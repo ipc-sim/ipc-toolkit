@@ -1,0 +1,57 @@
+dist: trusty
+language: cpp
+addons:
+  apt:
+    sources:
+    - sourceline: 'ppa:ubuntu-toolchain-r/test'
+    - sourceline: 'ppa:mhier/libboost-latest'
+    packages:
+    - g++-9
+    - gcc-9
+    - xorg-dev
+    - libboost1.70-dev
+    - freeglut3-dev
+    - python3-pip
+  homebrew:
+    packages:
+    - boost
+jobs:
+  include:
+  - os: linux
+    dist: "bionic"
+    compiler: gcc-9
+    env:
+    - MATRIX_EVAL="export CC=gcc-9 && CXX=g++-9 && CONFIG=Debug"
+
+  - os: linux
+    dist: "bionic"
+    compiler: gcc-9
+    env:
+    - MATRIX_EVAL="export CC=gcc-9 && CXX=g++-9 && CONFIG=Release"
+
+  - os: osx
+    osx_image: xcode11.3
+    compiler: clang
+    env:
+    - MATRIX_EVAL="export CONFIG=Debug"
+
+  - os: osx
+    osx_image: xcode11.3
+    compiler: clang
+    env:
+    - MATRIX_EVAL="export CONFIG=Release"
+
+before_install:
+  - pip3 install --user setuptools
+  - pip3 install --user -r requirements.txt
+
+install:
+- if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then export PATH="/usr/local/opt/ccache/libexec:$PATH"; fi
+- eval "${MATRIX_EVAL}"
+
+script:
+- mkdir build
+- cd build
+- cmake -DCMAKE_BUILD_TYPE=$CONFIG ${EXTRA_FLAGS} ..
+- make -j2
+- make test
