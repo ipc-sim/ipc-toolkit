@@ -4,7 +4,8 @@ project(IPCToolkit)
 ################################################################################
 
 # project-options
-option(IPC_TOOLKIT_BUILD_UNIT_TESTS         "Build unit-tests"      ON)
+option(IPC_USE_DISTANCE_SQUARED      "Use distance squared"  ON)
+option(IPC_TOOLKIT_BUILD_UNIT_TESTS  "Build unit-tests"      ON)
 
 ################################################################################
 
@@ -34,6 +35,9 @@ add_library(${PROJECT_NAME}
   src/barrier/barrier.cpp
 
   # src/utils/eigen_ext.cpp
+
+  src/spatial_hash/collision_candidate.cpp
+  src/spatial_hash/hash_grid.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)
@@ -41,6 +45,10 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 ################################################################################
 # Optional Definitions
 ################################################################################
+
+if(IPC_USE_DISTANCE_SQUARED)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC USE_DISTANCE_SQUARED)
+endif()
 
 ################################################################################
 # Required Libraries

@@ -6,11 +6,22 @@ add_executable(${PROJECT_NAME}_tests
 
   barrier/test_barrier.cpp
 
+  # spatial_hash/test_spatial_hash.cpp
+
+  distance/test_distance_type.cpp
+  # distance/test_edge_edge.cpp
+  distance/test_line_line.cpp
+  distance/test_point_edge.cpp
+  distance/test_point_line.cpp
+  distance/test_point_plane.cpp
+  distance/test_point_point.cpp
+  # distance/test_point_triangle.cpp
+
   # Test CCD
   # ccd/test_ccd.cpp
   # ccd/test_time_of_impact.cpp
   # ccd/test_hash_grid.cpp
-  #
+
   # geometry/test_distance.cpp
   # geometry/test_intersection.cpp
 )
@@ -19,7 +30,7 @@ target_link_libraries(${PROJECT_NAME}_tests PUBLIC ${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME}_tests PUBLIC Catch2::Catch2 warnings::all)
 target_link_libraries(${PROJECT_NAME}_tests PUBLIC FiniteDiff::FiniteDiff)
 
-# target_compile_definitions(${PROJECT_NAME}_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
+target_compile_definitions(${PROJECT_NAME}_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
 
 foreach(source IN ITEMS ${test_sources})
    source_group("tests" FILES "${source}")
