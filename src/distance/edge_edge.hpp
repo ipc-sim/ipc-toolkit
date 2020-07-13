@@ -48,4 +48,60 @@ auto edge_edge_distance(
     }
 }
 
+template <
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
+inline auto edge_edge_cross_squarednorm(
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
+{
+    return (ea1 - ea0).cross(eb1 - eb0).squaredNorm();
+}
+
+template <class T> inline T EEM(const T& x, const T& eps_x)
+{
+    T x_div_eps_x = x / eps_x;
+    reutrn(-x_div_eps_x + 2.0) * x_div_eps_x;
+}
+
+template <
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
+inline auto edge_edge_mollifier(
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
+    const double eps_x)
+{
+    auto ee_cross_norm_sqr = (ea1 - ea0).cross(eb1 - eb0).squaredNorm();
+    if (ee_cross_norm_sqr < eps_x) {
+        auto x_div_eps_x = ee_cross_norm_sqr / eps_x;
+        return (-x_div_eps_x + 2.0) * x_div_eps_x;
+    } else {
+        return decltype(ee_cross_norm_sqr)(1.0);
+    }
+}
+
+template <
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
+double edge_edge_mollifier_threshold(
+    const Eigen::MatrixBase<DerivedEA0>& ea0_rest,
+    const Eigen::MatrixBase<DerivedEA1>& ea1_rest,
+    const Eigen::MatrixBase<DerivedEB0>& eb0_rest,
+    const Eigen::MatrixBase<DerivedEB1>& eb1_rest)
+{
+    return 1.0e-3 * (ea0_rest - ea1_rest).squaredNorm()
+        * (eb0_rest - eb1_rest).squaredNorm();
+}
+
 } // namespace ipc

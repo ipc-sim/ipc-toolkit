@@ -22,6 +22,7 @@ inline void point_point_distance_gradient(
     const Eigen::MatrixBase<DerivedP1>& p1,
     Eigen::MatrixBase<DerivedGrad>& grad)
 {
+    grad.resize(p0.size() + p1.size());
 #ifdef USE_DISTANCE_SQUARED
     grad.head(p0.size()) = 2.0 * (p0 - p1);
     grad.tail(p1.size()) = -grad.head(p0.size());
@@ -36,6 +37,7 @@ inline void point_point_distance_hessian(
     const Eigen::MatrixBase<DerivedP1>& p1,
     Eigen::MatrixBase<DerivedHess>& hess)
 {
+    hess.resize(p0.size() + p1.size(), p0.size() + p1.size());
 #ifdef USE_DISTANCE_SQUARED
     int dim = p0.size();
     hess.setZero();
