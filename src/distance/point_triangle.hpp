@@ -1,7 +1,7 @@
 #pragma once
 
 #include <distance/distance_type.hpp>
-#include <distance/point_line.hpp>
+#include <distance/point_edge.hpp>
 #include <distance/point_plane.hpp>
 #include <distance/point_point.hpp>
 
@@ -29,13 +29,13 @@ auto point_triangle_distance(
         return point_point_distance(p, t2);
 
     case PointTriangleDistanceType::P_E0:
-        return point_line_distance(p, t0, t1);
+        return point_edge_distance(p, t0, t1);
 
     case PointTriangleDistanceType::P_E1:
-        return point_line_distance(p, t1, t2);
+        return point_edge_distance(p, t1, t2);
 
     case PointTriangleDistanceType::P_E2:
-        return point_line_distance(p, t2, t0);
+        return point_edge_distance(p, t2, t0);
 
     case PointTriangleDistanceType::P_T:
         return point_plane_distance(p, t0, t1, t2);

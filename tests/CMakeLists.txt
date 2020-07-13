@@ -15,7 +15,7 @@ add_executable(${PROJECT_NAME}_tests
   distance/test_point_line.cpp
   distance/test_point_plane.cpp
   distance/test_point_point.cpp
-  # distance/test_point_triangle.cpp
+  distance/test_point_triangle.cpp
 
   # Test CCD
   # ccd/test_ccd.cpp
