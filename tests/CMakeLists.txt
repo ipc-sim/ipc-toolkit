@@ -9,7 +9,7 @@ add_executable(${PROJECT_NAME}_tests
   # spatial_hash/test_spatial_hash.cpp
 
   distance/test_distance_type.cpp
-  # distance/test_edge_edge.cpp
+  distance/test_edge_edge.cpp
   distance/test_line_line.cpp
   distance/test_point_edge.cpp
   distance/test_point_line.cpp

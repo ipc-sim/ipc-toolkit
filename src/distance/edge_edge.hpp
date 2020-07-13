@@ -2,7 +2,7 @@
 
 #include <distance/distance_type.hpp>
 #include <distance/line_line.hpp>
-#include <distance/point_line.hpp>
+#include <distance/point_edge.hpp>
 #include <distance/point_point.hpp>
 
 namespace ipc {
@@ -32,16 +32,16 @@ auto edge_edge_distance(
         return point_point_distance(ea1, eb1);
 
     case EdgeEdgeDistanceType::EA_EB0:
-        return point_line_distance(eb0, ea0, ea1);
+        return point_edge_distance(eb0, ea0, ea1);
 
     case EdgeEdgeDistanceType::EA_EB1:
-        return point_line_distance(eb1, ea0, ea1);
+        return point_edge_distance(eb1, ea0, ea1);
 
     case EdgeEdgeDistanceType::EA0_EB:
-        return point_line_distance(ea0, eb0, eb1);
+        return point_edge_distance(ea0, eb0, eb1);
 
     case EdgeEdgeDistanceType::EA1_EB:
-        return point_line_distance(ea1, eb0, eb1);
+        return point_edge_distance(ea1, eb0, eb1);
 
     case EdgeEdgeDistanceType::EA_EB:
         return line_line_distance(ea0, ea1, eb0, eb1);

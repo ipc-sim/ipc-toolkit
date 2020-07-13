@@ -132,13 +132,8 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     } else {
         tN = (a * e - b * d);
         if (tN > 0.0 && tN < tD
-            && (u.cross(v).dot(w) == 0.0
-                || u.cross(v).squaredNorm() < 1.0e-20 * a * c)) {
-            // if (tN > 0.0 && tN < tD && (u.cross(v).dot(w) == 0.0 ||
-            // u.cross(v).squaredNorm() == 0.0)) { std::cout <<
-            // u.cross(v).squaredNorm() / (a * c) << ": " << sN << " " << D <<
-            // ", " << tN << " " << tD << std::endl; avoid coplanar or nearly
-            // parallel EE
+            && (u.cross(v).squaredNorm() < 1.0e-20 * a * c)) {
+            // avoid nearly parallel EE
             if (sN < D / 2) {
                 tN = e;
                 tD = c;
