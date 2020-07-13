@@ -36,21 +36,21 @@ TEST_CASE(
     }
     SECTION("closest to t0")
     {
-        double px = GENERATE(-1, -1 - 1e-12, -11);
-        p.x() = px;
-        p.z() = t0.z();
+        double delta = GENERATE(1e-8, 1e-4, 0.1, 11);
+        p.x() = t0.x() - delta;
+        p.z() = t0.z() + delta;
         expected_dtype = PointTriangleDistanceType::P_T0;
     }
     SECTION("closest to t1")
     {
-        double px = GENERATE(1, 1 + 1e-12, 11);
-        p.x() = px;
-        p.z() = t1.z();
+        double delta = GENERATE(1e-8, 1e-4, 0.1, 11);
+        p.x() = t1.x() + delta;
+        p.z() = t1.z() + delta;
         expected_dtype = PointTriangleDistanceType::P_T1;
     }
     SECTION("closest to t2")
     {
-        double pz = GENERATE(-1, -1 - 1e-12, -11);
+        double pz = GENERATE(-1 - 1e-12, -1.1, -11);
         p.z() = pz;
         expected_dtype = PointTriangleDistanceType::P_T2;
     }
@@ -60,7 +60,7 @@ TEST_CASE(
         Eigen::Vector3d closest_point = (t1 - t0) * alpha + t0;
         Eigen::Vector2d perp = edge_normal(
             Eigen::Vector2d(t0.x(), t0.z()), Eigen::Vector2d(t1.x(), t1.z()));
-        double scale = GENERATE(0, 1e-12, 1e-4, 1, 2, 11, 1000);
+        double scale = GENERATE(1e-12, 1e-4, 1, 2, 11, 1000);
         p.x() = closest_point.x() + scale * perp.x();
         p.z() = closest_point.z() + scale * perp.y();
         expected_dtype = PointTriangleDistanceType::P_E0;
@@ -71,7 +71,7 @@ TEST_CASE(
         Eigen::Vector3d closest_point = (t2 - t1) * alpha + t1;
         Eigen::Vector2d perp = edge_normal(
             Eigen::Vector2d(t1.x(), t1.z()), Eigen::Vector2d(t2.x(), t2.z()));
-        double scale = GENERATE(0, 1e-12, 1e-4, 1, 2, 11, 1000);
+        double scale = GENERATE(1e-12, 1e-4, 1, 2, 11, 1000);
         p.x() = closest_point.x() + scale * perp.x();
         p.z() = closest_point.z() + scale * perp.y();
         expected_dtype = PointTriangleDistanceType::P_E1;
@@ -82,17 +82,15 @@ TEST_CASE(
         Eigen::Vector3d closest_point = (t0 - t2) * alpha + t2;
         Eigen::Vector2d perp = edge_normal(
             Eigen::Vector2d(t2.x(), t2.z()), Eigen::Vector2d(t0.x(), t0.z()));
-        double scale = GENERATE(0, 1e-12, 1e-4, 1, 2, 11, 1000);
+        double scale = GENERATE(1e-12, 1e-4, 1, 2, 11, 1000);
         p.x() = closest_point.x() + scale * perp.x();
         p.z() = closest_point.z() + scale * perp.y();
         expected_dtype = PointTriangleDistanceType::P_E2;
     }
 
-    // PointTriangleDistanceType dtype =
-    //     point_triangle_distance_type(p, t0, t1, t2);
-    // if (dtype != PointTriangleDistanceType::P_T) {
-    //     CHECK(dtype == expected_dtype);
-    // }
+    PointTriangleDistanceType dtype =
+        point_triangle_distance_type(p, t0, t1, t2);
+    CHECK(dtype == expected_dtype);
 }
 
 TEST_CASE("Edge-edge distance type", "[distance][distance-type][edge-edge]")
