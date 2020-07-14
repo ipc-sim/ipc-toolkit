@@ -7,6 +7,10 @@
 
 namespace ipc {
 
+/// @brief Compute the distance between a two lines segments in 3D.
+/// @note The distance is actually squared distance.
+/// @param ea0,ea1 The points of the first edge.
+/// @param eb0,eb1 The points of the second edge.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -48,26 +52,12 @@ auto edge_edge_distance(
     }
 }
 
-template <
-    typename DerivedEA0,
-    typename DerivedEA1,
-    typename DerivedEB0,
-    typename DerivedEB1>
-inline auto edge_edge_cross_squarednorm(
-    const Eigen::MatrixBase<DerivedEA0>& ea0,
-    const Eigen::MatrixBase<DerivedEA1>& ea1,
-    const Eigen::MatrixBase<DerivedEB0>& eb0,
-    const Eigen::MatrixBase<DerivedEB1>& eb1)
-{
-    return (ea1 - ea0).cross(eb1 - eb0).squaredNorm();
-}
-
-template <class T> inline T EEM(const T& x, const T& eps_x)
-{
-    T x_div_eps_x = x / eps_x;
-    reutrn(-x_div_eps_x + 2.0) * x_div_eps_x;
-}
-
+/// @brief Compute a mollifier for the edge-edge distance.
+///
+/// This helps smooth the non-smoothness at close to parallel edges.
+///
+/// @param ea0,ea1 The points of the first edge.
+/// @param eb0,eb1 The points of the second edge.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -89,6 +79,12 @@ inline auto edge_edge_mollifier(
     }
 }
 
+/// @brief Compute the threshold of the mollifier edge-edge distance.
+///
+/// This values is computed based on the edges at rest length.
+///
+/// @param ea0,ea1 The points of the first edge at rest.
+/// @param eb0,eb1 The points of the second edge at rest.
 template <
     typename DerivedEA0,
     typename DerivedEA1,

@@ -62,11 +62,7 @@ TEST_CASE("Edge-edge distance degenerate case", "[distance][edge-edge]")
     }
 
     double distance = edge_edge_distance(e00, e01, e10, e11);
-#ifdef USE_DISTANCE_SQUARED
     CHECK(distance == Approx(e0y * e0y).margin(1e-12));
-#else
-    CHECK(distance == Approx(abs(e0y)).margin(1e-12));
-#endif
 }
 
 TEST_CASE(

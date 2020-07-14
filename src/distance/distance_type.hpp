@@ -4,8 +4,10 @@
 
 namespace ipc {
 
+/// @brief Closest pair between a point and edge.
 enum class PointEdgeDistanceType { P_E0, P_E1, P_E };
 
+/// @brief Closest pair between a point and triangle.
 enum class PointTriangleDistanceType {
     P_T0,
     P_T1,
@@ -16,6 +18,7 @@ enum class PointTriangleDistanceType {
     P_T
 };
 
+/// @brief Closest pair between two edges.
 enum class EdgeEdgeDistanceType {
     EA0_EB0,
     EA0_EB1,
@@ -28,13 +31,18 @@ enum class EdgeEdgeDistanceType {
     EA_EB
 };
 
-/// Determine the closest pair between a point and edge.
+/// @brief Determine the closest pair between a point and edge.
+/// @param p The point.
+/// @param e0,e1 The points of the edge.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 PointEdgeDistanceType point_edge_distance_type(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1);
 
+/// @brief Determine the closest pair between a point and triangle.
+/// @param p The point.
+/// @param t0,t1,t2 The points of the triangle.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -46,6 +54,9 @@ PointTriangleDistanceType point_triangle_distance_type(
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2);
 
+/// @brief Determine the closest pair between two edges.
+/// @param ea0,ea1 The points of the first edge.
+/// @param eb0,eb1 The points of the second edge.
 template <
     typename DerivedEA0,
     typename DerivedEA1,

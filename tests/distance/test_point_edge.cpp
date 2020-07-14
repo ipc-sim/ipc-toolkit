@@ -19,9 +19,5 @@ TEST_CASE("Point-edge distance", "[distance][point-edge]")
     e1.x() = 10;
 
     double distance = point_edge_distance(p, e0, e1);
-#ifdef USE_DISTANCE_SQUARED
     CHECK(distance == Approx(expected_distance * expected_distance));
-#else
-    CHECK(distance == Approx(abs(expected_distance)));
-#endif
 }

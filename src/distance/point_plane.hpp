@@ -5,9 +5,11 @@
 
 namespace ipc {
 
-// NOTE: squared distance
-
-// Compute the distance between a point and a plane (defined by a triangle)
+/// @brief Compute the distance between a point and a plane (defined by a
+/// triangle).
+/// @note The distance is actually squared distance.
+/// @param p The point.
+/// @param t0,t1,t2 The points of the triangle defining the plane.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -20,12 +22,8 @@ auto point_plane_distance(
     const Eigen::MatrixBase<DerivedT2>& t2)
 {
     auto normal = (t1 - t0).cross(t2 - t0);
-#ifdef USE_DISTANCE_SQUARED
     auto point_to_plane = (p - t0).dot(normal);
     return point_to_plane * point_to_plane / normal.squaredNorm();
-#else
-    return (p - t0).dot(normal.normalized());
-#endif
 }
 
 } // namespace ipc

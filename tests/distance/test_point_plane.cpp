@@ -16,8 +16,5 @@ TEST_CASE("Point-plane distance", "[distance][point-plane]")
 
     double distance = point_plane_distance(p, t0, t1, t2);
     double expected_distance = abs(y - y_plane);
-#ifdef USE_DISTANCE_SQUARED
-    expected_distance *= expected_distance;
-#endif
-    CHECK(distance == Approx(expected_distance));
+    CHECK(distance == Approx(expected_distance * expected_distance));
 }

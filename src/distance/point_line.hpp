@@ -6,7 +6,10 @@
 
 namespace ipc {
 
-// Compute the distance between a point and a line (defined by an edge)
+/// @brief Compute the distance between a point and a line (defined by an edge).
+/// @note The distance is actually squared distance.
+/// @param p The point.
+/// @param e0,e1 The points of the edge defining the line.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 auto point_line_distance(
     const Eigen::MatrixBase<DerivedP>& p,

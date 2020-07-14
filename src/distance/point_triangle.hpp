@@ -7,6 +7,10 @@
 
 namespace ipc {
 
+/// @brief Compute the distance between a points and a triangle.
+/// @note The distance is actually squared distance.
+/// @param p The point.
+/// @param t0,t1,t2 The points of the triangle.
 template <
     typename DerivedP,
     typename DerivedT0,

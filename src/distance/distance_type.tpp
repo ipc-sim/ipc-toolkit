@@ -9,8 +9,6 @@
 
 namespace ipc {
 
-// NOTE: squared distance
-
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 PointEdgeDistanceType point_edge_distance_type(
     const Eigen::MatrixBase<DerivedP>& p,

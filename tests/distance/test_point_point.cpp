@@ -19,10 +19,5 @@ TEST_CASE("Point-point distance", "[distance][point-point]")
         p1 *= expected_distance;
     }
     double distance = point_point_distance(p0, p1);
-#ifdef USE_DISTANCE_SQUARED
     CHECK(distance == Approx(expected_distance * expected_distance));
-#else
-    CHECK(distance == Approx(abs(expected_distance)));
-#endif
-    distance = point_point_distance(p0 - p1, p0);
 }

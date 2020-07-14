@@ -4,7 +4,6 @@ project(IPCToolkit)
 ################################################################################
 
 # project-options
-option(IPC_USE_DISTANCE_SQUARED      "Use distance squared"  ON)
 option(IPC_TOOLKIT_BUILD_UNIT_TESTS  "Build unit-tests"      ON)
 
 ################################################################################
@@ -45,10 +44,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 ################################################################################
 # Optional Definitions
 ################################################################################
-
-if(IPC_USE_DISTANCE_SQUARED)
-  target_compile_definitions(${PROJECT_NAME} PUBLIC USE_DISTANCE_SQUARED)
-endif()
 
 ################################################################################
 # Required Libraries

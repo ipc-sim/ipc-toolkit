@@ -6,7 +6,10 @@
 
 namespace ipc {
 
-// http://geomalgorithms.com/a02-_lines.html
+/// @brief Compute the distance between a point and edge in 2D or 3D.
+/// @note The distance is actually squared distance.
+/// @param p The point.
+/// @param e0,e1 The points of the edge.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 auto point_edge_distance(
     const Eigen::MatrixBase<DerivedP>& p,

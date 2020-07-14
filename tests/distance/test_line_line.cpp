@@ -17,8 +17,5 @@ TEST_CASE("Line-line distance", "[distance][line-line]")
 
     double distance = line_line_distance(ea0, ea1, eb0, eb1);
     double expected_distance = abs(ya - yb);
-#ifdef USE_DISTANCE_SQUARED
-    expected_distance *= expected_distance;
-#endif
-    CHECK(distance == Approx(expected_distance));
+    CHECK(distance == Approx(expected_distance * expected_distance));
 }
