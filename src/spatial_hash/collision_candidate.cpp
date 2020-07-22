@@ -1,4 +1,5 @@
 #include "collision_candidate.hpp"
+#include <algorithm>
 
 namespace ccd {
 
