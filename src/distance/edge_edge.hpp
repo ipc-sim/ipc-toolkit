@@ -51,8 +51,7 @@ auto edge_edge_distance(
         return line_line_distance(ea0, ea1, eb0, eb1);
     }
 
-    assert(false);
-    return point_point_distance(ea0, eb0);
+    throw "something went wrong in edge_edge_distance";
 }
 
 /// @brief Compute a mollifier for the edge-edge distance.

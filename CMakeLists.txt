@@ -33,10 +33,15 @@ add_library(${PROJECT_NAME}
 
   src/barrier/barrier.cpp
 
+  src/distance/line_line.cpp
+  src/distance/point_plane.cpp
+
   # src/utils/eigen_ext.cpp
 
   src/spatial_hash/collision_candidate.cpp
   src/spatial_hash/hash_grid.cpp
+
+  src/ipc.cpp
 )
 target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 
