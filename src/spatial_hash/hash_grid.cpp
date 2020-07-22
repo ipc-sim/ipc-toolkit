@@ -114,7 +114,7 @@ void HashGrid::addVertices(
     const double inflation_radius)
 {
     assert(vertices_t0.rows() == vertices_t1.rows());
-    tbb::parallel_for(0l, vertices_t0.rows(), 1l, [&](long i) {
+    tbb::parallel_for(0l, (long)(vertices_t0.rows()), 1l, [&](long i) {
         addVertex(vertices_t0.row(i), vertices_t1.row(i), i, inflation_radius);
     });
 }
@@ -164,7 +164,7 @@ void HashGrid::addEdges(
     const double inflation_radius)
 {
     assert(vertices_t0.rows() == vertices_t1.rows());
-    tbb::parallel_for(0l, edges.rows(), 1l, [&](long i) {
+    tbb::parallel_for(0l, (long)(edges.rows()), 1l, [&](long i) {
         addEdge(
             vertices_t0.row(edges(i, 0)), vertices_t0.row(edges(i, 1)),
             vertices_t1.row(edges(i, 0)), vertices_t1.row(edges(i, 1)), i,
@@ -224,7 +224,7 @@ void HashGrid::addFaces(
     const double inflation_radius)
 {
     assert(vertices_t0.rows() == vertices_t1.rows());
-    tbb::parallel_for(0l, faces.rows(), 1l, [&](long i) {
+    tbb::parallel_for(0l, (long)(faces.rows()), 1l, [&](long i) {
         addFace(
             vertices_t0.row(faces(i, 0)), vertices_t0.row(faces(i, 1)),
             vertices_t0.row(faces(i, 2)), vertices_t1.row(faces(i, 0)),
