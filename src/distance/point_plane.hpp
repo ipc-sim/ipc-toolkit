@@ -2,6 +2,7 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
+#include <utils/eigen_ext.hpp>
 
 namespace ipc {
 
@@ -59,6 +60,11 @@ namespace autogen {
         double H[144]);
 } // namespace autogen
 
+/// @brief Compute the gradient of the distance between a point and a plane.
+/// @note The distance is actually squared distance.
+/// @param[in] p The point.
+/// @param[in] t0,t1,t2 The points of the triangle defining the plane.
+/// @param[out] grad The computed gradient.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -77,6 +83,13 @@ auto point_plane_distance_gradient(
         t2[1], t2[2], grad.data());
 }
 
+/// @brief Compute the hessian of the distance between a point and a plane.
+/// @note The distance is actually squared distance.
+/// @param[in] p The point.
+/// @param[in] t0,t1,t2 The points of the triangle defining the plane.
+/// @param[out] hess The computed hessian.
+/// @param[in] project_to_psd True if the hessian should be projected to
+///                           positive semi-definite.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -87,7 +100,8 @@ auto point_plane_distance_hessian(
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2,
-    Eigen::MatrixXd& hess)
+    Eigen::MatrixXd& hess,
+    bool project_to_psd = false)
 {
     hess.resize(
         p.size() + t0.size() + t1.size() + t2.size(),
@@ -95,6 +109,9 @@ auto point_plane_distance_hessian(
     autogen::point_plane_distance_hessian(
         p[0], p[1], p[2], t0[0], t0[1], t0[2], t1[0], t1[1], t1[2], t2[0],
         t2[1], t2[2], hess.data());
+    if (project_to_psd) {
+        Eigen::project_to_psd(hess);
+    }
 }
 
 } // namespace ipc

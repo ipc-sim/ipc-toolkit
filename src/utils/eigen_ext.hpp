@@ -46,4 +46,7 @@ using DiagonalMatrixXd = DiagonalMatrix<double, Dynamic>;
 /// @brief A dynamic size diagonal matrix with a fixed maximum size of 6 x 6
 using DiagonalMatrixX6d = DiagonalMatrix<double, Dynamic, 6>;
 
+/// Matrix Projection onto Positive Semi-Definite Cone
+MatrixXd project_to_psd(const MatrixXd& A);
+
 } // namespace Eigen

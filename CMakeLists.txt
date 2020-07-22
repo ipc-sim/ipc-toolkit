@@ -31,17 +31,18 @@ add_library(${PROJECT_NAME}
   #
   # src/geometry/intersection.cpp
 
+  src/ipc.cpp
+
   src/barrier/barrier.cpp
 
   src/distance/line_line.cpp
   src/distance/point_plane.cpp
-
-  # src/utils/eigen_ext.cpp
+  src/distance/edge_edge_mollifier.cpp
 
   src/spatial_hash/collision_candidate.cpp
   src/spatial_hash/hash_grid.cpp
 
-  src/ipc.cpp
+  src/utils/eigen_ext.cpp
 )
 target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 

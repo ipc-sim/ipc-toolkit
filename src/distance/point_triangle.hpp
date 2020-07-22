@@ -122,18 +122,21 @@ void point_triangle_distance_gradient(
 /// @param[in] p The point.
 /// @param[in] t0,t1,t2 The points of the triangle.
 /// @param[out] hess The computed hessian.
+/// @param[in] project_to_psd True if the hessian should be projected to
+///                           positive semi-definite.
 template <
     typename DerivedP,
     typename DerivedT0,
     typename DerivedT1,
     typename DerivedT2,
-    typename DerivedGrad>
+    typename DerivedHess>
 void point_triangle_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2,
-    Eigen::MatrixBase<DerivedGrad>& hess)
+    Eigen::MatrixBase<DerivedHess>& hess,
+    bool project_to_psd = false)
 {
     int dim = p.size();
     assert(t0.size() == dim);
@@ -143,15 +146,15 @@ void point_triangle_distance_hessian(
     hess.resize(4 * dim, 4 * dim);
     hess.setZero();
 
-    Eigen::VectorXd local_hess;
+    Eigen::MatrixXd local_hess;
     switch (point_triangle_distance_type(p, t0, t1, t2)) {
     case PointTriangleDistanceType::P_T0:
-        point_point_distance_hessian(p, t0, local_hess);
+        point_point_distance_hessian(p, t0, local_hess, project_to_psd);
         hess.topLeftCorner(2 * dim, 2 * dim) = local_hess;
         break;
 
     case PointTriangleDistanceType::P_T1:
-        point_point_distance_hessian(p, t1, local_hess);
+        point_point_distance_hessian(p, t1, local_hess, project_to_psd);
         hess.topLeftCorner(dim, dim) = local_hess.topLeftCorner(dim, dim);
         hess.block(0, 2 * dim, dim, dim) = local_hess.topRightCorner(dim, dim);
         hess.block(2 * dim, 0, dim, dim) =
@@ -161,7 +164,7 @@ void point_triangle_distance_hessian(
         break;
 
     case PointTriangleDistanceType::P_T2:
-        point_point_distance_hessian(p, t2, local_hess);
+        point_point_distance_hessian(p, t2, local_hess, project_to_psd);
         hess.topLeftCorner(dim, dim) = local_hess.topLeftCorner(dim, dim);
         hess.topRightCorner(dim, dim) = local_hess.topRightCorner(dim, dim);
         hess.bottomLeftCorner(dim, dim) = local_hess.bottomLeftCorner(dim, dim);
@@ -170,12 +173,12 @@ void point_triangle_distance_hessian(
         break;
 
     case PointTriangleDistanceType::P_E0:
-        point_edge_distance_hessian(p, t0, t1, local_hess);
+        point_edge_distance_hessian(p, t0, t1, local_hess, project_to_psd);
         hess.topLeftCorner(3 * dim, 3 * dim) = local_hess;
         break;
 
     case PointTriangleDistanceType::P_E1:
-        point_edge_distance_hessian(p, t1, t2, local_hess);
+        point_edge_distance_hessian(p, t1, t2, local_hess, project_to_psd);
         hess.topLeftCorner(dim, dim) = local_hess.topLeftCorner(dim, dim);
         hess.topRightCorner(dim, 2 * dim) =
             local_hess.topRightCorner(dim, 2 * dim);
@@ -186,7 +189,7 @@ void point_triangle_distance_hessian(
         break;
 
     case PointTriangleDistanceType::P_E2:
-        point_edge_distance_hessian(p, t2, t0, local_hess);
+        point_edge_distance_hessian(p, t2, t0, local_hess, project_to_psd);
         hess.topLeftCorner(dim, dim) = local_hess.topLeftCorner(dim, dim);
         hess.block(0, dim, dim, dim) = local_hess.topRightCorner(dim, dim);
         hess.topRightCorner(dim, dim) = local_hess.block(0, dim, dim, dim);
@@ -201,7 +204,7 @@ void point_triangle_distance_hessian(
         break;
 
     case PointTriangleDistanceType::P_T:
-        point_plane_distance_hessian(p, t0, t1, t2, hess);
+        point_plane_distance_hessian(p, t0, t1, t2, hess, project_to_psd);
         break;
     }
 }
