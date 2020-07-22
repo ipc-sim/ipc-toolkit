@@ -50,6 +50,9 @@ auto edge_edge_distance(
     case EdgeEdgeDistanceType::EA_EB:
         return line_line_distance(ea0, ea1, eb0, eb1);
     }
+
+    assert(false);
+    return point_point_distance(ea0, eb0);
 }
 
 /// @brief Compute a mollifier for the edge-edge distance.
