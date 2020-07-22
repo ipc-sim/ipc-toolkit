@@ -38,6 +38,7 @@ add_library(${PROJECT_NAME}
   src/spatial_hash/collision_candidate.cpp
   src/spatial_hash/hash_grid.cpp
 )
+target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
