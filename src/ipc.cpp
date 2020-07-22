@@ -4,6 +4,7 @@
 #include <spatial_hash/hash_grid.hpp>
 
 #include <distance/edge_edge.hpp>
+#include <distance/edge_edge_mollifier.hpp>
 #include <distance/point_edge.hpp>
 #include <distance/point_triangle.hpp>
 
