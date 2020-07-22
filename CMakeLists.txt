@@ -62,8 +62,11 @@ target_link_libraries(${PROJECT_NAME} PUBLIC TBB::tbb)
 # Etienne Vouga's CTCD Library for the floating point root finding algorithm
 target_link_libraries(${PROJECT_NAME} PUBLIC EVCTCD)
 
+
 # Teseo's Exact CCD library for exact segment-triangle intersection check
-target_link_libraries(${PROJECT_NAME} PUBLIC RationalCCD)
+if(TARGET RationalCCD)
+  target_link_libraries(${PROJECT_NAME} PUBLIC RationalCCD)
+endif()
 
 ################################################################################
 # Compiler options

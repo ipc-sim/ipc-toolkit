@@ -58,5 +58,12 @@ endif()
 # Rational implmentation of Brochu et al. [2012]
 if(NOT TARGET RationalCCD)
   ipc_toolkit_download_rational_ccd()
-  add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/rational_ccd)
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${IPC_TOOLKIT_EXTERNAL}/rational_ccd/cmake)
+
+  find_package(GMPECCD)
+  if(NOT ${GMP_FOUND})
+    MESSAGE(WARNING "Unable to find GMP, not including RationalCCD")
+  else()
+    add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/rational_ccd)
+  endif()
 endif()
