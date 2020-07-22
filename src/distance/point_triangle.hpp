@@ -44,6 +44,8 @@ auto point_triangle_distance(
     case PointTriangleDistanceType::P_T:
         return point_plane_distance(p, t0, t1, t2);
     }
+
+    throw "something went wrong in point_triangle_distance";
 }
 
 /// @brief Compute the gradient of the distance between a points and a triangle.
