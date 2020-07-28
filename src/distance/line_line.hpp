@@ -69,13 +69,14 @@ template <
     typename DerivedEA0,
     typename DerivedEA1,
     typename DerivedEB0,
-    typename DerivedEB1>
+    typename DerivedEB1,
+    typename DerivedGrad>
 void line_line_distance_gradient(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
-    Eigen::VectorXd& grad)
+    Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
     grad.resize(ea0.size() + ea1.size() + eb0.size() + eb1.size());
     autogen::line_line_distance_gradient(
@@ -95,13 +96,14 @@ template <
     typename DerivedEA0,
     typename DerivedEA1,
     typename DerivedEB0,
-    typename DerivedEB1>
+    typename DerivedEB1,
+    typename DerivedHess>
 void line_line_distance_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
-    Eigen::MatrixXd& hess,
+    Eigen::PlainObjectBase<DerivedHess>& hess,
     bool project_to_psd = false)
 {
     hess.resize(

@@ -26,4 +26,44 @@ auto point_line_distance(
     return point_point_distance(p, e * alpha + e0);
 }
 
+template <
+    typename DerivedP,
+    typename DerivedE0,
+    typename DerivedE1,
+    typename DerivedGrad>
+void point_line_distance_gradient(
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1,
+    Eigen::PlainObjectBase<DerivedGrad>& grad)
+{
+    int dim = p.size();
+    assert(e0.size() == dim);
+    assert(e1.size() == dim);
+
+    grad.resize(3 * dim);
+
+    throw "not implemented";
+}
+
+template <
+    typename DerivedP,
+    typename DerivedE0,
+    typename DerivedE1,
+    typename DerivedHess>
+void point_line_distance_hessian(
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1,
+    Eigen::PlainObjectBase<DerivedHess>& hess)
+{
+    int dim = p.size();
+    assert(e0.size() == dim);
+    assert(e1.size() == dim);
+
+    hess.resize(3 * dim, 3 * dim);
+
+    throw "not implemented";
+}
+
 } // namespace ipc

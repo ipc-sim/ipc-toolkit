@@ -70,7 +70,7 @@ auto edge_edge_distance_gradient(
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
-    Eigen::MatrixBase<DerivedGrad>& grad)
+    Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
     int dim = ea0.size();
     assert(ea1.size() == dim);
@@ -153,7 +153,7 @@ auto edge_edge_distance_hessian(
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
-    Eigen::MatrixBase<DerivedHess>& hess,
+    Eigen::PlainObjectBase<DerivedHess>& hess,
     bool project_to_psd = false)
 {
     int dim = ea0.size();

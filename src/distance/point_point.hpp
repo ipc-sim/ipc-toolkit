@@ -24,7 +24,7 @@ template <typename DerivedP0, typename DerivedP1, typename DerivedGrad>
 inline void point_point_distance_gradient(
     const Eigen::MatrixBase<DerivedP0>& p0,
     const Eigen::MatrixBase<DerivedP1>& p1,
-    Eigen::MatrixBase<DerivedGrad>& grad)
+    Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
     grad.resize(p0.size() + p1.size());
     grad.head(p0.size()) = 2.0 * (p0 - p1);
@@ -41,7 +41,7 @@ template <typename DerivedP0, typename DerivedP1, typename DerivedHess>
 inline void point_point_distance_hessian(
     const Eigen::MatrixBase<DerivedP0>& p0,
     const Eigen::MatrixBase<DerivedP1>& p1,
-    Eigen::MatrixBase<DerivedHess>& hess,
+    Eigen::PlainObjectBase<DerivedHess>& hess,
     bool project_to_psd = false)
 {
     int dim = p0.size();

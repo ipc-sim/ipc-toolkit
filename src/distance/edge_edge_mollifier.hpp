@@ -58,13 +58,14 @@ template <
     typename DerivedEA0,
     typename DerivedEA1,
     typename DerivedEB0,
-    typename DerivedEB1>
+    typename DerivedEB1,
+    typename DerivedGrad>
 void edge_edge_cross_squarednorm_gradient(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
-    Eigen::VectorXd& grad)
+    Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
     grad.resize(ea0.size() + ea1.size() + eb0.size() + eb1.size());
     autogen::edge_edge_cross_squarednorm_gradient(
@@ -76,13 +77,14 @@ template <
     typename DerivedEA0,
     typename DerivedEA1,
     typename DerivedEB0,
-    typename DerivedEB1>
+    typename DerivedEB1,
+    typename DerivedHess>
 void edge_edge_cross_squarednorm_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
-    Eigen::MatrixXd& hess)
+    Eigen::PlainObjectBase<DerivedHess>& hess)
 {
     hess.resize(
         ea0.size() + ea1.size() + eb0.size() + eb1.size(),
@@ -147,7 +149,7 @@ void edge_edge_mollifier_gradient(
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
     const double eps_x,
-    Eigen::MatrixBase<DerivedGrad>& grad)
+    Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
     int dim = ea0.size();
     assert(ea1.size() == dim);
@@ -177,7 +179,7 @@ void edge_edge_mollifier_hessian(
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
     const double eps_x,
-    Eigen::MatrixBase<DerivedHess>& hess)
+    Eigen::PlainObjectBase<DerivedHess>& hess)
 {
     int dim = ea0.size();
     assert(ea1.size() == dim);

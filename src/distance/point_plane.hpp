@@ -69,13 +69,14 @@ template <
     typename DerivedP,
     typename DerivedT0,
     typename DerivedT1,
-    typename DerivedT2>
+    typename DerivedT2,
+    typename DerivedGrad>
 auto point_plane_distance_gradient(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2,
-    Eigen::VectorXd& grad)
+    Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
     grad.resize(p.size() + t0.size() + t1.size() + t2.size());
     autogen::point_plane_distance_gradient(
@@ -94,13 +95,14 @@ template <
     typename DerivedP,
     typename DerivedT0,
     typename DerivedT1,
-    typename DerivedT2>
+    typename DerivedT2,
+    typename DerivedHess>
 auto point_plane_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2,
-    Eigen::MatrixXd& hess,
+    Eigen::PlainObjectBase<DerivedHess>& hess,
     bool project_to_psd = false)
 {
     hess.resize(

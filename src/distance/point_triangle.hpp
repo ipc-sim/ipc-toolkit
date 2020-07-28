@@ -64,7 +64,7 @@ void point_triangle_distance_gradient(
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2,
-    Eigen::MatrixBase<DerivedGrad>& grad)
+    Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
     int dim = p.size();
     assert(t0.size() == dim);
@@ -135,7 +135,7 @@ void point_triangle_distance_hessian(
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2,
-    Eigen::MatrixBase<DerivedHess>& hess,
+    Eigen::PlainObjectBase<DerivedHess>& hess,
     bool project_to_psd = false)
 {
     int dim = p.size();
