@@ -44,8 +44,7 @@ double compute_barrier_potential(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const ccd::Candidates& constraint_set,
-    double dhat_squared,
-    double barrier_stiffness);
+    double dhat_squared);
 
 Eigen::VectorXd compute_barrier_potential_gradient(
     const Eigen::MatrixXd& V_rest,
@@ -53,8 +52,7 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const ccd::Candidates& constraint_set,
-    double dhat_squared,
-    double barrier_stiffness);
+    double dhat_squared);
 
 Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const Eigen::MatrixXd& V_rest,
@@ -62,8 +60,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const ccd::Candidates& constraint_set,
-    double dhat_squared,
-    double barrier_stiffness);
+    double dhat_squared);
 
 /// @brief Determine if the step is collision free.
 ///
@@ -105,11 +102,11 @@ double compute_collision_free_stepsize(
 /// @param[in] E Edges as rows of indicies into V.
 /// @param[in] F Triangular faces as rows of indicies into V.
 /// @returns The minimum distance between any non-adjacent elements.
-// double compute_minimum_distance(
-//     const Eigen::MatrixXd& V,
-//     const Eigen::MatrixXi& E,
-//     const Eigen::MatrixXi& F,
-//     const ccd::Candidates& constraint_set);
+double compute_minimum_distance(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const ccd::Candidates& constraint_set);
 
 // double compute_friction_potential(
 //     const Eigen::MatrixXd& V_prev,

@@ -34,6 +34,7 @@ add_library(${PROJECT_NAME}
   src/ipc.cpp
 
   src/barrier/barrier.cpp
+  src/barrier/adaptive_stiffness.cpp
 
   src/distance/line_line.cpp
   src/distance/point_line.cpp

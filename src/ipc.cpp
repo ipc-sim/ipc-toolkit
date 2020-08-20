@@ -91,8 +91,7 @@ double compute_barrier_potential(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const ccd::Candidates& constraint_set,
-    double dhat_squared,
-    double barrier_stiffness)
+    double dhat_squared)
 {
     double potential = 0;
 
@@ -130,7 +129,7 @@ double compute_barrier_potential(
         potential += barrier(distance_sqr, dhat_squared);
     }
 
-    return barrier_stiffness * potential;
+    return potential;
 }
 
 Eigen::VectorXd compute_barrier_potential_gradient(
@@ -139,8 +138,7 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const ccd::Candidates& constraint_set,
-    double dhat_squared,
-    double barrier_stiffness)
+    double dhat_squared)
 {
     Eigen::VectorXd grad = Eigen::VectorXd::Zero(V.size());
     int dim = V.cols();
@@ -255,8 +253,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const ccd::Candidates& constraint_set,
-    double dhat_squared,
-    double barrier_stiffness)
+    double dhat_squared)
 {
     std::vector<Eigen::Triplet<double>> hess_triplets;
     int dim = V.cols();
@@ -581,6 +578,53 @@ double compute_collision_free_stepsize(
     }
 
     return earliest_toi;
+}
+
+// NOTE: Actually distance squared
+double compute_minimum_distance(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const ccd::Candidates& constraint_set)
+{
+    double min_distance = std::numeric_limits<double>::infinity();
+
+    for (const auto& ev_candidate : constraint_set.ev_candidates) {
+        double distance_sqr = point_edge_distance(
+            V.row(ev_candidate.vertex_index),
+            V.row(E(ev_candidate.edge_index, 0)),
+            V.row(E(ev_candidate.edge_index, 1)));
+
+        if (distance_sqr < min_distance) {
+            min_distance = distance_sqr;
+        }
+    }
+
+    for (const auto& ee_candidate : constraint_set.ee_candidates) {
+        double distance_sqr = edge_edge_distance(
+            V.row(E(ee_candidate.edge0_index, 0)),
+            V.row(E(ee_candidate.edge0_index, 1)),
+            V.row(E(ee_candidate.edge1_index, 0)),
+            V.row(E(ee_candidate.edge1_index, 1)));
+
+        if (distance_sqr < min_distance) {
+            min_distance = distance_sqr;
+        }
+    }
+
+    for (const auto& fv_candidate : constraint_set.fv_candidates) {
+        double distance_sqr = point_triangle_distance(
+            V.row(fv_candidate.vertex_index),
+            V.row(F(fv_candidate.face_index, 0)),
+            V.row(F(fv_candidate.face_index, 1)),
+            V.row(F(fv_candidate.face_index, 2)));
+
+        if (distance_sqr < min_distance) {
+            min_distance = distance_sqr;
+        }
+    }
+
+    return min_distance;
 }
 
 } // namespace ipc
