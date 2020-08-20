@@ -77,7 +77,8 @@ void point_edge_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1,
-    Eigen::PlainObjectBase<DerivedHess>& hess)
+    Eigen::PlainObjectBase<DerivedHess>& hess,
+    bool project_to_psd = false)
 {
     int dim = p.size();
     assert(e0.size() == dim);
@@ -89,12 +90,12 @@ void point_edge_distance_hessian(
     Eigen::MatrixXd local_hess;
     switch (point_edge_distance_type(p, e0, e1)) {
     case PointEdgeDistanceType::P_E0:
-        point_point_distance_hessian(p, e0, local_hess);
+        point_point_distance_hessian(p, e0, local_hess, project_to_psd);
         hess.topLeftCorner(2 * dim, 2 * dim) = local_hess;
         break;
 
     case PointEdgeDistanceType::P_E1:
-        point_point_distance_hessian(p, e1, local_hess);
+        point_point_distance_hessian(p, e1, local_hess, project_to_psd);
         hess.topLeftCorner(dim, dim) = local_hess.topLeftCorner(dim, dim);
         hess.topRightCorner(dim, dim) = local_hess.topRightCorner(dim, dim);
         hess.bottomLeftCorner(dim, dim) = local_hess.bottomLeftCorner(dim, dim);
@@ -103,7 +104,7 @@ void point_edge_distance_hessian(
         break;
 
     case PointEdgeDistanceType::P_E:
-        point_line_distance_hessian(p, e0, e1, hess);
+        point_line_distance_hessian(p, e0, e1, hess, project_to_psd);
         break;
     }
 }

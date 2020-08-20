@@ -16,15 +16,61 @@ auto point_line_distance(
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    typedef typename DerivedP::Scalar T;
-
-    // Project the point onto the line
-    auto e = e1 - e0;
-    auto e_length_sqr = e.squaredNorm();
-    auto alpha = e_length_sqr != 0 ? ((p - e0).dot(e) / e_length_sqr) : T(0.5);
-
-    return point_point_distance(p, e * alpha + e0);
+    if (p.size() == 2) {
+        auto e = e1 - e0;
+        auto numerator =
+            (e[1] * p[0] - e[0] * p[1] + e1[0] * e0[1] - e1[1] * e0[0]);
+        return numerator * numerator / e.squaredNorm();
+    } else {
+        return Eigen::cross(e0 - p, e1 - p).squaredNorm()
+            / (e1 - e0).squaredNorm();
+    }
 }
+
+// Symbolically generated derivatives;
+namespace autogen {
+    void point_line_distance_gradient_2D(
+        double v01,
+        double v02,
+        double v11,
+        double v12,
+        double v21,
+        double v22,
+        double g[6]);
+
+    void point_line_distance_gradient_3D(
+        double v01,
+        double v02,
+        double v03,
+        double v11,
+        double v12,
+        double v13,
+        double v21,
+        double v22,
+        double v23,
+        double g[9]);
+
+    void point_line_distance_hessian_2D(
+        double v01,
+        double v02,
+        double v11,
+        double v12,
+        double v21,
+        double v22,
+        double H[36]);
+
+    void point_line_distance_hessian_3D(
+        double v01,
+        double v02,
+        double v03,
+        double v11,
+        double v12,
+        double v13,
+        double v21,
+        double v22,
+        double v23,
+        double H[81]);
+} // namespace autogen
 
 template <
     typename DerivedP,
@@ -37,13 +83,15 @@ void point_line_distance_gradient(
     const Eigen::MatrixBase<DerivedE1>& e1,
     Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
-    int dim = p.size();
-    assert(e0.size() == dim);
-    assert(e1.size() == dim);
-
-    grad.resize(3 * dim);
-
-    throw "not implemented";
+    grad.resize(p.size() + e0.size() + e1.size());
+    if (p.size() == 2) {
+        autogen::point_line_distance_gradient_2D(
+            p[0], p[1], e0[0], e0[1], e1[0], e1[1], grad.data());
+    } else {
+        autogen::point_line_distance_gradient_3D(
+            p[0], p[1], p[2], e0[0], e0[1], e0[2], e1[0], e1[1], e1[2],
+            grad.data());
+    }
 }
 
 template <
@@ -55,15 +103,22 @@ void point_line_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1,
-    Eigen::PlainObjectBase<DerivedHess>& hess)
+    Eigen::PlainObjectBase<DerivedHess>& hess,
+    bool project_to_psd = false)
 {
-    int dim = p.size();
-    assert(e0.size() == dim);
-    assert(e1.size() == dim);
-
-    hess.resize(3 * dim, 3 * dim);
-
-    throw "not implemented";
+    hess.resize(
+        p.size() + e0.size() + e1.size(), p.size() + e0.size() + e1.size());
+    if (p.size() == 2) {
+        autogen::point_line_distance_hessian_2D(
+            p[0], p[1], e0[0], e0[1], e1[0], e1[1], hess.data());
+    } else {
+        autogen::point_line_distance_hessian_3D(
+            p[0], p[1], p[2], e0[0], e0[1], e0[2], e1[0], e1[1], e1[2],
+            hess.data());
+    }
+    if (project_to_psd) {
+        Eigen::project_to_psd(hess);
+    }
 }
 
 } // namespace ipc

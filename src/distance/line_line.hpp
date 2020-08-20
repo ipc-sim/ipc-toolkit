@@ -22,7 +22,7 @@ auto line_line_distance(
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    const auto normal = (ea1 - ea0).cross(eb1 - eb0);
+    const auto normal = Eigen::cross(ea1 - ea0, eb1 - eb0);
     const auto line_to_line = (eb0 - ea0).dot(normal);
     return line_to_line * line_to_line / normal.squaredNorm();
 }

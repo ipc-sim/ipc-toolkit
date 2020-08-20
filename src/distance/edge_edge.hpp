@@ -121,7 +121,7 @@ auto edge_edge_distance_gradient(
     case EdgeEdgeDistanceType::EA0_EB:
         point_edge_distance_gradient(ea0, eb0, eb1, local_grad);
         grad.head(dim) = local_grad.head(dim);
-        grad.tail(2 * dim) = local_grad.head(2 * dim);
+        grad.tail(2 * dim) = local_grad.tail(2 * dim);
         break;
 
     case EdgeEdgeDistanceType::EA1_EB:

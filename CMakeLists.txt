@@ -36,6 +36,7 @@ add_library(${PROJECT_NAME}
   src/barrier/barrier.cpp
 
   src/distance/line_line.cpp
+  src/distance/point_line.cpp
   src/distance/point_plane.cpp
   src/distance/edge_edge_mollifier.cpp
 

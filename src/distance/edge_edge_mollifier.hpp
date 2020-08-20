@@ -18,7 +18,7 @@ auto edge_edge_cross_squarednorm(
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    return (ea1 - ea0).cross(eb1 - eb0).squaredNorm();
+    return Eigen::cross(ea1 - ea0, eb1 - eb0).squaredNorm();
 }
 
 // Symbolically generated derivatives;

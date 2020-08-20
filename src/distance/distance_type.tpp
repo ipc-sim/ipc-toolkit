@@ -44,7 +44,7 @@ PointTriangleDistanceType point_triangle_distance_type(
     typedef typename DerivedP::Scalar T;
 
     // Compute the barycentric coordinates of the projected_point
-    const auto normal = (t1 - t0).cross(t2 - t0);
+    const auto normal = Eigen::cross(t1 - t0, t2 - t0);
     const auto projected_p =
         p - (p - t0).dot(normal) / normal.squaredNorm() * normal;
 
@@ -134,7 +134,7 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     } else {
         tN = (a * e - b * d);
         if (tN > 0.0 && tN < tD
-            && (u.cross(v).squaredNorm() < 1.0e-20 * a * c)) {
+            && (Eigen::cross(u, v).squaredNorm() < 1.0e-20 * a * c)) {
             // avoid nearly parallel EE
             if (sN < D / 2) {
                 tN = e;

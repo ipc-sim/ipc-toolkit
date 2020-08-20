@@ -78,5 +78,5 @@ TEST_CASE("Point-edge distance hessian", "[distance][point-edge][hessian]")
     Eigen::MatrixXd fhess;
     fd::finite_hessian(x, f, fhess);
 
-    CHECK(fd::compare_hessian(hess, fhess));
+    CHECK(fd::compare_hessian(hess, fhess, 1e-2));
 }
