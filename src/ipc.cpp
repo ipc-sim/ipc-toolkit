@@ -18,7 +18,8 @@ void construct_constraint_set(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     double dhat_squared,
-    ccd::Candidates& constraint_set)
+    ccd::Candidates& constraint_set,
+    bool ignore_internal_vertices)
 {
     double dhat = std::sqrt(dhat_squared);
 
@@ -26,7 +27,18 @@ void construct_constraint_set(
     ccd::HashGrid hash_grid;
     hash_grid.resize(V, V, E, /*inflation_radius=*/dhat);
 
-    hash_grid.addVertices(V, V, /*inflation_radius=*/dhat);
+    if(ignore_internal_vertices)
+    {
+        for(int e = 0; e < E.rows(); ++e){
+            const int e0 = E(e, 0);
+            const int e1 = E(e, 1);
+            hash_grid.addVertex(V.row(e0), V.row(e0), e0,/*inflation_radius=*/dhat);
+            hash_grid.addVertex(V.row(e1), V.row(e1), e1,/*inflation_radius=*/dhat);
+        }
+    }
+    else
+        hash_grid.addVertices(V, V, /*inflation_radius=*/dhat);
+
     hash_grid.addEdges(V, V, E, /*inflation_radius=*/dhat);
     if (V.cols() == 3) {
         // These are not needed for 2D

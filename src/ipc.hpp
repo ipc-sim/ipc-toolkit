@@ -17,12 +17,14 @@ namespace ipc {
 /// @param[in] F Triangular faces as rows of indicies into V.
 /// @param[in] dhat_squared The activation distance squared of the barrier.
 /// @param[out] constraint_set The constructed set of constraints.
+/// @param[in] ignore_internal_vertices Ignores vertices not connected to edges E
 void construct_constraint_set(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     double dhat_squared,
-    ccd::Candidates& constraint_set);
+    ccd::Candidates& constraint_set,
+    bool ignore_internal_vertices = true);
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
 ///
