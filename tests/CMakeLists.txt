@@ -22,9 +22,6 @@ add_executable(${PROJECT_NAME}_tests
   # ccd/test_ccd.cpp
   # ccd/test_time_of_impact.cpp
   # ccd/test_hash_grid.cpp
-
-  # geometry/test_distance.cpp
-  # geometry/test_intersection.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}_tests PUBLIC ${PROJECT_NAME})

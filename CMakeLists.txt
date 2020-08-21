@@ -21,16 +21,6 @@ include(${PROJECT_NAME}Dependencies)
 ################################################################################
 
 add_library(${PROJECT_NAME}
-  # src/autodiff/autodiff.cpp
-
-  # src/ccd/impact.cpp
-  # src/ccd/collision_candidate.cpp
-  # src/ccd/hash_grid.cpp
-  # src/ccd/collision_detection_narrow_phase.cpp
-  # src/ccd/collision_detection_broad_phase.cpp
-  #
-  # src/geometry/intersection.cpp
-
   src/ipc.cpp
 
   src/barrier/barrier.cpp
