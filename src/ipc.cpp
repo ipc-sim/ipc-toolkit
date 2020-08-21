@@ -13,7 +13,7 @@
 
 namespace ipc {
 
-void compute_constraint_set(
+void construct_constraint_set(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
