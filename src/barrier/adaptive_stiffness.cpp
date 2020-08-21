@@ -21,8 +21,8 @@ double intial_barrier_stiffness(
     double dhat_squared,
     double average_mass,
     const Eigen::VectorXd& grad_energy,
-    double min_barrier_stiffness_scale,
-    double& max_barrier_stiffness)
+    double& max_barrier_stiffness,
+    double min_barrier_stiffness_scale)
 {
     double diag = world_bbox_diagonal(V);
 

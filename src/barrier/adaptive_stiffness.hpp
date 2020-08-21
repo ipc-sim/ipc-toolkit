@@ -12,7 +12,6 @@ double intial_barrier_stiffness(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     double dhat_squared,
-    double world_bbox_diagonal,
     double average_mass,
     const Eigen::VectorXd& grad_energy,
     double& max_barrier_stiffness,
