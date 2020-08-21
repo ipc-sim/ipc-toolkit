@@ -49,7 +49,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 ################################################################################
 
 # libigl
-# TODO: Replace this with Eigen::Eigen3
 target_link_libraries(${PROJECT_NAME} PUBLIC igl::core)
 
 # Extra warnings
