@@ -29,7 +29,11 @@ TEST_CASE("Dummy test for IPC compilation", "[ipc]")
     std::string dirname, basename, extension, filename;
     igl::pathinfo(
         std::string(__FILE__), dirname, basename, extension, filename);
+#ifdef win32
+    igl::read_triangle_mesh(dirname + "\\meshes\\" + mesh_name, V, F);
+#else
     igl::read_triangle_mesh(dirname + "/meshes/" + mesh_name, V, F);
+#endif
     REQUIRE(V.size());
     REQUIRE(F.size());
     igl::edges(F, E);
