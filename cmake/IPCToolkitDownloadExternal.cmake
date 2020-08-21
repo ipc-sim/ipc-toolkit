@@ -56,11 +56,3 @@ function(ipc_toolkit_download_evctcd)
     GIT_TAG        e5fe5c9767207df5047e375fb20180a665ae186f
   )
 endfunction()
-
-# Rational CCD (rational version of Brochu et al. [2012])
-function(ipc_toolkit_download_rational_ccd)
-  ipc_toolkit_download_project(rational_ccd
-    GIT_REPOSITORY https://github.com/teseoch/Exact-CDD.git
-    GIT_TAG        01d933b1a7d215fa8cdcc6998f9e60d9804b7354
-  )
-endfunction()

@@ -24,13 +24,15 @@ endif()
 
 # TBB
 if(NOT TARGET TBB::tbb)
-  ipc_toolkit_download_tbb()
-  set(TBB_BUILD_STATIC ON CACHE BOOL " " FORCE)
-  set(TBB_BUILD_SHARED OFF CACHE BOOL " " FORCE)
-  set(TBB_BUILD_TBBMALLOC OFF CACHE BOOL " " FORCE)
-  set(TBB_BUILD_TBBMALLOC_PROXY OFF CACHE BOOL " " FORCE)
-  set(TBB_BUILD_TESTS OFF CACHE BOOL " " FORCE)
-  add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/tbb EXCLUDE_FROM_ALL)
+  if(NOT TARGET tbb_static)
+    ipc_toolkit_download_tbb()
+    set(TBB_BUILD_STATIC ON CACHE BOOL " " FORCE)
+    set(TBB_BUILD_SHARED OFF CACHE BOOL " " FORCE)
+    set(TBB_BUILD_TBBMALLOC OFF CACHE BOOL " " FORCE)
+    set(TBB_BUILD_TBBMALLOC_PROXY OFF CACHE BOOL " " FORCE)
+    set(TBB_BUILD_TESTS OFF CACHE BOOL " " FORCE)
+    add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/tbb EXCLUDE_FROM_ALL)
+  endif()
   add_library(TBB::tbb ALIAS tbb_static)
 endif()
 
@@ -52,17 +54,4 @@ if(NOT TARGET EVCTCD)
 
   # Turn off floating point contraction for CCD robustness
   target_compile_options(EVCTCD PUBLIC "-ffp-contract=off")
-endif()
-
-# Rational implmentation of Brochu et al. [2012]
-if(NOT TARGET RationalCCD)
-  ipc_toolkit_download_rational_ccd()
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${IPC_TOOLKIT_EXTERNAL}/rational_ccd/cmake)
-
-  find_package(GMPECCD)
-  if(NOT ${GMP_FOUND})
-    MESSAGE(WARNING "Unable to find GMP, not including RationalCCD")
-  else()
-    add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/rational_ccd)
-  endif()
 endif()
