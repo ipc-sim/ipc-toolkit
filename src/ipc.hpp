@@ -35,9 +35,7 @@ void construct_constraint_set(
 /// @param[in] F Triangular faces as rows of indicies into V.
 /// @param[in] constraint_set The set of constraints.
 /// @param[in] dhat_squared The activation distance squared of the barrier.
-/// @param[in] barrier_stiffness The stiffness of the barrier term.
-/// @returns The sum of all barrier potentials weighted by the barrier
-///          stiffness.
+/// @returns The sum of all barrier potentials.
 double compute_barrier_potential(
     const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
