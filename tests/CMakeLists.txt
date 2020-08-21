@@ -18,6 +18,8 @@ add_executable(${PROJECT_NAME}_tests
   distance/test_point_point.cpp
   distance/test_point_triangle.cpp
 
+  test_ipc.cpp
+
   # Test CCD
   # ccd/test_ccd.cpp
   # ccd/test_time_of_impact.cpp

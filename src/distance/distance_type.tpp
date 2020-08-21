@@ -48,11 +48,15 @@ PointTriangleDistanceType point_triangle_distance_type(
     const auto projected_p =
         p - (p - t0).dot(normal) / normal.squaredNorm() * normal;
 
+    typedef Eigen::Matrix<T, 1, 3> RowVector3T;
+
     Eigen::MatrixX<T> coords;
     igl::barycentric_coordinates(
-        projected_p.transpose(), t0.transpose(), t1.transpose(), t2.transpose(),
+        RowVector3T(projected_p),                          //
+        RowVector3T(t0), RowVector3T(t1), RowVector3T(t2), //
         coords);
     T u = coords(0, 0), v = coords(0, 1), w = coords(0, 2);
+    assert(abs(u + v + w - 1) < 1e-12);
 
     // Find the closest point using the barycentric coordinates
     // https://math.stackexchange.com/a/589362

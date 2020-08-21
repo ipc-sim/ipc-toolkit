@@ -366,7 +366,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
         local_hessian_to_global_triplets(local_hess, ids, dim, hess_triplets);
     }
 
-    Eigen::SparseMatrix<double> hess;
+    Eigen::SparseMatrix<double> hess(V.size(), V.size());
     hess.setFromTriplets(hess_triplets.begin(), hess_triplets.end());
     return hess;
 }
