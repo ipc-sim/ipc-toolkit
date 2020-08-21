@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
+#include <igl/dirname.h>
 #include <igl/edges.h>
-#include <igl/pathinfo.h>
 #include <igl/read_triangle_mesh.h>
 
 #include <ipc.hpp>
@@ -26,10 +26,12 @@ TEST_CASE("Dummy test for IPC compilation", "[ipc]")
 
     Eigen::MatrixXd V;
     Eigen::MatrixXi E, F;
-    std::string dirname, basename, extension, filename;
-    igl::pathinfo(
-        std::string(__FILE__), dirname, basename, extension, filename);
+    std::string dirname = igl::dirname(std::string(__FILE__));
+#if defined(WIN32)
+    igl::read_triangle_mesh(dirname + "\\meshes\\" + mesh_name, V, F);
+#else
     igl::read_triangle_mesh(dirname + "/meshes/" + mesh_name, V, F);
+#endif
     REQUIRE(V.size());
     REQUIRE(F.size());
     igl::edges(F, E);
