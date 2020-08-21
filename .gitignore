@@ -243,4 +243,5 @@ distance_AABB.cpp.bak
 core*
 *.blend[123456789]
 
-docs
+docs/source/doxygen_build
+!docs/Makefile
