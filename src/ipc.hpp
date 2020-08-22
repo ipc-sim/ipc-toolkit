@@ -17,7 +17,7 @@ namespace ipc {
 /// @param[in] F Triangular faces as rows of indicies into V.
 /// @param[in] dhat_squared The activation distance squared of the barrier.
 /// @param[out] constraint_set The constructed set of constraints.
-/// @param[in] ignore_internal_vertices Ignores vertices not connected to edges E
+/// @param[in] ignore_internal_vertices Ignores vertices not connected to edges.
 void construct_constraint_set(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,

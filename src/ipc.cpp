@@ -28,17 +28,19 @@ void construct_constraint_set(
     ccd::HashGrid hash_grid;
     hash_grid.resize(V, V, E, /*inflation_radius=*/dhat);
 
-    if(ignore_internal_vertices)
-    {
-        for(int e = 0; e < E.rows(); ++e){
+    // Assumes the edges connect to all boundary vertices
+    if (ignore_internal_vertices) {
+        for (int e = 0; e < E.rows(); ++e) {
             const int e0 = E(e, 0);
             const int e1 = E(e, 1);
-            hash_grid.addVertex(V.row(e0), V.row(e0), e0,/*inflation_radius=*/dhat);
-            hash_grid.addVertex(V.row(e1), V.row(e1), e1,/*inflation_radius=*/dhat);
+            hash_grid.addVertex(
+                V.row(e0), V.row(e0), e0, /*inflation_radius=*/dhat);
+            hash_grid.addVertex(
+                V.row(e1), V.row(e1), e1, /*inflation_radius=*/dhat);
         }
-    }
-    else
+    } else {
         hash_grid.addVertices(V, V, /*inflation_radius=*/dhat);
+    }
 
     hash_grid.addEdges(V, V, E, /*inflation_radius=*/dhat);
     if (V.cols() == 3) {
