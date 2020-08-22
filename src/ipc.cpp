@@ -8,6 +8,7 @@
 #include <distance/point_edge.hpp>
 #include <distance/point_triangle.hpp>
 
+#include <ccd/edge_vertex_ccd_2D.hpp>
 // Etienne Vouga's CCD using a root finder in floating points
 #include <CTCD.h>
 
@@ -421,19 +422,22 @@ bool is_step_collision_free(
 
     for (const auto& ev_candidate : candidates.ev_candidates) {
         double toi;
-        // TODO: Test this for 2D
-        bool is_collision = CTCD::vertexEdgeCTCD(
+        double alpha;
+        bool is_collision = ccd::compute_edge_vertex_time_of_impact(
             // Point at t=0
             V0.row(ev_candidate.vertex_index),
             // Edge 2 at t=0
             V0.row(E(ev_candidate.edge_index, 0)),
             V0.row(E(ev_candidate.edge_index, 1)),
             // Point at t=1
-            V1.row(ev_candidate.vertex_index),
+            V1.row(ev_candidate.vertex_index)
+                - V0.row(ev_candidate.vertex_index),
             // Edge 2 at t=1
-            V1.row(E(ev_candidate.edge_index, 0)),
-            V1.row(E(ev_candidate.edge_index, 1)), //
-            eta, toi);
+            V1.row(E(ev_candidate.edge_index, 0))
+                - V0.row(E(ev_candidate.edge_index, 0)),
+            V1.row(E(ev_candidate.edge_index, 1))
+                - V0.row(E(ev_candidate.edge_index, 1)), //
+            toi, alpha);
 
         if (is_collision) {
             return true;
@@ -521,24 +525,27 @@ double compute_collision_free_stepsize(
     }
 
     // Narrow phase
-    double eta = 1e-6;
+    const double eta = 1e-6;
     double earliest_toi = std::numeric_limits<double>::infinity();
 
     for (const auto& ev_candidate : candidates.ev_candidates) {
         double toi;
-        // TODO: Test this for 2D
-        bool is_collision = CTCD::vertexEdgeCTCD(
+        double alpha;
+        bool is_collision = ccd::compute_edge_vertex_time_of_impact(
             // Point at t=0
             V0.row(ev_candidate.vertex_index),
             // Edge 2 at t=0
             V0.row(E(ev_candidate.edge_index, 0)),
             V0.row(E(ev_candidate.edge_index, 1)),
             // Point at t=1
-            V1.row(ev_candidate.vertex_index),
+            V1.row(ev_candidate.vertex_index)
+                - V0.row(ev_candidate.vertex_index),
             // Edge 2 at t=1
-            V1.row(E(ev_candidate.edge_index, 0)),
-            V1.row(E(ev_candidate.edge_index, 1)), //
-            eta, toi);
+            V1.row(E(ev_candidate.edge_index, 0))
+                - V0.row(E(ev_candidate.edge_index, 0)),
+            V1.row(E(ev_candidate.edge_index, 1))
+                - V0.row(E(ev_candidate.edge_index, 1)), //
+            toi, alpha);
 
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;

@@ -28,10 +28,13 @@ TEST_CASE("Dummy test for IPC compilation", "[ipc]")
     Eigen::MatrixXi E, F;
     std::string dirname = igl::dirname(std::string(__FILE__));
 #if defined(WIN32)
-    igl::read_triangle_mesh(dirname + "\\meshes\\" + mesh_name, V, F);
+    bool success =
+        igl::read_triangle_mesh(dirname + "\\meshes\\" + mesh_name, V, F);
 #else
-    igl::read_triangle_mesh(dirname + "/meshes/" + mesh_name, V, F);
+    bool success =
+        igl::read_triangle_mesh(dirname + "/meshes/" + mesh_name, V, F);
 #endif
+    REQUIRE(success);
     REQUIRE(V.size());
     REQUIRE(F.size());
     igl::edges(F, E);

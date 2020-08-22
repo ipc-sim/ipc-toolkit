@@ -31,6 +31,8 @@ add_library(${PROJECT_NAME}
   src/distance/point_plane.cpp
   src/distance/edge_edge_mollifier.cpp
 
+  src/ccd/edge_vertex_ccd_2D.cpp
+
   src/spatial_hash/collision_candidate.cpp
   src/spatial_hash/hash_grid.cpp
 
