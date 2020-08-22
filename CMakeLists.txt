@@ -66,19 +66,19 @@ target_link_libraries(${PROJECT_NAME} PUBLIC EVCTCD)
 # Compiler options
 ################################################################################
 
-## SIMD support
-# Figure out SSE level support
-message(STATUS "Seaching for SSE...")
-find_package(SSE)
-# Figure out AVX level support
-message(STATUS "Searching for AVX...")
-find_package(AVX)
-# Figure out FMA level support
-message(STATUS "Searching for FMA...")
-find_package(FMA)
-# Add SSE, AVX, and FMA flags to compiler flags
-string(REPLACE " " ";" SIMD_FLAGS "${SSE_FLAGS} ${AVX_FLAGS} ${FMA_FLAGS}")
-target_compile_options(${PROJECT_NAME} PUBLIC ${SIMD_FLAGS})
+# ## SIMD support
+# # Figure out SSE level support
+# message(STATUS "Seaching for SSE...")
+# find_package(SSE)
+# # Figure out AVX level support
+# message(STATUS "Searching for AVX...")
+# find_package(AVX)
+# # Figure out FMA level support
+# message(STATUS "Searching for FMA...")
+# find_package(FMA)
+# # Add SSE, AVX, and FMA flags to compiler flags
+# string(REPLACE " " ";" SIMD_FLAGS "${SSE_FLAGS} ${AVX_FLAGS} ${FMA_FLAGS}")
+# target_compile_options(${PROJECT_NAME} PUBLIC ${SIMD_FLAGS})
 
 # Use C++14
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14)

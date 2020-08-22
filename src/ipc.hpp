@@ -77,7 +77,8 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F);
+    const Eigen::MatrixXi& F,
+    bool ignore_internal_vertices = true);
 
 /// @brief Computes a maximal step size that is collision free.
 ///

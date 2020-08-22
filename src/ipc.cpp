@@ -390,7 +390,8 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F)
+    const Eigen::MatrixXi& F,
+    bool ignore_internal_vertices)
 {
     int dim = V0.cols();
     assert(V1.cols() == dim);
@@ -400,7 +401,19 @@ bool is_step_collision_free(
     ccd::HashGrid hash_grid;
     hash_grid.resize(V0, V1, E);
 
-    hash_grid.addVertices(V0, V1);
+    // Assumes the edges connect to all boundary vertices
+    if (ignore_internal_vertices) {
+        for (int e = 0; e < E.rows(); ++e) {
+            const int e0 = E(e, 0);
+            const int e1 = E(e, 1);
+            hash_grid.addVertex(
+                V0.row(e0), V1.row(e0), e0);
+            hash_grid.addVertex(
+                V0.row(e1), V1.row(e1), e1);
+        }
+    } else {
+        hash_grid.addVertices(V0, V1);
+    }
     hash_grid.addEdges(V0, V1, E);
     if (dim == 3) {
         // These are not needed for 2D
@@ -426,19 +439,19 @@ bool is_step_collision_free(
         double toi;
         double alpha;
         bool is_collision = ccd::compute_edge_vertex_time_of_impact(
-            // Point at t=0
-            V0.row(ev_candidate.vertex_index),
             // Edge 2 at t=0
             V0.row(E(ev_candidate.edge_index, 0)),
             V0.row(E(ev_candidate.edge_index, 1)),
-            // Point at t=1
-            V1.row(ev_candidate.vertex_index)
-                - V0.row(ev_candidate.vertex_index),
+            // Point at t=0
+            V0.row(ev_candidate.vertex_index),
             // Edge 2 at t=1
             V1.row(E(ev_candidate.edge_index, 0))
                 - V0.row(E(ev_candidate.edge_index, 0)),
             V1.row(E(ev_candidate.edge_index, 1))
                 - V0.row(E(ev_candidate.edge_index, 1)), //
+            // Point at t=1
+            V1.row(ev_candidate.vertex_index)
+                - V0.row(ev_candidate.vertex_index),
             toi, alpha);
 
         if (is_collision) {
