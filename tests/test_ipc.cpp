@@ -1,13 +1,7 @@
 #include <catch2/catch.hpp>
 
-// Include the correct filesystem
-#if !defined(__clang__) && defined(__GNUC__)                                   \
-    && (__GNUC___ < 8 || (__GNUC__ == 8 && __GNUC_MINOR__ < 1))
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
+#if defined(WIN32)
 #include <filesystem>
-namespace fs = std::filesystem;
 #endif
 
 #include <igl/dirname.h>
@@ -44,9 +38,15 @@ bool load_mesh(
     Eigen::MatrixXi& E,
     Eigen::MatrixXi& F)
 {
-    fs::path dirname = fs::path(__FILE__).parent_path();
-    bool success = igl::read_triangle_mesh(
-        std::string(dirname / "meshes" / mesh_name), V, F);
+#if defined(WIN32)
+    std::string mesh_path(
+        std::filesystem::path(__FILE__).parent_path() / "meshes" / mesh_name)
+        .c_str();
+#else
+    std::string mesh_path =
+        igl::dirname(std::string(__FILE__)) + "/meshes/" + mesh_name;
+#endif
+    bool success = igl::read_triangle_mesh(mesh_path, V, F);
     if (F.size()) {
         igl::edges(F, E);
     }

@@ -46,9 +46,9 @@ target_link_libraries(${PROJECT_NAME}_tests PUBLIC spdlog::spdlog)
 target_compile_definitions(${PROJECT_NAME}_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
 
 # Filesystem
-target_compile_features(${PROJECT_NAME}_tests PRIVATE cxx_std_17)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  target_compile_options(${PROJECT_NAME}_tests PRIVATE "-lstdc++fs")
+if(WIN32)
+  # set stuff for windows
+  target_compile_features(${PROJECT_NAME}_tests PRIVATE cxx_std_17)
 endif()
 
 ################################################################################
