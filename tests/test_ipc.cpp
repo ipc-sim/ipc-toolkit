@@ -39,9 +39,10 @@ bool load_mesh(
     Eigen::MatrixXi& F)
 {
 #if defined(WIN32)
-    std::string mesh_path =
-        (std::filesystem::path(__FILE__).parent_path() / "meshes" / mesh_name)
-            .string();
+    std::string mesh_path = (std::filesystem::absolute(
+                                 std::filesystem::path(__FILE__).parent_path()
+                                 / "meshes" / mesh_name))
+                                .string();
 #else
     std::string mesh_path =
         igl::dirname(std::string(__FILE__)) + "/meshes/" + mesh_name;
