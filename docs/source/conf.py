@@ -28,7 +28,38 @@ author = 'IPC Group'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx.ext.mathjax',
+    'breathe',
+    'exhale'
 ]
+
+# Setup the breathe extension
+breathe_projects = {
+    project: "../build/doxyoutput/xml"
+}
+breathe_default_project = project
+
+# Setup the exhale extension
+exhale_args = {
+    # These arguments are required
+    "containmentFolder":     "./api",
+    "rootFileName":          "library_root.rst",
+    "rootFileTitle":         "IPC Toolkit API",
+    "afterTitleDescription": "A set of reusable functions to integrate IPC into an existing simulation.",
+    "doxygenStripFromPath":  "../build",
+    # Suggested optional arguments
+    "createTreeView":        True,
+    # TIP: if using the sphinx-bootstrap-theme, you need
+    # "treeViewIsBootstrap": True,
+    "exhaleExecutesDoxygen": True,
+    "exhaleDoxygenStdin":    "INPUT = ../../src"
+}
+
+# Tell sphinx what the primary language being documented is.
+primary_domain = 'cpp'
+
+# Tell sphinx what the pygments highlight language should be.
+highlight_language = 'cpp'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
