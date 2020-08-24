@@ -46,7 +46,7 @@ exhale_args = {
     "rootFileName":          "library_root.rst",
     "rootFileTitle":         "IPC Toolkit API",
     "afterTitleDescription": "A set of reusable functions to integrate IPC into an existing simulation.",
-    "doxygenStripFromPath":  "../build",
+    "doxygenStripFromPath":  "../..",
     # Suggested optional arguments
     "createTreeView":        True,
     # TIP: if using the sphinx-bootstrap-theme, you need
