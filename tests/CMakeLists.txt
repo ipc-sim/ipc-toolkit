@@ -26,13 +26,30 @@ add_executable(${PROJECT_NAME}_tests
   # ccd/test_hash_grid.cpp
 )
 
+################################################################################
+# Required Libraries
+################################################################################
+
 target_link_libraries(${PROJECT_NAME}_tests PUBLIC ${PROJECT_NAME})
+
 target_link_libraries(${PROJECT_NAME}_tests PUBLIC Catch2::Catch2 warnings::all)
+
 # target_link_libraries(${PROJECT_NAME}_tests PUBLIC FiniteDiff::FiniteDiff)
 target_include_directories(${PROJECT_NAME}_tests PUBLIC ${IPC_TOOLKIT_EXTERNAL}/finite-diff)
+
 target_link_libraries(${PROJECT_NAME}_tests PUBLIC spdlog::spdlog)
 
+################################################################################
+# Compiler options
+################################################################################
+
 target_compile_definitions(${PROJECT_NAME}_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
+
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+
+################################################################################
+# Register tests
+################################################################################
 
 foreach(source IN ITEMS ${test_sources})
    source_group("tests" FILES "${source}")
