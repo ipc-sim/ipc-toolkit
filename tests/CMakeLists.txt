@@ -45,10 +45,11 @@ target_link_libraries(${PROJECT_NAME}_tests PUBLIC spdlog::spdlog)
 
 target_compile_definitions(${PROJECT_NAME}_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
 
-# Filesystem
-if(WIN32)
-  # set stuff for windows
-  target_compile_features(${PROJECT_NAME}_tests PRIVATE cxx_std_17)
+# Test data directory definition
+if(WIN32 OR TRUE)
+  target_compile_definitions(${PROJECT_NAME}_tests PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}\\\\data\\\\")
+else()
+  target_compile_definitions(${PROJECT_NAME}_tests PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data/")
 endif()
 
 ################################################################################

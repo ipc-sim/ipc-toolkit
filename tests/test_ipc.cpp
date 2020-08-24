@@ -1,9 +1,5 @@
 #include <catch2/catch.hpp>
 
-#if defined(WIN32)
-#include <filesystem>
-#endif
-
 #include <igl/dirname.h>
 #include <igl/edges.h>
 #include <igl/read_triangle_mesh.h>
@@ -38,16 +34,7 @@ bool load_mesh(
     Eigen::MatrixXi& E,
     Eigen::MatrixXi& F)
 {
-#if defined(WIN32)
-    std::string mesh_path = (std::filesystem::absolute(
-                                 std::filesystem::path(__FILE__).parent_path()
-                                 / "meshes" / mesh_name))
-                                .string();
-#else
-    std::string mesh_path =
-        igl::dirname(std::string(__FILE__)) + "/meshes/" + mesh_name;
-#endif
-    bool success = igl::read_triangle_mesh(mesh_path, V, F);
+    bool success = igl::read_triangle_mesh(TEST_DATA_DIR + mesh_name, V, F);
     if (F.size()) {
         igl::edges(F, E);
     }
