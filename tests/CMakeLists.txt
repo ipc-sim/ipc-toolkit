@@ -46,7 +46,7 @@ target_link_libraries(${PROJECT_NAME}_tests PUBLIC spdlog::spdlog)
 target_compile_definitions(${PROJECT_NAME}_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
 
 # Test data directory definition
-if(WIN32 OR TRUE)
+if(WIN32)
   target_compile_definitions(${PROJECT_NAME}_tests PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}\\\\data\\\\")
 else()
   target_compile_definitions(${PROJECT_NAME}_tests PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data/")
