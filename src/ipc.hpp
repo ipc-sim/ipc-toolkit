@@ -95,7 +95,8 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F);
+    const Eigen::MatrixXi& F,
+    bool ignore_internal_vertices = true);
 
 /// @brief Computes the minimum distance between any non-adjacent elements.
 ///
