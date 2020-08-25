@@ -5,10 +5,10 @@ add_executable(${PROJECT_NAME}_tests
   main.cpp
   ${IPC_TOOLKIT_EXTERNAL}/finite-diff/finitediff.cpp
 
+  # Test barrier and dertivatives
   barrier/test_barrier.cpp
 
-  # spatial_hash/test_spatial_hash.cpp
-
+  # Test distances and dertivatives
   distance/test_distance_type.cpp
   distance/test_edge_edge.cpp
   distance/test_line_line.cpp
@@ -18,12 +18,13 @@ add_executable(${PROJECT_NAME}_tests
   distance/test_point_point.cpp
   distance/test_point_triangle.cpp
 
+  # Test CCD
+  ccd/test_edge_vertex_ccd_2D.cpp
+  spatial_hash/test_spatial_hash.cpp
+
   test_ipc.cpp
 
-  # Test CCD
-  # ccd/test_ccd.cpp
-  # ccd/test_time_of_impact.cpp
-  # ccd/test_hash_grid.cpp
+  test_utils.cpp
 )
 
 ################################################################################

@@ -63,7 +63,19 @@ TEST_CASE(
         double scale = GENERATE(1e-12, 1e-4, 1, 2, 11, 1000);
         p.x() = closest_point.x() + scale * perp.x();
         p.z() = closest_point.z() + scale * perp.y();
-        expected_dtype = PointTriangleDistanceType::P_E0;
+        // Remove the ambiguity at the end points
+        PointEdgeDistanceType pe_dtype = point_edge_distance_type(p, t0, t1);
+        switch (pe_dtype) {
+        case PointEdgeDistanceType::P_E0:
+            expected_dtype = PointTriangleDistanceType::P_T0;
+            break;
+        case PointEdgeDistanceType::P_E1:
+            expected_dtype = PointTriangleDistanceType::P_T1;
+            break;
+        case PointEdgeDistanceType::P_E:
+            expected_dtype = PointTriangleDistanceType::P_E0;
+            break;
+        }
     }
     SECTION("closest to t1t2")
     {
@@ -74,7 +86,19 @@ TEST_CASE(
         double scale = GENERATE(1e-12, 1e-4, 1, 2, 11, 1000);
         p.x() = closest_point.x() + scale * perp.x();
         p.z() = closest_point.z() + scale * perp.y();
-        expected_dtype = PointTriangleDistanceType::P_E1;
+        // Remove the ambiguity at the end points
+        PointEdgeDistanceType pe_dtype = point_edge_distance_type(p, t1, t2);
+        switch (pe_dtype) {
+        case PointEdgeDistanceType::P_E0:
+            expected_dtype = PointTriangleDistanceType::P_T1;
+            break;
+        case PointEdgeDistanceType::P_E1:
+            expected_dtype = PointTriangleDistanceType::P_T2;
+            break;
+        case PointEdgeDistanceType::P_E:
+            expected_dtype = PointTriangleDistanceType::P_E1;
+            break;
+        }
     }
     SECTION("closest to t2t0")
     {
@@ -85,7 +109,19 @@ TEST_CASE(
         double scale = GENERATE(1e-12, 1e-4, 1, 2, 11, 1000);
         p.x() = closest_point.x() + scale * perp.x();
         p.z() = closest_point.z() + scale * perp.y();
-        expected_dtype = PointTriangleDistanceType::P_E2;
+        // Remove the ambiguity at the end points
+        PointEdgeDistanceType pe_dtype = point_edge_distance_type(p, t2, t0);
+        switch (pe_dtype) {
+        case PointEdgeDistanceType::P_E0:
+            expected_dtype = PointTriangleDistanceType::P_T2;
+            break;
+        case PointEdgeDistanceType::P_E1:
+            expected_dtype = PointTriangleDistanceType::P_T0;
+            break;
+        case PointEdgeDistanceType::P_E:
+            expected_dtype = PointTriangleDistanceType::P_E2;
+            break;
+        }
     }
 
     PointTriangleDistanceType dtype =

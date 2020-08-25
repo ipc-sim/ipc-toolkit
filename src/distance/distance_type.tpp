@@ -83,15 +83,39 @@ PointTriangleDistanceType point_triangle_distance_type(
     // Check if an edge is the closest point on the triangle
     if (u >= 0 && v >= 0 && w < 0) {
         // edge 0 is the closest
-        return PointTriangleDistanceType::P_E0;
+        PointEdgeDistanceType pe_dtype = point_edge_distance_type(p, t0, t1);
+        switch (pe_dtype) {
+        case PointEdgeDistanceType::P_E0:
+            return PointTriangleDistanceType::P_T0;
+        case PointEdgeDistanceType::P_E1:
+            return PointTriangleDistanceType::P_T1;
+        case PointEdgeDistanceType::P_E:
+            return PointTriangleDistanceType::P_E0;
+        }
     }
     if (u < 0 && v >= 0 && w >= 0) {
         // edge 1 is the closest
-        return PointTriangleDistanceType::P_E1;
+        PointEdgeDistanceType pe_dtype = point_edge_distance_type(p, t1, t2);
+        switch (pe_dtype) {
+        case PointEdgeDistanceType::P_E0:
+            return PointTriangleDistanceType::P_T1;
+        case PointEdgeDistanceType::P_E1:
+            return PointTriangleDistanceType::P_T2;
+        case PointEdgeDistanceType::P_E:
+            return PointTriangleDistanceType::P_E1;
+        }
     }
     if (u >= 0 && v < 0 && w >= 0) {
         // edge 2 is the closest
-        return PointTriangleDistanceType::P_E2;
+        PointEdgeDistanceType pe_dtype = point_edge_distance_type(p, t2, t0);
+        switch (pe_dtype) {
+        case PointEdgeDistanceType::P_E0:
+            return PointTriangleDistanceType::P_T2;
+        case PointEdgeDistanceType::P_E1:
+            return PointTriangleDistanceType::P_T0;
+        case PointEdgeDistanceType::P_E:
+            return PointTriangleDistanceType::P_E2;
+        }
     }
 
     // This should never happen because u + v + w = 1.

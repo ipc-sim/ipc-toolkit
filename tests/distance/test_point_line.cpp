@@ -1,9 +1,10 @@
 #include <catch2/catch.hpp>
 
+#include <iostream>
+
 #include <finitediff.hpp>
 
 #include <distance/point_line.hpp>
-
 #include <utils/eigen_ext.hpp>
 
 using namespace ipc;
@@ -97,5 +98,30 @@ TEST_CASE("Point-line distance hessian", "[distance][point-line][hessian]")
     fd::finite_hessian(x, f, fhess);
 
     CAPTURE(dim, y_point, y_line);
+    CHECK(fd::compare_hessian(hess, fhess, 1e-2));
+}
+
+TEST_CASE(
+    "Point-line distance hessian case 1",
+    "[distance][point-line][hessian][case1]")
+{
+    Eigen::Vector3d p(-10.8386, 10, -3.91955);
+    Eigen::Vector3d e0(0, 0, -1);
+    Eigen::Vector3d e1(-1, 0, 1);
+
+    Eigen::MatrixXd hess;
+    point_line_distance_hessian(p, e0, e1, hess);
+
+    // Compute the gradient using finite differences
+    Eigen::VectorXd x(9);
+    x.segment<3>(0) = p;
+    x.segment<3>(3) = e0;
+    x.segment<3>(6) = e1;
+    auto f = [](const Eigen::VectorXd& x) {
+        return point_line_distance(x.head(3), x.segment(3, 3), x.tail(3));
+    };
+    Eigen::MatrixXd fhess;
+    fd::finite_hessian(x, f, fhess);
+
     CHECK(fd::compare_hessian(hess, fhess, 1e-2));
 }

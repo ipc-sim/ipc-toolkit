@@ -1,8 +1,6 @@
-/**
- * Barrier functions that grow to infinity as x -> 0+. Includes gradient and
- * hessian functions, too. These barrier functions can be used to impose
- * inequlity constraints on a function.
- */
+// Barrier functions that grow to infinity as x -> 0+. Includes gradient and
+// hessian functions, too. These barrier functions can be used to impose
+// inequlity constraints on a function.
 
 #pragma once
 

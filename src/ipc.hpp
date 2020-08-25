@@ -5,6 +5,7 @@
 
 #include <spatial_hash/collision_candidate.hpp>
 
+/// Incremental Potential Contact functions
 namespace ipc {
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
