@@ -23,15 +23,18 @@ include(${PROJECT_NAME}Dependencies)
 add_library(${PROJECT_NAME}
   src/ipc.cpp
 
+
   src/barrier/barrier.cpp
   src/barrier/adaptive_stiffness.cpp
+
+  src/ccd/edge_vertex_ccd_2D.cpp
 
   src/distance/line_line.cpp
   src/distance/point_line.cpp
   src/distance/point_plane.cpp
   src/distance/edge_edge_mollifier.cpp
 
-  src/ccd/edge_vertex_ccd_2D.cpp
+  src/friction/friction.cpp
 
   src/spatial_hash/collision_candidate.cpp
   src/spatial_hash/hash_grid.cpp

@@ -5,6 +5,9 @@
 
 #include <spatial_hash/collision_candidate.hpp>
 
+// NOTE: Include this so the user can just include ipc.hpp
+#include <friction/friction.hpp>
+
 /// Incremental Potential Contact functions
 namespace ipc {
 
@@ -110,13 +113,5 @@ double compute_minimum_distance(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const ccd::Candidates& constraint_set);
-
-// double compute_friction_potential(
-//     const Eigen::MatrixXd& V_prev,
-//     const Eigen::MatrixXd& V,
-//     const Eigen::MatrixXi& E,
-//     const Eigen::MatrixXi& F,
-//     const Candidates& constraint_set,
-//     double epsilon_v);
 
 } // namespace ipc
