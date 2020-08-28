@@ -38,7 +38,7 @@ endfunction()
 function(ipc_toolkit_download_finite_diff)
   ipc_toolkit_download_project(finite-diff
     GIT_REPOSITORY https://github.com/zfergus/finite-diff.git
-    GIT_TAG        58d908b3a82b551bc6b237411817da5a8a52d500
+    GIT_TAG        dac4e629defb0edef050e56050eefb00574ecbaa
   )
 endfunction()
 
