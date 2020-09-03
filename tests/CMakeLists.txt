@@ -9,7 +9,7 @@ add_executable(${PROJECT_NAME}_tests
   barrier/test_barrier.cpp
 
   # Test CCD
-  ccd/test_edge_vertex_ccd_2D.cpp
+  ccd/test_ccd.cpp
   spatial_hash/test_spatial_hash.cpp
 
   # Test distances and dertivatives

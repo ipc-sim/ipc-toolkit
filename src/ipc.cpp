@@ -1,16 +1,13 @@
 #include "ipc.hpp"
 
 #include <barrier/barrier.hpp>
-#include <spatial_hash/hash_grid.hpp>
-
+#include <ccd/ccd.hpp>
 #include <distance/edge_edge.hpp>
 #include <distance/edge_edge_mollifier.hpp>
 #include <distance/point_edge.hpp>
 #include <distance/point_triangle.hpp>
-
-#include <ccd/edge_vertex_ccd_2D.hpp>
-// Etienne Vouga's CCD using a root finder in floating points
-#include <CTCD.h>
+#include <spatial_hash/hash_grid.hpp>
+#include <utils/local_hessian_to_global_triplets.hpp>
 
 namespace ipc {
 
@@ -243,25 +240,6 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     return grad;
 }
 
-void local_hessian_to_global_triplets(
-    const Eigen::MatrixXd& local_hessian,
-    const std::vector<long>& ids,
-    int dim,
-    std::vector<Eigen::Triplet<double>>& triplets)
-{
-    for (int i = 0; i < ids.size(); i++) {
-        for (int j = 0; j < ids.size(); j++) {
-            for (int k = 0; k < dim; k++) {
-                for (int l = 0; l < dim; l++) {
-                    triplets.emplace_back(
-                        dim * ids[i] + k, dim * ids[j] + l,
-                        local_hessian(dim * i + k, dim * j + l));
-                }
-            }
-        }
-    }
-}
-
 Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
@@ -435,22 +413,18 @@ bool is_step_collision_free(
 
     for (const auto& ev_candidate : candidates.ev_candidates) {
         double toi;
-        double alpha;
-        bool is_collision = ccd::compute_edge_vertex_time_of_impact(
-            // Displacement of Edge at t=0
+        bool is_collision = point_edge_ccd(
+            // Point at t=0
+            V0.row(ev_candidate.vertex_index),
+            // Edge at t=0
             V0.row(E(ev_candidate.edge_index, 0)),
             V0.row(E(ev_candidate.edge_index, 1)),
-            // Displacement of Point at t=0
-            V0.row(ev_candidate.vertex_index),
-            // Displacement of Edge at t=1
-            V1.row(E(ev_candidate.edge_index, 0))
-                - V0.row(E(ev_candidate.edge_index, 0)),
-            V1.row(E(ev_candidate.edge_index, 1))
-                - V0.row(E(ev_candidate.edge_index, 1)),
-            // Displacement of Point at t=1
-            V1.row(ev_candidate.vertex_index)
-                - V0.row(ev_candidate.vertex_index),
-            toi, alpha);
+            // Point at t=1
+            V1.row(ev_candidate.vertex_index),
+            // Edge at t=1
+            V1.row(E(ev_candidate.edge_index, 0)),
+            V1.row(E(ev_candidate.edge_index, 1)), //
+            toi);
 
         if (is_collision) {
             return false;
@@ -459,7 +433,7 @@ bool is_step_collision_free(
 
     for (const auto& ee_candidate : candidates.ee_candidates) {
         double toi;
-        bool is_collision = CTCD::edgeEdgeCTCD(
+        bool is_collision = edge_edge_ccd(
             // Edge 1 at t=0
             V0.row(E(ee_candidate.edge0_index, 0)),
             V0.row(E(ee_candidate.edge0_index, 1)),
@@ -472,7 +446,7 @@ bool is_step_collision_free(
             // Edge 2 at t=1
             V1.row(E(ee_candidate.edge1_index, 0)),
             V1.row(E(ee_candidate.edge1_index, 1)), //
-            eta, toi);
+            toi);
 
         if (is_collision) {
             return false;
@@ -481,7 +455,7 @@ bool is_step_collision_free(
 
     for (const auto& fv_candidate : candidates.fv_candidates) {
         double toi;
-        bool is_collision = CTCD::vertexFaceCTCD(
+        bool is_collision = point_triangle_ccd(
             // Point at t=0
             V0.row(fv_candidate.vertex_index),
             // Triangle at t = 0
@@ -494,7 +468,7 @@ bool is_step_collision_free(
             V1.row(F(fv_candidate.face_index, 0)),
             V1.row(F(fv_candidate.face_index, 1)),
             V1.row(F(fv_candidate.face_index, 2)), //
-            eta, toi);
+            toi);
 
         if (is_collision) {
             return false;
@@ -549,27 +523,22 @@ double compute_collision_free_stepsize(
     }
 
     // Narrow phase
-    const double eta = 1e-6;
     double earliest_toi = std::numeric_limits<double>::infinity();
 
     for (const auto& ev_candidate : candidates.ev_candidates) {
         double toi;
-        double alpha;
-        bool is_collision = ccd::compute_edge_vertex_time_of_impact(
+        bool is_collision = ipc::point_edge_ccd(
+            // Point at t=0
+            V0.row(ev_candidate.vertex_index),
             // Edge at t=0
             V0.row(E(ev_candidate.edge_index, 0)),
             V0.row(E(ev_candidate.edge_index, 1)),
-            // Point at t=0
-            V0.row(ev_candidate.vertex_index),
-            // Displacement of Edge at t=1
-            V1.row(E(ev_candidate.edge_index, 0))
-                - V0.row(E(ev_candidate.edge_index, 0)),
-            V1.row(E(ev_candidate.edge_index, 1))
-                - V0.row(E(ev_candidate.edge_index, 1)), //
-            // Displacement of Point at t=1
-            V1.row(ev_candidate.vertex_index)
-                - V0.row(ev_candidate.vertex_index),
-            toi, alpha);
+            // Point at t=1
+            V1.row(ev_candidate.vertex_index),
+            // Edge at t=1
+            V1.row(E(ev_candidate.edge_index, 0)),
+            V1.row(E(ev_candidate.edge_index, 1)), //
+            toi);
 
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;
@@ -578,7 +547,7 @@ double compute_collision_free_stepsize(
 
     for (const auto& ee_candidate : candidates.ee_candidates) {
         double toi;
-        bool is_collision = CTCD::edgeEdgeCTCD(
+        bool is_collision = edge_edge_ccd(
             // Edge 1 at t=0
             V0.row(E(ee_candidate.edge0_index, 0)),
             V0.row(E(ee_candidate.edge0_index, 1)),
@@ -591,7 +560,7 @@ double compute_collision_free_stepsize(
             // Edge 2 at t=1
             V1.row(E(ee_candidate.edge1_index, 0)),
             V1.row(E(ee_candidate.edge1_index, 1)), //
-            eta, toi);
+            toi);
 
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;
@@ -600,7 +569,7 @@ double compute_collision_free_stepsize(
 
     for (const auto& fv_candidate : candidates.fv_candidates) {
         double toi;
-        bool is_collision = CTCD::vertexFaceCTCD(
+        bool is_collision = point_triangle_ccd(
             // Point at t=0
             V0.row(fv_candidate.vertex_index),
             // Triangle at t = 0
@@ -613,7 +582,7 @@ double compute_collision_free_stepsize(
             V1.row(F(fv_candidate.face_index, 0)),
             V1.row(F(fv_candidate.face_index, 1)),
             V1.row(F(fv_candidate.face_index, 2)), //
-            eta, toi);
+            toi);
 
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;

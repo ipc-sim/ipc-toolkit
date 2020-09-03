@@ -23,11 +23,11 @@ include(${PROJECT_NAME}Dependencies)
 add_library(${PROJECT_NAME}
   src/ipc.cpp
 
-
   src/barrier/barrier.cpp
   src/barrier/adaptive_stiffness.cpp
 
-  src/ccd/edge_vertex_ccd_2D.cpp
+  src/ccd/ccd.cpp
+  src/ccd/broadphase.cpp
 
   src/distance/line_line.cpp
   src/distance/point_line.cpp
@@ -40,6 +40,7 @@ add_library(${PROJECT_NAME}
   src/spatial_hash/hash_grid.cpp
 
   src/utils/eigen_ext.cpp
+  src/utils/local_hessian_to_global_triplets.cpp
 )
 target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 

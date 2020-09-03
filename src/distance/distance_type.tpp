@@ -21,9 +21,9 @@ PointEdgeDistanceType point_edge_distance_type(
         return PointEdgeDistanceType::P_E; // PE
     }
     auto ratio = e.dot(p - e0) / e_length_sqr;
-    if (ratio <= 0) {
+    if (ratio < 0) {
         return PointEdgeDistanceType::P_E0; // PP (p-e0)
-    } else if (ratio >= 1) {
+    } else if (ratio > 1) {
         return PointEdgeDistanceType::P_E1; // PP (p-e1)
     } else {
         return PointEdgeDistanceType::P_E; // PE
