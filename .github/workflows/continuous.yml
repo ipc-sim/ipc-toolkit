@@ -42,7 +42,6 @@ jobs:
         if: runner.os == 'Linux'
         run: |
             sudo apt-get install \
-            xorg-dev \
             ccache
 
       - name: Dependencies (macOS)
