@@ -1,5 +1,7 @@
 #include "friction.hpp"
 
+#include <Eigen/Sparse>
+
 #include <barrier/barrier.hpp>
 #include <distance/edge_edge.hpp>
 #include <distance/point_edge.hpp>
@@ -8,6 +10,7 @@
 #include <friction/relative_displacement.hpp>
 #include <friction/tangent_basis.hpp>
 #include <utils/eigen_ext.hpp>
+#include <utils/local_hessian_to_global_triplets.hpp>
 
 namespace ipc {
 
@@ -108,8 +111,8 @@ void compute_friction_bases(
 }
 
 double compute_friction_potential(
-    const Eigen::MatrixXd& V0, // TODO: What is this
-    const Eigen::MatrixXd& V1, // This is the current position
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const ccd::Candidates& friction_constraint_set,
@@ -179,8 +182,8 @@ double compute_friction_potential(
 }
 
 Eigen::VectorXd compute_friction_potential_gradient(
-    const Eigen::MatrixXd& V0, // TODO: What is this
-    const Eigen::MatrixXd& V1, // This is the current position
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const ccd::Candidates& friction_constraint_set,
@@ -218,18 +221,9 @@ Eigen::VectorXd compute_friction_potential_gradient(
         const auto& de0 = U.row(E(ev_candidate.edge_index, 0));
         const auto& de1 = U.row(E(ev_candidate.edge_index, 1));
 
-        Eigen::Vector3d relative_displacement =
-            point_edge_relative_displacement(
-                dp, de0, de1, closest_points[constraint_i]);
-
         Eigen::Vector2d tangent_relative_displacement =
-            tangent_bases[constraint_i] * relative_displacement;
-
-        double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
-            tangent_relative_displacement.squaredNorm(), epsv_times_h);
-
-        tangent_relative_displacement *=
-            f1_div_rel_disp_norm * mu * normal_force_magnitudes[constraint_i];
+            foo(point_edge_relative_displacement(
+                dp, de0, de1, closest_points[constraint_i][0]));
 
         Eigen::Matrix3d mesh_displacements =
             point_edge_relative_mesh_displacement(
@@ -252,17 +246,9 @@ Eigen::VectorXd compute_friction_potential_gradient(
         const auto& deb0 = U.row(E(ee_candidate.edge1_index, 0));
         const auto& deb1 = U.row(E(ee_candidate.edge1_index, 1));
 
-        Eigen::Vector3d relative_displacement = edge_edge_relative_displacement(
-            dea0, dea1, deb0, deb1, closest_points[constraint_i]);
-
         Eigen::Vector2d tangent_relative_displacement =
-            tangent_bases[constraint_i] * relative_displacement;
-
-        double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
-            tangent_relative_displacement.squaredNorm(), epsv_times_h);
-
-        tangent_relative_displacement *=
-            f1_div_rel_disp_norm * mu * normal_force_magnitudes[constraint_i];
+            foo(edge_edge_relative_displacement(
+                dea0, dea1, deb0, deb1, closest_points[constraint_i]));
 
         Eigen::Matrix<double, 4, 3> mesh_displacements =
             edge_edge_relative_mesh_displacements(
@@ -286,18 +272,9 @@ Eigen::VectorXd compute_friction_potential_gradient(
         const auto& dt1 = U.row(F(fv_candidate.face_index, 1));
         const auto& dt2 = U.row(F(fv_candidate.face_index, 2));
 
-        Eigen::Vector3d relative_displacement =
-            point_triangle_relative_displacement(
-                dp, dt0, dt1, dt2, closest_points[constraint_i]);
-
         Eigen::Vector2d tangent_relative_displacement =
-            tangent_bases[constraint_i] * relative_displacement;
-
-        double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
-            tangent_relative_displacement.squaredNorm(), epsv_times_h);
-
-        tangent_relative_displacement *=
-            f1_div_rel_disp_norm * mu * normal_force_magnitudes[constraint_i];
+            foo(point_triangle_relative_displacement(
+                dp, dt0, dt1, dt2, closest_points[constraint_i]));
 
         Eigen::Matrix<double, 4, 3> mesh_displacements =
             point_triangle_relative_mesh_displacements(
@@ -318,518 +295,158 @@ Eigen::VectorXd compute_friction_potential_gradient(
     return grad;
 }
 
-/*
-template <class T, int dim = 3>
-void Compute_Friction_Gradient(
-    MESH_NODE<T, dim>& X,
-    MESH_NODE<T, dim>& Xn,
-    const std::vector<VECTOR<int, dim + 1>>& constraintSet,
-    const std::vector<Eigen::Matrix<T, dim - 1, 1>>& closestPoint,
-    const std::vector<Eigen::Matrix<T, dim, dim - 1>>& tanBasis,
-    const std::vector<T>& normalForce,
-    T epsvh2,
-    T mu,
-    MESH_NODE_ATTR<T, dim>& nodeAttr)
+Eigen::SparseMatrix<double> compute_friction_potential_hessian(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const ccd::Candidates& friction_constraint_set,
+    std::vector<Eigen::VectorXd>& closest_points,
+    std::vector<Eigen::MatrixXd>& tangent_bases,
+    const Eigen::VectorXd& normal_force_magnitudes,
+    double epsv_times_h_squared,
+    double mu)
 {
-    TIMER_FLAG("Compute_Friction_Gradient");
+    double epsv_times_h = sqrt(epsv_times_h_squared);
 
-    T epsvh = std::sqrt(epsvh2);
+    Eigen::MatrixXd U = V1 - V0; // absolute linear dislacement of each point
+    int dim = U.cols();
+    int dim_sq = dim * dim;
 
-    MESH_NODE<T, dim> dX(X.size);
-    X.deep_copy_to(dX);
-    dX.Join(Xn).Par_Each([&](int id, auto data) {
-        auto& [dx, xn] = data;
-        dx -= xn;
-    });
+    std::vector<Eigen::Triplet<double>> hess_triplets;
+    hess_triplets.reserve(
+        friction_constraint_set.ev_candidates.size() * /*3*3=*/9 * dim_sq
+        + friction_constraint_set.ee_candidates.size() * /*4*4=*/16 * dim_sq
+        + friction_constraint_set.fv_candidates.size() * /*4*4=*/16 * dim_sq);
 
-    if constexpr (dim == 3) {
-        // TODO: parallelize
-        for (int cI = 0; cI < constraintSet.size(); ++cI) {
-            VECTOR<int, dim + 1> cIVInd =
-                constraintSet[cI]; // NOTE: copy to be able to modify in the
-                                   // loop if needed
-            Eigen::Matrix<T, dim, 1> relDX3D;
-            if (cIVInd[0] >= 0) {
-                // ++++ edge-edge, no mollified stencil for friction
-                const VECTOR<T, 3>& dXea0 =
-                    std::get<0>(dX.Get_Unchecked(cIVInd[0]));
-                const VECTOR<T, 3>& dXea1 =
-                    std::get<0>(dX.Get_Unchecked(cIVInd[1]));
-                const VECTOR<T, 3>& dXeb0 =
-                    std::get<0>(dX.Get_Unchecked(cIVInd[2]));
-                const VECTOR<T, 3>& dXeb1 =
-                    std::get<0>(dX.Get_Unchecked(cIVInd[3]));
-                Eigen::Matrix<T, 3, 1> dea0(dXea0.data), dea1(dXea1.data),
-                    deb0(dXeb0.data), deb1(dXeb1.data);
+    int constraint_i = 0;
 
-                Edge_Edge_RelDX(
-                    dea0, dea1, deb0, deb1, closestPoint[cI][0],
-                    closestPoint[cI][1], relDX3D);
+    auto compute_common = [&](const Eigen::Vector3d& relative_displacement,
+                              const Eigen::MatrixXd& TT,
+                              const std::vector<long>& ids) {
+        Eigen::Vector2d tangent_relative_displacement =
+            tangent_bases[constraint_i] * relative_displacement;
 
-                Eigen::Matrix<T, dim - 1, 1> relDX =
-                    tanBasis[cI].transpose() * relDX3D;
-                T f1_div_relDXNorm;
-                f1_SF_Div_RelDXNorm(
-                    relDX.squaredNorm(), epsvh, f1_div_relDXNorm);
-                relDX *= f1_div_relDXNorm * mu * normalForce[cI];
+        double tangent_relative_displacement_sqnorm =
+            tangent_relative_displacement.squaredNorm();
 
-                Eigen::Matrix<T, 12, 1> TTTDX;
-                Edge_Edge_RelDXTan_To_Mesh(
-                    relDX, tanBasis[cI], closestPoint[cI][0],
-                    closestPoint[cI][1], TTTDX);
+        double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
+            tangent_relative_displacement_sqnorm, epsv_times_h);
+        double f2_term =
+            f2_SF(tangent_relative_displacement_sqnorm, epsv_times_h);
 
-                for (int i = 0; i < 4; ++i) {
-                    VECTOR<T, dim>& g =
-                        std::get<FIELDS<MESH_NODE_ATTR<T, dim>>::g>(
-                            nodeAttr.Get_Unchecked(cIVInd[i]));
-                    g += TTTDX.data() + i * dim;
-                }
+        Eigen::MatrixXd local_hess;
+
+        if (tangent_relative_displacement_sqnorm >= epsv_times_h_squared) {
+            // no SPD projection needed
+            Eigen::Vector2d ubar(
+                -tangent_relative_displacement[1],
+                tangent_relative_displacement[0]);
+            local_hess = (TT.transpose()
+                          * ((mu * normal_force_magnitudes[constraint_i]
+                              * f1_div_rel_disp_norm
+                              / tangent_relative_displacement_sqnorm)
+                             * ubar))
+                * (ubar.transpose() * TT);
+        } else {
+            double tangent_relative_displacement_norm =
+                sqrt(tangent_relative_displacement_sqnorm);
+            if (tangent_relative_displacement_norm == 0) {
+                // no SPD projection needed
+                local_hess = ((mu * normal_force_magnitudes[constraint_i]
+                               * f1_div_rel_disp_norm)
+                              * TT.transpose())
+                    * TT;
             } else {
-                // point-triangle and degenerate edge-edge
-                assert(cIVInd[1] >= 0);
+                // only need to project the inner 2x2 matrix to SPD
+                Eigen::Matrix2d inner_hess =
+                    ((f2_term / tangent_relative_displacement_norm)
+                     * tangent_relative_displacement)
+                    * tangent_relative_displacement.transpose();
+                inner_hess.diagonal().array() += f1_div_rel_disp_norm;
+                inner_hess =
+                    project_to_psd(inner_hess); // This is not PD it is PSD
+                inner_hess *= mu * normal_force_magnitudes[constraint_i];
 
-                cIVInd[0] = -cIVInd[0] - 1;
-                const VECTOR<T, 3>& dXp =
-                    std::get<0>(dX.Get_Unchecked(cIVInd[0]));
-                Eigen::Matrix<T, 3, 1> dp(dXp.data);
-                if (cIVInd[2] < 0) {
-                    // -+-[-] PP, last digit stores muliplicity
-                    const VECTOR<T, 3>& dXp1 =
-                        std::get<0>(X.Get_Unchecked(cIVInd[1]));
-                    Eigen::Matrix<T, 3, 1> dp1(dXp1.data);
-
-                    Point_Point_RelDX(dp, dp1, relDX3D);
-
-                    Eigen::Matrix<T, dim - 1, 1> relDX =
-                        tanBasis[cI].transpose() * relDX3D;
-                    T f1_div_relDXNorm;
-                    f1_SF_Div_RelDXNorm(
-                        relDX.squaredNorm(), epsvh, f1_div_relDXNorm);
-                    relDX *=
-                        f1_div_relDXNorm * -cIVInd[3] * mu * normalForce[cI];
-
-                    Eigen::Matrix<T, 6, 1> TTTDX;
-                    Point_Point_RelDXTan_To_Mesh(relDX, tanBasis[cI], TTTDX);
-
-                    for (int i = 0; i < 2; ++i) {
-                        VECTOR<T, dim>& g =
-                            std::get<FIELDS<MESH_NODE_ATTR<T, dim>>::g>(
-                                nodeAttr.Get_Unchecked(cIVInd[i]));
-                        g += TTTDX.data() + i * dim;
-                    }
-                } else if (cIVInd[3] < 0) {
-                    // -++[-] PE, last digit stores muliplicity
-                    const VECTOR<T, 3>& dXe0 =
-                        std::get<0>(dX.Get_Unchecked(cIVInd[1]));
-                    const VECTOR<T, 3>& dXe1 =
-                        std::get<0>(dX.Get_Unchecked(cIVInd[2]));
-                    Eigen::Matrix<T, 3, 1> de0(dXe0.data), de1(dXe1.data);
-
-                    Point_Edge_RelDX(
-                        dp, de0, de1, closestPoint[cI][0], relDX3D);
-
-                    Eigen::Matrix<T, dim - 1, 1> relDX =
-                        tanBasis[cI].transpose() * relDX3D;
-                    T f1_div_relDXNorm;
-                    f1_SF_Div_RelDXNorm(
-                        relDX.squaredNorm(), epsvh, f1_div_relDXNorm);
-                    relDX *=
-                        f1_div_relDXNorm * -cIVInd[3] * mu * normalForce[cI];
-
-                    Eigen::Matrix<T, 9, 1> TTTDX;
-                    Point_Edge_RelDXTan_To_Mesh(
-                        relDX, tanBasis[cI], closestPoint[cI][0], TTTDX);
-
-                    for (int i = 0; i < 3; ++i) {
-                        VECTOR<T, dim>& g =
-                            std::get<FIELDS<MESH_NODE_ATTR<T, dim>>::g>(
-                                nodeAttr.Get_Unchecked(cIVInd[i]));
-                        g += TTTDX.data() + i * dim;
-                    }
-                } else {
-                    // -+++ PT
-                    const VECTOR<T, 3>& dXt0 =
-                        std::get<0>(dX.Get_Unchecked(cIVInd[1]));
-                    const VECTOR<T, 3>& dXt1 =
-                        std::get<0>(dX.Get_Unchecked(cIVInd[2]));
-                    const VECTOR<T, 3>& dXt2 =
-                        std::get<0>(dX.Get_Unchecked(cIVInd[3]));
-                    Eigen::Matrix<T, 3, 1> dt0(dXt0.data), dt1(dXt1.data),
-                        dt2(dXt2.data);
-
-                    Point_Triangle_RelDX(
-                        dp, dt0, dt1, dt2, closestPoint[cI][0],
-                        closestPoint[cI][1], relDX3D);
-
-                    Eigen::Matrix<T, dim - 1, 1> relDX =
-                        tanBasis[cI].transpose() * relDX3D;
-                    T f1_div_relDXNorm;
-                    f1_SF_Div_RelDXNorm(
-                        relDX.squaredNorm(), epsvh, f1_div_relDXNorm);
-                    relDX *= f1_div_relDXNorm * mu * normalForce[cI];
-
-                    Eigen::Matrix<T, 12, 1> TTTDX;
-                    Point_Triangle_RelDXTan_To_Mesh(
-                        relDX, tanBasis[cI], closestPoint[cI][0],
-                        closestPoint[cI][1], TTTDX);
-
-                    for (int i = 0; i < 4; ++i) {
-                        VECTOR<T, dim>& g =
-                            std::get<FIELDS<MESH_NODE_ATTR<T, dim>>::g>(
-                                nodeAttr.Get_Unchecked(cIVInd[i]));
-                        g += TTTDX.data() + i * dim;
-                    }
-                }
+                // tensor product:
+                local_hess = TT.transpose() * inner_hess * TT;
             }
         }
-    } else {
-        // TODO
+
+        local_hessian_to_global_triplets(local_hess, ids, dim, hess_triplets);
+    };
+
+    // TODO: 2D
+
+    for (const auto& ev_candidate : friction_constraint_set.ev_candidates) {
+        const auto& dp = U.row(ev_candidate.vertex_index);
+        const auto& de0 = U.row(E(ev_candidate.edge_index, 0));
+        const auto& de1 = U.row(E(ev_candidate.edge_index, 1));
+
+        Eigen::Vector3d relative_displacement =
+            point_edge_relative_displacement(
+                dp, de0, de1, closest_points[constraint_i][0]);
+
+        Eigen::Matrix<double, 2, 12> TT;
+        point_edge_TT(
+            tangent_bases[constraint_i], closest_points[constraint_i][0], TT);
+
+        std::vector<long> ids = { { ev_candidate.vertex_index,
+                                    E(ev_candidate.edge_index, 0),
+                                    E(ev_candidate.edge_index, 1) } };
+        compute_common(relative_displacement, TT, ids);
+
+        constraint_i++;
     }
+
+    for (const auto& ee_candidate : friction_constraint_set.ee_candidates) {
+        const auto& dea0 = U.row(E(ee_candidate.edge0_index, 0));
+        const auto& dea1 = U.row(E(ee_candidate.edge0_index, 1));
+        const auto& deb0 = U.row(E(ee_candidate.edge1_index, 0));
+        const auto& deb1 = U.row(E(ee_candidate.edge1_index, 1));
+
+        Eigen::Vector3d relative_displacement = edge_edge_relative_displacement(
+            dea0, dea1, deb0, deb1, closest_points[constraint_i]);
+
+        Eigen::Matrix<double, 2, 12> TT;
+        edge_edge_TT(
+            tangent_bases[constraint_i], closest_points[constraint_i], TT);
+
+        std::vector<long> ids = {
+            { E(ee_candidate.edge0_index, 0), E(ee_candidate.edge0_index, 1),
+              E(ee_candidate.edge1_index, 0), E(ee_candidate.edge1_index, 1) }
+        };
+        compute_common(relative_displacement, TT, ids);
+
+        constraint_i++;
+    }
+
+    for (const auto& fv_candidate : friction_constraint_set.fv_candidates) {
+        const auto& dp = U.row(fv_candidate.vertex_index);
+        const auto& dt0 = U.row(F(fv_candidate.face_index, 0));
+        const auto& dt1 = U.row(F(fv_candidate.face_index, 1));
+        const auto& dt2 = U.row(F(fv_candidate.face_index, 2));
+
+        Eigen::Vector3d relative_displacement =
+            point_triangle_relative_displacement(
+                dp, dt0, dt1, dt2, closest_points[constraint_i]);
+
+        Eigen::Matrix<double, 2, 12> TT;
+        point_triangle_TT(
+            tangent_bases[constraint_i], closest_points[constraint_i], TT);
+
+        std::vector<long> ids = {
+            { fv_candidate.vertex_index, F(fv_candidate.face_index, 0),
+              F(fv_candidate.face_index, 1), F(fv_candidate.face_index, 2) }
+        };
+        compute_common(relative_displacement, TT, ids);
+
+        constraint_i++;
+    }
+
+    Eigen::SparseMatrix<double> hess(U.size(), U.size());
+    hess.setFromTriplets(hess_triplets.begin(), hess_triplets.end());
+    return hess;
 }
 
-template <class T, int dim = 3>
-void Compute_Friction_Hessian(
-    MESH_NODE<T, dim>& X,
-    MESH_NODE<T, dim>& Xn,
-    const std::vector<VECTOR<int, dim + 1>>& constraintSet,
-    const std::vector<Eigen::Matrix<T, dim - 1, 1>>& closestPoint,
-    const std::vector<Eigen::Matrix<T, dim, dim - 1>>& tanBasis,
-    const std::vector<T>& normalForce,
-    T epsvh2,
-    T mu,
-    std::vector<Eigen::Triplet<T>>& triplets)
-{
-    TIMER_FLAG("Compute_Friction_Hessian");
-
-    T epsvh = std::sqrt(epsvh2);
-
-    MESH_NODE<T, dim> dX(X.size);
-    X.deep_copy_to(dX);
-    dX.Join(Xn).Par_Each([&](int id, auto data) {
-        auto& [dx, xn] = data;
-        dx -= xn;
-    });
-
-    if constexpr (dim == 3) {
-        BASE_STORAGE<int> threads(constraintSet.size());
-        int curStartInd = triplets.size();
-        for (int cI = 0; cI < constraintSet.size(); ++cI) {
-            threads.Append(curStartInd);
-            const VECTOR<int, 4>& cIVInd = constraintSet[cI];
-            if (cIVInd[0] >= 0 || cIVInd[3] >= 0) {
-                // EE or PT, 12x12
-                curStartInd += 144;
-            } else if (cIVInd[2] >= 0) {
-                // PE, 9x9
-                curStartInd += 81;
-            } else {
-                // PP, 6x6
-                curStartInd += 36;
-            }
-        }
-        triplets.resize(curStartInd);
-
-        threads.Par_Each([&](int cI, auto data) {
-            const auto& [tripletStart] = data;
-            VECTOR<int, 4> cIVInd =
-                constraintSet[cI]; // NOTE: copy to be able to modify in the
-                                   // loop if needed
-            assert(cIVInd[1] >= 0);
-
-            Eigen::Matrix<T, dim, 1> relDX3D;
-            if (cIVInd[0] >= 0) {
-                // ++++ edge-edge, no mollified stencil for friction
-                const VECTOR<T, 3>& dXea0 =
-                    std::get<0>(dX.Get_Unchecked(cIVInd[0]));
-                const VECTOR<T, 3>& dXea1 =
-                    std::get<0>(dX.Get_Unchecked(cIVInd[1]));
-                const VECTOR<T, 3>& dXeb0 =
-                    std::get<0>(dX.Get_Unchecked(cIVInd[2]));
-                const VECTOR<T, 3>& dXeb1 =
-                    std::get<0>(dX.Get_Unchecked(cIVInd[3]));
-                Eigen::Matrix<T, 3, 1> dea0(dXea0.data), dea1(dXea1.data),
-                    deb0(dXeb0.data), deb1(dXeb1.data);
-
-                Edge_Edge_RelDX(
-                    dea0, dea1, deb0, deb1, closestPoint[cI][0],
-                    closestPoint[cI][1], relDX3D);
-                Eigen::Matrix<T, dim - 1, 1> relDX =
-                    tanBasis[cI].transpose() * relDX3D;
-                T relDXSqNorm = relDX.squaredNorm();
-                T relDXNorm = std::sqrt(relDXSqNorm);
-
-                Eigen::Matrix<T, 2, 12> TT;
-                Edge_Edge_TT(
-                    tanBasis[cI], closestPoint[cI][0], closestPoint[cI][1], TT);
-
-                T f1_div_relDXNorm, f2_term;
-                f1_SF_Div_RelDXNorm(relDXSqNorm, epsvh, f1_div_relDXNorm);
-                f2_SF_Term(relDXSqNorm, epsvh, f2_term);
-
-                Eigen::Matrix<T, 12, 12> HessianI;
-                if (relDXSqNorm >= epsvh2) {
-                    // no SPD projection needed
-                    Eigen::Matrix<T, 2, 1> ubar(-relDX[1], relDX[0]);
-                    HessianI = (TT.transpose()
-                                * ((mu * normalForce[cI] * f1_div_relDXNorm
-                                    / relDXSqNorm)
-                                   * ubar))
-                        * (ubar.transpose() * TT);
-                } else {
-                    if (relDXNorm == 0) {
-                        // no SPD projection needed
-                        HessianI = ((mu * normalForce[cI] * f1_div_relDXNorm)
-                                    * TT.transpose())
-                            * TT;
-                    } else {
-                        // only need to project the inner 2x2 matrix to SPD
-                        Eigen::Matrix<T, 2, 2> innerMtr =
-                            ((f2_term / relDXNorm) * relDX) * relDX.transpose();
-                        innerMtr.diagonal().array() += f1_div_relDXNorm;
-                        makePD(innerMtr);
-                        innerMtr *= mu * normalForce[cI];
-
-                        // tensor product:
-                        HessianI = TT.transpose() * innerMtr * TT;
-                    }
-                }
-
-                for (int i = 0; i < 4; ++i) {
-                    for (int j = 0; j < 4; ++j) {
-                        for (int idI = 0; idI < 3; ++idI) {
-                            for (int jdI = 0; jdI < 3; ++jdI) {
-                                triplets
-                                    [tripletStart + (i * 3 + idI) * 12 + j * 3
-                                     + jdI] =
-                                        Eigen::Triplet<T>(
-                                            cIVInd[i] * 3 + idI,
-                                            cIVInd[j] * 3 + jdI,
-                                            HessianI(i * 3 + idI, j * 3 + jdI));
-                            }
-                        }
-                    }
-                }
-            } else {
-                // point-triangle and degenerate edge-edge
-                assert(cIVInd[1] >= 0);
-
-                cIVInd[0] = -cIVInd[0] - 1;
-                const VECTOR<T, 3>& dXp =
-                    std::get<0>(dX.Get_Unchecked(cIVInd[0]));
-                Eigen::Matrix<T, 3, 1> dp(dXp.data);
-                if (cIVInd[2] < 0) {
-                    // -+-[-] PP, last digit stores muliplicity
-                    const VECTOR<T, 3>& dXp1 =
-                        std::get<0>(X.Get_Unchecked(cIVInd[1]));
-                    Eigen::Matrix<T, 3, 1> dp1(dXp1.data);
-
-                    Point_Point_RelDX(dp, dp1, relDX3D);
-                    Eigen::Matrix<T, dim - 1, 1> relDX =
-                        tanBasis[cI].transpose() * relDX3D;
-                    T relDXSqNorm = relDX.squaredNorm();
-                    T relDXNorm = std::sqrt(relDXSqNorm);
-
-                    Eigen::Matrix<T, 2, 6> TT;
-                    Point_Point_TT(tanBasis[cI], TT);
-
-                    T f1_div_relDXNorm, f2_term;
-                    f1_SF_Div_RelDXNorm(relDXSqNorm, epsvh, f1_div_relDXNorm);
-                    f2_SF_Term(relDXSqNorm, epsvh, f2_term);
-
-                    Eigen::Matrix<T, 6, 6> HessianI;
-                    if (relDXSqNorm >= epsvh2) {
-                        // no SPD projection needed
-                        Eigen::Matrix<T, 2, 1> ubar(-relDX[1], relDX[0]);
-                        HessianI = (TT.transpose()
-                                    * ((-cIVInd[3] * mu * normalForce[cI]
-                                        * f1_div_relDXNorm / relDXSqNorm)
-                                       * ubar))
-                            * (ubar.transpose() * TT);
-                    } else {
-                        if (relDXNorm == 0) {
-                            // no SPD projection needed
-                            HessianI = ((-cIVInd[3] * mu * normalForce[cI]
-                                         * f1_div_relDXNorm)
-                                        * TT.transpose())
-                                * TT;
-                        } else {
-                            // only need to project the inner 2x2 matrix to SPD
-                            Eigen::Matrix<T, 2, 2> innerMtr =
-                                ((f2_term / relDXNorm) * relDX)
-                                * relDX.transpose();
-                            innerMtr.diagonal().array() += f1_div_relDXNorm;
-                            makePD(innerMtr);
-                            innerMtr *= -cIVInd[3] * mu * normalForce[cI];
-
-                            // tensor product:
-                            HessianI = TT.transpose() * innerMtr * TT;
-                        }
-                    }
-
-                    for (int i = 0; i < 2; ++i) {
-                        for (int j = 0; j < 2; ++j) {
-                            for (int idI = 0; idI < 3; ++idI) {
-                                for (int jdI = 0; jdI < 3; ++jdI) {
-                                    triplets
-                                        [tripletStart + (i * 3 + idI) * 6
-                                         + j * 3 + jdI] =
-                                            Eigen::Triplet<T>(
-                                                cIVInd[i] * 3 + idI,
-                                                cIVInd[j] * 3 + jdI,
-                                                HessianI(
-                                                    i * 3 + idI, j * 3 + jdI));
-                                }
-                            }
-                        }
-                    }
-                } else if (cIVInd[3] < 0) {
-                    // -++[-] PE, last digit stores muliplicity
-                    const VECTOR<T, 3>& dXe0 =
-                        std::get<0>(dX.Get_Unchecked(cIVInd[1]));
-                    const VECTOR<T, 3>& dXe1 =
-                        std::get<0>(dX.Get_Unchecked(cIVInd[2]));
-                    Eigen::Matrix<T, 3, 1> de0(dXe0.data), de1(dXe1.data);
-
-                    Point_Edge_RelDX(
-                        dp, de0, de1, closestPoint[cI][0], relDX3D);
-                    Eigen::Matrix<T, dim - 1, 1> relDX =
-                        tanBasis[cI].transpose() * relDX3D;
-                    T relDXSqNorm = relDX.squaredNorm();
-                    T relDXNorm = std::sqrt(relDXSqNorm);
-
-                    Eigen::Matrix<T, 2, 9> TT;
-                    Point_Edge_TT(tanBasis[cI], closestPoint[cI][0], TT);
-
-                    T f1_div_relDXNorm, f2_term;
-                    f1_SF_Div_RelDXNorm(relDXSqNorm, epsvh, f1_div_relDXNorm);
-                    f2_SF_Term(relDXSqNorm, epsvh, f2_term);
-
-                    Eigen::Matrix<T, 9, 9> HessianI;
-                    if (relDXSqNorm >= epsvh2) {
-                        // no SPD projection needed
-                        Eigen::Matrix<T, 2, 1> ubar(-relDX[1], relDX[0]);
-                        HessianI = (TT.transpose()
-                                    * ((-cIVInd[3] * mu * normalForce[cI]
-                                        * f1_div_relDXNorm / relDXSqNorm)
-                                       * ubar))
-                            * (ubar.transpose() * TT);
-                    } else {
-                        if (relDXNorm == 0) {
-                            // no SPD projection needed
-                            HessianI = ((-cIVInd[3] * mu * normalForce[cI]
-                                         * f1_div_relDXNorm)
-                                        * TT.transpose())
-                                * TT;
-                        } else {
-                            // only need to project the inner 2x2 matrix to SPD
-                            Eigen::Matrix<T, 2, 2> innerMtr =
-                                ((f2_term / relDXNorm) * relDX)
-                                * relDX.transpose();
-                            innerMtr.diagonal().array() += f1_div_relDXNorm;
-                            makePD(innerMtr);
-                            innerMtr *= -cIVInd[3] * mu * normalForce[cI];
-
-                            // tensor product:
-                            HessianI = TT.transpose() * innerMtr * TT;
-                        }
-                    }
-
-                    for (int i = 0; i < 3; ++i) {
-                        for (int j = 0; j < 3; ++j) {
-                            for (int idI = 0; idI < 3; ++idI) {
-                                for (int jdI = 0; jdI < 3; ++jdI) {
-                                    triplets
-                                        [tripletStart + (i * 3 + idI) * 9
-                                         + j * 3 + jdI] =
-                                            Eigen::Triplet<T>(
-                                                cIVInd[i] * 3 + idI,
-                                                cIVInd[j] * 3 + jdI,
-                                                HessianI(
-                                                    i * 3 + idI, j * 3 + jdI));
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    // -+++ PT
-                    const VECTOR<T, 3>& dXt0 =
-                        std::get<0>(dX.Get_Unchecked(cIVInd[1]));
-                    const VECTOR<T, 3>& dXt1 =
-                        std::get<0>(dX.Get_Unchecked(cIVInd[2]));
-                    const VECTOR<T, 3>& dXt2 =
-                        std::get<0>(dX.Get_Unchecked(cIVInd[3]));
-                    Eigen::Matrix<T, 3, 1> dt0(dXt0.data), dt1(dXt1.data),
-                        dt2(dXt2.data);
-
-                    Point_Triangle_RelDX(
-                        dp, dt0, dt1, dt2, closestPoint[cI][0],
-                        closestPoint[cI][1], relDX3D);
-                    Eigen::Matrix<T, dim - 1, 1> relDX =
-                        tanBasis[cI].transpose() * relDX3D;
-                    T relDXSqNorm = relDX.squaredNorm();
-                    T relDXNorm = std::sqrt(relDXSqNorm);
-
-                    Eigen::Matrix<T, 2, 12> TT;
-                    Point_Triangle_TT(
-                        tanBasis[cI], closestPoint[cI][0], closestPoint[cI][1],
-                        TT);
-
-                    T f1_div_relDXNorm, f2_term;
-                    f1_SF_Div_RelDXNorm(relDXSqNorm, epsvh, f1_div_relDXNorm);
-                    f2_SF_Term(relDXSqNorm, epsvh, f2_term);
-
-                    Eigen::Matrix<T, 12, 12> HessianI;
-                    if (relDXSqNorm >= epsvh2) {
-                        // no SPD projection needed
-                        Eigen::Matrix<T, 2, 1> ubar(-relDX[1], relDX[0]);
-                        HessianI = (TT.transpose()
-                                    * ((mu * normalForce[cI] * f1_div_relDXNorm
-                                        / relDXSqNorm)
-                                       * ubar))
-                            * (ubar.transpose() * TT);
-                    } else {
-                        if (relDXNorm == 0) {
-                            // no SPD projection needed
-                            HessianI =
-                                ((mu * normalForce[cI] * f1_div_relDXNorm)
-                                 * TT.transpose())
-                                * TT;
-                        } else {
-                            // only need to project the inner 2x2 matrix to SPD
-                            Eigen::Matrix<T, 2, 2> innerMtr =
-                                ((f2_term / relDXNorm) * relDX)
-                                * relDX.transpose();
-                            innerMtr.diagonal().array() += f1_div_relDXNorm;
-                            makePD(innerMtr);
-                            innerMtr *= mu * normalForce[cI];
-
-                            // tensor product:
-                            HessianI = TT.transpose() * innerMtr * TT;
-                        }
-                    }
-
-                    for (int i = 0; i < 4; ++i) {
-                        for (int j = 0; j < 4; ++j) {
-                            for (int idI = 0; idI < 3; ++idI) {
-                                for (int jdI = 0; jdI < 3; ++jdI) {
-                                    triplets
-                                        [tripletStart + (i * 3 + idI) * 12
-                                         + j * 3 + jdI] =
-                                            Eigen::Triplet<T>(
-                                                cIVInd[i] * 3 + idI,
-                                                cIVInd[j] * 3 + jdI,
-                                                HessianI(
-                                                    i * 3 + idI, j * 3 + jdI));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    } else {
-        // TODO
-    }
-}
-*/
 } // namespace ipc

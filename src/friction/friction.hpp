@@ -31,8 +31,7 @@ f1_SF_div_relative_displacement_norm(const T& x_squared, const T& epsv_times_h)
     return (-std::sqrt(x_squared) + 2.0 * epsv_times_h) / epsv_times_h_squared;
 }
 
-template <typename T>
-inline T f2_SF_Term(const T& x_squared, const T& epsv_times_h)
+template <typename T> inline T f2_SF(const T& x_squared, const T& epsv_times_h)
 {
     return -1 / (epsv_times_h * epsv_times_h);
     // same for x_squared >= epsv_times_h * epsv_times_h for C1 clamped friction

@@ -48,11 +48,11 @@ inline Eigen::Matrix<T, 4, 3> point_triangle_relative_mesh_displacements(
     return mesh_displacements;
 }
 
-template <typename T>
-inline void Point_Triangle_TT(
-    const Eigen::Matrix<T, 3, 2>& basis,
-    const Eigen::Vector2<T>& beta,
-    Eigen::Matrix<T, 2, 12>& TT)
+template <typename DerivedBasis, typename DerivedBeta, typename DerivedTT>
+inline void point_triangle_TT(
+    const Eigen::MatrixBase<DerivedBasis>& basis,
+    const Eigen::MatrixBase<DerivedBeta>& beta,
+    Eigen::MatrixBase<DerivedTT>& TT)
 {
     TT.template block<2, 3>(0, 0) = basis.transpose();
     TT.template block<2, 3>(0, 3) =
@@ -102,11 +102,11 @@ inline Eigen::Matrix<T, 4, 3> edge_edge_relative_mesh_displacements(
     return mesh_displacements;
 }
 
-template <typename T>
-inline void Edge_Edge_TT(
-    const Eigen::Matrix<T, 3, 2>& basis,
-    const Eigen::Vector2<T>& gamma,
-    Eigen::Matrix<T, 2, 12>& TT)
+template <typename DerivedBasis, typename DerivedGamma, typename DerivedTT>
+inline void edge_edge_TT(
+    const Eigen::MatrixBase<DerivedBasis>& basis,
+    const Eigen::MatrixBase<DerivedGamma>& gamma,
+    Eigen::MatrixBase<DerivedTT>& TT)
 {
     TT.template block<2, 3>(0, 0) = (1.0 - gamma[0]) * basis.transpose();
     TT.template block<2, 3>(0, 3) = gamma[0] * basis.transpose();
@@ -143,11 +143,11 @@ inline Eigen::Matrix3<T> point_edge_relative_mesh_displacement(
     return mesh_displacements;
 }
 
-template <typename T>
-inline void Point_Edge_TT(
-    const Eigen::Matrix<T, 3, 2>& basis,
+template <typename DerivedBasis, typename T, typename DerivedTT>
+inline void point_edge_TT(
+    const Eigen::MatrixBase<DerivedBasis>& basis,
     const T& alpha,
-    Eigen::Matrix<T, 2, 9>& TT)
+    Eigen::MatrixBase<DerivedTT>& TT)
 {
     TT.template block<2, 3>(0, 0) = basis.transpose();
     TT.template block<2, 3>(0, 3) = (alpha - 1.0) * basis.transpose();
@@ -174,9 +174,10 @@ inline void point_point_relative_mesh_displacement(
     mesh_displacements.row(1) = -mesh_displacements.row(0);
 }
 
-template <typename T>
-inline void
-Point_Point_TT(const Eigen::Matrix<T, 3, 2>& basis, Eigen::Matrix<T, 2, 6>& TT)
+template <typename DerivedBasis, typename DerivedTT>
+inline void point_point_TT(
+    const Eigen::MatrixBase<DerivedBasis>& basis,
+    Eigen::MatrixBase<DerivedTT>& TT)
 {
     TT.template block<2, 3>(0, 0) = basis.transpose();
     TT.template block<2, 3>(0, 3) = -basis.transpose();
