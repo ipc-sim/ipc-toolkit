@@ -12,15 +12,14 @@ using namespace ipc;
 TEST_CASE("Test friction gradient", "[friction][grad][hess]")
 {
     double mu = GENERATE(range(0.0, 1.0, 0.1));
-    double epsv_times_h_squared = pow(10, -2 * GENERATE(range(0, 6)));
-    double dhat_squared = pow(10, -2 * GENERATE(range(0, 4)));
-    double dhat = sqrt(dhat_squared);
+    double epsv_times_h = pow(10, GENERATE(range(-6, 0)));
+    double dhat = pow(10, GENERATE(range(-4, 0)));
     double barrier_stiffness = pow(10, GENERATE(range(0, 2)));
-    CAPTURE(mu, epsv_times_h_squared, dhat_squared, barrier_stiffness);
+    CAPTURE(mu, epsv_times_h, dhat, barrier_stiffness);
 
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
-    Candidates contact_constraint_set;
+    Constraints contact_constraint_set;
     SECTION("point-triangle")
     {
         V0.resize(4, 3);
@@ -39,7 +38,7 @@ TEST_CASE("Test friction gradient", "[friction][grad][hess]")
         igl::edges(F, E);
         REQUIRE(E.rows() == 3);
 
-        contact_constraint_set.fv_candidates.emplace_back(0, 0);
+        contact_constraint_set.fv_constraints.emplace_back(0, 0);
     }
     SECTION("edge-edge")
     {
@@ -59,28 +58,28 @@ TEST_CASE("Test friction gradient", "[friction][grad][hess]")
         E.row(0) << 0, 1;
         E.row(1) << 2, 3;
 
-        contact_constraint_set.ee_candidates.emplace_back(0, 1);
+        contact_constraint_set.ee_constraints.emplace_back(0, 1, 0.0);
     }
 
-    Candidates friction_constraint_set;
+    Constraints friction_constraint_set;
     std::vector<Eigen::VectorXd> closest_points;
     std::vector<Eigen::MatrixXd> tangent_bases;
     Eigen::VectorXd normal_force_magnitudes;
     compute_friction_bases(
-        V0, E, F, contact_constraint_set, dhat_squared, barrier_stiffness,
+        V0, E, F, contact_constraint_set, dhat, barrier_stiffness,
         friction_constraint_set, closest_points, tangent_bases,
         normal_force_magnitudes);
 
     Eigen::VectorXd grad = compute_friction_potential_gradient(
         V0, V1, E, F, friction_constraint_set, closest_points, tangent_bases,
-        normal_force_magnitudes, epsv_times_h_squared, mu);
+        normal_force_magnitudes, epsv_times_h, mu);
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
-        return ipc::compute_friction_potential(
+        return compute_friction_potential(
             V0, unflatten(x, V1.cols()), E, F, friction_constraint_set,
             closest_points, tangent_bases, normal_force_magnitudes,
-            epsv_times_h_squared, mu);
+            epsv_times_h, mu);
     };
     Eigen::VectorXd fgrad;
     fd::finite_gradient(flatten(V1), f, fgrad);
@@ -88,12 +87,8 @@ TEST_CASE("Test friction gradient", "[friction][grad][hess]")
 
     Eigen::MatrixXd hess = compute_friction_potential_hessian(
         V0, V1, E, F, friction_constraint_set, closest_points, tangent_bases,
-        normal_force_magnitudes, epsv_times_h_squared, mu);
+        normal_force_magnitudes, epsv_times_h, mu);
     Eigen::MatrixXd fhess;
     fd::finite_hessian(flatten(V1), f, fhess);
-    if (!fd::compare_hessian(hess, fhess, 1e-3)) {
-        std::cout << hess.transpose() << std::endl;
-        std::cout << fhess.transpose() << std::endl;
-    }
     CHECK(fd::compare_hessian(hess, fhess, 1e-3));
 }

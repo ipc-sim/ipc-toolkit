@@ -12,14 +12,15 @@
 namespace ipc {
 
 void construct_constraint_set(
+    const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    double dhat_squared,
-    Candidates& constraint_set,
+    double dhat,
+    Constraints& constraint_set,
     bool ignore_internal_vertices)
 {
-    double dhat = std::sqrt(dhat_squared);
+    double dhat_squared = dhat * dhat;
 
     Candidates candidates;
     HashGrid hash_grid;
@@ -68,7 +69,7 @@ void construct_constraint_set(
             V.row(E(ev_candidate.edge_index, 1)));
 
         if (distance_sqr < dhat_squared) {
-            constraint_set.ev_candidates.push_back(ev_candidate);
+            constraint_set.ev_constraints.emplace_back(ev_candidate);
         }
     }
 
@@ -80,7 +81,13 @@ void construct_constraint_set(
             V.row(E(ee_candidate.edge1_index, 1)));
 
         if (distance_sqr < dhat_squared) {
-            constraint_set.ee_candidates.push_back(ee_candidate);
+            double eps_x = edge_edge_mollifier_threshold(
+                V_rest.row(E(ee_candidate.edge0_index, 0)),
+                V_rest.row(E(ee_candidate.edge0_index, 1)),
+                V_rest.row(E(ee_candidate.edge1_index, 0)),
+                V_rest.row(E(ee_candidate.edge1_index, 1)));
+
+            constraint_set.ee_constraints.emplace_back(ee_candidate, eps_x);
         }
     }
 
@@ -92,50 +99,46 @@ void construct_constraint_set(
             V.row(F(fv_candidate.face_index, 2)));
 
         if (distance_sqr < dhat_squared) {
-            constraint_set.fv_candidates.push_back(fv_candidate);
+            constraint_set.fv_constraints.emplace_back(fv_candidate);
         }
     }
 }
 
 double compute_barrier_potential(
-    const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Candidates& constraint_set,
-    double dhat_squared)
+    const Constraints& constraint_set,
+    double dhat)
 {
+    double dhat_squared = dhat * dhat;
     double potential = 0;
 
-    for (const auto& ev_candidate : constraint_set.ev_candidates) {
+    for (const auto& ev_constraint : constraint_set.ev_constraints) {
         double distance_sqr = point_edge_distance(
-            V.row(ev_candidate.vertex_index),
-            V.row(E(ev_candidate.edge_index, 0)),
-            V.row(E(ev_candidate.edge_index, 1)));
+            V.row(ev_constraint.vertex_index),
+            V.row(E(ev_constraint.edge_index, 0)),
+            V.row(E(ev_constraint.edge_index, 1)));
         potential += barrier(distance_sqr, dhat_squared);
     }
 
-    for (const auto& ee_candidate : constraint_set.ee_candidates) {
-        const auto& ea0 = V.row(E(ee_candidate.edge0_index, 0));
-        const auto& ea1 = V.row(E(ee_candidate.edge0_index, 1));
-        const auto& eb0 = V.row(E(ee_candidate.edge1_index, 0));
-        const auto& eb1 = V.row(E(ee_candidate.edge1_index, 1));
+    for (const auto& ee_constraint : constraint_set.ee_constraints) {
+        const auto& ea0 = V.row(E(ee_constraint.edge0_index, 0));
+        const auto& ea1 = V.row(E(ee_constraint.edge0_index, 1));
+        const auto& eb0 = V.row(E(ee_constraint.edge1_index, 0));
+        const auto& eb1 = V.row(E(ee_constraint.edge1_index, 1));
 
         double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1);
-        double eps_x = edge_edge_mollifier_threshold(
-            V_rest.row(E(ee_candidate.edge0_index, 0)),
-            V_rest.row(E(ee_candidate.edge0_index, 1)),
-            V_rest.row(E(ee_candidate.edge1_index, 0)),
-            V_rest.row(E(ee_candidate.edge1_index, 1)));
-        potential += edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x)
+        potential +=
+            edge_edge_mollifier(ea0, ea1, eb0, eb1, ee_constraint.eps_x)
             * barrier(distance_sqr, dhat_squared);
     }
 
-    for (const auto& fv_candidate : constraint_set.fv_candidates) {
-        const auto& p = V.row(fv_candidate.vertex_index);
-        const auto& t0 = V.row(F(fv_candidate.face_index, 0));
-        const auto& t1 = V.row(F(fv_candidate.face_index, 1));
-        const auto& t2 = V.row(F(fv_candidate.face_index, 2));
+    for (const auto& fv_constraint : constraint_set.fv_constraints) {
+        const auto& p = V.row(fv_constraint.vertex_index);
+        const auto& t0 = V.row(F(fv_constraint.face_index, 0));
+        const auto& t1 = V.row(F(fv_constraint.face_index, 1));
+        const auto& t2 = V.row(F(fv_constraint.face_index, 2));
 
         double distance_sqr = point_triangle_distance(p, t0, t1, t2);
         potential += barrier(distance_sqr, dhat_squared);
@@ -145,21 +148,22 @@ double compute_barrier_potential(
 }
 
 Eigen::VectorXd compute_barrier_potential_gradient(
-    const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Candidates& constraint_set,
-    double dhat_squared)
+    const Constraints& constraint_set,
+    double dhat)
 {
+    double dhat_squared = dhat * dhat;
+
     Eigen::VectorXd grad = Eigen::VectorXd::Zero(V.size());
     int dim = V.cols();
 
-    for (const auto& ev_candidate : constraint_set.ev_candidates) {
+    for (const auto& ev_constraint : constraint_set.ev_constraints) {
         // ∇b(d(x)) = b'(d(x)) * ∇d(x)
-        const auto& p = V.row(ev_candidate.vertex_index);
-        const auto& e0 = V.row(E(ev_candidate.edge_index, 0));
-        const auto& e1 = V.row(E(ev_candidate.edge_index, 1));
+        const auto& p = V.row(ev_constraint.vertex_index);
+        const auto& e0 = V.row(E(ev_constraint.edge_index, 0));
+        const auto& e1 = V.row(E(ev_constraint.edge_index, 1));
 
         Eigen::VectorXd local_grad;
         point_edge_distance_gradient(p, e0, e1, local_grad);
@@ -168,34 +172,30 @@ Eigen::VectorXd compute_barrier_potential_gradient(
         local_grad *= barrier_gradient(distance_sqr, dhat_squared);
 
         // Map from local to global gradient
-        grad.segment(dim * ev_candidate.vertex_index, dim) +=
+        grad.segment(dim * ev_constraint.vertex_index, dim) +=
             local_grad.head(dim);
-        grad.segment(dim * E(ev_candidate.edge_index, 0), dim) +=
+        grad.segment(dim * E(ev_constraint.edge_index, 0), dim) +=
             local_grad.segment(dim, dim);
-        grad.segment(dim * E(ev_candidate.edge_index, 1), dim) +=
+        grad.segment(dim * E(ev_constraint.edge_index, 1), dim) +=
             local_grad.tail(dim);
     }
 
-    for (const auto& ee_candidate : constraint_set.ee_candidates) {
+    for (const auto& ee_constraint : constraint_set.ee_constraints) {
         // ∇[m(x) * b(d(x))] = (∇m(x)) * b(d(x)) + m(x) * b'(d(x)) * ∇d(x)
-        const auto& ea0 = V.row(E(ee_candidate.edge0_index, 0));
-        const auto& ea1 = V.row(E(ee_candidate.edge0_index, 1));
-        const auto& eb0 = V.row(E(ee_candidate.edge1_index, 0));
-        const auto& eb1 = V.row(E(ee_candidate.edge1_index, 1));
+        const auto& ea0 = V.row(E(ee_constraint.edge0_index, 0));
+        const auto& ea1 = V.row(E(ee_constraint.edge0_index, 1));
+        const auto& eb0 = V.row(E(ee_constraint.edge1_index, 0));
+        const auto& eb1 = V.row(E(ee_constraint.edge1_index, 1));
 
         double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1);
         Eigen::VectorXd local_distance_grad;
         edge_edge_distance_gradient(ea0, ea1, eb0, eb1, local_distance_grad);
 
-        double eps_x = edge_edge_mollifier_threshold(
-            V_rest.row(E(ee_candidate.edge0_index, 0)),
-            V_rest.row(E(ee_candidate.edge0_index, 1)),
-            V_rest.row(E(ee_candidate.edge1_index, 0)),
-            V_rest.row(E(ee_candidate.edge1_index, 1)));
-        double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
+        double mollifier =
+            edge_edge_mollifier(ea0, ea1, eb0, eb1, ee_constraint.eps_x);
         Eigen::VectorXd local_mollifier_grad;
         edge_edge_mollifier_gradient(
-            ea0, ea1, eb0, eb1, eps_x, local_mollifier_grad);
+            ea0, ea1, eb0, eb1, ee_constraint.eps_x, local_mollifier_grad);
 
         Eigen::VectorXd local_grad =
             local_mollifier_grad * barrier(distance_sqr, dhat_squared)
@@ -203,22 +203,22 @@ Eigen::VectorXd compute_barrier_potential_gradient(
                 * local_distance_grad;
 
         // Map from local to global gradient
-        grad.segment(dim * E(ee_candidate.edge0_index, 0), dim) +=
+        grad.segment(dim * E(ee_constraint.edge0_index, 0), dim) +=
             local_grad.head(dim);
-        grad.segment(dim * E(ee_candidate.edge0_index, 1), dim) +=
+        grad.segment(dim * E(ee_constraint.edge0_index, 1), dim) +=
             local_grad.segment(dim, dim);
-        grad.segment(dim * E(ee_candidate.edge1_index, 0), dim) +=
+        grad.segment(dim * E(ee_constraint.edge1_index, 0), dim) +=
             local_grad.segment(2 * dim, dim);
-        grad.segment(dim * E(ee_candidate.edge1_index, 1), dim) +=
+        grad.segment(dim * E(ee_constraint.edge1_index, 1), dim) +=
             local_grad.tail(dim);
     }
 
-    for (const auto& fv_candidate : constraint_set.fv_candidates) {
+    for (const auto& fv_constraint : constraint_set.fv_constraints) {
         // ∇b(d(x)) = b'(d(x)) * ∇d(x)
-        const auto& p = V.row(fv_candidate.vertex_index);
-        const auto& t0 = V.row(F(fv_candidate.face_index, 0));
-        const auto& t1 = V.row(F(fv_candidate.face_index, 1));
-        const auto& t2 = V.row(F(fv_candidate.face_index, 2));
+        const auto& p = V.row(fv_constraint.vertex_index);
+        const auto& t0 = V.row(F(fv_constraint.face_index, 0));
+        const auto& t1 = V.row(F(fv_constraint.face_index, 1));
+        const auto& t2 = V.row(F(fv_constraint.face_index, 2));
 
         Eigen::VectorXd local_grad;
         point_triangle_distance_gradient(p, t0, t1, t2, local_grad);
@@ -227,13 +227,13 @@ Eigen::VectorXd compute_barrier_potential_gradient(
         local_grad *= barrier_gradient(distance_sqr, dhat_squared);
 
         // Map from local to global gradient
-        grad.segment(dim * fv_candidate.vertex_index, dim) +=
+        grad.segment(dim * fv_constraint.vertex_index, dim) +=
             local_grad.head(dim);
-        grad.segment(dim * F(fv_candidate.face_index, 0), dim) +=
+        grad.segment(dim * F(fv_constraint.face_index, 0), dim) +=
             local_grad.segment(dim, dim);
-        grad.segment(dim * F(fv_candidate.face_index, 1), dim) +=
+        grad.segment(dim * F(fv_constraint.face_index, 1), dim) +=
             local_grad.segment(2 * dim, dim);
-        grad.segment(dim * F(fv_candidate.face_index, 2), dim) +=
+        grad.segment(dim * F(fv_constraint.face_index, 2), dim) +=
             local_grad.tail(dim);
     }
 
@@ -241,27 +241,28 @@ Eigen::VectorXd compute_barrier_potential_gradient(
 }
 
 Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
-    const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Candidates& constraint_set,
-    double dhat_squared,
+    const Constraints& constraint_set,
+    double dhat,
     bool project_to_psd)
 {
+    double dhat_squared = dhat * dhat;
+
     std::vector<Eigen::Triplet<double>> hess_triplets;
     int dim = V.cols();
     hess_triplets.reserve(
-        constraint_set.ev_candidates.size() * /*3*3=*/9 * dim * dim
-        + constraint_set.ee_candidates.size() * /*4*4=*/16 * dim * dim
-        + constraint_set.fv_candidates.size() * /*4*4=*/16 * dim * dim);
+        constraint_set.ev_constraints.size() * /*3*3=*/9 * dim * dim
+        + constraint_set.ee_constraints.size() * /*4*4=*/16 * dim * dim
+        + constraint_set.fv_constraints.size() * /*4*4=*/16 * dim * dim);
 
-    for (const auto& ev_candidate : constraint_set.ev_candidates) {
+    for (const auto& ev_constraint : constraint_set.ev_constraints) {
         // ∇²b(d(x)) = ∇(b'(d(x)) * ∇d(x))
         //           = b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)
-        const auto& p = V.row(ev_candidate.vertex_index);
-        const auto& e0 = V.row(E(ev_candidate.edge_index, 0));
-        const auto& e1 = V.row(E(ev_candidate.edge_index, 1));
+        const auto& p = V.row(ev_constraint.vertex_index);
+        const auto& e0 = V.row(E(ev_constraint.edge_index, 0));
+        const auto& e1 = V.row(E(ev_constraint.edge_index, 1));
 
         double distance_sqr = point_edge_distance(p, e0, e1);
         Eigen::VectorXd local_grad;
@@ -274,22 +275,22 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
             * local_grad.transpose();
 
         // Map from local to global gradient
-        std::vector<long> ids = { { ev_candidate.vertex_index,
-                                    E(ev_candidate.edge_index, 0),
-                                    E(ev_candidate.edge_index, 1) } };
+        std::vector<long> ids = { { ev_constraint.vertex_index,
+                                    E(ev_constraint.edge_index, 0),
+                                    E(ev_constraint.edge_index, 1) } };
         local_hessian_to_global_triplets(local_hess, ids, dim, hess_triplets);
     }
 
-    for (const auto& ee_candidate : constraint_set.ee_candidates) {
+    for (const auto& ee_constraint : constraint_set.ee_constraints) {
         // ∇²[m(x) * b(d(x))] = ∇[∇m(x) * b(d(x)) + m(x) * b'(d(x)) * ∇d(x)]
         //                    = ∇²m(x) * b(d(x)) + b'(d(x)) * ∇d(x) * ∇m(x)ᵀ
         //                      + ∇m(x) * b'(d(x)) * ∇d(x))ᵀ
         //                      + m(x) * b"(d(x)) * ∇d(x) * ∇d(x)ᵀ
         //                      + m(x) * b'(d(x)) * ∇²d(x)
-        const auto& ea0 = V.row(E(ee_candidate.edge0_index, 0));
-        const auto& ea1 = V.row(E(ee_candidate.edge0_index, 1));
-        const auto& eb0 = V.row(E(ee_candidate.edge1_index, 0));
-        const auto& eb1 = V.row(E(ee_candidate.edge1_index, 1));
+        const auto& ea0 = V.row(E(ee_constraint.edge0_index, 0));
+        const auto& ea1 = V.row(E(ee_constraint.edge0_index, 1));
+        const auto& eb0 = V.row(E(ee_constraint.edge1_index, 0));
+        const auto& eb1 = V.row(E(ee_constraint.edge1_index, 1));
 
         // Compute distance derivatives
         double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1);
@@ -300,16 +301,14 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
             ea0, ea1, eb0, eb1, distance_hess, project_to_psd);
 
         // Compute mollifier derivatives
-        double eps_x = edge_edge_mollifier_threshold(
-            V_rest.row(E(ee_candidate.edge0_index, 0)),
-            V_rest.row(E(ee_candidate.edge0_index, 1)),
-            V_rest.row(E(ee_candidate.edge1_index, 0)),
-            V_rest.row(E(ee_candidate.edge1_index, 1)));
-        double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
+        double mollifier =
+            edge_edge_mollifier(ea0, ea1, eb0, eb1, ee_constraint.eps_x);
         Eigen::VectorXd mollifier_grad;
-        edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x, mollifier_grad);
+        edge_edge_mollifier_gradient(
+            ea0, ea1, eb0, eb1, ee_constraint.eps_x, mollifier_grad);
         Eigen::MatrixXd mollifier_hess;
-        edge_edge_mollifier_hessian(ea0, ea1, eb0, eb1, eps_x, mollifier_hess);
+        edge_edge_mollifier_hessian(
+            ea0, ea1, eb0, eb1, ee_constraint.eps_x, mollifier_hess);
 
         // Compute_barrier_derivatives
         double b = barrier(distance_sqr, dhat_squared);
@@ -326,19 +325,19 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 
         // Map from local to global gradient
         std::vector<long> ids = {
-            { E(ee_candidate.edge0_index, 0), E(ee_candidate.edge0_index, 1),
-              E(ee_candidate.edge1_index, 0), E(ee_candidate.edge1_index, 1) }
+            { E(ee_constraint.edge0_index, 0), E(ee_constraint.edge0_index, 1),
+              E(ee_constraint.edge1_index, 0), E(ee_constraint.edge1_index, 1) }
         };
         local_hessian_to_global_triplets(local_hess, ids, dim, hess_triplets);
     }
 
-    for (const auto& fv_candidate : constraint_set.fv_candidates) {
+    for (const auto& fv_constraint : constraint_set.fv_constraints) {
         // ∇²b(d(x)) = ∇(b'(d(x)) * ∇d(x))
         //           = b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)
-        const auto& p = V.row(fv_candidate.vertex_index);
-        const auto& t0 = V.row(F(fv_candidate.face_index, 0));
-        const auto& t1 = V.row(F(fv_candidate.face_index, 1));
-        const auto& t2 = V.row(F(fv_candidate.face_index, 2));
+        const auto& p = V.row(fv_constraint.vertex_index);
+        const auto& t0 = V.row(F(fv_constraint.face_index, 0));
+        const auto& t1 = V.row(F(fv_constraint.face_index, 1));
+        const auto& t2 = V.row(F(fv_constraint.face_index, 2));
 
         double distance_sqr = point_triangle_distance(p, t0, t1, t2);
         Eigen::VectorXd local_grad;
@@ -353,8 +352,8 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 
         // Map from local to global gradient
         std::vector<long> ids = {
-            { fv_candidate.vertex_index, F(fv_candidate.face_index, 0),
-              F(fv_candidate.face_index, 1), F(fv_candidate.face_index, 2) }
+            { fv_constraint.vertex_index, F(fv_constraint.face_index, 0),
+              F(fv_constraint.face_index, 1), F(fv_constraint.face_index, 2) }
         };
         local_hessian_to_global_triplets(local_hess, ids, dim, hess_triplets);
     }
@@ -602,39 +601,39 @@ double compute_minimum_distance(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Candidates& constraint_set)
+    const Constraints& constraint_set)
 {
     double min_distance = std::numeric_limits<double>::infinity();
 
-    for (const auto& ev_candidate : constraint_set.ev_candidates) {
+    for (const auto& ev_constraint : constraint_set.ev_constraints) {
         double distance_sqr = point_edge_distance(
-            V.row(ev_candidate.vertex_index),
-            V.row(E(ev_candidate.edge_index, 0)),
-            V.row(E(ev_candidate.edge_index, 1)));
+            V.row(ev_constraint.vertex_index),
+            V.row(E(ev_constraint.edge_index, 0)),
+            V.row(E(ev_constraint.edge_index, 1)));
 
         if (distance_sqr < min_distance) {
             min_distance = distance_sqr;
         }
     }
 
-    for (const auto& ee_candidate : constraint_set.ee_candidates) {
+    for (const auto& ee_constraint : constraint_set.ee_constraints) {
         double distance_sqr = edge_edge_distance(
-            V.row(E(ee_candidate.edge0_index, 0)),
-            V.row(E(ee_candidate.edge0_index, 1)),
-            V.row(E(ee_candidate.edge1_index, 0)),
-            V.row(E(ee_candidate.edge1_index, 1)));
+            V.row(E(ee_constraint.edge0_index, 0)),
+            V.row(E(ee_constraint.edge0_index, 1)),
+            V.row(E(ee_constraint.edge1_index, 0)),
+            V.row(E(ee_constraint.edge1_index, 1)));
 
         if (distance_sqr < min_distance) {
             min_distance = distance_sqr;
         }
     }
 
-    for (const auto& fv_candidate : constraint_set.fv_candidates) {
+    for (const auto& fv_constraint : constraint_set.fv_constraints) {
         double distance_sqr = point_triangle_distance(
-            V.row(fv_candidate.vertex_index),
-            V.row(F(fv_candidate.face_index, 0)),
-            V.row(F(fv_candidate.face_index, 1)),
-            V.row(F(fv_candidate.face_index, 2)));
+            V.row(fv_constraint.vertex_index),
+            V.row(F(fv_constraint.face_index, 0)),
+            V.row(F(fv_constraint.face_index, 1)),
+            V.row(F(fv_constraint.face_index, 2)));
 
         if (distance_sqr < min_distance) {
             min_distance = distance_sqr;

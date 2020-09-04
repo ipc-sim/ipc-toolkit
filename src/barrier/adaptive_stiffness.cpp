@@ -18,12 +18,14 @@ double intial_barrier_stiffness(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    double dhat_squared,
+    double dhat,
     double average_mass,
     const Eigen::VectorXd& grad_energy,
     double& max_barrier_stiffness,
     double min_barrier_stiffness_scale)
 {
+    double dhat_squared = dhat * dhat;
+
     double diag = world_bbox_diagonal(V);
 
     // Find a good initial value for κ
@@ -39,11 +41,11 @@ double intial_barrier_stiffness(
 
     max_barrier_stiffness = 100 * min_barrier_stiffness;
 
-    Candidates constraint_set;
-    construct_constraint_set(V, E, F, dhat_squared, constraint_set);
-    int num_active_barriers = constraint_set.size();
-    Eigen::VectorXd grad_barrier = compute_barrier_potential_gradient(
-        V_rest, V, E, F, constraint_set, dhat_squared);
+    Constraints constraint_set;
+    construct_constraint_set(V_rest, V, E, F, dhat, constraint_set);
+    int num_active_barriers = constraint_set.num_constraints();
+    Eigen::VectorXd grad_barrier =
+        compute_barrier_potential_gradient(V, E, F, constraint_set, dhat);
 
     double kappa = 1.0;
     if (num_active_barriers > 0 && grad_barrier.squaredNorm() > 0) {
@@ -60,18 +62,21 @@ void update_barrier_stiffness(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    double dhat_squared,
+    double dhat,
     double prev_min_distance,
     double& min_distance,
     double max_barrier_stiffness,
     double& barrier_stiffness,
     double dhat_epsilon_scale)
 {
+    double dhat_squared = dhat * dhat;
+
     double diag = world_bbox_diagonal(V);
 
     // Adaptive κ
-    Candidates constraint_set;
-    construct_constraint_set(V, E, F, dhat_squared, constraint_set);
+    Constraints constraint_set;
+    construct_constraint_set(
+        /*V_rest=*/V, V, E, F, dhat_squared, constraint_set);
     min_distance = compute_minimum_distance(V, E, F, constraint_set);
 
     // Is the barrier having a difficulty pushing the bodies apart?

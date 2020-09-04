@@ -26,14 +26,16 @@ void compute_friction_bases(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Candidates& contact_constraint_set,
-    double dhat_squared,
+    const Constraints& contact_constraint_set,
+    double dhat,
     double barrier_stiffness,
-    Candidates& friction_constraint_set,
+    Constraints& friction_constraint_set,
     std::vector<Eigen::VectorXd>& closest_points,
     std::vector<Eigen::MatrixXd>& tangent_bases,
     Eigen::VectorXd& normal_force_magnitudes)
 {
+    double dhat_squared = dhat * dhat;
+
     // TODO: ignore EE constraints that are close to parallel
     friction_constraint_set = contact_constraint_set;
 
@@ -44,9 +46,10 @@ void compute_friction_bases(
     int constraint_i = 0;
 
     // TODO: Point-point constraints
-    // for (const auto& vv_candidate : friction_constraint_set.vv_candidates) {
-    //     const auto& p0 = V.row(ev_candidate.vertex0_index);
-    //     const auto& p1 = V.row(ev_candidate.vertex1_index);
+    // for (const auto& vv_constraint : friction_constraint_set.vv_constraints)
+    // {
+    //     const auto& p0 = V.row(ev_constraint.vertex0_index);
+    //     const auto& p1 = V.row(ev_constraint.vertex1_index);
     //
     //     Eigen::Vector1d alpha_vec;
     //     alpha_vec << -1;
@@ -61,10 +64,10 @@ void compute_friction_bases(
     //     constraint_i++;
     // }
 
-    for (const auto& ev_candidate : friction_constraint_set.ev_candidates) {
-        const auto& p = V.row(ev_candidate.vertex_index);
-        const auto& e0 = V.row(E(ev_candidate.edge_index, 0));
-        const auto& e1 = V.row(E(ev_candidate.edge_index, 1));
+    for (const auto& ev_constraint : friction_constraint_set.ev_constraints) {
+        const auto& p = V.row(ev_constraint.vertex_index);
+        const auto& e0 = V.row(E(ev_constraint.edge_index, 0));
+        const auto& e1 = V.row(E(ev_constraint.edge_index, 1));
 
         double alpha = point_edge_closest_point(p, e0, e1);
         Eigen::Vector1d alpha_vec;
@@ -79,11 +82,11 @@ void compute_friction_bases(
         constraint_i++;
     }
 
-    for (const auto& ee_candidate : friction_constraint_set.ee_candidates) {
-        const auto& ea0 = V.row(E(ee_candidate.edge0_index, 0));
-        const auto& ea1 = V.row(E(ee_candidate.edge0_index, 1));
-        const auto& eb0 = V.row(E(ee_candidate.edge1_index, 0));
-        const auto& eb1 = V.row(E(ee_candidate.edge1_index, 1));
+    for (const auto& ee_constraint : friction_constraint_set.ee_constraints) {
+        const auto& ea0 = V.row(E(ee_constraint.edge0_index, 0));
+        const auto& ea1 = V.row(E(ee_constraint.edge0_index, 1));
+        const auto& eb0 = V.row(E(ee_constraint.edge1_index, 0));
+        const auto& eb1 = V.row(E(ee_constraint.edge1_index, 1));
 
         closest_points.push_back(edge_edge_closest_point(ea0, ea1, eb0, eb1));
         tangent_bases.push_back(edge_edge_tangent_basis(ea0, ea1, eb0, eb1));
@@ -94,11 +97,11 @@ void compute_friction_bases(
         constraint_i++;
     }
 
-    for (const auto& fv_candidate : friction_constraint_set.fv_candidates) {
-        const auto& p = V.row(fv_candidate.vertex_index);
-        const auto& t0 = V.row(F(fv_candidate.face_index, 0));
-        const auto& t1 = V.row(F(fv_candidate.face_index, 1));
-        const auto& t2 = V.row(F(fv_candidate.face_index, 2));
+    for (const auto& fv_constraint : friction_constraint_set.fv_constraints) {
+        const auto& p = V.row(fv_constraint.vertex_index);
+        const auto& t0 = V.row(F(fv_constraint.face_index, 0));
+        const auto& t1 = V.row(F(fv_constraint.face_index, 1));
+        const auto& t2 = V.row(F(fv_constraint.face_index, 2));
 
         closest_points.push_back(edge_edge_closest_point(p, t0, t1, t2));
         tangent_bases.push_back(edge_edge_tangent_basis(p, t0, t1, t2));
@@ -115,14 +118,14 @@ double compute_friction_potential(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Candidates& friction_constraint_set,
+    const Constraints& friction_constraint_set,
     std::vector<Eigen::VectorXd>& closest_points,
     std::vector<Eigen::MatrixXd>& tangent_bases,
     const Eigen::VectorXd& normal_force_magnitudes,
-    double epsv_times_h_squared,
+    double epsv_times_h,
     double mu)
 {
-    double epsv_times_h = sqrt(epsv_times_h_squared);
+    double epsv_times_h_squared = epsv_times_h * epsv_times_h;
 
     Eigen::MatrixXd U = V1 - V0; // absolute linear dislacement of each point
 
@@ -139,10 +142,10 @@ double compute_friction_potential(
     };
 
     // TODO: 2D
-    for (const auto& ev_candidate : friction_constraint_set.ev_candidates) {
-        const auto& dp = U.row(ev_candidate.vertex_index);
-        const auto& de0 = U.row(E(ev_candidate.edge_index, 0));
-        const auto& de1 = U.row(E(ev_candidate.edge_index, 1));
+    for (const auto& ev_constraint : friction_constraint_set.ev_constraints) {
+        const auto& dp = U.row(ev_constraint.vertex_index);
+        const auto& de0 = U.row(E(ev_constraint.edge_index, 0));
+        const auto& de1 = U.row(E(ev_constraint.edge_index, 1));
 
         friction_potential +=
             constraint_friction_potential(point_edge_relative_displacement(
@@ -151,11 +154,11 @@ double compute_friction_potential(
         constraint_i++;
     }
 
-    for (const auto& ee_candidate : friction_constraint_set.ee_candidates) {
-        const auto& dea0 = U.row(E(ee_candidate.edge0_index, 0));
-        const auto& dea1 = U.row(E(ee_candidate.edge0_index, 1));
-        const auto& deb0 = U.row(E(ee_candidate.edge1_index, 0));
-        const auto& deb1 = U.row(E(ee_candidate.edge1_index, 1));
+    for (const auto& ee_constraint : friction_constraint_set.ee_constraints) {
+        const auto& dea0 = U.row(E(ee_constraint.edge0_index, 0));
+        const auto& dea1 = U.row(E(ee_constraint.edge0_index, 1));
+        const auto& deb0 = U.row(E(ee_constraint.edge1_index, 0));
+        const auto& deb1 = U.row(E(ee_constraint.edge1_index, 1));
 
         friction_potential +=
             constraint_friction_potential(edge_edge_relative_displacement(
@@ -164,11 +167,11 @@ double compute_friction_potential(
         constraint_i++;
     }
 
-    for (const auto& fv_candidate : friction_constraint_set.fv_candidates) {
-        const auto& dp = U.row(fv_candidate.vertex_index);
-        const auto& dt0 = U.row(F(fv_candidate.face_index, 0));
-        const auto& dt1 = U.row(F(fv_candidate.face_index, 1));
-        const auto& dt2 = U.row(F(fv_candidate.face_index, 2));
+    for (const auto& fv_constraint : friction_constraint_set.fv_constraints) {
+        const auto& dp = U.row(fv_constraint.vertex_index);
+        const auto& dt0 = U.row(F(fv_constraint.face_index, 0));
+        const auto& dt1 = U.row(F(fv_constraint.face_index, 1));
+        const auto& dt2 = U.row(F(fv_constraint.face_index, 2));
 
         friction_potential +=
             constraint_friction_potential(point_triangle_relative_displacement(
@@ -186,14 +189,14 @@ Eigen::VectorXd compute_friction_potential_gradient(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Candidates& friction_constraint_set,
+    const Constraints& friction_constraint_set,
     std::vector<Eigen::VectorXd>& closest_points,
     std::vector<Eigen::MatrixXd>& tangent_bases,
     const Eigen::VectorXd& normal_force_magnitudes,
-    double epsv_times_h_squared,
+    double epsv_times_h,
     double mu)
 {
-    double epsv_times_h = sqrt(epsv_times_h_squared);
+    double epsv_times_h_squared = epsv_times_h * epsv_times_h;
 
     Eigen::MatrixXd U = V1 - V0; // absolute linear dislacement of each point
     int dim = U.cols();
@@ -216,10 +219,10 @@ Eigen::VectorXd compute_friction_potential_gradient(
     };
 
     // TODO: 2D
-    for (const auto& ev_candidate : friction_constraint_set.ev_candidates) {
-        const auto& dp = U.row(ev_candidate.vertex_index);
-        const auto& de0 = U.row(E(ev_candidate.edge_index, 0));
-        const auto& de1 = U.row(E(ev_candidate.edge_index, 1));
+    for (const auto& ev_constraint : friction_constraint_set.ev_constraints) {
+        const auto& dp = U.row(ev_constraint.vertex_index);
+        const auto& de0 = U.row(E(ev_constraint.edge_index, 0));
+        const auto& de1 = U.row(E(ev_constraint.edge_index, 1));
 
         Eigen::Vector2d tangent_relative_displacement =
             foo(point_edge_relative_displacement(
@@ -230,9 +233,9 @@ Eigen::VectorXd compute_friction_potential_gradient(
                 tangent_relative_displacement, tangent_bases[constraint_i],
                 closest_points[constraint_i][0]);
 
-        std::vector<long> ids = { { ev_candidate.vertex_index,
-                                    E(ev_candidate.edge_index, 0),
-                                    E(ev_candidate.edge_index, 1) } };
+        std::vector<long> ids = { { ev_constraint.vertex_index,
+                                    E(ev_constraint.edge_index, 0),
+                                    E(ev_constraint.edge_index, 1) } };
         for (int i = 0; i < mesh_displacements.rows(); i++) {
             grad.segment(dim * ids[i], dim) += mesh_displacements.row(i);
         }
@@ -240,11 +243,11 @@ Eigen::VectorXd compute_friction_potential_gradient(
         constraint_i++;
     }
 
-    for (const auto& ee_candidate : friction_constraint_set.ee_candidates) {
-        const auto& dea0 = U.row(E(ee_candidate.edge0_index, 0));
-        const auto& dea1 = U.row(E(ee_candidate.edge0_index, 1));
-        const auto& deb0 = U.row(E(ee_candidate.edge1_index, 0));
-        const auto& deb1 = U.row(E(ee_candidate.edge1_index, 1));
+    for (const auto& ee_constraint : friction_constraint_set.ee_constraints) {
+        const auto& dea0 = U.row(E(ee_constraint.edge0_index, 0));
+        const auto& dea1 = U.row(E(ee_constraint.edge0_index, 1));
+        const auto& deb0 = U.row(E(ee_constraint.edge1_index, 0));
+        const auto& deb1 = U.row(E(ee_constraint.edge1_index, 1));
 
         Eigen::Vector2d tangent_relative_displacement =
             foo(edge_edge_relative_displacement(
@@ -256,8 +259,8 @@ Eigen::VectorXd compute_friction_potential_gradient(
                 closest_points[constraint_i]);
 
         std::vector<long> ids = {
-            { E(ee_candidate.edge0_index, 0), E(ee_candidate.edge0_index, 1),
-              E(ee_candidate.edge1_index, 0), E(ee_candidate.edge1_index, 1) }
+            { E(ee_constraint.edge0_index, 0), E(ee_constraint.edge0_index, 1),
+              E(ee_constraint.edge1_index, 0), E(ee_constraint.edge1_index, 1) }
         };
         for (int i = 0; i < mesh_displacements.rows(); i++) {
             grad.segment(dim * ids[i], dim) += mesh_displacements.row(i);
@@ -266,11 +269,11 @@ Eigen::VectorXd compute_friction_potential_gradient(
         constraint_i++;
     }
 
-    for (const auto& fv_candidate : friction_constraint_set.fv_candidates) {
-        const auto& dp = U.row(fv_candidate.vertex_index);
-        const auto& dt0 = U.row(F(fv_candidate.face_index, 0));
-        const auto& dt1 = U.row(F(fv_candidate.face_index, 1));
-        const auto& dt2 = U.row(F(fv_candidate.face_index, 2));
+    for (const auto& fv_constraint : friction_constraint_set.fv_constraints) {
+        const auto& dp = U.row(fv_constraint.vertex_index);
+        const auto& dt0 = U.row(F(fv_constraint.face_index, 0));
+        const auto& dt1 = U.row(F(fv_constraint.face_index, 1));
+        const auto& dt2 = U.row(F(fv_constraint.face_index, 2));
 
         Eigen::Vector2d tangent_relative_displacement =
             foo(point_triangle_relative_displacement(
@@ -282,8 +285,8 @@ Eigen::VectorXd compute_friction_potential_gradient(
                 closest_points[constraint_i]);
 
         std::vector<long> ids = {
-            { fv_candidate.vertex_index, F(fv_candidate.face_index, 0),
-              F(fv_candidate.face_index, 1), F(fv_candidate.face_index, 2) }
+            { fv_constraint.vertex_index, F(fv_constraint.face_index, 0),
+              F(fv_constraint.face_index, 1), F(fv_constraint.face_index, 2) }
         };
         for (int i = 0; i < mesh_displacements.rows(); i++) {
             grad.segment(dim * ids[i], dim) += mesh_displacements.row(i);
@@ -300,14 +303,14 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Candidates& friction_constraint_set,
+    const Constraints& friction_constraint_set,
     std::vector<Eigen::VectorXd>& closest_points,
     std::vector<Eigen::MatrixXd>& tangent_bases,
     const Eigen::VectorXd& normal_force_magnitudes,
-    double epsv_times_h_squared,
+    double epsv_times_h,
     double mu)
 {
-    double epsv_times_h = sqrt(epsv_times_h_squared);
+    double epsv_times_h_squared = epsv_times_h * epsv_times_h;
 
     Eigen::MatrixXd U = V1 - V0; // absolute linear dislacement of each point
     int dim = U.cols();
@@ -315,9 +318,9 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
 
     std::vector<Eigen::Triplet<double>> hess_triplets;
     hess_triplets.reserve(
-        friction_constraint_set.ev_candidates.size() * /*3*3=*/9 * dim_sq
-        + friction_constraint_set.ee_candidates.size() * /*4*4=*/16 * dim_sq
-        + friction_constraint_set.fv_candidates.size() * /*4*4=*/16 * dim_sq);
+        friction_constraint_set.ev_constraints.size() * /*3*3=*/9 * dim_sq
+        + friction_constraint_set.ee_constraints.size() * /*4*4=*/16 * dim_sq
+        + friction_constraint_set.fv_constraints.size() * /*4*4=*/16 * dim_sq);
 
     int constraint_i = 0;
 
@@ -378,10 +381,10 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
 
     // TODO: 2D
 
-    for (const auto& ev_candidate : friction_constraint_set.ev_candidates) {
-        const auto& dp = U.row(ev_candidate.vertex_index);
-        const auto& de0 = U.row(E(ev_candidate.edge_index, 0));
-        const auto& de1 = U.row(E(ev_candidate.edge_index, 1));
+    for (const auto& ev_constraint : friction_constraint_set.ev_constraints) {
+        const auto& dp = U.row(ev_constraint.vertex_index);
+        const auto& de0 = U.row(E(ev_constraint.edge_index, 0));
+        const auto& de1 = U.row(E(ev_constraint.edge_index, 1));
 
         Eigen::Vector3d relative_displacement =
             point_edge_relative_displacement(
@@ -391,19 +394,19 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
         point_edge_TT(
             tangent_bases[constraint_i], closest_points[constraint_i][0], TT);
 
-        std::vector<long> ids = { { ev_candidate.vertex_index,
-                                    E(ev_candidate.edge_index, 0),
-                                    E(ev_candidate.edge_index, 1) } };
+        std::vector<long> ids = { { ev_constraint.vertex_index,
+                                    E(ev_constraint.edge_index, 0),
+                                    E(ev_constraint.edge_index, 1) } };
         compute_common(relative_displacement, TT, ids);
 
         constraint_i++;
     }
 
-    for (const auto& ee_candidate : friction_constraint_set.ee_candidates) {
-        const auto& dea0 = U.row(E(ee_candidate.edge0_index, 0));
-        const auto& dea1 = U.row(E(ee_candidate.edge0_index, 1));
-        const auto& deb0 = U.row(E(ee_candidate.edge1_index, 0));
-        const auto& deb1 = U.row(E(ee_candidate.edge1_index, 1));
+    for (const auto& ee_constraint : friction_constraint_set.ee_constraints) {
+        const auto& dea0 = U.row(E(ee_constraint.edge0_index, 0));
+        const auto& dea1 = U.row(E(ee_constraint.edge0_index, 1));
+        const auto& deb0 = U.row(E(ee_constraint.edge1_index, 0));
+        const auto& deb1 = U.row(E(ee_constraint.edge1_index, 1));
 
         Eigen::Vector3d relative_displacement = edge_edge_relative_displacement(
             dea0, dea1, deb0, deb1, closest_points[constraint_i]);
@@ -413,19 +416,19 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
             tangent_bases[constraint_i], closest_points[constraint_i], TT);
 
         std::vector<long> ids = {
-            { E(ee_candidate.edge0_index, 0), E(ee_candidate.edge0_index, 1),
-              E(ee_candidate.edge1_index, 0), E(ee_candidate.edge1_index, 1) }
+            { E(ee_constraint.edge0_index, 0), E(ee_constraint.edge0_index, 1),
+              E(ee_constraint.edge1_index, 0), E(ee_constraint.edge1_index, 1) }
         };
         compute_common(relative_displacement, TT, ids);
 
         constraint_i++;
     }
 
-    for (const auto& fv_candidate : friction_constraint_set.fv_candidates) {
-        const auto& dp = U.row(fv_candidate.vertex_index);
-        const auto& dt0 = U.row(F(fv_candidate.face_index, 0));
-        const auto& dt1 = U.row(F(fv_candidate.face_index, 1));
-        const auto& dt2 = U.row(F(fv_candidate.face_index, 2));
+    for (const auto& fv_constraint : friction_constraint_set.fv_constraints) {
+        const auto& dp = U.row(fv_constraint.vertex_index);
+        const auto& dt0 = U.row(F(fv_constraint.face_index, 0));
+        const auto& dt1 = U.row(F(fv_constraint.face_index, 1));
+        const auto& dt2 = U.row(F(fv_constraint.face_index, 2));
 
         Eigen::Vector3d relative_displacement =
             point_triangle_relative_displacement(
@@ -436,8 +439,8 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
             tangent_bases[constraint_i], closest_points[constraint_i], TT);
 
         std::vector<long> ids = {
-            { fv_candidate.vertex_index, F(fv_candidate.face_index, 0),
-              F(fv_candidate.face_index, 1), F(fv_candidate.face_index, 2) }
+            { fv_constraint.vertex_index, F(fv_constraint.face_index, 0),
+              F(fv_constraint.face_index, 1), F(fv_constraint.face_index, 2) }
         };
         compute_common(relative_displacement, TT, ids);
 

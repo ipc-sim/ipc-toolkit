@@ -29,6 +29,8 @@ add_library(${PROJECT_NAME}
   src/ccd/ccd.cpp
   src/ccd/broadphase.cpp
 
+  src/collision_constraint.cpp
+
   src/distance/line_line.cpp
   src/distance/point_line.cpp
   src/distance/point_plane.cpp

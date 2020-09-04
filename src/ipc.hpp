@@ -3,8 +3,7 @@
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
-#include <spatial_hash/collision_candidate.hpp>
-
+#include <collision_constraint.hpp>
 // NOTE: Include this so the user can just include ipc.hpp
 #include <friction/friction.hpp>
 
@@ -19,15 +18,16 @@ namespace ipc {
 /// @param[in] V Vertex positions as rows of a matrix.
 /// @param[in] E Edges as rows of indicies into V.
 /// @param[in] F Triangular faces as rows of indicies into V.
-/// @param[in] dhat_squared The activation distance squared of the barrier.
+/// @param[in] dhat The activation distance of the barrier.
 /// @param[out] constraint_set The constructed set of constraints.
 /// @param[in] ignore_internal_vertices Ignores vertices not connected to edges.
 void construct_constraint_set(
+    const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    double dhat_squared,
-    Candidates& constraint_set,
+    double dhat,
+    Constraints& constraint_set,
     bool ignore_internal_vertices = true);
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
@@ -40,31 +40,28 @@ void construct_constraint_set(
 /// @param[in] E Edges as rows of indicies into V.
 /// @param[in] F Triangular faces as rows of indicies into V.
 /// @param[in] constraint_set The set of constraints.
-/// @param[in] dhat_squared The activation distance squared of the barrier.
+/// @param[in] dhat The activation distance of the barrier.
 /// @returns The sum of all barrier potentials.
 double compute_barrier_potential(
-    const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Candidates& constraint_set,
-    double dhat_squared);
+    const Constraints& constraint_set,
+    double dhat);
 
 Eigen::VectorXd compute_barrier_potential_gradient(
-    const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Candidates& constraint_set,
-    double dhat_squared);
+    const Constraints& constraint_set,
+    double dhat);
 
 Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
-    const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Candidates& constraint_set,
-    double dhat_squared,
+    const Constraints& constraint_set,
+    double dhat,
     bool project_to_psd = true);
 
 /// @brief Determine if the step is collision free.
@@ -113,6 +110,6 @@ double compute_minimum_distance(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Candidates& constraint_set);
+    const Constraints& constraint_set);
 
 } // namespace ipc
