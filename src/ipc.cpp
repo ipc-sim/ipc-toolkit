@@ -594,7 +594,7 @@ double compute_collision_free_stepsize(
     }
     assert(earliest_toi >= 0);
 
-    return std::min(earliest_toi, 1); // Fulfill the promise of a step size
+    return std::min(earliest_toi, 1.0); // Fulfill the promise of a step size
 }
 
 // NOTE: Actually distance squared
