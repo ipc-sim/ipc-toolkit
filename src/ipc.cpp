@@ -526,7 +526,7 @@ double compute_collision_free_stepsize(
     double earliest_toi = std::numeric_limits<double>::infinity();
 
     for (const auto& ev_candidate : candidates.ev_candidates) {
-        double toi;
+        double toi =-1;
         bool is_collision = ipc::point_edge_ccd(
             // Point at t=0
             V0.row(ev_candidate.vertex_index),
@@ -540,13 +540,15 @@ double compute_collision_free_stepsize(
             V1.row(E(ev_candidate.edge_index, 1)), //
             toi);
 
+        assert(!is_collision || toi >= 0);
+
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;
         }
     }
 
     for (const auto& ee_candidate : candidates.ee_candidates) {
-        double toi;
+        double toi = -2;
         bool is_collision = edge_edge_ccd(
             // Edge 1 at t=0
             V0.row(E(ee_candidate.edge0_index, 0)),
@@ -562,13 +564,14 @@ double compute_collision_free_stepsize(
             V1.row(E(ee_candidate.edge1_index, 1)), //
             toi);
 
+        assert(!is_collision || toi >= 0);
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;
         }
     }
 
     for (const auto& fv_candidate : candidates.fv_candidates) {
-        double toi;
+        double toi = -3;
         bool is_collision = point_triangle_ccd(
             // Point at t=0
             V0.row(fv_candidate.vertex_index),
@@ -584,10 +587,12 @@ double compute_collision_free_stepsize(
             V1.row(F(fv_candidate.face_index, 2)), //
             toi);
 
+        assert(!is_collision || toi >= 0);
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;
         }
     }
+    assert(earliest_toi >= 0);
 
     return earliest_toi;
 }

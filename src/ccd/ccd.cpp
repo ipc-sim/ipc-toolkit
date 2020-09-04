@@ -151,7 +151,7 @@ bool point_edge_ccd(
     if (dim == 2) {
         return point_edge_ccd_2D(
             p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, //
-            toi, conservative_rescaling);
+            0, toi);
     } else {
         return point_edge_ccd_3D(
             p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, //
