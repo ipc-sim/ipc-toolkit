@@ -204,7 +204,7 @@ Eigen::VectorXd compute_friction_potential_gradient(
 
     auto foo = [&](const Eigen::Vector3d& rel_ui) {
         Eigen::Vector2d tangent_relative_displacement =
-            tangent_bases[constraint_i] * rel_ui;
+            tangent_bases[constraint_i].transpose() * rel_ui;
 
         double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
             tangent_relative_displacement.squaredNorm(), epsv_times_h);
@@ -325,7 +325,7 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
                               const Eigen::MatrixXd& TT,
                               const std::vector<long>& ids) {
         Eigen::Vector2d tangent_relative_displacement =
-            tangent_bases[constraint_i] * relative_displacement;
+            tangent_bases[constraint_i].transpose() * relative_displacement;
 
         double tangent_relative_displacement_sqnorm =
             tangent_relative_displacement.squaredNorm();

@@ -246,7 +246,8 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Candidates& constraint_set,
-    double dhat_squared)
+    double dhat_squared,
+    bool project_to_psd)
 {
     std::vector<Eigen::Triplet<double>> hess_triplets;
     int dim = V.cols();
@@ -266,8 +267,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
         Eigen::VectorXd local_grad;
         point_edge_distance_gradient(p, e0, e1, local_grad);
         Eigen::MatrixXd local_hess;
-        point_edge_distance_hessian(
-            p, e0, e1, local_hess, /*project_to_psd=*/true);
+        point_edge_distance_hessian(p, e0, e1, local_hess, project_to_psd);
 
         local_hess *= barrier_gradient(distance_sqr, dhat_squared);
         local_hess += barrier_hessian(distance_sqr, dhat_squared) * local_grad
@@ -297,7 +297,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
         edge_edge_distance_gradient(ea0, ea1, eb0, eb1, distance_grad);
         Eigen::MatrixXd distance_hess;
         edge_edge_distance_hessian(
-            ea0, ea1, eb0, eb1, distance_hess, /*project_to_psd=*/true);
+            ea0, ea1, eb0, eb1, distance_hess, project_to_psd);
 
         // Compute mollifier derivatives
         double eps_x = edge_edge_mollifier_threshold(
@@ -345,7 +345,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
         point_triangle_distance_gradient(p, t0, t1, t2, local_grad);
         Eigen::MatrixXd local_hess;
         point_triangle_distance_hessian(
-            p, t0, t1, t2, local_hess, /*project_to_psd=*/true);
+            p, t0, t1, t2, local_hess, project_to_psd);
 
         local_hess *= barrier_gradient(distance_sqr, dhat_squared);
         local_hess += barrier_hessian(distance_sqr, dhat_squared) * local_grad
@@ -526,8 +526,8 @@ double compute_collision_free_stepsize(
     double earliest_toi = std::numeric_limits<double>::infinity();
 
     for (const auto& ev_candidate : candidates.ev_candidates) {
-        double toi =-1;
-        bool is_collision = ipc::point_edge_ccd(
+        double toi;
+        bool is_collision = point_edge_ccd(
             // Point at t=0
             V0.row(ev_candidate.vertex_index),
             // Edge at t=0
@@ -540,7 +540,7 @@ double compute_collision_free_stepsize(
             V1.row(E(ev_candidate.edge_index, 1)), //
             toi);
 
-        assert(!is_collision || toi >= 0);
+        assert(!is_collision || (toi >= 0 && toi <= 0));
 
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;
@@ -548,7 +548,7 @@ double compute_collision_free_stepsize(
     }
 
     for (const auto& ee_candidate : candidates.ee_candidates) {
-        double toi = -2;
+        double toi;
         bool is_collision = edge_edge_ccd(
             // Edge 1 at t=0
             V0.row(E(ee_candidate.edge0_index, 0)),
@@ -564,14 +564,14 @@ double compute_collision_free_stepsize(
             V1.row(E(ee_candidate.edge1_index, 1)), //
             toi);
 
-        assert(!is_collision || toi >= 0);
+        assert(!is_collision || (toi >= 0 && toi <= 0));
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;
         }
     }
 
     for (const auto& fv_candidate : candidates.fv_candidates) {
-        double toi = -3;
+        double toi;
         bool is_collision = point_triangle_ccd(
             // Point at t=0
             V0.row(fv_candidate.vertex_index),
@@ -587,14 +587,14 @@ double compute_collision_free_stepsize(
             V1.row(F(fv_candidate.face_index, 2)), //
             toi);
 
-        assert(!is_collision || toi >= 0);
+        assert(!is_collision || (toi >= 0 && toi <= 0));
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;
         }
     }
     assert(earliest_toi >= 0);
 
-    return earliest_toi;
+    return std::min(earliest_toi, 1); // Fulfill the promise of a step size
 }
 
 // NOTE: Actually distance squared

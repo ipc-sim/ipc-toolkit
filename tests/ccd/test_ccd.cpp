@@ -13,7 +13,8 @@ TEST_CASE("Vertex-Vertex Impact", "[ccd]")
 
     double toi;
     bool is_collision = ipc::point_edge_ccd_2D(
-        v_t0, e0_t0, e1_t0, v_t1, e0_t1, e1_t1, /*eta=*/0, toi);
+        v_t0, e0_t0, e1_t0, v_t1, e0_t1, e1_t1, toi,
+        /*conservative_rescaling=*/1);
 
     REQUIRE(is_collision);
     CHECK(toi == Approx(0.5));

@@ -14,8 +14,8 @@ bool point_edge_ccd_2D(
     const Eigen::Vector2d& p_t1,
     const Eigen::Vector2d& e0_t1,
     const Eigen::Vector2d& e1_t1,
-    double eta,
-    double& toi)
+    double& toi,
+    double conservative_rescaling)
 {
     Eigen::Vector2d d0 = p_t1 - p_t0, d1 = e0_t1 - e0_t0, d2 = e1_t1 - e1_t0;
 
@@ -51,10 +51,10 @@ bool point_edge_ccd_2D(
                 }
 
                 if (rootAmt == 2) {
-                    toi = std::min(roots[0], roots[1]) * (1 - eta);
+                    toi = std::min(roots[0], roots[1]) * conservative_rescaling;
                     return true;
                 } else if (rootAmt == 1) {
-                    toi = roots[0] * (1 - eta);
+                    toi = roots[0] * conservative_rescaling;
                     return true;
                 } else {
                     return false;
@@ -95,7 +95,7 @@ bool point_edge_ccd_2D(
                     Eigen::Vector2d(e0_t0 + roots[i] * d1),
                     Eigen::Vector2d(e1_t0 + roots[i] * d2))
                 == PointEdgeDistanceType::P_E) {
-                toi = roots[i] * (1 - eta); // TODO: distance eta
+                toi = roots[i] * conservative_rescaling; // TODO: distance eta
                 return true;
             }
         }
@@ -151,7 +151,7 @@ bool point_edge_ccd(
     if (dim == 2) {
         return point_edge_ccd_2D(
             p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, //
-            0, toi);
+            toi, conservative_rescaling);
     } else {
         return point_edge_ccd_3D(
             p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, //

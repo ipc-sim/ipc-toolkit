@@ -64,7 +64,8 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Candidates& constraint_set,
-    double dhat_squared);
+    double dhat_squared,
+    bool project_to_psd = true);
 
 /// @brief Determine if the step is collision free.
 ///
