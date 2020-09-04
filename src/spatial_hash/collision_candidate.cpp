@@ -1,7 +1,7 @@
 #include "collision_candidate.hpp"
 #include <algorithm>
 
-namespace ccd {
+namespace ipc {
 
 EdgeVertexCandidate::EdgeVertexCandidate(long edge_index, long vertex_index)
     : edge_index(edge_index)
@@ -86,4 +86,4 @@ bool FaceVertexCandidate::operator<(const FaceVertexCandidate& other) const
     return face_index < other.face_index;
 }
 
-} // namespace ccd
+} // namespace ipc

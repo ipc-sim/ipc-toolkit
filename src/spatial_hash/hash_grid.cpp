@@ -1,6 +1,6 @@
 #include "hash_grid.hpp"
 
-namespace ccd {
+namespace ipc {
 
 bool AABB::are_overlaping(const AABB& a, const AABB& b)
 {
@@ -437,4 +437,4 @@ void HashGrid::getFaceVertexPairs(
         is_endpoint, is_same_group, m_faceItems, m_vertexItems, fv_candidates);
 }
 
-} // namespace ccd
+} // namespace ipc

@@ -31,7 +31,7 @@ TEST_CASE("Dummy test for IPC compilation", "[ipc]")
     bool success = load_mesh(mesh_name, V, E, F);
     REQUIRE(success);
 
-    ccd::Candidates constraint_set;
+    Candidates constraint_set;
     ipc::construct_constraint_set(V, E, F, dhat_squared, constraint_set);
     CAPTURE(mesh_name, dhat_squared);
     CHECK(constraint_set.ee_candidates.size() > 0);
@@ -76,7 +76,7 @@ TEST_CASE("Test IPC full gradient", "[ipc][grad]")
     bool success = load_mesh(mesh_name, V, E, F);
     REQUIRE(success);
 
-    ccd::Candidates constraint_set;
+    Candidates constraint_set;
     ipc::construct_constraint_set(V, E, F, dhat_squared, constraint_set);
     CAPTURE(mesh_name, dhat_squared);
     CHECK(constraint_set.ee_candidates.size() > 0);
@@ -129,7 +129,7 @@ TEST_CASE("Test IPC full hessian", "[ipc][hess]")
     bool success = load_mesh(mesh_name, V, E, F);
     REQUIRE(success);
 
-    ccd::Candidates constraint_set;
+    Candidates constraint_set;
     ipc::construct_constraint_set(V, E, F, dhat_squared, constraint_set);
     CAPTURE(mesh_name, dhat_squared);
     REQUIRE(constraint_set.ee_candidates.size() > 0);

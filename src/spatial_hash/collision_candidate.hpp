@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace ccd {
+namespace ipc {
 
 struct EdgeVertexCandidate {
     EdgeVertexCandidate(long edge_index, long vertex_index);
@@ -75,4 +75,4 @@ struct Candidates {
     }
 };
 
-} // namespace ccd
+} // namespace ipc

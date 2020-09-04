@@ -8,7 +8,7 @@
 #include <ipc.hpp>
 #include <spatial_hash/hash_grid.hpp>
 
-using namespace ccd;
+using namespace ipc;
 
 TEST_CASE("AABB initilization", "[spatial_hash][AABB]")
 {

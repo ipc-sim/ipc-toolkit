@@ -39,7 +39,7 @@ double intial_barrier_stiffness(
 
     max_barrier_stiffness = 100 * min_barrier_stiffness;
 
-    ccd::Candidates constraint_set;
+    Candidates constraint_set;
     construct_constraint_set(V, E, F, dhat_squared, constraint_set);
     int num_active_barriers = constraint_set.size();
     Eigen::VectorXd grad_barrier = compute_barrier_potential_gradient(
@@ -70,7 +70,7 @@ void update_barrier_stiffness(
     double diag = world_bbox_diagonal(V);
 
     // Adaptive κ
-    ccd::Candidates constraint_set;
+    Candidates constraint_set;
     construct_constraint_set(V, E, F, dhat_squared, constraint_set);
     min_distance = compute_minimum_distance(V, E, F, constraint_set);
 

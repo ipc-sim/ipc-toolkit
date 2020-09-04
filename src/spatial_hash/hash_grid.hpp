@@ -10,7 +10,7 @@
 #include <spatial_hash/collision_candidate.hpp>
 #include <utils/eigen_ext.hpp>
 
-namespace ccd {
+namespace ipc {
 
 /// @brief Axis aligned bounding-box of some type
 class AABB {
@@ -191,4 +191,4 @@ protected:
     HashItems m_faceItems;
 };
 
-} // namespace ccd
+} // namespace ipc

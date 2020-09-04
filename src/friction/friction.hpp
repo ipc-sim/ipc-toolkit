@@ -41,10 +41,10 @@ void compute_friction_bases(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const ccd::Candidates& contact_constraint_set,
+    const Candidates& contact_constraint_set,
     double dhat_squared,
     double barrier_stiffness,
-    ccd::Candidates& friction_constraint_set,
+    Candidates& friction_constraint_set,
     std::vector<Eigen::VectorXd>& closest_points,
     std::vector<Eigen::MatrixXd>& tangent_bases,
     Eigen::VectorXd& normal_force_magnitudes);
@@ -54,7 +54,7 @@ double compute_friction_potential(
     const Eigen::MatrixXd& V1, // This is the current position
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const ccd::Candidates& friction_constraint_set,
+    const Candidates& friction_constraint_set,
     std::vector<Eigen::VectorXd>& closest_points,
     std::vector<Eigen::MatrixXd>& tangent_bases,
     const Eigen::VectorXd& normal_force_magnitudes,
@@ -66,7 +66,7 @@ Eigen::VectorXd compute_friction_potential_gradient(
     const Eigen::MatrixXd& V1, // This is the current position
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const ccd::Candidates& friction_constraint_set,
+    const Candidates& friction_constraint_set,
     std::vector<Eigen::VectorXd>& closest_points,
     std::vector<Eigen::MatrixXd>& tangent_bases,
     const Eigen::VectorXd& normal_force_magnitudes,
@@ -78,7 +78,7 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     const Eigen::MatrixXd& V1, // This is the current position
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const ccd::Candidates& friction_constraint_set,
+    const Candidates& friction_constraint_set,
     std::vector<Eigen::VectorXd>& closest_points,
     std::vector<Eigen::MatrixXd>& tangent_bases,
     const Eigen::VectorXd& normal_force_magnitudes,

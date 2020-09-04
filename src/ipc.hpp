@@ -27,7 +27,7 @@ void construct_constraint_set(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     double dhat_squared,
-    ccd::Candidates& constraint_set,
+    Candidates& constraint_set,
     bool ignore_internal_vertices = true);
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
@@ -47,7 +47,7 @@ double compute_barrier_potential(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const ccd::Candidates& constraint_set,
+    const Candidates& constraint_set,
     double dhat_squared);
 
 Eigen::VectorXd compute_barrier_potential_gradient(
@@ -55,7 +55,7 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const ccd::Candidates& constraint_set,
+    const Candidates& constraint_set,
     double dhat_squared);
 
 Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
@@ -63,7 +63,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const ccd::Candidates& constraint_set,
+    const Candidates& constraint_set,
     double dhat_squared);
 
 /// @brief Determine if the step is collision free.
@@ -112,6 +112,6 @@ double compute_minimum_distance(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const ccd::Candidates& constraint_set);
+    const Candidates& constraint_set);
 
 } // namespace ipc
