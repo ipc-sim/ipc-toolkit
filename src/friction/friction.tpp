@@ -35,7 +35,7 @@ T compute_friction_potential(
     // absolute linear dislacement of each point
     MatrixXT U = V1 - V0.cast<T>();
 
-    T friction_potential = 0;
+    T friction_potential(0);
 
     int constraint_i = 0;
 
@@ -56,7 +56,7 @@ T compute_friction_potential(
 
         friction_potential +=
             constraint_friction_potential(point_edge_relative_displacement(
-                dp, de0, de1, closest_points[constraint_i][0]));
+                dp, de0, de1, T(closest_points[constraint_i][0])));
 
         constraint_i++;
     }
@@ -69,7 +69,8 @@ T compute_friction_potential(
 
         friction_potential +=
             constraint_friction_potential(edge_edge_relative_displacement(
-                dea0, dea1, deb0, deb1, closest_points[constraint_i]));
+                dea0, dea1, deb0, deb1,
+                closest_points[constraint_i].cast<T>()));
 
         constraint_i++;
     }
@@ -82,7 +83,7 @@ T compute_friction_potential(
 
         friction_potential +=
             constraint_friction_potential(point_triangle_relative_displacement(
-                dp, dt0, dt1, dt2, closest_points[constraint_i]));
+                dp, dt0, dt1, dt2, closest_points[constraint_i].cast<T>()));
 
         constraint_i++;
     }
