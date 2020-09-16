@@ -8,33 +8,34 @@
 namespace ipc {
 
 // C1 clamping
-template <typename T> inline T f0_SF(const T& x_squared, const T& epsv_times_h)
+template <typename T>
+inline T f0_SF(const T& x_squared, const double& epsv_times_h)
 {
-    T epsv_times_h_squared = epsv_times_h * epsv_times_h;
+    double epsv_times_h_squared = epsv_times_h * epsv_times_h;
     if (x_squared >= epsv_times_h_squared) {
-        return std::sqrt(x_squared);
+        return sqrt(x_squared);
     }
-    return x_squared * (-std::sqrt(x_squared) / 3.0 + epsv_times_h)
+    return x_squared * (-sqrt(x_squared) / 3.0 + epsv_times_h)
         / (epsv_times_h_squared)
         + epsv_times_h / 3.0;
 }
 
 /// Derivative of f0_SF divided by the relative norm
 template <typename T>
-inline T
-f1_SF_div_relative_displacement_norm(const T& x_squared, const T& epsv_times_h)
+inline T f1_SF_div_relative_displacement_norm(
+    const T& x_squared, const double& epsv_times_h)
 {
-    T epsv_times_h_squared = epsv_times_h * epsv_times_h;
+    double epsv_times_h_squared = epsv_times_h * epsv_times_h;
     if (x_squared >= epsv_times_h_squared) {
-        return 1 / std::sqrt(x_squared);
+        return 1 / sqrt(x_squared);
     }
-    return (-std::sqrt(x_squared) + 2.0 * epsv_times_h) / epsv_times_h_squared;
+    return (-sqrt(x_squared) + 2.0 * epsv_times_h) / epsv_times_h_squared;
 }
 
-template <typename T> inline T f2_SF(const T& x_squared, const T& epsv_times_h)
+template <typename T> inline T f2_SF(const T&, const double& epsv_times_h)
 {
-    return -1 / (epsv_times_h * epsv_times_h);
     // same for x_squared >= epsv_times_h * epsv_times_h for C1 clamped friction
+    return T(-1 / (epsv_times_h * epsv_times_h));
 }
 
 void compute_friction_bases(
@@ -49,9 +50,22 @@ void compute_friction_bases(
     std::vector<Eigen::MatrixXd>& tangent_bases,
     Eigen::VectorXd& normal_force_magnitudes);
 
-double compute_friction_potential(
-    const Eigen::MatrixXd& V0, // TODO: What is this
-    const Eigen::MatrixXd& V1, // This is the current position
+/// @brief Compute the friction potential between to positions.
+///
+/// @param V0 Vertex positions at start of time-step (or newton-solve) (rowwise)
+/// @param V1 Current vertex positions (rowwise)
+/// @param E  Edge vertex indicies
+/// @param F  Face vertex indicies (empty in 2D)
+/// @param friction_constraint_set
+/// @param closest_points
+/// @param tangent_bases
+/// @param normal_force_magnitudes
+/// @param epsv_times_h
+/// @param mu Coefficient of friction for all contacts
+template <typename T>
+T compute_friction_potential(
+    const Eigen::MatrixXd& V0,
+    const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Constraints& friction_constraint_set,
@@ -86,3 +100,5 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     double mu);
 
 } // namespace ipc
+
+#include "friction.tpp"

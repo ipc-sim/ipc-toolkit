@@ -113,6 +113,7 @@ void compute_friction_bases(
     }
 }
 
+/*
 double compute_friction_potential(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
@@ -183,6 +184,7 @@ double compute_friction_potential(
     // TODO: μ per constraint
     return mu * friction_potential;
 }
+*/
 
 Eigen::VectorXd compute_friction_potential_gradient(
     const Eigen::MatrixXd& V0,
