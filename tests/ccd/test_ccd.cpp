@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include <ccd/ccd.hpp>
+#include <ipc/ccd/ccd.hpp>
 
 TEST_CASE("Vertex-Vertex Impact", "[ccd]")
 {

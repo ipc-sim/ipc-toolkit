@@ -31,7 +31,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC IPCToolkit)
 
 #### 2. Use the toolkit
 
-The main functionality is provided in the `ipc.hpp` header. 
+The main functionality is provided in the `ipc.hpp` header. Use the prefix directory `ipc` to include all header files (e.g. `#include <ipc/ipc.hpp>`).
 
 ## Dependencies
 

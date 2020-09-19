@@ -1,4 +1,4 @@
-#include "point_line.hpp"
+#include <ipc/distance/point_line.hpp>
 
 namespace ipc {
 namespace autogen {

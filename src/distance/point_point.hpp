@@ -1,7 +1,8 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <utils/eigen_ext.hpp>
+
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 

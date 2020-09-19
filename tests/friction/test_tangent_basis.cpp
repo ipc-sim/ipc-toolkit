@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include <friction/tangent_basis.hpp>
+#include <ipc/friction/tangent_basis.hpp>
 
 using namespace ipc;
 

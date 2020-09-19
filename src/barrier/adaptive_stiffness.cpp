@@ -1,8 +1,9 @@
 // Fucntions for computing the initial and updated barrier stiffnesses.
 
-#include "adaptive_stiffness.hpp"
-#include <barrier/barrier.hpp>
-#include <ipc.hpp>
+#include <ipc/barrier/adaptive_stiffness.hpp>
+
+#include <ipc/barrier/barrier.hpp>
+#include <ipc/ipc.hpp>
 
 namespace ipc {
 

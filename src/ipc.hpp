@@ -3,9 +3,9 @@
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
-#include <collision_constraint.hpp>
+#include <ipc/collision_constraint.hpp>
 // NOTE: Include this so the user can just include ipc.hpp
-#include <friction/friction.hpp>
+#include <ipc/friction/friction.hpp>
 
 /// Incremental Potential Contact functions
 namespace ipc {

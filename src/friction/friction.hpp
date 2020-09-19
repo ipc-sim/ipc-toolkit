@@ -3,7 +3,7 @@
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
-#include <collision_constraint.hpp>
+#include <ipc/collision_constraint.hpp>
 
 namespace ipc {
 

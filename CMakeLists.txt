@@ -10,43 +10,39 @@ option(IPC_TOOLKIT_BUILD_UNIT_TESTS  "Build unit-tests"      ON)
 
 ### Configuration
 set(IPC_TOOLKIT_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/external")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-include(Warnings)
+# Include cmake functions
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+# Color output
 include(UseColors)
-include(${PROJECT_NAME}Dependencies)
+
+# Extra warnings
+include(Warnings)
+
+# Prepend function
+include(PrependCurrentPath)
+
+# IPC Toolkit utils
+include(IPCToolkitCopyHeaders)
+include(IPCToolkitSetSourceGroup)
+
+# Download external dependencies
+include(IPCToolkitDependencies)
 
 ################################################################################
 # IPC Toolkit Library
 ################################################################################
 
-add_library(${PROJECT_NAME}
-  src/ipc.cpp
+# add_library() can only be called without any source since CMake 3.11 ...
+add_library(${PROJECT_NAME} src/ipc.cpp)
+# NOTE: The actual list of sources will be added by src/CMakeLists.txt
+add_subdirectory(src)
 
-  src/barrier/barrier.cpp
-  src/barrier/adaptive_stiffness.cpp
+# Public include directory for IPC Toolkit
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_BINARY_DIR}/include)
 
-  src/ccd/ccd.cpp
-  src/ccd/broadphase.cpp
-
-  src/collision_constraint.cpp
-
-  src/distance/line_line.cpp
-  src/distance/point_line.cpp
-  src/distance/point_plane.cpp
-  src/distance/edge_edge_mollifier.cpp
-
-  src/friction/friction.cpp
-
-  src/spatial_hash/collision_candidate.cpp
-  src/spatial_hash/hash_grid.cpp
-
-  src/utils/eigen_ext.cpp
-  src/utils/local_hessian_to_global_triplets.cpp
-)
 target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
-
-target_include_directories(${PROJECT_NAME} PUBLIC src)
 
 ################################################################################
 # Optional Definitions

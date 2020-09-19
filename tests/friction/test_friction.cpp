@@ -3,7 +3,7 @@
 #include <finitediff.hpp>
 #include <igl/edges.h>
 
-#include <friction/friction.hpp>
+#include <ipc/friction/friction.hpp>
 
 #include "../test_utils.hpp"
 

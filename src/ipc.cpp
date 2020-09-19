@@ -1,13 +1,13 @@
-#include "ipc.hpp"
+#include <ipc/ipc.hpp>
 
-#include <barrier/barrier.hpp>
-#include <ccd/ccd.hpp>
-#include <distance/edge_edge.hpp>
-#include <distance/edge_edge_mollifier.hpp>
-#include <distance/point_edge.hpp>
-#include <distance/point_triangle.hpp>
-#include <spatial_hash/hash_grid.hpp>
-#include <utils/local_hessian_to_global_triplets.hpp>
+#include <ipc/barrier/barrier.hpp>
+#include <ipc/ccd/ccd.hpp>
+#include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/edge_edge_mollifier.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_triangle.hpp>
+#include <ipc/spatial_hash/hash_grid.hpp>
+#include <ipc/utils/local_hessian_to_global_triplets.hpp>
 
 namespace ipc {
 

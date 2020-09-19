@@ -5,7 +5,7 @@
 #include <Eigen/Geometry>
 #include <igl/barycentric_coordinates.h>
 
-#include <utils/eigen_ext.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 

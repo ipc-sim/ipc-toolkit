@@ -70,4 +70,4 @@ EdgeEdgeDistanceType edge_edge_distance_type(
 
 } // namespace ipc
 
-#include "distance_type.tpp"
+#include <ipc/distance/distance_type.tpp>

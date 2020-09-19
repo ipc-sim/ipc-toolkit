@@ -1,4 +1,4 @@
-#include "hash_grid.hpp"
+#include <ipc/spatial_hash/hash_grid.hpp>
 
 namespace ipc {
 

@@ -1,4 +1,4 @@
-#include "edge_edge_mollifier.hpp"
+#include <ipc/distance/edge_edge_mollifier.hpp>
 
 namespace ipc {
 namespace autogen {

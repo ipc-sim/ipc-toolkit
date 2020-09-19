@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 
-#include <distance/distance_type.hpp>
+#include <ipc/distance/distance_type.hpp>
 
 using namespace ipc;
 

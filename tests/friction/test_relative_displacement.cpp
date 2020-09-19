@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
-#include <friction/closest_point.hpp>
-#include <friction/relative_displacement.hpp>
+#include <ipc/friction/closest_point.hpp>
+#include <ipc/friction/relative_displacement.hpp>
 
 using namespace ipc;
 

@@ -2,8 +2,8 @@
 
 #include <finitediff.hpp>
 
-#include <distance/point_point.hpp>
-#include <utils/eigen_ext.hpp>
+#include <ipc/distance/point_point.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 using namespace ipc;
 

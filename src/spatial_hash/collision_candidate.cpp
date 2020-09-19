@@ -1,5 +1,4 @@
-#include "collision_candidate.hpp"
-#include <algorithm>
+#include <ipc/spatial_hash/collision_candidate.hpp>
 
 namespace ipc {
 

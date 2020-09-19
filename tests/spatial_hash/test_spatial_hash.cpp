@@ -5,8 +5,8 @@
 #include <igl/IO>
 #include <igl/edges.h>
 
-#include <ipc.hpp>
-#include <spatial_hash/hash_grid.hpp>
+#include <ipc/ipc.hpp>
+#include <ipc/spatial_hash/hash_grid.hpp>
 
 using namespace ipc;
 

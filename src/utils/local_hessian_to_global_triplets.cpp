@@ -1,4 +1,4 @@
-#include "local_hessian_to_global_triplets.hpp"
+#include <ipc/utils/local_hessian_to_global_triplets.hpp>
 
 namespace ipc {
 

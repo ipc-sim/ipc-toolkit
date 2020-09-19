@@ -4,7 +4,7 @@
 
 #include <finitediff.hpp>
 
-#include <ipc.hpp>
+#include <ipc/ipc.hpp>
 
 #include "test_utils.hpp"
 

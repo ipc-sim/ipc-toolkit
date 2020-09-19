@@ -1,14 +1,12 @@
 #pragma once
 
-#include <iomanip>
-#include <list>
 #include <vector>
 
 #include <Eigen/Core>
 #include <tbb/tbb.h>
 
-#include <spatial_hash/collision_candidate.hpp>
-#include <utils/eigen_ext.hpp>
+#include <ipc/spatial_hash/collision_candidate.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 

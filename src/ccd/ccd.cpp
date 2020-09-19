@@ -1,9 +1,9 @@
-#include "ccd.hpp"
+#include <ipc/ccd/ccd.hpp>
 
 #include <CTCD.h>
 
-#include <distance/edge_edge.hpp>
-#include <distance/point_triangle.hpp>
+#include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/point_triangle.hpp>
 
 namespace ipc {
 

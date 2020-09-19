@@ -3,7 +3,7 @@
 
 #include <finitediff.hpp>
 
-#include <barrier/barrier.hpp>
+#include <ipc/barrier/barrier.hpp>
 
 TEST_CASE("Test barrier derivatives", "[barrier]")
 {

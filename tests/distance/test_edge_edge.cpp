@@ -3,8 +3,8 @@
 #include <finitediff.hpp>
 #include <igl/PI.h>
 
-#include <distance/edge_edge.hpp>
-#include <utils/eigen_ext.hpp>
+#include <ipc/distance/edge_edge.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 using namespace ipc;
 

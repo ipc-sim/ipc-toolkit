@@ -2,7 +2,7 @@
 
 #include <Eigen/Core>
 
-#include <distance/point_point.hpp>
+#include <ipc/distance/point_point.hpp>
 
 namespace ipc {
 

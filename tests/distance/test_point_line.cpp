@@ -4,8 +4,8 @@
 
 #include <finitediff.hpp>
 
-#include <distance/point_line.hpp>
-#include <utils/eigen_ext.hpp>
+#include <ipc/distance/point_line.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 using namespace ipc;
 

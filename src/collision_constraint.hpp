@@ -1,6 +1,6 @@
 #pragma once
 
-#include <spatial_hash/collision_candidate.hpp>
+#include <ipc/spatial_hash/collision_candidate.hpp>
 
 namespace ipc {
 

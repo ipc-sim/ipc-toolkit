@@ -2,7 +2,8 @@
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <utils/eigen_ext.hpp>
+
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 

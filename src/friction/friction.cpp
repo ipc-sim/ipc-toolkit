@@ -1,16 +1,16 @@
-#include "friction.hpp"
+#include <ipc/friction/friction.hpp>
 
 #include <Eigen/Sparse>
 
-#include <barrier/barrier.hpp>
-#include <distance/edge_edge.hpp>
-#include <distance/point_edge.hpp>
-#include <distance/point_triangle.hpp>
-#include <friction/closest_point.hpp>
-#include <friction/relative_displacement.hpp>
-#include <friction/tangent_basis.hpp>
-#include <utils/eigen_ext.hpp>
-#include <utils/local_hessian_to_global_triplets.hpp>
+#include <ipc/barrier/barrier.hpp>
+#include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_triangle.hpp>
+#include <ipc/friction/closest_point.hpp>
+#include <ipc/friction/relative_displacement.hpp>
+#include <ipc/friction/tangent_basis.hpp>
+#include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/local_hessian_to_global_triplets.hpp>
 
 namespace ipc {
 

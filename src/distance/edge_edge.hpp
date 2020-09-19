@@ -1,9 +1,9 @@
 #pragma once
 
-#include <distance/distance_type.hpp>
-#include <distance/line_line.hpp>
-#include <distance/point_edge.hpp>
-#include <distance/point_point.hpp>
+#include <ipc/distance/distance_type.hpp>
+#include <ipc/distance/line_line.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_point.hpp>
 
 namespace ipc {
 

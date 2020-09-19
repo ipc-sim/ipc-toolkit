@@ -2,7 +2,7 @@
 
 #include <finitediff.hpp>
 
-#include <distance/point_plane.hpp>
+#include <ipc/distance/point_plane.hpp>
 
 using namespace ipc;
 
