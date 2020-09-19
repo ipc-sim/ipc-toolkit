@@ -9,6 +9,7 @@ option(IPC_TOOLKIT_BUILD_UNIT_TESTS  "Build unit-tests"      ON)
 ################################################################################
 
 ### Configuration
+set(IPC_TOOLKIT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(IPC_TOOLKIT_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/external")
 
 # Include cmake functions
@@ -90,14 +91,14 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14)
 ################################################################################
 
 if(IPC_TOOLKIT_BUILD_UNIT_TESTS)
-    # Catch2
-    if(NOT TARGET Catch2::Catch2)
-        ipc_toolkit_download_catch2()
-        add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/Catch2 catch2)
-        list(APPEND CMAKE_MODULE_PATH ${IPC_TOOLKIT_EXTERNAL}/Catch2/contrib)
-    endif()
+  # Catch2
+  if(NOT TARGET Catch2::Catch2)
+    ipc_toolkit_download_catch2()
+    add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/Catch2 catch2)
+    list(APPEND CMAKE_MODULE_PATH ${IPC_TOOLKIT_EXTERNAL}/Catch2/contrib)
+  endif()
 
-    include(CTest)
-    enable_testing()
-    add_subdirectory(tests)
+  include(CTest)
+  enable_testing()
+  add_subdirectory(tests)
 endif()
