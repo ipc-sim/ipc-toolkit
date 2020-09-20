@@ -166,8 +166,10 @@ protected:
     inline long hash(int x, int y, int z) const
     {
         assert(x >= 0 && y >= 0 && z >= 0);
-        assert(x < m_gridSize && y < m_gridSize && z < m_gridSize);
-        return (z * m_gridSize + y) * m_gridSize + x;
+        assert(
+            x < m_gridSize[0] && y < m_gridSize[1]
+            && (m_gridSize.size() == 2 || z < m_gridSize[2]));
+        return (z * m_gridSize[1] + y) * m_gridSize[0] + x;
     }
 
     /// @brief Clear the hash grid.
@@ -180,7 +182,7 @@ protected:
 
 protected:
     double m_cellSize;
-    int m_gridSize;
+    Eigen::VectorX3i m_gridSize;
     Eigen::VectorX3d m_domainMin;
     Eigen::VectorX3d m_domainMax;
 

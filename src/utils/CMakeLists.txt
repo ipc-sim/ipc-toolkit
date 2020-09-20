@@ -3,6 +3,8 @@ set(SOURCES
   eigen_ext.hpp
   local_hessian_to_global_triplets.cpp
   local_hessian_to_global_triplets.hpp
+  logger.cpp
+  logger.hpp
 )
 
 prepend_current_path(SOURCES)

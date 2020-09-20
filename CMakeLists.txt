@@ -65,6 +65,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC TBB::tbb)
 # Etienne Vouga's CTCD Library for the floating point root finding algorithm
 target_link_libraries(${PROJECT_NAME} PUBLIC EVCTCD)
 
+# Logger
+target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
+
 ################################################################################
 # Compiler options
 ################################################################################

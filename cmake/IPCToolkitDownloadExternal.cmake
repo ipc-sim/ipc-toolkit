@@ -38,7 +38,7 @@ endfunction()
 function(ipc_toolkit_download_finite_diff)
   ipc_toolkit_download_project(finite-diff
     GIT_REPOSITORY https://github.com/zfergus/finite-diff.git
-    GIT_TAG        dac4e629defb0edef050e56050eefb00574ecbaa
+    GIT_TAG        3cc4537130708fa08ce2a4cd0d77b2621227ccfe
   )
 endfunction()
 
@@ -55,4 +55,11 @@ function(ipc_toolkit_download_evctcd)
     GIT_REPOSITORY https://github.com/evouga/collisiondetection.git
     GIT_TAG        e5fe5c9767207df5047e375fb20180a665ae186f
   )
+endfunction()
+
+function(ipc_toolkit_download_spdlog)
+     ipc_toolkit_download_project(spdlog
+       GIT_REPOSITORY https://github.com/gabime/spdlog.git
+       GIT_TAG        v1.8.0
+    )
 endfunction()

@@ -55,3 +55,11 @@ if(NOT TARGET EVCTCD)
   # Turn off floating point contraction for CCD robustness
   target_compile_options(EVCTCD PUBLIC "-ffp-contract=off")
 endif()
+
+# Logger
+if(NOT TARGET spdlog::spdlog)
+  download_spdlog()
+  add_library(spdlog INTERFACE)
+  add_library(spdlog::spdlog ALIAS spdlog)
+  target_include_directories(spdlog SYSTEM INTERFACE ${IPC_TOOLKIT_EXTERNAL}/spdlog/include)
+endif()
