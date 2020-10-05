@@ -67,7 +67,7 @@ inline auto edge_edge_tangent_basis(
 
     auto ea = ea1 - ea0; // Edge A direction
     // The first basis vector is along edge A.
-    basis.col(0) = ea0.normalized();
+    basis.col(0) = ea.normalized();
     // The second basis vector is orthogonal to the first and the edge-edge
     // normal.
     auto normal = Eigen::cross(ea, eb1 - eb0);

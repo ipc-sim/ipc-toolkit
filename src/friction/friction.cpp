@@ -103,8 +103,8 @@ void compute_friction_bases(
         const auto& t1 = V.row(F(fv_constraint.face_index, 1));
         const auto& t2 = V.row(F(fv_constraint.face_index, 2));
 
-        closest_points.push_back(edge_edge_closest_point(p, t0, t1, t2));
-        tangent_bases.push_back(edge_edge_tangent_basis(p, t0, t1, t2));
+        closest_points.push_back(point_triangle_closest_point(p, t0, t1, t2));
+        tangent_bases.push_back(point_triangle_tangent_basis(p, t0, t1, t2));
         normal_force_magnitudes[constraint_i] = compute_normal_force_magnitude(
             point_triangle_distance(p, t0, t1, t2), dhat_squared,
             barrier_stiffness);

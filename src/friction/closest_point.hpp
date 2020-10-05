@@ -28,9 +28,13 @@ inline Eigen::Vector2<T> point_triangle_closest_point(
     assert(t2.size() == 3);
 
     Eigen::Matrix<T, 2, 3> basis;
-    basis.row(0) = (t1 - t0).transpose(); // edge 0
-    basis.row(1) = (t2 - t0).transpose(); // edge 1
-    return (basis * basis.transpose()).ldlt().solve(basis * (p - t0));
+    basis.row(0) = Eigen::RowVector3<T>(t1 - t0); // edge 0
+    basis.row(1) = Eigen::RowVector3<T>(t2 - t0); // edge 1
+    Eigen::Matrix2<T> A = basis * basis.transpose();
+    Eigen::Vector2<T> b = basis * Eigen::Vector3<T>(p - t0);
+    Eigen::Vector2<T> x = A.ldlt().solve(b);
+    assert((A * x - b).norm() < 1e-10);
+    return x;
 }
 
 // Edge - Edge

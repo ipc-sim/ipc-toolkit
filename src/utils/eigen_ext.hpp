@@ -12,9 +12,13 @@ typedef Matrix<bool, Dynamic, Dynamic> MatrixXb;
 
 template <typename T, int dim, int max_dim = dim>
 using Vector = Matrix<T, dim, 1, ColMajor, max_dim, 1>;
+template <typename T, int dim, int max_dim = dim>
+using RowVector = Matrix<T, 1, dim, RowMajor, 1, max_dim>;
 template <typename T> using Vector1 = Vector<T, 1>;
 template <typename T> using Vector2 = Vector<T, 2>;
 template <typename T> using Vector3 = Vector<T, 3>;
+template <typename T> using RowVector2 = RowVector<T, 2>;
+template <typename T> using RowVector3 = RowVector<T, 3>;
 template <typename T> using VectorX = Vector<T, Dynamic>;
 template <typename T> using Matrix2 = Matrix<T, 2, 2>;
 template <typename T> using Matrix3 = Matrix<T, 3, 3>;
