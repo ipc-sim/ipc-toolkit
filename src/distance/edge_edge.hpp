@@ -22,7 +22,27 @@ auto edge_edge_distance(
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    switch (edge_edge_distance_type(ea0, ea1, eb0, eb1)) {
+    return edge_edge_distance(
+        ea0, ea1, eb0, eb1, edge_edge_distance_type(ea0, ea1, eb0, eb1));
+}
+
+/// @brief Compute the distance between a two lines segments in 3D.
+/// @note The distance is actually squared distance.
+/// @param ea0,ea1 The points of the first edge.
+/// @param eb0,eb1 The points of the second edge.
+template <
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
+auto edge_edge_distance(
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
+    const EdgeEdgeDistanceType dtype)
+{
+    switch (dtype) {
     case EdgeEdgeDistanceType::EA0_EB0:
         return point_point_distance(ea0, eb0);
 
@@ -65,11 +85,34 @@ template <
     typename DerivedEB0,
     typename DerivedEB1,
     typename DerivedGrad>
-auto edge_edge_distance_gradient(
+void edge_edge_distance_gradient(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
+    Eigen::PlainObjectBase<DerivedGrad>& grad)
+{
+    return edge_edge_distance_gradient(
+        ea0, ea1, eb0, eb1, edge_edge_distance_type(ea0, ea1, eb0, eb1), grad);
+}
+
+/// @brief Compute the gradient of the distance between a two lines segments.
+/// @note The distance is actually squared distance.
+/// @param[in] ea0,ea1 The points of the first edge.
+/// @param[in] eb0,eb1 The points of the second edge.
+/// @param[out] grad The computed gradient.
+template <
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1,
+    typename DerivedGrad>
+void edge_edge_distance_gradient(
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
+    const EdgeEdgeDistanceType dtype,
     Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
     int dim = ea0.size();
@@ -81,7 +124,7 @@ auto edge_edge_distance_gradient(
     grad.setZero();
 
     Eigen::VectorXd local_grad;
-    switch (edge_edge_distance_type(ea0, ea1, eb0, eb1)) {
+    switch (dtype) {
     case EdgeEdgeDistanceType::EA0_EB0:
         point_point_distance_gradient(ea0, eb0, local_grad);
         grad.head(dim) = local_grad.head(dim);
@@ -148,11 +191,38 @@ template <
     typename DerivedEB0,
     typename DerivedEB1,
     typename DerivedHess>
-auto edge_edge_distance_hessian(
+void edge_edge_distance_hessian(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
+    Eigen::PlainObjectBase<DerivedHess>& hess,
+    bool project_to_psd = false)
+{
+    return edge_edge_distance_hessian(
+        ea0, ea1, eb0, eb1, edge_edge_distance_type(ea0, ea1, eb0, eb1), hess,
+        project_to_psd);
+}
+
+/// @brief Compute the hessian of the distance between a two lines segments.
+/// @note The distance is actually squared distance.
+/// @param[in] ea0,ea1 The points of the first edge.
+/// @param[in] eb0,eb1 The points of the second edge.
+/// @param[out] hess The computed hessian.
+/// @param[in] project_to_psd True if the hessian should be projected to
+///                           positive semi-definite.
+template <
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1,
+    typename DerivedHess>
+void edge_edge_distance_hessian(
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1,
+    const EdgeEdgeDistanceType dtype,
     Eigen::PlainObjectBase<DerivedHess>& hess,
     bool project_to_psd = false)
 {
@@ -165,7 +235,7 @@ auto edge_edge_distance_hessian(
     hess.setZero();
 
     Eigen::MatrixXd local_hess;
-    switch (edge_edge_distance_type(ea0, ea1, eb0, eb1)) {
+    switch (dtype) {
     case EdgeEdgeDistanceType::EA0_EB0:
         point_point_distance_hessian(ea0, eb0, local_hess, project_to_psd);
         hess.topLeftCorner(dim, dim) = local_hess.topLeftCorner(dim, dim);

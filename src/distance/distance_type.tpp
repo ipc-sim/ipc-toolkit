@@ -6,6 +6,7 @@
 #include <igl/barycentric_coordinates.h>
 
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/logger.hpp>
 
 namespace ipc {
 
@@ -18,6 +19,7 @@ PointEdgeDistanceType point_edge_distance_type(
     const auto e = e1 - e0;
     const auto e_length_sqr = e.squaredNorm();
     if (e_length_sqr == 0) {
+        logger().warn("Degenerate edge in point_edge_distance_type!");
         return PointEdgeDistanceType::P_E; // PE
     }
     auto ratio = e.dot(p - e0) / e_length_sqr;

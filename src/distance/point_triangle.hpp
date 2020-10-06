@@ -86,6 +86,29 @@ void point_triangle_distance_gradient(
     const Eigen::MatrixBase<DerivedT2>& t2,
     Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
+    return point_triangle_distance_gradient(
+        p, t0, t1, t2, point_triangle_distance_type(p, t0, t1, t2), grad);
+}
+
+/// @brief Compute the gradient of the distance between a points and a triangle.
+/// @note The distance is actually squared distance.
+/// @param[in] p The point.
+/// @param[in] t0,t1,t2 The points of the triangle.
+/// @param[out] grad The computed gradient.
+template <
+    typename DerivedP,
+    typename DerivedT0,
+    typename DerivedT1,
+    typename DerivedT2,
+    typename DerivedGrad>
+void point_triangle_distance_gradient(
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedT0>& t0,
+    const Eigen::MatrixBase<DerivedT1>& t1,
+    const Eigen::MatrixBase<DerivedT2>& t2,
+    const PointTriangleDistanceType dtype,
+    Eigen::PlainObjectBase<DerivedGrad>& grad)
+{
     int dim = p.size();
     assert(t0.size() == dim);
     assert(t1.size() == dim);
@@ -95,7 +118,7 @@ void point_triangle_distance_gradient(
     grad.setZero();
 
     Eigen::VectorXd local_grad;
-    switch (point_triangle_distance_type(p, t0, t1, t2)) {
+    switch (dtype) {
     case PointTriangleDistanceType::P_T0:
         point_point_distance_gradient(p, t0, local_grad);
         grad.head(2 * dim) = local_grad;
@@ -158,6 +181,33 @@ void point_triangle_distance_hessian(
     Eigen::PlainObjectBase<DerivedHess>& hess,
     bool project_to_psd = false)
 {
+    return point_triangle_distance_hessian(
+        p, t0, t1, t2, point_triangle_distance_type(p, t0, t1, t2), hess,
+        project_to_psd);
+}
+
+/// @brief Compute the hessian of the distance between a points and a triangle.
+/// @note The distance is actually squared distance.
+/// @param[in] p The point.
+/// @param[in] t0,t1,t2 The points of the triangle.
+/// @param[out] hess The computed hessian.
+/// @param[in] project_to_psd True if the hessian should be projected to
+///                           positive semi-definite.
+template <
+    typename DerivedP,
+    typename DerivedT0,
+    typename DerivedT1,
+    typename DerivedT2,
+    typename DerivedHess>
+void point_triangle_distance_hessian(
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedT0>& t0,
+    const Eigen::MatrixBase<DerivedT1>& t1,
+    const Eigen::MatrixBase<DerivedT2>& t2,
+    const PointTriangleDistanceType dtype,
+    Eigen::PlainObjectBase<DerivedHess>& hess,
+    bool project_to_psd = false)
+{
     int dim = p.size();
     assert(t0.size() == dim);
     assert(t1.size() == dim);
@@ -167,7 +217,7 @@ void point_triangle_distance_hessian(
     hess.setZero();
 
     Eigen::MatrixXd local_hess;
-    switch (point_triangle_distance_type(p, t0, t1, t2)) {
+    switch (dtype) {
     case PointTriangleDistanceType::P_T0:
         point_point_distance_hessian(p, t0, local_hess, project_to_psd);
         hess.topLeftCorner(2 * dim, 2 * dim) = local_hess;
