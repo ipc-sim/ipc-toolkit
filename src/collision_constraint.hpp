@@ -9,7 +9,7 @@ struct VertexVertexConstraint {
 
     bool operator==(const VertexVertexConstraint& other) const;
 
-    /// @brief Compare EdgeVertexConstraints for sorting.
+    /// @brief Compare VertexVertexConstraints for sorting.
     bool operator<(const VertexVertexConstraint& other) const;
 
     long vertex0_index;
@@ -29,14 +29,11 @@ struct EdgeEdgeConstraint : EdgeEdgeCandidate {
     EdgeEdgeConstraint(const EdgeEdgeCandidate& candidate, double eps_x);
 
     double eps_x;
-    long multiplicity = 1;
 };
 
 struct FaceVertexConstraint : FaceVertexCandidate {
     FaceVertexConstraint(long face_index, long vertex_index);
     FaceVertexConstraint(const FaceVertexCandidate& candidate);
-
-    long multiplicity = 1;
 };
 
 struct Constraints {

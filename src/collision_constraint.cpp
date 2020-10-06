@@ -74,12 +74,7 @@ size_t Constraints::num_constraints() const
     for (const auto& ev_constraint : ev_constraints) {
         num_constraints += ev_constraint.multiplicity;
     }
-    for (const auto& ee_constraint : ee_constraints) {
-        num_constraints += ee_constraint.multiplicity;
-    }
-    for (const auto& fv_constraint : fv_constraints) {
-        num_constraints += fv_constraint.multiplicity;
-    }
+    num_constraints += ee_constraints.size() + fv_constraints.size();
     return num_constraints;
 }
 
