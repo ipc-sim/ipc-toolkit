@@ -38,6 +38,8 @@ auto point_edge_distance(
     case PointEdgeDistanceType::P_E:
         return point_line_distance(p, e0, e1);
     }
+
+    throw "something went wrong in point_edge_distance";
 }
 
 template <
