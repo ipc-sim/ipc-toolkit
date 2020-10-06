@@ -4,6 +4,7 @@
 #include <Eigen/Sparse>
 
 #include <ipc/collision_constraint.hpp>
+#include <ipc/friction/friction_constraint.hpp>
 
 namespace ipc {
 
@@ -38,17 +39,15 @@ template <typename T> inline T f2_SF(const T&, const double& epsv_times_h)
     return T(-1 / (epsv_times_h * epsv_times_h));
 }
 
-void compute_friction_bases(
+void construct_friction_constraint_set(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Constraints& contact_constraint_set,
     double dhat,
     double barrier_stiffness,
-    Constraints& friction_constraint_set,
-    std::vector<Eigen::VectorXd>& closest_points,
-    std::vector<Eigen::MatrixXd>& tangent_bases,
-    Eigen::VectorXd& normal_force_magnitudes);
+    double mu,
+    FrictionConstraints& friction_constraint_set);
 
 /// @brief Compute the friction potential between to positions.
 ///
@@ -68,36 +67,24 @@ T compute_friction_potential(
     const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Constraints& friction_constraint_set,
-    std::vector<Eigen::VectorXd>& closest_points,
-    std::vector<Eigen::MatrixXd>& tangent_bases,
-    const Eigen::VectorXd& normal_force_magnitudes,
-    double epsv_times_h,
-    double mu);
+    const FrictionConstraints& friction_constraint_set,
+    double epsv_times_h);
 
 Eigen::VectorXd compute_friction_potential_gradient(
-    const Eigen::MatrixXd& V0, // TODO: What is this
-    const Eigen::MatrixXd& V1, // This is the current position
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Constraints& friction_constraint_set,
-    std::vector<Eigen::VectorXd>& closest_points,
-    std::vector<Eigen::MatrixXd>& tangent_bases,
-    const Eigen::VectorXd& normal_force_magnitudes,
-    double epsv_times_h,
-    double mu);
+    const FrictionConstraints& friction_constraint_set,
+    double epsv_times_h);
 
 Eigen::SparseMatrix<double> compute_friction_potential_hessian(
-    const Eigen::MatrixXd& V0, // TODO: What is this
-    const Eigen::MatrixXd& V1, // This is the current position
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Constraints& friction_constraint_set,
-    std::vector<Eigen::VectorXd>& closest_points,
-    std::vector<Eigen::MatrixXd>& tangent_bases,
-    const Eigen::VectorXd& normal_force_magnitudes,
-    double epsv_times_h,
-    double mu);
+    const FrictionConstraints& friction_constraint_set,
+    double epsv_times_h);
 
 } // namespace ipc
 

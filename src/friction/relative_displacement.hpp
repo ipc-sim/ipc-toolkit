@@ -165,14 +165,18 @@ inline auto point_point_relative_displacement(
     return dp0 - dp1;
 }
 
-template <typename T>
-inline void point_point_relative_mesh_displacement(
-    const Eigen::Vector2<T>& tangent_relative_displacement,
-    const Eigen::Matrix<T, 3, 2>& basis,
-    Eigen::Matrix<T, 2, 3>& mesh_displacements)
+template <
+    typename DerivedDisp,
+    typename DerivedBasis,
+    typename T = typename DerivedDisp::Scalar>
+inline Eigen::Matrix<T, 2, 3> point_point_relative_mesh_displacement(
+    const Eigen::MatrixBase<DerivedDisp>& tangent_relative_displacement,
+    const Eigen::MatrixBase<DerivedBasis>& basis)
 {
+    Eigen::Matrix<T, 2, 3> mesh_displacements;
     mesh_displacements.row(0) = basis * tangent_relative_displacement;
     mesh_displacements.row(1) = -mesh_displacements.row(0);
+    return mesh_displacements;
 }
 
 template <typename DerivedBasis, typename DerivedTT>

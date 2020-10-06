@@ -4,6 +4,8 @@
 
 #include <Eigen/Core>
 
+#include <ipc/collision_constraint.hpp>
+
 // Flatten the matrix rowwise
 Eigen::VectorXd flatten(const Eigen::MatrixXd& X);
 
@@ -15,3 +17,9 @@ bool load_mesh(
     Eigen::MatrixXd& V,
     Eigen::MatrixXi& E,
     Eigen::MatrixXi& F);
+
+void mmcvids_to_constraints(
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXi& mmcvids,
+    ipc::Constraints& constraints);

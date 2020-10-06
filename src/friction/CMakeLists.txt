@@ -3,8 +3,8 @@ set(SOURCES
   friction.cpp
   friction.hpp
   friction.tpp
-  # friction_constraint.cpp
-  # friction_constraint.hpp
+  friction_constraint.cpp
+  friction_constraint.hpp
   relative_displacement.hpp
   tangent_basis.hpp
 )
