@@ -4,7 +4,9 @@
 
 #include <Eigen/Eigenvalues>
 
+#ifdef IPC_TOOLKIT_WITH_LOGGER
 #include <ipc/utils/logger.hpp>
+#endif
 
 namespace Eigen {
 
@@ -16,8 +18,12 @@ MatrixXd project_to_pd(const MatrixXd& A, double eps)
     // https://math.stackexchange.com/q/2776803
     SelfAdjointEigenSolver<MatrixXd> eigensolver(A);
     if (eigensolver.info() != Success) {
+#ifdef IPC_TOOLKIT_WITH_LOGGER
         ipc::logger().error(
             "unable to project matrix onto positive definite cone");
+#else
+        throw "unable to project matrix onto positive definite cone";
+#endif
         return A;
     }
     // Check if all eigen values are positive.
@@ -44,8 +50,12 @@ MatrixXd project_to_psd(const MatrixXd& A)
     // https://math.stackexchange.com/q/2776803
     SelfAdjointEigenSolver<MatrixXd> eigensolver(A);
     if (eigensolver.info() != Success) {
+#ifdef IPC_TOOLKIT_WITH_LOGGER
         ipc::logger().error(
             "unable to project matrix onto positive semi-definite cone");
+#else
+        throw "unable to project matrix onto positive semi-definite cone";
+#endif
         return A;
     }
     // Check if all eigen values are zero or positive.

@@ -1,7 +1,8 @@
 #include <ipc/spatial_hash/hash_grid.hpp>
 
+#ifdef IPC_TOOLKIT_WITH_LOGGER
 #include <ipc/utils/logger.hpp>
-
+#endif
 namespace ipc {
 
 bool AABB::are_overlaping(const AABB& a, const AABB& b)
@@ -26,9 +27,11 @@ void HashGrid::resize(
     m_domainMin = min;
     m_domainMax = max;
     m_gridSize = ((max - min) / m_cellSize).array().ceil().cast<int>().max(1);
+#ifdef IPC_TOOLKIT_WITH_LOGGER
     logger().debug(
         "hash-grid resized with a size of {:d}x{:d}x{:d}", m_gridSize[0],
         m_gridSize[1], m_gridSize.size() == 3 ? m_gridSize[2] : 1);
+#endif
 }
 
 /// @brief Compute an AABB around a given 2D mesh.

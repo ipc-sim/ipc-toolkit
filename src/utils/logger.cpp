@@ -1,3 +1,4 @@
+#ifdef IPC_TOOLKIT_WITH_LOGGER
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -59,3 +60,4 @@ void Logger::init(std::ostream& os)
 }
 
 } // namespace ipc
+#endif

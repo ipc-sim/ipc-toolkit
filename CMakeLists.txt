@@ -5,6 +5,7 @@ project(IPCToolkit)
 
 # project-options
 option(IPC_TOOLKIT_BUILD_UNIT_TESTS  "Build unit-tests"      ON)
+option(IPC_TOOLKIT_WITH_LOGGER       "Enables logger "       ON)
 
 ################################################################################
 
@@ -66,7 +67,10 @@ target_link_libraries(${PROJECT_NAME} PUBLIC TBB::tbb)
 target_link_libraries(${PROJECT_NAME} PUBLIC EVCTCD)
 
 # Logger
-target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
+if(IPC_TOOLKIT_WITH_LOGGER)
+  target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC IPC_TOOLKIT_WITH_LOGGER)
+endif()
 
 ################################################################################
 # Compiler options

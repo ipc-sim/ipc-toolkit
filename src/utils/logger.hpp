@@ -1,3 +1,4 @@
+#ifdef IPC_TOOLKIT_WITH_LOGGER
 #pragma once
 
 #include <spdlog/spdlog.h>
@@ -30,3 +31,4 @@ inline spdlog::async_logger& logger()
 }
 
 } // namespace ipc
+#endif
