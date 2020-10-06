@@ -8,4 +8,5 @@ BinPackParameters: false
 AllowAllParametersOfDeclarationOnNextLine: true
 AlignAfterOpenBracket: AlwaysBreak
 BreakBeforeBinaryOperators: NonAssignment
+SortIncludes: false
 # BreakStringLiterals: false
