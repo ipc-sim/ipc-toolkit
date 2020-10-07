@@ -4,32 +4,67 @@
 [![Build status](https://github.com/ipc-sim/ipc-toolkit/workflows/Build/badge.svg?event=push)](https://github.com/ipc-sim/ipc-toolkit/actions?query=workflow%3ABuild+branch%3Amaster+event%3Apush)
 [![License](https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue)](https://github.com/ipc-sim/ipc-toolkit/blob/master/LICENSE)
 
-:warning: This toolkit is in an early stage of development. If you have any problems or find any bugs please post an issue.
+:warning: This toolkit is in an early stage of development. If you have any problems or find any bugs please post an issue,
 
 ## Integrating IPC Toolkit into your project
 
 #### 1. Add it to CMake
 
 The easiest way to add the toolkit to an existing CMake project is to download
-it thorugh CMake. If you do not already have `DownloadProject.cmake` and `DownloadProject.CMakeLists.cmake.in`, you can copy those in our `cmake` folder.
-With those added to your project all that is need is to create a file similar to our
-`cmake/IPCToolkitDownloadExternal.cmake`. Next, you need to create a file similar to our `cmake/IPCToolkitDependencies.cmake` with the following:
+it through CMake. If you do not already have `DownloadProject.cmake` and `DownloadProject.CMakeLists.cmake.in`, you can copy those in our `cmake` folder.
+With those added to your project, you can create a file a similar to `cmake/IPCToolkitDownloadExternal.cmake` with
 
 ```CMake
-# ipc-toolkit
+include(DownloadProject)
+
+# With CMake 3.8 and above, we can hide warnings about git being in a
+# detached head by passing an extra GIT_CONFIG option
+if(NOT (${CMAKE_VERSION} VERSION_LESS "3.8.0"))
+  set(PROJECT_NAME_EXTRA_OPTIONS "GIT_CONFIG advice.detachedHead=false")
+else()
+  set(PROJECT_NAME_EXTRA_OPTIONS "")
+endif()
+
+function(project_name_download_project name)
+  download_project(
+    PROJ         ${name}
+    SOURCE_DIR   ${IPC_TOOLKIT_EXTERNAL}/${name}
+    DOWNLOAD_DIR ${IPC_TOOLKIT_EXTERNAL}/.cache/${name}
+    QUIET
+    ${IPC_TOOLKIT_EXTRA_OPTIONS}
+    ${ARGN}
+  )
+endfunction()
+
+################################################################################
+
+# Download the IPC Toolkit
+function(project_name_download_ipc_toolkit)
+  project_name_download_project(ipc-toolkit
+    GIT_REPOSITORY https://github.com/ipc-sim/ipc-toolkit.git
+    GIT_TAG        ${IPC_TOOLKIT_GIT_TAG}
+  )
+endfunction()
+```
+
+where `PROJECT_NAME` is the name of your project and `IPC_TOOLKIT_GIT_TAG` is set to the version of the toolkit you want. Then add the toolkit to CMake with
+
+```CMake
+# Add the IPC Toolkit to CMake
 if(NOT TARGET IPCToolkit)
-    ${PROJECT_NAME}_download_ipc_toolkit()
-    add_subdirectory(${${PROJECT_NAME}_EXTERNAL}/ipc-toolkit EXCLUDE_FROM_ALL)
+    project_name_download_ipc_toolkit()
+    add_subdirectory(${PROJECT_NAME_EXTERNAL}/ipc-toolkit EXCLUDE_FROM_ALL)
 endif()
 ```
 
-Lastly, link against the library with
+where `PROJECT_NAME_EXTERNAL` is the directory you want the toolkit to be downloaded to. The last step is to link against the library with
 
 ```CMake
+# Link against the IPC Toolkit
 target_link_libraries(${PROJECT_NAME} PUBLIC IPCToolkit)
 ```
 
-#### 2. Use the toolkit
+#### 2. Using the toolkit
 
 The main functionality is provided in the `ipc.hpp` header. Use the prefix directory `ipc` to include all header files (e.g. `#include <ipc/ipc.hpp>`).
 
