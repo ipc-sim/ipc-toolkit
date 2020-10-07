@@ -70,14 +70,11 @@ void update_barrier_stiffness(
     double& barrier_stiffness,
     double dhat_epsilon_scale)
 {
-    double dhat_squared = dhat * dhat;
-
     double diag = world_bbox_diagonal(V);
 
     // Adaptive κ
     Constraints constraint_set;
-    construct_constraint_set(
-        /*V_rest=*/V, V, E, F, dhat_squared, constraint_set);
+    construct_constraint_set(/*V_rest=*/V, V, E, F, dhat, constraint_set);
     min_distance = compute_minimum_distance(V, E, F, constraint_set);
 
     // Is the barrier having a difficulty pushing the bodies apart?
