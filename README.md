@@ -4,7 +4,7 @@
 [![Build status](https://github.com/ipc-sim/ipc-toolkit/workflows/Build/badge.svg?event=push)](https://github.com/ipc-sim/ipc-toolkit/actions?query=workflow%3ABuild+branch%3Amaster+event%3Apush)
 [![License](https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue)](https://github.com/ipc-sim/ipc-toolkit/blob/master/LICENSE)
 
-:warning: This toolkit is in an early stage of development. If you have any problems or find any bugs please post an issue,
+:warning: This toolkit is in an early stage of development. If you have any problems or find any bugs please post an issue. For a complete list of changes, please see `CHANGELOG.md`.
 
 ## Integrating IPC Toolkit into your project
 
@@ -76,6 +76,8 @@ The following libraries are used in this project:
 * [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection.git) for continuous collision detection between triangle meshes in 3D
 * [libigl](https://github.com/libigl/libigl) as both a source of Eigen and for basic geometry functions (e.g. computing barycentric coordinates)
 * [TBB](https://github.com/wjakob/tbb) for limited parallelization
+* [spdlog](https://github.com/gabime/spdlog) for logging information
+    * Disable logging completely using the CMake flag `-IPC_TOOLKIT_WITH_LOGGER=OFF`
 * [Catch2](https://github.com/catchorg/Catch2.git) for testing (see [Unit Tests](#unit_tests))
 * [finite-diff](https://github.com/zfergus/finite-diff) for finite difference comparisons in the unit tests
 
