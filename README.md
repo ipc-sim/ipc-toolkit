@@ -28,10 +28,10 @@ endif()
 function(project_name_download_project name)
   download_project(
     PROJ         ${name}
-    SOURCE_DIR   ${IPC_TOOLKIT_EXTERNAL}/${name}
-    DOWNLOAD_DIR ${IPC_TOOLKIT_EXTERNAL}/.cache/${name}
+    SOURCE_DIR   ${PROJECT_NAME_EXTERNAL}/${name}
+    DOWNLOAD_DIR ${PROJECT_NAME_EXTERNAL}/.cache/${name}
     QUIET
-    ${IPC_TOOLKIT_EXTRA_OPTIONS}
+    ${PROJECT_NAME_EXTRA_OPTIONS}
     ${ARGN}
   )
 endfunction()
