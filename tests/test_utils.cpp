@@ -77,26 +77,26 @@ void mmcvids_to_constraints(
                 constraints.vv_constraints.back().multiplicity = -mmcvid[3];
 
             } else if (mmcvid[3] < 0) { // Is EV?
-
-                for (int i = 0; i < E.rows(); i++) {
-                    if (E(i, 0) == mmcvid[1] && E(i, 1) == mmcvid[2]) {
-                        constraints.ev_constraints.emplace_back(
-                            i, -mmcvid[0] - 1);
-                        constraints.ev_constraints.back().multiplicity =
-                            -mmcvid[3];
+                int ei;
+                for (ei = 0; ei < E.rows(); ei++) {
+                    if (E(ei, 0) == mmcvid[1] && E(ei, 1) == mmcvid[2]) {
                         break;
                     }
                 }
+                assert(ei < E.rows());
+                constraints.ev_constraints.emplace_back(ei, -mmcvid[0] - 1);
+                constraints.ev_constraints.back().multiplicity = -mmcvid[3];
 
             } else { // Is FV.
-                for (int i = 0; i < F.rows(); i++) {
-                    if (F(i, 0) == mmcvid[1] && F(i, 1) == mmcvid[2]
-                        && F(i, 2) == mmcvid[3]) {
-                        constraints.fv_constraints.emplace_back(
-                            i, -mmcvid[0] - 1);
+                int fi;
+                for (fi = 0; fi < F.rows(); fi++) {
+                    if (F(fi, 0) == mmcvid[1] && F(fi, 1) == mmcvid[2]
+                        && F(fi, 2) == mmcvid[3]) {
                         break;
                     }
                 }
+                assert(fi < F.rows());
+                constraints.fv_constraints.emplace_back(fi, -mmcvid[0] - 1);
             }
         }
     }

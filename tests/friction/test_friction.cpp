@@ -91,34 +91,25 @@ TEST_CASE("Test friction gradient and hessian", "[friction][grad][hess]")
 }
 
 void mmcvids_to_friction_constraints(
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    Eigen::MatrixXi& E,
+    Eigen::MatrixXi& F,
     const Eigen::MatrixXi& mmcvids,
     Eigen::VectorXd normal_force_magnitudes,
     const Eigen::MatrixXd& closest_points,
     const Eigen::MatrixXd& tangent_bases,
     FrictionConstraints& constraints)
 {
+    std::vector<Eigen::Vector2i> edges;
+    std::vector<Eigen::Vector3i> faces;
     for (int i = 0; i < mmcvids.rows(); i++) {
         const auto mmcvid = mmcvids.row(i);
         FrictionConstraint* constraint;
 
         if (mmcvid[0] >= 0) { // Is EE?
-            int ei, ej;
-            // Find the edge index
-            for (ei = 0; ei < E.rows(); ei++) {
-                if (E(ei, 0) == mmcvid[0] && E(ei, 1) == mmcvid[1]) {
-                    break;
-                }
-            }
-            // Find the edge index
-            for (ej = 0; ej < E.rows(); ej++) {
-                if (E(ej, 0) == mmcvid[2] && E(ej, 1) == mmcvid[3]) {
-                    break;
-                }
-            }
-            assert(ei < E.rows() && ej < E.rows());
-            constraints.ee_constraints.emplace_back(ei, ej);
+            edges.emplace_back(mmcvid[0], mmcvid[1]);
+            edges.emplace_back(mmcvid[2], mmcvid[3]);
+            constraints.ee_constraints.emplace_back(
+                edges.size() - 2, edges.size() - 1);
             constraint = &(constraints.ee_constraints.back());
         } else {
             if (mmcvid[2] < 0) { // Is VV?
@@ -130,28 +121,17 @@ void mmcvids_to_friction_constraints(
                 constraint = &(constraints.vv_constraints.back());
 
             } else if (mmcvid[3] < 0) { // Is EV?
-                for (int ei = 0; ei < E.rows(); ei++) {
-                    if (E(ei, 0) == mmcvid[1] && E(ei, 1) == mmcvid[2]) {
-                        constraints.ev_constraints.emplace_back(
-                            i, -mmcvid[0] - 1);
-                        break;
-                    }
-                }
-                assert(constraints.ev_constraints.size());
+                edges.emplace_back(mmcvid[1], mmcvid[2]);
+                constraints.ev_constraints.emplace_back(
+                    edges.size() - 1, -mmcvid[0] - 1);
                 constraints.ev_constraints.back().multiplicity = -mmcvid[3];
                 normal_force_magnitudes[i] /= -mmcvid[3];
                 constraint = &(constraints.ev_constraints.back());
 
             } else { // Is FV.
-                for (int fi = 0; fi < F.rows(); fi++) {
-                    if (F(fi, 0) == mmcvid[1] && F(fi, 1) == mmcvid[2]
-                        && F(fi, 2) == mmcvid[3]) {
-                        constraints.fv_constraints.emplace_back(
-                            i, -mmcvid[0] - 1);
-                        break;
-                    }
-                }
-                assert(constraints.fv_constraints.size());
+                faces.emplace_back(mmcvid[1], mmcvid[2], mmcvid[3]);
+                constraints.fv_constraints.emplace_back(
+                    faces.size() - 1, -mmcvid[0] - 1);
                 constraint = &(constraints.fv_constraints.back());
             }
         }
@@ -159,6 +139,15 @@ void mmcvids_to_friction_constraints(
         constraint->closest_point = closest_points.row(i);
         constraint->tangent_basis = tangent_bases.middleRows(3 * i, 3);
         constraint->normal_force_magnitude = normal_force_magnitudes[i];
+    }
+
+    E.resize(edges.size(), 2);
+    for (int i = 0; i < edges.size(); i++) {
+        E.row(i) = edges[i];
+    }
+    F.resize(faces.size(), 3);
+    for (int i = 0; i < faces.size(); i++) {
+        F.row(i) = faces[i];
     }
 }
 
@@ -174,21 +163,16 @@ bool read_ipc_friction_data(
     double& barrier_stiffness,
     double& epsv_times_h,
     double& mu,
-    Eigen::VectorXd& grad)
+    double& potential,
+    Eigen::VectorXd& grad,
+    Eigen::MatrixXd& hess)
 {
-    if (!load_mesh(fmt::format("{}_V0.obj", filename_root), V0, E, F)) {
-        return false;
-    }
-
     Eigen::MatrixXi E1, F1;
-    if (!load_mesh(fmt::format("{}_V1.obj", filename_root), V1, E1, F1)
-        || E1 != E || F1 != F) {
+    if (!load_mesh(fmt::format("{}_V0.obj", filename_root), V0, E1, F1)) {
         return false;
     }
 
-    // Need to explictly load the edges used in IPC
-    if (!igl::readDMAT(
-            TEST_DATA_DIR + fmt::format("{}_E.dmat", filename_root), E)) {
+    if (!load_mesh(fmt::format("{}_V1.obj", filename_root), V1, E1, F1)) {
         return false;
     }
 
@@ -208,9 +192,9 @@ bool read_ipc_friction_data(
         return false;
     }
 
-    mmcvids_to_constraints(E, F, mmcvids, constraint_set);
     mmcvids_to_friction_constraints(
         E, F, mmcvids, lambda, coords, bases, friction_constraint_set);
+    mmcvids_to_constraints(E, F, mmcvids, constraint_set);
 
     Eigen::VectorXd params;
     if (!igl::readDMAT(
@@ -228,35 +212,55 @@ bool read_ipc_friction_data(
         friction_constraint_set[i].mu = mu;
     }
 
+    Eigen::VectorXd energy_vec;
+    if (!igl::readDMAT(
+            TEST_DATA_DIR + fmt::format("{}_energy.dmat", filename_root),
+            energy_vec)) {
+        return false;
+    }
+    potential = energy_vec[0];
+
     if (!igl::readDMAT(
             TEST_DATA_DIR + fmt::format("{}_grad.dmat", filename_root), grad)) {
+        return false;
+    }
+
+    if (!igl::readDMAT(
+            TEST_DATA_DIR + fmt::format("{}_hess.dmat", filename_root), hess)) {
         return false;
     }
 
     return true;
 }
 
-TEST_CASE("Compare IPC friction gradient", "[friction][grad][debug]")
+TEST_CASE("Compare IPC friction gradient", "[friction][grad][hess]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
     Constraints contact_constraint_set;
     FrictionConstraints expected_friction_constraint_set;
     double dhat, barrier_stiffness, epsv_times_h, mu;
+    double expected_potential;
     Eigen::VectorXd expected_grad;
+    Eigen::MatrixXd expected_hess;
+
+    int frame = GENERATE(range(0, 373));
+    CAPTURE(frame);
+
     bool success = read_ipc_friction_data(
-        "friction/cube_cube_0", V0, V1, E, F, contact_constraint_set,
-        expected_friction_constraint_set, dhat, barrier_stiffness, epsv_times_h,
-        mu, expected_grad);
+        fmt::format("friction/cube_cube_{:d}", frame), V0, V1, E, F,
+        contact_constraint_set, expected_friction_constraint_set, dhat,
+        barrier_stiffness, epsv_times_h, mu, expected_potential, expected_grad,
+        expected_hess);
     REQUIRE(success);
 
     FrictionConstraints friction_constraint_set;
     construct_friction_constraint_set(
-        V1, E, F, contact_constraint_set, dhat, barrier_stiffness, mu,
+        V0, E, F, contact_constraint_set, dhat, barrier_stiffness, mu,
         friction_constraint_set);
 
-    CHECK(friction_constraint_set.size() == contact_constraint_set.size());
-    CHECK(
+    REQUIRE(friction_constraint_set.size() == contact_constraint_set.size());
+    REQUIRE(
         friction_constraint_set.size()
         == expected_friction_constraint_set.size());
 
@@ -282,8 +286,18 @@ TEST_CASE("Compare IPC friction gradient", "[friction][grad][debug]")
         CHECK(constraint.mu == Approx(expected_constraint.mu));
     }
 
+    double potential = compute_friction_potential(
+        V0, V1, E, F, friction_constraint_set, epsv_times_h);
+
+    CHECK(potential == Approx(expected_potential));
+
     Eigen::VectorXd grad = compute_friction_potential_gradient(
         V0, V1, E, F, friction_constraint_set, epsv_times_h);
 
-    CHECK(fd::compare_gradient(expected_grad, grad));
+    CHECK(fd::compare_gradient(expected_grad, grad, 1e-8));
+
+    Eigen::SparseMatrix<double> hess = compute_friction_potential_hessian(
+        V0, V1, E, F, friction_constraint_set, epsv_times_h);
+
+    CHECK(fd::compare_hessian(expected_hess, Eigen::MatrixXd(hess), 1e-6));
 }
