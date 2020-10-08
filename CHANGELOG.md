@@ -10,10 +10,19 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### 2020-10-08 ([cc3947d](https://github.com/ipc-sim/ipc-toolkit/commit/cc3947d48bc069488f6a773424e30fe67eb4b5f1))
+#### Added
+* Second version of `initial_barrier_stiffness()` that takes an already computed barrier gradient
+* Assertions on `initial_barrier_stiffness()` input
+    * `average_mass > 0 && min_barrier_stiffness_scale > 0`
+
+#### Changed
+* Fixed typo in `initial_barrier_stiffness()` name (was `intial_barrier_stiffness()`)
+
 ### 2020-10-07 ([5582582](https://github.com/ipc-sim/ipc-toolkit/commit/5582582bc2f54464bfcee4ba0ec2b7e6975f596f))
 #### Added
 * `FrictionConstraint` structures to store friction information (i.e., tangent basis, normal force magnitude, closest points, and coefficient of friction)
-* Unit test that compares the original IPC code's friction components with the toolkit's.
+* Unit test that compares the original IPC code's friction components with the toolkit's
 
 #### Changed
 * `compute_friction_bases()` is now `construct_friction_constraint_set()`
