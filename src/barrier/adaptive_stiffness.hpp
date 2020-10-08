@@ -32,6 +32,16 @@ double initial_barrier_stiffness(
 /// Update the barrier stiffness if the distance is decreasing and less than
 /// dhat_epsilon_scale * diag.
 void update_barrier_stiffness(
+    double prev_min_distance,
+    double min_distance,
+    double max_barrier_stiffness,
+    double& barrier_stiffness,
+    double dhat_epsilon_scale,
+    double bbox_diagonal);
+
+/// Update the barrier stiffness if the distance is decreasing and less than
+/// dhat_epsilon_scale * diag.
+void update_barrier_stiffness(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,

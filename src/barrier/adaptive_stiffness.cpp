@@ -76,6 +76,26 @@ double initial_barrier_stiffness(
         max_barrier_stiffness, min_barrier_stiffness_scale);
 }
 
+// Adaptive κ
+void update_barrier_stiffness(
+    double prev_min_distance,
+    double min_distance,
+    double max_barrier_stiffness,
+    double& barrier_stiffness,
+    double dhat_epsilon_scale,
+    double bbox_diagonal)
+{
+    // Is the barrier having a difficulty pushing the bodies apart?
+    double dhat_epsilon = dhat_epsilon_scale * bbox_diagonal;
+    if (prev_min_distance < dhat_epsilon && min_distance < dhat_epsilon
+        && min_distance < prev_min_distance) {
+        // Then increase the barrier stiffness.
+        barrier_stiffness =
+            std::min(max_barrier_stiffness, 2 * barrier_stiffness);
+    }
+}
+
+// Adaptive κ
 void update_barrier_stiffness(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
@@ -87,21 +107,17 @@ void update_barrier_stiffness(
     double& barrier_stiffness,
     double dhat_epsilon_scale)
 {
-    double diag = world_bbox_diagonal(V);
-
-    // Adaptive κ
     Constraints constraint_set;
     construct_constraint_set(/*V_rest=*/V, V, E, F, dhat, constraint_set);
-    min_distance = compute_minimum_distance(V, E, F, constraint_set);
+    // Use a temporay variable in case &prev_min_distance == &min_distance
+    double current_min_distance =
+        compute_minimum_distance(V, E, F, constraint_set);
 
-    // Is the barrier having a difficulty pushing the bodies apart?
-    double dhat_epsilon = dhat_epsilon_scale * diag;
-    if (prev_min_distance < dhat_epsilon && min_distance < dhat_epsilon
-        && min_distance < prev_min_distance) {
-        // Then increase the barrier stiffness.
-        barrier_stiffness =
-            std::min(max_barrier_stiffness, 2 * barrier_stiffness);
-    }
+    return update_barrier_stiffness(
+        prev_min_distance, current_min_distance, max_barrier_stiffness,
+        barrier_stiffness, dhat_epsilon_scale, world_bbox_diagonal(V));
+
+    min_distance = current_min_distance;
 }
 
 } // namespace ipc
