@@ -14,7 +14,7 @@ double initial_barrier_stiffness(
     const Eigen::VectorXd& grad_energy,
     const Eigen::VectorXd& grad_barrier,
     double& max_barrier_stiffness,
-    double min_barrier_stiffness_scale);
+    double min_barrier_stiffness_scale = 1e11);
 
 /// Compute an inital barrier stiffness using the mesh to compute the barrier
 /// potential gradient.

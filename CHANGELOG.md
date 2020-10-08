@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### 2020-10-08 ([6ee60ae](https://github.com/ipc-sim/ipc-toolkit/commit/6ee60aeaef6d7f88013ee2ee3d544e7403282527))
+#### Added
+* Second version of `update_barrier_stiffness()` that takes an already computed minimum distance and world bounding box diagonal
+
 ### 2020-10-08 ([cc3947d](https://github.com/ipc-sim/ipc-toolkit/commit/cc3947d48bc069488f6a773424e30fe67eb4b5f1))
 #### Added
 * Second version of `initial_barrier_stiffness()` that takes an already computed barrier gradient
