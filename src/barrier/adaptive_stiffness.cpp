@@ -14,23 +14,22 @@ double world_bbox_diagonal(const Eigen::MatrixXd& V)
     return (max - min).norm();
 }
 
-double intial_barrier_stiffness(
-    const Eigen::MatrixXd& V_rest,
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+double initial_barrier_stiffness(
+    double bbox_diagonal,
     double dhat,
     double average_mass,
     const Eigen::VectorXd& grad_energy,
+    const Eigen::VectorXd& grad_barrier,
     double& max_barrier_stiffness,
     double min_barrier_stiffness_scale)
 {
+    assert(average_mass > 0 && min_barrier_stiffness_scale > 0);
+    assert(bbox_diagonal > 0);
+
     double dhat_squared = dhat * dhat;
 
-    double diag = world_bbox_diagonal(V);
-
     // Find a good initial value for κ
-    double d0 = 1e-8 * diag;
+    double d0 = 1e-8 * bbox_diagonal;
     d0 *= d0;
     if (d0 >= dhat_squared) {
         d0 = 0.5 * dhat_squared; // TODO: this is untested
@@ -42,14 +41,8 @@ double intial_barrier_stiffness(
 
     max_barrier_stiffness = 100 * min_barrier_stiffness;
 
-    Constraints constraint_set;
-    construct_constraint_set(V_rest, V, E, F, dhat, constraint_set);
-    int num_active_barriers = constraint_set.num_constraints();
-    Eigen::VectorXd grad_barrier =
-        compute_barrier_potential_gradient(V, E, F, constraint_set, dhat);
-
     double kappa = 1.0;
-    if (num_active_barriers > 0 && grad_barrier.squaredNorm() > 0) {
+    if (grad_barrier.squaredNorm() > 0) {
         // If this value is negative it will be clamped to κ_min anyways
         kappa = -grad_barrier.dot(grad_energy) / grad_barrier.squaredNorm();
         assert(std::isfinite(kappa));
@@ -57,6 +50,30 @@ double intial_barrier_stiffness(
 
     return std::min(
         max_barrier_stiffness, std::max(min_barrier_stiffness, kappa));
+}
+
+// Use the mesh to compute the barrier gradient and world bounding box.
+double initial_barrier_stiffness(
+    const Eigen::MatrixXd& V_rest,
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    double dhat,
+    double average_mass,
+    const Eigen::VectorXd& grad_energy,
+    double& max_barrier_stiffness,
+    double min_barrier_stiffness_scale)
+{
+    double diag = world_bbox_diagonal(V);
+
+    Constraints constraint_set;
+    construct_constraint_set(V_rest, V, E, F, dhat, constraint_set);
+    Eigen::VectorXd grad_barrier =
+        compute_barrier_potential_gradient(V, E, F, constraint_set, dhat);
+
+    return initial_barrier_stiffness(
+        diag, dhat, average_mass, grad_energy, grad_barrier,
+        max_barrier_stiffness, min_barrier_stiffness_scale);
 }
 
 void update_barrier_stiffness(

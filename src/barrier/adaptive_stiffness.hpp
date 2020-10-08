@@ -6,7 +6,19 @@
 
 namespace ipc {
 
-double intial_barrier_stiffness(
+/// Compute an inital barrier stiffness using the barrier potential gradient.
+double initial_barrier_stiffness(
+    double bbox_diagonal,
+    double dhat,
+    double average_mass,
+    const Eigen::VectorXd& grad_energy,
+    const Eigen::VectorXd& grad_barrier,
+    double& max_barrier_stiffness,
+    double min_barrier_stiffness_scale);
+
+/// Compute an inital barrier stiffness using the mesh to compute the barrier
+/// potential gradient.
+double initial_barrier_stiffness(
     const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
@@ -17,6 +29,8 @@ double intial_barrier_stiffness(
     double& max_barrier_stiffness,
     double min_barrier_stiffness_scale = 1e11);
 
+/// Update the barrier stiffness if the distance is decreasing and less than
+/// dhat_epsilon_scale * diag.
 void update_barrier_stiffness(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
