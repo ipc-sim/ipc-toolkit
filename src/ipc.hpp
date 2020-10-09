@@ -21,6 +21,10 @@ namespace ipc {
 /// @param[in] dhat The activation distance of the barrier.
 /// @param[out] constraint_set The constructed set of constraints.
 /// @param[in] ignore_internal_vertices Ignores vertices not connected to edges.
+/// @param[in] vertex_group_ids A group ID per vertex such that vertices with
+///                             the same group id do not collide. An empty
+///                             vector implies all vertices can collide with all
+///                             other vertices.
 void construct_constraint_set(
     const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
@@ -28,7 +32,8 @@ void construct_constraint_set(
     const Eigen::MatrixXi& F,
     double dhat,
     Constraints& constraint_set,
-    bool ignore_internal_vertices = true);
+    bool ignore_internal_vertices = true,
+    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
 ///
@@ -74,13 +79,19 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 /// @param[in] V1 Vertex positions at end as rows of a matrix.
 /// @param[in] E Edges as rows of indicies into V.
 /// @param[in] F Triangular faces as rows of indicies into V.
+/// @param[in] ignore_internal_vertices Ignores vertices not connected to edges.
+/// @param[in] vertex_group_ids A group ID per vertex such that vertices with
+///                             the same group id do not collide. An empty
+///                             vector implies all vertices can collide with all
+///                             other vertices.
 /// @returns True if <b>any</b> collisions occur.
 bool is_step_collision_free(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    bool ignore_internal_vertices = true);
+    bool ignore_internal_vertices = true,
+    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
 
 /// @brief Computes a maximal step size that is collision free.
 ///
@@ -92,13 +103,19 @@ bool is_step_collision_free(
 /// @param[in] V1 Vertex positions at end as rows of a matrix.
 /// @param[in] E Edges as rows of indicies into V.
 /// @param[in] F Triangular faces as rows of indicies into V.
+/// @param[in] ignore_internal_vertices Ignores vertices not connected to edges.
+/// @param[in] vertex_group_ids A group ID per vertex such that vertices with
+///                             the same group id do not collide. An empty
+///                             vector implies all vertices can collide with all
+///                             other vertices.
 /// @returns A step-size \f$\in [0, 1]\f$ that is collision free.
 double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    bool ignore_internal_vertices = true);
+    bool ignore_internal_vertices = true,
+    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
 
 /// @brief Computes the minimum distance between any non-adjacent elements.
 ///

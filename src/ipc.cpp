@@ -70,7 +70,8 @@ void construct_constraint_set(
     const Eigen::MatrixXi& F,
     double dhat,
     Constraints& constraint_set,
-    bool ignore_internal_vertices)
+    bool ignore_internal_vertices,
+    const Eigen::VectorXi& vertex_group_ids)
 {
     double dhat_squared = dhat * dhat;
 
@@ -101,13 +102,13 @@ void construct_constraint_set(
     if (V.cols() == 2) {
         // This is not needed for 3D
         hash_grid.getVertexEdgePairs(
-            E, /*group_ids=*/Eigen::VectorXi(), candidates.ev_candidates);
+            E, vertex_group_ids, candidates.ev_candidates);
     } else {
         // These are not needed for 2D
         hash_grid.getEdgeEdgePairs(
-            E, /*group_ids=*/Eigen::VectorXi(), candidates.ee_candidates);
+            E, vertex_group_ids, candidates.ee_candidates);
         hash_grid.getFaceVertexPairs(
-            F, /*group_ids=*/Eigen::VectorXi(), candidates.fv_candidates);
+            F, vertex_group_ids, candidates.fv_candidates);
     }
 
     // Cull the candidates by measuring the distance and dropping those that are
@@ -629,7 +630,8 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    bool ignore_internal_vertices)
+    bool ignore_internal_vertices,
+    const Eigen::VectorXi& vertex_group_ids)
 {
     int dim = V0.cols();
     assert(V1.cols() == dim);
@@ -659,13 +661,13 @@ bool is_step_collision_free(
     if (dim == 2) {
         // This is not needed for 3D
         hash_grid.getVertexEdgePairs(
-            E, /*group_ids=*/Eigen::VectorXi(), candidates.ev_candidates);
+            E, vertex_group_ids, candidates.ev_candidates);
     } else {
         // These are not needed for 2D
         hash_grid.getEdgeEdgePairs(
-            E, /*group_ids=*/Eigen::VectorXi(), candidates.ee_candidates);
+            E, vertex_group_ids, candidates.ee_candidates);
         hash_grid.getFaceVertexPairs(
-            F, /*group_ids=*/Eigen::VectorXi(), candidates.fv_candidates);
+            F, vertex_group_ids, candidates.fv_candidates);
     }
 
     // Narrow phase
@@ -743,7 +745,8 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    bool ignore_internal_vertices)
+    bool ignore_internal_vertices,
+    const Eigen::VectorXi& vertex_group_ids)
 {
     int dim = V0.cols();
     assert(V1.cols() == dim);
@@ -773,13 +776,13 @@ double compute_collision_free_stepsize(
     if (dim == 2) {
         // This is not needed for 3D
         hash_grid.getVertexEdgePairs(
-            E, /*group_ids=*/Eigen::VectorXi(), candidates.ev_candidates);
+            E, vertex_group_ids, candidates.ev_candidates);
     } else {
         // These are not needed for 2D
         hash_grid.getEdgeEdgePairs(
-            E, /*group_ids=*/Eigen::VectorXi(), candidates.ee_candidates);
+            E, vertex_group_ids, candidates.ee_candidates);
         hash_grid.getFaceVertexPairs(
-            F, /*group_ids=*/Eigen::VectorXi(), candidates.fv_candidates);
+            F, vertex_group_ids, candidates.fv_candidates);
     }
 
     // Narrow phase
