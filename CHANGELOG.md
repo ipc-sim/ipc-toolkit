@@ -10,6 +10,11 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+
+### 2020-10-09 ([b737fb0](https://github.com/ipc-sim/ipc-toolkit/commit/b737fb0e708eac5a7775766f162a5d2067db2fa4))
+#### Added
+* Parameter for vertex group IDs to exclude some collisions (e.g., self collisions)
+
 ### 2020-10-08 ([6ee60ae](https://github.com/ipc-sim/ipc-toolkit/commit/6ee60aeaef6d7f88013ee2ee3d544e7403282527))
 #### Added
 * Second version of `update_barrier_stiffness()` that takes an already computed minimum distance and world bounding box diagonal
