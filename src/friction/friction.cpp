@@ -255,7 +255,8 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const FrictionConstraints& friction_constraint_set,
-    double epsv_times_h)
+    double epsv_times_h,
+    bool project_to_psd)
 {
     double epsv_times_h_squared = epsv_times_h * epsv_times_h;
 
@@ -313,8 +314,9 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
                      * tangent_relative_displacement)
                     * tangent_relative_displacement.transpose();
                 inner_hess.diagonal().array() += f1_div_rel_disp_norm;
-                inner_hess =
-                    project_to_psd(inner_hess); // This is not PD it is PSD
+                if (project_to_psd) {
+                    inner_hess = Eigen::project_to_psd(inner_hess);
+                }
                 inner_hess *= scale;
 
                 // tensor product:

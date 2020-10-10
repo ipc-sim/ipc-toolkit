@@ -84,7 +84,8 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const FrictionConstraints& friction_constraint_set,
-    double epsv_times_h);
+    double epsv_times_h,
+    bool project_to_psd = true);
 
 } // namespace ipc
 
