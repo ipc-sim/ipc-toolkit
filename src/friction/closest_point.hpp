@@ -81,10 +81,6 @@ inline auto point_edge_closest_point(
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    assert(p.size() == 3);
-    assert(e0.size() == 3);
-    assert(e1.size() == 3);
-
     auto e = e1 - e0;
     return (p - e0).dot(e) / e.squaredNorm();
 }
