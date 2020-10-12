@@ -11,6 +11,10 @@ All notable changes to this project will be documented in this file.
 -->
 
 
+### 2020-10-10 ([cb8b53f](https://github.com/ipc-sim/ipc-toolkit/commit/cb8b53fb098598ba5e8c95d4bdb4730e8df9382e))
+#### Fixed
+* Assertions in `compute_collision_free_stepsize`
+
 ### 2020-10-10 ([4a5f84f](https://github.com/ipc-sim/ipc-toolkit/commit/4a5f84f1177bdae1a265dc15a84603bbc389936d))
 #### Fixed
 * Point-triangle distance type by replacing it with the one used in the original IPC code
