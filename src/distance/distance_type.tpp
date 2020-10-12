@@ -49,83 +49,53 @@ PointTriangleDistanceType point_triangle_distance_type(
 {
     typedef typename DerivedP::Scalar T;
 
-    // Compute the barycentric coordinates of the projected_point
-    const auto normal = Eigen::cross(t1 - t0, t2 - t0);
-    const auto projected_p =
-        p - (p - t0).dot(normal) / normal.squaredNorm() * normal;
+    Eigen::Matrix<T, 2, 3> basis;
+    basis.row(0) = t1 - t0;
+    basis.row(1) = t2 - t0;
 
-    typedef Eigen::Matrix<T, 1, 3> RowVector3T;
+    auto normal = Eigen::cross(basis.row(0), basis.row(1));
 
-    Eigen::MatrixX<T> coords;
-    igl::barycentric_coordinates(
-        RowVector3T(projected_p),                          //
-        RowVector3T(t0), RowVector3T(t1), RowVector3T(t2), //
-        coords);
-    T u = coords(0, 0), v = coords(0, 1), w = coords(0, 2);
-    assert(abs(u + v + w - 1) < 1e-12);
+    Eigen::Matrix<T, 2, 3> param;
 
-    // Find the closest point using the barycentric coordinates
-    // https://math.stackexchange.com/a/589362
+    basis.row(1) = Eigen::cross(basis.row(0), normal);
+    param.col(0) = (basis * basis.transpose())
+                       .ldlt()
+                       .solve(basis * Eigen::Vector3<T>(p - t0));
+    if (param(0, 0) > 0.0 && param(0, 0) < 1.0 && param(1, 0) >= 0.0) {
+        return PointTriangleDistanceType::P_E0; // edge 0 is the closest
+    } else {
+        basis.row(0) = t2 - t1;
+        basis.row(1) = Eigen::cross(basis.row(0), normal);
+        param.col(1) = (basis * basis.transpose())
+                           .ldlt()
+                           .solve(basis * Eigen::Vector3<T>(p - t1));
+        if (param(0, 1) > 0.0 && param(0, 1) < 1.0 && param(1, 1) >= 0.0) {
+            return PointTriangleDistanceType::P_E1; // edge 1 is the closest
+        } else {
+            basis.row(0) = t0 - t2;
 
-    // Is closest point in the plane inside the trianlge?
-    if (u >= 0 && v >= 0 && w >= 0) {
-        return PointTriangleDistanceType::P_T;
-    }
-
-    // Check if a vertex is the closest point on the triangle
-    if (u >= 0 && v < 0 && w < 0) {
-        // vertex 0 is the closest
-        return PointTriangleDistanceType::P_T0;
-    }
-    if (u < 0 && v >= 0 && w < 0) {
-        // vertex 1 is the closest
-        return PointTriangleDistanceType::P_T1;
-    }
-    if (u < 0 && v < 0 && w >= 0) {
-        // vertex 2 is the closest
-        return PointTriangleDistanceType::P_T2;
-    }
-
-    // Check if an edge is the closest point on the triangle
-    if (u >= 0 && v >= 0 && w < 0) {
-        // edge 0 is the closest
-        PointEdgeDistanceType pe_dtype = point_edge_distance_type(p, t0, t1);
-        switch (pe_dtype) {
-        case PointEdgeDistanceType::P_E0:
-            return PointTriangleDistanceType::P_T0;
-        case PointEdgeDistanceType::P_E1:
-            return PointTriangleDistanceType::P_T1;
-        case PointEdgeDistanceType::P_E:
-            return PointTriangleDistanceType::P_E0;
+            basis.row(1) = Eigen::cross(basis.row(0), normal);
+            param.col(2) = (basis * basis.transpose())
+                               .ldlt()
+                               .solve(basis * Eigen::Vector3<T>(p - t2));
+            if (param(0, 2) > 0.0 && param(0, 2) < 1.0 && param(1, 2) >= 0.0) {
+                return PointTriangleDistanceType::P_E2; // edge 2 is the closest
+            } else {
+                if (param(0, 0) <= 0.0 && param(0, 2) >= 1.0) {
+                    // vertex 0 is the closest
+                    return PointTriangleDistanceType::P_T0;
+                } else if (param(0, 1) <= 0.0 && param(0, 0) >= 1.0) {
+                    // vertex 1 is the closest
+                    return PointTriangleDistanceType::P_T1;
+                } else if (param(0, 2) <= 0.0 && param(0, 1) >= 1.0) {
+                    // vertex 2 is the closest
+                    return PointTriangleDistanceType::P_T2;
+                } else {
+                    return PointTriangleDistanceType::P_T;
+                }
+            }
         }
     }
-    if (u < 0 && v >= 0 && w >= 0) {
-        // edge 1 is the closest
-        PointEdgeDistanceType pe_dtype = point_edge_distance_type(p, t1, t2);
-        switch (pe_dtype) {
-        case PointEdgeDistanceType::P_E0:
-            return PointTriangleDistanceType::P_T1;
-        case PointEdgeDistanceType::P_E1:
-            return PointTriangleDistanceType::P_T2;
-        case PointEdgeDistanceType::P_E:
-            return PointTriangleDistanceType::P_E1;
-        }
-    }
-    if (u >= 0 && v < 0 && w >= 0) {
-        // edge 2 is the closest
-        PointEdgeDistanceType pe_dtype = point_edge_distance_type(p, t2, t0);
-        switch (pe_dtype) {
-        case PointEdgeDistanceType::P_E0:
-            return PointTriangleDistanceType::P_T2;
-        case PointEdgeDistanceType::P_E1:
-            return PointTriangleDistanceType::P_T0;
-        case PointEdgeDistanceType::P_E:
-            return PointTriangleDistanceType::P_E2;
-        }
-    }
-
-    // This should never happen because u + v + w = 1.
-    throw "point_triangle_distance is not implemented correctly!";
 }
 
 // A more robust implementation of http://geomalgorithms.com/a07-_distance.html
