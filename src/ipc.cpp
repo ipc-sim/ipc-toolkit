@@ -803,7 +803,7 @@ double compute_collision_free_stepsize(
             V1.row(E(ev_candidate.edge_index, 1)), //
             toi);
 
-        assert(!is_collision || (toi >= 0 && toi <= 0));
+        assert(!is_collision || (toi >= 0 && toi <= 1));
 
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;
@@ -827,7 +827,7 @@ double compute_collision_free_stepsize(
             V1.row(E(ee_candidate.edge1_index, 1)), //
             toi);
 
-        assert(!is_collision || (toi >= 0 && toi <= 0));
+        assert(!is_collision || (toi >= 0 && toi <= 1));
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;
         }
@@ -850,7 +850,7 @@ double compute_collision_free_stepsize(
             V1.row(F(fv_candidate.face_index, 2)), //
             toi);
 
-        assert(!is_collision || (toi >= 0 && toi <= 0));
+        assert(!is_collision || (toi >= 0 && toi <= 1));
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;
         }
