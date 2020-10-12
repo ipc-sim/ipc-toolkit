@@ -11,6 +11,14 @@ All notable changes to this project will be documented in this file.
 -->
 
 
+### 2020-10-10 ([4a5f84f](https://github.com/ipc-sim/ipc-toolkit/commit/4a5f84f1177bdae1a265dc15a84603bbc389936d))
+#### Fixed
+* Point-triangle distance type by replacing it with the one used in the original IPC code
+
+### 2020-10-10 ([1d51a61](https://github.com/ipc-sim/ipc-toolkit/commit/1d51a61d60bb25e08c9937285ff9e44459a2223f))
+#### Added
+* Boolean parameter in `compute_friction_potential_hessian` that controls if the hessian is projected to PSD
+
 ### 2020-10-09 ([b737fb0](https://github.com/ipc-sim/ipc-toolkit/commit/b737fb0e708eac5a7775766f162a5d2067db2fa4))
 #### Added
 * Parameter for vertex group IDs to exclude some collisions (e.g., self collisions)

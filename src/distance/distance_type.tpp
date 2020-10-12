@@ -150,7 +150,7 @@ EdgeEdgeDistanceType edge_edge_distance_type(
                 defaultCase = EdgeEdgeDistanceType::EA1_EB;
             }
         }
-        // else defaultCase stays as 8
+        // else defaultCase stays EdgeEdgeDistanceType::EA_EB
     }
 
     if (tN <= 0.0) { // tc < 0 => the t=0 edge is visible

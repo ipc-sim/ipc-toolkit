@@ -43,7 +43,7 @@ TEST_CASE("Dummy test for IPC compilation", "[ipc]")
         ipc::compute_barrier_potential_hessian(V, E, F, constraint_set, dhat);
 }
 
-TEST_CASE("Test IPC full gradient", "[ipc][grad]")
+TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
 {
     double dhat = -1;
     std::string mesh_name;
@@ -94,7 +94,7 @@ TEST_CASE("Test IPC full gradient", "[ipc][grad]")
     CHECK(fd::compare_gradient(grad_b, fgrad_b));
 }
 
-TEST_CASE("Test IPC full hessian", "[ipc][hess]")
+TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
 {
     double dhat = -1;
     std::string mesh_name = "blah.obj";

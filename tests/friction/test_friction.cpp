@@ -13,7 +13,7 @@
 
 using namespace ipc;
 
-TEST_CASE("Test friction gradient and hessian", "[friction][grad][hess]")
+TEST_CASE("Test friction gradient and hessian", "[friction][gradient][hessian]")
 {
     double mu = GENERATE(range(0.0, 1.0, 0.1));
     double epsv_times_h = pow(10, GENERATE(range(-6, 0)));
@@ -233,7 +233,7 @@ bool read_ipc_friction_data(
     return true;
 }
 
-TEST_CASE("Compare IPC friction gradient", "[friction][grad][hess]")
+TEST_CASE("Compare IPC friction gradient", "[friction][gradient][hessian]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
