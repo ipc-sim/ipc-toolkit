@@ -4,7 +4,7 @@
 [![Build status](https://github.com/ipc-sim/ipc-toolkit/workflows/Build/badge.svg?event=push)](https://github.com/ipc-sim/ipc-toolkit/actions?query=workflow%3ABuild+branch%3Amaster+event%3Apush)
 [![License](https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue)](https://github.com/ipc-sim/ipc-toolkit/blob/master/LICENSE)
 
-:warning: This toolkit is in an early stage of development. If you have any problems or find any bugs please post an issue. For a complete list of changes, please see [`CHANGELOG.md`](https://github.com/ipc-sim/ipc-toolkit/blob/master/CHANGELOG.md).
+:warning: This toolkit is in an early stage of development. If you have any problems or find any bugs please post an issue. For a complete list of changes, please see [`CHANGELOG.md`](https://github.com/ipc-sim/ipc-toolkit/blob/master/CHANGELOG.md). Meanwhile for a definiteive refrence for all these functions please see the IPC source code.
 
 ## Integrating IPC Toolkit into your project
 
