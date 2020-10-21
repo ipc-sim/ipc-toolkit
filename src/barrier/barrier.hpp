@@ -18,7 +18,7 @@ namespace ipc {
  * @param barrier_type  Barrier function type to use.
  * @return The value of the barrier function at x.
  */
-template <typename T> T barrier(T d, double dhat);
+template <typename T> T barrier(const T& d, double dhat);
 
 double barrier_gradient(double d, double dhat);
 

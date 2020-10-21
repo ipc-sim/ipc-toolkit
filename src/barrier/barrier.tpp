@@ -3,7 +3,7 @@
 
 namespace ipc {
 
-template <typename T> T barrier(T d, double dhat)
+template <typename T> T barrier(const T& d, double dhat)
 {
     if (d <= T(0)) {
         return T(std::numeric_limits<double>::infinity());
