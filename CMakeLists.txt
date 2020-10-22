@@ -3,9 +3,19 @@ project(IPCToolkit)
 
 ################################################################################
 
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+  set(IPC_TOOLKIT_TOPLEVEL_PROJECT ON)
+else()
+  set(IPC_TOOLKIT_TOPLEVEL_PROJECT OFF)
+endif()
+
 # project-options
-option(IPC_TOOLKIT_BUILD_UNIT_TESTS  "Build unit-tests"      ON)
-option(IPC_TOOLKIT_WITH_LOGGER       "Enables logger "       ON)
+if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
+  option(IPC_TOOLKIT_BUILD_UNIT_TESTS "Build unit-tests"  ON)
+else()
+  option(IPC_TOOLKIT_BUILD_UNIT_TESTS "Build unit-tests" OFF)
+endif()
+option(IPC_TOOLKIT_WITH_LOGGER        "Enables logger "   ON)
 
 ################################################################################
 
@@ -103,6 +113,13 @@ if(IPC_TOOLKIT_BUILD_UNIT_TESTS)
     ipc_toolkit_download_catch2()
     add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/Catch2 catch2)
     list(APPEND CMAKE_MODULE_PATH ${IPC_TOOLKIT_EXTERNAL}/Catch2/contrib)
+  endif()
+
+  # finite-diff
+  if(NOT TARGET FiniteDiff::FiniteDiff)
+    ipc_toolkit_download_finite_diff()
+    add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/finite-diff EXCLUDE_FROM_ALL)
+    add_library(FiniteDiff::FiniteDiff ALIAS FiniteDiff)
   endif()
 
   include(CTest)

@@ -36,13 +36,6 @@ if(NOT TARGET TBB::tbb)
   add_library(TBB::tbb ALIAS tbb_static)
 endif()
 
-# finite-diff
-if(NOT TARGET FiniteDiff::FiniteDiff)
-  ipc_toolkit_download_finite_diff()
-  add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/finite-diff EXCLUDE_FROM_ALL)
-  add_library(FiniteDiff::FiniteDiff ALIAS FiniteDiff)
-endif()
-
 # Etienne Vouga's CTCD Library
 if(NOT TARGET EVCTCD)
   ipc_toolkit_download_evctcd()
@@ -57,11 +50,9 @@ if(NOT TARGET EVCTCD)
 endif()
 
 # Logger
-if(IPC_TOOLKIT_WITH_LOGGER)
-  if(NOT TARGET spdlog::spdlog)
-    download_spdlog()
-    add_library(spdlog INTERFACE)
-    add_library(spdlog::spdlog ALIAS spdlog)
-    target_include_directories(spdlog SYSTEM INTERFACE ${IPC_TOOLKIT_EXTERNAL}/spdlog/include)
-  endif()
+if(IPC_TOOLKIT_WITH_LOGGER AND NOT TARGET spdlog::spdlog)
+  ipc_toolkit_download_spdlog()
+  add_library(spdlog INTERFACE)
+  add_library(spdlog::spdlog ALIAS spdlog)
+  target_include_directories(spdlog SYSTEM INTERFACE ${IPC_TOOLKIT_EXTERNAL}/spdlog/include)
 endif()

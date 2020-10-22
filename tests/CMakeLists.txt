@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.1)
 
 add_executable(${PROJECT_NAME}_tests
   main.cpp
-  ${IPC_TOOLKIT_EXTERNAL}/finite-diff/finitediff.cpp
 
   # Test barrier and dertivatives
   barrier/test_barrier.cpp
@@ -43,8 +42,7 @@ target_link_libraries(${PROJECT_NAME}_tests PUBLIC ${PROJECT_NAME})
 
 target_link_libraries(${PROJECT_NAME}_tests PUBLIC Catch2::Catch2 warnings::all)
 
-# target_link_libraries(${PROJECT_NAME}_tests PUBLIC FiniteDiff::FiniteDiff)
-target_include_directories(${PROJECT_NAME}_tests PUBLIC ${IPC_TOOLKIT_EXTERNAL}/finite-diff)
+target_link_libraries(${PROJECT_NAME}_tests PUBLIC FiniteDiff::FiniteDiff)
 
 target_link_libraries(${PROJECT_NAME}_tests PUBLIC spdlog::spdlog)
 

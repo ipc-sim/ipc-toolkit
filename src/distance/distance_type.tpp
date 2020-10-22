@@ -3,7 +3,6 @@
 #include <iostream>
 
 #include <Eigen/Geometry>
-#include <igl/barycentric_coordinates.h>
 
 #include <ipc/utils/eigen_ext.hpp>
 #ifdef IPC_TOOLKIT_WITH_LOGGER
