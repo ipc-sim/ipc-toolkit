@@ -11,6 +11,13 @@ All notable changes to this project will be documented in this file.
 -->
 
 
+### 2020-10-22 ([XXXXXXX](https://github.com/ipc-sim/ipc-toolkit/commit/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX))
+#### Fixed
+* Mollification of EE constraints that have a distance type of PP or PE
+* If there is no mollification needed then the PP and PE constraints are stored with multiplicity
+* Set the parallel EE friction constraint threshold to eps_x like in IPC
+    * This avoid needing the mollification for the normal force and these forces are small anyways
+
 ### 2020-10-10 ([cb8b53f](https://github.com/ipc-sim/ipc-toolkit/commit/cb8b53fb098598ba5e8c95d4bdb4730e8df9382e))
 #### Fixed
 * Assertions in `compute_collision_free_stepsize`

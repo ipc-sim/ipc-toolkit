@@ -179,6 +179,17 @@ void construct_constraint_set(
             V.row(ea0i), V.row(ea1i), V.row(eb0i), V.row(eb1i), dtype);
 
         if (distance_sqr < dhat_squared) {
+            double eps_x = edge_edge_mollifier_threshold(
+                V_rest.row(ea0i), V_rest.row(ea1i), //
+                V_rest.row(eb0i), V_rest.row(eb1i));
+            double ee_cross_norm_sqr = edge_edge_cross_squarednorm(
+                V.row(ea0i), V.row(ea1i), V.row(eb0i), V.row(eb1i));
+            if (ee_cross_norm_sqr < eps_x) {
+                // NOTE: This may not actually the distance type, but all EE
+                // pairs requiring mollification must be mollified later.
+                dtype = EdgeEdgeDistanceType::EA_EB;
+            }
+
             switch (dtype) {
             case EdgeEdgeDistanceType::EA0_EB0:
                 add_vertex_vertex_constraint(
@@ -221,13 +232,7 @@ void construct_constraint_set(
                 break;
 
             case EdgeEdgeDistanceType::EA_EB:
-                constraint_set.ee_constraints.emplace_back(
-                    ee_candidate,
-                    edge_edge_mollifier_threshold(
-                        V_rest.row(E(ee_candidate.edge0_index, 0)),
-                        V_rest.row(E(ee_candidate.edge0_index, 1)),
-                        V_rest.row(E(ee_candidate.edge1_index, 0)),
-                        V_rest.row(E(ee_candidate.edge1_index, 1))));
+                constraint_set.ee_constraints.emplace_back(ee_candidate, eps_x);
                 break;
             }
         }
@@ -321,9 +326,9 @@ double compute_barrier_potential(
         const auto& eb0 = V.row(E(ee_constraint.edge1_index, 0));
         const auto& eb1 = V.row(E(ee_constraint.edge1_index, 1));
 
-        // The distance type is known because of construct_constraint_set()
-        double distance_sqr =
-            edge_edge_distance(ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB);
+        // The distance type is unknown because of mollified PP and PE
+        // constraints where also added as EE constraints.
+        double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1);
         potential +=
             edge_edge_mollifier(ea0, ea1, eb0, eb1, ee_constraint.eps_x)
             * barrier(distance_sqr, dhat_squared);
@@ -408,12 +413,14 @@ Eigen::VectorXd compute_barrier_potential_gradient(
         const auto& eb0 = V.row(E(ee_constraint.edge1_index, 0));
         const auto& eb1 = V.row(E(ee_constraint.edge1_index, 1));
 
-        double distance_sqr =
-            edge_edge_distance(ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB);
+        // The distance type is unknown because of mollified PP and PE
+        // constraints where also added as EE constraints.
+        EdgeEdgeDistanceType dtype =
+            edge_edge_distance_type(ea0, ea1, eb0, eb1);
+        double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
         Eigen::VectorXd local_distance_grad;
         edge_edge_distance_gradient(
-            ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB,
-            local_distance_grad);
+            ea0, ea1, eb0, eb1, dtype, local_distance_grad);
 
         double mollifier =
             edge_edge_mollifier(ea0, ea1, eb0, eb1, ee_constraint.eps_x);
@@ -549,15 +556,16 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
         const auto& eb1 = V.row(E(ee_constraint.edge1_index, 1));
 
         // Compute distance derivatives
-        double distance_sqr =
-            edge_edge_distance(ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB);
+        // The distance type is unknown because of mollified PP and PE
+        // constraints where also added as EE constraints.
+        EdgeEdgeDistanceType dtype =
+            edge_edge_distance_type(ea0, ea1, eb0, eb1);
+        double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
         Eigen::VectorXd distance_grad;
-        edge_edge_distance_gradient(
-            ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB, distance_grad);
+        edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype, distance_grad);
         Eigen::MatrixXd distance_hess;
         edge_edge_distance_hessian(
-            ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB, distance_hess,
-            project_to_psd);
+            ea0, ea1, eb0, eb1, dtype, distance_hess, project_to_psd);
 
         // Compute mollifier derivatives
         double mollifier =
@@ -891,12 +899,13 @@ double compute_minimum_distance(
     }
 
     for (const auto& ee_constraint : constraint_set.ee_constraints) {
+        // The distance type is unknown because of mollified PP and PE
+        // constraints where also added as EE constraints.
         double distance_sqr = edge_edge_distance(
             V.row(E(ee_constraint.edge0_index, 0)),
             V.row(E(ee_constraint.edge0_index, 1)),
             V.row(E(ee_constraint.edge1_index, 0)),
-            V.row(E(ee_constraint.edge1_index, 1)),
-            EdgeEdgeDistanceType::EA_EB);
+            V.row(E(ee_constraint.edge1_index, 1)));
 
         if (distance_sqr < min_distance) {
             min_distance = distance_sqr;

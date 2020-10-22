@@ -4,6 +4,7 @@
 
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/friction/closest_point.hpp>
@@ -80,8 +81,8 @@ void construct_friction_constraint_set(
         const auto& eb1 = V.row(E(ee_constraint.edge1_index, 1));
 
         // Skip EE constraints that are close to parallel
-        // TODO: Test this threshold
-        if (Eigen::cross(ea1 - ea0, eb1 - eb0).norm() < 1e-10) {
+        if (edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1)
+            < ee_constraint.eps_x) {
             continue;
         }
 
@@ -93,6 +94,8 @@ void construct_friction_constraint_set(
             edge_edge_tangent_basis(ea0, ea1, eb0, eb1);
         friction_constraint_set.ee_constraints.back().normal_force_magnitude =
             compute_normal_force_magnitude(
+                // The distance type is known because mollified PP and PE were
+                // skipped above.
                 edge_edge_distance(
                     ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB),
                 dhat_squared, barrier_stiffness);
