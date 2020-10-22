@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 -->
 
 
-### 2020-10-22 ([XXXXXXX](https://github.com/ipc-sim/ipc-toolkit/commit/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX))
+### 2020-10-22 ([9be6c0f](https://github.com/ipc-sim/ipc-toolkit/commit/9be6c0f7e2534e426e3f09f4c547406d50d5cf9c))
 #### Fixed
 * Mollification of EE constraints that have a distance type of PP or PE
 * If there is no mollification needed then the PP and PE constraints are stored with multiplicity
