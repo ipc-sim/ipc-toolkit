@@ -36,14 +36,11 @@ inline void point_point_distance_gradient(
 /// @note The distance is actually squared distance.
 /// @param[in] p0,p1 The two points.
 /// @param[out] hess The computed hessian.
-/// @param[in] project_to_psd True if the hessian should be projected to
-///                           positive semi-definite.
 template <typename DerivedP0, typename DerivedP1, typename DerivedHess>
 inline void point_point_distance_hessian(
     const Eigen::MatrixBase<DerivedP0>& p0,
     const Eigen::MatrixBase<DerivedP1>& p1,
-    Eigen::PlainObjectBase<DerivedHess>& hess,
-    bool project_to_psd = false)
+    Eigen::PlainObjectBase<DerivedHess>& hess)
 {
     int dim = p0.size();
 
@@ -53,10 +50,6 @@ inline void point_point_distance_hessian(
     hess.diagonal().setConstant(2.0);
     for (int i = 0; i < dim; i++) {
         hess(i, i + dim) = hess(i + dim, i) = -2;
-    }
-
-    if (project_to_psd) {
-        Eigen::project_to_psd(hess);
     }
 }
 

@@ -255,7 +255,7 @@ TEST_CASE("Point-triangle distance hessian", "[distance][point-triangle][hess]")
     };
 
     Eigen::MatrixXd hess;
-    point_triangle_distance_hessian(p, t0, t1, t2, hess, false);
+    point_triangle_distance_hessian(p, t0, t1, t2, hess);
 
     Eigen::MatrixXd fhess;
     fd::finite_hessian(x, f, fhess);

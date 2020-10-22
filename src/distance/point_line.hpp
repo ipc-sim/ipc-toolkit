@@ -103,8 +103,7 @@ void point_line_distance_hessian(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1,
-    Eigen::PlainObjectBase<DerivedHess>& hess,
-    bool project_to_psd = false)
+    Eigen::PlainObjectBase<DerivedHess>& hess)
 {
     hess.resize(
         p.size() + e0.size() + e1.size(), p.size() + e0.size() + e1.size());
@@ -115,9 +114,6 @@ void point_line_distance_hessian(
         autogen::point_line_distance_hessian_3D(
             p[0], p[1], p[2], e0[0], e0[1], e0[2], e1[0], e1[1], e1[2],
             hess.data());
-    }
-    if (project_to_psd) {
-        Eigen::project_to_psd(hess);
     }
 }
 

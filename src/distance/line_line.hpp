@@ -91,8 +91,6 @@ void line_line_distance_gradient(
 /// @param[in] ea0,ea1 The points of the edge defining the first line.
 /// @param[in] eb0,eb1 The points of the edge defining the second line.
 /// @param[out] hess The computed hessian.
-/// @param[in] project_to_psd True if the hessian should be projected to
-///                           positive semi-definite.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -104,8 +102,7 @@ void line_line_distance_hessian(
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
-    Eigen::PlainObjectBase<DerivedHess>& hess,
-    bool project_to_psd = false)
+    Eigen::PlainObjectBase<DerivedHess>& hess)
 {
     hess.resize(
         ea0.size() + ea1.size() + eb0.size() + eb1.size(),
@@ -113,9 +110,6 @@ void line_line_distance_hessian(
     autogen::line_line_distance_hessian(
         ea0[0], ea0[1], ea0[2], ea1[0], ea1[1], ea1[2], eb0[0], eb0[1], eb0[2],
         eb1[0], eb1[1], eb1[2], hess.data());
-    if (project_to_psd) {
-        Eigen::project_to_psd(hess);
-    }
 }
 
 } // namespace ipc

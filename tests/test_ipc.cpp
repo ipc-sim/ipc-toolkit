@@ -131,8 +131,8 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     CAPTURE(mesh_name, dhat);
     CHECK(constraint_set.num_constraints() > 0);
 
-    Eigen::MatrixXd hess_b =
-        ipc::compute_barrier_potential_hessian(V, E, F, constraint_set, dhat);
+    Eigen::MatrixXd hess_b = ipc::compute_barrier_potential_hessian(
+        V, E, F, constraint_set, dhat, /*project_to_psd=*/false);
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {

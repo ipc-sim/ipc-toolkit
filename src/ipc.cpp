@@ -501,13 +501,17 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
         Eigen::VectorXd local_grad;
         point_point_distance_gradient(p0, p1, local_grad);
         Eigen::MatrixXd local_hess;
-        point_point_distance_hessian(p0, p1, local_hess, project_to_psd);
+        point_point_distance_hessian(p0, p1, local_hess);
 
         local_hess *= barrier_gradient(distance_sqr, dhat_squared);
         local_hess += barrier_hessian(distance_sqr, dhat_squared) * local_grad
             * local_grad.transpose();
 
         local_hess *= vv_constraint.multiplicity;
+
+        if (project_to_psd) {
+            local_hess = Eigen::project_to_psd(local_hess);
+        }
 
         // Map from local to global gradient
         std::vector<long> ids = { { vv_constraint.vertex0_index,
@@ -529,13 +533,17 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
             p, e0, e1, PointEdgeDistanceType::P_E, local_grad);
         Eigen::MatrixXd local_hess;
         point_edge_distance_hessian(
-            p, e0, e1, PointEdgeDistanceType::P_E, local_hess, project_to_psd);
+            p, e0, e1, PointEdgeDistanceType::P_E, local_hess);
 
         local_hess *= barrier_gradient(distance_sqr, dhat_squared);
         local_hess += barrier_hessian(distance_sqr, dhat_squared) * local_grad
             * local_grad.transpose();
 
         local_hess *= ev_constraint.multiplicity;
+
+        if (project_to_psd) {
+            local_hess = Eigen::project_to_psd(local_hess);
+        }
 
         // Map from local to global gradient
         std::vector<long> ids = { { ev_constraint.vertex_index,
@@ -564,8 +572,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
         Eigen::VectorXd distance_grad;
         edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype, distance_grad);
         Eigen::MatrixXd distance_hess;
-        edge_edge_distance_hessian(
-            ea0, ea1, eb0, eb1, dtype, distance_hess, project_to_psd);
+        edge_edge_distance_hessian(ea0, ea1, eb0, eb1, dtype, distance_hess);
 
         // Compute mollifier derivatives
         double mollifier =
@@ -590,6 +597,10 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
                 * (hess_b * distance_grad * distance_grad.transpose()
                    + grad_b * distance_hess);
 
+        if (project_to_psd) {
+            local_hess = Eigen::project_to_psd(local_hess);
+        }
+
         // Map from local to global gradient
         std::vector<long> ids = {
             { E(ee_constraint.edge0_index, 0), E(ee_constraint.edge0_index, 1),
@@ -613,12 +624,15 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
             p, t0, t1, t2, PointTriangleDistanceType::P_T, local_grad);
         Eigen::MatrixXd local_hess;
         point_triangle_distance_hessian(
-            p, t0, t1, t2, PointTriangleDistanceType::P_T, local_hess,
-            project_to_psd);
+            p, t0, t1, t2, PointTriangleDistanceType::P_T, local_hess);
 
         local_hess *= barrier_gradient(distance_sqr, dhat_squared);
         local_hess += barrier_hessian(distance_sqr, dhat_squared) * local_grad
             * local_grad.transpose();
+
+        if (project_to_psd) {
+            local_hess = Eigen::project_to_psd(local_hess);
+        }
 
         // Map from local to global gradient
         std::vector<long> ids = {
