@@ -10,6 +10,9 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### 2020-10-22 ([51f4903](https://github.com/ipc-sim/ipc-toolkit/commit/51f49030dbeec15a6a7544826f5531811a779402))
+#### Fixed
+* Projection of the hessian to PSD. This was completely broken as the projected matrix was never used.
 
 ### 2020-10-22 ([9be6c0f](https://github.com/ipc-sim/ipc-toolkit/commit/9be6c0f7e2534e426e3f09f4c547406d50d5cf9c))
 #### Fixed
