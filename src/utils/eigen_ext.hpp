@@ -39,6 +39,10 @@ using VectorX3i = VectorX3<int>;
 template <typename T> using VectorX6 = Vector<T, Dynamic, 6>;
 /// @brief A dynamic size matrix with a fixed maximum size of 6 x 1
 using VectorX6d = VectorX6<double>;
+/// @brief A dynamic size matrix with a fixed maximum size of 9 x 1
+using VectorX9d = Vector<double, Dynamic, 9>;
+/// @brief A dynamic size matrix with a fixed maximum size of 12 x 1
+using VectorX12d = Vector<double, Dynamic, 12>;
 /// @brief A dynamic size matrix with a fixed maximum size of 6 x 1
 using VectorX6b = VectorX6<bool>;
 /// @brief A dynamic size matrix with a fixed maximum size of 3 x 3

@@ -366,7 +366,7 @@ Eigen::VectorXd compute_barrier_potential_gradient(
         const auto& p0 = V.row(vv_constraint.vertex0_index);
         const auto& p1 = V.row(vv_constraint.vertex1_index);
 
-        Eigen::VectorXd local_grad;
+        Eigen::VectorX6d local_grad;
         point_point_distance_gradient(p0, p1, local_grad);
 
         double distance_sqr = point_point_distance(p0, p1);
@@ -387,7 +387,7 @@ Eigen::VectorXd compute_barrier_potential_gradient(
         const auto& e0 = V.row(E(ev_constraint.edge_index, 0));
         const auto& e1 = V.row(E(ev_constraint.edge_index, 1));
 
-        Eigen::VectorXd local_grad;
+        Eigen::VectorX9d local_grad;
         point_edge_distance_gradient(
             p, e0, e1, PointEdgeDistanceType::P_E, local_grad);
 
@@ -418,17 +418,17 @@ Eigen::VectorXd compute_barrier_potential_gradient(
         EdgeEdgeDistanceType dtype =
             edge_edge_distance_type(ea0, ea1, eb0, eb1);
         double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
-        Eigen::VectorXd local_distance_grad;
+        Eigen::VectorX12d local_distance_grad;
         edge_edge_distance_gradient(
             ea0, ea1, eb0, eb1, dtype, local_distance_grad);
 
         double mollifier =
             edge_edge_mollifier(ea0, ea1, eb0, eb1, ee_constraint.eps_x);
-        Eigen::VectorXd local_mollifier_grad;
+        Eigen::VectorX12d local_mollifier_grad;
         edge_edge_mollifier_gradient(
             ea0, ea1, eb0, eb1, ee_constraint.eps_x, local_mollifier_grad);
 
-        Eigen::VectorXd local_grad =
+        Eigen::VectorX12d local_grad =
             local_mollifier_grad * barrier(distance_sqr, dhat_squared)
             + mollifier * barrier_gradient(distance_sqr, dhat_squared)
                 * local_distance_grad;
@@ -451,7 +451,7 @@ Eigen::VectorXd compute_barrier_potential_gradient(
         const auto& t1 = V.row(F(fv_constraint.face_index, 1));
         const auto& t2 = V.row(F(fv_constraint.face_index, 2));
 
-        Eigen::VectorXd local_grad;
+        Eigen::VectorX12d local_grad;
         point_triangle_distance_gradient(
             p, t0, t1, t2, PointTriangleDistanceType::P_T, local_grad);
 
@@ -498,9 +498,9 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
         const auto& p1 = V.row(vv_constraint.vertex1_index);
 
         double distance_sqr = point_point_distance(p0, p1);
-        Eigen::VectorXd local_grad;
+        Eigen::VectorX6d local_grad;
         point_point_distance_gradient(p0, p1, local_grad);
-        Eigen::MatrixXd local_hess;
+        Eigen::MatrixXX6d local_hess;
         point_point_distance_hessian(p0, p1, local_hess);
 
         local_hess *= barrier_gradient(distance_sqr, dhat_squared);
@@ -528,7 +528,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 
         double distance_sqr =
             point_edge_distance(p, e0, e1, PointEdgeDistanceType::P_E);
-        Eigen::VectorXd local_grad;
+        Eigen::VectorX9d local_grad;
         point_edge_distance_gradient(
             p, e0, e1, PointEdgeDistanceType::P_E, local_grad);
         Eigen::MatrixXd local_hess;
@@ -569,7 +569,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
         EdgeEdgeDistanceType dtype =
             edge_edge_distance_type(ea0, ea1, eb0, eb1);
         double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
-        Eigen::VectorXd distance_grad;
+        Eigen::VectorX12d distance_grad;
         edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype, distance_grad);
         Eigen::MatrixXd distance_hess;
         edge_edge_distance_hessian(ea0, ea1, eb0, eb1, dtype, distance_hess);
@@ -577,7 +577,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
         // Compute mollifier derivatives
         double mollifier =
             edge_edge_mollifier(ea0, ea1, eb0, eb1, ee_constraint.eps_x);
-        Eigen::VectorXd mollifier_grad;
+        Eigen::VectorX12d mollifier_grad;
         edge_edge_mollifier_gradient(
             ea0, ea1, eb0, eb1, ee_constraint.eps_x, mollifier_grad);
         Eigen::MatrixXd mollifier_hess;
@@ -619,7 +619,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 
         double distance_sqr = point_triangle_distance(
             p, t0, t1, t2, PointTriangleDistanceType::P_T);
-        Eigen::VectorXd local_grad;
+        Eigen::VectorX12d local_grad;
         point_triangle_distance_gradient(
             p, t0, t1, t2, PointTriangleDistanceType::P_T, local_grad);
         Eigen::MatrixXd local_hess;

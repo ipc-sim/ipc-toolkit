@@ -10,7 +10,7 @@
 
 using namespace ipc;
 
-TEST_CASE("Dummy test for IPC compilation", "[ipc]")
+TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
 {
     double dhat = -1;
     std::string mesh_name;
@@ -36,11 +36,21 @@ TEST_CASE("Dummy test for IPC compilation", "[ipc]")
     CAPTURE(mesh_name, dhat);
     CHECK(constraint_set.num_constraints() > 0);
 
-    double b = ipc::compute_barrier_potential(V, E, F, constraint_set, dhat);
-    Eigen::VectorXd grad_b =
-        ipc::compute_barrier_potential_gradient(V, E, F, constraint_set, dhat);
-    Eigen::MatrixXd hess_b =
-        ipc::compute_barrier_potential_hessian(V, E, F, constraint_set, dhat);
+    BENCHMARK("Compute barrier potential")
+    {
+        double b =
+            ipc::compute_barrier_potential(V, E, F, constraint_set, dhat);
+    };
+    BENCHMARK("Compute barrier potential gradient")
+    {
+        Eigen::VectorXd grad_b = ipc::compute_barrier_potential_gradient(
+            V, E, F, constraint_set, dhat);
+    };
+    BENCHMARK("Compute barrier potential hessian")
+    {
+        Eigen::MatrixXd hess_b = ipc::compute_barrier_potential_hessian(
+            V, E, F, constraint_set, dhat);
+    };
 }
 
 TEST_CASE("Test IPC full gradient", "[ipc][gradient]")

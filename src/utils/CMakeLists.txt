@@ -1,7 +1,6 @@
 set(SOURCES
   eigen_ext.cpp
   eigen_ext.hpp
-  local_hessian_to_global_triplets.cpp
   local_hessian_to_global_triplets.hpp
   logger.cpp
   logger.hpp
