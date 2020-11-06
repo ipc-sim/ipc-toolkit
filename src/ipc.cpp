@@ -125,6 +125,7 @@ void construct_constraint_set(
     };
     std::unordered_map<VertexVertexConstraint, long, decltype(vv_hash)>
         vv_to_index(/*min_buckets=*/candidates.size(), vv_hash);
+
     auto ev_hash = [&V](const EdgeVertexConstraint& ev_constraint) -> size_t {
         // There are max E.rows() * V.rows() constraints
         return size_t(
@@ -158,10 +159,10 @@ void construct_constraint_set(
 
             case PointEdgeDistanceType::P_E:
                 // ev_candidates is a set, so no duplicate EV constraints
-                ev_to_index.emplace(
-                    EdgeVertexCandidate(ev_candidate.edge_index, vi),
-                    constraint_set.ev_constraints.size());
                 constraint_set.ev_constraints.emplace_back(ev_candidate);
+                ev_to_index.emplace(
+                    constraint_set.ev_constraints.back(),
+                    constraint_set.ev_constraints.size() - 1);
                 break;
             }
         }
@@ -239,6 +240,7 @@ void construct_constraint_set(
     }
 
     for (const auto& fv_candidate : candidates.fv_candidates) {
+        long vi = fv_candidate.vertex_index;
         long f0i = F(fv_candidate.face_index, 0);
         long f1i = F(fv_candidate.face_index, 1);
         long f2i = F(fv_candidate.face_index, 2);
@@ -255,33 +257,36 @@ void construct_constraint_set(
         if (distance_sqr < dhat_squared) {
             switch (dtype) {
             case PointTriangleDistanceType::P_T0:
-                constraint_set.vv_constraints.emplace_back(
-                    fv_candidate.vertex_index, f0i);
+                add_vertex_vertex_constraint(
+                    constraint_set.vv_constraints, vv_to_index, vi, f0i);
                 break;
 
             case PointTriangleDistanceType::P_T1:
-                constraint_set.vv_constraints.emplace_back(
-                    fv_candidate.vertex_index, f1i);
+                add_vertex_vertex_constraint(
+                    constraint_set.vv_constraints, vv_to_index, vi, f1i);
                 break;
 
             case PointTriangleDistanceType::P_T2:
-                constraint_set.vv_constraints.emplace_back(
-                    fv_candidate.vertex_index, f2i);
+                add_vertex_vertex_constraint(
+                    constraint_set.vv_constraints, vv_to_index, vi, f2i);
                 break;
 
             case PointTriangleDistanceType::P_E0:
-                constraint_set.ev_constraints.emplace_back(
-                    find_edge(E, f0i, f1i), fv_candidate.vertex_index);
+                add_edge_vertex_constraint(
+                    constraint_set.ev_constraints, ev_to_index,
+                    find_edge(E, f0i, f1i), vi);
                 break;
 
             case PointTriangleDistanceType::P_E1:
-                constraint_set.ev_constraints.emplace_back(
-                    find_edge(E, f1i, f2i), fv_candidate.vertex_index);
+                add_edge_vertex_constraint(
+                    constraint_set.ev_constraints, ev_to_index,
+                    find_edge(E, f1i, f2i), vi);
                 break;
 
             case PointTriangleDistanceType::P_E2:
-                constraint_set.ev_constraints.emplace_back(
-                    find_edge(E, f2i, f0i), fv_candidate.vertex_index);
+                add_edge_vertex_constraint(
+                    constraint_set.ev_constraints, ev_to_index,
+                    find_edge(E, f2i, f0i), vi);
                 break;
 
             case PointTriangleDistanceType::P_T:
