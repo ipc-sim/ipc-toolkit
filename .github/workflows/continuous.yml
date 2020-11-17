@@ -98,7 +98,6 @@ jobs:
         # https://github.com/actions/cache/issues/101
       - name: Set env
         run: |
-          echo "::set-env name=appdata::$($env:LOCALAPPDATA)"
           echo "appdata=$env:LOCALAPPDATA" >> ${env:GITHUB_ENV}
 
       - name: Cache build
