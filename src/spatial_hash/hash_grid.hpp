@@ -3,7 +3,7 @@
 #include <vector>
 
 #include <Eigen/Core>
-#include <tbb/tbb.h>
+#include <tbb/concurrent_vector.h>
 
 #include <ipc/spatial_hash/collision_candidate.hpp>
 #include <ipc/utils/eigen_ext.hpp>

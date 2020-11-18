@@ -45,7 +45,7 @@ endfunction()
 function(ipc_toolkit_download_tbb)
    ipc_toolkit_download_project(tbb
     GIT_REPOSITORY https://github.com/wjakob/tbb.git
-    GIT_TAG        20357d83871e4cb93b2c724fe0c337cd999fd14f
+    GIT_TAG        141b0e310e1fb552bdca887542c9c1a8544d6503
   )
 endfunction()
 
