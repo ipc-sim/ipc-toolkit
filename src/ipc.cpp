@@ -76,7 +76,7 @@ void construct_constraint_set(
     double dhat_squared = dhat * dhat;
 
     Candidates candidates;
-    HashGrid hash_grid;
+    static HashGrid hash_grid;
     hash_grid.resize(V, V, E, /*inflation_radius=*/dhat);
 
     // Assumes the edges connect to all boundary vertices
@@ -110,6 +110,8 @@ void construct_constraint_set(
         hash_grid.getFaceVertexPairs(
             F, vertex_group_ids, candidates.fv_candidates);
     }
+
+    hash_grid.clear();
 
     // Cull the candidates by measuring the distance and dropping those that are
     // greater than dhat.
@@ -665,7 +667,7 @@ bool is_step_collision_free(
 
     // Broad phase
     Candidates candidates;
-    HashGrid hash_grid;
+    static HashGrid hash_grid;
     hash_grid.resize(V0, V1, E);
 
     // Assumes the edges connect to all boundary vertices
@@ -696,6 +698,8 @@ bool is_step_collision_free(
         hash_grid.getFaceVertexPairs(
             F, vertex_group_ids, candidates.fv_candidates);
     }
+
+    hash_grid.clear();
 
     // Narrow phase
     double eta = 1e-6;
@@ -780,7 +784,7 @@ double compute_collision_free_stepsize(
 
     // Broad phase
     Candidates candidates;
-    HashGrid hash_grid;
+    static HashGrid hash_grid;
     hash_grid.resize(V0, V1, E);
 
     // Assumes the edges connect to all boundary vertices
@@ -811,6 +815,8 @@ double compute_collision_free_stepsize(
         hash_grid.getFaceVertexPairs(
             F, vertex_group_ids, candidates.fv_candidates);
     }
+
+    hash_grid.clear();
 
     // Narrow phase
     double earliest_toi = std::numeric_limits<double>::infinity();

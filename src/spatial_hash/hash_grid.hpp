@@ -171,6 +171,14 @@ public:
         const Eigen::VectorXi& group_ids,
         std::vector<FaceVertexCandidate>& fv_candidates);
 
+    /// @brief Clear the hash grid.
+    inline void clear()
+    {
+        m_vertexItems.clear();
+        m_edgeItems.clear();
+        m_faceItems.clear();
+    }
+
 protected:
     /// @brief Add an AABB of the extents to the hash grid.
     void addElement(const AABB& aabb, const int id, HashItems& items);
@@ -183,14 +191,6 @@ protected:
             x < m_gridSize[0] && y < m_gridSize[1]
             && (m_gridSize.size() == 2 || z < m_gridSize[2]));
         return (z * m_gridSize[1] + y) * m_gridSize[0] + x;
-    }
-
-    /// @brief Clear the hash grid.
-    inline void clear()
-    {
-        m_vertexItems.clear();
-        m_edgeItems.clear();
-        m_faceItems.clear();
     }
 
 protected:
