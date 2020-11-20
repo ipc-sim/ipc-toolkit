@@ -1,7 +1,9 @@
 #include <ipc/spatial_hash/hash_grid.hpp>
 
+#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
 #include <tbb/parallel_for.h>
-#include <tbb/parallel_sort.h>
+#endif
+#include <tbb/parallel_sort.h> // Still use this even if TBB is disabled
 
 #ifdef IPC_TOOLKIT_WITH_LOGGER
 #include <ipc/utils/logger.hpp>
@@ -125,9 +127,17 @@ void HashGrid::addVertices(
     const double inflation_radius)
 {
     assert(vertices_t0.rows() == vertices_t1.rows());
+#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
     tbb::parallel_for(0l, (long)(vertices_t0.rows()), [&](long i) {
+#else
+    for (long i = 0; i < vertices_t0.rows(); i++) {
+#endif
         addVertex(vertices_t0.row(i), vertices_t1.row(i), i, inflation_radius);
+#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
     });
+#else
+    }
+#endif
 }
 
 /// @brief Compute a AABB for an edge moving through time (i.e. temporal quad).
@@ -175,12 +185,20 @@ void HashGrid::addEdges(
     const double inflation_radius)
 {
     assert(vertices_t0.rows() == vertices_t1.rows());
+#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
     tbb::parallel_for(0l, (long)(edges.rows()), [&](long i) {
+#else
+    for (long i = 0; i < edges.rows(); i++) {
+#endif
         addEdge(
             vertices_t0.row(edges(i, 0)), vertices_t0.row(edges(i, 1)),
             vertices_t1.row(edges(i, 0)), vertices_t1.row(edges(i, 1)), i,
             inflation_radius);
+#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
     });
+#else
+    }
+#endif
 }
 
 /// @brief Compute a AABB for an edge moving through time (i.e. temporal quad).
@@ -235,13 +253,22 @@ void HashGrid::addFaces(
     const double inflation_radius)
 {
     assert(vertices_t0.rows() == vertices_t1.rows());
+#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
     tbb::parallel_for(0l, (long)(faces.rows()), [&](long i) {
+#else
+    for (long i = 0; i < faces.rows(); i++) {
+#endif
         addFace(
             vertices_t0.row(faces(i, 0)), vertices_t0.row(faces(i, 1)),
             vertices_t0.row(faces(i, 2)), vertices_t1.row(faces(i, 0)),
             vertices_t1.row(faces(i, 1)), vertices_t1.row(faces(i, 2)), i,
             inflation_radius);
+
+#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
     });
+#else
+    }
+#endif
 }
 
 void HashGrid::addElement(const AABB& aabb, const int id, HashItems& items)

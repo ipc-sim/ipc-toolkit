@@ -3,10 +3,19 @@
 #include <vector>
 
 #include <Eigen/Core>
-#include <tbb/concurrent_vector.h>
 
 #include <ipc/spatial_hash/collision_candidate.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+
+// WARNING: In limited testing the way TBB is used in the hash grid was shown to
+// be detremental to performance, so we currently recommend leaving this line
+// commented out.
+// TODO: Implementing a more parallel or integrating the original spatial hash
+// is an important goal in order to increase performance.
+// #define IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
+#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
+#include <tbb/concurrent_vector.h>
+#endif
 
 namespace ipc {
 
@@ -73,8 +82,12 @@ public:
     }
 };
 
+#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
 // TODO: This may be less efficient than a std::vector
 typedef tbb::concurrent_vector<HashItem> HashItems;
+#else
+typedef std::vector<HashItem> HashItems;
+#endif
 
 class HashGrid {
 public:
