@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
-### 2020-11-20 ([77c7838](https://github.com/ipc-sim/ipc-toolkit/commit/77c78386fe0b951e635746c12b36b2ce0cceb512))
+### 2020-11-20 ([93143ad](https://github.com/ipc-sim/ipc-toolkit/commit/93143ad9b31030cde7324a83354268021e1cb9da))
 #### Changed
 * Removed TBB parallelization form the hash grid because we get better performance without it.
    * TODO: Improve parallelization in the hash grid or switch to the original IPC spatial hash
