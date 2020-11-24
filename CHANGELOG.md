@@ -10,6 +10,15 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### 2020-11-20 ([77c7838](https://github.com/ipc-sim/ipc-toolkit/commit/77c78386fe0b951e635746c12b36b2ce0cceb512))
+#### Changed
+* Removed TBB parallelization form the hash grid because we get better performance without it.
+   * TODO: Improve parallelization in the hash grid or switch to the original IPC spatial hash
+
+### 2020-11-06 ([4553509](https://github.com/ipc-sim/ipc-toolkit/commit/4553509fe6a4e6b78c041018cd6db3fdf23b4730))
+#### Fixed
+* Fixed multiplicity for point-triangle distance computation to avoid duplicate point-point and point-edge pairs.
+
 ### 2020-10-22 ([51f4903](https://github.com/ipc-sim/ipc-toolkit/commit/51f49030dbeec15a6a7544826f5531811a779402))
 #### Fixed
 * Projection of the hessian to PSD. This was completely broken as the projected matrix was never used.
