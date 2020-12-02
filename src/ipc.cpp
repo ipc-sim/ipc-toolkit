@@ -70,17 +70,17 @@ void construct_constraint_set(
     const Eigen::MatrixXi& F,
     double dhat,
     Constraints& constraint_set,
-    bool ignore_internal_vertices,
+    bool ignore_codimensional_vertices,
     const Eigen::VectorXi& vertex_group_ids)
 {
     double dhat_squared = dhat * dhat;
 
     Candidates candidates;
-    static HashGrid hash_grid;
+    HashGrid hash_grid;
     hash_grid.resize(V, V, E, /*inflation_radius=*/dhat);
 
     // Assumes the edges connect to all boundary vertices
-    if (ignore_internal_vertices) {
+    if (ignore_codimensional_vertices) {
         for (int e = 0; e < E.rows(); ++e) {
             const int e0 = E(e, 0);
             const int e1 = E(e, 1);
@@ -111,7 +111,19 @@ void construct_constraint_set(
             F, vertex_group_ids, candidates.fv_candidates);
     }
 
-    hash_grid.clear();
+    construct_constraint_set(candidates, V_rest, V, E, F, dhat, constraint_set);
+}
+
+void construct_constraint_set(
+    const Candidates& candidates,
+    const Eigen::MatrixXd& V_rest,
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    double dhat,
+    Constraints& constraint_set)
+{
+    double dhat_squared = dhat * dhat;
 
     // Cull the candidates by measuring the distance and dropping those that are
     // greater than dhat.
@@ -659,7 +671,7 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    bool ignore_internal_vertices,
+    bool ignore_codimensional_vertices,
     const Eigen::VectorXi& vertex_group_ids)
 {
     int dim = V0.cols();
@@ -667,11 +679,11 @@ bool is_step_collision_free(
 
     // Broad phase
     Candidates candidates;
-    static HashGrid hash_grid;
+    HashGrid hash_grid;
     hash_grid.resize(V0, V1, E);
 
     // Assumes the edges connect to all boundary vertices
-    if (ignore_internal_vertices) {
+    if (ignore_codimensional_vertices) {
         for (int e = 0; e < E.rows(); ++e) {
             const int e0 = E(e, 0);
             const int e1 = E(e, 1);
@@ -698,8 +710,6 @@ bool is_step_collision_free(
         hash_grid.getFaceVertexPairs(
             F, vertex_group_ids, candidates.fv_candidates);
     }
-
-    hash_grid.clear();
 
     // Narrow phase
     double eta = 1e-6;
@@ -776,7 +786,7 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    bool ignore_internal_vertices,
+    bool ignore_codimensional_vertices,
     const Eigen::VectorXi& vertex_group_ids)
 {
     int dim = V0.cols();
@@ -784,11 +794,11 @@ double compute_collision_free_stepsize(
 
     // Broad phase
     Candidates candidates;
-    static HashGrid hash_grid;
+    HashGrid hash_grid;
     hash_grid.resize(V0, V1, E);
 
     // Assumes the edges connect to all boundary vertices
-    if (ignore_internal_vertices) {
+    if (ignore_codimensional_vertices) {
         for (int e = 0; e < E.rows(); ++e) {
             const int e0 = E(e, 0);
             const int e1 = E(e, 1);
@@ -815,8 +825,6 @@ double compute_collision_free_stepsize(
         hash_grid.getFaceVertexPairs(
             F, vertex_group_ids, candidates.fv_candidates);
     }
-
-    hash_grid.clear();
 
     // Narrow phase
     double earliest_toi = std::numeric_limits<double>::infinity();
