@@ -8,6 +8,18 @@
 namespace ipc {
 
 template <typename Derived>
+void local_gradient_to_global_gradient(
+    const Eigen::MatrixBase<Derived>& local_grad,
+    const std::vector<long>& ids,
+    int dim,
+    Eigen::VectorXd& grad)
+{
+    for (int i = 0; i < ids.size(); i++) {
+        grad.segment(dim * ids[i], dim) += local_grad.segment(dim * i, dim);
+    }
+}
+
+template <typename Derived>
 void local_hessian_to_global_triplets(
     const Eigen::MatrixBase<Derived>& local_hessian,
     const std::vector<long>& ids,

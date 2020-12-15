@@ -10,7 +10,7 @@
 #include <ipc/friction/relative_displacement.hpp>
 #include <ipc/friction/tangent_basis.hpp>
 #include <ipc/utils/eigen_ext.hpp>
-#include <ipc/utils/local_hessian_to_global_triplets.hpp>
+#include <ipc/utils/local_to_global.hpp>
 
 namespace ipc {
 
@@ -156,7 +156,7 @@ Eigen::Vector2d compute_friction_potential_gradient_common(
     double epsv_times_h);
 
 template <typename DerivedDP0, typename DerivedDP1>
-inline Eigen::Matrix<double, 2, 3> compute_friction_potential_gradient(
+inline Eigen::VectorX6d compute_friction_potential_gradient(
     const Eigen::MatrixBase<DerivedDP0>& dp0,
     const Eigen::MatrixBase<DerivedDP1>& dp1,
     const VertexVertexFrictionConstraint& vv_constraint,
@@ -168,12 +168,12 @@ inline Eigen::Matrix<double, 2, 3> compute_friction_potential_gradient(
             epsv_times_h);
     tangent_relative_displacement *= vv_constraint.multiplicity;
 
-    return point_point_relative_mesh_displacement(
+    return point_point_relative_mesh_displacements(
         tangent_relative_displacement, vv_constraint.tangent_basis);
 }
 
 template <typename DerivedDP, typename DerivedDE0, typename DerivedDE1>
-inline Eigen::Matrix3d compute_friction_potential_gradient(
+inline Eigen::VectorX9d compute_friction_potential_gradient(
     const Eigen::MatrixBase<DerivedDP>& dp,
     const Eigen::MatrixBase<DerivedDE0>& de0,
     const Eigen::MatrixBase<DerivedDE1>& de1,
@@ -187,7 +187,7 @@ inline Eigen::Matrix3d compute_friction_potential_gradient(
             ev_constraint, rel_disp, epsv_times_h);
     tangent_relative_displacement *= ev_constraint.multiplicity;
 
-    return point_edge_relative_mesh_displacement(
+    return point_edge_relative_mesh_displacements(
         tangent_relative_displacement, ev_constraint.tangent_basis,
         ev_constraint.closest_point[0]);
 }
@@ -197,7 +197,7 @@ template <
     typename DerivedDEA1,
     typename DerivedDEB0,
     typename DerivedDEB1>
-inline Eigen::Matrix<double, 4, 3> compute_friction_potential_gradient(
+inline Eigen::VectorX12d compute_friction_potential_gradient(
     const Eigen::MatrixBase<DerivedDEA0>& dea0,
     const Eigen::MatrixBase<DerivedDEA1>& dea1,
     const Eigen::MatrixBase<DerivedDEB0>& deb0,
@@ -221,7 +221,7 @@ template <
     typename DerivedDT0,
     typename DerivedDT1,
     typename DerivedDT2>
-inline Eigen::Matrix<double, 4, 3> compute_friction_potential_gradient(
+inline Eigen::VectorX12d compute_friction_potential_gradient(
     const Eigen::MatrixBase<DerivedDP>& dp,
     const Eigen::MatrixBase<DerivedDT0>& dt0,
     const Eigen::MatrixBase<DerivedDT1>& dt1,
@@ -261,7 +261,7 @@ inline Eigen::MatrixXd compute_friction_potential_hessian(
     Eigen::Vector3d relative_displacement =
         point_point_relative_displacement(dp0, dp1);
 
-    Eigen::Matrix<double, 2, 12> TT;
+    Eigen::Matrix<double, 2, 6> TT;
     point_point_TT(vv_constraint.tangent_basis, TT);
 
     return compute_friction_potential_hessian_common(
@@ -281,7 +281,7 @@ inline Eigen::MatrixXd compute_friction_potential_hessian(
     Eigen::Vector3d relative_displacement = point_edge_relative_displacement(
         dp, de0, de1, ev_constraint.closest_point[0]);
 
-    Eigen::Matrix<double, 2, 12> TT;
+    Eigen::Matrix<double, 2, 9> TT;
     point_edge_TT(
         ev_constraint.tangent_basis, ev_constraint.closest_point[0], TT);
 

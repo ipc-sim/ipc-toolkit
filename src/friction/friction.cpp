@@ -11,7 +11,7 @@
 #include <ipc/friction/relative_displacement.hpp>
 #include <ipc/friction/tangent_basis.hpp>
 #include <ipc/utils/eigen_ext.hpp>
-#include <ipc/utils/local_hessian_to_global_triplets.hpp>
+#include <ipc/utils/local_to_global.hpp>
 
 namespace ipc {
 
@@ -127,19 +127,6 @@ void construct_friction_constraint_set(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template <typename DerivedLocalGrad>
-void add_local_grad(
-    const Eigen::MatrixBase<DerivedLocalGrad>& local_grad,
-    const std::vector<long>& ids,
-    Eigen::VectorXd& grad)
-{
-    assert(ids.size() == local_grad.rows());
-    int dim = local_grad.cols();
-    for (int i = 0; i < local_grad.rows(); i++) {
-        grad.segment(dim * ids[i], dim) += local_grad.row(i);
-    }
-}
-
 Eigen::VectorXd compute_friction_potential_gradient(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
@@ -156,18 +143,18 @@ Eigen::VectorXd compute_friction_potential_gradient(
     // TODO: 2D
 
     for (const auto& vv_constraint : friction_constraint_set.vv_constraints) {
-        add_local_grad(
+        local_gradient_to_global_gradient(
             /*local_grad=*/
             compute_friction_potential_gradient(
                 U.row(vv_constraint.vertex0_index),
                 U.row(vv_constraint.vertex1_index), //
                 vv_constraint, epsv_times_h),
             { { vv_constraint.vertex0_index, vv_constraint.vertex1_index } },
-            grad);
+            dim, grad);
     }
 
     for (const auto& ev_constraint : friction_constraint_set.ev_constraints) {
-        add_local_grad(
+        local_gradient_to_global_gradient(
             /*local_grad=*/
             compute_friction_potential_gradient(
                 U.row(ev_constraint.vertex_index),
@@ -176,11 +163,11 @@ Eigen::VectorXd compute_friction_potential_gradient(
                 ev_constraint, epsv_times_h),
             { { ev_constraint.vertex_index, E(ev_constraint.edge_index, 0),
                 E(ev_constraint.edge_index, 1) } },
-            grad);
+            dim, grad);
     }
 
     for (const auto& ee_constraint : friction_constraint_set.ee_constraints) {
-        add_local_grad(
+        local_gradient_to_global_gradient(
             /*local_grad=*/
             compute_friction_potential_gradient(
                 U.row(E(ee_constraint.edge0_index, 0)),
@@ -192,11 +179,11 @@ Eigen::VectorXd compute_friction_potential_gradient(
                 E(ee_constraint.edge0_index, 1),
                 E(ee_constraint.edge1_index, 0),
                 E(ee_constraint.edge1_index, 1) } },
-            grad);
+            dim, grad);
     }
 
     for (const auto& fv_constraint : friction_constraint_set.fv_constraints) {
-        add_local_grad(
+        local_gradient_to_global_gradient(
             /*local_grad=*/
             compute_friction_potential_gradient(
                 U.row(fv_constraint.vertex_index),
@@ -208,7 +195,7 @@ Eigen::VectorXd compute_friction_potential_gradient(
                 F(fv_constraint.face_index, 0), //
                 F(fv_constraint.face_index, 1), //
                 F(fv_constraint.face_index, 2) } },
-            grad);
+            dim, grad);
     }
 
     return grad;

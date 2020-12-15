@@ -143,14 +143,14 @@ inline T compute_friction_potential(
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename DerivedDP0, typename DerivedDP1>
-inline Eigen::Matrix<double, 2, 3> compute_friction_potential_gradient(
+inline Eigen::VectorX6d compute_friction_potential_gradient(
     const Eigen::MatrixBase<DerivedDP0>& dp0,
     const Eigen::MatrixBase<DerivedDP1>& dp1,
     const VertexVertexFrictionConstraint& friction_constraint,
     double epsv_times_h);
 
 template <typename DerivedDP, typename DerivedDE0, typename DerivedDE1>
-inline Eigen::Matrix3d compute_friction_potential_gradient(
+inline Eigen::VectorX9d compute_friction_potential_gradient(
     const Eigen::MatrixBase<DerivedDP>& dp,
     const Eigen::MatrixBase<DerivedDE0>& de0,
     const Eigen::MatrixBase<DerivedDE1>& de1,
@@ -162,7 +162,7 @@ template <
     typename DerivedDEA1,
     typename DerivedDEB0,
     typename DerivedDEB1>
-inline Eigen::Matrix<double, 4, 3> compute_friction_potential_gradient(
+inline Eigen::VectorX12d compute_friction_potential_gradient(
     const Eigen::MatrixBase<DerivedDEA0>& dea0,
     const Eigen::MatrixBase<DerivedDEA1>& dea1,
     const Eigen::MatrixBase<DerivedDEB0>& deb0,
@@ -175,7 +175,7 @@ template <
     typename DerivedDT0,
     typename DerivedDT1,
     typename DerivedDT2>
-inline Eigen::Matrix<double, 4, 3> compute_friction_potential_gradient(
+inline Eigen::VectorX12d compute_friction_potential_gradient(
     const Eigen::MatrixBase<DerivedDP>& dp,
     const Eigen::MatrixBase<DerivedDT0>& dt0,
     const Eigen::MatrixBase<DerivedDT1>& dt1,

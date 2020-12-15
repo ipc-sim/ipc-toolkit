@@ -9,7 +9,7 @@
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/spatial_hash/hash_grid.hpp>
-#include <ipc/utils/local_hessian_to_global_triplets.hpp>
+#include <ipc/utils/local_to_global.hpp>
 
 namespace ipc {
 

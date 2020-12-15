@@ -7,6 +7,32 @@
 
 namespace ipc {
 
+bool point_point_ccd(
+    const Eigen::Vector3d& p0_t0,
+    const Eigen::Vector3d& p1_t0,
+    const Eigen::Vector3d& p0_t1,
+    const Eigen::Vector3d& p1_t1,
+    double& toi,
+    double conservative_rescaling)
+{
+    double current_distance = sqrt(point_point_distance(p0_t0, p1_t0));
+    if (CTCD::vertexVertexCTCD(
+            p0_t0, p1_t0, p0_t1, p1_t1,
+            /*eta=*/(1 - conservative_rescaling) * current_distance, toi)) {
+        if (toi < 1.0e-6) {
+            if (CTCD::vertexVertexCTCD(
+                    p0_t0, p1_t0, p0_t1, p1_t1, /*eta=*/0, toi)) {
+                toi *= conservative_rescaling;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 bool point_edge_ccd_2D(
     const Eigen::Vector2d& p_t0,
     const Eigen::Vector2d& e0_t0,
@@ -159,38 +185,6 @@ bool point_edge_ccd(
     }
 }
 
-bool point_triangle_ccd(
-    const Eigen::Vector3d& p_t0,
-    const Eigen::Vector3d& t0_t0,
-    const Eigen::Vector3d& t1_t0,
-    const Eigen::Vector3d& t2_t0,
-    const Eigen::Vector3d& p_t1,
-    const Eigen::Vector3d& t0_t1,
-    const Eigen::Vector3d& t1_t1,
-    const Eigen::Vector3d& t2_t1,
-    double& toi,
-    double conservative_rescaling)
-{
-    double current_distance =
-        sqrt(point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0));
-    if (CTCD::vertexFaceCTCD(
-            p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
-            /*eta=*/(1.0 - conservative_rescaling) * current_distance, toi)) {
-        if (toi < 1.0e-6) {
-            if (CTCD::vertexFaceCTCD(
-                    p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
-                    /*eta=*/0, toi)) {
-                toi *= conservative_rescaling;
-                return true;
-            } else {
-                return false;
-            }
-        }
-        return true;
-    }
-    return false;
-}
-
 bool edge_edge_ccd(
     const Eigen::Vector3d& ea0_t0,
     const Eigen::Vector3d& ea1_t0,
@@ -212,6 +206,38 @@ bool edge_edge_ccd(
             if (CTCD::edgeEdgeCTCD(
                     ea0_t0, ea1_t0, eb0_t0, eb1_t0, //
                     ea0_t1, ea1_t1, eb0_t1, eb1_t1, //
+                    /*eta=*/0, toi)) {
+                toi *= conservative_rescaling;
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+bool point_triangle_ccd(
+    const Eigen::Vector3d& p_t0,
+    const Eigen::Vector3d& t0_t0,
+    const Eigen::Vector3d& t1_t0,
+    const Eigen::Vector3d& t2_t0,
+    const Eigen::Vector3d& p_t1,
+    const Eigen::Vector3d& t0_t1,
+    const Eigen::Vector3d& t1_t1,
+    const Eigen::Vector3d& t2_t1,
+    double& toi,
+    double conservative_rescaling)
+{
+    double current_distance =
+        sqrt(point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0));
+    if (CTCD::vertexFaceCTCD(
+            p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
+            /*eta=*/(1.0 - conservative_rescaling) * current_distance, toi)) {
+        if (toi < 1.0e-6) {
+            if (CTCD::vertexFaceCTCD(
+                    p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
                     /*eta=*/0, toi)) {
                 toi *= conservative_rescaling;
                 return true;

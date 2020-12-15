@@ -6,6 +6,141 @@
 
 namespace ipc {
 
+///////////////////////////////////////////////////////////////////////////////
+// Point - Point
+
+template <typename DerivedDP0, typename DerivedDP1>
+inline auto point_point_relative_displacement(
+    const Eigen::MatrixBase<DerivedDP0>& dp0,
+    const Eigen::MatrixBase<DerivedDP1>& dp1)
+{
+    return dp0 - dp1;
+}
+
+template <
+    typename DerivedDisp,
+    typename DerivedBasis,
+    typename T = typename DerivedDisp::Scalar>
+inline Eigen::VectorX6<T> point_point_relative_mesh_displacements(
+    const Eigen::MatrixBase<DerivedDisp>& tangent_relative_displacement,
+    const Eigen::MatrixBase<DerivedBasis>& basis)
+{
+    int dim = basis.rows();
+    Eigen::VectorX6<T> mesh_displacements(2 * dim);
+    mesh_displacements.head(dim) = basis * tangent_relative_displacement;
+    mesh_displacements.tail(dim) = -mesh_displacements.head(dim);
+    return mesh_displacements;
+}
+
+template <typename DerivedBasis, typename DerivedTT>
+inline void point_point_TT(
+    const Eigen::MatrixBase<DerivedBasis>& basis,
+    Eigen::MatrixBase<DerivedTT>& TT)
+{
+    TT.template block<2, 3>(0, 0) = basis.transpose();
+    TT.template block<2, 3>(0, 3) = -basis.transpose();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Point - Edge
+
+template <
+    typename DerivedDP,
+    typename DerivedDE0,
+    typename DerivedDE1,
+    typename T>
+inline auto point_edge_relative_displacement(
+    const Eigen::MatrixBase<DerivedDP>& dp,
+    const Eigen::MatrixBase<DerivedDE0>& de0,
+    const Eigen::MatrixBase<DerivedDE1>& de1,
+    const T& alpha)
+{
+    return dp - ((de1 - de0) * alpha + de0);
+}
+
+template <typename DerivedDisp, typename DerivedBasis, typename T>
+inline Eigen::VectorX9<T> point_edge_relative_mesh_displacements(
+    const Eigen::MatrixBase<DerivedDisp>& tangent_relative_displacement,
+    const Eigen::MatrixBase<DerivedBasis>& basis,
+    const T& alpha)
+{
+    int dim = basis.rows();
+    Eigen::VectorX9<T> mesh_displacements(3 * dim);
+    mesh_displacements.head(dim) = basis * tangent_relative_displacement;
+    mesh_displacements.segment(1 * dim, dim) =
+        (alpha - 1.0) * mesh_displacements.head(dim);
+    mesh_displacements.tail(dim) = -alpha * mesh_displacements.head(dim);
+    return mesh_displacements;
+}
+
+template <typename DerivedBasis, typename T, typename DerivedTT>
+inline void point_edge_TT(
+    const Eigen::MatrixBase<DerivedBasis>& basis,
+    const T& alpha,
+    Eigen::MatrixBase<DerivedTT>& TT)
+{
+    TT.template block<2, 3>(0, 0) = basis.transpose();
+    TT.template block<2, 3>(0, 3) = (alpha - 1.0) * basis.transpose();
+    TT.template block<2, 3>(0, 6) = -alpha * basis.transpose();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Edge - Edge
+
+/// Compute the relative displacement of the edges.
+template <
+    typename DerivedDEA0,
+    typename DerivedDEA1,
+    typename DerivedDEB0,
+    typename DerivedDEB1,
+    typename DerivedBarycentricCoordinates>
+inline auto edge_edge_relative_displacement(
+    const Eigen::MatrixBase<DerivedDEA0>& dea0,
+    const Eigen::MatrixBase<DerivedDEA1>& dea1,
+    const Eigen::MatrixBase<DerivedDEB0>& deb0,
+    const Eigen::MatrixBase<DerivedDEB1>& deb1,
+    const Eigen::MatrixBase<DerivedBarycentricCoordinates>&
+        barrycentric_coordinates)
+{
+    // closest_point_a_displacement - closest_point_b_displacement
+    return ((dea1 - dea0) * barrycentric_coordinates[0] + dea0)
+        - ((deb1 - deb0) * barrycentric_coordinates[1] + deb0);
+}
+
+template <
+    typename DerivedDisp,
+    typename DerivedBasis,
+    typename DerivedBeta,
+    typename T = typename DerivedDisp::Scalar>
+inline Eigen::VectorX12<T> edge_edge_relative_mesh_displacements(
+    const Eigen::MatrixBase<DerivedDisp>& tangent_relative_displacement,
+    const Eigen::MatrixBase<DerivedBasis>& basis,
+    const Eigen::MatrixBase<DerivedBeta>& gamma)
+{
+    Eigen::VectorX3<T> rel_disp = basis * tangent_relative_displacement;
+    int dim = rel_disp.size();
+    Eigen::VectorX12<T> mesh_displacements(4 * dim);
+    mesh_displacements.head(dim) = (1.0 - gamma[0]) * rel_disp; // dea0
+    mesh_displacements.segment(dim, dim) = gamma[0] * rel_disp; // dea1
+    mesh_displacements.segment(2 * dim, dim) =
+        (gamma[1] - 1.0) * rel_disp;                     // deb0
+    mesh_displacements.tail(dim) = -gamma[1] * rel_disp; // deb1
+    return mesh_displacements;
+}
+
+template <typename DerivedBasis, typename DerivedGamma, typename DerivedTT>
+inline void edge_edge_TT(
+    const Eigen::MatrixBase<DerivedBasis>& basis,
+    const Eigen::MatrixBase<DerivedGamma>& gamma,
+    Eigen::MatrixBase<DerivedTT>& TT)
+{
+    TT.template block<2, 3>(0, 0) = (1.0 - gamma[0]) * basis.transpose();
+    TT.template block<2, 3>(0, 3) = gamma[0] * basis.transpose();
+    TT.template block<2, 3>(0, 6) = (gamma[1] - 1.0) * basis.transpose();
+    TT.template block<2, 3>(0, 9) = -gamma[1] * basis.transpose();
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Point - Triangle
 
 /// Compute the relative displacement of the point to the triangle.
@@ -35,17 +170,19 @@ template <
     typename DerivedBasis,
     typename DerivedBeta,
     typename T = typename DerivedDisp::Scalar>
-inline Eigen::Matrix<T, 4, 3> point_triangle_relative_mesh_displacements(
+inline Eigen::VectorX12<T> point_triangle_relative_mesh_displacements(
     const Eigen::MatrixBase<DerivedDisp>& tangent_relative_displacement,
     const Eigen::MatrixBase<DerivedBasis>& basis,
     const Eigen::MatrixBase<DerivedBeta>& beta)
 {
-    Eigen::Matrix<T, 4, 3> mesh_displacements;
-    mesh_displacements.row(0) = basis * tangent_relative_displacement;
-    mesh_displacements.row(1) =
-        (-1 + beta[0] + beta[1]) * mesh_displacements.row(0);
-    mesh_displacements.row(2) = -beta[0] * mesh_displacements.row(0);
-    mesh_displacements.row(3) = -beta[1] * mesh_displacements.row(0);
+    int dim = basis.rows();
+    Eigen::VectorX12<T> mesh_displacements(4 * dim);
+    mesh_displacements.head(dim) = basis * tangent_relative_displacement;
+    mesh_displacements.segment(dim, dim) =
+        (-1 + beta[0] + beta[1]) * mesh_displacements.head(dim);
+    mesh_displacements.segment(2 * dim, dim) =
+        -beta[0] * mesh_displacements.head(dim);
+    mesh_displacements.tail(dim) = -beta[1] * mesh_displacements.head(dim);
     return mesh_displacements;
 }
 
@@ -60,132 +197,6 @@ inline void point_triangle_TT(
         (-1 + beta[0] + beta[1]) * basis.transpose();
     TT.template block<2, 3>(0, 6) = -beta[0] * basis.transpose();
     TT.template block<2, 3>(0, 9) = -beta[1] * basis.transpose();
-}
-
-// Edge - Edge
-
-/// Compute the relative displacement of the edges.
-template <
-    typename DerivedDEA0,
-    typename DerivedDEA1,
-    typename DerivedDEB0,
-    typename DerivedDEB1,
-    typename DerivedBarycentricCoordinates>
-inline auto edge_edge_relative_displacement(
-    const Eigen::MatrixBase<DerivedDEA0>& dea0,
-    const Eigen::MatrixBase<DerivedDEA1>& dea1,
-    const Eigen::MatrixBase<DerivedDEB0>& deb0,
-    const Eigen::MatrixBase<DerivedDEB1>& deb1,
-    const Eigen::MatrixBase<DerivedBarycentricCoordinates>&
-        barrycentric_coordinates)
-{
-    // closest_point_a_displacement - closest_point_b_displacement
-    return ((dea1 - dea0) * barrycentric_coordinates[0] + dea0)
-        - ((deb1 - deb0) * barrycentric_coordinates[1] + deb0);
-}
-
-template <
-    typename DerivedDisp,
-    typename DerivedBasis,
-    typename DerivedBeta,
-    typename T = typename DerivedDisp::Scalar>
-inline Eigen::Matrix<T, 4, 3> edge_edge_relative_mesh_displacements(
-    const Eigen::MatrixBase<DerivedDisp>& tangent_relative_displacement,
-    const Eigen::MatrixBase<DerivedBasis>& basis,
-    const Eigen::MatrixBase<DerivedBeta>& gamma)
-{
-    Eigen::Vector3<T> rel_disp = basis * tangent_relative_displacement;
-    Eigen::Matrix<T, 4, 3> mesh_displacements;
-    mesh_displacements.row(0) = (1.0 - gamma[0]) * rel_disp; // dea0
-    mesh_displacements.row(1) = gamma[0] * rel_disp;         // dea1
-    mesh_displacements.row(2) = (gamma[1] - 1.0) * rel_disp; // deb0
-    mesh_displacements.row(3) = -gamma[1] * rel_disp;        // deb1
-    return mesh_displacements;
-}
-
-template <typename DerivedBasis, typename DerivedGamma, typename DerivedTT>
-inline void edge_edge_TT(
-    const Eigen::MatrixBase<DerivedBasis>& basis,
-    const Eigen::MatrixBase<DerivedGamma>& gamma,
-    Eigen::MatrixBase<DerivedTT>& TT)
-{
-    TT.template block<2, 3>(0, 0) = (1.0 - gamma[0]) * basis.transpose();
-    TT.template block<2, 3>(0, 3) = gamma[0] * basis.transpose();
-    TT.template block<2, 3>(0, 6) = (gamma[1] - 1.0) * basis.transpose();
-    TT.template block<2, 3>(0, 9) = -gamma[1] * basis.transpose();
-}
-
-// Point - Edge
-
-template <
-    typename DerivedDP,
-    typename DerivedDE0,
-    typename DerivedDE1,
-    typename T>
-inline auto point_edge_relative_displacement(
-    const Eigen::MatrixBase<DerivedDP>& dp,
-    const Eigen::MatrixBase<DerivedDE0>& de0,
-    const Eigen::MatrixBase<DerivedDE1>& de1,
-    const T& alpha)
-{
-    return dp - ((de1 - de0) * alpha + de0);
-}
-
-template <typename DerivedDisp, typename DerivedBasis, typename T>
-inline Eigen::Matrix3<T> point_edge_relative_mesh_displacement(
-    const Eigen::MatrixBase<DerivedDisp>& tangent_relative_displacement,
-    const Eigen::MatrixBase<DerivedBasis>& basis,
-    const T& alpha)
-{
-    Eigen::Matrix3<T> mesh_displacements;
-    mesh_displacements.row(0) = basis * tangent_relative_displacement;
-    mesh_displacements.row(1) = (alpha - 1.0) * mesh_displacements.row(0);
-    mesh_displacements.row(2) = -alpha * mesh_displacements.row(0);
-    return mesh_displacements;
-}
-
-template <typename DerivedBasis, typename T, typename DerivedTT>
-inline void point_edge_TT(
-    const Eigen::MatrixBase<DerivedBasis>& basis,
-    const T& alpha,
-    Eigen::MatrixBase<DerivedTT>& TT)
-{
-    TT.template block<2, 3>(0, 0) = basis.transpose();
-    TT.template block<2, 3>(0, 3) = (alpha - 1.0) * basis.transpose();
-    TT.template block<2, 3>(0, 6) = -alpha * basis.transpose();
-}
-
-// Point - Point
-
-template <typename DerivedDP0, typename DerivedDP1>
-inline auto point_point_relative_displacement(
-    const Eigen::MatrixBase<DerivedDP0>& dp0,
-    const Eigen::MatrixBase<DerivedDP1>& dp1)
-{
-    return dp0 - dp1;
-}
-
-template <
-    typename DerivedDisp,
-    typename DerivedBasis,
-    typename T = typename DerivedDisp::Scalar>
-inline Eigen::Matrix<T, 2, 3> point_point_relative_mesh_displacement(
-    const Eigen::MatrixBase<DerivedDisp>& tangent_relative_displacement,
-    const Eigen::MatrixBase<DerivedBasis>& basis)
-{
-    Eigen::Matrix<T, 2, 3> mesh_displacements;
-    mesh_displacements.row(0) = basis * tangent_relative_displacement;
-    mesh_displacements.row(1) = -mesh_displacements.row(0);
-    return mesh_displacements;
-}
-
-template <typename DerivedBasis, typename DerivedTT>
-inline void point_point_TT(
-    const Eigen::MatrixBase<DerivedBasis>& basis,
-    Eigen::MatrixBase<DerivedTT>& TT)
-{
-    TT.template block<2, 3>(0, 0) = basis.transpose();
-    TT.template block<2, 3>(0, 3) = -basis.transpose();
 }
 
 } // namespace ipc
