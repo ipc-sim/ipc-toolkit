@@ -73,8 +73,6 @@ void construct_constraint_set(
     bool ignore_codimensional_vertices,
     const Eigen::VectorXi& vertex_group_ids)
 {
-    double dhat_squared = dhat * dhat;
-
     Candidates candidates;
     HashGrid hash_grid;
     hash_grid.resize(V, V, E, /*inflation_radius=*/dhat);

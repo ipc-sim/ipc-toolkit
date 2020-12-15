@@ -125,6 +125,21 @@ void construct_friction_constraint_set(
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename DerivedLocalGrad>
+void add_local_grad(
+    const Eigen::MatrixBase<DerivedLocalGrad>& local_grad,
+    const std::vector<long>& ids,
+    Eigen::VectorXd& grad)
+{
+    assert(ids.size() == local_grad.rows());
+    int dim = local_grad.cols();
+    for (int i = 0; i < local_grad.rows(); i++) {
+        grad.segment(dim * ids[i], dim) += local_grad.row(i);
+    }
+}
+
 Eigen::VectorXd compute_friction_potential_gradient(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
@@ -133,124 +148,90 @@ Eigen::VectorXd compute_friction_potential_gradient(
     const FrictionConstraints& friction_constraint_set,
     double epsv_times_h)
 {
-    double epsv_times_h_squared = epsv_times_h * epsv_times_h;
-
     auto U = V1 - V0; // absolute linear dislacement of each point
     int dim = U.cols();
 
     Eigen::VectorXd grad = Eigen::VectorXd::Zero(U.size());
 
-    auto compute_common = [&](const FrictionConstraint& constraint,
-                              const Eigen::Vector3d& rel_ui) {
-        Eigen::Vector2d tangent_relative_displacement =
-            constraint.tangent_basis.transpose() * rel_ui;
-
-        double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
-            tangent_relative_displacement.squaredNorm(), epsv_times_h);
-
-        tangent_relative_displacement *= f1_div_rel_disp_norm * constraint.mu
-            * constraint.normal_force_magnitude;
-
-        return tangent_relative_displacement;
-    };
-
     // TODO: 2D
 
     for (const auto& vv_constraint : friction_constraint_set.vv_constraints) {
-        const auto& dp0 = U.row(vv_constraint.vertex0_index);
-        const auto& dp1 = U.row(vv_constraint.vertex1_index);
-
-        Eigen::Vector2d tangent_relative_displacement = compute_common(
-            vv_constraint, point_point_relative_displacement(dp0, dp1));
-        tangent_relative_displacement *= vv_constraint.multiplicity;
-
-        Eigen::Matrix<double, 2, 3> mesh_displacements =
-            point_point_relative_mesh_displacement(
-                tangent_relative_displacement, vv_constraint.tangent_basis);
-
-        std::vector<long> ids = { { vv_constraint.vertex0_index,
-                                    vv_constraint.vertex1_index } };
-        for (int i = 0; i < mesh_displacements.rows(); i++) {
-            grad.segment(dim * ids[i], dim) += mesh_displacements.row(i);
-        }
+        add_local_grad(
+            /*local_grad=*/
+            compute_friction_potential_gradient(
+                U.row(vv_constraint.vertex0_index),
+                U.row(vv_constraint.vertex1_index), //
+                vv_constraint, epsv_times_h),
+            { { vv_constraint.vertex0_index, vv_constraint.vertex1_index } },
+            grad);
     }
 
     for (const auto& ev_constraint : friction_constraint_set.ev_constraints) {
-        const auto& dp = U.row(ev_constraint.vertex_index);
-        const auto& de0 = U.row(E(ev_constraint.edge_index, 0));
-        const auto& de1 = U.row(E(ev_constraint.edge_index, 1));
-
-        Eigen::Vector3d rel_disp = point_edge_relative_displacement(
-            dp, de0, de1, ev_constraint.closest_point[0]);
-        Eigen::Vector2d tangent_relative_displacement =
-            compute_common(ev_constraint, rel_disp);
-        tangent_relative_displacement *= ev_constraint.multiplicity;
-
-        Eigen::Matrix3d mesh_displacements =
-            point_edge_relative_mesh_displacement(
-                tangent_relative_displacement, ev_constraint.tangent_basis,
-                ev_constraint.closest_point[0]);
-
-        std::vector<long> ids = { { ev_constraint.vertex_index,
-                                    E(ev_constraint.edge_index, 0),
-                                    E(ev_constraint.edge_index, 1) } };
-        for (int i = 0; i < mesh_displacements.rows(); i++) {
-            grad.segment(dim * ids[i], dim) += mesh_displacements.row(i);
-        }
+        add_local_grad(
+            /*local_grad=*/
+            compute_friction_potential_gradient(
+                U.row(ev_constraint.vertex_index),
+                U.row(E(ev_constraint.edge_index, 0)),
+                U.row(E(ev_constraint.edge_index, 1)), //
+                ev_constraint, epsv_times_h),
+            { { ev_constraint.vertex_index, E(ev_constraint.edge_index, 0),
+                E(ev_constraint.edge_index, 1) } },
+            grad);
     }
 
     for (const auto& ee_constraint : friction_constraint_set.ee_constraints) {
-        const auto& dea0 = U.row(E(ee_constraint.edge0_index, 0));
-        const auto& dea1 = U.row(E(ee_constraint.edge0_index, 1));
-        const auto& deb0 = U.row(E(ee_constraint.edge1_index, 0));
-        const auto& deb1 = U.row(E(ee_constraint.edge1_index, 1));
-
-        Eigen::Vector3d rel_disp = edge_edge_relative_displacement(
-            dea0, dea1, deb0, deb1, ee_constraint.closest_point);
-        Eigen::Vector2d tangent_relative_displacement =
-            compute_common(ee_constraint, rel_disp);
-
-        Eigen::Matrix<double, 4, 3> mesh_displacements =
-            edge_edge_relative_mesh_displacements(
-                tangent_relative_displacement, ee_constraint.tangent_basis,
-                ee_constraint.closest_point);
-
-        std::vector<long> ids = {
-            { E(ee_constraint.edge0_index, 0), E(ee_constraint.edge0_index, 1),
-              E(ee_constraint.edge1_index, 0), E(ee_constraint.edge1_index, 1) }
-        };
-        for (int i = 0; i < mesh_displacements.rows(); i++) {
-            grad.segment(dim * ids[i], dim) += mesh_displacements.row(i);
-        }
+        add_local_grad(
+            /*local_grad=*/
+            compute_friction_potential_gradient(
+                U.row(E(ee_constraint.edge0_index, 0)),
+                U.row(E(ee_constraint.edge0_index, 1)),
+                U.row(E(ee_constraint.edge1_index, 0)),
+                U.row(E(ee_constraint.edge1_index, 1)), //
+                ee_constraint, epsv_times_h),
+            { { E(ee_constraint.edge0_index, 0),
+                E(ee_constraint.edge0_index, 1),
+                E(ee_constraint.edge1_index, 0),
+                E(ee_constraint.edge1_index, 1) } },
+            grad);
     }
 
     for (const auto& fv_constraint : friction_constraint_set.fv_constraints) {
-        const auto& dp = U.row(fv_constraint.vertex_index);
-        const auto& dt0 = U.row(F(fv_constraint.face_index, 0));
-        const auto& dt1 = U.row(F(fv_constraint.face_index, 1));
-        const auto& dt2 = U.row(F(fv_constraint.face_index, 2));
-
-        Eigen::Vector3d rel_disp = point_triangle_relative_displacement(
-            dp, dt0, dt1, dt2, fv_constraint.closest_point);
-        Eigen::Vector2d tangent_relative_displacement =
-            compute_common(fv_constraint, rel_disp);
-
-        Eigen::Matrix<double, 4, 3> mesh_displacements =
-            point_triangle_relative_mesh_displacements(
-                tangent_relative_displacement, fv_constraint.tangent_basis,
-                fv_constraint.closest_point);
-
-        std::vector<long> ids = {
-            { fv_constraint.vertex_index, F(fv_constraint.face_index, 0),
-              F(fv_constraint.face_index, 1), F(fv_constraint.face_index, 2) }
-        };
-        for (int i = 0; i < mesh_displacements.rows(); i++) {
-            grad.segment(dim * ids[i], dim) += mesh_displacements.row(i);
-        }
+        add_local_grad(
+            /*local_grad=*/
+            compute_friction_potential_gradient(
+                U.row(fv_constraint.vertex_index),
+                U.row(F(fv_constraint.face_index, 0)),
+                U.row(F(fv_constraint.face_index, 1)),
+                U.row(F(fv_constraint.face_index, 2)), //
+                fv_constraint, epsv_times_h),
+            { { fv_constraint.vertex_index,     //
+                F(fv_constraint.face_index, 0), //
+                F(fv_constraint.face_index, 1), //
+                F(fv_constraint.face_index, 2) } },
+            grad);
     }
 
     return grad;
 }
+
+Eigen::Vector2d compute_friction_potential_gradient_common(
+    const FrictionConstraint& constraint,
+    const Eigen::Vector3d& relative_displacement,
+    double epsv_times_h)
+{
+    Eigen::Vector2d tangent_relative_displacement =
+        constraint.tangent_basis.transpose() * relative_displacement;
+
+    double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
+        tangent_relative_displacement.squaredNorm(), epsv_times_h);
+
+    tangent_relative_displacement *= f1_div_rel_disp_norm * constraint.mu
+        * constraint.normal_force_magnitude;
+
+    return tangent_relative_displacement;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     const Eigen::MatrixXd& V0,
@@ -261,8 +242,6 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     double epsv_times_h,
     bool project_to_psd)
 {
-    double epsv_times_h_squared = epsv_times_h * epsv_times_h;
-
     auto U = V1 - V0; // absolute linear dislacement of each point
     int dim = U.cols();
     int dim_sq = dim * dim;
@@ -273,147 +252,123 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
         + friction_constraint_set.ee_constraints.size() * /*4*4=*/16 * dim_sq
         + friction_constraint_set.fv_constraints.size() * /*4*4=*/16 * dim_sq);
 
-    auto compute_common = [&](const FrictionConstraint& constraint,
-                              const Eigen::Vector3d& relative_displacement,
-                              const Eigen::MatrixXd& TT,
-                              const std::vector<long>& ids,
-                              const int multiplicity = 1) {
-        Eigen::Vector2d tangent_relative_displacement =
-            constraint.tangent_basis.transpose() * relative_displacement;
-
-        double tangent_relative_displacement_sqnorm =
-            tangent_relative_displacement.squaredNorm();
-
-        double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
-            tangent_relative_displacement_sqnorm, epsv_times_h);
-        double f2_term =
-            f2_SF(tangent_relative_displacement_sqnorm, epsv_times_h);
-
-        Eigen::MatrixXd local_hess;
-
-        double scale =
-            multiplicity * constraint.mu * constraint.normal_force_magnitude;
-        if (tangent_relative_displacement_sqnorm >= epsv_times_h_squared) {
-            // no SPD projection needed
-            Eigen::Vector2d ubar(
-                -tangent_relative_displacement[1],
-                tangent_relative_displacement[0]);
-            local_hess = (TT.transpose()
-                          * ((scale * f1_div_rel_disp_norm
-                              / tangent_relative_displacement_sqnorm)
-                             * ubar))
-                * (ubar.transpose() * TT);
-        } else {
-            double tangent_relative_displacement_norm =
-                sqrt(tangent_relative_displacement_sqnorm);
-            if (tangent_relative_displacement_norm == 0) {
-                // no SPD projection needed
-                local_hess =
-                    ((scale * f1_div_rel_disp_norm) * TT.transpose()) * TT;
-            } else {
-                // only need to project the inner 2x2 matrix to SPD
-                Eigen::Matrix2d inner_hess =
-                    ((f2_term / tangent_relative_displacement_norm)
-                     * tangent_relative_displacement)
-                    * tangent_relative_displacement.transpose();
-                inner_hess.diagonal().array() += f1_div_rel_disp_norm;
-                if (project_to_psd) {
-                    inner_hess = Eigen::project_to_psd(inner_hess);
-                }
-                inner_hess *= scale;
-
-                // tensor product:
-                local_hess = TT.transpose() * inner_hess * TT;
-            }
-        }
-
-        local_hessian_to_global_triplets(local_hess, ids, dim, hess_triplets);
-    };
-
     // TODO: 2D
 
     for (const auto& vv_constraint : friction_constraint_set.vv_constraints) {
-        const auto& dp0 = U.row(vv_constraint.vertex0_index);
-        const auto& dp1 = U.row(vv_constraint.vertex1_index);
-
-        Eigen::Vector3d relative_displacement =
-            point_point_relative_displacement(dp0, dp1);
-
-        Eigen::Matrix<double, 2, 12> TT;
-        point_point_TT(vv_constraint.tangent_basis, TT);
-
-        std::vector<long> ids = { { vv_constraint.vertex0_index,
-                                    vv_constraint.vertex1_index } };
-        compute_common(
-            vv_constraint, relative_displacement, TT, ids,
-            vv_constraint.multiplicity);
+        local_hessian_to_global_triplets(
+            compute_friction_potential_hessian(
+                U.row(vv_constraint.vertex0_index),
+                U.row(vv_constraint.vertex1_index), //
+                vv_constraint, epsv_times_h),
+            { { vv_constraint.vertex0_index, vv_constraint.vertex1_index } },
+            dim, hess_triplets);
     }
 
     for (const auto& ev_constraint : friction_constraint_set.ev_constraints) {
-        const auto& dp = U.row(ev_constraint.vertex_index);
-        const auto& de0 = U.row(E(ev_constraint.edge_index, 0));
-        const auto& de1 = U.row(E(ev_constraint.edge_index, 1));
-
-        Eigen::Vector3d relative_displacement =
-            point_edge_relative_displacement(
-                dp, de0, de1, ev_constraint.closest_point[0]);
-
-        Eigen::Matrix<double, 2, 12> TT;
-        point_edge_TT(
-            ev_constraint.tangent_basis, ev_constraint.closest_point[0], TT);
-
-        std::vector<long> ids = { { ev_constraint.vertex_index,
-                                    E(ev_constraint.edge_index, 0),
-                                    E(ev_constraint.edge_index, 1) } };
-        compute_common(
-            ev_constraint, relative_displacement, TT, ids,
-            ev_constraint.multiplicity);
+        local_hessian_to_global_triplets(
+            compute_friction_potential_hessian(
+                U.row(ev_constraint.vertex_index),
+                U.row(E(ev_constraint.edge_index, 0)),
+                U.row(E(ev_constraint.edge_index, 1)), //
+                ev_constraint, epsv_times_h),
+            { { ev_constraint.vertex_index, //
+                E(ev_constraint.edge_index, 0),
+                E(ev_constraint.edge_index, 1) } },
+            dim, hess_triplets);
     }
 
     for (const auto& ee_constraint : friction_constraint_set.ee_constraints) {
-        const auto& dea0 = U.row(E(ee_constraint.edge0_index, 0));
-        const auto& dea1 = U.row(E(ee_constraint.edge0_index, 1));
-        const auto& deb0 = U.row(E(ee_constraint.edge1_index, 0));
-        const auto& deb1 = U.row(E(ee_constraint.edge1_index, 1));
-
-        Eigen::Vector3d relative_displacement = edge_edge_relative_displacement(
-            dea0, dea1, deb0, deb1, ee_constraint.closest_point);
-
-        Eigen::Matrix<double, 2, 12> TT;
-        edge_edge_TT(
-            ee_constraint.tangent_basis, ee_constraint.closest_point, TT);
-
-        std::vector<long> ids = {
-            { E(ee_constraint.edge0_index, 0), E(ee_constraint.edge0_index, 1),
-              E(ee_constraint.edge1_index, 0), E(ee_constraint.edge1_index, 1) }
-        };
-        compute_common(ee_constraint, relative_displacement, TT, ids);
+        local_hessian_to_global_triplets(
+            compute_friction_potential_hessian(
+                U.row(E(ee_constraint.edge0_index, 0)),
+                U.row(E(ee_constraint.edge0_index, 1)),
+                U.row(E(ee_constraint.edge1_index, 0)),
+                U.row(E(ee_constraint.edge1_index, 1)), //
+                ee_constraint, epsv_times_h),
+            { { E(ee_constraint.edge0_index, 0),
+                E(ee_constraint.edge0_index, 1),
+                E(ee_constraint.edge1_index, 0),
+                E(ee_constraint.edge1_index, 1) } },
+            dim, hess_triplets);
     }
 
     for (const auto& fv_constraint : friction_constraint_set.fv_constraints) {
-        const auto& dp = U.row(fv_constraint.vertex_index);
-        const auto& dt0 = U.row(F(fv_constraint.face_index, 0));
-        const auto& dt1 = U.row(F(fv_constraint.face_index, 1));
-        const auto& dt2 = U.row(F(fv_constraint.face_index, 2));
-
-        Eigen::Vector3d relative_displacement =
-            point_triangle_relative_displacement(
-                dp, dt0, dt1, dt2, fv_constraint.closest_point);
-
-        Eigen::Matrix<double, 2, 12> TT;
-        point_triangle_TT(
-            fv_constraint.tangent_basis, fv_constraint.closest_point, TT);
-
-        std::vector<long> ids = {
-            { fv_constraint.vertex_index, F(fv_constraint.face_index, 0),
-              F(fv_constraint.face_index, 1), F(fv_constraint.face_index, 2) }
-        };
-        compute_common(fv_constraint, relative_displacement, TT, ids);
+        local_hessian_to_global_triplets(
+            compute_friction_potential_hessian(
+                U.row(fv_constraint.vertex_index),
+                U.row(F(fv_constraint.face_index, 0)),
+                U.row(F(fv_constraint.face_index, 1)),
+                U.row(F(fv_constraint.face_index, 2)), //
+                fv_constraint, epsv_times_h),
+            { { fv_constraint.vertex_index, F(fv_constraint.face_index, 0),
+                F(fv_constraint.face_index, 1),
+                F(fv_constraint.face_index, 2) } },
+            dim, hess_triplets);
     }
 
     Eigen::SparseMatrix<double> hess(U.size(), U.size());
     hess.setFromTriplets(hess_triplets.begin(), hess_triplets.end());
     return hess;
+}
+
+Eigen::MatrixXd compute_friction_potential_hessian_common(
+    const FrictionConstraint& constraint,
+    const Eigen::Vector3d& relative_displacement,
+    const Eigen::MatrixXd& TT,
+    const double epsv_times_h,
+    bool project_to_psd,
+    const int multiplicity)
+{
+    double epsv_times_h_squared = epsv_times_h * epsv_times_h;
+
+    Eigen::Vector2d tangent_relative_displacement =
+        constraint.tangent_basis.transpose() * relative_displacement;
+
+    double tangent_relative_displacement_sqnorm =
+        tangent_relative_displacement.squaredNorm();
+
+    double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
+        tangent_relative_displacement_sqnorm, epsv_times_h);
+    double f2_term = f2_SF(tangent_relative_displacement_sqnorm, epsv_times_h);
+
+    Eigen::MatrixXd local_hess;
+
+    double scale =
+        multiplicity * constraint.mu * constraint.normal_force_magnitude;
+    if (tangent_relative_displacement_sqnorm >= epsv_times_h_squared) {
+        // no SPD projection needed
+        Eigen::Vector2d ubar(
+            -tangent_relative_displacement[1],
+            tangent_relative_displacement[0]);
+        local_hess = (TT.transpose()
+                      * ((scale * f1_div_rel_disp_norm
+                          / tangent_relative_displacement_sqnorm)
+                         * ubar))
+            * (ubar.transpose() * TT);
+    } else {
+        double tangent_relative_displacement_norm =
+            sqrt(tangent_relative_displacement_sqnorm);
+        if (tangent_relative_displacement_norm == 0) {
+            // no SPD projection needed
+            local_hess = ((scale * f1_div_rel_disp_norm) * TT.transpose()) * TT;
+        } else {
+            // only need to project the inner 2x2 matrix to SPD
+            Eigen::Matrix2d inner_hess =
+                ((f2_term / tangent_relative_displacement_norm)
+                 * tangent_relative_displacement)
+                * tangent_relative_displacement.transpose();
+            inner_hess.diagonal().array() += f1_div_rel_disp_norm;
+            if (project_to_psd) {
+                inner_hess = Eigen::project_to_psd(inner_hess);
+            }
+            inner_hess *= scale;
+
+            // tensor product:
+            local_hess = TT.transpose() * inner_hess * TT;
+        }
+    }
+
+    return local_hess;
 }
 
 } // namespace ipc

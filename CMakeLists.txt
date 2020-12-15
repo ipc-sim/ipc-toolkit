@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.8)
 project(IPCToolkit)
+project(IPCToolkit
+        DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
+        LANGUAGES CXX)
 
 ################################################################################
 
