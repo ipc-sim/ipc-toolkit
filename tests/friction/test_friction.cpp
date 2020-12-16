@@ -8,6 +8,7 @@
 #include <igl/readDMAT.h>
 
 #include <ipc/friction/friction.hpp>
+#include <ipc/utils/logger.hpp>
 
 #include "../test_utils.hpp"
 

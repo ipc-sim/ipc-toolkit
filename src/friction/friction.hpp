@@ -5,39 +5,9 @@
 
 #include <ipc/collision_constraint.hpp>
 #include <ipc/friction/friction_constraint.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
-
-// C1 clamping
-template <typename T>
-inline T f0_SF(const T& x_squared, const double& epsv_times_h)
-{
-    double epsv_times_h_squared = epsv_times_h * epsv_times_h;
-    if (x_squared >= epsv_times_h_squared) {
-        return sqrt(x_squared);
-    }
-    return x_squared * (-sqrt(x_squared) / 3.0 + epsv_times_h)
-        / (epsv_times_h_squared)
-        + epsv_times_h / 3.0;
-}
-
-/// Derivative of f0_SF divided by the relative norm
-template <typename T>
-inline T f1_SF_div_relative_displacement_norm(
-    const T& x_squared, const double& epsv_times_h)
-{
-    double epsv_times_h_squared = epsv_times_h * epsv_times_h;
-    if (x_squared >= epsv_times_h_squared) {
-        return 1 / sqrt(x_squared);
-    }
-    return (-sqrt(x_squared) + 2.0 * epsv_times_h) / epsv_times_h_squared;
-}
-
-template <typename T> inline T f2_SF(const T&, const double& epsv_times_h)
-{
-    // same for x_squared >= epsv_times_h * epsv_times_h for C1 clamped friction
-    return T(-1 / (epsv_times_h * epsv_times_h));
-}
 
 void construct_friction_constraint_set(
     const Eigen::MatrixXd& V,

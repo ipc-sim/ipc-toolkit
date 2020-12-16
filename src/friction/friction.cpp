@@ -127,6 +127,10 @@ void construct_friction_constraint_set(
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// compute_friction_potential() in friction.tpp
+
+///////////////////////////////////////////////////////////////////////////////
+
 Eigen::VectorXd compute_friction_potential_gradient(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
@@ -140,82 +144,14 @@ Eigen::VectorXd compute_friction_potential_gradient(
 
     Eigen::VectorXd grad = Eigen::VectorXd::Zero(U.size());
 
-    // TODO: 2D
-
-    for (const auto& vv_constraint : friction_constraint_set.vv_constraints) {
+    for (size_t i = 0; i < friction_constraint_set.size(); i++) {
+        const auto& constraint = friction_constraint_set[i];
         local_gradient_to_global_gradient(
-            /*local_grad=*/
-            compute_friction_potential_gradient(
-                U.row(vv_constraint.vertex0_index),
-                U.row(vv_constraint.vertex1_index), //
-                vv_constraint, epsv_times_h),
-            { { vv_constraint.vertex0_index, vv_constraint.vertex1_index } },
-            dim, grad);
-    }
-
-    for (const auto& ev_constraint : friction_constraint_set.ev_constraints) {
-        local_gradient_to_global_gradient(
-            /*local_grad=*/
-            compute_friction_potential_gradient(
-                U.row(ev_constraint.vertex_index),
-                U.row(E(ev_constraint.edge_index, 0)),
-                U.row(E(ev_constraint.edge_index, 1)), //
-                ev_constraint, epsv_times_h),
-            { { ev_constraint.vertex_index, E(ev_constraint.edge_index, 0),
-                E(ev_constraint.edge_index, 1) } },
-            dim, grad);
-    }
-
-    for (const auto& ee_constraint : friction_constraint_set.ee_constraints) {
-        local_gradient_to_global_gradient(
-            /*local_grad=*/
-            compute_friction_potential_gradient(
-                U.row(E(ee_constraint.edge0_index, 0)),
-                U.row(E(ee_constraint.edge0_index, 1)),
-                U.row(E(ee_constraint.edge1_index, 0)),
-                U.row(E(ee_constraint.edge1_index, 1)), //
-                ee_constraint, epsv_times_h),
-            { { E(ee_constraint.edge0_index, 0),
-                E(ee_constraint.edge0_index, 1),
-                E(ee_constraint.edge1_index, 0),
-                E(ee_constraint.edge1_index, 1) } },
-            dim, grad);
-    }
-
-    for (const auto& fv_constraint : friction_constraint_set.fv_constraints) {
-        local_gradient_to_global_gradient(
-            /*local_grad=*/
-            compute_friction_potential_gradient(
-                U.row(fv_constraint.vertex_index),
-                U.row(F(fv_constraint.face_index, 0)),
-                U.row(F(fv_constraint.face_index, 1)),
-                U.row(F(fv_constraint.face_index, 2)), //
-                fv_constraint, epsv_times_h),
-            { { fv_constraint.vertex_index,     //
-                F(fv_constraint.face_index, 0), //
-                F(fv_constraint.face_index, 1), //
-                F(fv_constraint.face_index, 2) } },
-            dim, grad);
+            constraint.compute_potential_gradient(U, E, F, epsv_times_h),
+            constraint.vertex_indices(E, F), dim, grad);
     }
 
     return grad;
-}
-
-Eigen::Vector2d compute_friction_potential_gradient_common(
-    const FrictionConstraint& constraint,
-    const Eigen::Vector3d& relative_displacement,
-    double epsv_times_h)
-{
-    Eigen::Vector2d tangent_relative_displacement =
-        constraint.tangent_basis.transpose() * relative_displacement;
-
-    double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
-        tangent_relative_displacement.squaredNorm(), epsv_times_h);
-
-    tangent_relative_displacement *= f1_div_rel_disp_norm * constraint.mu
-        * constraint.normal_force_magnitude;
-
-    return tangent_relative_displacement;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -239,123 +175,17 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
         + friction_constraint_set.ee_constraints.size() * /*4*4=*/16 * dim_sq
         + friction_constraint_set.fv_constraints.size() * /*4*4=*/16 * dim_sq);
 
-    // TODO: 2D
-
-    for (const auto& vv_constraint : friction_constraint_set.vv_constraints) {
+    for (size_t i = 0; i < friction_constraint_set.size(); i++) {
+        const auto& constraint = friction_constraint_set[i];
         local_hessian_to_global_triplets(
-            compute_friction_potential_hessian(
-                U.row(vv_constraint.vertex0_index),
-                U.row(vv_constraint.vertex1_index), //
-                vv_constraint, epsv_times_h),
-            { { vv_constraint.vertex0_index, vv_constraint.vertex1_index } },
-            dim, hess_triplets);
-    }
-
-    for (const auto& ev_constraint : friction_constraint_set.ev_constraints) {
-        local_hessian_to_global_triplets(
-            compute_friction_potential_hessian(
-                U.row(ev_constraint.vertex_index),
-                U.row(E(ev_constraint.edge_index, 0)),
-                U.row(E(ev_constraint.edge_index, 1)), //
-                ev_constraint, epsv_times_h),
-            { { ev_constraint.vertex_index, //
-                E(ev_constraint.edge_index, 0),
-                E(ev_constraint.edge_index, 1) } },
-            dim, hess_triplets);
-    }
-
-    for (const auto& ee_constraint : friction_constraint_set.ee_constraints) {
-        local_hessian_to_global_triplets(
-            compute_friction_potential_hessian(
-                U.row(E(ee_constraint.edge0_index, 0)),
-                U.row(E(ee_constraint.edge0_index, 1)),
-                U.row(E(ee_constraint.edge1_index, 0)),
-                U.row(E(ee_constraint.edge1_index, 1)), //
-                ee_constraint, epsv_times_h),
-            { { E(ee_constraint.edge0_index, 0),
-                E(ee_constraint.edge0_index, 1),
-                E(ee_constraint.edge1_index, 0),
-                E(ee_constraint.edge1_index, 1) } },
-            dim, hess_triplets);
-    }
-
-    for (const auto& fv_constraint : friction_constraint_set.fv_constraints) {
-        local_hessian_to_global_triplets(
-            compute_friction_potential_hessian(
-                U.row(fv_constraint.vertex_index),
-                U.row(F(fv_constraint.face_index, 0)),
-                U.row(F(fv_constraint.face_index, 1)),
-                U.row(F(fv_constraint.face_index, 2)), //
-                fv_constraint, epsv_times_h),
-            { { fv_constraint.vertex_index, F(fv_constraint.face_index, 0),
-                F(fv_constraint.face_index, 1),
-                F(fv_constraint.face_index, 2) } },
-            dim, hess_triplets);
+            constraint.compute_potential_hessian(
+                U, E, F, epsv_times_h, project_to_psd),
+            constraint.vertex_indices(E, F), dim, hess_triplets);
     }
 
     Eigen::SparseMatrix<double> hess(U.size(), U.size());
     hess.setFromTriplets(hess_triplets.begin(), hess_triplets.end());
     return hess;
-}
-
-Eigen::MatrixXd compute_friction_potential_hessian_common(
-    const FrictionConstraint& constraint,
-    const Eigen::Vector3d& relative_displacement,
-    const Eigen::MatrixXd& TT,
-    const double epsv_times_h,
-    bool project_to_psd,
-    const int multiplicity)
-{
-    double epsv_times_h_squared = epsv_times_h * epsv_times_h;
-
-    Eigen::Vector2d tangent_relative_displacement =
-        constraint.tangent_basis.transpose() * relative_displacement;
-
-    double tangent_relative_displacement_sqnorm =
-        tangent_relative_displacement.squaredNorm();
-
-    double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
-        tangent_relative_displacement_sqnorm, epsv_times_h);
-    double f2_term = f2_SF(tangent_relative_displacement_sqnorm, epsv_times_h);
-
-    Eigen::MatrixXd local_hess;
-
-    double scale =
-        multiplicity * constraint.mu * constraint.normal_force_magnitude;
-    if (tangent_relative_displacement_sqnorm >= epsv_times_h_squared) {
-        // no SPD projection needed
-        Eigen::Vector2d ubar(
-            -tangent_relative_displacement[1],
-            tangent_relative_displacement[0]);
-        local_hess = (TT.transpose()
-                      * ((scale * f1_div_rel_disp_norm
-                          / tangent_relative_displacement_sqnorm)
-                         * ubar))
-            * (ubar.transpose() * TT);
-    } else {
-        double tangent_relative_displacement_norm =
-            sqrt(tangent_relative_displacement_sqnorm);
-        if (tangent_relative_displacement_norm == 0) {
-            // no SPD projection needed
-            local_hess = ((scale * f1_div_rel_disp_norm) * TT.transpose()) * TT;
-        } else {
-            // only need to project the inner 2x2 matrix to SPD
-            Eigen::Matrix2d inner_hess =
-                ((f2_term / tangent_relative_displacement_norm)
-                 * tangent_relative_displacement)
-                * tangent_relative_displacement.transpose();
-            inner_hess.diagonal().array() += f1_div_rel_disp_norm;
-            if (project_to_psd) {
-                inner_hess = Eigen::project_to_psd(inner_hess);
-            }
-            inner_hess *= scale;
-
-            // tensor product:
-            local_hess = TT.transpose() * inner_hess * TT;
-        }
-    }
-
-    return local_hess;
 }
 
 } // namespace ipc
