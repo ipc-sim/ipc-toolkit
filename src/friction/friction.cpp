@@ -145,7 +145,7 @@ Eigen::VectorXd compute_friction_potential_gradient(
     Eigen::VectorXd grad = Eigen::VectorXd::Zero(U.size());
 
     for (size_t i = 0; i < friction_constraint_set.size(); i++) {
-        const auto& constraint = friction_constraint_set[i];
+        const FrictionConstraint& constraint = friction_constraint_set[i];
         local_gradient_to_global_gradient(
             constraint.compute_potential_gradient(U, E, F, epsv_times_h),
             constraint.vertex_indices(E, F), dim, grad);
@@ -171,12 +171,13 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
 
     std::vector<Eigen::Triplet<double>> hess_triplets;
     hess_triplets.reserve(
-        friction_constraint_set.ev_constraints.size() * /*3*3=*/9 * dim_sq
+        friction_constraint_set.vv_constraints.size() * /*2*2=*/4 * dim_sq
+        + friction_constraint_set.ev_constraints.size() * /*3*3=*/9 * dim_sq
         + friction_constraint_set.ee_constraints.size() * /*4*4=*/16 * dim_sq
         + friction_constraint_set.fv_constraints.size() * /*4*4=*/16 * dim_sq);
 
     for (size_t i = 0; i < friction_constraint_set.size(); i++) {
-        const auto& constraint = friction_constraint_set[i];
+        const FrictionConstraint& constraint = friction_constraint_set[i];
         local_hessian_to_global_triplets(
             constraint.compute_potential_hessian(
                 U, E, F, epsv_times_h, project_to_psd),

@@ -97,9 +97,10 @@ protected:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct VertexVertexFrictionConstraint : VertexVertexConstraint,
+struct VertexVertexFrictionConstraint : VertexVertexCandidate,
                                         FrictionConstraint {
     VertexVertexFrictionConstraint(long vertex0_index, long vertex1_index);
+    VertexVertexFrictionConstraint(const VertexVertexCandidate& candidate);
     VertexVertexFrictionConstraint(const VertexVertexConstraint& constraint);
 
     std::vector<long> vertex_indices(
@@ -138,12 +139,15 @@ struct VertexVertexFrictionConstraint : VertexVertexConstraint,
         const Eigen::MatrixXi& F,
         const double epsv_times_h,
         const bool project_to_psd) const override;
+
+    long multiplicity = 1;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct EdgeVertexFrictionConstraint : EdgeVertexConstraint, FrictionConstraint {
+struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
     EdgeVertexFrictionConstraint(long edge_index, long vertex_index);
+    EdgeVertexFrictionConstraint(const EdgeVertexCandidate& constraint);
     EdgeVertexFrictionConstraint(const EdgeVertexConstraint& constraint);
 
     std::vector<long> vertex_indices(
@@ -185,12 +189,15 @@ struct EdgeVertexFrictionConstraint : EdgeVertexConstraint, FrictionConstraint {
         const Eigen::MatrixXi& F,
         const double epsv_times_h,
         const bool project_to_psd) const override;
+
+    long multiplicity = 1;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct EdgeEdgeFrictionConstraint : EdgeEdgeConstraint, FrictionConstraint {
+struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
     EdgeEdgeFrictionConstraint(long edge0_index, long edge1_index);
+    EdgeEdgeFrictionConstraint(const EdgeEdgeCandidate& constraint);
     EdgeEdgeFrictionConstraint(const EdgeEdgeConstraint& constraint);
 
     std::vector<long> vertex_indices(
@@ -237,8 +244,9 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeConstraint, FrictionConstraint {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct FaceVertexFrictionConstraint : FaceVertexConstraint, FrictionConstraint {
+struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
     FaceVertexFrictionConstraint(long face_index, long vertex_index);
+    FaceVertexFrictionConstraint(const FaceVertexCandidate& constraint);
     FaceVertexFrictionConstraint(const FaceVertexConstraint& constraint);
 
     std::vector<long> vertex_indices(

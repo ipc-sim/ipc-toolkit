@@ -2,6 +2,27 @@
 
 namespace ipc {
 
+VertexVertexCandidate::VertexVertexCandidate(
+    long vertex0_index, long vertex1_index)
+    : vertex0_index(vertex0_index)
+    , vertex1_index(vertex1_index)
+{
+}
+
+bool VertexVertexCandidate::operator==(const VertexVertexCandidate& other) const
+{
+    return vertex0_index == other.vertex0_index
+        && vertex1_index == other.vertex1_index;
+}
+
+bool VertexVertexCandidate::operator<(const VertexVertexCandidate& other) const
+{
+    if (vertex0_index == other.vertex0_index) {
+        return vertex1_index < other.vertex1_index;
+    }
+    return vertex0_index < other.vertex0_index;
+}
+
 EdgeVertexCandidate::EdgeVertexCandidate(long edge_index, long vertex_index)
     : edge_index(edge_index)
     , vertex_index(vertex_index)

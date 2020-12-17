@@ -4,6 +4,18 @@
 
 namespace ipc {
 
+struct VertexVertexCandidate {
+    VertexVertexCandidate(long edge_index, long vertex_index);
+
+    bool operator==(const VertexVertexCandidate& other) const;
+
+    /// @brief Compare EdgeVertexCandidates for sorting.
+    bool operator<(const VertexVertexCandidate& other) const;
+
+    long vertex0_index;
+    long vertex1_index;
+};
+
 struct EdgeVertexCandidate {
     EdgeVertexCandidate(long edge_index, long vertex_index);
 

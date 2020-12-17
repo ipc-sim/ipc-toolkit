@@ -79,13 +79,20 @@ Eigen::MatrixXd FrictionConstraint::compute_potential_hessian_common(
 
 VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
     long vertex0_index, long vertex1_index)
-    : VertexVertexConstraint(vertex0_index, vertex1_index)
+    : VertexVertexCandidate(vertex0_index, vertex1_index)
+{
+}
+
+VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
+    const VertexVertexCandidate& candidate)
+    : VertexVertexCandidate(candidate)
 {
 }
 
 VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
     const VertexVertexConstraint& constraint)
-    : VertexVertexConstraint(constraint)
+    : VertexVertexCandidate(constraint.vertex0_index, constraint.vertex1_index)
+    , multiplicity(constraint.multiplicity)
 {
 }
 
@@ -121,13 +128,20 @@ Eigen::MatrixXd VertexVertexFrictionConstraint::compute_potential_hessian(
 
 EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
     long edge_index, long vertex_index)
-    : EdgeVertexConstraint(edge_index, vertex_index)
+    : EdgeVertexCandidate(edge_index, vertex_index)
+{
+}
+
+EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
+    const EdgeVertexCandidate& candidate)
+    : EdgeVertexCandidate(candidate)
 {
 }
 
 EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
     const EdgeVertexConstraint& constraint)
-    : EdgeVertexConstraint(constraint)
+    : EdgeVertexCandidate(constraint.edge_index, constraint.vertex_index)
+    , multiplicity(constraint.multiplicity)
 {
 }
 
@@ -163,13 +177,19 @@ Eigen::MatrixXd EdgeVertexFrictionConstraint::compute_potential_hessian(
 
 EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
     long edge0_index, long edge1_index)
-    : EdgeEdgeConstraint(edge0_index, edge1_index, /*eps_x=*/-1)
+    : EdgeEdgeCandidate(edge0_index, edge1_index)
+{
+}
+
+EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
+    const EdgeEdgeCandidate& candidate)
+    : EdgeEdgeCandidate(candidate)
 {
 }
 
 EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
     const EdgeEdgeConstraint& constraint)
-    : EdgeEdgeConstraint(constraint)
+    : EdgeEdgeCandidate(constraint.edge0_index, constraint.edge1_index)
 {
 }
 
@@ -204,13 +224,19 @@ Eigen::MatrixXd EdgeEdgeFrictionConstraint::compute_potential_hessian(
 
 FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
     long face_index, long vertex_index)
-    : FaceVertexConstraint(face_index, vertex_index)
+    : FaceVertexCandidate(face_index, vertex_index)
+{
+}
+
+FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
+    const FaceVertexCandidate& candidate)
+    : FaceVertexCandidate(candidate)
 {
 }
 
 FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
     const FaceVertexConstraint& constraint)
-    : FaceVertexConstraint(constraint)
+    : FaceVertexCandidate(constraint.face_index, constraint.vertex_index)
 {
 }
 

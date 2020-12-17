@@ -2,7 +2,6 @@
 
 #include <unordered_map>
 
-#include <ipc/barrier/barrier.hpp>
 #include <ipc/ccd/ccd.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
@@ -309,6 +308,8 @@ void construct_constraint_set(
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 double compute_barrier_potential(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
@@ -316,53 +317,10 @@ double compute_barrier_potential(
     const Constraints& constraint_set,
     double dhat)
 {
-    double dhat_squared = dhat * dhat;
     double potential = 0;
-
-    for (const auto& vv_constraint : constraint_set.vv_constraints) {
-        double distance_sqr = point_point_distance(
-            V.row(vv_constraint.vertex0_index),
-            V.row(vv_constraint.vertex1_index));
-        potential +=
-            vv_constraint.multiplicity * barrier(distance_sqr, dhat_squared);
+    for (size_t i = 0; i < constraint_set.size(); i++) {
+        potential += constraint_set[i].compute_potential(V, E, F, dhat);
     }
-
-    for (const auto& ev_constraint : constraint_set.ev_constraints) {
-        // The distance type is known because of construct_constraint_set()
-        double distance_sqr = point_edge_distance(
-            V.row(ev_constraint.vertex_index),
-            V.row(E(ev_constraint.edge_index, 0)),
-            V.row(E(ev_constraint.edge_index, 1)), PointEdgeDistanceType::P_E);
-        potential +=
-            ev_constraint.multiplicity * barrier(distance_sqr, dhat_squared);
-    }
-
-    for (const auto& ee_constraint : constraint_set.ee_constraints) {
-        const auto& ea0 = V.row(E(ee_constraint.edge0_index, 0));
-        const auto& ea1 = V.row(E(ee_constraint.edge0_index, 1));
-        const auto& eb0 = V.row(E(ee_constraint.edge1_index, 0));
-        const auto& eb1 = V.row(E(ee_constraint.edge1_index, 1));
-
-        // The distance type is unknown because of mollified PP and PE
-        // constraints where also added as EE constraints.
-        double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1);
-        potential +=
-            edge_edge_mollifier(ea0, ea1, eb0, eb1, ee_constraint.eps_x)
-            * barrier(distance_sqr, dhat_squared);
-    }
-
-    for (const auto& fv_constraint : constraint_set.fv_constraints) {
-        const auto& p = V.row(fv_constraint.vertex_index);
-        const auto& t0 = V.row(F(fv_constraint.face_index, 0));
-        const auto& t1 = V.row(F(fv_constraint.face_index, 1));
-        const auto& t2 = V.row(F(fv_constraint.face_index, 2));
-
-        // The distance type is known because of construct_constraint_set()
-        double distance_sqr = point_triangle_distance(
-            p, t0, t1, t2, PointTriangleDistanceType::P_T);
-        potential += barrier(distance_sqr, dhat_squared);
-    }
-
     return potential;
 }
 
@@ -378,113 +336,10 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     Eigen::VectorXd grad = Eigen::VectorXd::Zero(V.size());
     int dim = V.cols();
 
-    for (const auto& vv_constraint : constraint_set.vv_constraints) {
-        // ∇[m * b(d(x))] = m * b'(d(x)) * ∇d(x)
-        const auto& p0 = V.row(vv_constraint.vertex0_index);
-        const auto& p1 = V.row(vv_constraint.vertex1_index);
-
-        Eigen::VectorX6d local_grad;
-        point_point_distance_gradient(p0, p1, local_grad);
-
-        double distance_sqr = point_point_distance(p0, p1);
-        local_grad *= barrier_gradient(distance_sqr, dhat_squared);
-
-        local_grad *= vv_constraint.multiplicity;
-
-        // Map from local to global gradient
-        grad.segment(dim * vv_constraint.vertex0_index, dim) +=
-            local_grad.head(dim);
-        grad.segment(dim * vv_constraint.vertex1_index, dim) +=
-            local_grad.tail(dim);
-    }
-
-    for (const auto& ev_constraint : constraint_set.ev_constraints) {
-        // ∇[m * b(d(x))] = m * b'(d(x)) * ∇d(x)
-        const auto& p = V.row(ev_constraint.vertex_index);
-        const auto& e0 = V.row(E(ev_constraint.edge_index, 0));
-        const auto& e1 = V.row(E(ev_constraint.edge_index, 1));
-
-        Eigen::VectorX9d local_grad;
-        point_edge_distance_gradient(
-            p, e0, e1, PointEdgeDistanceType::P_E, local_grad);
-
-        double distance_sqr =
-            point_edge_distance(p, e0, e1, PointEdgeDistanceType::P_E);
-        local_grad *= barrier_gradient(distance_sqr, dhat_squared);
-
-        local_grad *= ev_constraint.multiplicity;
-
-        // Map from local to global gradient
-        grad.segment(dim * ev_constraint.vertex_index, dim) +=
-            local_grad.head(dim);
-        grad.segment(dim * E(ev_constraint.edge_index, 0), dim) +=
-            local_grad.segment(dim, dim);
-        grad.segment(dim * E(ev_constraint.edge_index, 1), dim) +=
-            local_grad.tail(dim);
-    }
-
-    for (const auto& ee_constraint : constraint_set.ee_constraints) {
-        // ∇[m(x) * b(d(x))] = (∇m(x)) * b(d(x)) + m(x) * b'(d(x)) * ∇d(x)
-        const auto& ea0 = V.row(E(ee_constraint.edge0_index, 0));
-        const auto& ea1 = V.row(E(ee_constraint.edge0_index, 1));
-        const auto& eb0 = V.row(E(ee_constraint.edge1_index, 0));
-        const auto& eb1 = V.row(E(ee_constraint.edge1_index, 1));
-
-        // The distance type is unknown because of mollified PP and PE
-        // constraints where also added as EE constraints.
-        EdgeEdgeDistanceType dtype =
-            edge_edge_distance_type(ea0, ea1, eb0, eb1);
-        double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
-        Eigen::VectorX12d local_distance_grad;
-        edge_edge_distance_gradient(
-            ea0, ea1, eb0, eb1, dtype, local_distance_grad);
-
-        double mollifier =
-            edge_edge_mollifier(ea0, ea1, eb0, eb1, ee_constraint.eps_x);
-        Eigen::VectorX12d local_mollifier_grad;
-        edge_edge_mollifier_gradient(
-            ea0, ea1, eb0, eb1, ee_constraint.eps_x, local_mollifier_grad);
-
-        Eigen::VectorX12d local_grad =
-            local_mollifier_grad * barrier(distance_sqr, dhat_squared)
-            + mollifier * barrier_gradient(distance_sqr, dhat_squared)
-                * local_distance_grad;
-
-        // Map from local to global gradient
-        grad.segment(dim * E(ee_constraint.edge0_index, 0), dim) +=
-            local_grad.head(dim);
-        grad.segment(dim * E(ee_constraint.edge0_index, 1), dim) +=
-            local_grad.segment(dim, dim);
-        grad.segment(dim * E(ee_constraint.edge1_index, 0), dim) +=
-            local_grad.segment(2 * dim, dim);
-        grad.segment(dim * E(ee_constraint.edge1_index, 1), dim) +=
-            local_grad.tail(dim);
-    }
-
-    for (const auto& fv_constraint : constraint_set.fv_constraints) {
-        // ∇b(d(x)) = b'(d(x)) * ∇d(x)
-        const auto& p = V.row(fv_constraint.vertex_index);
-        const auto& t0 = V.row(F(fv_constraint.face_index, 0));
-        const auto& t1 = V.row(F(fv_constraint.face_index, 1));
-        const auto& t2 = V.row(F(fv_constraint.face_index, 2));
-
-        Eigen::VectorX12d local_grad;
-        point_triangle_distance_gradient(
-            p, t0, t1, t2, PointTriangleDistanceType::P_T, local_grad);
-
-        double distance_sqr = point_triangle_distance(
-            p, t0, t1, t2, PointTriangleDistanceType::P_T);
-        local_grad *= barrier_gradient(distance_sqr, dhat_squared);
-
-        // Map from local to global gradient
-        grad.segment(dim * fv_constraint.vertex_index, dim) +=
-            local_grad.head(dim);
-        grad.segment(dim * F(fv_constraint.face_index, 0), dim) +=
-            local_grad.segment(dim, dim);
-        grad.segment(dim * F(fv_constraint.face_index, 1), dim) +=
-            local_grad.segment(2 * dim, dim);
-        grad.segment(dim * F(fv_constraint.face_index, 2), dim) +=
-            local_grad.tail(dim);
+    for (size_t i = 0; i < constraint_set.size(); i++) {
+        local_gradient_to_global_gradient(
+            constraint_set[i].compute_potential_gradient(V, E, F, dhat),
+            constraint_set[i].vertex_indices(E, F), dim, grad);
     }
 
     return grad;
@@ -500,169 +355,28 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 {
     double dhat_squared = dhat * dhat;
 
-    std::vector<Eigen::Triplet<double>> hess_triplets;
     int dim = V.cols();
+    int dim_sq = dim * dim;
+    std::vector<Eigen::Triplet<double>> hess_triplets;
     hess_triplets.reserve(
-        constraint_set.vv_constraints.size() * /*2*2=*/4 * dim * dim
-        + constraint_set.ev_constraints.size() * /*3*3=*/9 * dim * dim
-        + constraint_set.ee_constraints.size() * /*4*4=*/16 * dim * dim
-        + constraint_set.fv_constraints.size() * /*4*4=*/16 * dim * dim);
+        constraint_set.vv_constraints.size() * /*2*2=*/4 * dim_sq
+        + constraint_set.ev_constraints.size() * /*3*3=*/9 * dim_sq
+        + constraint_set.ee_constraints.size() * /*4*4=*/16 * dim_sq
+        + constraint_set.fv_constraints.size() * /*4*4=*/16 * dim_sq);
 
-    for (const auto& vv_constraint : constraint_set.vv_constraints) {
-        // ∇²[m * b(d(x))] = m * ∇(b'(d(x)) * ∇d(x))
-        //                 = m * [b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)]
-        const auto& p0 = V.row(vv_constraint.vertex0_index);
-        const auto& p1 = V.row(vv_constraint.vertex1_index);
-
-        double distance_sqr = point_point_distance(p0, p1);
-        Eigen::VectorX6d local_grad;
-        point_point_distance_gradient(p0, p1, local_grad);
-        Eigen::MatrixXX6d local_hess;
-        point_point_distance_hessian(p0, p1, local_hess);
-
-        local_hess *= barrier_gradient(distance_sqr, dhat_squared);
-        local_hess += barrier_hessian(distance_sqr, dhat_squared) * local_grad
-            * local_grad.transpose();
-
-        local_hess *= vv_constraint.multiplicity;
-
-        if (project_to_psd) {
-            local_hess = Eigen::project_to_psd(local_hess);
-        }
-
-        // Map from local to global gradient
-        std::vector<long> ids = { { vv_constraint.vertex0_index,
-                                    vv_constraint.vertex1_index } };
-        local_hessian_to_global_triplets(local_hess, ids, dim, hess_triplets);
-    }
-
-    for (const auto& ev_constraint : constraint_set.ev_constraints) {
-        // ∇²[m * b(d(x))] = m * ∇(b'(d(x)) * ∇d(x))
-        //                 = m * [b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)]
-        const auto& p = V.row(ev_constraint.vertex_index);
-        const auto& e0 = V.row(E(ev_constraint.edge_index, 0));
-        const auto& e1 = V.row(E(ev_constraint.edge_index, 1));
-
-        double distance_sqr =
-            point_edge_distance(p, e0, e1, PointEdgeDistanceType::P_E);
-        Eigen::VectorX9d local_grad;
-        point_edge_distance_gradient(
-            p, e0, e1, PointEdgeDistanceType::P_E, local_grad);
-        Eigen::MatrixXd local_hess;
-        point_edge_distance_hessian(
-            p, e0, e1, PointEdgeDistanceType::P_E, local_hess);
-
-        local_hess *= barrier_gradient(distance_sqr, dhat_squared);
-        local_hess += barrier_hessian(distance_sqr, dhat_squared) * local_grad
-            * local_grad.transpose();
-
-        local_hess *= ev_constraint.multiplicity;
-
-        if (project_to_psd) {
-            local_hess = Eigen::project_to_psd(local_hess);
-        }
-
-        // Map from local to global gradient
-        std::vector<long> ids = { { ev_constraint.vertex_index,
-                                    E(ev_constraint.edge_index, 0),
-                                    E(ev_constraint.edge_index, 1) } };
-        local_hessian_to_global_triplets(local_hess, ids, dim, hess_triplets);
-    }
-
-    for (const auto& ee_constraint : constraint_set.ee_constraints) {
-        // ∇²[m(x) * b(d(x))] = ∇[∇m(x) * b(d(x)) + m(x) * b'(d(x)) * ∇d(x)]
-        //                    = ∇²m(x) * b(d(x)) + b'(d(x)) * ∇d(x) * ∇m(x)ᵀ
-        //                      + ∇m(x) * b'(d(x)) * ∇d(x))ᵀ
-        //                      + m(x) * b"(d(x)) * ∇d(x) * ∇d(x)ᵀ
-        //                      + m(x) * b'(d(x)) * ∇²d(x)
-        const auto& ea0 = V.row(E(ee_constraint.edge0_index, 0));
-        const auto& ea1 = V.row(E(ee_constraint.edge0_index, 1));
-        const auto& eb0 = V.row(E(ee_constraint.edge1_index, 0));
-        const auto& eb1 = V.row(E(ee_constraint.edge1_index, 1));
-
-        // Compute distance derivatives
-        // The distance type is unknown because of mollified PP and PE
-        // constraints where also added as EE constraints.
-        EdgeEdgeDistanceType dtype =
-            edge_edge_distance_type(ea0, ea1, eb0, eb1);
-        double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
-        Eigen::VectorX12d distance_grad;
-        edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype, distance_grad);
-        Eigen::MatrixXd distance_hess;
-        edge_edge_distance_hessian(ea0, ea1, eb0, eb1, dtype, distance_hess);
-
-        // Compute mollifier derivatives
-        double mollifier =
-            edge_edge_mollifier(ea0, ea1, eb0, eb1, ee_constraint.eps_x);
-        Eigen::VectorX12d mollifier_grad;
-        edge_edge_mollifier_gradient(
-            ea0, ea1, eb0, eb1, ee_constraint.eps_x, mollifier_grad);
-        Eigen::MatrixXd mollifier_hess;
-        edge_edge_mollifier_hessian(
-            ea0, ea1, eb0, eb1, ee_constraint.eps_x, mollifier_hess);
-
-        // Compute_barrier_derivatives
-        double b = barrier(distance_sqr, dhat_squared);
-        double grad_b = barrier_gradient(distance_sqr, dhat_squared);
-        double hess_b = barrier_hessian(distance_sqr, dhat_squared);
-
-        Eigen::MatrixXd local_hess = mollifier_hess * b
-            + grad_b
-                * (distance_grad * mollifier_grad.transpose()
-                   + mollifier_grad * distance_grad.transpose())
-            + mollifier
-                * (hess_b * distance_grad * distance_grad.transpose()
-                   + grad_b * distance_hess);
-
-        if (project_to_psd) {
-            local_hess = Eigen::project_to_psd(local_hess);
-        }
-
-        // Map from local to global gradient
-        std::vector<long> ids = {
-            { E(ee_constraint.edge0_index, 0), E(ee_constraint.edge0_index, 1),
-              E(ee_constraint.edge1_index, 0), E(ee_constraint.edge1_index, 1) }
-        };
-        local_hessian_to_global_triplets(local_hess, ids, dim, hess_triplets);
-    }
-
-    for (const auto& fv_constraint : constraint_set.fv_constraints) {
-        // ∇²b(d(x)) = ∇(b'(d(x)) * ∇d(x))
-        //           = b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)
-        const auto& p = V.row(fv_constraint.vertex_index);
-        const auto& t0 = V.row(F(fv_constraint.face_index, 0));
-        const auto& t1 = V.row(F(fv_constraint.face_index, 1));
-        const auto& t2 = V.row(F(fv_constraint.face_index, 2));
-
-        double distance_sqr = point_triangle_distance(
-            p, t0, t1, t2, PointTriangleDistanceType::P_T);
-        Eigen::VectorX12d local_grad;
-        point_triangle_distance_gradient(
-            p, t0, t1, t2, PointTriangleDistanceType::P_T, local_grad);
-        Eigen::MatrixXd local_hess;
-        point_triangle_distance_hessian(
-            p, t0, t1, t2, PointTriangleDistanceType::P_T, local_hess);
-
-        local_hess *= barrier_gradient(distance_sqr, dhat_squared);
-        local_hess += barrier_hessian(distance_sqr, dhat_squared) * local_grad
-            * local_grad.transpose();
-
-        if (project_to_psd) {
-            local_hess = Eigen::project_to_psd(local_hess);
-        }
-
-        // Map from local to global gradient
-        std::vector<long> ids = {
-            { fv_constraint.vertex_index, F(fv_constraint.face_index, 0),
-              F(fv_constraint.face_index, 1), F(fv_constraint.face_index, 2) }
-        };
-        local_hessian_to_global_triplets(local_hess, ids, dim, hess_triplets);
+    for (size_t i = 0; i < constraint_set.size(); i++) {
+        local_hessian_to_global_triplets(
+            constraint_set[i].compute_potential_hessian(
+                V, E, F, dhat, project_to_psd),
+            constraint_set[i].vertex_indices(E, F), dim, hess_triplets);
     }
 
     Eigen::SparseMatrix<double> hess(V.size(), V.size());
     hess.setFromTriplets(hess_triplets.begin(), hess_triplets.end());
     return hess;
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 bool is_step_collision_free(
     const Eigen::MatrixXd& V0,
@@ -778,6 +492,8 @@ bool is_step_collision_free(
 
     return true;
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V0,
@@ -898,6 +614,8 @@ double compute_collision_free_stepsize(
 
     return std::min(earliest_toi, 1.0); // Fulfill the promise of a step size
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 // NOTE: Actually distance squared
 double compute_minimum_distance(

@@ -1,40 +1,174 @@
 #pragma once
 
+#include <Eigen/Core>
+
 #include <ipc/spatial_hash/collision_candidate.hpp>
 
 namespace ipc {
 
-struct VertexVertexConstraint {
+struct CollisionConstraint {
+    virtual ~CollisionConstraint() {}
+
+    virtual std::vector<long> vertex_indices(
+        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const = 0;
+
+    virtual double compute_potential(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat) const = 0;
+
+    virtual Eigen::VectorXd compute_potential_gradient(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat) const = 0;
+
+    virtual Eigen::MatrixXd compute_potential_hessian(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const bool project_to_psd) const = 0;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
     VertexVertexConstraint(long vertex0_index, long vertex1_index);
+    VertexVertexConstraint(const VertexVertexCandidate& candidate);
 
-    bool operator==(const VertexVertexConstraint& other) const;
+    std::vector<long> vertex_indices(
+        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
+    {
+        return { { vertex0_index, vertex1_index } };
+    }
 
-    /// @brief Compare VertexVertexConstraints for sorting.
-    bool operator<(const VertexVertexConstraint& other) const;
+    double compute_potential(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat) const override;
 
-    long vertex0_index;
-    long vertex1_index;
+    Eigen::VectorXd compute_potential_gradient(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat) const override;
+
+    Eigen::MatrixXd compute_potential_hessian(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const bool project_to_psd) const override;
+
     long multiplicity = 1;
 };
 
-struct EdgeVertexConstraint : EdgeVertexCandidate {
+///////////////////////////////////////////////////////////////////////////////
+
+struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
     EdgeVertexConstraint(long edge_index, long vertex_index);
     EdgeVertexConstraint(const EdgeVertexCandidate& candidate);
 
+    std::vector<long> vertex_indices(
+        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
+    {
+        return { { vertex_index, E(edge_index, 0), E(edge_index, 1) } };
+    }
+
+    double compute_potential(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat) const override;
+
+    Eigen::VectorXd compute_potential_gradient(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat) const override;
+
+    Eigen::MatrixXd compute_potential_hessian(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const bool project_to_psd) const override;
+
     long multiplicity = 1;
 };
 
-struct EdgeEdgeConstraint : EdgeEdgeCandidate {
+///////////////////////////////////////////////////////////////////////////////
+
+struct EdgeEdgeConstraint : EdgeEdgeCandidate, CollisionConstraint {
     EdgeEdgeConstraint(long edge0_index, long edge1_index, double eps_x);
     EdgeEdgeConstraint(const EdgeEdgeCandidate& candidate, double eps_x);
+
+    std::vector<long> vertex_indices(
+        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
+    {
+        return { { E(edge0_index, 0), E(edge0_index, 1), //
+                   E(edge1_index, 0), E(edge1_index, 1) } };
+    }
+
+    double compute_potential(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat) const override;
+
+    Eigen::VectorXd compute_potential_gradient(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat) const override;
+
+    Eigen::MatrixXd compute_potential_hessian(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const bool project_to_psd) const override;
 
     double eps_x;
 };
 
-struct FaceVertexConstraint : FaceVertexCandidate {
+///////////////////////////////////////////////////////////////////////////////
+
+struct FaceVertexConstraint : FaceVertexCandidate, CollisionConstraint {
     FaceVertexConstraint(long face_index, long vertex_index);
     FaceVertexConstraint(const FaceVertexCandidate& candidate);
+
+    std::vector<long> vertex_indices(
+        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
+    {
+        return { { vertex_index, //
+                   F(face_index, 0), F(face_index, 1), F(face_index, 2) } };
+    }
+
+    double compute_potential(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat) const override;
+
+    Eigen::VectorXd compute_potential_gradient(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat) const override;
+
+    Eigen::MatrixXd compute_potential_hessian(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const bool project_to_psd) const override;
 };
+
+///////////////////////////////////////////////////////////////////////////////
 
 struct Constraints {
     std::vector<VertexVertexConstraint> vv_constraints;
@@ -47,6 +181,9 @@ struct Constraints {
     size_t num_constraints() const;
 
     void clear();
+
+    CollisionConstraint& operator[](size_t idx);
+    const CollisionConstraint& operator[](size_t idx) const;
 };
 
 } // namespace ipc
