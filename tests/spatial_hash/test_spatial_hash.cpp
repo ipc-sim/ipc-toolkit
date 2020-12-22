@@ -4,6 +4,7 @@
 
 #include <igl/IO>
 #include <igl/edges.h>
+#include <igl/Timer.h>
 
 #include <ipc/ipc.hpp>
 #include <ipc/spatial_hash/hash_grid.hpp>
@@ -299,4 +300,49 @@ TEST_CASE("Benchmark different spatial hashes", "[!benchmark][spatial_hash]")
         U.setRandom();
         U *= 3;
     }
+}
+
+TEST_CASE("Benchmark slow broadphase CCD", "[!benchmark][spatial_hash][febio]")
+{
+    using namespace ipc;
+
+    Eigen::MatrixXd V0, V1;
+    Eigen::MatrixXi E, F;
+    Eigen::VectorXi group_ids;
+
+    bool success = igl::read_triangle_mesh(
+        std::string(TEST_DATA_DIR) + "slow-broadphase-ccd/0.obj", V0, F);
+    REQUIRE(success);
+    success = igl::read_triangle_mesh(
+        std::string(TEST_DATA_DIR) + "slow-broadphase-ccd/1.obj", V1, F);
+    REQUIRE(success);
+    igl::edges(F, E);
+
+    HashGrid hashgrid;
+    Candidates candidates;
+
+    double inflation_radius = 0; // GENERATE(take(5, random(0.0, 0.1)));
+
+    igl::Timer timer;
+    timer.start();
+
+    // BENCHMARK("Hash Grid")
+    // {
+    hashgrid.resize(V0, V1, E, inflation_radius);
+    hashgrid.addVertices(V0, V1, inflation_radius);
+    hashgrid.addEdges(V0, V1, E, inflation_radius);
+    hashgrid.addFaces(V0, V1, F, inflation_radius);
+
+    candidates.clear();
+
+    hashgrid.getVertexEdgePairs(E, group_ids, candidates.ev_candidates);
+    hashgrid.getEdgeEdgePairs(E, group_ids, candidates.ee_candidates);
+    hashgrid.getFaceVertexPairs(F, group_ids, candidates.fv_candidates);
+    // };
+
+    timer.stop();
+    std::cout << timer.getElapsedTime() << " s" << std::endl;
+    std::cout << candidates.ev_candidates.size() << " "
+              << candidates.ee_candidates.size() << " "
+              << candidates.fv_candidates.size() << std::endl;
 }
