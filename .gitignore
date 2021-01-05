@@ -246,3 +246,4 @@ core*
 docs/source/doxyoutput
 docs/source/api
 !docs/Makefile
+tests/data/slow-broadphase-ccd
