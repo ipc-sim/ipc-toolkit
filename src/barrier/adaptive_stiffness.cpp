@@ -9,8 +9,8 @@ namespace ipc {
 
 double world_bbox_diagonal(const Eigen::MatrixXd& V)
 {
-    Eigen::VectorXd min = V.colwise().minCoeff();
-    Eigen::VectorXd max = V.colwise().maxCoeff();
+    Eigen::VectorX3d min = V.colwise().minCoeff();
+    Eigen::VectorX3d max = V.colwise().maxCoeff();
     return (max - min).norm();
 }
 

@@ -32,7 +32,7 @@ double VertexVertexConstraint::compute_potential(
     return multiplicity * barrier(distance_sqr, dhat_squared);
 }
 
-Eigen::VectorXd VertexVertexConstraint::compute_potential_gradient(
+Eigen::VectorX12d VertexVertexConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -53,7 +53,7 @@ Eigen::VectorXd VertexVertexConstraint::compute_potential_gradient(
     return multiplicity * local_grad;
 }
 
-Eigen::MatrixXd VertexVertexConstraint::compute_potential_hessian(
+Eigen::MatrixXX12d VertexVertexConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -112,7 +112,7 @@ double EdgeVertexConstraint::compute_potential(
     return multiplicity * barrier(distance_sqr, dhat_squared);
 }
 
-Eigen::VectorXd EdgeVertexConstraint::compute_potential_gradient(
+Eigen::VectorX12d EdgeVertexConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -136,7 +136,7 @@ Eigen::VectorXd EdgeVertexConstraint::compute_potential_gradient(
     return multiplicity * local_grad;
 }
 
-Eigen::MatrixXd EdgeVertexConstraint::compute_potential_hessian(
+Eigen::MatrixXX12d EdgeVertexConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -156,7 +156,7 @@ Eigen::MatrixXd EdgeVertexConstraint::compute_potential_hessian(
     Eigen::VectorX9d local_grad;
     point_edge_distance_gradient(
         p, e0, e1, PointEdgeDistanceType::P_E, local_grad);
-    Eigen::MatrixXd local_hess;
+    Eigen::MatrixXX12d local_hess;
     point_edge_distance_hessian(
         p, e0, e1, PointEdgeDistanceType::P_E, local_hess);
 
@@ -209,7 +209,7 @@ double EdgeEdgeConstraint::compute_potential(
         * barrier(distance_sqr, dhat_squared);
 }
 
-Eigen::VectorXd EdgeEdgeConstraint::compute_potential_gradient(
+Eigen::VectorX12d EdgeEdgeConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -240,7 +240,7 @@ Eigen::VectorXd EdgeEdgeConstraint::compute_potential_gradient(
         * local_distance_grad;
 }
 
-Eigen::MatrixXd EdgeEdgeConstraint::compute_potential_hessian(
+Eigen::MatrixXX12d EdgeEdgeConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -266,14 +266,14 @@ Eigen::MatrixXd EdgeEdgeConstraint::compute_potential_hessian(
     double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
     Eigen::VectorX12d distance_grad;
     edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype, distance_grad);
-    Eigen::MatrixXd distance_hess;
+    Eigen::MatrixXX12d distance_hess;
     edge_edge_distance_hessian(ea0, ea1, eb0, eb1, dtype, distance_hess);
 
     // Compute mollifier derivatives
     double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
     Eigen::VectorX12d mollifier_grad;
     edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x, mollifier_grad);
-    Eigen::MatrixXd mollifier_hess;
+    Eigen::MatrixXX12d mollifier_hess;
     edge_edge_mollifier_hessian(ea0, ea1, eb0, eb1, eps_x, mollifier_hess);
 
     // Compute_barrier_derivatives
@@ -281,7 +281,7 @@ Eigen::MatrixXd EdgeEdgeConstraint::compute_potential_hessian(
     double grad_b = barrier_gradient(distance_sqr, dhat_squared);
     double hess_b = barrier_hessian(distance_sqr, dhat_squared);
 
-    Eigen::MatrixXd local_hess = mollifier_hess * b
+    Eigen::MatrixXX12d local_hess = mollifier_hess * b
         + grad_b
             * (distance_grad * mollifier_grad.transpose()
                + mollifier_grad * distance_grad.transpose())
@@ -327,7 +327,7 @@ double FaceVertexConstraint::compute_potential(
     return barrier(distance_sqr, dhat_squared);
 }
 
-Eigen::VectorXd FaceVertexConstraint::compute_potential_gradient(
+Eigen::VectorX12d FaceVertexConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -351,7 +351,7 @@ Eigen::VectorXd FaceVertexConstraint::compute_potential_gradient(
     return local_grad * barrier_gradient(distance_sqr, dhat_squared);
 }
 
-Eigen::MatrixXd FaceVertexConstraint::compute_potential_hessian(
+Eigen::MatrixXX12d FaceVertexConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -372,7 +372,7 @@ Eigen::MatrixXd FaceVertexConstraint::compute_potential_hessian(
     Eigen::VectorX12d local_grad;
     point_triangle_distance_gradient(
         p, t0, t1, t2, PointTriangleDistanceType::P_T, local_grad);
-    Eigen::MatrixXd local_hess;
+    Eigen::MatrixXX12d local_hess;
     point_triangle_distance_hessian(
         p, t0, t1, t2, PointTriangleDistanceType::P_T, local_hess);
 

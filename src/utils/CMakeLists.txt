@@ -1,6 +1,7 @@
 set(SOURCES
   eigen_ext.cpp
   eigen_ext.hpp
+  eigen_ext.tpp
   local_to_global.hpp
   logger.cpp
   logger.hpp

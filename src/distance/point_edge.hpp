@@ -76,7 +76,7 @@ void point_edge_distance_gradient(
     grad.resize(3 * dim);
     grad.setZero();
 
-    Eigen::VectorXd local_grad;
+    Eigen::VectorX6d local_grad;
     switch (dtype) {
     case PointEdgeDistanceType::P_E0:
         point_point_distance_gradient(p, e0, local_grad);
@@ -129,7 +129,7 @@ void point_edge_distance_hessian(
     hess.resize(3 * dim, 3 * dim);
     hess.setZero();
 
-    Eigen::MatrixXd local_hess;
+    Eigen::MatrixXX6d local_hess;
     switch (dtype) {
     case PointEdgeDistanceType::P_E0:
         point_point_distance_hessian(p, e0, local_hess);

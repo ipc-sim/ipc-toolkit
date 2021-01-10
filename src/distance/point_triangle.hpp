@@ -117,7 +117,7 @@ void point_triangle_distance_gradient(
     grad.resize(4 * dim);
     grad.setZero();
 
-    Eigen::VectorXd local_grad;
+    Eigen::VectorX9d local_grad;
     switch (dtype) {
     case PointTriangleDistanceType::P_T0:
         point_point_distance_gradient(p, t0, local_grad);
@@ -209,7 +209,7 @@ void point_triangle_distance_hessian(
     hess.resize(4 * dim, 4 * dim);
     hess.setZero();
 
-    Eigen::MatrixXd local_hess;
+    Eigen::MatrixXX9d local_hess;
     switch (dtype) {
     case PointTriangleDistanceType::P_T0:
         point_point_distance_hessian(p, t0, local_hess);

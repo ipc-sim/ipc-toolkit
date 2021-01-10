@@ -3,6 +3,7 @@
 #include <Eigen/Core>
 
 #include <ipc/spatial_hash/collision_candidate.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
@@ -18,13 +19,13 @@ struct CollisionConstraint {
         const Eigen::MatrixXi& F,
         const double dhat) const = 0;
 
-    virtual Eigen::VectorXd compute_potential_gradient(
+    virtual Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double dhat) const = 0;
 
-    virtual Eigen::MatrixXd compute_potential_hessian(
+    virtual Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
@@ -50,13 +51,13 @@ struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXi& F,
         const double dhat) const override;
 
-    Eigen::VectorXd compute_potential_gradient(
+    Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double dhat) const override;
 
-    Eigen::MatrixXd compute_potential_hessian(
+    Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
@@ -84,13 +85,13 @@ struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXi& F,
         const double dhat) const override;
 
-    Eigen::VectorXd compute_potential_gradient(
+    Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double dhat) const override;
 
-    Eigen::MatrixXd compute_potential_hessian(
+    Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
@@ -119,13 +120,13 @@ struct EdgeEdgeConstraint : EdgeEdgeCandidate, CollisionConstraint {
         const Eigen::MatrixXi& F,
         const double dhat) const override;
 
-    Eigen::VectorXd compute_potential_gradient(
+    Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double dhat) const override;
 
-    Eigen::MatrixXd compute_potential_hessian(
+    Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
@@ -154,13 +155,13 @@ struct FaceVertexConstraint : FaceVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXi& F,
         const double dhat) const override;
 
-    Eigen::VectorXd compute_potential_gradient(
+    Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double dhat) const override;
 
-    Eigen::MatrixXd compute_potential_hessian(
+    Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,

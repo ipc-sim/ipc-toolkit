@@ -156,7 +156,7 @@ inline Eigen::VectorX12d compute_friction_potential_gradient(
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename DerivedDP0, typename DerivedDP1>
-inline Eigen::MatrixXd compute_friction_potential_hessian(
+inline Eigen::MatrixXX12d compute_friction_potential_hessian(
     const Eigen::MatrixBase<DerivedDP0>& dp0,
     const Eigen::MatrixBase<DerivedDP1>& dp1,
     const VertexVertexFrictionConstraint& friction_constraint,
@@ -164,7 +164,7 @@ inline Eigen::MatrixXd compute_friction_potential_hessian(
     bool project_to_psd = true);
 
 template <typename DerivedDP, typename DerivedDE0, typename DerivedDE1>
-inline Eigen::MatrixXd compute_friction_potential_hessian(
+inline Eigen::MatrixXX12d compute_friction_potential_hessian(
     const Eigen::MatrixBase<DerivedDP>& dp,
     const Eigen::MatrixBase<DerivedDE0>& de0,
     const Eigen::MatrixBase<DerivedDE1>& de1,
@@ -177,7 +177,7 @@ template <
     typename DerivedDEA1,
     typename DerivedDEB0,
     typename DerivedDEB1>
-inline Eigen::MatrixXd compute_friction_potential_hessian(
+inline Eigen::MatrixXX12d compute_friction_potential_hessian(
     const Eigen::MatrixBase<DerivedDEA0>& dea0,
     const Eigen::MatrixBase<DerivedDEA1>& dea1,
     const Eigen::MatrixBase<DerivedDEB0>& deb0,
@@ -191,7 +191,7 @@ template <
     typename DerivedDT0,
     typename DerivedDT1,
     typename DerivedDT2>
-inline Eigen::MatrixXd compute_friction_potential_hessian(
+inline Eigen::MatrixXX12d compute_friction_potential_hessian(
     const Eigen::MatrixBase<DerivedDP>& dp,
     const Eigen::MatrixBase<DerivedDT0>& dt0,
     const Eigen::MatrixBase<DerivedDT1>& dt1,

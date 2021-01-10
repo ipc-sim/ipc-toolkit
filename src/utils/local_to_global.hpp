@@ -7,12 +7,12 @@
 
 namespace ipc {
 
-template <typename Derived>
+template <typename DerivedLocalGrad, typename DerivedGrad>
 void local_gradient_to_global_gradient(
-    const Eigen::MatrixBase<Derived>& local_grad,
+    const Eigen::MatrixBase<DerivedLocalGrad>& local_grad,
     const std::vector<long>& ids,
     int dim,
-    Eigen::VectorXd& grad)
+    Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
     for (int i = 0; i < ids.size(); i++) {
         grad.segment(dim * ids[i], dim) += local_grad.segment(dim * i, dim);

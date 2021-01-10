@@ -17,9 +17,9 @@ Eigen::VectorX2d FrictionConstraint::compute_potential_gradient_common(
     return tangent_relative_displacement;
 }
 
-Eigen::MatrixXd FrictionConstraint::compute_potential_hessian_common(
+Eigen::MatrixXX12d FrictionConstraint::compute_potential_hessian_common(
     const Eigen::VectorX3d& relative_displacement,
-    const Eigen::MatrixXd& TT,
+    const Eigen::Matrix<double, 2, Eigen::Dynamic, Eigen::ColMajor, 2, 12>& TT,
     const double epsv_times_h,
     bool project_to_psd,
     const int multiplicity) const
@@ -36,7 +36,7 @@ Eigen::MatrixXd FrictionConstraint::compute_potential_hessian_common(
         tangent_relative_displacement_sqnorm, epsv_times_h);
     double f2_term = f2_SF(tangent_relative_displacement_sqnorm, epsv_times_h);
 
-    Eigen::MatrixXd local_hess;
+    Eigen::MatrixXX12d local_hess;
 
     double scale = multiplicity * mu * normal_force_magnitude;
     if (tangent_relative_displacement_sqnorm >= epsv_times_h_squared) {
@@ -96,7 +96,7 @@ VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
 {
 }
 
-Eigen::VectorXd VertexVertexFrictionConstraint::compute_potential_gradient(
+Eigen::VectorX12d VertexVertexFrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -110,7 +110,7 @@ Eigen::VectorXd VertexVertexFrictionConstraint::compute_potential_gradient(
         tangent_rel_u, tangent_basis);
 }
 
-Eigen::MatrixXd VertexVertexFrictionConstraint::compute_potential_hessian(
+Eigen::MatrixXX12d VertexVertexFrictionConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -145,7 +145,7 @@ EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
 {
 }
 
-Eigen::VectorXd EdgeVertexFrictionConstraint::compute_potential_gradient(
+Eigen::VectorX12d EdgeVertexFrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -159,7 +159,7 @@ Eigen::VectorXd EdgeVertexFrictionConstraint::compute_potential_gradient(
         tangent_rel_u, tangent_basis, closest_point[0]);
 }
 
-Eigen::MatrixXd EdgeVertexFrictionConstraint::compute_potential_hessian(
+Eigen::MatrixXX12d EdgeVertexFrictionConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -193,7 +193,7 @@ EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
 {
 }
 
-Eigen::VectorXd EdgeEdgeFrictionConstraint::compute_potential_gradient(
+Eigen::VectorX12d EdgeEdgeFrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -206,7 +206,7 @@ Eigen::VectorXd EdgeEdgeFrictionConstraint::compute_potential_gradient(
         tangent_rel_u, tangent_basis, closest_point);
 }
 
-Eigen::MatrixXd EdgeEdgeFrictionConstraint::compute_potential_hessian(
+Eigen::MatrixXX12d EdgeEdgeFrictionConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -240,7 +240,7 @@ FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
 {
 }
 
-Eigen::VectorXd FaceVertexFrictionConstraint::compute_potential_gradient(
+Eigen::VectorX12d FaceVertexFrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -253,7 +253,7 @@ Eigen::VectorXd FaceVertexFrictionConstraint::compute_potential_gradient(
         tangent_rel_u, tangent_basis, closest_point);
 }
 
-Eigen::MatrixXd FaceVertexFrictionConstraint::compute_potential_hessian(
+Eigen::MatrixXX12d FaceVertexFrictionConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,

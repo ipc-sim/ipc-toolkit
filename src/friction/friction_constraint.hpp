@@ -58,13 +58,13 @@ struct FrictionConstraint {
     virtual std::vector<long> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const = 0;
 
-    virtual Eigen::VectorXd compute_potential_gradient(
+    virtual Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const = 0;
 
-    virtual Eigen::MatrixXd compute_potential_hessian(
+    virtual Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
@@ -87,9 +87,10 @@ protected:
         const Eigen::VectorX3d& relative_displacement,
         double epsv_times_h) const;
 
-    Eigen::MatrixXd compute_potential_hessian_common(
+    Eigen::MatrixXX12d compute_potential_hessian_common(
         const Eigen::VectorX3d& relative_displacement,
-        const Eigen::MatrixXd& TT,
+        const Eigen::Matrix<double, 2, Eigen::Dynamic, Eigen::ColMajor, 2, 12>&
+            TT,
         const double epsv_times_h,
         bool project_to_psd,
         const int multiplicity = 1) const;
@@ -127,13 +128,13 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
         return multiplicity * compute_potential_common(rel_u, epsv_times_h);
     }
 
-    Eigen::VectorXd compute_potential_gradient(
+    Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const override;
 
-    Eigen::MatrixXd compute_potential_hessian(
+    Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
@@ -177,13 +178,13 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
         return multiplicity * compute_potential_common(rel_u, epsv_times_h);
     }
 
-    Eigen::VectorXd compute_potential_gradient(
+    Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const override;
 
-    Eigen::MatrixXd compute_potential_hessian(
+    Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
@@ -228,13 +229,13 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
             relative_displacement(U, E), epsv_times_h);
     }
 
-    Eigen::VectorXd compute_potential_gradient(
+    Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const override;
 
-    Eigen::MatrixXd compute_potential_hessian(
+    Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
@@ -277,13 +278,13 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
             relative_displacement(U, F), epsv_times_h);
     }
 
-    Eigen::VectorXd compute_potential_gradient(
+    Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const override;
 
-    Eigen::MatrixXd compute_potential_hessian(
+    Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,

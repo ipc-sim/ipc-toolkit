@@ -49,39 +49,38 @@ using VectorX9d = VectorX9<double>;
 template <typename T> using VectorX12 = Vector<T, Dynamic, 12>;
 /// @brief A dynamic size matrix with a fixed maximum size of 12 x 1
 using VectorX12d = VectorX12<double>;
+template <typename T, int max_rows, int max_cols>
+using MatrixXX = Matrix<T, Dynamic, Dynamic, ColMajor, max_rows, max_cols>;
 /// @brief A dynamic size matrix with a fixed maximum size of 3 x 3
-template <typename T>
-using MatrixXX3 = Matrix<T, Dynamic, Dynamic, ColMajor, 3, 3>;
-/// @brief A dynamic size matrix with a fixed maximum size of 3 x 3
-template <typename T>
-using MatrixXX6 = Matrix<T, Dynamic, Dynamic, ColMajor, 6, 6>;
+template <typename T> using MatrixXX3 = MatrixXX<T, 3, 3>;
+/// @brief A dynamic size matrix with a fixed maximum size of 6 x 6
+template <typename T> using MatrixXX6 = MatrixXX<T, 6, 6>;
+/// @brief A dynamic size matrix with a fixed maximum size of 9 x 9
+template <typename T> using MatrixXX9 = MatrixXX<T, 9, 9>;
+/// @brief A dynamic size matrix with a fixed maximum size of 12 x 12
+template <typename T> using MatrixXX12 = MatrixXX<T, 12, 12>;
 /// @brief A dynamic size matrix with a fixed maximum size of 3 x 3
 using MatrixXX3d = MatrixXX3<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 6 x 6
 using MatrixXX6d = MatrixXX6<double>;
+/// @brief A dynamic size matrix with a fixed maximum size of 12 x 12
+using MatrixXX9d = MatrixXX9<double>;
+/// @brief A dynamic size matrix with a fixed maximum size of 12 x 12
+using MatrixXX12d = MatrixXX12<double>;
 /// @brief A dynamic size diagonal matrix
 using DiagonalMatrixXd = DiagonalMatrix<double, Dynamic>;
 /// @brief A dynamic size diagonal matrix with a fixed maximum size of 6 x 6
 using DiagonalMatrixX6d = DiagonalMatrix<double, Dynamic, 6>;
 
 /// Matrix Projection onto Positive Definite Cone
-MatrixXd project_to_pd(const MatrixXd& A, double eps = 1e-8);
+template <typename Mat> Mat project_to_pd(const Mat& A, double eps = 1e-8);
 /// Matrix Projection onto Positive Semi-Definite Cone
-MatrixXd project_to_psd(const MatrixXd& A);
+template <typename Mat> Mat project_to_psd(const Mat& A);
 
 /// Cross product for dynamically sized matrices.
 template <typename DerivedA, typename DerivedB>
-auto cross(const MatrixBase<DerivedA>& a, const MatrixBase<DerivedB>& b)
-{
-    assert(a.size() == 3 && b.size() == 3);
-    Eigen::Matrix<
-        typename DerivedA::Scalar, DerivedA::RowsAtCompileTime,
-        DerivedA::ColsAtCompileTime>
-        c(a.rows(), a.cols());
-    c(0) = a(1) * b(2) - a(2) * b(1);
-    c(1) = a(2) * b(0) - a(0) * b(2);
-    c(2) = a(0) * b(1) - a(1) * b(0);
-    return c;
-}
+auto cross(const MatrixBase<DerivedA>& a, const MatrixBase<DerivedB>& b);
 
 } // namespace Eigen
+
+#include "eigen_ext.tpp"
