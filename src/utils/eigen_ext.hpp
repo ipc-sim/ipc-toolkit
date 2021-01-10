@@ -73,9 +73,29 @@ using DiagonalMatrixXd = DiagonalMatrix<double, Dynamic>;
 using DiagonalMatrixX6d = DiagonalMatrix<double, Dynamic, 6>;
 
 /// Matrix Projection onto Positive Definite Cone
-template <typename Mat> Mat project_to_pd(const Mat& A, double eps = 1e-8);
+template <
+    typename _Scalar,
+    int _Rows,
+    int _Cols,
+    int _Options,
+    int _MaxRows,
+    int _MaxCols>
+Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
+project_to_pd(
+    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A,
+    double eps = 1e-8);
 /// Matrix Projection onto Positive Semi-Definite Cone
-template <typename Mat> Mat project_to_psd(const Mat& A);
+template <
+    typename _Scalar,
+    int _Rows,
+    int _Cols,
+    int _Options,
+    int _MaxRows,
+    int _MaxCols>
+Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
+project_to_psd(
+    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&
+        A);
 
 /// Cross product for dynamically sized matrices.
 template <typename DerivedA, typename DerivedB>

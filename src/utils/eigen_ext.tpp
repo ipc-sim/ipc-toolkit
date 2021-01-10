@@ -11,12 +11,24 @@
 namespace Eigen {
 
 // Matrix Projection onto Positive Definite Cone
-template <typename Mat> Mat project_to_pd(const Mat& A, double eps)
+template <
+    typename _Scalar,
+    int _Rows,
+    int _Cols,
+    int _Options,
+    int _MaxRows,
+    int _MaxCols>
+Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
+project_to_pd(
+    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A,
+    double eps)
 {
     assert(eps > 0);
 
     // https://math.stackexchange.com/q/2776803
-    SelfAdjointEigenSolver<Mat> eigensolver(A);
+    SelfAdjointEigenSolver<
+        Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
+        eigensolver(A);
     if (eigensolver.info() != Success) {
 #ifdef IPC_TOOLKIT_WITH_LOGGER
         ipc::logger().error(
@@ -45,10 +57,21 @@ template <typename Mat> Mat project_to_pd(const Mat& A, double eps)
 }
 
 // Matrix Projection onto Positive Semi-Definite Cone
-template <typename Mat> Mat project_to_psd(const Mat& A)
+template <
+    typename _Scalar,
+    int _Rows,
+    int _Cols,
+    int _Options,
+    int _MaxRows,
+    int _MaxCols>
+Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
+project_to_psd(
+    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A)
 {
     // https://math.stackexchange.com/q/2776803
-    SelfAdjointEigenSolver<Mat> eigensolver(A);
+    SelfAdjointEigenSolver<
+        Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
+        eigensolver(A);
     if (eigensolver.info() != Success) {
 #ifdef IPC_TOOLKIT_WITH_LOGGER
         ipc::logger().error(
