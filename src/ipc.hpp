@@ -34,7 +34,8 @@ void construct_constraint_set(
     double dhat,
     Constraints& constraint_set,
     bool ignore_codimensional_vertices = true,
-    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
+    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi(),
+    const Eigen::MatrixXi& F2E = Eigen::MatrixXi());
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
 ///
@@ -55,7 +56,8 @@ void construct_constraint_set(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     double dhat,
-    Constraints& constraint_set);
+    Constraints& constraint_set,
+    const Eigen::MatrixXi& F2E = Eigen::MatrixXi());
 
 /// @brief Compute the barrier potential for a given constraint set.
 ///

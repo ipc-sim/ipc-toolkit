@@ -70,7 +70,8 @@ void construct_constraint_set(
     double dhat,
     Constraints& constraint_set,
     bool ignore_codimensional_vertices,
-    const Eigen::VectorXi& vertex_group_ids)
+    const Eigen::VectorXi& vertex_group_ids,
+    const Eigen::MatrixXi& F2E)
 {
     Candidates candidates;
     HashGrid hash_grid;
@@ -108,7 +109,8 @@ void construct_constraint_set(
             F, vertex_group_ids, candidates.fv_candidates);
     }
 
-    construct_constraint_set(candidates, V_rest, V, E, F, dhat, constraint_set);
+    construct_constraint_set(
+        candidates, V_rest, V, E, F, dhat, constraint_set, F2E);
 }
 
 void construct_constraint_set(
@@ -118,7 +120,8 @@ void construct_constraint_set(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     double dhat,
-    Constraints& constraint_set)
+    Constraints& constraint_set,
+    const Eigen::MatrixXi& F2E)
 {
     double dhat_squared = dhat * dhat;
 
@@ -252,9 +255,10 @@ void construct_constraint_set(
 
     for (const auto& fv_candidate : candidates.fv_candidates) {
         long vi = fv_candidate.vertex_index;
-        long f0i = F(fv_candidate.face_index, 0);
-        long f1i = F(fv_candidate.face_index, 1);
-        long f2i = F(fv_candidate.face_index, 2);
+        long fi = fv_candidate.face_index;
+        long f0i = F(fi, 0);
+        long f1i = F(fi, 1);
+        long f2i = F(fi, 2);
 
         // Compute distance type
         PointTriangleDistanceType dtype = point_triangle_distance_type(
@@ -285,19 +289,19 @@ void construct_constraint_set(
             case PointTriangleDistanceType::P_E0:
                 add_edge_vertex_constraint(
                     constraint_set.ev_constraints, ev_to_index,
-                    find_edge(E, f0i, f1i), vi);
+                    F2E.rows() > fi ? F2E(fi, 0) : find_edge(E, f0i, f1i), vi);
                 break;
 
             case PointTriangleDistanceType::P_E1:
                 add_edge_vertex_constraint(
                     constraint_set.ev_constraints, ev_to_index,
-                    find_edge(E, f1i, f2i), vi);
+                    F2E.rows() > fi ? F2E(fi, 1) : find_edge(E, f1i, f2i), vi);
                 break;
 
             case PointTriangleDistanceType::P_E2:
                 add_edge_vertex_constraint(
                     constraint_set.ev_constraints, ev_to_index,
-                    find_edge(E, f2i, f0i), vi);
+                    F2E.rows() > fi ? F2E(fi, 2) : find_edge(E, f2i, f0i), vi);
                 break;
 
             case PointTriangleDistanceType::P_T:
