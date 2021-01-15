@@ -42,6 +42,11 @@ public:
     {
     }
 
+    AABB(const AABB& aabb1, const AABB& aabb2, const AABB& aabb3)
+        : AABB(AABB(aabb1, aabb2), aabb3)
+    {
+    }
+
     static bool are_overlaping(const AABB& a, const AABB& b);
 
     inline const Eigen::VectorX3d& getMin() const { return min; }
