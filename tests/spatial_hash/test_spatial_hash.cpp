@@ -51,19 +51,19 @@ TEST_CASE("AABB initilization", "[spatial_hash][AABB]")
 TEST_CASE("AABB overlapping", "[spatial_hash][AABB]")
 {
     AABB a, b;
-    bool are_overlaping = false;
+    bool are_overlapping = false;
     SECTION("a to the right of b")
     {
         a = AABB(Eigen::Vector2d(-1, 0), Eigen::Vector2d(0, 1));
         SECTION("overlapping")
         {
             b = AABB(Eigen::Vector2d(-0.5, 0), Eigen::Vector2d(0.5, 1));
-            are_overlaping = true;
+            are_overlapping = true;
         }
         SECTION("not overlapping")
         {
             b = AABB(Eigen::Vector2d(0.5, 0), Eigen::Vector2d(1.5, 1));
-            are_overlaping = false;
+            are_overlapping = false;
         }
     }
     SECTION("b to the right of a")
@@ -72,12 +72,12 @@ TEST_CASE("AABB overlapping", "[spatial_hash][AABB]")
         SECTION("overlapping")
         {
             a = AABB(Eigen::Vector2d(-0.5, 0), Eigen::Vector2d(0.5, 1));
-            are_overlaping = true;
+            are_overlapping = true;
         }
         SECTION("not overlapping")
         {
             a = AABB(Eigen::Vector2d(0.5, 0), Eigen::Vector2d(1.5, 1));
-            are_overlaping = false;
+            are_overlapping = false;
         }
     }
     SECTION("a above b")
@@ -86,12 +86,12 @@ TEST_CASE("AABB overlapping", "[spatial_hash][AABB]")
         SECTION("overlapping")
         {
             b = AABB(Eigen::Vector2d(0, -0.5), Eigen::Vector2d(1, 0.5));
-            are_overlaping = true;
+            are_overlapping = true;
         }
         SECTION("not overlapping")
         {
             b = AABB(Eigen::Vector2d(0, 0.5), Eigen::Vector2d(1, 1.5));
-            are_overlaping = false;
+            are_overlapping = false;
         }
     }
     SECTION("a above b")
@@ -100,15 +100,15 @@ TEST_CASE("AABB overlapping", "[spatial_hash][AABB]")
         SECTION("overlapping")
         {
             a = AABB(Eigen::Vector2d(0, -0.5), Eigen::Vector2d(1, 0.5));
-            are_overlaping = true;
+            are_overlapping = true;
         }
         SECTION("not overlapping")
         {
             a = AABB(Eigen::Vector2d(0, 0.5), Eigen::Vector2d(1, 1.5));
-            are_overlaping = false;
+            are_overlapping = false;
         }
     }
-    CHECK(AABB::are_overlaping(a, b) == are_overlaping);
+    CHECK(AABB::are_overlapping(a, b) == are_overlapping);
 }
 
 TEST_CASE("Vertex-Vertex Spatial Hash", "[ccd][spatial_hash]")

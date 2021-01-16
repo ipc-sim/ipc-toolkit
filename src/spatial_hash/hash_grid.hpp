@@ -47,7 +47,7 @@ public:
     {
     }
 
-    static bool are_overlaping(const AABB& a, const AABB& b);
+    static bool are_overlapping(const AABB& a, const AABB& b);
 
     inline const Eigen::VectorX3d& getMin() const { return min; }
     inline const Eigen::VectorX3d& getMax() const { return max; }

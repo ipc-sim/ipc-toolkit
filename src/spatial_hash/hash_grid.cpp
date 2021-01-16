@@ -10,7 +10,7 @@
 #endif
 namespace ipc {
 
-bool AABB::are_overlaping(const AABB& a, const AABB& b)
+bool AABB::are_overlapping(const AABB& a, const AABB& b)
 {
     // https://bit.ly/2ZP3tW4
     assert(a.dim == b.dim);
@@ -326,7 +326,7 @@ void getPairs(
             if (item0.key == item1.key) {
                 if (!is_endpoint(item0.id, item1.id)
                     && !is_same_group(item0.id, item1.id)
-                    && AABB::are_overlaping(item0.aabb, item1.aabb)) {
+                    && AABB::are_overlapping(item0.aabb, item1.aabb)) {
                     candidates.emplace_back(item0.id, item1.id);
                 }
             } else {
@@ -369,7 +369,7 @@ void getPairs(
             if (item0.key == item1.key) {
                 if (!is_endpoint(item0.id, item1.id)
                     && !is_same_group(item0.id, item1.id)
-                    && AABB::are_overlaping(item0.aabb, item1.aabb)) {
+                    && AABB::are_overlapping(item0.aabb, item1.aabb)) {
                     candidates.emplace_back(item0.id, item1.id);
                 }
             } else {
