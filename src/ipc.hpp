@@ -35,7 +35,8 @@ void construct_constraint_set(
     Constraints& constraint_set,
     bool ignore_codimensional_vertices = true,
     const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi(),
-    const Eigen::MatrixXi& F2E = Eigen::MatrixXi());
+    const Eigen::MatrixXi& F2E = Eigen::MatrixXi(),
+    double dmin = 0);
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
 ///
@@ -57,7 +58,8 @@ void construct_constraint_set(
     const Eigen::MatrixXi& F,
     double dhat,
     Constraints& constraint_set,
-    const Eigen::MatrixXi& F2E = Eigen::MatrixXi());
+    const Eigen::MatrixXi& F2E = Eigen::MatrixXi(),
+    double dmin = 0);
 
 /// @brief Compute the barrier potential for a given constraint set.
 ///
@@ -73,7 +75,8 @@ double compute_barrier_potential(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
-    double dhat);
+    double dhat,
+    double dmin = 0);
 
 /// @brief Compute the gradient of the barrier potential.
 ///
@@ -89,7 +92,8 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
-    double dhat);
+    double dhat,
+    double dmin = 0);
 
 /// @brief Compute the hessian of the barrier potential.
 ///
@@ -106,6 +110,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
     double dhat,
+    double dmin = 0,
     bool project_to_psd = true);
 
 /// @brief Determine if the step is collision free.

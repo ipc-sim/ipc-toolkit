@@ -17,19 +17,22 @@ struct CollisionConstraint {
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        const double dhat) const = 0;
+        const double dhat,
+        const double dmin) const = 0;
 
     virtual Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        const double dhat) const = 0;
+        const double dhat,
+        const double dmin) const = 0;
 
     virtual Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double dhat,
+        const double dmin,
         const bool project_to_psd) const = 0;
 };
 
@@ -49,19 +52,22 @@ struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        const double dhat) const override;
+        const double dhat,
+        const double dmin) const override;
 
     Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        const double dhat) const override;
+        const double dhat,
+        const double dmin) const override;
 
     Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double dhat,
+        const double dmin,
         const bool project_to_psd) const override;
 
     long multiplicity = 1;
@@ -83,19 +89,22 @@ struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        const double dhat) const override;
+        const double dhat,
+        const double dmin) const override;
 
     Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        const double dhat) const override;
+        const double dhat,
+        const double dmin) const override;
 
     Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double dhat,
+        const double dmin,
         const bool project_to_psd) const override;
 
     long multiplicity = 1;
@@ -118,19 +127,22 @@ struct EdgeEdgeConstraint : EdgeEdgeCandidate, CollisionConstraint {
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        const double dhat) const override;
+        const double dhat,
+        const double dmin) const override;
 
     Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        const double dhat) const override;
+        const double dhat,
+        const double dmin) const override;
 
     Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double dhat,
+        const double dmin,
         const bool project_to_psd) const override;
 
     double eps_x;
@@ -153,19 +165,22 @@ struct FaceVertexConstraint : FaceVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        const double dhat) const override;
+        const double dhat,
+        const double dmin) const override;
 
     Eigen::VectorX12d compute_potential_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        const double dhat) const override;
+        const double dhat,
+        const double dmin) const override;
 
     Eigen::MatrixXX12d compute_potential_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double dhat,
+        const double dmin,
         const bool project_to_psd) const override;
 };
 

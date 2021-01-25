@@ -17,7 +17,8 @@ void construct_friction_constraint_set(
     double dhat,
     double barrier_stiffness,
     double mu,
-    FrictionConstraints& friction_constraint_set);
+    FrictionConstraints& friction_constraint_set,
+    double dmin = 0);
 
 /// @brief Compute the friction potential between to positions.
 ///

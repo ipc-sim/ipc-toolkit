@@ -16,9 +16,13 @@
 namespace ipc {
 
 double compute_normal_force_magnitude(
-    double distance_squared, double dhat_squared, double barrier_stiffness)
+    double distance_squared,
+    double dhat,
+    double barrier_stiffness,
+    double dmin = 0)
 {
-    double grad_b = barrier_gradient(distance_squared, dhat_squared);
+    double grad_b = barrier_gradient(
+        distance_squared - dmin * dmin, 2 * dmin * dhat + dhat * dhat);
     grad_b *= barrier_stiffness;
     return -grad_b * 2 * sqrt(distance_squared); // / (h * h) eliminated here
 }
@@ -31,10 +35,9 @@ void construct_friction_constraint_set(
     double dhat,
     double barrier_stiffness,
     double mu,
-    FrictionConstraints& friction_constraint_set)
+    FrictionConstraints& friction_constraint_set,
+    double dmin)
 {
-    double dhat_squared = dhat * dhat;
-
     friction_constraint_set.vv_constraints.reserve(
         contact_constraint_set.vv_constraints.size());
     for (const auto& vv_constraint : contact_constraint_set.vv_constraints) {
@@ -47,7 +50,7 @@ void construct_friction_constraint_set(
             point_point_tangent_basis(p0, p1);
         friction_constraint_set.vv_constraints.back().normal_force_magnitude =
             compute_normal_force_magnitude(
-                point_point_distance(p0, p1), dhat_squared, barrier_stiffness);
+                point_point_distance(p0, p1), dhat, barrier_stiffness, dmin);
         friction_constraint_set.vv_constraints.back().mu = mu;
     }
 
@@ -68,7 +71,7 @@ void construct_friction_constraint_set(
         friction_constraint_set.ev_constraints.back().normal_force_magnitude =
             compute_normal_force_magnitude(
                 point_edge_distance(p, e0, e1, PointEdgeDistanceType::P_E),
-                dhat_squared, barrier_stiffness);
+                dhat, barrier_stiffness, dmin);
         friction_constraint_set.ev_constraints.back().mu = mu;
     }
 
@@ -98,7 +101,7 @@ void construct_friction_constraint_set(
                 // skipped above.
                 edge_edge_distance(
                     ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB),
-                dhat_squared, barrier_stiffness);
+                dhat, barrier_stiffness, dmin);
         friction_constraint_set.ee_constraints.back().mu = mu;
     }
 
@@ -120,7 +123,7 @@ void construct_friction_constraint_set(
             compute_normal_force_magnitude(
                 point_triangle_distance(
                     p, t0, t1, t2, PointTriangleDistanceType::P_T),
-                dhat_squared, barrier_stiffness);
+                dhat, barrier_stiffness, dmin);
         friction_constraint_set.fv_constraints.back().mu = mu;
     }
 }

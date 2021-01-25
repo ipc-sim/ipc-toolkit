@@ -14,7 +14,8 @@ double initial_barrier_stiffness(
     const Eigen::VectorXd& grad_energy,
     const Eigen::VectorXd& grad_barrier,
     double& max_barrier_stiffness,
-    double min_barrier_stiffness_scale = 1e11);
+    double min_barrier_stiffness_scale = 1e11,
+    double dmin = 0);
 
 /// Compute an inital barrier stiffness using the mesh to compute the barrier
 /// potential gradient.
@@ -27,7 +28,8 @@ double initial_barrier_stiffness(
     double average_mass,
     const Eigen::VectorXd& grad_energy,
     double& max_barrier_stiffness,
-    double min_barrier_stiffness_scale = 1e11);
+    double min_barrier_stiffness_scale = 1e11,
+    double dmin = 0);
 
 /// Update the barrier stiffness if the distance is decreasing and less than
 /// dhat_epsilon_scale * diag.
@@ -37,7 +39,8 @@ void update_barrier_stiffness(
     double max_barrier_stiffness,
     double& barrier_stiffness,
     double dhat_epsilon_scale,
-    double bbox_diagonal);
+    double bbox_diagonal,
+    double dmin = 0);
 
 /// Update the barrier stiffness if the distance is decreasing and less than
 /// dhat_epsilon_scale * diag.
@@ -50,6 +53,7 @@ void update_barrier_stiffness(
     double& min_distance,
     double max_barrier_stiffness,
     double& barrier_stiffness,
-    double dhat_epsilon_scale);
+    double dhat_epsilon_scale,
+    double dmin = 0);
 
 } // namespace ipc
