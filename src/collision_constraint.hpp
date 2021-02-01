@@ -31,6 +31,8 @@ struct CollisionConstraint {
         const Eigen::MatrixXi& F,
         const double dhat,
         const bool project_to_psd) const = 0;
+
+    double minimum_distance = 0;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
