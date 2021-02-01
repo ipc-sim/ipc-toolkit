@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
-### 2021-02-01 <!--([XXXXXXX](https://github.com/ipc-sim/ipc-toolkit/commit/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX))-->
+### 2021-02-01 ([a395175](https://github.com/ipc-sim/ipc-toolkit/commit/a3951750ca5f167ab1d546ae1dadd87d0a9e2497))
 #### Added
 * Added 2D friction model based on the 3D formulation.
     * TODO: tTest this further
