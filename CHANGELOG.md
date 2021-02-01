@@ -10,7 +10,17 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
-### 2021-01-09 <!--([XXXXXXX](https://github.com/ipc-sim/ipc-toolkit/commit/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX))-->
+### 2021-02-01 <!--([XXXXXXX](https://github.com/ipc-sim/ipc-toolkit/commit/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX))-->
+#### Added
+* Added 2D friction model based on the 3D formulation.
+    * TODO: tTest this further
+
+### 2021-01-12 ([deee6d0](https://github.com/ipc-sim/ipc-toolkit/commit/deee6d0f9802910c5565f800492f9a995e65cf7e))
+#### Added
+* Added and optional parameter `F2E` to `construct_constraint_set()`. This is similar to `F` (which maps faces to vertices), but maps faces to edges. This is optional, but recommended for better performance. If not provided a simple linear search will be done per face edge!
+    * TODO: Add a function to compute this mapping.
+
+### 2021-01-09 ([deee6d0](https://github.com/ipc-sim/ipc-toolkit/commit/deee6d0f9802910c5565f800492f9a995e65cf7e))
 #### Changed
 * Replaced VectorXd and MatrixXd with static size versions for local gradient and hessians
 

@@ -52,6 +52,8 @@ using VectorX12d = VectorX12<double>;
 template <typename T, int max_rows, int max_cols>
 using MatrixXX = Matrix<T, Dynamic, Dynamic, ColMajor, max_rows, max_cols>;
 /// @brief A dynamic size matrix with a fixed maximum size of 3 x 3
+template <typename T> using MatrixXX2 = MatrixXX<T, 2, 2>;
+/// @brief A dynamic size matrix with a fixed maximum size of 3 x 3
 template <typename T> using MatrixXX3 = MatrixXX<T, 3, 3>;
 /// @brief A dynamic size matrix with a fixed maximum size of 6 x 6
 template <typename T> using MatrixXX6 = MatrixXX<T, 6, 6>;
@@ -59,6 +61,8 @@ template <typename T> using MatrixXX6 = MatrixXX<T, 6, 6>;
 template <typename T> using MatrixXX9 = MatrixXX<T, 9, 9>;
 /// @brief A dynamic size matrix with a fixed maximum size of 12 x 12
 template <typename T> using MatrixXX12 = MatrixXX<T, 12, 12>;
+/// @brief A dynamic size matrix with a fixed maximum size of 3 x 3
+using MatrixXX2d = MatrixXX2<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 3 x 3
 using MatrixXX3d = MatrixXX3<double>;
 /// @brief A dynamic size matrix with a fixed maximum size of 6 x 6
@@ -98,8 +102,14 @@ project_to_psd(
         A);
 
 /// Cross product for dynamically sized matrices.
-template <typename DerivedA, typename DerivedB>
-auto cross(const MatrixBase<DerivedA>& a, const MatrixBase<DerivedB>& b);
+template <
+    typename DerivedA,
+    typename DerivedB,
+    typename Result = Eigen::Matrix<
+        typename DerivedA::Scalar,
+        DerivedA::RowsAtCompileTime,
+        DerivedA::ColsAtCompileTime>>
+Result cross(const MatrixBase<DerivedA>& a, const MatrixBase<DerivedB>& b);
 
 } // namespace Eigen
 

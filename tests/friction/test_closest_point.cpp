@@ -41,3 +41,13 @@ TEST_CASE("Point-edge closest point", "[friction][point-edge][closest_point]")
     double alpha = point_edge_closest_point(p, e0, e1);
     CHECK(alpha == Approx(0.5));
 }
+
+TEST_CASE(
+    "Point-edge closest point in 2D",
+    "[friction][point-edge][closest_point][2D]")
+{
+    Eigen::Vector2d p(0, 1), e0(-1, 0), e1(1, 0);
+
+    double alpha = point_edge_closest_point(p, e0, e1);
+    CHECK(alpha == Approx(0.5));
+}

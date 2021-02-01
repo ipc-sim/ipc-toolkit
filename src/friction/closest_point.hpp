@@ -10,8 +10,12 @@ namespace ipc {
 ///////////////////////////////////////////////////////////////////////////////
 // Point - Edge
 
-template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_edge_closest_point(
+template <
+    typename DerivedP,
+    typename DerivedE0,
+    typename DerivedE1,
+    typename T = typename DerivedP::Scalar>
+inline T point_edge_closest_point(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)

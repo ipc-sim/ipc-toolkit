@@ -44,8 +44,7 @@ struct FrictionConstraint {
     Eigen::VectorX2d closest_point;
 
     /// @brief Tangent basis of the contact (max size 3×2)
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::ColMajor, 3, 2>
-        tangent_basis;
+    Eigen::MatrixXX<double, 3, 2> tangent_basis;
 
     /// @brief Contact force magnitude
     double normal_force_magnitude;
@@ -89,8 +88,7 @@ protected:
 
     Eigen::MatrixXX12d compute_potential_hessian_common(
         const Eigen::VectorX3d& relative_displacement,
-        const Eigen::Matrix<double, 2, Eigen::Dynamic, Eigen::ColMajor, 2, 12>&
-            TT,
+        const Eigen::MatrixXX<double, 2, 12>& TT,
         const double epsv_times_h,
         bool project_to_psd,
         const int multiplicity = 1) const;

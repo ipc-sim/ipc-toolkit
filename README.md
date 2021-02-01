@@ -74,7 +74,7 @@ All dependancies are downloaded through CMake depending on the build options.
 The following libraries are used in this project:
 
 * [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection.git) for continuous collision detection between triangle meshes in 3D
-* [libigl](https://github.com/libigl/libigl) as both a source of Eigen and for basic geometry functions (e.g. computing barycentric coordinates)
+* [libigl](https://github.com/libigl/libigl) as both a source of Eigen and for basic geometry functions
 * [TBB](https://github.com/wjakob/tbb) for limited parallelization
 * [spdlog](https://github.com/gabime/spdlog) for logging information
     * Disable logging completely using the CMake flag `-IPC_TOOLKIT_WITH_LOGGER=OFF`

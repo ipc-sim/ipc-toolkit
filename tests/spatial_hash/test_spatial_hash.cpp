@@ -186,9 +186,7 @@ TEST_CASE(
         V_rest, V, E, F, dhat, constraint_set,
         /*ignore_internal_vertices=*/false);
 
-    std::cout << constraint_set.size() << std::endl;
-    std::cout << sqrt(compute_minimum_distance(V, E, F, constraint_set))
-              << std::endl;
+    CHECK(constraint_set.size() != 0);
 }
 
 TEST_CASE("Benchmark different spatial hashes", "[!benchmark][spatial_hash]")

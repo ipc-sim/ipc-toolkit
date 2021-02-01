@@ -32,13 +32,15 @@ inline Eigen::VectorX6<T> point_point_relative_mesh_displacements(
     return mesh_displacements;
 }
 
-template <typename DerivedBasis, typename DerivedTT>
-inline void point_point_TT(
-    const Eigen::MatrixBase<DerivedBasis>& basis,
-    Eigen::MatrixBase<DerivedTT>& TT)
+template <typename DerivedBasis>
+inline Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 6>
+point_point_TT(const Eigen::MatrixBase<DerivedBasis>& basis)
 {
-    TT.template block<2, 3>(0, 0) = basis.transpose();
-    TT.template block<2, 3>(0, 3) = -basis.transpose();
+    Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 6> TT(
+        basis.cols(), 2 * basis.rows());
+    TT.leftCols(basis.rows()) = basis.transpose();
+    TT.rightCols(basis.rows()) = -basis.transpose();
+    return TT;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -73,15 +75,17 @@ inline Eigen::VectorX9<T> point_edge_relative_mesh_displacements(
     return mesh_displacements;
 }
 
-template <typename DerivedBasis, typename T, typename DerivedTT>
-inline void point_edge_TT(
-    const Eigen::MatrixBase<DerivedBasis>& basis,
-    const T& alpha,
-    Eigen::MatrixBase<DerivedTT>& TT)
+template <typename DerivedBasis, typename T>
+inline Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 9>
+point_edge_TT(const Eigen::MatrixBase<DerivedBasis>& basis, const T& alpha)
 {
-    TT.template block<2, 3>(0, 0) = basis.transpose();
-    TT.template block<2, 3>(0, 3) = (alpha - 1.0) * basis.transpose();
-    TT.template block<2, 3>(0, 6) = -alpha * basis.transpose();
+    Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 9> TT(
+        basis.cols(), 3 * basis.rows());
+    TT.leftCols(basis.rows()) = basis.transpose();
+    TT.middleCols(basis.rows(), basis.rows()) =
+        (alpha - 1.0) * basis.transpose();
+    TT.rightCols(basis.rows()) = -alpha * basis.transpose();
+    return TT;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -128,16 +132,19 @@ inline Eigen::VectorX12<T> edge_edge_relative_mesh_displacements(
     return mesh_displacements;
 }
 
-template <typename DerivedBasis, typename DerivedGamma, typename DerivedTT>
-inline void edge_edge_TT(
+template <typename DerivedBasis, typename DerivedGamma>
+inline Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 12> edge_edge_TT(
     const Eigen::MatrixBase<DerivedBasis>& basis,
-    const Eigen::MatrixBase<DerivedGamma>& gamma,
-    Eigen::MatrixBase<DerivedTT>& TT)
+    const Eigen::MatrixBase<DerivedGamma>& gamma)
 {
-    TT.template block<2, 3>(0, 0) = (1.0 - gamma[0]) * basis.transpose();
-    TT.template block<2, 3>(0, 3) = gamma[0] * basis.transpose();
-    TT.template block<2, 3>(0, 6) = (gamma[1] - 1.0) * basis.transpose();
-    TT.template block<2, 3>(0, 9) = -gamma[1] * basis.transpose();
+    Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 12> TT(
+        basis.cols(), 4 * basis.rows());
+    TT.leftCols(basis.rows()) = (1.0 - gamma[0]) * basis.transpose();
+    TT.middleCols(basis.rows(), basis.rows()) = gamma[0] * basis.transpose();
+    TT.middleCols(2 * basis.rows(), basis.rows()) =
+        (gamma[1] - 1.0) * basis.transpose();
+    TT.rightCols(basis.rows()) = -gamma[1] * basis.transpose();
+    return TT;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -186,17 +193,20 @@ inline Eigen::VectorX12<T> point_triangle_relative_mesh_displacements(
     return mesh_displacements;
 }
 
-template <typename DerivedBasis, typename DerivedBeta, typename DerivedTT>
-inline void point_triangle_TT(
+template <typename DerivedBasis, typename DerivedBeta>
+inline Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 12> point_triangle_TT(
     const Eigen::MatrixBase<DerivedBasis>& basis,
-    const Eigen::MatrixBase<DerivedBeta>& beta,
-    Eigen::MatrixBase<DerivedTT>& TT)
+    const Eigen::MatrixBase<DerivedBeta>& beta)
 {
-    TT.template block<2, 3>(0, 0) = basis.transpose();
-    TT.template block<2, 3>(0, 3) =
+    Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 12> TT(
+        basis.cols(), 4 * basis.rows());
+    TT.leftCols(basis.rows()) = basis.transpose();
+    TT.middleCols(basis.rows(), basis.rows()) =
         (-1 + beta[0] + beta[1]) * basis.transpose();
-    TT.template block<2, 3>(0, 6) = -beta[0] * basis.transpose();
-    TT.template block<2, 3>(0, 9) = -beta[1] * basis.transpose();
+    TT.middleCols(2 * basis.rows(), basis.rows()) =
+        -beta[0] * basis.transpose();
+    TT.rightCols(basis.rows()) = -beta[1] * basis.transpose();
+    return TT;
 }
 
 } // namespace ipc

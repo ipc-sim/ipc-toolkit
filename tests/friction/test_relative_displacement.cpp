@@ -64,3 +64,28 @@ TEST_CASE(
         point_point_relative_displacement(dp0, dp1);
     CHECK((dp0 - relative_displacement).norm() == Approx(0).margin(1e-12));
 }
+
+TEST_CASE(
+    "Point-edge relative displacement in 2D",
+    "[friction][point-edge][relative_displacement][2D]")
+{
+    Eigen::Vector2d p(0, 1), e0(-1, 0), e1(1, 0);
+    Eigen::Vector2d dp = Eigen::Vector2d::Random(), de0(0, 0), de1(0, 0);
+
+    double alpha = point_edge_closest_point(p, e0, e1);
+
+    Eigen::Vector2d relative_displacement =
+        point_edge_relative_displacement(dp, de0, de1, alpha);
+    CHECK((dp - relative_displacement).norm() == Approx(0).margin(1e-12));
+}
+
+TEST_CASE(
+    "Point-point relative displacement in 2D",
+    "[friction][point-point][relative_displacement][2D]")
+{
+    Eigen::Vector2d dp0 = Eigen::Vector2d::Random(), dp1(0, 0);
+
+    Eigen::Vector2d relative_displacement =
+        point_point_relative_displacement(dp0, dp1);
+    CHECK((dp0 - relative_displacement).norm() == Approx(0).margin(1e-12));
+}

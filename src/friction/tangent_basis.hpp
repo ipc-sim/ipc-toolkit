@@ -9,56 +9,81 @@ namespace ipc {
 
 // Point - Point
 
-template <typename DerivedP0, typename DerivedP1>
-inline auto point_point_tangent_basis(
+template <
+    typename DerivedP0,
+    typename DerivedP1,
+    typename T = typename DerivedP0::Scalar>
+inline Eigen::MatrixXX<T, 3, 2> point_point_tangent_basis(
     const Eigen::MatrixBase<DerivedP0>& p0,
     const Eigen::MatrixBase<DerivedP1>& p1)
 {
-    assert(p0.size() == 3);
-    assert(p1.size() == 3);
+    if (p0.size() == 2) {
+        assert(p1.size() == 2);
 
-    typedef typename DerivedP0::Scalar T;
+        Eigen::MatrixXX<T, 3, 2> basis(2, 1);
 
-    Eigen::Matrix<T, 3, 2> basis;
+        auto p0_to_p1 = (p1 - p0).normalized();
 
-    auto p0_to_p1 = (p1 - p0).transpose();
+        basis(0) = -p0_to_p1(1);
+        basis(1) = p0_to_p1(0);
 
-    auto cross_x = Eigen::cross(Eigen::Matrix<T, 1, 3>::UnitX(), p0_to_p1);
-    auto cross_y = Eigen::cross(Eigen::Matrix<T, 1, 3>::UnitY(), p0_to_p1);
-
-    if (cross_x.squaredNorm() > cross_y.squaredNorm()) {
-        basis.col(0) = cross_x.normalized().transpose();
-        basis.col(1) = Eigen::cross(p0_to_p1, cross_x).normalized().transpose();
+        return basis;
     } else {
-        basis.col(0) = cross_y.normalized().transpose();
-        basis.col(1) = Eigen::cross(p0_to_p1, cross_y).normalized().transpose();
-    }
+        assert(p0.size() == 3 && p1.size() == 3);
 
-    return basis;
+        Eigen::MatrixXX<T, 3, 2> basis(3, 2);
+
+        auto p0_to_p1 = p1 - p0;
+
+        Eigen::Vector3<T> cross_x =
+            Eigen::cross(Eigen::Vector3<T>::UnitX(), p0_to_p1);
+        Eigen::Vector3<T> cross_y =
+            Eigen::cross(Eigen::Vector3<T>::UnitY(), p0_to_p1);
+
+        if (cross_x.squaredNorm() > cross_y.squaredNorm()) {
+            basis.col(0) = cross_x.normalized();
+            basis.col(1) = Eigen::cross(p0_to_p1, cross_x).normalized();
+        } else {
+            basis.col(0) = cross_y.normalized();
+            basis.col(1) = Eigen::cross(p0_to_p1, cross_y).normalized();
+        }
+
+        return basis;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Point - Edge
 
-template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-inline auto point_edge_tangent_basis(
+template <
+    typename DerivedP,
+    typename DerivedE0,
+    typename DerivedE1,
+    typename T = typename DerivedP::Scalar>
+inline Eigen::MatrixXX<T, 3, 2> point_edge_tangent_basis(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
 {
-    assert(p.size() == 3);
-    assert(e0.size() == 3);
-    assert(e1.size() == 3);
+    if (p.size() == 2) {
+        assert(e0.size() == 2 && e1.size() == 2);
 
-    typedef typename DerivedP::Scalar T;
+        Eigen::MatrixXX<T, 3, 2> basis(2, 1);
 
-    Eigen::Matrix<T, 3, 2> basis;
+        basis.col(0) = (e1 - e0).normalized();
 
-    auto e = e1 - e0;
-    basis.col(0) = e.normalized();
-    basis.col(1) = Eigen::cross(e, p - e0).normalized();
+        return basis;
+    } else {
+        assert(p.size() == 3 && e0.size() == 3 && e1.size() == 3);
 
-    return basis;
+        Eigen::MatrixXX<T, 3, 2> basis(3, 2);
+
+        auto e = e1 - e0;
+        basis.col(0) = e.normalized();
+        basis.col(1) = Eigen::cross(e, p - e0).normalized();
+
+        return basis;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -69,19 +94,16 @@ template <
     typename DerivedEA0,
     typename DerivedEA1,
     typename DerivedEB0,
-    typename DerivedEB1>
-inline auto edge_edge_tangent_basis(
+    typename DerivedEB1,
+    typename T = typename DerivedEA0::Scalar>
+inline Eigen::Matrix<T, 3, 2> edge_edge_tangent_basis(
     const Eigen::MatrixBase<DerivedEA0>& ea0,
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
-    assert(ea0.size() == 3);
-    assert(ea1.size() == 3);
-    assert(eb0.size() == 3);
-    assert(eb1.size() == 3);
-
-    typedef typename DerivedEA0::Scalar T;
+    assert(ea0.size() == 3 && ea1.size() == 3);
+    assert(eb0.size() == 3 && eb1.size() == 3);
 
     Eigen::Matrix<T, 3, 2> basis;
 
@@ -106,19 +128,15 @@ template <
     typename DerivedP,
     typename DerivedT0,
     typename DerivedT1,
-    typename DerivedT2>
-inline auto point_triangle_tangent_basis(
+    typename DerivedT2,
+    typename T = typename DerivedP::Scalar>
+inline Eigen::Matrix<T, 3, 2> point_triangle_tangent_basis(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2)
 {
-    assert(p.size() == 3);
-    assert(t0.size() == 3);
-    assert(t1.size() == 3);
-    assert(t2.size() == 3);
-
-    typedef typename DerivedP::Scalar T;
+    assert(p.size() == 3 && t0.size() == 3 && t1.size() == 3 && t2.size() == 3);
 
     Eigen::Matrix<T, 3, 2> basis;
 

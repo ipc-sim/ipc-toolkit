@@ -14,7 +14,8 @@
 
 using namespace ipc;
 
-TEST_CASE("Test friction gradient and hessian", "[friction][gradient][hessian]")
+TEST_CASE(
+    "Test friction gradient and hessian", "[friction][gradient][hessian][2D]")
 {
     double mu = GENERATE(range(0.0, 1.0, 0.1));
     double epsv_times_h = pow(10, GENERATE(range(-6, 0)));
@@ -56,14 +57,76 @@ TEST_CASE("Test friction gradient and hessian", "[friction][gradient][hessian]")
 
         V1 = V0;
         double dy = GENERATE(-1, 1, 1e-1);
-        V0.row(0) << 0.5, d, 0; // edge a vertex 0 at t=1
-        V0.row(1) << 2.5, d, 0; // edge a vertex 1 at t=1
+        V1.row(0) << 0.5, d, 0; // edge a vertex 0 at t=1
+        V1.row(1) << 2.5, d, 0; // edge a vertex 1 at t=1
 
         E.resize(2, 2);
         E.row(0) << 0, 1;
         E.row(1) << 2, 3;
 
         contact_constraint_set.ee_constraints.emplace_back(0, 1, 0.0);
+    }
+    SECTION("point-edge")
+    {
+        V0.resize(3, 3);
+        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
+        V0.row(0) << -0.5, d, 0; // point at t=0
+        V0.row(1) << 0, 0, -1;   // edge vertex 0 at t=0
+        V0.row(2) << 0, 0, 1;    // edge vertex 1 at t=0
+
+        V1 = V0;
+        double dy = GENERATE(-1, 1, 1e-1);
+        V1.row(0) << 0.5, d, 0; // point at t=1
+
+        E.resize(1, 2);
+        E.row(0) << 1, 2;
+
+        contact_constraint_set.ev_constraints.emplace_back(0, 1);
+    }
+    SECTION("point-point")
+    {
+        V0.resize(2, 3);
+        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
+        V0.row(0) << -1, d, 0; // point 0 at t=0
+        V0.row(1) << 1, d, 0;  // point 1 at t=0
+
+        V1 = V0;
+        double dy = GENERATE(-1, 1, 1e-1);
+        V1.row(0) << 0.5, d, 0;  // edge a vertex 0 at t=1
+        V1.row(1) << -0.5, d, 0; // edge a vertex 1 at t=1
+
+        contact_constraint_set.vv_constraints.emplace_back(0, 1);
+    }
+    SECTION("point-edge")
+    {
+        V0.resize(3, 2);
+        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
+        V0.row(0) << -0.5, d; // point at t=0
+        V0.row(1) << -1, 0;   // edge vertex 0 at t=0
+        V0.row(2) << 1, 0;    // edge vertex 1 at t=0
+
+        V1 = V0;
+        double dy = GENERATE(-1, 1, 1e-1);
+        V1.row(0) << 0.5, d; // point at t=1
+
+        E.resize(1, 2);
+        E.row(0) << 1, 2;
+
+        contact_constraint_set.ev_constraints.emplace_back(0, 1);
+    }
+    SECTION("point-point")
+    {
+        V0.resize(2, 2);
+        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
+        V0.row(0) << -1, d; // point 0 at t=0
+        V0.row(1) << 1, d;  // point 1 at t=0
+
+        V1 = V0;
+        double dy = GENERATE(-1, 1, 1e-1);
+        V1.row(0) << 0.5, d;  // edge a vertex 0 at t=1
+        V1.row(1) << -0.5, d; // edge a vertex 1 at t=1
+
+        contact_constraint_set.vv_constraints.emplace_back(0, 1);
     }
 
     FrictionConstraints friction_constraint_set;
@@ -234,7 +297,7 @@ bool read_ipc_friction_data(
     return true;
 }
 
-TEST_CASE("Compare IPC friction gradient", "[friction][gradient][hessian]")
+TEST_CASE("Compare IPC friction derivatives", "[friction][gradient][hessian]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
