@@ -35,8 +35,7 @@ void construct_friction_constraint_set(
     double dhat,
     double barrier_stiffness,
     double mu,
-    FrictionConstraints& friction_constraint_set,
-    double dmin)
+    FrictionConstraints& friction_constraint_set)
 {
     friction_constraint_set.vv_constraints.reserve(
         contact_constraint_set.vv_constraints.size());
@@ -50,7 +49,8 @@ void construct_friction_constraint_set(
             point_point_tangent_basis(p0, p1);
         friction_constraint_set.vv_constraints.back().normal_force_magnitude =
             compute_normal_force_magnitude(
-                point_point_distance(p0, p1), dhat, barrier_stiffness, dmin);
+                point_point_distance(p0, p1), dhat, barrier_stiffness,
+                vv_constraint.minimum_distance);
         friction_constraint_set.vv_constraints.back().mu = mu;
     }
 
@@ -71,7 +71,7 @@ void construct_friction_constraint_set(
         friction_constraint_set.ev_constraints.back().normal_force_magnitude =
             compute_normal_force_magnitude(
                 point_edge_distance(p, e0, e1, PointEdgeDistanceType::P_E),
-                dhat, barrier_stiffness, dmin);
+                dhat, barrier_stiffness, ev_constraint.minimum_distance);
         friction_constraint_set.ev_constraints.back().mu = mu;
     }
 
@@ -101,7 +101,7 @@ void construct_friction_constraint_set(
                 // skipped above.
                 edge_edge_distance(
                     ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB),
-                dhat, barrier_stiffness, dmin);
+                dhat, barrier_stiffness, ee_constraint.minimum_distance);
         friction_constraint_set.ee_constraints.back().mu = mu;
     }
 
@@ -123,7 +123,7 @@ void construct_friction_constraint_set(
             compute_normal_force_magnitude(
                 point_triangle_distance(
                     p, t0, t1, t2, PointTriangleDistanceType::P_T),
-                dhat, barrier_stiffness, dmin);
+                dhat, barrier_stiffness, fv_constraint.minimum_distance);
         friction_constraint_set.fv_constraints.back().mu = mu;
     }
 }

@@ -74,7 +74,7 @@ double initial_barrier_stiffness(
     Constraints constraint_set;
     construct_constraint_set(V_rest, V, E, F, dhat, constraint_set, dmin);
     Eigen::VectorXd grad_barrier =
-        compute_barrier_potential_gradient(V, E, F, constraint_set, dhat, dmin);
+        compute_barrier_potential_gradient(V, E, F, constraint_set, dhat);
 
     return initial_barrier_stiffness(
         diag, dhat, average_mass, grad_energy, grad_barrier,

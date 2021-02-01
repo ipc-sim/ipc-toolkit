@@ -74,9 +74,11 @@ void construct_constraint_set(
     const Eigen::MatrixXi& F2E,
     double dmin)
 {
+    double inflation_radius = (dhat + dmin) / 2;
+
     Candidates candidates;
     HashGrid hash_grid;
-    hash_grid.resize(V, V, E, /*inflation_radius=*/dhat + dmin);
+    hash_grid.resize(V, V, E, inflation_radius);
 
     // Assumes the edges connect to all boundary vertices
     if (ignore_codimensional_vertices) {
@@ -91,13 +93,13 @@ void construct_constraint_set(
                 /*inflation_radius=*/dhat + dmin);
         }
     } else {
-        hash_grid.addVertices(V, V, /*inflation_radius=*/dhat + dmin);
+        hash_grid.addVertices(V, V, inflation_radius);
     }
 
-    hash_grid.addEdges(V, V, E, /*inflation_radius=*/dhat + dmin);
+    hash_grid.addEdges(V, V, E, inflation_radius);
     if (V.cols() == 3) {
         // These are not needed for 2D
-        hash_grid.addFaces(V, V, F, /*inflation_radius=*/dhat + dmin);
+        hash_grid.addFaces(V, V, F, inflation_radius);
     }
 
     if (V.cols() == 2) {
@@ -113,7 +115,7 @@ void construct_constraint_set(
     }
 
     construct_constraint_set(
-        candidates, V_rest, V, E, F, dhat + dmin, constraint_set, F2E);
+        candidates, V_rest, V, E, F, dhat, constraint_set, F2E, dmin);
 }
 
 void construct_constraint_set(
@@ -315,6 +317,10 @@ void construct_constraint_set(
             }
         }
     }
+
+    for (int ci = 0; ci < constraint_set.size(); ci++) {
+        constraint_set[ci].minimum_distance = dmin;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -324,12 +330,11 @@ double compute_barrier_potential(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
-    double dhat,
-    double dmin)
+    double dhat)
 {
     double potential = 0;
     for (size_t i = 0; i < constraint_set.size(); i++) {
-        potential += constraint_set[i].compute_potential(V, E, F, dhat, dmin);
+        potential += constraint_set[i].compute_potential(V, E, F, dhat);
     }
     return potential;
 }
@@ -339,15 +344,14 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
-    double dhat,
-    double dmin)
+    double dhat)
 {
     Eigen::VectorXd grad = Eigen::VectorXd::Zero(V.size());
     int dim = V.cols();
 
     for (size_t i = 0; i < constraint_set.size(); i++) {
         local_gradient_to_global_gradient(
-            constraint_set[i].compute_potential_gradient(V, E, F, dhat, dmin),
+            constraint_set[i].compute_potential_gradient(V, E, F, dhat),
             constraint_set[i].vertex_indices(E, F), dim, grad);
     }
 
@@ -360,7 +364,6 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
     double dhat,
-    double dmin,
     bool project_to_psd)
 {
 
@@ -376,7 +379,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     for (size_t i = 0; i < constraint_set.size(); i++) {
         local_hessian_to_global_triplets(
             constraint_set[i].compute_potential_hessian(
-                V, E, F, dhat, dmin, project_to_psd),
+                V, E, F, dhat, project_to_psd),
             constraint_set[i].vertex_indices(E, F), dim, hess_triplets);
     }
 

@@ -10,10 +10,15 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### 2021-02-01 <!--([XXXXXXX](https://github.com/ipc-sim/ipc-toolkit/commit/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX))-->
+#### Added
+* Added minimum seperation distance (thickness) to distance constraints
+    * Based on [Codimensional Incremental Potential Contact [Li et al. 2020]](https://arxiv.org/abs/2012.04457)
+
 ### 2021-02-01 ([a395175](https://github.com/ipc-sim/ipc-toolkit/commit/a3951750ca5f167ab1d546ae1dadd87d0a9e2497))
 #### Added
 * Added 2D friction model based on the 3D formulation.
-    * TODO: tTest this further
+    * TODO: Test this further
 
 ### 2021-01-12 ([deee6d0](https://github.com/ipc-sim/ipc-toolkit/commit/deee6d0f9802910c5565f800492f9a995e65cf7e))
 #### Added

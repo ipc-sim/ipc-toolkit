@@ -75,8 +75,7 @@ double compute_barrier_potential(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
-    double dhat,
-    double dmin = 0);
+    double dhat);
 
 /// @brief Compute the gradient of the barrier potential.
 ///
@@ -92,8 +91,7 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
-    double dhat,
-    double dmin = 0);
+    double dhat);
 
 /// @brief Compute the hessian of the barrier potential.
 ///
@@ -110,7 +108,6 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
     double dhat,
-    double dmin = 0,
     bool project_to_psd = true);
 
 /// @brief Determine if the step is collision free.
