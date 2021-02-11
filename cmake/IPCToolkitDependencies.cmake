@@ -36,18 +36,29 @@ if(NOT TARGET TBB::tbb)
   add_library(TBB::tbb ALIAS tbb_static)
 endif()
 
-# Etienne Vouga's CTCD Library
-if(NOT TARGET EVCTCD)
-  ipc_toolkit_download_evctcd()
+# CCD
+if(IPC_TOOLKIT_WITH_CORRECT_CCD)
+  # Provably conservative CCD of [Wang and Ferguson et al. 2020]
+  if(NOT TARGET TightInclusion)
+    ipc_toolkit_download_tight_inclusion()
+    add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/Tight-Inclusion)
+    add_library(TightInclusion ALIAS tight_inclusion)
+  endif()
+else()
+  # Etienne Vouga's CTCD Library
+  if(NOT TARGET EVCTCD)
+    ipc_toolkit_download_evctcd()
 
-  file(GLOB EVCTCD_FILES "${IPC_TOOLKIT_EXTERNAL}/EVCTCD/src/*.cpp")
-  add_library(EVCTCD ${EVCTCD_FILES})
-  target_include_directories(EVCTCD PUBLIC "${IPC_TOOLKIT_EXTERNAL}/EVCTCD/include")
-  target_link_libraries(EVCTCD PUBLIC Eigen3::Eigen)
+    file(GLOB EVCTCD_FILES "${IPC_TOOLKIT_EXTERNAL}/EVCTCD/src/*.cpp")
+    add_library(EVCTCD ${EVCTCD_FILES})
+    target_include_directories(EVCTCD PUBLIC "${IPC_TOOLKIT_EXTERNAL}/EVCTCD/include")
+    target_link_libraries(EVCTCD PUBLIC Eigen3::Eigen)
 
-  # Turn off floating point contraction for CCD robustness
-  target_compile_options(EVCTCD PUBLIC "-ffp-contract=off")
+    # Turn off floating point contraction for CCD robustness
+    target_compile_options(EVCTCD PUBLIC "-ffp-contract=off")
+  endif()
 endif()
+
 
 # Logger
 if(IPC_TOOLKIT_WITH_LOGGER AND NOT TARGET spdlog::spdlog)

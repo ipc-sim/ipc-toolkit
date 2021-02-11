@@ -49,6 +49,9 @@ bool point_triangle_ccd(
     const Eigen::Vector3d& t1_t1,
     const Eigen::Vector3d& t2_t1,
     double& toi,
+    double tmax = 1.0,
+    double tolerance = 1e-6,
+    int max_iterations = 1e7,
     double conservative_rescaling = 0.8);
 
 bool edge_edge_ccd(
@@ -61,6 +64,9 @@ bool edge_edge_ccd(
     const Eigen::Vector3d& eb0_t1,
     const Eigen::Vector3d& eb1_t1,
     double& toi,
+    double tmax = 1.0,
+    double tolerance = 1e-6,
+    int max_iterations = 1e7,
     double conservative_rescaling = 0.8);
 
 // 2D or 3D

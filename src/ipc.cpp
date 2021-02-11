@@ -436,8 +436,6 @@ bool is_step_collision_free(
     }
 
     // Narrow phase
-    double eta = 1e-6;
-
     for (const auto& ev_candidate : candidates.ev_candidates) {
         double toi;
         bool is_collision = point_edge_ccd(
@@ -553,7 +551,7 @@ double compute_collision_free_stepsize(
     }
 
     // Narrow phase
-    double earliest_toi = std::numeric_limits<double>::infinity();
+    double earliest_toi = 1;
 
     for (const auto& ev_candidate : candidates.ev_candidates) {
         double toi;
@@ -571,7 +569,6 @@ double compute_collision_free_stepsize(
             toi);
 
         assert(!is_collision || (toi >= 0 && toi <= 1));
-
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;
         }
@@ -592,7 +589,8 @@ double compute_collision_free_stepsize(
             // Edge 2 at t=1
             V1.row(E(ee_candidate.edge1_index, 0)),
             V1.row(E(ee_candidate.edge1_index, 1)), //
-            toi);
+            toi,
+            /*tmax=*/earliest_toi);
 
         assert(!is_collision || (toi >= 0 && toi <= 1));
         if (is_collision && toi < earliest_toi) {
@@ -615,16 +613,17 @@ double compute_collision_free_stepsize(
             V1.row(F(fv_candidate.face_index, 0)),
             V1.row(F(fv_candidate.face_index, 1)),
             V1.row(F(fv_candidate.face_index, 2)), //
-            toi);
+            toi,
+            /*tmax=*/earliest_toi);
 
         assert(!is_collision || (toi >= 0 && toi <= 1));
         if (is_collision && toi < earliest_toi) {
             earliest_toi = toi;
         }
     }
-    assert(earliest_toi >= 0);
 
-    return std::min(earliest_toi, 1.0); // Fulfill the promise of a step size
+    assert(earliest_toi >= 0 && earliest_toi <= 1.0);
+    return earliest_toi;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

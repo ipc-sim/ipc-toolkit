@@ -18,7 +18,8 @@ if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
 else()
   option(IPC_TOOLKIT_BUILD_UNIT_TESTS "Build unit-tests" OFF)
 endif()
-option(IPC_TOOLKIT_WITH_LOGGER        "Enables logger "   ON)
+option(IPC_TOOLKIT_WITH_LOGGER        "Enables logger"    ON)
+option(IPC_TOOLKIT_WITH_CORRECT_CCD   "Use the conservative CCD of [Wang and Ferguson et al. 2020]" ON)
 
 ################################################################################
 
@@ -76,8 +77,15 @@ target_link_libraries(${PROJECT_NAME} PRIVATE warnings::all)
 # TBB
 target_link_libraries(${PROJECT_NAME} PUBLIC TBB::tbb)
 
-# Etienne Vouga's CTCD Library for the floating point root finding algorithm
-target_link_libraries(${PROJECT_NAME} PUBLIC EVCTCD)
+# CCD
+if(IPC_TOOLKIT_WITH_CORRECT_CCD)
+  # Provably conservative CCD of [Wang and Ferguson et al. 2020]
+  target_link_libraries(${PROJECT_NAME} PUBLIC TightInclusion)
+  target_compile_definitions(${PROJECT_NAME} PUBLIC IPC_TOOLKIT_WITH_CORRECT_CCD)
+else()
+  # Etienne Vouga's CTCD Library for the floating point root finding algorithm
+  target_link_libraries(${PROJECT_NAME} PUBLIC EVCTCD)
+endif()
 
 # Logger
 if(IPC_TOOLKIT_WITH_LOGGER)

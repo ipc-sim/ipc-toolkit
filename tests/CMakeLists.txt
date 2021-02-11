@@ -34,6 +34,8 @@ add_executable(${PROJECT_NAME}_tests
   test_utils.cpp
 )
 
+target_include_directories(${PROJECT_NAME}_tests PUBLIC ".")
+
 ################################################################################
 # Required Libraries
 ################################################################################

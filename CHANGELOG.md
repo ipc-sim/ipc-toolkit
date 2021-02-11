@@ -10,7 +10,12 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
-### 2021-02-01 <!--([XXXXXXX](https://github.com/ipc-sim/ipc-toolkit/commit/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX))-->
+### 2021-02-11 <!--([XXXXXXX](https://github.com/ipc-sim/ipc-toolkit/commit/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX))-->
+#### Changed
+* Switched to the correct (conservative) CCD of [Wang and Ferguson et al. 2020]
+    * Can select Etienne Vouga's CCD in the CMake (see README.md)
+
+### 2021-02-01 ([b510253](https://github.com/ipc-sim/ipc-toolkit/commit/b51025310223b487e7c39858265d8d5c3e8b1e8a))
 #### Added
 * Added minimum seperation distance (thickness) to distance constraints
     * Based on [Codimensional Incremental Potential Contact [Li et al. 2020]](https://arxiv.org/abs/2012.04457)

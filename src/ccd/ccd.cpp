@@ -1,6 +1,10 @@
 #include <ipc/ccd/ccd.hpp>
 
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+#include <tight_inclusion/inclusion_ccd.hpp>
+#else
 #include <CTCD.h>
+#endif
 
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
@@ -15,10 +19,13 @@ bool point_point_ccd(
     double& toi,
     double conservative_rescaling)
 {
-    double current_distance = sqrt(point_point_distance(p0_t0, p1_t0));
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+    throw "point_edge_ccd_3D not implemented by Tight Inclusion CCD!";
+#else
+    double initial_distance = sqrt(point_point_distance(p0_t0, p1_t0));
     if (CTCD::vertexVertexCTCD(
             p0_t0, p1_t0, p0_t1, p1_t1,
-            /*eta=*/(1 - conservative_rescaling) * current_distance, toi)) {
+            /*eta=*/(1 - conservative_rescaling) * initial_distance, toi)) {
         if (toi < 1.0e-6) {
             if (CTCD::vertexVertexCTCD(
                     p0_t0, p1_t0, p0_t1, p1_t1, /*eta=*/0, toi)) {
@@ -31,6 +38,7 @@ bool point_point_ccd(
         return true;
     }
     return false;
+#endif
 }
 
 bool point_edge_ccd_2D(
@@ -140,10 +148,13 @@ bool point_edge_ccd_3D(
     double& toi,
     double conservative_rescaling)
 {
-    double current_distance = sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+    throw "point_edge_ccd_3D not implemented by Tight Inclusion CCD!";
+#else
+    double initial_distance = sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
     if (CTCD::vertexEdgeCTCD(
             p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1,
-            /*eta=*/(1 - conservative_rescaling) * current_distance, toi)) {
+            /*eta=*/(1 - conservative_rescaling) * initial_distance, toi)) {
         if (toi < 1.0e-6) {
             if (CTCD::vertexEdgeCTCD(
                     p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, /*eta=*/0, toi)) {
@@ -156,6 +167,7 @@ bool point_edge_ccd_3D(
         return true;
     }
     return false;
+#endif
 }
 
 bool point_edge_ccd(
@@ -195,27 +207,75 @@ bool edge_edge_ccd(
     const Eigen::Vector3d& eb0_t1,
     const Eigen::Vector3d& eb1_t1,
     double& toi,
+    double tmax,
+    double tolerance,
+    int max_iterations,
     double conservative_rescaling)
 {
-    double current_distance =
+    assert(tmax >= 0 && tmax <= 1.0);
+
+    double initial_distance =
         sqrt(edge_edge_distance(ea0_t0, ea1_t0, eb0_t0, eb1_t0));
-    if (CTCD::edgeEdgeCTCD(
-            ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
-            /*eta=*/(1.0 - conservative_rescaling) * current_distance, toi)) {
-        if (toi < 1.0e-6) {
-            if (CTCD::edgeEdgeCTCD(
-                    ea0_t0, ea1_t0, eb0_t0, eb1_t0, //
-                    ea0_t1, ea1_t1, eb0_t1, eb1_t1, //
-                    /*eta=*/0, toi)) {
-                toi *= conservative_rescaling;
-                return true;
-            } else {
-                return false;
-            }
-        }
+
+    if (initial_distance == 0) {
+        logger().warn("Initial edge-edge distance is 0, returning toi=0!");
+        toi = 0;
         return true;
     }
-    return false;
+
+    double min_distance = (1.0 - conservative_rescaling) * initial_distance;
+
+    double output_tolerance = tolerance;
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+    // 0: normal ccd method which only checks t = [0,1]
+    // 1: ccd with max_itr and t=[0, t_max]
+    const int CCD_TYPE = 1;
+    bool is_impacting = inclusion_ccd::edgeEdgeCCD_double(
+        ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
+        { { -1, -1, -1 } }, // rounding error (auto)
+        min_distance,       // minimum separation distance
+        toi,                // time of impact
+        tolerance,          // delta
+        tmax,               // maximum time to check
+        max_iterations,     // maximum number of iterations
+        output_tolerance,   // delta_actual
+        CCD_TYPE);
+#else
+    bool is_impacting = CTCD::edgeEdgeCTCD(
+        ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
+        min_distance, toi);
+#endif
+
+    if (is_impacting && toi < 1.0e-6) {
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+        is_impacting = inclusion_ccd::edgeEdgeCCD_double(
+            ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
+            { { -1, -1, -1 } }, // rounding error (auto)
+            0,                  // minimum separation distance
+            toi,                // time of impact
+            tolerance,          // delta
+            tmax,               // maximum time to check
+            max_iterations,     // maximum number of iterations
+            output_tolerance,   // delta_actual
+            CCD_TYPE);
+#else
+        is_impacting = CTCD::edgeEdgeCTCD(
+            ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
+            /*eta=*/0, toi);
+#endif
+
+        if (is_impacting) {
+            toi *= conservative_rescaling;
+            if (toi == 0) {
+                logger().warn(
+                    "Edge-edge CCD is overly conservative "
+                    "(initial_distance={:g}, actual_tolerance={:g})!",
+                    initial_distance, output_tolerance);
+            }
+        }
+    }
+
+    return is_impacting;
 }
 
 bool point_triangle_ccd(
@@ -228,26 +288,76 @@ bool point_triangle_ccd(
     const Eigen::Vector3d& t1_t1,
     const Eigen::Vector3d& t2_t1,
     double& toi,
+    double tmax,
+    double tolerance,
+    int max_iterations,
     double conservative_rescaling)
 {
-    double current_distance =
+    assert(tmax >= 0 && tmax <= 1.0);
+
+    double initial_distance =
         sqrt(point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0));
-    if (CTCD::vertexFaceCTCD(
-            p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
-            /*eta=*/(1.0 - conservative_rescaling) * current_distance, toi)) {
-        if (toi < 1.0e-6) {
-            if (CTCD::vertexFaceCTCD(
-                    p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
-                    /*eta=*/0, toi)) {
-                toi *= conservative_rescaling;
-                return true;
-            } else {
-                return false;
-            }
-        }
+
+    if (initial_distance == 0) {
+        logger().warn("Initial point-triangle distance is 0, returning toi=0!");
+        toi = 0;
         return true;
     }
-    return false;
+
+    double min_distance = (1.0 - conservative_rescaling) * initial_distance;
+
+    double output_tolerance = tolerance;
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+    // 0: normal ccd method which only checks t = [0,1]
+    // 1: ccd with max_itr and t=[0, t_max]
+    const int CCD_TYPE = 1;
+    bool is_impacting = inclusion_ccd::vertexFaceCCD_double(
+        p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
+        { { -1, -1, -1 } }, // rounding error (auto)
+        min_distance,       // minimum separation distance
+        toi,                // time of impact
+        tolerance,          // delta
+        tmax,               // maximum time to check
+        max_iterations,     // maximum number of iterations
+        output_tolerance,   // delta_actual
+        CCD_TYPE);
+#else
+    bool is_impacting = CTCD::vertexFaceCTCD(
+        p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, //
+        min_distance, toi);
+#endif
+
+    if (is_impacting && toi < 1e-6) {
+
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+        is_impacting = inclusion_ccd::vertexFaceCCD_double(
+            p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
+            { { -1, -1, -1 } }, // rounding error (auto)
+            0,                  // minimum separation distance
+            toi,                // time of impact
+            tolerance,          // delta
+            tmax,               // maximum time to check
+            max_iterations,     // maximum number of iterations
+            output_tolerance,   // delta_actual
+            CCD_TYPE);
+#else
+        is_impacting = CTCD::vertexFaceCTCD(
+            p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
+            /*eta=*/0, toi);
+#endif
+
+        if (is_impacting) {
+            toi *= conservative_rescaling;
+            if (toi == 0) {
+                logger().warn(
+                    "Point-triangle CCD is overly conservative "
+                    "(initial_distance={:g}, actual_tolerance={:g})!",
+                    initial_distance, output_tolerance);
+            }
+        }
+    }
+
+    return is_impacting;
 }
 
 } // namespace ipc

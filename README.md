@@ -73,13 +73,19 @@ The main functionality is provided in the `ipc.hpp` header. Use the prefix direc
 All dependancies are downloaded through CMake depending on the build options.
 The following libraries are used in this project:
 
-* [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection.git) for continuous collision detection between triangle meshes in 3D
+* [Tight Inclusion CCD](https://github.com/Continuous-Collision-Detection/Tight-Inclusion) for correct (conservative) continuous collision detection between triangle meshes in 3D
 * [libigl](https://github.com/libigl/libigl) as both a source of Eigen and for basic geometry functions
 * [TBB](https://github.com/wjakob/tbb) for limited parallelization
-* [spdlog](https://github.com/gabime/spdlog) for logging information
-    * Disable logging completely using the CMake flag `-IPC_TOOLKIT_WITH_LOGGER=OFF`
+
+### Optional
+
+* [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection) for continuous collision detection between triangle meshes in 3D
+    * Enable by using the CMake flag `-DIPC_TOOLKIT_WITH_CORRECT_CCD=OFF`
+* [spdlog](https://github.com/gabime/spdlog) for logging information (enabled by default)
+    * Disable logging completely using the CMake flag `-DIPC_TOOLKIT_WITH_LOGGER=OFF`
 * [Catch2](https://github.com/catchorg/Catch2.git) for testing (see [Unit Tests](#unit_tests))
 * [finite-diff](https://github.com/zfergus/finite-diff) for finite difference comparisons in the unit tests
+
 
 ## <a name="unit_tests"></a>Unit Tests
 
