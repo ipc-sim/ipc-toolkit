@@ -218,7 +218,9 @@ bool edge_edge_ccd(
         sqrt(edge_edge_distance(ea0_t0, ea1_t0, eb0_t0, eb1_t0));
 
     if (initial_distance == 0) {
+#ifdef IPC_TOOLKIT_WITH_LOGGER
         logger().warn("Initial edge-edge distance is 0, returning toi=0!");
+#endif
         toi = 0;
         return true;
     }
@@ -266,12 +268,14 @@ bool edge_edge_ccd(
 
         if (is_impacting) {
             toi *= conservative_rescaling;
+#ifdef IPC_TOOLKIT_WITH_LOGGER
             if (toi == 0) {
                 logger().warn(
                     "Edge-edge CCD is overly conservative "
                     "(initial_distance={:g}, actual_tolerance={:g})!",
                     initial_distance, output_tolerance);
             }
+#endif
         }
     }
 
@@ -299,7 +303,9 @@ bool point_triangle_ccd(
         sqrt(point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0));
 
     if (initial_distance == 0) {
+#ifdef IPC_TOOLKIT_WITH_LOGGER
         logger().warn("Initial point-triangle distance is 0, returning toi=0!");
+#endif
         toi = 0;
         return true;
     }
@@ -348,12 +354,14 @@ bool point_triangle_ccd(
 
         if (is_impacting) {
             toi *= conservative_rescaling;
+#ifdef IPC_TOOLKIT_WITH_LOGGER
             if (toi == 0) {
                 logger().warn(
                     "Point-triangle CCD is overly conservative "
                     "(initial_distance={:g}, actual_tolerance={:g})!",
                     initial_distance, output_tolerance);
             }
+#endif
         }
     }
 
