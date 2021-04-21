@@ -38,7 +38,7 @@ void SpatialHash::build(
 
     // precompute svVAI
     std::vector<Eigen::ArrayMax3i> vertexVoxelAxisIndex(V.rows());
-    tbb::parallel_for(0l, V.rows(), [&](int vi) {
+    tbb::parallel_for(size_t(0), size_t(V.rows()), [&](size_t vi) {
         locateVoxelAxisIndex(V.row(vi), vertexVoxelAxisIndex[vi]);
     });
 
@@ -57,7 +57,7 @@ void SpatialHash::build(
 #endif
 
     std::vector<std::vector<int>> voxelLoc_e(E.rows());
-    tbb::parallel_for(0l, E.rows(), [&](int ei) {
+    tbb::parallel_for(size_t(0), size_t(E.rows()), [&](size_t ei) {
         const Eigen::ArrayMax3i& voxelAxisIndex0 =
             vertexVoxelAxisIndex[E(ei, 0)];
         const Eigen::ArrayMax3i& voxelAxisIndex1 =
@@ -78,7 +78,7 @@ void SpatialHash::build(
     });
 
     std::vector<std::vector<int>> voxelLoc_f(F.rows());
-    tbb::parallel_for(0l, F.rows(), [&](int fi) {
+    tbb::parallel_for(size_t(0), size_t(F.rows()), [&](size_t fi) {
         const Eigen::ArrayMax3i& voxelAxisIndex0 =
             vertexVoxelAxisIndex[F(fi, 0)];
         const Eigen::ArrayMax3i& voxelAxisIndex1 =
@@ -618,7 +618,7 @@ void SpatialHash::build(
     // precompute vVAI
     std::vector<Eigen::ArrayMax3i> vertexMinVAI(V0.rows());
     std::vector<Eigen::ArrayMax3i> vertexMaxVAI(V0.rows());
-    tbb::parallel_for(0l, V0.rows(), [&](int vi) {
+    tbb::parallel_for(size_t(0), size_t(V0.rows()), [&](size_t vi) {
         Eigen::ArrayMax3i v0VAI, v1VAI;
         locateVoxelAxisIndex(V0.row(vi), v0VAI);
         locateVoxelAxisIndex(V1.row(vi), v1VAI);
@@ -630,7 +630,7 @@ void SpatialHash::build(
     pointAndEdgeOccupancy.clear();
     pointAndEdgeOccupancy.resize(triStartInd);
 
-    tbb::parallel_for(0l, V0.rows(), [&](int vi) {
+    tbb::parallel_for(size_t(0), size_t(V0.rows()), [&](size_t vi) {
         const Eigen::ArrayMax3i& mins = vertexMinVAI[vi];
         const Eigen::ArrayMax3i& maxs = vertexMaxVAI[vi];
         pointAndEdgeOccupancy[vi].reserve((maxs - mins + 1).prod());
@@ -645,7 +645,7 @@ void SpatialHash::build(
         }
     });
 
-    tbb::parallel_for(0l, E.rows(), [&](int ei) {
+    tbb::parallel_for(size_t(0), size_t(E.rows()), [&](size_t ei) {
         int eiInd = ei + edgeStartInd;
 
         Eigen::ArrayMax3i mins =
@@ -666,7 +666,7 @@ void SpatialHash::build(
     });
 
     std::vector<std::vector<int>> voxelLoc_f(F.rows());
-    tbb::parallel_for(0l, F.rows(), [&](int fi) {
+    tbb::parallel_for(size_t(0), size_t(F.rows()), [&](size_t fi) {
         Eigen::ArrayMax3i mins = vertexMinVAI[F(fi, 0)]
                                      .min(vertexMinVAI[F(fi, 1)])
                                      .min(vertexMinVAI[F(fi, 2)]);
@@ -868,7 +868,7 @@ void SpatialHash::queryMeshForCandidates(
     // edge-vertex
     if (queryEV) {
         tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), V.rows()),
+            tbb::blocked_range<size_t>(size_t(0), size_t(V.rows())),
             [&](const tbb::blocked_range<size_t>& range) {
                 ThreadSpecificCandidates::reference local_storage_candidates =
                     storages.local();
@@ -894,7 +894,7 @@ void SpatialHash::queryMeshForCandidates(
     // edge-edge
     if (queryEE) {
         tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), E.rows()),
+            tbb::blocked_range<size_t>(size_t(0), size_t(E.rows())),
             [&](const tbb::blocked_range<size_t>& range) {
                 ThreadSpecificCandidates::reference local_storage_candidates =
                     storages.local();
@@ -923,7 +923,7 @@ void SpatialHash::queryMeshForCandidates(
     // face-vertex
     if (queryFV) {
         tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), E.rows()),
+            tbb::blocked_range<size_t>(size_t(0), size_t(V.rows())),
             [&](const tbb::blocked_range<size_t>& range) {
                 ThreadSpecificCandidates::reference local_storage_candidates =
                     storages.local();
@@ -967,7 +967,7 @@ void SpatialHash::queryMeshForCandidates(
     // edge-vertex
     if (queryEV) {
         tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), V0.rows()),
+            tbb::blocked_range<size_t>(size_t(0), size_t(V0.rows())),
             [&](const tbb::blocked_range<size_t>& range) {
                 ThreadSpecificCandidates::reference local_storage_candidates =
                     storages.local();
@@ -995,7 +995,7 @@ void SpatialHash::queryMeshForCandidates(
     // edge-edge
     if (queryEE) {
         tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), E.rows()),
+            tbb::blocked_range<size_t>(size_t(0), size_t(E.rows())),
             [&](const tbb::blocked_range<size_t>& range) {
                 ThreadSpecificCandidates::reference local_storage_candidates =
                     storages.local();
@@ -1026,7 +1026,7 @@ void SpatialHash::queryMeshForCandidates(
     // face-vertex
     if (queryFV) {
         tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), E.rows()),
+            tbb::blocked_range<size_t>(size_t(0), size_t(V0.rows())),
             [&](const tbb::blocked_range<size_t>& range) {
                 ThreadSpecificCandidates::reference local_storage_candidates =
                     storages.local();
