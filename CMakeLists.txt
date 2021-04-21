@@ -14,11 +14,11 @@ endif()
 
 # project-options
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-  option(IPC_TOOLKIT_BUILD_UNIT_TESTS "Build unit-tests"  ON)
+  option(IPC_TOOLKIT_BUILD_UNIT_TESTS "Build unit-tests"       ON)
 else()
-  option(IPC_TOOLKIT_BUILD_UNIT_TESTS "Build unit-tests" OFF)
+  option(IPC_TOOLKIT_BUILD_UNIT_TESTS "Build unit-tests"      OFF)
 endif()
-option(IPC_TOOLKIT_WITH_LOGGER        "Enables logger"    ON)
+option(IPC_TOOLKIT_WITH_LOGGER        "Enables logger"         ON)
 option(IPC_TOOLKIT_WITH_CORRECT_CCD   "Use the conservative CCD of [Wang and Ferguson et al. 2020]" ON)
 
 ################################################################################

@@ -7,11 +7,13 @@
 
 namespace ipc {
 
-/// @brief Compute the distance between a point and a plane (defined by a
-/// triangle).
+/// @brief Compute the distance between a point and a plane.
 /// @note The distance is actually squared distance.
 /// @param p The point.
-/// @param t0,t1,t2 The points of the triangle defining the plane.
+/// @param t0 The first vertex of the triangle.
+/// @param t1 The second vertex of the triangle.
+/// @param t2 The third vertex of the triangle.
+/// @return The distance between the point and plane.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -23,6 +25,11 @@ auto point_plane_distance(
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2)
 {
+    assert(p.size() == 3);
+    assert(t0.size() == 3);
+    assert(t1.size() == 3);
+    assert(t2.size() == 3);
+
     auto normal = Eigen::cross(t1 - t0, t2 - t0);
     auto point_to_plane = (p - t0).dot(normal);
     return point_to_plane * point_to_plane / normal.squaredNorm();
@@ -64,8 +71,10 @@ namespace autogen {
 /// @brief Compute the gradient of the distance between a point and a plane.
 /// @note The distance is actually squared distance.
 /// @param[in] p The point.
-/// @param[in] t0,t1,t2 The points of the triangle defining the plane.
-/// @param[out] grad The computed gradient.
+/// @param[in] t0 The first vertex of the triangle.
+/// @param[in] t1 The second vertex of the triangle.
+/// @param[in] t2 The third vertex of the triangle.
+/// @param[out] grad The gradient of the distance wrt p, t0, t1, and t2.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -79,6 +88,11 @@ auto point_plane_distance_gradient(
     const Eigen::MatrixBase<DerivedT2>& t2,
     Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
+    assert(p.size() == 3);
+    assert(t0.size() == 3);
+    assert(t1.size() == 3);
+    assert(t2.size() == 3);
+
     grad.resize(p.size() + t0.size() + t1.size() + t2.size());
     autogen::point_plane_distance_gradient(
         p[0], p[1], p[2], t0[0], t0[1], t0[2], t1[0], t1[1], t1[2], t2[0],
@@ -88,8 +102,10 @@ auto point_plane_distance_gradient(
 /// @brief Compute the hessian of the distance between a point and a plane.
 /// @note The distance is actually squared distance.
 /// @param[in] p The point.
-/// @param[in] t0,t1,t2 The points of the triangle defining the plane.
-/// @param[out] hess The computed hessian.
+/// @param[in] t0 The first vertex of the triangle.
+/// @param[in] t1 The second vertex of the triangle.
+/// @param[in] t2 The third vertex of the triangle.
+/// @param[out] hess The hessian of the distance wrt p, t0, t1, and t2.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -103,6 +119,11 @@ auto point_plane_distance_hessian(
     const Eigen::MatrixBase<DerivedT2>& t2,
     Eigen::PlainObjectBase<DerivedHess>& hess)
 {
+    assert(p.size() == 3);
+    assert(t0.size() == 3);
+    assert(t1.size() == 3);
+    assert(t2.size() == 3);
+
     hess.resize(
         p.size() + t0.size() + t1.size() + t2.size(),
         p.size() + t0.size() + t1.size() + t2.size());

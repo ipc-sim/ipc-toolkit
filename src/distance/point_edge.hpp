@@ -8,21 +8,29 @@ namespace ipc {
 
 /// @brief Compute the distance between a point and edge in 2D or 3D.
 /// @note The distance is actually squared distance.
-/// @param p The point.
-/// @param e0,e1 The points of the edge.
+/// @param[in] p The point.
+/// @param[in] e0 The first vertex of the edge.
+/// @param[in] e1 The second vertex of the edge.
+/// @return The distance between the point and edge.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 auto point_edge_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
 {
+    assert(p.size() == 2 || p.size() == 3);
+    assert(e0.size() == 2 || e0.size() == 3);
+    assert(e1.size() == 2 || e1.size() == 3);
     return point_edge_distance(p, e0, e1, point_edge_distance_type(p, e0, e1));
 }
 
 /// @brief Compute the distance between a point and edge in 2D or 3D.
 /// @note The distance is actually squared distance.
-/// @param p The point.
-/// @param e0,e1 The points of the edge.
+/// @param[in] p The point.
+/// @param[in] e0 The first vertex of the edge.
+/// @param[in] e1 The second vertex of the edge.
+/// @param[in] dtype The point edge distance type to compute.
+/// @return The distance between the point and edge.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 auto point_edge_distance(
     const Eigen::MatrixBase<DerivedP>& p,
@@ -30,6 +38,10 @@ auto point_edge_distance(
     const Eigen::MatrixBase<DerivedE1>& e1,
     const PointEdgeDistanceType dtype)
 {
+    assert(p.size() == 2 || p.size() == 3);
+    assert(e0.size() == 2 || e0.size() == 3);
+    assert(e1.size() == 2 || e1.size() == 3);
+
     switch (dtype) {
     case PointEdgeDistanceType::P_E0:
         return point_point_distance(p, e0);
@@ -42,6 +54,12 @@ auto point_edge_distance(
     throw "something went wrong in point_edge_distance";
 }
 
+/// @brief Compute the gradient of the distance between a point and edge.
+/// @note The distance is actually squared distance.
+/// @param[in] p The point.
+/// @param[in] e0 The first vertex of the edge.
+/// @param[in] e1 The second vertex of the edge.
+/// @param[out] grad Gradient of the distance wrt p, e0, and e1.
 template <
     typename DerivedP,
     typename DerivedE0,
@@ -53,10 +71,21 @@ void point_edge_distance_gradient(
     const Eigen::MatrixBase<DerivedE1>& e1,
     Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
+    assert(p.size() == 2 || p.size() == 3);
+    assert(e0.size() == 2 || e0.size() == 3);
+    assert(e1.size() == 2 || e1.size() == 3);
+
     return point_edge_distance_gradient(
         p, e0, e1, point_edge_distance_type(p, e0, e1), grad);
 }
 
+/// @brief Compute the gradient of the distance between a point and edge.
+/// @note The distance is actually squared distance.
+/// @param[in] p The point.
+/// @param[in] e0 The first vertex of the edge.
+/// @param[in] e1 The second vertex of the edge.
+/// @param[in] dtype The point edge distance type to compute.
+/// @param[out] grad The gradient of the distance wrt p, e0, and e1.
 template <
     typename DerivedP,
     typename DerivedE0,
@@ -95,6 +124,12 @@ void point_edge_distance_gradient(
     }
 }
 
+/// @brief Compute the hessian of the distance between a point and edge.
+/// @note The distance is actually squared distance.
+/// @param[in] p The point.
+/// @param[in] e0 The first vertex of the edge.
+/// @param[in] e1 The second vertex of the edge.
+/// @param[out] hess The hessian of the distance wrt p, e0, and e1.
 template <
     typename DerivedP,
     typename DerivedE0,
@@ -106,10 +141,21 @@ void point_edge_distance_hessian(
     const Eigen::MatrixBase<DerivedE1>& e1,
     Eigen::PlainObjectBase<DerivedHess>& hess)
 {
+    assert(p.size() == 2 || p.size() == 3);
+    assert(e0.size() == 2 || e0.size() == 3);
+    assert(e1.size() == 2 || e1.size() == 3);
+
     return point_edge_distance_hessian(
         p, e0, e1, point_edge_distance_type(p, e0, e1), hess);
 }
 
+/// @brief Compute the hessian of the distance between a point and edge.
+/// @note The distance is actually squared distance.
+/// @param[in] p The point.
+/// @param[in] e0 The first vertex of the edge.
+/// @param[in] e1 The second vertex of the edge.
+/// @param[in] dtype The point edge distance type to compute.
+/// @param[out] hess The hessian of the distance wrt p, e0, and e1.
 template <
     typename DerivedP,
     typename DerivedE0,

@@ -17,6 +17,10 @@ PointEdgeDistanceType point_edge_distance_type(
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
 {
+    assert(p.size() == 2 || p.size() == 3);
+    assert(e0.size() == 2 || e0.size() == 3);
+    assert(e1.size() == 2 || e1.size() == 3);
+
     const auto e = e1 - e0;
     const auto e_length_sqr = e.squaredNorm();
     if (e_length_sqr == 0) {
@@ -47,6 +51,11 @@ PointTriangleDistanceType point_triangle_distance_type(
     const Eigen::MatrixBase<DerivedT2>& t2)
 {
     typedef typename DerivedP::Scalar T;
+
+    assert(p.size() == 3);
+    assert(t0.size() == 3);
+    assert(t1.size() == 3);
+    assert(t2.size() == 3);
 
     Eigen::Matrix<T, 2, 3> basis;
     basis.row(0) = t1 - t0;
@@ -109,6 +118,11 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
+    assert(ea0.size() == 3);
+    assert(ea1.size() == 3);
+    assert(eb0.size() == 3);
+    assert(eb1.size() == 3);
+
     auto u = ea1 - ea0;
     auto v = eb1 - eb0;
     auto w = ea0 - eb0;

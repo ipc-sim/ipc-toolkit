@@ -6,16 +6,22 @@
 
 namespace ipc {
 
-/// @brief Compute the distance between a point and a line (defined by an edge).
+/// @brief Compute the distance between a point and line in 2D or 3D.
 /// @note The distance is actually squared distance.
 /// @param p The point.
-/// @param e0,e1 The points of the edge defining the line.
+/// @param e0 The first vertex of the edge defining the line.
+/// @param e1 The second vertex of the edge defining the line.
+/// @return The distance between the point and line.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 auto point_line_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1)
 {
+    assert(p.size() == 2 || p.size() == 3);
+    assert(e0.size() == 2 || e0.size() == 3);
+    assert(e1.size() == 2 || e1.size() == 3);
+
     if (p.size() == 2) {
         auto e = e1 - e0;
         auto numerator =
@@ -72,6 +78,12 @@ namespace autogen {
         double H[81]);
 } // namespace autogen
 
+/// @brief Compute the gradient of the distance between a point and line.
+/// @note The distance is actually squared distance.
+/// @param[in] p The point.
+/// @param[in] e0 The first vertex of the edge defining the line.
+/// @param[in] e1 The second vertex of the edge defining the line.
+/// @param[out] grad The gradient of the distance wrt p, e0, and e1.
 template <
     typename DerivedP,
     typename DerivedE0,
@@ -83,6 +95,10 @@ void point_line_distance_gradient(
     const Eigen::MatrixBase<DerivedE1>& e1,
     Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
+    assert(p.size() == 2 || p.size() == 3);
+    assert(e0.size() == 2 || e0.size() == 3);
+    assert(e1.size() == 2 || e1.size() == 3);
+
     grad.resize(p.size() + e0.size() + e1.size());
     if (p.size() == 2) {
         autogen::point_line_distance_gradient_2D(
@@ -94,6 +110,12 @@ void point_line_distance_gradient(
     }
 }
 
+/// @brief Compute the hessian of the distance between a point and line.
+/// @note The distance is actually squared distance.
+/// @param[in] p The point.
+/// @param[in] e0 The first vertex of the edge defining the line.
+/// @param[in] e1 The second vertex of the edge defining the line.
+/// @param[out] hess The hessian of the distance wrt p, e0, and e1.
 template <
     typename DerivedP,
     typename DerivedE0,
@@ -105,6 +127,10 @@ void point_line_distance_hessian(
     const Eigen::MatrixBase<DerivedE1>& e1,
     Eigen::PlainObjectBase<DerivedHess>& hess)
 {
+    assert(p.size() == 2 || p.size() == 3);
+    assert(e0.size() == 2 || e0.size() == 3);
+    assert(e1.size() == 2 || e1.size() == 3);
+
     hess.resize(
         p.size() + e0.size() + e1.size(), p.size() + e0.size() + e1.size());
     if (p.size() == 2) {

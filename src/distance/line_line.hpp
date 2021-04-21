@@ -10,8 +10,11 @@ namespace ipc {
 /// @brief Compute the distance between a two infinite lines in 3D.
 /// @note The distance is actually squared distance.
 /// @warning If the lines are parallel this function returns a distance of zero.
-/// @param ea0,ea1 The points of the edge defining the first line.
-/// @param eb0,eb1 The points of the edge defining the second line.
+/// @param ea0 The first vertex of the edge defining the first line.
+/// @param ea1 The second vertex of the edge defining the first line.
+/// @param ea0 The first vertex of the edge defining the second line.
+/// @param ea1 The second vertex of the edge defining the second line.
+/// @return The distance between the two lines.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -23,6 +26,11 @@ auto line_line_distance(
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
+    assert(ea0.size() == 3);
+    assert(ea1.size() == 3);
+    assert(eb0.size() == 3);
+    assert(eb1.size() == 3);
+
     const auto normal = Eigen::cross(ea1 - ea0, eb1 - eb0);
     const auto line_to_line = (eb0 - ea0).dot(normal);
     return line_to_line * line_to_line / normal.squaredNorm();
@@ -64,8 +72,11 @@ namespace autogen {
 /// @brief Compute the gradient of the distance between a two lines in 3D.
 /// @note The distance is actually squared distance.
 /// @warning If the lines are parallel this function returns a distance of zero.
-/// @param ea0,ea1 The points of the edge defining the first line.
-/// @param eb0,eb1 The points of the edge defining the second line.
+/// @param[in] ea0 The first vertex of the edge defining the first line.
+/// @param[in] ea1 The second vertex of the edge defining the first line.
+/// @param[in] ea0 The first vertex of the edge defining the second line.
+/// @param[in] ea1 The second vertex of the edge defining the second line.
+/// @param[out] hess The gradient of the distance wrt ea0, ea1, eb0, and eb1.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -79,6 +90,11 @@ void line_line_distance_gradient(
     const Eigen::MatrixBase<DerivedEB1>& eb1,
     Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
+    assert(ea0.size() == 3);
+    assert(ea1.size() == 3);
+    assert(eb0.size() == 3);
+    assert(eb1.size() == 3);
+
     grad.resize(ea0.size() + ea1.size() + eb0.size() + eb1.size());
     autogen::line_line_distance_gradient(
         ea0[0], ea0[1], ea0[2], ea1[0], ea1[1], ea1[2], eb0[0], eb0[1], eb0[2],
@@ -88,9 +104,11 @@ void line_line_distance_gradient(
 /// @brief Compute the hessian of the distance between a two lines in 3D.
 /// @note The distance is actually squared distance.
 /// @warning If the lines are parallel this function returns a distance of zero.
-/// @param[in] ea0,ea1 The points of the edge defining the first line.
-/// @param[in] eb0,eb1 The points of the edge defining the second line.
-/// @param[out] hess The computed hessian.
+/// @param[in] ea0 The first vertex of the edge defining the first line.
+/// @param[in] ea1 The second vertex of the edge defining the first line.
+/// @param[in] ea0 The first vertex of the edge defining the second line.
+/// @param[in] ea1 The second vertex of the edge defining the second line.
+/// @param[out] hess The hessian of the distance wrt ea0, ea1, eb0, and eb1.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -104,6 +122,11 @@ void line_line_distance_hessian(
     const Eigen::MatrixBase<DerivedEB1>& eb1,
     Eigen::PlainObjectBase<DerivedHess>& hess)
 {
+    assert(ea0.size() == 3);
+    assert(ea1.size() == 3);
+    assert(eb0.size() == 3);
+    assert(eb1.size() == 3);
+
     hess.resize(
         ea0.size() + ea1.size() + eb0.size() + eb1.size(),
         ea0.size() + ea1.size() + eb0.size() + eb1.size());

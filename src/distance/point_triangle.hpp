@@ -10,7 +10,10 @@ namespace ipc {
 /// @brief Compute the distance between a points and a triangle.
 /// @note The distance is actually squared distance.
 /// @param p The point.
-/// @param t0,t1,t2 The points of the triangle.
+/// @param t0 The first vertex of the triangle.
+/// @param t1 The second vertex of the triangle.
+/// @param t2 The third vertex of the triangle.
+/// @return The distance between the point and triangle.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -22,6 +25,11 @@ auto point_triangle_distance(
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2)
 {
+    assert(p.size() == 3);
+    assert(t0.size() == 3);
+    assert(t1.size() == 3);
+    assert(t2.size() == 3);
+
     return point_triangle_distance(
         p, t0, t1, t2, point_triangle_distance_type(p, t0, t1, t2));
 }
@@ -29,7 +37,11 @@ auto point_triangle_distance(
 /// @brief Compute the distance between a points and a triangle.
 /// @note The distance is actually squared distance.
 /// @param p The point.
-/// @param t0,t1,t2 The points of the triangle.
+/// @param t0 The first vertex of the triangle.
+/// @param t1 The second vertex of the triangle.
+/// @param t2 The third vertex of the triangle.
+/// @param dtype The point-triangle distance type to compute.
+/// @return The distance between the point and triangle.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -42,6 +54,11 @@ auto point_triangle_distance(
     const Eigen::MatrixBase<DerivedT2>& t2,
     const PointTriangleDistanceType dtype)
 {
+    assert(p.size() == 3);
+    assert(t0.size() == 3);
+    assert(t1.size() == 3);
+    assert(t2.size() == 3);
+
     switch (dtype) {
     case PointTriangleDistanceType::P_T0:
         return point_point_distance(p, t0);
@@ -71,8 +88,10 @@ auto point_triangle_distance(
 /// @brief Compute the gradient of the distance between a points and a triangle.
 /// @note The distance is actually squared distance.
 /// @param[in] p The point.
-/// @param[in] t0,t1,t2 The points of the triangle.
-/// @param[out] grad The computed gradient.
+/// @param[in] t0 The first vertex of the triangle.
+/// @param[in] t1 The second vertex of the triangle.
+/// @param[in] t2 The third vertex of the triangle.
+/// @param[out] grad The gradient of the distance wrt p, t0, t1, and t2.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -86,6 +105,11 @@ void point_triangle_distance_gradient(
     const Eigen::MatrixBase<DerivedT2>& t2,
     Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
+    assert(p.size() == 3);
+    assert(t0.size() == 3);
+    assert(t1.size() == 3);
+    assert(t2.size() == 3);
+
     return point_triangle_distance_gradient(
         p, t0, t1, t2, point_triangle_distance_type(p, t0, t1, t2), grad);
 }
@@ -93,8 +117,11 @@ void point_triangle_distance_gradient(
 /// @brief Compute the gradient of the distance between a points and a triangle.
 /// @note The distance is actually squared distance.
 /// @param[in] p The point.
-/// @param[in] t0,t1,t2 The points of the triangle.
-/// @param[out] grad The computed gradient.
+/// @param[in] t0 The first vertex of the triangle.
+/// @param[in] t1 The second vertex of the triangle.
+/// @param[in] t2 The third vertex of the triangle.
+/// @param dtype The point-triangle distance type to compute.
+/// @param[out] grad The gradient of the distance wrt p, t0, t1, and t2.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -163,8 +190,10 @@ void point_triangle_distance_gradient(
 /// @brief Compute the hessian of the distance between a points and a triangle.
 /// @note The distance is actually squared distance.
 /// @param[in] p The point.
-/// @param[in] t0,t1,t2 The points of the triangle.
-/// @param[out] hess The computed hessian.
+/// @param[in] t0 The first vertex of the triangle.
+/// @param[in] t1 The second vertex of the triangle.
+/// @param[in] t2 The third vertex of the triangle.
+/// @param[out] grad The hessian of the distance wrt p, t0, t1, and t2.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -178,6 +207,11 @@ void point_triangle_distance_hessian(
     const Eigen::MatrixBase<DerivedT2>& t2,
     Eigen::PlainObjectBase<DerivedHess>& hess)
 {
+    assert(p.size() == 3);
+    assert(t0.size() == 3);
+    assert(t1.size() == 3);
+    assert(t2.size() == 3);
+
     return point_triangle_distance_hessian(
         p, t0, t1, t2, point_triangle_distance_type(p, t0, t1, t2), hess);
 }
@@ -185,8 +219,11 @@ void point_triangle_distance_hessian(
 /// @brief Compute the hessian of the distance between a points and a triangle.
 /// @note The distance is actually squared distance.
 /// @param[in] p The point.
-/// @param[in] t0,t1,t2 The points of the triangle.
-/// @param[out] hess The computed hessian.
+/// @param[in] t0 The first vertex of the triangle.
+/// @param[in] t1 The second vertex of the triangle.
+/// @param[in] t2 The third vertex of the triangle.
+/// @param dtype The point-triangle distance type to compute.
+/// @param[out] grad The hessian of the distance wrt p, t0, t1, and t2.
 template <
     typename DerivedP,
     typename DerivedT0,

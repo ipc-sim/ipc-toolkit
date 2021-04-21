@@ -7,6 +7,12 @@
 
 namespace ipc {
 
+/// @brief Compute the squared norm of the edge-edge cross product.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @return The squared norm of the edge-edge cross product.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -18,6 +24,11 @@ auto edge_edge_cross_squarednorm(
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
+    assert(ea0.size() == 3);
+    assert(ea1.size() == 3);
+    assert(eb0.size() == 3);
+    assert(eb1.size() == 3);
+
     return Eigen::cross(ea1 - ea0, eb1 - eb0).squaredNorm();
 }
 
@@ -54,6 +65,13 @@ namespace autogen {
         double H[144]);
 } // namespace autogen
 
+/// @brief Compute the gradient of the squared norm of the edge cross product.
+/// @param[in] ea0 The first vertex of the first edge.
+/// @param[in] ea1 The second vertex of the first edge.
+/// @param[in] eb0 The first vertex of the second edge.
+/// @param[in] eb1 The second vertex of the second edge.
+/// @param[out] grad The gradient of the squared norm of the edge cross product
+///                  wrt ea0, ea1, eb0, and eb1.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -67,12 +85,25 @@ void edge_edge_cross_squarednorm_gradient(
     const Eigen::MatrixBase<DerivedEB1>& eb1,
     Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
+    assert(ea0.size() == 3);
+    assert(ea1.size() == 3);
+    assert(eb0.size() == 3);
+    assert(eb1.size() == 3);
+
     grad.resize(ea0.size() + ea1.size() + eb0.size() + eb1.size());
     autogen::edge_edge_cross_squarednorm_gradient(
         ea0[0], ea0[1], ea0[2], ea1[0], ea1[1], ea1[2], eb0[0], eb0[1], eb0[2],
         eb1[0], eb1[1], eb1[2], grad.data());
 }
 
+/// @brief Compute the hessian of the squared norm of the edge cross product.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @return The squared norm of the edge-edge cross product.
+/// @param[out] hess The hessian of the squared norm of the edge cross product
+///                  wrt ea0, ea1, eb0, and eb1.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -86,6 +117,11 @@ void edge_edge_cross_squarednorm_hessian(
     const Eigen::MatrixBase<DerivedEB1>& eb1,
     Eigen::PlainObjectBase<DerivedHess>& hess)
 {
+    assert(ea0.size() == 3);
+    assert(ea1.size() == 3);
+    assert(eb0.size() == 3);
+    assert(eb1.size() == 3);
+
     hess.resize(
         ea0.size() + ea1.size() + eb0.size() + eb1.size(),
         ea0.size() + ea1.size() + eb0.size() + eb1.size());
@@ -94,18 +130,30 @@ void edge_edge_cross_squarednorm_hessian(
         eb1[0], eb1[1], eb1[2], hess.data());
 }
 
+/// @brief Mollifier function for edge-edge distance.
+/// @param x Squared norm of the edge-edge cross product.
+/// @param eps_x Mollifier activation threshold.
+/// @return The mollifier coefficient to premultiply the edge-edge distance.
 template <class T> T edge_edge_mollifier(const T& x, double eps_x)
 {
     T x_div_eps_x = x / eps_x;
     return (-x_div_eps_x + 2.0) * x_div_eps_x;
 }
 
+/// @brief The gradient of the mollifier function for edge-edge distance.
+/// @param x Squared norm of the edge-edge cross product.
+/// @param eps_x Mollifier activation threshold.
+/// @return The gradient of the mollifier function for edge-edge distance wrt x.
 template <class T> T edge_edge_mollifier_gradient(const T& x, double eps_x)
 {
     T one_div_eps_x = 1.0 / eps_x;
     return 2.0 * one_div_eps_x * (-one_div_eps_x * x + 1.0);
 }
 
+/// @brief The hessian of the mollifier function for edge-edge distance.
+/// @param x Squared norm of the edge-edge cross product.
+/// @param eps_x Mollifier activation threshold.
+/// @return The hessian of the mollifier function for edge-edge distance wrt x.
 template <class T> T edge_edge_mollifier_hessian(const T& x, double eps_x)
 {
     return -2.0 / (eps_x * eps_x);
@@ -129,6 +177,11 @@ inline auto edge_edge_mollifier(
     const Eigen::MatrixBase<DerivedEB1>& eb1,
     const double eps_x)
 {
+    assert(ea0.size() == 3);
+    assert(ea1.size() == 3);
+    assert(eb0.size() == 3);
+    assert(eb1.size() == 3);
+
     auto ee_cross_norm_sqr = edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
     if (ee_cross_norm_sqr < eps_x) {
         return edge_edge_mollifier(ee_cross_norm_sqr, eps_x);
@@ -208,8 +261,11 @@ void edge_edge_mollifier_hessian(
 ///
 /// This values is computed based on the edges at rest length.
 ///
-/// @param ea0,ea1 The points of the first edge at rest.
-/// @param eb0,eb1 The points of the second edge at rest.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @return Threshold for edge-edge mollification.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -221,6 +277,11 @@ double edge_edge_mollifier_threshold(
     const Eigen::MatrixBase<DerivedEB0>& eb0_rest,
     const Eigen::MatrixBase<DerivedEB1>& eb1_rest)
 {
+    assert(ea0_rest.size() == 3);
+    assert(ea1_rest.size() == 3);
+    assert(eb0_rest.size() == 3);
+    assert(eb1_rest.size() == 3);
+
     return 1.0e-3 * (ea0_rest - ea1_rest).squaredNorm()
         * (eb0_rest - eb1_rest).squaredNorm();
 }

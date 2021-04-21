@@ -9,8 +9,11 @@ namespace ipc {
 
 /// @brief Compute the distance between a two lines segments in 3D.
 /// @note The distance is actually squared distance.
-/// @param ea0,ea1 The points of the first edge.
-/// @param eb0,eb1 The points of the second edge.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @return The distance between the two edges.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -22,14 +25,23 @@ auto edge_edge_distance(
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1)
 {
+    assert(ea0.size() == 3);
+    assert(ea1.size() == 3);
+    assert(eb0.size() == 3);
+    assert(eb1.size() == 3);
+
     return edge_edge_distance(
         ea0, ea1, eb0, eb1, edge_edge_distance_type(ea0, ea1, eb0, eb1));
 }
 
 /// @brief Compute the distance between a two lines segments in 3D.
 /// @note The distance is actually squared distance.
-/// @param ea0,ea1 The points of the first edge.
-/// @param eb0,eb1 The points of the second edge.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @param dtype The point edge distance type to compute.
+/// @return The distance between the two edges.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -42,6 +54,11 @@ auto edge_edge_distance(
     const Eigen::MatrixBase<DerivedEB1>& eb1,
     const EdgeEdgeDistanceType dtype)
 {
+    assert(ea0.size() == 3);
+    assert(ea1.size() == 3);
+    assert(eb0.size() == 3);
+    assert(eb1.size() == 3);
+
     switch (dtype) {
     case EdgeEdgeDistanceType::EA0_EB0:
         return point_point_distance(ea0, eb0);
@@ -76,9 +93,11 @@ auto edge_edge_distance(
 
 /// @brief Compute the gradient of the distance between a two lines segments.
 /// @note The distance is actually squared distance.
-/// @param[in] ea0,ea1 The points of the first edge.
-/// @param[in] eb0,eb1 The points of the second edge.
-/// @param[out] grad The computed gradient.
+/// @param[in] ea0 The first vertex of the first edge.
+/// @param[in] ea1 The second vertex of the first edge.
+/// @param[in] eb0 The first vertex of the second edge.
+/// @param[in] eb1 The second vertex of the second edge.
+/// @param[out] grad The gradient of the distance wrt ea0, ea1, eb0, and eb1.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -92,15 +111,23 @@ void edge_edge_distance_gradient(
     const Eigen::MatrixBase<DerivedEB1>& eb1,
     Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
+    assert(ea0.size() == 3);
+    assert(ea1.size() == 3);
+    assert(eb0.size() == 3);
+    assert(eb1.size() == 3);
+
     return edge_edge_distance_gradient(
         ea0, ea1, eb0, eb1, edge_edge_distance_type(ea0, ea1, eb0, eb1), grad);
 }
 
 /// @brief Compute the gradient of the distance between a two lines segments.
 /// @note The distance is actually squared distance.
-/// @param[in] ea0,ea1 The points of the first edge.
-/// @param[in] eb0,eb1 The points of the second edge.
-/// @param[out] grad The computed gradient.
+/// @param[in] ea0 The first vertex of the first edge.
+/// @param[in] ea1 The second vertex of the first edge.
+/// @param[in] eb0 The first vertex of the second edge.
+/// @param[in] eb1 The second vertex of the second edge.
+/// @param[in] dtype The point edge distance type to compute.
+/// @param[out] grad The gradient of the distance wrt ea0, ea1, eb0, and eb1.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -180,9 +207,11 @@ void edge_edge_distance_gradient(
 
 /// @brief Compute the hessian of the distance between a two lines segments.
 /// @note The distance is actually squared distance.
-/// @param[in] ea0,ea1 The points of the first edge.
-/// @param[in] eb0,eb1 The points of the second edge.
-/// @param[out] hess The computed hessian.
+/// @param[in] ea0 The first vertex of the first edge.
+/// @param[in] ea1 The second vertex of the first edge.
+/// @param[in] eb0 The first vertex of the second edge.
+/// @param[in] eb1 The second vertex of the second edge.
+/// @param[out] hess The hessian of the distance wrt ea0, ea1, eb0, and eb1.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -196,15 +225,23 @@ void edge_edge_distance_hessian(
     const Eigen::MatrixBase<DerivedEB1>& eb1,
     Eigen::PlainObjectBase<DerivedHess>& hess)
 {
+    assert(ea0.size() == 3);
+    assert(ea1.size() == 3);
+    assert(eb0.size() == 3);
+    assert(eb1.size() == 3);
+
     return edge_edge_distance_hessian(
         ea0, ea1, eb0, eb1, edge_edge_distance_type(ea0, ea1, eb0, eb1), hess);
 }
 
 /// @brief Compute the hessian of the distance between a two lines segments.
 /// @note The distance is actually squared distance.
-/// @param[in] ea0,ea1 The points of the first edge.
-/// @param[in] eb0,eb1 The points of the second edge.
-/// @param[out] hess The computed hessian.
+/// @param[in] ea0 The first vertex of the first edge.
+/// @param[in] ea1 The second vertex of the first edge.
+/// @param[in] eb0 The first vertex of the second edge.
+/// @param[in] eb1 The second vertex of the second edge.
+/// @param[in] dtype The point edge distance type to compute.
+/// @param[out] hess The hessian of the distance wrt ea0, ea1, eb0, and eb1.
 template <
     typename DerivedEA0,
     typename DerivedEA1,

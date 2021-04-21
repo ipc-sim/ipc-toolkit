@@ -33,7 +33,9 @@ enum class EdgeEdgeDistanceType {
 
 /// @brief Determine the closest pair between a point and edge.
 /// @param p The point.
-/// @param e0,e1 The points of the edge.
+/// @param e0 The first vertex of the edge.
+/// @param e1 The second vertex of the edge.
+/// @return The distance type of the point-edge pair.
 template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 PointEdgeDistanceType point_edge_distance_type(
     const Eigen::MatrixBase<DerivedP>& p,
@@ -42,7 +44,10 @@ PointEdgeDistanceType point_edge_distance_type(
 
 /// @brief Determine the closest pair between a point and triangle.
 /// @param p The point.
-/// @param t0,t1,t2 The points of the triangle.
+/// @param t0 The first vertex of the triangle.
+/// @param t1 The second vertex of the triangle.
+/// @param t2 The third vertex of the triangle.
+/// @return The distance type of the point-triangle pair.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -55,8 +60,11 @@ PointTriangleDistanceType point_triangle_distance_type(
     const Eigen::MatrixBase<DerivedT2>& t2);
 
 /// @brief Determine the closest pair between two edges.
-/// @param ea0,ea1 The points of the first edge.
-/// @param eb0,eb1 The points of the second edge.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @return The distance type of the edge-edge pair.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
