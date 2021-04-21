@@ -7,20 +7,20 @@ namespace ipc {
 
 // Discrete collision detection
 
-bool point_edge_cd_broadphase(
+bool point_edge_aabb_cd(
     const Eigen::Vector2d& p,
     const Eigen::Vector2d& e0,
     const Eigen::Vector2d& e1,
     double dist);
 
-bool edge_edge_cd_broadphase(
+bool edge_edge_aabb_cd(
     const Eigen::Vector3d& ea0,
     const Eigen::Vector3d& ea1,
     const Eigen::Vector3d& eb0,
     const Eigen::Vector3d& eb1,
     double dist);
 
-bool point_triangle_cd_broadphase(
+bool point_triangle_aabb_cd(
     const Eigen::Vector3d& p,
     const Eigen::Vector3d& t0,
     const Eigen::Vector3d& t1,
@@ -29,7 +29,7 @@ bool point_triangle_cd_broadphase(
 
 // Continous collision detection
 
-bool point_edge_ccd_broadphase(
+bool point_edge_aabb_ccd(
     const Eigen::VectorX3d& p_t0,
     const Eigen::VectorX3d& e0_t0,
     const Eigen::VectorX3d& e1_t0,
@@ -38,7 +38,7 @@ bool point_edge_ccd_broadphase(
     const Eigen::VectorX3d& e1_t1,
     double dist);
 
-bool edge_edge_ccd_broadphase(
+bool edge_edge_aabb_ccd(
     const Eigen::Vector3d& ea0_t0,
     const Eigen::Vector3d& ea1_t0,
     const Eigen::Vector3d& eb0_t0,
@@ -49,7 +49,7 @@ bool edge_edge_ccd_broadphase(
     const Eigen::Vector3d& eb1_t1,
     double dist);
 
-bool point_triangle_ccd_broadphase(
+bool point_triangle_aabb_ccd(
     const Eigen::Vector3d& p_t0,
     const Eigen::Vector3d& t0_t0,
     const Eigen::Vector3d& t1_t0,

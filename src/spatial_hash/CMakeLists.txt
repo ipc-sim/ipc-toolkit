@@ -1,4 +1,6 @@
 set(SOURCES
+  brute_force.cpp
+  brute_force.hpp
   collision_candidate.cpp
   collision_candidate.hpp
   hash_grid.cpp

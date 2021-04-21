@@ -28,13 +28,13 @@ public: // data
     int dim;
 
 public: // constructor
-    SpatialHash(int dim) {}
+    SpatialHash() {}
 
     SpatialHash(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        double voxelSize)
+        double voxelSize = -1)
     {
         build(V, E, F, voxelSize);
     }
@@ -44,7 +44,7 @@ public: // constructor
         const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        double voxelSize)
+        double voxelSize = -1)
     {
         build(V0, V1, E, F, voxelSize);
     }
@@ -54,7 +54,20 @@ public: // API
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        double voxelSize);
+        double voxelSize = -1);
+
+    void build(
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        double voxelSize = -1);
+
+    void clear()
+    {
+        voxel.clear();
+        pointAndEdgeOccupancy.clear();
+    }
 
     void queryPointForTriangles(
         const Eigen::VectorX3d& p,
@@ -134,13 +147,6 @@ public: // API
         const Eigen::VectorX3d& e1,
         std::unordered_set<int>& triInds,
         double radius = 0) const;
-
-    void build(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        double voxelSize);
 
     void queryPointForPrimitives(
         int vi,

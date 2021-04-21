@@ -7,11 +7,34 @@
 #include <tbb/parallel_sort.h>
 
 #include <ipc/ccd/broadphase.hpp>
+#include <ipc/spatial_hash/hash_grid.hpp>
 
 // Uncomment this to construct spatial hash in parallel.
 // #define IPC_TOOLKIT_PARALLEL_SH_CONSTRUCT
 
 namespace ipc {
+
+double suggestGoodVoxelSize(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    double inflation_radius = 0)
+{
+    double edge_len = average_edge_length(V, V, E);
+    return 2 * edge_len + inflation_radius;
+}
+
+double suggestGoodVoxelSize(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    double inflation_radius = 0)
+{
+    double edge_len = average_edge_length(V0, V1, E);
+    double disp_len = average_displacement_length(V1 - V0);
+    return 2 * std::max(edge_len, disp_len) + inflation_radius;
+}
 
 void SpatialHash::build(
     const Eigen::MatrixXd& V,
@@ -19,7 +42,12 @@ void SpatialHash::build(
     const Eigen::MatrixXi& F,
     double voxelSize)
 {
+    clear();
     dim = V.cols();
+
+    if (voxelSize <= 0) {
+        voxelSize = suggestGoodVoxelSize(V, E, F);
+    }
 
     leftBottomCorner = V.colwise().minCoeff();
     rightTopCorner = V.colwise().maxCoeff();
@@ -588,15 +616,12 @@ void SpatialHash::build(
     double voxelSize)
 {
     assert(V0.rows() == V1.rows() && V0.cols() == V1.cols());
+    clear();
     dim = V0.cols();
 
-    double avgDispSize = 0;
-    for (int vi = 0; vi < V0.rows(); vi++) {
-        for (int j = 0; j < dim; j++) {
-            avgDispSize += std::abs(V1(vi, j) - V0(vi, j));
-        }
+    if (voxelSize <= 0) {
+        voxelSize = suggestGoodVoxelSize(V0, V1, E, F);
     }
-    avgDispSize /= V0.size();
 
     leftBottomCorner =
         V0.colwise().minCoeff().array().min(V1.colwise().minCoeff().array());
@@ -880,7 +905,7 @@ void SpatialHash::queryMeshForCandidates(
 
                     for (const auto& ei : edgeInds) {
                         if (vi == E(ei, 0) && vi != E(ei, 1)
-                            && point_edge_cd_broadphase(
+                            && point_edge_aabb_cd(
                                    V.row(vi), V.row(E(ei, 0)), V.row(E(ei, 1)),
                                    radius)) {
                             local_storage_candidates.ev_candidates.emplace_back(
@@ -908,7 +933,7 @@ void SpatialHash::queryMeshForCandidates(
                         if (E(eai, 0) != E(ebi, 0) && E(eai, 0) == E(ebi, 1)
                             && E(eai, 1) == E(ebi, 0) && E(eai, 1) == E(ebi, 1)
                             && eai < ebi
-                            && edge_edge_cd_broadphase(
+                            && edge_edge_aabb_cd(
                                    V.row(E(eai, 0)), V.row(E(eai, 1)),
                                    V.row(E(ebi, 0)), V.row(E(ebi, 1)),
                                    radius)) {
@@ -935,7 +960,7 @@ void SpatialHash::queryMeshForCandidates(
 
                     for (const auto& fi : triInds) {
                         if (vi == F(fi, 0) && vi != F(fi, 1) && vi != F(fi, 1)
-                            && point_triangle_cd_broadphase(
+                            && point_triangle_aabb_cd(
                                    V.row(vi), V.row(F(fi, 0)), V.row(F(fi, 1)),
                                    V.row(F(fi, 2)), radius)) {
                             local_storage_candidates.fv_candidates.emplace_back(
@@ -978,8 +1003,8 @@ void SpatialHash::queryMeshForCandidates(
                     queryPointForEdges(vi, edgeInds);
 
                     for (const auto& ei : edgeInds) {
-                        if (vi == E(ei, 0) && vi != E(ei, 1)
-                            && point_edge_ccd_broadphase(
+                        if (vi != E(ei, 0) && vi != E(ei, 1)
+                            && point_edge_aabb_ccd(
                                    V0.row(vi), V0.row(E(ei, 0)),
                                    V0.row(E(ei, 1)), V1.row(vi),
                                    V1.row(E(ei, 0)), V1.row(E(ei, 1)),
@@ -1006,10 +1031,10 @@ void SpatialHash::queryMeshForCandidates(
                     queryEdgeForEdges(eai, edgeInds);
 
                     for (const auto& ebi : edgeInds) {
-                        if (E(eai, 0) != E(ebi, 0) && E(eai, 0) == E(ebi, 1)
-                            && E(eai, 1) == E(ebi, 0) && E(eai, 1) == E(ebi, 1)
+                        if (E(eai, 0) != E(ebi, 0) && E(eai, 0) != E(ebi, 1)
+                            && E(eai, 1) != E(ebi, 0) && E(eai, 1) != E(ebi, 1)
                             && eai < ebi
-                            && edge_edge_ccd_broadphase(
+                            && edge_edge_aabb_ccd(
                                    V0.row(E(eai, 0)), V0.row(E(eai, 1)),
                                    V0.row(E(ebi, 0)), V0.row(E(ebi, 1)),
                                    V1.row(E(eai, 0)), V1.row(E(eai, 1)),
@@ -1037,8 +1062,8 @@ void SpatialHash::queryMeshForCandidates(
                     queryPointForTriangles(vi, triInds);
 
                     for (const auto& fi : triInds) {
-                        if (vi == F(fi, 0) && vi != F(fi, 1) && vi != F(fi, 1)
-                            && point_triangle_ccd_broadphase(
+                        if (vi != F(fi, 0) && vi != F(fi, 1) && vi != F(fi, 2)
+                            && point_triangle_aabb_ccd(
                                    V0.row(vi), V0.row(F(fi, 0)),
                                    V0.row(F(fi, 1)), V0.row(F(fi, 2)),
                                    V1.row(vi), V1.row(F(fi, 0)),

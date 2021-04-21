@@ -10,6 +10,9 @@ add_executable(${PROJECT_NAME}_tests
   # Test CCD
   ccd/test_ccd.cpp
   spatial_hash/test_spatial_hash.cpp
+  spatial_hash/test_hash_grid.cpp
+  spatial_hash/test_spatial_hash.cpp
+  spatial_hash/benchmark_spatial_hash.cpp
 
   # Test distances and dertivatives
   distance/test_distance_type.cpp

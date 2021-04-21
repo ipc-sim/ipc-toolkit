@@ -8,6 +8,10 @@ struct VertexVertexCandidate {
     VertexVertexCandidate(long edge_index, long vertex_index);
 
     bool operator==(const VertexVertexCandidate& other) const;
+    bool operator!=(const VertexVertexCandidate& other) const
+    {
+        return !(*this == other);
+    }
 
     /// @brief Compare EdgeVertexCandidates for sorting.
     bool operator<(const VertexVertexCandidate& other) const;
@@ -20,6 +24,10 @@ struct EdgeVertexCandidate {
     EdgeVertexCandidate(long edge_index, long vertex_index);
 
     bool operator==(const EdgeVertexCandidate& other) const;
+    bool operator!=(const EdgeVertexCandidate& other) const
+    {
+        return !(*this == other);
+    }
 
     /// @brief Compare EdgeVertexCandidates for sorting.
     bool operator<(const EdgeVertexCandidate& other) const;
@@ -32,6 +40,10 @@ struct EdgeEdgeCandidate {
     EdgeEdgeCandidate(long edge0_index, long edge1_index);
 
     bool operator==(const EdgeEdgeCandidate& other) const;
+    bool operator!=(const EdgeEdgeCandidate& other) const
+    {
+        return !(*this == other);
+    }
 
     /// @brief Compare EdgeEdgeCandidates for sorting.
     bool operator<(const EdgeEdgeCandidate& other) const;
@@ -47,6 +59,10 @@ struct EdgeFaceCandidate {
     EdgeFaceCandidate(long edge_index, long face_index);
 
     bool operator==(const EdgeFaceCandidate& other) const;
+    bool operator!=(const EdgeFaceCandidate& other) const
+    {
+        return !(*this == other);
+    }
 
     /// @brief Compare EdgeFaceCandidate for sorting.
     bool operator<(const EdgeFaceCandidate& other) const;
@@ -59,6 +75,10 @@ struct FaceVertexCandidate {
     FaceVertexCandidate(long face_index, long vertex_index);
 
     bool operator==(const FaceVertexCandidate& other) const;
+    bool operator!=(const FaceVertexCandidate& other) const
+    {
+        return !(*this == other);
+    }
 
     /// @brief Compare FaceVertexCandidate for sorting.
     bool operator<(const FaceVertexCandidate& other) const;

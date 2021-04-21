@@ -2,6 +2,10 @@
 
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
 #include <tight_inclusion/inclusion_ccd.hpp>
+// clang-format off
+#warning "TightInclusion does not include point-edge or point-point CCD. Using EVCTCD instead."
+// clang-format on
+#include <CTCD.h>
 #else
 #include <CTCD.h>
 #endif
@@ -19,9 +23,6 @@ bool point_point_ccd(
     double& toi,
     double conservative_rescaling)
 {
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-    throw "point_edge_ccd_3D not implemented by Tight Inclusion CCD!";
-#else
     double initial_distance = sqrt(point_point_distance(p0_t0, p1_t0));
     if (CTCD::vertexVertexCTCD(
             p0_t0, p1_t0, p0_t1, p1_t1,
@@ -38,7 +39,6 @@ bool point_point_ccd(
         return true;
     }
     return false;
-#endif
 }
 
 bool point_edge_ccd_2D(
@@ -148,9 +148,6 @@ bool point_edge_ccd_3D(
     double& toi,
     double conservative_rescaling)
 {
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-    throw "point_edge_ccd_3D not implemented by Tight Inclusion CCD!";
-#else
     double initial_distance = sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
     if (CTCD::vertexEdgeCTCD(
             p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1,
@@ -167,7 +164,6 @@ bool point_edge_ccd_3D(
         return true;
     }
     return false;
-#endif
 }
 
 bool point_edge_ccd(

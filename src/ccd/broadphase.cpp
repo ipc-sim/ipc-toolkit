@@ -4,7 +4,7 @@ namespace ipc {
 
 // Discrete collision detection
 
-bool point_edge_cd_broadphase(
+bool point_edge_aabb_cd(
     const Eigen::Vector2d& p,
     const Eigen::Vector2d& e0,
     const Eigen::Vector2d& e1,
@@ -19,7 +19,7 @@ bool point_edge_cd_broadphase(
     }
 }
 
-bool point_triangle_cd_broadphase(
+bool point_triangle_aabb_cd(
     const Eigen::Vector3d& p,
     const Eigen::Vector3d& t0,
     const Eigen::Vector3d& t1,
@@ -36,7 +36,7 @@ bool point_triangle_cd_broadphase(
     }
 }
 
-bool edge_edge_cd_broadphase(
+bool edge_edge_aabb_cd(
     const Eigen::Vector3d& ea0,
     const Eigen::Vector3d& ea1,
     const Eigen::Vector3d& eb0,
@@ -56,7 +56,7 @@ bool edge_edge_cd_broadphase(
 
 // Continous collision detection
 
-bool point_edge_ccd_broadphase(
+bool point_edge_aabb_ccd(
     const Eigen::VectorX3d& p_t0,
     const Eigen::VectorX3d& e0_t0,
     const Eigen::VectorX3d& e1_t0,
@@ -65,11 +65,11 @@ bool point_edge_ccd_broadphase(
     const Eigen::VectorX3d& e1_t1,
     double dist)
 {
-    const Eigen::Array2d max_p = p_t0.array().max((p_t1).array());
-    const Eigen::Array2d min_p = p_t0.array().min((p_t1).array());
-    const Eigen::Array2d max_e =
+    const Eigen::ArrayMax3d max_p = p_t0.array().max(p_t1.array());
+    const Eigen::ArrayMax3d min_p = p_t0.array().min(p_t1.array());
+    const Eigen::ArrayMax3d max_e =
         e0_t0.array().max(e1_t0.array()).max(e0_t1.array()).max(e1_t1.array());
-    const Eigen::Array2d min_e =
+    const Eigen::ArrayMax3d min_e =
         e0_t0.array().min(e1_t0.array()).min(e0_t1.array()).min(e1_t1.array());
     if ((min_p - max_e > dist).any() || (min_e - max_p > dist).any()) {
         return false;
@@ -78,7 +78,7 @@ bool point_edge_ccd_broadphase(
     }
 }
 
-bool point_triangle_ccd_broadphase(
+bool point_triangle_aabb_ccd(
     const Eigen::Vector3d& p_t0,
     const Eigen::Vector3d& t0_t0,
     const Eigen::Vector3d& t1_t0,
@@ -110,7 +110,7 @@ bool point_triangle_ccd_broadphase(
     }
 }
 
-bool edge_edge_ccd_broadphase(
+bool edge_edge_aabb_ccd(
     const Eigen::Vector3d& ea0_t0,
     const Eigen::Vector3d& ea1_t0,
     const Eigen::Vector3d& eb0_t0,

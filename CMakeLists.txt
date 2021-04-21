@@ -19,7 +19,7 @@ else()
   option(IPC_TOOLKIT_BUILD_UNIT_TESTS "Build unit-tests"      OFF)
 endif()
 option(IPC_TOOLKIT_WITH_LOGGER        "Enables logger"         ON)
-option(IPC_TOOLKIT_WITH_CORRECT_CCD   "Use the conservative CCD of [Wang and Ferguson et al. 2020]" ON)
+option(IPC_TOOLKIT_WITH_CORRECT_CCD   "Use the conservative CCD of [Wang and Ferguson et al. 2021]" ON)
 
 ################################################################################
 
@@ -82,6 +82,9 @@ if(IPC_TOOLKIT_WITH_CORRECT_CCD)
   # Provably conservative CCD of [Wang and Ferguson et al. 2020]
   target_link_libraries(${PROJECT_NAME} PUBLIC TightInclusion)
   target_compile_definitions(${PROJECT_NAME} PUBLIC IPC_TOOLKIT_WITH_CORRECT_CCD)
+  message(WARNING "TightInclusion does not include point-edge or point-point CCD. Using EVCTCD instead.")
+  # Etienne Vouga's CTCD Library for the floating point root finding algorithm
+  target_link_libraries(${PROJECT_NAME} PUBLIC EVCTCD)
 else()
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
   target_link_libraries(${PROJECT_NAME} PUBLIC EVCTCD)
