@@ -3,6 +3,8 @@ set(SOURCES
   collision_candidate.hpp
   hash_grid.cpp
   hash_grid.hpp
+  spatial_hash.cpp
+  spatial_hash.hpp
 )
 
 prepend_current_path(SOURCES)

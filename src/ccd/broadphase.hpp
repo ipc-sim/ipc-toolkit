@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Eigen/Core>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
@@ -29,21 +30,12 @@ bool point_triangle_cd_broadphase(
 // Continous collision detection
 
 bool point_edge_ccd_broadphase(
-    const Eigen::Vector2d& p_t0,
-    const Eigen::Vector2d& e0_t0,
-    const Eigen::Vector2d& e1_t0,
-    const Eigen::Vector2d& p_t1,
-    const Eigen::Vector2d& e0_t1,
-    const Eigen::Vector2d& e1_t1,
-    double dist);
-
-bool point_edge_ccd_broadphase(
-    const Eigen::Vector3d& p_t0,
-    const Eigen::Vector3d& e0_t0,
-    const Eigen::Vector3d& e1_t0,
-    const Eigen::Vector3d& p_t1,
-    const Eigen::Vector3d& e0_t1,
-    const Eigen::Vector3d& e1_t1,
+    const Eigen::VectorX3d& p_t0,
+    const Eigen::VectorX3d& e0_t0,
+    const Eigen::VectorX3d& e1_t0,
+    const Eigen::VectorX3d& p_t1,
+    const Eigen::VectorX3d& e0_t1,
+    const Eigen::VectorX3d& e1_t1,
     double dist);
 
 bool edge_edge_ccd_broadphase(

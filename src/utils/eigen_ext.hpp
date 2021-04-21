@@ -76,6 +76,17 @@ using DiagonalMatrixXd = DiagonalMatrix<double, Dynamic>;
 /// @brief A dynamic size diagonal matrix with a fixed maximum size of 6 x 6
 using DiagonalMatrixX6d = DiagonalMatrix<double, Dynamic, 6>;
 
+/// @brief A dynamic size array with a fixed maximum size of 2 x 1
+template <typename T> using ArrayMax2 = Array<T, Dynamic, 1, ColMajor, 2, 1>;
+/// @brief A dynamic size array with a fixed maximum size of 2 x 1
+template <typename T> using ArrayMax3 = Array<T, Dynamic, 1, ColMajor, 3, 1>;
+/// @brief A dynamic size array with a fixed maximum size of 2 x 1
+using ArrayMax2d = ArrayMax2<double>;
+/// @brief A dynamic size array with a fixed maximum size of 3 x 1
+using ArrayMax3d = ArrayMax3<double>;
+/// @brief A dynamic size array with a fixed maximum size of 3 x 1
+using ArrayMax3i = ArrayMax3<int>;
+
 /// Matrix Projection onto Positive Definite Cone
 template <
     typename _Scalar,
