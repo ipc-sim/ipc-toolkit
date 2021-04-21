@@ -3,7 +3,7 @@
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
 #include <tight_inclusion/inclusion_ccd.hpp>
 // clang-format off
-#warning "TightInclusion does not include point-edge or point-point CCD. Using EVCTCD instead."
+// #warning "TightInclusion does not include point-edge or point-point CCD. Using EVCTCD instead."
 // clang-format on
 #include <CTCD.h>
 #else

@@ -48,8 +48,12 @@ TEST_CASE("Compare SpatialHash against brute force", "[spatial_hash]")
     }
     SECTION("Complex")
     {
+#ifdef NDEBUG
         std::string filename =
             GENERATE(std::string("cube.obj"), std::string("bunny.obj"));
+#else
+        std::string filename = "cube.obj";
+#endif
         std::string mesh_path = std::string(TEST_DATA_DIR) + filename;
         bool success = igl::read_triangle_mesh(mesh_path, V0, F);
         REQUIRE(success);
@@ -109,7 +113,6 @@ TEST_CASE("Compare SpatialHash against brute force", "[spatial_hash]")
                     V0.row(vi), V0.row(E(ei, 0)), V0.row(E(ei, 1)), // t = 0
                     V1.row(vi), V1.row(E(ei, 0)), V1.row(E(ei, 1)), // t = 1
                     toi, 1.0);
-                assert(!hit);
                 CHECK(!hit); // Check for FN
 
             } else {
@@ -144,7 +147,6 @@ TEST_CASE("Compare SpatialHash against brute force", "[spatial_hash]")
                     /*tolerance=*/1e-6,
                     /*max_iterations=*/1e7,
                     /*conservative_rescaling=*/1.0);
-                assert(!hit);
                 CHECK(!hit); // Check for FN
 
             } else {
@@ -179,7 +181,6 @@ TEST_CASE("Compare SpatialHash against brute force", "[spatial_hash]")
                     /*tolerance=*/1e-6,
                     /*max_iterations=*/1e7,
                     /*conservative_rescaling=*/1.0);
-                assert(!hit);
                 CHECK(!hit); // Check for FN
 
             } else {

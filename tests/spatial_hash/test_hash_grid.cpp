@@ -226,8 +226,12 @@ TEST_CASE("Compare HashGrid against brute force", "[thisone][hash_grid]")
     }
     SECTION("Complex")
     {
+#ifdef NDEBUG
         std::string filename =
             GENERATE(std::string("cube.obj"), std::string("bunny.obj"));
+#else
+        std::string filename = "cube.obj";
+#endif
         std::string mesh_path = std::string(TEST_DATA_DIR) + filename;
         bool success = igl::read_triangle_mesh(mesh_path, V0, F);
         REQUIRE(success);
@@ -240,7 +244,7 @@ TEST_CASE("Compare HashGrid against brute force", "[thisone][hash_grid]")
     HashGrid hashgrid;
     Candidates hg_candidates, bf_candidates;
 
-    double inflation_radius = GENERATE(0, 1e-4, 1e-3, 1e-2, 1e-1);
+    double inflation_radius = 1e-2; // GENERATE(0.0, 1e-4, 1e-3, 1e-2, 1e-1);
 
     for (int i = 0; i < 2; i++) {
         Eigen::MatrixXd V1 = V0 + U;
