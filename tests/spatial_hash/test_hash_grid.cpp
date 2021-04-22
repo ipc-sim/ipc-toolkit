@@ -226,12 +226,13 @@ TEST_CASE("Compare HashGrid against brute force", "[thisone][hash_grid]")
     }
     SECTION("Complex")
     {
-#ifdef NDEBUG
-        std::string filename =
-            GENERATE(std::string("cube.obj"), std::string("bunny.obj"));
-#else
+        // #ifdef NDEBUG
+        //         std::string filename =
+        //             GENERATE(std::string("cube.obj"),
+        //             std::string("bunny.obj"));
+        // #else
         std::string filename = "cube.obj";
-#endif
+        // #endif
         std::string mesh_path = std::string(TEST_DATA_DIR) + filename;
         bool success = igl::read_triangle_mesh(mesh_path, V0, F);
         REQUIRE(success);

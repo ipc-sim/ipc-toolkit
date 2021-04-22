@@ -40,17 +40,35 @@ void SpatialHash::build(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
+    double inflation_radius,
     double voxelSize)
 {
+    build(V, V, E, F, inflation_radius, voxelSize);
+}
+
+void SpatialHash::build(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    double inflation_radius,
+    double voxelSize)
+{
+    assert(V0.rows() == V1.rows() && V0.cols() == V1.cols());
     clear();
-    dim = V.cols();
+    dim = V0.cols();
+    builtInRadius = inflation_radius;
 
     if (voxelSize <= 0) {
-        voxelSize = suggestGoodVoxelSize(V, E, F);
+        voxelSize = suggestGoodVoxelSize(V0, V1, E, F);
     }
 
-    leftBottomCorner = V.colwise().minCoeff();
-    rightTopCorner = V.colwise().maxCoeff();
+    leftBottomCorner =
+        V0.colwise().minCoeff().cwiseMin(V1.colwise().minCoeff()).array()
+        - inflation_radius;
+    rightTopCorner =
+        V0.colwise().maxCoeff().cwiseMax(V1.colwise().maxCoeff()).array()
+        + inflation_radius;
     one_div_voxelSize = 1.0 / voxelSize;
     Eigen::ArrayMax3d range = rightTopCorner - leftBottomCorner;
     voxelCount = (range * one_div_voxelSize).ceil().template cast<int>();
@@ -61,45 +79,71 @@ void SpatialHash::build(
     }
     voxelCount0x1 = voxelCount[0] * voxelCount[1];
 
-    edgeStartInd = V.rows();
+    edgeStartInd = V0.rows();
     triStartInd = edgeStartInd + E.rows();
 
-    // precompute svVAI
-    std::vector<Eigen::ArrayMax3i> vertexVoxelAxisIndex(V.rows());
-    tbb::parallel_for(size_t(0), size_t(V.rows()), [&](size_t vi) {
-        locateVoxelAxisIndex(V.row(vi), vertexVoxelAxisIndex[vi]);
+    // precompute vVAI
+    std::vector<Eigen::ArrayMax3i> vertexMinVAI(V0.rows());
+    std::vector<Eigen::ArrayMax3i> vertexMaxVAI(V0.rows());
+    tbb::parallel_for(size_t(0), size_t(V0.rows()), [&](size_t vi) {
+        Eigen::ArrayMax3i vVAIMin, vVAIMax;
+        locateVoxelAxisIndex(
+            V0.row(vi).cwiseMin(V1.row(vi)).array() - inflation_radius,
+            vVAIMin);
+        locateVoxelAxisIndex(
+            V0.row(vi).cwiseMax(V1.row(vi)).array() + inflation_radius,
+            vVAIMax);
+        vertexMinVAI[vi] = vVAIMin;
+        vertexMaxVAI[vi] = vVAIMax;
     });
 
-    voxel.clear();
+    voxel.clear(); // TODO: parallel insert
 
-#ifdef IPC_TOOLKIT_PARALLEL_SH_CONSTRUCT
-    std::vector<std::pair<int, int>> voxel_tmp;
+    // #ifdef IPC_TOOLKIT_PARALLEL_SH_CONSTRUCT
+    //     std::vector<std::pair<int, int>> voxel_tmp;
+    //
+    //     for (int vi = 0; vi < V.rows(); vi++) {
+    //         voxel_tmp.emplace_back(locateVoxelIndex(V.row(vi)), vi);
+    //     }
+    // #else
+    //     for (int vi = 0; vi < V.rows(); vi++) {
+    //         voxel[locateVoxelIndex(V.row(vi))].emplace_back(vi);
+    //     }
+    // #endif
 
-    for (int vi = 0; vi < V.rows(); vi++) {
-        voxel_tmp.emplace_back(locateVoxelIndex(V.row(vi)), vi);
-    }
-#else
-    for (int vi = 0; vi < V.rows(); vi++) {
-        voxel[locateVoxelIndex(V.row(vi))].emplace_back(vi);
-    }
-#endif
+    pointAndEdgeOccupancy.clear();
+    pointAndEdgeOccupancy.resize(triStartInd);
 
-    std::vector<std::vector<int>> voxelLoc_e(E.rows());
-    tbb::parallel_for(size_t(0), size_t(E.rows()), [&](size_t ei) {
-        const Eigen::ArrayMax3i& voxelAxisIndex0 =
-            vertexVoxelAxisIndex[E(ei, 0)];
-        const Eigen::ArrayMax3i& voxelAxisIndex1 =
-            vertexVoxelAxisIndex[E(ei, 1)];
-
-        Eigen::ArrayMax3i mins = voxelAxisIndex0.min(voxelAxisIndex1);
-        Eigen::ArrayMax3i maxs = voxelAxisIndex0.max(voxelAxisIndex1);
-
+    tbb::parallel_for(size_t(0), size_t(V0.rows()), [&](size_t vi) {
+        const Eigen::ArrayMax3i& mins = vertexMinVAI[vi];
+        const Eigen::ArrayMax3i& maxs = vertexMaxVAI[vi];
+        pointAndEdgeOccupancy[vi].reserve((maxs - mins + 1).prod());
         for (int iz = mins[2]; iz <= maxs[2]; iz++) {
             int zOffset = iz * voxelCount0x1;
             for (int iy = mins[1]; iy <= maxs[1]; iy++) {
                 int yzOffset = iy * voxelCount[0] + zOffset;
                 for (int ix = mins[0]; ix <= maxs[0]; ix++) {
-                    voxelLoc_e[ei].emplace_back(ix + yzOffset);
+                    pointAndEdgeOccupancy[vi].emplace_back(ix + yzOffset);
+                }
+            }
+        }
+    });
+
+    tbb::parallel_for(size_t(0), size_t(E.rows()), [&](size_t ei) {
+        int eiInd = ei + edgeStartInd;
+
+        Eigen::ArrayMax3i mins =
+            vertexMinVAI[E(ei, 0)].min(vertexMinVAI[E(ei, 1)]);
+        Eigen::ArrayMax3i maxs =
+            vertexMaxVAI[E(ei, 0)].max(vertexMaxVAI[E(ei, 1)]);
+
+        pointAndEdgeOccupancy[eiInd].reserve((maxs - mins + 1).prod());
+        for (int iz = mins[2]; iz <= maxs[2]; iz++) {
+            int zOffset = iz * voxelCount0x1;
+            for (int iy = mins[1]; iy <= maxs[1]; iy++) {
+                int yzOffset = iy * voxelCount[0] + zOffset;
+                for (int ix = mins[0]; ix <= maxs[0]; ix++) {
+                    pointAndEdgeOccupancy[eiInd].emplace_back(ix + yzOffset);
                 }
             }
         }
@@ -107,17 +151,12 @@ void SpatialHash::build(
 
     std::vector<std::vector<int>> voxelLoc_f(F.rows());
     tbb::parallel_for(size_t(0), size_t(F.rows()), [&](size_t fi) {
-        const Eigen::ArrayMax3i& voxelAxisIndex0 =
-            vertexVoxelAxisIndex[F(fi, 0)];
-        const Eigen::ArrayMax3i& voxelAxisIndex1 =
-            vertexVoxelAxisIndex[F(fi, 1)];
-        const Eigen::ArrayMax3i& voxelAxisIndex2 =
-            vertexVoxelAxisIndex[F(fi, 1)];
-
-        Eigen::ArrayMax3i mins =
-            voxelAxisIndex0.min(voxelAxisIndex1).min(voxelAxisIndex2);
-        Eigen::ArrayMax3i maxs =
-            voxelAxisIndex0.max(voxelAxisIndex1).max(voxelAxisIndex2);
+        Eigen::ArrayMax3i mins = vertexMinVAI[F(fi, 0)]
+                                     .min(vertexMinVAI[F(fi, 1)])
+                                     .min(vertexMinVAI[F(fi, 2)]);
+        Eigen::ArrayMax3i maxs = vertexMaxVAI[F(fi, 0)]
+                                     .max(vertexMaxVAI[F(fi, 1)])
+                                     .max(vertexMaxVAI[F(fi, 2)]);
 
         for (int iz = mins[2]; iz <= maxs[2]; iz++) {
             int zOffset = iz * voxelCount0x1;
@@ -130,46 +169,46 @@ void SpatialHash::build(
         }
     });
 
-#ifdef IPC_TOOLKIT_PARALLEL_SH_CONSTRUCT
-    for (int ei = 0; ei < voxelLoc_e.size(); ei++) {
-        for (const auto& voxelI : voxelLoc_e[ei]) {
-            voxel_tmp.emplace_back(voxelI, ei + edgeStartInd);
-        }
-    }
-
-    for (int fi = 0; fi < voxelLoc_f.size(); fi++) {
-        for (const auto& voxelI : voxelLoc_f[fi]) {
-            voxel_tmp.emplace_back(voxelI, fi + triStartInd);
-        }
-    }
-
-    // Sort the voxels based on the voxel indices
-    tbb::parallel_sort(
-        voxel_tmp.begin(), voxel_tmp.end(),
-        [](const std::pair<int, int>& f, const std::pair<int, int>& s) {
-            return f.first < s.first;
-        });
-
-    std::vector<std::pair<int, std::vector<int>>> voxel_tmp_merged;
-    voxel_tmp_merged.reserve(voxel_tmp.size());
-    int current_voxel = -1;
-    for (const auto& v : voxel_tmp) {
-        if (current_voxel != v.first) {
-            assert(current_voxel < v.first);
-            voxel_tmp_merged.emplace_back();
-            voxel_tmp_merged.back().first = v.first;
-            current_voxel = v.first;
-        }
-
-        voxel_tmp_merged.back().second.push_back(v.second);
-    }
-    assert(voxel_tmp_merged.size() <= voxel_tmp.size());
-
-    voxel.insert(voxel_tmp_merged.begin(), voxel_tmp_merged.end());
-#else
-    for (int ei = 0; ei < voxelLoc_e.size(); ei++) {
-        for (const auto& voxelI : voxelLoc_e[ei]) {
-            voxel[voxelI].emplace_back(ei + edgeStartInd);
+    // #ifdef IPC_TOOLKIT_PARALLEL_SH_CONSTRUCT
+    //     for (int ei = 0; ei < voxelLoc_e.size(); ei++) {
+    //         for (const auto& voxelI : voxelLoc_e[ei]) {
+    //             voxel_tmp.emplace_back(voxelI, ei + edgeStartInd);
+    //         }
+    //     }
+    //
+    //     for (int fi = 0; fi < voxelLoc_f.size(); fi++) {
+    //         for (const auto& voxelI : voxelLoc_f[fi]) {
+    //             voxel_tmp.emplace_back(voxelI, fi + triStartInd);
+    //         }
+    //     }
+    //
+    //     // Sort the voxels based on the voxel indices
+    //     tbb::parallel_sort(
+    //         voxel_tmp.begin(), voxel_tmp.end(),
+    //         [](const std::pair<int, int>& f, const std::pair<int, int>& s) {
+    //             return f.first < s.first;
+    //         });
+    //
+    //     std::vector<std::pair<int, std::vector<int>>> voxel_tmp_merged;
+    //     voxel_tmp_merged.reserve(voxel_tmp.size());
+    //     int current_voxel = -1;
+    //     for (const auto& v : voxel_tmp) {
+    //         if (current_voxel != v.first) {
+    //             assert(current_voxel < v.first);
+    //             voxel_tmp_merged.emplace_back();
+    //             voxel_tmp_merged.back().first = v.first;
+    //             current_voxel = v.first;
+    //         }
+    //
+    //         voxel_tmp_merged.back().second.push_back(v.second);
+    //     }
+    //     assert(voxel_tmp_merged.size() <= voxel_tmp.size());
+    //
+    //     voxel.insert(voxel_tmp_merged.begin(), voxel_tmp_merged.end());
+    // #else
+    for (int i = 0; i < pointAndEdgeOccupancy.size(); i++) {
+        for (const auto& voxelI : pointAndEdgeOccupancy[i]) {
+            voxel[voxelI].emplace_back(i);
         }
     }
     for (int fi = 0; fi < voxelLoc_f.size(); fi++) {
@@ -177,7 +216,7 @@ void SpatialHash::build(
             voxel[voxelI].emplace_back(fi + triStartInd);
         }
     }
-#endif
+    // #endif
 }
 
 void SpatialHash::queryPointForTriangles(
@@ -246,11 +285,12 @@ void SpatialHash::queryPointForPrimitives(
     const Eigen::VectorX3d& p_t1,
     std::unordered_set<int>& vertInds,
     std::unordered_set<int>& edgeInds,
-    std::unordered_set<int>& triInds) const
+    std::unordered_set<int>& triInds,
+    double radius) const
 {
     Eigen::ArrayMax3i mins, maxs;
-    locateVoxelAxisIndex(p_t0.array().min((p_t1).array()), mins);
-    locateVoxelAxisIndex(p_t0.array().max((p_t1).array()), maxs);
+    locateVoxelAxisIndex(p_t0.array().min((p_t1).array()) - radius, mins);
+    locateVoxelAxisIndex(p_t0.array().max((p_t1).array()) + radius, maxs);
     mins = mins.max(Eigen::ArrayMax3i::Zero(dim));
     maxs = maxs.min(voxelCount - 1);
 
@@ -283,10 +323,11 @@ void SpatialHash::queryEdgeForPE(
     const Eigen::VectorX3d& e0,
     const Eigen::VectorX3d& e1,
     std::vector<int>& vertInds,
-    std::vector<int>& edgeInds) const
+    std::vector<int>& edgeInds,
+    double radius) const
 {
-    Eigen::VectorX3d leftBottom = e0.array().min(e1.array());
-    Eigen::VectorX3d rightTop = e0.array().max(e1.array());
+    Eigen::VectorX3d leftBottom = e0.array().min(e1.array()) - radius;
+    Eigen::VectorX3d rightTop = e0.array().max(e1.array()) + radius;
     Eigen::ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(leftBottom, mins);
     locateVoxelAxisIndex(rightTop, maxs);
@@ -364,7 +405,6 @@ void SpatialHash::queryEdgeForEdges(
 void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const Eigen::VectorX3d& ea0,
     const Eigen::VectorX3d& ea1,
     std::vector<int>& edgeInds,
@@ -468,8 +508,10 @@ void SpatialHash::queryTriangleForPoints(
     std::unordered_set<int>& pointInds,
     double radius) const
 {
-    Eigen::VectorX3d leftBottom = t0.array().min(t1.array()).min(t2.array());
-    Eigen::VectorX3d rightTop = t0.array().max(t1.array()).max(t2.array());
+    Eigen::VectorX3d leftBottom =
+        t0.array().min(t1.array()).min(t2.array()) - radius;
+    Eigen::VectorX3d rightTop =
+        t0.array().max(t1.array()).max(t2.array()) + radius;
     Eigen::ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(leftBottom.array() - radius, mins);
     locateVoxelAxisIndex(rightTop.array() + radius, maxs);
@@ -502,20 +544,23 @@ void SpatialHash::queryTriangleForPoints(
     const Eigen::VectorX3d& t0_t1,
     const Eigen::VectorX3d& t1_t1,
     const Eigen::VectorX3d& t2_t1,
-    std::unordered_set<int>& pointInds) const
+    std::unordered_set<int>& pointInds,
+    double radius) const
 {
     Eigen::VectorX3d leftBottom = t0_t0.array()
                                       .min(t1_t0.array())
                                       .min(t2_t0.array())
                                       .min(t0_t1.array())
                                       .min(t1_t1.array())
-                                      .min(t2_t1.array());
+                                      .min(t2_t1.array())
+        - radius;
     Eigen::VectorX3d rightTop = t0_t0.array()
                                     .max(t1_t0.array())
                                     .max(t2_t0.array())
                                     .max(t0_t1.array())
                                     .max(t1_t1.array())
-                                    .max(t2_t1.array());
+                                    .max(t2_t1.array())
+        + radius;
     Eigen::ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(leftBottom.array(), mins);
     locateVoxelAxisIndex(rightTop.array(), maxs);
@@ -608,120 +653,6 @@ void SpatialHash::queryEdgeForTriangles(
     }
 }
 
-void SpatialHash::build(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    double voxelSize)
-{
-    assert(V0.rows() == V1.rows() && V0.cols() == V1.cols());
-    clear();
-    dim = V0.cols();
-
-    if (voxelSize <= 0) {
-        voxelSize = suggestGoodVoxelSize(V0, V1, E, F);
-    }
-
-    leftBottomCorner =
-        V0.colwise().minCoeff().array().min(V1.colwise().minCoeff().array());
-    rightTopCorner =
-        V0.colwise().maxCoeff().array().max(V1.colwise().maxCoeff().array());
-    one_div_voxelSize = 1.0 / voxelSize;
-    Eigen::ArrayMax3d range = rightTopCorner - leftBottomCorner;
-    voxelCount = (range * one_div_voxelSize).ceil().template cast<int>();
-    if (voxelCount.minCoeff() <= 0) {
-        // cast overflow due to huge search direction
-        one_div_voxelSize = 1.0 / (range.maxCoeff() * 1.01);
-        voxelCount.setOnes();
-    }
-    voxelCount0x1 = voxelCount[0] * voxelCount[1];
-
-    edgeStartInd = V0.rows();
-    triStartInd = edgeStartInd + E.rows();
-
-    // precompute vVAI
-    std::vector<Eigen::ArrayMax3i> vertexMinVAI(V0.rows());
-    std::vector<Eigen::ArrayMax3i> vertexMaxVAI(V0.rows());
-    tbb::parallel_for(size_t(0), size_t(V0.rows()), [&](size_t vi) {
-        Eigen::ArrayMax3i v0VAI, v1VAI;
-        locateVoxelAxisIndex(V0.row(vi), v0VAI);
-        locateVoxelAxisIndex(V1.row(vi), v1VAI);
-        vertexMinVAI[vi] = v0VAI.min(v1VAI);
-        vertexMaxVAI[vi] = v0VAI.max(v1VAI);
-    });
-
-    voxel.clear(); // TODO: parallel insert
-    pointAndEdgeOccupancy.clear();
-    pointAndEdgeOccupancy.resize(triStartInd);
-
-    tbb::parallel_for(size_t(0), size_t(V0.rows()), [&](size_t vi) {
-        const Eigen::ArrayMax3i& mins = vertexMinVAI[vi];
-        const Eigen::ArrayMax3i& maxs = vertexMaxVAI[vi];
-        pointAndEdgeOccupancy[vi].reserve((maxs - mins + 1).prod());
-        for (int iz = mins[2]; iz <= maxs[2]; iz++) {
-            int zOffset = iz * voxelCount0x1;
-            for (int iy = mins[1]; iy <= maxs[1]; iy++) {
-                int yzOffset = iy * voxelCount[0] + zOffset;
-                for (int ix = mins[0]; ix <= maxs[0]; ix++) {
-                    pointAndEdgeOccupancy[vi].emplace_back(ix + yzOffset);
-                }
-            }
-        }
-    });
-
-    tbb::parallel_for(size_t(0), size_t(E.rows()), [&](size_t ei) {
-        int eiInd = ei + edgeStartInd;
-
-        Eigen::ArrayMax3i mins =
-            vertexMinVAI[E(ei, 0)].min(vertexMinVAI[E(ei, 1)]);
-        Eigen::ArrayMax3i maxs =
-            vertexMaxVAI[E(ei, 0)].max(vertexMaxVAI[E(ei, 1)]);
-
-        pointAndEdgeOccupancy[eiInd].reserve((maxs - mins + 1).prod());
-        for (int iz = mins[2]; iz <= maxs[2]; iz++) {
-            int zOffset = iz * voxelCount0x1;
-            for (int iy = mins[1]; iy <= maxs[1]; iy++) {
-                int yzOffset = iy * voxelCount[0] + zOffset;
-                for (int ix = mins[0]; ix <= maxs[0]; ix++) {
-                    pointAndEdgeOccupancy[eiInd].emplace_back(ix + yzOffset);
-                }
-            }
-        }
-    });
-
-    std::vector<std::vector<int>> voxelLoc_f(F.rows());
-    tbb::parallel_for(size_t(0), size_t(F.rows()), [&](size_t fi) {
-        Eigen::ArrayMax3i mins = vertexMinVAI[F(fi, 0)]
-                                     .min(vertexMinVAI[F(fi, 1)])
-                                     .min(vertexMinVAI[F(fi, 2)]);
-        Eigen::ArrayMax3i maxs = vertexMaxVAI[F(fi, 0)]
-                                     .max(vertexMaxVAI[F(fi, 1)])
-                                     .max(vertexMaxVAI[F(fi, 2)]);
-
-        for (int iz = mins[2]; iz <= maxs[2]; iz++) {
-            int zOffset = iz * voxelCount0x1;
-            for (int iy = mins[1]; iy <= maxs[1]; iy++) {
-                int yzOffset = iy * voxelCount[0] + zOffset;
-                for (int ix = mins[0]; ix <= maxs[0]; ix++) {
-                    voxelLoc_f[fi].emplace_back(ix + yzOffset);
-                }
-            }
-        }
-    });
-
-    for (int i = 0; i < pointAndEdgeOccupancy.size(); i++) {
-        for (const auto& voxelI : pointAndEdgeOccupancy[i]) {
-            voxel[voxelI].emplace_back(i);
-        }
-    }
-    for (int fi = 0; fi < voxelLoc_f.size(); fi++) {
-        for (const auto& voxelI : voxelLoc_f[fi]) {
-            voxel[voxelI].emplace_back(fi + triStartInd);
-        }
-    }
-}
-
 void SpatialHash::queryPointForPrimitives(
     int vi,
     std::unordered_set<int>& vertInds,
@@ -797,7 +728,6 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     int eai,
     std::unordered_set<int>& edgeInds) const
 {
@@ -883,95 +813,11 @@ void SpatialHash::queryMeshForCandidates(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     Candidates& candidates,
-    double radius,
     bool queryEV,
     bool queryEE,
     bool queryFV) const
 {
-    ThreadSpecificCandidates storages;
-
-    // edge-vertex
-    if (queryEV) {
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), size_t(V.rows())),
-            [&](const tbb::blocked_range<size_t>& range) {
-                ThreadSpecificCandidates::reference local_storage_candidates =
-                    storages.local();
-
-                for (long vi = range.begin(); vi != range.end(); vi++) {
-                    std::unordered_set<int> edgeInds;
-                    // TODO: Use radius
-                    queryPointForEdges(vi, edgeInds);
-
-                    for (const auto& ei : edgeInds) {
-                        if (vi == E(ei, 0) && vi != E(ei, 1)
-                            && point_edge_aabb_cd(
-                                   V.row(vi), V.row(E(ei, 0)), V.row(E(ei, 1)),
-                                   radius)) {
-                            local_storage_candidates.ev_candidates.emplace_back(
-                                ei, vi);
-                        }
-                    }
-                }
-            });
-    }
-
-    // edge-edge
-    if (queryEE) {
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), size_t(E.rows())),
-            [&](const tbb::blocked_range<size_t>& range) {
-                ThreadSpecificCandidates::reference local_storage_candidates =
-                    storages.local();
-
-                for (long eai = range.begin(); eai != range.end(); eai++) {
-                    std::unordered_set<int> edgeInds;
-                    // TODO: Use radius
-                    queryEdgeForEdges(eai, edgeInds);
-
-                    for (const auto& ebi : edgeInds) {
-                        if (E(eai, 0) != E(ebi, 0) && E(eai, 0) == E(ebi, 1)
-                            && E(eai, 1) == E(ebi, 0) && E(eai, 1) == E(ebi, 1)
-                            && eai < ebi
-                            && edge_edge_aabb_cd(
-                                   V.row(E(eai, 0)), V.row(E(eai, 1)),
-                                   V.row(E(ebi, 0)), V.row(E(ebi, 1)),
-                                   radius)) {
-                            local_storage_candidates.ee_candidates.emplace_back(
-                                eai, ebi);
-                        }
-                    }
-                }
-            });
-    }
-
-    // face-vertex
-    if (queryFV) {
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), size_t(V.rows())),
-            [&](const tbb::blocked_range<size_t>& range) {
-                ThreadSpecificCandidates::reference local_storage_candidates =
-                    storages.local();
-
-                for (long vi = range.begin(); vi != range.end(); vi++) {
-                    std::unordered_set<int> triInds;
-                    // TODO: Use radius
-                    queryPointForTriangles(vi, triInds);
-
-                    for (const auto& fi : triInds) {
-                        if (vi == F(fi, 0) && vi != F(fi, 1) && vi != F(fi, 1)
-                            && point_triangle_aabb_cd(
-                                   V.row(vi), V.row(F(fi, 0)), V.row(F(fi, 1)),
-                                   V.row(F(fi, 2)), radius)) {
-                            local_storage_candidates.fv_candidates.emplace_back(
-                                fi, vi);
-                        }
-                    }
-                }
-            });
-    }
-
-    merge_local_candidates(storages, candidates);
+    queryMeshForCandidates(V, V, E, F, candidates, queryEV, queryEE, queryFV);
 }
 
 void SpatialHash::queryMeshForCandidates(
@@ -980,7 +826,6 @@ void SpatialHash::queryMeshForCandidates(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     Candidates& candidates,
-    double radius,
     bool queryEV,
     bool queryEE,
     bool queryFV) const
@@ -999,7 +844,6 @@ void SpatialHash::queryMeshForCandidates(
 
                 for (long vi = range.begin(); vi != range.end(); vi++) {
                     std::unordered_set<int> edgeInds;
-                    // TODO: Use radius
                     queryPointForEdges(vi, edgeInds);
 
                     for (const auto& ei : edgeInds) {
@@ -1008,7 +852,7 @@ void SpatialHash::queryMeshForCandidates(
                                    V0.row(vi), V0.row(E(ei, 0)),
                                    V0.row(E(ei, 1)), V1.row(vi),
                                    V1.row(E(ei, 0)), V1.row(E(ei, 1)),
-                                   radius)) {
+                                   builtInRadius)) {
                             local_storage_candidates.ev_candidates.emplace_back(
                                 ei, vi);
                         }
@@ -1027,7 +871,6 @@ void SpatialHash::queryMeshForCandidates(
 
                 for (long eai = range.begin(); eai != range.end(); eai++) {
                     std::unordered_set<int> edgeInds;
-                    // TODO: Use radius
                     queryEdgeForEdges(eai, edgeInds);
 
                     for (const auto& ebi : edgeInds) {
@@ -1039,7 +882,7 @@ void SpatialHash::queryMeshForCandidates(
                                    V0.row(E(ebi, 0)), V0.row(E(ebi, 1)),
                                    V1.row(E(eai, 0)), V1.row(E(eai, 1)),
                                    V1.row(E(ebi, 0)), V1.row(E(ebi, 1)),
-                                   radius)) {
+                                   builtInRadius)) {
                             local_storage_candidates.ee_candidates.emplace_back(
                                 eai, ebi);
                         }
@@ -1058,7 +901,6 @@ void SpatialHash::queryMeshForCandidates(
 
                 for (long vi = range.begin(); vi != range.end(); vi++) {
                     std::unordered_set<int> triInds;
-                    // TODO: Use radius
                     queryPointForTriangles(vi, triInds);
 
                     for (const auto& fi : triInds) {
@@ -1068,7 +910,7 @@ void SpatialHash::queryMeshForCandidates(
                                    V0.row(F(fi, 1)), V0.row(F(fi, 2)),
                                    V1.row(vi), V1.row(F(fi, 0)),
                                    V1.row(F(fi, 1)), V1.row(F(fi, 2)),
-                                   radius)) {
+                                   builtInRadius)) {
                             local_storage_candidates.fv_candidates.emplace_back(
                                 fi, vi);
                         }

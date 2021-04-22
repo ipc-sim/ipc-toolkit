@@ -49,12 +49,13 @@ TEST_CASE(
     }
     SECTION("Complex")
     {
-#ifdef NDEBUG
-        std::string filename =
-            GENERATE(std::string("cube.obj"), std::string("bunny.obj"));
-#else
+        // #ifdef NDEBUG
+        //         std::string filename =
+        //             GENERATE(std::string("cube.obj"),
+        //             std::string("bunny.obj"));
+        // #else
         std::string filename = "cube.obj";
-#endif
+        // #endif
         std::string mesh_path = std::string(TEST_DATA_DIR) + filename;
         bool success = igl::read_triangle_mesh(mesh_path, V, F);
         REQUIRE(success);
@@ -73,12 +74,12 @@ TEST_CASE(
     for (int i = 0; i < 2; i++) {
         BENCHMARK("SpatialHash")
         {
-            sh.build(V, V + U, E, F);
+            sh.build(V, V + U, E, F, inflation_radius);
 
             candidates.clear();
 
             sh.queryMeshForCandidates(
-                V, V + U, E, F, candidates, inflation_radius,
+                V, V + U, E, F, candidates,
                 /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true);
         };
         BENCHMARK("HashGrid")

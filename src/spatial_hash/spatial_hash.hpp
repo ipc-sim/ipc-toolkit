@@ -25,7 +25,9 @@ public: // data
     std::unordered_map<int, std::vector<int>> voxel;
     std::vector<std::vector<int>> pointAndEdgeOccupancy;
 
+protected:
     int dim;
+    double builtInRadius;
 
 public: // constructor
     SpatialHash() {}
@@ -34,9 +36,10 @@ public: // constructor
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
+        double inflation_radius = 0,
         double voxelSize = -1)
     {
-        build(V, E, F, voxelSize);
+        build(V, E, F, inflation_radius, voxelSize);
     }
 
     SpatialHash(
@@ -44,9 +47,10 @@ public: // constructor
         const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
+        double inflation_radius = 0,
         double voxelSize = -1)
     {
-        build(V0, V1, E, F, voxelSize);
+        build(V0, V1, E, F, inflation_radius, voxelSize);
     }
 
 public: // API
@@ -54,6 +58,7 @@ public: // API
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
+        double inflation_radius = 0,
         double voxelSize = -1);
 
     void build(
@@ -61,6 +66,7 @@ public: // API
         const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
+        double inflation_radius = 0,
         double voxelSize = -1);
 
     void clear()
@@ -85,13 +91,15 @@ public: // API
         const Eigen::VectorX3d& p_t1,
         std::unordered_set<int>& vertInds,
         std::unordered_set<int>& edgeInds,
-        std::unordered_set<int>& triInds) const;
+        std::unordered_set<int>& triInds,
+        double radius = 0) const;
 
     void queryEdgeForPE(
         const Eigen::VectorX3d& e0,
         const Eigen::VectorX3d& e1,
         std::vector<int>& vertInds,
-        std::vector<int>& edgeInds) const;
+        std::vector<int>& edgeInds,
+        double radius = 0) const;
 
     void queryEdgeForEdges(
         const Eigen::VectorX3d& ea0,
@@ -103,7 +111,6 @@ public: // API
     void queryEdgeForEdgesWithBBoxCheck(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
         const Eigen::VectorX3d& ea0,
         const Eigen::VectorX3d& ea1,
         std::vector<int>& edgeInds,
@@ -133,7 +140,8 @@ public: // API
         const Eigen::VectorX3d& t0_t1,
         const Eigen::VectorX3d& t1_t1,
         const Eigen::VectorX3d& t2_t1,
-        std::unordered_set<int>& pointInds) const;
+        std::unordered_set<int>& pointInds,
+        double radius = 0) const;
 
     void queryTriangleForEdges(
         const Eigen::VectorX3d& t0,
@@ -165,7 +173,6 @@ public: // API
         const Eigen::MatrixXd& V0,
         const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
         int eai,
         std::unordered_set<int>& edgeInds) const;
 
@@ -174,7 +181,6 @@ public: // API
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         Candidates& candidates,
-        double radius = 0,
         bool queryEV = false,
         bool queryEE = true,
         bool queryFV = true) const;
@@ -185,7 +191,6 @@ public: // API
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         Candidates& candidates,
-        double radius = 0,
         bool queryEV = false,
         bool queryEE = true,
         bool queryFV = true) const;
