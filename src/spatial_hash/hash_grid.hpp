@@ -7,16 +7,6 @@
 #include <ipc/spatial_hash/collision_candidate.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
-// WARNING: In limited testing the way TBB is used in the hash grid was shown to
-// be detremental to performance, so we currently recommend leaving this line
-// commented out.
-// TODO: Implementing a more parallel or integrating the original spatial hash
-// is an important goal in order to increase performance.
-// #define IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
-#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
-#include <tbb/concurrent_vector.h>
-#endif
-
 namespace ipc {
 
 /// @brief Axis aligned bounding-box of some type
@@ -86,13 +76,6 @@ public:
         return key < other.key;
     }
 };
-
-#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
-// TODO: This may be less efficient than a std::vector
-typedef tbb::concurrent_vector<HashItem> HashItems;
-#else
-typedef std::vector<HashItem> HashItems;
-#endif
 
 class HashGrid {
 public:
@@ -186,7 +169,38 @@ public:
 
 protected:
     /// @brief Add an AABB of the extents to the hash grid.
-    void addElement(const AABB& aabb, const int id, HashItems& items);
+    void
+    addElement(const AABB& aabb, const int id, std::vector<HashItem>& items);
+
+    /// @brief Add a vertex as a AABB containing the time swept edge.
+    void addVertex(
+        const Eigen::VectorX3d& vertex_t0,
+        const Eigen::VectorX3d& vertex_t1,
+        const long index,
+        std::vector<HashItem>& vertex_tems,
+        const double inflation_radius = 0.0);
+
+    /// @brief Add an edge as a AABB containing the time swept quad.
+    void addEdge(
+        const Eigen::VectorX3d& edge_vertex0_t0,
+        const Eigen::VectorX3d& edge_vertex1_t0,
+        const Eigen::VectorX3d& edge_vertex0_t1,
+        const Eigen::VectorX3d& edge_vertex1_t1,
+        const long index,
+        std::vector<HashItem>& edge_items,
+        const double inflation_radius = 0.0);
+
+    /// @brief Add an edge as a AABB containing the time swept quad.
+    void addFace(
+        const Eigen::VectorX3d& face_vertex0_t0,
+        const Eigen::VectorX3d& face_vertex1_t0,
+        const Eigen::VectorX3d& face_vertex2_t0,
+        const Eigen::VectorX3d& face_vertex0_t1,
+        const Eigen::VectorX3d& face_vertex1_t1,
+        const Eigen::VectorX3d& face_vertex2_t1,
+        const long index,
+        std::vector<HashItem>& face_items,
+        const double inflation_radius = 0.0);
 
     /// @brief Create the hash of a cell location.
     inline long hash(int x, int y, int z) const
@@ -204,9 +218,9 @@ protected:
     Eigen::VectorX3d m_domainMin;
     Eigen::VectorX3d m_domainMax;
 
-    HashItems m_vertexItems;
-    HashItems m_edgeItems;
-    HashItems m_faceItems;
+    std::vector<HashItem> m_vertexItems;
+    std::vector<HashItem> m_edgeItems;
+    std::vector<HashItem> m_faceItems;
 };
 
 /// @brief Compute the average edge length of a mesh.

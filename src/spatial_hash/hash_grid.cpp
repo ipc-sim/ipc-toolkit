@@ -1,13 +1,13 @@
 #include <ipc/spatial_hash/hash_grid.hpp>
 
-#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
+#include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
-#endif
-#include <tbb/parallel_sort.h> // Still use this even if TBB is disabled
+#include <tbb/parallel_sort.h>
 
 #ifdef IPC_TOOLKIT_WITH_LOGGER
 #include <ipc/utils/logger.hpp>
 #endif
+
 namespace ipc {
 
 bool AABB::are_overlapping(const AABB& a, const AABB& b)
@@ -22,6 +22,24 @@ bool AABB::are_overlapping(const AABB& a, const AABB& b)
             || abs(a.center.z() - b.center.z())
                 <= (a.half_extent.z() + b.half_extent.z()));
 };
+
+typedef tbb::enumerable_thread_specific<std::vector<HashItem>>
+    ThreadSpecificHashItems;
+
+void merge_local_items(
+    const ThreadSpecificHashItems& storages, std::vector<HashItem>& items)
+{
+    // size up the candidates
+    size_t num_items = items.size();
+    for (const auto& local_items : storages) {
+        num_items += local_items.size();
+    }
+    // serial merge!
+    items.reserve(num_items);
+    for (const auto& local_items : storages) {
+        items.insert(items.end(), local_items.begin(), local_items.end());
+    }
+}
 
 void HashGrid::resize(
     Eigen::VectorX3d min, Eigen::VectorX3d max, double cellSize)
@@ -46,10 +64,12 @@ void calculate_mesh_extents(
     Eigen::VectorX3d& lower_bound,
     Eigen::VectorX3d& upper_bound)
 {
-    lower_bound = vertices_t0.colwise().minCoeff();
-    upper_bound = vertices_t0.colwise().maxCoeff();
-    lower_bound = lower_bound.cwiseMin(vertices_t1.colwise().minCoeff());
-    upper_bound = upper_bound.cwiseMax(vertices_t1.colwise().maxCoeff());
+    Eigen::VectorX3d lower_bound_t0 = vertices_t0.colwise().minCoeff();
+    Eigen::VectorX3d upper_bound_t0 = vertices_t0.colwise().maxCoeff();
+    Eigen::VectorX3d lower_bound_t1 = vertices_t1.colwise().minCoeff();
+    Eigen::VectorX3d upper_bound_t1 = vertices_t1.colwise().maxCoeff();
+    lower_bound = lower_bound_t0.cwiseMin(lower_bound_t1);
+    upper_bound = upper_bound_t0.cwiseMax(upper_bound_t1);
 }
 
 /// @brief Compute the average edge length of a mesh.
@@ -105,13 +125,23 @@ void HashGrid::addVertex(
     const long index,
     const double inflation_radius)
 {
+    addVertex(vertex_t0, vertex_t1, index, m_vertexItems, inflation_radius);
+}
+
+void HashGrid::addVertex(
+    const Eigen::VectorX3d& vertex_t0,
+    const Eigen::VectorX3d& vertex_t1,
+    const long index,
+    std::vector<HashItem>& vertex_items,
+    const double inflation_radius)
+{
     Eigen::VectorX3d lower_bound, upper_bound;
     calculate_vertex_extents(vertex_t0, vertex_t1, lower_bound, upper_bound);
     this->addElement(
         AABB(
             lower_bound.array() - inflation_radius,
             upper_bound.array() + inflation_radius),
-        index, m_vertexItems); // Vertices have a negative id
+        index, vertex_items);
 }
 
 void HashGrid::addVertices(
@@ -120,17 +150,22 @@ void HashGrid::addVertices(
     const double inflation_radius)
 {
     assert(vertices_t0.rows() == vertices_t1.rows());
-#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
-    tbb::parallel_for(0l, (long)(vertices_t0.rows()), [&](long i) {
-#else
-    for (long i = 0; i < vertices_t0.rows(); i++) {
-#endif
-        addVertex(vertices_t0.row(i), vertices_t1.row(i), i, inflation_radius);
-#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
-    });
-#else
-    }
-#endif
+
+    ThreadSpecificHashItems storage;
+
+    tbb::parallel_for(
+        tbb::blocked_range<long>(0l, long(vertices_t0.rows())),
+        [&](const tbb::blocked_range<long>& range) {
+            ThreadSpecificHashItems::reference local_items = storage.local();
+
+            for (long i = range.begin(); i != range.end(); i++) {
+                addVertex(
+                    vertices_t0.row(i), vertices_t1.row(i), i, local_items,
+                    inflation_radius);
+            }
+        });
+
+    merge_local_items(storage, m_vertexItems);
 }
 
 /// @brief Compute a AABB for an edge moving through time (i.e. temporal quad).
@@ -158,6 +193,20 @@ void HashGrid::addEdge(
     const long index,
     const double inflation_radius)
 {
+    addEdge(
+        edge_vertex0_t0, edge_vertex1_t0, edge_vertex0_t1, edge_vertex1_t1,
+        index, m_edgeItems, inflation_radius);
+}
+
+void HashGrid::addEdge(
+    const Eigen::VectorX3d& edge_vertex0_t0,
+    const Eigen::VectorX3d& edge_vertex1_t0,
+    const Eigen::VectorX3d& edge_vertex0_t1,
+    const Eigen::VectorX3d& edge_vertex1_t1,
+    const long index,
+    std::vector<HashItem>& edge_items,
+    const double inflation_radius)
+{
     Eigen::VectorX3d lower_bound, upper_bound;
     calculate_edge_extents(
         edge_vertex0_t0, edge_vertex1_t0, edge_vertex0_t1, edge_vertex1_t1,
@@ -166,7 +215,7 @@ void HashGrid::addEdge(
         AABB(
             lower_bound.array() - inflation_radius,
             upper_bound.array() + inflation_radius),
-        index, m_edgeItems); // Edges have a positive id
+        index, edge_items);
 }
 
 void HashGrid::addEdges(
@@ -176,20 +225,23 @@ void HashGrid::addEdges(
     const double inflation_radius)
 {
     assert(vertices_t0.rows() == vertices_t1.rows());
-#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
-    tbb::parallel_for(0l, (long)(edges.rows()), [&](long i) {
-#else
-    for (long i = 0; i < edges.rows(); i++) {
-#endif
-        addEdge(
-            vertices_t0.row(edges(i, 0)), vertices_t0.row(edges(i, 1)),
-            vertices_t1.row(edges(i, 0)), vertices_t1.row(edges(i, 1)), i,
-            inflation_radius);
-#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
-    });
-#else
-    }
-#endif
+
+    ThreadSpecificHashItems storage;
+
+    tbb::parallel_for(
+        tbb::blocked_range<long>(0l, long(edges.rows())),
+        [&](const tbb::blocked_range<long>& range) {
+            ThreadSpecificHashItems::reference local_items = storage.local();
+
+            for (long i = range.begin(); i != range.end(); i++) {
+                addEdge(
+                    vertices_t0.row(edges(i, 0)), vertices_t0.row(edges(i, 1)),
+                    vertices_t1.row(edges(i, 0)), vertices_t1.row(edges(i, 1)),
+                    i, local_items, inflation_radius);
+            }
+        });
+
+    merge_local_items(storage, m_edgeItems);
 }
 
 /// @brief Compute a AABB for an edge moving through time (i.e. temporal quad).
@@ -225,6 +277,22 @@ void HashGrid::addFace(
     const long index,
     const double inflation_radius)
 {
+    addFace(
+        face_vertex0_t0, face_vertex1_t0, face_vertex2_t0, face_vertex0_t1,
+        face_vertex1_t1, face_vertex2_t1, index, m_faceItems, inflation_radius);
+}
+
+void HashGrid::addFace(
+    const Eigen::VectorX3d& face_vertex0_t0,
+    const Eigen::VectorX3d& face_vertex1_t0,
+    const Eigen::VectorX3d& face_vertex2_t0,
+    const Eigen::VectorX3d& face_vertex0_t1,
+    const Eigen::VectorX3d& face_vertex1_t1,
+    const Eigen::VectorX3d& face_vertex2_t1,
+    const long index,
+    std::vector<HashItem>& face_items,
+    const double inflation_radius)
+{
     Eigen::VectorX3d lower_bound, upper_bound;
     calculate_face_extents(
         face_vertex0_t0, face_vertex1_t0, face_vertex2_t0, //
@@ -234,7 +302,7 @@ void HashGrid::addFace(
         AABB(
             lower_bound.array() - inflation_radius,
             upper_bound.array() + inflation_radius),
-        index, m_faceItems); // Faces have a positive id
+        index, face_items);
 }
 
 void HashGrid::addFaces(
@@ -244,25 +312,28 @@ void HashGrid::addFaces(
     const double inflation_radius)
 {
     assert(vertices_t0.rows() == vertices_t1.rows());
-#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
-    tbb::parallel_for(0l, (long)(faces.rows()), [&](long i) {
-#else
-    for (long i = 0; i < faces.rows(); i++) {
-#endif
-        addFace(
-            vertices_t0.row(faces(i, 0)), vertices_t0.row(faces(i, 1)),
-            vertices_t0.row(faces(i, 2)), vertices_t1.row(faces(i, 0)),
-            vertices_t1.row(faces(i, 1)), vertices_t1.row(faces(i, 2)), i,
-            inflation_radius);
 
-#ifdef IPC_TOOLKIT_SPATIAL_HASH_USE_TBB
-    });
-#else
-    }
-#endif
+    ThreadSpecificHashItems storage;
+
+    tbb::parallel_for(
+        tbb::blocked_range<long>(0l, long(faces.rows())),
+        [&](const tbb::blocked_range<long>& range) {
+            ThreadSpecificHashItems::reference local_items = storage.local();
+
+            for (long i = range.begin(); i != range.end(); i++) {
+                addFace(
+                    vertices_t0.row(faces(i, 0)), vertices_t0.row(faces(i, 1)),
+                    vertices_t0.row(faces(i, 2)), vertices_t1.row(faces(i, 0)),
+                    vertices_t1.row(faces(i, 1)), vertices_t1.row(faces(i, 2)),
+                    i, local_items, inflation_radius);
+            }
+        });
+
+    merge_local_items(storage, m_faceItems);
 }
 
-void HashGrid::addElement(const AABB& aabb, const int id, HashItems& items)
+void HashGrid::addElement(
+    const AABB& aabb, const int id, std::vector<HashItem>& items)
 {
     Eigen::VectorX3<int> int_min =
         ((aabb.getMin() - m_domainMin) / m_cellSize).cast<int>();
@@ -293,8 +364,8 @@ template <typename T>
 void getPairs(
     const std::function<bool(int, int)>& is_endpoint,
     const std::function<bool(int, int)>& is_same_group,
-    HashItems& items0,
-    HashItems& items1,
+    std::vector<HashItem>& items0,
+    std::vector<HashItem>& items1,
     T& candidates)
 {
     // Sorted all they (key,value) pairs, where key is the hash key, and value
@@ -342,7 +413,7 @@ template <typename T>
 void getPairs(
     const std::function<bool(int, int)>& is_endpoint,
     const std::function<bool(int, int)>& is_same_group,
-    HashItems& items,
+    std::vector<HashItem>& items,
     T& candidates)
 {
     // Sorted all they (key,value) pairs, where key is the hash key, and value

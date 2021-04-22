@@ -263,7 +263,7 @@ TEST_CASE("Compare HashGrid against brute force", "[thisone][hash_grid]")
         detect_collision_candidates_brute_force(
             V0, V1, E, F, bf_candidates,
             /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true,
-            /*perform_aabb_check=*/true, inflation_radius, group_ids);
+            /*perform_aabb_check=*/false, inflation_radius, group_ids);
 
         CHECK(
             hg_candidates.ev_candidates.size()
