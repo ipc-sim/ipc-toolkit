@@ -46,13 +46,10 @@ void calculate_mesh_extents(
     Eigen::VectorX3d& lower_bound,
     Eigen::VectorX3d& upper_bound)
 {
-    int dim = vertices_t0.cols();
-    Eigen::MatrixXd points(vertices_t0.rows() + vertices_t1.rows(), dim);
-    points.topRows(vertices_t0.rows()) = vertices_t0;
-    points.bottomRows(vertices_t1.rows()) = vertices_t1;
-
-    lower_bound = points.colwise().minCoeff();
-    upper_bound = points.colwise().maxCoeff();
+    lower_bound = vertices_t0.colwise().minCoeff();
+    upper_bound = vertices_t0.colwise().maxCoeff();
+    lower_bound = lower_bound.cwiseMin(vertices_t1.colwise().minCoeff());
+    upper_bound = upper_bound.cwiseMax(vertices_t1.colwise().maxCoeff());
 }
 
 /// @brief Compute the average edge length of a mesh.
@@ -98,12 +95,8 @@ void calculate_vertex_extents(
     Eigen::VectorX3d& lower_bound,
     Eigen::VectorX3d& upper_bound)
 {
-    Eigen::MatrixXd points(2, vertex_t0.size());
-    points.row(0) = vertex_t0;
-    points.row(1) = vertex_t1;
-
-    lower_bound = points.colwise().minCoeff();
-    upper_bound = points.colwise().maxCoeff();
+    lower_bound = vertex_t0.cwiseMin(vertex_t1);
+    upper_bound = vertex_t0.cwiseMax(vertex_t1);
 }
 
 void HashGrid::addVertex(
@@ -149,14 +142,12 @@ void calculate_edge_extents(
     Eigen::VectorX3d& lower_bound,
     Eigen::VectorX3d& upper_bound)
 {
-    Eigen::MatrixXd points(4, edge_vertex0_t0.size());
-    points.row(0) = edge_vertex0_t0;
-    points.row(1) = edge_vertex1_t0;
-    points.row(2) = edge_vertex0_t1;
-    points.row(3) = edge_vertex1_t1;
-
-    lower_bound = points.colwise().minCoeff();
-    upper_bound = points.colwise().maxCoeff();
+    lower_bound = edge_vertex0_t0.cwiseMin(edge_vertex1_t0)
+                      .cwiseMin(edge_vertex0_t1)
+                      .cwiseMin(edge_vertex1_t1);
+    upper_bound = edge_vertex0_t0.cwiseMax(edge_vertex1_t0)
+                      .cwiseMax(edge_vertex0_t1)
+                      .cwiseMax(edge_vertex1_t1);
 }
 
 void HashGrid::addEdge(
@@ -212,16 +203,16 @@ void calculate_face_extents(
     Eigen::VectorX3d& lower_bound,
     Eigen::VectorX3d& upper_bound)
 {
-    Eigen::MatrixXd points(6, face_vertex0_t0.size());
-    points.row(0) = face_vertex0_t0;
-    points.row(1) = face_vertex1_t0;
-    points.row(2) = face_vertex2_t0;
-    points.row(3) = face_vertex0_t1;
-    points.row(4) = face_vertex1_t1;
-    points.row(5) = face_vertex2_t1;
-
-    lower_bound = points.colwise().minCoeff();
-    upper_bound = points.colwise().maxCoeff();
+    lower_bound = face_vertex0_t0.cwiseMin(face_vertex1_t0)
+                      .cwiseMin(face_vertex2_t0)
+                      .cwiseMin(face_vertex0_t1)
+                      .cwiseMin(face_vertex1_t1)
+                      .cwiseMin(face_vertex2_t1);
+    upper_bound = face_vertex0_t0.cwiseMax(face_vertex1_t0)
+                      .cwiseMax(face_vertex2_t0)
+                      .cwiseMax(face_vertex0_t1)
+                      .cwiseMax(face_vertex1_t1)
+                      .cwiseMax(face_vertex2_t1);
 }
 
 void HashGrid::addFace(
