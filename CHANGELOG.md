@@ -10,6 +10,12 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### 2021-04-21 ([c8a6d5](https://github.com/ipc-sim/ipc-toolkit/commit/c8a6d56823793e7be5e89238c3793e25bc45ffa0))
+#### Added
+* Added the SpatialHash from the original IPC code base with some modification to get all candidates in parallel
+    * Benchmark results indicate this SpatialHash is faster than the HashGrid with multithreading
+    * TODO: Improve HashGrid or fully integrate SpatialHash into ipc.hpp
+
 ### 2021-02-11 ([9c7493](https://github.com/ipc-sim/ipc-toolkit/commit/9c74938fefa691db6b79c73489c8c661638019c6))
 #### Changed
 * Switched to the correct (conservative) CCD of [[Wang and Ferguson et al. 2020]](https://continuous-collision-detection.github.io/)
