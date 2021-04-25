@@ -9,6 +9,7 @@
 #include <ipc/ipc.hpp>
 #include <ipc/spatial_hash/hash_grid.hpp>
 #include <ipc/spatial_hash/spatial_hash.hpp>
+#include <ipc/spatial_hash/brute_force.hpp>
 
 using namespace ipc;
 
@@ -49,13 +50,12 @@ TEST_CASE(
     }
     SECTION("Complex")
     {
-        // #ifdef NDEBUG
-        //         std::string filename =
-        //             GENERATE(std::string("cube.obj"),
-        //             std::string("bunny.obj"));
-        // #else
+#ifdef NDEBUG
+        std::string filename =
+            GENERATE(std::string("cube.obj"), std::string("bunny.obj"));
+#else
         std::string filename = "cube.obj";
-        // #endif
+#endif
         std::string mesh_path = std::string(TEST_DATA_DIR) + filename;
         bool success = igl::read_triangle_mesh(mesh_path, V, F);
         REQUIRE(success);
@@ -67,7 +67,6 @@ TEST_CASE(
 
     HashGrid hashgrid;
     SpatialHash sh;
-    Candidates candidates;
 
     double inflation_radius = 1e-2; // GENERATE(take(5, random(0.0, 0.1)));
 
@@ -76,8 +75,7 @@ TEST_CASE(
         {
             sh.build(V, V + U, E, F, inflation_radius);
 
-            candidates.clear();
-
+            Candidates candidates;
             sh.queryMeshForCandidates(
                 V, V + U, E, F, candidates,
                 /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true);
@@ -89,11 +87,18 @@ TEST_CASE(
             hashgrid.addEdges(V, V + U, E, inflation_radius);
             hashgrid.addFaces(V, V + U, F, inflation_radius);
 
-            candidates.clear();
-
+            Candidates candidates;
             hashgrid.getVertexEdgePairs(E, group_ids, candidates.ev_candidates);
             hashgrid.getEdgeEdgePairs(E, group_ids, candidates.ee_candidates);
             hashgrid.getFaceVertexPairs(F, group_ids, candidates.fv_candidates);
+        };
+        BENCHMARK("BruteForce")
+        {
+            Candidates candidates;
+            detect_collision_candidates_brute_force(
+                V, V + U, E, F, candidates, /*detect_edge_vertex=*/true,
+                /*detect_edge_edge=*/true, /*detect_face_vertex=*/true,
+                /*perform_aabb_check=*/true, inflation_radius, group_ids);
         };
 
         U.setRandom();
