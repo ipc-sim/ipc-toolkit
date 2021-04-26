@@ -249,3 +249,7 @@ docs/source/api
 tests/data/slow-broadphase-ccd
 tests/data/ccd-failure
 logo
+ipctk
+
+# Python bindings
+!python/src/bindings*

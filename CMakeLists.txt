@@ -19,7 +19,8 @@ else()
   option(IPC_TOOLKIT_BUILD_UNIT_TESTS "Build unit-tests"      OFF)
 endif()
 option(IPC_TOOLKIT_WITH_LOGGER        "Enables logger"         ON)
-option(IPC_TOOLKIT_WITH_CORRECT_CCD   "Use the conservative CCD of [Wang and Ferguson et al. 2021]" ON)
+option(IPC_TOOLKIT_WITH_CORRECT_CCD   "Use the conservative CCD of [Wang and Ferguson et al. 2020]" ON)
+option(IPC_TOOLKIT_WITH_PYTHON        "Build Python bindings" OFF)
 
 ################################################################################
 
@@ -139,4 +140,12 @@ if(IPC_TOOLKIT_BUILD_UNIT_TESTS)
   include(CTest)
   enable_testing()
   add_subdirectory(tests)
+endif()
+
+################################################################################
+# Python bindings
+################################################################################
+
+if(IPC_TOOLKIT_WITH_PYTHON)
+  add_subdirectory(python)
 endif()
