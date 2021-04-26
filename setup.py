@@ -5,6 +5,7 @@ import sys
 import sysconfig
 import platform
 import subprocess
+import pathlib
 
 from distutils.version import LooseVersion
 from setuptools import setup, Extension
@@ -12,55 +13,53 @@ from setuptools.command.build_ext import build_ext
 
 
 class CMakeExtension(Extension):
-    def __init__(self, name, sourcedir=''):
+    def __init__(self, name, sourcedir=""):
         Extension.__init__(self, name, sources=[])
-        self.sourcedir = os.path.abspath(sourcedir)
+        self.sourcedir = pathlib.Path(sourcedir).resolve()
 
 
 class CMakeBuild(build_ext):
     def run(self):
-        if os.path.exists('.git'):
-            subprocess.check_call(
-                ['git', 'submodule', 'update', '--init', '--recursive'])
+        if platform.system() == "Darwin":
+            self.build_temp = self.build_temp.replace("build", "build.nosync")
 
         try:
-            out = subprocess.check_output(['cmake', '--version'])
+            out = subprocess.check_output(["cmake", "--version"])
         except OSError:
             raise RuntimeError(
                 "CMake must be installed to build the following extensions: " +
                 ", ".join(e.name for e in self.extensions))
 
         if platform.system() == "Windows":
-            cmake_version = LooseVersion(re.search(r'version\s*([\d.]+)',
+            cmake_version = LooseVersion(re.search(r"version\s*([\d.]+)",
                                                    out.decode()).group(1))
-            if cmake_version < '3.2.0':
+            if cmake_version < "3.2.0":
                 raise RuntimeError("CMake >= 3.2.0 is required on Windows")
 
         for ext in self.extensions:
             self.build_extension(ext)
 
     def build_extension(self, ext):
-        extdir = os.path.abspath(
-            os.path.dirname(self.get_ext_fullpath(ext.name)))
-        cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_EXECUTABLE=' + sys.executable]
+        extdir = pathlib.Path(self.get_ext_fullpath(
+            ext.name)).resolve().parent
+        cmake_args = ["-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + str(extdir),
+                      "-DPYTHON_EXECUTABLE=" + sys.executable,
+                      "-DIPC_TOOLKIT_BUILD_UNIT_TESTS=OFF",
+                      "-DIPC_TOOLKIT_WITH_PYTHON=ON"]
 
-        cfg = 'Debug' if self.debug else 'Release'
-        build_args = ['--config', cfg]
+        cfg = "Debug" if self.debug else "Release"
+        build_args = ["--config", cfg]
+        cmake_args += ["-DCMAKE_BUILD_TYPE=" + cfg]
 
         if platform.system() == "Windows":
-            cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(
-                cfg.upper(),
-                extdir)]
-            if sys.maxsize > 2**32:
-                cmake_args += ['-A', 'x64']
-            build_args += ['--', '/m']
+            cmake_args += [
+                "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), extdir)]
+            if os.environ.get("CMAKE_GENERATOR") != "NMake Makefiles":
+                if sys.maxsize > 2**32:
+                    cmake_args += ["-A", "x64"]
+            # build_args += ["--", "/m"]
         else:
-            cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-            build_args += ['--', '-j2']
-
-        cmake_args.append("-DIPC_TOOLKIT_BUILD_UNIT_TESTS=OFF")
-        cmake_args.append("-DIPC_TOOLKIT_WITH_PYTHON=ON")
+            build_args += ["--", "-j4"]
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(
@@ -79,7 +78,7 @@ try:
     with open("README.md", "r") as fh:
         long_description = fh.read()
 except FileNotFoundError:
-    long_description = "Long description"
+    long_description = "IPC Toolkit"
 
 setuptools.setup(
     name="ipc-toolkit",
@@ -98,7 +97,7 @@ setuptools.setup(
         "Topic :: Games/Entertainment :: Simulation",
         "License :: OSI Approved :: MIT License",
     ],
-    ext_modules=[CMakeExtension('ipc_toolkit')],
+    ext_modules=[CMakeExtension('ipctk')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
     install_requires=[
