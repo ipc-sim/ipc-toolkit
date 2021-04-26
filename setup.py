@@ -5,7 +5,6 @@ import sys
 import sysconfig
 import platform
 import subprocess
-import pathlib
 
 from distutils.version import LooseVersion
 from setuptools import setup, Extension
@@ -15,7 +14,7 @@ from setuptools.command.build_ext import build_ext
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=""):
         Extension.__init__(self, name, sources=[])
-        self.sourcedir = pathlib.Path(sourcedir).resolve()
+        self.sourcedir = os.path.abspath(sourcedir)
 
 
 class CMakeBuild(build_ext):
@@ -40,9 +39,9 @@ class CMakeBuild(build_ext):
             self.build_extension(ext)
 
     def build_extension(self, ext):
-        extdir = pathlib.Path(self.get_ext_fullpath(
-            ext.name)).resolve().parent
-        cmake_args = ["-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + str(extdir),
+        extdir = os.path.abspath(
+            os.path.dirname(self.get_ext_fullpath(ext.name)))
+        cmake_args = ["-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + extdir,
                       "-DPYTHON_EXECUTABLE=" + sys.executable,
                       "-DIPC_TOOLKIT_BUILD_UNIT_TESTS=OFF",
                       "-DIPC_TOOLKIT_WITH_PYTHON=ON"]
