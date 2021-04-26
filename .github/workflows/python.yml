@@ -1,0 +1,59 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+      - python
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  Build:
+    name: ${{ matrix.name }} Python ${{ matrix.python-version }} (${{ matrix.config }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        python-version: [3.6, 3.7, 3.8]
+        config: [Debug, Release]
+        include:
+          - os: ubuntu-latest
+            name: Linux
+          - os: windows-latest
+            name: Windows
+          - os: macOS-latest
+            name: MacOS
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 10
+
+      - name: Setup NMake (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      # - name: Install Dependencies
+      #   run: |
+      #     pip install -r requirements.txt
+
+      - name: Envs (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          echo "CMAKE_GENERATOR=NMake Makefiles" >> $GITHUB_ENV
+          echo "CXX=cl.exe" >> $GITHUB_ENV
+          echo "CC=cl.exe" >> $GITHUB_ENV
+
+      - name: Build (Debug)
+        if: matrix.config == 'Debug'
+        run: python setup.py build --debug install
+
+      - name: Build (Release)
+        if: matrix.config == 'Release'
+        run: python setup.py build install
+
+      - name: Import Test
+        run: python -c "import ipctk"
