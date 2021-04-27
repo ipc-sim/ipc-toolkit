@@ -5,7 +5,7 @@
 namespace ipc {
 
 struct VertexVertexCandidate {
-    VertexVertexCandidate(long edge_index, long vertex_index);
+    VertexVertexCandidate(long vertex0_index, long vertex1_index);
 
     bool operator==(const VertexVertexCandidate& other) const;
     bool operator!=(const VertexVertexCandidate& other) const

@@ -1,6 +1,7 @@
 #include <ipc/spatial_hash/hash_grid.hpp>
 
 #include <tbb/enumerable_thread_specific.h>
+#include <tbb/blocked_range2d.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 
@@ -29,7 +30,7 @@ typedef tbb::enumerable_thread_specific<std::vector<HashItem>>
 void merge_local_items(
     const ThreadSpecificHashItems& storages, std::vector<HashItem>& items)
 {
-    // size up the candidates
+    // size up the hash items
     size_t num_items = items.size();
     for (const auto& local_items : storages) {
         num_items += local_items.size();
@@ -439,6 +440,58 @@ void getPairs(
             }
         }
     }
+
+    /*
+    tbb::enumerable_thread_specific<T> storages;
+
+    tbb::parallel_for(
+        tbb::blocked_range2d<int>(0, items.size(), 0, items.size()),
+        [&](const tbb::blocked_range2d<int>& r) {
+            if (r.rows().begin() >= r.cols().end()) {
+                return; // i needs to be less than j
+            }
+
+            auto& local_candidates = storages.local();
+
+            for (int i = r.rows().begin(); i < r.rows().end(); i++) {
+                const HashItem& item0 = items[i];
+
+                if (i >= r.cols().end()) {
+                    return; // i will increase but r.cols().end() will not
+                }
+
+                // i < r.cols().end() → i + 1 <= r.cols().end()
+                int j_start = std::max(i + 1, r.cols().begin());
+                assert(j_start > i);
+
+                for (int j = j_start; j < r.cols().end(); j++) {
+                    const HashItem& item1 = items[j];
+
+                    if (item0.key == item1.key) {
+                        if (!is_endpoint(item0.id, item1.id)
+                            && !is_same_group(item0.id, item1.id)
+                            && AABB::are_overlapping(item0.aabb, item1.aabb)) {
+                            local_candidates.emplace_back(item0.id, item1.id);
+                        }
+                    } else {
+                        break; // This avoids a brute force comparison
+                    }
+                }
+            }
+        });
+
+    // size up the candidates
+    size_t num_candidates = candidates.size();
+    for (const auto& local_candidates : storages) {
+        num_candidates += local_candidates.size();
+    }
+    // serial merge!
+    candidates.reserve(num_candidates);
+    for (const auto& local_candidates : storages) {
+        candidates.insert(
+            candidates.end(), local_candidates.begin(), local_candidates.end());
+    }
+    */
 
     // Remove the duplicate candidates
     tbb::parallel_sort(candidates.begin(), candidates.end());

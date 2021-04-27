@@ -26,14 +26,14 @@ public:
     }
 
     AABB(const AABB& aabb1, const AABB& aabb2)
-        : AABB(
-              aabb1.min.array().min(aabb2.min.array()),
-              aabb1.max.array().max(aabb2.max.array()))
+        : AABB(aabb1.min.cwiseMin(aabb2.min), aabb1.max.cwiseMax(aabb2.max))
     {
     }
 
     AABB(const AABB& aabb1, const AABB& aabb2, const AABB& aabb3)
-        : AABB(AABB(aabb1, aabb2), aabb3)
+        : AABB(
+              aabb1.min.cwiseMin(aabb2.min).cwiseMin(aabb3.min),
+              aabb1.max.cwiseMax(aabb2.max).cwiseMax(aabb3.max))
     {
     }
 
@@ -79,6 +79,11 @@ public:
 
 class HashGrid {
 public:
+    double cellSize() const { return m_cellSize; }
+    const Eigen::VectorX3i& gridSize() const { return m_gridSize; }
+    const Eigen::VectorX3d& domainMin() const { return m_domainMin; }
+    const Eigen::VectorX3d& domainMax() const { return m_domainMax; }
+
     void resize(Eigen::VectorX3d min, Eigen::VectorX3d max, double cellSize);
 
     void resize(

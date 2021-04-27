@@ -7,11 +7,11 @@
 #include <pybind11/operators.h>
 // clang-format on
 
-// #include <tbb/global_control.h>
-// #include <tbb/task_scheduler_init.h>
-// #include <thread>
+#include <tbb/global_control.h>
+#include <tbb/task_scheduler_init.h>
 
 #include <ipc/barrier/barrier.hpp>
+#include <ipc/collision_constraint.hpp>
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
@@ -28,9 +28,24 @@
 namespace py = pybind11;
 using namespace ipc;
 
-// static tbb::global_control thread_limiter = tbb::global_control(
+// static tbb::global_control thread_limiter(
 //     tbb::global_control::max_allowed_parallelism,
 //     tbb::task_scheduler_init::default_num_threads());
+//
+// void set_num_threads(int nthreads)
+// {
+//     if (nthreads <= 0) {
+//         nthreads = tbb::task_scheduler_init::default_num_threads();
+//     } else if (nthreads > tbb::task_scheduler_init::default_num_threads()) {
+//         logger().warn(
+//             "Attempting to use more threads than available ({:d} > "
+//             "{:d})!",
+//             nthreads, tbb::task_scheduler_init::default_num_threads());
+//         nthreads = tbb::task_scheduler_init::default_num_threads();
+//     }
+//     thread_limiter = tbb::global_control(
+//         tbb::global_control::max_allowed_parallelism, nthreads);
+// }
 
 PYBIND11_MODULE(ipctk, m)
 {
@@ -97,6 +112,82 @@ PYBIND11_MODULE(ipctk, m)
         .. math:: b(d) = (\frac{\hat{d}}{d} + 2)\frac{\hat{d}}{d} - 2\ln(\frac{d}{\hat{d}}) - 3
         )ipc_Qu8mg5v7",
         py::arg("d"), py::arg("dhat"));
+
+    ///////////////////////////////////////////////////////////////////////////
+    // collision_constraint
+    py::class_<VertexVertexCandidate>(m, "VertexVertexCandidate")
+        .def(py::init<long, long>())
+        .def_readwrite("vertex0_index", &VertexVertexConstraint::vertex0_index)
+        .def_readwrite("vertex1_index", &VertexVertexConstraint::vertex1_index);
+    py::class_<EdgeVertexCandidate>(m, "EdgeVertexCandidate")
+        .def(py::init<long, long>())
+        .def(
+            "__str__",
+            [](const EdgeVertexCandidate& ev) {
+                return fmt::format(
+                    "[{:d}, {:d}]", ev.edge_index, ev.vertex_index);
+            })
+        .def(
+            "__repr__",
+            [](const EdgeVertexCandidate& ev) {
+                return fmt::format(
+                    "EdgeVertexCandidate({:d}, {:d})", ev.edge_index,
+                    ev.vertex_index);
+            })
+        .def_readwrite("edge_index", &EdgeVertexCandidate::edge_index)
+        .def_readwrite("vertex_index", &EdgeVertexCandidate::vertex_index);
+    py::class_<EdgeEdgeCandidate>(m, "EdgeEdgeCandidate")
+        .def(py::init<long, long>())
+        .def_readwrite("edge0_index", &EdgeEdgeCandidate::edge0_index)
+        .def_readwrite("edge1_index", &EdgeEdgeCandidate::edge1_index);
+    py::class_<EdgeFaceCandidate>(m, "EdgeFaceCandidate")
+        .def(py::init<long, long>())
+        .def_readwrite("edge_index", &EdgeFaceCandidate::edge_index)
+        .def_readwrite("face_index", &EdgeFaceCandidate::face_index);
+    py::class_<FaceVertexCandidate>(m, "FaceVertexCandidate")
+        .def(py::init<long, long>())
+        .def_readwrite("face_index", &FaceVertexCandidate::face_index)
+        .def_readwrite("vertex_index", &FaceVertexCandidate::vertex_index);
+    py::class_<Candidates>(m, "Candidates")
+        .def(py::init())
+        .def("size", &Candidates::size)
+        .def("clear", &Candidates::clear)
+        .def_readwrite("ev_candidates", &Candidates::ev_candidates)
+        .def_readwrite("ee_candidates", &Candidates::ee_candidates)
+        .def_readwrite("fv_candidates", &Candidates::fv_candidates);
+
+    py::class_<VertexVertexConstraint, VertexVertexCandidate>(
+        m, "VertexVertexConstraint")
+        .def(py::init<long, long>())
+        // .def(py::init<const VertexVertexCandidate&>())
+        .def(
+            "vertex_indices", &VertexVertexConstraint::vertex_indices,
+            R"ipc_Qu8mg5v7(
+            Get the indices of the vertices
+
+            Parameters
+            ----------
+            E : Edge matrix of mesh
+            F : Face matrix of mesh
+
+            Returns
+            -------
+            List of vertex indices
+            )ipc_Qu8mg5v7",
+            py::arg("E"), py::arg("F"))
+        .def(
+            "compute_potential", &VertexVertexConstraint::compute_potential,
+            py::arg("V"), py::arg("E"), py::arg("F"), py::arg("dhat"))
+        .def(
+            "compute_potential_gradient",
+            &VertexVertexConstraint::compute_potential_gradient, py::arg("V"),
+            py::arg("E"), py::arg("F"), py::arg("dhat"))
+        .def(
+            "compute_potential_hessian",
+            &VertexVertexConstraint::compute_potential_hessian, py::arg("V"),
+            py::arg("E"), py::arg("F"), py::arg("dhat"),
+            py::arg("project_to_psd"))
+        .def_readwrite("multiplicity", &VertexVertexConstraint::multiplicity);
 
     ///////////////////////////////////////////////////////////////////////////
     // distance/distance_type
@@ -1075,21 +1166,6 @@ PYBIND11_MODULE(ipctk, m)
         "Set log level", py::arg("level"));
 
     // m.def(
-    //     "set_num_threads",
-    //     [](int nthreads) {
-    //         if (nthreads <= 0) {
-    //             nthreads = tbb::task_scheduler_init::default_num_threads();
-    //         } else if (
-    //             nthreads > tbb::task_scheduler_init::default_num_threads()) {
-    //             spdlog::warn(
-    //                 "Attempting to use more threads than available ({:d} > "
-    //                 "{:d})!",
-    //                 nthreads,
-    //                 tbb::task_scheduler_init::default_num_threads());
-    //             nthreads = tbb::task_scheduler_init::default_num_threads();
-    //         }
-    //         thread_limiter = tbb::global_control(
-    //             tbb::global_control::max_allowed_parallelism, nthreads);
-    //     },
-    //     "maximum number of threads to use", py::arg("nthreads"));
+    //     "set_num_threads", &set_num_threads, "maximum number of threads to
+    //     use", py::arg("nthreads"));
 }

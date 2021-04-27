@@ -70,12 +70,12 @@ The main functionality is provided in the `ipc.hpp` header. Use the prefix direc
 
 ## Dependencies
 
-All dependancies are downloaded through CMake depending on the build options.
+**All dependancies are downloaded through CMake** depending on the build options.
 The following libraries are used in this project:
 
 * [Tight Inclusion CCD](https://github.com/Continuous-Collision-Detection/Tight-Inclusion) for correct (conservative) continuous collision detection between triangle meshes in 3D
 * [libigl](https://github.com/libigl/libigl) as both a source of Eigen and for basic geometry functions
-* [TBB](https://github.com/wjakob/tbb) for limited parallelization
+* [TBB](https://github.com/wjakob/tbb) for parallelization
 
 ### Optional
 
