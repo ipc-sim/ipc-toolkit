@@ -99,8 +99,5 @@ setuptools.setup(
     ext_modules=[CMakeExtension('ipctk')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
-    install_requires=[
-        'numpy',
-        'scipy'
-    ]
+    install_requires=[]
 )
