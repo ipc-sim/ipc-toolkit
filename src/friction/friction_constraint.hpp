@@ -40,6 +40,8 @@ template <typename T> inline T f2_SF(const T&, const double& epsv_times_h)
 ///////////////////////////////////////////////////////////////////////////////
 
 struct FrictionConstraint {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     /// @brief Barycentric coordinates of the closest point(s)
     Eigen::VectorX2d closest_point;
 
@@ -293,10 +295,13 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
 ///////////////////////////////////////////////////////////////////////////////
 
 struct FrictionConstraints {
-    std::vector<VertexVertexFrictionConstraint> vv_constraints;
-    std::vector<EdgeVertexFrictionConstraint> ev_constraints;
-    std::vector<EdgeEdgeFrictionConstraint> ee_constraints;
-    std::vector<FaceVertexFrictionConstraint> fv_constraints;
+    template <typename T>
+    using aligned_vector = std::vector<T, Eigen::aligned_allocator<T>>;
+
+    aligned_vector<VertexVertexFrictionConstraint> vv_constraints;
+    aligned_vector<EdgeVertexFrictionConstraint> ev_constraints;
+    aligned_vector<EdgeEdgeFrictionConstraint> ee_constraints;
+    aligned_vector<FaceVertexFrictionConstraint> fv_constraints;
 
     size_t size() const;
 

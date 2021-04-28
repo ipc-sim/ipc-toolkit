@@ -134,7 +134,7 @@ void edge_edge_cross_squarednorm_hessian(
 /// @param x Squared norm of the edge-edge cross product.
 /// @param eps_x Mollifier activation threshold.
 /// @return The mollifier coefficient to premultiply the edge-edge distance.
-template <class T> T edge_edge_mollifier(const T& x, double eps_x)
+template <typename T> T edge_edge_mollifier(const T& x, double eps_x)
 {
     T x_div_eps_x = x / eps_x;
     return (-x_div_eps_x + 2.0) * x_div_eps_x;
@@ -144,7 +144,7 @@ template <class T> T edge_edge_mollifier(const T& x, double eps_x)
 /// @param x Squared norm of the edge-edge cross product.
 /// @param eps_x Mollifier activation threshold.
 /// @return The gradient of the mollifier function for edge-edge distance wrt x.
-template <class T> T edge_edge_mollifier_gradient(const T& x, double eps_x)
+template <typename T> T edge_edge_mollifier_gradient(const T& x, double eps_x)
 {
     T one_div_eps_x = 1.0 / eps_x;
     return 2.0 * one_div_eps_x * (-one_div_eps_x * x + 1.0);
@@ -154,7 +154,7 @@ template <class T> T edge_edge_mollifier_gradient(const T& x, double eps_x)
 /// @param x Squared norm of the edge-edge cross product.
 /// @param eps_x Mollifier activation threshold.
 /// @return The hessian of the mollifier function for edge-edge distance wrt x.
-template <class T> T edge_edge_mollifier_hessian(const T& x, double eps_x)
+template <typename T> T edge_edge_mollifier_hessian(const T& x, double eps_x)
 {
     return -2.0 / (eps_x * eps_x);
 }

@@ -12,6 +12,8 @@ namespace ipc {
 /// @brief Axis aligned bounding-box of some type
 class AABB {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     AABB() {}
 
     AABB(const Eigen::VectorX3d& min, const Eigen::VectorX3d& max)
@@ -55,6 +57,8 @@ protected:
 /// @brief An entry into the hash grid as a (key, value) pair.
 class HashItem {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     int key;   /// @brief The key of the item.
     int id;    /// @brief The value of the item.
     AABB aabb; /// @brief The axis-aligned bounding box of the element
@@ -79,6 +83,8 @@ public:
 
 class HashGrid {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     double cellSize() const { return m_cellSize; }
     const Eigen::VectorX3i& gridSize() const { return m_gridSize; }
     const Eigen::VectorX3d& domainMin() const { return m_domainMin; }
