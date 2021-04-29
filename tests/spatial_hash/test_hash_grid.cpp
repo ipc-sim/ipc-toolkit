@@ -18,23 +18,23 @@ TEST_CASE("AABB initilization", "[hash_grid][AABB]")
     int dim = GENERATE(2, 3);
     CAPTURE(dim);
     AABB aabb;
-    Eigen::VectorXd actual_center(dim);
+    Eigen::ArrayMax3d actual_center(dim);
     SECTION("Empty AABB")
     {
-        aabb = AABB(Eigen::VectorXd::Zero(dim), Eigen::VectorXd::Zero(dim));
-        actual_center = Eigen::VectorXd::Zero(dim);
+        aabb = AABB(Eigen::ArrayMax3d::Zero(dim), Eigen::ArrayMax3d::Zero(dim));
+        actual_center.setZero();
     }
     SECTION("Box centered at zero")
     {
-        Eigen::VectorXd min =
-            Eigen::VectorXd::Random(dim).array() - 1; // in range [-2, 0]
-        Eigen::VectorXd max = -min;
+        Eigen::ArrayMax3d min =
+            Eigen::ArrayMax3d::Random(dim).array() - 1; // in range [-2, 0]
+        Eigen::ArrayMax3d max = -min;
         aabb = AABB(min, max);
-        actual_center = Eigen::VectorXd::Zero(dim);
+        actual_center.setZero();
     }
     SECTION("Box not centered at zero")
     {
-        Eigen::VectorXd min(dim), max(dim);
+        Eigen::ArrayMax3d min(dim), max(dim);
         if (dim == 2) {
             min << 5.1, 3.14;
             max << 10.4, 7.89;
@@ -46,8 +46,8 @@ TEST_CASE("AABB initilization", "[hash_grid][AABB]")
         }
         aabb = AABB(min, max);
     }
-    Eigen::VectorXd center_diff = aabb.getCenter() - actual_center;
-    CHECK(center_diff.norm() == Approx(0.0).margin(1e-12));
+    Eigen::ArrayMax3d center_diff = aabb.getCenter() - actual_center;
+    CHECK(center_diff.matrix().norm() == Approx(0.0).margin(1e-12));
 }
 
 TEST_CASE("AABB overlapping", "[has_grid][AABB]")
@@ -56,57 +56,57 @@ TEST_CASE("AABB overlapping", "[has_grid][AABB]")
     bool are_overlapping = false;
     SECTION("a to the right of b")
     {
-        a = AABB(Eigen::Vector2d(-1, 0), Eigen::Vector2d(0, 1));
+        a = AABB(Eigen::Array2d(-1, 0), Eigen::Array2d(0, 1));
         SECTION("overlapping")
         {
-            b = AABB(Eigen::Vector2d(-0.5, 0), Eigen::Vector2d(0.5, 1));
+            b = AABB(Eigen::Array2d(-0.5, 0), Eigen::Array2d(0.5, 1));
             are_overlapping = true;
         }
         SECTION("not overlapping")
         {
-            b = AABB(Eigen::Vector2d(0.5, 0), Eigen::Vector2d(1.5, 1));
+            b = AABB(Eigen::Array2d(0.5, 0), Eigen::Array2d(1.5, 1));
             are_overlapping = false;
         }
     }
     SECTION("b to the right of a")
     {
-        b = AABB(Eigen::Vector2d(-1, 0), Eigen::Vector2d(0, 1));
+        b = AABB(Eigen::Array2d(-1, 0), Eigen::Array2d(0, 1));
         SECTION("overlapping")
         {
-            a = AABB(Eigen::Vector2d(-0.5, 0), Eigen::Vector2d(0.5, 1));
+            a = AABB(Eigen::Array2d(-0.5, 0), Eigen::Array2d(0.5, 1));
             are_overlapping = true;
         }
         SECTION("not overlapping")
         {
-            a = AABB(Eigen::Vector2d(0.5, 0), Eigen::Vector2d(1.5, 1));
+            a = AABB(Eigen::Array2d(0.5, 0), Eigen::Array2d(1.5, 1));
             are_overlapping = false;
         }
     }
     SECTION("a above b")
     {
-        a = AABB(Eigen::Vector2d(0, -1), Eigen::Vector2d(1, 0));
+        a = AABB(Eigen::Array2d(0, -1), Eigen::Array2d(1, 0));
         SECTION("overlapping")
         {
-            b = AABB(Eigen::Vector2d(0, -0.5), Eigen::Vector2d(1, 0.5));
+            b = AABB(Eigen::Array2d(0, -0.5), Eigen::Array2d(1, 0.5));
             are_overlapping = true;
         }
         SECTION("not overlapping")
         {
-            b = AABB(Eigen::Vector2d(0, 0.5), Eigen::Vector2d(1, 1.5));
+            b = AABB(Eigen::Array2d(0, 0.5), Eigen::Array2d(1, 1.5));
             are_overlapping = false;
         }
     }
     SECTION("a above b")
     {
-        b = AABB(Eigen::Vector2d(0, -1), Eigen::Vector2d(1, 0));
+        b = AABB(Eigen::Array2d(0, -1), Eigen::Array2d(1, 0));
         SECTION("overlapping")
         {
-            a = AABB(Eigen::Vector2d(0, -0.5), Eigen::Vector2d(1, 0.5));
+            a = AABB(Eigen::Array2d(0, -0.5), Eigen::Array2d(1, 0.5));
             are_overlapping = true;
         }
         SECTION("not overlapping")
         {
-            a = AABB(Eigen::Vector2d(0, 0.5), Eigen::Vector2d(1, 1.5));
+            a = AABB(Eigen::Array2d(0, 0.5), Eigen::Array2d(1, 1.5));
             are_overlapping = false;
         }
     }

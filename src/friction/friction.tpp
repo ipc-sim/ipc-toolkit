@@ -1,6 +1,10 @@
 #pragma once
 #include <ipc/friction/friction.hpp>
 
+#include <tbb/parallel_for.h>
+#include <tbb/blocked_range.h>
+#include <tbb/enumerable_thread_specific.h>
+
 namespace ipc {
 
 template <typename T>
@@ -15,24 +19,46 @@ T compute_friction_potential(
     // absolute linear dislacement of each point
     Eigen::MatrixX<T> U = V1 - V0.cast<T>();
 
-    T potential(0);
+    tbb::enumerable_thread_specific<T> storage(0);
 
-    for (const auto& vv_constraint : friction_constraint_set.vv_constraints) {
-        potential += vv_constraint.compute_potential(U, E, F, epsv_times_h);
+    const size_t num_vv = friction_constraint_set.vv_constraints.size();
+    const size_t num_ev = friction_constraint_set.ev_constraints.size();
+    const size_t num_ee = friction_constraint_set.ee_constraints.size();
+    const size_t num_fv = friction_constraint_set.fv_constraints.size();
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), friction_constraint_set.size()),
+        [&](tbb::blocked_range<size_t> r) {
+            auto& local_potential = storage.local();
+            for (size_t i = r.begin(); i < r.end(); i++) {
+
+                size_t ci = i;
+                if (ci < num_vv) {
+                    local_potential +=
+                        friction_constraint_set.vv_constraints[ci]
+                            .compute_potential(U, E, F, epsv_times_h);
+                } else if ((ci -= num_vv) < num_ev) {
+                    local_potential +=
+                        friction_constraint_set.ev_constraints[ci]
+                            .compute_potential(U, E, F, epsv_times_h);
+                } else if ((ci -= num_ev) < num_ee) {
+                    local_potential +=
+                        friction_constraint_set.ee_constraints[ci]
+                            .compute_potential(U, E, F, epsv_times_h);
+                } else {
+                    ci -= num_ee;
+                    assert(ci < num_fv);
+                    local_potential +=
+                        friction_constraint_set.fv_constraints[ci]
+                            .compute_potential(U, E, F, epsv_times_h);
+                }
+            }
+        });
+
+    T potential = 0;
+    for (const auto& local_potential : storage) {
+        potential += local_potential;
     }
-
-    for (const auto& ev_constraint : friction_constraint_set.ev_constraints) {
-        potential += ev_constraint.compute_potential(U, E, F, epsv_times_h);
-    }
-
-    for (const auto& ee_constraint : friction_constraint_set.ee_constraints) {
-        potential += ee_constraint.compute_potential(U, E, F, epsv_times_h);
-    }
-
-    for (const auto& fv_constraint : friction_constraint_set.fv_constraints) {
-        potential += fv_constraint.compute_potential(U, E, F, epsv_times_h);
-    }
-
     return potential;
 }
 

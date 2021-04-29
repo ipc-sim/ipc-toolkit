@@ -2,6 +2,11 @@
 
 #include <unordered_map>
 
+#include <tbb/mutex.h>
+#include <tbb/parallel_for.h>
+#include <tbb/blocked_range.h>
+#include <tbb/enumerable_thread_specific.h>
+
 #include <ipc/ccd/ccd.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
@@ -74,7 +79,7 @@ void construct_constraint_set(
     const Eigen::MatrixXi& F2E,
     double dmin)
 {
-    double inflation_radius = (dhat + dmin) / 2;
+    double inflation_radius = (dhat + dmin) / 1.9; // Conservative inflation
 
     Candidates candidates;
     HashGrid hash_grid;
@@ -82,16 +87,7 @@ void construct_constraint_set(
 
     // Assumes the edges connect to all boundary vertices
     if (ignore_codimensional_vertices) {
-        for (int e = 0; e < E.rows(); ++e) {
-            const int e0 = E(e, 0);
-            const int e1 = E(e, 1);
-            hash_grid.addVertex(
-                V.row(e0), V.row(e0), e0,
-                /*inflation_radius=*/dhat + dmin);
-            hash_grid.addVertex(
-                V.row(e1), V.row(e1), e1,
-                /*inflation_radius=*/dhat + dmin);
-        }
+        hash_grid.addVerticesFromEdges(V, V, E, inflation_radius);
     } else {
         hash_grid.addVertices(V, V, inflation_radius);
     }
@@ -207,7 +203,7 @@ void construct_constraint_set(
             double ee_cross_norm_sqr = edge_edge_cross_squarednorm(
                 V.row(ea0i), V.row(ea1i), V.row(eb0i), V.row(eb1i));
             if (ee_cross_norm_sqr < eps_x) {
-                // NOTE: This may not actually the distance type, but all EE
+                // NOTE: This may not actually be the distance type, but all EE
                 // pairs requiring mollification must be mollified later.
                 dtype = EdgeEdgeDistanceType::EA_EB;
             }
@@ -318,7 +314,7 @@ void construct_constraint_set(
         }
     }
 
-    for (int ci = 0; ci < constraint_set.size(); ci++) {
+    for (size_t ci = 0; ci < constraint_set.size(); ci++) {
         constraint_set[ci].minimum_distance = dmin;
     }
 }
@@ -332,9 +328,21 @@ double compute_barrier_potential(
     const Constraints& constraint_set,
     double dhat)
 {
+    tbb::enumerable_thread_specific<double> storage(0);
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), constraint_set.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            auto& local_potential = storage.local();
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                local_potential +=
+                    constraint_set[i].compute_potential(V, E, F, dhat);
+            }
+        });
+
     double potential = 0;
-    for (size_t i = 0; i < constraint_set.size(); i++) {
-        potential += constraint_set[i].compute_potential(V, E, F, dhat);
+    for (const auto& local_potential : storage) {
+        potential += local_potential;
     }
     return potential;
 }
@@ -346,15 +354,26 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     const Constraints& constraint_set,
     double dhat)
 {
-    Eigen::VectorXd grad = Eigen::VectorXd::Zero(V.size());
     int dim = V.cols();
 
-    for (size_t i = 0; i < constraint_set.size(); i++) {
-        local_gradient_to_global_gradient(
-            constraint_set[i].compute_potential_gradient(V, E, F, dhat),
-            constraint_set[i].vertex_indices(E, F), dim, grad);
-    }
+    tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
+        Eigen::VectorXd::Zero(V.size()));
 
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), constraint_set.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            auto& local_grad = storage.local();
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                local_gradient_to_global_gradient(
+                    constraint_set[i].compute_potential_gradient(V, E, F, dhat),
+                    constraint_set[i].vertex_indices(E, F), dim, local_grad);
+            }
+        });
+
+    Eigen::VectorXd grad = Eigen::VectorXd::Zero(V.size());
+    for (const auto& local_grad : storage) {
+        grad += local_grad;
+    }
     return grad;
 }
 
@@ -366,25 +385,32 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     double dhat,
     bool project_to_psd)
 {
-
     int dim = V.cols();
-    int dim_sq = dim * dim;
-    std::vector<Eigen::Triplet<double>> hess_triplets;
-    hess_triplets.reserve(
-        constraint_set.vv_constraints.size() * /*2*2=*/4 * dim_sq
-        + constraint_set.ev_constraints.size() * /*3*3=*/9 * dim_sq
-        + constraint_set.ee_constraints.size() * /*4*4=*/16 * dim_sq
-        + constraint_set.fv_constraints.size() * /*4*4=*/16 * dim_sq);
 
-    for (size_t i = 0; i < constraint_set.size(); i++) {
-        local_hessian_to_global_triplets(
-            constraint_set[i].compute_potential_hessian(
-                V, E, F, dhat, project_to_psd),
-            constraint_set[i].vertex_indices(E, F), dim, hess_triplets);
-    }
+    tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
+        storage;
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), constraint_set.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            auto& local_hess_triplets = storage.local();
+
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                local_hessian_to_global_triplets(
+                    constraint_set[i].compute_potential_hessian(
+                        V, E, F, dhat, project_to_psd),
+                    constraint_set[i].vertex_indices(E, F), dim,
+                    local_hess_triplets);
+            }
+        });
 
     Eigen::SparseMatrix<double> hess(V.size(), V.size());
-    hess.setFromTriplets(hess_triplets.begin(), hess_triplets.end());
+    for (const auto& local_hess_triplets : storage) {
+        Eigen::SparseMatrix<double> local_hess(V.size(), V.size());
+        local_hess.setFromTriplets(
+            local_hess_triplets.begin(), local_hess_triplets.end());
+        hess += local_hess;
+    }
     return hess;
 }
 
@@ -408,12 +434,7 @@ bool is_step_collision_free(
 
     // Assumes the edges connect to all boundary vertices
     if (ignore_codimensional_vertices) {
-        for (int e = 0; e < E.rows(); ++e) {
-            const int e0 = E(e, 0);
-            const int e1 = E(e, 1);
-            hash_grid.addVertex(V0.row(e0), V1.row(e0), e0);
-            hash_grid.addVertex(V0.row(e1), V1.row(e1), e1);
-        }
+        hash_grid.addVerticesFromEdges(V0, V1, E);
     } else {
         hash_grid.addVertices(V0, V1);
     }
@@ -523,12 +544,7 @@ double compute_collision_free_stepsize(
 
     // Assumes the edges connect to all boundary vertices
     if (ignore_codimensional_vertices) {
-        for (int e = 0; e < E.rows(); ++e) {
-            const int e0 = E(e, 0);
-            const int e1 = E(e, 1);
-            hash_grid.addVertex(V0.row(e0), V1.row(e0), e0);
-            hash_grid.addVertex(V0.row(e1), V1.row(e1), e1);
-        }
+        hash_grid.addVerticesFromEdges(V0, V1, E);
     } else {
         hash_grid.addVertices(V0, V1);
     }
@@ -552,75 +568,77 @@ double compute_collision_free_stepsize(
 
     // Narrow phase
     double earliest_toi = 1;
+    tbb::mutex earliest_toi_mutex;
 
-    for (const auto& ev_candidate : candidates.ev_candidates) {
-        double toi;
-        bool is_collision = point_edge_ccd(
-            // Point at t=0
-            V0.row(ev_candidate.vertex_index),
-            // Edge at t=0
-            V0.row(E(ev_candidate.edge_index, 0)),
-            V0.row(E(ev_candidate.edge_index, 1)),
-            // Point at t=1
-            V1.row(ev_candidate.vertex_index),
-            // Edge at t=1
-            V1.row(E(ev_candidate.edge_index, 0)),
-            V1.row(E(ev_candidate.edge_index, 1)), //
-            toi);
+    const size_t num_ev = candidates.ev_candidates.size();
+    const size_t num_ee = candidates.ee_candidates.size();
+    const size_t num_fv = candidates.fv_candidates.size();
 
-        assert(!is_collision || (toi >= 0 && toi <= 1));
-        if (is_collision && toi < earliest_toi) {
-            earliest_toi = toi;
-        }
-    }
+    // Do a single block range over all three candidate vectors
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, candidates.size()),
+        [&](tbb::blocked_range<size_t> r) {
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                double toi = std::numeric_limits<double>::infinity();
+                bool are_colliding;
 
-    for (const auto& ee_candidate : candidates.ee_candidates) {
-        double toi;
-        bool is_collision = edge_edge_ccd(
-            // Edge 1 at t=0
-            V0.row(E(ee_candidate.edge0_index, 0)),
-            V0.row(E(ee_candidate.edge0_index, 1)),
-            // Edge 2 at t=0
-            V0.row(E(ee_candidate.edge1_index, 0)),
-            V0.row(E(ee_candidate.edge1_index, 1)),
-            // Edge 1 at t=1
-            V1.row(E(ee_candidate.edge0_index, 0)),
-            V1.row(E(ee_candidate.edge0_index, 1)),
-            // Edge 2 at t=1
-            V1.row(E(ee_candidate.edge1_index, 0)),
-            V1.row(E(ee_candidate.edge1_index, 1)), //
-            toi,
-            /*tmax=*/earliest_toi);
+                size_t ci = i;
+                if (ci < num_ev) {
+                    const auto& ev_candidate = candidates.ev_candidates[ci];
+                    const auto& ei = ev_candidate.edge_index;
+                    const auto& vi = ev_candidate.vertex_index;
+                    are_colliding = point_edge_ccd(
+                        // Point at t=0
+                        V0.row(vi),
+                        // Edge at t=0
+                        V0.row(E(ei, 0)), V0.row(E(ei, 1)),
+                        // Point at t=1
+                        V1.row(vi),
+                        // Edge at t=1
+                        V1.row(E(ei, 0)), V1.row(E(ei, 1)), //
+                        toi);
+                } else if ((ci -= num_ev) < num_ee) {
+                    const auto& ee_candidate = candidates.ee_candidates[ci];
+                    const auto& eai = ee_candidate.edge0_index;
+                    const auto& ebi = ee_candidate.edge1_index;
+                    are_colliding = edge_edge_ccd(
+                        // Edge 1 at t=0
+                        V0.row(E(eai, 0)), V0.row(E(eai, 1)),
+                        // Edge 2 at t=0
+                        V0.row(E(ebi, 0)), V0.row(E(ebi, 1)),
+                        // Edge 1 at t=1
+                        V1.row(E(eai, 0)), V1.row(E(eai, 1)),
+                        // Edge 2 at t=1
+                        V1.row(E(ebi, 0)), V1.row(E(ebi, 1)), //
+                        toi,
+                        /*tmax=*/earliest_toi);
+                } else {
+                    ci -= num_ee;
+                    assert(ci < num_fv);
+                    const auto& fv_candidate = candidates.fv_candidates[ci];
+                    const auto& fi = fv_candidate.face_index;
+                    const auto& vi = fv_candidate.vertex_index;
+                    are_colliding = point_triangle_ccd(
+                        // Point at t=0
+                        V0.row(vi),
+                        // Triangle at t = 0
+                        V0.row(F(fi, 0)), V0.row(F(fi, 1)), V0.row(F(fi, 2)),
+                        // Point at t=1
+                        V1.row(vi),
+                        // Triangle at t = 1
+                        V1.row(F(fi, 0)), V1.row(F(fi, 1)), V1.row(F(fi, 2)),
+                        toi,
+                        /*tmax=*/earliest_toi);
+                }
 
-        assert(!is_collision || (toi >= 0 && toi <= 1));
-        if (is_collision && toi < earliest_toi) {
-            earliest_toi = toi;
-        }
-    }
-
-    for (const auto& fv_candidate : candidates.fv_candidates) {
-        double toi;
-        bool is_collision = point_triangle_ccd(
-            // Point at t=0
-            V0.row(fv_candidate.vertex_index),
-            // Triangle at t = 0
-            V0.row(F(fv_candidate.face_index, 0)),
-            V0.row(F(fv_candidate.face_index, 1)),
-            V0.row(F(fv_candidate.face_index, 2)),
-            // Point at t=1
-            V1.row(fv_candidate.vertex_index),
-            // Triangle at t = 1
-            V1.row(F(fv_candidate.face_index, 0)),
-            V1.row(F(fv_candidate.face_index, 1)),
-            V1.row(F(fv_candidate.face_index, 2)), //
-            toi,
-            /*tmax=*/earliest_toi);
-
-        assert(!is_collision || (toi >= 0 && toi <= 1));
-        if (is_collision && toi < earliest_toi) {
-            earliest_toi = toi;
-        }
-    }
+                if (are_colliding) {
+                    tbb::mutex::scoped_lock lock(earliest_toi_mutex);
+                    if (toi < earliest_toi) {
+                        earliest_toi = toi;
+                    }
+                }
+            }
+        });
 
     assert(earliest_toi >= 0 && earliest_toi <= 1.0);
     return earliest_toi;
@@ -635,57 +653,71 @@ double compute_minimum_distance(
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set)
 {
-    double min_distance = std::numeric_limits<double>::infinity();
+    tbb::enumerable_thread_specific<double> storage(
+        std::numeric_limits<double>::infinity());
 
-    for (const auto& vv_constraint : constraint_set.vv_constraints) {
-        double distance_sqr = point_point_distance(
-            V.row(vv_constraint.vertex0_index),
-            V.row(vv_constraint.vertex1_index));
+    const size_t num_vv = constraint_set.vv_constraints.size();
+    const size_t num_ev = constraint_set.ev_constraints.size();
+    const size_t num_ee = constraint_set.ee_constraints.size();
+    const size_t num_fv = constraint_set.fv_constraints.size();
 
-        if (distance_sqr < min_distance) {
-            min_distance = distance_sqr;
-        }
+    // Do a single block range over all constraint vectors
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, constraint_set.size()),
+        [&](tbb::blocked_range<size_t> r) {
+            auto& local_min_dist = storage.local();
+
+            for (size_t i = r.begin(); i < r.end(); i++) {
+
+                double dist;
+                size_t ci = i;
+                if (ci < num_vv) {
+                    const auto& vv_constraint =
+                        constraint_set.vv_constraints[ci];
+                    const auto& vai = vv_constraint.vertex0_index;
+                    const auto& vbi = vv_constraint.vertex1_index;
+                    dist = point_point_distance(V.row(vai), V.row(vbi));
+                } else if ((ci -= num_vv) < num_ev) {
+                    const auto& ev_constraint =
+                        constraint_set.ev_constraints[ci];
+                    const auto& ei = ev_constraint.edge_index;
+                    const auto& vi = ev_constraint.vertex_index;
+                    dist = point_edge_distance(
+                        V.row(vi), V.row(E(ei, 0)), V.row(E(ei, 1)),
+                        PointEdgeDistanceType::P_E);
+                } else if ((ci -= num_ev) < num_ee) {
+                    const auto& ee_constraint =
+                        constraint_set.ee_constraints[ci];
+                    const auto& eai = ee_constraint.edge0_index;
+                    const auto& ebi = ee_constraint.edge1_index;
+                    // The distance type is unknown because of mollified PP and
+                    // PE constraints where also added as EE constraints.
+                    dist = edge_edge_distance(
+                        V.row(E(eai, 0)), V.row(E(eai, 1)), //
+                        V.row(E(ebi, 0)), V.row(E(ebi, 1)));
+                } else {
+                    ci -= num_ee;
+                    assert(ci < num_fv);
+                    const auto& fv_constraint =
+                        constraint_set.fv_constraints[ci];
+                    const auto& fi = fv_constraint.face_index;
+                    const auto& vi = fv_constraint.vertex_index;
+                    dist = point_triangle_distance(
+                        V.row(vi), V.row(F(fi, 0)), V.row(F(fi, 1)),
+                        V.row(F(fi, 2)), PointTriangleDistanceType::P_T);
+                }
+
+                if (dist < local_min_dist) {
+                    local_min_dist = dist;
+                }
+            }
+        });
+
+    double min_dist = std::numeric_limits<double>::infinity();
+    for (const auto& local_min_dist : storage) {
+        min_dist = std::min(min_dist, local_min_dist);
     }
-
-    for (const auto& ev_constraint : constraint_set.ev_constraints) {
-        double distance_sqr = point_edge_distance(
-            V.row(ev_constraint.vertex_index),
-            V.row(E(ev_constraint.edge_index, 0)),
-            V.row(E(ev_constraint.edge_index, 1)), PointEdgeDistanceType::P_E);
-
-        if (distance_sqr < min_distance) {
-            min_distance = distance_sqr;
-        }
-    }
-
-    for (const auto& ee_constraint : constraint_set.ee_constraints) {
-        // The distance type is unknown because of mollified PP and PE
-        // constraints where also added as EE constraints.
-        double distance_sqr = edge_edge_distance(
-            V.row(E(ee_constraint.edge0_index, 0)),
-            V.row(E(ee_constraint.edge0_index, 1)),
-            V.row(E(ee_constraint.edge1_index, 0)),
-            V.row(E(ee_constraint.edge1_index, 1)));
-
-        if (distance_sqr < min_distance) {
-            min_distance = distance_sqr;
-        }
-    }
-
-    for (const auto& fv_constraint : constraint_set.fv_constraints) {
-        double distance_sqr = point_triangle_distance(
-            V.row(fv_constraint.vertex_index),
-            V.row(F(fv_constraint.face_index, 0)),
-            V.row(F(fv_constraint.face_index, 1)),
-            V.row(F(fv_constraint.face_index, 2)),
-            PointTriangleDistanceType::P_T);
-
-        if (distance_sqr < min_distance) {
-            min_distance = distance_sqr;
-        }
-    }
-
-    return min_distance;
+    return min_dist;
 }
 
 } // namespace ipc

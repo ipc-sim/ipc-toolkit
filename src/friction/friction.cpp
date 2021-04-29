@@ -1,5 +1,9 @@
 #include <ipc/friction/friction.hpp>
 
+#include <tbb/parallel_for.h>
+#include <tbb/blocked_range.h>
+#include <tbb/enumerable_thread_specific.h>
+
 #include <Eigen/Sparse>
 
 #include <ipc/barrier/barrier.hpp>
@@ -129,9 +133,9 @@ void construct_friction_constraint_set(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-
+//
 // compute_friction_potential() in friction.tpp
-
+//
 ///////////////////////////////////////////////////////////////////////////////
 
 Eigen::VectorXd compute_friction_potential_gradient(
@@ -145,15 +149,26 @@ Eigen::VectorXd compute_friction_potential_gradient(
     auto U = V1 - V0; // absolute linear dislacement of each point
     int dim = U.cols();
 
+    tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
+        Eigen::VectorXd::Zero(U.size()));
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), friction_constraint_set.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            auto& local_grad = storage.local();
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                local_gradient_to_global_gradient(
+                    friction_constraint_set[i].compute_potential_gradient(
+                        U, E, F, epsv_times_h),
+                    friction_constraint_set[i].vertex_indices(E, F), dim,
+                    local_grad);
+            }
+        });
+
     Eigen::VectorXd grad = Eigen::VectorXd::Zero(U.size());
-
-    for (size_t i = 0; i < friction_constraint_set.size(); i++) {
-        const FrictionConstraint& constraint = friction_constraint_set[i];
-        local_gradient_to_global_gradient(
-            constraint.compute_potential_gradient(U, E, F, epsv_times_h),
-            constraint.vertex_indices(E, F), dim, grad);
+    for (const auto& local_grad : storage) {
+        grad += local_grad;
     }
-
     return grad;
 }
 
@@ -170,25 +185,30 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
 {
     auto U = V1 - V0; // absolute linear dislacement of each point
     int dim = U.cols();
-    int dim_sq = dim * dim;
 
-    std::vector<Eigen::Triplet<double>> hess_triplets;
-    hess_triplets.reserve(
-        friction_constraint_set.vv_constraints.size() * /*2*2=*/4 * dim_sq
-        + friction_constraint_set.ev_constraints.size() * /*3*3=*/9 * dim_sq
-        + friction_constraint_set.ee_constraints.size() * /*4*4=*/16 * dim_sq
-        + friction_constraint_set.fv_constraints.size() * /*4*4=*/16 * dim_sq);
+    tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
+        storage;
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), friction_constraint_set.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            auto& local_hess_triplets = storage.local();
 
-    for (size_t i = 0; i < friction_constraint_set.size(); i++) {
-        const FrictionConstraint& constraint = friction_constraint_set[i];
-        local_hessian_to_global_triplets(
-            constraint.compute_potential_hessian(
-                U, E, F, epsv_times_h, project_to_psd),
-            constraint.vertex_indices(E, F), dim, hess_triplets);
-    }
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                local_hessian_to_global_triplets(
+                    friction_constraint_set[i].compute_potential_hessian(
+                        U, E, F, epsv_times_h, project_to_psd),
+                    friction_constraint_set[i].vertex_indices(E, F), dim,
+                    local_hess_triplets);
+            }
+        });
 
     Eigen::SparseMatrix<double> hess(U.size(), U.size());
-    hess.setFromTriplets(hess_triplets.begin(), hess_triplets.end());
+    for (const auto& local_hess_triplets : storage) {
+        Eigen::SparseMatrix<double> local_hess(U.size(), U.size());
+        local_hess.setFromTriplets(
+            local_hess_triplets.begin(), local_hess_triplets.end());
+        hess += local_hess;
+    }
     return hess;
 }
 

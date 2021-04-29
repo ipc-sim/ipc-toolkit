@@ -10,6 +10,17 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### 2021-04-29 <!-- ([XXXXXXX](https://github.com/ipc-sim/ipc-toolkit/commit/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)) -->
+#### Added
+* Added TBB parallel loops to the main function (`compute_potential`, `compute_friction_potential`, `compute_collision_free_stepsize`, etc.)
+* Added function `addVerticesFromEdges` that adds the vertices connected to edges in parallel and avoids duplicates
+
+#### Changed
+* Changed the HashGrid to use `ArrayMax3` over `VectorX3` to simplify the code
+
+#### Fixed
+* Fixed some parameters that were not by reference
+
 ### 2021-04-21 ([c8a6d5](https://github.com/ipc-sim/ipc-toolkit/commit/c8a6d56823793e7be5e89238c3793e25bc45ffa0))
 #### Added
 * Added the SpatialHash from the original IPC code base with some modification to get all candidates in parallel

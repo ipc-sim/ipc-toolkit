@@ -51,6 +51,11 @@ TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
         Eigen::MatrixXd hess_b = ipc::compute_barrier_potential_hessian(
             V, E, F, constraint_set, dhat);
     };
+    BENCHMARK("Compute compute_minimum_distance")
+    {
+        double min_dist =
+            ipc::compute_minimum_distance(V, E, F, constraint_set);
+    };
 }
 
 TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
