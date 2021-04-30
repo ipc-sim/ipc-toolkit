@@ -17,10 +17,17 @@ using namespace ipc;
 TEST_CASE(
     "Test friction gradient and hessian", "[friction][gradient][hessian][2D]")
 {
+#ifdef NDEBUG
     double mu = GENERATE(range(0.0, 1.0, 0.1));
     double epsv_times_h = pow(10, GENERATE(range(-6, 0)));
     double dhat = pow(10, GENERATE(range(-4, 0)));
     double barrier_stiffness = pow(10, GENERATE(range(0, 2)));
+#else
+    double mu = GENERATE(range(0.0, 1.0, 0.1));
+    double epsv_times_h = pow(10, GENERATE(range(-6, 0, 2)));
+    double dhat = pow(10, GENERATE(range(-4, 0, 2)));
+    double barrier_stiffness = 100;
+#endif
     CAPTURE(mu, epsv_times_h, dhat, barrier_stiffness);
 
     Eigen::MatrixXd V0, V1;

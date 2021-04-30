@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
-### 2021-04-29 <!-- ([XXXXXXX](https://github.com/ipc-sim/ipc-toolkit/commit/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX)) -->
+### 2021-04-29 ([293d0ad](https://github.com/ipc-sim/ipc-toolkit/commit/293d0ad992c01df561e25c286043c9ae9b901ff0))
 #### Added
 * Added TBB parallel loops to the main function (`compute_potential`, `compute_friction_potential`, `compute_collision_free_stepsize`, etc.)
 * Added function `addVerticesFromEdges` that adds the vertices connected to edges in parallel and avoids duplicates
