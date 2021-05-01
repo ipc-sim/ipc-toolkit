@@ -1,4 +1,4 @@
-name: Python Bindings
+name: Python
 
 on:
   push:
