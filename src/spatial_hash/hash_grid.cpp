@@ -5,6 +5,8 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 
+#include <ipc/spatial_hash/voxel_size_heuristic.hpp>
+
 #ifdef IPC_TOOLKIT_WITH_LOGGER
 #include <ipc/utils/logger.hpp>
 #endif
@@ -83,26 +85,6 @@ void calculate_mesh_extents(
     upper_bound = upper_bound_t0.max(upper_bound_t1);
 }
 
-/// @brief Compute the average edge length of a mesh.
-double average_edge_length(
-    const Eigen::MatrixXd& V_t0,
-    const Eigen::MatrixXd& V_t1,
-    const Eigen::MatrixXi& E)
-{
-    double avg = 0;
-    for (unsigned i = 0; i < E.rows(); i++) {
-        avg += (V_t0.row(E(i, 0)) - V_t0.row(E(i, 1))).norm();
-        avg += (V_t1.row(E(i, 0)) - V_t1.row(E(i, 1))).norm();
-    }
-    return avg / (2 * E.rows());
-}
-
-/// @brief Compute the average displacement length.
-double average_displacement_length(const Eigen::MatrixXd& displacements)
-{
-    return displacements.rowwise().norm().sum() / displacements.rows();
-}
-
 void HashGrid::resize(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
@@ -111,9 +93,8 @@ void HashGrid::resize(
 {
     Eigen::ArrayMax3d mesh_min, mesh_max;
     calculate_mesh_extents(vertices_t0, vertices_t1, mesh_min, mesh_max);
-    double edge_len = average_edge_length(vertices_t0, vertices_t1, edges);
-    double disp_len = average_displacement_length(vertices_t1 - vertices_t0);
-    double cell_size = 2 * std::max(edge_len, disp_len) + inflation_radius;
+    double cell_size = suggest_good_voxel_size(
+        vertices_t0, vertices_t1, edges, inflation_radius);
     this->resize(
         mesh_min - inflation_radius, mesh_max + inflation_radius, cell_size);
 }

@@ -237,13 +237,4 @@ protected:
     std::vector<HashItem> m_faceItems;
 };
 
-/// @brief Compute the average edge length of a mesh.
-double average_edge_length(
-    const Eigen::MatrixXd& V_t0,
-    const Eigen::MatrixXd& V_t1,
-    const Eigen::MatrixXi& E);
-
-/// @brief Compute the average displacement length.
-double average_displacement_length(const Eigen::MatrixXd& displacements);
-
 } // namespace ipc

@@ -7,6 +7,8 @@ set(SOURCES
   hash_grid.hpp
   spatial_hash.cpp
   spatial_hash.hpp
+  voxel_size_heuristic.cpp
+  voxel_size_heuristic.hpp
 )
 
 prepend_current_path(SOURCES)

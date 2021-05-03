@@ -17,8 +17,6 @@ TEST_CASE(
     "Benchmark different spatial hashes",
     "[!benchmark][spatial_hash][hash_grid]")
 {
-    using namespace ipc;
-
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
     Eigen::VectorXi group_ids;
@@ -73,6 +71,66 @@ TEST_CASE(
 
         igl::edges(F, E);
     }
+
+    double inflation_radius = 1e-2; // GENERATE(take(5, random(0.0, 0.1)));
+
+    BENCHMARK("SpatialHash")
+    {
+        SpatialHash sh;
+        sh.build(V0, V1, E, F, inflation_radius);
+
+        Candidates candidates;
+        sh.queryMeshForCandidates(
+            V0, V1, E, F, candidates,
+            /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true);
+    };
+
+    BENCHMARK("HashGrid")
+    {
+        HashGrid hashgrid;
+        hashgrid.resize(V0, V1, E, inflation_radius);
+        hashgrid.addVertices(V0, V1, inflation_radius);
+        hashgrid.addEdges(V0, V1, E, inflation_radius);
+        hashgrid.addFaces(V0, V1, F, inflation_radius);
+
+        Candidates candidates;
+        hashgrid.getVertexEdgePairs(E, group_ids, candidates.ev_candidates);
+        hashgrid.getEdgeEdgePairs(E, group_ids, candidates.ee_candidates);
+        hashgrid.getFaceVertexPairs(F, group_ids, candidates.fv_candidates);
+    };
+
+    BENCHMARK("BruteForce")
+    {
+        Candidates candidates;
+        detect_collision_candidates_brute_force(
+            V0, V1, E, F, candidates, /*detect_edge_vertex=*/true,
+            /*detect_edge_edge=*/true, /*detect_face_vertex=*/true,
+            /*perform_aabb_check=*/true, inflation_radius, group_ids);
+    };
+}
+
+TEST_CASE(
+    "Benchmark different spatial hashes on real data",
+    "[!benchmark][spatial_hash][hash_grid][real_data]")
+{
+    Eigen::MatrixXd V0, V1;
+    Eigen::MatrixXi E, F;
+    Eigen::VectorXi group_ids;
+
+    std::string mesh_path =
+        std::string(TEST_DATA_DIR) + "slow-broadphase-ccd/s0.obj";
+    bool success = igl::read_triangle_mesh(mesh_path, V0, F);
+    if (!success) {
+        return; // Data is private
+    }
+
+    mesh_path = std::string(TEST_DATA_DIR) + "slow-broadphase-ccd/s1.obj";
+    success = igl::read_triangle_mesh(mesh_path, V1, F);
+    if (!success) {
+        return; // Data is private
+    }
+
+    igl::edges(F, E);
 
     double inflation_radius = 1e-2; // GENERATE(take(5, random(0.0, 0.1)));
 

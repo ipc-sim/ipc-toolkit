@@ -7,34 +7,12 @@
 #include <tbb/parallel_sort.h>
 
 #include <ipc/ccd/broadphase.hpp>
-#include <ipc/spatial_hash/hash_grid.hpp>
+#include <ipc/spatial_hash/voxel_size_heuristic.hpp>
 
 // Uncomment this to construct spatial hash in parallel.
 // #define IPC_TOOLKIT_PARALLEL_SH_CONSTRUCT
 
 namespace ipc {
-
-double suggestGoodVoxelSize(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    double inflation_radius = 0)
-{
-    double edge_len = average_edge_length(V, V, E);
-    return 2 * edge_len + inflation_radius;
-}
-
-double suggestGoodVoxelSize(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    double inflation_radius = 0)
-{
-    double edge_len = average_edge_length(V0, V1, E);
-    double disp_len = average_displacement_length(V1 - V0);
-    return 2 * std::max(edge_len, disp_len) + inflation_radius;
-}
 
 void SpatialHash::build(
     const Eigen::MatrixXd& V,
@@ -60,7 +38,7 @@ void SpatialHash::build(
     builtInRadius = inflation_radius;
 
     if (voxelSize <= 0) {
-        voxelSize = suggestGoodVoxelSize(V0, V1, E, F);
+        voxelSize = suggest_good_voxel_size(V0, V1, E);
     }
 
     leftBottomCorner =
