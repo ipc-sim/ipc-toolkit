@@ -2,14 +2,13 @@
 // Originally created by Minchen Li.
 #pragma once
 
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include <Eigen/Core>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <ipc/spatial_hash/collision_candidate.hpp>
+#include <ipc/utils/unordered_map_and_set.hpp>
 
 namespace ipc {
 
@@ -22,7 +21,7 @@ public: // data
 
     int edgeStartInd, triStartInd;
 
-    std::unordered_map<int, std::vector<int>> voxel;
+    unordered_map<int, std::vector<int>> voxel;
     std::vector<std::vector<int>> pointAndEdgeOccupancy;
 
 protected:
@@ -79,21 +78,21 @@ public: // API
 
     void queryPointForTriangles(
         const Eigen::VectorX3d& p,
-        std::unordered_set<int>& triInds,
+        unordered_set<int>& triInds,
         double radius = 0) const;
 
     void queryPointForTriangles(
         const Eigen::VectorX3d& p_t0,
         const Eigen::VectorX3d& p_t1,
-        std::unordered_set<int>& triInds,
+        unordered_set<int>& triInds,
         double radius = 0) const;
 
     void queryPointForPrimitives(
         const Eigen::VectorX3d& p_t0,
         const Eigen::VectorX3d& p_t1,
-        std::unordered_set<int>& vertInds,
-        std::unordered_set<int>& edgeInds,
-        std::unordered_set<int>& triInds,
+        unordered_set<int>& vertInds,
+        unordered_set<int>& edgeInds,
+        unordered_set<int>& triInds,
         double radius = 0) const;
 
     void queryEdgeForPE(
@@ -132,7 +131,7 @@ public: // API
         const Eigen::VectorX3d& t0,
         const Eigen::VectorX3d& t1,
         const Eigen::VectorX3d& t2,
-        std::unordered_set<int>& pointInds,
+        unordered_set<int>& pointInds,
         double radius = 0) const;
 
     void queryTriangleForPoints(
@@ -142,41 +141,41 @@ public: // API
         const Eigen::VectorX3d& t0_t1,
         const Eigen::VectorX3d& t1_t1,
         const Eigen::VectorX3d& t2_t1,
-        std::unordered_set<int>& pointInds,
+        unordered_set<int>& pointInds,
         double radius = 0) const;
 
     void queryTriangleForEdges(
         const Eigen::VectorX3d& t0,
         const Eigen::VectorX3d& t1,
         const Eigen::VectorX3d& t2,
-        std::unordered_set<int>& edgeInds,
+        unordered_set<int>& edgeInds,
         double radius = 0) const;
 
     void queryEdgeForTriangles(
         const Eigen::VectorX3d& e0,
         const Eigen::VectorX3d& e1,
-        std::unordered_set<int>& triInds,
+        unordered_set<int>& triInds,
         double radius = 0) const;
 
     void queryPointForPrimitives(
         int vi,
-        std::unordered_set<int>& vertInds,
-        std::unordered_set<int>& edgeInds,
-        std::unordered_set<int>& triInds) const;
+        unordered_set<int>& vertInds,
+        unordered_set<int>& edgeInds,
+        unordered_set<int>& triInds) const;
 
-    void queryPointForEdges(int vi, std::unordered_set<int>& edgeInds) const;
+    void queryPointForEdges(int vi, unordered_set<int>& edgeInds) const;
 
-    void queryPointForTriangles(int vi, std::unordered_set<int>& triInds) const;
+    void queryPointForTriangles(int vi, unordered_set<int>& triInds) const;
 
     // will only put edges with larger than ei index into edgeInds
-    void queryEdgeForEdges(int eai, std::unordered_set<int>& edgeInds) const;
+    void queryEdgeForEdges(int eai, unordered_set<int>& edgeInds) const;
 
     void queryEdgeForEdgesWithBBoxCheck(
         const Eigen::MatrixXd& V0,
         const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& E,
         int eai,
-        std::unordered_set<int>& edgeInds) const;
+        unordered_set<int>& edgeInds) const;
 
     void queryMeshForCandidates(
         const Eigen::MatrixXd& V,

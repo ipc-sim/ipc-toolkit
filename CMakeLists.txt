@@ -14,14 +14,15 @@ endif()
 
 # project-options
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-  option(IPC_TOOLKIT_BUILD_UNIT_TESTS "Build unit-tests"       ON)
+  option(IPC_TOOLKIT_BUILD_UNIT_TESTS         "Build unit-tests"                               ON)
 else()
-  option(IPC_TOOLKIT_BUILD_UNIT_TESTS "Build unit-tests"      OFF)
+  option(IPC_TOOLKIT_BUILD_UNIT_TESTS         "Build unit-tests"                              OFF)
 endif()
-option(IPC_TOOLKIT_WITH_LOGGER        "Enables logger"         ON)
-option(IPC_TOOLKIT_WITH_CORRECT_CCD   "Use the conservative CCD of [Wang and Ferguson et al. 2020]" ON)
-option(IPC_TOOLKIT_WITH_PYTHON        "Build Python bindings" OFF)
-option(IPC_TOOLKIT_WITH_SIMD          "Enable SIMD" OFF)
+option(IPC_TOOLKIT_WITH_LOGGER                "Enable logger"                                  ON)
+option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"                     ON)
+option(IPC_TOOLKIT_WITH_PYTHON                "Build Python bindings"                         OFF)
+option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
+option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 
 ################################################################################
 
@@ -67,11 +68,11 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 ################################################################################
 
 ################################################################################
-# Required Libraries
+# Libraries
 ################################################################################
 
 # libigl
-target_link_libraries(${PROJECT_NAME} PUBLIC igl::core)
+target_link_libraries(${PROJECT_NAME} PUBLIC igl::core igl::predicates)
 
 # Extra warnings
 target_link_libraries(${PROJECT_NAME} PRIVATE warnings::all)
@@ -96,6 +97,19 @@ endif()
 if(IPC_TOOLKIT_WITH_LOGGER)
   target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
   target_compile_definitions(${PROJECT_NAME} PUBLIC IPC_TOOLKIT_WITH_LOGGER)
+endif()
+
+# Faster unoredered map
+target_link_libraries(${PROJECT_NAME} PUBLIC tsl::robin_map)
+
+if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
+  find_package(GMP)
+  IF(NOT ${GMP_FOUND})
+    MESSAGE(FATAL_ERROR "Unable to find GMP necessary for rational intersection")
+  ENDIF()
+  target_include_directories(${PROJECT_NAME} PUBLIC ${GMP_INCLUDE_DIRS})
+  target_link_libraries(${PROJECT_NAME} PUBLIC ${GMP_LIBRARIES})
+  target_compile_definitions(${PROJECT_NAME} PUBLIC IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
 endif()
 
 ################################################################################

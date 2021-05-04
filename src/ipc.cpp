@@ -7,6 +7,8 @@
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
 
+#include <igl/predicates/segment_segment_intersect.h>
+
 #include <ipc/ccd/ccd.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
@@ -14,6 +16,8 @@
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/spatial_hash/hash_grid.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/intersection.hpp>
+#include <ipc/utils/world_bbox_diagonal_length.hpp>
 
 namespace ipc {
 
@@ -83,19 +87,19 @@ void construct_constraint_set(
 
     Candidates candidates;
     HashGrid hash_grid;
-    hash_grid.resize(V, V, E, inflation_radius);
+    hash_grid.resize(V, E, inflation_radius);
 
     // Assumes the edges connect to all boundary vertices
     if (ignore_codimensional_vertices) {
-        hash_grid.addVerticesFromEdges(V, V, E, inflation_radius);
+        hash_grid.addVerticesFromEdges(V, E, inflation_radius);
     } else {
-        hash_grid.addVertices(V, V, inflation_radius);
+        hash_grid.addVertices(V, inflation_radius);
     }
 
-    hash_grid.addEdges(V, V, E, inflation_radius);
+    hash_grid.addEdges(V, E, inflation_radius);
     if (V.cols() == 3) {
         // These are not needed for 2D
-        hash_grid.addFaces(V, V, F, inflation_radius);
+        hash_grid.addFaces(V, F, inflation_radius);
     }
 
     if (V.cols() == 2) {
@@ -718,6 +722,60 @@ double compute_minimum_distance(
         min_dist = std::min(min_dist, local_min_dist);
     }
     return min_dist;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool has_intersections(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const Eigen::VectorXi& vertex_group_ids)
+{
+    HashGrid hash_grid;
+    double conservative_inflation_radius = 1e-2 * world_bbox_diagonal_length(V);
+    hash_grid.resize(V, E, conservative_inflation_radius);
+    hash_grid.addVertices(V, conservative_inflation_radius);
+    hash_grid.addEdges(V, E, conservative_inflation_radius);
+    if (V.cols() == 3) {
+        // These are not needed for 2D
+        hash_grid.addFaces(V, F, conservative_inflation_radius);
+    }
+
+    if (V.cols() == 2) { // Need to check segment-segment intersections in 2D
+        std::vector<EdgeEdgeCandidate> ee_candidates;
+        hash_grid.getEdgeEdgePairs(E, vertex_group_ids, ee_candidates);
+
+        // narrow-phase using igl
+        igl::predicates::exactinit();
+        for (const EdgeEdgeCandidate& ee_candidate : ee_candidates) {
+            if (igl::predicates::segment_segment_intersect(
+                    V.row(E(ee_candidate.edge0_index, 0)).head<2>(),
+                    V.row(E(ee_candidate.edge0_index, 1)).head<2>(),
+                    V.row(E(ee_candidate.edge1_index, 0)).head<2>(),
+                    V.row(E(ee_candidate.edge1_index, 1)).head<2>())) {
+                return true;
+            }
+        }
+    } else { // Need to check segment-triangle intersections in 3D
+        assert(V.cols() == 3);
+
+        std::vector<EdgeFaceCandidate> ef_candidates;
+        hash_grid.getEdgeFacePairs(E, F, vertex_group_ids, ef_candidates);
+
+        for (const EdgeFaceCandidate& ef_candidate : ef_candidates) {
+            if (is_edge_intersecting_triangle(
+                    V.row(E(ef_candidate.edge_index, 0)),
+                    V.row(E(ef_candidate.edge_index, 1)),
+                    V.row(F(ef_candidate.face_index, 0)),
+                    V.row(F(ef_candidate.face_index, 1)),
+                    V.row(F(ef_candidate.face_index, 2)))) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 } // namespace ipc

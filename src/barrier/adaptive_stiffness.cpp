@@ -2,17 +2,11 @@
 
 #include <ipc/barrier/adaptive_stiffness.hpp>
 
-#include <ipc/barrier/barrier.hpp>
 #include <ipc/ipc.hpp>
+#include <ipc/barrier/barrier.hpp>
+#include <ipc/utils/world_bbox_diagonal_length.hpp>
 
 namespace ipc {
-
-double world_bbox_diagonal(const Eigen::MatrixXd& V)
-{
-    Eigen::VectorX3d min = V.colwise().minCoeff();
-    Eigen::VectorX3d max = V.colwise().maxCoeff();
-    return (max - min).norm();
-}
 
 double initial_barrier_stiffness(
     double bbox_diagonal,
@@ -69,7 +63,7 @@ double initial_barrier_stiffness(
     double min_barrier_stiffness_scale,
     double dmin)
 {
-    double diag = world_bbox_diagonal(V);
+    double diag = world_bbox_diagonal_length(V);
 
     Constraints constraint_set;
     construct_constraint_set(V_rest, V, E, F, dhat, constraint_set, dmin);
@@ -123,7 +117,8 @@ void update_barrier_stiffness(
 
     return update_barrier_stiffness(
         prev_min_distance, current_min_distance, max_barrier_stiffness,
-        barrier_stiffness, dhat_epsilon_scale, world_bbox_diagonal(V), dmin);
+        barrier_stiffness, dhat_epsilon_scale, world_bbox_diagonal_length(V),
+        dmin);
 
     min_distance = current_min_distance;
 }

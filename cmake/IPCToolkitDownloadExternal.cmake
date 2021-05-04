@@ -43,7 +43,7 @@ function(ipc_toolkit_download_finite_diff)
 endfunction()
 
 function(ipc_toolkit_download_tbb)
-   ipc_toolkit_download_project(tbb
+  ipc_toolkit_download_project(tbb
     GIT_REPOSITORY https://github.com/wjakob/tbb.git
     GIT_TAG        141b0e310e1fb552bdca887542c9c1a8544d6503
   )
@@ -66,8 +66,15 @@ function(ipc_toolkit_download_tight_inclusion)
 endfunction()
 
 function(ipc_toolkit_download_spdlog)
-     ipc_toolkit_download_project(spdlog
-       GIT_REPOSITORY https://github.com/gabime/spdlog.git
-       GIT_TAG        v1.8.0
-    )
+  ipc_toolkit_download_project(spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG        v1.8.0
+  )
+endfunction()
+
+function(ipc_toolkit_download_robin_map)
+  ipc_toolkit_download_project(robin-map
+    GIT_REPOSITORY https://github.com/Tessil/robin-map.git
+    GIT_TAG        v0.6.3
+  )
 endfunction()

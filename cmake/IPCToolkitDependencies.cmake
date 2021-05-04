@@ -15,11 +15,12 @@ include(IPCToolkitDownloadExternal)
 ################################################################################
 
 # libigl
-if(NOT TARGET igl::core)
-    ipc_toolkit_download_libigl()
-    # Import libigl targets
-    list(APPEND CMAKE_MODULE_PATH "${IPC_TOOLKIT_EXTERNAL}/libigl/cmake")
-    include(libigl)
+if(NOT TARGET igl::core OR NOT TARGET igl::predicates)
+  set(LIBIGL_WITH_PREDICATES ON CACHE BOOL "Use exact predicates" FORCE)
+  ipc_toolkit_download_libigl()
+  # Import libigl targets
+  list(APPEND CMAKE_MODULE_PATH "${IPC_TOOLKIT_EXTERNAL}/libigl/cmake")
+  include(libigl)
 endif()
 
 # TBB
@@ -59,11 +60,16 @@ endif()
   endif()
 # endif()
 
-
 # Logger
 if(IPC_TOOLKIT_WITH_LOGGER AND NOT TARGET spdlog::spdlog)
   ipc_toolkit_download_spdlog()
   add_library(spdlog INTERFACE)
   add_library(spdlog::spdlog ALIAS spdlog)
   target_include_directories(spdlog SYSTEM INTERFACE ${IPC_TOOLKIT_EXTERNAL}/spdlog/include)
+endif()
+
+# Faster Unordered Map
+if(NOT TARGET tsl::robin_map)
+  ipc_toolkit_download_robin_map()
+  add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/robin-map)
 endif()

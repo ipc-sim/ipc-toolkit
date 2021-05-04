@@ -83,7 +83,7 @@ public:
     const Eigen::ArrayMax3d& domainMin() const { return m_domainMin; }
     const Eigen::ArrayMax3d& domainMax() const { return m_domainMax; }
 
-    void resize(
+    void resizeFromBox(
         const Eigen::ArrayMax3d& min,
         const Eigen::ArrayMax3d& max,
         double cellSize);
@@ -94,6 +94,14 @@ public:
         const Eigen::MatrixXi& edges,
         const double inflation_radius = 0.0);
 
+    void resize(
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const double inflation_radius = 0.0)
+    {
+        resize(vertices, vertices, edges, inflation_radius);
+    }
+
     /// @brief Add a vertex as a AABB containing the time swept edge.
     void addVertex(
         const Eigen::VectorX3d& vertex_t0,
@@ -101,11 +109,27 @@ public:
         const long index,
         const double inflation_radius = 0.0);
 
+    /// @brief Add a vertex.
+    void addVertex(
+        const Eigen::VectorX3d& vertex,
+        const long index,
+        const double inflation_radius = 0.0)
+    {
+        addVertex(vertex, vertex, index, inflation_radius);
+    }
+
     /// @brief Add all vertices as AABBs containing the time swept edge.
     void addVertices(
         const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
         const double inflation_radius = 0.0);
+
+    /// @brief Add all vertices.
+    void addVertices(
+        const Eigen::MatrixXd& vertices, const double inflation_radius = 0.0)
+    {
+        addVertices(vertices, vertices, inflation_radius);
+    }
 
     /// @brief Add all vertices as AABBs containing the time swept edge.
     void addVerticesFromEdges(
@@ -113,6 +137,15 @@ public:
         const Eigen::MatrixXd& vertices_t1,
         const Eigen::MatrixXi& edges,
         const double inflation_radius = 0.0);
+
+    /// @brief Add all vertices as AABBs containing the time swept edge.
+    void addVerticesFromEdges(
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const double inflation_radius = 0.0)
+    {
+        addVerticesFromEdges(vertices, vertices, edges, inflation_radius);
+    }
 
     /// @brief Add an edge as a AABB containing the time swept quad.
     void addEdge(
@@ -123,6 +156,18 @@ public:
         const long index,
         const double inflation_radius = 0.0);
 
+    /// @brief Add an edge as a AABB.
+    void addEdge(
+        const Eigen::VectorX3d& edge_vertex0,
+        const Eigen::VectorX3d& edge_vertex1,
+        const long index,
+        const double inflation_radius = 0.0)
+    {
+        addEdge(
+            edge_vertex0, edge_vertex1, edge_vertex0, edge_vertex1, index,
+            inflation_radius);
+    }
+
     /// @brief Add all edges as AABBs containing the time swept quad.
     void addEdges(
         const Eigen::MatrixXd& vertices_t0,
@@ -130,7 +175,16 @@ public:
         const Eigen::MatrixXi& edges,
         const double inflation_radius = 0.0);
 
-    /// @brief Add an edge as a AABB containing the time swept quad.
+    /// @brief Add all edges as AABBs.
+    void addEdges(
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const double inflation_radius = 0.0)
+    {
+        addEdges(vertices, vertices, edges, inflation_radius);
+    }
+
+    /// @brief Add an edge as a AABB containing the time swept prism.
     void addFace(
         const Eigen::VectorX3d& face_vertex0_t0,
         const Eigen::VectorX3d& face_vertex1_t0,
@@ -141,12 +195,34 @@ public:
         const long index,
         const double inflation_radius = 0.0);
 
-    /// @brief Add all edges as AABBs containing the time swept quad.
+    /// @brief Add an edge as a AABB.
+    void addFace(
+        const Eigen::VectorX3d& face_vertex0,
+        const Eigen::VectorX3d& face_vertex1,
+        const Eigen::VectorX3d& face_vertex2,
+        const long index,
+        const double inflation_radius = 0.0)
+    {
+        addFace(
+            face_vertex0, face_vertex1, face_vertex2, face_vertex0,
+            face_vertex1, face_vertex2, index, inflation_radius);
+    }
+
+    /// @brief Add all edges as AABBs containing the time swept prism.
     void addFaces(
         const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
         const Eigen::MatrixXi& faces,
         const double inflation_radius = 0.0);
+
+    /// @brief Add all edges as AABBs.
+    void addFaces(
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& faces,
+        const double inflation_radius = 0.0)
+    {
+        addFaces(vertices, vertices, faces, inflation_radius);
+    }
 
     /// @brief Compute the candidate edge-vertex candidate collisisons.
     void getVertexEdgePairs(

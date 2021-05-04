@@ -172,4 +172,19 @@ double compute_minimum_distance(
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set);
 
+/// @brief Determine if the mesh has self intersections.
+///
+/// @param[in] V Vertex positions as rows of a matrix.
+/// @param[in] E Edges as rows of indicies into V.
+/// @param[in] F Triangular faces as rows of indicies into V.
+/// @param[in] vertex_group_ids A group ID per vertex such that vertices with
+///                             the same group id do not intersect. An empty
+///                             vector implies all vertices can collide with all
+///                             other vertices.
+bool has_intersections(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
+
 } // namespace ipc

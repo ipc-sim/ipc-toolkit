@@ -54,7 +54,7 @@ void merge_local_items(
     }
 }
 
-void HashGrid::resize(
+void HashGrid::resizeFromBox(
     const Eigen::ArrayMax3d& min, const Eigen::ArrayMax3d& max, double cellSize)
 {
     clear();
@@ -95,7 +95,7 @@ void HashGrid::resize(
     calculate_mesh_extents(vertices_t0, vertices_t1, mesh_min, mesh_max);
     double cell_size = suggest_good_voxel_size(
         vertices_t0, vertices_t1, edges, inflation_radius);
-    this->resize(
+    resizeFromBox(
         mesh_min - inflation_radius, mesh_max + inflation_radius, cell_size);
 }
 
@@ -128,7 +128,7 @@ void HashGrid::addVertex(
 {
     Eigen::ArrayMax3d lower_bound, upper_bound;
     calculate_vertex_extents(vertex_t0, vertex_t1, lower_bound, upper_bound);
-    this->addElement(
+    addElement(
         AABB(lower_bound - inflation_radius, upper_bound + inflation_radius),
         index, vertex_items);
 }
@@ -240,7 +240,7 @@ void HashGrid::addEdge(
     calculate_edge_extents(
         edge_vertex0_t0, edge_vertex1_t0, edge_vertex0_t1, edge_vertex1_t1,
         lower_bound, upper_bound);
-    this->addElement(
+    addElement(
         AABB(lower_bound - inflation_radius, upper_bound + inflation_radius),
         index, edge_items);
 }
@@ -325,7 +325,7 @@ void HashGrid::addFace(
         face_vertex0_t0, face_vertex1_t0, face_vertex2_t0, //
         face_vertex0_t1, face_vertex1_t1, face_vertex2_t1, //
         lower_bound, upper_bound);
-    this->addElement(
+    addElement(
         AABB(lower_bound - inflation_radius, upper_bound + inflation_radius),
         index, face_items);
 }

@@ -75,8 +75,6 @@ void SpatialHash::build(
         vertexMaxVAI[vi] = vVAIMax;
     });
 
-    voxel.clear(); // TODO: parallel insert
-
     // #ifdef IPC_TOOLKIT_PARALLEL_SH_CONSTRUCT
     //     std::vector<std::pair<int, int>> voxel_tmp;
     //
@@ -89,7 +87,6 @@ void SpatialHash::build(
     //     }
     // #endif
 
-    pointAndEdgeOccupancy.clear();
     pointAndEdgeOccupancy.resize(triStartInd);
 
     tbb::parallel_for(size_t(0), size_t(V0.rows()), [&](size_t vi) {
@@ -198,9 +195,7 @@ void SpatialHash::build(
 }
 
 void SpatialHash::queryPointForTriangles(
-    const Eigen::VectorX3d& p,
-    std::unordered_set<int>& triInds,
-    double radius) const
+    const Eigen::VectorX3d& p, unordered_set<int>& triInds, double radius) const
 {
     Eigen::ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(p.array() - radius, mins);
@@ -230,7 +225,7 @@ void SpatialHash::queryPointForTriangles(
 void SpatialHash::queryPointForTriangles(
     const Eigen::VectorX3d& p_t0,
     const Eigen::VectorX3d& p_t1,
-    std::unordered_set<int>& triInds,
+    unordered_set<int>& triInds,
     double radius) const
 {
     Eigen::ArrayMax3i mins, maxs;
@@ -261,9 +256,9 @@ void SpatialHash::queryPointForTriangles(
 void SpatialHash::queryPointForPrimitives(
     const Eigen::VectorX3d& p_t0,
     const Eigen::VectorX3d& p_t1,
-    std::unordered_set<int>& vertInds,
-    std::unordered_set<int>& edgeInds,
-    std::unordered_set<int>& triInds,
+    unordered_set<int>& vertInds,
+    unordered_set<int>& edgeInds,
+    unordered_set<int>& triInds,
     double radius) const
 {
     Eigen::ArrayMax3i mins, maxs;
@@ -483,7 +478,7 @@ void SpatialHash::queryTriangleForPoints(
     const Eigen::VectorX3d& t0,
     const Eigen::VectorX3d& t1,
     const Eigen::VectorX3d& t2,
-    std::unordered_set<int>& pointInds,
+    unordered_set<int>& pointInds,
     double radius) const
 {
     Eigen::VectorX3d leftBottom =
@@ -522,7 +517,7 @@ void SpatialHash::queryTriangleForPoints(
     const Eigen::VectorX3d& t0_t1,
     const Eigen::VectorX3d& t1_t1,
     const Eigen::VectorX3d& t2_t1,
-    std::unordered_set<int>& pointInds,
+    unordered_set<int>& pointInds,
     double radius) const
 {
     Eigen::VectorX3d leftBottom = t0_t0.array()
@@ -568,7 +563,7 @@ void SpatialHash::queryTriangleForEdges(
     const Eigen::VectorX3d& t0,
     const Eigen::VectorX3d& t1,
     const Eigen::VectorX3d& t2,
-    std::unordered_set<int>& edgeInds,
+    unordered_set<int>& edgeInds,
     double radius) const
 {
     Eigen::VectorX3d leftBottom = t0.array().min(t1.array()).min(t2.array());
@@ -601,7 +596,7 @@ void SpatialHash::queryTriangleForEdges(
 void SpatialHash::queryEdgeForTriangles(
     const Eigen::VectorX3d& e0,
     const Eigen::VectorX3d& e1,
-    std::unordered_set<int>& triInds,
+    unordered_set<int>& triInds,
     double radius) const
 {
     Eigen::VectorX3d leftBottom = e0.array().min(e1.array());
@@ -633,9 +628,9 @@ void SpatialHash::queryEdgeForTriangles(
 
 void SpatialHash::queryPointForPrimitives(
     int vi,
-    std::unordered_set<int>& vertInds,
-    std::unordered_set<int>& edgeInds,
-    std::unordered_set<int>& triInds) const
+    unordered_set<int>& vertInds,
+    unordered_set<int>& edgeInds,
+    unordered_set<int>& triInds) const
 {
     vertInds.clear();
     edgeInds.clear();
@@ -655,8 +650,7 @@ void SpatialHash::queryPointForPrimitives(
     }
 }
 
-void SpatialHash::queryPointForEdges(
-    int vi, std::unordered_set<int>& edgeInds) const
+void SpatialHash::queryPointForEdges(int vi, unordered_set<int>& edgeInds) const
 {
     edgeInds.clear();
     for (const auto& voxelInd : pointAndEdgeOccupancy[vi]) {
@@ -671,7 +665,7 @@ void SpatialHash::queryPointForEdges(
 }
 
 void SpatialHash::queryPointForTriangles(
-    int vi, std::unordered_set<int>& triInds) const
+    int vi, unordered_set<int>& triInds) const
 {
     triInds.clear();
     for (const auto& voxelInd : pointAndEdgeOccupancy[vi]) {
@@ -686,8 +680,7 @@ void SpatialHash::queryPointForTriangles(
 }
 
 // will only put edges with larger than eai index into edgeInds
-void SpatialHash::queryEdgeForEdges(
-    int eai, std::unordered_set<int>& edgeInds) const
+void SpatialHash::queryEdgeForEdges(int eai, unordered_set<int>& edgeInds) const
 {
     edgeInds.clear();
     for (const auto& voxelInd : pointAndEdgeOccupancy[eai + edgeStartInd]) {
@@ -707,7 +700,7 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     int eai,
-    std::unordered_set<int>& edgeInds) const
+    unordered_set<int>& edgeInds) const
 {
     const Eigen::VectorX3d& ea0_t0 = V0.row(E(eai, 0));
     const Eigen::VectorX3d& ea1_t0 = V0.row(E(eai, 1));
@@ -821,7 +814,7 @@ void SpatialHash::queryMeshForCandidates(
                     storages.local();
 
                 for (long vi = range.begin(); vi != range.end(); vi++) {
-                    std::unordered_set<int> edgeInds;
+                    unordered_set<int> edgeInds;
                     queryPointForEdges(vi, edgeInds);
 
                     for (const auto& ei : edgeInds) {
@@ -848,7 +841,7 @@ void SpatialHash::queryMeshForCandidates(
                     storages.local();
 
                 for (long eai = range.begin(); eai != range.end(); eai++) {
-                    std::unordered_set<int> edgeInds;
+                    unordered_set<int> edgeInds;
                     queryEdgeForEdges(eai, edgeInds);
 
                     for (const auto& ebi : edgeInds) {
@@ -878,7 +871,7 @@ void SpatialHash::queryMeshForCandidates(
                     storages.local();
 
                 for (long vi = range.begin(); vi != range.end(); vi++) {
-                    std::unordered_set<int> triInds;
+                    unordered_set<int> triInds;
                     queryPointForTriangles(vi, triInds);
 
                     for (const auto& fi : triInds) {
