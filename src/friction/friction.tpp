@@ -55,7 +55,7 @@ T compute_friction_potential(
             }
         });
 
-    T potential = 0;
+    T potential(0);
     for (const auto& local_potential : storage) {
         potential += local_potential;
     }
