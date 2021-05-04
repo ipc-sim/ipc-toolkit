@@ -8,7 +8,7 @@
 #include <ipc/utils/logger.hpp>
 #endif
 
-namespace Eigen {
+namespace ipc {
 
 // Matrix Projection onto Positive Definite Cone
 template <
@@ -26,10 +26,10 @@ project_to_pd(
     assert(eps > 0);
 
     // https://math.stackexchange.com/q/2776803
-    SelfAdjointEigenSolver<
+    Eigen::SelfAdjointEigenSolver<
         Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
         eigensolver(A);
-    if (eigensolver.info() != Success) {
+    if (eigensolver.info() != Eigen::Success) {
 #ifdef IPC_TOOLKIT_WITH_LOGGER
         ipc::logger().error(
             "unable to project matrix onto positive definite cone");
@@ -43,7 +43,7 @@ project_to_pd(
     if (eigensolver.eigenvalues()[0] > 0.0) {
         return A;
     }
-    DiagonalMatrix<double, Dynamic> D(eigensolver.eigenvalues());
+    Eigen::DiagonalMatrix<double, Eigen::Dynamic> D(eigensolver.eigenvalues());
     // Save a little time and only project the negative or zero values
     for (int i = 0; i < A.rows(); i++) {
         if (D.diagonal()[i] <= 0.0) {
@@ -69,10 +69,10 @@ project_to_psd(
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A)
 {
     // https://math.stackexchange.com/q/2776803
-    SelfAdjointEigenSolver<
+    Eigen::SelfAdjointEigenSolver<
         Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
         eigensolver(A);
-    if (eigensolver.info() != Success) {
+    if (eigensolver.info() != Eigen::Success) {
 #ifdef IPC_TOOLKIT_WITH_LOGGER
         ipc::logger().error(
             "unable to project matrix onto positive semi-definite cone");
@@ -86,7 +86,7 @@ project_to_psd(
     if (eigensolver.eigenvalues()[0] >= 0.0) {
         return A;
     }
-    DiagonalMatrix<double, Dynamic> D(eigensolver.eigenvalues());
+    Eigen::DiagonalMatrix<double, Eigen::Dynamic> D(eigensolver.eigenvalues());
     // Save a little time and only project the negative values
     for (int i = 0; i < A.rows(); i++) {
         if (D.diagonal()[i] < 0.0) {
@@ -100,7 +100,8 @@ project_to_psd(
 }
 
 template <typename DerivedA, typename DerivedB, typename Result>
-Result cross(const MatrixBase<DerivedA>& a, const MatrixBase<DerivedB>& b)
+Result cross(
+    const Eigen::MatrixBase<DerivedA>& a, const Eigen::MatrixBase<DerivedB>& b)
 {
     assert(a.size() == 3 && b.size() == 3);
     Result c(a.rows(), a.cols());
@@ -110,4 +111,4 @@ Result cross(const MatrixBase<DerivedA>& a, const MatrixBase<DerivedB>& b)
     return c;
 }
 
-} // namespace Eigen
+} // namespace ipc

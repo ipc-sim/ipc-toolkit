@@ -16,7 +16,7 @@ public:
 
     AABB() {}
 
-    AABB(const Eigen::ArrayMax3d& min, const Eigen::ArrayMax3d& max);
+    AABB(const ArrayMax3d& min, const ArrayMax3d& max);
 
     AABB(const AABB& aabb1, const AABB& aabb2)
         : AABB(aabb1.min.min(aabb2.min), aabb1.max.max(aabb2.max))
@@ -32,19 +32,16 @@ public:
 
     static bool are_overlapping(const AABB& a, const AABB& b);
 
-    inline const Eigen::ArrayMax3d& getMin() const { return min; }
-    inline const Eigen::ArrayMax3d& getMax() const { return max; }
-    inline const Eigen::ArrayMax3d& getHalfExtent() const
-    {
-        return half_extent;
-    }
-    inline const Eigen::ArrayMax3d& getCenter() const { return center; }
+    inline const ArrayMax3d& getMin() const { return min; }
+    inline const ArrayMax3d& getMax() const { return max; }
+    inline const ArrayMax3d& getHalfExtent() const { return half_extent; }
+    inline const ArrayMax3d& getCenter() const { return center; }
 
 protected:
-    Eigen::ArrayMax3d min;
-    Eigen::ArrayMax3d max;
-    Eigen::ArrayMax3d half_extent;
-    Eigen::ArrayMax3d center;
+    ArrayMax3d min;
+    ArrayMax3d max;
+    ArrayMax3d half_extent;
+    ArrayMax3d center;
 };
 
 /// @brief An entry into the hash grid as a (key, value) pair.
@@ -79,14 +76,12 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     double cellSize() const { return m_cellSize; }
-    const Eigen::ArrayMax3i& gridSize() const { return m_gridSize; }
-    const Eigen::ArrayMax3d& domainMin() const { return m_domainMin; }
-    const Eigen::ArrayMax3d& domainMax() const { return m_domainMax; }
+    const ArrayMax3i& gridSize() const { return m_gridSize; }
+    const ArrayMax3d& domainMin() const { return m_domainMin; }
+    const ArrayMax3d& domainMax() const { return m_domainMax; }
 
     void resizeFromBox(
-        const Eigen::ArrayMax3d& min,
-        const Eigen::ArrayMax3d& max,
-        double cellSize);
+        const ArrayMax3d& min, const ArrayMax3d& max, double cellSize);
 
     void resize(
         const Eigen::MatrixXd& vertices_t0,
@@ -104,14 +99,14 @@ public:
 
     /// @brief Add a vertex as a AABB containing the time swept edge.
     void addVertex(
-        const Eigen::VectorX3d& vertex_t0,
-        const Eigen::VectorX3d& vertex_t1,
+        const VectorMax3d& vertex_t0,
+        const VectorMax3d& vertex_t1,
         const long index,
         const double inflation_radius = 0.0);
 
     /// @brief Add a vertex.
     void addVertex(
-        const Eigen::VectorX3d& vertex,
+        const VectorMax3d& vertex,
         const long index,
         const double inflation_radius = 0.0)
     {
@@ -149,17 +144,17 @@ public:
 
     /// @brief Add an edge as a AABB containing the time swept quad.
     void addEdge(
-        const Eigen::VectorX3d& edge_vertex0_t0,
-        const Eigen::VectorX3d& edge_vertex1_t0,
-        const Eigen::VectorX3d& edge_vertex0_t1,
-        const Eigen::VectorX3d& edge_vertex1_t1,
+        const VectorMax3d& edge_vertex0_t0,
+        const VectorMax3d& edge_vertex1_t0,
+        const VectorMax3d& edge_vertex0_t1,
+        const VectorMax3d& edge_vertex1_t1,
         const long index,
         const double inflation_radius = 0.0);
 
     /// @brief Add an edge as a AABB.
     void addEdge(
-        const Eigen::VectorX3d& edge_vertex0,
-        const Eigen::VectorX3d& edge_vertex1,
+        const VectorMax3d& edge_vertex0,
+        const VectorMax3d& edge_vertex1,
         const long index,
         const double inflation_radius = 0.0)
     {
@@ -186,20 +181,20 @@ public:
 
     /// @brief Add an edge as a AABB containing the time swept prism.
     void addFace(
-        const Eigen::VectorX3d& face_vertex0_t0,
-        const Eigen::VectorX3d& face_vertex1_t0,
-        const Eigen::VectorX3d& face_vertex2_t0,
-        const Eigen::VectorX3d& face_vertex0_t1,
-        const Eigen::VectorX3d& face_vertex1_t1,
-        const Eigen::VectorX3d& face_vertex2_t1,
+        const VectorMax3d& face_vertex0_t0,
+        const VectorMax3d& face_vertex1_t0,
+        const VectorMax3d& face_vertex2_t0,
+        const VectorMax3d& face_vertex0_t1,
+        const VectorMax3d& face_vertex1_t1,
+        const VectorMax3d& face_vertex2_t1,
         const long index,
         const double inflation_radius = 0.0);
 
     /// @brief Add an edge as a AABB.
     void addFace(
-        const Eigen::VectorX3d& face_vertex0,
-        const Eigen::VectorX3d& face_vertex1,
-        const Eigen::VectorX3d& face_vertex2,
+        const VectorMax3d& face_vertex0,
+        const VectorMax3d& face_vertex1,
+        const VectorMax3d& face_vertex2,
         const long index,
         const double inflation_radius = 0.0)
     {
@@ -264,30 +259,30 @@ protected:
 
     /// @brief Add a vertex as a AABB containing the time swept edge.
     void addVertex(
-        const Eigen::VectorX3d& vertex_t0,
-        const Eigen::VectorX3d& vertex_t1,
+        const VectorMax3d& vertex_t0,
+        const VectorMax3d& vertex_t1,
         const long index,
         std::vector<HashItem>& vertex_items,
         const double inflation_radius = 0.0) const;
 
     /// @brief Add an edge as a AABB containing the time swept quad.
     void addEdge(
-        const Eigen::VectorX3d& edge_vertex0_t0,
-        const Eigen::VectorX3d& edge_vertex1_t0,
-        const Eigen::VectorX3d& edge_vertex0_t1,
-        const Eigen::VectorX3d& edge_vertex1_t1,
+        const VectorMax3d& edge_vertex0_t0,
+        const VectorMax3d& edge_vertex1_t0,
+        const VectorMax3d& edge_vertex0_t1,
+        const VectorMax3d& edge_vertex1_t1,
         const long index,
         std::vector<HashItem>& edge_items,
         const double inflation_radius = 0.0) const;
 
     /// @brief Add an edge as a AABB containing the time swept quad.
     void addFace(
-        const Eigen::VectorX3d& face_vertex0_t0,
-        const Eigen::VectorX3d& face_vertex1_t0,
-        const Eigen::VectorX3d& face_vertex2_t0,
-        const Eigen::VectorX3d& face_vertex0_t1,
-        const Eigen::VectorX3d& face_vertex1_t1,
-        const Eigen::VectorX3d& face_vertex2_t1,
+        const VectorMax3d& face_vertex0_t0,
+        const VectorMax3d& face_vertex1_t0,
+        const VectorMax3d& face_vertex2_t0,
+        const VectorMax3d& face_vertex0_t1,
+        const VectorMax3d& face_vertex1_t1,
+        const VectorMax3d& face_vertex2_t1,
         const long index,
         std::vector<HashItem>& face_items,
         const double inflation_radius = 0.0) const;
@@ -304,9 +299,9 @@ protected:
 
 protected:
     double m_cellSize;
-    Eigen::ArrayMax3i m_gridSize;
-    Eigen::ArrayMax3d m_domainMin;
-    Eigen::ArrayMax3d m_domainMax;
+    ArrayMax3i m_gridSize;
+    ArrayMax3d m_domainMin;
+    ArrayMax3d m_domainMax;
 
     std::vector<HashItem> m_vertexItems;
     std::vector<HashItem> m_edgeItems;

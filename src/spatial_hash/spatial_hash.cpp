@@ -48,7 +48,7 @@ void SpatialHash::build(
         V0.colwise().maxCoeff().cwiseMax(V1.colwise().maxCoeff()).array()
         + inflation_radius;
     one_div_voxelSize = 1.0 / voxelSize;
-    Eigen::ArrayMax3d range = rightTopCorner - leftBottomCorner;
+    ArrayMax3d range = rightTopCorner - leftBottomCorner;
     voxelCount = (range * one_div_voxelSize).ceil().template cast<int>();
     if (voxelCount.minCoeff() <= 0) {
         // cast overflow due to huge search direction
@@ -61,10 +61,10 @@ void SpatialHash::build(
     triStartInd = edgeStartInd + E.rows();
 
     // precompute vVAI
-    std::vector<Eigen::ArrayMax3i> vertexMinVAI(V0.rows());
-    std::vector<Eigen::ArrayMax3i> vertexMaxVAI(V0.rows());
+    std::vector<ArrayMax3i> vertexMinVAI(V0.rows());
+    std::vector<ArrayMax3i> vertexMaxVAI(V0.rows());
     tbb::parallel_for(size_t(0), size_t(V0.rows()), [&](size_t vi) {
-        Eigen::ArrayMax3i vVAIMin, vVAIMax;
+        ArrayMax3i vVAIMin, vVAIMax;
         locateVoxelAxisIndex(
             V0.row(vi).cwiseMin(V1.row(vi)).array() - inflation_radius,
             vVAIMin);
@@ -90,8 +90,8 @@ void SpatialHash::build(
     pointAndEdgeOccupancy.resize(triStartInd);
 
     tbb::parallel_for(size_t(0), size_t(V0.rows()), [&](size_t vi) {
-        const Eigen::ArrayMax3i& mins = vertexMinVAI[vi];
-        const Eigen::ArrayMax3i& maxs = vertexMaxVAI[vi];
+        const ArrayMax3i& mins = vertexMinVAI[vi];
+        const ArrayMax3i& maxs = vertexMaxVAI[vi];
         pointAndEdgeOccupancy[vi].reserve((maxs - mins + 1).prod());
         for (int iz = mins[2]; iz <= maxs[2]; iz++) {
             int zOffset = iz * voxelCount0x1;
@@ -107,10 +107,8 @@ void SpatialHash::build(
     tbb::parallel_for(size_t(0), size_t(E.rows()), [&](size_t ei) {
         int eiInd = ei + edgeStartInd;
 
-        Eigen::ArrayMax3i mins =
-            vertexMinVAI[E(ei, 0)].min(vertexMinVAI[E(ei, 1)]);
-        Eigen::ArrayMax3i maxs =
-            vertexMaxVAI[E(ei, 0)].max(vertexMaxVAI[E(ei, 1)]);
+        ArrayMax3i mins = vertexMinVAI[E(ei, 0)].min(vertexMinVAI[E(ei, 1)]);
+        ArrayMax3i maxs = vertexMaxVAI[E(ei, 0)].max(vertexMaxVAI[E(ei, 1)]);
 
         pointAndEdgeOccupancy[eiInd].reserve((maxs - mins + 1).prod());
         for (int iz = mins[2]; iz <= maxs[2]; iz++) {
@@ -126,12 +124,12 @@ void SpatialHash::build(
 
     std::vector<std::vector<int>> voxelLoc_f(F.rows());
     tbb::parallel_for(size_t(0), size_t(F.rows()), [&](size_t fi) {
-        Eigen::ArrayMax3i mins = vertexMinVAI[F(fi, 0)]
-                                     .min(vertexMinVAI[F(fi, 1)])
-                                     .min(vertexMinVAI[F(fi, 2)]);
-        Eigen::ArrayMax3i maxs = vertexMaxVAI[F(fi, 0)]
-                                     .max(vertexMaxVAI[F(fi, 1)])
-                                     .max(vertexMaxVAI[F(fi, 2)]);
+        ArrayMax3i mins = vertexMinVAI[F(fi, 0)]
+                              .min(vertexMinVAI[F(fi, 1)])
+                              .min(vertexMinVAI[F(fi, 2)]);
+        ArrayMax3i maxs = vertexMaxVAI[F(fi, 0)]
+                              .max(vertexMaxVAI[F(fi, 1)])
+                              .max(vertexMaxVAI[F(fi, 2)]);
 
         for (int iz = mins[2]; iz <= maxs[2]; iz++) {
             int zOffset = iz * voxelCount0x1;
@@ -195,12 +193,12 @@ void SpatialHash::build(
 }
 
 void SpatialHash::queryPointForTriangles(
-    const Eigen::VectorX3d& p, unordered_set<int>& triInds, double radius) const
+    const VectorMax3d& p, unordered_set<int>& triInds, double radius) const
 {
-    Eigen::ArrayMax3i mins, maxs;
+    ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(p.array() - radius, mins);
     locateVoxelAxisIndex(p.array() + radius, maxs);
-    mins = mins.max(Eigen::ArrayMax3i::Zero(dim));
+    mins = mins.max(ArrayMax3i::Zero(dim));
     maxs = maxs.min(voxelCount - 1);
 
     triInds.clear();
@@ -223,15 +221,15 @@ void SpatialHash::queryPointForTriangles(
 }
 
 void SpatialHash::queryPointForTriangles(
-    const Eigen::VectorX3d& p_t0,
-    const Eigen::VectorX3d& p_t1,
+    const VectorMax3d& p_t0,
+    const VectorMax3d& p_t1,
     unordered_set<int>& triInds,
     double radius) const
 {
-    Eigen::ArrayMax3i mins, maxs;
+    ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(p_t0.array().min((p_t1).array()) - radius, mins);
     locateVoxelAxisIndex(p_t0.array().max((p_t1).array()) + radius, maxs);
-    mins = mins.max(Eigen::ArrayMax3i::Zero(dim));
+    mins = mins.max(ArrayMax3i::Zero(dim));
     maxs = maxs.min(voxelCount - 1);
 
     triInds.clear();
@@ -254,17 +252,17 @@ void SpatialHash::queryPointForTriangles(
 }
 
 void SpatialHash::queryPointForPrimitives(
-    const Eigen::VectorX3d& p_t0,
-    const Eigen::VectorX3d& p_t1,
+    const VectorMax3d& p_t0,
+    const VectorMax3d& p_t1,
     unordered_set<int>& vertInds,
     unordered_set<int>& edgeInds,
     unordered_set<int>& triInds,
     double radius) const
 {
-    Eigen::ArrayMax3i mins, maxs;
+    ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(p_t0.array().min((p_t1).array()) - radius, mins);
     locateVoxelAxisIndex(p_t0.array().max((p_t1).array()) + radius, maxs);
-    mins = mins.max(Eigen::ArrayMax3i::Zero(dim));
+    mins = mins.max(ArrayMax3i::Zero(dim));
     maxs = maxs.min(voxelCount - 1);
 
     vertInds.clear();
@@ -293,18 +291,18 @@ void SpatialHash::queryPointForPrimitives(
 }
 
 void SpatialHash::queryEdgeForPE(
-    const Eigen::VectorX3d& e0,
-    const Eigen::VectorX3d& e1,
+    const VectorMax3d& e0,
+    const VectorMax3d& e1,
     std::vector<int>& vertInds,
     std::vector<int>& edgeInds,
     double radius) const
 {
-    Eigen::VectorX3d leftBottom = e0.array().min(e1.array()) - radius;
-    Eigen::VectorX3d rightTop = e0.array().max(e1.array()) + radius;
-    Eigen::ArrayMax3i mins, maxs;
+    VectorMax3d leftBottom = e0.array().min(e1.array()) - radius;
+    VectorMax3d rightTop = e0.array().max(e1.array()) + radius;
+    ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(leftBottom, mins);
     locateVoxelAxisIndex(rightTop, maxs);
-    mins = mins.max(Eigen::ArrayMax3i::Zero(dim));
+    mins = mins.max(ArrayMax3i::Zero(dim));
     maxs = maxs.min(voxelCount - 1);
 
     vertInds.clear();
@@ -336,18 +334,18 @@ void SpatialHash::queryEdgeForPE(
 }
 
 void SpatialHash::queryEdgeForEdges(
-    const Eigen::VectorX3d& e0,
-    const Eigen::VectorX3d& e1,
+    const VectorMax3d& e0,
+    const VectorMax3d& e1,
     std::vector<int>& edgeInds,
     double radius,
     int eai) const
 {
-    Eigen::VectorX3d leftBottom = e0.array().min(e1.array()) - radius;
-    Eigen::VectorX3d rightTop = e0.array().max(e1.array()) + radius;
-    Eigen::ArrayMax3i mins, maxs;
+    VectorMax3d leftBottom = e0.array().min(e1.array()) - radius;
+    VectorMax3d rightTop = e0.array().max(e1.array()) + radius;
+    ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(leftBottom, mins);
     locateVoxelAxisIndex(rightTop, maxs);
-    mins = mins.max(Eigen::ArrayMax3i::Zero(dim));
+    mins = mins.max(ArrayMax3i::Zero(dim));
     maxs = maxs.min(voxelCount - 1);
 
     edgeInds.clear();
@@ -378,18 +376,18 @@ void SpatialHash::queryEdgeForEdges(
 void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
-    const Eigen::VectorX3d& ea0,
-    const Eigen::VectorX3d& ea1,
+    const VectorMax3d& ea0,
+    const VectorMax3d& ea1,
     std::vector<int>& edgeInds,
     double radius,
     int eai) const
 {
-    Eigen::VectorX3d leftBottom = ea0.array().min(ea1.array()) - radius;
-    Eigen::VectorX3d rightTop = ea0.array().max(ea1.array()) + radius;
-    Eigen::ArrayMax3i mins, maxs;
+    VectorMax3d leftBottom = ea0.array().min(ea1.array()) - radius;
+    VectorMax3d rightTop = ea0.array().max(ea1.array()) + radius;
+    ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(leftBottom, mins);
     locateVoxelAxisIndex(rightTop, maxs);
-    mins = mins.max(Eigen::ArrayMax3i::Zero(dim));
+    mins = mins.max(ArrayMax3i::Zero(dim));
     maxs = maxs.min(voxelCount - 1);
 
     edgeInds.clear();
@@ -405,11 +403,11 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
                         if (indI >= edgeStartInd && indI < triStartInd
                             && indI - edgeStartInd > eai) {
                             int ebi = indI - edgeStartInd;
-                            const Eigen::VectorX3d& eb0 = V.row(E(ebi, 0));
-                            const Eigen::VectorX3d& eb1 = V.row(E(ebi, 1));
-                            Eigen::ArrayMax3d bboxEBTopRight =
+                            const VectorMax3d& eb0 = V.row(E(ebi, 0));
+                            const VectorMax3d& eb1 = V.row(E(ebi, 1));
+                            ArrayMax3d bboxEBTopRight =
                                 eb0.array().max(eb1.array());
-                            Eigen::ArrayMax3d bboxEBBottomLeft =
+                            ArrayMax3d bboxEBBottomLeft =
                                 eb0.array().min(eb1.array());
                             if (!((bboxEBBottomLeft - rightTop.array() > 0.0)
                                       .any()
@@ -429,26 +427,26 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
 }
 
 void SpatialHash::queryEdgeForEdges(
-    const Eigen::VectorX3d& ea0_t0,
-    const Eigen::VectorX3d& ea1_t0,
-    const Eigen::VectorX3d& ea0_t1,
-    const Eigen::VectorX3d& ea1_t1,
+    const VectorMax3d& ea0_t0,
+    const VectorMax3d& ea1_t0,
+    const VectorMax3d& ea0_t1,
+    const VectorMax3d& ea1_t1,
     std::vector<int>& edgeInds,
     double radius,
     int eai) const
 {
-    Eigen::VectorX3d leftBottom = ea0_t0.array()
-                                      .min(ea1_t0.array())
-                                      .min(ea0_t1.array())
-                                      .min(ea1_t1.array());
-    Eigen::VectorX3d rightTop = ea0_t0.array()
-                                    .max(ea1_t0.array())
-                                    .max(ea0_t1.array())
-                                    .max(ea1_t1.array());
-    Eigen::ArrayMax3i mins, maxs;
+    VectorMax3d leftBottom = ea0_t0.array()
+                                 .min(ea1_t0.array())
+                                 .min(ea0_t1.array())
+                                 .min(ea1_t1.array());
+    VectorMax3d rightTop = ea0_t0.array()
+                               .max(ea1_t0.array())
+                               .max(ea0_t1.array())
+                               .max(ea1_t1.array());
+    ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(leftBottom.array() - radius, mins);
     locateVoxelAxisIndex(rightTop.array() + radius, maxs);
-    mins = mins.max(Eigen::ArrayMax3i::Zero(dim));
+    mins = mins.max(ArrayMax3i::Zero(dim));
     maxs = maxs.min(voxelCount - 1);
 
     edgeInds.clear();
@@ -475,20 +473,19 @@ void SpatialHash::queryEdgeForEdges(
 }
 
 void SpatialHash::queryTriangleForPoints(
-    const Eigen::VectorX3d& t0,
-    const Eigen::VectorX3d& t1,
-    const Eigen::VectorX3d& t2,
+    const VectorMax3d& t0,
+    const VectorMax3d& t1,
+    const VectorMax3d& t2,
     unordered_set<int>& pointInds,
     double radius) const
 {
-    Eigen::VectorX3d leftBottom =
+    VectorMax3d leftBottom =
         t0.array().min(t1.array()).min(t2.array()) - radius;
-    Eigen::VectorX3d rightTop =
-        t0.array().max(t1.array()).max(t2.array()) + radius;
-    Eigen::ArrayMax3i mins, maxs;
+    VectorMax3d rightTop = t0.array().max(t1.array()).max(t2.array()) + radius;
+    ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(leftBottom.array() - radius, mins);
     locateVoxelAxisIndex(rightTop.array() + radius, maxs);
-    mins = mins.max(Eigen::ArrayMax3i::Zero(dim));
+    mins = mins.max(ArrayMax3i::Zero(dim));
     maxs = maxs.min(voxelCount - 1);
 
     pointInds.clear();
@@ -511,33 +508,33 @@ void SpatialHash::queryTriangleForPoints(
 }
 
 void SpatialHash::queryTriangleForPoints(
-    const Eigen::VectorX3d& t0_t0,
-    const Eigen::VectorX3d& t1_t0,
-    const Eigen::VectorX3d& t2_t0,
-    const Eigen::VectorX3d& t0_t1,
-    const Eigen::VectorX3d& t1_t1,
-    const Eigen::VectorX3d& t2_t1,
+    const VectorMax3d& t0_t0,
+    const VectorMax3d& t1_t0,
+    const VectorMax3d& t2_t0,
+    const VectorMax3d& t0_t1,
+    const VectorMax3d& t1_t1,
+    const VectorMax3d& t2_t1,
     unordered_set<int>& pointInds,
     double radius) const
 {
-    Eigen::VectorX3d leftBottom = t0_t0.array()
-                                      .min(t1_t0.array())
-                                      .min(t2_t0.array())
-                                      .min(t0_t1.array())
-                                      .min(t1_t1.array())
-                                      .min(t2_t1.array())
+    VectorMax3d leftBottom = t0_t0.array()
+                                 .min(t1_t0.array())
+                                 .min(t2_t0.array())
+                                 .min(t0_t1.array())
+                                 .min(t1_t1.array())
+                                 .min(t2_t1.array())
         - radius;
-    Eigen::VectorX3d rightTop = t0_t0.array()
-                                    .max(t1_t0.array())
-                                    .max(t2_t0.array())
-                                    .max(t0_t1.array())
-                                    .max(t1_t1.array())
-                                    .max(t2_t1.array())
+    VectorMax3d rightTop = t0_t0.array()
+                               .max(t1_t0.array())
+                               .max(t2_t0.array())
+                               .max(t0_t1.array())
+                               .max(t1_t1.array())
+                               .max(t2_t1.array())
         + radius;
-    Eigen::ArrayMax3i mins, maxs;
+    ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(leftBottom.array(), mins);
     locateVoxelAxisIndex(rightTop.array(), maxs);
-    mins = mins.max(Eigen::ArrayMax3i::Zero(dim));
+    mins = mins.max(ArrayMax3i::Zero(dim));
     maxs = maxs.min(voxelCount - 1);
 
     pointInds.clear();
@@ -560,18 +557,18 @@ void SpatialHash::queryTriangleForPoints(
 }
 
 void SpatialHash::queryTriangleForEdges(
-    const Eigen::VectorX3d& t0,
-    const Eigen::VectorX3d& t1,
-    const Eigen::VectorX3d& t2,
+    const VectorMax3d& t0,
+    const VectorMax3d& t1,
+    const VectorMax3d& t2,
     unordered_set<int>& edgeInds,
     double radius) const
 {
-    Eigen::VectorX3d leftBottom = t0.array().min(t1.array()).min(t2.array());
-    Eigen::VectorX3d rightTop = t0.array().max(t1.array()).max(t2.array());
-    Eigen::ArrayMax3i mins, maxs;
+    VectorMax3d leftBottom = t0.array().min(t1.array()).min(t2.array());
+    VectorMax3d rightTop = t0.array().max(t1.array()).max(t2.array());
+    ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(leftBottom.array() - radius, mins);
     locateVoxelAxisIndex(rightTop.array() + radius, maxs);
-    mins = mins.max(Eigen::ArrayMax3i::Zero(dim));
+    mins = mins.max(ArrayMax3i::Zero(dim));
     maxs = maxs.min(voxelCount - 1);
 
     edgeInds.clear();
@@ -594,17 +591,17 @@ void SpatialHash::queryTriangleForEdges(
 }
 
 void SpatialHash::queryEdgeForTriangles(
-    const Eigen::VectorX3d& e0,
-    const Eigen::VectorX3d& e1,
+    const VectorMax3d& e0,
+    const VectorMax3d& e1,
     unordered_set<int>& triInds,
     double radius) const
 {
-    Eigen::VectorX3d leftBottom = e0.array().min(e1.array());
-    Eigen::VectorX3d rightTop = e0.array().max(e1.array());
-    Eigen::ArrayMax3i mins, maxs;
+    VectorMax3d leftBottom = e0.array().min(e1.array());
+    VectorMax3d rightTop = e0.array().max(e1.array());
+    ArrayMax3i mins, maxs;
     locateVoxelAxisIndex(leftBottom.array() - radius, mins);
     locateVoxelAxisIndex(rightTop.array() + radius, maxs);
-    mins = mins.max(Eigen::ArrayMax3i::Zero(dim));
+    mins = mins.max(ArrayMax3i::Zero(dim));
     maxs = maxs.min(voxelCount - 1);
 
     triInds.clear();
@@ -702,19 +699,19 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
     int eai,
     unordered_set<int>& edgeInds) const
 {
-    const Eigen::VectorX3d& ea0_t0 = V0.row(E(eai, 0));
-    const Eigen::VectorX3d& ea1_t0 = V0.row(E(eai, 1));
-    const Eigen::VectorX3d& ea0_t1 = V1.row(E(eai, 0));
-    const Eigen::VectorX3d& ea1_t1 = V1.row(E(eai, 1));
+    const VectorMax3d& ea0_t0 = V0.row(E(eai, 0));
+    const VectorMax3d& ea1_t0 = V0.row(E(eai, 1));
+    const VectorMax3d& ea0_t1 = V1.row(E(eai, 0));
+    const VectorMax3d& ea1_t1 = V1.row(E(eai, 1));
 
-    Eigen::ArrayMax3d bboxEATopRight = ea0_t0.array()
-                                           .max(ea1_t0.array())
-                                           .max(ea0_t1.array())
-                                           .max(ea1_t1.array());
-    Eigen::ArrayMax3d bboxEABottomLeft = ea0_t0.array()
-                                             .min(ea1_t0.array())
-                                             .min(ea0_t1.array())
-                                             .min(ea1_t1.array());
+    ArrayMax3d bboxEATopRight = ea0_t0.array()
+                                    .max(ea1_t0.array())
+                                    .max(ea0_t1.array())
+                                    .max(ea1_t1.array());
+    ArrayMax3d bboxEABottomLeft = ea0_t0.array()
+                                      .min(ea1_t0.array())
+                                      .min(ea0_t1.array())
+                                      .min(ea1_t1.array());
 
     edgeInds.clear();
     for (const auto& voxelInd : pointAndEdgeOccupancy[eai + edgeStartInd]) {
@@ -724,19 +721,19 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
             if (indI >= edgeStartInd && indI < triStartInd
                 && indI - edgeStartInd > eai) {
                 int ebi = indI - edgeStartInd;
-                const Eigen::VectorX3d& eb0_t0 = V0.row(E(ebi, 0));
-                const Eigen::VectorX3d& eb1_t0 = V0.row(E(ebi, 1));
-                const Eigen::VectorX3d& eb0_t1 = V1.row(E(ebi, 0));
-                const Eigen::VectorX3d& eb1_t1 = V1.row(E(ebi, 1));
+                const VectorMax3d& eb0_t0 = V0.row(E(ebi, 0));
+                const VectorMax3d& eb1_t0 = V0.row(E(ebi, 1));
+                const VectorMax3d& eb0_t1 = V1.row(E(ebi, 0));
+                const VectorMax3d& eb1_t1 = V1.row(E(ebi, 1));
 
-                Eigen::ArrayMax3d bboxEBTopRight = eb0_t0.array()
-                                                       .max(eb1_t0.array())
-                                                       .max(eb0_t1.array())
-                                                       .max(eb1_t1.array());
-                Eigen::ArrayMax3d bboxEBBottomLeft = eb0_t0.array()
-                                                         .min(eb1_t0.array())
-                                                         .min(eb0_t1.array())
-                                                         .min(eb1_t1.array());
+                ArrayMax3d bboxEBTopRight = eb0_t0.array()
+                                                .max(eb1_t0.array())
+                                                .max(eb0_t1.array())
+                                                .max(eb1_t1.array());
+                ArrayMax3d bboxEBBottomLeft = eb0_t0.array()
+                                                  .min(eb1_t0.array())
+                                                  .min(eb0_t1.array())
+                                                  .min(eb1_t1.array());
 
                 if (!((bboxEBBottomLeft - bboxEATopRight > 0.0).any()
                       || (bboxEABottomLeft - bboxEBTopRight > 0.0).any())) {
@@ -893,15 +890,15 @@ void SpatialHash::queryMeshForCandidates(
     merge_local_candidates(storages, candidates);
 }
 
-int SpatialHash::locateVoxelIndex(const Eigen::VectorX3d& p) const
+int SpatialHash::locateVoxelIndex(const VectorMax3d& p) const
 {
-    Eigen::ArrayMax3i voxelAxisIndex;
+    ArrayMax3i voxelAxisIndex;
     locateVoxelAxisIndex(p, voxelAxisIndex);
     return voxelAxisIndex2VoxelIndex(voxelAxisIndex.data());
 }
 
 void SpatialHash::SpatialHash::locateVoxelAxisIndex(
-    const Eigen::VectorX3d& p, Eigen::ArrayMax3i& voxelAxisIndex) const
+    const VectorMax3d& p, ArrayMax3i& voxelAxisIndex) const
 {
     voxelAxisIndex = ((p - leftBottomCorner) * one_div_voxelSize)
                          .array()

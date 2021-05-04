@@ -30,12 +30,12 @@ bool point_triangle_aabb_cd(
 // Continous collision detection
 
 bool point_edge_aabb_ccd(
-    const Eigen::VectorX3d& p_t0,
-    const Eigen::VectorX3d& e0_t0,
-    const Eigen::VectorX3d& e1_t0,
-    const Eigen::VectorX3d& p_t1,
-    const Eigen::VectorX3d& e0_t1,
-    const Eigen::VectorX3d& e1_t1,
+    const VectorMax3d& p_t0,
+    const VectorMax3d& e0_t0,
+    const VectorMax3d& e1_t0,
+    const VectorMax3d& p_t1,
+    const VectorMax3d& e0_t1,
+    const VectorMax3d& e1_t1,
     double dist);
 
 bool edge_edge_aabb_ccd(

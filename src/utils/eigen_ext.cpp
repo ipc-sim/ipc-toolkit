@@ -1,5 +1,5 @@
 #include <ipc/utils/eigen_ext.hpp>
 
-namespace Eigen {
+namespace ipc {
 
-} // namespace Eigen
+} // namespace ipc

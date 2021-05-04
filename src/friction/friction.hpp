@@ -55,7 +55,7 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     const Eigen::MatrixXi& F,
     const FrictionConstraints& friction_constraint_set,
     double epsv_times_h,
-    bool project_to_psd = true);
+    bool project_hessian_to_psd = true);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Compute potential and derivatives for a single constraint.
@@ -113,14 +113,14 @@ inline T compute_friction_potential(
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename DerivedDP0, typename DerivedDP1>
-inline Eigen::VectorX6d compute_friction_potential_gradient(
+inline VectorMax6d compute_friction_potential_gradient(
     const Eigen::MatrixBase<DerivedDP0>& dp0,
     const Eigen::MatrixBase<DerivedDP1>& dp1,
     const VertexVertexFrictionConstraint& friction_constraint,
     double epsv_times_h);
 
 template <typename DerivedDP, typename DerivedDE0, typename DerivedDE1>
-inline Eigen::VectorX9d compute_friction_potential_gradient(
+inline VectorMax9d compute_friction_potential_gradient(
     const Eigen::MatrixBase<DerivedDP>& dp,
     const Eigen::MatrixBase<DerivedDE0>& de0,
     const Eigen::MatrixBase<DerivedDE1>& de1,
@@ -132,7 +132,7 @@ template <
     typename DerivedDEA1,
     typename DerivedDEB0,
     typename DerivedDEB1>
-inline Eigen::VectorX12d compute_friction_potential_gradient(
+inline VectorMax12d compute_friction_potential_gradient(
     const Eigen::MatrixBase<DerivedDEA0>& dea0,
     const Eigen::MatrixBase<DerivedDEA1>& dea1,
     const Eigen::MatrixBase<DerivedDEB0>& deb0,
@@ -145,7 +145,7 @@ template <
     typename DerivedDT0,
     typename DerivedDT1,
     typename DerivedDT2>
-inline Eigen::VectorX12d compute_friction_potential_gradient(
+inline VectorMax12d compute_friction_potential_gradient(
     const Eigen::MatrixBase<DerivedDP>& dp,
     const Eigen::MatrixBase<DerivedDT0>& dt0,
     const Eigen::MatrixBase<DerivedDT1>& dt1,
@@ -156,49 +156,49 @@ inline Eigen::VectorX12d compute_friction_potential_gradient(
 ///////////////////////////////////////////////////////////////////////////////
 
 template <typename DerivedDP0, typename DerivedDP1>
-inline Eigen::MatrixXX12d compute_friction_potential_hessian(
+inline MatrixMax12d compute_friction_potential_hessian(
     const Eigen::MatrixBase<DerivedDP0>& dp0,
     const Eigen::MatrixBase<DerivedDP1>& dp1,
     const VertexVertexFrictionConstraint& friction_constraint,
     double epsv_times_h,
-    bool project_to_psd = true);
+    bool project_hessian_to_psd = true);
 
 template <typename DerivedDP, typename DerivedDE0, typename DerivedDE1>
-inline Eigen::MatrixXX12d compute_friction_potential_hessian(
+inline MatrixMax12d compute_friction_potential_hessian(
     const Eigen::MatrixBase<DerivedDP>& dp,
     const Eigen::MatrixBase<DerivedDE0>& de0,
     const Eigen::MatrixBase<DerivedDE1>& de1,
     const EdgeVertexFrictionConstraint& friction_constraint,
     double epsv_times_h,
-    bool project_to_psd = true);
+    bool project_hessian_to_psd = true);
 
 template <
     typename DerivedDEA0,
     typename DerivedDEA1,
     typename DerivedDEB0,
     typename DerivedDEB1>
-inline Eigen::MatrixXX12d compute_friction_potential_hessian(
+inline MatrixMax12d compute_friction_potential_hessian(
     const Eigen::MatrixBase<DerivedDEA0>& dea0,
     const Eigen::MatrixBase<DerivedDEA1>& dea1,
     const Eigen::MatrixBase<DerivedDEB0>& deb0,
     const Eigen::MatrixBase<DerivedDEB1>& deb1,
     const EdgeEdgeFrictionConstraint& friction_constraint,
     double epsv_times_h,
-    bool project_to_psd = true);
+    bool project_hessian_to_psd = true);
 
 template <
     typename DerivedDP,
     typename DerivedDT0,
     typename DerivedDT1,
     typename DerivedDT2>
-inline Eigen::MatrixXX12d compute_friction_potential_hessian(
+inline MatrixMax12d compute_friction_potential_hessian(
     const Eigen::MatrixBase<DerivedDP>& dp,
     const Eigen::MatrixBase<DerivedDT0>& dt0,
     const Eigen::MatrixBase<DerivedDT1>& dt1,
     const Eigen::MatrixBase<DerivedDT2>& dt2,
     const FaceVertexFrictionConstraint& friction_constraint,
     double epsv_times_h,
-    bool project_to_psd = true);
+    bool project_hessian_to_psd = true);
 
 } // namespace ipc
 

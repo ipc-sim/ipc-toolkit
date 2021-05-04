@@ -29,7 +29,7 @@ auto edge_edge_cross_squarednorm(
     assert(eb0.size() == 3);
     assert(eb1.size() == 3);
 
-    return Eigen::cross(ea1 - ea0, eb1 - eb0).squaredNorm();
+    return cross(ea1 - ea0, eb1 - eb0).squaredNorm();
 }
 
 // Symbolically generated derivatives;

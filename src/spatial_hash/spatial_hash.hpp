@@ -14,9 +14,9 @@ namespace ipc {
 
 class SpatialHash {
 public: // data
-    Eigen::VectorX3d leftBottomCorner, rightTopCorner;
+    VectorMax3d leftBottomCorner, rightTopCorner;
+    ArrayMax3i voxelCount;
     double one_div_voxelSize;
-    Eigen::ArrayMax3i voxelCount;
     int voxelCount0x1;
 
     int edgeStartInd, triStartInd;
@@ -77,34 +77,34 @@ public: // API
     }
 
     void queryPointForTriangles(
-        const Eigen::VectorX3d& p,
+        const VectorMax3d& p,
         unordered_set<int>& triInds,
         double radius = 0) const;
 
     void queryPointForTriangles(
-        const Eigen::VectorX3d& p_t0,
-        const Eigen::VectorX3d& p_t1,
+        const VectorMax3d& p_t0,
+        const VectorMax3d& p_t1,
         unordered_set<int>& triInds,
         double radius = 0) const;
 
     void queryPointForPrimitives(
-        const Eigen::VectorX3d& p_t0,
-        const Eigen::VectorX3d& p_t1,
+        const VectorMax3d& p_t0,
+        const VectorMax3d& p_t1,
         unordered_set<int>& vertInds,
         unordered_set<int>& edgeInds,
         unordered_set<int>& triInds,
         double radius = 0) const;
 
     void queryEdgeForPE(
-        const Eigen::VectorX3d& e0,
-        const Eigen::VectorX3d& e1,
+        const VectorMax3d& e0,
+        const VectorMax3d& e1,
         std::vector<int>& vertInds,
         std::vector<int>& edgeInds,
         double radius = 0) const;
 
     void queryEdgeForEdges(
-        const Eigen::VectorX3d& ea0,
-        const Eigen::VectorX3d& ea1,
+        const VectorMax3d& ea0,
+        const VectorMax3d& ea1,
         std::vector<int>& edgeInds,
         double radius = 0,
         int eai = -1) const;
@@ -112,48 +112,48 @@ public: // API
     void queryEdgeForEdgesWithBBoxCheck(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::VectorX3d& ea0,
-        const Eigen::VectorX3d& ea1,
+        const VectorMax3d& ea0,
+        const VectorMax3d& ea1,
         std::vector<int>& edgeInds,
         double radius = 0,
         int eai = -1) const;
 
     void queryEdgeForEdges(
-        const Eigen::VectorX3d& ea0_t0,
-        const Eigen::VectorX3d& ea1_t0,
-        const Eigen::VectorX3d& ea0_t1,
-        const Eigen::VectorX3d& ea1_t1,
+        const VectorMax3d& ea0_t0,
+        const VectorMax3d& ea1_t0,
+        const VectorMax3d& ea0_t1,
+        const VectorMax3d& ea1_t1,
         std::vector<int>& edgeInds,
         double radius = 0,
         int eai = -1) const;
 
     void queryTriangleForPoints(
-        const Eigen::VectorX3d& t0,
-        const Eigen::VectorX3d& t1,
-        const Eigen::VectorX3d& t2,
+        const VectorMax3d& t0,
+        const VectorMax3d& t1,
+        const VectorMax3d& t2,
         unordered_set<int>& pointInds,
         double radius = 0) const;
 
     void queryTriangleForPoints(
-        const Eigen::VectorX3d& t0_t0,
-        const Eigen::VectorX3d& t1_t0,
-        const Eigen::VectorX3d& t2_t0,
-        const Eigen::VectorX3d& t0_t1,
-        const Eigen::VectorX3d& t1_t1,
-        const Eigen::VectorX3d& t2_t1,
+        const VectorMax3d& t0_t0,
+        const VectorMax3d& t1_t0,
+        const VectorMax3d& t2_t0,
+        const VectorMax3d& t0_t1,
+        const VectorMax3d& t1_t1,
+        const VectorMax3d& t2_t1,
         unordered_set<int>& pointInds,
         double radius = 0) const;
 
     void queryTriangleForEdges(
-        const Eigen::VectorX3d& t0,
-        const Eigen::VectorX3d& t1,
-        const Eigen::VectorX3d& t2,
+        const VectorMax3d& t0,
+        const VectorMax3d& t1,
+        const VectorMax3d& t2,
         unordered_set<int>& edgeInds,
         double radius = 0) const;
 
     void queryEdgeForTriangles(
-        const Eigen::VectorX3d& e0,
-        const Eigen::VectorX3d& e1,
+        const VectorMax3d& e0,
+        const VectorMax3d& e1,
         unordered_set<int>& triInds,
         double radius = 0) const;
 
@@ -197,10 +197,10 @@ public: // API
         bool queryFV = true) const;
 
 public: // helper functions
-    int locateVoxelIndex(const Eigen::VectorX3d& p) const;
+    int locateVoxelIndex(const VectorMax3d& p) const;
 
     void locateVoxelAxisIndex(
-        const Eigen::VectorX3d& p, Eigen::ArrayMax3i& voxelAxisIndex) const;
+        const VectorMax3d& p, ArrayMax3i& voxelAxisIndex) const;
 
     int voxelAxisIndex2VoxelIndex(const int voxelAxisIndex[3]) const;
 

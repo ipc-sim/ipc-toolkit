@@ -10,14 +10,14 @@ namespace ipc {
 template <typename T>
 T compute_friction_potential(
     const Eigen::MatrixXd& V0,
-    const Eigen::MatrixX<T>& V1,
+    const MatrixX<T>& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const FrictionConstraints& friction_constraint_set,
     double epsv_times_h)
 {
     // absolute linear dislacement of each point
-    Eigen::MatrixX<T> U = V1 - V0.cast<T>();
+    MatrixX<T> U = V1 - V0.cast<T>();
 
     tbb::enumerable_thread_specific<T> storage(0);
 

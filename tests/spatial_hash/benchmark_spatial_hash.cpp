@@ -31,9 +31,9 @@ TEST_CASE(
     bool success = igl::read_triangle_mesh(mesh_path, V0, F);
     REQUIRE(success);
 
-    Eigen::VectorX3d min_V = V0.colwise().minCoeff();
-    Eigen::VectorX3d max_V = V0.colwise().maxCoeff();
-    Eigen::VectorX3d center = (max_V + min_V) / 2;
+    VectorMax3d min_V = V0.colwise().minCoeff();
+    VectorMax3d max_V = V0.colwise().maxCoeff();
+    VectorMax3d center = (max_V + min_V) / 2;
     V0.rowwise() -= center.transpose();
 
     SECTION("Squish")
@@ -45,7 +45,7 @@ TEST_CASE(
     }
     SECTION("Interobject")
     {
-        Eigen::VectorX3d scale = max_V - min_V;
+        VectorMax3d scale = max_V - min_V;
         for (int j = 0; j < V0.cols(); j++) {
             V0.col(j).array() /= scale(j);
         }

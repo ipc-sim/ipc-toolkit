@@ -31,7 +31,7 @@ auto line_line_distance(
     assert(eb0.size() == 3);
     assert(eb1.size() == 3);
 
-    const auto normal = Eigen::cross(ea1 - ea0, eb1 - eb0);
+    const auto normal = cross(ea1 - ea0, eb1 - eb0);
     const auto line_to_line = (eb0 - ea0).dot(normal);
     return line_to_line * line_to_line / normal.squaredNorm();
 }

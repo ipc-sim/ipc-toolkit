@@ -28,8 +28,7 @@ auto point_line_distance(
             (e[1] * p[0] - e[0] * p[1] + e1[0] * e0[1] - e1[1] * e0[0]);
         return numerator * numerator / e.squaredNorm();
     } else {
-        return Eigen::cross(e0 - p, e1 - p).squaredNorm()
-            / (e1 - e0).squaredNorm();
+        return cross(e0 - p, e1 - p).squaredNorm() / (e1 - e0).squaredNorm();
     }
 }
 

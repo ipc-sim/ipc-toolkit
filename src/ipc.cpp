@@ -387,7 +387,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
     double dhat,
-    bool project_to_psd)
+    bool project_hessian_to_psd)
 {
     int dim = V.cols();
 
@@ -402,7 +402,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 local_hessian_to_global_triplets(
                     constraint_set[i].compute_potential_hessian(
-                        V, E, F, dhat, project_to_psd),
+                        V, E, F, dhat, project_hessian_to_psd),
                     constraint_set[i].vertex_indices(E, F), dim,
                     local_hess_triplets);
             }

@@ -43,10 +43,10 @@ struct FrictionConstraint {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     /// @brief Barycentric coordinates of the closest point(s)
-    Eigen::VectorX2d closest_point;
+    VectorMax2d closest_point;
 
     /// @brief Tangent basis of the contact (max size 3×2)
-    Eigen::MatrixXX<double, 3, 2> tangent_basis;
+    MatrixMax<double, 3, 2> tangent_basis;
 
     /// @brief Contact force magnitude
     double normal_force_magnitude;
@@ -59,18 +59,18 @@ struct FrictionConstraint {
     virtual std::vector<long> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const = 0;
 
-    virtual Eigen::VectorX12d compute_potential_gradient(
+    virtual VectorMax12d compute_potential_gradient(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const = 0;
 
-    virtual Eigen::MatrixXX12d compute_potential_hessian(
+    virtual MatrixMax12d compute_potential_hessian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h,
-        const bool project_to_psd) const = 0;
+        const bool project_hessian_to_psd) const = 0;
 
 protected:
     template <typename DerivedRelUi, typename T = typename DerivedRelUi::Scalar>
@@ -84,15 +84,14 @@ protected:
                    epsv_times_h);
     }
 
-    Eigen::VectorX2d compute_potential_gradient_common(
-        const Eigen::VectorX3d& relative_displacement,
-        double epsv_times_h) const;
+    VectorMax2d compute_potential_gradient_common(
+        const VectorMax3d& relative_displacement, double epsv_times_h) const;
 
-    Eigen::MatrixXX12d compute_potential_hessian_common(
-        const Eigen::VectorX3d& relative_displacement,
-        const Eigen::MatrixXX<double, 2, 12>& TT,
+    MatrixMax12d compute_potential_hessian_common(
+        const VectorMax3d& relative_displacement,
+        const MatrixMax<double, 2, 12>& TT,
         const double epsv_times_h,
-        bool project_to_psd,
+        bool project_hessian_to_psd,
         const int multiplicity = 1) const;
 };
 
@@ -111,7 +110,7 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
     }
 
     template <typename T>
-    Eigen::VectorX3<T> relative_displacement(const Eigen::MatrixX<T>& U) const
+    VectorMax3<T> relative_displacement(const MatrixX<T>& U) const
     {
         return point_point_relative_displacement(
             U.row(vertex0_index), U.row(vertex1_index));
@@ -119,27 +118,27 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
 
     template <typename T>
     T compute_potential(
-        const Eigen::MatrixX<T>& U,
+        const MatrixX<T>& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const
     {
-        Eigen::VectorX3<T> rel_u = relative_displacement(U);
+        VectorMax3<T> rel_u = relative_displacement(U);
         return multiplicity * compute_potential_common(rel_u, epsv_times_h);
     }
 
-    Eigen::VectorX12d compute_potential_gradient(
+    VectorMax12d compute_potential_gradient(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const override;
 
-    Eigen::MatrixXX12d compute_potential_hessian(
+    MatrixMax12d compute_potential_hessian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h,
-        const bool project_to_psd) const override;
+        const bool project_hessian_to_psd) const override;
 
     long multiplicity = 1;
 };
@@ -158,8 +157,8 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
     }
 
     template <typename T>
-    Eigen::VectorX3<T> relative_displacement(
-        const Eigen::MatrixX<T>& U, const Eigen::MatrixXi& E) const
+    VectorMax3<T>
+    relative_displacement(const MatrixX<T>& U, const Eigen::MatrixXi& E) const
     {
         return point_edge_relative_displacement(
             U.row(vertex_index), //
@@ -169,27 +168,27 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
 
     template <typename T>
     T compute_potential(
-        const Eigen::MatrixX<T>& U,
+        const MatrixX<T>& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const
     {
-        Eigen::VectorX3<T> rel_u = relative_displacement(U, E);
+        VectorMax3<T> rel_u = relative_displacement(U, E);
         return multiplicity * compute_potential_common(rel_u, epsv_times_h);
     }
 
-    Eigen::VectorX12d compute_potential_gradient(
+    VectorMax12d compute_potential_gradient(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const override;
 
-    Eigen::MatrixXX12d compute_potential_hessian(
+    MatrixMax12d compute_potential_hessian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h,
-        const bool project_to_psd) const override;
+        const bool project_hessian_to_psd) const override;
 
     long multiplicity = 1;
 };
@@ -209,8 +208,8 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
     }
 
     template <typename T>
-    Eigen::VectorX3<T> relative_displacement(
-        const Eigen::MatrixX<T>& U, const Eigen::MatrixXi& E) const
+    VectorMax3<T>
+    relative_displacement(const MatrixX<T>& U, const Eigen::MatrixXi& E) const
     {
         return edge_edge_relative_displacement(
             U.row(E(edge0_index, 0)), U.row(E(edge0_index, 1)),
@@ -220,7 +219,7 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
 
     template <typename T>
     T compute_potential(
-        const Eigen::MatrixX<T>& U,
+        const MatrixX<T>& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const
@@ -229,18 +228,18 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
             relative_displacement(U, E), epsv_times_h);
     }
 
-    Eigen::VectorX12d compute_potential_gradient(
+    VectorMax12d compute_potential_gradient(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const override;
 
-    Eigen::MatrixXX12d compute_potential_hessian(
+    MatrixMax12d compute_potential_hessian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h,
-        const bool project_to_psd) const override;
+        const bool project_hessian_to_psd) const override;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -258,8 +257,8 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
     }
 
     template <typename T>
-    Eigen::VectorX3<T> relative_displacement(
-        const Eigen::MatrixX<T>& U, const Eigen::MatrixXi& F) const
+    VectorMax3<T>
+    relative_displacement(const MatrixX<T>& U, const Eigen::MatrixXi& F) const
     {
         return point_triangle_relative_displacement(
             U.row(vertex_index), U.row(F(face_index, 0)),
@@ -269,7 +268,7 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
 
     template <typename T>
     T compute_potential(
-        const Eigen::MatrixX<T>& U,
+        const MatrixX<T>& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const
@@ -278,18 +277,18 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
             relative_displacement(U, F), epsv_times_h);
     }
 
-    Eigen::VectorX12d compute_potential_gradient(
+    VectorMax12d compute_potential_gradient(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const override;
 
-    Eigen::MatrixXX12d compute_potential_hessian(
+    MatrixMax12d compute_potential_hessian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h,
-        const bool project_to_psd) const override;
+        const bool project_hessian_to_psd) const override;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

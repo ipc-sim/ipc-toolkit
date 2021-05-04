@@ -57,19 +57,19 @@ bool edge_edge_aabb_cd(
 // Continous collision detection
 
 bool point_edge_aabb_ccd(
-    const Eigen::VectorX3d& p_t0,
-    const Eigen::VectorX3d& e0_t0,
-    const Eigen::VectorX3d& e1_t0,
-    const Eigen::VectorX3d& p_t1,
-    const Eigen::VectorX3d& e0_t1,
-    const Eigen::VectorX3d& e1_t1,
+    const VectorMax3d& p_t0,
+    const VectorMax3d& e0_t0,
+    const VectorMax3d& e1_t0,
+    const VectorMax3d& p_t1,
+    const VectorMax3d& e0_t1,
+    const VectorMax3d& e1_t1,
     double dist)
 {
-    const Eigen::ArrayMax3d max_p = p_t0.array().max(p_t1.array());
-    const Eigen::ArrayMax3d min_p = p_t0.array().min(p_t1.array());
-    const Eigen::ArrayMax3d max_e =
+    const ArrayMax3d max_p = p_t0.array().max(p_t1.array());
+    const ArrayMax3d min_p = p_t0.array().min(p_t1.array());
+    const ArrayMax3d max_e =
         e0_t0.array().max(e1_t0.array()).max(e0_t1.array()).max(e1_t1.array());
-    const Eigen::ArrayMax3d min_e =
+    const ArrayMax3d min_e =
         e0_t0.array().min(e1_t0.array()).min(e0_t1.array()).min(e1_t1.array());
     if ((min_p > max_e + dist).any() || (min_e > max_p + dist).any()) {
         return false;

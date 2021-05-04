@@ -30,7 +30,7 @@ auto point_plane_distance(
     assert(t1.size() == 3);
     assert(t2.size() == 3);
 
-    auto normal = Eigen::cross(t1 - t0, t2 - t0);
+    auto normal = cross(t1 - t0, t2 - t0);
     auto point_to_plane = (p - t0).dot(normal);
     return point_to_plane * point_to_plane / normal.squaredNorm();
 }

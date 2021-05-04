@@ -222,8 +222,7 @@ PYBIND11_MODULE(ipctk, m)
 
     m.def(
         "point_edge_distance_type",
-        [](const Eigen::VectorX3d& p, const Eigen::VectorX3d& e0,
-           const Eigen::VectorX3d& e1) {
+        [](const VectorMax3d& p, const VectorMax3d& e0, const VectorMax3d& e1) {
             assert_2D_or_3D_vector(p, "p");
             assert_2D_or_3D_vector(e0, "e0");
             assert_2D_or_3D_vector(e1, "e1");
@@ -317,7 +316,7 @@ PYBIND11_MODULE(ipctk, m)
         "edge_edge_cross_squarednorm_gradient",
         [](const Eigen::Vector3d& ea0, const Eigen::Vector3d& ea1,
            const Eigen::Vector3d& eb0, const Eigen::Vector3d& eb1) {
-            Eigen::Vector<double, 12> grad;
+            Vector<double, 12> grad;
             edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1, grad);
             return grad;
         },
@@ -478,7 +477,7 @@ PYBIND11_MODULE(ipctk, m)
         [](const Eigen::Vector3d& ea0, const Eigen::Vector3d& ea1,
            const Eigen::Vector3d& eb0, const Eigen::Vector3d& eb1,
            const EdgeEdgeDistanceType* dtype) {
-            Eigen::Vector<double, 12> grad;
+            Vector<double, 12> grad;
             if (dtype == nullptr) {
                 edge_edge_distance_gradient(ea0, ea1, eb0, eb1, grad);
             } else {
@@ -588,7 +587,7 @@ PYBIND11_MODULE(ipctk, m)
         "line_line_distance_gradient",
         [](const Eigen::Vector3d& ea0, const Eigen::Vector3d& ea1,
            const Eigen::Vector3d& eb0, const Eigen::Vector3d& eb1) {
-            Eigen::Vector<double, 12> grad;
+            Vector<double, 12> grad;
             line_line_distance_gradient(ea0, ea1, eb0, eb1, grad);
             return grad;
         },
@@ -653,8 +652,8 @@ PYBIND11_MODULE(ipctk, m)
 
     m.def(
         "point_edge_distance",
-        [](const Eigen::VectorX3d& p, const Eigen::VectorX3d& e0,
-           const Eigen::VectorX3d& e1, const PointEdgeDistanceType* dtype) {
+        [](const VectorMax3d& p, const VectorMax3d& e0, const VectorMax3d& e1,
+           const PointEdgeDistanceType* dtype) {
             assert_2D_or_3D_vector(p, "p");
             assert_2D_or_3D_vector(e0, "e0");
             assert_2D_or_3D_vector(e1, "e1");
@@ -691,12 +690,12 @@ PYBIND11_MODULE(ipctk, m)
 
     m.def(
         "point_edge_distance_gradient",
-        [](const Eigen::VectorX3d& p, const Eigen::VectorX3d& e0,
-           const Eigen::VectorX3d& e1, const PointEdgeDistanceType* dtype) {
+        [](const VectorMax3d& p, const VectorMax3d& e0, const VectorMax3d& e1,
+           const PointEdgeDistanceType* dtype) {
             assert_2D_or_3D_vector(p, "p");
             assert_2D_or_3D_vector(e0, "e0");
             assert_2D_or_3D_vector(e1, "e1");
-            Eigen::VectorX9d grad;
+            VectorMax9d grad;
             if (dtype == nullptr) {
                 point_edge_distance_gradient(p, e0, e1, grad);
             } else {
@@ -731,12 +730,12 @@ PYBIND11_MODULE(ipctk, m)
 
     m.def(
         "point_edge_distance_hessian",
-        [](const Eigen::VectorX3d& p, const Eigen::VectorX3d& e0,
-           const Eigen::VectorX3d& e1, const PointEdgeDistanceType* dtype) {
+        [](const VectorMax3d& p, const VectorMax3d& e0, const VectorMax3d& e1,
+           const PointEdgeDistanceType* dtype) {
             assert_2D_or_3D_vector(p, "p");
             assert_2D_or_3D_vector(e0, "e0");
             assert_2D_or_3D_vector(e1, "e1");
-            Eigen::MatrixXX9d hess;
+            MatrixMax9d hess;
             if (dtype == nullptr) {
                 point_edge_distance_hessian(p, e0, e1, hess);
             } else {
@@ -774,8 +773,7 @@ PYBIND11_MODULE(ipctk, m)
 
     m.def(
         "point_line_distance",
-        [](const Eigen::VectorX3d& p, const Eigen::VectorX3d& e0,
-           const Eigen::VectorX3d& e1) {
+        [](const VectorMax3d& p, const VectorMax3d& e0, const VectorMax3d& e1) {
             assert_2D_or_3D_vector(p, "p");
             assert_2D_or_3D_vector(e0, "e0");
             assert_2D_or_3D_vector(e1, "e1");
@@ -802,12 +800,11 @@ PYBIND11_MODULE(ipctk, m)
 
     m.def(
         "point_line_distance_gradient",
-        [](const Eigen::VectorX3d& p, const Eigen::VectorX3d& e0,
-           const Eigen::VectorX3d& e1) {
+        [](const VectorMax3d& p, const VectorMax3d& e0, const VectorMax3d& e1) {
             assert_2D_or_3D_vector(p, "p");
             assert_2D_or_3D_vector(e0, "e0");
             assert_2D_or_3D_vector(e1, "e1");
-            Eigen::VectorX9d grad;
+            VectorMax9d grad;
             point_line_distance_gradient(p, e0, e1, grad);
             return grad;
         },
@@ -832,12 +829,11 @@ PYBIND11_MODULE(ipctk, m)
 
     m.def(
         "point_line_distance_hessian",
-        [](const Eigen::VectorX3d& p, const Eigen::VectorX3d& e0,
-           const Eigen::VectorX3d& e1) {
+        [](const VectorMax3d& p, const VectorMax3d& e0, const VectorMax3d& e1) {
             assert_2D_or_3D_vector(p, "p");
             assert_2D_or_3D_vector(e0, "e0");
             assert_2D_or_3D_vector(e1, "e1");
-            Eigen::MatrixXX9d hess;
+            MatrixMax9d hess;
             point_line_distance_hessian(p, e0, e1, hess);
             return hess;
         },
@@ -893,7 +889,7 @@ PYBIND11_MODULE(ipctk, m)
         "point_plane_distance_gradient",
         [](const Eigen::Vector3d& p, const Eigen::Vector3d& t0,
            const Eigen::Vector3d& t1, const Eigen::Vector3d& t2) {
-            Eigen::Vector<double, 12> grad;
+            Vector<double, 12> grad;
             point_plane_distance_gradient(p, t0, t1, t2, grad);
             return grad;
         },
@@ -950,7 +946,7 @@ PYBIND11_MODULE(ipctk, m)
 
     m.def(
         "point_point_distance",
-        [](const Eigen::VectorX3d& p0, const Eigen::VectorX3d& p1) {
+        [](const VectorMax3d& p0, const VectorMax3d& p1) {
             assert_2D_or_3D_vector(p0, "p0");
             assert_2D_or_3D_vector(p1, "p1");
             return point_point_distance(p0, p1);
@@ -975,10 +971,10 @@ PYBIND11_MODULE(ipctk, m)
 
     m.def(
         "point_point_distance_gradient",
-        [](const Eigen::VectorX3d& p0, const Eigen::VectorX3d& p1) {
+        [](const VectorMax3d& p0, const VectorMax3d& p1) {
             assert_2D_or_3D_vector(p0, "p0");
             assert_2D_or_3D_vector(p1, "p1");
-            Eigen::VectorX6<double> grad;
+            VectorMax6<double> grad;
             point_point_distance_gradient(p0, p1, grad);
             return grad;
         },
@@ -1002,10 +998,10 @@ PYBIND11_MODULE(ipctk, m)
 
     m.def(
         "point_point_distance_hessian",
-        [](const Eigen::VectorX3d& p0, const Eigen::VectorX3d& p1) {
+        [](const VectorMax3d& p0, const VectorMax3d& p1) {
             assert_2D_or_3D_vector(p0, "p0");
             assert_2D_or_3D_vector(p1, "p1");
-            Eigen::MatrixXX6<double> hess;
+            MatrixMax6<double> hess;
             point_point_distance_hessian(p0, p1, hess);
             return hess;
         },
@@ -1072,7 +1068,7 @@ PYBIND11_MODULE(ipctk, m)
         [](const Eigen::Vector3d& p, const Eigen::Vector3d& t0,
            const Eigen::Vector3d& t1, const Eigen::Vector3d& t2,
            const PointTriangleDistanceType* dtype) {
-            Eigen::Vector<double, 12> grad;
+            Vector<double, 12> grad;
             if (dtype == nullptr) {
                 point_triangle_distance_gradient(p, t0, t1, t2, grad);
             } else {

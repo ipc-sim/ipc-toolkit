@@ -10,8 +10,8 @@ using namespace ipc;
 TEST_CASE("Point-point distance", "[distance][point-point]")
 {
     int dim = GENERATE(2, 3);
-    Eigen::VectorX3d p0 = Eigen::VectorX3d::Zero(dim);
-    Eigen::VectorX3d p1 = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d p0 = VectorMax3d::Zero(dim);
+    VectorMax3d p1 = VectorMax3d::Zero(dim);
     double expected_distance = GENERATE(-10, -1, -1e-12, 0, 1e-12, 1, 10);
     SECTION("Aligned with X-axis") { p1(0) = expected_distance; }
     SECTION("Diagonal vector")
@@ -27,8 +27,8 @@ TEST_CASE("Point-point distance", "[distance][point-point]")
 TEST_CASE("Point-point distance gradient", "[distance][point-point][gradient]")
 {
     int dim = GENERATE(2, 3);
-    Eigen::VectorX3d p0 = Eigen::VectorX3d::Zero(dim);
-    Eigen::VectorX3d p1 = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d p0 = VectorMax3d::Zero(dim);
+    VectorMax3d p1 = VectorMax3d::Zero(dim);
     double expected_distance = GENERATE(-10, -1, -1e-12, 0, 1e-12, 1, 10);
     SECTION("Aligned with X-axis") { p1(0) = expected_distance; }
     SECTION("Diagonal vector")
@@ -57,8 +57,8 @@ TEST_CASE("Point-point distance gradient", "[distance][point-point][gradient]")
 TEST_CASE("Point-point distance hessian", "[distance][point-point][hessian]")
 {
     int dim = GENERATE(2, 3);
-    Eigen::VectorX3d p0 = Eigen::VectorX3d::Zero(dim);
-    Eigen::VectorX3d p1 = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d p0 = VectorMax3d::Zero(dim);
+    VectorMax3d p1 = VectorMax3d::Zero(dim);
     double expected_distance = GENERATE(-10, -1, -1e-12, 0, 1e-12, 1, 10);
     SECTION("Aligned with X-axis") { p1(0) = expected_distance; }
     SECTION("Diagonal vector")

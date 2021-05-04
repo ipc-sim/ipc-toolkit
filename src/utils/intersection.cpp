@@ -18,7 +18,7 @@ bool is_edge_intersecting_triangle_rational(
     const Eigen::Vector3d& t1_float,
     const Eigen::Vector3d& t2_float)
 {
-    Eigen::Vector3<Rational> e0, e1, t0, t1, t2;
+    Vector3<Rational> e0, e1, t0, t1, t2;
 
     for (int d = 0; d < 3; ++d) {
         e0[d] = e0_float[d];

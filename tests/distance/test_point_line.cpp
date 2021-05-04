@@ -14,12 +14,12 @@ TEST_CASE("Point-line distance", "[distance][point-line]")
     int dim = GENERATE(2, 3);
 
     double y_point = GENERATE(take(10, random(-100.0, 100.0)));
-    Eigen::VectorX3d p = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d p = VectorMax3d::Zero(dim);
     p.y() = y_point;
 
     double y_line = GENERATE(take(10, random(-100.0, 100.0)));
-    Eigen::VectorX3d e0 = Eigen::VectorX3d::Zero(dim);
-    Eigen::VectorX3d e1 = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d e0 = VectorMax3d::Zero(dim);
+    VectorMax3d e1 = VectorMax3d::Zero(dim);
     e0.x() = -1;
     e0.y() = y_line;
     e1.x() = 1;
@@ -36,12 +36,12 @@ TEST_CASE("Point-line distance gradient", "[distance][point-line][gradient]")
     int dim = 2;
 
     double y_point = GENERATE(take(10, random(-10.0, 10.0)));
-    Eigen::VectorX3d p = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d p = VectorMax3d::Zero(dim);
     p.y() = y_point;
 
     double y_line = GENERATE(take(10, random(-10.0, 10.0)));
-    Eigen::VectorX3d e0 = Eigen::VectorX3d::Zero(dim);
-    Eigen::VectorX3d e1 = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d e0 = VectorMax3d::Zero(dim);
+    VectorMax3d e1 = VectorMax3d::Zero(dim);
     e0.x() = -1;
     e0.y() = y_line;
     e1.x() = 1;
@@ -71,12 +71,12 @@ TEST_CASE("Point-line distance hessian", "[distance][point-line][hessian]")
     int dim = GENERATE(2, 3);
 
     double y_point = GENERATE(take(10, random(-10.0, 10.0)));
-    Eigen::VectorX3d p = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d p = VectorMax3d::Zero(dim);
     p.y() = y_point;
 
     double y_line = GENERATE(take(10, random(-10.0, 10.0)));
-    Eigen::VectorX3d e0 = Eigen::VectorX3d::Zero(dim);
-    Eigen::VectorX3d e1 = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d e0 = VectorMax3d::Zero(dim);
+    VectorMax3d e1 = VectorMax3d::Zero(dim);
     e0.x() = -1;
     e0.y() = y_line;
     e1.x() = 1;

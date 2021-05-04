@@ -61,31 +61,30 @@ PointTriangleDistanceType point_triangle_distance_type(
     basis.row(0) = t1 - t0;
     basis.row(1) = t2 - t0;
 
-    auto normal = Eigen::cross(basis.row(0), basis.row(1));
+    auto normal = cross(basis.row(0), basis.row(1));
 
     Eigen::Matrix<T, 2, 3> param;
 
-    basis.row(1) = Eigen::cross(basis.row(0), normal);
-    param.col(0) = (basis * basis.transpose())
-                       .ldlt()
-                       .solve(basis * Eigen::Vector3<T>(p - t0));
+    basis.row(1) = cross(basis.row(0), normal);
+    param.col(0) =
+        (basis * basis.transpose()).ldlt().solve(basis * Vector3<T>(p - t0));
     if (param(0, 0) > 0.0 && param(0, 0) < 1.0 && param(1, 0) >= 0.0) {
         return PointTriangleDistanceType::P_E0; // edge 0 is the closest
     } else {
         basis.row(0) = t2 - t1;
-        basis.row(1) = Eigen::cross(basis.row(0), normal);
+        basis.row(1) = cross(basis.row(0), normal);
         param.col(1) = (basis * basis.transpose())
                            .ldlt()
-                           .solve(basis * Eigen::Vector3<T>(p - t1));
+                           .solve(basis * Vector3<T>(p - t1));
         if (param(0, 1) > 0.0 && param(0, 1) < 1.0 && param(1, 1) >= 0.0) {
             return PointTriangleDistanceType::P_E1; // edge 1 is the closest
         } else {
             basis.row(0) = t0 - t2;
 
-            basis.row(1) = Eigen::cross(basis.row(0), normal);
+            basis.row(1) = cross(basis.row(0), normal);
             param.col(2) = (basis * basis.transpose())
                                .ldlt()
-                               .solve(basis * Eigen::Vector3<T>(p - t2));
+                               .solve(basis * Vector3<T>(p - t2));
             if (param(0, 2) > 0.0 && param(0, 2) < 1.0 && param(1, 2) >= 0.0) {
                 return PointTriangleDistanceType::P_E2; // edge 2 is the closest
             } else {
@@ -151,7 +150,7 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     } else {
         tN = (a * e - b * d);
         if (tN > 0.0 && tN < tD
-            && (Eigen::cross(u, v).squaredNorm() < 1.0e-20 * a * c)) {
+            && (cross(u, v).squaredNorm() < 1.0e-20 * a * c)) {
             // avoid nearly parallel EE
             if (sN < D / 2) {
                 tN = e;

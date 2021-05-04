@@ -35,7 +35,7 @@ double VertexVertexConstraint::compute_potential(
                2 * minimum_distance * dhat + dhat_squared);
 }
 
-Eigen::VectorX12d VertexVertexConstraint::compute_potential_gradient(
+VectorMax12d VertexVertexConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -47,7 +47,7 @@ Eigen::VectorX12d VertexVertexConstraint::compute_potential_gradient(
     const auto& p0 = V.row(vertex0_index);
     const auto& p1 = V.row(vertex1_index);
 
-    Eigen::VectorX6d local_grad;
+    VectorMax6d local_grad;
     point_point_distance_gradient(p0, p1, local_grad);
 
     double distance_sqr = point_point_distance(p0, p1);
@@ -58,12 +58,12 @@ Eigen::VectorX12d VertexVertexConstraint::compute_potential_gradient(
     return multiplicity * local_grad;
 }
 
-Eigen::MatrixXX12d VertexVertexConstraint::compute_potential_hessian(
+MatrixMax12d VertexVertexConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double dhat,
-    const bool project_to_psd) const
+    const bool project_hessian_to_psd) const
 {
     double dhat_squared = dhat * dhat;
 
@@ -73,9 +73,9 @@ Eigen::MatrixXX12d VertexVertexConstraint::compute_potential_hessian(
     const auto& p1 = V.row(vertex1_index);
 
     double distance_sqr = point_point_distance(p0, p1);
-    Eigen::VectorX6d local_grad;
+    VectorMax6d local_grad;
     point_point_distance_gradient(p0, p1, local_grad);
-    Eigen::MatrixXX6d local_hess;
+    MatrixMax6d local_hess;
     point_point_distance_hessian(p0, p1, local_hess);
 
     local_hess *= barrier_gradient(
@@ -88,8 +88,8 @@ Eigen::MatrixXX12d VertexVertexConstraint::compute_potential_hessian(
 
     local_hess *= multiplicity;
 
-    if (project_to_psd) {
-        local_hess = Eigen::project_to_psd(local_hess);
+    if (project_hessian_to_psd) {
+        local_hess = project_to_psd(local_hess);
     }
 
     return local_hess;
@@ -124,7 +124,7 @@ double EdgeVertexConstraint::compute_potential(
                2 * minimum_distance * dhat + dhat_squared);
 }
 
-Eigen::VectorX12d EdgeVertexConstraint::compute_potential_gradient(
+VectorMax12d EdgeVertexConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -137,7 +137,7 @@ Eigen::VectorX12d EdgeVertexConstraint::compute_potential_gradient(
     const auto& e0 = V.row(E(edge_index, 0));
     const auto& e1 = V.row(E(edge_index, 1));
 
-    Eigen::VectorX9d local_grad;
+    VectorMax9d local_grad;
     point_edge_distance_gradient(
         p, e0, e1, PointEdgeDistanceType::P_E, local_grad);
 
@@ -150,12 +150,12 @@ Eigen::VectorX12d EdgeVertexConstraint::compute_potential_gradient(
     return multiplicity * local_grad;
 }
 
-Eigen::MatrixXX12d EdgeVertexConstraint::compute_potential_hessian(
+MatrixMax12d EdgeVertexConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double dhat,
-    const bool project_to_psd) const
+    const bool project_hessian_to_psd) const
 {
     double dhat_squared = dhat * dhat;
 
@@ -167,10 +167,10 @@ Eigen::MatrixXX12d EdgeVertexConstraint::compute_potential_hessian(
 
     double distance_sqr =
         point_edge_distance(p, e0, e1, PointEdgeDistanceType::P_E);
-    Eigen::VectorX9d local_grad;
+    VectorMax9d local_grad;
     point_edge_distance_gradient(
         p, e0, e1, PointEdgeDistanceType::P_E, local_grad);
-    Eigen::MatrixXX12d local_hess;
+    MatrixMax12d local_hess;
     point_edge_distance_hessian(
         p, e0, e1, PointEdgeDistanceType::P_E, local_hess);
 
@@ -184,8 +184,8 @@ Eigen::MatrixXX12d EdgeVertexConstraint::compute_potential_hessian(
 
     local_hess *= multiplicity;
 
-    if (project_to_psd) {
-        local_hess = Eigen::project_to_psd(local_hess);
+    if (project_hessian_to_psd) {
+        local_hess = project_to_psd(local_hess);
     }
 
     return local_hess;
@@ -229,7 +229,7 @@ double EdgeEdgeConstraint::compute_potential(
                2 * minimum_distance * dhat + dhat_squared);
 }
 
-Eigen::VectorX12d EdgeEdgeConstraint::compute_potential_gradient(
+VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -247,11 +247,11 @@ Eigen::VectorX12d EdgeEdgeConstraint::compute_potential_gradient(
     // constraints where also added as EE constraints.
     EdgeEdgeDistanceType dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
     double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
-    Eigen::VectorX12d local_distance_grad;
+    VectorMax12d local_distance_grad;
     edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype, local_distance_grad);
 
     double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
-    Eigen::VectorX12d local_mollifier_grad;
+    VectorMax12d local_mollifier_grad;
     edge_edge_mollifier_gradient(
         ea0, ea1, eb0, eb1, eps_x, local_mollifier_grad);
 
@@ -266,12 +266,12 @@ Eigen::VectorX12d EdgeEdgeConstraint::compute_potential_gradient(
         * local_distance_grad;
 }
 
-Eigen::MatrixXX12d EdgeEdgeConstraint::compute_potential_hessian(
+MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double dhat,
-    const bool project_to_psd) const
+    const bool project_hessian_to_psd) const
 {
     double dhat_squared = dhat * dhat;
 
@@ -290,16 +290,16 @@ Eigen::MatrixXX12d EdgeEdgeConstraint::compute_potential_hessian(
     // constraints where also added as EE constraints.
     EdgeEdgeDistanceType dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
     double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
-    Eigen::VectorX12d distance_grad;
+    VectorMax12d distance_grad;
     edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype, distance_grad);
-    Eigen::MatrixXX12d distance_hess;
+    MatrixMax12d distance_hess;
     edge_edge_distance_hessian(ea0, ea1, eb0, eb1, dtype, distance_hess);
 
     // Compute mollifier derivatives
     double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
-    Eigen::VectorX12d mollifier_grad;
+    VectorMax12d mollifier_grad;
     edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x, mollifier_grad);
-    Eigen::MatrixXX12d mollifier_hess;
+    MatrixMax12d mollifier_hess;
     edge_edge_mollifier_hessian(ea0, ea1, eb0, eb1, eps_x, mollifier_hess);
 
     // Compute_barrier_derivatives
@@ -313,7 +313,7 @@ Eigen::MatrixXX12d EdgeEdgeConstraint::compute_potential_hessian(
         distance_sqr - minimum_distance * minimum_distance,
         2 * minimum_distance * dhat + dhat_squared);
 
-    Eigen::MatrixXX12d local_hess = mollifier_hess * b
+    MatrixMax12d local_hess = mollifier_hess * b
         + grad_b
             * (distance_grad * mollifier_grad.transpose()
                + mollifier_grad * distance_grad.transpose())
@@ -321,8 +321,8 @@ Eigen::MatrixXX12d EdgeEdgeConstraint::compute_potential_hessian(
             * (hess_b * distance_grad * distance_grad.transpose()
                + grad_b * distance_hess);
 
-    if (project_to_psd) {
-        local_hess = Eigen::project_to_psd(local_hess);
+    if (project_hessian_to_psd) {
+        local_hess = project_to_psd(local_hess);
     }
 
     return local_hess;
@@ -361,7 +361,7 @@ double FaceVertexConstraint::compute_potential(
         2 * minimum_distance * dhat + dhat_squared);
 }
 
-Eigen::VectorX12d FaceVertexConstraint::compute_potential_gradient(
+VectorMax12d FaceVertexConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -375,7 +375,7 @@ Eigen::VectorX12d FaceVertexConstraint::compute_potential_gradient(
     const auto& t1 = V.row(F(face_index, 1));
     const auto& t2 = V.row(F(face_index, 2));
 
-    Eigen::VectorX12d local_grad;
+    VectorMax12d local_grad;
     point_triangle_distance_gradient(
         p, t0, t1, t2, PointTriangleDistanceType::P_T, local_grad);
 
@@ -388,12 +388,12 @@ Eigen::VectorX12d FaceVertexConstraint::compute_potential_gradient(
                2 * minimum_distance * dhat + dhat_squared);
 }
 
-Eigen::MatrixXX12d FaceVertexConstraint::compute_potential_hessian(
+MatrixMax12d FaceVertexConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double dhat,
-    const bool project_to_psd) const
+    const bool project_hessian_to_psd) const
 {
     double dhat_squared = dhat * dhat;
 
@@ -406,10 +406,10 @@ Eigen::MatrixXX12d FaceVertexConstraint::compute_potential_hessian(
 
     double distance_sqr =
         point_triangle_distance(p, t0, t1, t2, PointTriangleDistanceType::P_T);
-    Eigen::VectorX12d local_grad;
+    VectorMax12d local_grad;
     point_triangle_distance_gradient(
         p, t0, t1, t2, PointTriangleDistanceType::P_T, local_grad);
-    Eigen::MatrixXX12d local_hess;
+    MatrixMax12d local_hess;
     point_triangle_distance_hessian(
         p, t0, t1, t2, PointTriangleDistanceType::P_T, local_hess);
 
@@ -421,8 +421,8 @@ Eigen::MatrixXX12d FaceVertexConstraint::compute_potential_hessian(
                       2 * minimum_distance * dhat + dhat_squared)
         * local_grad * local_grad.transpose();
 
-    if (project_to_psd) {
-        local_hess = Eigen::project_to_psd(local_hess);
+    if (project_hessian_to_psd) {
+        local_hess = project_to_psd(local_hess);
     }
 
     return local_hess;

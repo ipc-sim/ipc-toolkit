@@ -181,7 +181,7 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     const Eigen::MatrixXi& F,
     const FrictionConstraints& friction_constraint_set,
     double epsv_times_h,
-    bool project_to_psd)
+    bool project_hessian_to_psd)
 {
     auto U = V1 - V0; // absolute linear dislacement of each point
     int dim = U.cols();
@@ -196,7 +196,7 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 local_hessian_to_global_triplets(
                     friction_constraint_set[i].compute_potential_hessian(
-                        U, E, F, epsv_times_h, project_to_psd),
+                        U, E, F, epsv_times_h, project_hessian_to_psd),
                     friction_constraint_set[i].vertex_indices(E, F), dim,
                     local_hess_triplets);
             }

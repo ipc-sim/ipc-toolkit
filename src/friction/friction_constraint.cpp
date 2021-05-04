@@ -2,10 +2,10 @@
 
 namespace ipc {
 
-Eigen::VectorX2d FrictionConstraint::compute_potential_gradient_common(
-    const Eigen::VectorX3d& relative_displacement, double epsv_times_h) const
+VectorMax2d FrictionConstraint::compute_potential_gradient_common(
+    const VectorMax3d& relative_displacement, double epsv_times_h) const
 {
-    Eigen::VectorX2d tangent_relative_displacement =
+    VectorMax2d tangent_relative_displacement =
         tangent_basis.transpose() * relative_displacement;
 
     double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
@@ -17,11 +17,11 @@ Eigen::VectorX2d FrictionConstraint::compute_potential_gradient_common(
     return tangent_relative_displacement;
 }
 
-Eigen::MatrixXX12d FrictionConstraint::compute_potential_hessian_common(
-    const Eigen::VectorX3d& relative_displacement,
-    const Eigen::MatrixXX<double, 2, 12>& TT,
+MatrixMax12d FrictionConstraint::compute_potential_hessian_common(
+    const VectorMax3d& relative_displacement,
+    const MatrixMax<double, 2, 12>& TT,
     const double epsv_times_h,
-    bool project_to_psd,
+    bool project_hessian_to_psd,
     const int multiplicity) const
 {
     int dim = relative_displacement.size();
@@ -29,7 +29,7 @@ Eigen::MatrixXX12d FrictionConstraint::compute_potential_hessian_common(
 
     double epsv_times_h_squared = epsv_times_h * epsv_times_h;
 
-    Eigen::VectorX2d tangent_relative_displacement =
+    VectorMax2d tangent_relative_displacement =
         tangent_basis.transpose() * relative_displacement;
 
     double tangent_relative_displacement_sqnorm =
@@ -39,12 +39,12 @@ Eigen::MatrixXX12d FrictionConstraint::compute_potential_hessian_common(
         tangent_relative_displacement_sqnorm, epsv_times_h);
     double f2_term = f2_SF(tangent_relative_displacement_sqnorm, epsv_times_h);
 
-    Eigen::MatrixXX12d local_hess;
+    MatrixMax12d local_hess;
 
     double scale = multiplicity * mu * normal_force_magnitude;
     if (tangent_relative_displacement_sqnorm >= epsv_times_h_squared) {
         // no SPD projection needed
-        Eigen::VectorX2d ubar(dim - 1);
+        VectorMax2d ubar(dim - 1);
         if (dim == 2) {
             ubar[0] = tangent_relative_displacement[0];
         } else {
@@ -64,13 +64,13 @@ Eigen::MatrixXX12d FrictionConstraint::compute_potential_hessian_common(
             local_hess = ((scale * f1_div_rel_disp_norm) * TT.transpose()) * TT;
         } else {
             // only need to project the inner 2x2 matrix to SPD
-            Eigen::MatrixXX2d inner_hess =
+            MatrixMax2d inner_hess =
                 ((f2_term / tangent_relative_displacement_norm)
                  * tangent_relative_displacement)
                 * tangent_relative_displacement.transpose();
             inner_hess.diagonal().array() += f1_div_rel_disp_norm;
-            if (project_to_psd) {
-                inner_hess = Eigen::project_to_psd(inner_hess);
+            if (project_hessian_to_psd) {
+                inner_hess = project_to_psd(inner_hess);
             }
             inner_hess *= scale;
 
@@ -103,31 +103,31 @@ VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
 {
 }
 
-Eigen::VectorX12d VertexVertexFrictionConstraint::compute_potential_gradient(
+VectorMax12d VertexVertexFrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double epsv_times_h) const
 {
-    Eigen::VectorX3d rel_u = relative_displacement(U);
-    Eigen::VectorX2d tangent_rel_u =
+    VectorMax3d rel_u = relative_displacement(U);
+    VectorMax2d tangent_rel_u =
         compute_potential_gradient_common(rel_u, epsv_times_h);
     tangent_rel_u *= multiplicity;
     return point_point_relative_mesh_displacements(
         tangent_rel_u, tangent_basis);
 }
 
-Eigen::MatrixXX12d VertexVertexFrictionConstraint::compute_potential_hessian(
+MatrixMax12d VertexVertexFrictionConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double epsv_times_h,
-    const bool project_to_psd) const
+    const bool project_hessian_to_psd) const
 {
-    Eigen::VectorX3d rel_u = relative_displacement(U);
+    VectorMax3d rel_u = relative_displacement(U);
     auto TT = point_point_TT(tangent_basis);
     return compute_potential_hessian_common(
-        rel_u, TT, epsv_times_h, project_to_psd, multiplicity);
+        rel_u, TT, epsv_times_h, project_hessian_to_psd, multiplicity);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -151,31 +151,31 @@ EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
 {
 }
 
-Eigen::VectorX12d EdgeVertexFrictionConstraint::compute_potential_gradient(
+VectorMax12d EdgeVertexFrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double epsv_times_h) const
 {
-    Eigen::VectorX3d rel_u = relative_displacement(U, E);
-    Eigen::VectorX2d tangent_rel_u =
+    VectorMax3d rel_u = relative_displacement(U, E);
+    VectorMax2d tangent_rel_u =
         compute_potential_gradient_common(rel_u, epsv_times_h);
     tangent_rel_u *= multiplicity;
     return point_edge_relative_mesh_displacements(
         tangent_rel_u, tangent_basis, closest_point[0]);
 }
 
-Eigen::MatrixXX12d EdgeVertexFrictionConstraint::compute_potential_hessian(
+MatrixMax12d EdgeVertexFrictionConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double epsv_times_h,
-    const bool project_to_psd) const
+    const bool project_hessian_to_psd) const
 {
-    Eigen::VectorX3d rel_u = relative_displacement(U, E);
+    VectorMax3d rel_u = relative_displacement(U, E);
     auto TT = point_edge_TT(tangent_basis, closest_point[0]);
     return compute_potential_hessian_common(
-        rel_u, TT, epsv_times_h, project_to_psd, multiplicity);
+        rel_u, TT, epsv_times_h, project_hessian_to_psd, multiplicity);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -198,30 +198,30 @@ EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
 {
 }
 
-Eigen::VectorX12d EdgeEdgeFrictionConstraint::compute_potential_gradient(
+VectorMax12d EdgeEdgeFrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double epsv_times_h) const
 {
-    Eigen::VectorX3d rel_u = relative_displacement(U, E);
-    Eigen::VectorX2d tangent_rel_u =
+    VectorMax3d rel_u = relative_displacement(U, E);
+    VectorMax2d tangent_rel_u =
         compute_potential_gradient_common(rel_u, epsv_times_h);
     return edge_edge_relative_mesh_displacements(
         tangent_rel_u, tangent_basis, closest_point);
 }
 
-Eigen::MatrixXX12d EdgeEdgeFrictionConstraint::compute_potential_hessian(
+MatrixMax12d EdgeEdgeFrictionConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double epsv_times_h,
-    const bool project_to_psd) const
+    const bool project_hessian_to_psd) const
 {
-    Eigen::VectorX3d rel_u = relative_displacement(U, E);
+    VectorMax3d rel_u = relative_displacement(U, E);
     auto TT = edge_edge_TT(tangent_basis, closest_point);
     return compute_potential_hessian_common(
-        rel_u, TT, epsv_times_h, project_to_psd);
+        rel_u, TT, epsv_times_h, project_hessian_to_psd);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -244,31 +244,31 @@ FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
 {
 }
 
-Eigen::VectorX12d FaceVertexFrictionConstraint::compute_potential_gradient(
+VectorMax12d FaceVertexFrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double epsv_times_h) const
 {
-    Eigen::VectorX3d rel_u = relative_displacement(U, F);
-    Eigen::VectorX2d tangent_rel_u =
+    VectorMax3d rel_u = relative_displacement(U, F);
+    VectorMax2d tangent_rel_u =
         compute_potential_gradient_common(rel_u, epsv_times_h);
     return point_triangle_relative_mesh_displacements(
         tangent_rel_u, tangent_basis, closest_point);
 }
 
-Eigen::MatrixXX12d FaceVertexFrictionConstraint::compute_potential_hessian(
+MatrixMax12d FaceVertexFrictionConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double epsv_times_h,
-    const bool project_to_psd) const
+    const bool project_hessian_to_psd) const
 {
-    Eigen::VectorX3d rel_u = relative_displacement(U, F);
+    VectorMax3d rel_u = relative_displacement(U, F);
     assert(rel_u.size() == 3);
     auto TT = point_triangle_TT(tangent_basis, closest_point);
     return compute_potential_hessian_common(
-        rel_u, TT, epsv_times_h, project_to_psd);
+        rel_u, TT, epsv_times_h, project_hessian_to_psd);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

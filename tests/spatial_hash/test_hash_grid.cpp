@@ -18,23 +18,23 @@ TEST_CASE("AABB initilization", "[hash_grid][AABB]")
     int dim = GENERATE(2, 3);
     CAPTURE(dim);
     AABB aabb;
-    Eigen::ArrayMax3d actual_center(dim);
+    ArrayMax3d actual_center(dim);
     SECTION("Empty AABB")
     {
-        aabb = AABB(Eigen::ArrayMax3d::Zero(dim), Eigen::ArrayMax3d::Zero(dim));
+        aabb = AABB(ArrayMax3d::Zero(dim), ArrayMax3d::Zero(dim));
         actual_center.setZero();
     }
     SECTION("Box centered at zero")
     {
-        Eigen::ArrayMax3d min =
-            Eigen::ArrayMax3d::Random(dim).array() - 1; // in range [-2, 0]
-        Eigen::ArrayMax3d max = -min;
+        ArrayMax3d min =
+            ArrayMax3d::Random(dim).array() - 1; // in range [-2, 0]
+        ArrayMax3d max = -min;
         aabb = AABB(min, max);
         actual_center.setZero();
     }
     SECTION("Box not centered at zero")
     {
-        Eigen::ArrayMax3d min(dim), max(dim);
+        ArrayMax3d min(dim), max(dim);
         if (dim == 2) {
             min << 5.1, 3.14;
             max << 10.4, 7.89;
@@ -46,7 +46,7 @@ TEST_CASE("AABB initilization", "[hash_grid][AABB]")
         }
         aabb = AABB(min, max);
     }
-    Eigen::ArrayMax3d center_diff = aabb.getCenter() - actual_center;
+    ArrayMax3d center_diff = aabb.getCenter() - actual_center;
     CHECK(center_diff.matrix().norm() == Approx(0.0).margin(1e-12));
 }
 

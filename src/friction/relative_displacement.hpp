@@ -21,22 +21,22 @@ template <
     typename DerivedDisp,
     typename DerivedBasis,
     typename T = typename DerivedDisp::Scalar>
-inline Eigen::VectorX6<T> point_point_relative_mesh_displacements(
+inline VectorMax6<T> point_point_relative_mesh_displacements(
     const Eigen::MatrixBase<DerivedDisp>& tangent_relative_displacement,
     const Eigen::MatrixBase<DerivedBasis>& basis)
 {
     int dim = basis.rows();
-    Eigen::VectorX6<T> mesh_displacements(2 * dim);
+    VectorMax6<T> mesh_displacements(2 * dim);
     mesh_displacements.head(dim) = basis * tangent_relative_displacement;
     mesh_displacements.tail(dim) = -mesh_displacements.head(dim);
     return mesh_displacements;
 }
 
 template <typename DerivedBasis>
-inline Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 6>
+inline MatrixMax<typename DerivedBasis::Scalar, 2, 6>
 point_point_TT(const Eigen::MatrixBase<DerivedBasis>& basis)
 {
-    Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 6> TT(
+    MatrixMax<typename DerivedBasis::Scalar, 2, 6> TT(
         basis.cols(), 2 * basis.rows());
     TT.leftCols(basis.rows()) = basis.transpose();
     TT.rightCols(basis.rows()) = -basis.transpose();
@@ -61,13 +61,13 @@ inline auto point_edge_relative_displacement(
 }
 
 template <typename DerivedDisp, typename DerivedBasis, typename T>
-inline Eigen::VectorX9<T> point_edge_relative_mesh_displacements(
+inline VectorMax9<T> point_edge_relative_mesh_displacements(
     const Eigen::MatrixBase<DerivedDisp>& tangent_relative_displacement,
     const Eigen::MatrixBase<DerivedBasis>& basis,
     const T& alpha)
 {
     int dim = basis.rows();
-    Eigen::VectorX9<T> mesh_displacements(3 * dim);
+    VectorMax9<T> mesh_displacements(3 * dim);
     mesh_displacements.head(dim) = basis * tangent_relative_displacement;
     mesh_displacements.segment(1 * dim, dim) =
         (alpha - 1.0) * mesh_displacements.head(dim);
@@ -76,10 +76,10 @@ inline Eigen::VectorX9<T> point_edge_relative_mesh_displacements(
 }
 
 template <typename DerivedBasis, typename T>
-inline Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 9>
+inline MatrixMax<typename DerivedBasis::Scalar, 2, 9>
 point_edge_TT(const Eigen::MatrixBase<DerivedBasis>& basis, const T& alpha)
 {
-    Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 9> TT(
+    MatrixMax<typename DerivedBasis::Scalar, 2, 9> TT(
         basis.cols(), 3 * basis.rows());
     TT.leftCols(basis.rows()) = basis.transpose();
     TT.middleCols(basis.rows(), basis.rows()) =
@@ -116,14 +116,14 @@ template <
     typename DerivedBasis,
     typename DerivedBeta,
     typename T = typename DerivedDisp::Scalar>
-inline Eigen::VectorX12<T> edge_edge_relative_mesh_displacements(
+inline VectorMax12<T> edge_edge_relative_mesh_displacements(
     const Eigen::MatrixBase<DerivedDisp>& tangent_relative_displacement,
     const Eigen::MatrixBase<DerivedBasis>& basis,
     const Eigen::MatrixBase<DerivedBeta>& gamma)
 {
-    Eigen::VectorX3<T> rel_disp = basis * tangent_relative_displacement;
+    VectorMax3<T> rel_disp = basis * tangent_relative_displacement;
     int dim = rel_disp.size();
-    Eigen::VectorX12<T> mesh_displacements(4 * dim);
+    VectorMax12<T> mesh_displacements(4 * dim);
     mesh_displacements.head(dim) = (1.0 - gamma[0]) * rel_disp; // dea0
     mesh_displacements.segment(dim, dim) = gamma[0] * rel_disp; // dea1
     mesh_displacements.segment(2 * dim, dim) =
@@ -133,11 +133,11 @@ inline Eigen::VectorX12<T> edge_edge_relative_mesh_displacements(
 }
 
 template <typename DerivedBasis, typename DerivedGamma>
-inline Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 12> edge_edge_TT(
+inline MatrixMax<typename DerivedBasis::Scalar, 2, 12> edge_edge_TT(
     const Eigen::MatrixBase<DerivedBasis>& basis,
     const Eigen::MatrixBase<DerivedGamma>& gamma)
 {
-    Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 12> TT(
+    MatrixMax<typename DerivedBasis::Scalar, 2, 12> TT(
         basis.cols(), 4 * basis.rows());
     TT.leftCols(basis.rows()) = (1.0 - gamma[0]) * basis.transpose();
     TT.middleCols(basis.rows(), basis.rows()) = gamma[0] * basis.transpose();
@@ -177,13 +177,13 @@ template <
     typename DerivedBasis,
     typename DerivedBeta,
     typename T = typename DerivedDisp::Scalar>
-inline Eigen::VectorX12<T> point_triangle_relative_mesh_displacements(
+inline VectorMax12<T> point_triangle_relative_mesh_displacements(
     const Eigen::MatrixBase<DerivedDisp>& tangent_relative_displacement,
     const Eigen::MatrixBase<DerivedBasis>& basis,
     const Eigen::MatrixBase<DerivedBeta>& beta)
 {
     int dim = basis.rows();
-    Eigen::VectorX12<T> mesh_displacements(4 * dim);
+    VectorMax12<T> mesh_displacements(4 * dim);
     mesh_displacements.head(dim) = basis * tangent_relative_displacement;
     mesh_displacements.segment(dim, dim) =
         (-1 + beta[0] + beta[1]) * mesh_displacements.head(dim);
@@ -194,11 +194,11 @@ inline Eigen::VectorX12<T> point_triangle_relative_mesh_displacements(
 }
 
 template <typename DerivedBasis, typename DerivedBeta>
-inline Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 12> point_triangle_TT(
+inline MatrixMax<typename DerivedBasis::Scalar, 2, 12> point_triangle_TT(
     const Eigen::MatrixBase<DerivedBasis>& basis,
     const Eigen::MatrixBase<DerivedBeta>& beta)
 {
-    Eigen::MatrixXX<typename DerivedBasis::Scalar, 2, 12> TT(
+    MatrixMax<typename DerivedBasis::Scalar, 2, 12> TT(
         basis.cols(), 4 * basis.rows());
     TT.leftCols(basis.rows()) = basis.transpose();
     TT.middleCols(basis.rows(), basis.rows()) =

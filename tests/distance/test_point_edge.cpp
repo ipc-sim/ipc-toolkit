@@ -12,11 +12,11 @@ TEST_CASE("Point-edge distance", "[distance][point-edge]")
 {
     int dim = GENERATE(2, 3);
     double expected_distance = GENERATE(-10, -1, -1e-12, 0, 1e-12, 1, 10);
-    Eigen::VectorX3d p = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d p = VectorMax3d::Zero(dim);
     p.y() = expected_distance;
-    Eigen::VectorX3d e0 = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d e0 = VectorMax3d::Zero(dim);
     e0.x() = -10;
-    Eigen::VectorX3d e1 = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d e1 = VectorMax3d::Zero(dim);
     e1.x() = 10;
 
     double distance = point_edge_distance(p, e0, e1);
@@ -27,11 +27,11 @@ TEST_CASE("Point-edge distance gradient", "[distance][point-edge][gradient]")
 {
     int dim = GENERATE(2, 3);
     double expected_distance = GENERATE(-10, -1, -1e-12, 0, 1e-12, 1, 10);
-    Eigen::VectorX3d p = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d p = VectorMax3d::Zero(dim);
     p.y() = expected_distance;
-    Eigen::VectorX3d e0 = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d e0 = VectorMax3d::Zero(dim);
     e0.x() = -10;
-    Eigen::VectorX3d e1 = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d e1 = VectorMax3d::Zero(dim);
     e1.x() = 10;
 
     Eigen::VectorXd grad;
@@ -56,11 +56,11 @@ TEST_CASE("Point-edge distance hessian", "[distance][point-edge][hessian]")
 {
     int dim = GENERATE(2, 3);
     double expected_distance = GENERATE(-10, -1, -1e-12, 0, 1e-12, 1, 10);
-    Eigen::VectorX3d p = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d p = VectorMax3d::Zero(dim);
     p.y() = expected_distance;
-    Eigen::VectorX3d e0 = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d e0 = VectorMax3d::Zero(dim);
     e0.x() = -10;
-    Eigen::VectorX3d e1 = Eigen::VectorX3d::Zero(dim);
+    VectorMax3d e1 = VectorMax3d::Zero(dim);
     e1.x() = 10;
 
     Eigen::MatrixXd hess;
