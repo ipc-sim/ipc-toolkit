@@ -30,9 +30,8 @@ double initial_barrier_stiffness(
     if (d0 - dmin_squared >= 2 * dmin * dhat + dhat_squared) {
         d0 = dmin * dhat + 0.5 * dhat_squared; // TODO: this is untested
     }
-    double min_barrier_stiffness =
-        barrier_hessian(d0 - dmin_squared, 2 * dmin * dhat + dhat_squared) * 4
-        * d0;
+    double min_barrier_stiffness = 4 * d0
+        * barrier_hessian(d0 - dmin_squared, 2 * dmin * dhat + dhat_squared);
     min_barrier_stiffness =
         min_barrier_stiffness_scale * average_mass / min_barrier_stiffness;
     assert(std::isfinite(min_barrier_stiffness));
@@ -115,7 +114,7 @@ void update_barrier_stiffness(
     double current_min_distance =
         compute_minimum_distance(V, E, F, constraint_set);
 
-    return update_barrier_stiffness(
+    update_barrier_stiffness(
         prev_min_distance, current_min_distance, max_barrier_stiffness,
         barrier_stiffness, dhat_epsilon_scale, world_bbox_diagonal_length(V),
         dmin);
