@@ -38,8 +38,8 @@ void update_barrier_stiffness(
     double min_distance,
     double max_barrier_stiffness,
     double& barrier_stiffness,
-    double dhat_epsilon_scale,
     double bbox_diagonal,
+    double dhat_epsilon_scale = 1e-9,
     double dmin = 0);
 
 /// Update the barrier stiffness if the distance is decreasing and less than
@@ -53,7 +53,7 @@ void update_barrier_stiffness(
     double& min_distance,
     double max_barrier_stiffness,
     double& barrier_stiffness,
-    double dhat_epsilon_scale,
+    double dhat_epsilon_scale = 1e-9,
     double dmin = 0);
 
 } // namespace ipc

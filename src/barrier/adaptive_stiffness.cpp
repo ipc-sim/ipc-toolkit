@@ -80,8 +80,8 @@ void update_barrier_stiffness(
     double min_distance,
     double max_barrier_stiffness,
     double& barrier_stiffness,
-    double dhat_epsilon_scale,
     double bbox_diagonal,
+    double dhat_epsilon_scale,
     double dmin)
 {
     // Is the barrier having a difficulty pushing the bodies apart?
@@ -116,7 +116,7 @@ void update_barrier_stiffness(
 
     update_barrier_stiffness(
         prev_min_distance, current_min_distance, max_barrier_stiffness,
-        barrier_stiffness, dhat_epsilon_scale, world_bbox_diagonal_length(V),
+        barrier_stiffness, world_bbox_diagonal_length(V), dhat_epsilon_scale,
         dmin);
 
     min_distance = current_min_distance;
