@@ -31,7 +31,7 @@ endfunction()
 function(ipc_toolkit_download_libigl)
   ipc_toolkit_download_project(libigl
     GIT_REPOSITORY https://github.com/libigl/libigl.git
-    GIT_TAG        v2.2.0
+    GIT_TAG        v2.3.0
   )
 endfunction()
 
