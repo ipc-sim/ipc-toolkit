@@ -1,5 +1,7 @@
 #include <ipc/collision_constraint.hpp>
 
+#include <stdexcept> // std::out_of_range
+
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
@@ -474,8 +476,7 @@ CollisionConstraint& Constraints::operator[](size_t idx)
     if (idx < fv_constraints.size()) {
         return fv_constraints[idx];
     }
-    assert(false);
-    throw "Invalid friction constraint index!";
+    throw std::out_of_range("Constraint index is out of range!");
 }
 
 const CollisionConstraint& Constraints::operator[](size_t idx) const
@@ -495,8 +496,7 @@ const CollisionConstraint& Constraints::operator[](size_t idx) const
     if (idx < fv_constraints.size()) {
         return fv_constraints[idx];
     }
-    assert(false);
-    throw "Invalid friction constraint index!";
+    throw std::out_of_range("Constraint index is out of range!");
 }
 
 } // namespace ipc

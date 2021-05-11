@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdexcept> // std::invalid_argument
+
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
@@ -51,7 +53,8 @@ auto point_edge_distance(
         return point_line_distance(p, e0, e1);
     }
 
-    throw "something went wrong in point_edge_distance";
+    throw std::invalid_argument(
+        "Invalid distance type for point-edge distance!");
 }
 
 /// @brief Compute the gradient of the distance between a point and edge.
@@ -121,6 +124,10 @@ void point_edge_distance_gradient(
     case PointEdgeDistanceType::P_E:
         point_line_distance_gradient(p, e0, e1, grad);
         break;
+
+    default:
+        throw std::invalid_argument(
+            "Invalid distance type for point-edge distance gradient!");
     }
 }
 
@@ -194,6 +201,10 @@ void point_edge_distance_hessian(
     case PointEdgeDistanceType::P_E:
         point_line_distance_hessian(p, e0, e1, hess);
         break;
+
+    default:
+        throw std::invalid_argument(
+            "Invalid distance type for point-edge distance hessian!");
     }
 }
 

@@ -1,6 +1,7 @@
 #include <ipc/ipc.hpp>
 
 #include <unordered_map>
+#include <stdexcept> // std::runtime_error
 
 #include <tbb/mutex.h>
 #include <tbb/parallel_for.h>
@@ -30,7 +31,7 @@ long find_edge(const Eigen::MatrixXi& E, long e0, long e1)
             return i;
         }
     }
-    throw "Unable to find edge!";
+    throw std::runtime_error("Unable to find edge!");
 }
 
 template <typename Hash>

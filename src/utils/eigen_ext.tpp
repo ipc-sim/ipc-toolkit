@@ -1,6 +1,6 @@
 #include <ipc/utils/eigen_ext.hpp>
 
-#include <iostream>
+#include <stdexcept> // std::runtime_error
 
 #include <Eigen/Eigenvalues>
 
@@ -34,7 +34,8 @@ project_to_pd(
         ipc::logger().error(
             "unable to project matrix onto positive definite cone");
 #else
-        throw "unable to project matrix onto positive definite cone";
+        throw std::runtime_error(
+            "unable to project matrix onto positive definite cone");
 #endif
         return A;
     }
@@ -77,7 +78,8 @@ project_to_psd(
         ipc::logger().error(
             "unable to project matrix onto positive semi-definite cone");
 #else
-        throw "unable to project matrix onto positive semi-definite cone";
+        throw std::runtime_error(
+            "unable to project matrix onto positive definite cone");
 #endif
         return A;
     }

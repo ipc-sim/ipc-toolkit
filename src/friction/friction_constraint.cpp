@@ -1,5 +1,7 @@
 #include <ipc/friction/friction_constraint.hpp>
 
+#include <stdexcept> // std::out_of_range
+
 namespace ipc {
 
 VectorMax2d FrictionConstraint::compute_potential_gradient_common(
@@ -317,8 +319,7 @@ FrictionConstraint& FrictionConstraints::operator[](size_t idx)
     if (idx < fv_constraints.size()) {
         return fv_constraints[idx];
     }
-    assert(false);
-    throw "Invalid friction constraint index!";
+    throw std::out_of_range("Friction constraint index is out of range!");
 }
 
 const FrictionConstraint& FrictionConstraints::operator[](size_t idx) const
@@ -338,8 +339,7 @@ const FrictionConstraint& FrictionConstraints::operator[](size_t idx) const
     if (idx < fv_constraints.size()) {
         return fv_constraints[idx];
     }
-    assert(false);
-    throw "Invalid friction constraint index!";
+    throw std::out_of_range("Friction constraint index is out of range!");
 }
 
 } // namespace ipc
