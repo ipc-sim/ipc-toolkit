@@ -61,7 +61,7 @@ endfunction()
 function(ipc_toolkit_download_tight_inclusion)
   ipc_toolkit_download_project(Tight-Inclusion
     GIT_REPOSITORY https://github.com/Continuous-Collision-Detection/Tight-Inclusion.git
-    GIT_TAG        8730ca944b71b8bed6f1aecb0fca5bd152f95a58
+    GIT_TAG        14c8943760f599b33984fafab13869ed633a7826
   )
 endfunction()
 

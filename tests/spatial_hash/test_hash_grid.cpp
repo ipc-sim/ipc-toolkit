@@ -141,14 +141,13 @@ TEST_CASE("Vertex-Vertex Spatial Hash", "[ccd][has_grid]")
 TEST_CASE("Entire 2D Mesh", "[ccd][has_grid]")
 {
     Eigen::MatrixXd V_t0;
-    igl::readCSV(std::string(TEST_DATA_DIR) + "V_t0.txt", V_t0);
+    igl::readCSV(std::string(TEST_DATA_DIR) + "V_t0.csv", V_t0);
 
     Eigen::MatrixXd V_t1;
-    igl::readCSV(std::string(TEST_DATA_DIR) + "V_t1.txt", V_t1);
+    igl::readCSV(std::string(TEST_DATA_DIR) + "V_t1.csv", V_t1);
 
-    Eigen::MatrixXd E_double;
-    igl::readCSV(std::string(TEST_DATA_DIR) + "E.txt", E_double);
-    Eigen::MatrixXi E = E_double.cast<int>();
+    Eigen::MatrixXi E;
+    igl::readCSV(std::string(TEST_DATA_DIR) + "E.csv", E);
 
     bool ignore_internal_vertices = GENERATE(false, true);
 
