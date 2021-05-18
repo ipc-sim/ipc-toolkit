@@ -159,6 +159,7 @@ void check_toi(
 // ---------------------------------------------------
 // Tests
 // ---------------------------------------------------
+#if defined(NDEBUG) || !(defined(WIN32) || defined(_WIN32) || defined(__WIN32))
 
 TEST_CASE("Point-edge 2D ToI", "[ccd][toi]")
 {
@@ -247,6 +248,8 @@ TEST_CASE("Point-edge 2D ToI", "[ccd][toi]")
     // Flip the edges
     check_toi(p_t0, e1_t0, e0_t0, p_t1, e1_t1, e0_t1, expected_toi);
 }
+
+#endif
 
 TEST_CASE("Repeated CCD", "[ccd][thisone]")
 {
