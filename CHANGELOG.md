@@ -10,6 +10,44 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### 2021-05-18 ([245b13b](https://github.com/ipc-sim/ipc-toolkit/commit/245b13bcc5e99ed52850ae865aaa0ad4e71a43a8))
+#### Changed
+* Use TightInclusion degenerate edge-edge for point-point and point-edge CCD
+
+### 2021-05-11 ([5c34dcd](https://github.com/ipc-sim/ipc-toolkit/commit/5c34dcdf226d46ada962204585fa386eb9b67859))
+#### Changed
+* `char*` exceptions to `std::exceptions`
+
+### 2021-05-06 ([24056cc](https://github.com/ipc-sim/ipc-toolkit/commit/24056ccb2ca0a03bdef8141bc5011c41547f06b5))
+#### Changed
+* Gave `dhat_epsilon_scale` a default value of `1e-9` in `update_barrier_stiffness`
+* :warning: Changed order of parameters to `update_barrier_stiffness`
+    * Flipped `bbox_diagonal` and `dhat_epsilon_scale`
+
+### 2021-05-06 ([81d65f3](https://github.com/ipc-sim/ipc-toolkit/commit/81d65f32e479fea32d0acc29c8a7a532fa55518b))
+#### Fixed
+* Bug in output min distance of `update_barrier_stiffness`
+
+### 2021-05-04 ([59ec167](https://github.com/ipc-sim/ipc-toolkit/commit/59ec167b85eaf56095a2d0333bdd96146d658ebf))
+#### Changed
+* Moved eigen_ext functions into ipc namespace
+* Renamed max size matrices with `Max`
+    * `Eigen::VectorX([0-9])` → `ipc::VectorMax$1`
+    * `Eigen::MatrixXX([0-9])` → `ipc::VectorMax$1`
+    * `Eigen::ArrayMax([0-9])` → `ipc::ArrayMax$1`
+
+### 2021-05-03 ([664d65f](https://github.com/ipc-sim/ipc-toolkit/commit/664d65fd70dbd350b6bfe5f8a311a89ff4fef3bd))
+#### Added
+* Added utility function to check for edge-edge intersection in 2D and edge-triangle intersection in 3D.
+* Optionally: use GMP for exact edge-triangle intersection checks
+
+### 2021-05-03 ([9b4ebfc](https://github.com/ipc-sim/ipc-toolkit/commit/9b4ebfc0f458645cf33eeebf8211607f45ad9cb4))
+#### Added
+* voxel_size_heuristic.cpp which suggests a good voxel size for the SpatialHash and HashGrid
+
+#### Changed
+* Changed HashGrid voxel size to be the average edge length not considering displacement length. This results in better performance, but can result in large memory usage.
+
 ### 2021-04-29 ([293d0ad](https://github.com/ipc-sim/ipc-toolkit/commit/293d0ad992c01df561e25c286043c9ae9b901ff0))
 #### Added
 * Added TBB parallel loops to the main function (`compute_potential`, `compute_friction_potential`, `compute_collision_free_stepsize`, etc.)
