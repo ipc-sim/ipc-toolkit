@@ -124,7 +124,7 @@ TEST_CASE("Point-edge 2D CCD", "[ccd]")
         CAPTURE(
             p_t0.transpose(), e0_t0.transpose(), e1_t0.transpose(),
             p_t1.transpose(), e0_t1.transpose(), e1_t1.transpose());
-        CHECK(toi == Approx(toi_expected));
+        CHECK(toi <= toi_expected);
     }
 }
 
@@ -153,7 +153,7 @@ void check_toi(
         /*max_iterations=*/1e7,
         /*conservative_rescaling=*/1.0);
     CHECK(has_collision);
-    CHECK(toi_expected == Approx(toi_actual));
+    CHECK(toi_actual <= toi_expected);
 }
 
 // ---------------------------------------------------
