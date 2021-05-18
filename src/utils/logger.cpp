@@ -24,7 +24,9 @@ void Logger::init(std::vector<spdlog::sink_ptr>& sinks)
         spdlog::drop("ipc_toolkit");
     }
 
-    spdlog::init_thread_pool(8192, 1);
+    if (spdlog::thread_pool() == nullptr) {
+        spdlog::init_thread_pool(8192, 1);
+    }
     Logger::_logger = std::make_shared<spdlog::async_logger>(
         "ipc_toolkit", sinks.begin(), sinks.end(), spdlog::thread_pool(),
         spdlog::async_overflow_policy::block);
