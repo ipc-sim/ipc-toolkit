@@ -27,7 +27,7 @@ PointEdgeDistanceType point_edge_distance_type(
 #ifdef IPC_TOOLKIT_WITH_LOGGER
         logger().warn("Degenerate edge in point_edge_distance_type!");
 #endif
-        return PointEdgeDistanceType::P_E; // PE
+        return PointEdgeDistanceType::P_E0; // WARNING: use arbitrary end-point
     }
     auto ratio = e.dot(p - e0) / e_length_sqr;
     if (ratio < 0) {

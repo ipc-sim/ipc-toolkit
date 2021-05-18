@@ -38,14 +38,14 @@ if(NOT TARGET TBB::tbb)
 endif()
 
 # CCD
-# if(IPC_TOOLKIT_WITH_CORRECT_CCD)
+if(IPC_TOOLKIT_WITH_CORRECT_CCD)
   # Provably conservative CCD of [Wang and Ferguson et al. 2020]
   if(NOT TARGET TightInclusion)
     ipc_toolkit_download_tight_inclusion()
     add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/Tight-Inclusion)
     add_library(TightInclusion ALIAS tight_inclusion)
   endif()
-# else()
+else()
   # Etienne Vouga's CTCD Library
   if(NOT TARGET EVCTCD)
     ipc_toolkit_download_evctcd()
@@ -58,7 +58,7 @@ endif()
     # Turn off floating point contraction for CCD robustness
     target_compile_options(EVCTCD PUBLIC "-ffp-contract=off")
   endif()
-# endif()
+endif()
 
 # Logger
 if(IPC_TOOLKIT_WITH_LOGGER AND NOT TARGET spdlog::spdlog)
