@@ -1,10 +1,11 @@
 # IPC Toolkit
 **A set of reusable functions to integrate IPC into an existing simulation.**
 
-[![Build status](https://github.com/ipc-sim/ipc-toolkit/workflows/Build/badge.svg?event=push)](https://github.com/ipc-sim/ipc-toolkit/actions?query=workflow%3ABuild+branch%3Amaster+event%3Apush)
-[![License](https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue)](https://github.com/ipc-sim/ipc-toolkit/blob/master/LICENSE)
+[![Build](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg)](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml)
+[![Python](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg)](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml)
+[![License](https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue)](https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE)
 
-:warning: This toolkit is in an early stage of development. If you have any problems or find any bugs please post an issue. For a complete list of changes, please see [`CHANGELOG.md`](https://github.com/ipc-sim/ipc-toolkit/blob/master/CHANGELOG.md). Meanwhile, for a definitive reference for these functions, please see the [IPC source code](https://github.com/ipc-sim/IPC).
+:warning: This toolkit is in an early stage of development. If you have any problems or find any bugs please post an issue. For a complete list of changes, please see [`CHANGELOG.md`](https://github.com/ipc-sim/ipc-toolkit/blob/main/CHANGELOG.md). Meanwhile, for a definitive reference for these functions, please see the [IPC source code](https://github.com/ipc-sim/IPC).
 
 ## Integrating IPC Toolkit into your project
 

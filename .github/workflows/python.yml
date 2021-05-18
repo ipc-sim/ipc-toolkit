@@ -3,11 +3,11 @@ name: Python
 on:
   push:
     branches:
-      - master
+      - main
       - python
   pull_request:
     branches:
-      - master
+      - main
 
 jobs:
   Build:
