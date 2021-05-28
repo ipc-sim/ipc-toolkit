@@ -423,19 +423,20 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool is_step_collision_free(
+void construct_ccd_candidates(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
+    Candidates& candidates,
     bool ignore_codimensional_vertices,
     const Eigen::VectorXi& vertex_group_ids)
 {
     int dim = V0.cols();
     assert(V1.cols() == dim);
 
-    // Broad phase
-    Candidates candidates;
+    candidates.clear();
+
     HashGrid hash_grid;
     hash_grid.resize(V0, V1, E);
 
@@ -462,6 +463,36 @@ bool is_step_collision_free(
         hash_grid.getFaceVertexPairs(
             F, vertex_group_ids, candidates.fv_candidates);
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool is_step_collision_free(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    bool ignore_codimensional_vertices,
+    const Eigen::VectorXi& vertex_group_ids)
+{
+    // Broad phase
+    Candidates candidates;
+    construct_ccd_candidates(
+        V0, V1, E, F, candidates, ignore_codimensional_vertices,
+        vertex_group_ids);
+
+    // Narrow phase
+    return is_step_collision_free(candidates, V0, V1, E, F);
+}
+
+bool is_step_collision_free(
+    const Candidates& candidates,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F)
+{
+    assert(V0.cols() == V1.cols());
 
     // Narrow phase
     for (const auto& ev_candidate : candidates.ev_candidates) {
@@ -541,37 +572,24 @@ double compute_collision_free_stepsize(
     bool ignore_codimensional_vertices,
     const Eigen::VectorXi& vertex_group_ids)
 {
-    int dim = V0.cols();
-    assert(V1.cols() == dim);
-
     // Broad phase
     Candidates candidates;
-    HashGrid hash_grid;
-    hash_grid.resize(V0, V1, E);
+    construct_ccd_candidates(
+        V0, V1, E, F, candidates, ignore_codimensional_vertices,
+        vertex_group_ids);
 
-    // Assumes the edges connect to all boundary vertices
-    if (ignore_codimensional_vertices) {
-        hash_grid.addVerticesFromEdges(V0, V1, E);
-    } else {
-        hash_grid.addVertices(V0, V1);
-    }
-    hash_grid.addEdges(V0, V1, E);
-    if (dim == 3) {
-        // These are not needed for 2D
-        hash_grid.addFaces(V0, V1, F);
-    }
+    // Narrow phase
+    return compute_collision_free_stepsize(candidates, V0, V1, E, F);
+}
 
-    if (dim == 2) {
-        // This is not needed for 3D
-        hash_grid.getVertexEdgePairs(
-            E, vertex_group_ids, candidates.ev_candidates);
-    } else {
-        // These are not needed for 2D
-        hash_grid.getEdgeEdgePairs(
-            E, vertex_group_ids, candidates.ee_candidates);
-        hash_grid.getFaceVertexPairs(
-            F, vertex_group_ids, candidates.fv_candidates);
-    }
+double compute_collision_free_stepsize(
+    const Candidates& candidates,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F)
+{
+    assert(V0.cols() == V1.cols());
 
     // Narrow phase
     double earliest_toi = 1;

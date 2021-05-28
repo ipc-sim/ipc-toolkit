@@ -112,6 +112,35 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     double dhat,
     bool project_hessian_to_psd = true);
 
+///////////////////////////////////////////////////////////////////////////////
+// Collision detection
+
+/// @brief Construct a set of continous collision detection candidates.
+///
+/// @note Assumes the trajectory is linear.
+/// @note V can either be the surface vertices or the entire mesh vertices.
+/// The edges and face should be only for the surface elements.
+///
+/// @param[in] V0 Vertex positions at start as rows of a matrix.
+/// @param[in] V1 Vertex positions at end as rows of a matrix.
+/// @param[in] E Edges as rows of indicies into V.
+/// @param[in] F Triangular faces as rows of indicies into V.
+/// @param[out] canidates The constructed candidate set as output.
+/// @param[in] ignore_codimensional_vertices Ignores vertices not connected to
+///                                          edges.
+/// @param[in] vertex_group_ids A group ID per vertex such that vertices with
+///                             the same group id do not collide. An empty
+///                             vector implies all vertices can collide with all
+///                             other vertices.
+void construct_ccd_candidates(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    Candidates& candidates,
+    bool ignore_codimensional_vertices = true,
+    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
+
 /// @brief Determine if the step is collision free.
 ///
 /// @note Assumes the trajectory is linear.
@@ -137,6 +166,26 @@ bool is_step_collision_free(
     bool ignore_codimensional_vertices = true,
     const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
 
+/// @brief Determine if the step is collision free from a set of candidates.
+///
+/// @note Assumes the trajectory is linear.
+/// @note V can either be the surface vertices or the entire mesh vertices.
+/// The edges and face should be only for the surface elements.
+///
+/// @param[in] candidates Set of candidates to check for collisions.
+/// @param[in] V0 Vertex positions at start as rows of a matrix.
+/// @param[in] V1 Vertex positions at end as rows of a matrix.
+/// @param[in] E Edges as rows of indicies into V.
+/// @param[in] F Triangular faces as rows of indicies into V.
+///
+/// @returns True if <b>any</b> collisions occur.
+bool is_step_collision_free(
+    const Candidates& candidates,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F);
+
 /// @brief Computes a maximal step size that is collision free.
 ///
 /// @note Assumes V0 is intersection free.
@@ -161,6 +210,30 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXi& F,
     bool ignore_codimensional_vertices = true,
     const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
+
+/// @brief Computes a maximal step size that is collision free using a set of
+/// collision candidates.
+///
+/// @note Assumes V0 is intersection free.
+/// @note Assumes the trajectory is linear.
+/// @note A value of 1.0 if a full step and 0.0 is no step.
+///
+/// @param[in] candidates Set of candidates to check for collisions.
+/// @param[in] V0 Vertex positions at start as rows of a matrix.
+/// @param[in] V1 Vertex positions at end as rows of a matrix.
+/// @param[in] E Edges as rows of indicies into V.
+/// @param[in] F Triangular faces as rows of indicies into V.
+////
+/// @returns A step-size \f$\in [0, 1]\f$ that is collision free.
+double compute_collision_free_stepsize(
+    const Candidates& candidates,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F);
+
+///////////////////////////////////////////////////////////////////////////////
+// Utilities
 
 /// @brief Computes the minimum distance between any non-adjacent elements.
 ///
