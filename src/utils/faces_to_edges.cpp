@@ -19,7 +19,7 @@ faces_to_edges(const Eigen::MatrixXi& F, const Eigen::MatrixXi& E)
     unordered_map<
         Eigen::RowVector2i, int, decltype(hash_edge), decltype(eq_edges)>
         edge_map(/*bucket_count=*/E.rows(), hash_edge, eq_edges);
-    for (int ei = 0; ei < F.rows(); ei++) {
+    for (int ei = 0; ei < E.rows(); ei++) {
         edge_map[E.row(ei)] = ei;
     }
 
