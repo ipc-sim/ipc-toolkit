@@ -12,6 +12,7 @@ namespace ipc {
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
 ///
+/// @note The given constraint_set will be cleared.
 /// @note V can either be the surface vertices or the entire mesh vertices.
 /// The edges and face should be only for the surface elements.
 ///
@@ -40,6 +41,7 @@ void construct_constraint_set(
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
 ///
+/// @note The given constraint_set will be cleared.
 /// @note V can either be the surface vertices or the entire mesh vertices.
 /// The edges and face should be only for the surface elements.
 ///

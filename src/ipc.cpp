@@ -1,6 +1,5 @@
 #include <ipc/ipc.hpp>
 
-#include <unordered_map>
 #include <stdexcept> // std::runtime_error
 
 #include <tbb/mutex.h>
@@ -19,6 +18,7 @@
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/intersection.hpp>
 #include <ipc/utils/world_bbox_diagonal_length.hpp>
+#include <ipc/utils/unordered_map_and_set.hpp>
 
 namespace ipc {
 
@@ -37,7 +37,7 @@ long find_edge(const Eigen::MatrixXi& E, long e0, long e1)
 template <typename Hash>
 void add_vertex_vertex_constraint(
     std::vector<VertexVertexConstraint>& vv_constraints,
-    std::unordered_map<VertexVertexConstraint, long, Hash>& vv_to_index,
+    unordered_map<VertexVertexConstraint, long, Hash>& vv_to_index,
     const long v0i,
     const long v1i)
 {
@@ -56,7 +56,7 @@ void add_vertex_vertex_constraint(
 template <typename Hash>
 void add_edge_vertex_constraint(
     std::vector<EdgeVertexConstraint>& ev_constraints,
-    std::unordered_map<EdgeVertexConstraint, long, Hash>& ev_to_index,
+    unordered_map<EdgeVertexConstraint, long, Hash>& ev_to_index,
     const long ei,
     const long vi)
 {
@@ -130,6 +130,8 @@ void construct_constraint_set(
     const Eigen::MatrixXi& F2E,
     double dmin)
 {
+    constraint_set.clear();
+
     double dhat_squared = dhat * dhat;
     double dmin_squared = dmin * dmin;
 
@@ -145,16 +147,16 @@ void construct_constraint_set(
             std::max(vv_constraint.vertex0_index, vv_constraint.vertex1_index);
         return size_t(max_vi * V.rows() + min_vi);
     };
-    std::unordered_map<VertexVertexConstraint, long, decltype(vv_hash)>
-        vv_to_index(/*min_buckets=*/candidates.size(), vv_hash);
+    unordered_map<VertexVertexConstraint, long, decltype(vv_hash)> vv_to_index(
+        /*min_buckets=*/candidates.size(), vv_hash);
 
     auto ev_hash = [&V](const EdgeVertexConstraint& ev_constraint) -> size_t {
         // There are max E.rows() * V.rows() constraints
         return size_t(
             ev_constraint.edge_index * V.rows() + ev_constraint.vertex_index);
     };
-    std::unordered_map<EdgeVertexConstraint, long, decltype(ev_hash)>
-        ev_to_index(/*min_buckets=*/candidates.size(), ev_hash);
+    unordered_map<EdgeVertexConstraint, long, decltype(ev_hash)> ev_to_index(
+        /*min_buckets=*/candidates.size(), ev_hash);
 
     for (const auto& ev_candidate : candidates.ev_candidates) {
         long vi = ev_candidate.vertex_index;
