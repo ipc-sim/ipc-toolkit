@@ -1,5 +1,7 @@
 #include <ipc/spatial_hash/hash_grid.hpp>
 
+#include <algorithm> // std::min/max
+
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/blocked_range2d.h>
 #include <tbb/parallel_for.h>

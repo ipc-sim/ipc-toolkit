@@ -1,5 +1,7 @@
 #include <ipc/spatial_hash/brute_force.hpp>
 
+#include <algorithm> // std::min/max
+
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range2d.h>

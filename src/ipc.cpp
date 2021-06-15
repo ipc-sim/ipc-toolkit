@@ -1,6 +1,7 @@
 #include <ipc/ipc.hpp>
 
 #include <stdexcept> // std::runtime_error
+#include <algorithm> // std::min/max
 
 #include <tbb/mutex.h>
 #include <tbb/parallel_for.h>

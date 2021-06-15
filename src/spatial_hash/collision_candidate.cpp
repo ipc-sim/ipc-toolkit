@@ -1,5 +1,7 @@
 #include <ipc/spatial_hash/collision_candidate.hpp>
 
+#include <algorithm> // std::min/max
+
 namespace ipc {
 
 VertexVertexCandidate::VertexVertexCandidate(

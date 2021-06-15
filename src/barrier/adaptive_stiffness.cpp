@@ -2,6 +2,8 @@
 
 #include <ipc/barrier/adaptive_stiffness.hpp>
 
+#include <algorithm> // std::min/max
+
 #include <ipc/ipc.hpp>
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/utils/world_bbox_diagonal_length.hpp>
