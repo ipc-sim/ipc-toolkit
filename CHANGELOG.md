@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### 2021-06-18 ([aa59aeb](https://github.com/ipc-sim/ipc-toolkit/commit/aa59aeb0634af981a8f1cfbb6d2ff2b76a04d610))
+#### Changed
+* `construct_friction_constraint_set` now clears the given `friction_constraint_set`
+
 ### 2021-05-18 ([245b13b](https://github.com/ipc-sim/ipc-toolkit/commit/245b13bcc5e99ed52850ae865aaa0ad4e71a43a8))
 #### Changed
 * Use TightInclusion degenerate edge-edge for point-point and point-edge CCD
