@@ -19,6 +19,27 @@ void construct_friction_constraint_set(
     double mu,
     FrictionConstraints& friction_constraint_set);
 
+void construct_friction_constraint_set(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const Constraints& contact_constraint_set,
+    double dhat,
+    double barrier_stiffness,
+    const Eigen::VectorXd& mus,
+    FrictionConstraints& friction_constraint_set);
+
+void construct_friction_constraint_set(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const Constraints& contact_constraint_set,
+    double dhat,
+    double barrier_stiffness,
+    const Eigen::VectorXd& mus,
+    const std::function<double(double, double)>& blend_mu,
+    FrictionConstraints& friction_constraint_set);
+
 /// @brief Compute the friction potential between to positions.
 ///
 /// @param V0 Vertex positions at start of time-step (rowwise)
