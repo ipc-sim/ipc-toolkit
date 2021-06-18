@@ -41,6 +41,8 @@ void construct_friction_constraint_set(
     double mu,
     FrictionConstraints& friction_constraint_set)
 {
+    friction_constraint_set.clear();
+
     friction_constraint_set.vv_constraints.reserve(
         contact_constraint_set.vv_constraints.size());
     for (const auto& vv_constraint : contact_constraint_set.vv_constraints) {
