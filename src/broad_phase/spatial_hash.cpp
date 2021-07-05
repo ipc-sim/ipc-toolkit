@@ -6,7 +6,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 
-#include <ipc/ccd/broadphase.hpp>
+#include <ipc/ccd/aabb.hpp>
 #include <ipc/broad_phase/voxel_size_heuristic.hpp>
 
 // Uncomment this to construct spatial hash in parallel.

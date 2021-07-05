@@ -1,4 +1,4 @@
-#include <ipc/ccd/broadphase.hpp>
+#include <ipc/ccd/aabb.hpp>
 
 namespace ipc {
 

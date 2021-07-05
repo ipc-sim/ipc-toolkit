@@ -6,7 +6,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range2d.h>
 
-#include <ipc/ccd/broadphase.hpp>
+#include <ipc/ccd/aabb.hpp>
 
 namespace ipc {
 
