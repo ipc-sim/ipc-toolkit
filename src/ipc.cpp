@@ -81,40 +81,17 @@ void construct_constraint_set(
     double dhat,
     Constraints& constraint_set,
     bool ignore_codimensional_vertices,
+    const BroadPhaseMethod& method,
     const Eigen::VectorXi& vertex_group_ids,
     const Eigen::MatrixXi& F2E,
     double dmin)
 {
-    double inflation_radius = (dhat + dmin) / 1.9; // Conservative inflation
+    double inflation_radius = (dhat + dmin) / 1.99; // Conservative inflation
 
     Candidates candidates;
-    HashGrid hash_grid;
-    hash_grid.resize(V, E, inflation_radius);
-
-    // Assumes the edges connect to all boundary vertices
-    if (ignore_codimensional_vertices) {
-        hash_grid.addVerticesFromEdges(V, E, inflation_radius);
-    } else {
-        hash_grid.addVertices(V, inflation_radius);
-    }
-
-    hash_grid.addEdges(V, E, inflation_radius);
-    if (V.cols() == 3) {
-        // These are not needed for 2D
-        hash_grid.addFaces(V, F, inflation_radius);
-    }
-
-    if (V.cols() == 2) {
-        // This is not needed for 3D
-        hash_grid.getVertexEdgePairs(
-            E, vertex_group_ids, candidates.ev_candidates);
-    } else {
-        // These are not needed for 2D
-        hash_grid.getEdgeEdgePairs(
-            E, vertex_group_ids, candidates.ee_candidates);
-        hash_grid.getFaceVertexPairs(
-            F, vertex_group_ids, candidates.fv_candidates);
-    }
+    construct_collision_candidates(
+        V, E, F, candidates, inflation_radius, method,
+        ignore_codimensional_vertices, vertex_group_ids);
 
     construct_constraint_set(
         candidates, V_rest, V, E, F, dhat, constraint_set, F2E, dmin);
@@ -424,66 +401,26 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void construct_ccd_candidates(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    Candidates& candidates,
-    bool ignore_codimensional_vertices,
-    const Eigen::VectorXi& vertex_group_ids)
-{
-    int dim = V0.cols();
-    assert(V1.cols() == dim);
-
-    candidates.clear();
-
-    HashGrid hash_grid;
-    hash_grid.resize(V0, V1, E);
-
-    // Assumes the edges connect to all boundary vertices
-    if (ignore_codimensional_vertices) {
-        hash_grid.addVerticesFromEdges(V0, V1, E);
-    } else {
-        hash_grid.addVertices(V0, V1);
-    }
-    hash_grid.addEdges(V0, V1, E);
-    if (dim == 3) {
-        // These are not needed for 2D
-        hash_grid.addFaces(V0, V1, F);
-    }
-
-    if (dim == 2) {
-        // This is not needed for 3D
-        hash_grid.getVertexEdgePairs(
-            E, vertex_group_ids, candidates.ev_candidates);
-    } else {
-        // These are not needed for 2D
-        hash_grid.getEdgeEdgePairs(
-            E, vertex_group_ids, candidates.ee_candidates);
-        hash_grid.getFaceVertexPairs(
-            F, vertex_group_ids, candidates.fv_candidates);
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
 bool is_step_collision_free(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     bool ignore_codimensional_vertices,
-    const Eigen::VectorXi& vertex_group_ids)
+    const BroadPhaseMethod& method,
+    const Eigen::VectorXi& vertex_group_ids,
+    double tolerance,
+    int max_iterations)
 {
     // Broad phase
     Candidates candidates;
-    construct_ccd_candidates(
-        V0, V1, E, F, candidates, ignore_codimensional_vertices,
-        vertex_group_ids);
+    construct_collision_candidates(
+        V0, V1, E, F, candidates, /*inflation_radius=*/0, method,
+        ignore_codimensional_vertices, vertex_group_ids);
 
     // Narrow phase
-    return is_step_collision_free(candidates, V0, V1, E, F);
+    return is_step_collision_free(
+        candidates, V0, V1, E, F, tolerance, max_iterations);
 }
 
 bool is_step_collision_free(
@@ -491,7 +428,9 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F)
+    const Eigen::MatrixXi& F,
+    double tolerance,
+    int max_iterations)
 {
     assert(V0.cols() == V1.cols());
 
@@ -509,7 +448,7 @@ bool is_step_collision_free(
             // Edge at t=1
             V1.row(E(ev_candidate.edge_index, 0)),
             V1.row(E(ev_candidate.edge_index, 1)), //
-            toi);
+            toi, /*tmax=*/1.0, tolerance, max_iterations);
 
         if (is_collision) {
             return false;
@@ -531,7 +470,7 @@ bool is_step_collision_free(
             // Edge 2 at t=1
             V1.row(E(ee_candidate.edge1_index, 0)),
             V1.row(E(ee_candidate.edge1_index, 1)), //
-            toi);
+            toi, /*tmax=*/1.0, tolerance, max_iterations);
 
         if (is_collision) {
             return false;
@@ -553,7 +492,7 @@ bool is_step_collision_free(
             V1.row(F(fv_candidate.face_index, 0)),
             V1.row(F(fv_candidate.face_index, 1)),
             V1.row(F(fv_candidate.face_index, 2)), //
-            toi);
+            toi, /*tmax=*/1.0, tolerance, max_iterations);
 
         if (is_collision) {
             return false;
@@ -571,16 +510,20 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     bool ignore_codimensional_vertices,
-    const Eigen::VectorXi& vertex_group_ids)
+    const BroadPhaseMethod& method,
+    const Eigen::VectorXi& vertex_group_ids,
+    double tolerance,
+    int max_iterations)
 {
     // Broad phase
     Candidates candidates;
-    construct_ccd_candidates(
-        V0, V1, E, F, candidates, ignore_codimensional_vertices,
-        vertex_group_ids);
+    construct_collision_candidates(
+        V0, V1, E, F, candidates, /*inflation_radius=*/0, method,
+        ignore_codimensional_vertices, vertex_group_ids);
 
     // Narrow phase
-    return compute_collision_free_stepsize(candidates, V0, V1, E, F);
+    return compute_collision_free_stepsize(
+        candidates, V0, V1, E, F, tolerance, max_iterations);
 }
 
 double compute_collision_free_stepsize(
@@ -588,7 +531,9 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F)
+    const Eigen::MatrixXi& F,
+    double tolerance,
+    int max_iterations)
 {
     assert(V0.cols() == V1.cols());
 
@@ -622,7 +567,7 @@ double compute_collision_free_stepsize(
                         V1.row(vi),
                         // Edge at t=1
                         V1.row(E(ei, 0)), V1.row(E(ei, 1)), //
-                        toi);
+                        toi, /*tmax=*/earliest_toi, tolerance, max_iterations);
                 } else if ((ci -= num_ev) < num_ee) {
                     const auto& ee_candidate = candidates.ee_candidates[ci];
                     const auto& eai = ee_candidate.edge0_index;
@@ -636,8 +581,7 @@ double compute_collision_free_stepsize(
                         V1.row(E(eai, 0)), V1.row(E(eai, 1)),
                         // Edge 2 at t=1
                         V1.row(E(ebi, 0)), V1.row(E(ebi, 1)), //
-                        toi,
-                        /*tmax=*/earliest_toi);
+                        toi, /*tmax=*/earliest_toi, tolerance, max_iterations);
                 } else {
                     ci -= num_ee;
                     assert(ci < num_fv);
@@ -653,8 +597,7 @@ double compute_collision_free_stepsize(
                         V1.row(vi),
                         // Triangle at t = 1
                         V1.row(F(fi, 0)), V1.row(F(fi, 1)), V1.row(F(fi, 2)),
-                        toi,
-                        /*tmax=*/earliest_toi);
+                        toi, /*tmax=*/earliest_toi, tolerance, max_iterations);
                 }
 
                 if (are_colliding) {
@@ -754,6 +697,7 @@ bool has_intersections(
     const Eigen::MatrixXi& F,
     const Eigen::VectorXi& vertex_group_ids)
 {
+    // TODO: Expose the broad-phase method
     HashGrid hash_grid;
     double conservative_inflation_radius = 1e-2 * world_bbox_diagonal_length(V);
     hash_grid.resize(V, E, conservative_inflation_radius);

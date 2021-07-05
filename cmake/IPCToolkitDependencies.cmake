@@ -42,6 +42,7 @@ if(IPC_TOOLKIT_WITH_CORRECT_CCD)
   # Provably conservative CCD of [Wang and Ferguson et al. 2020]
   if(NOT TARGET TightInclusion)
     ipc_toolkit_download_tight_inclusion()
+    option(TIGHT_INCLUSION_WITH_NO_ZERO_TOI "Enable refinement if CCD produces a zero ToI" ON)
     add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/Tight-Inclusion)
     add_library(TightInclusion ALIAS tight_inclusion)
   endif()

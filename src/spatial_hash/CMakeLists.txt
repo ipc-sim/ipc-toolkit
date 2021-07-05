@@ -1,4 +1,6 @@
 set(SOURCES
+  broad_phase.cpp
+  broad_phase.hpp
   brute_force.cpp
   brute_force.hpp
   collision_candidate.cpp

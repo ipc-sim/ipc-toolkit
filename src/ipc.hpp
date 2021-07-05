@@ -6,6 +6,7 @@
 #include <ipc/collision_constraint.hpp>
 // NOTE: Include this so the user can just include ipc.hpp
 #include <ipc/friction/friction.hpp>
+#include <ipc/spatial_hash/broad_phase.hpp>
 
 /// Incremental Potential Contact functions
 namespace ipc {
@@ -34,7 +35,8 @@ void construct_constraint_set(
     const Eigen::MatrixXi& F,
     double dhat,
     Constraints& constraint_set,
-    bool ignore_codimensional_vertices = true,
+    bool ignore_codimensional_vertices = false,
+    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
     const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi(),
     const Eigen::MatrixXi& F2E = Eigen::MatrixXi(),
     double dmin = 0);
@@ -115,32 +117,6 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 ///////////////////////////////////////////////////////////////////////////////
 // Collision detection
 
-/// @brief Construct a set of continous collision detection candidates.
-///
-/// @note Assumes the trajectory is linear.
-/// @note V can either be the surface vertices or the entire mesh vertices.
-/// The edges and face should be only for the surface elements.
-///
-/// @param[in] V0 Vertex positions at start as rows of a matrix.
-/// @param[in] V1 Vertex positions at end as rows of a matrix.
-/// @param[in] E Edges as rows of indicies into V.
-/// @param[in] F Triangular faces as rows of indicies into V.
-/// @param[out] canidates The constructed candidate set as output.
-/// @param[in] ignore_codimensional_vertices Ignores vertices not connected to
-///                                          edges.
-/// @param[in] vertex_group_ids A group ID per vertex such that vertices with
-///                             the same group id do not collide. An empty
-///                             vector implies all vertices can collide with all
-///                             other vertices.
-void construct_ccd_candidates(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    Candidates& candidates,
-    bool ignore_codimensional_vertices = true,
-    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
-
 /// @brief Determine if the step is collision free.
 ///
 /// @note Assumes the trajectory is linear.
@@ -163,8 +139,11 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    bool ignore_codimensional_vertices = true,
-    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
+    bool ignore_codimensional_vertices = false,
+    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
+    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi(),
+    double tolerance = 1e-6,
+    int max_iterations = 1e7);
 
 /// @brief Determine if the step is collision free from a set of candidates.
 ///
@@ -184,7 +163,9 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F);
+    const Eigen::MatrixXi& F,
+    double tolerance = 1e-6,
+    int max_iterations = 1e7);
 
 /// @brief Computes a maximal step size that is collision free.
 ///
@@ -208,8 +189,11 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    bool ignore_codimensional_vertices = true,
-    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
+    bool ignore_codimensional_vertices = false,
+    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
+    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi(),
+    double tolerance = 1e-6,
+    int max_iterations = 1e7);
 
 /// @brief Computes a maximal step size that is collision free using a set of
 /// collision candidates.
@@ -230,7 +214,9 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F);
+    const Eigen::MatrixXi& F,
+    double tolerance = 1e-6,
+    int max_iterations = 1e7);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Utilities
