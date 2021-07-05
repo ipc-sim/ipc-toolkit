@@ -1,4 +1,4 @@
-#include <ipc/spatial_hash/brute_force.hpp>
+#include <ipc/broad_phase/brute_force.hpp>
 
 #include <algorithm> // std::min/max
 

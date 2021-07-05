@@ -15,8 +15,8 @@ target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
 ################################################################################
 
 add_subdirectory(barrier)
+add_subdirectory(broad_phase)
 add_subdirectory(ccd)
 add_subdirectory(distance)
 add_subdirectory(friction)
-add_subdirectory(spatial_hash)
 add_subdirectory(utils)

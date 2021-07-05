@@ -6,7 +6,7 @@
 #include <ipc/collision_constraint.hpp>
 // NOTE: Include this so the user can just include ipc.hpp
 #include <ipc/friction/friction.hpp>
-#include <ipc/spatial_hash/broad_phase.hpp>
+#include <ipc/broad_phase/broad_phase.hpp>
 
 /// Incremental Potential Contact functions
 namespace ipc {

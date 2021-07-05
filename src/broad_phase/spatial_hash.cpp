@@ -1,13 +1,13 @@
 // Modified version of SpatialHash.hpp from IPC codebase.
 // Originally created by Minchen Li.
-#include <ipc/spatial_hash/spatial_hash.hpp>
+#include <ipc/broad_phase/spatial_hash.hpp>
 
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 
 #include <ipc/ccd/broadphase.hpp>
-#include <ipc/spatial_hash/voxel_size_heuristic.hpp>
+#include <ipc/broad_phase/voxel_size_heuristic.hpp>
 
 // Uncomment this to construct spatial hash in parallel.
 // #define IPC_TOOLKIT_PARALLEL_SH_CONSTRUCT

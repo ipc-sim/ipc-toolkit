@@ -7,9 +7,9 @@
 #include <igl/Timer.h>
 
 #include <ipc/ipc.hpp>
-#include <ipc/spatial_hash/hash_grid.hpp>
-#include <ipc/spatial_hash/spatial_hash.hpp>
-#include <ipc/spatial_hash/brute_force.hpp>
+#include <ipc/broad_phase/hash_grid.hpp>
+#include <ipc/broad_phase/spatial_hash.hpp>
+#include <ipc/broad_phase/brute_force.hpp>
 
 using namespace ipc;
 

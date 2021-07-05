@@ -8,13 +8,12 @@ add_executable(${PROJECT_NAME}_tests
   barrier/test_barrier.cpp
 
   # Test CCD
-  ccd/test_ccd.cpp
-  ccd/collision_generator.cpp
+  broad_phase/benchmark_spatial_hash.cpp
+  broad_phase/test_hash_grid.cpp
+  broad_phase/test_spatial_hash.cpp
   ccd/benchmark_ccd.cpp
-  spatial_hash/test_spatial_hash.cpp
-  spatial_hash/test_hash_grid.cpp
-  spatial_hash/test_spatial_hash.cpp
-  spatial_hash/benchmark_spatial_hash.cpp
+  ccd/collision_generator.cpp
+  ccd/test_ccd.cpp
 
   # Test distances and dertivatives
   distance/test_distance_type.cpp

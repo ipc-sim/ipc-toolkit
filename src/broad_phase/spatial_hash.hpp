@@ -7,7 +7,7 @@
 #include <Eigen/Core>
 #include <ipc/utils/eigen_ext.hpp>
 
-#include <ipc/spatial_hash/collision_candidate.hpp>
+#include <ipc/broad_phase/collision_candidate.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
 
 namespace ipc {

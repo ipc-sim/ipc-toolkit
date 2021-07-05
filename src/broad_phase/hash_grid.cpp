@@ -1,4 +1,4 @@
-#include <ipc/spatial_hash/hash_grid.hpp>
+#include <ipc/broad_phase/hash_grid.hpp>
 
 #include <algorithm> // std::min/max
 
@@ -7,7 +7,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 
-#include <ipc/spatial_hash/voxel_size_heuristic.hpp>
+#include <ipc/broad_phase/voxel_size_heuristic.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_LOGGER
 #include <ipc/utils/logger.hpp>

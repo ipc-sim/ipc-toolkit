@@ -2,7 +2,7 @@
 
 #include <Eigen/Core>
 
-#include <ipc/spatial_hash/collision_candidate.hpp>
+#include <ipc/broad_phase/collision_candidate.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {

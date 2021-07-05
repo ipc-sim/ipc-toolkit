@@ -1,6 +1,6 @@
 set(SOURCES
-  broadphase.cpp
-  broadphase.hpp
+  aabb.cpp
+  aabb.hpp
   ccd.cpp
   ccd.hpp
 )

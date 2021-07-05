@@ -1,4 +1,4 @@
-#include <ipc/spatial_hash/voxel_size_heuristic.hpp>
+#include <ipc/broad_phase/voxel_size_heuristic.hpp>
 
 namespace ipc {
 

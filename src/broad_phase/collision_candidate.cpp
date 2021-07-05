@@ -1,4 +1,4 @@
-#include <ipc/spatial_hash/collision_candidate.hpp>
+#include <ipc/broad_phase/collision_candidate.hpp>
 
 #include <algorithm> // std::min/max
 

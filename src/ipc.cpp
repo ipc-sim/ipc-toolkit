@@ -15,7 +15,7 @@
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
-#include <ipc/spatial_hash/hash_grid.hpp>
+#include <ipc/broad_phase/hash_grid.hpp>
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/intersection.hpp>
 #include <ipc/utils/world_bbox_diagonal_length.hpp>
