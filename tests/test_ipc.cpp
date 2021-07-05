@@ -113,6 +113,7 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
 {
     double dhat = -1;
     std::string mesh_name = "blah.obj";
+    bool ignore_codimensional_vertices = false;
 
     // SECTION("cube")
     // {
@@ -123,11 +124,13 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     {
         dhat = 1e-1;
         mesh_name = "two-cubes-far.obj";
+        ignore_codimensional_vertices = true;
     }
     SECTION("two cubes close")
     {
         dhat = 1e-1;
         mesh_name = "two-cubes-close.obj";
+        ignore_codimensional_vertices = true;
     }
     // WARNING: The bunny takes too long in debug.
     // SECTION("bunny")
@@ -142,7 +145,9 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     REQUIRE(success);
 
     Constraints constraint_set;
-    ipc::construct_constraint_set(/*V_rest=*/V, V, E, F, dhat, constraint_set);
+    ipc::construct_constraint_set(
+        /*V_rest=*/V, V, E, F, dhat, constraint_set,
+        ignore_codimensional_vertices);
     CAPTURE(mesh_name, dhat);
     CHECK(constraint_set.num_constraints() > 0);
 

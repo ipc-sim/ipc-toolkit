@@ -34,18 +34,18 @@ void construct_collision_candidates(
         break;
     case BroadPhaseMethod::HASH_GRID: {
         HashGrid hash_grid;
-        hash_grid.resize(V, E);
+        hash_grid.resize(V, E, inflation_radius);
 
         // Assumes the edges connect to all boundary vertices
         if (ignore_codimensional_vertices) {
-            hash_grid.addVerticesFromEdges(V, E);
+            hash_grid.addVerticesFromEdges(V, E, inflation_radius);
         } else {
-            hash_grid.addVertices(V);
+            hash_grid.addVertices(V, inflation_radius);
         }
-        hash_grid.addEdges(V, E);
+        hash_grid.addEdges(V, E, inflation_radius);
         if (dim == 3) {
             // These are not needed for 2D
-            hash_grid.addFaces(V, F);
+            hash_grid.addFaces(V, F, inflation_radius);
         }
 
         if (dim == 2) {
@@ -102,18 +102,18 @@ void construct_collision_candidates(
         break;
     case BroadPhaseMethod::HASH_GRID: {
         HashGrid hash_grid;
-        hash_grid.resize(V0, V1, E);
+        hash_grid.resize(V0, V1, E, inflation_radius);
 
         // Assumes the edges connect to all boundary vertices
         if (ignore_codimensional_vertices) {
-            hash_grid.addVerticesFromEdges(V0, V1, E);
+            hash_grid.addVerticesFromEdges(V0, V1, E, inflation_radius);
         } else {
-            hash_grid.addVertices(V0, V1);
+            hash_grid.addVertices(V0, V1, inflation_radius);
         }
-        hash_grid.addEdges(V0, V1, E);
+        hash_grid.addEdges(V0, V1, E, inflation_radius);
         if (dim == 3) {
             // These are not needed for 2D
-            hash_grid.addFaces(V0, V1, F);
+            hash_grid.addFaces(V0, V1, F, inflation_radius);
         }
 
         if (dim == 2) {
