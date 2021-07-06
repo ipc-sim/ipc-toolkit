@@ -7,30 +7,28 @@ Incremental Potential Contact (IPC) Toolkit
    :target: https://opensource.org/licenses/MIT
    :alt: License: MIT
 
+A set of reusable functions to integrate IPC into an existing simulation.
+
 - **Free Software**: MIT License
 - **Github Repository**: https://github.com/ipc-sim/ipc-toolkit
 - **Paper**: https://ipc-sim.github.io/file/IPC-paper-fullRes.pdf
-
-.. warning::
-    This library is in early stages of development and consequently the API may
-    change to better improve usability.
 
 .. toctree::
     :hidden:
     :maxdepth: 2
     :caption: General
 
-    installation
-    concepts
-    examples
+    .. installation
+    .. concepts
+    .. examples
     changelog
 
-.. .. toctree::
-..     :hidden:
-..     :maxdepth: 2
-..     :caption: Developers
-..
-..     contributing
+.. toctree::
+    :hidden:
+    :maxdepth: 2
+    :caption: Developers
+
+    contributing
 
 .. toctree::
     :hidden:
@@ -57,7 +55,14 @@ Development Status
 ------------------
 
 - ✅ contacts
-- ⬜ friction
+- ✅ friction
+
+.. warning::
+    This toolkit is in an early stage of development and consequently the API may
+    change to better improve usability. If you have any problems
+    or find any bugs please `post and issue <https://github.com/ipc-sim/ipc-toolkit/issues>`__. For a complete list of changes,
+    please see `changelog <changelog.html>`__.
+    Meanwhile, for a definitive reference for these functions, please see the `IPC source code <https://github.com/ipc-sim/IPC>`__.
 
 Indices and tables
 ------------------

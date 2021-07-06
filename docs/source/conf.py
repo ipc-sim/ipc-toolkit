@@ -30,7 +30,8 @@ author = 'IPC Group'
 extensions = [
     'sphinx.ext.mathjax',
     'breathe',
-    'exhale'
+    'exhale',
+    'm2r2'
 ]
 
 # Setup the breathe extension
@@ -74,8 +75,20 @@ exclude_patterns = []
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-#
 html_theme = 'alabaster'
+
+# Theme options are theme-specific and customize the look and feel of a theme
+# further.  For a list of options available for each theme, see the
+# documentation.
+html_theme_options = {
+    "description": "A set of reusable functions to integrate IPC into an existing simulation",
+    "logo": "teaser@0_3.png",
+    "github_banner": True,
+    "github_button": True,
+    "github_repo": "ipc-toolkit",
+    "github_user": "ipc-sim",
+    "github_type": "star",
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
