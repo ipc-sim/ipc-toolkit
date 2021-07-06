@@ -183,6 +183,8 @@ struct Constraints {
 
     size_t num_constraints() const;
 
+    bool empty() const;
+
     void clear();
 
     CollisionConstraint& operator[](size_t idx);

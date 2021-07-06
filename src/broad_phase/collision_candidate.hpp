@@ -92,18 +92,11 @@ struct Candidates {
     std::vector<EdgeEdgeCandidate> ee_candidates;
     std::vector<FaceVertexCandidate> fv_candidates;
 
-    size_t size() const
-    {
-        return ev_candidates.size() + ee_candidates.size()
-            + fv_candidates.size();
-    }
+    size_t size() const;
 
-    void clear()
-    {
-        ev_candidates.clear();
-        ee_candidates.clear();
-        fv_candidates.clear();
-    }
+    bool empty() const;
+
+    void clear();
 };
 
 } // namespace ipc

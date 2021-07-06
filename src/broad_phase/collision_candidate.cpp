@@ -25,6 +25,8 @@ bool VertexVertexCandidate::operator<(const VertexVertexCandidate& other) const
     return vertex0_index < other.vertex0_index;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 EdgeVertexCandidate::EdgeVertexCandidate(long edge_index, long vertex_index)
     : edge_index(edge_index)
     , vertex_index(vertex_index)
@@ -43,6 +45,8 @@ bool EdgeVertexCandidate::operator<(const EdgeVertexCandidate& other) const
     }
     return edge_index < other.edge_index;
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 EdgeEdgeCandidate::EdgeEdgeCandidate(long edge0_index, long edge1_index)
     : edge0_index(edge0_index)
@@ -70,6 +74,8 @@ bool EdgeEdgeCandidate::operator<(const EdgeEdgeCandidate& other) const
     return this_min < other_min;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 EdgeFaceCandidate::EdgeFaceCandidate(long edge_index, long face_index)
     : edge_index(edge_index)
     , face_index(face_index)
@@ -89,6 +95,8 @@ bool EdgeFaceCandidate::operator<(const EdgeFaceCandidate& other) const
     return edge_index < other.edge_index;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 FaceVertexCandidate::FaceVertexCandidate(long face_index, long vertex_index)
     : face_index(face_index)
     , vertex_index(vertex_index)
@@ -106,6 +114,26 @@ bool FaceVertexCandidate::operator<(const FaceVertexCandidate& other) const
         return vertex_index < other.vertex_index;
     }
     return face_index < other.face_index;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+size_t Candidates::size() const
+{
+    return ev_candidates.size() + ee_candidates.size() + fv_candidates.size();
+}
+
+bool Candidates::empty() const
+{
+    return ev_candidates.empty() && ee_candidates.empty()
+        && fv_candidates.empty();
+}
+
+void Candidates::clear()
+{
+    ev_candidates.clear();
+    ee_candidates.clear();
+    fv_candidates.clear();
 }
 
 } // namespace ipc

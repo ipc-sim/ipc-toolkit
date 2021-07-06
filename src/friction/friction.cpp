@@ -203,6 +203,10 @@ Eigen::VectorXd compute_friction_potential_gradient(
     const FrictionConstraints& friction_constraint_set,
     double epsv_times_h)
 {
+    if (friction_constraint_set.empty()) {
+        return Eigen::VectorXd::Zero(V0.size());
+    }
+
     auto U = V1 - V0; // absolute linear dislacement of each point
     int dim = U.cols();
 
@@ -240,6 +244,10 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     double epsv_times_h,
     bool project_hessian_to_psd)
 {
+    if (friction_constraint_set.empty()) {
+        return Eigen::SparseMatrix<double>(V0.size(), V0.size());
+    }
+
     auto U = V1 - V0; // absolute linear dislacement of each point
     int dim = U.cols();
 

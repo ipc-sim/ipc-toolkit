@@ -16,6 +16,10 @@ T compute_friction_potential(
     const FrictionConstraints& friction_constraint_set,
     double epsv_times_h)
 {
+    if (friction_constraint_set.empty()) {
+        return T(0);
+    }
+
     // absolute linear dislacement of each point
     MatrixX<T> U = V1 - V0.cast<T>();
 

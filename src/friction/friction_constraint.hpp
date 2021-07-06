@@ -306,6 +306,8 @@ struct FrictionConstraints {
 
     size_t num_constraints() const;
 
+    bool empty() const;
+
     void clear();
 
     FrictionConstraint& operator[](size_t idx);

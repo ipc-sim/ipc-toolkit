@@ -451,6 +451,12 @@ size_t Constraints::num_constraints() const
     return num_constraints;
 }
 
+bool Constraints::empty() const
+{
+    return vv_constraints.empty() && ev_constraints.empty()
+        && ee_constraints.empty() && fv_constraints.empty();
+}
+
 void Constraints::clear()
 {
     vv_constraints.clear();

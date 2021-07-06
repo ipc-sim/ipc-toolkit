@@ -294,6 +294,12 @@ size_t FrictionConstraints::num_constraints() const
     return num_constraints;
 }
 
+bool FrictionConstraints::empty() const
+{
+    return vv_constraints.empty() && ev_constraints.empty()
+        && ee_constraints.empty() && fv_constraints.empty();
+}
+
 void FrictionConstraints::clear()
 {
     vv_constraints.clear();

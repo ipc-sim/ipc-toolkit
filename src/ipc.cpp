@@ -313,6 +313,10 @@ double compute_barrier_potential(
     const Constraints& constraint_set,
     double dhat)
 {
+    if (constraint_set.empty()) {
+        return 0;
+    }
+
     tbb::enumerable_thread_specific<double> storage(0);
 
     tbb::parallel_for(
@@ -339,6 +343,10 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     const Constraints& constraint_set,
     double dhat)
 {
+    if (constraint_set.empty()) {
+        return Eigen::VectorXd::Zero(V.size());
+    }
+
     int dim = V.cols();
 
     tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
@@ -370,6 +378,10 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     double dhat,
     bool project_hessian_to_psd)
 {
+    if (constraint_set.empty()) {
+        return Eigen::SparseMatrix<double>(V.size(), V.size());
+    }
+
     int dim = V.cols();
 
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
@@ -537,6 +549,10 @@ double compute_collision_free_stepsize(
 {
     assert(V0.cols() == V1.cols());
 
+    if (candidates.empty()) {
+        return 1; // No possible collisions, so can take full step.
+    }
+
     // Narrow phase
     double earliest_toi = 1;
     tbb::mutex earliest_toi_mutex;
@@ -622,6 +638,10 @@ double compute_minimum_distance(
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set)
 {
+    if (constraint_set.empty()) {
+        return std::numeric_limits<double>::infinity();
+    }
+
     tbb::enumerable_thread_specific<double> storage(
         std::numeric_limits<double>::infinity());
 
