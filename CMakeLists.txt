@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.8)
-project(IPCToolkit)
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
         LANGUAGES CXX)
@@ -13,11 +12,7 @@ else()
 endif()
 
 # project-options
-if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-  option(IPC_TOOLKIT_BUILD_UNIT_TESTS         "Build unit-tests"                               ON)
-else()
-  option(IPC_TOOLKIT_BUILD_UNIT_TESTS         "Build unit-tests"                              OFF)
-endif()
+option(IPC_TOOLKIT_BUILD_UNIT_TESTS           "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
 option(IPC_TOOLKIT_WITH_LOGGER                "Enable logger"                                  ON)
 option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"                     ON)
 option(IPC_TOOLKIT_WITH_PYTHON                "Build Python bindings"                         OFF)

@@ -10,6 +10,21 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### 2021-07-05 ([4d16954](https://github.com/ipc-sim/ipc-toolkit/commit/4d16954012570b3a15346b99b5aedea77266fe86))
+#### Changed
+* Renamed directory `src/spatial_hash/` → `src/broad_phase/`
+* Renamed files `src/ccd/broad_phase.*` → `src/ccd/aabb.*`
+
+### 2021-07-05 ([b3808e1](https://github.com/ipc-sim/ipc-toolkit/commit/b3808e15bdbaba9a6efd4b731db3070e85bcc4b7))
+#### Added
+* Select the broad-phase method for CCD and distance constraints
+    * Methods: `HASH_GRID`, `SPATIAL_HASH`, `BRUTE_FORCE`
+* CCD parameters for Tight Inclusion's tolerance and maximum iterations
+
+#### Changed
+* `ignore_codimensional_vertices` to `false` by default
+* CMake option `TIGHT_INCLUSION_WITH_NO_ZERO_TOI=ON` as default
+
 ### 2021-06-18 ([aa59aeb](https://github.com/ipc-sim/ipc-toolkit/commit/aa59aeb0634af981a8f1cfbb6d2ff2b76a04d610))
 #### Changed
 * `construct_friction_constraint_set` now clears the given `friction_constraint_set`
