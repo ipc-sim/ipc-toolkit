@@ -17,7 +17,7 @@ void define_collision_candidate_classes(py::module_& m)
             "__str__",
             [](const VertexVertexCandidate& ev) {
                 return fmt::format(
-                    "{:d}, {:d}]", ev.vertex0_index, ev.vertex1_index);
+                    "[{:d}, {:d}]", ev.vertex0_index, ev.vertex1_index);
             })
         .def(
             "__repr__",
@@ -59,7 +59,7 @@ void define_collision_candidate_classes(py::module_& m)
             "__str__",
             [](const EdgeEdgeCandidate& ev) {
                 return fmt::format(
-                    "{:d}, {:d}]", ev.edge0_index, ev.edge1_index);
+                    "[{:d}, {:d}]", ev.edge0_index, ev.edge1_index);
             })
         .def(
             "__repr__",
@@ -79,7 +79,8 @@ void define_collision_candidate_classes(py::module_& m)
         .def(
             "__str__",
             [](const EdgeFaceCandidate& ev) {
-                return fmt::format("{:d}, {:d}]", ev.edge_index, ev.face_index);
+                return fmt::format(
+                    "[{:d}, {:d}]", ev.edge_index, ev.face_index);
             })
         .def(
             "__repr__",
@@ -100,7 +101,7 @@ void define_collision_candidate_classes(py::module_& m)
             "__str__",
             [](const FaceVertexCandidate& ev) {
                 return fmt::format(
-                    "{:d}, {:d}]", ev.face_index, ev.vertex_index);
+                    "[{:d}, {:d}]", ev.face_index, ev.vertex_index);
             })
         .def(
             "__repr__",

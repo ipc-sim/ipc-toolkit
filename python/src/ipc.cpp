@@ -55,4 +55,66 @@ void define_ipc_functions(py::module_& m)
         py::arg("method") = BroadPhaseMethod::HASH_GRID,
         py::arg("vertex_group_ids") = Eigen::VectorXi(),
         py::arg("F2E") = Eigen::MatrixXi(), py::arg("dmin") = 0);
+
+    m.def(
+        "compute_barrier_potential", &compute_barrier_potential,
+        R"ipc_Qu8mg5v7(
+        Compute the barrier potential for a given constraint set.
+
+        Parameters
+        ----------
+        V : Vertex positions as rows of a matrix
+        E : Edges as rows of indicies into V
+        F : Triangular faces as rows of indicies into V
+        constraint_set : The set of constraints
+        dhat : The activation distance of the barrier
+
+        Returns
+        -------
+        The sum of all barrier potentials (not scaled by the barrier stiffness).
+        )ipc_Qu8mg5v7",
+        py::arg("V"), py::arg("E"), py::arg("F"), py::arg("constraint_set"),
+        py::arg("dhat"));
+
+    m.def(
+        "compute_barrier_potential_gradient",
+        &compute_barrier_potential_gradient,
+        R"ipc_Qu8mg5v7(
+        Compute the gradient of the barrier potential.
+
+        Parameters
+        ----------
+        V : Vertex positions as rows of a matrix
+        E : Edges as rows of indicies into V
+        F : Triangular faces as rows of indicies into V
+        constraint_set : The set of constraints
+        dhat : The activation distance of the barrier
+
+        Returns
+        -------
+        The gradient of all barrier potentials (not scaled by the barrier stiffness).
+        )ipc_Qu8mg5v7",
+        py::arg("V"), py::arg("E"), py::arg("F"), py::arg("constraint_set"),
+        py::arg("dhat"));
+
+    m.def(
+        "compute_barrier_potential_hessian", &compute_barrier_potential_hessian,
+        R"ipc_Qu8mg5v7(
+        Compute the hessian of the barrier potential.
+
+        Parameters
+        ----------
+        V : Vertex positions as rows of a matrix
+        E : Edges as rows of indicies into V
+        F : Triangular faces as rows of indicies into V
+        constraint_set : The set of constraints
+        dhat : The activation distance of the barrier
+        project_to_psd : Make sure the hessian is positive semi-definite
+
+        Returns
+        -------
+        The hessian of all barrier potentials (not scaled by the barrier stiffness).
+        )ipc_Qu8mg5v7",
+        py::arg("V"), py::arg("E"), py::arg("F"), py::arg("constraint_set"),
+        py::arg("dhat"), py::arg("project_hessian_to_psd") = true);
 }

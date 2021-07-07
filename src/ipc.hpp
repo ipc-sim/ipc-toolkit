@@ -108,6 +108,8 @@ Eigen::VectorXd compute_barrier_potential_gradient(
 /// @param[in] F Triangular faces as rows of indicies into V.
 /// @param[in] constraint_set The set of constraints.
 /// @param[in] dhat The activation distance of the barrier.
+/// @param[in] project_hessian_to_psd Make sure the hessian is positive
+///            semi-definite.
 /// @returns The hessian of all barrier potentials (not scaled by the barrier
 /// stiffness).
 Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
