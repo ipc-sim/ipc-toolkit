@@ -19,7 +19,32 @@ endif()
 ###############################################################################
 # Create Python module for Rigid IPC
 
-pybind11_add_module(ipctk src/bindings.cpp)
+pybind11_add_module(ipctk
+  src/bindings.cpp
+
+  src/barrier/barrier.cpp
+
+  src/broad_phase/broad_phase.cpp
+
+  src/broad_phase/collision_candidate.cpp
+
+  src/collision_constraint.cpp
+
+  src/distance/distance_type.cpp
+  src/distance/edge_edge.cpp
+  src/distance/edge_edge_mollifier.cpp
+  src/distance/line_line.cpp
+  src/distance/point_edge.cpp
+  src/distance/point_line.cpp
+  src/distance/point_plane.cpp
+  src/distance/point_point.cpp
+  src/distance/point_triangle.cpp
+
+  src/ipc.cpp
+
+  src/utils/logger.cpp
+  src/utils/thread_limiter.cpp
+)
 target_link_libraries(ipctk PRIVATE ${PROJECT_NAME})
 target_link_libraries(ipctk PRIVATE spdlog::spdlog)
 

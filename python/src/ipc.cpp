@@ -1,0 +1,58 @@
+#include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
+
+#include <ipc/ipc.hpp>
+
+namespace py = pybind11;
+using namespace ipc;
+
+void define_ipc_functions(py::module_& m)
+{
+    m.def(
+        "construct_constraint_set",
+        [](const Eigen::MatrixXd& V_rest, const Eigen::MatrixXd& V,
+           const Eigen::MatrixXi& E, const Eigen::MatrixXi& F, double dhat,
+           bool ignore_codimensional_vertices, const BroadPhaseMethod& method,
+           const Eigen::VectorXi& vertex_group_ids, const Eigen::MatrixXi& F2E,
+           double dmin) {
+            Constraints constraint_set;
+            construct_constraint_set(
+                V_rest, V, E, F, dhat, constraint_set,
+                ignore_codimensional_vertices, method, vertex_group_ids, F2E,
+                dmin);
+            return constraint_set;
+        },
+        R"ipc_Qu8mg5v7(
+        Construct a set of constraints used to compute the barrier potential.
+
+        Parameters
+        ----------
+        V : Vertex positions as rows of a matrix
+        E : Edges as rows of indicies into V
+        F : Triangular faces as rows of indicies into V
+        dhat : The activation distance of the barrier
+        ignore_codimensional_vertices : (Optional) Ignores vertices not connected to edges.
+        method : (Optional) Broad-phase method to use
+        vertex_group_ids : (Optional) A group ID per vertex such that vertices with the same group id do not collide. An empty vector implies all vertices can collide with all other vertices.
+        F2E : (Optional) Map from F edges to rows of E
+        dmin : (Optional) Minimum distance
+
+        Returns
+        -------
+        The constructed set of constraints.
+
+        See also
+        --------
+        Constraints
+
+        Notes
+        -----
+        The given constraint_set will be cleared.
+        V can either be the surface vertices or the entire mesh vertices. The edges and face should be only for the surface elements.
+        )ipc_Qu8mg5v7",
+        py::arg("V_rest"), py::arg("V"), py::arg("E"), py::arg("F"),
+        py::arg("dhat"), py::arg("ignore_codimensional_vertices") = true,
+        py::arg("method") = BroadPhaseMethod::HASH_GRID,
+        py::arg("vertex_group_ids") = Eigen::VectorXi(),
+        py::arg("F2E") = Eigen::MatrixXi(), py::arg("dmin") = 0);
+}

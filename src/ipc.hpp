@@ -17,17 +17,19 @@ namespace ipc {
 /// @note V can either be the surface vertices or the entire mesh vertices.
 /// The edges and face should be only for the surface elements.
 ///
-/// @param[in] V Vertex positions as rows of a matrix.
-/// @param[in] E Edges as rows of indicies into V.
-/// @param[in] F Triangular faces as rows of indicies into V.
-/// @param[in] dhat The activation distance of the barrier.
-/// @param[out] constraint_set The constructed set of constraints.
-/// @param[in] ignore_codimensional_vertices Ignores vertices not connected to
-///                                          edges.
-/// @param[in] vertex_group_ids A group ID per vertex such that vertices with
-///                             the same group id do not collide. An empty
-///                             vector implies all vertices can collide with all
-///                             other vertices.
+/// @param[in]  V  Vertex positions as rows of a matrix.
+/// @param[in]  E  Edges as rows of indicies into V.
+/// @param[in]  F  Triangular faces as rows of indicies into V.
+/// @param[in]  dhat  The activation distance of the barrier.
+/// @param[out] constraint_set  The constructed set of constraints.
+/// @param[in]  ignore_codimensional_vertices  Ignores vertices not connected to
+///             edges.
+/// @param[in]  method  Broad-phase method to use.
+/// @param[in]  vertex_group_ids  A group ID per vertex such that vertices with
+///             the same group id do not collide. An empty vector implies all
+///             vertices can collide with all other vertices.
+/// @param[in]  F2E  Map from F edges to rows of E.
+/// @param[in]  dmin  Minimum distance.
 void construct_constraint_set(
     const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
@@ -47,13 +49,15 @@ void construct_constraint_set(
 /// @note V can either be the surface vertices or the entire mesh vertices.
 /// The edges and face should be only for the surface elements.
 ///
-/// @param[in] candidates Distance candidates from which the constraint set is
-///                       built.
-/// @param[in] V Vertex positions as rows of a matrix.
-/// @param[in] E Edges as rows of indicies into V.
-/// @param[in] F Triangular faces as rows of indicies into V.
-/// @param[in] dhat The activation distance of the barrier.
-/// @param[out] constraint_set The constructed set of constraints.
+/// @param[in]  candidates  Distance candidates from which the constraint set is
+///                         built.
+/// @param[in]  V  Vertex positions as rows of a matrix.
+/// @param[in]  E  Edges as rows of indicies into V.
+/// @param[in]  F  Triangular faces as rows of indicies into V.
+/// @param[in]  dhat  The activation distance of the barrier.
+/// @param[out] constraint_set  The constructed set of constraints.
+/// @param[in]  F2E  Map from F edges to rows of E.
+/// @param[in]  dmin  Minimum distance.
 void construct_constraint_set(
     const Candidates& candidates,
     const Eigen::MatrixXd& V_rest,

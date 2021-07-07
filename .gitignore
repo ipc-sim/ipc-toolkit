@@ -253,3 +253,4 @@ ipctk
 
 # Python bindings
 !python/src/bindings*
+python/bunny.obj

@@ -1,4 +1,7 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
+
+#include <Eigen/Core>
 
 template <typename Derived>
 void assert_2D_or_3D_vector(
