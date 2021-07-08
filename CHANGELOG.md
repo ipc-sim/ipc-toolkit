@@ -10,6 +10,24 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### 2021-07-08 ([86ae4e5](https://github.com/ipc-sim/ipc-toolkit/commit/86ae4e5f87eb2c65585920ad3ca0bbb3b57702f6))
+#### Changed
+* Replaced vertex group ids with more powerful can_collide function. By
+default everything can collide with everything (same as before)
+* Reordered parameters in `construct_constraint_set()`,
+`is_collision_free()`, and `compute_collision_free_stepsize()`
+* `update_barrier_stiffness` now requires the `constraint_set` rather
+than building it
+* `update_barrier_stiffness` dropped dhat parameter
+
+#### Fixed
+* SpatialHash for 2D
+
+#### Removed
+* Verison of `initial_barrier_stiffness` that computes the
+constraint set and barrier gradient because there are a lot of
+parameters to these functions
+
 ### 2021-07-05 ([4d16954](https://github.com/ipc-sim/ipc-toolkit/commit/4d16954012570b3a15346b99b5aedea77266fe86))
 #### Changed
 * Renamed directory `src/spatial_hash/` → `src/broad_phase/`
