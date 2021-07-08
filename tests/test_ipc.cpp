@@ -61,7 +61,7 @@ TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
 TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
 {
     double dhat = -1;
-    std::string mesh_name;
+    std::string mesh_name = "blah.obj";
     bool ignore_codimensional_vertices = false;
 
     SECTION("cube")
@@ -90,17 +90,19 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
     Eigen::MatrixXd V;
     Eigen::MatrixXi E, F;
     bool success = load_mesh(mesh_name, V, E, F);
+    CAPTURE(mesh_name);
     REQUIRE(success);
 
-    BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-        BroadPhaseMethod::SPATIAL_HASH);
+    BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
+    // GENERATE(
+    //     BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
+    //     BroadPhaseMethod::SPATIAL_HASH);
 
     Constraints constraint_set;
     ipc::construct_constraint_set(
         /*V_rest=*/V, V, E, F, dhat, constraint_set, /*F2E=*/Eigen::MatrixXi(),
         /*dmin=*/0, method, ignore_codimensional_vertices);
-    CAPTURE(mesh_name, dhat);
+    CAPTURE(dhat, method, ignore_codimensional_vertices);
     CHECK(constraint_set.num_constraints() > 0);
 
     Eigen::VectorXd grad_b =
@@ -151,17 +153,19 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     Eigen::MatrixXd V;
     Eigen::MatrixXi E, F;
     bool success = load_mesh(mesh_name, V, E, F);
+    CAPTURE(mesh_name);
     REQUIRE(success);
 
-    BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-        BroadPhaseMethod::SPATIAL_HASH);
+    BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
+    // GENERATE(
+    //     BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
+    //     BroadPhaseMethod::SPATIAL_HASH);
 
     Constraints constraint_set;
     ipc::construct_constraint_set(
         /*V_rest=*/V, V, E, F, dhat, constraint_set, /*F2E=*/Eigen::MatrixXi(),
         /*dmin=*/0, method, ignore_codimensional_vertices);
-    CAPTURE(mesh_name, dhat);
+    CAPTURE(dhat, method, ignore_codimensional_vertices);
     CHECK(constraint_set.num_constraints() > 0);
 
     Eigen::MatrixXd hess_b = ipc::compute_barrier_potential_hessian(
