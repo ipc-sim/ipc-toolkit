@@ -7,8 +7,6 @@ namespace ipc {
 
 // 2D
 
-// TODO: point_point_ccd_2D()
-
 bool point_edge_ccd_2D(
     const Eigen::Vector2d& p_t0,
     const Eigen::Vector2d& e0_t0,

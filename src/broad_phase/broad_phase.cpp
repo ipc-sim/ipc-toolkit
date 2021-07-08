@@ -14,7 +14,7 @@ void construct_collision_candidates(
     double inflation_radius,
     const BroadPhaseMethod& method,
     bool ignore_codimensional_vertices,
-    const Eigen::VectorXi& vertex_group_ids)
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     int dim = V.cols();
 
@@ -30,7 +30,7 @@ void construct_collision_candidates(
             /*detect_face_vertex=*/dim == 3,
             /*perform_aabb_check=*/true,
             /*aabb_inflation_radius=*/inflation_radius, //
-            vertex_group_ids);
+            can_collide);
         break;
     case BroadPhaseMethod::HASH_GRID: {
         HashGrid hash_grid;
@@ -51,17 +51,18 @@ void construct_collision_candidates(
         if (dim == 2) {
             // This is not needed for 3D
             hash_grid.getVertexEdgePairs(
-                E, vertex_group_ids, candidates.ev_candidates);
+                E, candidates.ev_candidates, can_collide);
         } else {
             // These are not needed for 2D
             hash_grid.getEdgeEdgePairs(
-                E, vertex_group_ids, candidates.ee_candidates);
+                E, candidates.ee_candidates, can_collide);
             hash_grid.getFaceVertexPairs(
-                F, vertex_group_ids, candidates.fv_candidates);
+                F, candidates.fv_candidates, can_collide);
         }
     } break;
     case BroadPhaseMethod::SPATIAL_HASH: {
         // TODO: Use ignore_codimensional_vertices
+        // TODO: Use can_collide
         SpatialHash sh(V, E, F, inflation_radius);
         sh.queryMeshForCandidates(
             V, E, F, candidates,
@@ -81,7 +82,7 @@ void construct_collision_candidates(
     double inflation_radius,
     const BroadPhaseMethod& method,
     bool ignore_codimensional_vertices,
-    const Eigen::VectorXi& vertex_group_ids)
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     int dim = V0.cols();
     assert(V1.cols() == dim);
@@ -98,7 +99,7 @@ void construct_collision_candidates(
             /*detect_face_vertex=*/dim == 3,
             /*perform_aabb_check=*/true,
             /*aabb_inflation_radius=*/inflation_radius, //
-            vertex_group_ids);
+            can_collide);
         break;
     case BroadPhaseMethod::HASH_GRID: {
         HashGrid hash_grid;
@@ -119,17 +120,18 @@ void construct_collision_candidates(
         if (dim == 2) {
             // This is not needed for 3D
             hash_grid.getVertexEdgePairs(
-                E, vertex_group_ids, candidates.ev_candidates);
+                E, candidates.ev_candidates, can_collide);
         } else {
             // These are not needed for 2D
             hash_grid.getEdgeEdgePairs(
-                E, vertex_group_ids, candidates.ee_candidates);
+                E, candidates.ee_candidates, can_collide);
             hash_grid.getFaceVertexPairs(
-                F, vertex_group_ids, candidates.fv_candidates);
+                F, candidates.fv_candidates, can_collide);
         }
     } break;
     case BroadPhaseMethod::SPATIAL_HASH: {
         // TODO: Use ignore_codimensional_vertices
+        // TODO: Use can_collide
         SpatialHash sh(V0, V1, E, F, inflation_radius);
         sh.queryMeshForCandidates(
             V0, V1, E, F, candidates,

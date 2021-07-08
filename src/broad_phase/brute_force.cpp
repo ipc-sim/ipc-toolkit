@@ -41,7 +41,7 @@ void detect_collision_candidates_brute_force(
     bool detect_face_vertex,
     bool perform_aabb_check,
     double aabb_inflation_radius,
-    const Eigen::VectorXi& group_ids)
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     assert(E.size() == 0 || E.cols() == 2);
     assert(F.size() == 0 || F.cols() == 3);
@@ -49,19 +49,19 @@ void detect_collision_candidates_brute_force(
     if (detect_edge_vertex) {
         detect_edge_vertex_collision_candidates_brute_force(
             V, E, candidates.ev_candidates, perform_aabb_check,
-            aabb_inflation_radius, group_ids);
+            aabb_inflation_radius, can_collide);
     }
 
     if (detect_edge_edge) {
         detect_edge_edge_collision_candidates_brute_force(
             V, E, candidates.ee_candidates, perform_aabb_check,
-            aabb_inflation_radius, group_ids);
+            aabb_inflation_radius, can_collide);
     }
 
     if (detect_face_vertex) {
         detect_face_vertex_collision_candidates_brute_force(
             V, F, candidates.fv_candidates, perform_aabb_check,
-            aabb_inflation_radius, group_ids);
+            aabb_inflation_radius, can_collide);
     }
 }
 
@@ -71,11 +71,10 @@ void detect_edge_vertex_collision_candidates_brute_force(
     std::vector<EdgeVertexCandidate>& ev_candidates,
     bool perform_aabb_check,
     double aabb_inflation_radius,
-    const Eigen::VectorXi& group_ids)
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     tbb::enumerable_thread_specific<std::vector<EdgeVertexCandidate>> storages;
 
-    const bool check_group = group_ids.size() > 0;
     tbb::parallel_for(
         tbb::blocked_range2d<long>(0l, long(E.rows()), 0l, long(V.rows())),
         [&](const tbb::blocked_range2d<long>& r) {
@@ -88,11 +87,10 @@ void detect_edge_vertex_collision_candidates_brute_force(
 
                     // Check that the vertex is not an endpoint of the edge
                     bool is_endpoint = vi == E(ei, 0) || vi == E(ei, 1);
-                    bool same_group = check_group
-                        && (group_ids(vi) == group_ids(E(ei, 0))
-                            || group_ids(vi) == group_ids(E(ei, 1)));
+                    bool can_ev_collide =
+                        can_collide(vi, E(ei, 0)) || can_collide(vi, E(ei, 1));
 
-                    if (!is_endpoint && !same_group) {
+                    if (!is_endpoint && can_ev_collide) {
                         bool aabb_intersect = !perform_aabb_check
                             || point_edge_aabb_cd(
                                    V.row(vi), V.row(E(ei, 0)), V.row(E(ei, 1)),
@@ -114,11 +112,10 @@ void detect_edge_edge_collision_candidates_brute_force(
     std::vector<EdgeEdgeCandidate>& ee_candidates,
     bool perform_aabb_check,
     double aabb_inflation_radius,
-    const Eigen::VectorXi& group_ids)
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     tbb::enumerable_thread_specific<std::vector<EdgeEdgeCandidate>> storages;
 
-    const bool check_group = group_ids.size() > 0;
     long num_edges = E.rows();
     tbb::parallel_for(
         tbb::blocked_range2d<long>(0l, num_edges, 0l, num_edges),
@@ -136,12 +133,11 @@ void detect_edge_edge_collision_candidates_brute_force(
                     bool has_common_endpoint = E(eai, 0) == E(ebi, 0)
                         || E(eai, 0) == E(ebi, 1) || E(eai, 1) == E(ebi, 0)
                         || E(eai, 1) == E(ebi, 1);
-                    bool same_group = check_group
-                        && (group_ids(E(eai, 0)) == group_ids(E(ebi, 0))
-                            || group_ids(E(eai, 0)) == group_ids(E(ebi, 1))
-                            || group_ids(E(eai, 1)) == group_ids(E(ebi, 0))
-                            || group_ids(E(eai, 1)) == group_ids(E(ebi, 1)));
-                    if (!has_common_endpoint && !same_group) {
+                    bool can_ee_collide = can_collide(E(eai, 0), E(ebi, 0))
+                        || can_collide(E(eai, 0), E(ebi, 1))
+                        || can_collide(E(eai, 1), E(ebi, 0))
+                        || can_collide(E(eai, 1), E(ebi, 1));
+                    if (!has_common_endpoint && can_ee_collide) {
                         bool aabb_intersect = !perform_aabb_check
                             || edge_edge_aabb_cd(
                                    V.row(E(eai, 0)), V.row(E(eai, 1)),
@@ -164,11 +160,10 @@ void detect_face_vertex_collision_candidates_brute_force(
     std::vector<FaceVertexCandidate>& fv_candidates,
     bool perform_aabb_check,
     double aabb_inflation_radius,
-    const Eigen::VectorXi& group_ids)
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     tbb::enumerable_thread_specific<std::vector<FaceVertexCandidate>> storages;
 
-    const bool check_group = group_ids.size() > 0;
     tbb::parallel_for(
         tbb::blocked_range2d<long>(0l, long(F.rows()), 0l, long(V.rows())),
         [&](const tbb::blocked_range2d<long>& r) {
@@ -181,11 +176,10 @@ void detect_face_vertex_collision_candidates_brute_force(
                     // Check that the vertex is not an endpoint of the edge
                     bool is_endpoint =
                         vi == F(fi, 0) || vi == F(fi, 1) || vi == F(fi, 2);
-                    bool same_group = check_group
-                        && (group_ids(vi) == group_ids(F(fi, 0))
-                            || group_ids(vi) == group_ids(F(fi, 1))
-                            || group_ids(vi) == group_ids(F(fi, 2)));
-                    if (!is_endpoint && !same_group) {
+                    bool can_fv_collide = can_collide(vi, F(fi, 0))
+                        || can_collide(vi, F(fi, 1))
+                        || can_collide(vi, F(fi, 2));
+                    if (!is_endpoint && can_fv_collide) {
                         bool aabb_intersect = !perform_aabb_check
                             || point_triangle_aabb_cd(
                                    V.row(vi), V.row(F(fi, 0)), V.row(F(fi, 1)),
@@ -215,7 +209,7 @@ void detect_collision_candidates_brute_force(
     bool detect_face_vertex,
     bool perform_aabb_check,
     double aabb_inflation_radius,
-    const Eigen::VectorXi& group_ids)
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     assert(V0.rows() == V1.rows() && V0.cols() == V1.cols());
     assert(E.size() == 0 || E.cols() == 2);
@@ -224,19 +218,19 @@ void detect_collision_candidates_brute_force(
     if (detect_edge_vertex) {
         detect_edge_vertex_collision_candidates_brute_force(
             V0, V1, E, candidates.ev_candidates, perform_aabb_check,
-            aabb_inflation_radius, group_ids);
+            aabb_inflation_radius, can_collide);
     }
 
     if (detect_edge_edge) {
         detect_edge_edge_collision_candidates_brute_force(
             V0, V1, E, candidates.ee_candidates, perform_aabb_check,
-            aabb_inflation_radius, group_ids);
+            aabb_inflation_radius, can_collide);
     }
 
     if (detect_face_vertex) {
         detect_face_vertex_collision_candidates_brute_force(
             V0, V1, F, candidates.fv_candidates, perform_aabb_check,
-            aabb_inflation_radius, group_ids);
+            aabb_inflation_radius, can_collide);
     }
 }
 
@@ -247,13 +241,12 @@ void detect_edge_vertex_collision_candidates_brute_force(
     std::vector<EdgeVertexCandidate>& ev_candidates,
     bool perform_aabb_check,
     double aabb_inflation_radius,
-    const Eigen::VectorXi& group_ids)
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     assert(V0.rows() == V1.rows() && V0.cols() == V1.cols());
 
     tbb::enumerable_thread_specific<std::vector<EdgeVertexCandidate>> storages;
 
-    const bool check_group = group_ids.size() > 0;
     tbb::parallel_for(
         tbb::blocked_range2d<long>(0l, long(E.rows()), 0l, long(V0.rows())),
         [&](const tbb::blocked_range2d<long>& r) {
@@ -266,11 +259,10 @@ void detect_edge_vertex_collision_candidates_brute_force(
 
                     // Check that the vertex is not an endpoint of the edge
                     bool is_endpoint = vi == E(ei, 0) || vi == E(ei, 1);
-                    bool same_group = check_group
-                        && (group_ids(vi) == group_ids(E(ei, 0))
-                            || group_ids(vi) == group_ids(E(ei, 1)));
+                    bool can_ev_collide =
+                        can_collide(vi, E(ei, 0)) || can_collide(vi, E(ei, 1));
 
-                    if (!is_endpoint && !same_group) {
+                    if (!is_endpoint && can_ev_collide) {
                         bool aabb_intersect = !perform_aabb_check
                             || point_edge_aabb_ccd(
                                    V0.row(vi), V0.row(E(ei, 0)),
@@ -295,13 +287,12 @@ void detect_edge_edge_collision_candidates_brute_force(
     std::vector<EdgeEdgeCandidate>& ee_candidates,
     bool perform_aabb_check,
     double aabb_inflation_radius,
-    const Eigen::VectorXi& group_ids)
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     assert(V0.rows() == V1.rows() && V0.cols() == V1.cols());
 
     tbb::enumerable_thread_specific<std::vector<EdgeEdgeCandidate>> storages;
 
-    const bool check_group = group_ids.size() > 0;
     long num_edges = E.rows();
     tbb::parallel_for(
         tbb::blocked_range2d<long>(0l, num_edges, 0l, num_edges),
@@ -319,12 +310,11 @@ void detect_edge_edge_collision_candidates_brute_force(
                     bool has_common_endpoint = E(eai, 0) == E(ebi, 0)
                         || E(eai, 0) == E(ebi, 1) || E(eai, 1) == E(ebi, 0)
                         || E(eai, 1) == E(ebi, 1);
-                    bool same_group = check_group
-                        && (group_ids(E(eai, 0)) == group_ids(E(ebi, 0))
-                            || group_ids(E(eai, 0)) == group_ids(E(ebi, 1))
-                            || group_ids(E(eai, 1)) == group_ids(E(ebi, 0))
-                            || group_ids(E(eai, 1)) == group_ids(E(ebi, 1)));
-                    if (!has_common_endpoint && !same_group) {
+                    bool can_ee_collide = can_collide(E(eai, 0), E(ebi, 0))
+                        || can_collide(E(eai, 0), E(ebi, 1))
+                        || can_collide(E(eai, 1), E(ebi, 0))
+                        || can_collide(E(eai, 1), E(ebi, 1));
+                    if (!has_common_endpoint && can_ee_collide) {
                         bool aabb_intersect = !perform_aabb_check
                             || edge_edge_aabb_ccd(
                                    V0.row(E(eai, 0)), V0.row(E(eai, 1)), //
@@ -350,13 +340,12 @@ void detect_face_vertex_collision_candidates_brute_force(
     std::vector<FaceVertexCandidate>& fv_candidates,
     bool perform_aabb_check,
     double aabb_inflation_radius,
-    const Eigen::VectorXi& group_ids)
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     assert(V0.rows() == V1.rows() && V0.cols() == V1.cols());
 
     tbb::enumerable_thread_specific<std::vector<FaceVertexCandidate>> storages;
 
-    const bool check_group = group_ids.size() > 0;
     tbb::parallel_for(
         tbb::blocked_range2d<long>(0l, long(F.rows()), 0l, long(V0.rows())),
         [&](const tbb::blocked_range2d<long>& r) {
@@ -369,11 +358,10 @@ void detect_face_vertex_collision_candidates_brute_force(
                     // Check that the vertex is not an endpoint of the edge
                     bool is_endpoint =
                         vi == F(fi, 0) || vi == F(fi, 1) || vi == F(fi, 2);
-                    bool same_group = check_group
-                        && (group_ids(vi) == group_ids(F(fi, 0))
-                            || group_ids(vi) == group_ids(F(fi, 1))
-                            || group_ids(vi) == group_ids(F(fi, 2)));
-                    if (!is_endpoint && !same_group) {
+                    bool can_fv_collide = can_collide(vi, F(fi, 0))
+                        || can_collide(vi, F(fi, 1))
+                        || can_collide(vi, F(fi, 2));
+                    if (!is_endpoint && can_fv_collide) {
                         bool aabb_intersect = !perform_aabb_check
                             || point_triangle_aabb_ccd(
                                    V0.row(vi), //

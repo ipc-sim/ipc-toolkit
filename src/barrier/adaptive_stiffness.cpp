@@ -30,7 +30,7 @@ double initial_barrier_stiffness(
     double d0 = 1e-8 * bbox_diagonal + dmin;
     d0 *= d0;
     if (d0 - dmin_squared >= 2 * dmin * dhat + dhat_squared) {
-        d0 = dmin * dhat + 0.5 * dhat_squared; // TODO: this is untested
+        d0 = dmin * dhat + 0.5 * dhat_squared; // NOTE: this is untested
     }
     double min_barrier_stiffness = 4 * d0
         * barrier_hessian(d0 - dmin_squared, 2 * dmin * dhat + dhat_squared);
@@ -49,31 +49,6 @@ double initial_barrier_stiffness(
 
     return std::min(
         max_barrier_stiffness, std::max(min_barrier_stiffness, kappa));
-}
-
-// Use the mesh to compute the barrier gradient and world bounding box.
-double initial_barrier_stiffness(
-    const Eigen::MatrixXd& V_rest,
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    double dhat,
-    double average_mass,
-    const Eigen::VectorXd& grad_energy,
-    double& max_barrier_stiffness,
-    double min_barrier_stiffness_scale,
-    double dmin)
-{
-    double diag = world_bbox_diagonal_length(V);
-
-    Constraints constraint_set;
-    construct_constraint_set(V_rest, V, E, F, dhat, constraint_set, dmin);
-    Eigen::VectorXd grad_barrier =
-        compute_barrier_potential_gradient(V, E, F, constraint_set, dhat);
-
-    return initial_barrier_stiffness(
-        diag, dhat, average_mass, grad_energy, grad_barrier,
-        max_barrier_stiffness, min_barrier_stiffness_scale, dmin);
 }
 
 // Adaptive κ
@@ -99,10 +74,10 @@ void update_barrier_stiffness(
 
 // Adaptive κ
 void update_barrier_stiffness(
+    const Constraints& constraint_set,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    double dhat,
     double prev_min_distance,
     double& min_distance,
     double max_barrier_stiffness,
@@ -110,8 +85,6 @@ void update_barrier_stiffness(
     double dhat_epsilon_scale,
     double dmin)
 {
-    Constraints constraint_set;
-    construct_constraint_set(/*V_rest=*/V, V, E, F, dhat, constraint_set, dmin);
     // Use a temporay variable in case &prev_min_distance == &min_distance
     double current_min_distance =
         compute_minimum_distance(V, E, F, constraint_set);

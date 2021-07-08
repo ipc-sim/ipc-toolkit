@@ -69,11 +69,16 @@ TEST_CASE("Compare SpatialHash against brute force", "[spatial_hash]")
 
     double inflation_radius = 1e-2; // GENERATE(0, 1e-4, 1e-3, 1e-2, 1e-1);
 
+    auto can_collide = [&group_ids](size_t vi, size_t vj) {
+        return group_ids.size() == 0 || group_ids(vi) != group_ids(vj);
+    };
+
     for (int i = 0; i < 2; i++) {
         Eigen::MatrixXd V1 = V0 + U;
         sh.build(V0, V1, E, F, inflation_radius);
 
         sh_candidates.clear();
+        // TODO: use can_collide
         sh.queryMeshForCandidates(
             V0, V1, E, F, sh_candidates,
             /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true);
@@ -82,7 +87,7 @@ TEST_CASE("Compare SpatialHash against brute force", "[spatial_hash]")
         detect_collision_candidates_brute_force(
             V0, V1, E, F, bf_candidates,
             /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true,
-            /*perform_aabb_check=*/false, inflation_radius, group_ids);
+            /*perform_aabb_check=*/false, inflation_radius, can_collide);
 
         CHECK(
             sh_candidates.ev_candidates.size()

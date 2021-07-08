@@ -19,7 +19,6 @@ TEST_CASE(
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
-    Eigen::VectorXi group_ids;
 
 #ifdef NDEBUG
     std::string filename =
@@ -94,9 +93,9 @@ TEST_CASE(
         hashgrid.addFaces(V0, V1, F, inflation_radius);
 
         Candidates candidates;
-        hashgrid.getVertexEdgePairs(E, group_ids, candidates.ev_candidates);
-        hashgrid.getEdgeEdgePairs(E, group_ids, candidates.ee_candidates);
-        hashgrid.getFaceVertexPairs(F, group_ids, candidates.fv_candidates);
+        hashgrid.getVertexEdgePairs(E, candidates.ev_candidates);
+        hashgrid.getEdgeEdgePairs(E, candidates.ee_candidates);
+        hashgrid.getFaceVertexPairs(F, candidates.fv_candidates);
     };
 
     BENCHMARK("BruteForce")
@@ -105,7 +104,7 @@ TEST_CASE(
         detect_collision_candidates_brute_force(
             V0, V1, E, F, candidates, /*detect_edge_vertex=*/true,
             /*detect_edge_edge=*/true, /*detect_face_vertex=*/true,
-            /*perform_aabb_check=*/true, inflation_radius, group_ids);
+            /*perform_aabb_check=*/true, inflation_radius);
     };
 }
 
@@ -115,7 +114,6 @@ TEST_CASE(
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
-    Eigen::VectorXi group_ids;
 
     std::string mesh_path =
         std::string(TEST_DATA_DIR) + "slow-broadphase-ccd/s0.obj";
@@ -154,9 +152,9 @@ TEST_CASE(
         hashgrid.addFaces(V0, V1, F, inflation_radius);
 
         Candidates candidates;
-        hashgrid.getVertexEdgePairs(E, group_ids, candidates.ev_candidates);
-        hashgrid.getEdgeEdgePairs(E, group_ids, candidates.ee_candidates);
-        hashgrid.getFaceVertexPairs(F, group_ids, candidates.fv_candidates);
+        hashgrid.getVertexEdgePairs(E, candidates.ev_candidates);
+        hashgrid.getEdgeEdgePairs(E, candidates.ee_candidates);
+        hashgrid.getFaceVertexPairs(F, candidates.fv_candidates);
     };
 
     BENCHMARK("BruteForce")
@@ -165,6 +163,6 @@ TEST_CASE(
         detect_collision_candidates_brute_force(
             V0, V1, E, F, candidates, /*detect_edge_vertex=*/true,
             /*detect_edge_edge=*/true, /*detect_face_vertex=*/true,
-            /*perform_aabb_check=*/true, inflation_radius, group_ids);
+            /*perform_aabb_check=*/true, inflation_radius);
     };
 }

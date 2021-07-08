@@ -390,7 +390,7 @@ void HashGrid::addElement(
 template <typename T>
 void getPairs(
     const std::function<bool(int, int)>& is_endpoint,
-    const std::function<bool(int, int)>& is_same_group,
+    const std::function<bool(int, int)>& can_collide,
     std::vector<HashItem>& items0,
     std::vector<HashItem>& items1,
     T& candidates)
@@ -414,7 +414,7 @@ void getPairs(
 
             if (item0.key == item1.key) {
                 if (!is_endpoint(item0.id, item1.id)
-                    && !is_same_group(item0.id, item1.id)
+                    && can_collide(item0.id, item1.id)
                     && AABB::are_overlapping(item0.aabb, item1.aabb)) {
                     candidates.emplace_back(item0.id, item1.id);
                 }
@@ -439,7 +439,7 @@ void getPairs(
 template <typename T>
 void getPairs(
     const std::function<bool(int, int)>& is_endpoint,
-    const std::function<bool(int, int)>& is_same_group,
+    const std::function<bool(int, int)>& can_collide,
     std::vector<HashItem>& items,
     T& candidates)
 {
@@ -457,7 +457,7 @@ void getPairs(
             const HashItem& item1 = items[j];
             if (item0.key == item1.key) {
                 if (!is_endpoint(item0.id, item1.id)
-                    && !is_same_group(item0.id, item1.id)
+                    && can_collide(item0.id, item1.id)
                     && AABB::are_overlapping(item0.aabb, item1.aabb)) {
                     candidates.emplace_back(item0.id, item1.id);
                 }
@@ -495,7 +495,7 @@ void getPairs(
 
                     if (item0.key == item1.key) {
                         if (!is_endpoint(item0.id, item1.id)
-                            && !is_same_group(item0.id, item1.id)
+                            && can_collide(item0.id, item1.id)
                             && AABB::are_overlapping(item0.aabb, item1.aabb)) {
                             local_candidates.emplace_back(item0.id, item1.id);
                         }
@@ -527,51 +527,47 @@ void getPairs(
 
 void HashGrid::getVertexEdgePairs(
     const Eigen::MatrixXi& edges,
-    const Eigen::VectorXi& group_ids,
-    std::vector<EdgeVertexCandidate>& ev_candidates)
+    std::vector<EdgeVertexCandidate>& ev_candidates,
+    const std::function<bool(size_t, size_t)>& can_vertices_collide)
 {
     auto is_endpoint = [&](int ei, int vi) {
         return edges(ei, 0) == vi || edges(ei, 1) == vi;
     };
 
-    bool check_groups = group_ids.size() > 0;
-    auto is_same_group = [&](int ei, int vi) {
-        return check_groups
-            && (group_ids(vi) == group_ids(edges(ei, 0))
-                || group_ids(vi) == group_ids(edges(ei, 1)));
+    auto can_collide = [&](int ei, int vi) {
+        return can_vertices_collide(vi, edges(ei, 0))
+            || can_vertices_collide(vi, edges(ei, 1));
     };
 
     getPairs(
-        is_endpoint, is_same_group, m_edgeItems, m_vertexItems, ev_candidates);
+        is_endpoint, can_collide, m_edgeItems, m_vertexItems, ev_candidates);
 }
 
 void HashGrid::getEdgeEdgePairs(
     const Eigen::MatrixXi& edges,
-    const Eigen::VectorXi& group_ids,
-    std::vector<EdgeEdgeCandidate>& ee_candidates)
+    std::vector<EdgeEdgeCandidate>& ee_candidates,
+    const std::function<bool(size_t, size_t)>& can_vertices_collide)
 {
     auto is_endpoint = [&](int ei, int ej) {
         return edges(ei, 0) == edges(ej, 0) || edges(ei, 0) == edges(ej, 1)
             || edges(ei, 1) == edges(ej, 0) || edges(ei, 1) == edges(ej, 1);
     };
 
-    bool check_groups = group_ids.size() > 0;
-    auto is_same_group = [&](int ei, int ej) {
-        return check_groups
-            && (group_ids(edges(ei, 0)) == group_ids(edges(ej, 0))
-                || group_ids(edges(ei, 0)) == group_ids(edges(ej, 1))
-                || group_ids(edges(ei, 1)) == group_ids(edges(ej, 0))
-                || group_ids(edges(ei, 1)) == group_ids(edges(ej, 1)));
+    auto can_collide = [&](int ei, int ej) {
+        return can_vertices_collide(edges(ei, 0), edges(ej, 0))
+            || can_vertices_collide(edges(ei, 0), edges(ej, 1))
+            || can_vertices_collide(edges(ei, 1), edges(ej, 0))
+            || can_vertices_collide(edges(ei, 1), edges(ej, 1));
     };
 
-    getPairs(is_endpoint, is_same_group, m_edgeItems, ee_candidates);
+    getPairs(is_endpoint, can_collide, m_edgeItems, ee_candidates);
 }
 
 void HashGrid::getEdgeFacePairs(
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    const Eigen::VectorXi& group_ids,
-    std::vector<EdgeFaceCandidate>& ef_candidates)
+    std::vector<EdgeFaceCandidate>& ef_candidates,
+    const std::function<bool(size_t, size_t)>& can_vertices_collide)
 {
     auto is_endpoint = [&](int ei, int fi) {
         // Check if the edge and face have a common end-point
@@ -580,40 +576,35 @@ void HashGrid::getEdgeFacePairs(
             || edges(ei, 1) == faces(fi, 1) || edges(ei, 1) == faces(fi, 2);
     };
 
-    bool check_groups = group_ids.size() > 0;
-    auto is_same_group = [&](int ei, int fi) {
-        return check_groups
-            && (group_ids(edges(ei, 0)) == group_ids(faces(fi, 0))
-                || group_ids(edges(ei, 0)) == group_ids(faces(fi, 1))
-                || group_ids(edges(ei, 0)) == group_ids(faces(fi, 2))
-                || group_ids(edges(ei, 1)) == group_ids(faces(fi, 0))
-                || group_ids(edges(ei, 1)) == group_ids(faces(fi, 1))
-                || group_ids(edges(ei, 1)) == group_ids(faces(fi, 2)));
+    auto can_collide = [&](int ei, int fi) {
+        return can_vertices_collide(edges(ei, 0), faces(fi, 0))
+            || can_vertices_collide(edges(ei, 0), faces(fi, 1))
+            || can_vertices_collide(edges(ei, 0), faces(fi, 2))
+            || can_vertices_collide(edges(ei, 1), faces(fi, 0))
+            || can_vertices_collide(edges(ei, 1), faces(fi, 1))
+            || can_vertices_collide(edges(ei, 1), faces(fi, 2));
     };
 
-    getPairs(
-        is_endpoint, is_same_group, m_edgeItems, m_faceItems, ef_candidates);
+    getPairs(is_endpoint, can_collide, m_edgeItems, m_faceItems, ef_candidates);
 }
 
 void HashGrid::getFaceVertexPairs(
     const Eigen::MatrixXi& faces,
-    const Eigen::VectorXi& group_ids,
-    std::vector<FaceVertexCandidate>& fv_candidates)
+    std::vector<FaceVertexCandidate>& fv_candidates,
+    const std::function<bool(size_t, size_t)>& can_vertices_collide)
 {
     auto is_endpoint = [&](int fi, int vi) {
         return vi == faces(fi, 0) || vi == faces(fi, 1) || vi == faces(fi, 2);
     };
 
-    bool check_groups = group_ids.size() > 0;
-    auto is_same_group = [&](int fi, int vi) {
-        return check_groups
-            && (group_ids(vi) == group_ids(faces(fi, 0))
-                || group_ids(vi) == group_ids(faces(fi, 1))
-                || group_ids(vi) == group_ids(faces(fi, 2)));
+    auto can_collide = [&](int fi, int vi) {
+        return can_vertices_collide(vi, faces(fi, 0))
+            || can_vertices_collide(vi, faces(fi, 1))
+            || can_vertices_collide(vi, faces(fi, 2));
     };
 
     getPairs(
-        is_endpoint, is_same_group, m_faceItems, m_vertexItems, fv_candidates);
+        is_endpoint, can_collide, m_faceItems, m_vertexItems, fv_candidates);
 }
 
 } // namespace ipc

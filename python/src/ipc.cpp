@@ -12,14 +12,13 @@ void define_ipc_functions(py::module_& m)
         "construct_constraint_set",
         [](const Eigen::MatrixXd& V_rest, const Eigen::MatrixXd& V,
            const Eigen::MatrixXi& E, const Eigen::MatrixXi& F, double dhat,
-           bool ignore_codimensional_vertices, const BroadPhaseMethod& method,
-           const Eigen::VectorXi& vertex_group_ids, const Eigen::MatrixXi& F2E,
-           double dmin) {
+           const Eigen::MatrixXi& F2E, double dmin,
+           const BroadPhaseMethod& method, bool ignore_codimensional_vertices,
+           const std::function<bool(size_t, size_t)>& can_collide) {
             Constraints constraint_set;
             construct_constraint_set(
-                V_rest, V, E, F, dhat, constraint_set,
-                ignore_codimensional_vertices, method, vertex_group_ids, F2E,
-                dmin);
+                V_rest, V, E, F, dhat, constraint_set, F2E, dmin, method,
+                ignore_codimensional_vertices, can_collide);
             return constraint_set;
         },
         R"ipc_Qu8mg5v7(
@@ -31,11 +30,14 @@ void define_ipc_functions(py::module_& m)
         E : Edges as rows of indicies into V
         F : Triangular faces as rows of indicies into V
         dhat : The activation distance of the barrier
-        ignore_codimensional_vertices : (Optional) Ignores vertices not connected to edges.
-        method : (Optional) Broad-phase method to use
-        vertex_group_ids : (Optional) A group ID per vertex such that vertices with the same group id do not collide. An empty vector implies all vertices can collide with all other vertices.
         F2E : (Optional) Map from F edges to rows of E
         dmin : (Optional) Minimum distance
+        ignore_codimensional_vertices : (Optional) Ignores vertices not connected to edges.
+        method : (Optional) Broad-phase method to use
+        can_collide : (Optional) A function that takes two vertex IDs (row numbers in F)
+                      and returns true if the vertices (and faces or edges containting the
+                      edges) can collide. By default all primitives can collide with all
+                      other primitives.
 
         Returns
         -------
@@ -51,10 +53,10 @@ void define_ipc_functions(py::module_& m)
         V can either be the surface vertices or the entire mesh vertices. The edges and face should be only for the surface elements.
         )ipc_Qu8mg5v7",
         py::arg("V_rest"), py::arg("V"), py::arg("E"), py::arg("F"),
-        py::arg("dhat"), py::arg("ignore_codimensional_vertices") = true,
-        py::arg("method") = BroadPhaseMethod::HASH_GRID,
-        py::arg("vertex_group_ids") = Eigen::VectorXi(),
-        py::arg("F2E") = Eigen::MatrixXi(), py::arg("dmin") = 0);
+        py::arg("dhat"), py::arg("F2E") = Eigen::MatrixXi(),
+        py::arg("dmin") = 0, py::arg("method") = BroadPhaseMethod::HASH_GRID,
+        py::arg("ignore_codimensional_vertices") = true,
+        py::arg("can_collide") = [](size_t, size_t) { return true; });
 
     m.def(
         "compute_barrier_potential", &compute_barrier_potential,
@@ -116,5 +118,5 @@ void define_ipc_functions(py::module_& m)
         The hessian of all barrier potentials (not scaled by the barrier stiffness).
         )ipc_Qu8mg5v7",
         py::arg("V"), py::arg("E"), py::arg("F"), py::arg("constraint_set"),
-        py::arg("dhat"), py::arg("project_hessian_to_psd") = true);
+        py::arg("dhat"), py::arg("project_to_psd") = true);
 }

@@ -202,7 +202,7 @@ public: // helper functions
     void locateVoxelAxisIndex(
         const VectorMax3d& p, ArrayMax3i& voxelAxisIndex) const;
 
-    int voxelAxisIndex2VoxelIndex(const int voxelAxisIndex[3]) const;
+    int voxelAxisIndex2VoxelIndex(const ArrayMax3i& voxelAxisIndex) const;
 
     int voxelAxisIndex2VoxelIndex(int ix, int iy, int iz) const;
 };

@@ -17,19 +17,20 @@ namespace ipc {
 /// @note V can either be the surface vertices or the entire mesh vertices.
 /// The edges and face should be only for the surface elements.
 ///
-/// @param[in]  V  Vertex positions as rows of a matrix.
-/// @param[in]  E  Edges as rows of indicies into V.
-/// @param[in]  F  Triangular faces as rows of indicies into V.
-/// @param[in]  dhat  The activation distance of the barrier.
-/// @param[out] constraint_set  The constructed set of constraints.
-/// @param[in]  ignore_codimensional_vertices  Ignores vertices not connected to
-///             edges.
-/// @param[in]  method  Broad-phase method to use.
-/// @param[in]  vertex_group_ids  A group ID per vertex such that vertices with
-///             the same group id do not collide. An empty vector implies all
-///             vertices can collide with all other vertices.
-/// @param[in]  F2E  Map from F edges to rows of E.
-/// @param[in]  dmin  Minimum distance.
+/// @param[in] V Vertex positions as rows of a matrix.
+/// @param[in] E Edges as rows of indicies into V.
+/// @param[in] F Triangular faces as rows of indicies into V.
+/// @param[in] dhat The activation distance of the barrier.
+/// @param[out] constraint_set The constructed set of constraints.
+/// @param[in] F2E Map from F edges to rows of E.
+/// @param[in] dmin Minimum distance.
+/// @param[in] method Broad-phase method to use.
+/// @param[in] ignore_codimensional_vertices
+///     Ignores vertices not connected to edges.
+/// @param[in] can_collide
+///     A function that takes two vertex IDs (row numbers in F) and returns true
+///     if the vertices (and faces or edges containting the edges) can collide.
+///     By default all primitives can collide with all other primitives.
 void construct_constraint_set(
     const Eigen::MatrixXd& V_rest,
     const Eigen::MatrixXd& V,
@@ -37,11 +38,12 @@ void construct_constraint_set(
     const Eigen::MatrixXi& F,
     double dhat,
     Constraints& constraint_set,
-    bool ignore_codimensional_vertices = false,
-    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
-    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi(),
     const Eigen::MatrixXi& F2E = Eigen::MatrixXi(),
-    double dmin = 0);
+    double dmin = 0,
+    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
+    bool ignore_codimensional_vertices = false,
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
 ///
@@ -133,23 +135,24 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 /// @param[in] V1 Vertex positions at end as rows of a matrix.
 /// @param[in] E Edges as rows of indicies into V.
 /// @param[in] F Triangular faces as rows of indicies into V.
-/// @param[in] ignore_codimensional_vertices Ignores vertices not connected to
-///                                          edges.
-/// @param[in] vertex_group_ids A group ID per vertex such that vertices with
-///                             the same group id do not collide. An empty
-///                             vector implies all vertices can collide with all
-///                             other vertices.
+/// @param[in] ignore_codimensional_vertices
+///     Ignores vertices not connected to edges.
+/// @param[in] can_collide
+///     A function that takes two vertex IDs (row numbers in F) and returns true
+///     if the vertices (and faces or edges containting the edges) can collide.
+///     By default all primitives can collide with all other primiti
 /// @returns True if <b>any</b> collisions occur.
 bool is_step_collision_free(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    bool ignore_codimensional_vertices = false,
     const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
-    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi(),
     double tolerance = 1e-6,
-    int max_iterations = 1e7);
+    int max_iterations = 1e7,
+    bool ignore_codimensional_vertices = false,
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 /// @brief Determine if the step is collision free from a set of candidates.
 ///
@@ -183,23 +186,24 @@ bool is_step_collision_free(
 /// @param[in] V1 Vertex positions at end as rows of a matrix.
 /// @param[in] E Edges as rows of indicies into V.
 /// @param[in] F Triangular faces as rows of indicies into V.
-/// @param[in] ignore_codimensional_vertices Ignores vertices not connected to
-///                                          edges.
-/// @param[in] vertex_group_ids A group ID per vertex such that vertices with
-///                             the same group id do not collide. An empty
-///                             vector implies all vertices can collide with all
-///                             other vertices.
+/// @param[in] ignore_codimensional_vertices
+///     Ignores vertices not connected to edges.
+/// @param[in] can_collide
+///     A function that takes two vertex IDs (row numbers in F) and returns true
+///     if the vertices (and faces or edges containting the edges) can collide.
+///     By default all primitives can collide with all other primitives.
 /// @returns A step-size \f$\in [0, 1]\f$ that is collision free.
 double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    bool ignore_codimensional_vertices = false,
     const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
-    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi(),
     double tolerance = 1e-6,
-    int max_iterations = 1e7);
+    int max_iterations = 1e7,
+    bool ignore_codimensional_vertices = false,
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 /// @brief Computes a maximal step size that is collision free using a set of
 /// collision candidates.
@@ -244,14 +248,15 @@ double compute_minimum_distance(
 /// @param[in] V Vertex positions as rows of a matrix.
 /// @param[in] E Edges as rows of indicies into V.
 /// @param[in] F Triangular faces as rows of indicies into V.
-/// @param[in] vertex_group_ids A group ID per vertex such that vertices with
-///                             the same group id do not intersect. An empty
-///                             vector implies all vertices can collide with all
-///                             other vertices.
+/// @param[in] can_collide
+///     A function that takes two vertex IDs (row numbers in F) and returns true
+///     if the vertices (and faces or edges containting the edges) can collide.
+///     By default all primitives can collide with all other primitives.
 bool has_intersections(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 } // namespace ipc

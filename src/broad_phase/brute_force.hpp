@@ -17,7 +17,8 @@ void detect_collision_candidates_brute_force(
     bool detect_face_vertex = true,
     bool perform_aabb_check = false,
     double aabb_inflation_radius = 0,
-    const Eigen::VectorXi& group_ids = Eigen::VectorXi());
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 void detect_edge_vertex_collision_candidates_brute_force(
     const Eigen::MatrixXd& V,
@@ -25,7 +26,8 @@ void detect_edge_vertex_collision_candidates_brute_force(
     std::vector<EdgeVertexCandidate>& ev_candidates,
     bool perform_aabb_check = false,
     double aabb_inflation_radius = 0,
-    const Eigen::VectorXi& group_ids = Eigen::VectorXi());
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 void detect_edge_edge_collision_candidates_brute_force(
     const Eigen::MatrixXd& V,
@@ -33,7 +35,8 @@ void detect_edge_edge_collision_candidates_brute_force(
     std::vector<EdgeEdgeCandidate>& ee_candidates,
     bool perform_aabb_check = false,
     double aabb_inflation_radius = 0,
-    const Eigen::VectorXi& group_ids = Eigen::VectorXi());
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 void detect_face_vertex_collision_candidates_brute_force(
     const Eigen::MatrixXd& V,
@@ -41,7 +44,8 @@ void detect_face_vertex_collision_candidates_brute_force(
     std::vector<FaceVertexCandidate>& fv_candidates,
     bool perform_aabb_check = false,
     double aabb_inflation_radius = 0,
-    const Eigen::VectorXi& group_ids = Eigen::VectorXi());
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 /// Find all continous collisions in one time step using brute-force.
 void detect_collision_candidates_brute_force(
@@ -55,7 +59,8 @@ void detect_collision_candidates_brute_force(
     bool detect_face_vertex = true,
     bool perform_aabb_check = false,
     double aabb_inflation_radius = 0,
-    const Eigen::VectorXi& group_ids = Eigen::VectorXi());
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 void detect_edge_vertex_collision_candidates_brute_force(
     const Eigen::MatrixXd& V0,
@@ -64,7 +69,8 @@ void detect_edge_vertex_collision_candidates_brute_force(
     std::vector<EdgeVertexCandidate>& ev_candidates,
     bool perform_aabb_check = false,
     double aabb_inflation_radius = 0,
-    const Eigen::VectorXi& group_ids = Eigen::VectorXi());
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 void detect_edge_edge_collision_candidates_brute_force(
     const Eigen::MatrixXd& V0,
@@ -73,7 +79,8 @@ void detect_edge_edge_collision_candidates_brute_force(
     std::vector<EdgeEdgeCandidate>& ee_candidates,
     bool perform_aabb_check = false,
     double aabb_inflation_radius = 0,
-    const Eigen::VectorXi& group_ids = Eigen::VectorXi());
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 void detect_face_vertex_collision_candidates_brute_force(
     const Eigen::MatrixXd& V0,
@@ -82,6 +89,7 @@ void detect_face_vertex_collision_candidates_brute_force(
     std::vector<FaceVertexCandidate>& fv_candidates,
     bool perform_aabb_check = false,
     double aabb_inflation_radius = 0,
-    const Eigen::VectorXi& group_ids = Eigen::VectorXi());
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 } // namespace ipc

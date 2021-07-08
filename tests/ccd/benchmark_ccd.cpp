@@ -31,9 +31,19 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
 
     igl::edges(F, E);
 
+    BroadPhaseMethod method = GENERATE(
+        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
+        BroadPhaseMethod::SPATIAL_HASH);
+
+    double tolerance = 1e-6;
+    int max_iterations = 1e7;
+
+    bool ignore_codimensional_vertices = true;
+
     BENCHMARK("Earliest ToI")
     {
         double stpesize = compute_collision_free_stepsize(
-            V0, V1, E, F, /*ignore_codimensional_vertices=*/false);
+            V0, V1, E, F, method, tolerance, max_iterations,
+            ignore_codimensional_vertices);
     };
 }

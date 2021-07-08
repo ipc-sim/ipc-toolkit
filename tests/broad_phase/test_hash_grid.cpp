@@ -113,83 +113,6 @@ TEST_CASE("AABB overlapping", "[has_grid][AABB]")
     CHECK(AABB::are_overlapping(a, b) == are_overlapping);
 }
 
-TEST_CASE("Vertex-Vertex Spatial Hash", "[ccd][has_grid]")
-{
-    Eigen::MatrixXd V_t0(4, 2);
-    V_t0.row(0) << 1.11111, 0.5;  // edge 0 vertex 0
-    V_t0.row(1) << 1.11111, 0.75; // edge 0 vertex 1
-    V_t0.row(2) << 1, 0.5;        // edge 1 vertex 0
-    V_t0.row(3) << 1, 0.75;       // edge 1 vertex 1
-
-    Eigen::MatrixXd V_t1 = V_t0;
-    V_t1.row(0) << 0.888889, 0.5;  // edge 0 vertex 0
-    V_t1.row(1) << 0.888889, 0.75; // edge 0 vertex 1
-
-    Eigen::MatrixXi E(2, 2);
-    E.row(0) << 1, 0;
-    E.row(1) << 2, 3;
-
-    bool ignore_internal_vertices = GENERATE(false, true);
-
-    bool is_valid_step = ipc::is_step_collision_free(
-        V_t0, V_t1, E, /*F=*/Eigen::MatrixXi(), ignore_internal_vertices);
-
-    CAPTURE(ignore_internal_vertices);
-    CHECK(!is_valid_step);
-}
-
-TEST_CASE("Entire 2D Mesh", "[ccd][has_grid]")
-{
-    Eigen::MatrixXd V_t0;
-    igl::readCSV(std::string(TEST_DATA_DIR) + "V_t0.csv", V_t0);
-
-    Eigen::MatrixXd V_t1;
-    igl::readCSV(std::string(TEST_DATA_DIR) + "V_t1.csv", V_t1);
-
-    Eigen::MatrixXi E;
-    igl::readCSV(std::string(TEST_DATA_DIR) + "E.csv", E);
-
-    bool ignore_internal_vertices = GENERATE(false, true);
-
-    bool is_valid_step;
-    SECTION("2D")
-    {
-        is_valid_step = ipc::is_step_collision_free(
-            V_t0.leftCols(2), V_t1.rightCols(2), E, /*F=*/Eigen::MatrixXi(),
-            ignore_internal_vertices);
-    }
-    SECTION("3D")
-    {
-        is_valid_step = ipc::is_step_collision_free(
-            V_t0, V_t1, E, /*F=*/Eigen::MatrixXi(), ignore_internal_vertices);
-    }
-
-    CAPTURE(ignore_internal_vertices);
-    CHECK(!is_valid_step);
-}
-
-TEST_CASE(
-    "Test construct_constraint_set() with codimensional points",
-    "[construct_constraint_set][has_grid]")
-{
-    double dhat = 0.1;
-    // double dhat = 0.00173123;
-    Eigen::MatrixXd V_rest, V;
-    igl::readDMAT(
-        std::string(TEST_DATA_DIR) + "codim-points/V_rest.dmat", V_rest);
-    igl::readDMAT(std::string(TEST_DATA_DIR) + "codim-points/V.dmat", V);
-    Eigen::MatrixXi E, F;
-    igl::readDMAT(std::string(TEST_DATA_DIR) + "codim-points/E.dmat", E);
-    igl::readDMAT(std::string(TEST_DATA_DIR) + "codim-points/F.dmat", F);
-
-    Constraints constraint_set;
-    construct_constraint_set(
-        V_rest, V, E, F, dhat, constraint_set,
-        /*ignore_internal_vertices=*/false);
-
-    CHECK(constraint_set.size() != 0);
-}
-
 TEST_CASE("Compare HashGrid against brute force", "[thisone][hash_grid]")
 {
     using namespace ipc;
@@ -246,6 +169,10 @@ TEST_CASE("Compare HashGrid against brute force", "[thisone][hash_grid]")
 
     double inflation_radius = 1e-2; // GENERATE(0.0, 1e-4, 1e-3, 1e-2, 1e-1);
 
+    auto can_collide = [&group_ids](size_t vi, size_t vj) {
+        return group_ids.size() == 0 || group_ids(vi) != group_ids(vj);
+    };
+
     for (int i = 0; i < 2; i++) {
         Eigen::MatrixXd V1 = V0 + U;
         hashgrid.resize(V0, V1, E, inflation_radius);
@@ -254,15 +181,17 @@ TEST_CASE("Compare HashGrid against brute force", "[thisone][hash_grid]")
         hashgrid.addFaces(V0, V1, F, inflation_radius);
 
         hg_candidates.clear();
-        hashgrid.getVertexEdgePairs(E, group_ids, hg_candidates.ev_candidates);
-        hashgrid.getEdgeEdgePairs(E, group_ids, hg_candidates.ee_candidates);
-        hashgrid.getFaceVertexPairs(F, group_ids, hg_candidates.fv_candidates);
+        hashgrid.getVertexEdgePairs(
+            E, hg_candidates.ev_candidates, can_collide);
+        hashgrid.getEdgeEdgePairs(E, hg_candidates.ee_candidates, can_collide);
+        hashgrid.getFaceVertexPairs(
+            F, hg_candidates.fv_candidates, can_collide);
 
         bf_candidates.clear();
         detect_collision_candidates_brute_force(
             V0, V1, E, F, bf_candidates,
             /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true,
-            /*perform_aabb_check=*/false, inflation_radius, group_ids);
+            /*perform_aabb_check=*/false, inflation_radius, can_collide);
 
         CHECK(
             hg_candidates.ev_candidates.size()

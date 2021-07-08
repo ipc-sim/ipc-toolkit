@@ -80,18 +80,18 @@ void construct_constraint_set(
     const Eigen::MatrixXi& F,
     double dhat,
     Constraints& constraint_set,
-    bool ignore_codimensional_vertices,
-    const BroadPhaseMethod& method,
-    const Eigen::VectorXi& vertex_group_ids,
     const Eigen::MatrixXi& F2E,
-    double dmin)
+    double dmin,
+    const BroadPhaseMethod& method,
+    bool ignore_codimensional_vertices,
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     double inflation_radius = (dhat + dmin) / 1.99; // Conservative inflation
 
     Candidates candidates;
     construct_collision_candidates(
         V, E, F, candidates, inflation_radius, method,
-        ignore_codimensional_vertices, vertex_group_ids);
+        ignore_codimensional_vertices, can_collide);
 
     construct_constraint_set(
         candidates, V_rest, V, E, F, dhat, constraint_set, F2E, dmin);
@@ -418,17 +418,17 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    bool ignore_codimensional_vertices,
     const BroadPhaseMethod& method,
-    const Eigen::VectorXi& vertex_group_ids,
     double tolerance,
-    int max_iterations)
+    int max_iterations,
+    bool ignore_codimensional_vertices,
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     // Broad phase
     Candidates candidates;
     construct_collision_candidates(
         V0, V1, E, F, candidates, /*inflation_radius=*/0, method,
-        ignore_codimensional_vertices, vertex_group_ids);
+        ignore_codimensional_vertices, can_collide);
 
     // Narrow phase
     return is_step_collision_free(
@@ -521,17 +521,17 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    bool ignore_codimensional_vertices,
     const BroadPhaseMethod& method,
-    const Eigen::VectorXi& vertex_group_ids,
     double tolerance,
-    int max_iterations)
+    int max_iterations,
+    bool ignore_codimensional_vertices,
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     // Broad phase
     Candidates candidates;
     construct_collision_candidates(
         V0, V1, E, F, candidates, /*inflation_radius=*/0, method,
-        ignore_codimensional_vertices, vertex_group_ids);
+        ignore_codimensional_vertices, can_collide);
 
     // Narrow phase
     return compute_collision_free_stepsize(
@@ -715,7 +715,7 @@ bool has_intersections(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const Eigen::VectorXi& vertex_group_ids)
+    const std::function<bool(size_t, size_t)>& can_collide)
 {
     // TODO: Expose the broad-phase method
     HashGrid hash_grid;
@@ -730,7 +730,7 @@ bool has_intersections(
 
     if (V.cols() == 2) { // Need to check segment-segment intersections in 2D
         std::vector<EdgeEdgeCandidate> ee_candidates;
-        hash_grid.getEdgeEdgePairs(E, vertex_group_ids, ee_candidates);
+        hash_grid.getEdgeEdgePairs(E, ee_candidates, can_collide);
 
         // narrow-phase using igl
         igl::predicates::exactinit();
@@ -747,7 +747,7 @@ bool has_intersections(
         assert(V.cols() == 3);
 
         std::vector<EdgeFaceCandidate> ef_candidates;
-        hash_grid.getEdgeFacePairs(E, F, vertex_group_ids, ef_candidates);
+        hash_grid.getEdgeFacePairs(E, F, ef_candidates, can_collide);
 
         for (const EdgeFaceCandidate& ef_candidate : ef_candidates) {
             if (is_edge_intersecting_triangle(

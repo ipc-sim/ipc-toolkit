@@ -26,10 +26,11 @@ enum class BroadPhaseMethod {
 /// @param[in] method Broad phase method to use.
 /// @param[in] ignore_codimensional_vertices Ignores vertices not connected to
 ///                                          edges.
-/// @param[in] vertex_group_ids A group ID per vertex such that vertices with
-///                             the same group id do not collide. An empty
-///                             vector implies all vertices can collide with all
-///                             other vertices.
+/// @param[in] can_collide A function that takes two vertex IDs
+///                        (row numbers in F) and returns true if the vertices
+///                        (and faces or edges containting the edges) can
+///                        collide. By default all primitives can collide with
+///                        all other primitives.
 void construct_collision_candidates(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
@@ -38,7 +39,8 @@ void construct_collision_candidates(
     double inflation_radius = 0,
     const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
     bool ignore_codimensional_vertices = false,
-    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 /// @brief Construct a set of continous collision detection candidates.
 ///
@@ -55,10 +57,11 @@ void construct_collision_candidates(
 /// @param[in] method Broad phase method to use.
 /// @param[in] ignore_codimensional_vertices Ignores vertices not connected to
 ///                                          edges.
-/// @param[in] vertex_group_ids A group ID per vertex such that vertices with
-///                             the same group id do not collide. An empty
-///                             vector implies all vertices can collide with all
-///                             other vertices.
+/// @param[in] can_collide A function that takes two vertex IDs
+///                        (row numbers in F) and returns true if the vertices
+///                        (and faces or edges containting the edges) can
+///                        collide. By default all primitives can collide with
+///                        all other primitives.
 void construct_collision_candidates(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
@@ -68,6 +71,7 @@ void construct_collision_candidates(
     double inflation_radius = 0,
     const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
     bool ignore_codimensional_vertices = false,
-    const Eigen::VectorXi& vertex_group_ids = Eigen::VectorXi());
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
 
 } // namespace ipc

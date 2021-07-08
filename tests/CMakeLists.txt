@@ -9,6 +9,7 @@ add_executable(${PROJECT_NAME}_tests
 
   # Test CCD
   broad_phase/benchmark_spatial_hash.cpp
+  broad_phase/test_broad_phase.cpp
   broad_phase/test_hash_grid.cpp
   broad_phase/test_spatial_hash.cpp
   ccd/benchmark_ccd.cpp

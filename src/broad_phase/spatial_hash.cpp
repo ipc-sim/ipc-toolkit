@@ -61,8 +61,8 @@ void SpatialHash::build(
     triStartInd = edgeStartInd + E.rows();
 
     // precompute vVAI
-    std::vector<ArrayMax3i> vertexMinVAI(V0.rows());
-    std::vector<ArrayMax3i> vertexMaxVAI(V0.rows());
+    std::vector<Eigen::Array3i> vertexMinVAI(V0.rows(), Eigen::Array3i::Zero());
+    std::vector<Eigen::Array3i> vertexMaxVAI(V0.rows(), Eigen::Array3i::Zero());
     tbb::parallel_for(size_t(0), size_t(V0.rows()), [&](size_t vi) {
         ArrayMax3i vVAIMin, vVAIMax;
         locateVoxelAxisIndex(
@@ -71,8 +71,8 @@ void SpatialHash::build(
         locateVoxelAxisIndex(
             V0.row(vi).cwiseMax(V1.row(vi)).array() + inflation_radius,
             vVAIMax);
-        vertexMinVAI[vi] = vVAIMin;
-        vertexMaxVAI[vi] = vVAIMax;
+        vertexMinVAI[vi].head(dim) = vVAIMin;
+        vertexMinVAI[vi].head(dim) = vVAIMin;
     });
 
     // #ifdef IPC_TOOLKIT_PARALLEL_SH_CONSTRUCT
@@ -90,8 +90,7 @@ void SpatialHash::build(
     pointAndEdgeOccupancy.resize(triStartInd);
 
     tbb::parallel_for(size_t(0), size_t(V0.rows()), [&](size_t vi) {
-        const ArrayMax3i& mins = vertexMinVAI[vi];
-        const ArrayMax3i& maxs = vertexMaxVAI[vi];
+        const Eigen::Array3i &mins = vertexMinVAI[vi], &maxs = vertexMaxVAI[vi];
         pointAndEdgeOccupancy[vi].reserve((maxs - mins + 1).prod());
         for (int iz = mins[2]; iz <= maxs[2]; iz++) {
             int zOffset = iz * voxelCount0x1;
@@ -107,8 +106,10 @@ void SpatialHash::build(
     tbb::parallel_for(size_t(0), size_t(E.rows()), [&](size_t ei) {
         int eiInd = ei + edgeStartInd;
 
-        ArrayMax3i mins = vertexMinVAI[E(ei, 0)].min(vertexMinVAI[E(ei, 1)]);
-        ArrayMax3i maxs = vertexMaxVAI[E(ei, 0)].max(vertexMaxVAI[E(ei, 1)]);
+        Eigen::Array3i mins =
+            vertexMinVAI[E(ei, 0)].min(vertexMinVAI[E(ei, 1)]);
+        Eigen::Array3i maxs =
+            vertexMaxVAI[E(ei, 0)].max(vertexMaxVAI[E(ei, 1)]);
 
         pointAndEdgeOccupancy[eiInd].reserve((maxs - mins + 1).prod());
         for (int iz = mins[2]; iz <= maxs[2]; iz++) {
@@ -124,12 +125,12 @@ void SpatialHash::build(
 
     std::vector<std::vector<int>> voxelLoc_f(F.rows());
     tbb::parallel_for(size_t(0), size_t(F.rows()), [&](size_t fi) {
-        ArrayMax3i mins = vertexMinVAI[F(fi, 0)]
-                              .min(vertexMinVAI[F(fi, 1)])
-                              .min(vertexMinVAI[F(fi, 2)]);
-        ArrayMax3i maxs = vertexMaxVAI[F(fi, 0)]
-                              .max(vertexMaxVAI[F(fi, 1)])
-                              .max(vertexMaxVAI[F(fi, 2)]);
+        Eigen::Array3i mins = vertexMinVAI[F(fi, 0)]
+                                  .min(vertexMinVAI[F(fi, 1)])
+                                  .min(vertexMinVAI[F(fi, 2)]);
+        Eigen::Array3i maxs = vertexMaxVAI[F(fi, 0)]
+                                  .max(vertexMaxVAI[F(fi, 1)])
+                                  .max(vertexMaxVAI[F(fi, 2)]);
 
         for (int iz = mins[2]; iz <= maxs[2]; iz++) {
             int zOffset = iz * voxelCount0x1;
@@ -202,7 +203,10 @@ void SpatialHash::queryPointForTriangles(
     maxs = maxs.min(voxelCount - 1);
 
     triInds.clear();
-    for (int iz = mins[2]; iz <= maxs[2]; iz++) {
+
+    int min_z = mins.size() >= 3 ? mins[2] : 0;
+    int max_z = maxs.size() >= 3 ? maxs[2] : 0;
+    for (int iz = min_z; iz <= max_z; iz++) {
         int zOffset = iz * voxelCount0x1;
         for (int iy = mins[1]; iy <= maxs[1]; iy++) {
             int yzOffset = iy * voxelCount[0] + zOffset;
@@ -233,7 +237,9 @@ void SpatialHash::queryPointForTriangles(
     maxs = maxs.min(voxelCount - 1);
 
     triInds.clear();
-    for (int iz = mins[2]; iz <= maxs[2]; iz++) {
+    int min_z = mins.size() >= 3 ? mins[2] : 0;
+    int max_z = maxs.size() >= 3 ? maxs[2] : 0;
+    for (int iz = min_z; iz <= max_z; iz++) {
         int zOffset = iz * voxelCount0x1;
         for (int iy = mins[1]; iy <= maxs[1]; iy++) {
             int yzOffset = iy * voxelCount[0] + zOffset;
@@ -268,7 +274,9 @@ void SpatialHash::queryPointForPrimitives(
     vertInds.clear();
     edgeInds.clear();
     triInds.clear();
-    for (int iz = mins[2]; iz <= maxs[2]; iz++) {
+    int min_z = mins.size() >= 3 ? mins[2] : 0;
+    int max_z = maxs.size() >= 3 ? maxs[2] : 0;
+    for (int iz = min_z; iz <= max_z; iz++) {
         int zOffset = iz * voxelCount0x1;
         for (int iy = mins[1]; iy <= maxs[1]; iy++) {
             int yzOffset = iy * voxelCount[0] + zOffset;
@@ -307,7 +315,9 @@ void SpatialHash::queryEdgeForPE(
 
     vertInds.clear();
     edgeInds.clear();
-    for (int iz = mins[2]; iz <= maxs[2]; iz++) {
+    int min_z = mins.size() >= 3 ? mins[2] : 0;
+    int max_z = maxs.size() >= 3 ? maxs[2] : 0;
+    for (int iz = min_z; iz <= max_z; iz++) {
         int zOffset = iz * voxelCount0x1;
         for (int iy = mins[1]; iy <= maxs[1]; iy++) {
             int yzOffset = iy * voxelCount[0] + zOffset;
@@ -349,7 +359,9 @@ void SpatialHash::queryEdgeForEdges(
     maxs = maxs.min(voxelCount - 1);
 
     edgeInds.clear();
-    for (int iz = mins[2]; iz <= maxs[2]; iz++) {
+    int min_z = mins.size() >= 3 ? mins[2] : 0;
+    int max_z = maxs.size() >= 3 ? maxs[2] : 0;
+    for (int iz = min_z; iz <= max_z; iz++) {
         int zOffset = iz * voxelCount0x1;
         for (int iy = mins[1]; iy <= maxs[1]; iy++) {
             int yzOffset = iy * voxelCount[0] + zOffset;
@@ -391,7 +403,9 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
     maxs = maxs.min(voxelCount - 1);
 
     edgeInds.clear();
-    for (int iz = mins[2]; iz <= maxs[2]; iz++) {
+    int min_z = mins.size() >= 3 ? mins[2] : 0;
+    int max_z = maxs.size() >= 3 ? maxs[2] : 0;
+    for (int iz = min_z; iz <= max_z; iz++) {
         int zOffset = iz * voxelCount0x1;
         for (int iy = mins[1]; iy <= maxs[1]; iy++) {
             int yzOffset = iy * voxelCount[0] + zOffset;
@@ -450,7 +464,9 @@ void SpatialHash::queryEdgeForEdges(
     maxs = maxs.min(voxelCount - 1);
 
     edgeInds.clear();
-    for (int iz = mins[2]; iz <= maxs[2]; iz++) {
+    int min_z = mins.size() >= 3 ? mins[2] : 0;
+    int max_z = maxs.size() >= 3 ? maxs[2] : 0;
+    for (int iz = min_z; iz <= max_z; iz++) {
         int zOffset = iz * voxelCount0x1;
         for (int iy = mins[1]; iy <= maxs[1]; iy++) {
             int yzOffset = iy * voxelCount[0] + zOffset;
@@ -489,7 +505,9 @@ void SpatialHash::queryTriangleForPoints(
     maxs = maxs.min(voxelCount - 1);
 
     pointInds.clear();
-    for (int iz = mins[2]; iz <= maxs[2]; iz++) {
+    int min_z = mins.size() >= 3 ? mins[2] : 0;
+    int max_z = maxs.size() >= 3 ? maxs[2] : 0;
+    for (int iz = min_z; iz <= max_z; iz++) {
         int zOffset = iz * voxelCount0x1;
         for (int iy = mins[1]; iy <= maxs[1]; iy++) {
             int yzOffset = iy * voxelCount[0] + zOffset;
@@ -538,7 +556,9 @@ void SpatialHash::queryTriangleForPoints(
     maxs = maxs.min(voxelCount - 1);
 
     pointInds.clear();
-    for (int iz = mins[2]; iz <= maxs[2]; iz++) {
+    int min_z = mins.size() >= 3 ? mins[2] : 0;
+    int max_z = maxs.size() >= 3 ? maxs[2] : 0;
+    for (int iz = min_z; iz <= max_z; iz++) {
         int zOffset = iz * voxelCount0x1;
         for (int iy = mins[1]; iy <= maxs[1]; iy++) {
             int yzOffset = iy * voxelCount[0] + zOffset;
@@ -572,7 +592,9 @@ void SpatialHash::queryTriangleForEdges(
     maxs = maxs.min(voxelCount - 1);
 
     edgeInds.clear();
-    for (int iz = mins[2]; iz <= maxs[2]; iz++) {
+    int min_z = mins.size() >= 3 ? mins[2] : 0;
+    int max_z = maxs.size() >= 3 ? maxs[2] : 0;
+    for (int iz = min_z; iz <= max_z; iz++) {
         int zOffset = iz * voxelCount0x1;
         for (int iy = mins[1]; iy <= maxs[1]; iy++) {
             int yzOffset = iy * voxelCount[0] + zOffset;
@@ -605,7 +627,9 @@ void SpatialHash::queryEdgeForTriangles(
     maxs = maxs.min(voxelCount - 1);
 
     triInds.clear();
-    for (int iz = mins[2]; iz <= maxs[2]; iz++) {
+    int min_z = mins.size() >= 3 ? mins[2] : 0;
+    int max_z = maxs.size() >= 3 ? maxs[2] : 0;
+    for (int iz = min_z; iz <= max_z; iz++) {
         int zOffset = iz * voxelCount0x1;
         for (int iy = mins[1]; iy <= maxs[1]; iy++) {
             int yzOffset = iy * voxelCount[0] + zOffset;
@@ -894,7 +918,7 @@ int SpatialHash::locateVoxelIndex(const VectorMax3d& p) const
 {
     ArrayMax3i voxelAxisIndex;
     locateVoxelAxisIndex(p, voxelAxisIndex);
-    return voxelAxisIndex2VoxelIndex(voxelAxisIndex.data());
+    return voxelAxisIndex2VoxelIndex(voxelAxisIndex);
 }
 
 void SpatialHash::SpatialHash::locateVoxelAxisIndex(
@@ -906,17 +930,19 @@ void SpatialHash::SpatialHash::locateVoxelAxisIndex(
                          .template cast<int>();
 }
 
-int SpatialHash::voxelAxisIndex2VoxelIndex(const int voxelAxisIndex[3]) const
+int SpatialHash::voxelAxisIndex2VoxelIndex(
+    const ArrayMax3i& voxelAxisIndex) const
 {
     return voxelAxisIndex2VoxelIndex(
-        voxelAxisIndex[0], voxelAxisIndex[1], voxelAxisIndex[2]);
+        voxelAxisIndex[0], voxelAxisIndex[1],
+        voxelAxisIndex.size() >= 3 ? voxelAxisIndex[2] : 0);
 }
 
 int SpatialHash::voxelAxisIndex2VoxelIndex(int ix, int iy, int iz) const
 {
-    assert(
-        ix >= 0 && iy >= 0 && iz >= 0 && ix < voxelCount[0]
-        && iy < voxelCount[1] && iz < voxelCount[2]);
+    assert(ix >= 0 && ix < voxelCount[0]);
+    assert(iy >= 0 && iy < voxelCount[1]);
+    assert(iz >= 0 && iz < (voxelCount.size() >= 3 ? voxelCount[2] : 1));
     return ix + iy * voxelCount[0] + iz * voxelCount0x1;
 }
 
