@@ -1,13 +1,17 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
+#include <pybind11/functional.h>
 
 #include <ipc/ipc.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
+bool default_can_collide(size_t, size_t) { return true; }
+
 void define_ipc_functions(py::module_& m)
 {
+
     m.def(
         "construct_constraint_set",
         [](const Eigen::MatrixXd& V_rest, const Eigen::MatrixXd& V,
@@ -56,7 +60,8 @@ void define_ipc_functions(py::module_& m)
         py::arg("dhat"), py::arg("F2E") = Eigen::MatrixXi(),
         py::arg("dmin") = 0, py::arg("method") = BroadPhaseMethod::HASH_GRID,
         py::arg("ignore_codimensional_vertices") = true,
-        py::arg("can_collide") = [](size_t, size_t) { return true; });
+        py::arg("can_collide") =
+            std::function<bool(size_t, size_t)>(default_can_collide));
 
     m.def(
         "compute_barrier_potential", &compute_barrier_potential,

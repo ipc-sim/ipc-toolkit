@@ -100,10 +100,16 @@ TEST_CASE(
 
     bool ignore_internal_vertices = false;
 
+#ifdef NDEBUG
     BroadPhaseMethod method = GENERATE(
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID //,
         // BroadPhaseMethod::SPATIAL_HASH
     );
+#else
+    BroadPhaseMethod method = GENERATE(BroadPhaseMethod::HASH_GRID //,
+                                       // BroadPhaseMethod::SPATIAL_HASH
+    );
+#endif
 
     Constraints constraint_set;
     construct_constraint_set(
