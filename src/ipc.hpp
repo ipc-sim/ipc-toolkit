@@ -29,7 +29,7 @@ namespace ipc {
 ///     Ignores vertices not connected to edges.
 /// @param[in] can_collide
 ///     A function that takes two vertex IDs (row numbers in F) and returns true
-///     if the vertices (and faces or edges containting the edges) can collide.
+///     if the vertices (and faces or edges containing the vertices) can collide.
 ///     By default all primitives can collide with all other primitives.
 void construct_constraint_set(
     const Eigen::MatrixXd& V_rest,
@@ -139,7 +139,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 ///     Ignores vertices not connected to edges.
 /// @param[in] can_collide
 ///     A function that takes two vertex IDs (row numbers in F) and returns true
-///     if the vertices (and faces or edges containting the edges) can collide.
+///     if the vertices (and faces or edges containing the vertices) can collide.
 ///     By default all primitives can collide with all other primiti
 /// @returns True if <b>any</b> collisions occur.
 bool is_step_collision_free(
@@ -190,7 +190,7 @@ bool is_step_collision_free(
 ///     Ignores vertices not connected to edges.
 /// @param[in] can_collide
 ///     A function that takes two vertex IDs (row numbers in F) and returns true
-///     if the vertices (and faces or edges containting the edges) can collide.
+///     if the vertices (and faces or edges containing the vertices) can collide.
 ///     By default all primitives can collide with all other primitives.
 /// @returns A step-size \f$\in [0, 1]\f$ that is collision free.
 double compute_collision_free_stepsize(
@@ -250,7 +250,7 @@ double compute_minimum_distance(
 /// @param[in] F Triangular faces as rows of indicies into V.
 /// @param[in] can_collide
 ///     A function that takes two vertex IDs (row numbers in F) and returns true
-///     if the vertices (and faces or edges containting the edges) can collide.
+///     if the vertices (and faces or edges containing the vertices) can collide.
 ///     By default all primitives can collide with all other primitives.
 bool has_intersections(
     const Eigen::MatrixXd& V,

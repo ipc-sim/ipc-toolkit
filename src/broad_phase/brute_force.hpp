@@ -17,6 +17,7 @@ void detect_collision_candidates_brute_force(
     bool detect_face_vertex = true,
     bool perform_aabb_check = false,
     double aabb_inflation_radius = 0,
+    bool ignore_codimensional_vertices = false,
     const std::function<bool(size_t, size_t)>& can_collide =
         [](size_t, size_t) { return true; });
 
@@ -59,6 +60,7 @@ void detect_collision_candidates_brute_force(
     bool detect_face_vertex = true,
     bool perform_aabb_check = false,
     double aabb_inflation_radius = 0,
+    bool ignore_codimensional_vertices = false,
     const std::function<bool(size_t, size_t)>& can_collide =
         [](size_t, size_t) { return true; });
 

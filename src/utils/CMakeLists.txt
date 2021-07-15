@@ -11,6 +11,8 @@ set(SOURCES
   logger.hpp
   rational.hpp
   unordered_map_and_set.hpp
+  vertex_to_min_edge.cpp
+  vertex_to_min_edge.hpp
   world_bbox_diagonal_length.hpp
 )
 

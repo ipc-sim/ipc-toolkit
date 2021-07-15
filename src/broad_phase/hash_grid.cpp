@@ -8,6 +8,7 @@
 #include <tbb/parallel_sort.h>
 
 #include <ipc/broad_phase/voxel_size_heuristic.hpp>
+#include <ipc/utils/vertex_to_min_edge.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_LOGGER
 #include <ipc/utils/logger.hpp>
@@ -167,15 +168,7 @@ void HashGrid::addVerticesFromEdges(
 {
     assert(vertices_t0.rows() == vertices_t1.rows());
 
-    std::vector<size_t> vertex_to_min_edge(
-        vertices_t0.rows(), edges.rows() + 1);
-    // Column first because colmajor
-    for (size_t ej = 0; ej < edges.cols(); ej++) {
-        for (size_t ei = 0; ei < edges.rows(); ei++) {
-            const size_t vi = edges(ei, ej);
-            vertex_to_min_edge[vi] = std::min(vertex_to_min_edge[vi], ei);
-        }
-    }
+    std::vector<size_t> V2E = vertex_to_min_edge(vertices_t0.rows(), edges);
 
     ThreadSpecificHashItems storage;
 
@@ -187,7 +180,7 @@ void HashGrid::addVerticesFromEdges(
             for (long ei = range.begin(); ei != range.end(); ei++) {
                 for (long ej = 0; ej < edges.cols(); ej++) {
                     const size_t vi = edges(ei, ej);
-                    if (vertex_to_min_edge[vi] == ei) {
+                    if (V2E[vi] == ei) {
                         addVertex(
                             vertices_t0.row(vi), vertices_t1.row(vi), vi,
                             local_items, inflation_radius);

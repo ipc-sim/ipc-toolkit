@@ -61,8 +61,13 @@ TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
 TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
 {
     double dhat = -1;
-    std::string mesh_name = "blah.obj";
+    std::string mesh_name = "";
     bool ignore_codimensional_vertices = false;
+
+    BroadPhaseMethod method = GENERATE(
+        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID //,
+        // BroadPhaseMethod::SPATIAL_HASH
+    );
 
     SECTION("cube")
     {
@@ -93,11 +98,6 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
     CAPTURE(mesh_name);
     REQUIRE(success);
 
-    BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
-    // GENERATE(
-    //     BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-    //     BroadPhaseMethod::SPATIAL_HASH);
-
     Constraints constraint_set;
     ipc::construct_constraint_set(
         /*V_rest=*/V, V, E, F, dhat, constraint_set, /*F2E=*/Eigen::MatrixXi(),
@@ -123,8 +123,13 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
 TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
 {
     double dhat = -1;
-    std::string mesh_name = "blah.obj";
+    std::string mesh_name = "";
     bool ignore_codimensional_vertices = false;
+
+    BroadPhaseMethod method = GENERATE(
+        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID //,
+        // BroadPhaseMethod::SPATIAL_HASH
+    );
 
     // SECTION("cube")
     // {
@@ -155,11 +160,6 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     bool success = load_mesh(mesh_name, V, E, F);
     CAPTURE(mesh_name);
     REQUIRE(success);
-
-    BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
-    // GENERATE(
-    //     BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-    //     BroadPhaseMethod::SPATIAL_HASH);
 
     Constraints constraint_set;
     ipc::construct_constraint_set(

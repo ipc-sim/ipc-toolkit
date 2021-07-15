@@ -844,7 +844,7 @@ void SpatialHash::queryMeshForCandidates(
                                    V0.row(vi), V0.row(E(ei, 0)),
                                    V0.row(E(ei, 1)), V1.row(vi),
                                    V1.row(E(ei, 0)), V1.row(E(ei, 1)),
-                                   builtInRadius)) {
+                                   2 * builtInRadius)) {
                             local_storage_candidates.ev_candidates.emplace_back(
                                 ei, vi);
                         }
@@ -874,7 +874,7 @@ void SpatialHash::queryMeshForCandidates(
                                    V0.row(E(ebi, 0)), V0.row(E(ebi, 1)),
                                    V1.row(E(eai, 0)), V1.row(E(eai, 1)),
                                    V1.row(E(ebi, 0)), V1.row(E(ebi, 1)),
-                                   builtInRadius)) {
+                                   2 * builtInRadius)) {
                             local_storage_candidates.ee_candidates.emplace_back(
                                 eai, ebi);
                         }
@@ -902,7 +902,7 @@ void SpatialHash::queryMeshForCandidates(
                                    V0.row(F(fi, 1)), V0.row(F(fi, 2)),
                                    V1.row(vi), V1.row(F(fi, 0)),
                                    V1.row(F(fi, 1)), V1.row(F(fi, 2)),
-                                   builtInRadius)) {
+                                   2 * builtInRadius)) {
                             local_storage_candidates.fv_candidates.emplace_back(
                                 fi, vi);
                         }

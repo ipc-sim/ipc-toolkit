@@ -113,7 +113,7 @@ TEST_CASE("AABB overlapping", "[has_grid][AABB]")
     CHECK(AABB::are_overlapping(a, b) == are_overlapping);
 }
 
-TEST_CASE("Compare HashGrid against brute force", "[thisone][hash_grid]")
+TEST_CASE("Compare HashGrid against brute force", "[hash_grid]")
 {
     using namespace ipc;
 
@@ -191,7 +191,8 @@ TEST_CASE("Compare HashGrid against brute force", "[thisone][hash_grid]")
         detect_collision_candidates_brute_force(
             V0, V1, E, F, bf_candidates,
             /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true,
-            /*perform_aabb_check=*/false, inflation_radius, can_collide);
+            /*perform_aabb_check=*/false, inflation_radius,
+            /*ignore_codimensional_vertices=*/false, can_collide);
 
         CHECK(
             hg_candidates.ev_candidates.size()

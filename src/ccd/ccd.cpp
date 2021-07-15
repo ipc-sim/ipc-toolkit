@@ -13,6 +13,8 @@
 
 namespace ipc {
 
+static const double SMALL_TOI = 1e-6;
+
 bool point_point_ccd(
     const Eigen::Vector3d& p0_t0,
     const Eigen::Vector3d& p1_t0,
@@ -37,6 +39,7 @@ bool point_point_ccd(
     }
 
     double min_distance = (1.0 - conservative_rescaling) * initial_distance;
+    assert(min_distance < initial_distance);
 
     double output_tolerance = tolerance;
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
@@ -55,7 +58,7 @@ bool point_point_ccd(
         CTCD::vertexVertexCTCD(p0_t0, p1_t0, p0_t1, p1_t1, min_distance, toi);
 #endif
 
-    if (is_impacting && toi < 1.0e-6) {
+    if (is_impacting && toi < SMALL_TOI) {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         // NOTE: Use degenerate edge-edge
         is_impacting = inclusion_ccd::edgeEdgeCCD_double(
@@ -201,6 +204,7 @@ bool point_edge_ccd_2D(
     }
 
     double min_distance = (1.0 - conservative_rescaling) * initial_distance;
+    assert(min_distance < initial_distance);
 
     Eigen::Vector3d p_t0_3D, e0_t0_3D, e1_t0_3D, p_t1_3D, e0_t1_3D, e1_t1_3D;
     p_t0_3D.head<2>() = p_t0;
@@ -229,7 +233,7 @@ bool point_edge_ccd_2D(
         max_iterations,     // maximum number of iterations
         output_tolerance);  // delta_actual
 
-    if (is_impacting && toi < 1.0e-6) {
+    if (is_impacting && toi < SMALL_TOI) {
         is_impacting = inclusion_ccd::edgeEdgeCCD_double(
             p_t0_3D, p_t0_3D, e0_t0_3D, e1_t0_3D, //
             p_t1_3D, p_t1_3D, e0_t1_3D, e1_t1_3D,
@@ -284,6 +288,7 @@ bool point_edge_ccd_3D(
     }
 
     double min_distance = (1.0 - conservative_rescaling) * initial_distance;
+    assert(min_distance < initial_distance);
 
     double output_tolerance = tolerance;
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
@@ -302,7 +307,7 @@ bool point_edge_ccd_3D(
         p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, min_distance, toi);
 #endif
 
-    if (is_impacting && toi < 1.0e-6) {
+    if (is_impacting && toi < SMALL_TOI) {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         is_impacting = inclusion_ccd::edgeEdgeCCD_double(
             p_t0, p_t0, e0_t0, e1_t0, p_t1, p_t1, e0_t1, e1_t1,
@@ -393,6 +398,7 @@ bool edge_edge_ccd(
     }
 
     double min_distance = (1.0 - conservative_rescaling) * initial_distance;
+    assert(min_distance < initial_distance);
 
     double output_tolerance = tolerance;
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
@@ -411,7 +417,7 @@ bool edge_edge_ccd(
         min_distance, toi);
 #endif
 
-    if (is_impacting && toi < 1.0e-6) {
+    if (is_impacting && toi < SMALL_TOI) {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         is_impacting = inclusion_ccd::edgeEdgeCCD_double(
             ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
@@ -473,6 +479,7 @@ bool point_triangle_ccd(
     }
 
     double min_distance = (1.0 - conservative_rescaling) * initial_distance;
+    assert(min_distance < initial_distance);
 
     double output_tolerance = tolerance;
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
@@ -491,7 +498,7 @@ bool point_triangle_ccd(
         min_distance, toi);
 #endif
 
-    if (is_impacting && toi < 1e-6) {
+    if (is_impacting && toi < SMALL_TOI) {
 
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         is_impacting = inclusion_ccd::vertexFaceCCD_double(

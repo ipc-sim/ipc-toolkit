@@ -38,4 +38,5 @@ faces_to_edges(const Eigen::MatrixXi& F, const Eigen::MatrixXi& E)
 
     return F2E;
 }
+
 } // namespace ipc

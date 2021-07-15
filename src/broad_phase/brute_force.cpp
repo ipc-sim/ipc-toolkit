@@ -31,6 +31,19 @@ void merge_local_candidates(
 ///////////////////////////////////////////////////////////////////////////////
 // Discrete Collision Detection
 
+void build_is_codim(
+    size_t num_vertices, const Eigen::MatrixXi& E, std::vector<bool>& is_codim)
+{
+    is_codim.resize(num_vertices, true);
+    // Column first because colmajor
+    for (size_t ej = 0; ej < E.cols(); ej++) {
+        for (size_t ei = 0; ei < E.rows(); ei++) {
+            assert(E(ei, ej) < num_vertices);
+            is_codim[E(ei, ej)] = false;
+        }
+    }
+}
+
 void detect_collision_candidates_brute_force(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
@@ -41,18 +54,30 @@ void detect_collision_candidates_brute_force(
     bool detect_face_vertex,
     bool perform_aabb_check,
     double aabb_inflation_radius,
+    bool ignore_codimensional_vertices,
     const std::function<bool(size_t, size_t)>& can_collide)
 {
     assert(E.size() == 0 || E.cols() == 2);
     assert(F.size() == 0 || F.cols() == 3);
 
+    std::vector<bool> is_codim;
+    if (ignore_codimensional_vertices) {
+        build_is_codim(V.rows(), E, is_codim);
+    }
+    auto adjusted_can_collide = [&](size_t vi, size_t vj) {
+        return (is_codim.empty() || (!is_codim[vi] && !is_codim[vj]))
+            && can_collide(vi, vj);
+    };
+
     if (detect_edge_vertex) {
         detect_edge_vertex_collision_candidates_brute_force(
             V, E, candidates.ev_candidates, perform_aabb_check,
-            aabb_inflation_radius, can_collide);
+            aabb_inflation_radius, adjusted_can_collide);
     }
 
     if (detect_edge_edge) {
+        // Use the original can_collide because edge vertices are not
+        // codimensional.
         detect_edge_edge_collision_candidates_brute_force(
             V, E, candidates.ee_candidates, perform_aabb_check,
             aabb_inflation_radius, can_collide);
@@ -61,7 +86,7 @@ void detect_collision_candidates_brute_force(
     if (detect_face_vertex) {
         detect_face_vertex_collision_candidates_brute_force(
             V, F, candidates.fv_candidates, perform_aabb_check,
-            aabb_inflation_radius, can_collide);
+            aabb_inflation_radius, adjusted_can_collide);
     }
 }
 
@@ -82,22 +107,25 @@ void detect_edge_vertex_collision_candidates_brute_force(
 
             // Loop over edges
             for (long ei = r.rows().begin(); ei < r.rows().end(); ei++) {
+                const size_t &e0i = E(ei, 0), &e1i = E(ei, 1);
+
                 // Loop over vertices
                 for (long vi = r.cols().begin(); vi < r.cols().end(); vi++) {
-
                     // Check that the vertex is not an endpoint of the edge
-                    bool is_endpoint = vi == E(ei, 0) || vi == E(ei, 1);
-                    bool can_ev_collide =
-                        can_collide(vi, E(ei, 0)) || can_collide(vi, E(ei, 1));
+                    if (vi == e0i || vi == e1i) {
+                        continue;
+                    }
 
-                    if (!is_endpoint && can_ev_collide) {
-                        bool aabb_intersect = !perform_aabb_check
-                            || point_edge_aabb_cd(
-                                   V.row(vi), V.row(E(ei, 0)), V.row(E(ei, 1)),
-                                   aabb_inflation_radius);
-                        if (aabb_intersect) {
-                            local_candidates.emplace_back(ei, vi);
-                        }
+                    if (!can_collide(vi, e0i) && !can_collide(vi, e1i)) {
+                        continue;
+                    }
+
+                    bool aabb_intersect = !perform_aabb_check
+                        || point_edge_aabb_cd(
+                               V.row(vi), V.row(E(ei, 0)), V.row(E(ei, 1)),
+                               2 * aabb_inflation_radius);
+                    if (aabb_intersect) {
+                        local_candidates.emplace_back(ei, vi);
                     }
                 }
             }
@@ -125,27 +153,33 @@ void detect_edge_edge_collision_candidates_brute_force(
             long eai_end = std::min(r.rows().end(), r.cols().end());
 
             for (long eai = r.rows().begin(); eai < eai_end; eai++) {
+                const size_t &ea0i = E(eai, 0), &ea1i = E(eai, 1);
+
                 // i < r.cols().end() → i + 1 <= r.cols().end()
                 int ebi_begin = std::max(eai + 1, r.cols().begin());
                 assert(ebi_begin > eai);
 
                 for (long ebi = ebi_begin; ebi < r.cols().end(); ebi++) {
-                    bool has_common_endpoint = E(eai, 0) == E(ebi, 0)
-                        || E(eai, 0) == E(ebi, 1) || E(eai, 1) == E(ebi, 0)
-                        || E(eai, 1) == E(ebi, 1);
-                    bool can_ee_collide = can_collide(E(eai, 0), E(ebi, 0))
-                        || can_collide(E(eai, 0), E(ebi, 1))
-                        || can_collide(E(eai, 1), E(ebi, 0))
-                        || can_collide(E(eai, 1), E(ebi, 1));
-                    if (!has_common_endpoint && can_ee_collide) {
-                        bool aabb_intersect = !perform_aabb_check
-                            || edge_edge_aabb_cd(
-                                   V.row(E(eai, 0)), V.row(E(eai, 1)),
-                                   V.row(E(ebi, 0)), V.row(E(ebi, 1)),
-                                   aabb_inflation_radius);
-                        if (aabb_intersect) {
-                            local_candidates.emplace_back(eai, ebi);
-                        }
+                    const size_t &eb0i = E(ebi, 0), &eb1i = E(ebi, 1);
+
+                    // Check for common end points
+                    if (ea0i == eb0i || ea0i == eb1i || ea1i == eb0i
+                        || ea1i == eb1i) {
+                        continue;
+                    }
+
+                    if (!can_collide(ea0i, eb0i) && !can_collide(ea0i, eb1i)
+                        && !can_collide(ea1i, eb0i)
+                        && !can_collide(ea1i, eb1i)) {
+                        continue;
+                    }
+
+                    bool aabb_intersect = !perform_aabb_check
+                        || edge_edge_aabb_cd(
+                               V.row(ea0i), V.row(ea1i), V.row(eb0i),
+                               V.row(eb1i), 2 * aabb_inflation_radius);
+                    if (aabb_intersect) {
+                        local_candidates.emplace_back(eai, ebi);
                     }
                 }
             }
@@ -171,22 +205,26 @@ void detect_face_vertex_collision_candidates_brute_force(
 
             // Loop over faces
             for (int fi = r.rows().begin(); fi < r.rows().end(); fi++) {
+                const size_t &f0i = F(fi, 0), &f1i = F(fi, 1), &f2i = F(fi, 2);
+
                 // Loop over vertices
                 for (int vi = r.cols().begin(); vi < r.cols().end(); vi++) {
-                    // Check that the vertex is not an endpoint of the edge
-                    bool is_endpoint =
-                        vi == F(fi, 0) || vi == F(fi, 1) || vi == F(fi, 2);
-                    bool can_fv_collide = can_collide(vi, F(fi, 0))
-                        || can_collide(vi, F(fi, 1))
-                        || can_collide(vi, F(fi, 2));
-                    if (!is_endpoint && can_fv_collide) {
-                        bool aabb_intersect = !perform_aabb_check
-                            || point_triangle_aabb_cd(
-                                   V.row(vi), V.row(F(fi, 0)), V.row(F(fi, 1)),
-                                   V.row(F(fi, 2)), aabb_inflation_radius);
-                        if (aabb_intersect) {
-                            local_candidates.emplace_back(fi, vi);
-                        }
+                    // Check for common end points
+                    if (vi == f0i || vi == f1i || vi == f2i) {
+                        continue;
+                    }
+
+                    if (!can_collide(vi, f0i) && !can_collide(vi, f1i)
+                        && !can_collide(vi, f2i)) {
+                        continue;
+                    }
+
+                    bool aabb_intersect = !perform_aabb_check
+                        || point_triangle_aabb_cd(
+                               V.row(vi), V.row(f0i), V.row(f1i), V.row(f2i),
+                               2 * aabb_inflation_radius);
+                    if (aabb_intersect) {
+                        local_candidates.emplace_back(fi, vi);
                     }
                 }
             }
@@ -209,19 +247,31 @@ void detect_collision_candidates_brute_force(
     bool detect_face_vertex,
     bool perform_aabb_check,
     double aabb_inflation_radius,
+    bool ignore_codimensional_vertices,
     const std::function<bool(size_t, size_t)>& can_collide)
 {
     assert(V0.rows() == V1.rows() && V0.cols() == V1.cols());
     assert(E.size() == 0 || E.cols() == 2);
     assert(F.size() == 0 || F.cols() == 3);
 
+    std::vector<bool> is_codim;
+    if (ignore_codimensional_vertices) {
+        build_is_codim(V0.rows(), E, is_codim);
+    }
+    auto adjusted_can_collide = [&](size_t vi, size_t vj) {
+        return (is_codim.empty() || (!is_codim[vi] && !is_codim[vj]))
+            && can_collide(vi, vj);
+    };
+
     if (detect_edge_vertex) {
         detect_edge_vertex_collision_candidates_brute_force(
             V0, V1, E, candidates.ev_candidates, perform_aabb_check,
-            aabb_inflation_radius, can_collide);
+            aabb_inflation_radius, adjusted_can_collide);
     }
 
     if (detect_edge_edge) {
+        // Use the original can_collide because edge vertices are not
+        // codimensional.
         detect_edge_edge_collision_candidates_brute_force(
             V0, V1, E, candidates.ee_candidates, perform_aabb_check,
             aabb_inflation_radius, can_collide);
@@ -230,7 +280,7 @@ void detect_collision_candidates_brute_force(
     if (detect_face_vertex) {
         detect_face_vertex_collision_candidates_brute_force(
             V0, V1, F, candidates.fv_candidates, perform_aabb_check,
-            aabb_inflation_radius, can_collide);
+            aabb_inflation_radius, adjusted_can_collide);
     }
 }
 
@@ -254,24 +304,26 @@ void detect_edge_vertex_collision_candidates_brute_force(
 
             // Loop over edges
             for (long ei = r.rows().begin(); ei < r.rows().end(); ei++) {
+                const size_t &e0i = E(ei, 0), &e1i = E(ei, 1);
+
                 // Loop over vertices
                 for (long vi = r.cols().begin(); vi < r.cols().end(); vi++) {
-
                     // Check that the vertex is not an endpoint of the edge
-                    bool is_endpoint = vi == E(ei, 0) || vi == E(ei, 1);
-                    bool can_ev_collide =
-                        can_collide(vi, E(ei, 0)) || can_collide(vi, E(ei, 1));
+                    if (vi == e0i || vi == e1i) {
+                        continue;
+                    }
 
-                    if (!is_endpoint && can_ev_collide) {
-                        bool aabb_intersect = !perform_aabb_check
-                            || point_edge_aabb_ccd(
-                                   V0.row(vi), V0.row(E(ei, 0)),
-                                   V0.row(E(ei, 1)), V1.row(vi),
-                                   V1.row(E(ei, 0)), V1.row(E(ei, 1)),
-                                   aabb_inflation_radius);
-                        if (aabb_intersect) {
-                            local_candidates.emplace_back(ei, vi);
-                        }
+                    if (!can_collide(vi, e0i) && !can_collide(vi, e1i)) {
+                        continue;
+                    }
+
+                    bool aabb_intersect = !perform_aabb_check
+                        || point_edge_aabb_ccd(
+                               V0.row(vi), V0.row(e0i), V0.row(e0i), V1.row(vi),
+                               V1.row(e0i), V1.row(e1i),
+                               2 * aabb_inflation_radius);
+                    if (aabb_intersect) {
+                        local_candidates.emplace_back(ei, vi);
                     }
                 }
             }
@@ -302,29 +354,35 @@ void detect_edge_edge_collision_candidates_brute_force(
             long eai_end = std::min(r.rows().end(), r.cols().end());
 
             for (long eai = r.rows().begin(); eai < eai_end; eai++) {
+                const size_t &ea0i = E(eai, 0), &ea1i = E(eai, 1);
+
                 // i < r.cols().end() → i + 1 <= r.cols().end()
                 int ebi_begin = std::max(eai + 1, r.cols().begin());
                 assert(ebi_begin > eai);
 
                 for (long ebi = ebi_begin; ebi < r.cols().end(); ebi++) {
-                    bool has_common_endpoint = E(eai, 0) == E(ebi, 0)
-                        || E(eai, 0) == E(ebi, 1) || E(eai, 1) == E(ebi, 0)
-                        || E(eai, 1) == E(ebi, 1);
-                    bool can_ee_collide = can_collide(E(eai, 0), E(ebi, 0))
-                        || can_collide(E(eai, 0), E(ebi, 1))
-                        || can_collide(E(eai, 1), E(ebi, 0))
-                        || can_collide(E(eai, 1), E(ebi, 1));
-                    if (!has_common_endpoint && can_ee_collide) {
-                        bool aabb_intersect = !perform_aabb_check
-                            || edge_edge_aabb_ccd(
-                                   V0.row(E(eai, 0)), V0.row(E(eai, 1)), //
-                                   V0.row(E(ebi, 0)), V0.row(E(ebi, 1)), //
-                                   V1.row(E(eai, 0)), V1.row(E(eai, 1)), //
-                                   V1.row(E(ebi, 0)), V1.row(E(ebi, 1)), //
-                                   aabb_inflation_radius);
-                        if (aabb_intersect) {
-                            local_candidates.emplace_back(eai, ebi);
-                        }
+                    const size_t &eb0i = E(ebi, 0), &eb1i = E(ebi, 1);
+
+                    // Check for common end points
+                    if (ea0i == eb0i || ea0i == eb1i || ea1i == eb0i
+                        || ea1i == eb1i) {
+                        continue;
+                    }
+
+                    if (!can_collide(ea0i, eb0i) && !can_collide(ea0i, eb1i)
+                        && !can_collide(ea1i, eb0i)
+                        && !can_collide(ea1i, eb1i)) {
+                        continue;
+                    }
+
+                    bool aabb_intersect = !perform_aabb_check
+                        || edge_edge_aabb_ccd(
+                               V0.row(ea0i), V0.row(ea1i), V0.row(eb0i),
+                               V0.row(eb1i), V1.row(ea0i), V1.row(ea1i),
+                               V1.row(eb0i), V1.row(eb1i),
+                               2 * aabb_inflation_radius);
+                    if (aabb_intersect) {
+                        local_candidates.emplace_back(eai, ebi);
                     }
                 }
             }
@@ -353,26 +411,28 @@ void detect_face_vertex_collision_candidates_brute_force(
 
             // Loop over faces
             for (int fi = r.rows().begin(); fi < r.rows().end(); fi++) {
+                const size_t &f0i = F(fi, 0), &f1i = F(fi, 1), &f2i = F(fi, 2);
+
                 // Loop over vertices
                 for (int vi = r.cols().begin(); vi < r.cols().end(); vi++) {
-                    // Check that the vertex is not an endpoint of the edge
-                    bool is_endpoint =
-                        vi == F(fi, 0) || vi == F(fi, 1) || vi == F(fi, 2);
-                    bool can_fv_collide = can_collide(vi, F(fi, 0))
-                        || can_collide(vi, F(fi, 1))
-                        || can_collide(vi, F(fi, 2));
-                    if (!is_endpoint && can_fv_collide) {
-                        bool aabb_intersect = !perform_aabb_check
-                            || point_triangle_aabb_ccd(
-                                   V0.row(vi), //
-                                   V0.row(F(fi, 0)), V0.row(F(fi, 1)),
-                                   V0.row(F(fi, 2)),
-                                   V1.row(vi), //
-                                   V1.row(F(fi, 0)), V1.row(F(fi, 1)),
-                                   V1.row(F(fi, 2)), aabb_inflation_radius);
-                        if (aabb_intersect) {
-                            local_candidates.emplace_back(fi, vi);
-                        }
+                    // Check for common end points
+                    if (vi == f0i || vi == f1i || vi == f2i) {
+                        continue;
+                    }
+
+                    if (!can_collide(vi, f0i) && !can_collide(vi, f1i)
+                        && !can_collide(vi, f2i)) {
+                        continue;
+                    }
+
+                    bool aabb_intersect = !perform_aabb_check
+                        || point_triangle_aabb_ccd(
+                               V0.row(vi), V0.row(f0i), V0.row(f1i),
+                               V0.row(f2i), V1.row(vi), V1.row(f0i),
+                               V1.row(f1i), V1.row(f2i),
+                               2 * aabb_inflation_radius);
+                    if (aabb_intersect) {
+                        local_candidates.emplace_back(fi, vi);
                     }
                 }
             }

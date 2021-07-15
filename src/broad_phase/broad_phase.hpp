@@ -28,7 +28,7 @@ enum class BroadPhaseMethod {
 ///                                          edges.
 /// @param[in] can_collide A function that takes two vertex IDs
 ///                        (row numbers in F) and returns true if the vertices
-///                        (and faces or edges containting the edges) can
+///                        (and faces or edges containing the vertices) can
 ///                        collide. By default all primitives can collide with
 ///                        all other primitives.
 void construct_collision_candidates(
@@ -59,7 +59,7 @@ void construct_collision_candidates(
 ///                                          edges.
 /// @param[in] can_collide A function that takes two vertex IDs
 ///                        (row numbers in F) and returns true if the vertices
-///                        (and faces or edges containting the edges) can
+///                        (and faces or edges containing the vertices) can
 ///                        collide. By default all primitives can collide with
 ///                        all other primitives.
 void construct_collision_candidates(

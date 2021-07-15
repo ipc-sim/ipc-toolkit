@@ -87,7 +87,8 @@ TEST_CASE("Compare SpatialHash against brute force", "[spatial_hash]")
         detect_collision_candidates_brute_force(
             V0, V1, E, F, bf_candidates,
             /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true,
-            /*perform_aabb_check=*/false, inflation_radius, can_collide);
+            /*perform_aabb_check=*/false, inflation_radius,
+            /*ignore_codimensional_vertices=*/false, can_collide);
 
         CHECK(
             sh_candidates.ev_candidates.size()

@@ -29,8 +29,8 @@ void construct_collision_candidates(
             /*detect_edge_edge=*/dim == 3,
             /*detect_face_vertex=*/dim == 3,
             /*perform_aabb_check=*/true,
-            /*aabb_inflation_radius=*/inflation_radius, //
-            can_collide);
+            /*aabb_inflation_radius=*/inflation_radius,
+            ignore_codimensional_vertices, can_collide);
         break;
     case BroadPhaseMethod::HASH_GRID: {
         HashGrid hash_grid;
@@ -91,15 +91,14 @@ void construct_collision_candidates(
 
     switch (method) {
     case BroadPhaseMethod::BRUTE_FORCE:
-        // TODO: Use ignore_codimensional_vertices
         detect_collision_candidates_brute_force(
             V0, V1, E, F, candidates,
             /*detect_edge_vertex=*/dim == 2,
             /*detect_edge_edge=*/dim == 3,
             /*detect_face_vertex=*/dim == 3,
             /*perform_aabb_check=*/true,
-            /*aabb_inflation_radius=*/inflation_radius, //
-            can_collide);
+            /*aabb_inflation_radius=*/inflation_radius,
+            ignore_codimensional_vertices, can_collide);
         break;
     case BroadPhaseMethod::HASH_GRID: {
         HashGrid hash_grid;
