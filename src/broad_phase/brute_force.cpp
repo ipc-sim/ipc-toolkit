@@ -233,6 +233,57 @@ void detect_face_vertex_collision_candidates_brute_force(
     merge_local_candidates(storages, fv_candidates);
 }
 
+void detect_edge_face_collision_candidates_brute_force(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    std::vector<EdgeFaceCandidate>& ef_candidates,
+    bool perform_aabb_check,
+    double aabb_inflation_radius,
+    const std::function<bool(size_t, size_t)>& can_collide)
+{
+    tbb::enumerable_thread_specific<std::vector<EdgeFaceCandidate>> storages;
+
+    tbb::parallel_for(
+        tbb::blocked_range2d<long>(0l, long(E.rows()), 0l, long(F.rows())),
+        [&](const tbb::blocked_range2d<long>& r) {
+            auto& local_candidates = storages.local();
+
+            // Loop over faces
+            for (int ei = r.rows().begin(); ei < r.rows().end(); ei++) {
+                const size_t &e0i = E(ei, 0), &e1i = E(ei, 1);
+
+                // Loop over vertices
+                for (int fi = r.cols().begin(); fi < r.cols().end(); fi++) {
+                    const size_t &f0i = F(fi, 0), &f1i = F(fi, 1),
+                                 &f2i = F(fi, 2);
+
+                    // Check for common end points
+                    if (e0i == f0i || e0i == f1i || e0i == f2i || e1i == f0i
+                        || e1i == f1i || e1i == f2i) {
+                        continue;
+                    }
+
+                    if (!can_collide(e0i, f0i) && !can_collide(e0i, f1i)
+                        && !can_collide(e0i, f2i) && !can_collide(e1i, f0i)
+                        && !can_collide(e1i, f1i) && !can_collide(e1i, f2i)) {
+                        continue;
+                    }
+
+                    bool aabb_intersect = !perform_aabb_check
+                        || edge_triangle_aabb_cd(
+                               V.row(e0i), V.row(e1i), V.row(f0i), V.row(f1i),
+                               V.row(f2i), 2 * aabb_inflation_radius);
+                    if (aabb_intersect) {
+                        local_candidates.emplace_back(ei, fi);
+                    }
+                }
+            }
+        });
+
+    merge_local_candidates(storages, ef_candidates);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Continuous Collision Detection
 

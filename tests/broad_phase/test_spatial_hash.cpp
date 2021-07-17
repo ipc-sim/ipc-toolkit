@@ -2,6 +2,8 @@
 
 #include <Eigen/Core>
 
+#include <tbb/parallel_sort.h>
+
 #include <igl/IO>
 #include <igl/edges.h>
 #include <igl/Timer.h>
@@ -100,10 +102,10 @@ TEST_CASE("Compare SpatialHash against brute force", "[spatial_hash]")
             sh_candidates.fv_candidates.size()
             <= bf_candidates.fv_candidates.size());
 
-        std::sort(
+        tbb::parallel_sort(
             sh_candidates.ev_candidates.begin(),
             sh_candidates.ev_candidates.end());
-        std::sort(
+        tbb::parallel_sort(
             bf_candidates.ev_candidates.begin(),
             bf_candidates.ev_candidates.end());
         int sh_ci = 0;
@@ -128,10 +130,10 @@ TEST_CASE("Compare SpatialHash against brute force", "[spatial_hash]")
         }
         CHECK(sh_ci >= sh_candidates.ev_candidates.size());
 
-        std::sort(
+        tbb::parallel_sort(
             sh_candidates.ee_candidates.begin(),
             sh_candidates.ee_candidates.end());
-        std::sort(
+        tbb::parallel_sort(
             bf_candidates.ee_candidates.begin(),
             bf_candidates.ee_candidates.end());
         sh_ci = 0;
@@ -162,10 +164,10 @@ TEST_CASE("Compare SpatialHash against brute force", "[spatial_hash]")
         }
         CHECK(sh_ci >= sh_candidates.ee_candidates.size());
 
-        std::sort(
+        tbb::parallel_sort(
             sh_candidates.fv_candidates.begin(),
             sh_candidates.fv_candidates.end());
-        std::sort(
+        tbb::parallel_sort(
             bf_candidates.fv_candidates.begin(),
             bf_candidates.fv_candidates.end());
         sh_ci = 0;

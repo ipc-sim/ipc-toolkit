@@ -1,5 +1,9 @@
 #include <catch2/catch.hpp>
 
+#ifndef IPC_TOOLKIT_WITH_LOGGER
+#include <fmt/format.h>
+#endif
+
 #include <ipc/ipc.hpp>
 #include <ipc/ccd/ccd.hpp>
 

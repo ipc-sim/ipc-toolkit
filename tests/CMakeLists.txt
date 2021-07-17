@@ -35,6 +35,9 @@ add_executable(${PROJECT_NAME}_tests
   # Test general interface
   test_ipc.cpp
 
+  # Test intersection checks
+  test_has_intersections.cpp
+
   # Utilities for tests
   test_utils.cpp
 )
@@ -51,7 +54,11 @@ target_link_libraries(${PROJECT_NAME}_tests PUBLIC Catch2::Catch2 warnings::all)
 
 target_link_libraries(${PROJECT_NAME}_tests PUBLIC FiniteDiff::FiniteDiff)
 
-target_link_libraries(${PROJECT_NAME}_tests PUBLIC spdlog::spdlog)
+if(IPC_TOOLKIT_WITH_LOGGER)
+  target_link_libraries(${PROJECT_NAME}_tests PRIVATE spdlog::spdlog)
+else()
+  target_link_libraries(${PROJECT_NAME}_tests PRIVATE fmt::fmt)
+endif()
 
 ################################################################################
 # Compiler options

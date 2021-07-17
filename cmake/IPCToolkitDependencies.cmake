@@ -67,6 +67,9 @@ if(IPC_TOOLKIT_WITH_LOGGER AND NOT TARGET spdlog::spdlog)
   add_library(spdlog INTERFACE)
   add_library(spdlog::spdlog ALIAS spdlog)
   target_include_directories(spdlog SYSTEM INTERFACE ${IPC_TOOLKIT_EXTERNAL}/spdlog/include)
+elseif(NOT IPC_TOOLKIT_WITH_LOGGER AND NOT TARGET fmt::fmt)
+  ipc_toolkit_download_fmt()
+  add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/fmt)
 endif()
 
 # Faster Unordered Map

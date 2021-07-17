@@ -34,14 +34,14 @@ public:
 
     inline const ArrayMax3d& getMin() const { return min; }
     inline const ArrayMax3d& getMax() const { return max; }
-    inline const ArrayMax3d& getHalfExtent() const { return half_extent; }
-    inline const ArrayMax3d& getCenter() const { return center; }
+    // inline const ArrayMax3d& getHalfExtent() const { return half_extent; }
+    // inline const ArrayMax3d& getCenter() const { return center; }
 
 protected:
     ArrayMax3d min;
     ArrayMax3d max;
-    ArrayMax3d half_extent;
-    ArrayMax3d center;
+    // ArrayMax3d half_extent;
+    // ArrayMax3d center;
 };
 
 /// @brief An entry into the hash grid as a (key, value) pair.
@@ -300,6 +300,22 @@ protected:
             && (m_gridSize.size() == 2 || z < m_gridSize[2]));
         return (z * m_gridSize[1] + y) * m_gridSize[0] + x;
     }
+
+private:
+    template <typename T>
+    void getPairs(
+        const std::function<bool(int, int)>& is_endpoint,
+        const std::function<bool(int, int)>& can_collide,
+        std::vector<HashItem>& items0,
+        std::vector<HashItem>& items1,
+        T& candidates);
+
+    template <typename T>
+    void getPairs(
+        const std::function<bool(int, int)>& is_endpoint,
+        const std::function<bool(int, int)>& can_collide,
+        std::vector<HashItem>& items,
+        T& candidates);
 
 protected:
     double m_cellSize;

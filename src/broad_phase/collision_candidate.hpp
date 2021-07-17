@@ -1,6 +1,9 @@
 #pragma once
 
 #include <vector>
+#include <fstream>
+
+#include <Eigen/Core>
 
 namespace ipc {
 
@@ -97,6 +100,56 @@ struct Candidates {
     bool empty() const;
 
     void clear();
+
+    bool save_obj(
+        const std::string& filename,
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F);
 };
+
+////////////////////////////////////////////////////////////////////////////////
+// Debugging functions
+
+void save_obj(
+    std::ofstream& out,
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const std::vector<EdgeVertexCandidate>& ev_candidates);
+void save_obj(
+    std::ofstream& out,
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const std::vector<EdgeEdgeCandidate>& ee_candidates);
+void save_obj(
+    std::ofstream& out,
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const std::vector<FaceVertexCandidate>& fv_candidates);
+void save_obj(
+    std::ofstream& out,
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const std::vector<EdgeFaceCandidate>& ef_candidates);
+
+template <typename Candidate>
+bool save_obj(
+    const std::string& filename,
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const std::vector<Candidate>& candidates)
+{
+    std::ofstream obj(filename);
+    if (!obj.is_open()) {
+        return false;
+    }
+    save_obj(obj, V, E, F, candidates);
+    return true;
+}
 
 } // namespace ipc

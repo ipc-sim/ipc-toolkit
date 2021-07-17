@@ -72,6 +72,13 @@ function(ipc_toolkit_download_spdlog)
   )
 endfunction()
 
+function(ipc_toolkit_download_fmt)
+  ipc_toolkit_download_project(fmt
+    GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+    GIT_TAG        8.0.1
+  )
+endfunction()
+
 function(ipc_toolkit_download_robin_map)
   ipc_toolkit_download_project(robin-map
     GIT_REPOSITORY https://github.com/Tessil/robin-map.git

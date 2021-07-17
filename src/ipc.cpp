@@ -721,7 +721,6 @@ bool has_intersections(
     HashGrid hash_grid;
     double conservative_inflation_radius = 1e-2 * world_bbox_diagonal_length(V);
     hash_grid.resize(V, E, conservative_inflation_radius);
-    hash_grid.addVertices(V, conservative_inflation_radius);
     hash_grid.addEdges(V, E, conservative_inflation_radius);
     if (V.cols() == 3) {
         // These are not needed for 2D

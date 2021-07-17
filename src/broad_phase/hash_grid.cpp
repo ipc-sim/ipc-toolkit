@@ -14,6 +14,9 @@
 #include <ipc/utils/logger.hpp>
 #endif
 
+// NOTE: Uncomment for expiermental parallel version of getPairs()
+// #define IPC_HASH_GRID_PARALLEL_GET_PAIR
+
 namespace ipc {
 
 AABB::AABB(const ArrayMax3d& min, const ArrayMax3d& max)
@@ -22,21 +25,26 @@ AABB::AABB(const ArrayMax3d& min, const ArrayMax3d& max)
 {
     assert(min.size() == max.size());
     assert((min <= max).all());
-    half_extent = (max - min) / 2;
-    center = min + half_extent;
+    // half_extent = (max - min) / 2;
+    // center = min + half_extent;
 }
 
 bool AABB::are_overlapping(const AABB& a, const AABB& b)
 {
-    // https://bit.ly/2ZP3tW4
     assert(a.min.size() == b.min.size());
-    return (abs(a.center.x() - b.center.x())
-            <= (a.half_extent.x() + b.half_extent.x()))
-        && (abs(a.center.y() - b.center.y())
-            <= (a.half_extent.y() + b.half_extent.y()))
-        && (a.min.size() == 2
-            || abs(a.center.z() - b.center.z())
-                <= (a.half_extent.z() + b.half_extent.z()));
+
+    // NOTE: This is a faster check (https://gamedev.stackexchange.com/a/587),
+    // but it is inexact and can result in false negatives.
+    // return (abs(a.center.x() - b.center.x())
+    //         <= (a.half_extent.x() + b.half_extent.x()))
+    //     && (abs(a.center.y() - b.center.y())
+    //         <= (a.half_extent.y() + b.half_extent.y()))
+    //     && (a.min.size() == 2
+    //         || abs(a.center.z() - b.center.z())
+    //             <= (a.half_extent.z() + b.half_extent.z()));
+
+    // This on the otherhand, is exact because there is no rounding.
+    return (a.min <= b.max).all() && (b.min <= a.max).all();
 };
 
 typedef tbb::enumerable_thread_specific<std::vector<HashItem>>
@@ -381,7 +389,7 @@ void HashGrid::addElement(
 }
 
 template <typename T>
-void getPairs(
+void HashGrid::getPairs(
     const std::function<bool(int, int)>& is_endpoint,
     const std::function<bool(int, int)>& can_collide,
     std::vector<HashItem>& items0,
@@ -395,8 +403,83 @@ void getPairs(
 
     // Entries with the same key means they share a cell (that cell index
     // hashes to the same key) and should be flagged for low-level intersection
-    // testing. So we loop over the entire sorted set of (key,value) pairs
-    // creating Candidate entries for vertex-edge pairs with the same key
+    // testing. We loop over the entire sorted set of (key,value) pairs
+    // creating Candidate entries for pairs with the same key
+
+    // 1. Find start of cells in items0 and items1. Store the start and end of
+    // each cell in a vector.
+    int num_cells = m_gridSize.prod();
+
+    std::vector<long> cell_starts0(num_cells, -1);
+    std::vector<long> cell_ends0(num_cells, -1);
+    for (long i = 0; i < items0.size(); i++) {
+        if (i == 0 || items0[i].key != items0[i - 1].key) {
+            cell_starts0[items0[i].key] = i;
+        }
+        if (i == items0.size() - 1 || items0[i].key != items0[i + 1].key) {
+            cell_ends0[items0[i].key] = i;
+        }
+    }
+
+    std::vector<long> cell_starts1(num_cells, -1);
+    std::vector<long> cell_ends1(num_cells, -1);
+    for (long i = 0; i < items1.size(); i++) {
+        if (i == 0 || items1[i].key != items1[i - 1].key) {
+            cell_starts1[items1[i].key] = i;
+        }
+        if (i == items1.size() - 1 || items1[i].key != items1[i + 1].key) {
+            cell_ends1[items1[i].key] = i;
+        }
+    }
+
+    // 2. Perform a double for loop for each cell, building the candidates.
+#ifdef IPC_HASH_GRID_PARALLEL_GET_PAIR
+    tbb::enumerable_thread_specific<T> storages;
+    tbb::parallel_for(
+        tbb::blocked_range<int>(0, num_cells),
+        [&](const tbb::blocked_range<int>& c_ids) {
+            for (int ci = c_ids.begin(); ci < c_ids.end(); ci++) {
+                auto& local_candidates = storages.local();
+#else
+    for (int ci = 0; ci < num_cells; ci++) {
+        auto& local_candidates = candidates;
+#endif
+                // Check if the cell is empty
+                if (cell_starts0[ci] < 0 || cell_starts1[ci] < 0) {
+                    continue;
+                }
+                assert(cell_ends0[ci] >= 0 && cell_ends1[ci] >= 0);
+
+                for (int i = cell_starts0[ci]; i <= cell_ends0[ci]; i++) {
+                    for (int j = cell_starts1[ci]; j <= cell_ends1[ci]; j++) {
+                        if (!is_endpoint(items0[i].id, items1[j].id)
+                            && can_collide(items0[i].id, items1[j].id)
+                            && AABB::are_overlapping(
+                                   items0[i].aabb, items1[j].aabb)) {
+                            local_candidates.emplace_back(
+                                items0[i].id, items1[j].id);
+                        }
+                    }
+                }
+            }
+#ifdef IPC_HASH_GRID_PARALLEL_GET_PAIR
+        });
+
+    // size up the candidates
+    size_t num_candidates = candidates.size();
+    for (const auto& local_candidates : storages) {
+        num_candidates += local_candidates.size();
+    }
+    // serial merge!
+    candidates.reserve(num_candidates);
+    for (const auto& local_candidates : storages) {
+        candidates.insert(
+            candidates.end(), local_candidates.begin(), local_candidates.end());
+    }
+#endif
+
+    // WARNING: This version is buggy and I am not sure why.
+    /*
     int i = 0, j_start = 0;
     while (i < items0.size() && j_start < items1.size()) {
         const HashItem& item0 = items0[i];
@@ -422,6 +505,7 @@ void getPairs(
         }
         i++;
     }
+    */
 
     // Remove the duplicate candidates
     tbb::parallel_sort(candidates.begin(), candidates.end());
@@ -430,20 +514,21 @@ void getPairs(
 }
 
 template <typename T>
-void getPairs(
+void HashGrid::getPairs(
     const std::function<bool(int, int)>& is_endpoint,
     const std::function<bool(int, int)>& can_collide,
     std::vector<HashItem>& items,
     T& candidates)
 {
-    // Sorted all they (key,value) pairs, where key is the hash key, and value
-    // is the element index
+    // Sorted all they (key,value) pairs, where key is the hash key, and
+    // value is the element index
     tbb::parallel_sort(items.begin(), items.end());
 
+#ifndef IPC_HASH_GRID_PARALLEL_GET_PAIR
     // Entries with the same key means they share a cell (that cell index
-    // hashes to the same key) and should be flagged for low-level intersection
-    // testing. So we loop over the entire sorted set of (key,value) pairs
-    // creating Candidate entries for vertex-edge pairs with the same key
+    // hashes to the same key) and should be flagged for low-level
+    // intersection testing. So we loop over the entire sorted set of
+    // (key,value) pairs creating Candidate entries for pairs with the same key
     for (int i = 0; i < items.size(); i++) {
         const HashItem& item0 = items[i];
         for (int j = i + 1; j < items.size(); j++) {
@@ -459,8 +544,7 @@ void getPairs(
             }
         }
     }
-
-    /*
+#else
     tbb::enumerable_thread_specific<T> storages;
 
     tbb::parallel_for(
@@ -510,7 +594,7 @@ void getPairs(
         candidates.insert(
             candidates.end(), local_candidates.begin(), local_candidates.end());
     }
-    */
+#endif
 
     // Remove the duplicate candidates
     tbb::parallel_sort(candidates.begin(), candidates.end());

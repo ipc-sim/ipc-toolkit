@@ -1,10 +1,10 @@
 #include "test_utils.hpp"
 
-#include <catch2/catch.hpp>
-
 #include <igl/dirname.h>
 #include <igl/edges.h>
 #include <igl/read_triangle_mesh.h>
+
+#include <ipc/utils/eigen_ext.hpp>
 
 // Flatten the matrix rowwise
 Eigen::VectorXd flatten(const Eigen::MatrixXd& X)
@@ -100,4 +100,25 @@ void mmcvids_to_constraints(
             }
         }
     }
+}
+
+// Attempts to move the generator to the next element.
+// Returns true if successful (and thus has another element that can be
+// read)
+bool RotationGenerator::next()
+{
+    double angle = ipc::Vector1d::Random()[0];
+    R = Eigen::AngleAxisd(angle, Eigen::Vector3d::Random().normalized());
+    return true;
+}
+
+// Precondition:
+// The generator is either freshly constructed or the last call to next()
+// returned true
+Eigen::Matrix3d const& RotationGenerator::get() const { return R; }
+
+Catch::Generators::GeneratorWrapper<Eigen::Matrix3d> RotationGenerator::create()
+{
+    return Catch::Generators::GeneratorWrapper<Eigen::Matrix3d>(
+        std::unique_ptr<RotationGenerator>(new RotationGenerator()));
 }

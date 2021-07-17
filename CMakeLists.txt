@@ -89,6 +89,8 @@ endif()
 if(IPC_TOOLKIT_WITH_LOGGER)
   target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
   target_compile_definitions(${PROJECT_NAME} PUBLIC IPC_TOOLKIT_WITH_LOGGER)
+else()
+  target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
 endif()
 
 # Faster unoredered map

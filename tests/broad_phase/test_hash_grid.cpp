@@ -2,6 +2,8 @@
 
 #include <Eigen/Core>
 
+#include <tbb/parallel_sort.h>
+
 #include <igl/IO>
 #include <igl/edges.h>
 #include <igl/Timer.h>
@@ -13,42 +15,42 @@
 
 using namespace ipc;
 
-TEST_CASE("AABB initilization", "[hash_grid][AABB]")
-{
-    int dim = GENERATE(2, 3);
-    CAPTURE(dim);
-    AABB aabb;
-    ArrayMax3d actual_center(dim);
-    SECTION("Empty AABB")
-    {
-        aabb = AABB(ArrayMax3d::Zero(dim), ArrayMax3d::Zero(dim));
-        actual_center.setZero();
-    }
-    SECTION("Box centered at zero")
-    {
-        ArrayMax3d min =
-            ArrayMax3d::Random(dim).array() - 1; // in range [-2, 0]
-        ArrayMax3d max = -min;
-        aabb = AABB(min, max);
-        actual_center.setZero();
-    }
-    SECTION("Box not centered at zero")
-    {
-        ArrayMax3d min(dim), max(dim);
-        if (dim == 2) {
-            min << 5.1, 3.14;
-            max << 10.4, 7.89;
-            actual_center << 7.75, 5.515;
-        } else {
-            min << 5.1, 3.14, 7.94;
-            max << 10.4, 7.89, 10.89;
-            actual_center << 7.75, 5.515, 9.415;
-        }
-        aabb = AABB(min, max);
-    }
-    ArrayMax3d center_diff = aabb.getCenter() - actual_center;
-    CHECK(center_diff.matrix().norm() == Approx(0.0).margin(1e-12));
-}
+// TEST_CASE("AABB initilization", "[hash_grid][AABB]")
+// {
+//     int dim = GENERATE(2, 3);
+//     CAPTURE(dim);
+//     AABB aabb;
+//     ArrayMax3d actual_center(dim);
+//     SECTION("Empty AABB")
+//     {
+//         aabb = AABB(ArrayMax3d::Zero(dim), ArrayMax3d::Zero(dim));
+//         actual_center.setZero();
+//     }
+//     SECTION("Box centered at zero")
+//     {
+//         ArrayMax3d min =
+//             ArrayMax3d::Random(dim).array() - 1; // in range [-2, 0]
+//         ArrayMax3d max = -min;
+//         aabb = AABB(min, max);
+//         actual_center.setZero();
+//     }
+//     SECTION("Box not centered at zero")
+//     {
+//         ArrayMax3d min(dim), max(dim);
+//         if (dim == 2) {
+//             min << 5.1, 3.14;
+//             max << 10.4, 7.89;
+//             actual_center << 7.75, 5.515;
+//         } else {
+//             min << 5.1, 3.14, 7.94;
+//             max << 10.4, 7.89, 10.89;
+//             actual_center << 7.75, 5.515, 9.415;
+//         }
+//         aabb = AABB(min, max);
+//     }
+//     ArrayMax3d center_diff = aabb.getCenter() - actual_center;
+//     CHECK(center_diff.matrix().norm() == Approx(0.0).margin(1e-12));
+// }
 
 TEST_CASE("AABB overlapping", "[has_grid][AABB]")
 {
@@ -204,10 +206,10 @@ TEST_CASE("Compare HashGrid against brute force", "[hash_grid]")
             hg_candidates.fv_candidates.size()
             <= bf_candidates.fv_candidates.size());
 
-        std::sort(
+        tbb::parallel_sort(
             hg_candidates.ev_candidates.begin(),
             hg_candidates.ev_candidates.end());
-        std::sort(
+        tbb::parallel_sort(
             bf_candidates.ev_candidates.begin(),
             bf_candidates.ev_candidates.end());
         int hg_ci = 0;
@@ -232,10 +234,10 @@ TEST_CASE("Compare HashGrid against brute force", "[hash_grid]")
         }
         CHECK(hg_ci >= hg_candidates.ev_candidates.size());
 
-        std::sort(
+        tbb::parallel_sort(
             hg_candidates.ee_candidates.begin(),
             hg_candidates.ee_candidates.end());
-        std::sort(
+        tbb::parallel_sort(
             bf_candidates.ee_candidates.begin(),
             bf_candidates.ee_candidates.end());
         hg_ci = 0;
@@ -266,10 +268,10 @@ TEST_CASE("Compare HashGrid against brute force", "[hash_grid]")
         }
         CHECK(hg_ci >= hg_candidates.ee_candidates.size());
 
-        std::sort(
+        tbb::parallel_sort(
             hg_candidates.fv_candidates.begin(),
             hg_candidates.fv_candidates.end());
-        std::sort(
+        tbb::parallel_sort(
             bf_candidates.fv_candidates.begin(),
             bf_candidates.fv_candidates.end());
         hg_ci = 0;

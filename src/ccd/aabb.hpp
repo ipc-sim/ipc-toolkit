@@ -8,20 +8,28 @@ namespace ipc {
 // Discrete collision detection
 
 bool point_edge_aabb_cd(
-    const Eigen::Vector2d& p,
-    const Eigen::Vector2d& e0,
-    const Eigen::Vector2d& e1,
+    const VectorMax3d& p,
+    const VectorMax3d& e0,
+    const VectorMax3d& e1,
     double dist);
 
 bool edge_edge_aabb_cd(
-    const Eigen::Vector3d& ea0,
-    const Eigen::Vector3d& ea1,
-    const Eigen::Vector3d& eb0,
-    const Eigen::Vector3d& eb1,
+    const VectorMax3d& ea0,
+    const VectorMax3d& ea1,
+    const VectorMax3d& eb0,
+    const VectorMax3d& eb1,
     double dist);
 
 bool point_triangle_aabb_cd(
     const Eigen::Vector3d& p,
+    const Eigen::Vector3d& t0,
+    const Eigen::Vector3d& t1,
+    const Eigen::Vector3d& t2,
+    double dist);
+
+bool edge_triangle_aabb_cd(
+    const Eigen::Vector3d& e0,
+    const Eigen::Vector3d& e1,
     const Eigen::Vector3d& t0,
     const Eigen::Vector3d& t1,
     const Eigen::Vector3d& t2,

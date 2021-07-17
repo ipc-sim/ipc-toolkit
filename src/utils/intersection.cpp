@@ -29,7 +29,6 @@ bool is_edge_intersecting_triangle_rational(
         t2[d] = t2_float[d];
     }
 
-    // d is the rational distance between the edge and triangle
     const Rational d = e0[0] * t0[1] * t1[2] - e0[0] * t0[1] * t2[2]
         - e0[0] * t0[2] * t1[1] + e0[0] * t0[2] * t2[1] + e0[0] * t1[1] * t2[2]
         - e0[0] * t1[2] * t2[1] - e0[1] * t0[0] * t1[2] + e0[1] * t0[0] * t2[2]
