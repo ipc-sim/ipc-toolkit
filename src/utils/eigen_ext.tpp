@@ -4,9 +4,7 @@
 
 #include <Eigen/Eigenvalues>
 
-#ifdef IPC_TOOLKIT_WITH_LOGGER
 #include <ipc/utils/logger.hpp>
-#endif
 
 namespace ipc {
 
@@ -30,14 +28,9 @@ project_to_pd(
         Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
         eigensolver(A);
     if (eigensolver.info() != Eigen::Success) {
-#ifdef IPC_TOOLKIT_WITH_LOGGER
-        ipc::logger().error(
-            "unable to project matrix onto positive definite cone");
-#else
+        IPC_LOG(error("unable to project matrix onto positive definite cone"));
         throw std::runtime_error(
             "unable to project matrix onto positive definite cone");
-#endif
-        return A;
     }
     // Check if all eigen values are positive.
     // The eigenvalues are sorted in increasing order.
@@ -74,14 +67,10 @@ project_to_psd(
         Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
         eigensolver(A);
     if (eigensolver.info() != Eigen::Success) {
-#ifdef IPC_TOOLKIT_WITH_LOGGER
-        ipc::logger().error(
-            "unable to project matrix onto positive semi-definite cone");
-#else
+        IPC_LOG(
+            error("unable to project matrix onto positive semi-definite cone"));
         throw std::runtime_error(
             "unable to project matrix onto positive definite cone");
-#endif
-        return A;
     }
     // Check if all eigen values are zero or positive.
     // The eigenvalues are sorted in increasing order.

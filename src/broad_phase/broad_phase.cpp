@@ -22,7 +22,6 @@ void construct_collision_candidates(
 
     switch (method) {
     case BroadPhaseMethod::BRUTE_FORCE:
-        // TODO: Use ignore_codimensional_vertices
         detect_collision_candidates_brute_force(
             V, E, F, candidates,
             /*detect_edge_vertex=*/dim == 2,

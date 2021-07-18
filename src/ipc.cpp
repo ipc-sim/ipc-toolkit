@@ -494,13 +494,13 @@ bool is_step_collision_free(
         bool is_collision = point_triangle_ccd(
             // Point at t=0
             V0.row(fv_candidate.vertex_index),
-            // Triangle at t = 0
+            // Triangle at t=0
             V0.row(F(fv_candidate.face_index, 0)),
             V0.row(F(fv_candidate.face_index, 1)),
             V0.row(F(fv_candidate.face_index, 2)),
             // Point at t=1
             V1.row(fv_candidate.vertex_index),
-            // Triangle at t = 1
+            // Triangle at t=1
             V1.row(F(fv_candidate.face_index, 0)),
             V1.row(F(fv_candidate.face_index, 1)),
             V1.row(F(fv_candidate.face_index, 2)), //

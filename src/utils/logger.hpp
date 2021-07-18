@@ -1,10 +1,14 @@
 #pragma once
 
+#ifdef IPC_TOOLKIT_WITH_LOGGER
+
 #include <spdlog/spdlog.h>
 #include <spdlog/async.h>
 #include <spdlog/fmt/bundled/ranges.h>
 
 #include <ostream>
+
+#define IPC_LOG(message) logger().message
 
 namespace ipc {
 
@@ -30,3 +34,11 @@ inline spdlog::async_logger& logger()
 }
 
 } // namespace ipc
+
+#else
+
+#include <fmt/format.h>
+
+#define IPC_LOG(message)
+
+#endif

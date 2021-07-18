@@ -2,11 +2,7 @@
 
 #include <algorithm> // std::min/max
 
-#ifdef IPC_TOOLKIT_WITH_LOGGER
 #include <ipc/utils/logger.hpp>
-#else
-#include <fmt/format.h>
-#endif
 
 namespace ipc {
 

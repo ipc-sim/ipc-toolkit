@@ -9,10 +9,7 @@
 
 #include <ipc/broad_phase/voxel_size_heuristic.hpp>
 #include <ipc/utils/vertex_to_min_edge.hpp>
-
-#ifdef IPC_TOOLKIT_WITH_LOGGER
 #include <ipc/utils/logger.hpp>
-#endif
 
 // NOTE: Uncomment for expiermental parallel version of getPairs()
 // #define IPC_HASH_GRID_PARALLEL_GET_PAIR
@@ -74,11 +71,9 @@ void HashGrid::resizeFromBox(
     m_domainMin = min;
     m_domainMax = max;
     m_gridSize = ((max - min) / m_cellSize).ceil().cast<int>().max(1);
-#ifdef IPC_TOOLKIT_WITH_LOGGER
-    logger().debug(
+    IPC_LOG(debug(
         "hash-grid resized with a size of {:d}x{:d}x{:d}", m_gridSize[0],
-        m_gridSize[1], m_gridSize.size() == 3 ? m_gridSize[2] : 1);
-#endif
+        m_gridSize[1], m_gridSize.size() == 3 ? m_gridSize[2] : 1));
 }
 
 /// @brief Compute an AABB around a given 2D mesh.

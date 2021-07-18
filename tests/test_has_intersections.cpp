@@ -63,8 +63,13 @@ bool combine_meshes(
 
 TEST_CASE("Test HashGrid EF vs brute-force", "[intersection][brute_force]")
 {
+#ifdef NDEBUG
     std::string mesh1_name = GENERATE("cube.obj", "bunny.obj");
     std::string mesh2_name = GENERATE("cube.obj", "bunny.obj");
+#else
+    std::string mesh1_name = "cube.obj";
+    std::string mesh2_name = "cube.obj";
+#endif
     int dim = GENERATE(2, 3);
     bool perform_aabb_check = true;
 
@@ -161,8 +166,13 @@ TEST_CASE("Test has_intersections()", "[intersection][thisone]")
     std::string mesh2_name = GENERATE("cube.obj", "bunny.obj");
     int dim = GENERATE(2, 3);
 
+#ifdef NDEBUG
     Eigen::Matrix3d R1 = GENERATE(take(4, RotationGenerator::create()));
     Eigen::Matrix3d R2 = GENERATE(take(4, RotationGenerator::create()));
+#else
+    Eigen::Matrix3d R1 = GENERATE(take(2, RotationGenerator::create()));
+    Eigen::Matrix3d R2 = GENERATE(take(2, RotationGenerator::create()));
+#endif
 
     Eigen::MatrixXd V;
     Eigen::MatrixXi E, F;
