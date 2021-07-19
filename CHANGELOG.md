@@ -10,6 +10,21 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### 2021-07-17 ([a20f7a2](https://github.com/ipc-sim/ipc-toolkit/commit/a20f7a2dfea5a04c67ef71d0cd523f69391f2f54))
+#### Added
+* Added `detect_edge_face_collision_candidates_brute_force` for 3D intersection broad-phase
+* Added ability to save an obj of collision candidates
+* Added tests for has_intersection (all pass after fixes)
+
+#### Fixed
+* Fixed possible numerical rounding problems in HashGrid `AABB::are_overlapping`
+* Fixed HashGrid's function for getting edge-face intersection candidates
+
+### 2021-07-15 ([7301b42](https://github.com/ipc-sim/ipc-toolkit/commit/7301b422a9b9a90c76d9e7abf2f9127bf6d0dbd6))
+#### Fixed
+* Use `ignore_codimensional_vertices` in the brute force broad-phase method
+* Fixed AABB inflation in brute force and SpatialHash methods
+
 ### 2021-07-08 ([86ae4e5](https://github.com/ipc-sim/ipc-toolkit/commit/86ae4e5f87eb2c65585920ad3ca0bbb3b57702f6))
 #### Changed
 * Replaced vertex group ids with more powerful can_collide function. By
