@@ -77,7 +77,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC TBB::tbb)
 
 # CCD
 if(IPC_TOOLKIT_WITH_CORRECT_CCD)
-  # Provably conservative CCD of [Wang and Ferguson et al. 2020]
+  # Provably conservative CCD of [Wang and Ferguson et al. 2021]
   target_link_libraries(${PROJECT_NAME} PUBLIC TightInclusion)
   target_compile_definitions(${PROJECT_NAME} PUBLIC IPC_TOOLKIT_WITH_CORRECT_CCD)
 else()

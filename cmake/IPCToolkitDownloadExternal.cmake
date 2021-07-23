@@ -57,11 +57,11 @@ function(ipc_toolkit_download_evctcd)
   )
 endfunction()
 
-# Provably conservative CCD of [Wang and Ferguson et al. 2020]
+# Provably conservative CCD of [Wang and Ferguson et al. 2021]
 function(ipc_toolkit_download_tight_inclusion)
   ipc_toolkit_download_project(Tight-Inclusion
     GIT_REPOSITORY https://github.com/Continuous-Collision-Detection/Tight-Inclusion.git
-    GIT_TAG        90450c3690c06e116056f225c3b7c0ddef77b54f
+    GIT_TAG        698db1016aee25e9eaeca0aee5071e460dc49fe0
   )
 endfunction()
 

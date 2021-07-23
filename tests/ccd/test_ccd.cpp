@@ -255,8 +255,15 @@ TEST_CASE("Point-edge 2D ToI", "[ccd][toi]")
 
 TEST_CASE("Repeated CCD", "[ccd][thisone]")
 {
+    const double FIRST_TOL = 1e-6, SECOND_TOL = 1e-7;
+    const double FIRST_MAX_ITER = 1e6, SECOND_MAX_ITER = 1e6;
+
     BroadPhaseMethod broadphase_method =
         GENERATE(BroadPhaseMethod::HASH_GRID, BroadPhaseMethod::BRUTE_FORCE);
+    bool ignore_codimensional_vertices = true;
+    double inflation_radius = 0;
+
+    bool recompute_candidates = GENERATE(false, true);
 
     std::string t0_filename, t1_filename;
     SECTION("tooth")
@@ -269,6 +276,26 @@ TEST_CASE("Repeated CCD", "[ccd][thisone]")
         t0_filename = "ccd-failure/repeated_toi_hip_0.obj";
         t1_filename = "ccd-failure/repeated_toi_hip_1.obj";
     }
+    SECTION("hip small repeated toi")
+    {
+        t0_filename = "ccd-failure/small_repeated_toi_hip_0.obj";
+        t1_filename = "ccd-failure/small_repeated_toi_hip_1.obj";
+    }
+    SECTION("hip inf-repeat 0")
+    {
+        t0_filename = "ccd-failure/inf_repeated_toi_hip_0.obj";
+        t1_filename = "ccd-failure/inf_repeated_toi_hip_1.obj";
+    }
+    SECTION("hip inf-repeat 1")
+    {
+        t0_filename = "ccd-failure/s0121.obj";
+        t1_filename = "ccd-failure/s1121.obj";
+    }
+    SECTION("hip inf-repeat 2")
+    {
+        t0_filename = "ccd-failure/s0110.obj";
+        t1_filename = "ccd-failure/s1110.obj";
+    }
 
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
@@ -279,38 +306,48 @@ TEST_CASE("Repeated CCD", "[ccd][thisone]")
     }
     // REQUIRE(success);
 
-    // REQUIRE(!has_intersections(V0, E, F));
+    Candidates candidates;
+    construct_collision_candidates(
+        V0, V1, E, F, candidates, inflation_radius, broadphase_method,
+        ignore_codimensional_vertices);
 
-    bool has_collisions =
-        !is_step_collision_free(V0, V1, E, F, broadphase_method);
+    bool has_collisions = !is_step_collision_free(
+        candidates, V0, V1, E, F, FIRST_TOL, FIRST_MAX_ITER);
+
+    double stepsize = compute_collision_free_stepsize(
+        candidates, V0, V1, E, F, FIRST_TOL, FIRST_MAX_ITER);
 
     if (!has_collisions) {
+        CHECK(stepsize == 1.0);
         return;
     }
-
-    double stepsize =
-        compute_collision_free_stepsize(V0, V1, E, F, broadphase_method);
 
     double collision_free_step_size = stepsize;
     bool has_collisions_repeated;
     double stepsize_repeated;
     do {
         Eigen::MatrixXd Vt = (V1 - V0) * collision_free_step_size + V0;
-        CHECK(!has_intersections(Vt, E, F));
+        // CHECK(!has_intersections(Vt, E, F));
 
-        has_collisions_repeated =
-            !is_step_collision_free(V0, Vt, E, F, broadphase_method);
+        if (recompute_candidates) {
+            construct_collision_candidates(
+                V0, Vt, E, F, candidates, inflation_radius, broadphase_method,
+                ignore_codimensional_vertices);
+        }
 
-        stepsize_repeated =
-            compute_collision_free_stepsize(V0, Vt, E, F, broadphase_method);
+        has_collisions_repeated = !is_step_collision_free(
+            candidates, V0, Vt, E, F, SECOND_TOL, SECOND_MAX_ITER);
+
+        stepsize_repeated = compute_collision_free_stepsize(
+            candidates, V0, Vt, E, F, SECOND_TOL, SECOND_MAX_ITER);
 
         CAPTURE(
-            t0_filename, t1_filename, broadphase_method, has_collisions,
-            collision_free_step_size, has_collisions_repeated,
+            t0_filename, t1_filename, broadphase_method, recompute_candidates,
+            has_collisions, collision_free_step_size, has_collisions_repeated,
             stepsize_repeated);
         CHECK(!has_collisions_repeated);
         CHECK(stepsize_repeated == 1.0);
 
         collision_free_step_size *= stepsize_repeated;
-    } while (has_collisions_repeated);
+    } while (has_collisions_repeated && stepsize_repeated != 1.0);
 }

@@ -77,9 +77,9 @@ bool point_point_ccd(
             toi *= conservative_rescaling;
             if (toi == 0) {
                 IPC_LOG(warn(
-                    "Point-point CCD is overly conservative "
-                    "(initial_distance={:g}, actual_tolerance={:g})!",
-                    initial_distance, output_tolerance));
+                    "Point-point CCD is overly conservative (toi={:g}, but "
+                    "initial_distance={:g} with actual_tolerance={:g})!",
+                    toi, initial_distance, output_tolerance));
             }
         }
     }
@@ -243,9 +243,9 @@ bool point_edge_ccd_2D(
             toi *= conservative_rescaling;
             if (toi == 0) {
                 IPC_LOG(warn(
-                    "Point-edge CCD is overly conservative "
-                    "(initial_distance={:g}, actual_tolerance={:g})!",
-                    initial_distance, output_tolerance));
+                    "Point-edge CCD is overly conservative (toi={:g}, but "
+                    "initial_distance={:g} with actual_tolerance={:g})!",
+                    toi, initial_distance, output_tolerance));
             }
         }
     }
@@ -317,9 +317,9 @@ bool point_edge_ccd_3D(
             toi *= conservative_rescaling;
             if (toi == 0) {
                 IPC_LOG(warn(
-                    "Point-edge CCD is overly conservative "
-                    "(initial_distance={:g}, actual_tolerance={:g})!",
-                    initial_distance, output_tolerance));
+                    "Point-edge CCD is overly conservative (toi={:g}, but "
+                    "initial_distance={:g} with actual_tolerance={:g})!",
+                    toi, initial_distance, output_tolerance));
             }
         }
     }
@@ -388,6 +388,7 @@ bool edge_edge_ccd(
 
     double output_tolerance = tolerance;
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+    const int CCD_TYPE = 1;
     bool is_impacting = inclusion_ccd::edgeEdgeCCD_double(
         ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
         { { -1, -1, -1 } }, // rounding error (auto)
@@ -396,7 +397,9 @@ bool edge_edge_ccd(
         tolerance,          // delta
         tmax,               // maximum time to check
         max_iterations,     // maximum number of iterations
-        output_tolerance);  // delta_actual
+        output_tolerance,   // delta_actual
+        CCD_TYPE,
+        /*no_zero_toi=*/false);
 #else
     bool is_impacting = CTCD::edgeEdgeCTCD(
         ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
@@ -413,7 +416,9 @@ bool edge_edge_ccd(
             tolerance,          // delta
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
-            output_tolerance);  // delta_actual
+            output_tolerance,   // delta_actual
+            CCD_TYPE,
+            /*no_zero_toi=*/true);
 #else
         is_impacting = CTCD::edgeEdgeCTCD(
             ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
@@ -424,9 +429,9 @@ bool edge_edge_ccd(
             toi *= conservative_rescaling;
             if (toi == 0) {
                 IPC_LOG(warn(
-                    "Edge-edge CCD is overly conservative "
-                    "(initial_distance={:g}, actual_tolerance={:g})!",
-                    initial_distance, output_tolerance));
+                    "Edge-edge CCD is overly conservative (toi={:g}, but "
+                    "initial_distance={:g} with actual_tolerance={:g})!",
+                    toi, initial_distance, output_tolerance));
             }
         }
     }
@@ -465,6 +470,7 @@ bool point_triangle_ccd(
 
     double output_tolerance = tolerance;
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+    const int CCD_TYPE = 1;
     bool is_impacting = inclusion_ccd::vertexFaceCCD_double(
         p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
         { { -1, -1, -1 } }, // rounding error (auto)
@@ -473,7 +479,9 @@ bool point_triangle_ccd(
         tolerance,          // delta
         tmax,               // maximum time to check
         max_iterations,     // maximum number of iterations
-        output_tolerance);  // delta_actual
+        output_tolerance,   // delta_actual
+        CCD_TYPE,
+        /*no_zero_toi=*/false);
 #else
     bool is_impacting = CTCD::vertexFaceCTCD(
         p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, //
@@ -491,7 +499,9 @@ bool point_triangle_ccd(
             tolerance,          // delta
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
-            output_tolerance);  // delta_actual
+            output_tolerance,   // delta_actual
+            CCD_TYPE,
+            /*no_zero_toi=*/true);
 #else
         is_impacting = CTCD::vertexFaceCTCD(
             p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
@@ -502,9 +512,9 @@ bool point_triangle_ccd(
             toi *= conservative_rescaling;
             if (toi == 0) {
                 IPC_LOG(warn(
-                    "Point-triangle CCD is overly conservative "
-                    "(initial_distance={:g}, actual_tolerance={:g})!",
-                    initial_distance, output_tolerance));
+                    "Point-triangle CCD is overly conservative (toi={:g}, but "
+                    "initial_distance={:g} with actual_tolerance={:g})!",
+                    toi, initial_distance, output_tolerance));
             }
         }
     }

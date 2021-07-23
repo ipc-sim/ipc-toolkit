@@ -612,7 +612,7 @@ double compute_collision_free_stepsize(
                         // Point at t=1
                         V1.row(vi),
                         // Triangle at t = 1
-                        V1.row(F(fi, 0)), V1.row(F(fi, 1)), V1.row(F(fi, 2)),
+                        V1.row(F(fi, 0)), V1.row(F(fi, 1)), V1.row(F(fi, 2)), //
                         toi, /*tmax=*/earliest_toi, tolerance, max_iterations);
                 }
 
