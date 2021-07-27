@@ -11,7 +11,7 @@ FetchContent_Declare(
     EVCTCD
     GIT_REPOSITORY https://github.com/evouga/collisiondetection.git
     GIT_TAG e5fe5c9767207df5047e375fb20180a665ae186f
-    GIT_SHALLOW TRUE
+    GIT_SHALLOW FALSE
 )
 
 FetchContent_GetProperties(EVCTCD)

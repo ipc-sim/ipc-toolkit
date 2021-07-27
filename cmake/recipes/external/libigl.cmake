@@ -20,6 +20,7 @@ FetchContent_Declare(
     libigl
     GIT_REPOSITORY https://github.com/libigl/libigl.git
     GIT_TAG v2.3.0
+    GIT_SHALLOW TRUE
 )
 FetchContent_GetProperties(libigl)
 if(libigl_POPULATED)
