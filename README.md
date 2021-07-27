@@ -11,59 +11,30 @@
 
 #### 1. Add it to CMake
 
-The easiest way to add the toolkit to an existing CMake project is to download
-it through CMake. If you do not already have `DownloadProject.cmake` and `DownloadProject.CMakeLists.cmake.in`, you can copy those in our `cmake` folder.
-With those added to your project, you can create a file a similar to `cmake/IPCToolkitDownloadExternal.cmake` with
+The easiest way to add the toolkit to an existing CMake project is to download it through CMake.
+CMake provides functionality for doing this called [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html) (requires CMake ≥ 3.14).
+We use this same process to download all external dependencies.
+For example,
 
 ```CMake
-include(DownloadProject)
-
-# With CMake 3.8 and above, we can hide warnings about git being in a
-# detached head by passing an extra GIT_CONFIG option
-if(NOT (${CMAKE_VERSION} VERSION_LESS "3.8.0"))
-  set(PROJECT_NAME_EXTRA_OPTIONS "GIT_CONFIG advice.detachedHead=false")
-else()
-  set(PROJECT_NAME_EXTRA_OPTIONS "")
-endif()
-
-function(project_name_download_project name)
-  download_project(
-    PROJ         ${name}
-    SOURCE_DIR   ${PROJECT_NAME_EXTERNAL}/${name}
-    DOWNLOAD_DIR ${PROJECT_NAME_EXTERNAL}/.cache/${name}
-    QUIET
-    ${PROJECT_NAME_EXTRA_OPTIONS}
-    ${ARGN}
-  )
-endfunction()
-
-################################################################################
-
-# Download the IPC Toolkit
-function(project_name_download_ipc_toolkit)
-  project_name_download_project(ipc-toolkit
+include(FetchContent)
+FetchContent_Declare(
+    ipc-toolkit
     GIT_REPOSITORY https://github.com/ipc-sim/ipc-toolkit.git
-    GIT_TAG        ${IPC_TOOLKIT_GIT_TAG}
-  )
-endfunction()
+    GIT_TAG ${IPC_TOOLKIT_GIT_TAG}
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(ipc-toolkit)
 ```
 
-where `PROJECT_NAME` is the name of your project and `IPC_TOOLKIT_GIT_TAG` is set to the version of the toolkit you want. Then add the toolkit to CMake with
-
-```CMake
-# Add the IPC Toolkit to CMake
-if(NOT TARGET IPCToolkit)
-    project_name_download_ipc_toolkit()
-    add_subdirectory(${PROJECT_NAME_EXTERNAL}/ipc-toolkit EXCLUDE_FROM_ALL)
-endif()
-```
-
-where `PROJECT_NAME_EXTERNAL` is the directory you want the toolkit to be downloaded to. The last step is to link against the library with
+where `IPC_TOOLKIT_GIT_TAG` is set to the version of the toolkit you want to use. This will download and add the toolkit to CMake. The toolkit can then be linked against using
 
 ```CMake
 # Link against the IPC Toolkit
 target_link_libraries(${PROJECT_NAME} PUBLIC IPCToolkit)
 ```
+
+where `PROJECT_NAME` is the name of your project.
 
 #### 2. Using the toolkit
 
@@ -74,18 +45,22 @@ The main functionality is provided in the `ipc.hpp` header. Use the prefix direc
 **All dependancies are downloaded through CMake** depending on the build options.
 The following libraries are used in this project:
 
-* [Tight Inclusion CCD](https://github.com/Continuous-Collision-Detection/Tight-Inclusion) for correct (conservative) continuous collision detection between triangle meshes in 3D
-* [libigl](https://github.com/libigl/libigl) as both a source of Eigen and for basic geometry functions
-* [TBB](https://github.com/wjakob/tbb) for parallelization
+* [Eigen](https://eigen.tuxfamily.org/): linear algebra
+* [libigl](https://github.com/libigl/libigl): basic geometry functions and predicates
+* [TBB](https://github.com/wjakob/tbb): parallelization
+* [Tight Inclusion CCD](https://github.com/Continuous-Collision-Detection/Tight-Inclusion): correct (conservative) continuous collision detection between triangle meshes in 3D
 
 ### Optional
 
-* [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection) for continuous collision detection between triangle meshes in 3D
+* [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection): continuous collision detection between triangle meshes in 3D
     * Enable by using the CMake flag `-DIPC_TOOLKIT_WITH_CORRECT_CCD=OFF`
-* [spdlog](https://github.com/gabime/spdlog) for logging information (enabled by default)
+* [spdlog](https://github.com/gabime/spdlog): logging information (enabled by default)
     * Disable logging completely using the CMake flag `-DIPC_TOOLKIT_WITH_LOGGER=OFF`
-* [Catch2](https://github.com/catchorg/Catch2.git) for testing (see [Unit Tests](#unit_tests))
-* [finite-diff](https://github.com/zfergus/finite-diff) for finite difference comparisons in the unit tests
+* [fmt](https://github.com/fmtlib/fmt): string formatting
+    * This is either provided through spdlog or downloaded directly if logging is disabled (`-DIPC_TOOLKIT_WITH_LOGGER=OFF`)
+* [Catch2](https://github.com/catchorg/Catch2.git): testing (see [Unit Tests](#unit_tests))
+* [finite-diff](https://github.com/zfergus/finite-diff): finite difference comparisons
+    * Only used by the unit tests (if they are enabled)
 
 
 ## <a name="unit_tests"></a>Unit Tests

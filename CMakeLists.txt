@@ -1,17 +1,35 @@
-cmake_minimum_required(VERSION 3.8)
+# Detects whether this is a top-level project
+get_directory_property(HAS_PARENT PARENT_DIRECTORY)
+if(HAS_PARENT)
+    set(IPC_TOOLKIT_TOPLEVEL_PROJECT OFF)
+else()
+    set(IPC_TOOLKIT_TOPLEVEL_PROJECT ON)
+endif()
+
+# Check required CMake version
+set(REQUIRED_CMAKE_VERSION "3.14.0")
+if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
+    cmake_minimum_required(VERSION ${REQUIRED_CMAKE_VERSION})
+else()
+    # Don't use cmake_minimum_required here to avoid implicitly overriding parent policies
+    if(${CMAKE_VERSION} VERSION_LESS ${REQUIRED_CMAKE_VERSION})
+        message(FATAL_ERROR "CMake required version to build IPC Toolkit is ${REQUIRED_CMAKE_VERSION}")
+    endif()
+endif()
+
+# Include user-provided default options if available. We do that before the main
+# `project()` so that we can define the C/C++ compilers from the option file.
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake)
+    message(STATUS "Using local options file: ${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake")
+    include(${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake)
+endif()
+
+################################################################################
+
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
         LANGUAGES CXX)
 
-################################################################################
-
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-  set(IPC_TOOLKIT_TOPLEVEL_PROJECT ON)
-else()
-  set(IPC_TOOLKIT_TOPLEVEL_PROJECT OFF)
-endif()
-
-# project-options
 option(IPC_TOOLKIT_BUILD_UNIT_TESTS           "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
 option(IPC_TOOLKIT_WITH_LOGGER                "Enable logger"                                  ON)
 option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"                     ON)
@@ -19,85 +37,95 @@ option(IPC_TOOLKIT_WITH_PYTHON                "Build Python bindings"           
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 
-################################################################################
+# Set default minimum C++ standard
+if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
+    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+endif()
 
 ### Configuration
-set(IPC_TOOLKIT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-set(IPC_TOOLKIT_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/external")
+set(IPC_TOOLKIT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 
-# Include cmake functions
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/ipc_toolkit/")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/recipes/external/")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/find/")
 
 # Color output
-include(UseColors)
-
-# Extra warnings
-include(Warnings)
-
-# Prepend function
-include(PrependCurrentPath)
+include(ipc_toolkit_use_colors)
 
 # IPC Toolkit utils
-include(IPCToolkitCopyHeaders)
-include(IPCToolkitSetSourceGroup)
-
-# Download external dependencies
-include(IPCToolkitDependencies)
+include(ipc_toolkit_prepend_current_path)
+include(ipc_toolkit_copy_headers)
+include(ipc_toolkit_set_source_group)
 
 ################################################################################
 # IPC Toolkit Library
 ################################################################################
 
-# add_library() can only be called without any source since CMake 3.11 ...
-add_library(${PROJECT_NAME} src/ipc.cpp)
-# NOTE: The actual list of sources will be added by src/CMakeLists.txt
+# Add an empty library and fill in the list of sources in `src/CMakeLists.txt`.
+add_library(${PROJECT_NAME})
 add_subdirectory(src)
 
 # Public include directory for IPC Toolkit
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_BINARY_DIR}/include)
 
-target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
-
 ################################################################################
 # Optional Definitions
 ################################################################################
 
-################################################################################
-# Libraries
-################################################################################
+# For MSVC, do not use the min and max macros.
+target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 
-# libigl
-target_link_libraries(${PROJECT_NAME} PUBLIC igl::core igl::predicates)
+################################################################################
+# Dependencies
+################################################################################
 
 # Extra warnings
-target_link_libraries(${PROJECT_NAME} PRIVATE warnings::all)
+include(ipc_toolkit_warnings)
+target_link_libraries(${PROJECT_NAME} PRIVATE IPCToolkit::warnings)
+
+# libigl
+include(eigen)
+include(libigl)
+target_link_libraries(${PROJECT_NAME} PUBLIC
+  Eigen3::Eigen
+  igl::core
+  igl::predicates
+)
 
 # TBB
+include(tbb)
 target_link_libraries(${PROJECT_NAME} PUBLIC TBB::tbb)
 
 # CCD
 if(IPC_TOOLKIT_WITH_CORRECT_CCD)
   # Provably conservative CCD of [Wang and Ferguson et al. 2021]
+  include(tight_inclusion)
   target_link_libraries(${PROJECT_NAME} PUBLIC TightInclusion)
   target_compile_definitions(${PROJECT_NAME} PUBLIC IPC_TOOLKIT_WITH_CORRECT_CCD)
 else()
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
+  include(evctcd)
   target_link_libraries(${PROJECT_NAME} PUBLIC EVCTCD)
 endif()
 
 # Logger
 if(IPC_TOOLKIT_WITH_LOGGER)
+  include(spdlog)
   target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
   target_compile_definitions(${PROJECT_NAME} PUBLIC IPC_TOOLKIT_WITH_LOGGER)
 else()
+  include(fmt)
   target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
 endif()
 
 # Faster unoredered map
+include(robin_map)
 target_link_libraries(${PROJECT_NAME} PUBLIC tsl::robin_map)
 
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
-  find_package(GMP)
+  find_package(GMP REQUIRED)
   IF(NOT ${GMP_FOUND})
     MESSAGE(FATAL_ERROR "Unable to find GMP necessary for rational intersection")
   ENDIF()
@@ -133,23 +161,16 @@ target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14)
 # Tests
 ################################################################################
 
+# Enable unit testing at the root level
 if(IPC_TOOLKIT_BUILD_UNIT_TESTS)
-  # Catch2
-  if(NOT TARGET Catch2::Catch2)
-    ipc_toolkit_download_catch2()
-    add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/Catch2 catch2)
-    list(APPEND CMAKE_MODULE_PATH ${IPC_TOOLKIT_EXTERNAL}/Catch2/contrib)
-  endif()
-
-  # finite-diff
-  if(NOT TARGET FiniteDiff::FiniteDiff)
-    ipc_toolkit_download_finite_diff()
-    add_subdirectory(${IPC_TOOLKIT_EXTERNAL}/finite-diff EXCLUDE_FROM_ALL)
-    add_library(FiniteDiff::FiniteDiff ALIAS FiniteDiff)
-  endif()
-
   include(CTest)
   enable_testing()
+
+  # Include Catch2 and provide function `catch_discover_tests` to register tests.
+  include(catch2)
+  FetchContent_GetProperties(catch2)
+  include("${catch2_SOURCE_DIR}/contrib/Catch.cmake")
+
   add_subdirectory(tests)
 endif()
 

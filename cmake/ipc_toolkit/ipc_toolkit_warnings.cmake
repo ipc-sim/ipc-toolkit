@@ -1,15 +1,13 @@
 ################################################################################
-cmake_minimum_required(VERSION 2.8.12)
-################################################################################
 # See comments and discussions here:
 # http://stackoverflow.com/questions/5088460/flags-to-enable-thorough-and-verbose-g-warnings
 ################################################################################
 
-if(TARGET warnings::all)
+if(TARGET IPCToolkit::warnings)
 	return()
 endif()
 
-set(MY_FLAGS
+set(IPC_TOOLKIT_FLAGS
 		-Wall
 		-Wextra
 		-pedantic
@@ -149,20 +147,20 @@ set(MY_FLAGS
 
 # Flags above don't make sense for MSVC
 if(MSVC)
-	set(MY_FLAGS)
+	set(IPC_TOOLKIT_FLAGS)
 endif()
 
 include(CheckCXXCompilerFlag)
 
-add_library(warnings_all INTERFACE)
-add_library(warnings::all ALIAS warnings_all)
+add_library(ipc_toolkit_warnings INTERFACE)
+add_library(IPCToolkit::warnings ALIAS ipc_toolkit_warnings)
 
-foreach(FLAG IN ITEMS ${MY_FLAGS})
+foreach(FLAG IN ITEMS ${IPC_TOOLKIT_FLAGS})
 	string(REPLACE "=" "-" FLAG_VAR "${FLAG}")
 	if(NOT DEFINED IS_SUPPORTED_${FLAG_VAR})
 		check_cxx_compiler_flag("${FLAG}" IS_SUPPORTED_${FLAG_VAR})
 	endif()
 	if(IS_SUPPORTED_${FLAG_VAR})
-		target_compile_options(warnings_all INTERFACE ${FLAG})
+		target_compile_options(ipc_toolkit_warnings INTERFACE ${FLAG})
 	endif()
 endforeach()

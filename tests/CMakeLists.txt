@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.1)
+################################################################################
+# Tests
 ################################################################################
 
 add_executable(${PROJECT_NAME}_tests
@@ -50,13 +51,20 @@ target_include_directories(${PROJECT_NAME}_tests PUBLIC ".")
 
 target_link_libraries(${PROJECT_NAME}_tests PUBLIC ${PROJECT_NAME})
 
-target_link_libraries(${PROJECT_NAME}_tests PUBLIC Catch2::Catch2 warnings::all)
+include(ipc_toolkit_warnings)
+target_link_libraries(${PROJECT_NAME}_tests PRIVATE IPCToolkit::warnings)
 
+include(catch2)
+target_link_libraries(${PROJECT_NAME}_tests PUBLIC Catch2::Catch2)
+
+include(finite_diff)
 target_link_libraries(${PROJECT_NAME}_tests PUBLIC FiniteDiff::FiniteDiff)
 
 if(IPC_TOOLKIT_WITH_LOGGER)
+  include(spdlog)
   target_link_libraries(${PROJECT_NAME}_tests PRIVATE spdlog::spdlog)
 else()
+  include(fmt)
   target_link_libraries(${PROJECT_NAME}_tests PRIVATE fmt::fmt)
 endif()
 
@@ -83,5 +91,5 @@ endforeach()
 
 # Register tests
 set(PARSE_CATCH_TESTS_ADD_TO_CONFIGURE_DEPENDS ON)
-include(Catch)
+# include(Catch)
 catch_discover_tests(${PROJECT_NAME}_tests)

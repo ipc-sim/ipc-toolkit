@@ -1,3 +1,10 @@
+################################################################################
+# Copyright (c) 2016, Project Chrono Development Team
+# All rights reserved.
+# This file is licensed to you under the BSD 3-Clause "New" or "Revised" License.
+# See https://github.com/projectchrono/chrono/blob/develop/LICENSE for details.
+################################################################################
+#
 # This script checks for the highest level of SSE support on the host
 # by compiling and running small C++ programs that uses SSE intrinsics.
 #

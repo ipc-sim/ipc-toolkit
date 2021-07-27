@@ -233,7 +233,7 @@ logs/**/*.csv
 logs/*.log
 logs/**/*.log
 
-external*
+/external*
 
 
 # Atom beautifier files
