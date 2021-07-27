@@ -23,10 +23,7 @@ file(GLOB EVCTCD_FILES "${EVCTCD_SOURCE_DIR}/src/*.cpp")
 add_library(EVCTCD ${EVCTCD_FILES})
 target_include_directories(EVCTCD PUBLIC "${EVCTCD_SOURCE_DIR}/include")
 
-if(TARGET Eigen3::Eigen)
-    message(FATAL_ERROR "Must define Eigen3::Eigen library before building EVCTCD")
-endif()
-
+include(eigen)
 target_link_libraries(EVCTCD PUBLIC Eigen3::Eigen)
 
 # Turn off floating point contraction for CCD robustness
