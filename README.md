@@ -3,6 +3,7 @@
 
 [![Build](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg)](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml)
 [![Python](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg)](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml)
+[![CodeFactor](https://www.codefactor.io/repository/github/ipc-sim/ipc-toolkit/badge)](https://www.codefactor.io/repository/github/ipc-sim/ipc-toolkit)
 [![License](https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue)](https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE)
 
 For a complete list of changes, please see [`CHANGELOG.md`](https://github.com/ipc-sim/ipc-toolkit/blob/main/CHANGELOG.md), and for a definitive reference for these functions, please see the [IPC source code](https://github.com/ipc-sim/IPC).
