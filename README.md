@@ -5,7 +5,7 @@
 [![Python](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg)](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml)
 [![License](https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue)](https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE)
 
-:warning: This toolkit is in an early stage of development. If you have any problems or find any bugs please post an issue. For a complete list of changes, please see [`CHANGELOG.md`](https://github.com/ipc-sim/ipc-toolkit/blob/main/CHANGELOG.md). Meanwhile, for a definitive reference for these functions, please see the [IPC source code](https://github.com/ipc-sim/IPC).
+For a complete list of changes, please see [`CHANGELOG.md`](https://github.com/ipc-sim/ipc-toolkit/blob/main/CHANGELOG.md), and for a definitive reference for these functions, please see the [IPC source code](https://github.com/ipc-sim/IPC).
 
 ## Integrating IPC Toolkit into your project
 
@@ -68,3 +68,18 @@ The following libraries are used in this project:
 We provide unit tests for ensuring the correctness of our algorithmic pieces.
 To enable the unit tests use the flag `-DIPC_TOOLKIT_BUILD_UNIT_TESTS=ON` with
 CMake.
+
+## Contributing
+
+This project is open for contributors! Contibutions can come in the form of feature requests, bug fixes, documentation, tutorials and the like. We highly recommend to file an Issue first before submitting a Pull Request.
+
+Simply fork this repository and make a Pull Request! We'd definitely appreciate:
+
+* Implementation of new features
+* Bug Reports
+* Documentation
+* Testing
+
+## License
+
+MIT License © 2020, the IPC-Sim organization (See [`LICENSE.txt`](https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE) for details)
