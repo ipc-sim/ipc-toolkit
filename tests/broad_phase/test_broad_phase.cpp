@@ -56,12 +56,14 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase]")
 
     Eigen::MatrixXi E;
     igl::readCSV(std::string(TEST_DATA_DIR) + "E.csv", E);
+    E.array() -= 1; // NOTE: Convert from OBJ format to index
 
     bool ignore_internal_vertices = true; // GENERATE(false, true);
 
     BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-        BroadPhaseMethod::SPATIAL_HASH);
+        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID
+        // , BroadPhaseMethod::SPATIAL_HASH
+    );
 
     double tolerance = 1e-6;
     int max_iterations = 1e7;
@@ -70,7 +72,7 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase]")
     SECTION("2D")
     {
         is_valid_step = ipc::is_step_collision_free(
-            V_t0.leftCols(2), V_t1.rightCols(2), E, /*F=*/Eigen::MatrixXi(),
+            V_t0.leftCols(2), V_t1.leftCols(2), E, /*F=*/Eigen::MatrixXi(),
             method, tolerance, max_iterations, ignore_internal_vertices);
     }
     SECTION("3D")
@@ -80,7 +82,7 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase]")
             max_iterations, ignore_internal_vertices);
     }
 
-    CAPTURE(ignore_internal_vertices);
+    CAPTURE(method);
     CHECK(!is_valid_step);
 }
 
@@ -106,9 +108,10 @@ TEST_CASE(
         // BroadPhaseMethod::SPATIAL_HASH
     );
 #else
-    BroadPhaseMethod method = GENERATE(BroadPhaseMethod::HASH_GRID //,
-                                       // BroadPhaseMethod::SPATIAL_HASH
-    );
+    BroadPhaseMethod method =
+        GENERATE(BroadPhaseMethod::HASH_GRID //,
+                                             // BroadPhaseMethod::SPATIAL_HASH
+        );
 #endif
 
     Constraints constraint_set;

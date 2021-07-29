@@ -13,6 +13,10 @@
 
 using namespace ipc;
 
+static const bool BENCHMARK_EV = false;
+static const bool BENCHMARK_EE = false;
+static const bool BENCHMARK_FV = true;
+
 TEST_CASE(
     "Benchmark different spatial hashes",
     "[!benchmark][spatial_hash][hash_grid]")
@@ -81,7 +85,9 @@ TEST_CASE(
         Candidates candidates;
         sh.queryMeshForCandidates(
             V0, V1, E, F, candidates,
-            /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true);
+            /*queryEV=*/BENCHMARK_EV,
+            /*queryEE=*/BENCHMARK_EE,
+            /*queryFV=*/BENCHMARK_FV);
     };
 
     BENCHMARK("HashGrid")
@@ -93,17 +99,25 @@ TEST_CASE(
         hashgrid.addFaces(V0, V1, F, inflation_radius);
 
         Candidates candidates;
-        hashgrid.getVertexEdgePairs(E, candidates.ev_candidates);
-        hashgrid.getEdgeEdgePairs(E, candidates.ee_candidates);
-        hashgrid.getFaceVertexPairs(F, candidates.fv_candidates);
+        if (BENCHMARK_EV) {
+            hashgrid.getVertexEdgePairs(E, candidates.ev_candidates);
+        }
+        if (BENCHMARK_EE) {
+            hashgrid.getEdgeEdgePairs(E, candidates.ee_candidates);
+        }
+        if (BENCHMARK_FV) {
+            hashgrid.getFaceVertexPairs(F, candidates.fv_candidates);
+        }
     };
 
     BENCHMARK("BruteForce")
     {
         Candidates candidates;
         detect_collision_candidates_brute_force(
-            V0, V1, E, F, candidates, /*detect_edge_vertex=*/true,
-            /*detect_edge_edge=*/true, /*detect_face_vertex=*/true,
+            V0, V1, E, F, candidates,
+            /*detect_edge_vertex=*/BENCHMARK_EV,
+            /*detect_edge_edge=*/BENCHMARK_EE,
+            /*detect_face_vertex=*/BENCHMARK_FV,
             /*perform_aabb_check=*/true, inflation_radius);
     };
 }
@@ -140,7 +154,9 @@ TEST_CASE(
         Candidates candidates;
         sh.queryMeshForCandidates(
             V0, V1, E, F, candidates,
-            /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true);
+            /*queryEV=*/BENCHMARK_EV,
+            /*queryEE=*/BENCHMARK_EE,
+            /*queryFV=*/BENCHMARK_FV);
     };
 
     BENCHMARK("HashGrid")
@@ -152,17 +168,25 @@ TEST_CASE(
         hashgrid.addFaces(V0, V1, F, inflation_radius);
 
         Candidates candidates;
-        hashgrid.getVertexEdgePairs(E, candidates.ev_candidates);
-        hashgrid.getEdgeEdgePairs(E, candidates.ee_candidates);
-        hashgrid.getFaceVertexPairs(F, candidates.fv_candidates);
+        if (BENCHMARK_EV) {
+            hashgrid.getVertexEdgePairs(E, candidates.ev_candidates);
+        }
+        if (BENCHMARK_EE) {
+            hashgrid.getEdgeEdgePairs(E, candidates.ee_candidates);
+        }
+        if (BENCHMARK_FV) {
+            hashgrid.getFaceVertexPairs(F, candidates.fv_candidates);
+        }
     };
 
     BENCHMARK("BruteForce")
     {
         Candidates candidates;
         detect_collision_candidates_brute_force(
-            V0, V1, E, F, candidates, /*detect_edge_vertex=*/true,
-            /*detect_edge_edge=*/true, /*detect_face_vertex=*/true,
+            V0, V1, E, F, candidates,
+            /*detect_edge_vertex=*/BENCHMARK_EV,
+            /*detect_edge_edge=*/BENCHMARK_EE,
+            /*detect_face_vertex=*/BENCHMARK_FV,
             /*perform_aabb_check=*/true, inflation_radius);
     };
 }

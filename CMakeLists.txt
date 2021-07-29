@@ -46,6 +46,7 @@ endif()
 
 ### Configuration
 set(IPC_TOOLKIT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
+# set(IPC_TOOLKIT_EXTERNAL "${CMAKE_CURRENT_SOURCE_DIR}/external")
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/ipc_toolkit/")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/recipes/external/")

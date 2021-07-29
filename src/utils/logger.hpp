@@ -8,7 +8,7 @@
 
 #include <ostream>
 
-#define IPC_LOG(message) logger().message
+#define IPC_LOG(message) ipc::logger().message
 
 namespace ipc {
 
