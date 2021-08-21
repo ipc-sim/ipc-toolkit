@@ -29,7 +29,7 @@ pybind11_add_module(ipctk
   src/utils/thread_limiter.cpp
 )
 
-target_link_libraries(ipctk PRIVATE ${PROJECT_NAME})
+target_link_libraries(ipctk PRIVATE ipc::toolkit)
 
 if(IPC_TOOLKIT_WITH_LOGGER)
   include(spdlog)
