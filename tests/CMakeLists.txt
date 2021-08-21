@@ -2,7 +2,7 @@
 # Tests
 ################################################################################
 
-add_executable(${PROJECT_NAME}_tests
+add_executable(ipc_toolkit_tests
   main.cpp
 
   # Test barrier and dertivatives
@@ -43,42 +43,42 @@ add_executable(${PROJECT_NAME}_tests
   test_utils.cpp
 )
 
-target_include_directories(${PROJECT_NAME}_tests PUBLIC ".")
+target_include_directories(ipc_toolkit_tests PUBLIC ".")
 
 ################################################################################
 # Required Libraries
 ################################################################################
 
-target_link_libraries(${PROJECT_NAME}_tests PUBLIC ${PROJECT_NAME})
+target_link_libraries(ipc_toolkit_tests PUBLIC ipc::toolkit)
 
 include(ipc_toolkit_warnings)
-target_link_libraries(${PROJECT_NAME}_tests PRIVATE IPCToolkit::warnings)
+target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)
 
 include(catch2)
-target_link_libraries(${PROJECT_NAME}_tests PUBLIC Catch2::Catch2)
+target_link_libraries(ipc_toolkit_tests PUBLIC Catch2::Catch2)
 
 include(finite_diff)
-target_link_libraries(${PROJECT_NAME}_tests PUBLIC FiniteDiff::FiniteDiff)
+target_link_libraries(ipc_toolkit_tests PUBLIC FiniteDiff::FiniteDiff)
 
 if(IPC_TOOLKIT_WITH_LOGGER)
   include(spdlog)
-  target_link_libraries(${PROJECT_NAME}_tests PRIVATE spdlog::spdlog)
+  target_link_libraries(ipc_toolkit_tests PRIVATE spdlog::spdlog)
 else()
   include(fmt)
-  target_link_libraries(${PROJECT_NAME}_tests PRIVATE fmt::fmt)
+  target_link_libraries(ipc_toolkit_tests PRIVATE fmt::fmt)
 endif()
 
 ################################################################################
 # Compiler options
 ################################################################################
 
-target_compile_definitions(${PROJECT_NAME}_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
+target_compile_definitions(ipc_toolkit_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
 
 # Test data directory definition
 if(WIN32)
-  target_compile_definitions(${PROJECT_NAME}_tests PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}\\\\data\\\\")
+  target_compile_definitions(ipc_toolkit_tests PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}\\\\data\\\\")
 else()
-  target_compile_definitions(${PROJECT_NAME}_tests PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data/")
+  target_compile_definitions(ipc_toolkit_tests PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data/")
 endif()
 
 ################################################################################
@@ -92,4 +92,4 @@ endforeach()
 # Register tests
 set(PARSE_CATCH_TESTS_ADD_TO_CONFIGURE_DEPENDS ON)
 # include(Catch)
-catch_discover_tests(${PROJECT_NAME}_tests)
+catch_discover_tests(ipc_toolkit_tests)

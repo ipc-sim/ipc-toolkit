@@ -65,18 +65,20 @@ include(ipc_toolkit_set_source_group)
 ################################################################################
 
 # Add an empty library and fill in the list of sources in `src/CMakeLists.txt`.
-add_library(${PROJECT_NAME})
+add_library(ipc_toolkit)
+add_library(ipc::toolkit ALIAS ipc_toolkit)
+
 add_subdirectory(src)
 
 # Public include directory for IPC Toolkit
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_BINARY_DIR}/include)
+target_include_directories(ipc_toolkit PUBLIC ${PROJECT_BINARY_DIR}/include)
 
 ################################################################################
 # Optional Definitions
 ################################################################################
 
 # For MSVC, do not use the min and max macros.
-target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
+target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
 
 ################################################################################
 # Dependencies
@@ -84,12 +86,12 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 
 # Extra warnings
 include(ipc_toolkit_warnings)
-target_link_libraries(${PROJECT_NAME} PRIVATE IPCToolkit::warnings)
+target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
 
 # libigl
 include(eigen)
 include(libigl)
-target_link_libraries(${PROJECT_NAME} PUBLIC
+target_link_libraries(ipc_toolkit PUBLIC
   Eigen3::Eigen
   igl::core
   igl::predicates
@@ -97,42 +99,42 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 
 # TBB
 include(tbb)
-target_link_libraries(${PROJECT_NAME} PUBLIC TBB::tbb)
+target_link_libraries(ipc_toolkit PUBLIC TBB::tbb)
 
 # CCD
 if(IPC_TOOLKIT_WITH_CORRECT_CCD)
   # Provably conservative CCD of [Wang and Ferguson et al. 2021]
   include(tight_inclusion)
-  target_link_libraries(${PROJECT_NAME} PUBLIC TightInclusion)
-  target_compile_definitions(${PROJECT_NAME} PUBLIC IPC_TOOLKIT_WITH_CORRECT_CCD)
+  target_link_libraries(ipc_toolkit PUBLIC TightInclusion)
+  target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_CORRECT_CCD)
 else()
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
   include(evctcd)
-  target_link_libraries(${PROJECT_NAME} PUBLIC EVCTCD)
+  target_link_libraries(ipc_toolkit PUBLIC EVCTCD)
 endif()
 
 # Logger
 if(IPC_TOOLKIT_WITH_LOGGER)
   include(spdlog)
-  target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
-  target_compile_definitions(${PROJECT_NAME} PUBLIC IPC_TOOLKIT_WITH_LOGGER)
+  target_link_libraries(ipc_toolkit PRIVATE spdlog::spdlog)
+  target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_LOGGER)
 else()
   include(fmt)
-  target_link_libraries(${PROJECT_NAME} PRIVATE fmt::fmt)
+  target_link_libraries(ipc_toolkit PRIVATE fmt::fmt)
 endif()
 
 # Faster unoredered map
 include(robin_map)
-target_link_libraries(${PROJECT_NAME} PUBLIC tsl::robin_map)
+target_link_libraries(ipc_toolkit PUBLIC tsl::robin_map)
 
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   find_package(GMP REQUIRED)
   IF(NOT ${GMP_FOUND})
     MESSAGE(FATAL_ERROR "Unable to find GMP necessary for rational intersection")
   ENDIF()
-  target_include_directories(${PROJECT_NAME} PUBLIC ${GMP_INCLUDE_DIRS})
-  target_link_libraries(${PROJECT_NAME} PUBLIC ${GMP_LIBRARIES})
-  target_compile_definitions(${PROJECT_NAME} PUBLIC IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
+  target_include_directories(ipc_toolkit PUBLIC ${GMP_INCLUDE_DIRS})
+  target_link_libraries(ipc_toolkit PUBLIC ${GMP_LIBRARIES})
+  target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
 endif()
 
 ################################################################################
@@ -152,11 +154,11 @@ if(IPC_TOOLKIT_WITH_SIMD)
   find_package(FMA)
   # Add SSE, AVX, and FMA flags to compiler flags
   string(REPLACE " " ";" SIMD_FLAGS "${SSE_FLAGS} ${AVX_FLAGS} ${FMA_FLAGS}")
-  target_compile_options(${PROJECT_NAME} PRIVATE ${SIMD_FLAGS})
+  target_compile_options(ipc_toolkit PRIVATE ${SIMD_FLAGS})
 endif()
 
 # Use C++14
-target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_14)
+target_compile_features(ipc_toolkit PUBLIC cxx_std_14)
 
 ################################################################################
 # Tests

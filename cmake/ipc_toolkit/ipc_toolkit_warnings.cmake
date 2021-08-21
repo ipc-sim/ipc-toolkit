@@ -3,7 +3,7 @@
 # http://stackoverflow.com/questions/5088460/flags-to-enable-thorough-and-verbose-g-warnings
 ################################################################################
 
-if(TARGET IPCToolkit::warnings)
+if(TARGET ipc::toolkit::warnings)
 	return()
 endif()
 
@@ -153,7 +153,7 @@ endif()
 include(CheckCXXCompilerFlag)
 
 add_library(ipc_toolkit_warnings INTERFACE)
-add_library(IPCToolkit::warnings ALIAS ipc_toolkit_warnings)
+add_library(ipc::toolkit::warnings ALIAS ipc_toolkit_warnings)
 
 foreach(FLAG IN ITEMS ${IPC_TOOLKIT_FLAGS})
 	string(REPLACE "=" "-" FLAG_VAR "${FLAG}")
