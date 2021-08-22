@@ -47,7 +47,7 @@ target_include_directories(Eigen3_Eigen SYSTEM INTERFACE
     $<BUILD_INTERFACE:${EIGEN_INCLUDE_DIRS}>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
-target_compile_definitions(Eigen3_Eigen INTERFACE EIGEN_MPL2_ONLY)
+# target_compile_definitions(Eigen3_Eigen INTERFACE EIGEN_MPL2_ONLY)
 
 if(EIGEN_WITH_MKL)
     # TODO: Checks that, on 64bits systems, `mkl::mkl` is using the LP64 interface
