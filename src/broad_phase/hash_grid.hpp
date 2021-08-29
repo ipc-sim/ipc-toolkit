@@ -223,14 +223,14 @@ public:
     void getVertexEdgePairs(
         const Eigen::MatrixXi& edges,
         std::vector<EdgeVertexCandidate>& ev_candidates,
-        const std::function<bool(size_t, size_t)>& can_collide =
+        const std::function<bool(size_t, size_t)>& can_vertices_collide =
             [](size_t, size_t) { return true; });
 
     /// @brief Compute the candidate edge-edge candidate collisions.
     void getEdgeEdgePairs(
         const Eigen::MatrixXi& edges,
         std::vector<EdgeEdgeCandidate>& ee_candidates,
-        const std::function<bool(size_t, size_t)>& can_collide =
+        const std::function<bool(size_t, size_t)>& can_vertices_collide =
             [](size_t, size_t) { return true; });
 
     /// @brief Compute the candidate edge-face candidate intersections.
@@ -238,14 +238,14 @@ public:
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         std::vector<EdgeFaceCandidate>& ef_candidates,
-        const std::function<bool(size_t, size_t)>& can_collide =
+        const std::function<bool(size_t, size_t)>& can_vertices_collide =
             [](size_t, size_t) { return true; });
 
     /// @brief Compute the candidate edge-edge candidate collisions.
     void getFaceVertexPairs(
         const Eigen::MatrixXi& faces,
         std::vector<FaceVertexCandidate>& fv_candidates,
-        const std::function<bool(size_t, size_t)>& can_collide =
+        const std::function<bool(size_t, size_t)>& can_vertices_collide =
             [](size_t, size_t) { return true; });
 
     /// @brief Clear the hash grid.

@@ -10,6 +10,14 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### YYYY-MM-DD ([1479aae](https://github.com/ipc-sim/ipc-toolkit/commit/1479aaea958daaa4e963529493e4169dc7757913))
+#### Changed
+* Updated the CMake system to use modern `FetchContent` to download externals
+
+### 2021-07-22 ([e24c76d](https://github.com/ipc-sim/ipc-toolkit/commit/e24c76ddc818fb9efc4d522ef72a581a15abf751))
+#### Fixed
+* Updated CCD strategy when using Tight Inclusion to only perform `no_zero_toi=true` when there is no minimum distance
+
 ### 2021-07-17 ([a20f7a2](https://github.com/ipc-sim/ipc-toolkit/commit/a20f7a2dfea5a04c67ef71d0cd523f69391f2f54))
 #### Added
 * Added `detect_edge_face_collision_candidates_brute_force` for 3D intersection broad-phase
