@@ -5,7 +5,7 @@
 
 #include <finitediff.hpp>
 #include <igl/edges.h>
-#include <igl/readDMAT.h>
+#include <nlohmann/json.hpp>
 
 #include <ipc/friction/friction.hpp>
 #include <ipc/utils/logger.hpp>
@@ -222,10 +222,37 @@ void mmcvids_to_friction_constraints(
     }
 }
 
+template <typename T>
+inline void from_json(const nlohmann::json& json, VectorX<T>& vec)
+{
+    vec =
+        Eigen::Map<VectorX<T>>(json.get<std::vector<T>>().data(), json.size());
+}
+
+template <typename T>
+void from_json(const nlohmann::json& json, MatrixX<T>& mat)
+{
+    typedef std::vector<std::vector<T>> L;
+    L list = json.get<L>();
+
+    size_t num_rows = list.size();
+    if (num_rows == 0) {
+        return;
+    }
+    size_t num_cols = list[0].size();
+    mat.resize(num_rows, num_cols);
+
+    for (size_t i = 0; i < num_rows; ++i) {
+        assert(num_cols == list[i].size());
+        mat.row(i) = Eigen::Map<RowVectorX<T>>(list[i].data(), num_cols);
+    }
+}
+
 bool read_ipc_friction_data(
-    const std::string& filename_root,
-    Eigen::MatrixXd& V0,
-    Eigen::MatrixXd& V1,
+    const std::string& filename,
+    Eigen::MatrixXd& V_start,
+    Eigen::MatrixXd& V_lagged,
+    Eigen::MatrixXd& V_end,
     Eigen::MatrixXi& E,
     Eigen::MatrixXi& F,
     Constraints& constraint_set,
@@ -236,98 +263,111 @@ bool read_ipc_friction_data(
     double& mu,
     double& potential,
     Eigen::VectorXd& grad,
-    Eigen::MatrixXd& hess)
+    Eigen::SparseMatrix<double>& hess)
 {
-    Eigen::MatrixXi E1, F1;
-    if (!load_mesh(fmt::format("{}_V0.obj", filename_root), V0, E1, F1)) {
+    nlohmann::json data;
+
+    std::ifstream input(filename);
+    if (input.good()) {
+        data = nlohmann::json::parse(input, nullptr, false);
+    } else {
+        spdlog::error("Unable to open IPC friction data file: {}", filename);
         return false;
     }
 
-    if (!load_mesh(fmt::format("{}_V1.obj", filename_root), V1, E1, F1)) {
+    if (data.is_discarded()) {
+        spdlog::error("IPC friction data JSON is invalid: {}", filename);
         return false;
     }
+
+    // Parameters
+    dhat = sqrt(data["dhat_squared"].get<double>());
+    barrier_stiffness = data["barrier_stiffness"];
+    epsv_times_h = sqrt(data["epsv_times_h_squared"].get<double>());
+    mu = data["mu"];
+
+    // Dissipative potential value
+    potential = data["energy"];
+
+    // Potential gradient
+    from_json(data["gradient"], grad);
+
+    // Potential hessian
+    std::vector<Eigen::Triplet<double>> hessian_triplets;
+    hessian_triplets.reserve(data["hessian_triplets"].size());
+    for (std::tuple<long, long, double> triplet : data["hessian_triplets"]) {
+        hessian_triplets.emplace_back(
+            std::get<0>(triplet), std::get<1>(triplet), std::get<2>(triplet));
+    }
+    hess.resize(grad.size(), grad.size());
+    hess.setFromTriplets(hessian_triplets.begin(), hessian_triplets.end());
+
+    // Mesh
+    from_json(data["V_start"], V_start);
+    from_json(data["V_lagged"], V_lagged);
+    from_json(data["V_end"], V_end);
 
     // MMVCIDs
     Eigen::MatrixXi mmcvids;
+    from_json(data["mmcvids"], mmcvids);
+
     Eigen::VectorXd lambda;
-    Eigen::MatrixXd coords, bases;
-    bool success = igl::readDMAT(
-        TEST_DATA_DIR + fmt::format("{}_mmcvids.dmat", filename_root), mmcvids);
-    success |= igl::readDMAT(
-        TEST_DATA_DIR + fmt::format("{}_lambda.dmat", filename_root), lambda);
-    success |= igl::readDMAT(
-        TEST_DATA_DIR + fmt::format("{}_coords.dmat", filename_root), coords);
-    success |= igl::readDMAT(
-        TEST_DATA_DIR + fmt::format("{}_bases.dmat", filename_root), bases);
-    if (!success) {
-        return false;
-    }
+    from_json(data["normal_force_magnitudes"], lambda);
+
+    Eigen::MatrixXd coords;
+    from_json(data["closest_point_coordinates"], coords);
+
+    Eigen::MatrixXd bases;
+    from_json(data["tangent_bases"], bases);
 
     mmcvids_to_friction_constraints(
         E, F, mmcvids, lambda, coords, bases, friction_constraint_set);
     mmcvids_to_constraints(E, F, mmcvids, constraint_set);
-
-    Eigen::VectorXd params;
-    if (!igl::readDMAT(
-            TEST_DATA_DIR + fmt::format("{}_params.dmat", filename_root),
-            params)
-        || params.size() != 4) {
-        return false;
-    }
-    dhat = sqrt(params[0]);         // dHat
-    barrier_stiffness = params[1];  // mu_IP
-    epsv_times_h = sqrt(params[2]); // fricDHat
-    mu = params[3];                 // selfFric
-
     for (int i = 0; i < friction_constraint_set.size(); i++) {
         friction_constraint_set[i].mu = mu;
-    }
-
-    Eigen::VectorXd energy_vec;
-    if (!igl::readDMAT(
-            TEST_DATA_DIR + fmt::format("{}_energy.dmat", filename_root),
-            energy_vec)) {
-        return false;
-    }
-    potential = energy_vec[0];
-
-    if (!igl::readDMAT(
-            TEST_DATA_DIR + fmt::format("{}_grad.dmat", filename_root), grad)) {
-        return false;
-    }
-
-    if (!igl::readDMAT(
-            TEST_DATA_DIR + fmt::format("{}_hess.dmat", filename_root), hess)) {
-        return false;
     }
 
     return true;
 }
 
-TEST_CASE("Compare IPC friction derivatives", "[friction][gradient][hessian]")
+TEST_CASE(
+    "Compare IPC friction derivatives", "[friction][gradient][hessian][data]")
 {
-    Eigen::MatrixXd V0, V1;
+    Eigen::MatrixXd V_start, V_lagged, V_end;
     Eigen::MatrixXi E, F;
     Constraints contact_constraint_set;
     FrictionConstraints expected_friction_constraint_set;
     double dhat, barrier_stiffness, epsv_times_h, mu;
     double expected_potential;
     Eigen::VectorXd expected_grad;
-    Eigen::MatrixXd expected_hess;
+    Eigen::SparseMatrix<double> expected_hess;
 
-    int frame = GENERATE(range(0, 373));
-    CAPTURE(frame);
+    std::string scene_folder;
+    int file_number;
+    SECTION("cube_cube")
+    {
+        scene_folder = "friction/cube_cube";
+        file_number = GENERATE(range(0, 446));
+    }
+    // SECTION("chain")
+    // {
+    //     scene_folder = "friction/chain";
+    //     file_number = GENERATE(range(0, 401));
+    // }
+    CAPTURE(scene_folder, file_number);
 
     bool success = read_ipc_friction_data(
-        fmt::format("friction/cube_cube_{:d}", frame), V0, V1, E, F,
-        contact_constraint_set, expected_friction_constraint_set, dhat,
-        barrier_stiffness, epsv_times_h, mu, expected_potential, expected_grad,
-        expected_hess);
+        fmt::format(
+            "{}{}/friction_data_{:d}.json", TEST_DATA_DIR, scene_folder,
+            file_number),
+        V_start, V_lagged, V_end, E, F, contact_constraint_set,
+        expected_friction_constraint_set, dhat, barrier_stiffness, epsv_times_h,
+        mu, expected_potential, expected_grad, expected_hess);
     REQUIRE(success);
 
     FrictionConstraints friction_constraint_set;
     construct_friction_constraint_set(
-        V0, E, F, contact_constraint_set, dhat, barrier_stiffness, mu,
+        V_lagged, E, F, contact_constraint_set, dhat, barrier_stiffness, mu,
         friction_constraint_set);
 
     REQUIRE(friction_constraint_set.size() == contact_constraint_set.size());
@@ -335,7 +375,12 @@ TEST_CASE("Compare IPC friction derivatives", "[friction][gradient][hessian]")
         friction_constraint_set.size()
         == expected_friction_constraint_set.size());
 
+    REQUIRE(V_start.size() == V_lagged.size());
+    REQUIRE(V_start.size() == V_end.size());
+    REQUIRE(V_start.size() == expected_grad.size());
+
     for (int i = 0; i < friction_constraint_set.size(); i++) {
+        CAPTURE(i);
         const FrictionConstraint& constraint = friction_constraint_set[i];
         const FrictionConstraint& expected_constraint =
             expected_friction_constraint_set[i];
@@ -344,31 +389,33 @@ TEST_CASE("Compare IPC friction derivatives", "[friction][gradient][hessian]")
                 constraint.closest_point[0]
                 == Approx(expected_constraint.closest_point[0]));
         } else {
-            CHECK(fd::compare_gradient(
-                constraint.closest_point, expected_constraint.closest_point,
-                1e-12));
+            CHECK(constraint.closest_point.isApprox(
+                expected_constraint.closest_point, 1e-12));
         }
-        CHECK(fd::compare_jacobian(
-            constraint.tangent_basis, expected_constraint.tangent_basis,
-            1e-12));
+        CHECK(constraint.tangent_basis.isApprox(
+            expected_constraint.tangent_basis, 1e-12));
         CHECK(
             constraint.normal_force_magnitude
             == Approx(expected_constraint.normal_force_magnitude));
         CHECK(constraint.mu == Approx(expected_constraint.mu));
+
+        CHECK(
+            constraint.vertex_indices(E, F)
+            == expected_constraint.vertex_indices(E, F));
     }
 
     double potential = compute_friction_potential(
-        V0, V1, E, F, friction_constraint_set, epsv_times_h);
+        V_start, V_end, E, F, friction_constraint_set, epsv_times_h);
 
     CHECK(potential == Approx(expected_potential));
 
     Eigen::VectorXd grad = compute_friction_potential_gradient(
-        V0, V1, E, F, friction_constraint_set, epsv_times_h);
+        V_start, V_end, E, F, friction_constraint_set, epsv_times_h);
 
-    CHECK(fd::compare_gradient(expected_grad, grad, 1e-8));
+    CHECK(grad.isApprox(expected_grad));
 
     Eigen::SparseMatrix<double> hess = compute_friction_potential_hessian(
-        V0, V1, E, F, friction_constraint_set, epsv_times_h);
+        V_start, V_end, E, F, friction_constraint_set, epsv_times_h);
 
-    CHECK(fd::compare_hessian(expected_hess, Eigen::MatrixXd(hess), 1e-6));
+    CHECK(hess.isApprox(expected_hess));
 }

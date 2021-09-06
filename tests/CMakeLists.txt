@@ -58,7 +58,7 @@ include(catch2)
 target_link_libraries(ipc_toolkit_tests PUBLIC Catch2::Catch2)
 
 include(finite_diff)
-target_link_libraries(ipc_toolkit_tests PUBLIC FiniteDiff::FiniteDiff)
+target_link_libraries(ipc_toolkit_tests PUBLIC finitediff::finitediff)
 
 if(IPC_TOOLKIT_WITH_LOGGER)
   include(spdlog)
@@ -67,6 +67,10 @@ else()
   include(fmt)
   target_link_libraries(ipc_toolkit_tests PRIVATE fmt::fmt)
 endif()
+
+include(json)
+target_link_libraries(ipc_toolkit_tests PUBLIC nlohmann::json)
+
 
 ################################################################################
 # Compiler options

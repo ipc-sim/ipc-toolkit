@@ -18,9 +18,10 @@ using RowVector = Eigen::Matrix<T, 1, dim, Eigen::RowMajor, 1, max_dim>;
 template <typename T> using Vector1 = Vector<T, 1>;
 template <typename T> using Vector2 = Vector<T, 2>;
 template <typename T> using Vector3 = Vector<T, 3>;
+template <typename T> using VectorX = Vector<T, Eigen::Dynamic>;
 template <typename T> using RowVector2 = RowVector<T, 2>;
 template <typename T> using RowVector3 = RowVector<T, 3>;
-template <typename T> using VectorX = Vector<T, Eigen::Dynamic>;
+template <typename T> using RowVectorX = RowVector<T, Eigen::Dynamic>;
 template <typename T> using Matrix2 = Eigen::Matrix<T, 2, 2>;
 template <typename T> using Matrix3 = Eigen::Matrix<T, 3, 3>;
 template <typename T>
