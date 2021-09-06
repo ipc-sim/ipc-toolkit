@@ -544,7 +544,7 @@ bool point_static_plane_ccd(
             / plane_normal.dot(p_t1 - p_t0);
     };
     auto compute_tois = [&compute_toi](double d = 0) -> std::array<double, 2> {
-        return { compute_toi(d), compute_toi(-d) };
+        return { { compute_toi(d), compute_toi(-d) } };
     };
 
     double min_distance = (1.0 - conservative_rescaling) * initial_distance;
