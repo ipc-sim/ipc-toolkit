@@ -444,6 +444,9 @@ TEST_CASE("Fixed Edge Edge-Edge Case", "[ccd][edge-edge]")
     CHECK(is_colliding >= is_collision_expected);
 }
 
+// Only run this slow case on Linux and macOS
+#if !defined(WIN32)
+
 TEST_CASE("Zhongshi test case", "[ccd][point-triangle][zhongshi]")
 {
     double qy = GENERATE(-EPSILON, 0, EPSILON);
@@ -476,6 +479,8 @@ TEST_CASE("Zhongshi test case", "[ccd][point-triangle][zhongshi]")
     CAPTURE(qy);
     CHECK(is_colliding >= is_collision_expected);
 }
+
+#endif
 
 TEST_CASE("Bolun test case", "[ccd][point-triangle][bolun]")
 {
