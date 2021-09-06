@@ -32,7 +32,7 @@ where `IPC_TOOLKIT_GIT_TAG` is set to the version of the toolkit you want to use
 
 ```CMake
 # Link against the IPC Toolkit
-target_link_libraries(${PROJECT_NAME} PUBLIC IPCToolkit)
+target_link_libraries(${PROJECT_NAME} PUBLIC ipc::toolkit)
 ```
 
 where `PROJECT_NAME` is the name of your project.
