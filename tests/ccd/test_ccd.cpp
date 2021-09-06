@@ -385,6 +385,9 @@ TEST_CASE("Repeated CCD", "[ccd][thisone]")
 //     REQUIRE(is_colliding >= is_collision_expected);
 // }
 
+// Disable these tests in debug because they take a long time.
+#ifdef NDEBUG
+
 TEST_CASE("Edge-Edge 3D CCD", "[ccd][edge-edge]")
 {
     // e0 = (v0, v1)
@@ -554,3 +557,5 @@ TEST_CASE("Point-Plane CCD", "[ccd][point-plane]")
     CHECK(is_colliding);
     CHECK(toi <= t);
 }
+
+#endif
