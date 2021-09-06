@@ -248,6 +248,7 @@ docs/source/api
 !docs/Makefile
 tests/data/slow-broadphase-ccd
 tests/data/ccd-failure
+tests/data/friction/chain
 logo
 ipctk
 
