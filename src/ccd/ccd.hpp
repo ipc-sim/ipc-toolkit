@@ -91,4 +91,12 @@ bool point_edge_ccd(
     int max_iterations = 1e7,
     double conservative_rescaling = 0.8);
 
+bool point_static_plane_ccd(
+    const Eigen::Vector3d& p_t0,
+    const Eigen::Vector3d& p_t1,
+    const Eigen::Vector3d& plane_origin,
+    const Eigen::Vector3d& plane_normal,
+    double& toi,
+    double conservative_rescaling = 0.8);
+
 } // namespace ipc

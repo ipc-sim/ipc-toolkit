@@ -7,6 +7,20 @@
 
 namespace ipc {
 
+template <typename DerivedP, typename DerivedOrigin, typename DerivedNormal>
+auto point_plane_distance(
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedOrigin>& origin,
+    const Eigen::MatrixBase<DerivedNormal>& normal)
+{
+    assert(p.size() == 3);
+    assert(origin.size() == 3);
+    assert(normal.size() == 3);
+
+    auto point_to_plane = (p - origin).dot(normal);
+    return point_to_plane * point_to_plane / normal.squaredNorm();
+}
+
 /// @brief Compute the distance between a point and a plane.
 /// @note The distance is actually squared distance.
 /// @param p The point.
@@ -31,8 +45,7 @@ auto point_plane_distance(
     assert(t2.size() == 3);
 
     auto normal = cross(t1 - t0, t2 - t0);
-    auto point_to_plane = (p - t0).dot(normal);
-    return point_to_plane * point_to_plane / normal.squaredNorm();
+    return point_plane_distance(p, t0, normal);
 }
 
 // Symbolically generated derivatives;
