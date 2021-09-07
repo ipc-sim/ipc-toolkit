@@ -1,6 +1,7 @@
 #include <ipc/ccd/ccd.hpp>
 
 #include <algorithm> // std::min/max
+#include <array>
 
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
 #include <tight_inclusion/inclusion_ccd.hpp>
