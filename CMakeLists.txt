@@ -105,7 +105,7 @@ target_link_libraries(ipc_toolkit PUBLIC TBB::tbb)
 if(IPC_TOOLKIT_WITH_CORRECT_CCD)
   # Provably conservative CCD of [Wang and Ferguson et al. 2021]
   include(tight_inclusion)
-  target_link_libraries(ipc_toolkit PUBLIC TightInclusion)
+  target_link_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
   target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_CORRECT_CCD)
 else()
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
