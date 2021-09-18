@@ -17,20 +17,20 @@ CMake provides functionality for doing this called [FetchContent](https://cmake.
 We use this same process to download all external dependencies.
 For example,
 
-```CMake
+```cmake
 include(FetchContent)
 FetchContent_Declare(
-    ipc-toolkit
+    ipc_toolkit
     GIT_REPOSITORY https://github.com/ipc-sim/ipc-toolkit.git
     GIT_TAG ${IPC_TOOLKIT_GIT_TAG}
     GIT_SHALLOW TRUE
 )
-FetchContent_MakeAvailable(ipc-toolkit)
+FetchContent_MakeAvailable(ipc_toolkit)
 ```
 
 where `IPC_TOOLKIT_GIT_TAG` is set to the version of the toolkit you want to use. This will download and add the toolkit to CMake. The toolkit can then be linked against using
 
-```CMake
+```cmake
 # Link against the IPC Toolkit
 target_link_libraries(${PROJECT_NAME} PUBLIC ipc::toolkit)
 ```

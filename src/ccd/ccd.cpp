@@ -51,7 +51,9 @@ bool point_point_ccd(
         tolerance,          // delta
         tmax,               // maximum time to check
         max_iterations,     // maximum number of iterations
-        output_tolerance);  // delta_actual
+        output_tolerance,   // delta_actual
+        CCD_TYPE,
+        /*no_zero_toi=*/false);
 #else
     bool is_impacting =
         CTCD::vertexVertexCTCD(p0_t0, p1_t0, p0_t1, p1_t1, min_distance, toi);
@@ -68,7 +70,9 @@ bool point_point_ccd(
             tolerance,          // delta
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
-            output_tolerance);  // delta_actual
+            output_tolerance,   // delta_actual
+            CCD_TYPE,
+            /*no_zero_toi=*/true);
 #else
         is_impacting =
             CTCD::vertexVertexCTCD(p0_t0, p1_t0, p0_t1, p1_t1, /*eta=*/0, toi);
@@ -226,7 +230,9 @@ bool point_edge_ccd_2D(
         tolerance,          // delta
         tmax,               // maximum time to check
         max_iterations,     // maximum number of iterations
-        output_tolerance);  // delta_actual
+        output_tolerance,   // delta_actual
+        CCD_TYPE,
+        /*no_zero_toi=*/false);
 
     if (is_impacting && toi < SMALL_TOI) {
         is_impacting = inclusion_ccd::edgeEdgeCCD_double(
@@ -238,7 +244,9 @@ bool point_edge_ccd_2D(
             tolerance,          // delta
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
-            output_tolerance);  // delta_actual
+            output_tolerance,   // delta_actual
+            CCD_TYPE,
+            /*no_zero_toi=*/true);
 
         if (is_impacting) {
             toi *= conservative_rescaling;
@@ -292,7 +300,9 @@ bool point_edge_ccd_3D(
         tolerance,          // delta
         tmax,               // maximum time to check
         max_iterations,     // maximum number of iterations
-        output_tolerance);  // delta_actual
+        output_tolerance,   // delta_actual
+        CCD_TYPE,
+        /*no_zero_toi=*/false);
 #else
     bool is_impacting = CTCD::vertexEdgeCTCD(
         p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, min_distance, toi);
@@ -308,7 +318,9 @@ bool point_edge_ccd_3D(
             tolerance,          // delta
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
-            output_tolerance);  // delta_actual
+            output_tolerance,   // delta_actual
+            CCD_TYPE,
+            /*no_zero_toi=*/true);
 #else
         is_impacting = CTCD::vertexEdgeCTCD(
             p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, /*eta=*/0, toi);
