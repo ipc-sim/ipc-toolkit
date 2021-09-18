@@ -15,6 +15,9 @@
 namespace ipc {
 
 static const double SMALL_TOI = 1e-6;
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+static const int TIGHT_INCLUSION_CCD_TYPE = 1;
+#endif
 
 bool point_point_ccd(
     const Eigen::Vector3d& p0_t0,
@@ -52,7 +55,7 @@ bool point_point_ccd(
         tmax,               // maximum time to check
         max_iterations,     // maximum number of iterations
         output_tolerance,   // delta_actual
-        CCD_TYPE,
+        TIGHT_INCLUSION_CCD_TYPE,
         /*no_zero_toi=*/false);
 #else
     bool is_impacting =
@@ -71,7 +74,7 @@ bool point_point_ccd(
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
-            CCD_TYPE,
+            TIGHT_INCLUSION_CCD_TYPE,
             /*no_zero_toi=*/true);
 #else
         is_impacting =
@@ -231,7 +234,7 @@ bool point_edge_ccd_2D(
         tmax,               // maximum time to check
         max_iterations,     // maximum number of iterations
         output_tolerance,   // delta_actual
-        CCD_TYPE,
+        TIGHT_INCLUSION_CCD_TYPE,
         /*no_zero_toi=*/false);
 
     if (is_impacting && toi < SMALL_TOI) {
@@ -245,7 +248,7 @@ bool point_edge_ccd_2D(
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
-            CCD_TYPE,
+            TIGHT_INCLUSION_CCD_TYPE,
             /*no_zero_toi=*/true);
 
         if (is_impacting) {
@@ -301,7 +304,7 @@ bool point_edge_ccd_3D(
         tmax,               // maximum time to check
         max_iterations,     // maximum number of iterations
         output_tolerance,   // delta_actual
-        CCD_TYPE,
+        TIGHT_INCLUSION_CCD_TYPE,
         /*no_zero_toi=*/false);
 #else
     bool is_impacting = CTCD::vertexEdgeCTCD(
@@ -319,7 +322,7 @@ bool point_edge_ccd_3D(
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
-            CCD_TYPE,
+            TIGHT_INCLUSION_CCD_TYPE,
             /*no_zero_toi=*/true);
 #else
         is_impacting = CTCD::vertexEdgeCTCD(
@@ -401,7 +404,6 @@ bool edge_edge_ccd(
 
     double output_tolerance = tolerance;
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-    const int CCD_TYPE = 1;
     bool is_impacting = inclusion_ccd::edgeEdgeCCD_double(
         ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
         { { -1, -1, -1 } }, // rounding error (auto)
@@ -411,7 +413,7 @@ bool edge_edge_ccd(
         tmax,               // maximum time to check
         max_iterations,     // maximum number of iterations
         output_tolerance,   // delta_actual
-        CCD_TYPE,
+        TIGHT_INCLUSION_CCD_TYPE,
         /*no_zero_toi=*/false);
 #else
     bool is_impacting = CTCD::edgeEdgeCTCD(
@@ -430,7 +432,7 @@ bool edge_edge_ccd(
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
-            CCD_TYPE,
+            TIGHT_INCLUSION_CCD_TYPE,
             /*no_zero_toi=*/true);
 #else
         is_impacting = CTCD::edgeEdgeCTCD(
@@ -483,7 +485,6 @@ bool point_triangle_ccd(
 
     double output_tolerance = tolerance;
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-    const int CCD_TYPE = 1;
     bool is_impacting = inclusion_ccd::vertexFaceCCD_double(
         p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
         { { -1, -1, -1 } }, // rounding error (auto)
@@ -493,7 +494,7 @@ bool point_triangle_ccd(
         tmax,               // maximum time to check
         max_iterations,     // maximum number of iterations
         output_tolerance,   // delta_actual
-        CCD_TYPE,
+        TIGHT_INCLUSION_CCD_TYPE,
         /*no_zero_toi=*/false);
 #else
     bool is_impacting = CTCD::vertexFaceCTCD(
@@ -513,7 +514,7 @@ bool point_triangle_ccd(
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
-            CCD_TYPE,
+            TIGHT_INCLUSION_CCD_TYPE,
             /*no_zero_toi=*/true);
 #else
         is_impacting = CTCD::vertexFaceCTCD(
