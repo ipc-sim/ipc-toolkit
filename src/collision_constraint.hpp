@@ -14,44 +14,41 @@ public:
     virtual std::vector<long> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const = 0;
 
+    virtual double compute_distance(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const = 0;
+
+    virtual VectorMax12d compute_distance_gradient(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const = 0;
+
+    virtual MatrixMax12d compute_distance_hessian(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const = 0;
+
     virtual double compute_potential(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        const double dhat) const = 0;
+        const double dhat) const;
 
     virtual VectorMax12d compute_potential_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        const double dhat) const = 0;
+        const double dhat) const;
 
     virtual MatrixMax12d compute_potential_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double dhat,
-        const bool project_hessian_to_psd) const = 0;
+        const bool project_hessian_to_psd) const;
 
     double minimum_distance = 0;
-
-protected:
-    double
-    compute_potential_common(const double distance, const double dhat) const;
-
-    template <typename DerivedDistanceGrad>
-    VectorMax12d compute_potential_gradient_common(
-        const double distance,
-        const Eigen::MatrixBase<DerivedDistanceGrad>& distance_grad,
-        const double dhat) const;
-
-    template <typename DerivedDistanceGrad, typename DerivedDistanceHess>
-    MatrixMax12d compute_potential_hessian_common(
-        const double distance,
-        const Eigen::MatrixBase<DerivedDistanceGrad>& distance_grad,
-        const Eigen::MatrixBase<DerivedDistanceHess>& distance_hess,
-        const double dhat,
-        const bool project_hessian_to_psd) const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -65,6 +62,21 @@ struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
     {
         return { { vertex0_index, vertex1_index } };
     }
+
+    double compute_distance(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const override;
+
+    VectorMax12d compute_distance_gradient(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const override;
+
+    MatrixMax12d compute_distance_hessian(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const override;
 
     double compute_potential(
         const Eigen::MatrixXd& V,
@@ -99,6 +111,21 @@ struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
     {
         return { { vertex_index, E(edge_index, 0), E(edge_index, 1) } };
     }
+
+    double compute_distance(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const override;
+
+    VectorMax12d compute_distance_gradient(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const override;
+
+    MatrixMax12d compute_distance_hessian(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const override;
 
     double compute_potential(
         const Eigen::MatrixXd& V,
@@ -135,6 +162,21 @@ struct EdgeEdgeConstraint : EdgeEdgeCandidate, CollisionConstraint {
                    E(edge1_index, 0), E(edge1_index, 1) } };
     }
 
+    double compute_distance(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const override;
+
+    VectorMax12d compute_distance_gradient(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const override;
+
+    MatrixMax12d compute_distance_hessian(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const override;
+
     double compute_potential(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
@@ -170,24 +212,20 @@ struct FaceVertexConstraint : FaceVertexCandidate, CollisionConstraint {
                    F(face_index, 0), F(face_index, 1), F(face_index, 2) } };
     }
 
-    double compute_potential(
+    double compute_distance(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double dhat) const override;
+        const Eigen::MatrixXi& F) const override;
 
-    VectorMax12d compute_potential_gradient(
+    VectorMax12d compute_distance_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double dhat) const override;
+        const Eigen::MatrixXi& F) const override;
 
-    MatrixMax12d compute_potential_hessian(
+    MatrixMax12d compute_distance_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double dhat,
-        const bool project_hessian_to_psd) const override;
+        const Eigen::MatrixXi& F) const override;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -204,24 +242,20 @@ struct PlaneVertexConstraint : CollisionConstraint {
         return { vertex_index };
     }
 
-    double compute_potential(
+    double compute_distance(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double dhat) const override;
+        const Eigen::MatrixXi& F) const override;
 
-    VectorMax12d compute_potential_gradient(
+    VectorMax12d compute_distance_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double dhat) const override;
+        const Eigen::MatrixXi& F) const override;
 
-    MatrixMax12d compute_potential_hessian(
+    MatrixMax12d compute_distance_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double dhat,
-        const bool project_hessian_to_psd) const override;
+        const Eigen::MatrixXi& F) const override;
 
     VectorMax3d plane_origin;
     VectorMax3d plane_normal;

@@ -24,7 +24,7 @@
 namespace ipc {
 
 /// Find the index of the undirected edge (e0, e1)
-long find_edge(const Eigen::MatrixXi& E, long e0, long e1)
+long find_edge(const Eigen::MatrixXi& E, const long e0, const long e1)
 {
     for (long i = 0; i < E.rows(); i++) {
         if ((E(i, 0) == e0 && E(i, 1) == e1)
@@ -78,12 +78,12 @@ void construct_constraint_set(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    double dhat,
+    const double dhat,
     Constraints& constraint_set,
     const Eigen::MatrixXi& F2E,
-    double dmin,
+    const double dmin,
     const BroadPhaseMethod& method,
-    bool ignore_codimensional_vertices,
+    const bool ignore_codimensional_vertices,
     const std::function<bool(size_t, size_t)>& can_collide)
 {
     double inflation_radius = (dhat + dmin) / 1.99; // Conservative inflation
@@ -103,10 +103,10 @@ void construct_constraint_set(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    double dhat,
+    const double dhat,
     Constraints& constraint_set,
     const Eigen::MatrixXi& F2E,
-    double dmin)
+    const double dmin)
 {
     constraint_set.clear();
 
@@ -304,6 +304,46 @@ void construct_constraint_set(
     }
 }
 
+void construct_point_plane_constraint_set(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& plane_origins,
+    const Eigen::MatrixXd& plane_normals,
+    const double dhat,
+    std::vector<PlaneVertexConstraint>& pv_constraints,
+    const double dmin,
+    const std::function<bool(size_t, size_t)>& can_collide)
+{
+    pv_constraints.clear();
+
+    double dhat_squared = dhat * dhat;
+    double dmin_squared = dmin * dmin;
+
+    // Cull the candidates by measuring the distance and dropping those that are
+    // greater than dhat.
+
+    size_t n_planes = plane_origins.rows();
+    assert(plane_normals.rows() == n_planes);
+
+    for (size_t vi = 0; vi < V.rows(); vi++) {
+        for (size_t pi = 0; pi < n_planes; pi++) {
+            if (!can_collide(vi, pi)) {
+                continue;
+            }
+
+            const auto& plane_origin = plane_origins.row(pi);
+            const auto& plane_normal = plane_normals.row(pi);
+
+            double distance_sqr =
+                point_plane_distance(V.row(vi), plane_origin, plane_normal);
+
+            if (distance_sqr - dmin_squared < 2 * dmin * dhat + dhat_squared) {
+                pv_constraints.emplace_back(plane_origin, plane_normal, vi);
+                pv_constraints.back().minimum_distance = dmin;
+            }
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 double compute_barrier_potential(
@@ -311,7 +351,7 @@ double compute_barrier_potential(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
-    double dhat)
+    const double dhat)
 {
     if (constraint_set.empty()) {
         return 0;
@@ -341,7 +381,7 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
-    double dhat)
+    const double dhat)
 {
     if (constraint_set.empty()) {
         return Eigen::VectorXd::Zero(V.size());
@@ -375,8 +415,8 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
-    double dhat,
-    bool project_hessian_to_psd)
+    const double dhat,
+    const bool project_hessian_to_psd)
 {
     if (constraint_set.empty()) {
         return Eigen::SparseMatrix<double>(V.size(), V.size());
@@ -419,9 +459,9 @@ bool is_step_collision_free(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const BroadPhaseMethod& method,
-    double tolerance,
-    int max_iterations,
-    bool ignore_codimensional_vertices,
+    const double tolerance,
+    const long max_iterations,
+    const bool ignore_codimensional_vertices,
     const std::function<bool(size_t, size_t)>& can_collide)
 {
     // Broad phase
@@ -441,73 +481,52 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    double tolerance,
-    int max_iterations)
+    const double tolerance,
+    const long max_iterations)
 {
     assert(V0.cols() == V1.cols());
 
     // Narrow phase
-    for (const auto& ev_candidate : candidates.ev_candidates) {
+    for (size_t i = 0; i < candidates.size(); i++) {
         double toi;
-        bool is_collision = point_edge_ccd(
-            // Point at t=0
-            V0.row(ev_candidate.vertex_index),
-            // Edge at t=0
-            V0.row(E(ev_candidate.edge_index, 0)),
-            V0.row(E(ev_candidate.edge_index, 1)),
-            // Point at t=1
-            V1.row(ev_candidate.vertex_index),
-            // Edge at t=1
-            V1.row(E(ev_candidate.edge_index, 0)),
-            V1.row(E(ev_candidate.edge_index, 1)), //
-            toi, /*tmax=*/1.0, tolerance, max_iterations);
+        bool is_collision = candidates[i].ccd(
+            V0, V1, E, F, toi, /*tmax=*/1.0, tolerance, max_iterations);
 
         if (is_collision) {
             return false;
         }
     }
 
-    for (const auto& ee_candidate : candidates.ee_candidates) {
-        double toi;
-        bool is_collision = edge_edge_ccd(
-            // Edge 1 at t=0
-            V0.row(E(ee_candidate.edge0_index, 0)),
-            V0.row(E(ee_candidate.edge0_index, 1)),
-            // Edge 2 at t=0
-            V0.row(E(ee_candidate.edge1_index, 0)),
-            V0.row(E(ee_candidate.edge1_index, 1)),
-            // Edge 1 at t=1
-            V1.row(E(ee_candidate.edge0_index, 0)),
-            V1.row(E(ee_candidate.edge0_index, 1)),
-            // Edge 2 at t=1
-            V1.row(E(ee_candidate.edge1_index, 0)),
-            V1.row(E(ee_candidate.edge1_index, 1)), //
-            toi, /*tmax=*/1.0, tolerance, max_iterations);
+    return true;
+}
 
-        if (is_collision) {
-            return false;
-        }
-    }
+bool is_step_point_plane_collision_free(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& plane_origins,
+    const Eigen::MatrixXd& plane_normals,
+    const std::function<bool(size_t, size_t)>& can_collide)
+{
+    size_t n_planes = plane_origins.rows();
+    assert(plane_normals.rows() == n_planes);
+    assert(V0.rows() == V1.rows());
 
-    for (const auto& fv_candidate : candidates.fv_candidates) {
-        double toi;
-        bool is_collision = point_triangle_ccd(
-            // Point at t=0
-            V0.row(fv_candidate.vertex_index),
-            // Triangle at t=0
-            V0.row(F(fv_candidate.face_index, 0)),
-            V0.row(F(fv_candidate.face_index, 1)),
-            V0.row(F(fv_candidate.face_index, 2)),
-            // Point at t=1
-            V1.row(fv_candidate.vertex_index),
-            // Triangle at t=1
-            V1.row(F(fv_candidate.face_index, 0)),
-            V1.row(F(fv_candidate.face_index, 1)),
-            V1.row(F(fv_candidate.face_index, 2)), //
-            toi, /*tmax=*/1.0, tolerance, max_iterations);
+    for (size_t vi = 0; vi < V0.rows(); vi++) {
+        for (size_t pi = 0; pi < n_planes; pi++) {
+            if (!can_collide(vi, pi)) {
+                continue;
+            }
 
-        if (is_collision) {
-            return false;
+            const auto& plane_origin = plane_origins.row(pi);
+            const auto& plane_normal = plane_normals.row(pi);
+
+            double toi;
+            bool is_collision = point_static_plane_ccd(
+                V0.row(vi), V1.row(vi), plane_origin, plane_normal, toi);
+
+            if (is_collision) {
+                return false;
+            }
         }
     }
 
@@ -522,9 +541,9 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const BroadPhaseMethod& method,
-    double tolerance,
-    int max_iterations,
-    bool ignore_codimensional_vertices,
+    const double tolerance,
+    const long max_iterations,
+    const bool ignore_codimensional_vertices,
     const std::function<bool(size_t, size_t)>& can_collide)
 {
     // Broad phase
@@ -544,8 +563,8 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    double tolerance,
-    int max_iterations)
+    const double tolerance,
+    const long max_iterations)
 {
     assert(V0.cols() == V1.cols());
 
@@ -557,69 +576,65 @@ double compute_collision_free_stepsize(
     double earliest_toi = 1;
     tbb::mutex earliest_toi_mutex;
 
-    const size_t num_ev = candidates.ev_candidates.size();
-    const size_t num_ee = candidates.ee_candidates.size();
-    const size_t num_fv = candidates.fv_candidates.size();
-
-    // Do a single block range over all three candidate vectors
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, candidates.size()),
         [&](tbb::blocked_range<size_t> r) {
             for (size_t i = r.begin(); i < r.end(); i++) {
                 double toi = std::numeric_limits<double>::infinity();
-                bool are_colliding;
-
-                size_t ci = i;
-                if (ci < num_ev) {
-                    const auto& ev_candidate = candidates.ev_candidates[ci];
-                    const auto& ei = ev_candidate.edge_index;
-                    const auto& vi = ev_candidate.vertex_index;
-                    are_colliding = point_edge_ccd(
-                        // Point at t=0
-                        V0.row(vi),
-                        // Edge at t=0
-                        V0.row(E(ei, 0)), V0.row(E(ei, 1)),
-                        // Point at t=1
-                        V1.row(vi),
-                        // Edge at t=1
-                        V1.row(E(ei, 0)), V1.row(E(ei, 1)), //
-                        toi, /*tmax=*/earliest_toi, tolerance, max_iterations);
-                } else if ((ci -= num_ev) < num_ee) {
-                    const auto& ee_candidate = candidates.ee_candidates[ci];
-                    const auto& eai = ee_candidate.edge0_index;
-                    const auto& ebi = ee_candidate.edge1_index;
-                    are_colliding = edge_edge_ccd(
-                        // Edge 1 at t=0
-                        V0.row(E(eai, 0)), V0.row(E(eai, 1)),
-                        // Edge 2 at t=0
-                        V0.row(E(ebi, 0)), V0.row(E(ebi, 1)),
-                        // Edge 1 at t=1
-                        V1.row(E(eai, 0)), V1.row(E(eai, 1)),
-                        // Edge 2 at t=1
-                        V1.row(E(ebi, 0)), V1.row(E(ebi, 1)), //
-                        toi, /*tmax=*/earliest_toi, tolerance, max_iterations);
-                } else {
-                    ci -= num_ee;
-                    assert(ci < num_fv);
-                    const auto& fv_candidate = candidates.fv_candidates[ci];
-                    const auto& fi = fv_candidate.face_index;
-                    const auto& vi = fv_candidate.vertex_index;
-                    are_colliding = point_triangle_ccd(
-                        // Point at t=0
-                        V0.row(vi),
-                        // Triangle at t = 0
-                        V0.row(F(fi, 0)), V0.row(F(fi, 1)), V0.row(F(fi, 2)),
-                        // Point at t=1
-                        V1.row(vi),
-                        // Triangle at t = 1
-                        V1.row(F(fi, 0)), V1.row(F(fi, 1)), V1.row(F(fi, 2)), //
-                        toi, /*tmax=*/earliest_toi, tolerance, max_iterations);
-                }
+                bool are_colliding = candidates[i].ccd(
+                    V0, V1, E, F, toi, /*tmax=*/earliest_toi, tolerance,
+                    max_iterations);
 
                 if (are_colliding) {
                     tbb::mutex::scoped_lock lock(earliest_toi_mutex);
                     if (toi < earliest_toi) {
                         earliest_toi = toi;
+                    }
+                }
+            }
+        });
+
+    assert(earliest_toi >= 0 && earliest_toi <= 1.0);
+    return earliest_toi;
+}
+
+bool compute_point_plane_collision_free_stepsize(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& plane_origins,
+    const Eigen::MatrixXd& plane_normals,
+    const std::function<bool(size_t, size_t)>& can_collide)
+{
+    size_t n_planes = plane_origins.rows();
+    assert(plane_normals.rows() == n_planes);
+    assert(V0.rows() == V1.rows());
+
+    double earliest_toi = 1;
+    tbb::mutex earliest_toi_mutex;
+
+    // Do a single block range over all three candidate vectors
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, V0.rows()),
+        [&](tbb::blocked_range<size_t> r) {
+            for (size_t vi = r.begin(); vi < r.end(); vi++) {
+                for (size_t pi = 0; pi < n_planes; pi++) {
+                    if (!can_collide(vi, pi)) {
+                        continue;
+                    }
+
+                    const auto& plane_origin = plane_origins.row(pi);
+                    const auto& plane_normal = plane_normals.row(pi);
+
+                    double toi;
+                    bool are_colliding = point_static_plane_ccd(
+                        V0.row(vi), V1.row(vi), plane_origin, plane_normal,
+                        toi);
+
+                    if (are_colliding) {
+                        tbb::mutex::scoped_lock lock(earliest_toi_mutex);
+                        if (toi < earliest_toi) {
+                            earliest_toi = toi;
+                        }
                     }
                 }
             }
@@ -645,56 +660,14 @@ double compute_minimum_distance(
     tbb::enumerable_thread_specific<double> storage(
         std::numeric_limits<double>::infinity());
 
-    const size_t num_vv = constraint_set.vv_constraints.size();
-    const size_t num_ev = constraint_set.ev_constraints.size();
-    const size_t num_ee = constraint_set.ee_constraints.size();
-    const size_t num_fv = constraint_set.fv_constraints.size();
-
     // Do a single block range over all constraint vectors
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, constraint_set.size()),
         [&](tbb::blocked_range<size_t> r) {
-            auto& local_min_dist = storage.local();
+            double& local_min_dist = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-
-                double dist;
-                size_t ci = i;
-                if (ci < num_vv) {
-                    const auto& vv_constraint =
-                        constraint_set.vv_constraints[ci];
-                    const auto& vai = vv_constraint.vertex0_index;
-                    const auto& vbi = vv_constraint.vertex1_index;
-                    dist = point_point_distance(V.row(vai), V.row(vbi));
-                } else if ((ci -= num_vv) < num_ev) {
-                    const auto& ev_constraint =
-                        constraint_set.ev_constraints[ci];
-                    const auto& ei = ev_constraint.edge_index;
-                    const auto& vi = ev_constraint.vertex_index;
-                    dist = point_edge_distance(
-                        V.row(vi), V.row(E(ei, 0)), V.row(E(ei, 1)),
-                        PointEdgeDistanceType::P_E);
-                } else if ((ci -= num_ev) < num_ee) {
-                    const auto& ee_constraint =
-                        constraint_set.ee_constraints[ci];
-                    const auto& eai = ee_constraint.edge0_index;
-                    const auto& ebi = ee_constraint.edge1_index;
-                    // The distance type is unknown because of mollified PP and
-                    // PE constraints where also added as EE constraints.
-                    dist = edge_edge_distance(
-                        V.row(E(eai, 0)), V.row(E(eai, 1)), //
-                        V.row(E(ebi, 0)), V.row(E(ebi, 1)));
-                } else {
-                    ci -= num_ee;
-                    assert(ci < num_fv);
-                    const auto& fv_constraint =
-                        constraint_set.fv_constraints[ci];
-                    const auto& fi = fv_constraint.face_index;
-                    const auto& vi = fv_constraint.vertex_index;
-                    dist = point_triangle_distance(
-                        V.row(vi), V.row(F(fi, 0)), V.row(F(fi, 1)),
-                        V.row(F(fi, 2)), PointTriangleDistanceType::P_T);
-                }
+                const double dist = constraint_set[i].compute_distance(V, E, F);
 
                 if (dist < local_min_dist) {
                     local_min_dist = dist;

@@ -5,7 +5,25 @@
 
 #include <Eigen/Core>
 
+#include <ipc/ccd/ccd.hpp>
+
 namespace ipc {
+
+struct CollisionCandidate {
+    virtual ~CollisionCandidate() {}
+
+    virtual bool
+    ccd(const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        double& toi,
+        const double tmax = 1.0,
+        const double tolerance = DEFAULT_CCD_TOLERANCE,
+        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+        const double conservative_rescaling =
+            DEFAULT_CCD_CONSERVATIVE_RESCALING) const = 0;
+};
 
 struct VertexVertexCandidate {
     VertexVertexCandidate(long vertex0_index, long vertex1_index);
@@ -23,7 +41,7 @@ struct VertexVertexCandidate {
     long vertex1_index;
 };
 
-struct EdgeVertexCandidate {
+struct EdgeVertexCandidate : CollisionCandidate {
     EdgeVertexCandidate(long edge_index, long vertex_index);
 
     bool operator==(const EdgeVertexCandidate& other) const;
@@ -35,11 +53,23 @@ struct EdgeVertexCandidate {
     /// @brief Compare EdgeVertexCandidates for sorting.
     bool operator<(const EdgeVertexCandidate& other) const;
 
+    bool
+    ccd(const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        double& toi,
+        const double tmax = 1.0,
+        const double tolerance = DEFAULT_CCD_TOLERANCE,
+        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+        const double conservative_rescaling =
+            DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
+
     long edge_index;
     long vertex_index;
 };
 
-struct EdgeEdgeCandidate {
+struct EdgeEdgeCandidate : CollisionCandidate {
     EdgeEdgeCandidate(long edge0_index, long edge1_index);
 
     bool operator==(const EdgeEdgeCandidate& other) const;
@@ -50,6 +80,18 @@ struct EdgeEdgeCandidate {
 
     /// @brief Compare EdgeEdgeCandidates for sorting.
     bool operator<(const EdgeEdgeCandidate& other) const;
+
+    bool
+    ccd(const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        double& toi,
+        const double tmax = 1.0,
+        const double tolerance = DEFAULT_CCD_TOLERANCE,
+        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+        const double conservative_rescaling =
+            DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
 
     long edge0_index;
     long edge1_index;
@@ -74,7 +116,7 @@ struct EdgeFaceCandidate {
     long face_index;
 };
 
-struct FaceVertexCandidate {
+struct FaceVertexCandidate : CollisionCandidate {
     FaceVertexCandidate(long face_index, long vertex_index);
 
     bool operator==(const FaceVertexCandidate& other) const;
@@ -85,6 +127,18 @@ struct FaceVertexCandidate {
 
     /// @brief Compare FaceVertexCandidate for sorting.
     bool operator<(const FaceVertexCandidate& other) const;
+
+    bool
+    ccd(const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        double& toi,
+        const double tmax = 1.0,
+        const double tolerance = DEFAULT_CCD_TOLERANCE,
+        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+        const double conservative_rescaling =
+            DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
 
     long face_index;
     long vertex_index;
@@ -100,6 +154,9 @@ struct Candidates {
     bool empty() const;
 
     void clear();
+
+    CollisionCandidate& operator[](size_t idx);
+    const CollisionCandidate& operator[](size_t idx) const;
 
     bool save_obj(
         const std::string& filename,

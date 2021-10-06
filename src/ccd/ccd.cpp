@@ -25,10 +25,10 @@ bool point_point_ccd(
     const Eigen::Vector3d& p0_t1,
     const Eigen::Vector3d& p1_t1,
     double& toi,
-    double tmax,
-    double tolerance,
-    int max_iterations,
-    double conservative_rescaling)
+    const double tmax,
+    const double tolerance,
+    const long max_iterations,
+    const double conservative_rescaling)
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -103,10 +103,10 @@ bool point_edge_ccd_2D(
     const Eigen::Vector2d& e0_t1,
     const Eigen::Vector2d& e1_t1,
     double& toi,
-    double tmax,
-    double tolerance,
-    int max_iterations,
-    double conservative_rescaling)
+    const double tmax,
+    const double tolerance,
+    const long max_iterations,
+    const double conservative_rescaling)
 {
 #ifndef IPC_TOOLKIT_WITH_CORRECT_CCD
     Eigen::Vector2d d0 = p_t1 - p_t0, d1 = e0_t1 - e0_t0, d2 = e1_t1 - e1_t0;
@@ -274,10 +274,10 @@ bool point_edge_ccd_3D(
     const Eigen::Vector3d& e0_t1,
     const Eigen::Vector3d& e1_t1,
     double& toi,
-    double tmax,
-    double tolerance,
-    int max_iterations,
-    double conservative_rescaling)
+    const double tmax,
+    const double tolerance,
+    const long max_iterations,
+    const double conservative_rescaling)
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -351,10 +351,10 @@ bool point_edge_ccd(
     const VectorMax3d& e0_t1,
     const VectorMax3d& e1_t1,
     double& toi,
-    double tmax,
-    double tolerance,
-    int max_iterations,
-    double conservative_rescaling)
+    const double tmax,
+    const double tolerance,
+    const long max_iterations,
+    const double conservative_rescaling)
 {
     int dim = p_t0.size();
     assert(e0_t0.size() == dim);
@@ -383,10 +383,10 @@ bool edge_edge_ccd(
     const Eigen::Vector3d& eb0_t1,
     const Eigen::Vector3d& eb1_t1,
     double& toi,
-    double tmax,
-    double tolerance,
-    int max_iterations,
-    double conservative_rescaling)
+    const double tmax,
+    const double tolerance,
+    const long max_iterations,
+    const double conservative_rescaling)
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
@@ -464,10 +464,10 @@ bool point_triangle_ccd(
     const Eigen::Vector3d& t1_t1,
     const Eigen::Vector3d& t2_t1,
     double& toi,
-    double tmax,
-    double tolerance,
-    int max_iterations,
-    double conservative_rescaling)
+    const double tmax,
+    const double tolerance,
+    const long max_iterations,
+    const double conservative_rescaling)
 {
     assert(tmax >= 0 && tmax <= 1.0);
 

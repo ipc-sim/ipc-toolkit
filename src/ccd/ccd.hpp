@@ -5,6 +5,10 @@
 
 namespace ipc {
 
+static constexpr double DEFAULT_CCD_TOLERANCE = 1e-6;
+static constexpr long DEFAULT_CCD_MAX_ITERATIONS = 1e7;
+static constexpr double DEFAULT_CCD_CONSERVATIVE_RESCALING = 0.8;
+
 // 2D
 
 bool point_edge_ccd_2D(
@@ -15,10 +19,10 @@ bool point_edge_ccd_2D(
     const Eigen::Vector2d& e0_t1,
     const Eigen::Vector2d& e1_t1,
     double& toi,
-    double tmax = 1.0,
-    double tolerance = 1e-6,
-    int max_iterations = 1e7,
-    double conservative_rescaling = 0.8);
+    const double tmax = 1.0,
+    const double tolerance = DEFAULT_CCD_TOLERANCE,
+    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 // 3D
 
@@ -28,10 +32,10 @@ bool point_point_ccd(
     const Eigen::Vector3d& p0_t1,
     const Eigen::Vector3d& p1_t1,
     double& toi,
-    double tmax = 1.0,
-    double tolerance = 1e-6,
-    int max_iterations = 1e7,
-    double conservative_rescaling = 0.8);
+    const double tmax = 1.0,
+    const double tolerance = DEFAULT_CCD_TOLERANCE,
+    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 bool point_edge_ccd_3D(
     const Eigen::Vector3d& p_t0,
@@ -41,10 +45,10 @@ bool point_edge_ccd_3D(
     const Eigen::Vector3d& e0_t1,
     const Eigen::Vector3d& e1_t1,
     double& toi,
-    double tmax = 1.0,
-    double tolerance = 1e-6,
-    int max_iterations = 1e7,
-    double conservative_rescaling = 0.8);
+    const double tmax = 1.0,
+    const double tolerance = DEFAULT_CCD_TOLERANCE,
+    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 bool point_triangle_ccd(
     const Eigen::Vector3d& p_t0,
@@ -56,10 +60,10 @@ bool point_triangle_ccd(
     const Eigen::Vector3d& t1_t1,
     const Eigen::Vector3d& t2_t1,
     double& toi,
-    double tmax = 1.0,
-    double tolerance = 1e-6,
-    int max_iterations = 1e7,
-    double conservative_rescaling = 0.8);
+    const double tmax = 1.0,
+    const double tolerance = DEFAULT_CCD_TOLERANCE,
+    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 bool edge_edge_ccd(
     const Eigen::Vector3d& ea0_t0,
@@ -71,10 +75,10 @@ bool edge_edge_ccd(
     const Eigen::Vector3d& eb0_t1,
     const Eigen::Vector3d& eb1_t1,
     double& toi,
-    double tmax = 1.0,
-    double tolerance = 1e-6,
-    int max_iterations = 1e7,
-    double conservative_rescaling = 0.8);
+    const double tmax = 1.0,
+    const double tolerance = DEFAULT_CCD_TOLERANCE,
+    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 // 2D or 3D
 
@@ -86,10 +90,10 @@ bool point_edge_ccd(
     const VectorMax3d& e0_t1,
     const VectorMax3d& e1_t1,
     double& toi,
-    double tmax = 1.0,
-    double tolerance = 1e-6,
-    int max_iterations = 1e7,
-    double conservative_rescaling = 0.8);
+    const double tmax = 1.0,
+    const double tolerance = DEFAULT_CCD_TOLERANCE,
+    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 bool point_static_plane_ccd(
     const VectorMax3d& p_t0,
@@ -97,6 +101,6 @@ bool point_static_plane_ccd(
     const VectorMax3d& plane_origin,
     const VectorMax3d& plane_normal,
     double& toi,
-    double conservative_rescaling = 0.8);
+    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 } // namespace ipc

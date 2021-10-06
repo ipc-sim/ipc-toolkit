@@ -10,35 +10,41 @@
 
 namespace ipc {
 
-double CollisionConstraint::compute_potential_common(
-    const double distance, const double dhat) const
+double CollisionConstraint::compute_potential(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const double dhat) const
 {
     const double dhat_squared = dhat * dhat;
+    const double distance = compute_distance(V, E, F); // Squared distance
     return barrier(
         distance - minimum_distance * minimum_distance,
         2 * minimum_distance * dhat + dhat_squared);
 }
 
-template <typename DerivedDistanceGrad>
-VectorMax12d CollisionConstraint::compute_potential_gradient_common(
-    const double distance,
-    const Eigen::MatrixBase<DerivedDistanceGrad>& distance_grad,
+VectorMax12d CollisionConstraint::compute_potential_gradient(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
     const double dhat) const
 {
     const double dhat_squared = dhat * dhat;
 
     // ∇b(d(x)) = b'(d(x)) * ∇d(x)
-    double grad_b = barrier_gradient(
+    const double distance = compute_distance(V, E, F);
+    const VectorMax12d distance_grad = compute_distance_gradient(V, E, F);
+
+    const double grad_b = barrier_gradient(
         distance - minimum_distance * minimum_distance,
         2 * minimum_distance * dhat + dhat_squared);
     return grad_b * distance_grad;
 }
 
-template <typename DerivedDistanceGrad, typename DerivedDistanceHess>
-MatrixMax12d CollisionConstraint::compute_potential_hessian_common(
-    const double distance,
-    const Eigen::MatrixBase<DerivedDistanceGrad>& distance_grad,
-    const Eigen::MatrixBase<DerivedDistanceHess>& distance_hess,
+MatrixMax12d CollisionConstraint::compute_potential_hessian(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
     const double dhat,
     const bool project_hessian_to_psd) const
 {
@@ -48,11 +54,14 @@ MatrixMax12d CollisionConstraint::compute_potential_hessian_common(
     // ∇²[b(d(x))] = ∇(b'(d(x)) * ∇d(x))
     //             = b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)
 
-    double grad_b = barrier_gradient(
+    const double distance = compute_distance(V, E, F);
+    const VectorMax12d distance_grad = compute_distance_gradient(V, E, F);
+    const MatrixMax12d distance_hess = compute_distance_hessian(V, E, F);
+
+    const double grad_b = barrier_gradient(
         distance - min_dist_squrared,
         2 * minimum_distance * dhat + dhat_squared);
-
-    double hess_b = barrier_hessian(
+    const double hess_b = barrier_hessian(
         distance - min_dist_squrared,
         2 * minimum_distance * dhat + dhat_squared);
 
@@ -78,15 +87,43 @@ VertexVertexConstraint::VertexVertexConstraint(
 {
 }
 
+double VertexVertexConstraint::compute_distance(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    return point_point_distance(V.row(vertex0_index), V.row(vertex1_index));
+}
+
+VectorMax12d VertexVertexConstraint::compute_distance_gradient(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    VectorMax6d distance_grad;
+    point_point_distance_gradient(
+        V.row(vertex0_index), V.row(vertex1_index), distance_grad);
+    return distance_grad;
+}
+
+MatrixMax12d VertexVertexConstraint::compute_distance_hessian(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    MatrixMax6d distance_hess;
+    point_point_distance_hessian(
+        V.row(vertex0_index), V.row(vertex1_index), distance_hess);
+    return distance_hess;
+}
+
 double VertexVertexConstraint::compute_potential(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double dhat) const
 {
-    double distance =
-        point_point_distance(V.row(vertex0_index), V.row(vertex1_index));
-    return multiplicity * compute_potential_common(distance, dhat);
+    return multiplicity * CollisionConstraint::compute_potential(V, E, F, dhat);
 }
 
 VectorMax12d VertexVertexConstraint::compute_potential_gradient(
@@ -96,16 +133,8 @@ VectorMax12d VertexVertexConstraint::compute_potential_gradient(
     const double dhat) const
 {
     // ∇[m * b(d(x))] = m * b'(d(x)) * ∇d(x)
-    const auto& p0 = V.row(vertex0_index);
-    const auto& p1 = V.row(vertex1_index);
-
-    VectorMax6d distance_grad;
-    point_point_distance_gradient(p0, p1, distance_grad);
-
-    double distance = point_point_distance(p0, p1);
-
     return multiplicity
-        * compute_potential_gradient_common(distance, distance_grad, dhat);
+        * CollisionConstraint::compute_potential_gradient(V, E, F, dhat);
 }
 
 MatrixMax12d VertexVertexConstraint::compute_potential_hessian(
@@ -117,19 +146,9 @@ MatrixMax12d VertexVertexConstraint::compute_potential_hessian(
 {
     // ∇²[m * b(d(x))] = m * ∇(b'(d(x)) * ∇d(x))
     //                 = m * [b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)]
-    const auto& p0 = V.row(vertex0_index);
-    const auto& p1 = V.row(vertex1_index);
-
-    double distance = point_point_distance(p0, p1);
-    VectorMax6d distance_grad;
-    point_point_distance_gradient(p0, p1, distance_grad);
-    MatrixMax6d distance_hess;
-    point_point_distance_hessian(p0, p1, distance_hess);
-
     return multiplicity
-        * compute_potential_hessian_common(
-               distance, distance_grad, distance_hess, dhat,
-               project_hessian_to_psd);
+        * CollisionConstraint::compute_potential_hessian(
+               V, E, F, dhat, project_hessian_to_psd);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -144,17 +163,48 @@ EdgeVertexConstraint::EdgeVertexConstraint(const EdgeVertexCandidate& candidate)
 {
 }
 
+double EdgeVertexConstraint::compute_distance(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    // The distance type is known because of construct_constraint_set()
+    return point_edge_distance(
+        V.row(vertex_index), V.row(E(edge_index, 0)), V.row(E(edge_index, 1)),
+        PointEdgeDistanceType::P_E);
+}
+
+VectorMax12d EdgeVertexConstraint::compute_distance_gradient(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    VectorMax9d distance_grad;
+    point_edge_distance_gradient(
+        V.row(vertex_index), V.row(E(edge_index, 0)), V.row(E(edge_index, 1)),
+        PointEdgeDistanceType::P_E, distance_grad);
+    return distance_grad;
+}
+
+MatrixMax12d EdgeVertexConstraint::compute_distance_hessian(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    MatrixMax9d distance_hess;
+    point_edge_distance_hessian(
+        V.row(vertex_index), V.row(E(edge_index, 0)), V.row(E(edge_index, 1)),
+        PointEdgeDistanceType::P_E, distance_hess);
+    return distance_hess;
+}
+
 double EdgeVertexConstraint::compute_potential(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double dhat) const
 {
-    // The distance type is known because of construct_constraint_set()
-    double distance = point_edge_distance(
-        V.row(vertex_index), V.row(E(edge_index, 0)), V.row(E(edge_index, 1)),
-        PointEdgeDistanceType::P_E);
-    return multiplicity * compute_potential_common(distance, dhat);
+    return multiplicity * CollisionConstraint::compute_potential(V, E, F, dhat);
 }
 
 VectorMax12d EdgeVertexConstraint::compute_potential_gradient(
@@ -164,19 +214,8 @@ VectorMax12d EdgeVertexConstraint::compute_potential_gradient(
     const double dhat) const
 {
     // ∇[m * b(d(x))] = m * b'(d(x)) * ∇d(x)
-    const auto& p = V.row(vertex_index);
-    const auto& e0 = V.row(E(edge_index, 0));
-    const auto& e1 = V.row(E(edge_index, 1));
-
-    VectorMax9d distance_grad;
-    point_edge_distance_gradient(
-        p, e0, e1, PointEdgeDistanceType::P_E, distance_grad);
-
-    double distance =
-        point_edge_distance(p, e0, e1, PointEdgeDistanceType::P_E);
-
     return multiplicity
-        * compute_potential_gradient_common(distance, distance_grad, dhat);
+        * CollisionConstraint::compute_potential_gradient(V, E, F, dhat);
 }
 
 MatrixMax12d EdgeVertexConstraint::compute_potential_hessian(
@@ -188,23 +227,9 @@ MatrixMax12d EdgeVertexConstraint::compute_potential_hessian(
 {
     // ∇²[m * b(d(x))] = m * ∇(b'(d(x)) * ∇d(x))
     //                 = m * [b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)]
-    const auto& p = V.row(vertex_index);
-    const auto& e0 = V.row(E(edge_index, 0));
-    const auto& e1 = V.row(E(edge_index, 1));
-
-    double distance =
-        point_edge_distance(p, e0, e1, PointEdgeDistanceType::P_E);
-    VectorMax9d distance_grad;
-    point_edge_distance_gradient(
-        p, e0, e1, PointEdgeDistanceType::P_E, distance_grad);
-    MatrixMax12d distance_hess;
-    point_edge_distance_hessian(
-        p, e0, e1, PointEdgeDistanceType::P_E, distance_hess);
-
     return multiplicity
-        * compute_potential_hessian_common(
-               distance, distance_grad, distance_hess, dhat,
-               project_hessian_to_psd);
+        * CollisionConstraint::compute_potential_hessian(
+               V, E, F, dhat, project_hessian_to_psd);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -223,22 +248,52 @@ EdgeEdgeConstraint::EdgeEdgeConstraint(
 {
 }
 
+double EdgeEdgeConstraint::compute_distance(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    // The distance type is unknown because of mollified PP and PE
+    // constraints where also added as EE constraints.
+    return edge_edge_distance(
+        V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
+        V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)));
+}
+
+VectorMax12d EdgeEdgeConstraint::compute_distance_gradient(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    VectorMax9d distance_grad;
+    edge_edge_distance_gradient(
+        V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
+        V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)), distance_grad);
+    return distance_grad;
+}
+
+MatrixMax12d EdgeEdgeConstraint::compute_distance_hessian(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    MatrixMax12d distance_hess;
+    edge_edge_distance_hessian(
+        V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
+        V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)), distance_hess);
+    return distance_hess;
+}
+
 double EdgeEdgeConstraint::compute_potential(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double dhat) const
 {
-    const auto& ea0 = V.row(E(edge0_index, 0));
-    const auto& ea1 = V.row(E(edge0_index, 1));
-    const auto& eb0 = V.row(E(edge1_index, 0));
-    const auto& eb1 = V.row(E(edge1_index, 1));
-
-    // The distance type is unknown because of mollified PP and PE
-    // constraints where also added as EE constraints.
-    double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
-    return edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x)
-        * compute_potential_common(distance, dhat);
+    return edge_edge_mollifier(
+               V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
+               V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)), eps_x)
+        * CollisionConstraint::compute_potential(V, E, F, dhat);
 }
 
 VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
@@ -257,27 +312,28 @@ VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
 
     // The distance type is unknown because of mollified PP and PE
     // constraints where also added as EE constraints.
-    EdgeEdgeDistanceType dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
-    double distance = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
+    const EdgeEdgeDistanceType dtype =
+        edge_edge_distance_type(ea0, ea1, eb0, eb1);
+    const double distance = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
     VectorMax12d distance_grad;
     edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype, distance_grad);
 
     // m(x)
-    double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
+    const double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
     // ∇m(x)
     VectorMax12d mollifier_grad;
     edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x, mollifier_grad);
 
     // b(d(x))
-    double b = barrier(
+    const double b = barrier(
+        distance - minimum_distance * minimum_distance,
+        2 * minimum_distance * dhat + dhat_squared);
+    // b'(d(x))
+    const double grad_b = barrier_gradient(
         distance - minimum_distance * minimum_distance,
         2 * minimum_distance * dhat + dhat_squared);
 
-    // b'(d(x)) * ∇d(x)
-    auto barrier_distance_grad =
-        compute_potential_gradient_common(distance, distance_grad, dhat);
-
-    return mollifier_grad * b + mollifier * barrier_distance_grad;
+    return mollifier_grad * b + mollifier * grad_b * distance_grad;
 }
 
 MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
@@ -303,28 +359,29 @@ MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
     // Compute distance derivatives
     // The distance type is unknown because of mollified PP and PE
     // constraints where also added as EE constraints.
-    EdgeEdgeDistanceType dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
-    double distance = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
+    const EdgeEdgeDistanceType dtype =
+        edge_edge_distance_type(ea0, ea1, eb0, eb1);
+    const double distance = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
     VectorMax12d distance_grad;
     edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype, distance_grad);
     MatrixMax12d distance_hess;
     edge_edge_distance_hessian(ea0, ea1, eb0, eb1, dtype, distance_hess);
 
     // Compute mollifier derivatives
-    double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
+    const double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
     VectorMax12d mollifier_grad;
     edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x, mollifier_grad);
     MatrixMax12d mollifier_hess;
     edge_edge_mollifier_hessian(ea0, ea1, eb0, eb1, eps_x, mollifier_hess);
 
     // Compute barrier derivatives
-    double b = barrier(
+    const double b = barrier(
         distance - min_dist_squrared,
         2 * minimum_distance * dhat + dhat_squared);
-    double grad_b = barrier_gradient(
+    const double grad_b = barrier_gradient(
         distance - min_dist_squrared,
         2 * minimum_distance * dhat + dhat_squared);
-    double hess_b = barrier_hessian(
+    const double hess_b = barrier_hessian(
         distance - min_dist_squrared,
         2 * minimum_distance * dhat + dhat_squared);
 
@@ -355,65 +412,39 @@ FaceVertexConstraint::FaceVertexConstraint(const FaceVertexCandidate& candidate)
 {
 }
 
-double FaceVertexConstraint::compute_potential(
+double FaceVertexConstraint::compute_distance(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double dhat) const
+    const Eigen::MatrixXi& F) const
 {
     // The distance type is known because of construct_constraint_set()
-    double distance = point_triangle_distance(
+    return point_triangle_distance(
         V.row(vertex_index), V.row(F(face_index, 0)), V.row(F(face_index, 1)),
         V.row(F(face_index, 2)), PointTriangleDistanceType::P_T);
-    return compute_potential_common(distance, dhat);
 }
 
-VectorMax12d FaceVertexConstraint::compute_potential_gradient(
+VectorMax12d FaceVertexConstraint::compute_distance_gradient(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double dhat) const
+    const Eigen::MatrixXi& F) const
 {
-    // ∇b(d(x)) = b'(d(x)) * ∇d(x)
-    const auto& p = V.row(vertex_index);
-    const auto& t0 = V.row(F(face_index, 0));
-    const auto& t1 = V.row(F(face_index, 1));
-    const auto& t2 = V.row(F(face_index, 2));
-
-    double distance =
-        point_triangle_distance(p, t0, t1, t2, PointTriangleDistanceType::P_T);
     VectorMax12d distance_grad;
     point_triangle_distance_gradient(
-        p, t0, t1, t2, PointTriangleDistanceType::P_T, distance_grad);
-
-    return compute_potential_gradient_common(distance, distance_grad, dhat);
+        V.row(vertex_index), V.row(F(face_index, 0)), V.row(F(face_index, 1)),
+        V.row(F(face_index, 2)), PointTriangleDistanceType::P_T, distance_grad);
+    return distance_grad;
 }
 
-MatrixMax12d FaceVertexConstraint::compute_potential_hessian(
+MatrixMax12d FaceVertexConstraint::compute_distance_hessian(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double dhat,
-    const bool project_hessian_to_psd) const
+    const Eigen::MatrixXi& F) const
 {
-    // ∇²b(d(x)) = ∇(b'(d(x)) * ∇d(x))
-    //           = b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)
-    const auto& p = V.row(vertex_index);
-    const auto& t0 = V.row(F(face_index, 0));
-    const auto& t1 = V.row(F(face_index, 1));
-    const auto& t2 = V.row(F(face_index, 2));
-
-    double distance =
-        point_triangle_distance(p, t0, t1, t2, PointTriangleDistanceType::P_T);
-    VectorMax12d distance_grad;
-    point_triangle_distance_gradient(
-        p, t0, t1, t2, PointTriangleDistanceType::P_T, distance_grad);
-    MatrixMax12d distance_hess;
+    VectorMax12d distance_hess;
     point_triangle_distance_hessian(
-        p, t0, t1, t2, PointTriangleDistanceType::P_T, distance_hess);
-
-    return compute_potential_hessian_common(
-        distance, distance_grad, distance_hess, dhat, project_hessian_to_psd);
+        V.row(vertex_index), V.row(F(face_index, 0)), V.row(F(face_index, 1)),
+        V.row(F(face_index, 2)), PointTriangleDistanceType::P_T, distance_hess);
+    return distance_hess;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -428,52 +459,35 @@ PlaneVertexConstraint::PlaneVertexConstraint(
 {
 }
 
-double PlaneVertexConstraint::compute_potential(
+double PlaneVertexConstraint::compute_distance(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double dhat) const
+    const Eigen::MatrixXi& F) const
 {
-    double distance =
-        point_plane_distance(V.row(vertex_index), plane_origin, plane_normal);
-    return compute_potential_common(distance, dhat);
+    return point_plane_distance(
+        V.row(vertex_index), plane_origin, plane_normal);
 }
 
-VectorMax12d PlaneVertexConstraint::compute_potential_gradient(
+VectorMax12d PlaneVertexConstraint::compute_distance_gradient(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double dhat) const
+    const Eigen::MatrixXi& F) const
 {
-    // ∇b(d(x)) = b'(d(x)) * ∇d(x)
-    const auto& p = V.row(vertex_index);
-
-    double distance = point_plane_distance(p, plane_origin, plane_normal);
     VectorMax3d distance_grad;
-    point_plane_distance_gradient(p, plane_origin, plane_normal, distance_grad);
-
-    return compute_potential_gradient_common(distance, distance_grad, dhat);
+    point_plane_distance_gradient(
+        V.row(vertex_index), plane_origin, plane_normal, distance_grad);
+    return distance_grad;
 }
 
-MatrixMax12d PlaneVertexConstraint::compute_potential_hessian(
+MatrixMax12d PlaneVertexConstraint::compute_distance_hessian(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double dhat,
-    const bool project_hessian_to_psd) const
+    const Eigen::MatrixXi& F) const
 {
-    // ∇²b(d(x)) = ∇(b'(d(x)) * ∇d(x))
-    //           = b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)
-    const auto& p = V.row(vertex_index);
-
-    double distance = point_plane_distance(p, plane_origin, plane_normal);
-    VectorMax3d distance_grad;
-    point_plane_distance_gradient(p, plane_origin, plane_normal, distance_grad);
     MatrixMax3d distance_hess;
-    point_plane_distance_hessian(p, plane_origin, plane_normal, distance_hess);
-
-    return compute_potential_hessian_common(
-        distance, distance_grad, distance_hess, dhat, project_hessian_to_psd);
+    point_plane_distance_hessian(
+        V.row(vertex_index), plane_origin, plane_normal, distance_hess);
+    return distance_hess;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

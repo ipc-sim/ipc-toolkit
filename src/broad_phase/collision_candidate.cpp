@@ -48,6 +48,29 @@ bool EdgeVertexCandidate::operator<(const EdgeVertexCandidate& other) const
     return edge_index < other.edge_index;
 }
 
+bool EdgeVertexCandidate::ccd(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    double& toi,
+    const double tmax,
+    const double tolerance,
+    const long max_iterations,
+    const double conservative_rescaling) const
+{
+    return point_edge_ccd(
+        // Point at t=0
+        V0.row(vertex_index),
+        // Edge at t=0
+        V0.row(E(edge_index, 0)), V0.row(E(edge_index, 1)),
+        // Point at t=1
+        V1.row(vertex_index),
+        // Edge at t=1
+        V1.row(E(edge_index, 0)), V1.row(E(edge_index, 1)), //
+        toi, tmax, tolerance, max_iterations, conservative_rescaling);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 EdgeEdgeCandidate::EdgeEdgeCandidate(long edge0_index, long edge1_index)
@@ -74,6 +97,29 @@ bool EdgeEdgeCandidate::operator<(const EdgeEdgeCandidate& other) const
             < std::max(other.edge0_index, other.edge1_index);
     }
     return this_min < other_min;
+}
+
+bool EdgeEdgeCandidate::ccd(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    double& toi,
+    const double tmax,
+    const double tolerance,
+    const long max_iterations,
+    const double conservative_rescaling) const
+{
+    return edge_edge_ccd(
+        // Edge 1 at t=0
+        V0.row(E(edge0_index, 0)), V0.row(E(edge0_index, 1)),
+        // Edge 2 at t=0
+        V0.row(E(edge1_index, 0)), V0.row(E(edge1_index, 1)),
+        // Edge 1 at t=1
+        V1.row(E(edge0_index, 0)), V1.row(E(edge0_index, 1)),
+        // Edge 2 at t=1
+        V1.row(E(edge1_index, 0)), V1.row(E(edge1_index, 1)), //
+        toi, tmax, tolerance, max_iterations, conservative_rescaling);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -118,6 +164,31 @@ bool FaceVertexCandidate::operator<(const FaceVertexCandidate& other) const
     return face_index < other.face_index;
 }
 
+bool FaceVertexCandidate::ccd(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    double& toi,
+    const double tmax,
+    const double tolerance,
+    const long max_iterations,
+    const double conservative_rescaling) const
+{
+    return point_triangle_ccd(
+        // Point at t=0
+        V0.row(vertex_index),
+        // Triangle at t=0
+        V0.row(F(face_index, 0)), V0.row(F(face_index, 1)),
+        V0.row(F(face_index, 2)),
+        // Point at t=1
+        V1.row(vertex_index),
+        // Triangle at t=1
+        V1.row(F(face_index, 0)), V1.row(F(face_index, 1)),
+        V1.row(F(face_index, 2)), //
+        toi, tmax, tolerance, max_iterations, conservative_rescaling);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 size_t Candidates::size() const
@@ -136,6 +207,44 @@ void Candidates::clear()
     ev_candidates.clear();
     ee_candidates.clear();
     fv_candidates.clear();
+}
+
+CollisionCandidate& Candidates::operator[](size_t idx)
+{
+    if (idx < 0) {
+        throw std::out_of_range("Constraint index is out of range!");
+    }
+    if (idx < ev_candidates.size()) {
+        return ev_candidates[idx];
+    }
+    idx -= ev_candidates.size();
+    if (idx < ee_candidates.size()) {
+        return ee_candidates[idx];
+    }
+    idx -= ee_candidates.size();
+    if (idx < fv_candidates.size()) {
+        return fv_candidates[idx];
+    }
+    throw std::out_of_range("Constraint index is out of range!");
+}
+
+const CollisionCandidate& Candidates::operator[](size_t idx) const
+{
+    if (idx < 0) {
+        throw std::out_of_range("Constraint index is out of range!");
+    }
+    if (idx < ev_candidates.size()) {
+        return ev_candidates[idx];
+    }
+    idx -= ev_candidates.size();
+    if (idx < ee_candidates.size()) {
+        return ee_candidates[idx];
+    }
+    idx -= ee_candidates.size();
+    if (idx < fv_candidates.size()) {
+        return fv_candidates[idx];
+    }
+    throw std::out_of_range("Constraint index is out of range!");
 }
 
 bool Candidates::save_obj(
