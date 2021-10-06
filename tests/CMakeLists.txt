@@ -10,6 +10,8 @@ add_executable(ipc_toolkit_tests
 
   # Test CCD
   broad_phase/benchmark_spatial_hash.cpp
+  broad_phase/brute_force_comparison.cpp
+  broad_phase/brute_force_comparison.hpp
   broad_phase/test_broad_phase.cpp
   broad_phase/test_hash_grid.cpp
   broad_phase/test_spatial_hash.cpp
