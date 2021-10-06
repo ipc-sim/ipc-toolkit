@@ -440,7 +440,7 @@ MatrixMax12d FaceVertexConstraint::compute_distance_hessian(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F) const
 {
-    VectorMax12d distance_hess;
+    MatrixMax12d distance_hess;
     point_triangle_distance_hessian(
         V.row(vertex_index), V.row(F(face_index, 0)), V.row(F(face_index, 1)),
         V.row(F(face_index, 2)), PointTriangleDistanceType::P_T, distance_hess);
