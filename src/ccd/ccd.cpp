@@ -536,14 +536,21 @@ bool point_triangle_ccd(
     return is_impacting;
 }
 
+inline bool is_in_01(double x) { return 0 <= x && x <= 1; };
+
 bool point_static_plane_ccd(
-    const Eigen::Vector3d& p_t0,
-    const Eigen::Vector3d& p_t1,
-    const Eigen::Vector3d& plane_origin,
-    const Eigen::Vector3d& plane_normal,
+    const VectorMax3d& p_t0,
+    const VectorMax3d& p_t1,
+    const VectorMax3d& plane_origin,
+    const VectorMax3d& plane_normal,
     double& toi,
     double conservative_rescaling)
 {
+    int dim = p_t0.size();
+    assert(p_t1.size() == dim);
+    assert(plane_origin.size() == dim);
+    assert(plane_normal.size() == dim);
+
     double initial_distance =
         sqrt(point_plane_distance(p_t0, plane_origin, plane_normal));
 
@@ -553,19 +560,17 @@ bool point_static_plane_ccd(
         return true;
     }
 
-    auto compute_toi = [&](double d = 0) -> double {
+    auto compute_toi = [&](double d) -> double {
         return (d * plane_normal.norm() + plane_normal.dot(plane_origin - p_t0))
             / plane_normal.dot(p_t1 - p_t0);
     };
-    auto compute_tois = [&compute_toi](double d = 0) -> std::array<double, 2> {
+    auto compute_tois = [&compute_toi](double d) -> std::array<double, 2> {
         return { { compute_toi(d), compute_toi(-d) } };
     };
 
     double min_distance = (1.0 - conservative_rescaling) * initial_distance;
     assert(min_distance < initial_distance);
     std::array<double, 2> tois = compute_tois(min_distance);
-
-    auto is_in_01 = [](double x) { return 0 <= x && x <= 1; };
 
     bool is_impacting = is_in_01(tois[0]) || is_in_01(tois[1]);
     if (is_in_01(tois[0]) && is_in_01(tois[1])) {
@@ -577,7 +582,7 @@ bool point_static_plane_ccd(
     }
 
     if (is_impacting && toi < SMALL_TOI) {
-        toi = compute_toi();
+        toi = compute_toi(/*d=*/0);
         is_impacting = is_in_01(toi);
         if (is_impacting) {
             toi *= conservative_rescaling;
