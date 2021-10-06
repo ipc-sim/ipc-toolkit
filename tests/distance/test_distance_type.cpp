@@ -28,7 +28,7 @@ struct RandomBarycentricCoordGenerator
     // Attempts to move the generator to the next element.
     // Returns true if successful (and thus has another element that can be
     // read)
-    virtual bool next() override
+    bool next() override
     {
         double margin = 1e-8;
         bc.head<2>() =
@@ -45,7 +45,7 @@ struct RandomBarycentricCoordGenerator
     // Precondition:
     // The generator is either freshly constructed or the last call to next()
     // returned true
-    virtual Eigen::Vector3d const& get() const override { return bc; }
+    Eigen::Vector3d const& get() const override { return bc; }
 };
 
 TEST_CASE(

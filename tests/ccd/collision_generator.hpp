@@ -14,7 +14,7 @@ struct TestImpact {
 TestImpact generate_random_impact(const bool rigid);
 
 class TestImpactGenerator : public Catch::Generators::IGenerator<TestImpact> {
-
+protected:
     TestImpact current;
     bool rigid;
     size_t current_i, max_i;

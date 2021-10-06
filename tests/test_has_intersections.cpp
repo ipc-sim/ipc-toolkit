@@ -108,7 +108,6 @@ TEST_CASE("Test HashGrid EF vs brute-force", "[intersection][brute_force]")
         for (int bf_ci = 0; bf_ci < bf_ee_candidates.size(); bf_ci++) {
             if (hg_ee_candidates.size() <= hg_ci
                 || bf_ee_candidates[bf_ci] != hg_ee_candidates[hg_ci]) {
-
                 long eai = bf_ee_candidates[bf_ci].edge0_index;
                 long ebi = bf_ee_candidates[bf_ci].edge1_index;
                 bool intersects = igl::predicates::segment_segment_intersect(
@@ -142,7 +141,6 @@ TEST_CASE("Test HashGrid EF vs brute-force", "[intersection][brute_force]")
         for (int bf_ci = 0; bf_ci < bf_ef_candidates.size(); bf_ci++) {
             if (hg_ef_candidates.size() <= hg_ci
                 || bf_ef_candidates[bf_ci] != hg_ef_candidates[hg_ci]) {
-
                 long ei = bf_ef_candidates[bf_ci].edge_index;
                 long fi = bf_ef_candidates[bf_ci].face_index;
                 bool intersects = is_edge_intersecting_triangle(

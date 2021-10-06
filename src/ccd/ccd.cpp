@@ -503,7 +503,6 @@ bool point_triangle_ccd(
 #endif
 
     if (is_impacting && toi < SMALL_TOI) {
-
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         is_impacting = inclusion_ccd::vertexFaceCCD_double(
             p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,

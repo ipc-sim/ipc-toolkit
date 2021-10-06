@@ -366,7 +366,6 @@ void SpatialHash::queryEdgeForEdges(
         for (int iy = mins[1]; iy <= maxs[1]; iy++) {
             int yzOffset = iy * voxelCount[0] + zOffset;
             for (int ix = mins[0]; ix <= maxs[0]; ix++) {
-
                 const auto voxelI = voxel.find(ix + yzOffset);
                 if (voxelI != voxel.end()) {
                     for (const auto& indI : voxelI->second) {
@@ -410,7 +409,6 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
         for (int iy = mins[1]; iy <= maxs[1]; iy++) {
             int yzOffset = iy * voxelCount[0] + zOffset;
             for (int ix = mins[0]; ix <= maxs[0]; ix++) {
-
                 const auto voxelI = voxel.find(ix + yzOffset);
                 if (voxelI != voxel.end()) {
                     for (const auto& indI : voxelI->second) {

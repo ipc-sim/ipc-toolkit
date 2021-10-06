@@ -218,7 +218,6 @@ TEST_CASE("Compare HashGrid against brute force", "[hash_grid]")
             if (hg_candidates.ev_candidates.size() <= hg_ci
                 || bf_candidates.ev_candidates[bf_ci]
                     != hg_candidates.ev_candidates[hg_ci]) {
-
                 long ei = bf_candidates.ev_candidates[bf_ci].edge_index;
                 long vi = bf_candidates.ev_candidates[bf_ci].vertex_index;
                 double toi;
@@ -246,7 +245,6 @@ TEST_CASE("Compare HashGrid against brute force", "[hash_grid]")
             if (hg_candidates.ee_candidates.size() <= hg_ci
                 || bf_candidates.ee_candidates[bf_ci]
                     != hg_candidates.ee_candidates[hg_ci]) {
-
                 long eai = bf_candidates.ee_candidates[bf_ci].edge0_index;
                 long ebi = bf_candidates.ee_candidates[bf_ci].edge1_index;
                 double toi;
@@ -280,7 +278,6 @@ TEST_CASE("Compare HashGrid against brute force", "[hash_grid]")
             if (hg_candidates.fv_candidates.size() <= hg_ci
                 || bf_candidates.fv_candidates[bf_ci]
                     != hg_candidates.fv_candidates[hg_ci]) {
-
                 long fi = bf_candidates.fv_candidates[bf_ci].face_index;
                 long vi = bf_candidates.fv_candidates[bf_ci].vertex_index;
                 double toi;

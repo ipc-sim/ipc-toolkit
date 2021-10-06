@@ -11,7 +11,6 @@ bool default_can_collide(size_t, size_t) { return true; }
 
 void define_ipc_functions(py::module_& m)
 {
-
     m.def(
         "construct_constraint_set",
         [](const Eigen::MatrixXd& V_rest, const Eigen::MatrixXd& V,

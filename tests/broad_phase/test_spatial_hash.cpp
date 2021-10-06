@@ -114,7 +114,6 @@ TEST_CASE("Compare SpatialHash against brute force", "[spatial_hash]")
             if (sh_candidates.ev_candidates.size() <= sh_ci
                 || bf_candidates.ev_candidates[bf_ci]
                     != sh_candidates.ev_candidates[sh_ci]) {
-
                 long ei = bf_candidates.ev_candidates[bf_ci].edge_index;
                 long vi = bf_candidates.ev_candidates[bf_ci].vertex_index;
                 double toi;
@@ -142,7 +141,6 @@ TEST_CASE("Compare SpatialHash against brute force", "[spatial_hash]")
             if (sh_candidates.ee_candidates.size() <= sh_ci
                 || bf_candidates.ee_candidates[bf_ci]
                     != sh_candidates.ee_candidates[sh_ci]) {
-
                 long eai = bf_candidates.ee_candidates[bf_ci].edge0_index;
                 long ebi = bf_candidates.ee_candidates[bf_ci].edge1_index;
                 double toi;
@@ -176,7 +174,6 @@ TEST_CASE("Compare SpatialHash against brute force", "[spatial_hash]")
             if (sh_candidates.fv_candidates.size() <= sh_ci
                 || bf_candidates.fv_candidates[bf_ci]
                     != sh_candidates.fv_candidates[sh_ci]) {
-
                 long fi = bf_candidates.fv_candidates[bf_ci].face_index;
                 long vi = bf_candidates.fv_candidates[bf_ci].vertex_index;
                 double toi;
