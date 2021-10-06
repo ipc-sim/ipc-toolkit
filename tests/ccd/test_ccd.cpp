@@ -206,7 +206,12 @@ TEST_CASE("Point-edge 2D ToI", "[ccd][toi]")
 
     SECTION("random")
     {
+        // This times out on Windows debug
+#if defined(NDEBUG) || !(defined(WIN32) || defined(_WIN32) || defined(__WIN32))
         auto impact = GENERATE(random_impacts(100, /*rigid=*/true));
+#else
+        auto impact = GENERATE(random_impacts(10, /*rigid=*/true));
+#endif
 
         p_t0 = impact.p_t0;
         e0_t0 = impact.e0_t0;
