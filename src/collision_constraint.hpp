@@ -8,6 +8,7 @@
 namespace ipc {
 
 struct CollisionConstraint {
+public:
     virtual ~CollisionConstraint() {}
 
     virtual std::vector<long> vertex_indices(
@@ -33,6 +34,24 @@ struct CollisionConstraint {
         const bool project_hessian_to_psd) const = 0;
 
     double minimum_distance = 0;
+
+protected:
+    double
+    compute_potential_common(const double distance, const double dhat) const;
+
+    template <typename DerivedDistanceGrad>
+    VectorMax12d compute_potential_gradient_common(
+        const double distance,
+        const Eigen::MatrixBase<DerivedDistanceGrad>& distance_grad,
+        const double dhat) const;
+
+    template <typename DerivedDistanceGrad, typename DerivedDistanceHess>
+    MatrixMax12d compute_potential_hessian_common(
+        const double distance,
+        const Eigen::MatrixBase<DerivedDistanceGrad>& distance_grad,
+        const Eigen::MatrixBase<DerivedDistanceHess>& distance_hess,
+        const double dhat,
+        const bool project_hessian_to_psd) const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -66,7 +85,7 @@ struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
         const double dhat,
         const bool project_hessian_to_psd) const override;
 
-    long multiplicity = 1;
+    unsigned int multiplicity = 1;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -100,7 +119,7 @@ struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
         const double dhat,
         const bool project_hessian_to_psd) const override;
 
-    long multiplicity = 1;
+    unsigned int multiplicity = 1;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -173,11 +192,50 @@ struct FaceVertexConstraint : FaceVertexCandidate, CollisionConstraint {
 
 ///////////////////////////////////////////////////////////////////////////////
 
+struct PlaneVertexConstraint : CollisionConstraint {
+    PlaneVertexConstraint(
+        const VectorMax3d& plane_origin,
+        const VectorMax3d& plane_normal,
+        const long vertex_index);
+
+    std::vector<long> vertex_indices(
+        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
+    {
+        return { vertex_index };
+    }
+
+    double compute_potential(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat) const override;
+
+    VectorMax12d compute_potential_gradient(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat) const override;
+
+    MatrixMax12d compute_potential_hessian(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const bool project_hessian_to_psd) const override;
+
+    VectorMax3d plane_origin;
+    VectorMax3d plane_normal;
+    long vertex_index;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 struct Constraints {
     std::vector<VertexVertexConstraint> vv_constraints;
     std::vector<EdgeVertexConstraint> ev_constraints;
     std::vector<EdgeEdgeConstraint> ee_constraints;
     std::vector<FaceVertexConstraint> fv_constraints;
+    std::vector<PlaneVertexConstraint> pv_constraints;
 
     size_t size() const;
 
