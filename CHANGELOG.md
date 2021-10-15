@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+### 2021-08-21 ([acf2a80](https://github.com/ipc-sim/ipc-toolkit/commit/acf2a80544ebe27dc5e440602a3a89243e575e8a))
+#### Changed
+* Changed CMake target name to `ipc::toolkit`
+
 ### 2021-07-26 ([1479aae](https://github.com/ipc-sim/ipc-toolkit/commit/1479aaea958daaa4e963529493e4169dc7757913))
 #### Changed
 * Updated the CMake system to use modern `FetchContent` to download externals
