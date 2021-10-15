@@ -1,0 +1,679 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Changelog &#8212; IPC Toolkit  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Contributing" href="contributing.html" />
+    <link rel="prev" title="Incremental Potential Contact (IPC) Toolkit" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h1>
+<p>All notable changes to this project will be documented in this file.</p>
+<!--
+### YYYY-MM-DD ([XXXXXXX](https://github.com/ipc-sim/ipc-toolkit/commit/XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX))
+#### Added
+#### Removed
+#### Changed
+#### Fixed
+--><section id="id1">
+<h2>2021-07-26 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/1479aaea958daaa4e963529493e4169dc7757913">1479aae</a>)<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<section id="changed">
+<h3>Changed<a class="headerlink" href="#changed" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Updated the CMake system to use modern <code class="docutils literal notranslate"><span class="pre">FetchContent</span></code> to download externals</p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h2>2021-07-22 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/e24c76ddc818fb9efc4d522ef72a581a15abf751">e24c76d</a>)<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<section id="fixed">
+<h3>Fixed<a class="headerlink" href="#fixed" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Updated CCD strategy when using Tight Inclusion to only perform <code class="docutils literal notranslate"><span class="pre">no_zero_toi=true</span></code> when there is no minimum distance</p></li>
+</ul>
+</section>
+</section>
+<section id="id3">
+<h2>2021-07-17 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/a20f7a2dfea5a04c67ef71d0cd523f69391f2f54">a20f7a2</a>)<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<section id="added">
+<h3>Added<a class="headerlink" href="#added" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">detect_edge_face_collision_candidates_brute_force</span></code> for 3D intersection broad-phase</p></li>
+<li><p>Added ability to save an obj of collision candidates</p></li>
+<li><p>Added tests for has_intersection (all pass after fixes)</p></li>
+</ul>
+</section>
+<section id="id4">
+<h3>Fixed<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Fixed possible numerical rounding problems in HashGrid <code class="docutils literal notranslate"><span class="pre">AABB::are_overlapping</span></code></p></li>
+<li><p>Fixed HashGrid’s function for getting edge-face intersection candidates</p></li>
+</ul>
+</section>
+</section>
+<section id="id5">
+<h2>2021-07-15 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/7301b422a9b9a90c76d9e7abf2f9127bf6d0dbd6">7301b42</a>)<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<section id="id6">
+<h3>Fixed<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">ignore_codimensional_vertices</span></code> in the brute force broad-phase method</p></li>
+<li><p>Fixed AABB inflation in brute force and SpatialHash methods</p></li>
+</ul>
+</section>
+</section>
+<section id="id7">
+<h2>2021-07-08 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/86ae4e5f87eb2c65585920ad3ca0bbb3b57702f6">86ae4e5</a>)<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<section id="id8">
+<h3>Changed<a class="headerlink" href="#id8" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Replaced vertex group ids with more powerful can_collide function. By
+default everything can collide with everything (same as before)</p></li>
+<li><p>Reordered parameters in <code class="docutils literal notranslate"><span class="pre">construct_constraint_set()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">is_collision_free()</span></code>, and <code class="docutils literal notranslate"><span class="pre">compute_collision_free_stepsize()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">update_barrier_stiffness</span></code> now requires the <code class="docutils literal notranslate"><span class="pre">constraint_set</span></code> rather
+than building it</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">update_barrier_stiffness</span></code> dropped dhat parameter</p></li>
+</ul>
+</section>
+<section id="id9">
+<h3>Fixed<a class="headerlink" href="#id9" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>SpatialHash for 2D</p></li>
+</ul>
+</section>
+<section id="removed">
+<h3>Removed<a class="headerlink" href="#removed" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Verison of <code class="docutils literal notranslate"><span class="pre">initial_barrier_stiffness</span></code> that computes the
+constraint set and barrier gradient because there are a lot of
+parameters to these functions</p></li>
+</ul>
+</section>
+</section>
+<section id="id10">
+<h2>2021-07-05 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/4d16954012570b3a15346b99b5aedea77266fe86">4d16954</a>)<a class="headerlink" href="#id10" title="Permalink to this headline">¶</a></h2>
+<section id="id11">
+<h3>Changed<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Renamed directory <code class="docutils literal notranslate"><span class="pre">src/spatial_hash/</span></code> → <code class="docutils literal notranslate"><span class="pre">src/broad_phase/</span></code></p></li>
+<li><p>Renamed files <code class="docutils literal notranslate"><span class="pre">src/ccd/broad_phase.*</span></code> → <code class="docutils literal notranslate"><span class="pre">src/ccd/aabb.*</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="id12">
+<h2>2021-07-05 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/b3808e15bdbaba9a6efd4b731db3070e85bcc4b7">b3808e1</a>)<a class="headerlink" href="#id12" title="Permalink to this headline">¶</a></h2>
+<section id="id13">
+<h3>Added<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Select the broad-phase method for CCD and distance constraints</p>
+<ul>
+<li><p>Methods: <code class="docutils literal notranslate"><span class="pre">HASH_GRID</span></code>, <code class="docutils literal notranslate"><span class="pre">SPATIAL_HASH</span></code>, <code class="docutils literal notranslate"><span class="pre">BRUTE_FORCE</span></code></p></li>
+</ul>
+</li>
+<li><p>CCD parameters for Tight Inclusion’s tolerance and maximum iterations</p></li>
+</ul>
+</section>
+<section id="id14">
+<h3>Changed<a class="headerlink" href="#id14" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ignore_codimensional_vertices</span></code> to <code class="docutils literal notranslate"><span class="pre">false</span></code> by default</p></li>
+<li><p>CMake option <code class="docutils literal notranslate"><span class="pre">TIGHT_INCLUSION_WITH_NO_ZERO_TOI=ON</span></code> as default</p></li>
+</ul>
+</section>
+</section>
+<section id="id15">
+<h2>2021-06-18 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/aa59aeb0634af981a8f1cfbb6d2ff2b76a04d610">aa59aeb</a>)<a class="headerlink" href="#id15" title="Permalink to this headline">¶</a></h2>
+<section id="id16">
+<h3>Changed<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">construct_friction_constraint_set</span></code> now clears the given <code class="docutils literal notranslate"><span class="pre">friction_constraint_set</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="id17">
+<h2>2021-05-18 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/245b13bcc5e99ed52850ae865aaa0ad4e71a43a8">245b13b</a>)<a class="headerlink" href="#id17" title="Permalink to this headline">¶</a></h2>
+<section id="id18">
+<h3>Changed<a class="headerlink" href="#id18" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Use TightInclusion degenerate edge-edge for point-point and point-edge CCD</p></li>
+</ul>
+</section>
+</section>
+<section id="id19">
+<h2>2021-05-11 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/5c34dcdf226d46ada962204585fa386eb9b67859">5c34dcd</a>)<a class="headerlink" href="#id19" title="Permalink to this headline">¶</a></h2>
+<section id="id20">
+<h3>Changed<a class="headerlink" href="#id20" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">char*</span></code> exceptions to <code class="docutils literal notranslate"><span class="pre">std::exceptions</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="id21">
+<h2>2021-05-06 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/24056ccb2ca0a03bdef8141bc5011c41547f06b5">24056cc</a>)<a class="headerlink" href="#id21" title="Permalink to this headline">¶</a></h2>
+<section id="id22">
+<h3>Changed<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p>Gave <code class="docutils literal notranslate"><span class="pre">dhat_epsilon_scale</span></code> a default value of <code class="docutils literal notranslate"><span class="pre">1e-9</span></code> in <code class="docutils literal notranslate"><span class="pre">update_barrier_stiffness</span></code></p></li>
+<li><dl class="field-list simple">
+<dt class="field-odd">warning</dt>
+<dd class="field-odd"><p>Changed order of parameters to <code class="docutils literal notranslate"><span class="pre">update_barrier_stiffness</span></code></p>
+</dd>
+</dl>
+<ul class="simple">
+<li><p>Flipped <code class="docutils literal notranslate"><span class="pre">bbox_diagonal</span></code> and <code class="docutils literal notranslate"><span class="pre">dhat_epsilon_scale</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id23">
+<h2>2021-05-06 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/81d65f32e479fea32d0acc29c8a7a532fa55518b">81d65f3</a>)<a class="headerlink" href="#id23" title="Permalink to this headline">¶</a></h2>
+<section id="id24">
+<h3>Fixed<a class="headerlink" href="#id24" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Bug in output min distance of <code class="docutils literal notranslate"><span class="pre">update_barrier_stiffness</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="id25">
+<h2>2021-05-04 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/59ec167b85eaf56095a2d0333bdd96146d658ebf">59ec167</a>)<a class="headerlink" href="#id25" title="Permalink to this headline">¶</a></h2>
+<section id="id26">
+<h3>Changed<a class="headerlink" href="#id26" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Moved eigen_ext functions into ipc namespace</p></li>
+<li><p>Renamed max size matrices with <code class="docutils literal notranslate"><span class="pre">Max</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Eigen::VectorX([0-9])</span></code> → <code class="docutils literal notranslate"><span class="pre">ipc::VectorMax$1</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Eigen::MatrixXX([0-9])</span></code> → <code class="docutils literal notranslate"><span class="pre">ipc::VectorMax$1</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Eigen::ArrayMax([0-9])</span></code> → <code class="docutils literal notranslate"><span class="pre">ipc::ArrayMax$1</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id27">
+<h2>2021-05-03 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/664d65fd70dbd350b6bfe5f8a311a89ff4fef3bd">664d65f</a>)<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h2>
+<section id="id28">
+<h3>Added<a class="headerlink" href="#id28" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Added utility function to check for edge-edge intersection in 2D and edge-triangle intersection in 3D.</p></li>
+<li><p>Optionally: use GMP for exact edge-triangle intersection checks</p></li>
+</ul>
+</section>
+</section>
+<section id="id29">
+<h2>2021-05-03 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9b4ebfc0f458645cf33eeebf8211607f45ad9cb4">9b4ebfc</a>)<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h2>
+<section id="id30">
+<h3>Added<a class="headerlink" href="#id30" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>voxel_size_heuristic.cpp which suggests a good voxel size for the SpatialHash and HashGrid</p></li>
+</ul>
+</section>
+<section id="id31">
+<h3>Changed<a class="headerlink" href="#id31" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Changed HashGrid voxel size to be the average edge length not considering displacement length. This results in better performance, but can result in large memory usage.</p></li>
+</ul>
+</section>
+</section>
+<section id="id32">
+<h2>2021-04-29 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/293d0ad992c01df561e25c286043c9ae9b901ff0">293d0ad</a>)<a class="headerlink" href="#id32" title="Permalink to this headline">¶</a></h2>
+<section id="id33">
+<h3>Added<a class="headerlink" href="#id33" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Added TBB parallel loops to the main function (<code class="docutils literal notranslate"><span class="pre">compute_potential</span></code>, <code class="docutils literal notranslate"><span class="pre">compute_friction_potential</span></code>, <code class="docutils literal notranslate"><span class="pre">compute_collision_free_stepsize</span></code>, etc.)</p></li>
+<li><p>Added function <code class="docutils literal notranslate"><span class="pre">addVerticesFromEdges</span></code> that adds the vertices connected to edges in parallel and avoids duplicates</p></li>
+</ul>
+</section>
+<section id="id34">
+<h3>Changed<a class="headerlink" href="#id34" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Changed the HashGrid to use <code class="docutils literal notranslate"><span class="pre">ArrayMax3</span></code> over <code class="docutils literal notranslate"><span class="pre">VectorX3</span></code> to simplify the code</p></li>
+</ul>
+</section>
+<section id="id35">
+<h3>Fixed<a class="headerlink" href="#id35" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Fixed some parameters that were not by reference</p></li>
+</ul>
+</section>
+</section>
+<section id="id36">
+<h2>2021-04-21 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/c8a6d56823793e7be5e89238c3793e25bc45ffa0">c8a6d5</a>)<a class="headerlink" href="#id36" title="Permalink to this headline">¶</a></h2>
+<section id="id37">
+<h3>Added<a class="headerlink" href="#id37" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Added the SpatialHash from the original IPC code base with some modification to get all candidates in parallel</p>
+<ul>
+<li><p>Benchmark results indicate this SpatialHash is faster than the HashGrid with multithreading</p></li>
+<li><p>TODO: Improve HashGrid or fully integrate SpatialHash into ipc.hpp</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id38">
+<h2>2021-02-11 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9c74938fefa691db6b79c73489c8c661638019c6">9c7493</a>)<a class="headerlink" href="#id38" title="Permalink to this headline">¶</a></h2>
+<section id="id39">
+<h3>Changed<a class="headerlink" href="#id39" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Switched to the correct (conservative) CCD of <a class="reference external" href="https://continuous-collision-detection.github.io/">[Wang and Ferguson et al. 2020]</a></p>
+<ul>
+<li><p>Can select Etienne Vouga’s CCD in the CMake (see README.md)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id40">
+<h2>2021-02-01 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/b51025310223b487e7c39858265d8d5c3e8b1e8a">b510253</a>)<a class="headerlink" href="#id40" title="Permalink to this headline">¶</a></h2>
+<section id="id41">
+<h3>Added<a class="headerlink" href="#id41" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Added minimum seperation distance (thickness) to distance constraints</p>
+<ul>
+<li><p>Based on <a class="reference external" href="https://arxiv.org/abs/2012.04457">Codimensional Incremental Potential Contact [Li et al. 2020]</a></p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id42">
+<h2>2021-02-01 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/a3951750ca5f167ab1d546ae1dadd87d0a9e2497">a395175</a>)<a class="headerlink" href="#id42" title="Permalink to this headline">¶</a></h2>
+<section id="id43">
+<h3>Added<a class="headerlink" href="#id43" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Added 2D friction model based on the 3D formulation.</p>
+<ul>
+<li><p>TODO: Test this further</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id44">
+<h2>2021-01-12 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/deee6d0f9802910c5565f800492f9a995e65cf7e">deee6d0</a>)<a class="headerlink" href="#id44" title="Permalink to this headline">¶</a></h2>
+<section id="id45">
+<h3>Added<a class="headerlink" href="#id45" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Added and optional parameter <code class="docutils literal notranslate"><span class="pre">F2E</span></code> to <code class="docutils literal notranslate"><span class="pre">construct_constraint_set()</span></code>. This is similar to <code class="docutils literal notranslate"><span class="pre">F</span></code> (which maps faces to vertices), but maps faces to edges. This is optional, but recommended for better performance. If not provided a simple linear search will be done per face edge!</p>
+<ul>
+<li><p>TODO: Add a function to compute this mapping.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id47">
+<h2>2021-01-09 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/deee6d0f9802910c5565f800492f9a995e65cf7e">deee6d0</a>)<a class="headerlink" href="#id47" title="Permalink to this headline">¶</a></h2>
+<section id="id48">
+<h3>Changed<a class="headerlink" href="#id48" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Replaced VectorXd and MatrixXd with static size versions for local gradient and hessians</p></li>
+</ul>
+</section>
+</section>
+<section id="id49">
+<h2>2020-11-20 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/93143ad9b31030cde7324a83354268021e1cb9da">93143ad</a>)<a class="headerlink" href="#id49" title="Permalink to this headline">¶</a></h2>
+<section id="id50">
+<h3>Changed<a class="headerlink" href="#id50" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Removed TBB parallelization form the hash grid because we get better performance without it.</p>
+<ul>
+<li><p>TODO: Improve parallelization in the hash grid or switch to the original IPC spatial hash</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id52">
+<h2>2020-11-06 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/4553509fe6a4e6b78c041018cd6db3fdf23b4730">4553509</a>)<a class="headerlink" href="#id52" title="Permalink to this headline">¶</a></h2>
+<section id="id53">
+<h3>Fixed<a class="headerlink" href="#id53" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Fixed multiplicity for point-triangle distance computation to avoid duplicate point-point and point-edge pairs.</p></li>
+</ul>
+</section>
+</section>
+<section id="id54">
+<h2>2020-10-22 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/51f49030dbeec15a6a7544826f5531811a779402">51f4903</a>)<a class="headerlink" href="#id54" title="Permalink to this headline">¶</a></h2>
+<section id="id55">
+<h3>Fixed<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Projection of the hessian to PSD. This was completely broken as the projected matrix was never used.</p></li>
+</ul>
+</section>
+</section>
+<section id="id56">
+<h2>2020-10-22 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9be6c0f7e2534e426e3f09f4c547406d50d5cf9c">9be6c0f</a>)<a class="headerlink" href="#id56" title="Permalink to this headline">¶</a></h2>
+<section id="id57">
+<h3>Fixed<a class="headerlink" href="#id57" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Mollification of EE constraints that have a distance type of PP or PE</p></li>
+<li><p>If there is no mollification needed then the PP and PE constraints are stored with multiplicity</p></li>
+<li><p>Set the parallel EE friction constraint threshold to eps_x like in IPC</p>
+<ul>
+<li><p>This avoid needing the mollification for the normal force and these forces are small anyways</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id58">
+<h2>2020-10-10 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/cb8b53fb098598ba5e8c95d4bdb4730e8df9382e">cb8b53f</a>)<a class="headerlink" href="#id58" title="Permalink to this headline">¶</a></h2>
+<section id="id59">
+<h3>Fixed<a class="headerlink" href="#id59" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Assertions in <code class="docutils literal notranslate"><span class="pre">compute_collision_free_stepsize</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="id60">
+<h2>2020-10-10 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/4a5f84f1177bdae1a265dc15a84603bbc389936d">4a5f84f</a>)<a class="headerlink" href="#id60" title="Permalink to this headline">¶</a></h2>
+<section id="id61">
+<h3>Fixed<a class="headerlink" href="#id61" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Point-triangle distance type by replacing it with the one used in the original IPC code</p></li>
+</ul>
+</section>
+</section>
+<section id="id62">
+<h2>2020-10-10 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/1d51a61d60bb25e08c9937285ff9e44459a2223f">1d51a61</a>)<a class="headerlink" href="#id62" title="Permalink to this headline">¶</a></h2>
+<section id="id63">
+<h3>Added<a class="headerlink" href="#id63" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Boolean parameter in <code class="docutils literal notranslate"><span class="pre">compute_friction_potential_hessian</span></code> that controls if the hessian is projected to PSD</p></li>
+</ul>
+</section>
+</section>
+<section id="id64">
+<h2>2020-10-09 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/b737fb0e708eac5a7775766f162a5d2067db2fa4">b737fb0</a>)<a class="headerlink" href="#id64" title="Permalink to this headline">¶</a></h2>
+<section id="id65">
+<h3>Added<a class="headerlink" href="#id65" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Parameter for vertex group IDs to exclude some collisions (e.g., self collisions)</p></li>
+</ul>
+</section>
+</section>
+<section id="id66">
+<h2>2020-10-08 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/6ee60aeaef6d7f88013ee2ee3d544e7403282527">6ee60ae</a>)<a class="headerlink" href="#id66" title="Permalink to this headline">¶</a></h2>
+<section id="id67">
+<h3>Added<a class="headerlink" href="#id67" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Second version of <code class="docutils literal notranslate"><span class="pre">update_barrier_stiffness()</span></code> that takes an already computed minimum distance and world bounding box diagonal</p></li>
+</ul>
+</section>
+</section>
+<section id="id68">
+<h2>2020-10-08 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/cc3947d48bc069488f6a773424e30fe67eb4b5f1">cc3947d</a>)<a class="headerlink" href="#id68" title="Permalink to this headline">¶</a></h2>
+<section id="id69">
+<h3>Added<a class="headerlink" href="#id69" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Second version of <code class="docutils literal notranslate"><span class="pre">initial_barrier_stiffness()</span></code> that takes an already computed barrier gradient</p></li>
+<li><p>Assertions on <code class="docutils literal notranslate"><span class="pre">initial_barrier_stiffness()</span></code> input</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">average_mass</span> <span class="pre">&gt;</span> <span class="pre">0</span> <span class="pre">&amp;&amp;</span> <span class="pre">min_barrier_stiffness_scale</span> <span class="pre">&gt;</span> <span class="pre">0</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="id70">
+<h3>Changed<a class="headerlink" href="#id70" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Fixed typo in <code class="docutils literal notranslate"><span class="pre">initial_barrier_stiffness()</span></code> name (was <code class="docutils literal notranslate"><span class="pre">intial_barrier_stiffness()</span></code>)</p></li>
+</ul>
+</section>
+</section>
+<section id="id72">
+<h2>2020-10-07 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/5582582bc2f54464bfcee4ba0ec2b7e6975f596f">5582582</a>)<a class="headerlink" href="#id72" title="Permalink to this headline">¶</a></h2>
+<section id="id73">
+<h3>Added<a class="headerlink" href="#id73" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">FrictionConstraint</span></code> structures to store friction information (i.e., tangent basis, normal force magnitude, closest points, and coefficient of friction)</p></li>
+<li><p>Unit test that compares the original IPC code’s friction components with the toolkit’s</p></li>
+</ul>
+</section>
+<section id="id74">
+<h3>Changed<a class="headerlink" href="#id74" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">compute_friction_bases()</span></code> is now <code class="docutils literal notranslate"><span class="pre">construct_friction_constraint_set()</span></code></p>
+<ul>
+<li><p>It now takes the coefficient of friction (<code class="docutils literal notranslate"><span class="pre">mu</span></code>)</p></li>
+<li><p>It now puts all information inside of the <code class="docutils literal notranslate"><span class="pre">FrictionConstraints</span></code> (<code class="docutils literal notranslate"><span class="pre">friction_constraint_set</span></code>)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id75">
+<h2>2020-10-06 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/b48ba0ec9d60754e7670e28fd1987b0c78cd809f">b48ba0e</a>)<a class="headerlink" href="#id75" title="Permalink to this headline">¶</a></h2>
+<section id="id76">
+<h3>Changed<a class="headerlink" href="#id76" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>During <code class="docutils literal notranslate"><span class="pre">construct_constraint_set()</span></code> the constraints are added based on distance type</p>
+<ul>
+<li><p>Duplicate vertex-vertex and edge-vertex constraints are handled by a multiplicity multiplier</p></li>
+<li><p>Edge-edge constraints are always line-line distances</p></li>
+<li><p>Point-triangle constraints are always point-plane distances</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id77">
+<h2>2020-10-05 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9a4576b209302c79296593ac213ed8ce85510f3b">9a4576b</a>)<a class="headerlink" href="#id77" title="Permalink to this headline">¶</a></h2>
+<section id="id78">
+<h3>Fixed<a class="headerlink" href="#id78" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Fixed a bug in the point-triangle closest points and tangent basis computed in <code class="docutils literal notranslate"><span class="pre">compute_friction_bases()</span></code></p></li>
+<li><p>Fixed a bug in <code class="docutils literal notranslate"><span class="pre">edge_edge_tangent_basis()</span></code> used to compute the tangent basis for friction</p></li>
+</ul>
+</section>
+</section>
+<section id="id79">
+<h2>2020-09-19 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/31a37e04abc9ecec325e00be97fd42b89c895b45">31a37e0</a>)<a class="headerlink" href="#id79" title="Permalink to this headline">¶</a></h2>
+<section id="id80">
+<h3>Added<a class="headerlink" href="#id80" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>spdlog for logging information</p></li>
+</ul>
+</section>
+</section>
+<section id="id81">
+<h2>2020-09-19 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/acb7664792982685f6de28468ba126f5e531834f">acb7664</a>)<a class="headerlink" href="#id81" title="Permalink to this headline">¶</a></h2>
+<section id="id82">
+<h3>Changed<a class="headerlink" href="#id82" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Headers are now include with the prefix <code class="docutils literal notranslate"><span class="pre">ipc/</span></code></p>
+<ul>
+<li><p>E.g., <code class="docutils literal notranslate"><span class="pre">#include</span> <span class="pre">&lt;ipc.hpp&gt;</span></code> → <code class="docutils literal notranslate"><span class="pre">#include</span> <span class="pre">&lt;ipc/ipc.hpp&gt;</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id83">
+<h2>2020-09-04 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/7dd2ab7a255ffd23ccdfe5aee08bca6a142f75a7">7dd2ab7</a>)<a class="headerlink" href="#id83" title="Permalink to this headline">¶</a></h2>
+<section id="id84">
+<h3>Added<a class="headerlink" href="#id84" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Collision constraint to store distance constraint pairs</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">EdgeEdgeConstraint</span></code> stores the edge-edge mollifier threshold (<code class="docutils literal notranslate"><span class="pre">eps_x</span></code>)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="id85">
+<h3>Changed<a class="headerlink" href="#id85" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Input parameter <code class="docutils literal notranslate"><span class="pre">dhat_squared</span></code> is now <code class="docutils literal notranslate"><span class="pre">dhat</span></code> (i.e., non-squared value)</p></li>
+<li><p>Input parameter <code class="docutils literal notranslate"><span class="pre">epsv_times_h_squared</span></code> is now <code class="docutils literal notranslate"><span class="pre">epsv_times_h</span></code> (i.e., non-squared value)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Constraints</span></code> replaced <code class="docutils literal notranslate"><span class="pre">Candidates</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">construct_constraint_set()</span></code> now takes the rest vertex position (<code class="docutils literal notranslate"><span class="pre">V_rest</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compute_barrier_potential*()</span></code> no longer take the rest vertex position</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/teaser@0_3.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A set of reusable functions to integrate IPC into an existing simulation</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=ipc-sim&repo=ipc-toolkit&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Changelog</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">2021-07-26 (1479aae)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">2021-07-22 (e24c76d)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">2021-07-17 (a20f7a2)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">2021-07-15 (7301b42)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id7">2021-07-08 (86ae4e5)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id10">2021-07-05 (4d16954)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id12">2021-07-05 (b3808e1)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id15">2021-06-18 (aa59aeb)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id17">2021-05-18 (245b13b)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id19">2021-05-11 (5c34dcd)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id21">2021-05-06 (24056cc)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id23">2021-05-06 (81d65f3)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id25">2021-05-04 (59ec167)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id27">2021-05-03 (664d65f)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id29">2021-05-03 (9b4ebfc)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id32">2021-04-29 (293d0ad)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id36">2021-04-21 (c8a6d5)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id38">2021-02-11 (9c7493)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id40">2021-02-01 (b510253)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id42">2021-02-01 (a395175)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id44">2021-01-12 (deee6d0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id47">2021-01-09 (deee6d0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id49">2020-11-20 (93143ad)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id52">2020-11-06 (4553509)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id54">2020-10-22 (51f4903)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id56">2020-10-22 (9be6c0f)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id58">2020-10-10 (cb8b53f)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id60">2020-10-10 (4a5f84f)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id62">2020-10-10 (1d51a61)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id64">2020-10-09 (b737fb0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id66">2020-10-08 (6ee60ae)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id68">2020-10-08 (cc3947d)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id72">2020-10-07 (5582582)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id75">2020-10-06 (b48ba0e)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id77">2020-10-05 (9a4576b)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id79">2020-09-19 (31a37e0)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id81">2020-09-19 (acb7664)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id83">2020-09-04 (7dd2ab7)</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Incremental Potential Contact (IPC) Toolkit</a></li>
+      <li>Next: <a href="contributing.html" title="next chapter">Contributing</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, IPC Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/changelog.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/ipc-sim/ipc-toolkit" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
