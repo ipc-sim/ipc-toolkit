@@ -4,13 +4,6 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-from sphinx.builders.html import StandaloneHTMLBuilder
-import subprocess
-import os
-
-# Doxygen
-subprocess.call('doxygen Doxyfile', shell=True)
-
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -46,6 +39,7 @@ extensions = [
     # 'sphinx_sitemap',
     'sphinx.ext.inheritance_diagram',
     'breathe',
+    'exhale',
     'm2r2'
 ]
 
@@ -55,6 +49,22 @@ breathe_projects = {
 }
 breathe_default_project = project
 breathe_default_members = ('members', 'undoc-members')
+
+# Setup the exhale extension
+exhale_args = {
+    # These arguments are required
+    "containmentFolder":     "./api",
+    "rootFileName":          "library_root.rst",
+    "rootFileTitle":         "IPC Toolkit API",
+    "afterTitleDescription": "A set of reusable functions to integrate IPC into an existing simulation.",
+    "doxygenStripFromPath":  "../..",
+    # Suggested optional arguments
+    "createTreeView":        True,
+    # TIP: if using the sphinx-bootstrap-theme, you need
+    # "treeViewIsBootstrap": True,
+    "exhaleExecutesDoxygen": True,
+    "exhaleUseDoxyfile":    True,
+}
 
 # Tell sphinx what the primary language being documented is.
 primary_domain = 'cpp'

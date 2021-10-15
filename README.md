@@ -1,14 +1,15 @@
 # IPC Toolkit
-**A set of reusable functions to integrate IPC into an existing simulation.**
 
 [![Build](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg)](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml)
 [![Python](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg)](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml)
 [![CodeFactor](https://www.codefactor.io/repository/github/ipc-sim/ipc-toolkit/badge)](https://www.codefactor.io/repository/github/ipc-sim/ipc-toolkit)
 [![License](https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue)](https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE)
 
-For a complete list of changes, please see [`CHANGELOG.md`](https://github.com/ipc-sim/ipc-toolkit/blob/main/CHANGELOG.md), and for a definitive reference for these functions, please see the [IPC source code](https://github.com/ipc-sim/IPC).
+**A set of reusable functions to integrate IPC into an existing simulation.**
 
-## Integrating IPC Toolkit into your project
+For a complete list of changes, please see <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/CHANGELOG.md"><code>CHANGELOG.md</code></a>, and for a definitive reference for these functions, please see the [IPC source code](https://github.com/ipc-sim/IPC).
+
+## Integrating the IPC Toolkit into your project
 
 #### 1. Add it to CMake
 
@@ -83,4 +84,4 @@ Simply fork this repository and make a Pull Request! We'd definitely appreciate:
 
 ## License
 
-MIT License © 2020, the IPC-Sim organization (See [`LICENSE.txt`](https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE) for details)
+MIT License © 2020, the IPC-Sim organization (See <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><code>LICENSE.txt</code></a> for details)

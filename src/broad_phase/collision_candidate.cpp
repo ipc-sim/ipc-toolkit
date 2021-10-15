@@ -265,9 +265,6 @@ bool Candidates::save_obj(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static const Eigen::IOFormat OBJ_VERTEX_FORMAT(
-    Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "", "");
-
 void save_obj(
     std::ofstream& out,
     const Eigen::MatrixXd& V,
@@ -275,6 +272,9 @@ void save_obj(
     const Eigen::MatrixXi& F,
     const std::vector<EdgeVertexCandidate>& ev_candidates)
 {
+    static const Eigen::IOFormat OBJ_VERTEX_FORMAT(
+        Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "",
+        "");
     out << "o EV\n";
     int i = 1;
     for (const auto& ev_candidate : ev_candidates) {
@@ -293,6 +293,9 @@ void save_obj(
     const Eigen::MatrixXi& F,
     const std::vector<EdgeEdgeCandidate>& ee_candidates)
 {
+    static const Eigen::IOFormat OBJ_VERTEX_FORMAT(
+        Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "",
+        "");
     out << "o EE\n";
     int i = 1;
     for (const auto& ee_candidate : ee_candidates) {
@@ -313,6 +316,9 @@ void save_obj(
     const Eigen::MatrixXi& F,
     const std::vector<FaceVertexCandidate>& fv_candidates)
 {
+    static const Eigen::IOFormat OBJ_VERTEX_FORMAT(
+        Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "",
+        "");
     out << "o FV\n";
     int i = 1;
     for (const auto& fv_candidate : fv_candidates) {
@@ -332,6 +338,9 @@ void save_obj(
     const Eigen::MatrixXi& F,
     const std::vector<EdgeFaceCandidate>& ef_candidates)
 {
+    static const Eigen::IOFormat OBJ_VERTEX_FORMAT(
+        Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "",
+        "");
     out << "o EF\n";
     int i = 1;
     for (const auto& ef_candidate : ef_candidates) {
