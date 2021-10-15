@@ -53,7 +53,7 @@ Functions
 
 - :ref:`exhale_function_namespaceipc_1aeecb201c157afeb798bbf8b3b5cf20be`
 
-- :ref:`exhale_function_namespaceipc_1a0e8192a97dfe0340bb4521eb1073e532`
-
 - :ref:`exhale_function_namespaceipc_1aebbceb90d0ea7217838b0ac9eb979faf`
+
+- :ref:`exhale_function_namespaceipc_1a0e8192a97dfe0340bb4521eb1073e532`
 
