@@ -263,9 +263,9 @@ Functions
 
 - :ref:`exhale_function_namespaceipc_1a642911e7310c286322c970ddfe32c0fe`
 
-- :ref:`exhale_function_namespaceipc_1a17a098c56120fdbb97252750d4d44a26`
-
 - :ref:`exhale_function_namespaceipc_1a2e998593d4ea4698ef92c8b210b2a42a`
+
+- :ref:`exhale_function_namespaceipc_1a17a098c56120fdbb97252750d4d44a26`
 
 - :ref:`exhale_function_namespaceipc_1a8c7216392c67872ce590ad1ef6afb006`
 
