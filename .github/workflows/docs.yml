@@ -10,7 +10,7 @@ on:
       - main
 
 jobs:
-  build:
+  Docs:
     runs-on: macos-latest
     steps:
       - name: Checkout repository
