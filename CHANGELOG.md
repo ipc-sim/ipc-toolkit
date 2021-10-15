@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
-### YYYY-MM-DD ([1479aae](https://github.com/ipc-sim/ipc-toolkit/commit/1479aaea958daaa4e963529493e4169dc7757913))
+### 2021-07-26 ([1479aae](https://github.com/ipc-sim/ipc-toolkit/commit/1479aaea958daaa4e963529493e4169dc7757913))
 #### Changed
 * Updated the CMake system to use modern `FetchContent` to download externals
 

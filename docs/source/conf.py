@@ -4,30 +4,12 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import sys
+from sphinx.builders.html import StandaloneHTMLBuilder
 import subprocess
+import os
 
-
-def run_doxygen(folder):
-    """Run the doxygen make command in the designated folder"""
-    try:
-        retcode = subprocess.call("cd %s; doxygen" % folder, shell=True)
-        if retcode < 0:
-            sys.stderr.write("doxygen terminated by signal %s" % (-retcode))
-    except OSError as e:
-        sys.stderr.write("doxygen execution failed: %s" % e)
-
-
-def generate_doxygen_xml(app):
-    """Run the doxygen make commands if we're on the ReadTheDocs server"""
-    read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
-    if read_the_docs_build:
-        run_doxygen("..")
-
-
-def setup(app):
-    # Add hook for building doxygen xml when needed
-    app.connect("builder-inited", generate_doxygen_xml)
+# Doxygen
+subprocess.call('doxygen Doxyfile', shell=True)
 
 # -- Path setup --------------------------------------------------------------
 
@@ -53,9 +35,17 @@ author = 'IPC Group'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.autosectionlabel',
+    'sphinx.ext.todo',
+    'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
+    'sphinx.ext.ifconfig',
+    'sphinx.ext.viewcode',
+    # 'sphinx_sitemap',
+    'sphinx.ext.inheritance_diagram',
     'breathe',
-    'exhale',
     'm2r2'
 ]
 
@@ -64,22 +54,7 @@ breathe_projects = {
     project: "../build/doxyoutput/xml"
 }
 breathe_default_project = project
-
-# Setup the exhale extension
-exhale_args = {
-    # These arguments are required
-    "containmentFolder":     "./api",
-    "rootFileName":          "library_root.rst",
-    "rootFileTitle":         "IPC Toolkit API",
-    "afterTitleDescription": "A set of reusable functions to integrate IPC into an existing simulation.",
-    "doxygenStripFromPath":  "../..",
-    # Suggested optional arguments
-    "createTreeView":        True,
-    # TIP: if using the sphinx-bootstrap-theme, you need
-    # "treeViewIsBootstrap": True,
-    "exhaleExecutesDoxygen": True,
-    "exhaleUseDoxyfile":    True,
-}
+breathe_default_members = ('members', 'undoc-members')
 
 # Tell sphinx what the primary language being documented is.
 primary_domain = 'cpp'
