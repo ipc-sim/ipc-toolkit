@@ -1,0 +1,26 @@
+.. _exhale_struct_structipc_1_1_edge_vertex_constraint:
+
+Struct EdgeVertexConstraint
+===========================
+
+- Defined in :ref:`file_src_collision_constraint.hpp`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Types
+**********
+
+- ``public ipc::EdgeVertexCandidate`` (:ref:`exhale_struct_structipc_1_1_edge_vertex_candidate`)
+- ``public ipc::CollisionConstraint`` (:ref:`exhale_struct_structipc_1_1_collision_constraint`)
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: ipc::EdgeVertexConstraint
+   :members:
+   :protected-members:
+   :undoc-members:

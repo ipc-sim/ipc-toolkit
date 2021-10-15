@@ -1,0 +1,13 @@
+.. _exhale_typedef_namespaceipc_1a3ccdfa8ea5ad73f04c58700840e69b54:
+
+Typedef ipc::RowVector2
+=======================
+
+- Defined in :ref:`file_src_utils_eigen_ext.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: ipc::RowVector2

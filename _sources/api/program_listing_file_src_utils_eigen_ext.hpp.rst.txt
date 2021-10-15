@@ -1,0 +1,119 @@
+
+.. _program_listing_file_src_utils_eigen_ext.hpp:
+
+Program Listing for File eigen_ext.hpp
+======================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_utils_eigen_ext.hpp>` (``src/utils/eigen_ext.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #pragma once
+   
+   #include <Eigen/Core>
+   #include <Eigen/SparseCore>
+   
+   namespace ipc {
+   
+   // Boolean scalar
+   typedef Eigen::Array<bool, Eigen::Dynamic, 1> ArrayXb;
+   typedef Eigen::Matrix<bool, Eigen::Dynamic, 1> VectorXb;
+   typedef Eigen::Matrix<bool, 3, 1> Vector3b;
+   typedef Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> MatrixXb;
+   
+   template <typename T, int dim, int max_dim = dim>
+   using Vector = Eigen::Matrix<T, dim, 1, Eigen::ColMajor, max_dim, 1>;
+   template <typename T, int dim, int max_dim = dim>
+   using RowVector = Eigen::Matrix<T, 1, dim, Eigen::RowMajor, 1, max_dim>;
+   template <typename T> using Vector1 = Vector<T, 1>;
+   template <typename T> using Vector2 = Vector<T, 2>;
+   template <typename T> using Vector3 = Vector<T, 3>;
+   template <typename T> using VectorX = Vector<T, Eigen::Dynamic>;
+   template <typename T> using RowVector2 = RowVector<T, 2>;
+   template <typename T> using RowVector3 = RowVector<T, 3>;
+   template <typename T> using RowVectorX = RowVector<T, Eigen::Dynamic>;
+   template <typename T> using Matrix2 = Eigen::Matrix<T, 2, 2>;
+   template <typename T> using Matrix3 = Eigen::Matrix<T, 3, 3>;
+   template <typename T>
+   using MatrixX = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
+   
+   using Vector1d = Vector1<double>;
+   template <typename T> using VectorMax2 = Vector<T, Eigen::Dynamic, 2>;
+   template <typename T> using VectorMax3 = Vector<T, Eigen::Dynamic, 3>;
+   using VectorMax2d = VectorMax2<double>;
+   using VectorMax3d = VectorMax3<double>;
+   using VectorMax3i = VectorMax3<int>;
+   template <typename T> using VectorMax6 = Vector<T, Eigen::Dynamic, 6>;
+   using VectorMax6d = VectorMax6<double>;
+   using VectorMax6b = VectorMax6<bool>;
+   template <typename T> using VectorMax9 = Vector<T, Eigen::Dynamic, 9>;
+   using VectorMax9d = VectorMax9<double>;
+   template <typename T> using VectorMax12 = Vector<T, Eigen::Dynamic, 12>;
+   using VectorMax12d = VectorMax12<double>;
+   template <typename T, int max_rows, int max_cols>
+   using MatrixMax = Eigen::Matrix<
+       T,
+       Eigen::Dynamic,
+       Eigen::Dynamic,
+       Eigen::ColMajor,
+       max_rows,
+       max_cols>;
+   template <typename T> using MatrixMax2 = MatrixMax<T, 2, 2>;
+   template <typename T> using MatrixMax3 = MatrixMax<T, 3, 3>;
+   template <typename T> using MatrixMax6 = MatrixMax<T, 6, 6>;
+   template <typename T> using MatrixMax9 = MatrixMax<T, 9, 9>;
+   template <typename T> using MatrixMax12 = MatrixMax<T, 12, 12>;
+   using MatrixMax2d = MatrixMax2<double>;
+   using MatrixMax3d = MatrixMax3<double>;
+   using MatrixMax6d = MatrixMax6<double>;
+   using MatrixMax9d = MatrixMax9<double>;
+   using MatrixMax12d = MatrixMax12<double>;
+   using DiagonalMatrixXd = Eigen::DiagonalMatrix<double, Eigen::Dynamic>;
+   using DiagonalMatrixMax6d = Eigen::DiagonalMatrix<double, Eigen::Dynamic, 6>;
+   
+   template <typename T>
+   using ArrayMax2 = Eigen::Array<T, Eigen::Dynamic, 1, Eigen::ColMajor, 2, 1>;
+   template <typename T>
+   using ArrayMax3 = Eigen::Array<T, Eigen::Dynamic, 1, Eigen::ColMajor, 3, 1>;
+   using ArrayMax2d = ArrayMax2<double>;
+   using ArrayMax3d = ArrayMax3<double>;
+   using ArrayMax3i = ArrayMax3<int>;
+   
+   template <
+       typename _Scalar,
+       int _Rows,
+       int _Cols,
+       int _Options,
+       int _MaxRows,
+       int _MaxCols>
+   Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
+   project_to_pd(
+       const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A,
+       double eps = 1e-8);
+   template <
+       typename _Scalar,
+       int _Rows,
+       int _Cols,
+       int _Options,
+       int _MaxRows,
+       int _MaxCols>
+   Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
+   project_to_psd(
+       const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&
+           A);
+   
+   template <
+       typename DerivedA,
+       typename DerivedB,
+       typename Result = Eigen::Matrix<
+           typename DerivedA::Scalar,
+           DerivedA::RowsAtCompileTime,
+           DerivedA::ColsAtCompileTime>>
+   Result cross(
+       const Eigen::MatrixBase<DerivedA>& a, const Eigen::MatrixBase<DerivedB>& b);
+   
+   } // namespace ipc
+   
+   #include "eigen_ext.tpp"

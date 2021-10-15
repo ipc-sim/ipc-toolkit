@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1aeba68ebedab332ccc5e95320fe7c905e:
+
+Template Function ipc::f1_SF_div_relative_displacement_norm
+===========================================================
+
+- Defined in :ref:`file_src_friction_friction_constraint.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::f1_SF_div_relative_displacement_norm(const T&, const double&)

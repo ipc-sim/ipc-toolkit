@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a34b665fda3eb02618006554747e7b8b9:
+
+Template Function ipc::point_line_distance
+==========================================
+
+- Defined in :ref:`file_src_distance_point_line.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::point_line_distance(const Eigen::MatrixBase<DerivedP>&, const Eigen::MatrixBase<DerivedE0>&, const Eigen::MatrixBase<DerivedE1>&)

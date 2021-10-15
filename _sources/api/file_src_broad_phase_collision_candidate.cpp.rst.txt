@@ -1,0 +1,61 @@
+
+.. _file_src_broad_phase_collision_candidate.cpp:
+
+File collision_candidate.cpp
+============================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_broad_phase>` (``src/broad_phase``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/broad_phase/collision_candidate.cpp``)
+--------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_broad_phase_collision_candidate.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``algorithm``
+
+- ``ipc/broad_phase/collision_candidate.hpp``
+
+- ``ipc/utils/logger.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1a783351052e5565997ca41f651c291761`
+
+- :ref:`exhale_function_namespaceipc_1aa710f7280920a7d2b4c5028656045870`
+
+- :ref:`exhale_function_namespaceipc_1ad63e48dc1163e9215d6127b02dd67804`
+
+- :ref:`exhale_function_namespaceipc_1aa19b596f7428b48cde24b5a0636e21a6`
+

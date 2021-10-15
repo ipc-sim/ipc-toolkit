@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a536bea21d3c09619f5283ceb60ac2665:
+
+Function ipc::point_triangle_ccd
+================================
+
+- Defined in :ref:`file_src_ccd_ccd.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::point_triangle_ccd(const Eigen::Vector3d&, const Eigen::Vector3d&, const Eigen::Vector3d&, const Eigen::Vector3d&, const Eigen::Vector3d&, const Eigen::Vector3d&, const Eigen::Vector3d&, const Eigen::Vector3d&, double&, const double, const double, const long, const double)

@@ -1,0 +1,13 @@
+.. _exhale_typedef_namespaceipc_1a3457d418a16497d898cfcaffbfffd96d:
+
+Typedef ipc::MatrixMax12
+========================
+
+- Defined in :ref:`file_src_utils_eigen_ext.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: ipc::MatrixMax12

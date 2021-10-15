@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1aaca3bca3a5000375afbdd5b32f471eee:
+
+Template Function ipc::point_triangle_distance_gradient(const Eigen::MatrixBase<DerivedP>&, const Eigen::MatrixBase<DerivedT0>&, const Eigen::MatrixBase<DerivedT1>&, const Eigen::MatrixBase<DerivedT2>&, Eigen::PlainObjectBase<DerivedGrad>&)
+================================================================================================================================================================================================================================================
+
+- Defined in :ref:`file_src_distance_point_triangle.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::point_triangle_distance_gradient(const Eigen::MatrixBase<DerivedP>&, const Eigen::MatrixBase<DerivedT0>&, const Eigen::MatrixBase<DerivedT1>&, const Eigen::MatrixBase<DerivedT2>&, Eigen::PlainObjectBase<DerivedGrad>&)

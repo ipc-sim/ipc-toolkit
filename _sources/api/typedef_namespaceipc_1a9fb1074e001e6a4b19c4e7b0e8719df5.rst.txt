@@ -1,0 +1,13 @@
+.. _exhale_typedef_namespaceipc_1a9fb1074e001e6a4b19c4e7b0e8719df5:
+
+Typedef ipc::ArrayMax3i
+=======================
+
+- Defined in :ref:`file_src_utils_eigen_ext.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: ipc::ArrayMax3i

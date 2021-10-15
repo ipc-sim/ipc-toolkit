@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Program Listing for File adaptive_stiffness.cpp &#8212; IPC Toolkit  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js"></script>
+    <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="program-listing-for-file-adaptive-stiffness-cpp">
+<span id="program-listing-file-src-barrier-adaptive-stiffness-cpp"></span><h1>Program Listing for File adaptive_stiffness.cpp<a class="headerlink" href="#program-listing-for-file-adaptive-stiffness-cpp" title="Permalink to this headline">¶</a></h1>
+<p>↰ <a class="reference internal" href="file_src_barrier_adaptive_stiffness.cpp.html#file-src-barrier-adaptive-stiffness-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/barrier/adaptive_stiffness.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// Fucntions for computing the initial and updated barrier stiffnesses.</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/barrier/adaptive_stiffness.hpp&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;algorithm&gt;</span><span class="c1"> // std::min/max</span><span class="cp"></span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/ipc.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/barrier/barrier.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/utils/world_bbox_diagonal_length.hpp&gt;</span><span class="cp"></span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ipc</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="kt">double</span><span class="w"> </span><span class="nf">initial_barrier_stiffness</span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">bbox_diagonal</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">average_mass</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="o">&amp;</span><span class="w"> </span><span class="n">grad_energy</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="o">&amp;</span><span class="w"> </span><span class="n">grad_barrier</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">max_barrier_stiffness</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">min_barrier_stiffness_scale</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dmin</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">average_mass</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">min_barrier_stiffness_scale</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">bbox_diagonal</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dhat_squared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dhat</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dhat</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dmin_squared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dmin</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dmin</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="c1">// Find a good initial value for κ</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">d0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e-8</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">bbox_diagonal</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">dmin</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">d0</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">d0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">d0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">dmin_squared</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dmin</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dhat</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">dhat_squared</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">d0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dmin</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dhat</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dhat_squared</span><span class="p">;</span><span class="w"> </span><span class="c1">// NOTE: this is untested</span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">min_barrier_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">d0</span><span class="w"></span>
+<span class="w">        </span><span class="o">*</span><span class="w"> </span><span class="n">barrier_hessian</span><span class="p">(</span><span class="n">d0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">dmin_squared</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dmin</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dhat</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">dhat_squared</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">min_barrier_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">        </span><span class="n">min_barrier_stiffness_scale</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">average_mass</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">min_barrier_stiffness</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">isfinite</span><span class="p">(</span><span class="n">min_barrier_stiffness</span><span class="p">));</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">max_barrier_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">min_barrier_stiffness</span><span class="p">;</span><span class="w"></span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">kappa</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">grad_barrier</span><span class="p">.</span><span class="n">squaredNorm</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// If this value is negative it will be clamped to κ_min anyways</span>
+<span class="w">        </span><span class="n">kappa</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">grad_barrier</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">grad_energy</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">grad_barrier</span><span class="p">.</span><span class="n">squaredNorm</span><span class="p">();</span><span class="w"></span>
+<span class="w">        </span><span class="n">assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">isfinite</span><span class="p">(</span><span class="n">kappa</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">max_barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">min_barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">kappa</span><span class="p">));</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">// Adaptive κ</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">update_barrier_stiffness</span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">prev_min_distance</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">min_distance</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">max_barrier_stiffness</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">bbox_diagonal</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dhat_epsilon_scale</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dmin</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// Is the barrier having a difficulty pushing the bodies apart?</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dhat_epsilon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dhat_epsilon_scale</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">bbox_diagonal</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">dmin</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">dhat_epsilon</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">dhat_epsilon</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">prev_min_distance</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">dhat_epsilon</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">min_distance</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">dhat_epsilon</span><span class="w"></span>
+<span class="w">        </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">min_distance</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">prev_min_distance</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// Then increase the barrier stiffness.</span>
+<span class="w">        </span><span class="n">barrier_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">max_barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">// Adaptive κ</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">update_barrier_stiffness</span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Constraints</span><span class="o">&amp;</span><span class="w"> </span><span class="n">constraint_set</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="o">&amp;</span><span class="w"> </span><span class="n">V</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">F</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">prev_min_distance</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">min_distance</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">max_barrier_stiffness</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dhat_epsilon_scale</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dmin</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="c1">// Use a temporay variable in case &amp;prev_min_distance == &amp;min_distance</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">current_min_distance</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">        </span><span class="n">compute_minimum_distance</span><span class="p">(</span><span class="n">V</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">F</span><span class="p">,</span><span class="w"> </span><span class="n">constraint_set</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">update_barrier_stiffness</span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">prev_min_distance</span><span class="p">,</span><span class="w"> </span><span class="n">current_min_distance</span><span class="p">,</span><span class="w"> </span><span class="n">max_barrier_stiffness</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">world_bbox_diagonal_length</span><span class="p">(</span><span class="n">V</span><span class="p">),</span><span class="w"> </span><span class="n">dhat_epsilon_scale</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="n">dmin</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">min_distance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">current_min_distance</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="p">}</span><span class="w"> </span><span class="c1">// namespace ipc</span>
+</pre></div>
+</div>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/teaser@0_3.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A set of reusable functions to integrate IPC into an existing simulation</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=ipc-sim&repo=ipc-toolkit&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, IPC Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/program_listing_file_src_barrier_adaptive_stiffness.cpp.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/ipc-sim/ipc-toolkit" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

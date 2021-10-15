@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1ab255b3694ce6856e7e5f42bf185dc1e4:
+
+Template Function ipc::edge_edge_distance_gradient(const Eigen::MatrixBase<DerivedEA0>&, const Eigen::MatrixBase<DerivedEA1>&, const Eigen::MatrixBase<DerivedEB0>&, const Eigen::MatrixBase<DerivedEB1>&, const EdgeEdgeDistanceType, Eigen::PlainObjectBase<DerivedGrad>&)
+============================================================================================================================================================================================================================================================================
+
+- Defined in :ref:`file_src_distance_edge_edge.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::edge_edge_distance_gradient(const Eigen::MatrixBase<DerivedEA0>&, const Eigen::MatrixBase<DerivedEA1>&, const Eigen::MatrixBase<DerivedEB0>&, const Eigen::MatrixBase<DerivedEB1>&, const EdgeEdgeDistanceType, Eigen::PlainObjectBase<DerivedGrad>&)

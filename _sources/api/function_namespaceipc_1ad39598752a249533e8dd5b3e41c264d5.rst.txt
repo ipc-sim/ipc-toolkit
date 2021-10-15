@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1ad39598752a249533e8dd5b3e41c264d5:
+
+Template Function ipc::edge_edge_tangent_basis
+==============================================
+
+- Defined in :ref:`file_src_friction_tangent_basis.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::edge_edge_tangent_basis(const Eigen::MatrixBase<DerivedEA0>&, const Eigen::MatrixBase<DerivedEA1>&, const Eigen::MatrixBase<DerivedEB0>&, const Eigen::MatrixBase<DerivedEB1>&)

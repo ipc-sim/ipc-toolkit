@@ -1,0 +1,82 @@
+
+.. _file_src_ccd_ccd.cpp:
+
+File ccd.cpp
+============
+
+|exhale_lsh| :ref:`Parent directory <dir_src_ccd>` (``src/ccd``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/ccd/ccd.cpp``)
+--------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_ccd_ccd.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``CTCD.h``
+
+- ``algorithm``
+
+- ``array``
+
+- ``ipc/ccd/ccd.hpp``
+
+- ``ipc/distance/edge_edge.hpp``
+
+- ``ipc/distance/point_triangle.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1ade329fe5abe60d05c5163da71e03f68d`
+
+- :ref:`exhale_function_namespaceipc_1a57a6945c94038ae22a4a42858f894c1b`
+
+- :ref:`exhale_function_namespaceipc_1aa7770914c3a974666b2b573b389893a2`
+
+- :ref:`exhale_function_namespaceipc_1acc4a3e39a99356e8c0783737cb1ecf4d`
+
+- :ref:`exhale_function_namespaceipc_1a405ad0fe37167af9105849da2fe81bd5`
+
+- :ref:`exhale_function_namespaceipc_1a2752d8d90616c6934e9779eb16d6e82d`
+
+- :ref:`exhale_function_namespaceipc_1a3f62520107cb85797bbd682ef2562749`
+
+- :ref:`exhale_function_namespaceipc_1a536bea21d3c09619f5283ceb60ac2665`
+
+
+Variables
+---------
+
+
+- :ref:`exhale_variable_namespaceipc_1a245d438df4884431e13e50b50ba556df`
+

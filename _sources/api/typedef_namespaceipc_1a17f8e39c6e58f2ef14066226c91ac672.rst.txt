@@ -1,0 +1,13 @@
+.. _exhale_typedef_namespaceipc_1a17f8e39c6e58f2ef14066226c91ac672:
+
+Typedef ipc::VectorMax9
+=======================
+
+- Defined in :ref:`file_src_utils_eigen_ext.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: ipc::VectorMax9

@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a247da53c5cfd953216493bda707a7ac5:
+
+Template Function ipc::edge_edge_distance_hessian(const Eigen::MatrixBase<DerivedEA0>&, const Eigen::MatrixBase<DerivedEA1>&, const Eigen::MatrixBase<DerivedEB0>&, const Eigen::MatrixBase<DerivedEB1>&, Eigen::PlainObjectBase<DerivedHess>&)
+===============================================================================================================================================================================================================================================
+
+- Defined in :ref:`file_src_distance_edge_edge.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::edge_edge_distance_hessian(const Eigen::MatrixBase<DerivedEA0>&, const Eigen::MatrixBase<DerivedEA1>&, const Eigen::MatrixBase<DerivedEB0>&, const Eigen::MatrixBase<DerivedEB1>&, Eigen::PlainObjectBase<DerivedHess>&)

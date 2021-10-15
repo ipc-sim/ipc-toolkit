@@ -1,0 +1,67 @@
+
+.. _file_src_collision_constraint.hpp:
+
+File collision_constraint.hpp
+=============================
+
+|exhale_lsh| :ref:`Parent directory <dir_src>` (``src``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/collision_constraint.hpp``)
+---------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_collision_constraint.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``Eigen/Core``
+
+- ``ipc/broad_phase/collision_candidate.hpp``
+
+- ``ipc/utils/eigen_ext.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structipc_1_1_collision_constraint`
+
+- :ref:`exhale_struct_structipc_1_1_constraints`
+
+- :ref:`exhale_struct_structipc_1_1_edge_edge_constraint`
+
+- :ref:`exhale_struct_structipc_1_1_edge_vertex_constraint`
+
+- :ref:`exhale_struct_structipc_1_1_face_vertex_constraint`
+
+- :ref:`exhale_struct_structipc_1_1_plane_vertex_constraint`
+
+- :ref:`exhale_struct_structipc_1_1_vertex_vertex_constraint`
+

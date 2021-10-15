@@ -1,0 +1,37 @@
+
+.. _program_listing_file_src_broad_phase_voxel_size_heuristic.hpp:
+
+Program Listing for File voxel_size_heuristic.hpp
+=================================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_broad_phase_voxel_size_heuristic.hpp>` (``src/broad_phase/voxel_size_heuristic.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #pragma once
+   
+   #include <Eigen/Core>
+   
+   namespace ipc {
+   
+   double suggest_good_voxel_size(
+       const Eigen::MatrixXd& V,
+       const Eigen::MatrixXi& E,
+       double inflation_radius = 0);
+   
+   double suggest_good_voxel_size(
+       const Eigen::MatrixXd& V0,
+       const Eigen::MatrixXd& V1,
+       const Eigen::MatrixXi& E,
+       double inflation_radius = 0);
+   
+   double average_edge_length(
+       const Eigen::MatrixXd& V0,
+       const Eigen::MatrixXd& V1,
+       const Eigen::MatrixXi& E);
+   
+   double average_displacement_length(const Eigen::MatrixXd& U);
+   
+   } // namespace ipc

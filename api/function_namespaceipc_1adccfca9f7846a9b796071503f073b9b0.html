@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Function ipc::compute_point_plane_collision_free_stepsize &#8212; IPC Toolkit  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js"></script>
+    <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Function ipc::construct_collision_candidates(const Eigen::MatrixXd&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, Candidates&amp;, double, const BroadPhaseMethod&amp;, bool, const std::function&lt;bool(size_t, size_t)&gt;&amp;)" href="function_namespaceipc_1a518bc1d5a6fe1e42856d755be7b3e511.html" />
+    <link rel="prev" title="Function ipc::compute_normal_force_magnitude" href="function_namespaceipc_1afac187c44c4fec78b674c72c98c4298c.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="function-ipc-compute-point-plane-collision-free-stepsize">
+<span id="exhale-function-namespaceipc-1adccfca9f7846a9b796071503f073b9b0"></span><h1>Function ipc::compute_point_plane_collision_free_stepsize<a class="headerlink" href="#function-ipc-compute-point-plane-collision-free-stepsize" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p>Defined in <a class="reference internal" href="file_src_implicits_plane.cpp.html#file-src-implicits-plane-cpp"><span class="std std-ref">File plane.cpp</span></a></p></li>
+</ul>
+<section id="function-documentation">
+<h2>Function Documentation<a class="headerlink" href="#function-documentation" title="Permalink to this headline">¶</a></h2>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N3ipc43compute_point_plane_collision_free_stepsizeERKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKNSt8functionIFb6size_t6size_tEEE">
+<span id="_CPPv3N3ipc43compute_point_plane_collision_free_stepsizeERKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKNSt8functionIFb6size_t6size_tEEE"></span><span id="_CPPv2N3ipc43compute_point_plane_collision_free_stepsizeERKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKNSt8functionIFb6size_t6size_tEEE"></span><span class="target" id="namespaceipc_1adccfca9f7846a9b796071503f073b9b0"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">ipc</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">compute_point_plane_collision_free_stepsize</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXd</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">V0</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXd</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">V1</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXd</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">plane_origins</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXd</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">plane_normals</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">(</span></span><span class="n"><span class="pre">size_t</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">can_collide</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><code class="docutils literal notranslate"><span class="pre">[](size_t,</span> <span class="pre">size_t)</span> <span class="pre">{</span> <span class="pre">return</span> <span class="pre">true;}</span></code><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3ipc43compute_point_plane_collision_free_stepsizeERKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKNSt8functionIFb6size_t6size_tEEE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Computes a maximal step size that is collision free. </p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Assumes V0 is intersection free. </p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Assumes the trajectory is linear. </p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A value of 1.0 if a full step and 0.0 is no step.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>V0</strong> – <strong>[in]</strong> Vertex positions at start as rows of a matrix. </p></li>
+<li><p><strong>V1</strong> – <strong>[in]</strong> Vertex positions at end as rows of a matrix. </p></li>
+<li><p><strong>plane_origins</strong> – <strong>[in]</strong> Plane origins as rows of a matrix. </p></li>
+<li><p><strong>plane_normals</strong> – <strong>[in]</strong> Plane normals as rows of a matrix. </p></li>
+<li><p><strong>can_collide</strong> – <strong>[in]</strong> A function that takes a vertex ID (row numbers in V) and a plane ID (row number in plane_origins) then returns true if the vertex can collide with the plane. By default all points can collide with all planes. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A step-size <span class="math notranslate nohighlight">\(\in [0, 1]\)</span> that is collision free. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/teaser@0_3.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A set of reusable functions to integrate IPC into an existing simulation</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=ipc-sim&repo=ipc-toolkit&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#barrier-function">Barrier Function</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#distance-functions">Distance Functions</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API</a><ul>
+  <li><a href="unabridged_api.html">Full API</a><ul>
+      <li>Previous: <a href="function_namespaceipc_1afac187c44c4fec78b674c72c98c4298c.html" title="previous chapter">Function ipc::compute_normal_force_magnitude</a></li>
+      <li>Next: <a href="function_namespaceipc_1a518bc1d5a6fe1e42856d755be7b3e511.html" title="next chapter">Function ipc::construct_collision_candidates(const Eigen::MatrixXd&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, Candidates&amp;, double, const BroadPhaseMethod&amp;, bool, const std::function&lt;bool(size_t, size_t)&gt;&amp;)</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, IPC Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/function_namespaceipc_1adccfca9f7846a9b796071503f073b9b0.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/ipc-sim/ipc-toolkit" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

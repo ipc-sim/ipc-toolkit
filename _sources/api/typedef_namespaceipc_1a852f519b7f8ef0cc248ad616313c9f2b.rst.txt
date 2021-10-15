@@ -1,0 +1,13 @@
+.. _exhale_typedef_namespaceipc_1a852f519b7f8ef0cc248ad616313c9f2b:
+
+Typedef ipc::ThreadSpecificCandidates
+=====================================
+
+- Defined in :ref:`file_src_broad_phase_spatial_hash.cpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: ipc::ThreadSpecificCandidates

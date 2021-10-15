@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a38a3f406bd194c3c7ebf524301edad63:
+
+Function ipc::update_barrier_stiffness(double, double, double, double&, double, double, double)
+===============================================================================================
+
+- Defined in :ref:`file_src_barrier_adaptive_stiffness.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::update_barrier_stiffness(double, double, double, double&, double, double, double)

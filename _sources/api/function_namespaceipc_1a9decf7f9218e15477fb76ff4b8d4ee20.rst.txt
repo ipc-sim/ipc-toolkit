@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a9decf7f9218e15477fb76ff4b8d4ee20:
+
+Template Function ipc::add_edge_vertex_constraint
+=================================================
+
+- Defined in :ref:`file_src_ipc.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::add_edge_vertex_constraint(std::vector<EdgeVertexConstraint>&, unordered_map<EdgeVertexConstraint, long, Hash>&, const long, const long)

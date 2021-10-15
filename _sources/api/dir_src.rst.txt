@@ -1,0 +1,30 @@
+.. _dir_src:
+
+
+Directory src
+=============
+
+
+*Directory path:* ``src``
+
+Subdirectories
+--------------
+
+- :ref:`dir_src_barrier`
+- :ref:`dir_src_broad_phase`
+- :ref:`dir_src_ccd`
+- :ref:`dir_src_distance`
+- :ref:`dir_src_friction`
+- :ref:`dir_src_implicits`
+- :ref:`dir_src_utils`
+
+
+Files
+-----
+
+- :ref:`file_src_collision_constraint.cpp`
+- :ref:`file_src_collision_constraint.hpp`
+- :ref:`file_src_ipc.cpp`
+- :ref:`file_src_ipc.hpp`
+
+

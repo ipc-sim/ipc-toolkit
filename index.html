@@ -6,14 +6,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Incremental Potential Contact (IPC) Toolkit &#8212; IPC Toolkit  documentation</title>
+    <title>IPC Toolkit &#8212; IPC Toolkit  documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="_static/collapsible-lists/css/tree_view.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/collapsible-lists/js/CollapsibleLists.compressed.js"></script>
+    <script src="_static/collapsible-lists/js/apply-collapsible-lists.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
@@ -33,46 +36,104 @@
 
           <div class="body" role="main">
             
-  <section id="incremental-potential-contact-ipc-toolkit">
-<h1>Incremental Potential Contact (IPC) Toolkit<a class="headerlink" href="#incremental-potential-contact-ipc-toolkit" title="Permalink to this headline">¶</a></h1>
+  <div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<section id="ipc-toolkit">
+<h1>IPC Toolkit<a class="headerlink" href="#ipc-toolkit" title="Permalink to this headline">¶</a></h1>
 <a class="reference external image-reference" href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml"><img alt="Build" src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg" /></a>
-<a class="reference external image-reference" href="https://opensource.org/licenses/MIT"><img alt="License: MIT" src="https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue" /></a>
-<p>A set of reusable functions to integrate IPC into an existing simulation.</p>
-<ul class="simple">
-<li><p><strong>Free Software</strong>: MIT License</p></li>
-<li><p><strong>Github Repository</strong>: <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit">https://github.com/ipc-sim/ipc-toolkit</a></p></li>
-<li><p><strong>Paper</strong>: <a class="reference external" href="https://ipc-sim.github.io/file/IPC-paper-fullRes.pdf">https://ipc-sim.github.io/file/IPC-paper-fullRes.pdf</a></p></li>
-</ul>
-<div class="toctree-wrapper compound">
+<a class="reference external image-reference" href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml"><img alt="Python" src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg" /></a>
+<a class="reference external image-reference" href="https://www.codefactor.io/repository/github/ipc-sim/ipc-toolkit"><img alt="CodeFactor" src="https://www.codefactor.io/repository/github/ipc-sim/ipc-toolkit/badge" /></a>
+<a class="reference external image-reference" href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue" /></a>
+<p><strong>A set of reusable functions to integrate IPC into an existing simulation.</strong></p>
+<p>For a complete list of changes, please see <span class="raw-html-m2r"><a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/CHANGELOG.md"><code>CHANGELOG.md</code></a></span>, and for a definitive reference for these functions, please see the <a class="reference external" href="https://github.com/ipc-sim/IPC">IPC source code</a>.</p>
+<section id="integrating-the-ipc-toolkit-into-your-project">
+<h2>Integrating the IPC Toolkit into your project<a class="headerlink" href="#integrating-the-ipc-toolkit-into-your-project" title="Permalink to this headline">¶</a></h2>
+<section id="add-it-to-cmake">
+<h3>1. Add it to CMake<a class="headerlink" href="#add-it-to-cmake" title="Permalink to this headline">¶</a></h3>
+<p>The easiest way to add the toolkit to an existing CMake project is to download it through CMake.
+CMake provides functionality for doing this called <a class="reference external" href="https://cmake.org/cmake/help/latest/module/FetchContent.html">FetchContent</a> (requires CMake ≥ 3.14).
+We use this same process to download all external dependencies.
+For example,</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nb">include</span><span class="p">(</span><span class="s">FetchContent</span><span class="p">)</span>
+<span class="nb">FetchContent_Declare</span><span class="p">(</span>
+    <span class="s">ipc_toolkit</span>
+    <span class="s">GIT_REPOSITORY</span> <span class="s">https://github.com/ipc-sim/ipc-toolkit.git</span>
+    <span class="s">GIT_TAG</span> <span class="o">${</span><span class="nv">IPC_TOOLKIT_GIT_TAG</span><span class="o">}</span>
+    <span class="s">GIT_SHALLOW</span> <span class="s">TRUE</span>
+<span class="p">)</span>
+<span class="nb">FetchContent_MakeAvailable</span><span class="p">(</span><span class="s">ipc_toolkit</span><span class="p">)</span>
+</pre></div>
 </div>
-<div class="toctree-wrapper compound">
+<p>where <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_GIT_TAG</span></code> is set to the version of the toolkit you want to use. This will download and add the toolkit to CMake. The toolkit can then be linked against using</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="c"># Link against the IPC Toolkit</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span><span class="o">${</span><span class="nv">PROJECT_NAME</span><span class="o">}</span> <span class="s">PUBLIC</span> <span class="s">ipc::toolkit</span><span class="p">)</span>
+</pre></div>
 </div>
-<div class="toctree-wrapper compound">
-</div>
-<section id="api">
-<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
-<section id="barrier-function">
-<h3>Barrier Function<a class="headerlink" href="#barrier-function" title="Permalink to this headline">¶</a></h3>
-<p><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ipc::barrier()</span></code></p>
-<p><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ipc::barrier_gradient()</span></code></p>
-<p><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ipc::barrier_hessian()</span></code></p>
-<p><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ipc::point_edge_distance_type()</span></code></p>
+<p>where <code class="docutils literal notranslate"><span class="pre">PROJECT_NAME</span></code> is the name of your project.</p>
+</section>
+<section id="using-the-toolkit">
+<h3>2. Using the toolkit<a class="headerlink" href="#using-the-toolkit" title="Permalink to this headline">¶</a></h3>
+<p>The main functionality is provided in the <code class="docutils literal notranslate"><span class="pre">ipc.hpp</span></code> header. Use the prefix directory <code class="docutils literal notranslate"><span class="pre">ipc</span></code> to include all header files (e.g. <code class="docutils literal notranslate"><span class="pre">#include</span> <span class="pre">&lt;ipc/ipc.hpp&gt;</span></code>).</p>
 </section>
 </section>
-<section id="development-status">
-<h2>Development Status<a class="headerlink" href="#development-status" title="Permalink to this headline">¶</a></h2>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p><strong>All dependancies are downloaded through CMake</strong> depending on the build options.
+The following libraries are used in this project:</p>
 <ul class="simple">
-<li><p>✅ contacts</p></li>
-<li><p>✅ friction</p></li>
+<li><p><a class="reference external" href="https://eigen.tuxfamily.org/">Eigen</a>: linear algebra</p></li>
+<li><p><a class="reference external" href="https://github.com/libigl/libigl">libigl</a>: basic geometry functions and predicates</p></li>
+<li><p><a class="reference external" href="https://github.com/wjakob/tbb">TBB</a>: parallelization</p></li>
+<li><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Tight-Inclusion">Tight Inclusion CCD</a>: correct (conservative) continuous collision detection between triangle meshes in 3D</p></li>
 </ul>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>This toolkit is in an early stage of development and consequently the API may
-change to better improve usability. If you have any problems
-or find any bugs please <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/issues">post and issue</a>. For a complete list of changes,
-please see <a class="reference external" href="changelog.html">changelog</a>.
-Meanwhile, for a definitive reference for these functions, please see the <a class="reference external" href="https://github.com/ipc-sim/IPC">IPC source code</a>.</p>
-</div>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/evouga/collisiondetection">Etienne Vouga’s Collision Detection Library</a>: continuous collision detection between triangle meshes in 3D</p>
+<ul>
+<li><p>Enable by using the CMake flag <code class="docutils literal notranslate"><span class="pre">-DIPC_TOOLKIT_WITH_CORRECT_CCD=OFF</span></code></p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://github.com/gabime/spdlog">spdlog</a>: logging information (enabled by default)</p>
+<ul>
+<li><p>Disable logging completely using the CMake flag <code class="docutils literal notranslate"><span class="pre">-DIPC_TOOLKIT_WITH_LOGGER=OFF</span></code></p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://github.com/fmtlib/fmt">fmt</a>: string formatting</p>
+<ul>
+<li><p>This is either provided through spdlog or downloaded directly if logging is disabled (<code class="docutils literal notranslate"><span class="pre">-DIPC_TOOLKIT_WITH_LOGGER=OFF</span></code>)</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://github.com/catchorg/Catch2.git">Catch2</a>: testing (see <a class="reference external" href="#unit_tests">Unit Tests</a>)</p></li>
+<li><p><a class="reference external" href="https://github.com/zfergus/finite-diff">finite-diff</a>: finite difference comparisons</p>
+<ul>
+<li><p>Only used by the unit tests (if they are enabled)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="a-name-unit-tests-a-unit-tests">
+<h2><span class="raw-html-m2r"><a name="unit_tests"></a></span>Unit Tests<a class="headerlink" href="#a-name-unit-tests-a-unit-tests" title="Permalink to this headline">¶</a></h2>
+<p>We provide unit tests for ensuring the correctness of our algorithmic pieces.
+To enable the unit tests use the flag <code class="docutils literal notranslate"><span class="pre">-DIPC_TOOLKIT_BUILD_UNIT_TESTS=ON</span></code> with
+CMake.</p>
+</section>
+<section id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<p>This project is open for contributors! Contibutions can come in the form of feature requests, bug fixes, documentation, tutorials and the like. We highly recommend to file an Issue first before submitting a Pull Request.</p>
+<p>Simply fork this repository and make a Pull Request! We’d definitely appreciate:</p>
+<ul class="simple">
+<li><p>Implementation of new features</p></li>
+<li><p>Bug Reports</p></li>
+<li><p>Documentation</p></li>
+<li><p>Testing</p></li>
+</ul>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>MIT License © 2020, the IPC-Sim organization (See <span class="raw-html-m2r"><a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><code>LICENSE.txt</code></a></span> for details)</p>
 </section>
 <section id="indices-and-tables">
 <h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
@@ -122,6 +183,10 @@ Meanwhile, for a definitive reference for these functions, please see the <a cla
 <p class="caption" role="heading"><span class="caption-text">Developers</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
 </ul>
 
 <div class="relations">

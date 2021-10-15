@@ -1,0 +1,52 @@
+
+.. _file_src_ipc.hpp:
+
+File ipc.hpp
+============
+
+|exhale_lsh| :ref:`Parent directory <dir_src>` (``src``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/ipc.hpp``)
+----------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_ipc.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``Eigen/Core``
+
+- ``Eigen/Sparse``
+
+- ``ipc/broad_phase/broad_phase.hpp``
+
+- ``ipc/collision_constraint.hpp``
+
+- ``ipc/friction/friction.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+

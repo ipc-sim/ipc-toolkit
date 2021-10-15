@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1ae52eaaea32ca9dda61a18cb8c5fbcbba:
+
+Function ipc::compute_friction_potential_gradient
+=================================================
+
+- Defined in :ref:`file_src_friction_friction.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::compute_friction_potential_gradient(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, const FrictionConstraints&, double)

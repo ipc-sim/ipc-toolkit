@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a3c25e388ab1214467d7f64e304b451af:
+
+Template Function ipc::point_plane_distance_hessian(const Eigen::MatrixBase<DerivedP>&, const Eigen::MatrixBase<DerivedOrigin>&, const Eigen::MatrixBase<DerivedNormal>&, Eigen::PlainObjectBase<DerivedHess>&)
+===============================================================================================================================================================================================================
+
+- Defined in :ref:`file_src_distance_point_plane.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::point_plane_distance_hessian(const Eigen::MatrixBase<DerivedP>&, const Eigen::MatrixBase<DerivedOrigin>&, const Eigen::MatrixBase<DerivedNormal>&, Eigen::PlainObjectBase<DerivedHess>&)

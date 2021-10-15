@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1aaf3842a2be07cfa03e56dc40d36fafcf:
+
+Template Function ipc::save_obj(const std::string&, const Eigen::MatrixXd&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, const std::vector<Candidate>&)
+==========================================================================================================================================================
+
+- Defined in :ref:`file_src_broad_phase_collision_candidate.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::save_obj(const std::string&, const Eigen::MatrixXd&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, const std::vector<Candidate>&)

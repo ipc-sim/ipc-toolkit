@@ -1,0 +1,46 @@
+
+.. _file_src_utils_unordered_map_and_set.hpp:
+
+File unordered_map_and_set.hpp
+==============================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_utils>` (``src/utils``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/utils/unordered_map_and_set.hpp``)
+----------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_utils_unordered_map_and_set.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``unordered_map`` (:ref:`file_src_utils_unordered_map_and_set.hpp`)
+
+- ``unordered_set``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+

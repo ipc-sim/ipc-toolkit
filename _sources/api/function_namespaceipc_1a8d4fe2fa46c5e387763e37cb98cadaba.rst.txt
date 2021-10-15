@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a8d4fe2fa46c5e387763e37cb98cadaba:
+
+Function ipc::world_bbox_diagonal_length
+========================================
+
+- Defined in :ref:`file_src_utils_world_bbox_diagonal_length.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::world_bbox_diagonal_length(const Eigen::MatrixXd&)

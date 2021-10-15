@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a83d75b2483c50b094d716a570fe4340f:
+
+Template Function ipc::line_line_distance_hessian
+=================================================
+
+- Defined in :ref:`file_src_distance_line_line.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::line_line_distance_hessian(const Eigen::MatrixBase<DerivedEA0>&, const Eigen::MatrixBase<DerivedEA1>&, const Eigen::MatrixBase<DerivedEB0>&, const Eigen::MatrixBase<DerivedEB1>&, Eigen::PlainObjectBase<DerivedHess>&)

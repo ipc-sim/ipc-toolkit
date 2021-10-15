@@ -1,0 +1,13 @@
+.. _exhale_typedef_namespaceipc_1a2df68c7413ea1ebc85c5f0bc2d3854e8:
+
+Typedef ipc::DiagonalMatrixXd
+=============================
+
+- Defined in :ref:`file_src_utils_eigen_ext.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: ipc::DiagonalMatrixXd

@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a6c7616fa02bd319d18e1b48561975c91:
+
+Template Function ipc::f0_SF
+============================
+
+- Defined in :ref:`file_src_friction_friction_constraint.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::f0_SF(const T&, const double&)

@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1aa0832f96f1d89d074ad695468ad0f64a:
+
+Template Function ipc::point_edge_relative_displacement
+=======================================================
+
+- Defined in :ref:`file_src_friction_relative_displacement.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::point_edge_relative_displacement(const Eigen::MatrixBase<DerivedDP>&, const Eigen::MatrixBase<DerivedDE0>&, const Eigen::MatrixBase<DerivedDE1>&, const T&)

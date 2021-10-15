@@ -1,0 +1,63 @@
+
+.. _file_src_implicits_plane.cpp:
+
+File plane.cpp
+==============
+
+|exhale_lsh| :ref:`Parent directory <dir_src_implicits>` (``src/implicits``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/implicits/plane.cpp``)
+----------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_implicits_plane.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``ipc/distance/point_plane.hpp``
+
+- ``ipc/implicits/plane.hpp``
+
+- ``tbb/blocked_range.h``
+
+- ``tbb/mutex.h``
+
+- ``tbb/parallel_for.h``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1adccfca9f7846a9b796071503f073b9b0`
+
+- :ref:`exhale_function_namespaceipc_1a46e0a62409c4c31e35b85fd9ead7c26d`
+
+- :ref:`exhale_function_namespaceipc_1a370a73a6594a6b27ecc2abf4535e3e7f`
+

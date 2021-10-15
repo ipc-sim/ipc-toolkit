@@ -1,0 +1,53 @@
+
+.. _file_src_barrier_barrier.cpp:
+
+File barrier.cpp
+================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_barrier>` (``src/barrier``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/barrier/barrier.cpp``)
+----------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_barrier_barrier.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``ipc/barrier/barrier.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1ab1a8f472720b4154ab8693143512576a`
+
+- :ref:`exhale_function_namespaceipc_1ab6668771f873bc217133038e838565c5`
+

@@ -1,0 +1,24 @@
+
+.. _program_listing_file_src_utils_world_bbox_diagonal_length.hpp:
+
+Program Listing for File world_bbox_diagonal_length.hpp
+=======================================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_utils_world_bbox_diagonal_length.hpp>` (``src/utils/world_bbox_diagonal_length.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #pragma once
+   
+   #include <Eigen/Core>
+   
+   namespace ipc {
+   
+   inline double world_bbox_diagonal_length(const Eigen::MatrixXd& V)
+   {
+       return (V.colwise().maxCoeff() - V.colwise().minCoeff()).norm();
+   }
+   
+   } // namespace ipc

@@ -1,0 +1,75 @@
+
+.. _file_src_friction_relative_displacement.hpp:
+
+File relative_displacement.hpp
+==============================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_friction>` (``src/friction``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/friction/relative_displacement.hpp``)
+-------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_friction_relative_displacement.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``Eigen/Core``
+
+- ``ipc/utils/eigen_ext.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1aa80100e70c47f8174c351d0ccbe13227`
+
+- :ref:`exhale_function_namespaceipc_1a45d3aea2e9501807395409e95f9afbfb`
+
+- :ref:`exhale_function_namespaceipc_1a7e9fbb0f3ddf4ec9d3a39a440d3c205c`
+
+- :ref:`exhale_function_namespaceipc_1aa0832f96f1d89d074ad695468ad0f64a`
+
+- :ref:`exhale_function_namespaceipc_1a52bb47f74ca27a33b0afd58b409ac6bc`
+
+- :ref:`exhale_function_namespaceipc_1a9410f294b8f6218b40875c9632e954b9`
+
+- :ref:`exhale_function_namespaceipc_1a0c45c6377a92cc82c0dc2fa490a69926`
+
+- :ref:`exhale_function_namespaceipc_1af5d950f1e240d5031242233bb5ff9912`
+
+- :ref:`exhale_function_namespaceipc_1a2ba19cb730d6f64aaa04ee2143a5c4b2`
+
+- :ref:`exhale_function_namespaceipc_1ad8d113e668d8844a509d7f95e4fc364f`
+
+- :ref:`exhale_function_namespaceipc_1a2ed58a4f146810729d4176d2c100d913`
+
+- :ref:`exhale_function_namespaceipc_1a7644ee0f575be91ce40cc743aa65f262`
+

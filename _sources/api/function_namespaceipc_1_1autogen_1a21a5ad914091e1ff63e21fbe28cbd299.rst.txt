@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1_1autogen_1a21a5ad914091e1ff63e21fbe28cbd299:
+
+Function ipc::autogen::line_line_distance_hessian
+=================================================
+
+- Defined in :ref:`file_src_distance_line_line.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::autogen::line_line_distance_hessian(double, double, double, double, double, double, double, double, double, double, double, double, double)

@@ -1,0 +1,61 @@
+
+.. _file_src_friction_tangent_basis.hpp:
+
+File tangent_basis.hpp
+======================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_friction>` (``src/friction``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/friction/tangent_basis.hpp``)
+-----------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_friction_tangent_basis.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``Eigen/Core``
+
+- ``Eigen/Geometry``
+
+- ``ipc/utils/eigen_ext.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1ad39598752a249533e8dd5b3e41c264d5`
+
+- :ref:`exhale_function_namespaceipc_1aa120c800344d3a6b75482727c8eb2457`
+
+- :ref:`exhale_function_namespaceipc_1a169cb206707bcd89b84739ba6defeece`
+
+- :ref:`exhale_function_namespaceipc_1accb98d11269b01b5cc0572518df94116`
+

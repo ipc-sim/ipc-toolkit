@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a1fd41b4ba9d2a72241b6f5efb229767a:
+
+Function ipc::calculate_vertex_extents
+======================================
+
+- Defined in :ref:`file_src_broad_phase_hash_grid.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::calculate_vertex_extents(const VectorMax3d&, const VectorMax3d&, ArrayMax3d&, ArrayMax3d&)

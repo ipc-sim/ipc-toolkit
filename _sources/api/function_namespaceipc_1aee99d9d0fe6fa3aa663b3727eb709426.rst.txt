@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1aee99d9d0fe6fa3aa663b3727eb709426:
+
+Function ipc::is_edge_intersecting_triangle
+===========================================
+
+- Defined in :ref:`file_src_utils_intersection.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::is_edge_intersecting_triangle(const Eigen::Vector3d&, const Eigen::Vector3d&, const Eigen::Vector3d&, const Eigen::Vector3d&, const Eigen::Vector3d&)

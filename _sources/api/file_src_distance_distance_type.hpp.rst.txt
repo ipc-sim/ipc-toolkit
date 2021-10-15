@@ -1,0 +1,68 @@
+
+.. _file_src_distance_distance_type.hpp:
+
+File distance_type.hpp
+======================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_distance>` (``src/distance``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/distance/distance_type.hpp``)
+-----------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_distance_distance_type.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``Eigen/Core``
+
+- ``ipc/distance/distance_type.tpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Enums
+-----
+
+
+- :ref:`exhale_enum_namespaceipc_1aace9dbcc350f25ed0a880e40e18b2350`
+
+- :ref:`exhale_enum_namespaceipc_1afa3f29ec5dbcae8c624e28e7318bfce2`
+
+- :ref:`exhale_enum_namespaceipc_1aa45c4d116f94b6728bd604ee6b59937a`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1aa633e9ba9a4118ff78deb9e6cf80eeff`
+
+- :ref:`exhale_function_namespaceipc_1a7607aa20a35d22e34f8887f6104ca2c1`
+
+- :ref:`exhale_function_namespaceipc_1a389f8292c8095432d51dd74782f1265a`
+

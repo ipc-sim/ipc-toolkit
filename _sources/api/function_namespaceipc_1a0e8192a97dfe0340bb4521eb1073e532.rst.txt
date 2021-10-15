@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a0e8192a97dfe0340bb4521eb1073e532:
+
+Function ipc::suggest_good_voxel_size(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::MatrixXi&, double)
+=====================================================================================================================
+
+- Defined in :ref:`file_src_broad_phase_voxel_size_heuristic.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::suggest_good_voxel_size(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::MatrixXi&, double)

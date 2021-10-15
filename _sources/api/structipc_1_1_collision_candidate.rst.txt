@@ -1,0 +1,27 @@
+.. _exhale_struct_structipc_1_1_collision_candidate:
+
+Struct CollisionCandidate
+=========================
+
+- Defined in :ref:`file_src_broad_phase_collision_candidate.hpp`
+
+
+Inheritance Relationships
+-------------------------
+
+Derived Types
+*************
+
+- ``public ipc::EdgeEdgeCandidate`` (:ref:`exhale_struct_structipc_1_1_edge_edge_candidate`)
+- ``public ipc::EdgeVertexCandidate`` (:ref:`exhale_struct_structipc_1_1_edge_vertex_candidate`)
+- ``public ipc::FaceVertexCandidate`` (:ref:`exhale_struct_structipc_1_1_face_vertex_candidate`)
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: ipc::CollisionCandidate
+   :members:
+   :protected-members:
+   :undoc-members:

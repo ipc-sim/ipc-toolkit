@@ -1,0 +1,53 @@
+
+.. _file_src_broad_phase_broad_phase.hpp:
+
+File broad_phase.hpp
+====================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_broad_phase>` (``src/broad_phase``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/broad_phase/broad_phase.hpp``)
+------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_broad_phase_broad_phase.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``Eigen/Core``
+
+- ``ipc/broad_phase/collision_candidate.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Enums
+-----
+
+
+- :ref:`exhale_enum_namespaceipc_1a351a099db7744033543d348172b8dbd8`
+

@@ -1,0 +1,201 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>File ipc.cpp &#8212; IPC Toolkit  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js"></script>
+    <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="file-ipc-cpp">
+<span id="file-src-ipc-cpp"></span><h1>File ipc.cpp<a class="headerlink" href="#file-ipc-cpp" title="Permalink to this headline">¶</a></h1>
+<p>↰ <a class="reference internal" href="dir_src.html#dir-src"><span class="std std-ref">Parent directory</span></a> (<code class="docutils literal notranslate"><span class="pre">src</span></code>)</p>
+<div class="contents local topic" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#definition-src-ipc-cpp" id="id1">Definition (<code class="docutils literal notranslate"><span class="pre">src/ipc.cpp</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#includes" id="id2">Includes</a></p></li>
+<li><p><a class="reference internal" href="#namespaces" id="id3">Namespaces</a></p></li>
+<li><p><a class="reference internal" href="#functions" id="id4">Functions</a></p></li>
+</ul>
+</div>
+<section id="definition-src-ipc-cpp">
+<h2>Definition (<code class="docutils literal notranslate"><span class="pre">src/ipc.cpp</span></code>)<a class="headerlink" href="#definition-src-ipc-cpp" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="program_listing_file_src_ipc.cpp.html">Program Listing for File ipc.cpp</a></li>
+</ul>
+</div>
+</section>
+<section id="includes">
+<h2>Includes<a class="headerlink" href="#includes" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">algorithm</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">igl/predicates/segment_segment_intersect.h</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ipc/broad_phase/hash_grid.hpp</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ipc/ccd/ccd.hpp</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ipc/distance/edge_edge.hpp</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ipc/distance/edge_edge_mollifier.hpp</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ipc/distance/point_edge.hpp</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ipc/distance/point_triangle.hpp</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ipc/ipc.hpp</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ipc/utils/intersection.hpp</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ipc/utils/local_to_global.hpp</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ipc/utils/unordered_map_and_set.hpp</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ipc/utils/world_bbox_diagonal_length.hpp</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stdexcept</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tbb/blocked_range.h</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tbb/enumerable_thread_specific.h</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tbb/mutex.h</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tbb/parallel_for.h</span></code></p></li>
+</ul>
+</section>
+<section id="namespaces">
+<h2>Namespaces<a class="headerlink" href="#namespaces" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="namespace_ipc.html#namespace-ipc"><span class="std std-ref">Namespace ipc</span></a></p></li>
+</ul>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="function_namespaceipc_1a9decf7f9218e15477fb76ff4b8d4ee20.html#exhale-function-namespaceipc-1a9decf7f9218e15477fb76ff4b8d4ee20"><span class="std std-ref">Template Function ipc::add_edge_vertex_constraint</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespaceipc_1a6cd62af7804d68177f8807aabcd7abb1.html#exhale-function-namespaceipc-1a6cd62af7804d68177f8807aabcd7abb1"><span class="std std-ref">Template Function ipc::add_vertex_vertex_constraint</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespaceipc_1ad6dc7ab118094ad5889760c0412e79c3.html#exhale-function-namespaceipc-1ad6dc7ab118094ad5889760c0412e79c3"><span class="std std-ref">Function ipc::compute_barrier_potential</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespaceipc_1ae39ce0a78747850366f016fbcdc92b21.html#exhale-function-namespaceipc-1ae39ce0a78747850366f016fbcdc92b21"><span class="std std-ref">Function ipc::compute_barrier_potential_gradient</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespaceipc_1afb994c0d9343c524478df41f033aff6c.html#exhale-function-namespaceipc-1afb994c0d9343c524478df41f033aff6c"><span class="std std-ref">Function ipc::compute_barrier_potential_hessian</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespaceipc_1a011b169f710246773493bd204a9a18a4.html#exhale-function-namespaceipc-1a011b169f710246773493bd204a9a18a4"><span class="std std-ref">Function ipc::compute_collision_free_stepsize(const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const BroadPhaseMethod&amp;, const double, const long, const bool, const std::function&lt;bool(size_t, size_t)&gt;&amp;)</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespaceipc_1ae0e18d96948dbeda4f74e2526f04db16.html#exhale-function-namespaceipc-1ae0e18d96948dbeda4f74e2526f04db16"><span class="std std-ref">Function ipc::compute_collision_free_stepsize(const Candidates&amp;, const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const double, const long)</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespaceipc_1aa8654fc09b4e744c1d192fda02a3a134.html#exhale-function-namespaceipc-1aa8654fc09b4e744c1d192fda02a3a134"><span class="std std-ref">Function ipc::compute_minimum_distance</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespaceipc_1a4e511bee6f5987468da886e9c11f40a6.html#exhale-function-namespaceipc-1a4e511bee6f5987468da886e9c11f40a6"><span class="std std-ref">Function ipc::construct_constraint_set(const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const double, Constraints&amp;, const Eigen::MatrixXi&amp;, const double, const BroadPhaseMethod&amp;, const bool, const std::function&lt;bool(size_t, size_t)&gt;&amp;)</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespaceipc_1a975169ca4a2c7215248fafa53ee6e5bb.html#exhale-function-namespaceipc-1a975169ca4a2c7215248fafa53ee6e5bb"><span class="std std-ref">Function ipc::construct_constraint_set(const Candidates&amp;, const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const double, Constraints&amp;, const Eigen::MatrixXi&amp;, const double)</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespaceipc_1ac79eb69e56e161ad3155e798d20d1450.html#exhale-function-namespaceipc-1ac79eb69e56e161ad3155e798d20d1450"><span class="std std-ref">Function ipc::find_edge</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespaceipc_1a1a55503a07bdaf129882fe00491a3f7b.html#exhale-function-namespaceipc-1a1a55503a07bdaf129882fe00491a3f7b"><span class="std std-ref">Function ipc::has_intersections</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespaceipc_1afebb3efe19b31f7335f92e58afdf8987.html#exhale-function-namespaceipc-1afebb3efe19b31f7335f92e58afdf8987"><span class="std std-ref">Function ipc::is_step_collision_free(const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const BroadPhaseMethod&amp;, const double, const long, const bool, const std::function&lt;bool(size_t, size_t)&gt;&amp;)</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespaceipc_1a40d1f11cffdfdca899e38eea808da876.html#exhale-function-namespaceipc-1a40d1f11cffdfdca899e38eea808da876"><span class="std std-ref">Function ipc::is_step_collision_free(const Candidates&amp;, const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const double, const long)</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/teaser@0_3.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A set of reusable functions to integrate IPC into an existing simulation</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=ipc-sim&repo=ipc-toolkit&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, IPC Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/file_src_ipc.cpp.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/ipc-sim/ipc-toolkit" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

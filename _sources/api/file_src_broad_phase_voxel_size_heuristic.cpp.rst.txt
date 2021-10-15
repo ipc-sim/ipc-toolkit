@@ -1,0 +1,59 @@
+
+.. _file_src_broad_phase_voxel_size_heuristic.cpp:
+
+File voxel_size_heuristic.cpp
+=============================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_broad_phase>` (``src/broad_phase``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/broad_phase/voxel_size_heuristic.cpp``)
+---------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_broad_phase_voxel_size_heuristic.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``ipc/broad_phase/voxel_size_heuristic.hpp``
+
+- ``ipc/utils/logger.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1a1fbc73fe0dd9add50c3b2ba96fb3154c`
+
+- :ref:`exhale_function_namespaceipc_1aeecb201c157afeb798bbf8b3b5cf20be`
+
+- :ref:`exhale_function_namespaceipc_1a0e8192a97dfe0340bb4521eb1073e532`
+
+- :ref:`exhale_function_namespaceipc_1aebbceb90d0ea7217838b0ac9eb979faf`
+

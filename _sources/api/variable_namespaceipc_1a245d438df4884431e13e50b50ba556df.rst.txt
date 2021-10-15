@@ -1,0 +1,13 @@
+.. _exhale_variable_namespaceipc_1a245d438df4884431e13e50b50ba556df:
+
+Variable ipc::SMALL_TOI
+=======================
+
+- Defined in :ref:`file_src_ccd_ccd.cpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: ipc::SMALL_TOI

@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1aa633e9ba9a4118ff78deb9e6cf80eeff:
+
+Template Function ipc::edge_edge_distance_type
+==============================================
+
+- Defined in :ref:`file_src_distance_distance_type.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::edge_edge_distance_type(const Eigen::MatrixBase<DerivedEA0>&, const Eigen::MatrixBase<DerivedEA1>&, const Eigen::MatrixBase<DerivedEB0>&, const Eigen::MatrixBase<DerivedEB1>&)

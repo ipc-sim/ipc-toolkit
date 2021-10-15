@@ -1,0 +1,61 @@
+
+.. _file_src_friction_friction.hpp:
+
+File friction.hpp
+=================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_friction>` (``src/friction``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/friction/friction.hpp``)
+------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_friction_friction.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``Eigen/Core``
+
+- ``Eigen/Sparse``
+
+- ``friction.tpp``
+
+- ``ipc/collision_constraint.hpp``
+
+- ``ipc/friction/friction_constraint.hpp``
+
+- ``ipc/utils/eigen_ext.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1ae150b80fc29b071609040dfc93eaa887`
+

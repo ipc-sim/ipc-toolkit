@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a6cd62af7804d68177f8807aabcd7abb1:
+
+Template Function ipc::add_vertex_vertex_constraint
+===================================================
+
+- Defined in :ref:`file_src_ipc.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::add_vertex_vertex_constraint(std::vector<VertexVertexConstraint>&, unordered_map<VertexVertexConstraint, long, Hash>&, const long, const long)

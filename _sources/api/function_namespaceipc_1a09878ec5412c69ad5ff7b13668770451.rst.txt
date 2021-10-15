@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a09878ec5412c69ad5ff7b13668770451:
+
+Template Function ipc::local_gradient_to_global_gradient
+========================================================
+
+- Defined in :ref:`file_src_utils_local_to_global.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::local_gradient_to_global_gradient(const Eigen::MatrixBase<DerivedLocalGrad>&, const std::vector<long>&, int, Eigen::PlainObjectBase<DerivedGrad>&)

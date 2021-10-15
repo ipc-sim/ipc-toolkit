@@ -1,0 +1,57 @@
+
+.. _file_src_utils_local_to_global.hpp:
+
+File local_to_global.hpp
+========================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_utils>` (``src/utils``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/utils/local_to_global.hpp``)
+----------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_utils_local_to_global.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``Eigen/Core``
+
+- ``Eigen/Sparse``
+
+- ``vector``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1a09878ec5412c69ad5ff7b13668770451`
+
+- :ref:`exhale_function_namespaceipc_1a642911e7310c286322c970ddfe32c0fe`
+

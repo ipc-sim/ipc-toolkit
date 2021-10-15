@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a642911e7310c286322c970ddfe32c0fe:
+
+Template Function ipc::local_hessian_to_global_triplets
+=======================================================
+
+- Defined in :ref:`file_src_utils_local_to_global.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::local_hessian_to_global_triplets(const Eigen::MatrixBase<Derived>&, const std::vector<long>&, int, std::vector<Eigen::Triplet<double>>&)

@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1aa19b596f7428b48cde24b5a0636e21a6:
+
+Function ipc::save_obj(std::ofstream&, const Eigen::MatrixXd&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, const std::vector<EdgeFaceCandidate>&)
+=====================================================================================================================================================
+
+- Defined in :ref:`file_src_broad_phase_collision_candidate.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::save_obj(std::ofstream&, const Eigen::MatrixXd&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, const std::vector<EdgeFaceCandidate>&)

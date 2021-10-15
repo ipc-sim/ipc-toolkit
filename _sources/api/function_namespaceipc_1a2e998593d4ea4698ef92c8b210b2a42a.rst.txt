@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a2e998593d4ea4698ef92c8b210b2a42a:
+
+Template Function ipc::merge_local_candidates(const tbb::enumerable_thread_specific<std::vector<Candidate>>&, std::vector<Candidate>&)
+======================================================================================================================================
+
+- Defined in :ref:`file_src_broad_phase_brute_force.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::merge_local_candidates(const tbb::enumerable_thread_specific<std::vector<Candidate>>&, std::vector<Candidate>&)

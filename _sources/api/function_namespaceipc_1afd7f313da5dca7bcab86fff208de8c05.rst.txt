@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1afd7f313da5dca7bcab86fff208de8c05:
+
+Function ipc::point_edge_aabb_cd
+================================
+
+- Defined in :ref:`file_src_ccd_aabb.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::point_edge_aabb_cd(const VectorMax3d&, const VectorMax3d&, const VectorMax3d&, double)

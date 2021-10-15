@@ -1,0 +1,13 @@
+.. _exhale_typedef_namespaceipc_1a2d1d79a415293045764fe5ddb258f703:
+
+Typedef ipc::Vector1
+====================
+
+- Defined in :ref:`file_src_utils_eigen_ext.hpp`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: ipc::Vector1

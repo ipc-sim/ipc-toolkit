@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a1c5b2993d4c9c3fe6756f37b7941c40d:
+
+Template Function ipc::point_triangle_distance(const Eigen::MatrixBase<DerivedP>&, const Eigen::MatrixBase<DerivedT0>&, const Eigen::MatrixBase<DerivedT1>&, const Eigen::MatrixBase<DerivedT2>&)
+=================================================================================================================================================================================================
+
+- Defined in :ref:`file_src_distance_point_triangle.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::point_triangle_distance(const Eigen::MatrixBase<DerivedP>&, const Eigen::MatrixBase<DerivedT0>&, const Eigen::MatrixBase<DerivedT1>&, const Eigen::MatrixBase<DerivedT2>&)

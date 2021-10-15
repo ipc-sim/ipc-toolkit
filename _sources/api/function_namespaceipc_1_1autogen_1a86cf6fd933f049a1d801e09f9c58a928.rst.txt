@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1_1autogen_1a86cf6fd933f049a1d801e09f9c58a928:
+
+Function ipc::autogen::line_line_distance_gradient
+==================================================
+
+- Defined in :ref:`file_src_distance_line_line.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::autogen::line_line_distance_gradient(double, double, double, double, double, double, double, double, double, double, double, double, double)

@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1_1autogen_1a60e7cafa2e931453f9059b94c7d9a53f:
+
+Function ipc::autogen::point_plane_distance_hessian
+===================================================
+
+- Defined in :ref:`file_src_distance_point_plane.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::autogen::point_plane_distance_hessian(double, double, double, double, double, double, double, double, double, double, double, double, double)

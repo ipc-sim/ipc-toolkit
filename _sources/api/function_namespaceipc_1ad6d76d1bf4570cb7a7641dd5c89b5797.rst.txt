@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1ad6d76d1bf4570cb7a7641dd5c89b5797:
+
+Function ipc::calculate_edge_extents
+====================================
+
+- Defined in :ref:`file_src_broad_phase_hash_grid.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::calculate_edge_extents(const VectorMax3d&, const VectorMax3d&, const VectorMax3d&, const VectorMax3d&, ArrayMax3d&, ArrayMax3d&)

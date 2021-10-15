@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a5954d6c49ce9f45383a66fd599ed6cf7:
+
+Template Function ipc::point_point_distance_gradient
+====================================================
+
+- Defined in :ref:`file_src_distance_point_point.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::point_point_distance_gradient(const Eigen::MatrixBase<DerivedP0>&, const Eigen::MatrixBase<DerivedP1>&, Eigen::PlainObjectBase<DerivedGrad>&)

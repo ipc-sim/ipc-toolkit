@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1ae0e18d96948dbeda4f74e2526f04db16:
+
+Function ipc::compute_collision_free_stepsize(const Candidates&, const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double, const long)
+==========================================================================================================================================================================================
+
+- Defined in :ref:`file_src_ipc.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::compute_collision_free_stepsize(const Candidates&, const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double, const long)

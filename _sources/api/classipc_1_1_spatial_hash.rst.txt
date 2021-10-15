@@ -1,0 +1,16 @@
+.. _exhale_class_classipc_1_1_spatial_hash:
+
+Class SpatialHash
+=================
+
+- Defined in :ref:`file_src_broad_phase_spatial_hash.hpp`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: ipc::SpatialHash
+   :members:
+   :protected-members:
+   :undoc-members:

@@ -1,0 +1,111 @@
+
+.. _file_src_ipc.cpp:
+
+File ipc.cpp
+============
+
+|exhale_lsh| :ref:`Parent directory <dir_src>` (``src``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/ipc.cpp``)
+----------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_ipc.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``algorithm``
+
+- ``igl/predicates/segment_segment_intersect.h``
+
+- ``ipc/broad_phase/hash_grid.hpp``
+
+- ``ipc/ccd/ccd.hpp``
+
+- ``ipc/distance/edge_edge.hpp``
+
+- ``ipc/distance/edge_edge_mollifier.hpp``
+
+- ``ipc/distance/point_edge.hpp``
+
+- ``ipc/distance/point_triangle.hpp``
+
+- ``ipc/ipc.hpp``
+
+- ``ipc/utils/intersection.hpp``
+
+- ``ipc/utils/local_to_global.hpp``
+
+- ``ipc/utils/unordered_map_and_set.hpp``
+
+- ``ipc/utils/world_bbox_diagonal_length.hpp``
+
+- ``stdexcept``
+
+- ``tbb/blocked_range.h``
+
+- ``tbb/enumerable_thread_specific.h``
+
+- ``tbb/mutex.h``
+
+- ``tbb/parallel_for.h``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1a9decf7f9218e15477fb76ff4b8d4ee20`
+
+- :ref:`exhale_function_namespaceipc_1a6cd62af7804d68177f8807aabcd7abb1`
+
+- :ref:`exhale_function_namespaceipc_1ad6dc7ab118094ad5889760c0412e79c3`
+
+- :ref:`exhale_function_namespaceipc_1ae39ce0a78747850366f016fbcdc92b21`
+
+- :ref:`exhale_function_namespaceipc_1afb994c0d9343c524478df41f033aff6c`
+
+- :ref:`exhale_function_namespaceipc_1a011b169f710246773493bd204a9a18a4`
+
+- :ref:`exhale_function_namespaceipc_1ae0e18d96948dbeda4f74e2526f04db16`
+
+- :ref:`exhale_function_namespaceipc_1aa8654fc09b4e744c1d192fda02a3a134`
+
+- :ref:`exhale_function_namespaceipc_1a4e511bee6f5987468da886e9c11f40a6`
+
+- :ref:`exhale_function_namespaceipc_1a975169ca4a2c7215248fafa53ee6e5bb`
+
+- :ref:`exhale_function_namespaceipc_1ac79eb69e56e161ad3155e798d20d1450`
+
+- :ref:`exhale_function_namespaceipc_1a1a55503a07bdaf129882fe00491a3f7b`
+
+- :ref:`exhale_function_namespaceipc_1afebb3efe19b31f7335f92e58afdf8987`
+
+- :ref:`exhale_function_namespaceipc_1a40d1f11cffdfdca899e38eea808da876`
+

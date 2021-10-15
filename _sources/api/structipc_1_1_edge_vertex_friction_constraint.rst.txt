@@ -1,0 +1,26 @@
+.. _exhale_struct_structipc_1_1_edge_vertex_friction_constraint:
+
+Struct EdgeVertexFrictionConstraint
+===================================
+
+- Defined in :ref:`file_src_friction_friction_constraint.hpp`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Types
+**********
+
+- ``public ipc::EdgeVertexCandidate`` (:ref:`exhale_struct_structipc_1_1_edge_vertex_candidate`)
+- ``public ipc::FrictionConstraint`` (:ref:`exhale_struct_structipc_1_1_friction_constraint`)
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: ipc::EdgeVertexFrictionConstraint
+   :members:
+   :protected-members:
+   :undoc-members:

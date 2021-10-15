@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a7644ee0f575be91ce40cc743aa65f262:
+
+Template Function ipc::point_triangle_TT
+========================================
+
+- Defined in :ref:`file_src_friction_relative_displacement.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::point_triangle_TT(const Eigen::MatrixBase<DerivedBasis>&, const Eigen::MatrixBase<DerivedBeta>&)

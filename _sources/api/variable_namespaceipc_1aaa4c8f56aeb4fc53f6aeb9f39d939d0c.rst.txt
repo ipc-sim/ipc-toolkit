@@ -1,0 +1,13 @@
+.. _exhale_variable_namespaceipc_1aaa4c8f56aeb4fc53f6aeb9f39d939d0c:
+
+Variable ipc::DEFAULT_CCD_TOLERANCE
+===================================
+
+- Defined in :ref:`file_src_ccd_ccd.hpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: ipc::DEFAULT_CCD_TOLERANCE

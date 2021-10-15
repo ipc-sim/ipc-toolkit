@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a46e0a62409c4c31e35b85fd9ead7c26d:
+
+Function ipc::construct_point_plane_constraint_set
+==================================================
+
+- Defined in :ref:`file_src_implicits_plane.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::construct_point_plane_constraint_set(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::MatrixXd&, const double, std::vector<PlaneVertexConstraint>&, const double, const std::function<bool(size_t, size_t)>&)

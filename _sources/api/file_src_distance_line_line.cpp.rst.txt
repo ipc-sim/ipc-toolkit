@@ -1,0 +1,55 @@
+
+.. _file_src_distance_line_line.cpp:
+
+File line_line.cpp
+==================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_distance>` (``src/distance``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/distance/line_line.cpp``)
+-------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_distance_line_line.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``ipc/distance/line_line.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+- :ref:`namespace_ipc__autogen`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1_1autogen_1a86cf6fd933f049a1d801e09f9c58a928`
+
+- :ref:`exhale_function_namespaceipc_1_1autogen_1a21a5ad914091e1ff63e21fbe28cbd299`
+

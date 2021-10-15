@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a1a55503a07bdaf129882fe00491a3f7b:
+
+Function ipc::has_intersections
+===============================
+
+- Defined in :ref:`file_src_ipc.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::has_intersections(const Eigen::MatrixXd&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, const std::function<bool(size_t, size_t)>&)

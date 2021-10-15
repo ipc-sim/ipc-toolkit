@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a57a6945c94038ae22a4a42858f894c1b:
+
+Function ipc::is_in_01
+======================
+
+- Defined in :ref:`file_src_ccd_ccd.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::is_in_01(double)

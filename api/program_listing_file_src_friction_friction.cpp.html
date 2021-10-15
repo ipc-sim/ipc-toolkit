@@ -1,0 +1,415 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Program Listing for File friction.cpp &#8212; IPC Toolkit  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js"></script>
+    <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="program-listing-for-file-friction-cpp">
+<span id="program-listing-file-src-friction-friction-cpp"></span><h1>Program Listing for File friction.cpp<a class="headerlink" href="#program-listing-for-file-friction-cpp" title="Permalink to this headline">¶</a></h1>
+<p>↰ <a class="reference internal" href="file_src_friction_friction.cpp.html#file-src-friction-friction-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/friction/friction.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/friction/friction.hpp&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tbb/parallel_for.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tbb/blocked_range.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tbb/enumerable_thread_specific.h&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Eigen/Sparse&gt;</span><span class="cp"></span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/barrier/barrier.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/distance/edge_edge.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/distance/edge_edge_mollifier.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/distance/point_edge.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/distance/point_triangle.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/friction/closest_point.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/friction/relative_displacement.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/friction/tangent_basis.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/utils/eigen_ext.hpp&gt;</span><span class="cp"></span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/utils/local_to_global.hpp&gt;</span><span class="cp"></span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ipc</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+
+<span class="kt">double</span><span class="w"> </span><span class="nf">compute_normal_force_magnitude</span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">distance_squared</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dmin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">grad_b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">barrier_gradient</span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">distance_squared</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">dmin</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dmin</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dmin</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dhat</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">dhat</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dhat</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="n">grad_b</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="o">-</span><span class="n">grad_b</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">sqrt</span><span class="p">(</span><span class="n">distance_squared</span><span class="p">);</span><span class="w"> </span><span class="c1">// / (h * h) eliminated here</span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">construct_friction_constraint_set</span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="o">&amp;</span><span class="w"> </span><span class="n">V</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">F</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Constraints</span><span class="o">&amp;</span><span class="w"> </span><span class="n">contact_constraint_set</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">mu</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FrictionConstraints</span><span class="o">&amp;</span><span class="w"> </span><span class="n">friction_constraint_set</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">construct_friction_constraint_set</span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">V</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">F</span><span class="p">,</span><span class="w"> </span><span class="n">contact_constraint_set</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="o">::</span><span class="n">Constant</span><span class="p">(</span><span class="n">V</span><span class="p">.</span><span class="n">rows</span><span class="p">(),</span><span class="w"> </span><span class="n">mu</span><span class="p">),</span><span class="w"> </span><span class="n">friction_constraint_set</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">construct_friction_constraint_set</span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="o">&amp;</span><span class="w"> </span><span class="n">V</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">F</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Constraints</span><span class="o">&amp;</span><span class="w"> </span><span class="n">contact_constraint_set</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="o">&amp;</span><span class="w"> </span><span class="n">mus</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FrictionConstraints</span><span class="o">&amp;</span><span class="w"> </span><span class="n">friction_constraint_set</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">construct_friction_constraint_set</span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">V</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">F</span><span class="p">,</span><span class="w"> </span><span class="n">contact_constraint_set</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">mus</span><span class="p">,</span><span class="w"></span>
+<span class="w">        </span><span class="p">[](</span><span class="kt">double</span><span class="w"> </span><span class="n">mu0</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">mu1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">mu0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">mu1</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="p">},</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// [](double mu0, double mu1) { return mu0 * mu1; },</span>
+<span class="w">        </span><span class="c1">// [](double mu0, double mu1) { return std::min(mu0, mu1); },</span>
+<span class="w">        </span><span class="c1">// [](double mu0, double mu1) { return std::max(mu0, mu1); },</span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">construct_friction_constraint_set</span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="o">&amp;</span><span class="w"> </span><span class="n">V</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">F</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Constraints</span><span class="o">&amp;</span><span class="w"> </span><span class="n">contact_constraint_set</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="o">&amp;</span><span class="w"> </span><span class="n">mus</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">(</span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="p">)</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">blend_mu</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="n">FrictionConstraints</span><span class="o">&amp;</span><span class="w"> </span><span class="n">friction_constraint_set</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">mus</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">rows</span><span class="p">());</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">vv_constraints</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">contact_constraint_set</span><span class="p">.</span><span class="n">vv_constraints</span><span class="p">.</span><span class="n">size</span><span class="p">());</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="nl">vv_constraint</span> <span class="p">:</span><span class="w"> </span><span class="n">contact_constraint_set</span><span class="p">.</span><span class="n">vv_constraints</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">vv_constraint</span><span class="p">.</span><span class="n">vertex0_index</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">vv_constraint</span><span class="p">.</span><span class="n">vertex1_index</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">vv_constraints</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">vv_constraint</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="c1">// Do not initialize closest point because it is trivial</span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">vv_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">tangent_basis</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="n">point_point_tangent_basis</span><span class="p">(</span><span class="n">p0</span><span class="p">,</span><span class="w"> </span><span class="n">p1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">vv_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">normal_force_magnitude</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="n">compute_normal_force_magnitude</span><span class="p">(</span><span class="w"></span>
+<span class="w">                </span><span class="n">point_point_distance</span><span class="p">(</span><span class="n">p0</span><span class="p">,</span><span class="w"> </span><span class="n">p1</span><span class="p">),</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"></span>
+<span class="w">                </span><span class="n">vv_constraint</span><span class="p">.</span><span class="n">minimum_distance</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">vv_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">blend_mu</span><span class="p">(</span><span class="w"></span>
+<span class="w">            </span><span class="n">mus</span><span class="p">(</span><span class="n">vv_constraint</span><span class="p">.</span><span class="n">vertex0_index</span><span class="p">),</span><span class="w"> </span><span class="n">mus</span><span class="p">(</span><span class="n">vv_constraint</span><span class="p">.</span><span class="n">vertex1_index</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">ev_constraints</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">contact_constraint_set</span><span class="p">.</span><span class="n">ev_constraints</span><span class="p">.</span><span class="n">size</span><span class="p">());</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="nl">ev_constraint</span> <span class="p">:</span><span class="w"> </span><span class="n">contact_constraint_set</span><span class="p">.</span><span class="n">ev_constraints</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="o">&amp;</span><span class="w"> </span><span class="n">vi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ev_constraint</span><span class="p">.</span><span class="n">vertex_index</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e0i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">E</span><span class="p">(</span><span class="n">ev_constraint</span><span class="p">.</span><span class="n">edge_index</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e1i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">E</span><span class="p">(</span><span class="n">ev_constraint</span><span class="p">.</span><span class="n">edge_index</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="o">&amp;</span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">vi</span><span class="p">),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">e0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">e0i</span><span class="p">),</span><span class="w"> </span><span class="o">&amp;</span><span class="n">e1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">e1i</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">ev_constraints</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">ev_constraint</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">ev_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">closest_point</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">point_edge_closest_point</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">e0</span><span class="p">,</span><span class="w"> </span><span class="n">e1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">ev_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">closest_point</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">alpha</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">ev_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">tangent_basis</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="n">point_edge_tangent_basis</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">e0</span><span class="p">,</span><span class="w"> </span><span class="n">e1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">ev_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">normal_force_magnitude</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="n">compute_normal_force_magnitude</span><span class="p">(</span><span class="w"></span>
+<span class="w">                </span><span class="n">point_edge_distance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">e0</span><span class="p">,</span><span class="w"> </span><span class="n">e1</span><span class="p">,</span><span class="w"> </span><span class="n">PointEdgeDistanceType</span><span class="o">::</span><span class="n">P_E</span><span class="p">),</span><span class="w"></span>
+<span class="w">                </span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">ev_constraint</span><span class="p">.</span><span class="n">minimum_distance</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">edge_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">mus</span><span class="p">(</span><span class="n">e1i</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">mus</span><span class="p">(</span><span class="n">e0i</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">alpha</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">mus</span><span class="p">(</span><span class="n">e0i</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">ev_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">mu</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="n">blend_mu</span><span class="p">(</span><span class="n">edge_mu</span><span class="p">,</span><span class="w"> </span><span class="n">mus</span><span class="p">(</span><span class="n">vi</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">ee_constraints</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">contact_constraint_set</span><span class="p">.</span><span class="n">ee_constraints</span><span class="p">.</span><span class="n">size</span><span class="p">());</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="nl">ee_constraint</span> <span class="p">:</span><span class="w"> </span><span class="n">contact_constraint_set</span><span class="p">.</span><span class="n">ee_constraints</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="o">&amp;</span><span class="w"> </span><span class="n">ea0i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">E</span><span class="p">(</span><span class="n">ee_constraint</span><span class="p">.</span><span class="n">edge0_index</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="o">&amp;</span><span class="w"> </span><span class="n">ea1i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">E</span><span class="p">(</span><span class="n">ee_constraint</span><span class="p">.</span><span class="n">edge0_index</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="o">&amp;</span><span class="w"> </span><span class="n">eb0i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">E</span><span class="p">(</span><span class="n">ee_constraint</span><span class="p">.</span><span class="n">edge1_index</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="o">&amp;</span><span class="w"> </span><span class="n">eb1i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">E</span><span class="p">(</span><span class="n">ee_constraint</span><span class="p">.</span><span class="n">edge1_index</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">ea0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">ea0i</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">ea1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">ea1i</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">eb0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">eb0i</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">eb1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">eb1i</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="c1">// Skip EE constraints that are close to parallel</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">edge_edge_cross_squarednorm</span><span class="p">(</span><span class="n">ea0</span><span class="p">,</span><span class="w"> </span><span class="n">ea1</span><span class="p">,</span><span class="w"> </span><span class="n">eb0</span><span class="p">,</span><span class="w"> </span><span class="n">eb1</span><span class="p">)</span><span class="w"></span>
+<span class="w">            </span><span class="o">&lt;</span><span class="w"> </span><span class="n">ee_constraint</span><span class="p">.</span><span class="n">eps_x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="k">continue</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">ee_constraints</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">ee_constraint</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="w"> </span><span class="n">alphas</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">edge_edge_closest_point</span><span class="p">(</span><span class="n">ea0</span><span class="p">,</span><span class="w"> </span><span class="n">ea1</span><span class="p">,</span><span class="w"> </span><span class="n">eb0</span><span class="p">,</span><span class="w"> </span><span class="n">eb1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">ee_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">closest_point</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">alphas</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">ee_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">tangent_basis</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="n">edge_edge_tangent_basis</span><span class="p">(</span><span class="n">ea0</span><span class="p">,</span><span class="w"> </span><span class="n">ea1</span><span class="p">,</span><span class="w"> </span><span class="n">eb0</span><span class="p">,</span><span class="w"> </span><span class="n">eb1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">ee_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">normal_force_magnitude</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="n">compute_normal_force_magnitude</span><span class="p">(</span><span class="w"></span>
+<span class="w">                </span><span class="c1">// The distance type is known because mollified PP and PE were</span>
+<span class="w">                </span><span class="c1">// skipped above.</span>
+<span class="w">                </span><span class="n">edge_edge_distance</span><span class="p">(</span><span class="w"></span>
+<span class="w">                    </span><span class="n">ea0</span><span class="p">,</span><span class="w"> </span><span class="n">ea1</span><span class="p">,</span><span class="w"> </span><span class="n">eb0</span><span class="p">,</span><span class="w"> </span><span class="n">eb1</span><span class="p">,</span><span class="w"> </span><span class="n">EdgeEdgeDistanceType</span><span class="o">::</span><span class="n">EA_EB</span><span class="p">),</span><span class="w"></span>
+<span class="w">                </span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">ee_constraint</span><span class="p">.</span><span class="n">minimum_distance</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">ea_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">mus</span><span class="p">(</span><span class="n">ea1i</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">mus</span><span class="p">(</span><span class="n">ea0i</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">alphas</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">mus</span><span class="p">(</span><span class="n">ea0i</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">eb_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">mus</span><span class="p">(</span><span class="n">eb1i</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">mus</span><span class="p">(</span><span class="n">eb0i</span><span class="p">))</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">alphas</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">mus</span><span class="p">(</span><span class="n">eb0i</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">ee_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">mu</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="n">blend_mu</span><span class="p">(</span><span class="n">ea_mu</span><span class="p">,</span><span class="w"> </span><span class="n">eb_mu</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">fv_constraints</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">contact_constraint_set</span><span class="p">.</span><span class="n">fv_constraints</span><span class="p">.</span><span class="n">size</span><span class="p">());</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="nl">fv_constraint</span> <span class="p">:</span><span class="w"> </span><span class="n">contact_constraint_set</span><span class="p">.</span><span class="n">fv_constraints</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="o">&amp;</span><span class="w"> </span><span class="n">vi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fv_constraint</span><span class="p">.</span><span class="n">vertex_index</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="o">&amp;</span><span class="w"> </span><span class="n">f0i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">F</span><span class="p">(</span><span class="n">fv_constraint</span><span class="p">.</span><span class="n">face_index</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="o">&amp;</span><span class="w"> </span><span class="n">f1i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">F</span><span class="p">(</span><span class="n">fv_constraint</span><span class="p">.</span><span class="n">face_index</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="o">&amp;</span><span class="w"> </span><span class="n">f2i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">F</span><span class="p">(</span><span class="n">fv_constraint</span><span class="p">.</span><span class="n">face_index</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">vi</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">t0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">f0i</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">t1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">f1i</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">t2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V</span><span class="p">.</span><span class="n">row</span><span class="p">(</span><span class="n">f2i</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">fv_constraints</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">fv_constraint</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">        </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="w"> </span><span class="n">bc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">point_triangle_closest_point</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">t0</span><span class="p">,</span><span class="w"> </span><span class="n">t1</span><span class="p">,</span><span class="w"> </span><span class="n">t2</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">fv_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">closest_point</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bc</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">fv_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">tangent_basis</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="n">point_triangle_tangent_basis</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">t0</span><span class="p">,</span><span class="w"> </span><span class="n">t1</span><span class="p">,</span><span class="w"> </span><span class="n">t2</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">fv_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">normal_force_magnitude</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="n">compute_normal_force_magnitude</span><span class="p">(</span><span class="w"></span>
+<span class="w">                </span><span class="n">point_triangle_distance</span><span class="p">(</span><span class="w"></span>
+<span class="w">                    </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">t0</span><span class="p">,</span><span class="w"> </span><span class="n">t1</span><span class="p">,</span><span class="w"> </span><span class="n">t2</span><span class="p">,</span><span class="w"> </span><span class="n">PointTriangleDistanceType</span><span class="o">::</span><span class="n">P_T</span><span class="p">),</span><span class="w"></span>
+<span class="w">                </span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">fv_constraint</span><span class="p">.</span><span class="n">minimum_distance</span><span class="p">);</span><span class="w"></span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">face_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mus</span><span class="p">(</span><span class="n">f0i</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">bc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">mus</span><span class="p">(</span><span class="n">f1i</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">mus</span><span class="p">(</span><span class="n">f0i</span><span class="p">))</span><span class="w"></span>
+<span class="w">            </span><span class="o">+</span><span class="w"> </span><span class="n">bc</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">mus</span><span class="p">(</span><span class="n">f2i</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">mus</span><span class="p">(</span><span class="n">f0i</span><span class="p">));</span><span class="w"></span>
+<span class="w">        </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">fv_constraints</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">mu</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">            </span><span class="n">blend_mu</span><span class="p">(</span><span class="n">face_mu</span><span class="p">,</span><span class="w"> </span><span class="n">mus</span><span class="p">(</span><span class="n">vi</span><span class="p">));</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="c1">//</span>
+<span class="c1">// compute_friction_potential() in friction.tpp</span>
+<span class="c1">//</span>
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="nf">compute_friction_potential_gradient</span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="o">&amp;</span><span class="w"> </span><span class="n">V0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="o">&amp;</span><span class="w"> </span><span class="n">V1</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">F</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">FrictionConstraints</span><span class="o">&amp;</span><span class="w"> </span><span class="n">friction_constraint_set</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">epsv_times_h</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="o">::</span><span class="n">Zero</span><span class="p">(</span><span class="n">V0</span><span class="p">.</span><span class="n">size</span><span class="p">());</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">U</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">V0</span><span class="p">;</span><span class="w"> </span><span class="c1">// absolute linear dislacement of each point</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">dim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">U</span><span class="p">.</span><span class="n">cols</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">tbb</span><span class="o">::</span><span class="n">enumerable_thread_specific</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="o">&gt;</span><span class="w"> </span><span class="n">storage</span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="o">::</span><span class="n">Zero</span><span class="p">(</span><span class="n">U</span><span class="p">.</span><span class="n">size</span><span class="p">()));</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">tbb</span><span class="o">::</span><span class="n">parallel_for</span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">tbb</span><span class="o">::</span><span class="n">blocked_range</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(</span><span class="kt">size_t</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">size</span><span class="p">()),</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">tbb</span><span class="o">::</span><span class="n">blocked_range</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">local_grad</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">storage</span><span class="p">.</span><span class="n">local</span><span class="p">();</span><span class="w"></span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">end</span><span class="p">();</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">local_gradient_to_global_gradient</span><span class="p">(</span><span class="w"></span>
+<span class="w">                    </span><span class="n">friction_constraint_set</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">compute_potential_gradient</span><span class="p">(</span><span class="w"></span>
+<span class="w">                        </span><span class="n">U</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">F</span><span class="p">,</span><span class="w"> </span><span class="n">epsv_times_h</span><span class="p">),</span><span class="w"></span>
+<span class="w">                    </span><span class="n">friction_constraint_set</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">vertex_indices</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">F</span><span class="p">),</span><span class="w"> </span><span class="n">dim</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="n">local_grad</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">});</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="n">grad</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="o">::</span><span class="n">Zero</span><span class="p">(</span><span class="n">U</span><span class="p">.</span><span class="n">size</span><span class="p">());</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="nl">local_grad</span> <span class="p">:</span><span class="w"> </span><span class="n">storage</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">grad</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">local_grad</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">grad</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+
+<span class="n">Eigen</span><span class="o">::</span><span class="n">SparseMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">compute_friction_potential_hessian</span><span class="p">(</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="o">&amp;</span><span class="w"> </span><span class="n">V0</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="o">&amp;</span><span class="w"> </span><span class="n">V1</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="o">&amp;</span><span class="w"> </span><span class="n">F</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">FrictionConstraints</span><span class="o">&amp;</span><span class="w"> </span><span class="n">friction_constraint_set</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">epsv_times_h</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">project_hessian_to_psd</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">SparseMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="n">V0</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="n">V0</span><span class="p">.</span><span class="n">size</span><span class="p">());</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">U</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">V1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">V0</span><span class="p">;</span><span class="w"> </span><span class="c1">// absolute linear dislacement of each point</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">dim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">U</span><span class="p">.</span><span class="n">cols</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">tbb</span><span class="o">::</span><span class="n">enumerable_thread_specific</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Triplet</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;&gt;&gt;</span><span class="w"></span>
+<span class="w">        </span><span class="n">storage</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">tbb</span><span class="o">::</span><span class="n">parallel_for</span><span class="p">(</span><span class="w"></span>
+<span class="w">        </span><span class="n">tbb</span><span class="o">::</span><span class="n">blocked_range</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(</span><span class="kt">size_t</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="n">friction_constraint_set</span><span class="p">.</span><span class="n">size</span><span class="p">()),</span><span class="w"></span>
+<span class="w">        </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">tbb</span><span class="o">::</span><span class="n">blocked_range</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">local_hess_triplets</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">storage</span><span class="p">.</span><span class="n">local</span><span class="p">();</span><span class="w"></span>
+
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">end</span><span class="p">();</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">local_hessian_to_global_triplets</span><span class="p">(</span><span class="w"></span>
+<span class="w">                    </span><span class="n">friction_constraint_set</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">compute_potential_hessian</span><span class="p">(</span><span class="w"></span>
+<span class="w">                        </span><span class="n">U</span><span class="p">,</span><span class="w"> </span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">F</span><span class="p">,</span><span class="w"> </span><span class="n">epsv_times_h</span><span class="p">,</span><span class="w"> </span><span class="n">project_hessian_to_psd</span><span class="p">),</span><span class="w"></span>
+<span class="w">                    </span><span class="n">friction_constraint_set</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">vertex_indices</span><span class="p">(</span><span class="n">E</span><span class="p">,</span><span class="w"> </span><span class="n">F</span><span class="p">),</span><span class="w"> </span><span class="n">dim</span><span class="p">,</span><span class="w"></span>
+<span class="w">                    </span><span class="n">local_hess_triplets</span><span class="p">);</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">});</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">Eigen</span><span class="o">::</span><span class="n">SparseMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">hess</span><span class="p">(</span><span class="n">U</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="n">U</span><span class="p">.</span><span class="n">size</span><span class="p">());</span><span class="w"></span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="nl">local_hess_triplets</span> <span class="p">:</span><span class="w"> </span><span class="n">storage</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="n">Eigen</span><span class="o">::</span><span class="n">SparseMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">local_hess</span><span class="p">(</span><span class="n">U</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span><span class="w"> </span><span class="n">U</span><span class="p">.</span><span class="n">size</span><span class="p">());</span><span class="w"></span>
+<span class="w">        </span><span class="n">local_hess</span><span class="p">.</span><span class="n">setFromTriplets</span><span class="p">(</span><span class="w"></span>
+<span class="w">            </span><span class="n">local_hess_triplets</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">local_hess_triplets</span><span class="p">.</span><span class="n">end</span><span class="p">());</span><span class="w"></span>
+<span class="w">        </span><span class="n">hess</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">local_hess</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">hess</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="p">}</span><span class="w"> </span><span class="c1">// namespace ipc</span>
+</pre></div>
+</div>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/teaser@0_3.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A set of reusable functions to integrate IPC into an existing simulation</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=ipc-sim&repo=ipc-toolkit&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, IPC Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/program_listing_file_src_friction_friction.cpp.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/ipc-sim/ipc-toolkit" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

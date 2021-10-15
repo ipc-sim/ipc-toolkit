@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a169cb206707bcd89b84739ba6defeece:
+
+Template Function ipc::point_point_tangent_basis
+================================================
+
+- Defined in :ref:`file_src_friction_tangent_basis.hpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::point_point_tangent_basis(const Eigen::MatrixBase<DerivedP0>&, const Eigen::MatrixBase<DerivedP1>&)

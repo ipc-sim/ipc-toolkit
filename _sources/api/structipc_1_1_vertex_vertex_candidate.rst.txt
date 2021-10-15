@@ -1,0 +1,26 @@
+.. _exhale_struct_structipc_1_1_vertex_vertex_candidate:
+
+Struct VertexVertexCandidate
+============================
+
+- Defined in :ref:`file_src_broad_phase_collision_candidate.hpp`
+
+
+Inheritance Relationships
+-------------------------
+
+Derived Types
+*************
+
+- ``public ipc::VertexVertexConstraint`` (:ref:`exhale_struct_structipc_1_1_vertex_vertex_constraint`)
+- ``public ipc::VertexVertexFrictionConstraint`` (:ref:`exhale_struct_structipc_1_1_vertex_vertex_friction_constraint`)
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: ipc::VertexVertexCandidate
+   :members:
+   :protected-members:
+   :undoc-members:

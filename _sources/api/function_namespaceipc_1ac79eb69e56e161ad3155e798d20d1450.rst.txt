@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1ac79eb69e56e161ad3155e798d20d1450:
+
+Function ipc::find_edge
+=======================
+
+- Defined in :ref:`file_src_ipc.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::find_edge(const Eigen::MatrixXi&, const long, const long)

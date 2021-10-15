@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1_1autogen_1ab2a441f3b1fef832ba45c78a4189e521:
+
+Function ipc::autogen::edge_edge_cross_squarednorm_gradient
+===========================================================
+
+- Defined in :ref:`file_src_distance_edge_edge_mollifier.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::autogen::edge_edge_cross_squarednorm_gradient(double, double, double, double, double, double, double, double, double, double, double, double, double)

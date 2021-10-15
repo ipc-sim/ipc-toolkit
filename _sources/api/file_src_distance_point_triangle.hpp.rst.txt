@@ -1,0 +1,69 @@
+
+.. _file_src_distance_point_triangle.hpp:
+
+File point_triangle.hpp
+=======================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_distance>` (``src/distance``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/distance/point_triangle.hpp``)
+------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_distance_point_triangle.hpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``ipc/distance/distance_type.hpp``
+
+- ``ipc/distance/point_edge.hpp``
+
+- ``ipc/distance/point_plane.hpp``
+
+- ``ipc/distance/point_point.hpp``
+
+- ``stdexcept``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1a1c5b2993d4c9c3fe6756f37b7941c40d`
+
+- :ref:`exhale_function_namespaceipc_1aa420f3dd9d734155bfd062ceca0ef33a`
+
+- :ref:`exhale_function_namespaceipc_1aaca3bca3a5000375afbdd5b32f471eee`
+
+- :ref:`exhale_function_namespaceipc_1a555fd75204039483438221065a6b503a`
+
+- :ref:`exhale_function_namespaceipc_1a956d3a2bcea17e8f0f3d87f2cd46cc38`
+
+- :ref:`exhale_function_namespaceipc_1a4b24aba29d566136165679fcf78bf1e6`
+

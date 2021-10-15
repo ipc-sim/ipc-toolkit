@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1ab1a8f472720b4154ab8693143512576a:
+
+Function ipc::barrier_gradient
+==============================
+
+- Defined in :ref:`file_src_barrier_barrier.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::barrier_gradient(double, double)

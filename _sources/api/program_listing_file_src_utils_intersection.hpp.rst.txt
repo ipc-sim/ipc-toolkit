@@ -1,0 +1,26 @@
+
+.. _program_listing_file_src_utils_intersection.hpp:
+
+Program Listing for File intersection.hpp
+=========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_utils_intersection.hpp>` (``src/utils/intersection.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #pragma once
+   
+   #include <Eigen/Core>
+   
+   namespace ipc {
+   
+   bool is_edge_intersecting_triangle(
+       const Eigen::Vector3d& e0,
+       const Eigen::Vector3d& e1,
+       const Eigen::Vector3d& t0,
+       const Eigen::Vector3d& t1,
+       const Eigen::Vector3d& t2);
+   
+   } // namespace ipc

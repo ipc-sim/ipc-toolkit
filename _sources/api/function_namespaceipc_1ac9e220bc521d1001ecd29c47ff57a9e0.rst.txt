@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1ac9e220bc521d1001ecd29c47ff57a9e0:
+
+Function ipc::initial_barrier_stiffness
+=======================================
+
+- Defined in :ref:`file_src_barrier_adaptive_stiffness.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::initial_barrier_stiffness(double, double, double, const Eigen::VectorXd&, const Eigen::VectorXd&, double&, double, double)

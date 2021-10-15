@@ -1,0 +1,13 @@
+.. _exhale_enum_namespaceipc_1aa45c4d116f94b6728bd604ee6b59937a:
+
+Enum PointTriangleDistanceType
+==============================
+
+- Defined in :ref:`file_src_distance_distance_type.hpp`
+
+
+Enum Documentation
+------------------
+
+
+.. doxygenenum:: ipc::PointTriangleDistanceType

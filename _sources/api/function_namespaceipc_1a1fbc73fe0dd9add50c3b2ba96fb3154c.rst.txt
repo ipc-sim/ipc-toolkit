@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a1fbc73fe0dd9add50c3b2ba96fb3154c:
+
+Function ipc::average_displacement_length
+=========================================
+
+- Defined in :ref:`file_src_broad_phase_voxel_size_heuristic.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::average_displacement_length(const Eigen::MatrixXd&)

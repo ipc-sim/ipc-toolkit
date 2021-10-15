@@ -1,0 +1,16 @@
+.. _exhale_class_classipc_1_1_a_a_b_b:
+
+Class AABB
+==========
+
+- Defined in :ref:`file_src_broad_phase_hash_grid.hpp`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: ipc::AABB
+   :members:
+   :protected-members:
+   :undoc-members:

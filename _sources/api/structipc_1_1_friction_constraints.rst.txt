@@ -1,0 +1,16 @@
+.. _exhale_struct_structipc_1_1_friction_constraints:
+
+Struct FrictionConstraints
+==========================
+
+- Defined in :ref:`file_src_friction_friction_constraint.hpp`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: ipc::FrictionConstraints
+   :members:
+   :protected-members:
+   :undoc-members:

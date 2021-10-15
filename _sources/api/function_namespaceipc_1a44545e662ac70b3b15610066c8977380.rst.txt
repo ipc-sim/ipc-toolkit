@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a44545e662ac70b3b15610066c8977380:
+
+Function ipc::calculate_mesh_extents
+====================================
+
+- Defined in :ref:`file_src_broad_phase_hash_grid.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::calculate_mesh_extents(const Eigen::MatrixXd&, const Eigen::MatrixXd&, ArrayMax3d&, ArrayMax3d&)

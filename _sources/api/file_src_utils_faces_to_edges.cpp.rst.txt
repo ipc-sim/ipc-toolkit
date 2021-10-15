@@ -1,0 +1,53 @@
+
+.. _file_src_utils_faces_to_edges.cpp:
+
+File faces_to_edges.cpp
+=======================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_utils>` (``src/utils``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/utils/faces_to_edges.cpp``)
+---------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_utils_faces_to_edges.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``ipc/utils/faces_to_edges.hpp``
+
+- ``ipc/utils/unordered_map_and_set.hpp``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ipc`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceipc_1a0f7a0efc5c389f0e49dbfccf7996c5fa`
+

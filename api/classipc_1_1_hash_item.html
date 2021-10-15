@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Class HashItem &#8212; IPC Toolkit  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js"></script>
+    <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Class SpatialHash" href="classipc_1_1_spatial_hash.html" />
+    <link rel="prev" title="Class HashGrid" href="classipc_1_1_hash_grid.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="class-hashitem">
+<span id="exhale-class-classipc-1-1-hash-item"></span><h1>Class HashItem<a class="headerlink" href="#class-hashitem" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p>Defined in <a class="reference internal" href="file_src_broad_phase_hash_grid.hpp.html#file-src-broad-phase-hash-grid-hpp"><span class="std std-ref">File hash_grid.hpp</span></a></p></li>
+</ul>
+<section id="class-documentation">
+<h2>Class Documentation<a class="headerlink" href="#class-documentation" title="Permalink to this headline">¶</a></h2>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N3ipc8HashItemE">
+<span id="_CPPv3N3ipc8HashItemE"></span><span id="_CPPv2N3ipc8HashItemE"></span><span id="ipc::HashItem"></span><span class="target" id="classipc_1_1_hash_item"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">ipc</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">HashItem</span></span></span><a class="headerlink" href="#_CPPv4N3ipc8HashItemE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>An entry into the hash grid as a (key, value) pair. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N3ipc8HashItem8HashItemEiiRK4AABB">
+<span id="_CPPv3N3ipc8HashItem8HashItemEiiRK4AABB"></span><span id="_CPPv2N3ipc8HashItem8HashItemEiiRK4AABB"></span><span id="ipc::HashItem::HashItem__i.i.AABBCR"></span><span class="target" id="classipc_1_1_hash_item_1aecc53fc5f77b56f6ca0e1e455ed6832c"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">HashItem</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">key</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">id</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="classipc_1_1_a_a_b_b.html#_CPPv4N3ipc4AABBE" title="ipc::AABB"><span class="n"><span class="pre">AABB</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">aabb</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3ipc8HashItem8HashItemEiiRK4AABB" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>The axis-aligned bounding box of the element. </p>
+<p>Construct a hash item as a (key, value) pair. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK3ipc8HashItemltERK8HashItem">
+<span id="_CPPv3NK3ipc8HashItemltERK8HashItem"></span><span id="_CPPv2NK3ipc8HashItemltERK8HashItem"></span><span id="ipc::HashItem::lt-operator__HashItemCRC"></span><span class="target" id="classipc_1_1_hash_item_1a83491c4a5e2d163d8cb47448fb51ea6b"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">&lt;</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N3ipc8HashItemE" title="ipc::HashItem"><span class="n"><span class="pre">HashItem</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">other</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK3ipc8HashItemltERK8HashItem" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Compare HashItems by their keys for sorting. </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp">
+<span class="target" id="classipc_1_1_hash_item_1a7524ce8cf37a28a01f7a45e7ac5fa3cd"></span><span class="sig-name descname"><span class="pre">EIGEN_MAKE_ALIGNED_OPERATOR_NEW</span> <span class="pre">int</span> <span class="pre">key</span></span></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N3ipc8HashItem2idE">
+<span id="_CPPv3N3ipc8HashItem2idE"></span><span id="_CPPv2N3ipc8HashItem2idE"></span><span id="ipc::HashItem::id__i"></span><span class="target" id="classipc_1_1_hash_item_1a07e11c1e8de7e154351492f041711f44"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">id</span></span></span><a class="headerlink" href="#_CPPv4N3ipc8HashItem2idE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>The key of the item. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N3ipc8HashItem4aabbE">
+<span id="_CPPv3N3ipc8HashItem4aabbE"></span><span id="_CPPv2N3ipc8HashItem4aabbE"></span><span id="ipc::HashItem::aabb__AABB"></span><span class="target" id="classipc_1_1_hash_item_1ade1388bb9686b725ec6c964954e61944"></span><a class="reference internal" href="classipc_1_1_a_a_b_b.html#_CPPv4N3ipc4AABBE" title="ipc::AABB"><span class="n"><span class="pre">AABB</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">aabb</span></span></span><a class="headerlink" href="#_CPPv4N3ipc8HashItem4aabbE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>The value of the item. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/teaser@0_3.png" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A set of reusable functions to integrate IPC into an existing simulation</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=ipc-sim&repo=ipc-toolkit&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">General</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developers</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../api.html#barrier-function">Barrier Function</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../api.html#distance-functions">Distance Functions</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../api.html">API</a><ul>
+  <li><a href="unabridged_api.html">Full API</a><ul>
+      <li>Previous: <a href="classipc_1_1_hash_grid.html" title="previous chapter">Class HashGrid</a></li>
+      <li>Next: <a href="classipc_1_1_spatial_hash.html" title="next chapter">Class SpatialHash</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, IPC Group.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/api/classipc_1_1_hash_item.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/ipc-sim/ipc-toolkit" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

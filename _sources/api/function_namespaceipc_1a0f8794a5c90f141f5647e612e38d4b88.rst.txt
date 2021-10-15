@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a0f8794a5c90f141f5647e612e38d4b88:
+
+Function ipc::calculate_face_extents
+====================================
+
+- Defined in :ref:`file_src_broad_phase_hash_grid.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::calculate_face_extents(const VectorMax3d&, const VectorMax3d&, const VectorMax3d&, const VectorMax3d&, const VectorMax3d&, const VectorMax3d&, ArrayMax3d&, ArrayMax3d&)

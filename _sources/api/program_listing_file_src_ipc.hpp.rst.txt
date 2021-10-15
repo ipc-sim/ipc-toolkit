@@ -1,0 +1,131 @@
+
+.. _program_listing_file_src_ipc.hpp:
+
+Program Listing for File ipc.hpp
+================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_ipc.hpp>` (``src/ipc.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #pragma once
+   
+   #include <Eigen/Core>
+   #include <Eigen/Sparse>
+   
+   #include <ipc/collision_constraint.hpp>
+   // NOTE: Include this so the user can just include ipc.hpp
+   #include <ipc/friction/friction.hpp>
+   #include <ipc/broad_phase/broad_phase.hpp>
+   
+   namespace ipc {
+   
+   void construct_constraint_set(
+       const Eigen::MatrixXd& V_rest,
+       const Eigen::MatrixXd& V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const double dhat,
+       Constraints& constraint_set,
+       const Eigen::MatrixXi& F2E = Eigen::MatrixXi(),
+       const double dmin = 0,
+       const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
+       const bool ignore_codimensional_vertices = false,
+       const std::function<bool(size_t, size_t)>& can_collide =
+           [](size_t, size_t) { return true; });
+   
+   void construct_constraint_set(
+       const Candidates& candidates,
+       const Eigen::MatrixXd& V_rest,
+       const Eigen::MatrixXd& V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const double dhat,
+       Constraints& constraint_set,
+       const Eigen::MatrixXi& F2E = Eigen::MatrixXi(),
+       const double dmin = 0);
+   
+   double compute_barrier_potential(
+       const Eigen::MatrixXd& V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const Constraints& constraint_set,
+       const double dhat);
+   
+   Eigen::VectorXd compute_barrier_potential_gradient(
+       const Eigen::MatrixXd& V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const Constraints& constraint_set,
+       const double dhat);
+   
+   Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
+       const Eigen::MatrixXd& V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const Constraints& constraint_set,
+       const double dhat,
+       const bool project_hessian_to_psd = true);
+   
+   // Collision detection
+   
+   bool is_step_collision_free(
+       const Eigen::MatrixXd& V0,
+       const Eigen::MatrixXd& V1,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
+       const double tolerance = 1e-6,
+       const long max_iterations = 1e7,
+       const bool ignore_codimensional_vertices = false,
+       const std::function<bool(size_t, size_t)>& can_collide =
+           [](size_t, size_t) { return true; });
+   
+   bool is_step_collision_free(
+       const Candidates& candidates,
+       const Eigen::MatrixXd& V0,
+       const Eigen::MatrixXd& V1,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const double tolerance = 1e-6,
+       const long max_iterations = 1e7);
+   
+   double compute_collision_free_stepsize(
+       const Eigen::MatrixXd& V0,
+       const Eigen::MatrixXd& V1,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
+       const double tolerance = 1e-6,
+       const long max_iterations = 1e7,
+       const bool ignore_codimensional_vertices = false,
+       const std::function<bool(size_t, size_t)>& can_collide =
+           [](size_t, size_t) { return true; });
+   
+   double compute_collision_free_stepsize(
+       const Candidates& candidates,
+       const Eigen::MatrixXd& V0,
+       const Eigen::MatrixXd& V1,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const double tolerance = 1e-6,
+       const long max_iterations = 1e7);
+   
+   // Utilities
+   
+   double compute_minimum_distance(
+       const Eigen::MatrixXd& V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const Constraints& constraint_set);
+   
+   bool has_intersections(
+       const Eigen::MatrixXd& V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const std::function<bool(size_t, size_t)>& can_collide =
+           [](size_t, size_t) { return true; });
+   
+   } // namespace ipc

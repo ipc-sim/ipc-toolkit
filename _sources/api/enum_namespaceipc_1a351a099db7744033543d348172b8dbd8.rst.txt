@@ -1,0 +1,13 @@
+.. _exhale_enum_namespaceipc_1a351a099db7744033543d348172b8dbd8:
+
+Enum BroadPhaseMethod
+=====================
+
+- Defined in :ref:`file_src_broad_phase_broad_phase.hpp`
+
+
+Enum Documentation
+------------------
+
+
+.. doxygenenum:: ipc::BroadPhaseMethod
