@@ -200,7 +200,7 @@ bool point_edge_ccd_2D(
     double initial_distance = sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
 
     if (initial_distance == 0) {
-        IPC_LOG(warn("Initial edge-edge distance is 0, returning toi=0!"));
+        IPC_LOG(warn("Initial point-edge distance is 0, returning toi=0!"));
         toi = 0;
         return true;
     }
