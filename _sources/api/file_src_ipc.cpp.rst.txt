@@ -55,13 +55,13 @@ Includes
 
 - ``ipc/utils/world_bbox_diagonal_length.hpp``
 
+- ``mutex``
+
 - ``stdexcept``
 
 - ``tbb/blocked_range.h``
 
 - ``tbb/enumerable_thread_specific.h``
-
-- ``tbb/mutex.h``
 
 - ``tbb/parallel_for.h``
 
@@ -91,9 +91,9 @@ Functions
 
 - :ref:`exhale_function_namespaceipc_1afb994c0d9343c524478df41f033aff6c`
 
-- :ref:`exhale_function_namespaceipc_1ae0e18d96948dbeda4f74e2526f04db16`
-
 - :ref:`exhale_function_namespaceipc_1a011b169f710246773493bd204a9a18a4`
+
+- :ref:`exhale_function_namespaceipc_1ae0e18d96948dbeda4f74e2526f04db16`
 
 - :ref:`exhale_function_namespaceipc_1aa8654fc09b4e744c1d192fda02a3a134`
 

@@ -33,9 +33,9 @@ Includes
 
 - ``ipc/implicits/plane.hpp``
 
-- ``tbb/blocked_range.h``
+- ``mutex``
 
-- ``tbb/mutex.h``
+- ``tbb/blocked_range.h``
 
 - ``tbb/parallel_for.h``
 
