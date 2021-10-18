@@ -2,9 +2,9 @@
 
 #include <ipc/distance/point_plane.hpp>
 
-#include <mutex>
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
+#include <tbb/enumerable_thread_specific.h>
 
 namespace ipc {
 
@@ -96,13 +96,14 @@ bool compute_point_plane_collision_free_stepsize(
     assert(plane_normals.rows() == n_planes);
     assert(V0.rows() == V1.rows());
 
-    double earliest_toi = 1;
-    std::mutex earliest_toi_mutex;
+    tbb::enumerable_thread_specific<double> storage(1);
 
     // Do a single block range over all three candidate vectors
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, V0.rows()),
         [&](tbb::blocked_range<size_t> r) {
+            double& earliest_toi = storage.local();
+
             for (size_t vi = r.begin(); vi < r.end(); vi++) {
                 for (size_t pi = 0; pi < n_planes; pi++) {
                     if (!can_collide(vi, pi)) {
@@ -118,7 +119,6 @@ bool compute_point_plane_collision_free_stepsize(
                         toi);
 
                     if (are_colliding) {
-                        std::lock_guard<std::mutex> lock(earliest_toi_mutex);
                         if (toi < earliest_toi) {
                             earliest_toi = toi;
                         }
@@ -127,6 +127,10 @@ bool compute_point_plane_collision_free_stepsize(
             }
         });
 
+    double earliest_toi = 1;
+    for (const auto& local_earliest_toi : storage) {
+        earliest_toi = std::min(earliest_toi, local_earliest_toi);
+    }
     assert(earliest_toi >= 0 && earliest_toi <= 1.0);
     return earliest_toi;
 }
