@@ -2,7 +2,7 @@
 
 #include <ipc/distance/point_plane.hpp>
 
-#include <tbb/mutex.h>
+#include <mutex>
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 
@@ -97,7 +97,7 @@ bool compute_point_plane_collision_free_stepsize(
     assert(V0.rows() == V1.rows());
 
     double earliest_toi = 1;
-    tbb::mutex earliest_toi_mutex;
+    std::mutex earliest_toi_mutex;
 
     // Do a single block range over all three candidate vectors
     tbb::parallel_for(
@@ -118,7 +118,7 @@ bool compute_point_plane_collision_free_stepsize(
                         toi);
 
                     if (are_colliding) {
-                        tbb::mutex::scoped_lock lock(earliest_toi_mutex);
+                        std::lock_guard<std::mutex> lock(earliest_toi_mutex);
                         if (toi < earliest_toi) {
                             earliest_toi = toi;
                         }

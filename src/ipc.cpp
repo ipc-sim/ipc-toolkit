@@ -3,7 +3,7 @@
 #include <stdexcept> // std::runtime_error
 #include <algorithm> // std::min/max
 
-#include <tbb/mutex.h>
+#include <mutex>
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
@@ -501,7 +501,7 @@ double compute_collision_free_stepsize(
 
     // Narrow phase
     double earliest_toi = 1;
-    tbb::mutex earliest_toi_mutex;
+    std::mutex earliest_toi_mutex;
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, candidates.size()),
@@ -513,7 +513,7 @@ double compute_collision_free_stepsize(
                     max_iterations);
 
                 if (are_colliding) {
-                    tbb::mutex::scoped_lock lock(earliest_toi_mutex);
+                    std::lock_guard<std::mutex> lock(earliest_toi_mutex);
                     if (toi < earliest_toi) {
                         earliest_toi = toi;
                     }

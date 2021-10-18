@@ -1,7 +1,6 @@
 #ifdef IPC_TOOLKIT_WITH_LOGGER
 #include <iostream>
 #include <memory>
-#include <mutex>
 
 #include <ipc/utils/logger.hpp>
 
