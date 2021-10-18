@@ -109,3 +109,10 @@ Functions
 
 - :ref:`exhale_function_namespaceipc_1a40d1f11cffdfdca899e38eea808da876`
 
+
+Defines
+-------
+
+
+- :ref:`exhale_define_ipc_8cpp_1adb169b6b65325ce3cff069e36e079d7a`
+

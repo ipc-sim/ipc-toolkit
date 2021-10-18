@@ -999,6 +999,11 @@ Defines
 .. toctree::
    :maxdepth: 5
 
+   define_ipc_8cpp_1adb169b6b65325ce3cff069e36e079d7a.rst
+
+.. toctree::
+   :maxdepth: 5
+
    define_logger_8hpp_1a2b81c2b5947828c1602513f81b2ffea6.rst
 
 Typedefs
