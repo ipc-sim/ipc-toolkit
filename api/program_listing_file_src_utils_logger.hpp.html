@@ -49,6 +49,7 @@
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ostream&gt;</span><span class="cp"></span>
 
 <span class="cp">#define IPC_LOG(message) ipc::logger().message</span>
+<span class="cp">#define IPC_LOGGER(function) ipc::Logger::function</span>
 
 <span class="k">namespace</span><span class="w"> </span><span class="nn">ipc</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 
@@ -79,7 +80,9 @@
 
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fmt/format.h&gt;</span><span class="cp"></span>
 
+<span class="c1">// Dummy macros to disable logging completly.</span>
 <span class="cp">#define IPC_LOG(message)</span>
+<span class="cp">#define IPC_LOGGER(function)</span>
 
 <span class="cp">#endif</span>
 </pre></div>

@@ -21,6 +21,7 @@ Program Listing for File logger.hpp
    #include <ostream>
    
    #define IPC_LOG(message) ipc::logger().message
+   #define IPC_LOGGER(function) ipc::Logger::function
    
    namespace ipc {
    
@@ -51,6 +52,8 @@ Program Listing for File logger.hpp
    
    #include <fmt/format.h>
    
+   // Dummy macros to disable logging completly.
    #define IPC_LOG(message)
+   #define IPC_LOGGER(function)
    
    #endif

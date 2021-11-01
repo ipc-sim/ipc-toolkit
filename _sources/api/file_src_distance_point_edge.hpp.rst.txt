@@ -61,7 +61,7 @@ Functions
 
 - :ref:`exhale_function_namespaceipc_1adcccfc8b202737e299f2e9c5c561c89a`
 
-- :ref:`exhale_function_namespaceipc_1adabdb502b5de4f7935f678aff4a49bde`
-
 - :ref:`exhale_function_namespaceipc_1ada9f888c4185235a7c3d967f4e1333ff`
+
+- :ref:`exhale_function_namespaceipc_1adabdb502b5de4f7935f678aff4a49bde`
 

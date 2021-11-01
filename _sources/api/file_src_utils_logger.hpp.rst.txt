@@ -42,3 +42,5 @@ Defines
 
 - :ref:`exhale_define_logger_8hpp_1a2b81c2b5947828c1602513f81b2ffea6`
 
+- :ref:`exhale_define_logger_8hpp_1a9136aaca9d7303268deb35f499753208`
+
