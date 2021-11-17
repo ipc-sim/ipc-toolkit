@@ -2,6 +2,7 @@
 
 #include <ipc/ipc.hpp>
 #include <ipc/ccd/ccd.hpp>
+#include <ipc/ccd/point_static_plane.hpp>
 
 #include <test_utils.hpp>
 

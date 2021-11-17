@@ -1,6 +1,7 @@
 #include <ipc/implicits/plane.hpp>
 
 #include <ipc/distance/point_plane.hpp>
+#include <ipc/ccd/point_static_plane.hpp>
 
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>

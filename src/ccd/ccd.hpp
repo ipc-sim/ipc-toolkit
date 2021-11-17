@@ -95,12 +95,4 @@ bool point_edge_ccd(
     const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
     const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
-bool point_static_plane_ccd(
-    const VectorMax3d& p_t0,
-    const VectorMax3d& p_t1,
-    const VectorMax3d& plane_origin,
-    const VectorMax3d& plane_normal,
-    double& toi,
-    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
-
 } // namespace ipc

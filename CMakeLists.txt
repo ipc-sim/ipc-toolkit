@@ -167,12 +167,6 @@ target_compile_features(ipc_toolkit PUBLIC cxx_std_14)
 if(IPC_TOOLKIT_BUILD_UNIT_TESTS)
   include(CTest)
   enable_testing()
-
-  # Include Catch2 and provide function `catch_discover_tests` to register tests.
-  include(catch2)
-  FetchContent_GetProperties(catch2)
-  include("${catch2_SOURCE_DIR}/contrib/Catch.cmake")
-
   add_subdirectory(tests)
 endif()
 

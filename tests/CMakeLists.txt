@@ -91,11 +91,10 @@ endif()
 # Register tests
 ################################################################################
 
-foreach(source IN ITEMS ${test_sources})
-   source_group("tests" FILES "${source}")
-endforeach()
-
-# Register tests
 set(PARSE_CATCH_TESTS_ADD_TO_CONFIGURE_DEPENDS ON)
-# include(Catch)
+
+# Include Catch2 and provide function `catch_discover_tests` to register tests.
+FetchContent_GetProperties(catch2)
+include("${catch2_SOURCE_DIR}/contrib/Catch.cmake")
+
 catch_discover_tests(ipc_toolkit_tests)
