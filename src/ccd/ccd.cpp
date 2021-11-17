@@ -39,7 +39,7 @@ bool ccd_strategy(
     bool is_impacting = ccd(min_distance, /*no_zero_toi=*/false, toi);
 
     if (is_impacting && toi < SMALL_TOI) {
-        bool is_impacting = ccd(/*min_distance=*/0, /*no_zero_toi=*/true, toi);
+        is_impacting = ccd(/*min_distance=*/0, /*no_zero_toi=*/true, toi);
 
         if (is_impacting) {
             toi *= conservative_rescaling;
