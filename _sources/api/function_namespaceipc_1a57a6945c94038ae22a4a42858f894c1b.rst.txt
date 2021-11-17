@@ -3,7 +3,7 @@
 Function ipc::is_in_01
 ======================
 
-- Defined in :ref:`file_src_ccd_ccd.cpp`
+- Defined in :ref:`file_src_ccd_point_static_plane.cpp`
 
 
 Function Documentation

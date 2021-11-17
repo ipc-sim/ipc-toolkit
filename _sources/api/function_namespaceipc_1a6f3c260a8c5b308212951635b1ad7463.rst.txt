@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a6f3c260a8c5b308212951635b1ad7463:
+
+Function ipc::ccd_strategy
+==========================
+
+- Defined in :ref:`file_src_ccd_ccd.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::ccd_strategy(const std::function<bool(double, bool, double&)>&, const double, const double, double&)

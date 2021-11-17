@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a645cdb39f1ca6646142ea9e65fbe445f:
+
+Function ipc::inexact_point_edge_ccd_2D
+=======================================
+
+- Defined in :ref:`file_src_ccd_inexact_point_edge.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::inexact_point_edge_ccd_2D(const Eigen::Vector2d&, const Eigen::Vector2d&, const Eigen::Vector2d&, const Eigen::Vector2d&, const Eigen::Vector2d&, const Eigen::Vector2d&, double&, const double)

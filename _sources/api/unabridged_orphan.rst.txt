@@ -210,6 +210,16 @@ Files
 .. toctree::
    :maxdepth: 5
 
+   file_src_ccd_inexact_point_edge.cpp.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_src_ccd_inexact_point_edge.hpp.rst
+
+.. toctree::
+   :maxdepth: 5
+
    file_src_utils_intersection.cpp.rst
 
 .. toctree::
@@ -291,6 +301,16 @@ Files
    :maxdepth: 5
 
    file_src_distance_point_point.hpp.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_src_ccd_point_static_plane.cpp.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_src_ccd_point_static_plane.hpp.rst
 
 .. toctree::
    :maxdepth: 5

@@ -1,0 +1,29 @@
+
+.. _program_listing_file_src_ccd_inexact_point_edge.hpp:
+
+Program Listing for File inexact_point_edge.hpp
+===============================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_ccd_inexact_point_edge.hpp>` (``src/ccd/inexact_point_edge.hpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   #pragma once
+   
+   #include <Eigen/Core>
+   
+   namespace ipc {
+   
+   bool inexact_point_edge_ccd_2D(
+       const Eigen::Vector2d& p_t0,
+       const Eigen::Vector2d& e0_t0,
+       const Eigen::Vector2d& e1_t0,
+       const Eigen::Vector2d& p_t1,
+       const Eigen::Vector2d& e0_t1,
+       const Eigen::Vector2d& e1_t1,
+       double& toi,
+       const double conservative_rescaling);
+   
+   } // namespace ipc

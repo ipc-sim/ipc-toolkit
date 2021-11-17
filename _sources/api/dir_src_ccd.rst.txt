@@ -19,5 +19,9 @@ Files
 - :ref:`file_src_ccd_aabb.hpp`
 - :ref:`file_src_ccd_ccd.cpp`
 - :ref:`file_src_ccd_ccd.hpp`
+- :ref:`file_src_ccd_inexact_point_edge.cpp`
+- :ref:`file_src_ccd_inexact_point_edge.hpp`
+- :ref:`file_src_ccd_point_static_plane.cpp`
+- :ref:`file_src_ccd_point_static_plane.hpp`
 
 

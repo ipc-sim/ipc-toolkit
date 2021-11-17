@@ -57,9 +57,9 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_namespaceipc_1ade329fe5abe60d05c5163da71e03f68d`
+- :ref:`exhale_function_namespaceipc_1a6f3c260a8c5b308212951635b1ad7463`
 
-- :ref:`exhale_function_namespaceipc_1a57a6945c94038ae22a4a42858f894c1b`
+- :ref:`exhale_function_namespaceipc_1ade329fe5abe60d05c5163da71e03f68d`
 
 - :ref:`exhale_function_namespaceipc_1aa7770914c3a974666b2b573b389893a2`
 
@@ -69,14 +69,7 @@ Functions
 
 - :ref:`exhale_function_namespaceipc_1a2752d8d90616c6934e9779eb16d6e82d`
 
-- :ref:`exhale_function_namespaceipc_1a3f62520107cb85797bbd682ef2562749`
-
 - :ref:`exhale_function_namespaceipc_1a536bea21d3c09619f5283ceb60ac2665`
 
-
-Variables
----------
-
-
-- :ref:`exhale_variable_namespaceipc_1a245d438df4884431e13e50b50ba556df`
+- :ref:`exhale_function_namespaceipc_1a1d57bfcc4ee63b31e787c782a7611658`
 
