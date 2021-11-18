@@ -3,8 +3,8 @@
 [![Build](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg)](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml)
 [![Python](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg)](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml)
 [![Docs](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg)](https://ipc-sim.github.io/ipc-toolkit/)
-<!-- [![CodeFactor](https://www.codefactor.io/repository/github/ipc-sim/ipc-toolkit/badge)](https://www.codefactor.io/repository/github/ipc-sim/ipc-toolkit) -->
 [![License](https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue)](https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE)
+<!-- [![CodeFactor](https://www.codefactor.io/repository/github/ipc-sim/ipc-toolkit/badge)](https://www.codefactor.io/repository/github/ipc-sim/ipc-toolkit) -->
 
 **A set of reusable functions to integrate IPC into an existing simulation.**
 
