@@ -8,7 +8,7 @@ include(FetchContent)
 FetchContent_Declare(
     tight_inclusion
     GIT_REPOSITORY https://github.com/Continuous-Collision-Detection/Tight-Inclusion.git
-    GIT_TAG 5f295da8ed79bc3b1165bb1de1b937c44105c3de
+    GIT_TAG 1dc56b9d9c202a381fe6bd998cee38484938a77c
     GIT_SHALLOW FALSE
 )
 

@@ -15,7 +15,8 @@
 namespace ipc {
 
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-static const int TIGHT_INCLUSION_CCD_TYPE = 1;
+static constexpr int TIGHT_INCLUSION_CCD_TYPE = 1;
+static constexpr double INITIAL_DISTANCE_TOLERANCE_SCALE = 0.5;
 #endif
 
 bool ccd_strategy(
@@ -34,9 +35,14 @@ bool ccd_strategy(
     }
 
     double min_distance = (1.0 - conservative_rescaling) * initial_distance;
+    // #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+    // Tight Inclusion performs better when the minimum separation is small
+    // min_distance = std::min(min_distance, 1e-4);
+    // #endif
+
     assert(min_distance < initial_distance);
 
-    bool is_impacting = ccd(min_distance, /*no_zero_toi=*/false, toi);
+    bool is_impacting = ccd(min_distance, /*no_zero_toi=*/true, toi);
 
     if (is_impacting && toi < SMALL_TOI) {
         is_impacting = ccd(/*min_distance=*/0, /*no_zero_toi=*/true, toi);
@@ -63,6 +69,11 @@ bool point_point_ccd(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
+    double initial_distance = sqrt(point_point_distance(p0_t0, p1_t0));
+
+    double adjusted_tolerance = std::min(
+        INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+
     const auto ccd = [&](double min_distance, bool no_zero_toi,
                          double& toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
@@ -73,7 +84,7 @@ bool point_point_ccd(
             { { -1, -1, -1 } }, // rounding error (auto)
             min_distance,       // minimum separation distance
             toi,                // time of impact
-            tolerance,          // delta
+            adjusted_tolerance, // delta
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
@@ -83,8 +94,6 @@ bool point_point_ccd(
             p0_t0, p1_t0, p0_t1, p1_t1, min_distance, toi);
 #endif
     };
-
-    double initial_distance = sqrt(point_point_distance(p0_t0, p1_t0));
 
     return ccd_strategy(ccd, initial_distance, conservative_rescaling, toi);
 }
@@ -120,6 +129,11 @@ bool point_edge_ccd_2D(
     Eigen::Vector3d e0_t1_3D = to_3D(e0_t1);
     Eigen::Vector3d e1_t1_3D = to_3D(e1_t1);
 
+    double initial_distance = sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
+
+    double adjusted_tolerance = std::min(
+        INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+
     const auto ccd = [&](double min_distance, bool no_zero_toi,
                          double& toi) -> bool {
         double output_tolerance;
@@ -130,14 +144,12 @@ bool point_edge_ccd_2D(
             { { -1, -1, -1 } }, // rounding error (auto)
             min_distance,       // minimum separation distance
             toi,                // time of impact
-            tolerance,          // delta
+            adjusted_tolerance, // delta
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
             TIGHT_INCLUSION_CCD_TYPE, no_zero_toi);
     };
-
-    double initial_distance = sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
 
     return ccd_strategy(ccd, initial_distance, conservative_rescaling, toi);
 #endif
@@ -158,6 +170,11 @@ bool point_edge_ccd_3D(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
+    double initial_distance = sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
+
+    double adjusted_tolerance = std::min(
+        INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+
     const auto ccd = [&](double min_distance, bool no_zero_toi,
                          double& toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
@@ -168,7 +185,7 @@ bool point_edge_ccd_3D(
             { { -1, -1, -1 } }, // rounding error (auto)
             min_distance,       // minimum separation distance
             toi,                // time of impact
-            tolerance,          // delta
+            adjusted_tolerance, // delta
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
@@ -178,8 +195,6 @@ bool point_edge_ccd_3D(
             p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, min_distance, toi);
 #endif
     };
-
-    double initial_distance = sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
 
     return ccd_strategy(ccd, initial_distance, conservative_rescaling, toi);
 }
@@ -231,6 +246,12 @@ bool edge_edge_ccd(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
+    double initial_distance =
+        sqrt(edge_edge_distance(ea0_t0, ea1_t0, eb0_t0, eb1_t0));
+
+    double adjusted_tolerance = std::min(
+        INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+
     const auto ccd = [&](double min_distance, bool no_zero_toi,
                          double& toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
@@ -240,7 +261,7 @@ bool edge_edge_ccd(
             { { -1, -1, -1 } }, // rounding error (auto)
             min_distance,       // minimum separation distance
             toi,                // time of impact
-            tolerance,          // delta
+            adjusted_tolerance, // delta
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
@@ -251,9 +272,6 @@ bool edge_edge_ccd(
             min_distance, toi);
 #endif
     };
-
-    double initial_distance =
-        sqrt(edge_edge_distance(ea0_t0, ea1_t0, eb0_t0, eb1_t0));
 
     return ccd_strategy(ccd, initial_distance, conservative_rescaling, toi);
 }
@@ -275,6 +293,12 @@ bool point_triangle_ccd(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
+    double initial_distance =
+        sqrt(point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0));
+
+    double adjusted_tolerance = std::min(
+        INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+
     const auto ccd = [&](double min_distance, bool no_zero_toi,
                          double& toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
@@ -284,7 +308,7 @@ bool point_triangle_ccd(
             { { -1, -1, -1 } }, // rounding error (auto)
             min_distance,       // minimum separation distance
             toi,                // time of impact
-            tolerance,          // delta
+            adjusted_tolerance, // delta
             tmax,               // maximum time to check
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
@@ -295,9 +319,6 @@ bool point_triangle_ccd(
             min_distance, toi);
 #endif
     };
-
-    double initial_distance =
-        sqrt(point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0));
 
     return ccd_strategy(ccd, initial_distance, conservative_rescaling, toi);
 }

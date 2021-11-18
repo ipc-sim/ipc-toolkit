@@ -488,12 +488,12 @@ TEST_CASE("Bolun test case", "[ccd][point-triangle][bolun]")
 
 TEST_CASE("Dobule root test case", "[ccd][edge-edge][double-root]")
 {
-    const Eigen::Vector3d a0s(-30022200, 2362580, 165247);
-    const Eigen::Vector3d a1s(-32347850, 8312380, -1151003);
-    const Eigen::Vector3d a0e(-28995600, 345838, 638580);
-    const Eigen::Vector3d a1e(-31716930, 6104858, -713340);
-    const Eigen::Vector3d b0(-30319900, 3148750, 0);
-    const Eigen::Vector3d b1(-28548800, 900349, 0);
+    const Eigen::Vector3d a0s(-3.0022200, 0.2362580, 0.0165247);
+    const Eigen::Vector3d a1s(-3.2347850, 0.8312380, -0.1151003);
+    const Eigen::Vector3d a0e(-2.8995600, 0.0345838, 0.0638580);
+    const Eigen::Vector3d a1e(-3.1716930, 0.6104858, -0.0713340);
+    const Eigen::Vector3d b0(-3.0319900, 0.3148750, 0.0000000);
+    const Eigen::Vector3d b1(-2.8548800, 0.0900349, 0.0000000);
 
     bool is_collision_expected = true;
 
@@ -553,4 +553,24 @@ TEST_CASE("Point-Plane CCD", "[ccd][point-plane]")
     CAPTURE(p_t0.x(), p_t0.y(), p_t0.z(), p_t1.x(), p_t1.y(), p_t1.z());
     CHECK(is_colliding);
     CHECK(toi <= t);
+}
+
+TEST_CASE("No Zero ToI CCD", "[ccd][no-zero-toi]")
+{
+    Eigen::Vector3d p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1;
+    p_t0 << 0.0133653, 0.100651, -0.0215935;
+    t0_t0 << 0.0100485, 0.0950896, -0.0171013;
+    t1_t0 << 0.0130388, 0.100666, -0.0218112;
+    t2_t0 << 0.015413, 0.100554, -0.0202265;
+    p_t1 << 0.0133652999767858, 0.099670000268615, -0.0215934999996444;
+    t0_t1 << 0.0100484999799995, 0.0941086002577558, -0.0171012999972189;
+    t1_t1 << 0.0130387999724314, 0.0996850002629403, -0.0218111999936902;
+    t2_t1 << 0.0154129999740718, 0.0995730002646605, -0.020226499996014;
+
+    double toi;
+    bool is_impacting = point_triangle_ccd(
+        p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, toi);
+
+    CAPTURE(toi);
+    CHECK(!is_impacting);
 }
