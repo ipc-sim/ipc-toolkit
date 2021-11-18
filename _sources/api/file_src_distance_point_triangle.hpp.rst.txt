@@ -55,9 +55,9 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_namespaceipc_1a1c5b2993d4c9c3fe6756f37b7941c40d`
-
 - :ref:`exhale_function_namespaceipc_1aa420f3dd9d734155bfd062ceca0ef33a`
+
+- :ref:`exhale_function_namespaceipc_1a1c5b2993d4c9c3fe6756f37b7941c40d`
 
 - :ref:`exhale_function_namespaceipc_1a555fd75204039483438221065a6b503a`
 
