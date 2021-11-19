@@ -53,13 +53,13 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_namespaceipc_1a25b38d64cfd7a1dc7be09adb52c735d7`
-
 - :ref:`exhale_function_namespaceipc_1a2335dac2a36b41226ce284422eb6fdad`
 
-- :ref:`exhale_function_namespaceipc_1ae8bf7297de2e3028fe719c927dd71e1b`
+- :ref:`exhale_function_namespaceipc_1a25b38d64cfd7a1dc7be09adb52c735d7`
 
 - :ref:`exhale_function_namespaceipc_1a6c8fa5a85c5fe087e8206b5f8cfeeac2`
+
+- :ref:`exhale_function_namespaceipc_1ae8bf7297de2e3028fe719c927dd71e1b`
 
 - :ref:`exhale_function_namespaceipc_1a3c25e388ab1214467d7f64e304b451af`
 
