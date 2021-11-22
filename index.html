@@ -121,6 +121,18 @@ The following libraries are used in this project:</p>
 To enable the unit tests use the flag <code class="docutils literal notranslate"><span class="pre">-DIPC_TOOLKIT_BUILD_UNIT_TESTS=ON</span></code> with
 CMake.</p>
 </section>
+<section id="python-bindings">
+<h2>Python Bindings<a class="headerlink" href="#python-bindings" title="Permalink to this headline">¶</a></h2>
+<p>We provide Python bindings for functions in the toolkit using <a class="reference external" href="https://github.com/pybind/pybind11">pybind11</a>.</p>
+<p>Currently, the bindings must be built from scratch. The easiest way to do this is to use the <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> script which uses <code class="docutils literal notranslate"><span class="pre">setuptools</span></code>. For example:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python setup.py install
+</pre></div>
+</div>
+<p>will build the library and python bindings and then install them on your system.</p>
+<p>You can test the install was successful by doing <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-c</span> <span class="pre">&quot;import</span> <span class="pre">ipctk&quot;</span></code>.</p>
+<p>We provide a Jupyter notebook (<code class="docutils literal notranslate"><span class="pre">python/example.ipynb</span></code>) with some simple examples.</p>
+<p>The Python bindings are still a work in progress, and functions are added on an as-needed basis. If a function is missing that you would like, please create an issue on GitHub.</p>
+</section>
 <section id="contributing">
 <h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
 <p>This project is open for contributors! Contibutions can come in the form of feature requests, bug fixes, documentation, tutorials and the like. We highly recommend to file an Issue first before submitting a Pull Request.</p>

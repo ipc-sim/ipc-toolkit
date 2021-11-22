@@ -51,11 +51,11 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_namespaceipc_1aa19b596f7428b48cde24b5a0636e21a6`
-
-- :ref:`exhale_function_namespaceipc_1ad63e48dc1163e9215d6127b02dd67804`
+- :ref:`exhale_function_namespaceipc_1aa710f7280920a7d2b4c5028656045870`
 
 - :ref:`exhale_function_namespaceipc_1a783351052e5565997ca41f651c291761`
 
-- :ref:`exhale_function_namespaceipc_1aa710f7280920a7d2b4c5028656045870`
+- :ref:`exhale_function_namespaceipc_1aa19b596f7428b48cde24b5a0636e21a6`
+
+- :ref:`exhale_function_namespaceipc_1ad63e48dc1163e9215d6127b02dd67804`
 
