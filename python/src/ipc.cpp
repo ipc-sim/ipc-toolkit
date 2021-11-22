@@ -123,4 +123,28 @@ void define_ipc_functions(py::module_& m)
         )ipc_Qu8mg5v7",
         py::arg("V"), py::arg("E"), py::arg("F"), py::arg("constraint_set"),
         py::arg("dhat"), py::arg("project_to_psd") = true);
+
+    // ...
+
+    m.def(
+        "has_intersections", &has_intersections,
+        R"ipc_Qu8mg5v7(
+
+        Parameters
+        ----------
+        V : Vertex positions as rows of a matrix
+        E : Edges as rows of indicies into V
+        F : Triangular faces as rows of indicies into V
+        can_collide : (Optional) A function that takes two vertex IDs (row numbers in F)
+                      and returns true if the vertices (and faces or edges containting the
+                      edges) can collide. By default all primitives can collide with all
+                      other primitives.
+
+        Returns
+        -------
+        A boolean for if the mesh has intersections.
+        )ipc_Qu8mg5v7",
+        py::arg("V"), py::arg("E"), py::arg("F"),
+        py::arg("can_collide") =
+            std::function<bool(size_t, size_t)>(default_can_collide));
 }

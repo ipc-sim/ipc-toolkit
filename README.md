@@ -72,6 +72,28 @@ We provide unit tests for ensuring the correctness of our algorithmic pieces.
 To enable the unit tests use the flag `-DIPC_TOOLKIT_BUILD_UNIT_TESTS=ON` with
 CMake.
 
+## Python Bindings
+
+We provide Python bindings for functions in the toolkit using [pybind11](https://github.com/pybind/pybind11).
+
+### Build and Install
+
+Currently, the bindings must be built from scratch. The easiest way to do this is to use the `setup.py` script which uses `setuptools`. For example:
+```sh
+python setup.py install
+```
+will build the library and python bindings and then install them on your system.
+
+You can test the install was successful by doing `python -c "import ipctk"`.
+
+### Examples
+
+We provide a Jupyter notebook (`python/example.ipynb`) with some simple examples.
+
+### Missing Functions
+
+The Python bindings are still a work in progress, and functions are added on an as-needed basis. If a function is missing that you would like, please create an issue on GitHub.
+
 ## Contributing
 
 This project is open for contributors! Contibutions can come in the form of feature requests, bug fixes, documentation, tutorials and the like. We highly recommend to file an Issue first before submitting a Pull Request.

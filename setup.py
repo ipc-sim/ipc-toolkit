@@ -92,7 +92,6 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: C++",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 2.7",
         "Topic :: Games/Entertainment :: Simulation",
         "License :: OSI Approved :: MIT License",
     ],
