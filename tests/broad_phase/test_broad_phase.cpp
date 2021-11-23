@@ -41,9 +41,16 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase]")
     double tolerance = 1e-6;
     int max_iterations = 1e7;
 
-    bool is_valid_step = ipc::is_step_collision_free(
-        V_t0, V_t1, E, /*F=*/Eigen::MatrixXi(), method, tolerance,
-        max_iterations, ignore_internal_vertices);
+    bool is_valid_step;
+    if (ignore_internal_vertices) {
+        is_valid_step = ipc::is_step_collision_free(
+            V_t0, V_t1, Eigen::VectorXi(), E, /*F=*/Eigen::MatrixXi(), method,
+            tolerance, max_iterations);
+    } else {
+        is_valid_step = ipc::is_step_collision_free(
+            V_t0, V_t1, E, /*F=*/Eigen::MatrixXi(), method, tolerance,
+            max_iterations);
+    }
 
     CAPTURE(ignore_internal_vertices);
     CHECK(!is_valid_step);
@@ -61,7 +68,8 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase]")
     igl::readCSV(std::string(TEST_DATA_DIR) + "E.csv", E);
     E.array() -= 1; // NOTE: Convert from OBJ format to index
 
-    bool ignore_internal_vertices = true; // GENERATE(false, true);
+    Eigen::VectorXi codim_V;
+    Eigen::MatrixXi F;
 
     BroadPhaseMethod method = GENERATE(
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID
@@ -75,14 +83,13 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase]")
     SECTION("2D")
     {
         is_valid_step = ipc::is_step_collision_free(
-            V_t0.leftCols(2), V_t1.leftCols(2), E, /*F=*/Eigen::MatrixXi(),
-            method, tolerance, max_iterations, ignore_internal_vertices);
+            V_t0.leftCols(2), V_t1.leftCols(2), codim_V, E, F, method,
+            tolerance, max_iterations);
     }
     SECTION("3D")
     {
         is_valid_step = ipc::is_step_collision_free(
-            V_t0, V_t1, E, /*F=*/Eigen::MatrixXi(), method, tolerance,
-            max_iterations, ignore_internal_vertices);
+            V_t0, V_t1, codim_V, E, F, method, tolerance, max_iterations);
     }
 
     CAPTURE(method);
@@ -103,8 +110,6 @@ TEST_CASE(
     igl::readDMAT(std::string(TEST_DATA_DIR) + "codim-points/F.dmat", F);
     const Eigen::MatrixXi F2E = faces_to_edges(F, E);
 
-    const bool ignore_internal_vertices = false;
-
 #ifdef NDEBUG
     BroadPhaseMethod method = GENERATE(
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID //,
@@ -119,8 +124,7 @@ TEST_CASE(
 
     Constraints constraint_set;
     construct_constraint_set(
-        V_rest, V, E, F, dhat, constraint_set, F2E, /*dmin=*/0, method,
-        ignore_internal_vertices);
+        V_rest, V, E, F, dhat, constraint_set, F2E, /*dmin=*/0, method);
 
     CHECK(constraint_set.size() != 0);
 }
@@ -147,7 +151,7 @@ TEST_CASE(
         E.row(0) << 0, 1;
         E.row(1) << 2, 3;
 
-        SECTION("Without group ids") {}
+        SECTION("Without group ids") { }
         SECTION("With group ids")
         {
             group_ids.resize(4);

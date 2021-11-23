@@ -14,7 +14,7 @@ class AABB {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    AABB() {}
+    AABB() { }
 
     AABB(const ArrayMax3d& min, const ArrayMax3d& max);
 
@@ -25,8 +25,8 @@ public:
 
     AABB(const AABB& aabb1, const AABB& aabb2, const AABB& aabb3)
         : AABB(
-              aabb1.min.min(aabb2.min).min(aabb3.min),
-              aabb1.max.max(aabb2.max).max(aabb3.max))
+            aabb1.min.min(aabb2.min).min(aabb3.min),
+            aabb1.max.max(aabb2.max).max(aabb3.max))
     {
     }
 
@@ -124,6 +124,23 @@ public:
         const Eigen::MatrixXd& vertices, const double inflation_radius = 0.0)
     {
         addVertices(vertices, vertices, inflation_radius);
+    }
+
+    /// @brief Add all selected vertices as AABBs containing the time swept
+    /// edge.
+    void addSelectVertices(
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
+        const Eigen::VectorXi& vertex_indices,
+        const double inflation_radius = 0.0);
+
+    /// @brief Add all selected vertices.
+    void addSelectVertices(
+        const Eigen::MatrixXd& vertices,
+        const Eigen::VectorXi& vertex_indices,
+        const double inflation_radius = 0.0)
+    {
+        addSelectVertices(vertices, vertices, vertex_indices, inflation_radius);
     }
 
     /// @brief Add all vertices as AABBs containing the time swept edge.

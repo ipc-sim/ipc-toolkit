@@ -58,3 +58,9 @@
 # option(FETCHCONTENT_UPDATES_DISCONNECTED "Enables UPDATE_DISCONNECTED behavior for all content population")
 # option(FETCHCONTENT_QUIET                "Enables QUIET option for all content population" ON)
 # set(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/_deps" CACHE PATH "Directory under which to collect all populated content")
+
+################################################################################
+# Development Locations for Third Party Libraries
+################################################################################
+
+# set(IPC_TOOLKIT_TIGHT_INCLUSION_PATH "" CACHE STRING "path to tight inclusion")

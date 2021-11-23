@@ -42,7 +42,18 @@ bool ccd_strategy(
 
     assert(min_distance < initial_distance);
 
-    bool is_impacting = ccd(min_distance, /*no_zero_toi=*/true, toi);
+    // Do not use no_zero_toi because the minimum distance is arbitrary and can
+    // be removed if the query is challenging (i.e., produces small ToI).
+    bool is_impacting = ccd(min_distance, /*no_zero_toi=*/false, toi);
+
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+    // Tight inclusion will have higher accuracy and better performance if we
+    // shrink the minimum distance. The value 1e-10 is arbitrary.
+    while (is_impacting && toi < SMALL_TOI && min_distance > 1e-10) {
+        min_distance /= 10;
+        is_impacting = ccd(min_distance, /*no_zero_toi=*/false, toi);
+    }
+#endif
 
     if (is_impacting && toi < SMALL_TOI) {
         is_impacting = ccd(/*min_distance=*/0, /*no_zero_toi=*/true, toi);

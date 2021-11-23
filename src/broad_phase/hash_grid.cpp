@@ -163,6 +163,32 @@ void HashGrid::addVertices(
     merge_local_items(storage, m_vertexItems);
 }
 
+void HashGrid::addSelectVertices(
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
+    const Eigen::VectorXi& vertex_indices,
+    const double inflation_radius)
+{
+    assert(vertices_t0.rows() == vertices_t1.rows());
+
+    ThreadSpecificHashItems storage;
+
+    tbb::parallel_for(
+        tbb::blocked_range<long>(0l, long(vertex_indices.size())),
+        [&](const tbb::blocked_range<long>& range) {
+            ThreadSpecificHashItems::reference local_items = storage.local();
+
+            for (long i = range.begin(); i != range.end(); i++) {
+                const size_t vi = vertex_indices[i];
+                addVertex(
+                    vertices_t0.row(vi), vertices_t1.row(vi), vi, local_items,
+                    inflation_radius);
+            }
+        });
+
+    merge_local_items(storage, m_vertexItems);
+}
+
 void HashGrid::addVerticesFromEdges(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
@@ -450,7 +476,7 @@ void HashGrid::getPairs(
                         if (!is_endpoint(items0[i].id, items1[j].id)
                             && can_collide(items0[i].id, items1[j].id)
                             && AABB::are_overlapping(
-                                   items0[i].aabb, items1[j].aabb)) {
+                                items0[i].aabb, items1[j].aabb)) {
                             local_candidates.emplace_back(
                                 items0[i].id, items1[j].id);
                         }

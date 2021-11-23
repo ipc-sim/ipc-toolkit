@@ -99,9 +99,15 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
     REQUIRE(success);
 
     Constraints constraint_set;
-    ipc::construct_constraint_set(
-        /*V_rest=*/V, V, E, F, dhat, constraint_set, /*F2E=*/Eigen::MatrixXi(),
-        /*dmin=*/0, method, ignore_codimensional_vertices);
+    if (ignore_codimensional_vertices) {
+        ipc::construct_constraint_set(
+            /*V_rest=*/V, V, /*codim_V=*/Eigen::VectorXi(), E, F, dhat,
+            constraint_set, /*F2E=*/Eigen::MatrixXi(), /*dmin=*/0, method);
+    } else {
+        ipc::construct_constraint_set(
+            /*V_rest=*/V, V, E, F, dhat, constraint_set,
+            /*F2E=*/Eigen::MatrixXi(), /*dmin=*/0, method);
+    }
     CAPTURE(dhat, method, ignore_codimensional_vertices);
     CHECK(constraint_set.num_constraints() > 0);
 
@@ -162,9 +168,15 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     REQUIRE(success);
 
     Constraints constraint_set;
-    ipc::construct_constraint_set(
-        /*V_rest=*/V, V, E, F, dhat, constraint_set, /*F2E=*/Eigen::MatrixXi(),
-        /*dmin=*/0, method, ignore_codimensional_vertices);
+    if (ignore_codimensional_vertices) {
+        ipc::construct_constraint_set(
+            /*V_rest=*/V, V, /*codim_V=*/Eigen::VectorXi(), E, F, dhat,
+            constraint_set, /*F2E=*/Eigen::MatrixXi(), /*dmin=*/0, method);
+    } else {
+        ipc::construct_constraint_set(
+            /*V_rest=*/V, V, E, F, dhat, constraint_set,
+            /*F2E=*/Eigen::MatrixXi(), /*dmin=*/0, method);
+    }
     CAPTURE(dhat, method, ignore_codimensional_vertices);
     CHECK(constraint_set.num_constraints() > 0);
 

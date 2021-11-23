@@ -13,20 +13,20 @@ namespace ipc {
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
 ///
-/// @note The given constraint_set will be cleared.
-/// @note V can either be the surface vertices or the entire mesh vertices.
-/// The edges and face should be only for the surface elements.
+/// All vertices in V will be considered for collisions, so V should be only the
+/// surface vertices. The edges and face should be only for the surface
+/// elements.
 ///
 /// @param[in] V Vertex positions as rows of a matrix.
 /// @param[in] E Edges as rows of indicies into V.
 /// @param[in] F Triangular faces as rows of indicies into V.
 /// @param[in] dhat The activation distance of the barrier.
-/// @param[out] constraint_set The constructed set of constraints.
+/// @param[out] constraint_set
+///     The constructed set of constraints (any existing constraints will be
+///     cleared).
 /// @param[in] F2E Map from F edges to rows of E.
 /// @param[in] dmin Minimum distance.
 /// @param[in] method Broad-phase method to use.
-/// @param[in] ignore_codimensional_vertices
-///     Ignores vertices not connected to edges.
 /// @param[in] can_collide
 ///     A function that takes two vertex IDs (row numbers in V) and returns true
 ///     if the vertices (and faces or edges containing the vertices) can
@@ -42,15 +42,50 @@ void construct_constraint_set(
     const Eigen::MatrixXi& F2E = Eigen::MatrixXi(),
     const double dmin = 0,
     const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
-    const bool ignore_codimensional_vertices = false,
     const std::function<bool(size_t, size_t)>& can_collide =
         [](size_t, size_t) { return true; });
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
 ///
-/// @note The given constraint_set will be cleared.
-/// @note V can either be the surface vertices or the entire mesh vertices.
-/// The edges and face should be only for the surface elements.
+/// V can either be the surface vertices or the entire mesh vertices. The edges
+/// and face should be only for the surface elements.
+///
+/// @param[in] V Vertex positions as rows of a matrix.
+/// @param[in] codim_V
+///     Vertex indices of codimensional points. Pass `Eigen::VectorXi()` to
+///     ignore all codimensional vertices (vertices not connected to an edge).
+/// @param[in] E Edges as rows of indicies into V.
+/// @param[in] F Triangular faces as rows of indicies into V.
+/// @param[in] dhat The activation distance of the barrier.
+/// @param[out] constraint_set
+///     The constructed set of constraints (any existing constraints will be
+///     cleared).
+/// @param[in] F2E Map from F edges to rows of E.
+/// @param[in] dmin Minimum distance.
+/// @param[in] method Broad-phase method to use.
+/// @param[in] can_collide
+///     A function that takes two vertex IDs (row numbers in V) and returns true
+///     if the vertices (and faces or edges containing the vertices) can
+///     collide. By default all primitives can collide with all other
+///     primitives.
+void construct_constraint_set(
+    const Eigen::MatrixXd& V_rest,
+    const Eigen::MatrixXd& V,
+    const Eigen::VectorXi& codim_V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const double dhat,
+    Constraints& constraint_set,
+    const Eigen::MatrixXi& F2E = Eigen::MatrixXi(),
+    const double dmin = 0,
+    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
+
+/// @brief Construct a set of constraints used to compute the barrier potential.
+///
+/// V can either be the surface vertices or the entire mesh vertices. The edges
+/// and face should be only for the surface elements.
 ///
 /// @param[in]  candidates  Distance candidates from which the constraint set is
 ///                         built.
@@ -58,7 +93,9 @@ void construct_constraint_set(
 /// @param[in]  E  Edges as rows of indicies into V.
 /// @param[in]  F  Triangular faces as rows of indicies into V.
 /// @param[in]  dhat  The activation distance of the barrier.
-/// @param[out] constraint_set  The constructed set of constraints.
+/// @param[out] constraint_set
+///     The constructed set of constraints (any existing constraints will be
+///     cleared).
 /// @param[in]  F2E  Map from F edges to rows of E.
 /// @param[in]  dmin  Minimum distance.
 void construct_constraint_set(
@@ -128,16 +165,16 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 
 /// @brief Determine if the step is collision free.
 ///
+/// All vertices in V0 and V1 will be considered for collisions, so V0 and
+/// V1 should be only the surface vertices. The edges and face should be only
+/// for the surface elements.
+///
 /// @note Assumes the trajectory is linear.
-/// @note V can either be the surface vertices or the entire mesh vertices.
-/// The edges and face should be only for the surface elements.
 ///
 /// @param[in] V0 Vertex positions at start as rows of a matrix.
 /// @param[in] V1 Vertex positions at end as rows of a matrix.
 /// @param[in] E Edges as rows of indicies into V.
 /// @param[in] F Triangular faces as rows of indicies into V.
-/// @param[in] ignore_codimensional_vertices
-///     Ignores vertices not connected to edges.
 /// @param[in] can_collide
 ///     A function that takes two vertex IDs (row numbers in F) and returns true
 ///     if the vertices (and faces or edges containing the vertices) can
@@ -151,15 +188,46 @@ bool is_step_collision_free(
     const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
     const double tolerance = 1e-6,
     const long max_iterations = 1e7,
-    const bool ignore_codimensional_vertices = false,
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
+
+/// @brief Determine if the step is collision free.
+///
+/// V can either be the surface vertices or the entire mesh vertices. The edges
+/// and face should be only for the surface elements.
+///
+/// @note Assumes the trajectory is linear.
+///
+/// @param[in] V0 Vertex positions at start as rows of a matrix.
+/// @param[in] V1 Vertex positions at end as rows of a matrix.
+/// @param[in] codim_V Vertex indices of codimensional points. Pass
+///     Eigen::VectorXi() to ignore all codimensional vertices (vertices not
+///     connected to an edge).
+/// @param[in] E Edges as rows of indicies into V.
+/// @param[in] F Triangular faces as rows of indicies into V.
+/// @param[in] can_collide
+///     A function that takes two vertex IDs (row numbers in F) and returns true
+///     if the vertices (and faces or edges containing the vertices) can
+///     collide. By default all primitives can collide with all other primiti
+/// @returns True if <b>any</b> collisions occur.
+bool is_step_collision_free(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::VectorXi& codim_V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
+    const double tolerance = 1e-6,
+    const long max_iterations = 1e7,
     const std::function<bool(size_t, size_t)>& can_collide =
         [](size_t, size_t) { return true; });
 
 /// @brief Determine if the step is collision free from a set of candidates.
 ///
+/// V can either be the surface vertices or the entire mesh vertices. The edges
+/// and face should be only for the surface elements.
+///
 /// @note Assumes the trajectory is linear.
-/// @note V can either be the surface vertices or the entire mesh vertices.
-/// The edges and face should be only for the surface elements.
 ///
 /// @param[in] candidates Set of candidates to check for collisions.
 /// @param[in] V0 Vertex positions at start as rows of a matrix.
@@ -179,22 +247,25 @@ bool is_step_collision_free(
 
 /// @brief Computes a maximal step size that is collision free.
 ///
-/// @note Assumes V0 is intersection free.
-/// @note Assumes the trajectory is linear.
-/// @note A value of 1.0 if a full step and 0.0 is no step.
+/// All vertices in V0 and V1 will be considered for collisions, so V0 and
+/// V1 should be only the surface vertices. The edges and face should be only
+/// for the surface elements.
 ///
-/// @param[in] V0 Vertex positions at start as rows of a matrix.
+/// @note Assumes the trajectory is linear.
+///
+/// @param[in] V0
+///     Vertex positions at start as rows of a matrix. Assumes V0 is
+///     intersection free.
 /// @param[in] V1 Vertex positions at end as rows of a matrix.
 /// @param[in] E Edges as rows of indicies into V.
 /// @param[in] F Triangular faces as rows of indicies into V.
-/// @param[in] ignore_codimensional_vertices
-///     Ignores vertices not connected to edges.
 /// @param[in] can_collide
 ///     A function that takes two vertex IDs (row numbers in F) and returns true
 ///     if the vertices (and faces or edges containing the vertices) can
 ///     collide. By default all primitives can collide with all other
 ///     primitives.
-/// @returns A step-size \f$\in [0, 1]\f$ that is collision free.
+/// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0
+/// if a full step and 0.0 is no step.
 double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
@@ -203,24 +274,56 @@ double compute_collision_free_stepsize(
     const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
     const double tolerance = 1e-6,
     const long max_iterations = 1e7,
-    const bool ignore_codimensional_vertices = false,
+    const std::function<bool(size_t, size_t)>& can_collide =
+        [](size_t, size_t) { return true; });
+
+/// @brief Computes a maximal step size that is collision free.
+///
+/// @note Assumes the trajectory is linear.
+///
+/// @param[in] V0
+///     Vertex positions at start as rows of a matrix. Assumes V0 is
+///     intersection free.
+/// @param[in] V1 Vertex positions at end as rows of a matrix.
+/// @param[in] codim_V Vertex indices of codimensional points. Pass
+///     Eigen::VectorXi() to ignore all codimensional vertices (vertices not
+///     connected to an edge).
+/// @param[in] E Edges as rows of indicies into V.
+/// @param[in] F Triangular faces as rows of indicies into V.
+/// @param[in] can_collide
+///     A function that takes two vertex IDs (row numbers in F) and returns true
+///     if the vertices (and faces or edges containing the vertices) can
+///     collide. By default all primitives can collide with all other
+///     primitives.
+/// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0
+/// if a full step and 0.0 is no step.
+double compute_collision_free_stepsize(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::VectorXi& codim_V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
+    const double tolerance = 1e-6,
+    const long max_iterations = 1e7,
     const std::function<bool(size_t, size_t)>& can_collide =
         [](size_t, size_t) { return true; });
 
 /// @brief Computes a maximal step size that is collision free using a set of
 /// collision candidates.
 ///
-/// @note Assumes V0 is intersection free.
 /// @note Assumes the trajectory is linear.
-/// @note A value of 1.0 if a full step and 0.0 is no step.
 ///
 /// @param[in] candidates Set of candidates to check for collisions.
-/// @param[in] V0 Vertex positions at start as rows of a matrix.
+/// @param[in] V0
+///     Vertex positions at start as rows of a matrix. Assumes V0 is
+///     intersection free.
 /// @param[in] V1 Vertex positions at end as rows of a matrix.
 /// @param[in] E Edges as rows of indicies into V.
 /// @param[in] F Triangular faces as rows of indicies into V.
 ////
-/// @returns A step-size \f$\in [0, 1]\f$ that is collision free.
+/// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0
+/// if a full step and 0.0 is no step.
 double compute_collision_free_stepsize(
     const Candidates& candidates,
     const Eigen::MatrixXd& V0,

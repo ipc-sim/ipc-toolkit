@@ -268,7 +268,7 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
     // BroadPhaseMethod broadphase_method =
     //     GENERATE(BroadPhaseMethod::HASH_GRID, BroadPhaseMethod::BRUTE_FORCE);
     BroadPhaseMethod broadphase_method = BroadPhaseMethod::HASH_GRID;
-    bool ignore_codimensional_vertices = true;
+    Eigen::VectorXi codim_V;
     double inflation_radius = 0;
 
     bool recompute_candidates = GENERATE(false, true);
@@ -316,8 +316,7 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
 
     Candidates candidates;
     construct_collision_candidates(
-        V0, V1, E, F, candidates, inflation_radius, broadphase_method,
-        ignore_codimensional_vertices);
+        V0, V1, codim_V, E, F, candidates, inflation_radius, broadphase_method);
 
     bool has_collisions = !is_step_collision_free(
         candidates, V0, V1, E, F, FIRST_TOL, FIRST_MAX_ITER);
@@ -339,8 +338,8 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
 
         if (recompute_candidates) {
             construct_collision_candidates(
-                V0, Vt, E, F, candidates, inflation_radius, broadphase_method,
-                ignore_codimensional_vertices);
+                V0, Vt, codim_V, E, F, candidates, inflation_radius,
+                broadphase_method);
         }
 
         has_collisions_repeated = !is_step_collision_free(
@@ -573,4 +572,39 @@ TEST_CASE("No Zero ToI CCD", "[ccd][no-zero-toi]")
 
     CAPTURE(toi);
     CHECK(!is_impacting);
+}
+
+TEST_CASE("Slow EE CCD", "[ccd][edge-edge][slow]")
+{
+    Eigen::Vector3d ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1,
+        eb1_t1;
+    ea0_t0 << 1, 0.50803125, 2.10835646075301e-18;
+    ea1_t0 << -2.38233935445388e-18, 0.50803125, 1;
+    eb0_t0 << -4.99999999958867e-07, 0.5, 0;
+    eb1_t0 << -4.99999999958867e-07, 0.5, 1;
+    ea0_t1 << 1, 0.47124375, 4.11078309465837e-18;
+    ea1_t1 << -2.8526707189104e-18, 0.47124375, 1;
+    eb0_t1 << -4.99999999958867e-07, 0.5, 0;
+    eb1_t1 << -4.99999999958867e-07, 0.5, 1;
+
+    // BENCHMARK("compute toi")
+    // {
+    //     double toi;
+    //     bool is_impacting = edge_edge_ccd(
+    //         ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
+    //         toi);
+    // };
+
+    double tol = DEFAULT_CCD_TOLERANCE;
+    long max_iter = DEFAULT_CCD_MAX_ITERATIONS;
+    while (tol < 1) {
+        double toi;
+        bool is_impacting = edge_edge_ccd(
+            ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
+            1.0, tol, max_iter);
+        tol *= 10;
+
+        CAPTURE(toi);
+        CHECK(is_impacting);
+    }
 }

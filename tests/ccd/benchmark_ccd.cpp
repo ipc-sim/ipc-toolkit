@@ -38,12 +38,10 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
     double tolerance = 1e-6;
     int max_iterations = 1e7;
 
-    bool ignore_codimensional_vertices = true;
-
     BENCHMARK("Earliest ToI")
     {
         double stpesize = compute_collision_free_stepsize(
-            V0, V1, E, F, method, tolerance, max_iterations,
-            ignore_codimensional_vertices);
+            V0, V1, /*codim_V=*/Eigen::VectorXi(), E, F, method, tolerance,
+            max_iterations);
     };
 }

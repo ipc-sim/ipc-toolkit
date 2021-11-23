@@ -24,8 +24,7 @@ void brute_force_comparison(
     detect_collision_candidates_brute_force(
         V0, V1, E, F, bf_candidates,
         /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true,
-        /*perform_aabb_check=*/false, inflation_radius,
-        /*ignore_codimensional_vertices=*/false, can_collide);
+        /*perform_aabb_check=*/false, inflation_radius, can_collide);
 
     auto& ev_candidates = candidates.ev_candidates;
     auto& ee_candidates = candidates.ee_candidates;

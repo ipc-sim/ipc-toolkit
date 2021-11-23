@@ -9,8 +9,8 @@
 
 namespace ipc {
 
-struct CollisionCandidate {
-    virtual ~CollisionCandidate() {}
+struct ContinuousCollisionCandidate {
+    virtual ~ContinuousCollisionCandidate() { }
 
     virtual bool
     ccd(const Eigen::MatrixXd& V0,
@@ -41,7 +41,7 @@ struct VertexVertexCandidate {
     long vertex1_index;
 };
 
-struct EdgeVertexCandidate : CollisionCandidate {
+struct EdgeVertexCandidate : ContinuousCollisionCandidate {
     EdgeVertexCandidate(long edge_index, long vertex_index);
 
     bool operator==(const EdgeVertexCandidate& other) const;
@@ -69,7 +69,7 @@ struct EdgeVertexCandidate : CollisionCandidate {
     long vertex_index;
 };
 
-struct EdgeEdgeCandidate : CollisionCandidate {
+struct EdgeEdgeCandidate : ContinuousCollisionCandidate {
     EdgeEdgeCandidate(long edge0_index, long edge1_index);
 
     bool operator==(const EdgeEdgeCandidate& other) const;
@@ -116,7 +116,7 @@ struct EdgeFaceCandidate {
     long face_index;
 };
 
-struct FaceVertexCandidate : CollisionCandidate {
+struct FaceVertexCandidate : ContinuousCollisionCandidate {
     FaceVertexCandidate(long face_index, long vertex_index);
 
     bool operator==(const FaceVertexCandidate& other) const;
@@ -155,8 +155,8 @@ struct Candidates {
 
     void clear();
 
-    CollisionCandidate& operator[](size_t idx);
-    const CollisionCandidate& operator[](size_t idx) const;
+    ContinuousCollisionCandidate& operator[](size_t idx);
+    const ContinuousCollisionCandidate& operator[](size_t idx) const;
 
     bool save_obj(
         const std::string& filename,

@@ -5,30 +5,38 @@
 namespace ipc {
 
 /// @brief Closest pair between a point and edge.
-enum class PointEdgeDistanceType { P_E0, P_E1, P_E };
+enum class PointEdgeDistanceType {
+    P_E0, ///< The point is closest to edge vertex zero.
+    P_E1, ///< The point is closest to edge vertex one.
+    P_E   ///< The point is closest to the interior of the edge.
+};
 
 /// @brief Closest pair between a point and triangle.
 enum class PointTriangleDistanceType {
-    P_T0,
-    P_T1,
-    P_T2,
-    P_E0,
-    P_E1,
-    P_E2,
-    P_T
+    P_T0, ///< The point is closest to triangle vertex zero.
+    P_T1, ///< The point is closest to triangle vertex one.
+    P_T2, ///< The point is closest to triangle vertex two.
+    P_E0, ///< The point is closest to triangle edge zero (vertex zero to one).
+    P_E1, ///< The point is closest to triangle edge one (vertex one to two).
+    P_E2, ///< The point is closest to triangle edge two (vertex two to zero).
+    P_T   ///< The point is closest to the interior of the triangle.
 };
 
 /// @brief Closest pair between two edges.
 enum class EdgeEdgeDistanceType {
-    EA0_EB0,
-    EA0_EB1,
-    EA1_EB0,
-    EA1_EB1,
-    EA_EB0,
-    EA_EB1,
-    EA0_EB,
-    EA1_EB,
-    EA_EB
+    EA0_EB0, ///< The edges are closest at vertex 0 of edge A and 0 of edge B.
+    EA0_EB1, ///< The edges are closest at vertex 0 of edge A and 1 of edge B.
+    EA1_EB0, ///< The edges are closest at vertex 1 of edge A and 0 of edge B.
+    EA1_EB1, ///< The edges are closest at vertex 1 of edge A and 1 of edge B.
+    EA_EB0, ///< The edges are closest at the interior of edge A and vertex 0 of
+            ///< edge B.
+    EA_EB1, ///< The edges are closest at the interior of edge A and vertex 1 of
+            ///< edge B.
+    EA0_EB, ///< The edges are closest at vertex 0 of edge A and the interior of
+            ///< edge B.
+    EA1_EB, ///< The edges are closest at vertex 1 of edge A and the interior of
+            ///< edge B.
+    EA_EB   ///< The edges are closest at an interior point of edge A and B.
 };
 
 /// @brief Determine the closest pair between a point and edge.
