@@ -16,28 +16,32 @@ Program Listing for File distance_type.hpp
    
    namespace ipc {
    
-   enum class PointEdgeDistanceType { P_E0, P_E1, P_E };
+   enum class PointEdgeDistanceType {
+       P_E0, 
+       P_E1, 
+       P_E   
+   };
    
    enum class PointTriangleDistanceType {
-       P_T0,
-       P_T1,
-       P_T2,
-       P_E0,
-       P_E1,
-       P_E2,
-       P_T
+       P_T0, 
+       P_T1, 
+       P_T2, 
+       P_E0, 
+       P_E1, 
+       P_E2, 
+       P_T   
    };
    
    enum class EdgeEdgeDistanceType {
-       EA0_EB0,
-       EA0_EB1,
-       EA1_EB0,
-       EA1_EB1,
-       EA_EB0,
-       EA_EB1,
-       EA0_EB,
-       EA1_EB,
-       EA_EB
+       EA0_EB0, 
+       EA0_EB1, 
+       EA1_EB0, 
+       EA1_EB1, 
+       EA_EB0, 
+       EA_EB1, 
+       EA0_EB, 
+       EA1_EB, 
+       EA_EB   
    };
    
    template <typename DerivedP, typename DerivedE0, typename DerivedE1>

@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a4d9b593fa9aadb45da0b711b40950d3f:
+
+Function ipc::is_step_collision_free(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, const BroadPhaseMethod&, const double, const long, const std::function<bool(size_t, size_t)>&)
+===================================================================================================================================================================================================================================
+
+- Defined in :ref:`file_src_ipc.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::is_step_collision_free(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, const BroadPhaseMethod&, const double, const long, const std::function<bool(size_t, size_t)>&)

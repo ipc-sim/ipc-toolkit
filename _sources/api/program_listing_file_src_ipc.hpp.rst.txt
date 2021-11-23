@@ -32,7 +32,20 @@ Program Listing for File ipc.hpp
        const Eigen::MatrixXi& F2E = Eigen::MatrixXi(),
        const double dmin = 0,
        const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
-       const bool ignore_codimensional_vertices = false,
+       const std::function<bool(size_t, size_t)>& can_collide =
+           [](size_t, size_t) { return true; });
+   
+   void construct_constraint_set(
+       const Eigen::MatrixXd& V_rest,
+       const Eigen::MatrixXd& V,
+       const Eigen::VectorXi& codim_V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const double dhat,
+       Constraints& constraint_set,
+       const Eigen::MatrixXi& F2E = Eigen::MatrixXi(),
+       const double dmin = 0,
+       const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
        const std::function<bool(size_t, size_t)>& can_collide =
            [](size_t, size_t) { return true; });
    
@@ -79,7 +92,18 @@ Program Listing for File ipc.hpp
        const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
        const double tolerance = 1e-6,
        const long max_iterations = 1e7,
-       const bool ignore_codimensional_vertices = false,
+       const std::function<bool(size_t, size_t)>& can_collide =
+           [](size_t, size_t) { return true; });
+   
+   bool is_step_collision_free(
+       const Eigen::MatrixXd& V0,
+       const Eigen::MatrixXd& V1,
+       const Eigen::VectorXi& codim_V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
+       const double tolerance = 1e-6,
+       const long max_iterations = 1e7,
        const std::function<bool(size_t, size_t)>& can_collide =
            [](size_t, size_t) { return true; });
    
@@ -100,7 +124,18 @@ Program Listing for File ipc.hpp
        const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
        const double tolerance = 1e-6,
        const long max_iterations = 1e7,
-       const bool ignore_codimensional_vertices = false,
+       const std::function<bool(size_t, size_t)>& can_collide =
+           [](size_t, size_t) { return true; });
+   
+   double compute_collision_free_stepsize(
+       const Eigen::MatrixXd& V0,
+       const Eigen::MatrixXd& V1,
+       const Eigen::VectorXi& codim_V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
+       const double tolerance = 1e-6,
+       const long max_iterations = 1e7,
        const std::function<bool(size_t, size_t)>& can_collide =
            [](size_t, size_t) { return true; });
    

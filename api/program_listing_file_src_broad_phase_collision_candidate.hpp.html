@@ -50,8 +50,8 @@
 
 <span class="k">namespace</span><span class="w"> </span><span class="nn">ipc</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 
-<span class="k">struct</span> <span class="nc">CollisionCandidate</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
-<span class="w">    </span><span class="k">virtual</span><span class="w"> </span><span class="o">~</span><span class="n">CollisionCandidate</span><span class="p">()</span><span class="w"> </span><span class="p">{}</span><span class="w"></span>
+<span class="k">struct</span> <span class="nc">ContinuousCollisionCandidate</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">virtual</span><span class="w"> </span><span class="o">~</span><span class="n">ContinuousCollisionCandidate</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span><span class="w"></span>
 
 <span class="w">    </span><span class="k">virtual</span><span class="w"> </span><span class="kt">bool</span><span class="w"></span>
 <span class="w">    </span><span class="n">ccd</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="o">&amp;</span><span class="w"> </span><span class="n">V0</span><span class="p">,</span><span class="w"></span>
@@ -81,7 +81,7 @@
 <span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="n">vertex1_index</span><span class="p">;</span><span class="w"></span>
 <span class="p">};</span><span class="w"></span>
 
-<span class="k">struct</span> <span class="nc">EdgeVertexCandidate</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">CollisionCandidate</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">struct</span> <span class="nc">EdgeVertexCandidate</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">ContinuousCollisionCandidate</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="n">EdgeVertexCandidate</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">edge_index</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">vertex_index</span><span class="p">);</span><span class="w"></span>
 
 <span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="k">operator</span><span class="o">==</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">EdgeVertexCandidate</span><span class="o">&amp;</span><span class="w"> </span><span class="n">other</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="p">;</span><span class="w"></span>
@@ -108,7 +108,7 @@
 <span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="n">vertex_index</span><span class="p">;</span><span class="w"></span>
 <span class="p">};</span><span class="w"></span>
 
-<span class="k">struct</span> <span class="nc">EdgeEdgeCandidate</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">CollisionCandidate</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">struct</span> <span class="nc">EdgeEdgeCandidate</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">ContinuousCollisionCandidate</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="n">EdgeEdgeCandidate</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">edge0_index</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">edge1_index</span><span class="p">);</span><span class="w"></span>
 
 <span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="k">operator</span><span class="o">==</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">EdgeEdgeCandidate</span><span class="o">&amp;</span><span class="w"> </span><span class="n">other</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="p">;</span><span class="w"></span>
@@ -150,7 +150,7 @@
 <span class="w">    </span><span class="kt">long</span><span class="w"> </span><span class="n">face_index</span><span class="p">;</span><span class="w"></span>
 <span class="p">};</span><span class="w"></span>
 
-<span class="k">struct</span> <span class="nc">FaceVertexCandidate</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">CollisionCandidate</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">struct</span> <span class="nc">FaceVertexCandidate</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">ContinuousCollisionCandidate</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">    </span><span class="n">FaceVertexCandidate</span><span class="p">(</span><span class="kt">long</span><span class="w"> </span><span class="n">face_index</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">vertex_index</span><span class="p">);</span><span class="w"></span>
 
 <span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="k">operator</span><span class="o">==</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">FaceVertexCandidate</span><span class="o">&amp;</span><span class="w"> </span><span class="n">other</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="p">;</span><span class="w"></span>
@@ -188,8 +188,8 @@
 
 <span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">clear</span><span class="p">();</span><span class="w"></span>
 
-<span class="w">    </span><span class="n">CollisionCandidate</span><span class="o">&amp;</span><span class="w"> </span><span class="k">operator</span><span class="p">[](</span><span class="kt">size_t</span><span class="w"> </span><span class="n">idx</span><span class="p">);</span><span class="w"></span>
-<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">CollisionCandidate</span><span class="o">&amp;</span><span class="w"> </span><span class="k">operator</span><span class="p">[](</span><span class="kt">size_t</span><span class="w"> </span><span class="n">idx</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="n">ContinuousCollisionCandidate</span><span class="o">&amp;</span><span class="w"> </span><span class="k">operator</span><span class="p">[](</span><span class="kt">size_t</span><span class="w"> </span><span class="n">idx</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">ContinuousCollisionCandidate</span><span class="o">&amp;</span><span class="w"> </span><span class="k">operator</span><span class="p">[](</span><span class="kt">size_t</span><span class="w"> </span><span class="n">idx</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="p">;</span><span class="w"></span>
 
 <span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="nf">save_obj</span><span class="p">(</span><span class="w"></span>
 <span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"></span>

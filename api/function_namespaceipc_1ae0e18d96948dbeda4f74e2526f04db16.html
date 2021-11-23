@@ -23,7 +23,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Template Function ipc::compute_friction_potential" href="function_namespaceipc_1ae150b80fc29b071609040dfc93eaa887.html" />
-    <link rel="prev" title="Function ipc::compute_collision_free_stepsize(const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const BroadPhaseMethod&amp;, const double, const long, const bool, const std::function&lt;bool(size_t, size_t)&gt;&amp;)" href="function_namespaceipc_1a011b169f710246773493bd204a9a18a4.html" />
+    <link rel="prev" title="Function ipc::compute_collision_free_stepsize(const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::VectorXi&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const BroadPhaseMethod&amp;, const double, const long, const std::function&lt;bool(size_t, size_t)&gt;&amp;)" href="function_namespaceipc_1a395d97dcb5216ea6ebfa7e832db3ab4d.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -53,28 +53,20 @@
 <dd><p>Computes a maximal step size that is collision free using a set of collision candidates. </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Assumes V0 is intersection free. </p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Assumes the trajectory is linear. </p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>A value of 1.0 if a full step and 0.0 is no step.</p>
+<p>Assumes the trajectory is linear.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>candidates</strong> – <strong>[in]</strong> Set of candidates to check for collisions. </p></li>
-<li><p><strong>V0</strong> – <strong>[in]</strong> Vertex positions at start as rows of a matrix. </p></li>
+<li><p><strong>V0</strong> – <strong>[in]</strong> Vertex positions at start as rows of a matrix. Assumes V0 is intersection free. </p></li>
 <li><p><strong>V1</strong> – <strong>[in]</strong> Vertex positions at end as rows of a matrix. </p></li>
 <li><p><strong>E</strong> – <strong>[in]</strong> Edges as rows of indicies into V. </p></li>
 <li><p><strong>F</strong> – <strong>[in]</strong> Triangular faces as rows of indicies into V.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A step-size <span class="math notranslate nohighlight">\(\in [0, 1]\)</span> that is collision free. </p>
+<dd class="field-even"><p>A step-size <span class="math notranslate nohighlight">\(\in [0, 1]\)</span> that is collision free. A value of 1.0 if a full step and 0.0 is no step. </p>
 </dd>
 </dl>
 </dd></dl>
@@ -137,7 +129,7 @@
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API</a><ul>
   <li><a href="unabridged_api.html">Full API</a><ul>
-      <li>Previous: <a href="function_namespaceipc_1a011b169f710246773493bd204a9a18a4.html" title="previous chapter">Function ipc::compute_collision_free_stepsize(const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const BroadPhaseMethod&amp;, const double, const long, const bool, const std::function&lt;bool(size_t, size_t)&gt;&amp;)</a></li>
+      <li>Previous: <a href="function_namespaceipc_1a395d97dcb5216ea6ebfa7e832db3ab4d.html" title="previous chapter">Function ipc::compute_collision_free_stepsize(const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::VectorXi&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const BroadPhaseMethod&amp;, const double, const long, const std::function&lt;bool(size_t, size_t)&gt;&amp;)</a></li>
       <li>Next: <a href="function_namespaceipc_1ae150b80fc29b071609040dfc93eaa887.html" title="next chapter">Template Function ipc::compute_friction_potential</a></li>
   </ul></li>
   </ul></li>

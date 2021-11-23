@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a905ea243eaa7e92f4d030bd4050958fb:
+
+Function ipc::construct_collision_candidates(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::VectorXi&, bool, const Eigen::MatrixXi&, const Eigen::MatrixXi&, Candidates&, double, const BroadPhaseMethod&, const std::function<bool(size_t, size_t)>&)
+====================================================================================================================================================================================================================================================================
+
+- Defined in :ref:`file_src_broad_phase_broad_phase.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::construct_collision_candidates(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::VectorXi&, bool, const Eigen::MatrixXi&, const Eigen::MatrixXi&, Candidates&, double, const BroadPhaseMethod&, const std::function<bool(size_t, size_t)>&)

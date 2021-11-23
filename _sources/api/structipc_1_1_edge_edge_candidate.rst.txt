@@ -12,7 +12,7 @@ Inheritance Relationships
 Base Type
 *********
 
-- ``public ipc::CollisionCandidate`` (:ref:`exhale_struct_structipc_1_1_collision_candidate`)
+- ``public ipc::ContinuousCollisionCandidate`` (:ref:`exhale_struct_structipc_1_1_continuous_collision_candidate`)
 
 
 Derived Types

@@ -1,7 +1,7 @@
-.. _exhale_struct_structipc_1_1_collision_candidate:
+.. _exhale_struct_structipc_1_1_continuous_collision_candidate:
 
-Struct CollisionCandidate
-=========================
+Struct ContinuousCollisionCandidate
+===================================
 
 - Defined in :ref:`file_src_broad_phase_collision_candidate.hpp`
 
@@ -21,7 +21,7 @@ Struct Documentation
 --------------------
 
 
-.. doxygenstruct:: ipc::CollisionCandidate
+.. doxygenstruct:: ipc::ContinuousCollisionCandidate
    :members:
    :protected-members:
    :undoc-members:

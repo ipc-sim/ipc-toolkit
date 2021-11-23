@@ -31,7 +31,17 @@ Program Listing for File broad_phase.hpp
        Candidates& candidates,
        double inflation_radius = 0,
        const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
-       bool ignore_codimensional_vertices = false,
+       const std::function<bool(size_t, size_t)>& can_collide =
+           [](size_t, size_t) { return true; });
+   
+   void construct_collision_candidates(
+       const Eigen::MatrixXd& V,
+       const Eigen::VectorXi& codim_V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       Candidates& candidates,
+       double inflation_radius = 0,
+       const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
        const std::function<bool(size_t, size_t)>& can_collide =
            [](size_t, size_t) { return true; });
    
@@ -43,7 +53,18 @@ Program Listing for File broad_phase.hpp
        Candidates& candidates,
        double inflation_radius = 0,
        const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
-       bool ignore_codimensional_vertices = false,
+       const std::function<bool(size_t, size_t)>& can_collide =
+           [](size_t, size_t) { return true; });
+   
+   void construct_collision_candidates(
+       const Eigen::MatrixXd& V0,
+       const Eigen::MatrixXd& V1,
+       const Eigen::VectorXi& codim_V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       Candidates& candidates,
+       double inflation_radius = 0,
+       const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
        const std::function<bool(size_t, size_t)>& can_collide =
            [](size_t, size_t) { return true; });
    

@@ -55,7 +55,7 @@ Classes
 
 - :ref:`exhale_struct_structipc_1_1_candidates`
 
-- :ref:`exhale_struct_structipc_1_1_collision_candidate`
+- :ref:`exhale_struct_structipc_1_1_continuous_collision_candidate`
 
 - :ref:`exhale_struct_structipc_1_1_edge_edge_candidate`
 

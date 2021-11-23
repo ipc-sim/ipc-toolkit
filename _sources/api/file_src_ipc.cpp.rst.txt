@@ -91,23 +91,29 @@ Functions
 
 - :ref:`exhale_function_namespaceipc_1afb994c0d9343c524478df41f033aff6c`
 
-- :ref:`exhale_function_namespaceipc_1a011b169f710246773493bd204a9a18a4`
+- :ref:`exhale_function_namespaceipc_1a395d97dcb5216ea6ebfa7e832db3ab4d`
+
+- :ref:`exhale_function_namespaceipc_1aaea7f20368253682b55b9b2b9a893390`
 
 - :ref:`exhale_function_namespaceipc_1ae0e18d96948dbeda4f74e2526f04db16`
 
 - :ref:`exhale_function_namespaceipc_1aa8654fc09b4e744c1d192fda02a3a134`
 
-- :ref:`exhale_function_namespaceipc_1a975169ca4a2c7215248fafa53ee6e5bb`
+- :ref:`exhale_function_namespaceipc_1a62e3565e3ef88eadecbc97e815b4a951`
 
-- :ref:`exhale_function_namespaceipc_1a4e511bee6f5987468da886e9c11f40a6`
+- :ref:`exhale_function_namespaceipc_1a5fcf1ee6f365e0a68304cf958946912a`
+
+- :ref:`exhale_function_namespaceipc_1a975169ca4a2c7215248fafa53ee6e5bb`
 
 - :ref:`exhale_function_namespaceipc_1ac79eb69e56e161ad3155e798d20d1450`
 
 - :ref:`exhale_function_namespaceipc_1a1a55503a07bdaf129882fe00491a3f7b`
 
-- :ref:`exhale_function_namespaceipc_1afebb3efe19b31f7335f92e58afdf8987`
+- :ref:`exhale_function_namespaceipc_1a4d9b593fa9aadb45da0b711b40950d3f`
 
 - :ref:`exhale_function_namespaceipc_1a40d1f11cffdfdca899e38eea808da876`
+
+- :ref:`exhale_function_namespaceipc_1ae9a804ad495bfa539fb36b8dbd5eb8a1`
 
 
 Defines

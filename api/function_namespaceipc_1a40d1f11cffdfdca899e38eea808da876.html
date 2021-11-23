@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Function ipc::is_step_point_plane_collision_free" href="function_namespaceipc_1a370a73a6594a6b27ecc2abf4535e3e7f.html" />
-    <link rel="prev" title="Function ipc::is_step_collision_free(const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const BroadPhaseMethod&amp;, const double, const long, const bool, const std::function&lt;bool(size_t, size_t)&gt;&amp;)" href="function_namespaceipc_1afebb3efe19b31f7335f92e58afdf8987.html" />
+    <link rel="prev" title="Function ipc::is_step_collision_free(const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::VectorXi&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const BroadPhaseMethod&amp;, const double, const long, const std::function&lt;bool(size_t, size_t)&gt;&amp;)" href="function_namespaceipc_1ae9a804ad495bfa539fb36b8dbd5eb8a1.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -49,13 +49,10 @@
 <dt class="sig sig-object cpp" id="_CPPv4N3ipc22is_step_collision_freeERK10CandidatesRKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiEKdKl">
 <span class="target" id="namespaceipc_1a40d1f11cffdfdca899e38eea808da876"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">ipc</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">is_step_collision_free</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="structipc_1_1_candidates.html#_CPPv4N3ipc10CandidatesE" title="ipc::Candidates"><span class="n"><span class="pre">Candidates</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">candidates</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXd</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">V0</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXd</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">V1</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">E</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">F</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">tolerance</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">1e-6</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">long</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">max_iterations</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">1e7</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3ipc22is_step_collision_freeERK10CandidatesRKN5Eigen8MatrixXdERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiEKdKl" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Determine if the step is collision free from a set of candidates. </p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Assumes the trajectory is linear. </p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
 <p>V can either be the surface vertices or the entire mesh vertices. The edges and face should be only for the surface elements.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Assumes the trajectory is linear.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -131,7 +128,7 @@
   <li><a href="../index.html">Documentation overview</a><ul>
   <li><a href="../api.html">API</a><ul>
   <li><a href="unabridged_api.html">Full API</a><ul>
-      <li>Previous: <a href="function_namespaceipc_1afebb3efe19b31f7335f92e58afdf8987.html" title="previous chapter">Function ipc::is_step_collision_free(const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const BroadPhaseMethod&amp;, const double, const long, const bool, const std::function&lt;bool(size_t, size_t)&gt;&amp;)</a></li>
+      <li>Previous: <a href="function_namespaceipc_1ae9a804ad495bfa539fb36b8dbd5eb8a1.html" title="previous chapter">Function ipc::is_step_collision_free(const Eigen::MatrixXd&amp;, const Eigen::MatrixXd&amp;, const Eigen::VectorXi&amp;, const Eigen::MatrixXi&amp;, const Eigen::MatrixXi&amp;, const BroadPhaseMethod&amp;, const double, const long, const std::function&lt;bool(size_t, size_t)&gt;&amp;)</a></li>
       <li>Next: <a href="function_namespaceipc_1a370a73a6594a6b27ecc2abf4535e3e7f.html" title="next chapter">Function ipc::is_step_point_plane_collision_free</a></li>
   </ul></li>
   </ul></li>

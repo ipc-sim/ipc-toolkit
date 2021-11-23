@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1a5fcf1ee6f365e0a68304cf958946912a:
+
+Function ipc::construct_constraint_set(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::VectorXi&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double, Constraints&, const Eigen::MatrixXi&, const double, const BroadPhaseMethod&, const std::function<bool(size_t, size_t)>&)
+=====================================================================================================================================================================================================================================================================================================
+
+- Defined in :ref:`file_src_ipc.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::construct_constraint_set(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::VectorXi&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double, Constraints&, const Eigen::MatrixXi&, const double, const BroadPhaseMethod&, const std::function<bool(size_t, size_t)>&)

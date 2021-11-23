@@ -97,15 +97,36 @@ Program Listing for File ipc.cpp
        const Eigen::MatrixXi& F2E,
        const double dmin,
        const BroadPhaseMethod& method,
-       const bool ignore_codimensional_vertices,
        const std::function<bool(size_t, size_t)>& can_collide)
    {
        double inflation_radius = (dhat + dmin) / 1.99; // Conservative inflation
    
        Candidates candidates;
        construct_collision_candidates(
-           V, E, F, candidates, inflation_radius, method,
-           ignore_codimensional_vertices, can_collide);
+           V, E, F, candidates, inflation_radius, method, can_collide);
+   
+       construct_constraint_set(
+           candidates, V_rest, V, E, F, dhat, constraint_set, F2E, dmin);
+   }
+   
+   void construct_constraint_set(
+       const Eigen::MatrixXd& V_rest,
+       const Eigen::MatrixXd& V,
+       const Eigen::VectorXi& codim_V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const double dhat,
+       Constraints& constraint_set,
+       const Eigen::MatrixXi& F2E,
+       const double dmin,
+       const BroadPhaseMethod& method,
+       const std::function<bool(size_t, size_t)>& can_collide)
+   {
+       double inflation_radius = (dhat + dmin) / 1.99; // Conservative inflation
+   
+       Candidates candidates;
+       construct_collision_candidates(
+           V, codim_V, E, F, candidates, inflation_radius, method, can_collide);
    
        construct_constraint_set(
            candidates, V_rest, V, E, F, dhat, constraint_set, F2E, dmin);
@@ -433,14 +454,34 @@ Program Listing for File ipc.cpp
        const BroadPhaseMethod& method,
        const double tolerance,
        const long max_iterations,
-       const bool ignore_codimensional_vertices,
        const std::function<bool(size_t, size_t)>& can_collide)
    {
        // Broad phase
        Candidates candidates;
        construct_collision_candidates(
-           V0, V1, E, F, candidates, /*inflation_radius=*/0, method,
-           ignore_codimensional_vertices, can_collide);
+           V0, V1, E, F, candidates, /*inflation_radius=*/0, method, can_collide);
+   
+       // Narrow phase
+       return is_step_collision_free(
+           candidates, V0, V1, E, F, tolerance, max_iterations);
+   }
+   
+   bool is_step_collision_free(
+       const Eigen::MatrixXd& V0,
+       const Eigen::MatrixXd& V1,
+       const Eigen::VectorXi& codim_V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const BroadPhaseMethod& method,
+       const double tolerance,
+       const long max_iterations,
+       const std::function<bool(size_t, size_t)>& can_collide)
+   {
+       // Broad phase
+       Candidates candidates;
+       construct_collision_candidates(
+           V0, V1, codim_V, E, F, candidates, /*inflation_radius=*/0, method,
+           can_collide);
    
        // Narrow phase
        return is_step_collision_free(
@@ -481,14 +522,34 @@ Program Listing for File ipc.cpp
        const BroadPhaseMethod& method,
        const double tolerance,
        const long max_iterations,
-       const bool ignore_codimensional_vertices,
        const std::function<bool(size_t, size_t)>& can_collide)
    {
        // Broad phase
        Candidates candidates;
        construct_collision_candidates(
-           V0, V1, E, F, candidates, /*inflation_radius=*/0, method,
-           ignore_codimensional_vertices, can_collide);
+           V0, V1, E, F, candidates, /*inflation_radius=*/0, method, can_collide);
+   
+       // Narrow phase
+       return compute_collision_free_stepsize(
+           candidates, V0, V1, E, F, tolerance, max_iterations);
+   }
+   
+   double compute_collision_free_stepsize(
+       const Eigen::MatrixXd& V0,
+       const Eigen::MatrixXd& V1,
+       const Eigen::VectorXi& codim_V,
+       const Eigen::MatrixXi& E,
+       const Eigen::MatrixXi& F,
+       const BroadPhaseMethod& method,
+       const double tolerance,
+       const long max_iterations,
+       const std::function<bool(size_t, size_t)>& can_collide)
+   {
+       // Broad phase
+       Candidates candidates;
+       construct_collision_candidates(
+           V0, V1, codim_V, E, F, candidates, /*inflation_radius=*/0, method,
+           can_collide);
    
        // Narrow phase
        return compute_collision_free_stepsize(

@@ -28,17 +28,17 @@ Classes and Structs
 .. toctree::
    :maxdepth: 5
 
-   structipc_1_1_collision_candidate.rst
-
-.. toctree::
-   :maxdepth: 5
-
    structipc_1_1_collision_constraint.rst
 
 .. toctree::
    :maxdepth: 5
 
    structipc_1_1_constraints.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   structipc_1_1_continuous_collision_candidate.rst
 
 .. toctree::
    :maxdepth: 5
@@ -256,7 +256,7 @@ Functions
 .. toctree::
    :maxdepth: 5
 
-   function_namespaceipc_1aa235af02e5089cba0935ea471b28211c.rst
+   function_namespaceipc_1acb2ac1c47a38fcdcf9266ad73f0578bb.rst
 
 .. toctree::
    :maxdepth: 5
@@ -301,7 +301,12 @@ Functions
 .. toctree::
    :maxdepth: 5
 
-   function_namespaceipc_1a011b169f710246773493bd204a9a18a4.rst
+   function_namespaceipc_1aaea7f20368253682b55b9b2b9a893390.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   function_namespaceipc_1a395d97dcb5216ea6ebfa7e832db3ab4d.rst
 
 .. toctree::
    :maxdepth: 5
@@ -341,17 +346,42 @@ Functions
 .. toctree::
    :maxdepth: 5
 
-   function_namespaceipc_1a518bc1d5a6fe1e42856d755be7b3e511.rst
+   function_namespaceipc_1affba1e99f3ee95a4f8f6c7ac382b54a7.rst
 
 .. toctree::
    :maxdepth: 5
 
-   function_namespaceipc_1abd49b68c284149e9dff233718a58b66d.rst
+   function_namespaceipc_1ab6fd97cb93404200460ba0b7bfb464d0.rst
 
 .. toctree::
    :maxdepth: 5
 
-   function_namespaceipc_1a4e511bee6f5987468da886e9c11f40a6.rst
+   function_namespaceipc_1aa90bda61dd84198e6f3accb5b29d6bd0.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   function_namespaceipc_1a905ea243eaa7e92f4d030bd4050958fb.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   function_namespaceipc_1a3368285cc36ec741754b342b81593a1a.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   function_namespaceipc_1a2f2ae2da7c107783b27b84ce54060a33.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   function_namespaceipc_1a62e3565e3ef88eadecbc97e815b4a951.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   function_namespaceipc_1a5fcf1ee6f365e0a68304cf958946912a.rst
 
 .. toctree::
    :maxdepth: 5
@@ -386,12 +416,12 @@ Functions
 .. toctree::
    :maxdepth: 5
 
-   function_namespaceipc_1a1f5cbf33567e4ebaaaa6b048c34b5307.rst
+   function_namespaceipc_1a812f58415223f9bb95198f4ecf951d6b.rst
 
 .. toctree::
    :maxdepth: 5
 
-   function_namespaceipc_1a473ebbb23cc3ba859e0e35e298e9f4e4.rst
+   function_namespaceipc_1aaefe5f68b4e549f6230b1fb5ac7be48a.rst
 
 .. toctree::
    :maxdepth: 5
@@ -611,7 +641,12 @@ Functions
 .. toctree::
    :maxdepth: 5
 
-   function_namespaceipc_1afebb3efe19b31f7335f92e58afdf8987.rst
+   function_namespaceipc_1a4d9b593fa9aadb45da0b711b40950d3f.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   function_namespaceipc_1ae9a804ad495bfa539fb36b8dbd5eb8a1.rst
 
 .. toctree::
    :maxdepth: 5

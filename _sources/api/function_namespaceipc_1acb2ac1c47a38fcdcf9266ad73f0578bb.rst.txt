@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1acb2ac1c47a38fcdcf9266ad73f0578bb:
+
+Function ipc::build_ignore_vertices
+===================================
+
+- Defined in :ref:`file_src_broad_phase_broad_phase.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::build_ignore_vertices(size_t, const Eigen::VectorXi&, const Eigen::MatrixXi&, std::vector<bool>&)

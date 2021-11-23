@@ -1,0 +1,13 @@
+.. _exhale_function_namespaceipc_1aaefe5f68b4e549f6230b1fb5ac7be48a:
+
+Function ipc::detect_collision_candidates_brute_force(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, Candidates&, bool, bool, bool, bool, double, const std::function<bool(size_t, size_t)>&)
+==============================================================================================================================================================================================================================================
+
+- Defined in :ref:`file_src_broad_phase_brute_force.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ipc::detect_collision_candidates_brute_force(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::MatrixXi&, const Eigen::MatrixXi&, Candidates&, bool, bool, bool, bool, double, const std::function<bool(size_t, size_t)>&)
