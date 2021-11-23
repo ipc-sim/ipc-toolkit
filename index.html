@@ -17,6 +17,7 @@
     <script src="_static/doctools.js"></script>
     <script src="_static/collapsible-lists/js/CollapsibleLists.compressed.js"></script>
     <script src="_static/collapsible-lists/js/apply-collapsible-lists.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Changelog" href="changelog.html" />
@@ -91,6 +92,8 @@ The following libraries are used in this project:</p>
 <li><p><a class="reference external" href="https://github.com/wjakob/tbb">TBB</a>: parallelization</p></li>
 <li><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Tight-Inclusion">Tight Inclusion CCD</a>: correct (conservative) continuous collision detection between triangle meshes in 3D</p></li>
 </ul>
+<section id="optional">
+<h3>Optional<a class="headerlink" href="#optional" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/evouga/collisiondetection">Etienne Vouga’s Collision Detection Library</a>: continuous collision detection between triangle meshes in 3D</p>
 <ul>
@@ -115,6 +118,7 @@ The following libraries are used in this project:</p>
 </li>
 </ul>
 </section>
+</section>
 <section id="a-name-unit-tests-a-unit-tests">
 <h2><span class="raw-html-m2r"><a name="unit_tests"></a></span>Unit Tests<a class="headerlink" href="#a-name-unit-tests-a-unit-tests" title="Permalink to this headline">¶</a></h2>
 <p>We provide unit tests for ensuring the correctness of our algorithmic pieces.
@@ -124,14 +128,23 @@ CMake.</p>
 <section id="python-bindings">
 <h2>Python Bindings<a class="headerlink" href="#python-bindings" title="Permalink to this headline">¶</a></h2>
 <p>We provide Python bindings for functions in the toolkit using <a class="reference external" href="https://github.com/pybind/pybind11">pybind11</a>.</p>
+<section id="build-and-install">
+<h3>Build and Install<a class="headerlink" href="#build-and-install" title="Permalink to this headline">¶</a></h3>
 <p>Currently, the bindings must be built from scratch. The easiest way to do this is to use the <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> script which uses <code class="docutils literal notranslate"><span class="pre">setuptools</span></code>. For example:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python setup.py install
 </pre></div>
 </div>
 <p>will build the library and python bindings and then install them on your system.</p>
 <p>You can test the install was successful by doing <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-c</span> <span class="pre">&quot;import</span> <span class="pre">ipctk&quot;</span></code>.</p>
+</section>
+<section id="examples">
+<h3>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h3>
 <p>We provide a Jupyter notebook (<code class="docutils literal notranslate"><span class="pre">python/example.ipynb</span></code>) with some simple examples.</p>
+</section>
+<section id="missing-functions">
+<h3>Missing Functions<a class="headerlink" href="#missing-functions" title="Permalink to this headline">¶</a></h3>
 <p>The Python bindings are still a work in progress, and functions are added on an as-needed basis. If a function is missing that you would like, please create an issue on GitHub.</p>
+</section>
 </section>
 <section id="contributing">
 <h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
@@ -173,7 +186,7 @@ CMake.</p>
 
 
 
-<p class="blurb">A set of reusable functions to integrate IPC into an existing simulation</p>
+<p class="blurb">A set of reusable functions to integrate IPC into an existing simulation.</p>
 
 
 

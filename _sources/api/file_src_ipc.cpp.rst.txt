@@ -97,9 +97,9 @@ Functions
 
 - :ref:`exhale_function_namespaceipc_1aa8654fc09b4e744c1d192fda02a3a134`
 
-- :ref:`exhale_function_namespaceipc_1a4e511bee6f5987468da886e9c11f40a6`
-
 - :ref:`exhale_function_namespaceipc_1a975169ca4a2c7215248fafa53ee6e5bb`
+
+- :ref:`exhale_function_namespaceipc_1a4e511bee6f5987468da886e9c11f40a6`
 
 - :ref:`exhale_function_namespaceipc_1ac79eb69e56e161ad3155e798d20d1450`
 

@@ -19,6 +19,14 @@
 
     api
 
+.. .. toctree::
+..     :hidden:
+..     :maxdepth: 2
+..     :caption: Python
+..
+..     python
+..     example
+
 .. mdinclude:: ../../README.md
 
 Indices and tables
