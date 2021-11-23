@@ -32,8 +32,9 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
     igl::edges(F, E);
 
     BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-        BroadPhaseMethod::SPATIAL_HASH);
+        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID
+        //,BroadPhaseMethod::SPATIAL_HASH
+    );
 
     double tolerance = 1e-6;
     int max_iterations = 1e7;

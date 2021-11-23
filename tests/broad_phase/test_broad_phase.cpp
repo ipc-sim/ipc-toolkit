@@ -38,6 +38,10 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase]")
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
         BroadPhaseMethod::SPATIAL_HASH);
 
+    if (method == BroadPhaseMethod::SPATIAL_HASH && ignore_internal_vertices) {
+        return; // Not implemented
+    }
+
     double tolerance = 1e-6;
     int max_iterations = 1e7;
 
