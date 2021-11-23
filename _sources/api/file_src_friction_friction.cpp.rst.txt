@@ -81,9 +81,9 @@ Functions
 
 - :ref:`exhale_function_namespaceipc_1afac187c44c4fec78b674c72c98c4298c`
 
-- :ref:`exhale_function_namespaceipc_1aafa33fda4c5ce4dbdbaef6dcb949fdce`
+- :ref:`exhale_function_namespaceipc_1a5049006b62dc3e4bf20ec32519cd23dd`
 
 - :ref:`exhale_function_namespaceipc_1a75c5c43f72a2340f33b777d20854eaf5`
 
-- :ref:`exhale_function_namespaceipc_1a5049006b62dc3e4bf20ec32519cd23dd`
+- :ref:`exhale_function_namespaceipc_1aafa33fda4c5ce4dbdbaef6dcb949fdce`
 
