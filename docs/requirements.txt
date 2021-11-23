@@ -3,3 +3,5 @@ sphinx-sitemap
 breathe
 exhale
 m2r2
+nbsphinx
+pandoc

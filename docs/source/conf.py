@@ -40,7 +40,8 @@ extensions = [
     'sphinx.ext.inheritance_diagram',
     'breathe',
     'exhale',
-    'm2r2'
+    'm2r2',
+    'nbsphinx'
 ]
 
 # Setup the breathe extension
@@ -80,7 +81,6 @@ templates_path = ['_templates']
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -91,7 +91,7 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "description": "A set of reusable functions to integrate IPC into an existing simulation",
+    "description": "A set of reusable functions to integrate IPC into an existing simulation.",
     "logo": "teaser@0_3.png",
     "github_banner": True,
     "github_button": True,

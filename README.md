@@ -12,7 +12,7 @@ For a complete list of changes, please see <a href="https://github.com/ipc-sim/i
 
 ## Integrating the IPC Toolkit into your project
 
-#### 1. Add it to CMake
+### 1. Add it to CMake
 
 The easiest way to add the toolkit to an existing CMake project is to download it through CMake.
 CMake provides functionality for doing this called [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html) (requires CMake ≥ 3.14).
@@ -39,7 +39,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ipc::toolkit)
 
 where `PROJECT_NAME` is the name of your project.
 
-#### 2. Using the toolkit
+### 2. Using the toolkit
 
 The main functionality is provided in the `ipc.hpp` header. Use the prefix directory `ipc` to include all header files (e.g. `#include <ipc/ipc.hpp>`).
 
