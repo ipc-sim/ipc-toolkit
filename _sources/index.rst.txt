@@ -1,31 +1,30 @@
 .. toctree::
     :hidden:
-    :maxdepth: 2
+    :maxdepth: 4
     :caption: General
 
     changelog
 
 .. toctree::
     :hidden:
-    :maxdepth: 2
-    :caption: Developers
+    :maxdepth: 4
+    :caption: C++
 
-    contributing
+    c++
 
 .. toctree::
     :hidden:
-    :maxdepth: 2
-    :caption: API Documentation
+    :maxdepth: 4
+    :caption: Python
 
-    api
+    python
 
-.. .. toctree::
-..     :hidden:
-..     :maxdepth: 2
-..     :caption: Python
-..
-..     python
-..     example
+.. toctree::
+    :hidden:
+    :maxdepth: 4
+    :caption: Developers
+
+    contributing
 
 .. mdinclude:: ../../README.md
 

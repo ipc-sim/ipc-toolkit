@@ -1,0 +1,16 @@
+dl.function, dl.class, dl.enum {
+    margin-bottom: 1.25em;
+    padding-bottom: 1.25em;
+    border-bottom: solid black 1px;
+}
+
+dt.py {
+    margin-bottom: 0.5em;
+}
+
+/*
+em.sig-param::before {
+    content: "\A    ";
+    white-space: pre;
+}
+*/
