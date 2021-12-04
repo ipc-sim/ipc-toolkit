@@ -40,9 +40,7 @@ jobs:
 
       - name: Dependencies (Linux)
         if: runner.os == 'Linux'
-        run: |
-            sudo apt-get install \
-            ccache
+        run: sudo apt-get install ccache
 
       - name: Dependencies (macOS)
         if: runner.os == 'macOS'

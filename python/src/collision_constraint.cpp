@@ -19,14 +19,12 @@ void define_collision_constraint_classes(py::module_& m)
             R"ipc_Qu8mg5v7(
             Get the indices of the vertices
 
-            Parameters
-            ----------
-            E : Edge matrix of mesh
-            F : Face matrix of mesh
+            Parameters:
+                E: edge matrix of mesh
+                F: face matrix of mesh
 
-            Returns
-            -------
-            List of vertex indices
+            Returns:
+                List of vertex indices
             )ipc_Qu8mg5v7",
             py::arg("E"), py::arg("F"))
         .def(

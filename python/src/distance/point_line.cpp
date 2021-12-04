@@ -20,17 +20,17 @@ void define_point_line_distance_functions(py::module_& m)
         },
         R"ipc_Qu8mg5v7(
         Compute the distance between a point and line in 2D or 3D.
-        Parameters
-        ----------
-        p : The point
-        e0 : The first vertex of the edge defining the line
-        e1 : The second vertex of the edge defining the line
-        Returns
-        -------
-        The distance between the point and line.
-        Notes
-        -----
-        The distance is actually squared distance.
+
+        Parameters:
+            p: point
+            e0: first vertex of the edge defining the line
+            e1: second vertex of the edge defining the line
+
+        Returns:
+            The distance between the point and line.
+
+        Note:
+            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"));
 
@@ -46,17 +46,16 @@ void define_point_line_distance_functions(py::module_& m)
         },
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a point and line.
-        Parameters
-        ----------
-        p : The point
-        e0 : The first vertex of the edge defining the line.
-        e1 : The second vertex of the edge defining the line.
-        Returns
-        -------
-        The gradient of the distance wrt p, e0, and e1.
-        Notes
-        -----
-        The distance is actually squared distance.
+        Parameters:
+            p: point
+            e0: first vertex of the edge defining the line.
+            e1: second vertex of the edge defining the line.
+
+        Returns:
+            The gradient of the distance wrt p, e0, and e1.
+
+        Note:
+            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"));
 
@@ -72,17 +71,16 @@ void define_point_line_distance_functions(py::module_& m)
         },
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and line.
-        Parameters
-        ----------
-        p : The point
-        e0 : The first vertex of the edge defining the line
-        e1 : The second vertex of the edge defining the line
-        Returns
-        -------
-        The hessian of the distance wrt p, e0, and e1.
-        Notes
-        -----
-        The distance is actually squared distance.
+        Parameters:
+            p: point
+            e0: first vertex of the edge defining the line
+            e1: second vertex of the edge defining the line
+
+        Returns:
+            The hessian of the distance wrt p, e0, and e1.
+
+        Note:
+            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"));
 }

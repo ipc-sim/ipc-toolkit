@@ -4,6 +4,8 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import subprocess
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -21,25 +23,25 @@ project = 'IPC Toolkit'
 copyright = '2020, IPC Group'
 author = 'IPC Group'
 
-
 # -- General configuration ---------------------------------------------------
+
+# Doxygen
+subprocess.call('doxygen Doxyfile', shell=True)
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.todo',
-    'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    # 'sphinx_sitemap',
     'sphinx.ext.inheritance_diagram',
     'breathe',
-    'exhale',
     'm2r2',
     'nbsphinx'
 ]
@@ -50,22 +52,6 @@ breathe_projects = {
 }
 breathe_default_project = project
 breathe_default_members = ('members', 'undoc-members')
-
-# Setup the exhale extension
-exhale_args = {
-    # These arguments are required
-    "containmentFolder":     "./api",
-    "rootFileName":          "library_root.rst",
-    "rootFileTitle":         "IPC Toolkit API",
-    "afterTitleDescription": "A set of reusable functions to integrate IPC into an existing simulation.",
-    "doxygenStripFromPath":  "../..",
-    # Suggested optional arguments
-    "createTreeView":        True,
-    # TIP: if using the sphinx-bootstrap-theme, you need
-    # "treeViewIsBootstrap": True,
-    "exhaleExecutesDoxygen": True,
-    "exhaleUseDoxyfile":    True,
-}
 
 # Tell sphinx what the primary language being documented is.
 primary_domain = 'cpp'
@@ -79,7 +65,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -91,16 +77,24 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    "description": "A set of reusable functions to integrate IPC into an existing simulation.",
+    "description": ("A set of reusable functions to integrate IPC into an "
+                    "existing simulation."),
     "logo": "teaser@0_3.png",
-    "github_banner": True,
+    "logo_name": True,
+    "github_banner": False,
     "github_button": True,
     "github_repo": "ipc-toolkit",
     "github_user": "ipc-sim",
     "github_type": "star",
+    "fixed_sidebar": False,
+    "page_width": "1200px",
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# These paths are either relative to html_static_path
+# or fully qualified paths (eg. https://...)
+html_css_files = ['css/custom.css']

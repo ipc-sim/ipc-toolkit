@@ -12,18 +12,15 @@ void define_barrier_functions(py::module_& m)
         R"ipc_Qu8mg5v7(
         Function that grows to infinity as d approaches 0 from the right.
 
-        Parameters
-        ----------
-        d : The distance
-        dhat : Activation distance of the barrier
+        .. math:: b(d) = -(d-\hat{d})^2\ln\left(\frac{d}{\hat{d}}\right)
 
-        Returns
-        -------
-        The value of the barrier function at d.
+        Parameters:
+            d: distance
+            dhat: activation distance of the barrier
 
-        Notes
-        -----
-        .. math:: b(d) = -(d-\hat{d})^2\ln(\frac{d}{\hat{d}})
+        Returns:
+            The value of the barrier function at d.
+
         )ipc_Qu8mg5v7",
         py::arg("d"), py::arg("dhat"));
 
@@ -32,18 +29,14 @@ void define_barrier_functions(py::module_& m)
         R"ipc_Qu8mg5v7(
         Derivative of the barrier function.
 
-        Parameters
-        ----------
-        d : The distance
-        dhat : Activation distance of the barrier
+        .. math:: b'(d) = (\hat{d}-d) \left( 2\ln\left( \frac{d}{\hat{d}} \right) - \frac{\hat{d}}{d} + 1\right)
 
-        Returns
-        -------
-        The derivative of the barrier wrt d.
+        Parameters:
+            d: distance
+            dhat: activation distance of the barrier
 
-        Notes
-        -----
-        .. math:: b(d) = (\hat{d}-d)(2\ln(\frac{d}{\hat{d}}) - \frac{\hat{d}}{d}) + 1)
+        Returns:
+            The derivative of the barrier wrt d.
         )ipc_Qu8mg5v7",
         py::arg("d"), py::arg("dhat"));
 
@@ -52,18 +45,14 @@ void define_barrier_functions(py::module_& m)
         R"ipc_Qu8mg5v7(
         Second derivative of the barrier function.
 
-        Parameters
-        ----------
-        d : The distance
-        dhat : Activation distance of the barrier
+        .. math:: b''(d) = \left( \frac{\hat{d}}{d} + 2 \right) \frac{\hat{d}}{d} - 2\ln\left( \frac{d}{\hat{d}} \right) - 3
 
-        Returns
-        -------
-        The second derivative of the barrier wrt d.
+        Parameters:
+            d: distance
+            dhat: activation distance of the barrier
 
-        Notes
-        -----
-        .. math:: b(d) = (\frac{\hat{d}}{d} + 2)\frac{\hat{d}}{d} - 2\ln(\frac{d}{\hat{d}}) - 3
+        Returns:
+            The second derivative of the barrier wrt d.
         )ipc_Qu8mg5v7",
         py::arg("d"), py::arg("dhat"));
 }

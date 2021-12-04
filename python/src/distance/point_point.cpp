@@ -21,18 +21,15 @@ void define_point_point_distance_functions(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the distance between two points.
 
-        Parameters
-        ----------
-        p0 : The first point
-        p1 : The second point
+        Parameters:
+            p0: first point
+            p1: second point
 
-        Returns
-        -------
-        The distance between p0 and p1
+        Returns:
+            The distance between p0 and p1
 
-        Notes
-        -----
-        The distance is actually squared distance.
+        Note:
+            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p0"), py::arg("p1"));
 
@@ -48,18 +45,15 @@ void define_point_point_distance_functions(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between two points.
 
-        Parameters
-        ----------
-        p0 : The first point
-        p1 : The second point
+        Parameters:
+            p0: first point
+            p1: second point
 
-        Returns
-        -------
-        The gradient of the distance wrt p0 and p1.
+        Returns:
+            The gradient of the distance wrt p0 and p1.
 
-        Notes
-        -----
-        The distance is actually squared distance.
+        Note:
+            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p0"), py::arg("p1"));
 
@@ -75,18 +69,15 @@ void define_point_point_distance_functions(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and point.
 
-        Parameters
-        ----------
-        p0 : The first point
-        p1 : The second point
+        Parameters:
+            p0: first point
+            p1: second point
 
-        Returns
-        -------
-        The hessian of the distance wrt p0 and p1.
+        Returns:
+            The hessian of the distance wrt p0 and p1.
 
-        Notes
-        -----
-        The distance is actually squared distance.
+        Note:
+            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p0"), py::arg("p1"));
 }

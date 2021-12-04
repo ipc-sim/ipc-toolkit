@@ -27,7 +27,11 @@ jobs:
         run: |
           brew install doxygen sphinx-doc
           python -m pip install --upgrade pip
+          pip install -r requirements.txt
           pip install -r docs/requirements.txt
+
+      - name: Build ipctk
+        run: python setup.py install
 
       - name: Build docs
         run: |

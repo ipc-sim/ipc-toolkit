@@ -163,8 +163,12 @@ template <typename T> T edge_edge_mollifier_hessian(const T& x, double eps_x)
 ///
 /// This helps smooth the non-smoothness at close to parallel edges.
 ///
-/// @param ea0,ea1 The points of the first edge.
-/// @param eb0,eb1 The points of the second edge.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @param eps_x Mollifier activation threshold.
+/// @return The mollifier coefficient to premultiply the edge-edge distance.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -190,6 +194,13 @@ inline auto edge_edge_mollifier(
     }
 }
 
+/// @brief Compute the gradient of the mollifier for the edge-edge distance.
+/// @param[in] ea0 The first vertex of the first edge.
+/// @param[in] ea1 The second vertex of the first edge.
+/// @param[in] eb0 The first vertex of the second edge.
+/// @param[in] eb1 The second vertex of the second edge.
+/// @param eps_x[in] Mollifier activation threshold.
+/// @param[out] grad The gradient of the mollifier.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -220,6 +231,13 @@ void edge_edge_mollifier_gradient(
     }
 }
 
+/// @brief Compute the hessian of the mollifier for the edge-edge distance.
+/// @param[in] ea0 The first vertex of the first edge.
+/// @param[in] ea1 The second vertex of the first edge.
+/// @param[in] eb0 The first vertex of the second edge.
+/// @param[in] eb1 The second vertex of the second edge.
+/// @param eps_x[in] Mollifier activation threshold.
+/// @param[out] hess The hessian of the mollifier.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -261,10 +279,10 @@ void edge_edge_mollifier_hessian(
 ///
 /// This values is computed based on the edges at rest length.
 ///
-/// @param ea0 The first vertex of the first edge.
-/// @param ea1 The second vertex of the first edge.
-/// @param eb0 The first vertex of the second edge.
-/// @param eb1 The second vertex of the second edge.
+/// @param ea0_rest The rest position of the first vertex of the first edge.
+/// @param ea1_rest The rest position of the second vertex of the first edge.
+/// @param eb0_rest The rest position of the first vertex of the second edge.
+/// @param eb1_rest The rest position of the second vertex of the second edge.
 /// @return Threshold for edge-edge mollification.
 template <
     typename DerivedEA0,

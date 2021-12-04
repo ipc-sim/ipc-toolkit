@@ -27,24 +27,17 @@ void define_point_edge_distance_functions(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the distance between a point and edge in 2D or 3D.
 
-        Parameters
-        ----------
-        p : The point
-        e0 : The first vertex of the edge
-        e1 : The second vertex of the edge
-        dtype : (Optional) The point edge distance type to compute
+        Parameters:
+            p: point
+            e0: first vertex of the edge
+            e1: second vertex of the edge
+            dtype: (optional) point edge distance type to compute
 
-        Returns
-        -------
-        The distance between the point and edge
+        Returns:
+            The distance between the point and edge
 
-        See also
-        --------
-        point_edge_distance_type
-
-        Notes
-        -----
-        The distance is actually squared distance.
+        Note:
+            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"),
         py::arg("dtype") = py::none());
@@ -67,24 +60,17 @@ void define_point_edge_distance_functions(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a point and edge.
 
-        Parameters
-        ----------
-        p : The point
-        e0 : The first vertex of the edge
-        e1 : The second vertex of the edge
-        dtype : (Optional) The point edge distance type to compute
+        Parameters:
+            p: point
+            e0: first vertex of the edge
+            e1: second vertex of the edge
+            dtype: (optional) point edge distance type to compute
 
-        Returns
-        -------
-        The gradient of the distance wrt p, e0, and e1.
+        Returns:
+            The gradient of the distance wrt p, e0, and e1.
 
-        See also
-        --------
-        point_edge_distance_type
-
-        Notes
-        -----
-        The distance is actually squared distance.
+        Note:
+            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"),
         py::arg("dtype") = py::none());
@@ -107,24 +93,17 @@ void define_point_edge_distance_functions(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and edge.
 
-        Parameters
-        ----------
-        p : The point
-        e0 : The first vertex of the edge
-        e1 : The second vertex of the edge
-        dtype : (Optional) The point edge distance type to compute
+        Parameters:
+            p: point
+            e0: first vertex of the edge
+            e1: second vertex of the edge
+            dtype: (optional) point edge distance type to compute
 
-        Returns
-        -------
-        The hessian of the distance wrt p, e0, and e1.
+        Returns:
+            The hessian of the distance wrt p, e0, and e1.
 
-        See also
-        --------
-        point_edge_distance_type
-
-        Notes
-        -----
-        The distance is actually squared distance.
+        Note:
+            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"),
         py::arg("dtype") = py::none());

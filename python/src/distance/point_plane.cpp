@@ -19,20 +19,17 @@ void define_point_plane_distance_functions(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the distance between a point and a plane.
 
-        Parameters
-        ----------
-        p  : The point.
-        t0 : The first vertex of the triangle.
-        t1 : The second vertex of the triangle.
-        t2 : The third vertex of the triangle.
+        Parameters:
+            p : point
+            t0: first vertex of the triangle
+            t1: second vertex of the triangle
+            t2: third vertex of the triangle
 
-        Returns
-        -------
-        The distance between the point and plane.
+        Returns:
+            The distance between the point and plane.
 
-        Notes
-        -----
-        The distance is actually squared distance.
+        Note:
+            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t1"));
 
@@ -47,20 +44,17 @@ void define_point_plane_distance_functions(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a point and a plane.
 
-        Parameters
-        ----------
-        p  : The point
-        t0 : The first vertex of the triangle
-        t1 : The second vertex of the triangle
-        t2 : The third vertex of the triangle
+        Parameters:
+            p : point
+            t0: first vertex of the triangle
+            t1: second vertex of the triangle
+            t2: third vertex of the triangle
 
-        Returns
-        -------
-        The gradient of the distance wrt p, t0, t1, and t2.
+        Returns:
+            The gradient of the distance wrt p, t0, t1, and t2.
 
-        Notes
-        -----
-        The distance is actually squared distance.
+        Note:
+            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t1"));
 
@@ -75,20 +69,17 @@ void define_point_plane_distance_functions(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and a plane.
 
-        Parameters
-        ----------
-        p  : The point
-        t0 : The first vertex of the triangle
-        t1 : The second vertex of the triangle
-        t2 : The third vertex of the triangle
+        Parameters:
+            p : point
+            t0: first vertex of the triangle
+            t1: second vertex of the triangle
+            t2: third vertex of the triangle
 
-        Returns
-        -------
-        The hessian of the distance wrt p, t0, t1, and t2.
+        Returns:
+            The hessian of the distance wrt p, t0, t1, and t2.
 
-        Notes
-        -----
-        The distance is actually squared distance.
+        Note:
+            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t1"));
 }
