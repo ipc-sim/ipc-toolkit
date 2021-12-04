@@ -5,6 +5,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
 import subprocess
+import pathlib
 
 # -- Path setup --------------------------------------------------------------
 
@@ -26,7 +27,10 @@ author = 'IPC Group'
 # -- General configuration ---------------------------------------------------
 
 # Doxygen
-subprocess.call('doxygen Doxyfile', shell=True)
+pathlib.Path("../build/doxyoutput").mkdir(parents=True, exist_ok=True)
+if(not subprocess.run(["doxygen", "Doxyfile"])):
+    print("Doxygen failed! Exiting")
+    exit(1)
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
