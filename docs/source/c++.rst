@@ -19,6 +19,16 @@ Main Functions
 .. doxygenfunction:: compute_collision_free_stepsize(const Eigen::MatrixXd &V0, const Eigen::MatrixXd &V1, const Eigen::VectorXi &codim_V, const Eigen::MatrixXi &E, const Eigen::MatrixXi &F, const BroadPhaseMethod &method = BroadPhaseMethod::HASH_GRID, const double tolerance = 1e-6, const long max_iterations = 1e7, const std::function<bool(size_t, size_t)> &can_collide = [](size_t, size_t) { return true;})
 .. doxygenfunction:: compute_collision_free_stepsize(const Candidates &candidates, const Eigen::MatrixXd &V0, const Eigen::MatrixXd &V1, const Eigen::MatrixXi &E, const Eigen::MatrixXi &F, const double tolerance = 1e-6, const long max_iterations = 1e7)
 
+Collision Constraints
+---------------------
+
+.. doxygenstruct:: ipc::CollisionConstraint
+.. doxygenstruct:: ipc::VertexVertexConstraint
+.. doxygenstruct:: ipc::EdgeVertexConstraint
+.. doxygenstruct:: ipc::EdgeEdgeConstraint
+.. doxygenstruct:: ipc::FaceVertexConstraint
+.. doxygenstruct:: ipc::PlaneVertexConstraint
+.. doxygenstruct:: ipc::Constraints
 
 Barrier
 -----
@@ -117,6 +127,34 @@ Point-Triangle
 .. doxygenfunction:: point_triangle_distance_gradient(const Eigen::MatrixBase<DerivedP> &p, const Eigen::MatrixBase<DerivedT0> &t0, const Eigen::MatrixBase<DerivedT1> &t1, const Eigen::MatrixBase<DerivedT2> &t2, const PointTriangleDistanceType dtype, Eigen::PlainObjectBase<DerivedGrad> &grad)
 .. doxygenfunction:: point_triangle_distance_hessian(const Eigen::MatrixBase<DerivedP> &p, const Eigen::MatrixBase<DerivedT0> &t0, const Eigen::MatrixBase<DerivedT1> &t1, const Eigen::MatrixBase<DerivedT2> &t2, Eigen::PlainObjectBase<DerivedHess> &hess)
 .. doxygenfunction:: point_triangle_distance_hessian(const Eigen::MatrixBase<DerivedP> &p, const Eigen::MatrixBase<DerivedT0> &t0, const Eigen::MatrixBase<DerivedT1> &t1, const Eigen::MatrixBase<DerivedT2> &t2, const PointTriangleDistanceType dtype, Eigen::PlainObjectBase<DerivedHess> &hess)
+
+CCD
+---
+
+Broad-Phase
+^^^^^^^^^^^
+
+.. doxygenenum:: ipc::BroadPhaseMethod
+
+Candidates
+""""""""""
+
+.. doxygenstruct:: ipc::ContinuousCollisionCandidate
+
+.. doxygenstruct:: ipc::VertexVertexCandidate
+.. doxygenstruct:: ipc::EdgeVertexCandidate
+.. doxygenstruct:: ipc::EdgeEdgeCandidate
+.. doxygenstruct:: ipc::EdgeFaceCandidate
+.. doxygenstruct:: ipc::FaceVertexCandidate
+
+.. doxygenstruct:: ipc::Candidates
+
+Narrow-Phase
+^^^^^^^^^^^^
+
+.. doxygenvariable:: ipc::DEFAULT_CCD_TOLERANCE
+.. doxygenvariable:: ipc::DEFAULT_CCD_MAX_ITERATIONS
+.. doxygenvariable:: ipc::DEFAULT_CCD_CONSERVATIVE_RESCALING
 
 Utils
 -----
