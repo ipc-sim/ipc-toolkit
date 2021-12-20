@@ -28,4 +28,17 @@ double barrier_hessian(double d, double dhat)
     return (dhat_d + 2) * dhat_d - 2 * log(d / dhat) - 3;
 }
 
+double physical_barrier_gradient(double d, double dhat)
+{
+    if (d <= 0.0 || d >= dhat) {
+        return 0.0;
+    }
+    // b(d) = -d̂(d/d̂ - 1)²ln(d / d̂)
+    // b'(d) = -2d̂(d/d̂ - 1)/d̂ ln(d / d̂) + -d̂(d/d̂ - 1)² (1/d)
+    //       = -2(d/d̂ - 1)ln(d/d̂) - d̂(d/d̂ - 1)² (1/d)
+    //       = -(d/d̂ - 1)(2ln(d/d̂) + d̂/d(d/d̂ - 1))
+    const double tmp = (d / dhat - 1);
+    return -tmp * (2 * log(d / dhat) + dhat / d * tmp);
+}
+
 } // namespace ipc
