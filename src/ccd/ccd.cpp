@@ -26,45 +26,51 @@ bool ccd_strategy(
     const double conservative_rescaling,
     double& toi)
 {
-    static constexpr double SMALL_TOI = 1e-6;
+    return ccd(/*min_distance=*/0, /*no_zero_toi=*/false, toi);
+    //     static constexpr double SMALL_TOI = 1e-6;
 
-    if (initial_distance == 0) {
-        IPC_LOG(warn("Initial distance is 0, returning toi=0!"));
-        toi = 0;
-        return true;
-    }
+    //     if (initial_distance == 0) {
+    //         IPC_LOG(warn("Initial distance is 0, returning toi=0!"));
+    //         toi = 0;
+    //         return true;
+    //     }
 
-    double min_distance = (1.0 - conservative_rescaling) * initial_distance;
+    //     double min_distance = (1.0 - conservative_rescaling) *
+    //     initial_distance;
+    //     // #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+    //     // Tight Inclusion performs better when the minimum separation is
+    //     small
+    //     // min_distance = std::min(min_distance, 1e-4);
+    //     // #endif
+
+    //     assert(min_distance < initial_distance);
+
+    //     // Do not use no_zero_toi because the minimum distance is arbitrary
+    //     and can
+    //     // be removed if the query is challenging (i.e., produces small ToI).
+    //     bool is_impacting = ccd(min_distance, /*no_zero_toi=*/false, toi);
+
     // #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-    // Tight Inclusion performs better when the minimum separation is small
-    // min_distance = std::min(min_distance, 1e-4);
+    //     // Tight inclusion will have higher accuracy and better performance
+    //     if we
+    //     // shrink the minimum distance. The value 1e-10 is arbitrary.
+    //     while (is_impacting && toi < SMALL_TOI && min_distance > 1e-10) {
+    //         min_distance /= 10;
+    //         is_impacting = ccd(min_distance, /*no_zero_toi=*/false, toi);
+    //     }
     // #endif
 
-    assert(min_distance < initial_distance);
+    //     if (is_impacting && toi < SMALL_TOI) {
+    //         is_impacting = ccd(/*min_distance=*/0, /*no_zero_toi=*/true,
+    //         toi);
 
-    // Do not use no_zero_toi because the minimum distance is arbitrary and can
-    // be removed if the query is challenging (i.e., produces small ToI).
-    bool is_impacting = ccd(min_distance, /*no_zero_toi=*/false, toi);
+    //         if (is_impacting) {
+    //             toi *= conservative_rescaling;
+    //             assert(toi != 0);
+    //         }
+    //     }
 
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-    // Tight inclusion will have higher accuracy and better performance if we
-    // shrink the minimum distance. The value 1e-10 is arbitrary.
-    while (is_impacting && toi < SMALL_TOI && min_distance > 1e-10) {
-        min_distance /= 10;
-        is_impacting = ccd(min_distance, /*no_zero_toi=*/false, toi);
-    }
-#endif
-
-    if (is_impacting && toi < SMALL_TOI) {
-        is_impacting = ccd(/*min_distance=*/0, /*no_zero_toi=*/true, toi);
-
-        if (is_impacting) {
-            toi *= conservative_rescaling;
-            assert(toi != 0);
-        }
-    }
-
-    return is_impacting;
+    //     return is_impacting;
 }
 
 bool point_point_ccd(
