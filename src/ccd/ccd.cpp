@@ -88,8 +88,9 @@ bool point_point_ccd(
 
     double initial_distance = sqrt(point_point_distance(p0_t0, p1_t0));
 
-    double adjusted_tolerance = std::min(
-        INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+    double adjusted_tolerance = 1e-6; // std::min(
+                                      //  INITIAL_DISTANCE_TOLERANCE_SCALE *
+                                      //  initial_distance, tolerance);
 
     const auto ccd = [&](double min_distance, bool no_zero_toi,
                          double& toi) -> bool {
@@ -148,8 +149,9 @@ bool point_edge_ccd_2D(
 
     double initial_distance = sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
 
-    double adjusted_tolerance = std::min(
-        INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+    double adjusted_tolerance = 1e-6; // std::min(
+                                      //  INITIAL_DISTANCE_TOLERANCE_SCALE *
+                                      //  initial_distance, tolerance);
 
     const auto ccd = [&](double min_distance, bool no_zero_toi,
                          double& toi) -> bool {
@@ -189,8 +191,9 @@ bool point_edge_ccd_3D(
 
     double initial_distance = sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
 
-    double adjusted_tolerance = std::min(
-        INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+    double adjusted_tolerance = 1e-6; // std::min(
+                                      //  INITIAL_DISTANCE_TOLERANCE_SCALE *
+                                      //  initial_distance, tolerance);
 
     const auto ccd = [&](double min_distance, bool no_zero_toi,
                          double& toi) -> bool {
@@ -266,8 +269,9 @@ bool edge_edge_ccd(
     double initial_distance =
         sqrt(edge_edge_distance(ea0_t0, ea1_t0, eb0_t0, eb1_t0));
 
-    double adjusted_tolerance = std::min(
-        INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+    double adjusted_tolerance = 1e-6; // std::min(
+                                      //  INITIAL_DISTANCE_TOLERANCE_SCALE *
+                                      //  initial_distance, tolerance);
 
     const auto ccd = [&](double min_distance, bool no_zero_toi,
                          double& toi) -> bool {
@@ -313,8 +317,9 @@ bool point_triangle_ccd(
     double initial_distance =
         sqrt(point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0));
 
-    double adjusted_tolerance = std::min(
-        INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+    double adjusted_tolerance = 1e-6; // std::min(
+                                      //  INITIAL_DISTANCE_TOLERANCE_SCALE *
+                                      //  initial_distance, tolerance);
 
     const auto ccd = [&](double min_distance, bool no_zero_toi,
                          double& toi) -> bool {
