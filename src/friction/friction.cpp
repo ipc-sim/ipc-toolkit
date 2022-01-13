@@ -12,24 +12,13 @@
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/friction/closest_point.hpp>
+#include <ipc/friction/normal_force_magnitude.hpp>
 #include <ipc/friction/relative_displacement.hpp>
 #include <ipc/friction/tangent_basis.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
 namespace ipc {
-
-double compute_normal_force_magnitude(
-    double distance_squared,
-    double dhat,
-    double barrier_stiffness,
-    double dmin = 0)
-{
-    double grad_b = barrier_gradient(
-        distance_squared - dmin * dmin, 2 * dmin * dhat + dhat * dhat);
-    grad_b *= barrier_stiffness;
-    return -grad_b * 2 * sqrt(distance_squared); // / (h * h) eliminated here
-}
 
 void construct_friction_constraint_set(
     const Eigen::MatrixXd& V,
