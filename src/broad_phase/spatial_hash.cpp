@@ -72,7 +72,7 @@ void SpatialHash::build(
             V0.row(vi).cwiseMax(V1.row(vi)).array() + inflation_radius,
             vVAIMax);
         vertexMinVAI[vi].head(dim) = vVAIMin;
-        vertexMinVAI[vi].head(dim) = vVAIMin;
+        vertexMaxVAI[vi].head(dim) = vVAIMax;
     });
 
     // #ifdef IPC_TOOLKIT_PARALLEL_SH_CONSTRUCT
@@ -91,6 +91,7 @@ void SpatialHash::build(
 
     tbb::parallel_for(size_t(0), size_t(V0.rows()), [&](size_t vi) {
         const Eigen::Array3i &mins = vertexMinVAI[vi], &maxs = vertexMaxVAI[vi];
+        assert((mins <= maxs).all());
         pointAndEdgeOccupancy[vi].reserve((maxs - mins + 1).prod());
         for (int iz = mins[2]; iz <= maxs[2]; iz++) {
             int zOffset = iz * voxelCount0x1;
@@ -839,10 +840,9 @@ void SpatialHash::queryMeshForCandidates(
                     for (const auto& ei : edgeInds) {
                         if (vi != E(ei, 0) && vi != E(ei, 1)
                             && point_edge_aabb_ccd(
-                                   V0.row(vi), V0.row(E(ei, 0)),
-                                   V0.row(E(ei, 1)), V1.row(vi),
-                                   V1.row(E(ei, 0)), V1.row(E(ei, 1)),
-                                   2 * builtInRadius)) {
+                                V0.row(vi), V0.row(E(ei, 0)), V0.row(E(ei, 1)),
+                                V1.row(vi), V1.row(E(ei, 0)), V1.row(E(ei, 1)),
+                                2 * builtInRadius)) {
                             local_storage_candidates.ev_candidates.emplace_back(
                                 ei, vi);
                         }
@@ -868,11 +868,11 @@ void SpatialHash::queryMeshForCandidates(
                             && E(eai, 1) != E(ebi, 0) && E(eai, 1) != E(ebi, 1)
                             && eai < ebi
                             && edge_edge_aabb_ccd(
-                                   V0.row(E(eai, 0)), V0.row(E(eai, 1)),
-                                   V0.row(E(ebi, 0)), V0.row(E(ebi, 1)),
-                                   V1.row(E(eai, 0)), V1.row(E(eai, 1)),
-                                   V1.row(E(ebi, 0)), V1.row(E(ebi, 1)),
-                                   2 * builtInRadius)) {
+                                V0.row(E(eai, 0)), V0.row(E(eai, 1)),
+                                V0.row(E(ebi, 0)), V0.row(E(ebi, 1)),
+                                V1.row(E(eai, 0)), V1.row(E(eai, 1)),
+                                V1.row(E(ebi, 0)), V1.row(E(ebi, 1)),
+                                2 * builtInRadius)) {
                             local_storage_candidates.ee_candidates.emplace_back(
                                 eai, ebi);
                         }
@@ -896,11 +896,10 @@ void SpatialHash::queryMeshForCandidates(
                     for (const auto& fi : triInds) {
                         if (vi != F(fi, 0) && vi != F(fi, 1) && vi != F(fi, 2)
                             && point_triangle_aabb_ccd(
-                                   V0.row(vi), V0.row(F(fi, 0)),
-                                   V0.row(F(fi, 1)), V0.row(F(fi, 2)),
-                                   V1.row(vi), V1.row(F(fi, 0)),
-                                   V1.row(F(fi, 1)), V1.row(F(fi, 2)),
-                                   2 * builtInRadius)) {
+                                V0.row(vi), V0.row(F(fi, 0)), V0.row(F(fi, 1)),
+                                V0.row(F(fi, 2)), V1.row(vi), V1.row(F(fi, 0)),
+                                V1.row(F(fi, 1)), V1.row(F(fi, 2)),
+                                2 * builtInRadius)) {
                             local_storage_candidates.fv_candidates.emplace_back(
                                 fi, vi);
                         }
