@@ -7,16 +7,14 @@ namespace ipc {
 VectorMax2d FrictionConstraint::compute_potential_gradient_common(
     const VectorMax3d& relative_displacement, double epsv_times_h) const
 {
-    VectorMax2d tangent_relative_displacement =
-        tangent_basis.transpose() * relative_displacement;
+    // u is the relative displacement in the tangential space
+    VectorMax2d u = tangent_basis.transpose() * relative_displacement;
 
-    double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
-        tangent_relative_displacement.squaredNorm(), epsv_times_h);
+    const double f1_over_norm_u = f1_SF_over_x(u.norm(), epsv_times_h);
 
-    tangent_relative_displacement *=
-        f1_div_rel_disp_norm * mu * normal_force_magnitude;
+    u *= f1_over_norm_u * mu * normal_force_magnitude;
 
-    return tangent_relative_displacement;
+    return u;
 }
 
 MatrixMax12d FrictionConstraint::compute_potential_hessian_common(
@@ -31,54 +29,43 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian_common(
 
     double epsv_times_h_squared = epsv_times_h * epsv_times_h;
 
-    VectorMax2d tangent_relative_displacement =
-        tangent_basis.transpose() * relative_displacement;
+    // u is the relative displacement in the tangential space
+    const VectorMax2d u = tangent_basis.transpose() * relative_displacement;
 
-    double tangent_relative_displacement_sqnorm =
-        tangent_relative_displacement.squaredNorm();
+    const double norm_u = u.norm();
 
-    double f1_div_rel_disp_norm = f1_SF_div_relative_displacement_norm(
-        tangent_relative_displacement_sqnorm, epsv_times_h);
-    double f2_term = f2_SF(tangent_relative_displacement_sqnorm, epsv_times_h);
+    const double f1_over_norm_u = f1_SF_over_x(norm_u, epsv_times_h);
 
     MatrixMax12d local_hess;
 
     double scale = multiplicity * mu * normal_force_magnitude;
-    if (tangent_relative_displacement_sqnorm >= epsv_times_h_squared) {
+    if (norm_u >= epsv_times_h) {
         // no SPD projection needed
-        VectorMax2d ubar(dim - 1);
+        VectorMax2d u_perp(dim - 1);
         if (dim == 2) {
-            ubar[0] = tangent_relative_displacement[0];
+            u_perp[0] = u[0];
         } else {
-            ubar[0] = -tangent_relative_displacement[1];
-            ubar[1] = tangent_relative_displacement[0];
+            u_perp[0] = -u[1];
+            u_perp[1] = u[0];
         }
         local_hess = (TT.transpose()
-                      * ((scale * f1_div_rel_disp_norm
-                          / tangent_relative_displacement_sqnorm)
-                         * ubar))
-            * (ubar.transpose() * TT);
+                      * ((scale * f1_over_norm_u / (norm_u * norm_u)) * u_perp))
+            * (u_perp.transpose() * TT);
+    } else if (norm_u == 0) {
+        // no SPD projection needed
+        local_hess = ((scale * f1_over_norm_u) * TT.transpose()) * TT;
     } else {
-        double tangent_relative_displacement_norm =
-            sqrt(tangent_relative_displacement_sqnorm);
-        if (tangent_relative_displacement_norm == 0) {
-            // no SPD projection needed
-            local_hess = ((scale * f1_div_rel_disp_norm) * TT.transpose()) * TT;
-        } else {
-            // only need to project the inner 2x2 matrix to SPD
-            MatrixMax2d inner_hess =
-                ((f2_term / tangent_relative_displacement_norm)
-                 * tangent_relative_displacement)
-                * tangent_relative_displacement.transpose();
-            inner_hess.diagonal().array() += f1_div_rel_disp_norm;
-            if (project_hessian_to_psd) {
-                inner_hess = project_to_psd(inner_hess);
-            }
-            inner_hess *= scale;
-
-            // tensor product:
-            local_hess = TT.transpose() * inner_hess * TT;
+        // only need to project the inner 2x2 matrix to SPD
+        const double f2 = f2_SF(norm_u, epsv_times_h);
+        MatrixMax2d inner_hess = (f2 / norm_u) * u * u.transpose();
+        inner_hess.diagonal().array() += f1_over_norm_u;
+        if (project_hessian_to_psd) {
+            inner_hess = project_to_psd(inner_hess);
         }
+        inner_hess *= scale;
+
+        // tensor product:
+        local_hess = TT.transpose() * inner_hess * TT;
     }
 
     return local_hess;

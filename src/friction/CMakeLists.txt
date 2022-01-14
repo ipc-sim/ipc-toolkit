@@ -5,7 +5,10 @@ set(SOURCES
   friction.tpp
   friction_constraint.cpp
   friction_constraint.hpp
+  normal_force_magnitude.cpp
+  normal_force_magnitude.hpp
   relative_displacement.hpp
+  smooth_friction_mollifier.hpp
   tangent_basis.hpp
 )
 
