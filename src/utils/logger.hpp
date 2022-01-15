@@ -42,7 +42,7 @@ inline spdlog::async_logger& logger()
 
 #else
 
-#include <fmt/format.h>
+//#include <fmt/format.h>
 
 // Dummy macros to disable logging completly.
 #define IPC_LOG(message)
