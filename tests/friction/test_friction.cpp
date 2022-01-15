@@ -271,12 +271,12 @@ bool read_ipc_friction_data(
     if (input.good()) {
         data = nlohmann::json::parse(input, nullptr, false);
     } else {
-        spdlog::error("Unable to open IPC friction data file: {}", filename);
+        IPC_LOG(error("Unable to open IPC friction data file: {}", filename));
         return false;
     }
 
     if (data.is_discarded()) {
-        spdlog::error("IPC friction data JSON is invalid: {}", filename);
+        IPC_LOG(error("IPC friction data JSON is invalid: {}", filename));
         return false;
     }
 

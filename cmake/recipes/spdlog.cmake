@@ -18,9 +18,8 @@ message(STATUS "Third-party: creating target 'spdlog::spdlog'")
 include(FetchContent)
 FetchContent_Declare(
     spdlog
-    GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG v1.9.0
-    GIT_SHALLOW TRUE
+    URL https://github.com/gabime/spdlog/archive/refs/tags/v1.9.2.zip
+    URL_HASH MD5=a3d2fb9e5c811ba100380aa82d48f989
 )
 
 option(SPDLOG_INSTALL "Generate the install target" ON)
