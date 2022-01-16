@@ -31,16 +31,28 @@ struct FrictionConstraint {
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        const double epsv_times_h) const = 0;
+        const double epsv_times_h) const;
 
     virtual MatrixMax12d compute_potential_hessian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h,
-        const bool project_hessian_to_psd) const = 0;
+        const bool project_hessian_to_psd) const;
+
+    virtual VectorMax3d relative_displacement(
+        const Eigen::MatrixXd& U,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const = 0;
+
+    virtual MatrixMax<double, 3, 12> relative_displacement_jacobian(
+        const Eigen::MatrixXd& U,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const = 0;
 
 protected:
+    virtual int get_multiplicity() const { return 1; };
+
     template <typename DerivedRelUi, typename T = typename DerivedRelUi::Scalar>
     T compute_potential_common(
         const Eigen::MatrixBase<DerivedRelUi>& rel_ui,
@@ -50,16 +62,6 @@ protected:
         const VectorMax2d u = tangent_basis.transpose().cast<T>() * rel_ui;
         return mu * normal_force_magnitude * f0_SF(u.norm(), epsv_times_h);
     }
-
-    VectorMax2d compute_potential_gradient_common(
-        const VectorMax3d& relative_displacement, double epsv_times_h) const;
-
-    MatrixMax12d compute_potential_hessian_common(
-        const VectorMax3d& relative_displacement,
-        const MatrixMax<double, 2, 12>& TT,
-        const double epsv_times_h,
-        bool project_hessian_to_psd,
-        const int multiplicity = 1) const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,37 +79,41 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
     }
 
     template <typename T>
-    VectorMax3<T> relative_displacement(const MatrixX<T>& U) const
-    {
-        return point_point_relative_displacement(
-            U.row(vertex0_index), U.row(vertex1_index));
-    }
-
-    template <typename T>
     T compute_potential(
         const MatrixX<T>& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const
     {
-        VectorMax3<T> rel_u = relative_displacement(U);
+        VectorMax3<T> rel_u = relative_displacement_T(U);
         return multiplicity * compute_potential_common(rel_u, epsv_times_h);
     }
 
-    VectorMax12d compute_potential_gradient(
+    VectorMax3d relative_displacement(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double epsv_times_h) const override;
+        const Eigen::MatrixXi& F) const override
+    {
+        return relative_displacement_T(U);
+    }
 
-    MatrixMax12d compute_potential_hessian(
+    MatrixMax<double, 3, 12> relative_displacement_jacobian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double epsv_times_h,
-        const bool project_hessian_to_psd) const override;
+        const Eigen::MatrixXi& F) const override;
 
     long multiplicity = 1;
+
+protected:
+    int get_multiplicity() const override { return multiplicity; };
+
+private:
+    template <typename T>
+    VectorMax3<T> relative_displacement_T(const MatrixX<T>& U) const
+    {
+        return point_point_relative_displacement(
+            U.row(vertex0_index), U.row(vertex1_index));
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -124,40 +130,44 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
     }
 
     template <typename T>
-    VectorMax3<T>
-    relative_displacement(const MatrixX<T>& U, const Eigen::MatrixXi& E) const
-    {
-        return point_edge_relative_displacement(
-            U.row(vertex_index), //
-            U.row(E(edge_index, 0)), U.row(E(edge_index, 1)),
-            T(closest_point[0]));
-    }
-
-    template <typename T>
     T compute_potential(
         const MatrixX<T>& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const
     {
-        VectorMax3<T> rel_u = relative_displacement(U, E);
+        VectorMax3<T> rel_u = relative_displacement_T(U, E);
         return multiplicity * compute_potential_common(rel_u, epsv_times_h);
     }
 
-    VectorMax12d compute_potential_gradient(
+    VectorMax3d relative_displacement(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double epsv_times_h) const override;
+        const Eigen::MatrixXi& F) const override
+    {
+        return relative_displacement_T(U, E);
+    }
 
-    MatrixMax12d compute_potential_hessian(
+    MatrixMax<double, 3, 12> relative_displacement_jacobian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double epsv_times_h,
-        const bool project_hessian_to_psd) const override;
+        const Eigen::MatrixXi& F) const override;
 
     long multiplicity = 1;
+
+protected:
+    int get_multiplicity() const override { return multiplicity; };
+
+private:
+    template <typename T>
+    VectorMax3<T>
+    relative_displacement_T(const MatrixX<T>& U, const Eigen::MatrixXi& E) const
+    {
+        return point_edge_relative_displacement(
+            U.row(vertex_index), //
+            U.row(E(edge_index, 0)), U.row(E(edge_index, 1)),
+            T(closest_point[0]));
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -175,16 +185,6 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
     }
 
     template <typename T>
-    VectorMax3<T>
-    relative_displacement(const MatrixX<T>& U, const Eigen::MatrixXi& E) const
-    {
-        return edge_edge_relative_displacement(
-            U.row(E(edge0_index, 0)), U.row(E(edge0_index, 1)),
-            U.row(E(edge1_index, 0)), U.row(E(edge1_index, 1)),
-            closest_point.cast<T>());
-    }
-
-    template <typename T>
     T compute_potential(
         const MatrixX<T>& U,
         const Eigen::MatrixXi& E,
@@ -192,21 +192,32 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
         const double epsv_times_h) const
     {
         return compute_potential_common(
-            relative_displacement(U, E), epsv_times_h);
+            relative_displacement_T(U, E), epsv_times_h);
     }
 
-    VectorMax12d compute_potential_gradient(
+    VectorMax3d relative_displacement(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double epsv_times_h) const override;
+        const Eigen::MatrixXi& F) const override
+    {
+        return relative_displacement_T(U, E);
+    }
 
-    MatrixMax12d compute_potential_hessian(
+    MatrixMax<double, 3, 12> relative_displacement_jacobian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double epsv_times_h,
-        const bool project_hessian_to_psd) const override;
+        const Eigen::MatrixXi& F) const override;
+
+private:
+    template <typename T>
+    VectorMax3<T>
+    relative_displacement_T(const MatrixX<T>& U, const Eigen::MatrixXi& E) const
+    {
+        return edge_edge_relative_displacement(
+            U.row(E(edge0_index, 0)), U.row(E(edge0_index, 1)),
+            U.row(E(edge1_index, 0)), U.row(E(edge1_index, 1)),
+            closest_point.cast<T>());
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -224,16 +235,6 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
     }
 
     template <typename T>
-    VectorMax3<T>
-    relative_displacement(const MatrixX<T>& U, const Eigen::MatrixXi& F) const
-    {
-        return point_triangle_relative_displacement(
-            U.row(vertex_index), U.row(F(face_index, 0)),
-            U.row(F(face_index, 1)), U.row(F(face_index, 2)),
-            closest_point.cast<T>());
-    }
-
-    template <typename T>
     T compute_potential(
         const MatrixX<T>& U,
         const Eigen::MatrixXi& E,
@@ -241,21 +242,32 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
         const double epsv_times_h) const
     {
         return compute_potential_common(
-            relative_displacement(U, F), epsv_times_h);
+            relative_displacement_T(U, F), epsv_times_h);
     }
 
-    VectorMax12d compute_potential_gradient(
+    VectorMax3d relative_displacement(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double epsv_times_h) const override;
+        const Eigen::MatrixXi& F) const override
+    {
+        return relative_displacement_T(U, F);
+    }
 
-    MatrixMax12d compute_potential_hessian(
+    MatrixMax<double, 3, 12> relative_displacement_jacobian(
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double epsv_times_h,
-        const bool project_hessian_to_psd) const override;
+        const Eigen::MatrixXi& F) const override;
+
+private:
+    template <typename T>
+    VectorMax3<T>
+    relative_displacement_T(const MatrixX<T>& U, const Eigen::MatrixXi& F) const
+    {
+        return point_triangle_relative_displacement(
+            U.row(vertex_index), U.row(F(face_index, 0)),
+            U.row(F(face_index, 1)), U.row(F(face_index, 2)),
+            closest_point.cast<T>());
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -4,68 +4,109 @@
 
 namespace ipc {
 
-VectorMax2d FrictionConstraint::compute_potential_gradient_common(
-    const VectorMax3d& relative_displacement, double epsv_times_h) const
+VectorMax12d FrictionConstraint::compute_potential_gradient(
+    const Eigen::MatrixXd& U,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    double epsv_times_h) const
 {
-    // u is the relative displacement in the tangential space
-    VectorMax2d u = tangent_basis.transpose() * relative_displacement;
+    // ∇ₓ μ N(xᵗ) f₀(‖ū‖) (where ū = T(xᵗ)ᵀ u(xᵗ, x))
+    //  = μ N(xᵗ) f₁(‖ū‖)/‖ū‖ ūᵀ T(xᵗ)ᵀ ∇ₓu(xᵗ, x)
 
-    const double f1_over_norm_u = f1_SF_over_x(u.norm(), epsv_times_h);
+    // compute u(xᵗ, x)
+    const VectorMax3d global_rel_u = relative_displacement(U, E, F);
 
-    u *= f1_over_norm_u * mu * normal_force_magnitude;
+    // compute ∇ₓ u(xᵗ, x)
+    const MatrixMax<double, 3, 12> jac_global_rel_u =
+        relative_displacement_jacobian(U, E, F);
 
-    return u;
+    // compute ū
+    const VectorMax2d tangent_rel_u = tangent_basis.transpose() * global_rel_u;
+
+    // compute f₁(‖ū‖)/‖ū‖
+    const double f1_over_norm_tangent_u =
+        f1_SF_over_x(tangent_rel_u.norm(), epsv_times_h);
+
+    // μ N(xᵗ) f₁(‖ū‖)/‖ū‖ ūᵀ T(xᵗ)ᵀ ∇ₓu(xᵗ, x)
+    return get_multiplicity() * mu * normal_force_magnitude
+        * f1_over_norm_tangent_u * tangent_rel_u.transpose()
+        * tangent_basis.transpose() * jac_global_rel_u;
 }
 
-MatrixMax12d FrictionConstraint::compute_potential_hessian_common(
-    const VectorMax3d& relative_displacement,
-    const MatrixMax<double, 2, 12>& TT,
+MatrixMax12d FrictionConstraint::compute_potential_hessian(
+    const Eigen::MatrixXd& U,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
     const double epsv_times_h,
-    bool project_hessian_to_psd,
-    const int multiplicity) const
+    bool project_hessian_to_psd) const
 {
-    int dim = relative_displacement.size();
-    assert(dim == 2 || dim == 3);
+    int dim = U.cols();
+    // ∇ₓ μ N(xᵗ) f₁(‖ū‖)/‖ū‖ ūᵀ T(xᵗ)ᵀ ∇ₓu(xᵗ, x) (where ū = T(xᵗ)ᵀ u(xᵗ, x))
+    //  = μ N ∇uᵀ T [(f₁'(‖ū‖)‖ū‖ − f₁(‖ū‖))/‖ū‖³ ūūᵀ + f₁(‖ū‖)/‖ū‖ I] Tᵀ ∇u
+    //  = μ N ∇uᵀ T [f₂(‖ū‖) ūūᵀ + f₁(‖ū‖)/‖ū‖ I] Tᵀ ∇u
 
-    double epsv_times_h_squared = epsv_times_h * epsv_times_h;
+    // compute u(xᵗ, x)
+    const VectorMax3d global_rel_u = relative_displacement(U, E, F);
 
-    // u is the relative displacement in the tangential space
-    const VectorMax2d u = tangent_basis.transpose() * relative_displacement;
+    // compute ∇ₓ u(xᵗ, x)
+    const MatrixMax<double, 3, 12> jac_global_rel_u =
+        relative_displacement_jacobian(U, E, F);
 
-    const double norm_u = u.norm();
+    // compute ū
+    const VectorMax2d tangent_rel_u = tangent_basis.transpose() * global_rel_u;
 
+    // compute TJᵤ = T(xᵗ)ᵀ ∇ₓu(xᵗ, x)
+    const MatrixMax<double, 2, 12> TJ_u =
+        tangent_basis.transpose() * jac_global_rel_u;
+
+    // compute ‖ū‖
+    const double norm_u = tangent_rel_u.norm();
+
+    // compute f₁(‖ū‖)/‖ū‖
     const double f1_over_norm_u = f1_SF_over_x(norm_u, epsv_times_h);
 
-    MatrixMax12d local_hess;
+    // compute μ N(xᵗ)
+    double scale = get_multiplicity() * mu * normal_force_magnitude;
 
-    double scale = multiplicity * mu * normal_force_magnitude;
+    MatrixMax12d local_hess;
     if (norm_u >= epsv_times_h) {
-        // no SPD projection needed
-        VectorMax2d u_perp(dim - 1);
+        // f₁(‖ū‖) = 1
+        //  ⟹ ∇²D(x) = μ N ∇uᵀ T [-f₁(‖ū‖)/‖ū‖³ ūūᵀ + f₁(‖ū‖)/‖ū‖ I] Tᵀ ∇u
+        //            = μ N ∇uᵀ T [-f₁(‖ū‖)/‖ū‖ ūūᵀ/‖ū‖² + f₁(‖ū‖)/‖ū‖ I] Tᵀ ∇u
+        //            = μ N ∇uᵀ T [f₁(‖ū‖)/‖ū‖ (I - ūūᵀ/‖ū‖²)] Tᵀ ∇u
+        //  ⟹ no SPD projection needed because f₁(‖ū‖)/‖ū‖ ≥ 0
+        // ∧ dim = 2 ⟹
         if (dim == 2) {
-            u_perp[0] = u[0];
+            // I - ūūᵀ/‖ū‖² = 1 - ū²/ū² = 0 ⟹ ∇²D(x) = 0
+            int n = jac_global_rel_u.cols(); // num_vars
+            local_hess.setZero(n, n);
         } else {
-            u_perp[0] = -u[1];
-            u_perp[1] = u[0];
+            assert(dim == 3);
+            // I - ūūᵀ/‖ū‖² = ūᵖ(ūᵖ)ᵀ / ‖ū‖² (where ūᵖ⋅ū = 0)
+            Eigen::Vector2d u_perp(-tangent_rel_u[1], tangent_rel_u[0]);
+            local_hess = // grouped to reduce number of operations
+                (TJ_u.transpose()
+                 * ((scale * f1_over_norm_u / (norm_u * norm_u)) * u_perp))
+                * (u_perp.transpose() * TJ_u);
         }
-        local_hess = (TT.transpose()
-                      * ((scale * f1_over_norm_u / (norm_u * norm_u)) * u_perp))
-            * (u_perp.transpose() * TT);
     } else if (norm_u == 0) {
-        // no SPD projection needed
-        local_hess = ((scale * f1_over_norm_u) * TT.transpose()) * TT;
+        // ∇²D = μ N ∇uᵀT[(f₁'(‖ū‖)‖ū‖ − f₁(‖ū‖))/‖ū‖³ ūūᵀ + f₁(‖ū‖)/‖ū‖ I]Tᵀ∇u
+        // lim_{‖ū‖→0} ∇²D = μ N ∇uᵀT [f₁(‖ū‖)/‖ū‖ I] Tᵀ ∇u
+        // no SPD projection needed because μ N f₁(‖ū‖)/‖ū‖ ≥ 0
+        local_hess = scale * f1_over_norm_u * TJ_u.transpose() * TJ_u;
     } else {
-        // only need to project the inner 2x2 matrix to SPD
-        const double f2 = f2_SF(norm_u, epsv_times_h);
-        MatrixMax2d inner_hess = (f2 / norm_u) * u * u.transpose();
+        // ∇²D(x) = μ N ∇uᵀ T [f₂(‖ū‖) ūūᵀ + f₁(‖ū‖)/‖ū‖ I] Tᵀ ∇u
+        //  ⟹ only need to project the inner 2x2 matrix to SPD
+        const double f2 = df1_x_minus_f1_over_x3(norm_u, epsv_times_h);
+
+        MatrixMax2d inner_hess = f2 * tangent_rel_u * tangent_rel_u.transpose();
         inner_hess.diagonal().array() += f1_over_norm_u;
+        inner_hess *= scale;
         if (project_hessian_to_psd) {
             inner_hess = project_to_psd(inner_hess);
         }
-        inner_hess *= scale;
 
-        // tensor product:
-        local_hess = TT.transpose() * inner_hess * TT;
+        local_hess = TJ_u.transpose() * inner_hess * TJ_u;
     }
 
     return local_hess;
@@ -92,31 +133,14 @@ VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
 {
 }
 
-VectorMax12d VertexVertexFrictionConstraint::compute_potential_gradient(
+MatrixMax<double, 3, 12>
+VertexVertexFrictionConstraint::relative_displacement_jacobian(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double epsv_times_h) const
+    const Eigen::MatrixXi& F) const
 {
-    VectorMax3d rel_u = relative_displacement(U);
-    VectorMax2d tangent_rel_u =
-        compute_potential_gradient_common(rel_u, epsv_times_h);
-    tangent_rel_u *= multiplicity;
-    return point_point_relative_mesh_displacements(
-        tangent_rel_u, tangent_basis);
-}
-
-MatrixMax12d VertexVertexFrictionConstraint::compute_potential_hessian(
-    const Eigen::MatrixXd& U,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double epsv_times_h,
-    const bool project_hessian_to_psd) const
-{
-    VectorMax3d rel_u = relative_displacement(U);
-    auto TT = point_point_TT(tangent_basis);
-    return compute_potential_hessian_common(
-        rel_u, TT, epsv_times_h, project_hessian_to_psd, multiplicity);
+    return point_point_relative_displacement_jacobian(
+        U.row(vertex0_index), U.row(vertex1_index));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -140,31 +164,15 @@ EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
 {
 }
 
-VectorMax12d EdgeVertexFrictionConstraint::compute_potential_gradient(
+MatrixMax<double, 3, 12>
+EdgeVertexFrictionConstraint::relative_displacement_jacobian(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double epsv_times_h) const
+    const Eigen::MatrixXi& F) const
 {
-    VectorMax3d rel_u = relative_displacement(U, E);
-    VectorMax2d tangent_rel_u =
-        compute_potential_gradient_common(rel_u, epsv_times_h);
-    tangent_rel_u *= multiplicity;
-    return point_edge_relative_mesh_displacements(
-        tangent_rel_u, tangent_basis, closest_point[0]);
-}
-
-MatrixMax12d EdgeVertexFrictionConstraint::compute_potential_hessian(
-    const Eigen::MatrixXd& U,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double epsv_times_h,
-    const bool project_hessian_to_psd) const
-{
-    VectorMax3d rel_u = relative_displacement(U, E);
-    auto TT = point_edge_TT(tangent_basis, closest_point[0]);
-    return compute_potential_hessian_common(
-        rel_u, TT, epsv_times_h, project_hessian_to_psd, multiplicity);
+    return point_edge_relative_displacement_jacobian(
+        U.row(vertex_index), U.row(E(edge_index, 0)), U.row(E(edge_index, 1)),
+        closest_point[0]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -187,30 +195,15 @@ EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
 {
 }
 
-VectorMax12d EdgeEdgeFrictionConstraint::compute_potential_gradient(
+MatrixMax<double, 3, 12>
+EdgeEdgeFrictionConstraint::relative_displacement_jacobian(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double epsv_times_h) const
+    const Eigen::MatrixXi& F) const
 {
-    VectorMax3d rel_u = relative_displacement(U, E);
-    VectorMax2d tangent_rel_u =
-        compute_potential_gradient_common(rel_u, epsv_times_h);
-    return edge_edge_relative_mesh_displacements(
-        tangent_rel_u, tangent_basis, closest_point);
-}
-
-MatrixMax12d EdgeEdgeFrictionConstraint::compute_potential_hessian(
-    const Eigen::MatrixXd& U,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double epsv_times_h,
-    const bool project_hessian_to_psd) const
-{
-    VectorMax3d rel_u = relative_displacement(U, E);
-    auto TT = edge_edge_TT(tangent_basis, closest_point);
-    return compute_potential_hessian_common(
-        rel_u, TT, epsv_times_h, project_hessian_to_psd);
+    return edge_edge_relative_displacement_jacobian(
+        U.row(E(edge0_index, 0)), U.row(E(edge0_index, 1)),
+        U.row(E(edge1_index, 0)), U.row(E(edge1_index, 1)), closest_point);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -233,31 +226,15 @@ FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
 {
 }
 
-VectorMax12d FaceVertexFrictionConstraint::compute_potential_gradient(
+MatrixMax<double, 3, 12>
+FaceVertexFrictionConstraint::relative_displacement_jacobian(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double epsv_times_h) const
+    const Eigen::MatrixXi& F) const
 {
-    VectorMax3d rel_u = relative_displacement(U, F);
-    VectorMax2d tangent_rel_u =
-        compute_potential_gradient_common(rel_u, epsv_times_h);
-    return point_triangle_relative_mesh_displacements(
-        tangent_rel_u, tangent_basis, closest_point);
-}
-
-MatrixMax12d FaceVertexFrictionConstraint::compute_potential_hessian(
-    const Eigen::MatrixXd& U,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double epsv_times_h,
-    const bool project_hessian_to_psd) const
-{
-    VectorMax3d rel_u = relative_displacement(U, F);
-    assert(rel_u.size() == 3);
-    auto TT = point_triangle_TT(tangent_basis, closest_point);
-    return compute_potential_hessian_common(
-        rel_u, TT, epsv_times_h, project_hessian_to_psd);
+    return point_triangle_relative_displacement_jacobian(
+        U.row(vertex_index), U.row(F(face_index, 0)), U.row(F(face_index, 1)),
+        U.row(F(face_index, 2)), closest_point);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
