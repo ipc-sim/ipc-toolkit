@@ -150,4 +150,171 @@ inline Eigen::Matrix<T, 3, 2> point_triangle_tangent_basis(
     return basis;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Gradient
+
+namespace autogen {
+    void point_point_tangent_basis_2D_jacobian(
+        double p0_x, double p0_y, double p1_x, double p1_y, double J[8]);
+
+    void point_point_tangent_basis_3D_jacobian(
+        double p0_x,
+        double p0_y,
+        double p0_z,
+        double p1_x,
+        double p1_y,
+        double p1_z,
+        double J[36]);
+
+    void point_edge_tangent_basis_2D_jacobian(
+        double p_x,
+        double p_y,
+        double e0_x,
+        double e0_y,
+        double e1_x,
+        double e1_y,
+        double J[12]);
+
+    void point_edge_tangent_basis_3D_jacobian(
+        double p_x,
+        double p_y,
+        double p_z,
+        double e0_x,
+        double e0_y,
+        double e0_z,
+        double e1_x,
+        double e1_y,
+        double e1_z,
+        double J[54]);
+
+    void edge_edge_tangent_basis_jacobian(
+        double ea0_x,
+        double ea0_y,
+        double ea0_z,
+        double ea1_x,
+        double ea1_y,
+        double ea1_z,
+        double eb0_x,
+        double eb0_y,
+        double eb0_z,
+        double eb1_x,
+        double eb1_y,
+        double eb1_z,
+        double J[72]);
+
+    void point_triangle_tangent_basis_jacobian(
+        double p_x,
+        double p_y,
+        double p_z,
+        double t0_x,
+        double t0_y,
+        double t0_z,
+        double t1_x,
+        double t1_y,
+        double t1_z,
+        double t2_x,
+        double t2_y,
+        double t2_z,
+        double J[72]);
+} // namespace autogen
+
+template <typename DerivedP0, typename DerivedP1>
+inline MatrixMax<double, 18, 2> point_point_tangent_basis_jacobian(
+    const Eigen::MatrixBase<DerivedP0>& p0,
+    const Eigen::MatrixBase<DerivedP1>& p1)
+{
+    if (p0.size() == 2) {
+        assert(p1.size() == 2);
+
+        MatrixMax<double, 18, 2> J(8, 1);
+
+        autogen::point_point_tangent_basis_2D_jacobian(
+            p0[0], p0[1], p1[0], p1[1], J.data());
+
+        return J;
+    } else {
+        assert(p0.size() == 3 && p1.size() == 3);
+
+        MatrixMax<double, 18, 2> J(18, 2);
+
+        autogen::point_point_tangent_basis_3D_jacobian(
+            p0[0], p0[1], p0[2], p1[0], p1[1], p1[2], J.data());
+
+        return J;
+    }
+}
+
+template <typename DerivedP, typename DerivedE0, typename DerivedE1>
+inline MatrixMax<double, 27, 2> point_edge_tangent_basis_jacobian(
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedE0>& e0,
+    const Eigen::MatrixBase<DerivedE1>& e1)
+{
+    if (p.size() == 2) {
+        assert(e0.size() == 2 && e1.size() == 2);
+
+        MatrixMax<double, 27, 2> J(12, 1);
+
+        autogen::point_edge_tangent_basis_2D_jacobian(
+            p[0], p[1], e0[0], e0[1], e1[0], e1[1], J.data());
+
+        return J;
+    } else {
+        assert(p.size() == 3 && e0.size() == 3 && e1.size() == 3);
+
+        MatrixMax<double, 27, 2> J(27, 2);
+
+        autogen::point_edge_tangent_basis_3D_jacobian(
+            p[0], p[1], p[2], e0[0], e0[1], e0[2], e1[0], e1[1], e1[2],
+            J.data());
+
+        return J;
+    }
+}
+
+template <
+    typename DerivedEA0,
+    typename DerivedEA1,
+    typename DerivedEB0,
+    typename DerivedEB1>
+inline Eigen::Matrix<double, 36, 2> edge_edge_tangent_basis_jacobian(
+    const Eigen::MatrixBase<DerivedEA0>& ea0,
+    const Eigen::MatrixBase<DerivedEA1>& ea1,
+    const Eigen::MatrixBase<DerivedEB0>& eb0,
+    const Eigen::MatrixBase<DerivedEB1>& eb1)
+{
+    assert(ea0.size() == 3 && ea1.size() == 3);
+    assert(eb0.size() == 3 && eb1.size() == 3);
+
+    Eigen::Matrix<double, 36, 2> J;
+
+    autogen::edge_edge_tangent_basis_jacobian(
+        ea0[0], ea0[1], ea0[2], ea1[0], ea1[1], ea1[2], eb0[0], eb0[1], eb0[2],
+        eb1[0], eb1[1], eb1[2], J.data());
+
+    return J;
+}
+
+template <
+    typename DerivedP,
+    typename DerivedT0,
+    typename DerivedT1,
+    typename DerivedT2>
+inline Eigen::Matrix<double, 36, 2> point_triangle_tangent_basis_jacobian(
+    const Eigen::MatrixBase<DerivedP>& p,
+    const Eigen::MatrixBase<DerivedT0>& t0,
+    const Eigen::MatrixBase<DerivedT1>& t1,
+    const Eigen::MatrixBase<DerivedT2>& t2)
+{
+    assert(p.size() == 3 && t0.size() == 3 && t1.size() == 3 && t2.size() == 3);
+
+    Eigen::Matrix<double, 36, 2> J;
+
+    autogen::point_triangle_tangent_basis_jacobian(
+        p[0], p[1], p[2], t0[0], t0[1], t0[2], t1[0], t1[1], t1[2], t2[0],
+        t2[1], t2[2], J.data());
+
+    return J;
+}
+
 } // namespace ipc
