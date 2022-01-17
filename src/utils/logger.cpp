@@ -29,7 +29,7 @@ spdlog::logger& logger()
         // functions), names must be unique, since the logger is registered
         // globally. Otherwise, you will need to create the logger manually. See
         // https://github.com/gabime/spdlog/wiki/2.-Creating-loggers
-        static auto default_logger = spdlog::stdout_color_mt("wmtk");
+        static auto default_logger = spdlog::stdout_color_mt("ipctk");
         return *default_logger;
     }
 }
