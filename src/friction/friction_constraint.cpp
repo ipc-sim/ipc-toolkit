@@ -2,6 +2,13 @@
 
 #include <stdexcept> // std::out_of_range
 
+#include <ipc/friction/tangent_basis.hpp>
+#include <ipc/friction/normal_force_magnitude.hpp>
+#include <ipc/distance/point_point.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/point_triangle.hpp>
+
 namespace ipc {
 
 VectorMax12d FrictionConstraint::compute_potential_gradient(
@@ -133,6 +140,56 @@ VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
 {
 }
 
+double VertexVertexFrictionConstraint::compute_normal_force_magnitude(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const double dhat,
+    const double barrier_stiffness,
+    const double dmin) const
+{
+    const auto& p0 = V.row(vertex0_index);
+    const auto& p1 = V.row(vertex1_index);
+    return ipc::compute_normal_force_magnitude(
+        point_point_distance(p0, p1), dhat, barrier_stiffness, dmin);
+}
+
+VectorMax12d
+VertexVertexFrictionConstraint::compute_normal_force_magnitude_gradient(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const double dhat,
+    const double barrier_stiffness,
+    const double dmin) const
+{
+    const auto& p0 = V.row(vertex0_index);
+    const auto& p1 = V.row(vertex1_index);
+    VectorMax6d grad_d;
+    point_point_distance_gradient(p0, p1, grad_d);
+    return ipc::compute_normal_force_magnitude_gradient(
+        point_point_distance(p0, p1), grad_d, dhat, barrier_stiffness, dmin);
+}
+
+MatrixMax<double, 3, 2> VertexVertexFrictionConstraint::compute_tangent_basis(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    return point_point_tangent_basis(
+        V.row(vertex0_index), V.row(vertex1_index));
+}
+
+MatrixMax<double, 3, 24>
+VertexVertexFrictionConstraint::compute_tangent_basis_jacobian(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    return point_point_tangent_basis_jacobian(
+        V.row(vertex0_index), V.row(vertex1_index));
+}
+
 MatrixMax<double, 3, 12>
 VertexVertexFrictionConstraint::relative_displacement_jacobian(
     const Eigen::MatrixXd& U,
@@ -162,6 +219,58 @@ EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
     : EdgeVertexCandidate(constraint.edge_index, constraint.vertex_index)
     , multiplicity(constraint.multiplicity)
 {
+}
+
+double EdgeVertexFrictionConstraint::compute_normal_force_magnitude(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const double dhat,
+    const double barrier_stiffness,
+    const double dmin) const
+{
+    const auto& p = V.row(vertex_index);
+    const auto& e0 = V.row(E(edge_index, 0));
+    const auto& e1 = V.row(E(edge_index, 1));
+    return ipc::compute_normal_force_magnitude(
+        point_edge_distance(p, e0, e1), dhat, barrier_stiffness, dmin);
+}
+
+VectorMax12d
+EdgeVertexFrictionConstraint::compute_normal_force_magnitude_gradient(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const double dhat,
+    const double barrier_stiffness,
+    const double dmin) const
+{
+    const auto& p = V.row(vertex_index);
+    const auto& e0 = V.row(E(edge_index, 0));
+    const auto& e1 = V.row(E(edge_index, 1));
+    VectorMax9d grad_d;
+    point_edge_distance_gradient(p, e0, e1, grad_d);
+    return ipc::compute_normal_force_magnitude_gradient(
+        point_edge_distance(p, e0, e1), grad_d, dhat, barrier_stiffness, dmin);
+}
+
+MatrixMax<double, 3, 2> EdgeVertexFrictionConstraint::compute_tangent_basis(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    return point_edge_tangent_basis(
+        V.row(vertex_index), V.row(E(edge_index, 0)), V.row(E(edge_index, 1)));
+}
+
+MatrixMax<double, 3, 24>
+EdgeVertexFrictionConstraint::compute_tangent_basis_jacobian(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    return point_edge_tangent_basis_jacobian(
+        V.row(vertex_index), V.row(E(edge_index, 0)), V.row(E(edge_index, 1)));
 }
 
 MatrixMax<double, 3, 12>
@@ -195,6 +304,63 @@ EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
 {
 }
 
+double EdgeEdgeFrictionConstraint::compute_normal_force_magnitude(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const double dhat,
+    const double barrier_stiffness,
+    const double dmin) const
+{
+    const auto& ea0 = V.row(E(edge0_index, 0));
+    const auto& ea1 = V.row(E(edge0_index, 1));
+    const auto& eb0 = V.row(E(edge1_index, 0));
+    const auto& eb1 = V.row(E(edge1_index, 1));
+    return ipc::compute_normal_force_magnitude(
+        edge_edge_distance(ea0, ea1, eb0, eb1), dhat, barrier_stiffness, dmin);
+}
+
+VectorMax12d
+EdgeEdgeFrictionConstraint::compute_normal_force_magnitude_gradient(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const double dhat,
+    const double barrier_stiffness,
+    const double dmin) const
+{
+    const auto& ea0 = V.row(E(edge0_index, 0));
+    const auto& ea1 = V.row(E(edge0_index, 1));
+    const auto& eb0 = V.row(E(edge1_index, 0));
+    const auto& eb1 = V.row(E(edge1_index, 1));
+    VectorMax12d grad_d;
+    edge_edge_distance_gradient(ea0, ea1, eb0, eb1, grad_d);
+    return ipc::compute_normal_force_magnitude_gradient(
+        edge_edge_distance(ea0, ea1, eb0, eb1), grad_d, dhat, barrier_stiffness,
+        dmin);
+}
+
+MatrixMax<double, 3, 2> EdgeEdgeFrictionConstraint::compute_tangent_basis(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    return edge_edge_tangent_basis(
+        V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
+        V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)));
+}
+
+MatrixMax<double, 3, 24>
+EdgeEdgeFrictionConstraint::compute_tangent_basis_jacobian(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    return edge_edge_tangent_basis_jacobian(
+        V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
+        V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)));
+}
+
 MatrixMax<double, 3, 12>
 EdgeEdgeFrictionConstraint::relative_displacement_jacobian(
     const Eigen::MatrixXd& U,
@@ -224,6 +390,63 @@ FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
     const FaceVertexConstraint& constraint)
     : FaceVertexCandidate(constraint.face_index, constraint.vertex_index)
 {
+}
+
+double FaceVertexFrictionConstraint::compute_normal_force_magnitude(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const double dhat,
+    const double barrier_stiffness,
+    const double dmin) const
+{
+    const auto& p = V.row(vertex_index);
+    const auto& t0 = V.row(F(face_index, 0));
+    const auto& t1 = V.row(F(face_index, 1));
+    const auto& t2 = V.row(F(face_index, 2));
+    return ipc::compute_normal_force_magnitude(
+        point_triangle_distance(p, t0, t1, t2), dhat, barrier_stiffness, dmin);
+}
+
+VectorMax12d
+FaceVertexFrictionConstraint::compute_normal_force_magnitude_gradient(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const double dhat,
+    const double barrier_stiffness,
+    const double dmin) const
+{
+    const auto& p = V.row(vertex_index);
+    const auto& t0 = V.row(F(face_index, 0));
+    const auto& t1 = V.row(F(face_index, 1));
+    const auto& t2 = V.row(F(face_index, 2));
+    VectorMax12d grad_d;
+    point_triangle_distance_gradient(p, t0, t1, t2, grad_d);
+    return ipc::compute_normal_force_magnitude_gradient(
+        point_triangle_distance(p, t0, t1, t2), grad_d, dhat, barrier_stiffness,
+        dmin);
+}
+
+MatrixMax<double, 3, 2> FaceVertexFrictionConstraint::compute_tangent_basis(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    return point_triangle_tangent_basis(
+        V.row(vertex_index), V.row(F(face_index, 0)), V.row(F(face_index, 1)),
+        V.row(F(face_index, 2)));
+}
+
+MatrixMax<double, 3, 24>
+FaceVertexFrictionConstraint::compute_tangent_basis_jacobian(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    return point_triangle_tangent_basis_jacobian(
+        V.row(vertex_index), V.row(F(face_index, 0)), V.row(F(face_index, 1)),
+        V.row(F(face_index, 2)));
 }
 
 MatrixMax<double, 3, 12>
