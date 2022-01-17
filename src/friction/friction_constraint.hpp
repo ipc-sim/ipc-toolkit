@@ -41,8 +41,8 @@ struct FrictionConstraint {
         const bool project_hessian_to_psd) const;
 
     virtual VectorMax12d compute_force(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXd& X,
+        const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double dhat,
@@ -50,14 +50,17 @@ struct FrictionConstraint {
         const double epsv_times_h,
         const double dmin = 0) const;
 
+    enum class DiffWRT { X, U };
+
     virtual MatrixMax12d compute_force_jacobian(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXd& X,
+        const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
+        const DiffWRT wrt,
         const double dmin = 0) const;
 
     virtual double compute_normal_force_magnitude(

@@ -14,8 +14,7 @@
 
 using namespace ipc;
 
-TEST_CASE(
-    "Test friction gradient and hessian", "[friction][gradient][hessian][2D]")
+TEST_CASE("Test friction gradient and hessian", "[friction][gradient][hessian]")
 {
 #ifdef NDEBUG
     double mu = GENERATE(range(0.0, 1.0, 0.1));

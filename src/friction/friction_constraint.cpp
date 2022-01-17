@@ -120,8 +120,8 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
 }
 
 VectorMax12d FrictionConstraint::compute_force(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& X,
+    const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double dhat,
@@ -129,14 +129,17 @@ VectorMax12d FrictionConstraint::compute_force(
     const double epsv_times_h,
     const double dmin) const
 {
-    const Eigen::MatrixXd U = V1 - V0;
+    // X is the position of all vertices; U is the displacment of all vertices
+    // u(U) is the displacment of the point of contact
+    // ū = T(X + U)ᵀu(U) is the tangential displacment of u
+    // F(X, U) = -μ N(X + U) f₁(‖ū‖)/‖ū‖ ūᵀ T(X + U)ᵀ ∇u(U)
 
-    // -μ N(x) f₁(‖ū‖)/‖ū‖ ūᵀ T(x)ᵀ ∇ₓu(xᵗ, x)
+    Eigen::MatrixXd X_plus_U = X + U;
 
-    double N =
-        compute_normal_force_magnitude(V1, E, F, dhat, barrier_stiffness, dmin);
+    double N = compute_normal_force_magnitude(
+        X_plus_U, E, F, dhat, barrier_stiffness, dmin);
 
-    MatrixMax<double, 3, 2> T = compute_tangent_basis(V1, E, F);
+    MatrixMax<double, 3, 2> T = compute_tangent_basis(X_plus_U, E, F);
 
     // compute u(xᵗ, x)
     const VectorMax3d global_rel_u = relative_displacement(U, E, F);
@@ -158,60 +161,72 @@ VectorMax12d FrictionConstraint::compute_force(
 }
 
 MatrixMax12d FrictionConstraint::compute_force_jacobian(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& X,
+    const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const double dhat,
     const double barrier_stiffness,
     const double epsv_times_h,
+    const DiffWRT wrt,
     const double dmin) const
 {
-    const Eigen::MatrixXd U = V1 - V0;
     int dim = U.cols();
     int n = dim * vertex_indices(E, F).size();
 
-    // ∇ₓ μ N(x) f₁(‖ū‖)/‖ū‖ ūᵀ T(x)ᵀ ∇ₓu(xᵗ, x) (where ū = T(x)ᵀ u(xᵗ, x))
-    double N =
-        compute_normal_force_magnitude(V1, E, F, dhat, barrier_stiffness, dmin);
-    VectorMax12d grad_N = compute_normal_force_magnitude_gradient(
-        V1, E, F, dhat, barrier_stiffness, dmin);
+    // X is the position of all vertices; U is the displacment of all vertices
+    // u(U) is the displacment of the point of contact
+    // ū = T(X + U)ᵀu(U) is the tangential displacment of u
+    // F(X, U) = -μ N(X + U) f₁(‖ū‖)/‖ū‖ ūᵀ T(X + U)ᵀ ∇ᵤu(U)
 
-    MatrixMax<double, 3, 2> T = compute_tangent_basis(V1, E, F);
-    MatrixMax<double, 3, 24> jac_T = compute_tangent_basis_jacobian(V1, E, F);
+    Eigen::MatrixXd X_plus_U = X + U;
+    double N = compute_normal_force_magnitude(
+        X_plus_U, E, F, dhat, barrier_stiffness, dmin);
+    // ∇ₓN = ∇ᵤN
+    VectorMax12d grad_N = compute_normal_force_magnitude_gradient(
+        X_plus_U, E, F, dhat, barrier_stiffness, dmin);
+
+    MatrixMax<double, 3, 2> T = compute_tangent_basis(X_plus_U, E, F);
+    // ∇ₓT = ∇ᵤT
+    MatrixMax<double, 3, 24> jac_T =
+        compute_tangent_basis_jacobian(X_plus_U, E, F);
 
     VectorMax3d u = relative_displacement(U, E, F);
-    const MatrixMax<double, 3, 12> jac_u =
+    const MatrixMax<double, 3, 12> jac_u_wrt_U =
         relative_displacement_jacobian(U, E, F);
 
     VectorMax2d ubar = T.transpose() * u;
     double f1_over_norm_u = f1_SF_over_x(ubar.norm(), epsv_times_h);
 
-    const MatrixMax<double, 2, 12> TJ_u = tangent_basis.transpose() * jac_u;
+    const MatrixMax<double, 2, 12> T_Ju = T.transpose() * jac_u_wrt_U;
 
-    const VectorMax12d ubarTJ_u = (ubar.transpose() * TJ_u);
+    const VectorMax12d ubar_T_Ju = (ubar.transpose() * T_Ju);
 
-    MatrixMax<double, 24, 1> jacTu = jac_T.transpose() * u;
-    MatrixMax<double, 2, 12> J_ubar =
-        Eigen::Map<MatrixMax<double, 2, 12>>(jacTu.data(), dim - 1, n)
-        + T.transpose() * jac_u;
-
-    // compute ∇ᵢF
-    MatrixMax12d J(n, n);
-    // = -μ [∇N] f₁(‖ū‖)/‖ū‖ ūᵀ Tᵀ ∇u
-    for (int i = 0; i < n; i++) {
-        J.col(i) = grad_N(i) * f1_over_norm_u * ubarTJ_u;
+    // ∇ū = ∇T(X + U)ᵀu(U) + T(X + U)ᵀ∇u(U)
+    MatrixMax<double, 24, 1> JT_u = jac_T.transpose() * u;
+    MatrixMax<double, 2, 12> jac_ubar =
+        Eigen::Map<MatrixMax<double, 2, 12>>(JT_u.data(), dim - 1, n);
+    if (wrt == DiffWRT::U) {
+        jac_ubar += T_Ju;
     }
-    // + -μ N [f₁'(‖ū‖)/‖ū‖ (ūᵀ ∇ū)ᵀ]/‖ū‖ ūᵀ Tᵀ ∇u
-    // + -μ N f₁(‖ū‖) [-1/‖ū‖³ (ūᵀ ∇ū)ᵀ] ūᵀ Tᵀ ∇u
+    // ∇ₓu(U) = 0
+
+    // compute ∇F
+    MatrixMax12d J(n, n);
+    // = -μ [∇N] f₁(‖ū‖)/‖ū‖ ūᵀ Tᵀ ∇ᵤu
+    for (int i = 0; i < n; i++) {
+        J.col(i) = grad_N(i) * f1_over_norm_u * ubar_T_Ju;
+    }
+    // + -μ N [(f₁'(‖ū‖)‖ū‖ - f₁(‖ū‖))/‖ū‖³ (ūᵀ ∇ₓū)ᵀ] ūᵀ Tᵀ ∇ᵤu
     double f2 = df1_x_minus_f1_over_x3(ubar.norm(), epsv_times_h);
-    J += (N * f2 * ubar.transpose() * J_ubar).transpose() * ubarTJ_u;
-    // + -μ N f₁(‖ū‖)/‖ū‖ (∇ū)ᵀ Tᵀ ∇u
-    J += N * f1_over_norm_u * J_ubar.transpose() * TJ_u;
-    // + -μ N f₁(‖ū‖)/‖ū‖ ūᵀ ∇Tᵀ ∇u
+    J += (N * f2 * ubar.transpose() * jac_ubar).transpose() * ubar_T_Ju;
+    // + -μ N f₁(‖ū‖)/‖ū‖ (∇ₓū)ᵀ Tᵀ ∇ᵤu
+    J += N * f1_over_norm_u * jac_ubar.transpose() * T_Ju;
+    // + -μ N f₁(‖ū‖)/‖ū‖ ūᵀ ∇Tᵀ ∇ᵤu
     for (int i = 0; i < n; i++) {
         J.col(i) += N * f1_over_norm_u * ubar.transpose()
-            * jac_T.middleCols((dim - 1) * i, (dim - 1)).transpose() * jac_u;
+            * jac_T.middleCols((dim - 1) * i, (dim - 1)).transpose()
+            * jac_u_wrt_U;
     }
     // + -μ N f₁(‖ū‖)/‖ū‖ ūᵀ Tᵀ (∇²u = 0).
     J *= -get_multiplicity() * mu;
