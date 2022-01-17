@@ -40,6 +40,26 @@ struct FrictionConstraint {
         const double epsv_times_h,
         const bool project_hessian_to_psd) const;
 
+    virtual VectorMax12d compute_force(
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const double barrier_stiffness,
+        const double epsv_times_h,
+        const double dmin = 0) const;
+
+    virtual MatrixMax12d compute_force_jacobian(
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const double barrier_stiffness,
+        const double epsv_times_h,
+        const double dmin = 0) const;
+
     virtual double compute_normal_force_magnitude(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
