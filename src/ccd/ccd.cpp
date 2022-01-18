@@ -17,16 +17,22 @@ namespace ipc {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
 static constexpr int TIGHT_INCLUSION_CCD_TYPE = 1;
 static constexpr double INITIAL_DISTANCE_TOLERANCE_SCALE = 0.5;
+static constexpr long TIGHT_INCLUSION_UNLIMITED_ITERATIONS = -1;
 #endif
+
+static constexpr double SMALL_TOI = 1e-6;
 
 bool ccd_strategy(
     const std::function<bool(
-        double /*min_distance*/, bool /*no_zero_toi*/, double& /*toi*/)>& ccd,
+        long /*max_iterations*/,
+        double /*min_distance*/,
+        bool /*no_zero_toi*/,
+        double& /*toi*/)>& ccd,
+    const double max_iterations,
     const double initial_distance,
     const double conservative_rescaling,
     double& toi)
 {
-    static constexpr double SMALL_TOI = 1e-6;
 
     if (initial_distance == 0) {
         IPC_LOG(warn("Initial distance is 0, returning toi=0!"));
@@ -44,19 +50,23 @@ bool ccd_strategy(
 
     // Do not use no_zero_toi because the minimum distance is arbitrary and can
     // be removed if the query is challenging (i.e., produces small ToI).
-    bool is_impacting = ccd(min_distance, /*no_zero_toi=*/false, toi);
+    bool is_impacting =
+        ccd(max_iterations, min_distance, /*no_zero_toi=*/false, toi);
 
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
     // Tight inclusion will have higher accuracy and better performance if we
     // shrink the minimum distance. The value 1e-10 is arbitrary.
     while (is_impacting && toi < SMALL_TOI && min_distance > 1e-10) {
         min_distance /= 10;
-        is_impacting = ccd(min_distance, /*no_zero_toi=*/false, toi);
+        is_impacting =
+            ccd(max_iterations, min_distance, /*no_zero_toi=*/false, toi);
     }
 #endif
 
     if (is_impacting && toi < SMALL_TOI) {
-        is_impacting = ccd(/*min_distance=*/0, /*no_zero_toi=*/true, toi);
+        is_impacting = ccd(
+            /*max_iterations=*/TIGHT_INCLUSION_UNLIMITED_ITERATIONS,
+            /*min_distance=*/0, /*no_zero_toi=*/true, toi);
 
         if (is_impacting) {
             toi *= conservative_rescaling;
@@ -85,8 +95,8 @@ bool point_point_ccd(
     double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
-    const auto ccd = [&](double min_distance, bool no_zero_toi,
-                         double& toi) -> bool {
+    const auto ccd = [&](long max_iterations, double min_distance,
+                         bool no_zero_toi, double& toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         double output_tolerance;
         // NOTE: Use degenerate edge-edge
@@ -106,7 +116,8 @@ bool point_point_ccd(
 #endif
     };
 
-    return ccd_strategy(ccd, initial_distance, conservative_rescaling, toi);
+    return ccd_strategy(
+        ccd, max_iterations, initial_distance, conservative_rescaling, toi);
 }
 
 inline Eigen::Vector3d to_3D(const Eigen::Vector2d& v)
@@ -145,11 +156,11 @@ bool point_edge_ccd_2D(
     double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
-    const auto ccd = [&](double min_distance, bool no_zero_toi,
-                         double& toi) -> bool {
+    const auto ccd = [&](long max_iterations, double min_distance,
+                         bool no_zero_toi, double& toi) -> bool {
         double output_tolerance;
         // NOTE: Use degenerate edge-edge
-        return inclusion_ccd::edgeEdgeCCD_double(
+        bool is_impacting = inclusion_ccd::edgeEdgeCCD_double(
             p_t0_3D, p_t0_3D, e0_t0_3D, e1_t0_3D, //
             p_t1_3D, p_t1_3D, e0_t1_3D, e1_t1_3D,
             { { -1, -1, -1 } }, // rounding error (auto)
@@ -160,9 +171,18 @@ bool point_edge_ccd_2D(
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
             TIGHT_INCLUSION_CCD_TYPE, no_zero_toi);
+        if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
+            IPC_LOG(warn(
+                "edgeEdgeCCD_double exceeded iteration limit (min_dist={:g} "
+                "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
+                min_distance, max_iterations, adjusted_tolerance,
+                output_tolerance, toi));
+        }
+        return is_impacting;
     };
 
-    return ccd_strategy(ccd, initial_distance, conservative_rescaling, toi);
+    return ccd_strategy(
+        ccd, max_iterations, initial_distance, conservative_rescaling, toi);
 #endif
 }
 
@@ -186,12 +206,12 @@ bool point_edge_ccd_3D(
     double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
-    const auto ccd = [&](double min_distance, bool no_zero_toi,
-                         double& toi) -> bool {
+    const auto ccd = [&](long max_iterations, double min_distance,
+                         bool no_zero_toi, double& toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         double output_tolerance = tolerance;
         // NOTE: Use degenerate edge-edge
-        return inclusion_ccd::edgeEdgeCCD_double(
+        bool is_impacting = inclusion_ccd::edgeEdgeCCD_double(
             p_t0, p_t0, e0_t0, e1_t0, p_t1, p_t1, e0_t1, e1_t1,
             { { -1, -1, -1 } }, // rounding error (auto)
             min_distance,       // minimum separation distance
@@ -201,13 +221,22 @@ bool point_edge_ccd_3D(
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
             TIGHT_INCLUSION_CCD_TYPE, no_zero_toi);
+        if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
+            IPC_LOG(warn(
+                "edgeEdgeCCD_double exceeded iteration limit (min_dist={:g} "
+                "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
+                min_distance, max_iterations, adjusted_tolerance,
+                output_tolerance, toi));
+        }
+        return is_impacting;
 #else
         return CTCD::vertexEdgeCTCD(
             p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, min_distance, toi);
 #endif
     };
 
-    return ccd_strategy(ccd, initial_distance, conservative_rescaling, toi);
+    return ccd_strategy(
+        ccd, max_iterations, initial_distance, conservative_rescaling, toi);
 }
 
 bool point_edge_ccd(
@@ -263,11 +292,11 @@ bool edge_edge_ccd(
     double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
-    const auto ccd = [&](double min_distance, bool no_zero_toi,
-                         double& toi) -> bool {
+    const auto ccd = [&](long max_iterations, double min_distance,
+                         bool no_zero_toi, double& toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         double output_tolerance;
-        return inclusion_ccd::edgeEdgeCCD_double(
+        bool is_impacting = inclusion_ccd::edgeEdgeCCD_double(
             ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
             { { -1, -1, -1 } }, // rounding error (auto)
             min_distance,       // minimum separation distance
@@ -277,6 +306,14 @@ bool edge_edge_ccd(
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
             TIGHT_INCLUSION_CCD_TYPE, no_zero_toi);
+        if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
+            IPC_LOG(warn(
+                "edgeEdgeCCD_double exceeded iteration limit (min_dist={:g} "
+                "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
+                min_distance, max_iterations, adjusted_tolerance,
+                output_tolerance, toi));
+        }
+        return is_impacting;
 #else
         return CTCD::edgeEdgeCTCD(
             ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
@@ -284,7 +321,8 @@ bool edge_edge_ccd(
 #endif
     };
 
-    return ccd_strategy(ccd, initial_distance, conservative_rescaling, toi);
+    return ccd_strategy(
+        ccd, max_iterations, initial_distance, conservative_rescaling, toi);
 }
 
 bool point_triangle_ccd(
@@ -310,11 +348,11 @@ bool point_triangle_ccd(
     double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
-    const auto ccd = [&](double min_distance, bool no_zero_toi,
-                         double& toi) -> bool {
+    const auto ccd = [&](long max_iterations, double min_distance,
+                         bool no_zero_toi, double& toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         double output_tolerance;
-        return inclusion_ccd::vertexFaceCCD_double(
+        bool is_impacting = inclusion_ccd::vertexFaceCCD_double(
             p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
             { { -1, -1, -1 } }, // rounding error (auto)
             min_distance,       // minimum separation distance
@@ -324,6 +362,14 @@ bool point_triangle_ccd(
             max_iterations,     // maximum number of iterations
             output_tolerance,   // delta_actual
             TIGHT_INCLUSION_CCD_TYPE, no_zero_toi);
+        if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
+            IPC_LOG(warn(
+                "vertexFaceCCD_double exceeded iteration limit (min_dist={:g} "
+                "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
+                min_distance, max_iterations, adjusted_tolerance,
+                output_tolerance, toi));
+        }
+        return is_impacting;
 #else
         return CTCD::vertexFaceCTCD(
             p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, //
@@ -331,7 +377,8 @@ bool point_triangle_ccd(
 #endif
     };
 
-    return ccd_strategy(ccd, initial_distance, conservative_rescaling, toi);
+    return ccd_strategy(
+        ccd, max_iterations, initial_distance, conservative_rescaling, toi);
 }
 
 } // namespace ipc

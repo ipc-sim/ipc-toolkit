@@ -608,3 +608,29 @@ TEST_CASE("Slow EE CCD", "[ccd][edge-edge][slow]")
         CHECK(is_impacting);
     }
 }
+
+TEST_CASE("Slow EE CCD 2", "[ccd][edge-edge][slow][thisone]")
+{
+    Eigen::Vector3d ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1,
+        eb1_t1;
+    ea0_t0 << 1.00002232466453, 0.500004786049044, -2.06727783590977e-05;
+    ea1_t0 << 1.64687846177844e-05, 0.499996645067319, 1.63939999009028e-05;
+    eb0_t0 << 1, 0.5, 0;
+    eb1_t0 << 0, 0.5, 0;
+    ea0_t1 << 1.00294282700155, 0.498652627047143, 0.003626320742036;
+    ea1_t1 << -0.00219276550735626, 0.500871179186644, -0.00315828804921928;
+    eb0_t1 << 1, 0.5, 0;
+    eb1_t1 << 0, 0.5, 0;
+
+    double tol = 1e-6;
+    long max_iter = 1e6;
+    double tmax = 2.8076171875e-03;
+
+    double toi;
+    bool is_impacting = edge_edge_ccd(
+        ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
+        tmax, tol, max_iter);
+
+    CAPTURE(toi);
+    CHECK(is_impacting);
+}

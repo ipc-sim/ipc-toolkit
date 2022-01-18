@@ -38,6 +38,13 @@ struct ContinuousCollisionCandidate {
         const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
         const double conservative_rescaling =
             DEFAULT_CCD_CONSERVATIVE_RESCALING) const = 0;
+
+    // Print the vertices of the CCD query for debugging.
+    virtual void print_ccd_query(
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const = 0;
 };
 
 struct VertexVertexCandidate {
@@ -80,6 +87,12 @@ struct EdgeVertexCandidate : ContinuousCollisionCandidate {
         const double conservative_rescaling =
             DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
 
+    void print_ccd_query(
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const override;
+
     long edge_index;
     long vertex_index;
 };
@@ -107,6 +120,12 @@ struct EdgeEdgeCandidate : ContinuousCollisionCandidate {
         const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
         const double conservative_rescaling =
             DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
+
+    void print_ccd_query(
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const override;
 
     long edge0_index;
     long edge1_index;
@@ -154,6 +173,12 @@ struct FaceVertexCandidate : ContinuousCollisionCandidate {
         const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
         const double conservative_rescaling =
             DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
+
+    void print_ccd_query(
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F) const override;
 
     long face_index;
     long vertex_index;

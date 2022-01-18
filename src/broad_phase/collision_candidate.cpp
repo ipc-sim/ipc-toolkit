@@ -1,10 +1,14 @@
 #include <ipc/broad_phase/collision_candidate.hpp>
 
 #include <algorithm> // std::min/max
+#include <iostream>
 
 #include <ipc/utils/logger.hpp>
 
 namespace ipc {
+
+static const Eigen::IOFormat OBJ_VERTEX_FORMAT(
+    Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "", "");
 
 VertexVertexCandidate::VertexVertexCandidate(
     long vertex0_index, long vertex1_index)
@@ -71,6 +75,21 @@ bool EdgeVertexCandidate::ccd(
         toi, tmax, tolerance, max_iterations, conservative_rescaling);
 }
 
+void EdgeVertexCandidate::print_ccd_query(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    std::cout << V0.row(E(edge_index, 0)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V0.row(E(edge_index, 1)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V0.row(vertex_index).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(E(edge_index, 0)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(E(edge_index, 1)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(vertex_index).format(OBJ_VERTEX_FORMAT);
+    std::cout << std::flush;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 EdgeEdgeCandidate::EdgeEdgeCandidate(long edge0_index, long edge1_index)
@@ -120,6 +139,23 @@ bool EdgeEdgeCandidate::ccd(
         // Edge 2 at t=1
         V1.row(E(edge1_index, 0)), V1.row(E(edge1_index, 1)), //
         toi, tmax, tolerance, max_iterations, conservative_rescaling);
+}
+
+void EdgeEdgeCandidate::print_ccd_query(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    std::cout << V0.row(E(edge0_index, 0)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V0.row(E(edge0_index, 1)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V0.row(E(edge1_index, 0)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V0.row(E(edge1_index, 1)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(E(edge0_index, 0)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(E(edge0_index, 1)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(E(edge1_index, 0)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(E(edge1_index, 1)).format(OBJ_VERTEX_FORMAT);
+    std::cout << std::flush;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -187,6 +223,23 @@ bool FaceVertexCandidate::ccd(
         V1.row(F(face_index, 0)), V1.row(F(face_index, 1)),
         V1.row(F(face_index, 2)), //
         toi, tmax, tolerance, max_iterations, conservative_rescaling);
+}
+
+void FaceVertexCandidate::print_ccd_query(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F) const
+{
+    std::cout << V0.row(F(face_index, 0)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V0.row(F(face_index, 1)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V0.row(F(face_index, 2)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V0.row(vertex_index).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(F(face_index, 0)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(F(face_index, 1)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(F(face_index, 2)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(vertex_index).format(OBJ_VERTEX_FORMAT);
+    std::cout << std::flush;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -272,9 +325,6 @@ void save_obj(
     const Eigen::MatrixXi& F,
     const std::vector<EdgeVertexCandidate>& ev_candidates)
 {
-    static const Eigen::IOFormat OBJ_VERTEX_FORMAT(
-        Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "",
-        "");
     out << "o EV\n";
     int i = 1;
     for (const auto& ev_candidate : ev_candidates) {
@@ -293,9 +343,6 @@ void save_obj(
     const Eigen::MatrixXi& F,
     const std::vector<EdgeEdgeCandidate>& ee_candidates)
 {
-    static const Eigen::IOFormat OBJ_VERTEX_FORMAT(
-        Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "",
-        "");
     out << "o EE\n";
     int i = 1;
     for (const auto& ee_candidate : ee_candidates) {
@@ -316,9 +363,6 @@ void save_obj(
     const Eigen::MatrixXi& F,
     const std::vector<FaceVertexCandidate>& fv_candidates)
 {
-    static const Eigen::IOFormat OBJ_VERTEX_FORMAT(
-        Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "",
-        "");
     out << "o FV\n";
     int i = 1;
     for (const auto& fv_candidate : fv_candidates) {
@@ -338,9 +382,6 @@ void save_obj(
     const Eigen::MatrixXi& F,
     const std::vector<EdgeFaceCandidate>& ef_candidates)
 {
-    static const Eigen::IOFormat OBJ_VERTEX_FORMAT(
-        Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "",
-        "");
     out << "o EF\n";
     int i = 1;
     for (const auto& ef_candidate : ef_candidates) {
