@@ -23,6 +23,7 @@ VectorMax12d compute_normal_force_magnitude_gradient(
     double arg_d = distance_squared - dmin * dmin;
     double arg_dhat = 2 * dmin * dhat + dhat * dhat;
     double distance = sqrt(distance_squared);
+    assert(distance > 0);
 
     return -barrier_stiffness
         * (barrier_hessian(arg_d, arg_dhat) * 2 * distance

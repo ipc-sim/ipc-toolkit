@@ -200,7 +200,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
 
     const MatrixMax<double, 2, 12> T_Ju = T.transpose() * jac_u_wrt_U;
 
-    const VectorMax12d ubar_T_Ju = (ubar.transpose() * T_Ju);
+    const RowVectorMax12d ubar_T_Ju = ubar.transpose() * T_Ju;
 
     // ∇ū = ∇T(X + U)ᵀu(U) + T(X + U)ᵀ∇u(U)
     MatrixMax<double, 24, 1> JT_u = jac_T.transpose() * u;
