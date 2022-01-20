@@ -266,4 +266,97 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     return hess;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+Eigen::VectorXd compute_force(
+    const Eigen::MatrixXd& X,
+    const Eigen::MatrixXd& Ut,
+    const Eigen::MatrixXd& U,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const FrictionConstraints& friction_constraint_set,
+    const double dhat,
+    const double barrier_stiffness,
+    const double epsv_times_h,
+    const double dmin)
+{
+    if (friction_constraint_set.empty()) {
+        return Eigen::VectorXd::Zero(U.size());
+    }
+
+    int dim = U.cols();
+
+    tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
+        Eigen::VectorXd::Zero(U.size()));
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), friction_constraint_set.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            auto& local_force = storage.local();
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                local_gradient_to_global_gradient(
+                    friction_constraint_set[i].compute_force(
+                        X, Ut, U, E, F, dhat, barrier_stiffness, epsv_times_h,
+                        dmin),
+                    friction_constraint_set[i].vertex_indices(E, F), dim,
+                    local_force);
+            }
+        });
+
+    Eigen::VectorXd force = Eigen::VectorXd::Zero(U.size());
+    for (const auto& local_force : storage) {
+        force += local_force;
+    }
+    return force;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Eigen::SparseMatrix<double> compute_force_jacobian(
+    const Eigen::MatrixXd& X,
+    const Eigen::MatrixXd& Ut,
+    const Eigen::MatrixXd& U,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const FrictionConstraints& friction_constraint_set,
+    const double dhat,
+    const double barrier_stiffness,
+    const double epsv_times_h,
+    const FrictionConstraint::DiffWRT wrt,
+    const double dmin)
+{
+    if (friction_constraint_set.empty()) {
+        return Eigen::SparseMatrix<double>(U.size(), U.size());
+    }
+
+    int dim = U.cols();
+
+    tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
+        storage;
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), friction_constraint_set.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            auto& local_jac_triplets = storage.local();
+
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                local_hessian_to_global_triplets(
+                    friction_constraint_set[i].compute_force_jacobian(
+                        X, Ut, U, E, F, dhat, barrier_stiffness, epsv_times_h,
+                        wrt, dmin),
+                    friction_constraint_set[i].vertex_indices(E, F), dim,
+                    local_jac_triplets);
+            }
+        });
+
+    Eigen::SparseMatrix<double> jacobian(U.size(), U.size());
+    for (const auto& local_jac_triplets : storage) {
+        Eigen::SparseMatrix<double> local_jacobian(U.size(), U.size());
+        local_jacobian.setFromTriplets(
+            local_jac_triplets.begin(), local_jac_triplets.end());
+        jacobian += local_jacobian;
+    }
+    return jacobian;
+}
+
 } // namespace ipc

@@ -48,12 +48,45 @@ struct FrictionConstraint {
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
+        const double dmin = 0) const
+    {
+        return compute_force(
+            X, Eigen::MatrixXd(), U, E, F, dhat, barrier_stiffness,
+            epsv_times_h, dmin);
+    }
+
+    virtual VectorMax12d compute_force(
+        const Eigen::MatrixXd& X,
+        const Eigen::MatrixXd& Ut,
+        const Eigen::MatrixXd& U,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const double barrier_stiffness,
+        const double epsv_times_h,
         const double dmin = 0) const;
 
-    enum class DiffWRT { X, U };
+    enum class DiffWRT { X, Ut, U };
 
     virtual MatrixMax12d compute_force_jacobian(
         const Eigen::MatrixXd& X,
+        const Eigen::MatrixXd& U,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const double barrier_stiffness,
+        const double epsv_times_h,
+        const DiffWRT wrt,
+        const double dmin = 0) const
+    {
+        return compute_force_jacobian(
+            X, Eigen::MatrixXd(), U, E, F, dhat, barrier_stiffness,
+            epsv_times_h, wrt, dmin);
+    }
+
+    virtual MatrixMax12d compute_force_jacobian(
+        const Eigen::MatrixXd& X,
+        const Eigen::MatrixXd& Ut,
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
