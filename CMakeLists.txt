@@ -35,6 +35,7 @@ option(IPC_TOOLKIT_WITH_LOGGER                "Enable logger"                   
 option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"                     ON)
 option(IPC_TOOLKIT_WITH_PYTHON                "Build Python bindings"                         OFF)
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
+option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 
 # Set default minimum C++ standard
@@ -130,6 +131,12 @@ if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   include(gmp)
   target_link_libraries(ipc_toolkit PUBLIC GMP::GMP)
   target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
+endif()
+
+if(IPC_TOOLKIT_WITH_CUDA)
+  include(gpu_ccd)
+  target_link_libraries(ipc PUBLIC gpu_ccd::gpu_ccd)
+  target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_CUDA)
 endif()
 
 ################################################################################
