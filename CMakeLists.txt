@@ -135,7 +135,7 @@ endif()
 
 if(IPC_TOOLKIT_WITH_CUDA)
   include(gpu_ccd)
-  target_link_libraries(ipc PUBLIC gpu_ccd::gpu_ccd)
+  target_link_libraries(ipc_toolkit PUBLIC gpu_ccd::gpu_ccd)
   target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_CUDA)
 endif()
 
