@@ -74,7 +74,7 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     double epsv_times_h,
     bool project_hessian_to_psd = true);
 
-Eigen::VectorXd compute_force(
+Eigen::VectorXd compute_friction_force(
     const Eigen::MatrixXd& X,
     const Eigen::MatrixXd& Ut,
     const Eigen::MatrixXd& U,
@@ -86,7 +86,7 @@ Eigen::VectorXd compute_force(
     const double epsv_times_h,
     const double dmin = 0);
 
-inline Eigen::VectorXd compute_force(
+inline Eigen::VectorXd compute_friction_force(
     const Eigen::MatrixXd& X,
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
@@ -97,12 +97,12 @@ inline Eigen::VectorXd compute_force(
     const double epsv_times_h,
     const double dmin = 0)
 {
-    return compute_force(
+    return compute_friction_force(
         X, Eigen::MatrixXd(), U, E, F, friction_constraint_set, dhat,
         barrier_stiffness, epsv_times_h, dmin);
 }
 
-Eigen::SparseMatrix<double> compute_force_jacobian(
+Eigen::SparseMatrix<double> compute_friction_force_jacobian(
     const Eigen::MatrixXd& X,
     const Eigen::MatrixXd& Ut,
     const Eigen::MatrixXd& U,
@@ -115,7 +115,7 @@ Eigen::SparseMatrix<double> compute_force_jacobian(
     const FrictionConstraint::DiffWRT wrt,
     const double dmin = 0);
 
-inline Eigen::SparseMatrix<double> compute_force_jacobian(
+inline Eigen::SparseMatrix<double> compute_friction_force_jacobian(
     const Eigen::MatrixXd& X,
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
@@ -127,7 +127,7 @@ inline Eigen::SparseMatrix<double> compute_force_jacobian(
     const FrictionConstraint::DiffWRT wrt,
     const double dmin = 0)
 {
-    return compute_force_jacobian(
+    return compute_friction_force_jacobian(
         X, Eigen::MatrixXd(), U, E, F, friction_constraint_set, dhat,
         barrier_stiffness, epsv_times_h, wrt, dmin);
 }

@@ -268,7 +268,7 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Eigen::VectorXd compute_force(
+Eigen::VectorXd compute_friction_force(
     const Eigen::MatrixXd& X,
     const Eigen::MatrixXd& Ut,
     const Eigen::MatrixXd& U,
@@ -312,7 +312,7 @@ Eigen::VectorXd compute_force(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Eigen::SparseMatrix<double> compute_force_jacobian(
+Eigen::SparseMatrix<double> compute_friction_force_jacobian(
     const Eigen::MatrixXd& X,
     const Eigen::MatrixXd& Ut,
     const Eigen::MatrixXd& U,
