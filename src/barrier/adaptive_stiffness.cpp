@@ -75,9 +75,8 @@ void update_barrier_stiffness(
 // Adaptive κ
 void update_barrier_stiffness(
     const Constraints& constraint_set,
+    const SurfaceMesh& mesh,
     const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     double prev_min_distance,
     double& min_distance,
     double max_barrier_stiffness,
@@ -87,7 +86,7 @@ void update_barrier_stiffness(
 {
     // Use a temporay variable in case &prev_min_distance == &min_distance
     double current_min_distance =
-        compute_minimum_distance(V, E, F, constraint_set);
+        compute_minimum_distance(mesh, V, constraint_set);
 
     update_barrier_stiffness(
         prev_min_distance, current_min_distance, max_barrier_stiffness,

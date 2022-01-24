@@ -3,6 +3,8 @@ set(SOURCES
   collision_constraint.hpp
   ipc.hpp
   ipc.cpp
+  surface_mesh.cpp
+  surface_mesh.hpp
 )
 
 ipc_toolkit_prepend_current_path(SOURCES)

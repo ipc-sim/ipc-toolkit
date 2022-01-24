@@ -281,10 +281,10 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
         contact_constraint_set.vv_constraints.emplace_back(0, 1);
     }
 
-    double distance_t0 =
-        compute_minimum_distance(V0, E, F, contact_constraint_set);
-    double distance_t1 =
-        compute_minimum_distance(V1, E, F, contact_constraint_set);
+    double distance_t0 = compute_minimum_distance(
+        SurfaceMesh(V0, E, F), V0, contact_constraint_set);
+    double distance_t1 = compute_minimum_distance(
+        SurfaceMesh(V0, E, F), V1, contact_constraint_set);
     // CHECK((distance_t0 < dhat || distance_t1 < dhat));
 
     if (distance_t0 == 0 || distance_t1 == 0) {

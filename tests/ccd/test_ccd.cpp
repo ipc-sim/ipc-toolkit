@@ -268,7 +268,6 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
     // BroadPhaseMethod broadphase_method =
     //     GENERATE(BroadPhaseMethod::HASH_GRID, BroadPhaseMethod::BRUTE_FORCE);
     BroadPhaseMethod broadphase_method = BroadPhaseMethod::HASH_GRID;
-    Eigen::VectorXi codim_V;
     double inflation_radius = 0;
 
     bool recompute_candidates = GENERATE(false, true);
@@ -314,15 +313,20 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
     }
     // REQUIRE(success);
 
+    SurfaceMesh mesh = SurfaceMesh::build_from_full_mesh(V0, E, F);
+    // Discard codimensional/internal vertices
+    V0 = mesh.surface_vertices(V0);
+    V1 = mesh.surface_vertices(V1);
+
     Candidates candidates;
     construct_collision_candidates(
-        V0, V1, codim_V, E, F, candidates, inflation_radius, broadphase_method);
+        V0, V1, E, F, candidates, inflation_radius, broadphase_method);
 
     bool has_collisions = !is_step_collision_free(
-        candidates, V0, V1, E, F, FIRST_TOL, FIRST_MAX_ITER);
+        candidates, mesh, V0, V1, FIRST_TOL, FIRST_MAX_ITER);
 
     double stepsize = compute_collision_free_stepsize(
-        candidates, V0, V1, E, F, FIRST_TOL, FIRST_MAX_ITER);
+        candidates, mesh, V0, V1, FIRST_TOL, FIRST_MAX_ITER);
 
     if (!has_collisions) {
         CHECK(stepsize == 1.0);
@@ -338,15 +342,14 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
 
         if (recompute_candidates) {
             construct_collision_candidates(
-                V0, Vt, codim_V, E, F, candidates, inflation_radius,
-                broadphase_method);
+                V0, Vt, E, F, candidates, inflation_radius, broadphase_method);
         }
 
         has_collisions_repeated = !is_step_collision_free(
-            candidates, V0, Vt, E, F, SECOND_TOL, SECOND_MAX_ITER);
+            candidates, mesh, V0, Vt, SECOND_TOL, SECOND_MAX_ITER);
 
         stepsize_repeated = compute_collision_free_stepsize(
-            candidates, V0, Vt, E, F, SECOND_TOL, SECOND_MAX_ITER);
+            candidates, mesh, V0, Vt, SECOND_TOL, SECOND_MAX_ITER);
 
         CAPTURE(
             t0_filename, t1_filename, broadphase_method, recompute_candidates,

@@ -178,5 +178,5 @@ TEST_CASE("Test has_intersections()", "[intersection][thisone]")
     REQUIRE(success);
 
     CAPTURE(mesh1_name, mesh2_name, R1, R2);
-    CHECK(has_intersections(V, E, F));
+    CHECK(has_intersections(SurfaceMesh(V, E, F), V));
 }

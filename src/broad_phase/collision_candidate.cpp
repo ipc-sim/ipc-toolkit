@@ -244,6 +244,32 @@ void FaceVertexCandidate::print_ccd_query(
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef IPC_TOOLKIT_WITH_CUDA
+Candidates::Candidates(
+    const std::vector<std::pair<int, int>>& overlaps,
+    const std::vector<ccdgpu::Aabb> boxes)
+{
+    for (int i = 0; i < overlaps.size(); i++) {
+        const std::pair<int, int>& overlap = overlaps[i];
+        const ccdgpu::Aabb& boxA = boxes[overlap.first];
+        const ccdgpu::Aabb& boxB = boxes[overlap.second];
+        if (is_face(boxA) && is_vertex(boxB)) { // FV
+            fv_candidates.emplace_back(boxA.id, boxB.id);
+        } else if (is_face(boxB) && is_vertex(boxA)) { // VF
+            fv_candidates.emplace_back(boxB.id, boxA.id);
+        } else if (is_edge(boxA) && is_edge(boxB)) { // EE
+            ee_candidates.emplace_back(boxA.id, boxB.id);
+        } else if (is_edge(boxA) && is_vertex(boxB)) { // EV
+            ev_candidates.emplace_back(boxA.id, boxB.id);
+        } else if (is_edge(boxB) && is_vertex(boxA)) { // VE
+            ev_candidates.emplace_back(boxB.id, boxA.id);
+        } else { // VV, FF, FE, EF
+            // Invalid collision candidate
+        }
+    }
+}
+#endif
+
 size_t Candidates::size() const
 {
     return ev_candidates.size() + ee_candidates.size() + fv_candidates.size();
