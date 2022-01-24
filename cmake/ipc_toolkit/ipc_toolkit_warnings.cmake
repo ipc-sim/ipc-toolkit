@@ -122,9 +122,9 @@ set(IPC_TOOLKIT_FLAGS
 		#-Wno-c++98-compat
 		#-Wno-c++98-compat-pedantic
 
-		###########################
-		# Need to check if those are still valid today
-		###########################
+		################################################
+		# Need to check if those are still valid today #
+		################################################
 
 		#-Wimplicit-atomic-properties
 		#-Wmissing-declarations
