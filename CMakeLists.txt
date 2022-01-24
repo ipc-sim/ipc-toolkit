@@ -163,6 +163,45 @@ endif()
 target_compile_features(ipc_toolkit PUBLIC cxx_std_14)
 
 ################################################################################
+# CUDA
+################################################################################
+
+if(IPC_TOOLKIT_WITH_CUDA)
+  include(CheckLanguage)
+  check_language(CUDA)
+  if(CMAKE_CUDA_COMPILER)
+    enable_language(CUDA)
+  else()
+    message(FATAL_ERROR "No CUDA support found!")
+  endif()
+
+  # We need to explicitly state that we need all CUDA files in the particle 
+  # library to be built with -dc as the member functions could be called by 
+  # other libraries and executables.
+  set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+  # Nvidia RTX8000 -> compute_75
+  # Nvidia V100 -> compute_70
+  # Nvidia 1080/1080Ti -> compute_61
+  # Nvidia 3080Ti -> compute_86
+  if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+    set(CMAKE_CUDA_ARCHITECTURES 70 75 86)
+  endif()
+  set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "70;75;86")
+
+  if(APPLE)
+    # We need to add the path to the driver (libcuda.dylib) as an rpath, 
+    # so that the static cuda runtime can find it at runtime.
+    set_property(TARGET ipc_toolkit 
+                 PROPERTY
+                 BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
+  endif()
+
+  find_package(CUDAToolkit)
+  target_link_libraries(ipc_toolkit PRIVATE CUDA::cudart)
+endif()
+
+################################################################################
 # Tests
 ################################################################################
 
