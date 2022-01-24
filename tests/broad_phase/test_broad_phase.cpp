@@ -38,22 +38,19 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase]")
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
         BroadPhaseMethod::SPATIAL_HASH);
 
-    if (method == BroadPhaseMethod::SPATIAL_HASH && ignore_internal_vertices) {
-        return; // Not implemented
-    }
-
     double tolerance = 1e-6;
     int max_iterations = 1e7;
 
     bool is_valid_step;
     if (ignore_internal_vertices) {
+        SurfaceMesh mesh =
+            SurfaceMesh::build_from_full_mesh(V_t0, E, /*F=*/Eigen::MatrixXi());
         is_valid_step = ipc::is_step_collision_free(
-            V_t0, V_t1, Eigen::VectorXi(), E, /*F=*/Eigen::MatrixXi(), method,
-            tolerance, max_iterations);
+            mesh, V_t0, V_t1, method, tolerance, max_iterations);
     } else {
+        SurfaceMesh mesh(V_t0, E, /*F=*/Eigen::MatrixXi());
         is_valid_step = ipc::is_step_collision_free(
-            V_t0, V_t1, E, /*F=*/Eigen::MatrixXi(), method, tolerance,
-            max_iterations);
+            mesh, V_t0, V_t1, method, tolerance, max_iterations);
     }
 
     CAPTURE(ignore_internal_vertices);
@@ -72,13 +69,12 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase]")
     igl::readCSV(std::string(TEST_DATA_DIR) + "E.csv", E);
     E.array() -= 1; // NOTE: Convert from OBJ format to index
 
-    Eigen::VectorXi codim_V;
-    Eigen::MatrixXi F;
+    SurfaceMesh mesh =
+        SurfaceMesh::build_from_full_mesh(V_t0, E, /*F=*/Eigen::MatrixXi());
 
     BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID
-        // , BroadPhaseMethod::SPATIAL_HASH
-    );
+        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
+        BroadPhaseMethod::SPATIAL_HASH);
 
     double tolerance = 1e-6;
     int max_iterations = 1e7;
@@ -87,13 +83,13 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase]")
     SECTION("2D")
     {
         is_valid_step = ipc::is_step_collision_free(
-            V_t0.leftCols(2), V_t1.leftCols(2), codim_V, E, F, method,
-            tolerance, max_iterations);
+            mesh, V_t0.leftCols(2), V_t1.leftCols(2), method, tolerance,
+            max_iterations);
     }
     SECTION("3D")
     {
         is_valid_step = ipc::is_step_collision_free(
-            V_t0, V_t1, codim_V, E, F, method, tolerance, max_iterations);
+            mesh, V_t0, V_t1, method, tolerance, max_iterations);
     }
 
     CAPTURE(method);
@@ -112,23 +108,20 @@ TEST_CASE(
     Eigen::MatrixXi E, F;
     igl::readDMAT(std::string(TEST_DATA_DIR) + "codim-points/E.dmat", E);
     igl::readDMAT(std::string(TEST_DATA_DIR) + "codim-points/F.dmat", F);
-    const Eigen::MatrixXi F2E = faces_to_edges(F, E);
+
+    SurfaceMesh mesh = SurfaceMesh::build_from_full_mesh(V_rest, E, F);
 
 #ifdef NDEBUG
     BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID //,
-        // BroadPhaseMethod::SPATIAL_HASH
-    );
+        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
+        BroadPhaseMethod::SPATIAL_HASH);
 #else
     BroadPhaseMethod method =
-        GENERATE(BroadPhaseMethod::HASH_GRID //,
-                                             // BroadPhaseMethod::SPATIAL_HASH
-        );
+        GENERATE(BroadPhaseMethod::HASH_GRID, BroadPhaseMethod::SPATIAL_HASH);
 #endif
 
     Constraints constraint_set;
-    construct_constraint_set(
-        V_rest, V, E, F, dhat, constraint_set, F2E, /*dmin=*/0, method);
+    construct_constraint_set(mesh, V, dhat, constraint_set, /*dmin=*/0, method);
 
     CHECK(constraint_set.size() != 0);
 }
@@ -155,12 +148,12 @@ TEST_CASE(
         E.row(0) << 0, 1;
         E.row(1) << 2, 3;
 
-        SECTION("Without group ids") { }
-        SECTION("With group ids")
-        {
-            group_ids.resize(4);
-            group_ids << 0, 0, 1, 1;
-        }
+        // SECTION("Without group ids") { }
+        // SECTION("With group ids")
+        // {
+        //     group_ids.resize(4);
+        //     group_ids << 0, 0, 1, 1;
+        // }
 
         F.resize(0, 3);
 
@@ -170,13 +163,7 @@ TEST_CASE(
     }
     SECTION("Complex")
     {
-        // #ifdef NDEBUG
-        //         std::string filename =
-        //             GENERATE(std::string("cube.obj"),
-        //             std::string("bunny.obj"));
-        // #else
         std::string filename = "cube.obj";
-        // #endif
         std::string mesh_path = std::string(TEST_DATA_DIR) + filename;
         bool success = igl::read_triangle_mesh(mesh_path, V0, F);
         REQUIRE(success);
@@ -186,21 +173,19 @@ TEST_CASE(
         U.col(1).setOnes();
     }
 
-    Candidates candidates;
-
-    // int check_hash_grid = GENERATE(0, 1);
-    int check_hash_grid = 1;
-
-    double inflation_radius = 1e-2; // GENERATE(0.0, 1e-4, 1e-3, 1e-2, 1e-1);
+    double inflation_radius = 1e-2;
 
     auto can_collide = [&group_ids](size_t vi, size_t vj) {
         return group_ids.size() == 0 || group_ids(vi) != group_ids(vj);
     };
 
-    std::function<void(const Eigen::MatrixXd&)> build_candidates;
-    if (check_hash_grid) {
+    BroadPhaseMethod method =
+        GENERATE(BroadPhaseMethod::HASH_GRID, BroadPhaseMethod::SPATIAL_HASH);
+
+    std::function<Candidates(const Eigen::MatrixXd&)> build_candidates;
+    if (method == BroadPhaseMethod::HASH_GRID) {
         build_candidates = [&](const Eigen::MatrixXd& V1) {
-            candidates.clear();
+            Candidates candidates;
 
             HashGrid hashgrid;
             hashgrid.resize(V0, V1, E, inflation_radius);
@@ -213,10 +198,12 @@ TEST_CASE(
             hashgrid.getEdgeEdgePairs(E, candidates.ee_candidates, can_collide);
             hashgrid.getFaceVertexPairs(
                 F, candidates.fv_candidates, can_collide);
+            return candidates;
         };
     } else {
+        assert(method = BroadPhaseMethod::SPATIAL_HASH);
         build_candidates = [&](const Eigen::MatrixXd& V1) {
-            candidates.clear();
+            Candidates candidates;
 
             SpatialHash sh;
             sh.build(V0, V1, E, F, inflation_radius);
@@ -225,13 +212,14 @@ TEST_CASE(
             sh.queryMeshForCandidates(
                 V0, V1, E, F, candidates,
                 /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true);
+            return candidates;
         };
     }
 
     for (int i = 0; i < 2; i++) {
         Eigen::MatrixXd V1 = V0 + U;
 
-        build_candidates(V1);
+        Candidates candidates = build_candidates(V1);
 
         brute_force_comparison(
             V0, V1, E, F, group_ids, candidates, inflation_radius);

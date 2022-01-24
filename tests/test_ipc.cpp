@@ -31,30 +31,32 @@ TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
     bool success = load_mesh(mesh_name, V, E, F);
     REQUIRE(success);
 
+    SurfaceMesh mesh(V, E, F);
+
     Constraints constraint_set;
-    construct_constraint_set(/*V_rest=*/V, V, E, F, dhat, constraint_set);
+    construct_constraint_set(mesh, V, dhat, constraint_set);
     CAPTURE(mesh_name, dhat);
     CHECK(constraint_set.num_constraints() > 0);
 
     BENCHMARK("Compute barrier potential")
     {
         double b =
-            ipc::compute_barrier_potential(V, E, F, constraint_set, dhat);
+            ipc::compute_barrier_potential(mesh, V, constraint_set, dhat);
     };
     BENCHMARK("Compute barrier potential gradient")
     {
         Eigen::VectorXd grad_b = ipc::compute_barrier_potential_gradient(
-            V, E, F, constraint_set, dhat);
+            mesh, V, constraint_set, dhat);
     };
     BENCHMARK("Compute barrier potential hessian")
     {
         Eigen::MatrixXd hess_b = ipc::compute_barrier_potential_hessian(
-            V, E, F, constraint_set, dhat);
+            mesh, V, constraint_set, dhat);
     };
     BENCHMARK("Compute compute_minimum_distance")
     {
         double min_dist =
-            ipc::compute_minimum_distance(V, E, F, constraint_set);
+            ipc::compute_minimum_distance(mesh, V, constraint_set);
     };
 }
 
@@ -62,12 +64,11 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
 {
     double dhat = -1;
     std::string mesh_name = "";
-    bool ignore_codimensional_vertices = false;
+    bool all_vertices_on_surface = true;
 
     BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID //,
-        // BroadPhaseMethod::SPATIAL_HASH
-    );
+        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
+        BroadPhaseMethod::SPATIAL_HASH);
 
     SECTION("cube")
     {
@@ -78,13 +79,13 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
     {
         dhat = 1e-1;
         mesh_name = "two-cubes-far.obj";
-        ignore_codimensional_vertices = true;
+        all_vertices_on_surface = false;
     }
     SECTION("two cubes close")
     {
         dhat = 1e-1;
         mesh_name = "two-cubes-close.obj";
-        ignore_codimensional_vertices = true;
+        all_vertices_on_surface = false;
     }
     // SECTION("bunny")
     // {
@@ -98,26 +99,29 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
     CAPTURE(mesh_name);
     REQUIRE(success);
 
+    SurfaceMesh mesh;
+
     Constraints constraint_set;
-    if (ignore_codimensional_vertices) {
+    if (all_vertices_on_surface) {
+        mesh = SurfaceMesh(V, E, F);
         ipc::construct_constraint_set(
-            /*V_rest=*/V, V, /*codim_V=*/Eigen::VectorXi(), E, F, dhat,
-            constraint_set, /*F2E=*/Eigen::MatrixXi(), /*dmin=*/0, method);
+            mesh, V, dhat, constraint_set, /*dmin=*/0, method);
     } else {
+        mesh = SurfaceMesh::build_from_full_mesh(V, E, F);
+        V = mesh.surface_vertices(V);
         ipc::construct_constraint_set(
-            /*V_rest=*/V, V, E, F, dhat, constraint_set,
-            /*F2E=*/Eigen::MatrixXi(), /*dmin=*/0, method);
+            mesh, V, dhat, constraint_set, /*dmin=*/0, method);
     }
-    CAPTURE(dhat, method, ignore_codimensional_vertices);
+    CAPTURE(dhat, method, all_vertices_on_surface);
     CHECK(constraint_set.num_constraints() > 0);
 
     Eigen::VectorXd grad_b =
-        ipc::compute_barrier_potential_gradient(V, E, F, constraint_set, dhat);
+        ipc::compute_barrier_potential_gradient(mesh, V, constraint_set, dhat);
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
         return ipc::compute_barrier_potential(
-            fd::unflatten(x, V.cols()), E, F, constraint_set, dhat);
+            mesh, fd::unflatten(x, V.cols()), constraint_set, dhat);
     };
     Eigen::VectorXd fgrad_b;
     fd::finite_gradient(fd::flatten(V), f, fgrad_b);
@@ -130,29 +134,28 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
 {
     double dhat = -1;
     std::string mesh_name = "";
-    bool ignore_codimensional_vertices = false;
+    bool all_vertices_on_surface = true;
 
     BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID //,
-        // BroadPhaseMethod::SPATIAL_HASH
-    );
+        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
+        BroadPhaseMethod::SPATIAL_HASH);
 
-    // SECTION("cube")
-    // {
-    //     dhat = sqrt(2.0);
-    //     mesh_name = "cube.obj";
-    // }
+    SECTION("cube")
+    {
+        dhat = sqrt(2.0);
+        mesh_name = "cube.obj";
+    }
     SECTION("two cubes far")
     {
         dhat = 1e-1;
         mesh_name = "two-cubes-far.obj";
-        ignore_codimensional_vertices = true;
+        all_vertices_on_surface = false;
     }
     SECTION("two cubes close")
     {
         dhat = 1e-1;
         mesh_name = "two-cubes-close.obj";
-        ignore_codimensional_vertices = true;
+        all_vertices_on_surface = false;
     }
     // WARNING: The bunny takes too long in debug.
     // SECTION("bunny")
@@ -167,26 +170,29 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     CAPTURE(mesh_name);
     REQUIRE(success);
 
+    SurfaceMesh mesh;
+
     Constraints constraint_set;
-    if (ignore_codimensional_vertices) {
+    if (all_vertices_on_surface) {
+        mesh = SurfaceMesh(V, E, F);
         ipc::construct_constraint_set(
-            /*V_rest=*/V, V, /*codim_V=*/Eigen::VectorXi(), E, F, dhat,
-            constraint_set, /*F2E=*/Eigen::MatrixXi(), /*dmin=*/0, method);
+            mesh, V, dhat, constraint_set, /*dmin=*/0, method);
     } else {
+        mesh = SurfaceMesh::build_from_full_mesh(V, E, F);
+        V = mesh.surface_vertices(V);
         ipc::construct_constraint_set(
-            /*V_rest=*/V, V, E, F, dhat, constraint_set,
-            /*F2E=*/Eigen::MatrixXi(), /*dmin=*/0, method);
+            mesh, V, dhat, constraint_set, /*dmin=*/0, method);
     }
-    CAPTURE(dhat, method, ignore_codimensional_vertices);
+    CAPTURE(dhat, method, all_vertices_on_surface);
     CHECK(constraint_set.num_constraints() > 0);
 
     Eigen::MatrixXd hess_b = ipc::compute_barrier_potential_hessian(
-        V, E, F, constraint_set, dhat, /*project_to_psd=*/false);
+        mesh, V, constraint_set, dhat, /*project_to_psd=*/false);
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
         return ipc::compute_barrier_potential_gradient(
-            fd::unflatten(x, V.cols()), E, F, constraint_set, dhat);
+            mesh, fd::unflatten(x, V.cols()), constraint_set, dhat);
     };
     Eigen::MatrixXd fhess_b;
     fd::finite_jacobian(fd::flatten(V), f, fhess_b);

@@ -5,6 +5,7 @@
 #include <Eigen/Core>
 
 #include <ipc/collision_constraint.hpp>
+#include <ipc/surface_mesh.hpp>
 
 namespace ipc {
 
@@ -34,9 +35,8 @@ void update_barrier_stiffness(
 /// dhat_epsilon_scale * diag.
 void update_barrier_stiffness(
     const Constraints& constraint_set,
+    const SurfaceMesh& mesh,
     const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     double prev_min_distance,
     double& min_distance,
     double max_barrier_stiffness,

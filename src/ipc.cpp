@@ -12,6 +12,9 @@
 #include <tbb/enumerable_thread_specific.h>
 
 #include <igl/predicates/segment_segment_intersect.h>
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#include <ccdgpu/helper.cuh>
+#endif
 
 #include <ipc/ccd/ccd.hpp>
 #include <ipc/distance/edge_edge.hpp>
@@ -25,18 +28,6 @@
 #include <ipc/utils/unordered_map_and_set.hpp>
 
 namespace ipc {
-
-/// Find the index of the undirected edge (e0, e1)
-long find_edge(const Eigen::MatrixXi& E, const long e0, const long e1)
-{
-    for (long i = 0; i < E.rows(); i++) {
-        if ((E(i, 0) == e0 && E(i, 1) == e1)
-            || (E(i, 1) == e0 && E(i, 0) == e1)) {
-            return i;
-        }
-    }
-    throw std::runtime_error("Unable to find edge!");
-}
 
 template <typename Hash>
 void add_vertex_vertex_constraint(
@@ -77,62 +68,37 @@ void add_edge_vertex_constraint(
 }
 
 void construct_constraint_set(
-    const Eigen::MatrixXd& V_rest,
+    const SurfaceMesh& mesh,
     const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const double dhat,
     Constraints& constraint_set,
-    const Eigen::MatrixXi& F2E,
     const double dmin,
-    const BroadPhaseMethod& method,
-    const std::function<bool(size_t, size_t)>& can_collide)
+    const BroadPhaseMethod& method)
 {
     double inflation_radius = (dhat + dmin) / 1.99; // Conservative inflation
 
     Candidates candidates;
     construct_collision_candidates(
-        V, E, F, candidates, inflation_radius, method, can_collide);
+        V, mesh.edges(), mesh.faces(), candidates, inflation_radius, method,
+        mesh.can_collide);
 
-    construct_constraint_set(
-        candidates, V_rest, V, E, F, dhat, constraint_set, F2E, dmin);
-}
-
-void construct_constraint_set(
-    const Eigen::MatrixXd& V_rest,
-    const Eigen::MatrixXd& V,
-    const Eigen::VectorXi& codim_V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const double dhat,
-    Constraints& constraint_set,
-    const Eigen::MatrixXi& F2E,
-    const double dmin,
-    const BroadPhaseMethod& method,
-    const std::function<bool(size_t, size_t)>& can_collide)
-{
-    double inflation_radius = (dhat + dmin) / 1.99; // Conservative inflation
-
-    Candidates candidates;
-    construct_collision_candidates(
-        V, codim_V, E, F, candidates, inflation_radius, method, can_collide);
-
-    construct_constraint_set(
-        candidates, V_rest, V, E, F, dhat, constraint_set, F2E, dmin);
+    construct_constraint_set(candidates, mesh, V, dhat, constraint_set, dmin);
 }
 
 void construct_constraint_set(
     const Candidates& candidates,
-    const Eigen::MatrixXd& V_rest,
+    const SurfaceMesh& mesh,
     const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const double dhat,
     Constraints& constraint_set,
-    const Eigen::MatrixXi& F2E,
     const double dmin)
 {
     constraint_set.clear();
+
+    const Eigen::MatrixXd& V_rest = mesh.vertices_at_rest();
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
+    const Eigen::MatrixXi& F2E = mesh.faces_to_edges();
 
     double dhat_squared = dhat * dhat;
     double dmin_squared = dmin * dmin;
@@ -141,24 +107,10 @@ void construct_constraint_set(
     // greater than dhat.
 
     // Store the indices to VV and EV pairs to avoid duplicates.
-    auto vv_hash = [&V](const VertexVertexConstraint& vv_constraint) -> size_t {
-        // The vertex-vertex pair should be order independent
-        long min_vi =
-            std::min(vv_constraint.vertex0_index, vv_constraint.vertex1_index);
-        long max_vi =
-            std::max(vv_constraint.vertex0_index, vv_constraint.vertex1_index);
-        return size_t(max_vi * V.rows() + min_vi);
-    };
-    unordered_map<VertexVertexConstraint, long, decltype(vv_hash)> vv_to_index(
-        /*min_buckets=*/candidates.size(), vv_hash);
-
-    auto ev_hash = [&V](const EdgeVertexConstraint& ev_constraint) -> size_t {
-        // There are max E.rows() * V.rows() constraints
-        return size_t(
-            ev_constraint.edge_index * V.rows() + ev_constraint.vertex_index);
-    };
-    unordered_map<EdgeVertexConstraint, long, decltype(ev_hash)> ev_to_index(
-        /*min_buckets=*/candidates.size(), ev_hash);
+    unordered_map<VertexVertexConstraint, long> vv_to_index(
+        /*min_buckets=*/candidates.size());
+    unordered_map<EdgeVertexConstraint, long> ev_to_index(
+        /*min_buckets=*/candidates.size());
 
     for (const auto& ev_candidate : candidates.ev_candidates) {
         long vi = ev_candidate.vertex_index;
@@ -300,20 +252,17 @@ void construct_constraint_set(
 
             case PointTriangleDistanceType::P_E0:
                 add_edge_vertex_constraint(
-                    constraint_set.ev_constraints, ev_to_index,
-                    F2E.rows() > fi ? F2E(fi, 0) : find_edge(E, f0i, f1i), vi);
+                    constraint_set.ev_constraints, ev_to_index, F2E(fi, 0), vi);
                 break;
 
             case PointTriangleDistanceType::P_E1:
                 add_edge_vertex_constraint(
-                    constraint_set.ev_constraints, ev_to_index,
-                    F2E.rows() > fi ? F2E(fi, 1) : find_edge(E, f1i, f2i), vi);
+                    constraint_set.ev_constraints, ev_to_index, F2E(fi, 1), vi);
                 break;
 
             case PointTriangleDistanceType::P_E2:
                 add_edge_vertex_constraint(
-                    constraint_set.ev_constraints, ev_to_index,
-                    F2E.rows() > fi ? F2E(fi, 2) : find_edge(E, f2i, f0i), vi);
+                    constraint_set.ev_constraints, ev_to_index, F2E(fi, 2), vi);
                 break;
 
             case PointTriangleDistanceType::P_T:
@@ -331,15 +280,17 @@ void construct_constraint_set(
 ///////////////////////////////////////////////////////////////////////////////
 
 double compute_barrier_potential(
+    const SurfaceMesh& mesh,
     const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
     const double dhat)
 {
     if (constraint_set.empty()) {
         return 0;
     }
+
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     tbb::enumerable_thread_specific<double> storage(0);
 
@@ -361,15 +312,17 @@ double compute_barrier_potential(
 }
 
 Eigen::VectorXd compute_barrier_potential_gradient(
+    const SurfaceMesh& mesh,
     const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
     const double dhat)
 {
     if (constraint_set.empty()) {
         return Eigen::VectorXd::Zero(V.size());
     }
+
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     int dim = V.cols();
 
@@ -395,9 +348,8 @@ Eigen::VectorXd compute_barrier_potential_gradient(
 }
 
 Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
+    const SurfaceMesh& mesh,
     const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const Constraints& constraint_set,
     const double dhat,
     const bool project_hessian_to_psd)
@@ -405,6 +357,9 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     if (constraint_set.empty()) {
         return Eigen::SparseMatrix<double>(V.size(), V.size());
     }
+
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     int dim = V.cols();
 
@@ -438,57 +393,36 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 ///////////////////////////////////////////////////////////////////////////////
 
 bool is_step_collision_free(
+    const SurfaceMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const BroadPhaseMethod& method,
     const double tolerance,
-    const long max_iterations,
-    const std::function<bool(size_t, size_t)>& can_collide)
+    const long max_iterations)
 {
     // Broad phase
     Candidates candidates;
     construct_collision_candidates(
-        V0, V1, E, F, candidates, /*inflation_radius=*/0, method, can_collide);
+        V0, V1, mesh.edges(), mesh.faces(), candidates, /*inflation_radius=*/0,
+        method, mesh.can_collide);
 
     // Narrow phase
     return is_step_collision_free(
-        candidates, V0, V1, E, F, tolerance, max_iterations);
-}
-
-bool is_step_collision_free(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::VectorXi& codim_V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const BroadPhaseMethod& method,
-    const double tolerance,
-    const long max_iterations,
-    const std::function<bool(size_t, size_t)>& can_collide)
-{
-    // Broad phase
-    Candidates candidates;
-    construct_collision_candidates(
-        V0, V1, codim_V, E, F, candidates, /*inflation_radius=*/0, method,
-        can_collide);
-
-    // Narrow phase
-    return is_step_collision_free(
-        candidates, V0, V1, E, F, tolerance, max_iterations);
+        candidates, mesh, V0, V1, tolerance, max_iterations);
 }
 
 bool is_step_collision_free(
     const Candidates& candidates,
+    const SurfaceMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const double tolerance,
     const long max_iterations)
 {
     assert(V0.cols() == V1.cols());
+
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     // Narrow phase
     for (size_t i = 0; i < candidates.size(); i++) {
@@ -507,57 +441,47 @@ bool is_step_collision_free(
 ///////////////////////////////////////////////////////////////////////////////
 
 double compute_collision_free_stepsize(
+    const SurfaceMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const BroadPhaseMethod& method,
     const double tolerance,
-    const long max_iterations,
-    const std::function<bool(size_t, size_t)>& can_collide)
+    const long max_iterations)
 {
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+    if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE) {
+        double min_distance = 0; // TODO
+        return compute_toi_strategy(
+            V0, V1, E, F, max_iterations, min_distance, tolerance);
+    }
+#endif
+
     // Broad phase
     Candidates candidates;
     construct_collision_candidates(
-        V0, V1, E, F, candidates, /*inflation_radius=*/0, method, can_collide);
+        V0, V1, E, F, candidates, /*inflation_radius=*/0, method,
+        mesh.can_collide);
 
     // Narrow phase
     return compute_collision_free_stepsize(
-        candidates, V0, V1, E, F, tolerance, max_iterations);
-}
-
-double compute_collision_free_stepsize(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::VectorXi& codim_V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const BroadPhaseMethod& method,
-    const double tolerance,
-    const long max_iterations,
-    const std::function<bool(size_t, size_t)>& can_collide)
-{
-    // Broad phase
-    Candidates candidates;
-    construct_collision_candidates(
-        V0, V1, codim_V, E, F, candidates, /*inflation_radius=*/0, method,
-        can_collide);
-
-    // Narrow phase
-    return compute_collision_free_stepsize(
-        candidates, V0, V1, E, F, tolerance, max_iterations);
+        candidates, mesh, V0, V1, tolerance, max_iterations);
 }
 
 double compute_collision_free_stepsize(
     const Candidates& candidates,
+    const SurfaceMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const double tolerance,
     const long max_iterations)
 {
     assert(V0.cols() == V1.cols());
+
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     if (candidates.empty()) {
         return 1; // No possible collisions, so can take full step.
@@ -608,14 +532,16 @@ double compute_collision_free_stepsize(
 
 // NOTE: Actually distance squared
 double compute_minimum_distance(
+    const SurfaceMesh& mesh,
     const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const Constraints& constraint_set)
 {
     if (constraint_set.empty()) {
         return std::numeric_limits<double>::infinity();
     }
+
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     tbb::enumerable_thread_specific<double> storage(
         std::numeric_limits<double>::infinity());
@@ -644,12 +570,11 @@ double compute_minimum_distance(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool has_intersections(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const std::function<bool(size_t, size_t)>& can_collide)
+bool has_intersections(const SurfaceMesh& mesh, const Eigen::MatrixXd& V)
 {
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
+
     // TODO: Expose the broad-phase method
     HashGrid hash_grid;
     double conservative_inflation_radius = 1e-2 * world_bbox_diagonal_length(V);
@@ -662,7 +587,7 @@ bool has_intersections(
 
     if (V.cols() == 2) { // Need to check segment-segment intersections in 2D
         std::vector<EdgeEdgeCandidate> ee_candidates;
-        hash_grid.getEdgeEdgePairs(E, ee_candidates, can_collide);
+        hash_grid.getEdgeEdgePairs(E, ee_candidates, mesh.can_collide);
 
         // narrow-phase using igl
         igl::predicates::exactinit();
@@ -679,7 +604,7 @@ bool has_intersections(
         assert(V.cols() == 3);
 
         std::vector<EdgeFaceCandidate> ef_candidates;
-        hash_grid.getEdgeFacePairs(E, F, ef_candidates, can_collide);
+        hash_grid.getEdgeFacePairs(E, F, ef_candidates, mesh.can_collide);
 
         for (const EdgeFaceCandidate& ef_candidate : ef_candidates) {
             if (is_edge_intersecting_triangle(
@@ -695,5 +620,4 @@ bool has_intersections(
 
     return false;
 }
-
 } // namespace ipc

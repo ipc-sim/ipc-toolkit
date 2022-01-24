@@ -31,6 +31,9 @@ Catch::clara::ParserResult parse_num_threads(int const d, int& num_threads)
         IPC_LOG(warn(
             "Attempting to use more threads than available ({:d} > {:d})!",
             num_threads, tbb::task_scheduler_init::default_num_threads()));
+        num_threads = tbb::task_scheduler_init::default_num_threads();
+    } else {
+        num_threads = d;
     }
     return Catch::clara::ParserResult::ok(
         Catch::clara::ParseResultType::Matched);
@@ -65,7 +68,10 @@ int main(int argc, char* argv[])
     if (returnCode != 0) // Indicates a command line error
         return returnCode;
 
-    IPC_LOG(set_level(static_cast<spdlog::level::level_enum>(log_level)));
+#ifdef IPC_TOOLKIT_WITH_LOGGER
+    spdlog::set_level(static_cast<spdlog::level::level_enum>(log_level));
+    ipc::logger().set_level(static_cast<spdlog::level::level_enum>(log_level));
+#endif
 
     tbb::global_control thread_limiter(
         tbb::global_control::max_allowed_parallelism, num_threads);
