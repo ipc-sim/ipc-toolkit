@@ -74,8 +74,15 @@ SurfaceMesh::SurfaceMesh(
 
 Eigen::VectorXd SurfaceMesh::map_surface_to_full(const Eigen::VectorXd& x) const
 {
-    Eigen::VectorXd full_x = Eigen::VectorXd::Zero(full_size());
-    igl::slice_into(x, surface_to_full(), full_x);
+    Eigen::VectorXd full_x = Eigen::VectorXd::Zero(full_size() * dim());
+    Eigen::VectorXi surface_to_full_flat(x.size());
+    for (int i = 0; i < surface_size(); i++) {
+        for (int d = 0; d < dim(); d++) {
+            surface_to_full_flat[dim() * i + d] =
+                dim() * surface_to_full()[i] + d;
+        }
+    }
+    igl::slice_into(x, surface_to_full_flat, full_x);
     return full_x;
 }
 
@@ -83,9 +90,19 @@ Eigen::SparseMatrix<double>
 SurfaceMesh::map_surface_to_full(const Eigen::SparseMatrix<double>& X) const
 {
     // initializes to zero
-    Eigen::SparseMatrix<double> full_X(full_size(), full_size());
+    int n = full_size() * dim();
+    Eigen::SparseMatrix<double> full_X(n, n);
     full_X.reserve(X.nonZeros());
-    igl::slice_into(X, surface_to_full(), surface_to_full(), full_X);
+
+    Eigen::VectorXi surface_to_full_flat(surface_size() * dim());
+    for (int i = 0; i < surface_size(); i++) {
+        for (int d = 0; d < dim(); d++) {
+            surface_to_full_flat[dim() * i + d] =
+                dim() * surface_to_full()[i] + d;
+        }
+    }
+
+    igl::slice_into(X, surface_to_full_flat, surface_to_full_flat, full_X);
     full_X.makeCompressed();
     return full_X;
 }

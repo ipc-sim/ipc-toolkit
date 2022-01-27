@@ -12,6 +12,12 @@
 #include <ipc/ccd/ccd.hpp>
 #include <ipc/utils/faces_to_edges.hpp>
 
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <ccdgpu/helper.cuh>
+#endif
+
 #include <broad_phase/brute_force_comparison.hpp>
 
 using namespace ipc;
@@ -179,8 +185,9 @@ TEST_CASE(
         return group_ids.size() == 0 || group_ids(vi) != group_ids(vj);
     };
 
-    BroadPhaseMethod method =
-        GENERATE(BroadPhaseMethod::HASH_GRID, BroadPhaseMethod::SPATIAL_HASH);
+    BroadPhaseMethod method = GENERATE(
+        BroadPhaseMethod::HASH_GRID, BroadPhaseMethod::SPATIAL_HASH,
+        BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE);
 
     std::function<Candidates(const Eigen::MatrixXd&)> build_candidates;
     if (method == BroadPhaseMethod::HASH_GRID) {
@@ -200,7 +207,7 @@ TEST_CASE(
                 F, candidates.fv_candidates, can_collide);
             return candidates;
         };
-    } else {
+    } else if (method == BroadPhaseMethod::HASH_GRID) {
         assert(method = BroadPhaseMethod::SPATIAL_HASH);
         build_candidates = [&](const Eigen::MatrixXd& V1) {
             Candidates candidates;
@@ -213,6 +220,14 @@ TEST_CASE(
                 V0, V1, E, F, candidates,
                 /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true);
             return candidates;
+        };
+    } else {
+        build_candidates = [&](const Eigen::MatrixXd& V1) {
+            std::vector<std::pair<int, int>> overlaps;
+            std::vector<ccdgpu::Aabb> boxes;
+            construct_continuous_collision_candidates(
+                V0, V1, E, F, overlaps, boxes, inflation_radius);
+            return Candidates(overlaps, boxes);
         };
     }
 

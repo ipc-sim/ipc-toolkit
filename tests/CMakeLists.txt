@@ -75,6 +75,8 @@ endif()
 include(json)
 target_link_libraries(ipc_toolkit_tests PUBLIC nlohmann::json)
 
+find_package(CUDAToolkit)
+target_link_libraries(ipc_toolkit_tests PRIVATE CUDA::cudart)
 
 ################################################################################
 # Compiler options

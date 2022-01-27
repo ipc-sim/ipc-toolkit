@@ -32,6 +32,7 @@ public:
 
     size_t surface_size() const { return m_surface_to_full.size(); }
     size_t full_size() const { return m_full_size; }
+    size_t dim() const { return m_vertices_at_rest.cols(); }
     const Eigen::VectorXi& surface_to_full() const { return m_surface_to_full; }
     const Eigen::VectorXi& full_to_surface() const { return m_full_to_surface; }
 

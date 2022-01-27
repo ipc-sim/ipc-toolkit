@@ -254,15 +254,15 @@ Candidates::Candidates(
         const ccdgpu::Aabb& boxA = boxes[overlap.first];
         const ccdgpu::Aabb& boxB = boxes[overlap.second];
         if (is_face(boxA) && is_vertex(boxB)) { // FV
-            fv_candidates.emplace_back(boxA.id, boxB.id);
+            fv_candidates.emplace_back(boxA.ref_id, boxB.ref_id);
         } else if (is_face(boxB) && is_vertex(boxA)) { // VF
-            fv_candidates.emplace_back(boxB.id, boxA.id);
+            fv_candidates.emplace_back(boxB.ref_id, boxA.ref_id);
         } else if (is_edge(boxA) && is_edge(boxB)) { // EE
-            ee_candidates.emplace_back(boxA.id, boxB.id);
+            ee_candidates.emplace_back(boxA.ref_id, boxB.ref_id);
         } else if (is_edge(boxA) && is_vertex(boxB)) { // EV
-            ev_candidates.emplace_back(boxA.id, boxB.id);
+            ev_candidates.emplace_back(boxA.ref_id, boxB.ref_id);
         } else if (is_edge(boxB) && is_vertex(boxA)) { // VE
-            ev_candidates.emplace_back(boxB.id, boxA.id);
+            ev_candidates.emplace_back(boxB.ref_id, boxA.ref_id);
         } else { // VV, FF, FE, EF
             // Invalid collision candidate
         }
