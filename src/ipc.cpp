@@ -451,13 +451,18 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
 
-#ifdef IPC_TOOLKIT_WITH_CUDA
-    if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE) {
-        double min_distance = 0; // TODO
-        return compute_toi_strategy(
-            V0, V1, E, F, max_iterations, min_distance, tolerance);
-    }
-#endif
+    // #ifdef IPC_TOOLKIT_WITH_CUDA
+    //     if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE) {
+    //         double min_distance = 0; // TODO
+    //         const double step_size = compute_toi_strategy(
+    //             V0, V1, E, F, max_iterations, min_distance, tolerance);
+    //         logger().critical("{}", step_size);
+    //         if (has_intersections(mesh, (V1 - V0) * step_size + V0)) {
+    //             logger().critical("failed {}", step_size);
+    //         }
+    //         return 0.8 * step_size;
+    //     }
+    // #endif
 
     // Broad phase
     Candidates candidates;
@@ -466,8 +471,15 @@ double compute_collision_free_stepsize(
         mesh.can_collide);
 
     // Narrow phase
-    return compute_collision_free_stepsize(
+    double step_size = compute_collision_free_stepsize(
         candidates, mesh, V0, V1, tolerance, max_iterations);
+
+    logger().critical("{}", step_size);
+    if (has_intersections(mesh, (V1 - V0) * step_size + V0)) {
+        logger().critical("failed {}", step_size);
+    }
+
+    return step_size;
 }
 
 double compute_collision_free_stepsize(

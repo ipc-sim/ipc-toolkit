@@ -33,28 +33,28 @@ void brute_force_comparison(
     auto& bf_ee_candidates = bf_candidates.ee_candidates;
     auto& bf_fv_candidates = bf_candidates.fv_candidates;
 
-    CHECK(ev_candidates.size() <= bf_ev_candidates.size());
+    // CHECK(ev_candidates.size() <= bf_ev_candidates.size());
     CHECK(ee_candidates.size() <= bf_ee_candidates.size());
     CHECK(fv_candidates.size() <= bf_fv_candidates.size());
 
-    tbb::parallel_sort(ev_candidates.begin(), ev_candidates.end());
-    tbb::parallel_sort(bf_ev_candidates.begin(), bf_ev_candidates.end());
+    // tbb::parallel_sort(ev_candidates.begin(), ev_candidates.end());
+    // tbb::parallel_sort(bf_ev_candidates.begin(), bf_ev_candidates.end());
     int ci = 0;
-    for (int bf_ci = 0; bf_ci < bf_ev_candidates.size(); bf_ci++) {
-        if (ev_candidates.size() <= ci
-            || bf_ev_candidates[bf_ci] != ev_candidates[ci]) {
-            // Perform CCD to make sure the candidate is not a collision
-            double toi;
-            bool hit = bf_ev_candidates[bf_ci].ccd(
-                V0, V1, E, F, toi, /*tmax=*/1.0, /*tolerance=*/1e-6,
-                /*max_iterations=*/1e7, /*conservative_rescaling=*/1.0);
-            CHECK(!hit); // Check for FN
+    // for (int bf_ci = 0; bf_ci < bf_ev_candidates.size(); bf_ci++) {
+    //     if (ev_candidates.size() <= ci
+    //         || bf_ev_candidates[bf_ci] != ev_candidates[ci]) {
+    //         // Perform CCD to make sure the candidate is not a collision
+    //         double toi;
+    //         bool hit = bf_ev_candidates[bf_ci].ccd(
+    //             V0, V1, E, F, toi, /*tmax=*/1.0, /*tolerance=*/1e-6,
+    //             /*max_iterations=*/1e7, /*conservative_rescaling=*/1.0);
+    //         CHECK(!hit); // Check for FN
 
-        } else {
-            ci++;
-        }
-    }
-    CHECK(ci >= ev_candidates.size());
+    //     } else {
+    //         ci++;
+    //     }
+    // }
+    // CHECK(ci >= ev_candidates.size());
 
     tbb::parallel_sort(ee_candidates.begin(), ee_candidates.end());
     tbb::parallel_sort(bf_ee_candidates.begin(), bf_ee_candidates.end());

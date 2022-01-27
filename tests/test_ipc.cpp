@@ -68,7 +68,8 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
 
     BroadPhaseMethod method = GENERATE(
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-        BroadPhaseMethod::SPATIAL_HASH);
+        BroadPhaseMethod::SPATIAL_HASH,
+        BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE);
 
     SECTION("cube")
     {
@@ -138,7 +139,8 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
 
     BroadPhaseMethod method = GENERATE(
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-        BroadPhaseMethod::SPATIAL_HASH);
+        BroadPhaseMethod::SPATIAL_HASH,
+        BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE);
 
     SECTION("cube")
     {
