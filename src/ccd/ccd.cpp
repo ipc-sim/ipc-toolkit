@@ -4,7 +4,7 @@
 #include <array>
 
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-#include <tight_inclusion/inclusion_ccd.hpp>
+#include <tight_inclusion/ccd.hpp>
 #else
 #include <CTCD.h>
 #endif
@@ -15,7 +15,6 @@
 namespace ipc {
 
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-static constexpr int TIGHT_INCLUSION_CCD_TYPE = 1;
 static constexpr double INITIAL_DISTANCE_TOLERANCE_SCALE = 0.5;
 static constexpr long TIGHT_INCLUSION_UNLIMITED_ITERATIONS = -1;
 #endif
@@ -100,16 +99,16 @@ bool point_point_ccd(
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         double output_tolerance;
         // NOTE: Use degenerate edge-edge
-        return inclusion_ccd::edgeEdgeCCD_double(
+        return ticcd::edgeEdgeCCD(
             p0_t0, p0_t0, p1_t0, p1_t0, p0_t1, p0_t1, p1_t1, p1_t1,
-            { { -1, -1, -1 } }, // rounding error (auto)
-            min_distance,       // minimum separation distance
-            toi,                // time of impact
-            adjusted_tolerance, // delta
-            tmax,               // maximum time to check
-            max_iterations,     // maximum number of iterations
-            output_tolerance,   // delta_actual
-            TIGHT_INCLUSION_CCD_TYPE, no_zero_toi);
+            Eigen::Array3d::Constant(-1), // rounding error (auto)
+            min_distance,                 // minimum separation distance
+            toi,                          // time of impact
+            adjusted_tolerance,           // delta
+            tmax,                         // maximum time to check
+            max_iterations,               // maximum number of iterations
+            output_tolerance,             // delta_actual
+            no_zero_toi);
 #else
         return CTCD::vertexVertexCTCD(
             p0_t0, p1_t0, p0_t1, p1_t1, min_distance, toi);
@@ -160,17 +159,17 @@ bool point_edge_ccd_2D(
                          bool no_zero_toi, double& toi) -> bool {
         double output_tolerance;
         // NOTE: Use degenerate edge-edge
-        bool is_impacting = inclusion_ccd::edgeEdgeCCD_double(
+        bool is_impacting = ticcd::edgeEdgeCCD(
             p_t0_3D, p_t0_3D, e0_t0_3D, e1_t0_3D, //
             p_t1_3D, p_t1_3D, e0_t1_3D, e1_t1_3D,
-            { { -1, -1, -1 } }, // rounding error (auto)
-            min_distance,       // minimum separation distance
-            toi,                // time of impact
-            adjusted_tolerance, // delta
-            tmax,               // maximum time to check
-            max_iterations,     // maximum number of iterations
-            output_tolerance,   // delta_actual
-            TIGHT_INCLUSION_CCD_TYPE, no_zero_toi);
+            Eigen::Array3d::Constant(-1), // rounding error (auto)
+            min_distance,                 // minimum separation distance
+            toi,                          // time of impact
+            adjusted_tolerance,           // delta
+            tmax,                         // maximum time to check
+            max_iterations,               // maximum number of iterations
+            output_tolerance,             // delta_actual
+            no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
             IPC_LOG(warn(
                 "edgeEdgeCCD_double exceeded iteration limit (min_dist={:g} "
@@ -211,16 +210,16 @@ bool point_edge_ccd_3D(
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         double output_tolerance = tolerance;
         // NOTE: Use degenerate edge-edge
-        bool is_impacting = inclusion_ccd::edgeEdgeCCD_double(
+        bool is_impacting = ticcd::edgeEdgeCCD(
             p_t0, p_t0, e0_t0, e1_t0, p_t1, p_t1, e0_t1, e1_t1,
-            { { -1, -1, -1 } }, // rounding error (auto)
-            min_distance,       // minimum separation distance
-            toi,                // time of impact
-            adjusted_tolerance, // delta
-            tmax,               // maximum time to check
-            max_iterations,     // maximum number of iterations
-            output_tolerance,   // delta_actual
-            TIGHT_INCLUSION_CCD_TYPE, no_zero_toi);
+            Eigen::Array3d::Constant(-1), // rounding error (auto)
+            min_distance,                 // minimum separation distance
+            toi,                          // time of impact
+            adjusted_tolerance,           // delta
+            tmax,                         // maximum time to check
+            max_iterations,               // maximum number of iterations
+            output_tolerance,             // delta_actual
+            no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
             IPC_LOG(warn(
                 "edgeEdgeCCD_double exceeded iteration limit (min_dist={:g} "
@@ -296,16 +295,16 @@ bool edge_edge_ccd(
                          bool no_zero_toi, double& toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         double output_tolerance;
-        bool is_impacting = inclusion_ccd::edgeEdgeCCD_double(
+        bool is_impacting = ticcd::edgeEdgeCCD(
             ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
-            { { -1, -1, -1 } }, // rounding error (auto)
-            min_distance,       // minimum separation distance
-            toi,                // time of impact
-            adjusted_tolerance, // delta
-            tmax,               // maximum time to check
-            max_iterations,     // maximum number of iterations
-            output_tolerance,   // delta_actual
-            TIGHT_INCLUSION_CCD_TYPE, no_zero_toi);
+            Eigen::Array3d::Constant(-1), // rounding error (auto)
+            min_distance,                 // minimum separation distance
+            toi,                          // time of impact
+            adjusted_tolerance,           // delta
+            tmax,                         // maximum time to check
+            max_iterations,               // maximum number of iterations
+            output_tolerance,             // delta_actual
+            no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
             IPC_LOG(warn(
                 "edgeEdgeCCD_double exceeded iteration limit (min_dist={:g} "
@@ -352,16 +351,16 @@ bool point_triangle_ccd(
                          bool no_zero_toi, double& toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         double output_tolerance;
-        bool is_impacting = inclusion_ccd::vertexFaceCCD_double(
+        bool is_impacting = ticcd::vertexFaceCCD(
             p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
-            { { -1, -1, -1 } }, // rounding error (auto)
-            min_distance,       // minimum separation distance
-            toi,                // time of impact
-            adjusted_tolerance, // delta
-            tmax,               // maximum time to check
-            max_iterations,     // maximum number of iterations
-            output_tolerance,   // delta_actual
-            TIGHT_INCLUSION_CCD_TYPE, no_zero_toi);
+            Eigen::Array3d::Constant(-1), // rounding error (auto)
+            min_distance,                 // minimum separation distance
+            toi,                          // time of impact
+            adjusted_tolerance,           // delta
+            tmax,                         // maximum time to check
+            max_iterations,               // maximum number of iterations
+            output_tolerance,             // delta_actual
+            no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
             IPC_LOG(warn(
                 "vertexFaceCCD_double exceeded iteration limit (min_dist={:g} "
