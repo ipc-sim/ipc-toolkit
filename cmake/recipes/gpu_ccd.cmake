@@ -12,7 +12,7 @@ else()
     FetchContent_Declare(
         gpu_ccd
         GIT_REPOSITORY git@github.com:dbelgrod/CCD-GPU.git
-        GIT_TAG 8da341470b2cd44a925a0845df28bf43eae02716
+        GIT_TAG 3b27f21b3e6f6a35e1173ed9b2405c2e6f843d59
         GIT_SHALLOW FALSE
     )
     FetchContent_MakeAvailable(gpu_ccd)
