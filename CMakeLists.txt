@@ -98,7 +98,7 @@ target_link_libraries(ipc_toolkit PUBLIC
 )
 
 # TBB
-include(tbb)
+include(onetbb)
 target_link_libraries(ipc_toolkit PUBLIC TBB::tbb)
 
 # CCD
