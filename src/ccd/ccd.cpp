@@ -171,8 +171,8 @@ bool point_edge_ccd_2D(
             output_tolerance,             // delta_actual
             no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
-            IPC_LOG(warn(
-                "edgeEdgeCCD_double exceeded iteration limit (min_dist={:g} "
+            IPC_LOG(trace(
+                "ticcd::edgeEdgeCCD exceeded iteration limit (min_dist={:g} "
                 "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
                 min_distance, max_iterations, adjusted_tolerance,
                 output_tolerance, toi));
@@ -221,8 +221,8 @@ bool point_edge_ccd_3D(
             output_tolerance,             // delta_actual
             no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
-            IPC_LOG(warn(
-                "edgeEdgeCCD_double exceeded iteration limit (min_dist={:g} "
+            IPC_LOG(trace(
+                "ticcd::edgeEdgeCCD exceeded iteration limit (min_dist={:g} "
                 "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
                 min_distance, max_iterations, adjusted_tolerance,
                 output_tolerance, toi));
@@ -306,8 +306,8 @@ bool edge_edge_ccd(
             output_tolerance,             // delta_actual
             no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
-            IPC_LOG(warn(
-                "edgeEdgeCCD_double exceeded iteration limit (min_dist={:g} "
+            IPC_LOG(trace(
+                "ticcd::edgeEdgeCCD exceeded iteration limit (min_dist={:g} "
                 "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
                 min_distance, max_iterations, adjusted_tolerance,
                 output_tolerance, toi));
@@ -362,8 +362,8 @@ bool point_triangle_ccd(
             output_tolerance,             // delta_actual
             no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
-            IPC_LOG(warn(
-                "vertexFaceCCD_double exceeded iteration limit (min_dist={:g} "
+            IPC_LOG(trace(
+                "ticcd::vertexFaceCCD exceeded iteration limit (min_dist={:g} "
                 "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
                 min_distance, max_iterations, adjusted_tolerance,
                 output_tolerance, toi));
