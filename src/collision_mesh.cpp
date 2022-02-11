@@ -1,4 +1,4 @@
-#include <ipc/surface_mesh.hpp>
+#include <ipc/collision_mesh.hpp>
 
 #include <ipc/utils/unordered_map_and_set.hpp>
 
@@ -7,7 +7,7 @@
 
 namespace ipc {
 
-SurfaceMesh::SurfaceMesh(
+CollisionMesh::CollisionMesh(
     const Eigen::MatrixXd& surface_vertices_at_rest,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces)
@@ -24,7 +24,7 @@ SurfaceMesh::SurfaceMesh(
     m_surface_to_full = m_full_to_surface;
 }
 
-SurfaceMesh::SurfaceMesh(
+CollisionMesh::CollisionMesh(
     const std::vector<bool>& is_on_surface,
     const Eigen::MatrixXd& full_vertices_at_rest,
     const Eigen::MatrixXi& edges,
@@ -72,7 +72,8 @@ SurfaceMesh::SurfaceMesh(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Eigen::VectorXd SurfaceMesh::map_surface_to_full(const Eigen::VectorXd& x) const
+Eigen::VectorXd
+CollisionMesh::map_surface_to_full(const Eigen::VectorXd& x) const
 {
     Eigen::VectorXd full_x = Eigen::VectorXd::Zero(full_size() * dim());
     Eigen::VectorXi surface_to_full_flat(x.size());
@@ -87,7 +88,7 @@ Eigen::VectorXd SurfaceMesh::map_surface_to_full(const Eigen::VectorXd& x) const
 }
 
 Eigen::SparseMatrix<double>
-SurfaceMesh::map_surface_to_full(const Eigen::SparseMatrix<double>& X) const
+CollisionMesh::map_surface_to_full(const Eigen::SparseMatrix<double>& X) const
 {
     // initializes to zero
     int n = full_size() * dim();
@@ -108,7 +109,7 @@ SurfaceMesh::map_surface_to_full(const Eigen::SparseMatrix<double>& X) const
 }
 
 Eigen::MatrixXd
-SurfaceMesh::surface_vertices(const Eigen::MatrixXd& full_V) const
+CollisionMesh::surface_vertices(const Eigen::MatrixXd& full_V) const
 {
     Eigen::MatrixXd surface_V(surface_size(), full_V.cols());
     igl::slice(full_V, surface_to_full(), /*dim=*/1, surface_V);
@@ -117,7 +118,7 @@ SurfaceMesh::surface_vertices(const Eigen::MatrixXd& full_V) const
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::vector<bool> SurfaceMesh::construct_is_on_surface(
+std::vector<bool> CollisionMesh::construct_is_on_surface(
     const int num_vertices, const Eigen::MatrixXi& edges)
 {
     std::vector<bool> is_on_surface(num_vertices, false);
@@ -133,7 +134,7 @@ std::vector<bool> SurfaceMesh::construct_is_on_surface(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Eigen::MatrixXi SurfaceMesh::construct_faces_to_edges(
+Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
     const Eigen::MatrixXi& faces, const Eigen::MatrixXi& edges)
 {
     if (faces.size() == 0) {

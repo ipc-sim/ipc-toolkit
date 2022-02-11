@@ -75,7 +75,7 @@ void update_barrier_stiffness(
 // Adaptive κ
 void update_barrier_stiffness(
     const Constraints& constraint_set,
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     double prev_min_distance,
     double& min_distance,

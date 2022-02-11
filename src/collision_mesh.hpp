@@ -5,22 +5,22 @@
 
 namespace ipc {
 
-class SurfaceMesh {
+class CollisionMesh {
 public:
-    SurfaceMesh() { }
+    CollisionMesh() { }
 
-    SurfaceMesh(
+    CollisionMesh(
         const Eigen::MatrixXd& surface_vertices_at_rest,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces);
 
-    SurfaceMesh(
+    CollisionMesh(
         const std::vector<bool>& is_on_surface,
         const Eigen::MatrixXd& full_vertices_at_rest,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces);
 
-    ~SurfaceMesh() { }
+    ~CollisionMesh() { }
 
     const Eigen::MatrixXd& vertices_at_rest() const
     {
@@ -45,12 +45,12 @@ public:
     static std::vector<bool> construct_is_on_surface(
         const int num_vertices, const Eigen::MatrixXi& edges);
 
-    static SurfaceMesh build_from_full_mesh(
+    static CollisionMesh build_from_full_mesh(
         const Eigen::MatrixXd& full_vertices_at_rest,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces)
     {
-        return SurfaceMesh(
+        return CollisionMesh(
             construct_is_on_surface(full_vertices_at_rest.rows(), edges),
             full_vertices_at_rest, edges, faces);
     }
@@ -70,11 +70,11 @@ public:
 
 protected:
     Eigen::MatrixXd m_vertices_at_rest;
-    /// @param[in] E Edges as rows of indicies into V.
+    /// Edges as rows of indicies into V.
     Eigen::MatrixXi m_edges;
-    /// @param[in] F Triangular faces as rows of indicies into V.
+    /// Triangular faces as rows of indicies into V.
     Eigen::MatrixXi m_faces;
-    /// @param[in] F2E Map from F edges to rows of E.
+    /// Map from F edges to rows of E.
     Eigen::MatrixXi m_faces_to_edges;
 
     size_t m_full_size;

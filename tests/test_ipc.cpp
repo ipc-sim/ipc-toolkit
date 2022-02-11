@@ -31,7 +31,7 @@ TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
     bool success = load_mesh(mesh_name, V, E, F);
     REQUIRE(success);
 
-    SurfaceMesh mesh(V, E, F);
+    CollisionMesh mesh(V, E, F);
 
     Constraints constraint_set;
     construct_constraint_set(mesh, V, dhat, constraint_set);
@@ -100,15 +100,15 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
     CAPTURE(mesh_name);
     REQUIRE(success);
 
-    SurfaceMesh mesh;
+    CollisionMesh mesh;
 
     Constraints constraint_set;
     if (all_vertices_on_surface) {
-        mesh = SurfaceMesh(V, E, F);
+        mesh = CollisionMesh(V, E, F);
         ipc::construct_constraint_set(
             mesh, V, dhat, constraint_set, /*dmin=*/0, method);
     } else {
-        mesh = SurfaceMesh::build_from_full_mesh(V, E, F);
+        mesh = CollisionMesh::build_from_full_mesh(V, E, F);
         V = mesh.surface_vertices(V);
         ipc::construct_constraint_set(
             mesh, V, dhat, constraint_set, /*dmin=*/0, method);
@@ -172,15 +172,15 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     CAPTURE(mesh_name);
     REQUIRE(success);
 
-    SurfaceMesh mesh;
+    CollisionMesh mesh;
 
     Constraints constraint_set;
     if (all_vertices_on_surface) {
-        mesh = SurfaceMesh(V, E, F);
+        mesh = CollisionMesh(V, E, F);
         ipc::construct_constraint_set(
             mesh, V, dhat, constraint_set, /*dmin=*/0, method);
     } else {
-        mesh = SurfaceMesh::build_from_full_mesh(V, E, F);
+        mesh = CollisionMesh::build_from_full_mesh(V, E, F);
         V = mesh.surface_vertices(V);
         ipc::construct_constraint_set(
             mesh, V, dhat, constraint_set, /*dmin=*/0, method);

@@ -3,6 +3,7 @@
 #include <Eigen/Core>
 
 #include <ipc/broad_phase/collision_candidate.hpp>
+#include <ipc/collision_mesh.hpp>
 
 namespace ipc {
 
@@ -16,61 +17,32 @@ enum class BroadPhaseMethod {
 };
 
 /// @brief Construct a set of discrete collision detection candidates.
-///
-/// All vertices in V will be considered for collisions, so V should be only the
-/// surface vertices. The edges and face should be only for the surface
-/// elements.
-///
+/// @param[in] mesh The surface of the contact mesh.
 /// @param[in] V Surface Vertex positions at start as rows of a matrix.
-/// @param[in] E Edges as rows of indicies into V.
-/// @param[in] F Triangular faces as rows of indicies into V.
 /// @param[out] canidates The constructed candidate set as output.
 /// @param[in] inflation_radius Amount to inflate the bounding boxes.
 /// @param[in] method Broad phase method to use.
-/// @param[in] can_collide
-///     A function that takes two vertex IDs (row numbers in F) and returns true
-///     if the vertices (and faces or edges containing the vertices) can
-///     collide. By default all primitives can collide with all other
-///     primitives.
 void construct_collision_candidates(
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     Candidates& candidates,
     double inflation_radius = 0,
-    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
-    const std::function<bool(size_t, size_t)>& can_collide =
-        [](size_t, size_t) { return true; });
+    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID);
 
 /// @brief Construct a set of continous collision detection candidates.
-///
-/// All vertices in V will be considered for collisions, so V should be only the
-/// surface vertices. The edges and face should be only for the surface
-/// elements.
-///
 /// @note Assumes the trajectory is linear.
-///
+/// @param[in] mesh The surface of the contact mesh.
 /// @param[in] V0 Surface vertex positions at start as rows of a matrix.
 /// @param[in] V1 Surface vertex positions at end as rows of a matrix.
-/// @param[in] E Edges as rows of indicies into V.
-/// @param[in] F Triangular faces as rows of indicies into V.
 /// @param[out] canidates The constructed candidate set as output.
 /// @param[in] inflation_radius Amount to inflate the bounding boxes.
 /// @param[in] method Broad phase method to use.
-/// @param[in] can_collide
-///     A function that takes two vertex IDs (row numbers in F) and returns true
-///     if the vertices (and faces or edges containing the vertices) can
-///     collide. By default all primitives can collide with all other
-///     primitives.
 void construct_collision_candidates(
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     Candidates& candidates,
     double inflation_radius = 0,
-    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
-    const std::function<bool(size_t, size_t)>& can_collide =
-        [](size_t, size_t) { return true; });
+    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID);
 
 } // namespace ipc

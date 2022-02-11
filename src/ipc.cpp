@@ -68,7 +68,7 @@ void add_edge_vertex_constraint(
 }
 
 void construct_constraint_set(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const double dhat,
     Constraints& constraint_set,
@@ -79,15 +79,14 @@ void construct_constraint_set(
 
     Candidates candidates;
     construct_collision_candidates(
-        V, mesh.edges(), mesh.faces(), candidates, inflation_radius, method,
-        mesh.can_collide);
+        mesh, V, candidates, inflation_radius, method);
 
     construct_constraint_set(candidates, mesh, V, dhat, constraint_set, dmin);
 }
 
 void construct_constraint_set(
     const Candidates& candidates,
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const double dhat,
     Constraints& constraint_set,
@@ -100,11 +99,12 @@ void construct_constraint_set(
     const Eigen::MatrixXi& F = mesh.faces();
     const Eigen::MatrixXi& F2E = mesh.faces_to_edges();
 
-    double dhat_squared = dhat * dhat;
-    double dmin_squared = dmin * dmin;
-
     // Cull the candidates by measuring the distance and dropping those that are
     // greater than dhat.
+    const double offset_sqr = std::pow(dmin + dhat, 2);
+    auto is_active = [&](double distance_sqr) {
+        return distance_sqr < offset_sqr;
+    };
 
     // Store the indices to VV and EV pairs to avoid duplicates.
     unordered_map<VertexVertexConstraint, long> vv_to_index(
@@ -123,7 +123,7 @@ void construct_constraint_set(
         double distance_sqr =
             point_edge_distance(V.row(vi), V.row(e0i), V.row(e1i), dtype);
 
-        if (distance_sqr - dmin_squared < 2 * dmin * dhat + dhat_squared) {
+        if (is_active(distance_sqr)) {
             switch (dtype) {
             case PointEdgeDistanceType::P_E0:
                 add_vertex_vertex_constraint(
@@ -157,7 +157,7 @@ void construct_constraint_set(
         double distance_sqr = edge_edge_distance(
             V.row(ea0i), V.row(ea1i), V.row(eb0i), V.row(eb1i), dtype);
 
-        if (distance_sqr - dmin_squared < 2 * dmin * dhat + dhat_squared) {
+        if (is_active(distance_sqr)) {
             double eps_x = edge_edge_mollifier_threshold(
                 V_rest.row(ea0i), V_rest.row(ea1i), //
                 V_rest.row(eb0i), V_rest.row(eb1i));
@@ -233,7 +233,7 @@ void construct_constraint_set(
             V.row(fv_candidate.vertex_index), //
             V.row(f0i), V.row(f1i), V.row(f2i), dtype);
 
-        if (distance_sqr - dmin_squared < 2 * dmin * dhat + dhat_squared) {
+        if (is_active(distance_sqr)) {
             switch (dtype) {
             case PointTriangleDistanceType::P_T0:
                 add_vertex_vertex_constraint(
@@ -280,7 +280,7 @@ void construct_constraint_set(
 ///////////////////////////////////////////////////////////////////////////////
 
 double compute_barrier_potential(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const Constraints& constraint_set,
     const double dhat)
@@ -312,7 +312,7 @@ double compute_barrier_potential(
 }
 
 Eigen::VectorXd compute_barrier_potential_gradient(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const Constraints& constraint_set,
     const double dhat)
@@ -348,7 +348,7 @@ Eigen::VectorXd compute_barrier_potential_gradient(
 }
 
 Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const Constraints& constraint_set,
     const double dhat,
@@ -393,7 +393,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 ///////////////////////////////////////////////////////////////////////////////
 
 bool is_step_collision_free(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const BroadPhaseMethod& method,
@@ -403,8 +403,7 @@ bool is_step_collision_free(
     // Broad phase
     Candidates candidates;
     construct_collision_candidates(
-        V0, V1, mesh.edges(), mesh.faces(), candidates, /*inflation_radius=*/0,
-        method, mesh.can_collide);
+        mesh, V0, V1, candidates, /*inflation_radius=*/0, method);
 
     // Narrow phase
     return is_step_collision_free(
@@ -413,7 +412,7 @@ bool is_step_collision_free(
 
 bool is_step_collision_free(
     const Candidates& candidates,
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const double tolerance,
@@ -441,7 +440,7 @@ bool is_step_collision_free(
 ///////////////////////////////////////////////////////////////////////////////
 
 double compute_collision_free_stepsize(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const BroadPhaseMethod& method,
@@ -463,8 +462,7 @@ double compute_collision_free_stepsize(
     // Broad phase
     Candidates candidates;
     construct_collision_candidates(
-        V0, V1, E, F, candidates, /*inflation_radius=*/0, method,
-        mesh.can_collide);
+        mesh, V0, V1, candidates, /*inflation_radius=*/0, method);
 
     // Narrow phase
     double step_size = compute_collision_free_stepsize(
@@ -475,7 +473,7 @@ double compute_collision_free_stepsize(
 
 double compute_collision_free_stepsize(
     const Candidates& candidates,
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const double tolerance,
@@ -535,7 +533,7 @@ double compute_collision_free_stepsize(
 
 // NOTE: Actually distance squared
 double compute_minimum_distance(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const Constraints& constraint_set)
 {
@@ -573,7 +571,7 @@ double compute_minimum_distance(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool has_intersections(const SurfaceMesh& mesh, const Eigen::MatrixXd& V)
+bool has_intersections(const CollisionMesh& mesh, const Eigen::MatrixXd& V)
 {
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
