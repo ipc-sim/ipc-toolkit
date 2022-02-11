@@ -136,18 +136,20 @@ TEST_CASE("Test friction gradient and hessian", "[friction][gradient][hessian]")
         contact_constraint_set.vv_constraints.emplace_back(0, 1);
     }
 
+    CollisionMesh mesh(V0, E, F);
+
     FrictionConstraints friction_constraint_set;
     construct_friction_constraint_set(
-        V0, E, F, contact_constraint_set, dhat, barrier_stiffness, mu,
+        mesh, V0, contact_constraint_set, dhat, barrier_stiffness, mu,
         friction_constraint_set);
 
     Eigen::VectorXd grad = compute_friction_potential_gradient(
-        V0, V1, E, F, friction_constraint_set, epsv_times_h);
+        mesh, V0, V1, friction_constraint_set, epsv_times_h);
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
         return compute_friction_potential(
-            V0, fd::unflatten(x, V1.cols()), E, F, friction_constraint_set,
+            mesh, V0, fd::unflatten(x, V1.cols()), friction_constraint_set,
             epsv_times_h);
     };
     Eigen::VectorXd fgrad;
@@ -155,7 +157,7 @@ TEST_CASE("Test friction gradient and hessian", "[friction][gradient][hessian]")
     CHECK(fd::compare_gradient(grad, fgrad));
 
     Eigen::MatrixXd hess = compute_friction_potential_hessian(
-        V0, V1, E, F, friction_constraint_set, epsv_times_h);
+        mesh, V0, V1, friction_constraint_set, epsv_times_h);
     Eigen::MatrixXd fhess;
     fd::finite_hessian(fd::flatten(V1), f, fhess);
     CHECK(fd::compare_hessian(hess, fhess, 1e-3));
@@ -281,10 +283,12 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
         contact_constraint_set.vv_constraints.emplace_back(0, 1);
     }
 
-    double distance_t0 = compute_minimum_distance(
-        CollisionMesh(V0, E, F), V0, contact_constraint_set);
-    double distance_t1 = compute_minimum_distance(
-        CollisionMesh(V0, E, F), V1, contact_constraint_set);
+    CollisionMesh mesh(V0, E, F);
+
+    double distance_t0 =
+        compute_minimum_distance(mesh, V0, contact_constraint_set);
+    double distance_t1 =
+        compute_minimum_distance(mesh, V1, contact_constraint_set);
     // CHECK((distance_t0 < dhat || distance_t1 < dhat));
 
     if (distance_t0 == 0 || distance_t1 == 0) {
@@ -297,22 +301,22 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
 
     FrictionConstraints friction_constraint_set;
     construct_friction_constraint_set(
-        V0, E, F, contact_constraint_set, dhat, barrier_stiffness, mu,
+        mesh, V0, contact_constraint_set, dhat, barrier_stiffness, mu,
         friction_constraint_set);
 
     Eigen::MatrixXd X = V0, U = V1 - V0;
 
     Eigen::MatrixXd JF_wrt_X = compute_friction_force_jacobian(
-        X, U, E, F, friction_constraint_set, dhat, barrier_stiffness,
+        mesh, X, U, friction_constraint_set, dhat, barrier_stiffness,
         epsv_times_h, FrictionConstraint::DiffWRT::X);
 
     Eigen::MatrixXd JF_wrt_U = compute_friction_force_jacobian(
-        X, U, E, F, friction_constraint_set, dhat, barrier_stiffness,
+        mesh, X, U, friction_constraint_set, dhat, barrier_stiffness,
         epsv_times_h, FrictionConstraint::DiffWRT::U);
 
     auto F_X = [&](const Eigen::VectorXd& x) {
         return compute_friction_force(
-            fd::unflatten(x, X.cols()), U, E, F, friction_constraint_set, dhat,
+            mesh, fd::unflatten(x, X.cols()), U, friction_constraint_set, dhat,
             barrier_stiffness, epsv_times_h);
     };
     Eigen::MatrixXd fd_JF_wrt_X;
@@ -321,7 +325,7 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
 
     auto F_U = [&](const Eigen::VectorXd& u) {
         return compute_friction_force(
-            X, fd::unflatten(u, U.cols()), E, F, friction_constraint_set, dhat,
+            mesh, X, fd::unflatten(u, U.cols()), friction_constraint_set, dhat,
             barrier_stiffness, epsv_times_h);
     };
     Eigen::MatrixXd fd_JF_wrt_U;
@@ -534,9 +538,15 @@ TEST_CASE(
         mu, expected_potential, expected_grad, expected_hess);
     REQUIRE(success);
 
+    Eigen::MatrixXi face_edges;
+    igl::edges(F, face_edges);
+    E.conservativeResize(E.rows() + face_edges.rows(), E.cols());
+    E.bottomRows(face_edges.rows()) = face_edges;
+    CollisionMesh mesh(V_start, E, F);
+
     FrictionConstraints friction_constraint_set;
     construct_friction_constraint_set(
-        V_lagged, E, F, contact_constraint_set, dhat, barrier_stiffness, mu,
+        mesh, V_lagged, contact_constraint_set, dhat, barrier_stiffness, mu,
         friction_constraint_set);
 
     REQUIRE(friction_constraint_set.size() == contact_constraint_set.size());
@@ -574,17 +584,17 @@ TEST_CASE(
     }
 
     double potential = compute_friction_potential(
-        V_start, V_end, E, F, friction_constraint_set, epsv_times_h);
+        mesh, V_start, V_end, friction_constraint_set, epsv_times_h);
 
     CHECK(potential == Approx(expected_potential));
 
     Eigen::VectorXd grad = compute_friction_potential_gradient(
-        V_start, V_end, E, F, friction_constraint_set, epsv_times_h);
+        mesh, V_start, V_end, friction_constraint_set, epsv_times_h);
 
     CHECK(grad.isApprox(expected_grad));
 
     Eigen::SparseMatrix<double> hess = compute_friction_potential_hessian(
-        V_start, V_end, E, F, friction_constraint_set, epsv_times_h);
+        mesh, V_start, V_end, friction_constraint_set, epsv_times_h);
 
     CHECK(hess.isApprox(expected_hess));
 }
