@@ -2,8 +2,6 @@ set(SOURCES
   eigen_ext.cpp
   eigen_ext.hpp
   eigen_ext.tpp
-  faces_to_edges.cpp
-  faces_to_edges.hpp
   intersection.cpp
   intersection.hpp
   local_to_global.hpp

@@ -9,16 +9,18 @@ namespace ipc {
 
 template <typename T>
 T compute_friction_potential(
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const MatrixX<T>& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const FrictionConstraints& friction_constraint_set,
     double epsv_times_h)
 {
     if (friction_constraint_set.empty()) {
         return T(0);
     }
+
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     // absolute linear dislacement of each point
     MatrixX<T> U = V1 - V0.cast<T>();

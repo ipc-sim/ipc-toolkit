@@ -21,9 +21,8 @@
 namespace ipc {
 
 void construct_friction_constraint_set(
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const Constraints& contact_constraint_set,
     double dhat,
     double barrier_stiffness,
@@ -31,14 +30,13 @@ void construct_friction_constraint_set(
     FrictionConstraints& friction_constraint_set)
 {
     return construct_friction_constraint_set(
-        V, E, F, contact_constraint_set, dhat, barrier_stiffness,
+        mesh, V, contact_constraint_set, dhat, barrier_stiffness,
         Eigen::VectorXd::Constant(V.rows(), mu), friction_constraint_set);
 }
 
 void construct_friction_constraint_set(
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const Constraints& contact_constraint_set,
     double dhat,
     double barrier_stiffness,
@@ -46,7 +44,7 @@ void construct_friction_constraint_set(
     FrictionConstraints& friction_constraint_set)
 {
     return construct_friction_constraint_set(
-        V, E, F, contact_constraint_set, dhat, barrier_stiffness, mus,
+        mesh, V, contact_constraint_set, dhat, barrier_stiffness, mus,
         [](double mu0, double mu1) { return (mu0 + mu1) / 2; },
         // [](double mu0, double mu1) { return mu0 * mu1; },
         // [](double mu0, double mu1) { return std::min(mu0, mu1); },
@@ -55,9 +53,8 @@ void construct_friction_constraint_set(
 }
 
 void construct_friction_constraint_set(
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const Constraints& contact_constraint_set,
     double dhat,
     double barrier_stiffness,
@@ -66,6 +63,9 @@ void construct_friction_constraint_set(
     FrictionConstraints& friction_constraint_set)
 {
     assert(mus.size() == V.rows());
+
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     friction_constraint_set.clear();
 
@@ -185,16 +185,18 @@ void construct_friction_constraint_set(
 ///////////////////////////////////////////////////////////////////////////////
 
 Eigen::VectorXd compute_friction_potential_gradient(
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const FrictionConstraints& friction_constraint_set,
     double epsv_times_h)
 {
     if (friction_constraint_set.empty()) {
         return Eigen::VectorXd::Zero(V0.size());
     }
+
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     auto U = V1 - V0; // absolute linear dislacement of each point
     int dim = U.cols();
@@ -225,10 +227,9 @@ Eigen::VectorXd compute_friction_potential_gradient(
 ///////////////////////////////////////////////////////////////////////////////
 
 Eigen::SparseMatrix<double> compute_friction_potential_hessian(
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const FrictionConstraints& friction_constraint_set,
     double epsv_times_h,
     bool project_hessian_to_psd)
@@ -236,6 +237,9 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     if (friction_constraint_set.empty()) {
         return Eigen::SparseMatrix<double>(V0.size(), V0.size());
     }
+
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     auto U = V1 - V0; // absolute linear dislacement of each point
     int dim = U.cols();
@@ -269,11 +273,10 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
 ///////////////////////////////////////////////////////////////////////////////
 
 Eigen::VectorXd compute_friction_force(
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& X,
     const Eigen::MatrixXd& Ut,
     const Eigen::MatrixXd& U,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const FrictionConstraints& friction_constraint_set,
     const double dhat,
     const double barrier_stiffness,
@@ -285,6 +288,8 @@ Eigen::VectorXd compute_friction_force(
     }
 
     int dim = U.cols();
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
         Eigen::VectorXd::Zero(U.size()));
@@ -313,11 +318,10 @@ Eigen::VectorXd compute_friction_force(
 ///////////////////////////////////////////////////////////////////////////////
 
 Eigen::SparseMatrix<double> compute_friction_force_jacobian(
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& X,
     const Eigen::MatrixXd& Ut,
     const Eigen::MatrixXd& U,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     const FrictionConstraints& friction_constraint_set,
     const double dhat,
     const double barrier_stiffness,
@@ -330,6 +334,8 @@ Eigen::SparseMatrix<double> compute_friction_force_jacobian(
     }
 
     int dim = U.cols();
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
         storage;
