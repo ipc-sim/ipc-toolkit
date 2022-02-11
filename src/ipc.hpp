@@ -7,7 +7,7 @@
 // NOTE: Include this so the user can just include ipc.hpp
 #include <ipc/friction/friction.hpp>
 #include <ipc/broad_phase/broad_phase.hpp>
-#include <ipc/surface_mesh.hpp>
+#include <ipc/collision_mesh.hpp>
 
 /// Incremental Potential Contact functions
 namespace ipc {
@@ -22,7 +22,7 @@ namespace ipc {
 /// @param[in] dmin Minimum distance.
 /// @param[in] method Broad-phase method to use.
 void construct_constraint_set(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const double dhat,
     Constraints& constraint_set,
@@ -41,7 +41,7 @@ void construct_constraint_set(
 /// @param[in]  dmin  Minimum distance.
 void construct_constraint_set(
     const Candidates& candidates,
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const double dhat,
     Constraints& constraint_set,
@@ -56,7 +56,7 @@ void construct_constraint_set(
 /// @returns The sum of all barrier potentials (not scaled by the barrier
 /// stiffness).
 double compute_barrier_potential(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const Constraints& constraint_set,
     const double dhat);
@@ -70,7 +70,7 @@ double compute_barrier_potential(
 /// @returns The gradient of all barrier potentials (not scaled by the barrier
 /// stiffness). This will have a size of |V|.
 Eigen::VectorXd compute_barrier_potential_gradient(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const Constraints& constraint_set,
     const double dhat);
@@ -86,7 +86,7 @@ Eigen::VectorXd compute_barrier_potential_gradient(
 /// @returns The hessian of all barrier potentials (not scaled by the barrier
 ///     stiffness). This will have a size of |V|x|V|.
 Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const Constraints& constraint_set,
     const double dhat,
@@ -106,7 +106,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 /// @param[in] V1 Surface vertex positions at end as rows of a matrix.
 /// @returns True if <b>any</b> collisions occur.
 bool is_step_collision_free(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
@@ -128,7 +128,7 @@ bool is_step_collision_free(
 /// @returns True if <b>any</b> collisions occur.
 bool is_step_collision_free(
     const Candidates& candidates,
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const double tolerance = 1e-6,
@@ -150,7 +150,7 @@ bool is_step_collision_free(
 /// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0
 /// if a full step and 0.0 is no step.
 double compute_collision_free_stepsize(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
@@ -173,7 +173,7 @@ double compute_collision_free_stepsize(
 /// if a full step and 0.0 is no step.
 double compute_collision_free_stepsize(
     const Candidates& candidates,
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const double tolerance = 1e-6,
@@ -188,7 +188,7 @@ double compute_collision_free_stepsize(
 /// @param[in] V Surface vertex positions as rows of a matrix.
 /// @returns The minimum distance between any non-adjacent elements.
 double compute_minimum_distance(
-    const SurfaceMesh& mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const Constraints& constraint_set);
 
@@ -196,6 +196,6 @@ double compute_minimum_distance(
 ///
 /// @param[in] mesh The surface of the contact mesh.
 /// @param[in] V Surface vertex positions as rows of a matrix.
-bool has_intersections(const SurfaceMesh& mesh, const Eigen::MatrixXd& V);
+bool has_intersections(const CollisionMesh& mesh, const Eigen::MatrixXd& V);
 
 } // namespace ipc

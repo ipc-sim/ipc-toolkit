@@ -13,15 +13,16 @@
 namespace ipc {
 
 void construct_collision_candidates(
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     Candidates& candidates,
     double inflation_radius,
-    const BroadPhaseMethod& method,
-    const std::function<bool(size_t, size_t)>& can_collide)
+    const BroadPhaseMethod& method)
 {
-    int dim = V.cols();
+    const int dim = V.cols();
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
+    const auto& can_collide = mesh.can_collide;
 
     candidates.clear();
 
@@ -83,17 +84,18 @@ void construct_collision_candidates(
 }
 
 void construct_collision_candidates(
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
     Candidates& candidates,
     double inflation_radius,
-    const BroadPhaseMethod& method,
-    const std::function<bool(size_t, size_t)>& can_collide)
+    const BroadPhaseMethod& method)
 {
-    int dim = V0.cols();
+    const int dim = V0.cols();
     assert(V1.cols() == dim);
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
+    const auto& can_collide = mesh.can_collide;
 
     candidates.clear();
 

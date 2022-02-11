@@ -49,12 +49,12 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase]")
 
     bool is_valid_step;
     if (ignore_internal_vertices) {
-        SurfaceMesh mesh =
-            SurfaceMesh::build_from_full_mesh(V_t0, E, /*F=*/Eigen::MatrixXi());
+        CollisionMesh mesh = CollisionMesh::build_from_full_mesh(
+            V_t0, E, /*F=*/Eigen::MatrixXi());
         is_valid_step = ipc::is_step_collision_free(
             mesh, V_t0, V_t1, method, tolerance, max_iterations);
     } else {
-        SurfaceMesh mesh(V_t0, E, /*F=*/Eigen::MatrixXi());
+        CollisionMesh mesh(V_t0, E, /*F=*/Eigen::MatrixXi());
         is_valid_step = ipc::is_step_collision_free(
             mesh, V_t0, V_t1, method, tolerance, max_iterations);
     }
@@ -75,8 +75,8 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase]")
     igl::readCSV(std::string(TEST_DATA_DIR) + "E.csv", E);
     E.array() -= 1; // NOTE: Convert from OBJ format to index
 
-    SurfaceMesh mesh =
-        SurfaceMesh::build_from_full_mesh(V_t0, E, /*F=*/Eigen::MatrixXi());
+    CollisionMesh mesh =
+        CollisionMesh::build_from_full_mesh(V_t0, E, /*F=*/Eigen::MatrixXi());
 
     BroadPhaseMethod method = GENERATE(
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
@@ -115,7 +115,7 @@ TEST_CASE(
     igl::readDMAT(std::string(TEST_DATA_DIR) + "codim-points/E.dmat", E);
     igl::readDMAT(std::string(TEST_DATA_DIR) + "codim-points/F.dmat", F);
 
-    SurfaceMesh mesh = SurfaceMesh::build_from_full_mesh(V_rest, E, F);
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V_rest, E, F);
 
 #ifdef NDEBUG
     BroadPhaseMethod method = GENERATE(

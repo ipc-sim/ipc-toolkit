@@ -282,9 +282,9 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
     }
 
     double distance_t0 = compute_minimum_distance(
-        SurfaceMesh(V0, E, F), V0, contact_constraint_set);
+        CollisionMesh(V0, E, F), V0, contact_constraint_set);
     double distance_t1 = compute_minimum_distance(
-        SurfaceMesh(V0, E, F), V1, contact_constraint_set);
+        CollisionMesh(V0, E, F), V1, contact_constraint_set);
     // CHECK((distance_t0 < dhat || distance_t1 < dhat));
 
     if (distance_t0 == 0 || distance_t1 == 0) {

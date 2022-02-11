@@ -33,7 +33,7 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
 
     igl::edges(F, E);
 
-    SurfaceMesh mesh = SurfaceMesh::build_from_full_mesh(V0, E, F);
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0, E, F);
     // Discard codimensional/internal vertices
     V0 = mesh.surface_vertices(V0);
     V1 = mesh.surface_vertices(V1);

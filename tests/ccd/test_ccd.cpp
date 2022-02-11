@@ -313,14 +313,14 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
     }
     // REQUIRE(success);
 
-    SurfaceMesh mesh = SurfaceMesh::build_from_full_mesh(V0, E, F);
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0, E, F);
     // Discard codimensional/internal vertices
     V0 = mesh.surface_vertices(V0);
     V1 = mesh.surface_vertices(V1);
 
     Candidates candidates;
     construct_collision_candidates(
-        V0, V1, E, F, candidates, inflation_radius, broadphase_method);
+        mesh, V0, V1, candidates, inflation_radius, broadphase_method);
 
     bool has_collisions = !is_step_collision_free(
         candidates, mesh, V0, V1, FIRST_TOL, FIRST_MAX_ITER);
@@ -342,7 +342,7 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
 
         if (recompute_candidates) {
             construct_collision_candidates(
-                V0, Vt, E, F, candidates, inflation_radius, broadphase_method);
+                mesh, V0, Vt, candidates, inflation_radius, broadphase_method);
         }
 
         has_collisions_repeated = !is_step_collision_free(

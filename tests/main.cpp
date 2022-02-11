@@ -4,8 +4,7 @@
 #include <catch2/catch.hpp>
 
 #include <tbb/global_control.h>
-#include <tbb/task_scheduler_init.h>
-#include <thread>
+#include <tbb/info.h>
 
 #include <ipc/utils/logger.hpp>
 
@@ -26,12 +25,12 @@ Catch::clara::ParserResult parse_log_level(int const d, int& log_level)
 Catch::clara::ParserResult parse_num_threads(int const d, int& num_threads)
 {
     if (num_threads <= 0) {
-        num_threads = tbb::task_scheduler_init::default_num_threads();
-    } else if (num_threads > tbb::task_scheduler_init::default_num_threads()) {
+        num_threads = tbb::info::default_concurrency();
+    } else if (num_threads > tbb::info::default_concurrency()) {
         IPC_LOG(warn(
             "Attempting to use more threads than available ({:d} > {:d})!",
-            num_threads, tbb::task_scheduler_init::default_num_threads()));
-        num_threads = tbb::task_scheduler_init::default_num_threads();
+            num_threads, tbb::info::default_concurrency()));
+        num_threads = tbb::info::default_concurrency();
     } else {
         num_threads = d;
     }
@@ -55,7 +54,7 @@ int main(int argc, char* argv[])
             "logger verbosity level int (0-6)");
 #endif
 
-    int num_threads = tbb::task_scheduler_init::default_num_threads();
+    int num_threads = tbb::info::default_concurrency();
     cli |=
         Opt([&num_threads](
                 int const d) { return parse_num_threads(d, num_threads); },
