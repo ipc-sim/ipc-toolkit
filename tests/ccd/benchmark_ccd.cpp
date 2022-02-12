@@ -35,8 +35,8 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
 
     CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0, E, F);
     // Discard codimensional/internal vertices
-    V0 = mesh.surface_vertices(V0);
-    V1 = mesh.surface_vertices(V1);
+    V0 = mesh.vertices(V0);
+    V1 = mesh.vertices(V1);
 
     // BroadPhaseMethod method = GENERATE(
     //     BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,

@@ -10,12 +10,12 @@ public:
     CollisionMesh() { }
 
     CollisionMesh(
-        const Eigen::MatrixXd& surface_vertices_at_rest,
+        const Eigen::MatrixXd& vertices_at_rest,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces);
 
     CollisionMesh(
-        const std::vector<bool>& is_on_surface,
+        const std::vector<bool>& include_vertex,
         const Eigen::MatrixXd& full_vertices_at_rest,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces);
@@ -26,21 +26,23 @@ public:
     {
         return m_vertices_at_rest;
     }
+    Eigen::MatrixXd vertices(const Eigen::MatrixXd& full_V) const;
     const Eigen::MatrixXi& edges() const { return m_edges; }
     const Eigen::MatrixXi& faces() const { return m_faces; }
     const Eigen::MatrixXi& faces_to_edges() const { return m_faces_to_edges; }
 
-    size_t surface_size() const { return m_surface_to_full.size(); }
-    size_t full_size() const { return m_full_size; }
-    size_t dim() const { return m_vertices_at_rest.cols(); }
-    const Eigen::VectorXi& surface_to_full() const { return m_surface_to_full; }
-    const Eigen::VectorXi& full_to_surface() const { return m_full_to_surface; }
+    size_t num_vertices() const { return vertices_at_rest().rows(); }
+    size_t dim() const { return vertices_at_rest().cols(); }
+    size_t ndof() const { return num_vertices() * dim(); }
 
-    Eigen::VectorXd map_surface_to_full(const Eigen::VectorXd& x) const;
+    size_t to_full_vertex_id(const size_t id)
+    {
+        assert(id < num_vertices());
+        return vertex_to_full_vertex[id];
+    }
+    Eigen::VectorXd to_full_dof(const Eigen::VectorXd& x) const;
     Eigen::SparseMatrix<double>
-    map_surface_to_full(const Eigen::SparseMatrix<double>& X) const;
-
-    Eigen::MatrixXd surface_vertices(const Eigen::MatrixXd& full_V) const;
+    to_full_dof(const Eigen::SparseMatrix<double>& X) const;
 
     static std::vector<bool> construct_is_on_surface(
         const int num_vertices, const Eigen::MatrixXi& edges);
@@ -69,6 +71,10 @@ public:
     };
 
 protected:
+    void init_dof_to_full_dof();
+
+    size_t full_ndof() const { return full_vertex_to_vertex.size() * dim(); }
+
     Eigen::MatrixXd m_vertices_at_rest;
     /// Edges as rows of indicies into V.
     Eigen::MatrixXi m_edges;
@@ -77,9 +83,9 @@ protected:
     /// Map from F edges to rows of E.
     Eigen::MatrixXi m_faces_to_edges;
 
-    size_t m_full_size;
-    Eigen::VectorXi m_surface_to_full;
-    Eigen::VectorXi m_full_to_surface;
+    Eigen::VectorXi full_vertex_to_vertex;
+    Eigen::VectorXi vertex_to_full_vertex;
+    Eigen::VectorXi dof_to_full_dof;
 };
 
 } // namespace ipc
