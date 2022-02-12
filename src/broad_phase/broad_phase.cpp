@@ -60,7 +60,6 @@ void construct_collision_candidates(
                 F, candidates.fv_candidates, can_collide);
         }
     } break;
-    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
     case BroadPhaseMethod::SPATIAL_HASH: {
         // TODO: Use can_collide
         SpatialHash sh(V, E, F, inflation_radius);
@@ -70,16 +69,16 @@ void construct_collision_candidates(
             /*queryEE=*/dim == 3,
             /*queryFV=*/dim == 3);
     } break;
-        // #ifdef IPC_TOOLKIT_WITH_CUDA
-        //     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE: {
-        //         // TODO: Use can_collide
-        //         std::vector<std::pair<int, int>> overlaps;
-        //         std::vector<ccdgpu::Aabb> boxes;
-        //         construct_static_collision_candidates(
-        //             V, E, F, overlaps, boxes, inflation_radius);
-        //         candidates = Candidates(overlaps, boxes);
-        //     } break;
-        // #endif
+#ifdef IPC_TOOLKIT_WITH_CUDA
+    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE: {
+        // TODO: Use can_collide
+        std::vector<std::pair<int, int>> overlaps;
+        std::vector<ccdgpu::Aabb> boxes;
+        construct_static_collision_candidates(
+            V, E, F, overlaps, boxes, inflation_radius);
+        candidates = Candidates(overlaps, boxes);
+    } break;
+#endif
     }
 }
 
