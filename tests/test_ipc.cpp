@@ -109,7 +109,7 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
             mesh, V, dhat, constraint_set, /*dmin=*/0, method);
     } else {
         mesh = CollisionMesh::build_from_full_mesh(V, E, F);
-        V = mesh.surface_vertices(V);
+        V = mesh.vertices(V);
         ipc::construct_constraint_set(
             mesh, V, dhat, constraint_set, /*dmin=*/0, method);
     }
@@ -181,7 +181,7 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
             mesh, V, dhat, constraint_set, /*dmin=*/0, method);
     } else {
         mesh = CollisionMesh::build_from_full_mesh(V, E, F);
-        V = mesh.surface_vertices(V);
+        V = mesh.vertices(V);
         ipc::construct_constraint_set(
             mesh, V, dhat, constraint_set, /*dmin=*/0, method);
     }
