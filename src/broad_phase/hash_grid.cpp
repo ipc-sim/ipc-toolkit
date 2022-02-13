@@ -12,7 +12,7 @@
 #include <ipc/utils/logger.hpp>
 
 // NOTE: Uncomment for expiermental parallel version of getPairs()
-// #define IPC_HASH_GRID_PARALLEL_GET_PAIR
+#define IPC_HASH_GRID_PARALLEL_GET_PAIR
 
 namespace ipc {
 
