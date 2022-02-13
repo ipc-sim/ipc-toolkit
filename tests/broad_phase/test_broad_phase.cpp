@@ -10,7 +10,6 @@
 #include <ipc/broad_phase/hash_grid.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/ccd/ccd.hpp>
-#include <ipc/utils/faces_to_edges.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
 #include <cuda.h>
