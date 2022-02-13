@@ -13,8 +13,8 @@
 namespace ipc {
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
-/// @param[in] mesh The surface of the contact mesh.
-/// @param[in] V Surface vertex positions as rows of a matrix.
+/// @param[in] mesh The collision mesh.
+/// @param[in] V Vertices of the collision mesh.
 /// @param[in] dhat The activation distance of the barrier.
 /// @param[out] constraint_set
 ///     The constructed set of constraints (any existing constraints will be
@@ -32,8 +32,8 @@ void construct_constraint_set(
 /// @brief Construct a set of constraints used to compute the barrier potential.
 /// @param[in] candidates Distance candidates from which the constraint set is
 ///                       built.
-/// @param[in] mesh The surface of the contact mesh.
-/// @param[in] V Surface vertex positions as rows of a matrix.
+/// @param[in] mesh The collision mesh.
+/// @param[in] V Vertices of the collision mesh.
 /// @param[in] dhat The activation distance of the barrier.
 /// @param[out] constraint_set
 ///     The constructed set of constraints (any existing constraints will be
@@ -49,8 +49,8 @@ void construct_constraint_set(
 
 /// @brief Compute the barrier potential for a given constraint set.
 ///
-/// @param[in] mesh The surface of the contact mesh.
-/// @param[in] V Surface vertex positions as rows of a matrix.
+/// @param[in] mesh The collision mesh.
+/// @param[in] V Vertices of the collision mesh.
 /// @param[in] constraint_set The set of constraints.
 /// @param[in] dhat The activation distance of the barrier.
 /// @returns The sum of all barrier potentials (not scaled by the barrier
@@ -63,8 +63,8 @@ double compute_barrier_potential(
 
 /// @brief Compute the gradient of the barrier potential.
 ///
-/// @param[in] mesh The surface of the contact mesh.
-/// @param[in] V Surface vertex positions as rows of a matrix.
+/// @param[in] mesh The collision mesh.
+/// @param[in] V Vertices of the collision mesh.
 /// @param[in] constraint_set The set of constraints.
 /// @param[in] dhat The activation distance of the barrier.
 /// @returns The gradient of all barrier potentials (not scaled by the barrier
@@ -77,8 +77,8 @@ Eigen::VectorXd compute_barrier_potential_gradient(
 
 /// @brief Compute the hessian of the barrier potential.
 ///
-/// @param[in] mesh The surface of the contact mesh.
-/// @param[in] V Surface vertex positions as rows of a matrix.
+/// @param[in] mesh The collision mesh.
+/// @param[in] V Vertices of the collision mesh.
 /// @param[in] constraint_set The set of constraints.
 /// @param[in] dhat The activation distance of the barrier.
 /// @param[in] project_hessian_to_psd Make sure the hessian is positive
@@ -101,7 +101,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 ///
 /// @note Assumes the trajectory is linear.
 ///
-/// @param[in] mesh The surface of the contact mesh.
+/// @param[in] mesh The collision mesh.
 /// @param[in] V0 Surface vertex positions at start as rows of a matrix.
 /// @param[in] V1 Surface vertex positions at end as rows of a matrix.
 /// @returns True if <b>any</b> collisions occur.
@@ -121,7 +121,7 @@ bool is_step_collision_free(
 /// @note Assumes the trajectory is linear.
 ///
 /// @param[in] candidates Set of candidates to check for collisions.
-/// @param[in] mesh The surface of the contact mesh.
+/// @param[in] mesh The collision mesh.
 /// @param[in] V0 Surface vertex positions at start as rows of a matrix.
 /// @param[in] V1 Surface vertex positions at end as rows of a matrix.
 ///
@@ -142,7 +142,7 @@ bool is_step_collision_free(
 ///
 /// @note Assumes the trajectory is linear.
 ///
-/// @param[in] mesh The surface of the contact mesh.
+/// @param[in] mesh The collision mesh.
 /// @param[in] V0
 ///     Vertex positions at start as rows of a matrix. Assumes V0 is
 ///     intersection free.
@@ -163,7 +163,7 @@ double compute_collision_free_stepsize(
 /// @note Assumes the trajectory is linear.
 ///
 /// @param[in] candidates Set of candidates to check for collisions.
-/// @param[in] mesh The surface of the contact mesh.
+/// @param[in] mesh The collision mesh.
 /// @param[in] V0
 ///     Vertex positions at start as rows of a matrix. Assumes V0 is
 ///     intersection free.
@@ -184,8 +184,8 @@ double compute_collision_free_stepsize(
 
 /// @brief Computes the minimum distance between any non-adjacent elements.
 ///
-/// @param[in] mesh The surface of the contact mesh.
-/// @param[in] V Surface vertex positions as rows of a matrix.
+/// @param[in] mesh The collision mesh.
+/// @param[in] V Vertices of the collision mesh.
 /// @returns The minimum distance between any non-adjacent elements.
 double compute_minimum_distance(
     const CollisionMesh& mesh,
@@ -194,8 +194,8 @@ double compute_minimum_distance(
 
 /// @brief Determine if the mesh has self intersections.
 ///
-/// @param[in] mesh The surface of the contact mesh.
-/// @param[in] V Surface vertex positions as rows of a matrix.
+/// @param[in] mesh The collision mesh.
+/// @param[in] V Vertices of the collision mesh.
 bool has_intersections(const CollisionMesh& mesh, const Eigen::MatrixXd& V);
 
 } // namespace ipc

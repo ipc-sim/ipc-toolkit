@@ -21,6 +21,8 @@ void define_point_triangle_distance_functions(py::module_& m);
 
 void define_ipc_functions(py::module_& m);
 
+void define_collision_mesh_class(py::module_& m);
+
 void define_logger_functions(py::module_& m);
 void define_thread_limiter_functions(py::module_& m);
 
@@ -46,6 +48,8 @@ PYBIND11_MODULE(ipctk, m)
     define_point_triangle_distance_functions(m);
 
     define_ipc_functions(m);
+
+    define_collision_mesh_class(m);
 
     define_logger_functions(m);
     define_thread_limiter_functions(m);

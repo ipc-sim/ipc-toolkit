@@ -19,3 +19,6 @@ else()
 endif()
 
 add_library(gpu_ccd::gpu_ccd ALIAS CCDGPU)
+
+set_target_properties(GPUBF PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(CCDGPU PROPERTIES POSITION_INDEPENDENT_CODE ON)
