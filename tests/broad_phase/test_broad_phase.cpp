@@ -23,7 +23,7 @@
 
 using namespace ipc;
 
-TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase]")
+TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase][2D]")
 {
     Eigen::MatrixXd V_t0(4, 2);
     V_t0.row(0) << 1.11111, 0.5;  // edge 0 vertex 0
@@ -64,7 +64,7 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase]")
     CHECK(!is_valid_step);
 }
 
-TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase]")
+TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D]")
 {
     Eigen::MatrixXd V_t0;
     igl::readCSV(std::string(TEST_DATA_DIR) + "V_t0.csv", V_t0);
