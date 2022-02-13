@@ -23,6 +23,8 @@ pybind11_add_module(ipctk
   src/distance/point_point.cpp
   src/distance/point_triangle.cpp
 
+  src/collision_mesh.cpp
+
   src/ipc.cpp
 
   src/utils/logger.cpp

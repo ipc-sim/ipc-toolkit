@@ -2,8 +2,8 @@
 
 #include <memory>
 
+#include <tbb/info.h>
 #include <tbb/global_control.h>
-#include <tbb/task_scheduler_init.h>
 
 #include <ipc/utils/logger.hpp>
 
@@ -20,12 +20,12 @@ int get_num_threads()
 void set_num_threads(int nthreads)
 {
     if (nthreads <= 0) {
-        nthreads = tbb::task_scheduler_init::default_num_threads();
-    } else if (nthreads > tbb::task_scheduler_init::default_num_threads()) {
+        nthreads = tbb::info::default_concurrency();
+    } else if (nthreads > tbb::info::default_concurrency()) {
         IPC_LOG(warn(
             "Attempting to use more threads than available ({:d} > {:d})!",
-            nthreads, tbb::task_scheduler_init::default_num_threads()));
-        nthreads = tbb::task_scheduler_init::default_num_threads();
+            nthreads, tbb::info::default_concurrency()));
+        nthreads = tbb::info::default_concurrency();
     }
     thread_limiter = std::make_shared<tbb::global_control>(
         tbb::global_control::max_allowed_parallelism, nthreads);
