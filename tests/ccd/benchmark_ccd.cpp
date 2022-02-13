@@ -40,15 +40,18 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
     V0 = mesh.vertices(V0);
     V1 = mesh.vertices(V1);
 
-    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    std::vector<std::string> BP_names = { "BF", "HG", "SH", "GPU_STQ" };
 
     double tolerance = 1e-6;
     int max_iterations = 1e7;
 
-    BENCHMARK("Earliest ToI")
-    {
-        double stepsize = compute_collision_free_stepsize(
-            mesh, V0, V1, method, tolerance, max_iterations);
-        // IPC_LOG(critical("stepsize={}", stepsize));
-    };
+    for (int i = 0; i < static_cast<int>(BroadPhaseMethod::NUM_METHODS); i++) {
+        BroadPhaseMethod method = static_cast<BroadPhaseMethod>(i);
+        BENCHMARK(fmt::format("Earliest ToI {}", BP_names[i]))
+        {
+            double stepsize = compute_collision_free_stepsize(
+                mesh, V0, V1, method, tolerance, max_iterations);
+            // IPC_LOG(critical("stepsize={}", stepsize));
+        };
+    }
 }
