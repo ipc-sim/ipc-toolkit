@@ -215,7 +215,7 @@ struct Candidates {
         const std::string& filename,
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F);
+        const Eigen::MatrixXi& F) const;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -226,25 +226,29 @@ void save_obj(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const std::vector<EdgeVertexCandidate>& ev_candidates);
+    const std::vector<EdgeVertexCandidate>& ev_candidates,
+    const int v_offset = 0);
 void save_obj(
     std::ofstream& out,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const std::vector<EdgeEdgeCandidate>& ee_candidates);
+    const std::vector<EdgeEdgeCandidate>& ee_candidates,
+    const int v_offset = 0);
 void save_obj(
     std::ofstream& out,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const std::vector<FaceVertexCandidate>& fv_candidates);
+    const std::vector<FaceVertexCandidate>& fv_candidates,
+    const int v_offset = 0);
 void save_obj(
     std::ofstream& out,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const std::vector<EdgeFaceCandidate>& ef_candidates);
+    const std::vector<EdgeFaceCandidate>& ef_candidates,
+    const int v_offset = 0);
 
 template <typename Candidate>
 bool save_obj(
