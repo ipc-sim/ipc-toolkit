@@ -330,15 +330,18 @@ bool Candidates::save_obj(
     const std::string& filename,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F)
+    const Eigen::MatrixXi& F) const
 {
     std::ofstream obj(filename, std::ios::out);
     if (!obj.is_open()) {
         return false;
     }
-    ipc::save_obj(obj, V, E, F, ev_candidates);
-    ipc::save_obj(obj, V, E, F, ee_candidates);
-    ipc::save_obj(obj, V, F, F, fv_candidates);
+    int v_offset = 0;
+    ipc::save_obj(obj, V, E, F, ev_candidates, v_offset);
+    v_offset += ev_candidates.size() * 3;
+    ipc::save_obj(obj, V, E, F, ee_candidates, v_offset);
+    v_offset += ee_candidates.size() * 4;
+    ipc::save_obj(obj, V, F, F, fv_candidates, v_offset);
     return true;
 }
 
@@ -349,10 +352,11 @@ void save_obj(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const std::vector<EdgeVertexCandidate>& ev_candidates)
+    const std::vector<EdgeVertexCandidate>& ev_candidates,
+    const int v_offset)
 {
     out << "o EV\n";
-    int i = 1;
+    int i = v_offset + 1;
     for (const auto& ev_candidate : ev_candidates) {
         out << V.row(E(ev_candidate.edge_index, 0)).format(OBJ_VERTEX_FORMAT);
         out << V.row(E(ev_candidate.edge_index, 1)).format(OBJ_VERTEX_FORMAT);
@@ -367,10 +371,11 @@ void save_obj(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const std::vector<EdgeEdgeCandidate>& ee_candidates)
+    const std::vector<EdgeEdgeCandidate>& ee_candidates,
+    const int v_offset)
 {
     out << "o EE\n";
-    int i = 1;
+    int i = v_offset + 1;
     for (const auto& ee_candidate : ee_candidates) {
         out << V.row(E(ee_candidate.edge0_index, 0)).format(OBJ_VERTEX_FORMAT);
         out << V.row(E(ee_candidate.edge0_index, 1)).format(OBJ_VERTEX_FORMAT);
@@ -387,10 +392,11 @@ void save_obj(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const std::vector<FaceVertexCandidate>& fv_candidates)
+    const std::vector<FaceVertexCandidate>& fv_candidates,
+    const int v_offset)
 {
     out << "o FV\n";
-    int i = 1;
+    int i = v_offset + 1;
     for (const auto& fv_candidate : fv_candidates) {
         out << V.row(F(fv_candidate.face_index, 0)).format(OBJ_VERTEX_FORMAT);
         out << V.row(F(fv_candidate.face_index, 1)).format(OBJ_VERTEX_FORMAT);
@@ -406,10 +412,11 @@ void save_obj(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const std::vector<EdgeFaceCandidate>& ef_candidates)
+    const std::vector<EdgeFaceCandidate>& ef_candidates,
+    const int v_offset)
 {
     out << "o EF\n";
-    int i = 1;
+    int i = v_offset + 1;
     for (const auto& ef_candidate : ef_candidates) {
         out << V.row(E(ef_candidate.edge_index, 0)).format(OBJ_VERTEX_FORMAT);
         out << V.row(E(ef_candidate.edge_index, 1)).format(OBJ_VERTEX_FORMAT);

@@ -114,15 +114,15 @@ Eigen::MatrixXd CollisionMesh::vertices(const Eigen::MatrixXd& full_V) const
 std::vector<bool> CollisionMesh::construct_is_on_surface(
     const int num_vertices, const Eigen::MatrixXi& edges)
 {
-    std::vector<bool> include_vertex(num_vertices, false);
+    std::vector<bool> is_on_surface(num_vertices, false);
     // Column first because colmajor
     for (size_t ej = 0; ej < edges.cols(); ej++) {
         for (size_t ei = 0; ei < edges.rows(); ei++) {
             assert(edges(ei, ej) < num_vertices);
-            include_vertex[edges(ei, ej)] = true;
+            is_on_surface[edges(ei, ej)] = true;
         }
     }
-    return include_vertex;
+    return is_on_surface;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
