@@ -66,6 +66,7 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
             max_iterations);
         // IPC_LOG(critical("stepsize={}", stepsize));
     };
+#ifdef IPC_TOOLKIT_WITH_CUDA
     BENCHMARK("Earliest ToI STQ")
     {
         double stepsize = compute_collision_free_stepsize(
@@ -73,4 +74,5 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
             max_iterations);
         // IPC_LOG(critical("stepsize={}", stepsize));
     };
+#endif
 }
