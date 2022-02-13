@@ -265,8 +265,7 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
     const double FIRST_TOL = 1e-6, SECOND_TOL = 1e-7;
     const double FIRST_MAX_ITER = 1e6, SECOND_MAX_ITER = 1e6;
 
-    // BroadPhaseMethod broadphase_method =
-    //     GENERATE(BroadPhaseMethod::HASH_GRID, BroadPhaseMethod::BRUTE_FORCE);
+    // BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
     BroadPhaseMethod broadphase_method = BroadPhaseMethod::HASH_GRID;
     double inflation_radius = 0;
 

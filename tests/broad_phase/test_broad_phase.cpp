@@ -19,6 +19,8 @@
 
 #include <broad_phase/brute_force_comparison.hpp>
 
+#include "test_utils.hpp"
+
 using namespace ipc;
 
 TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase]")
@@ -116,13 +118,11 @@ TEST_CASE(
 
     CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V_rest, E, F);
 
-#ifdef NDEBUG
-    BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-        BroadPhaseMethod::SPATIAL_HASH);
-#else
-    BroadPhaseMethod method =
-        GENERATE(BroadPhaseMethod::HASH_GRID, BroadPhaseMethod::SPATIAL_HASH);
+    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+#ifndef NDEBUG
+    if (method == BroadPhaseMethod::BRUTE_FORCE) {
+        return;
+    }
 #endif
 
     Constraints constraint_set;
@@ -184,13 +184,10 @@ TEST_CASE(
         return group_ids.size() == 0 || group_ids(vi) != group_ids(vj);
     };
 
-    BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::HASH_GRID, BroadPhaseMethod::SPATIAL_HASH
-#ifdef IPC_TOOLKIT_WITH_CUDA
-        ,
-        BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
-#endif
-    );
+    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    if (method == BroadPhaseMethod::BRUTE_FORCE) {
+        return;
+    }
 
     std::function<Candidates(const Eigen::MatrixXd&)> build_candidates;
     if (method == BroadPhaseMethod::HASH_GRID) {

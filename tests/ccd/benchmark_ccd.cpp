@@ -8,6 +8,8 @@
 
 #include <ipc/ipc.hpp>
 
+#include "test_utils.hpp"
+
 using namespace ipc;
 
 TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
@@ -38,41 +40,15 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
     V0 = mesh.vertices(V0);
     V1 = mesh.vertices(V1);
 
-    // BroadPhaseMethod method = GENERATE(
-    //     BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-    //     BroadPhaseMethod::SPATIAL_HASH);
+    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 
     double tolerance = 1e-6;
     int max_iterations = 1e7;
 
-    BENCHMARK("Earliest ToI BF")
+    BENCHMARK("Earliest ToI")
     {
         double stepsize = compute_collision_free_stepsize(
-            mesh, V0, V1, BroadPhaseMethod::BRUTE_FORCE, tolerance,
-            max_iterations);
+            mesh, V0, V1, method, tolerance, max_iterations);
         // IPC_LOG(critical("stepsize={}", stepsize));
     };
-    BENCHMARK("Earliest ToI HG")
-    {
-        double stepsize = compute_collision_free_stepsize(
-            mesh, V0, V1, static_cast<BroadPhaseMethod>(1), tolerance,
-            max_iterations);
-        // IPC_LOG(critical("stepsize={}", stepsize));
-    };
-    BENCHMARK("Earliest ToI SH")
-    {
-        double stepsize = compute_collision_free_stepsize(
-            mesh, V0, V1, static_cast<BroadPhaseMethod>(2), tolerance,
-            max_iterations);
-        // IPC_LOG(critical("stepsize={}", stepsize));
-    };
-#ifdef IPC_TOOLKIT_WITH_CUDA
-    BENCHMARK("Earliest ToI STQ")
-    {
-        double stepsize = compute_collision_free_stepsize(
-            mesh, V0, V1, BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE, tolerance,
-            max_iterations);
-        // IPC_LOG(critical("stepsize={}", stepsize));
-    };
-#endif
 }

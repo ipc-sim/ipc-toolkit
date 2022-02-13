@@ -79,6 +79,8 @@ void construct_collision_candidates(
         candidates = Candidates(overlaps, boxes);
     } break;
 #endif
+    default:
+        throw "Invalid BroadPhaseMethod!";
     }
 }
 
@@ -151,6 +153,8 @@ void construct_collision_candidates(
         candidates = Candidates(overlaps, boxes);
     } break;
 #endif
+    default:
+        throw "Invalid BroadPhaseMethod!";
     }
 }
 

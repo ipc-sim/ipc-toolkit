@@ -95,5 +95,5 @@ Eigen::Matrix3d const& RotationGenerator::get() const { return R; }
 Catch::Generators::GeneratorWrapper<Eigen::Matrix3d> RotationGenerator::create()
 {
     return Catch::Generators::GeneratorWrapper<Eigen::Matrix3d>(
-        std::unique_ptr<RotationGenerator>(new RotationGenerator()));
+        std::make_unique<RotationGenerator>());
 }
