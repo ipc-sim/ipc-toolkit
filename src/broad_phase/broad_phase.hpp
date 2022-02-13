@@ -14,6 +14,7 @@ enum class BroadPhaseMethod {
 #ifdef IPC_TOOLKIT_WITH_CUDA
     SWEEP_AND_TINIEST_QUEUE,
 #endif
+    NUM_METHODS
 };
 
 /// @brief Construct a set of discrete collision detection candidates.

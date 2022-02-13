@@ -66,14 +66,7 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
     std::string mesh_name = "";
     bool all_vertices_on_surface = true;
 
-    BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-        BroadPhaseMethod::SPATIAL_HASH
-#ifdef IPC_TOOLKIT_WITH_CUDA
-        ,
-        BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
-#endif
-    );
+    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 
     SECTION("cube")
     {
@@ -141,14 +134,7 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     std::string mesh_name = "";
     bool all_vertices_on_surface = true;
 
-    BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-        BroadPhaseMethod::SPATIAL_HASH
-#ifdef IPC_TOOLKIT_WITH_CUDA
-        ,
-        BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
-#endif
-    );
+    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 
     SECTION("cube")
     {

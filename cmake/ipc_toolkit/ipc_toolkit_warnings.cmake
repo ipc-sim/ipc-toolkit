@@ -23,7 +23,7 @@ set(IPC_TOOLKIT_FLAGS
 		-Wcast-qual
 		# -Wmissing-noreturn
 		-Wmissing-format-attribute
-		-Wredundant-decls
+		# -Wredundant-decls
 
 		-Werror=implicit
 		-Werror=nonnull
@@ -77,7 +77,7 @@ set(IPC_TOOLKIT_FLAGS
 		-Wstrict-overflow
 		-Wstrict-overflow=2
 
-		-Wctor-dtor-privacy
+		# -Wctor-dtor-privacy
 		-Wlogical-op
 		-Wnoexcept
 		-Woverloaded-virtual
@@ -143,6 +143,8 @@ set(IPC_TOOLKIT_FLAGS
 		-fno-optimize-sibling-calls
 
 		-Wno-pedantic
+
+		-Wno-redundant-decls
 )
 
 # Flags above don't make sense for MSVC

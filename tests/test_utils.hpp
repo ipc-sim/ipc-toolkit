@@ -8,6 +8,12 @@
 
 #include <ipc/collision_constraint.hpp>
 
+#include <ipc/broad_phase/broad_phase.hpp>
+
+#define GENERATE_BROAD_PHASE_METHODS()                                         \
+    static_cast<BroadPhaseMethod>(                                             \
+        GENERATE(range(0, static_cast<int>(BroadPhaseMethod::NUM_METHODS))));
+
 bool load_mesh(
     const std::string& mesh_name,
     Eigen::MatrixXd& V,
@@ -26,12 +32,12 @@ public:
     // Attempts to move the generator to the next element.
     // Returns true if successful (and thus has another element that can be
     // read)
-    virtual bool next();
+    bool next() override;
 
     // Precondition:
     // The generator is either freshly constructed or the last call to next()
     // returned true
-    virtual Eigen::Matrix3d const& get() const;
+    Eigen::Matrix3d const& get() const override;
 
     static Catch::Generators::GeneratorWrapper<Eigen::Matrix3d> create();
 
