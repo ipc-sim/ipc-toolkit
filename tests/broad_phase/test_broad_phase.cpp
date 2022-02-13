@@ -137,6 +137,11 @@ TEST_CASE(
 {
     using namespace ipc;
 
+    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    if (method == BroadPhaseMethod::BRUTE_FORCE) {
+        return;
+    }
+
     Eigen::MatrixXd V0, U;
     Eigen::MatrixXi E, F;
     Eigen::VectorXi group_ids;
@@ -183,11 +188,6 @@ TEST_CASE(
     auto can_collide = [&group_ids](size_t vi, size_t vj) {
         return group_ids.size() == 0 || group_ids(vi) != group_ids(vj);
     };
-
-    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
-    if (method == BroadPhaseMethod::BRUTE_FORCE) {
-        return;
-    }
 
     std::function<Candidates(const Eigen::MatrixXd&)> build_candidates;
     if (method == BroadPhaseMethod::HASH_GRID) {

@@ -656,9 +656,8 @@ void SpatialHash::queryPointForPrimitives(
     edgeInds.clear();
     triInds.clear();
     for (const auto& voxelInd : pointAndEdgeOccupancy[vi]) {
-        const auto& voxelI = voxel.find(voxelInd);
-        assert(voxelI != voxel.end());
-        for (const auto& indI : voxelI->second) {
+        const auto& voxelI = voxel.at(voxelInd);
+        for (const auto& indI : voxelI) {
             if (indI < edgeStartInd) {
                 vertInds.insert(indI);
             } else if (indI < triStartInd) {
@@ -674,9 +673,8 @@ void SpatialHash::queryPointForEdges(int vi, unordered_set<int>& edgeInds) const
 {
     edgeInds.clear();
     for (const auto& voxelInd : pointAndEdgeOccupancy[vi]) {
-        const auto& voxelI = voxel.find(voxelInd);
-        assert(voxelI != voxel.end());
-        for (const auto& indI : voxelI->second) {
+        const auto& voxelI = voxel.at(voxelInd);
+        for (const auto& indI : voxelI) {
             if (indI >= edgeStartInd && indI < triStartInd) {
                 edgeInds.insert(indI - edgeStartInd);
             }
@@ -689,9 +687,8 @@ void SpatialHash::queryPointForTriangles(
 {
     triInds.clear();
     for (const auto& voxelInd : pointAndEdgeOccupancy[vi]) {
-        const auto& voxelI = voxel.find(voxelInd);
-        assert(voxelI != voxel.end());
-        for (const auto& indI : voxelI->second) {
+        const auto& voxelI = voxel.at(voxelInd);
+        for (const auto& indI : voxelI) {
             if (indI >= triStartInd) {
                 triInds.insert(indI - triStartInd);
             }
@@ -704,9 +701,8 @@ void SpatialHash::queryEdgeForEdges(int eai, unordered_set<int>& edgeInds) const
 {
     edgeInds.clear();
     for (const auto& voxelInd : pointAndEdgeOccupancy[eai + edgeStartInd]) {
-        const auto& voxelI = voxel.find(voxelInd);
-        assert(voxelI != voxel.end());
-        for (const auto& indI : voxelI->second) {
+        const auto& voxelI = voxel.at(voxelInd);
+        for (const auto& indI : voxelI) {
             if (indI >= edgeStartInd && indI < triStartInd
                 && indI - edgeStartInd > eai) {
                 edgeInds.insert(indI - edgeStartInd);
@@ -738,9 +734,8 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
 
     edgeInds.clear();
     for (const auto& voxelInd : pointAndEdgeOccupancy[eai + edgeStartInd]) {
-        const auto& voxelI = voxel.find(voxelInd);
-        assert(voxelI != voxel.end());
-        for (const auto& indI : voxelI->second) {
+        const auto& voxelI = voxel.at(voxelInd);
+        for (const auto& indI : voxelI) {
             if (indI >= edgeStartInd && indI < triStartInd
                 && indI - edgeStartInd > eai) {
                 int ebi = indI - edgeStartInd;

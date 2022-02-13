@@ -290,9 +290,6 @@ void Candidates::clear()
 
 ContinuousCollisionCandidate& Candidates::operator[](size_t idx)
 {
-    if (idx < 0) {
-        throw std::out_of_range("Constraint index is out of range!");
-    }
     if (idx < ev_candidates.size()) {
         return ev_candidates[idx];
     }
@@ -309,9 +306,6 @@ ContinuousCollisionCandidate& Candidates::operator[](size_t idx)
 
 const ContinuousCollisionCandidate& Candidates::operator[](size_t idx) const
 {
-    if (idx < 0) {
-        throw std::out_of_range("Constraint index is out of range!");
-    }
     if (idx < ev_candidates.size()) {
         return ev_candidates[idx];
     }
