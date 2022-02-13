@@ -185,8 +185,12 @@ TEST_CASE(
     };
 
     BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::HASH_GRID, BroadPhaseMethod::SPATIAL_HASH,
-        BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE);
+        BroadPhaseMethod::HASH_GRID, BroadPhaseMethod::SPATIAL_HASH
+#ifdef IPC_TOOLKIT_WITH_CUDA
+        ,
+        BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
+#endif
+    );
 
     std::function<Candidates(const Eigen::MatrixXd&)> build_candidates;
     if (method == BroadPhaseMethod::HASH_GRID) {
@@ -206,8 +210,7 @@ TEST_CASE(
                 F, candidates.fv_candidates, can_collide);
             return candidates;
         };
-    } else if (method == BroadPhaseMethod::HASH_GRID) {
-        assert(method = BroadPhaseMethod::SPATIAL_HASH);
+    } else if (method == BroadPhaseMethod::SPATIAL_HASH) {
         build_candidates = [&](const Eigen::MatrixXd& V1) {
             Candidates candidates;
 
@@ -221,6 +224,7 @@ TEST_CASE(
             return candidates;
         };
     } else {
+#if IPC_TOOLKIT_WITH_CUDA
         build_candidates = [&](const Eigen::MatrixXd& V1) {
             std::vector<std::pair<int, int>> overlaps;
             std::vector<ccdgpu::Aabb> boxes;
@@ -228,6 +232,9 @@ TEST_CASE(
                 V0, V1, E, F, overlaps, boxes, inflation_radius);
             return Candidates(overlaps, boxes);
         };
+#else
+        CHECK(false);
+#endif
     }
 
     for (int i = 0; i < 2; i++) {
