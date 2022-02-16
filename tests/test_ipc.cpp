@@ -117,10 +117,10 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
         return ipc::compute_barrier_potential(
-            unflatten(x, V.cols()), E, F, constraint_set, dhat);
+            fd::unflatten(x, V.cols()), E, F, constraint_set, dhat);
     };
     Eigen::VectorXd fgrad_b;
-    fd::finite_gradient(flatten(V), f, fgrad_b);
+    fd::finite_gradient(fd::flatten(V), f, fgrad_b);
 
     REQUIRE(grad_b.squaredNorm() > 1e-8);
     CHECK(fd::compare_gradient(grad_b, fgrad_b));
@@ -186,10 +186,10 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
         return ipc::compute_barrier_potential_gradient(
-            unflatten(x, V.cols()), E, F, constraint_set, dhat);
+            fd::unflatten(x, V.cols()), E, F, constraint_set, dhat);
     };
     Eigen::MatrixXd fhess_b;
-    fd::finite_jacobian(flatten(V), f, fhess_b);
+    fd::finite_jacobian(fd::flatten(V), f, fhess_b);
 
     REQUIRE(hess_b.squaredNorm() > 1e-3);
     CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));

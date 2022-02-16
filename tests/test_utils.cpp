@@ -6,31 +6,6 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 
-// Flatten the matrix rowwise
-Eigen::VectorXd flatten(const Eigen::MatrixXd& X)
-{
-    Eigen::MatrixXd XT = X.transpose();
-    return Eigen::VectorXd(Eigen::Map<Eigen::VectorXd>(XT.data(), XT.size()));
-}
-
-/// Unflatten rowwise
-Eigen::MatrixXd unflatten(const Eigen::VectorXd& x, int dim)
-{
-    assert(x.size() % dim == 0);
-    Eigen::MatrixXd unflat_x(x.size() / dim, dim);
-    for (int i = 0; i < x.size(); i++) {
-        unflat_x(i / dim, i % dim) = x(i);
-    }
-    return unflat_x;
-}
-
-TEST_CASE("Flatten and unflatten", "[utils]")
-{
-    Eigen::MatrixXd X = Eigen::MatrixXd::Random(1000, 3);
-    Eigen::MatrixXd R = unflatten(flatten(X), X.cols());
-    CHECK(X == R);
-}
-
 bool load_mesh(
     const std::string& mesh_name,
     Eigen::MatrixXd& V,

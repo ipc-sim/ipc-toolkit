@@ -147,17 +147,17 @@ TEST_CASE("Test friction gradient and hessian", "[friction][gradient][hessian]")
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
         return compute_friction_potential(
-            V0, unflatten(x, V1.cols()), E, F, friction_constraint_set,
+            V0, fd::unflatten(x, V1.cols()), E, F, friction_constraint_set,
             epsv_times_h);
     };
     Eigen::VectorXd fgrad;
-    fd::finite_gradient(flatten(V1), f, fgrad);
+    fd::finite_gradient(fd::flatten(V1), f, fgrad);
     CHECK(fd::compare_gradient(grad, fgrad));
 
     Eigen::MatrixXd hess = compute_friction_potential_hessian(
         V0, V1, E, F, friction_constraint_set, epsv_times_h);
     Eigen::MatrixXd fhess;
-    fd::finite_hessian(flatten(V1), f, fhess);
+    fd::finite_hessian(fd::flatten(V1), f, fhess);
     CHECK(fd::compare_hessian(hess, fhess, 1e-3));
 }
 
@@ -312,20 +312,20 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
 
     auto F_X = [&](const Eigen::VectorXd& x) {
         return compute_friction_force(
-            unflatten(x, X.cols()), U, E, F, friction_constraint_set, dhat,
+            fd::unflatten(x, X.cols()), U, E, F, friction_constraint_set, dhat,
             barrier_stiffness, epsv_times_h);
     };
     Eigen::MatrixXd fd_JF_wrt_X;
-    fd::finite_jacobian(flatten(X), F_X, fd_JF_wrt_X);
+    fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
     CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
 
     auto F_U = [&](const Eigen::VectorXd& u) {
         return compute_friction_force(
-            X, unflatten(u, U.cols()), E, F, friction_constraint_set, dhat,
+            X, fd::unflatten(u, U.cols()), E, F, friction_constraint_set, dhat,
             barrier_stiffness, epsv_times_h);
     };
     Eigen::MatrixXd fd_JF_wrt_U;
-    fd::finite_jacobian(flatten(U), F_U, fd_JF_wrt_U);
+    fd::finite_jacobian(fd::flatten(U), F_U, fd_JF_wrt_U);
     CHECK(fd::compare_jacobian(JF_wrt_U, fd_JF_wrt_U));
 }
 
@@ -355,7 +355,7 @@ void mmcvids_to_friction_constraints(
                 constraints.vv_constraints.emplace_back(
                     -mmcvid[0] - 1, mmcvid[1]);
                 assert(-mmcvid[3] >= 1);
-                constraints.vv_constraints.back().multiplicity = -mmcvid[3];
+                constraints.vv_constraints.back().multiplicity() = -mmcvid[3];
                 normal_force_magnitudes[i] /= -mmcvid[3];
                 constraint = &(constraints.vv_constraints.back());
 
@@ -363,7 +363,7 @@ void mmcvids_to_friction_constraints(
                 edges.emplace_back(mmcvid[1], mmcvid[2]);
                 constraints.ev_constraints.emplace_back(
                     edges.size() - 1, -mmcvid[0] - 1);
-                constraints.ev_constraints.back().multiplicity = -mmcvid[3];
+                constraints.ev_constraints.back().multiplicity() = -mmcvid[3];
                 normal_force_magnitudes[i] /= -mmcvid[3];
                 constraint = &(constraints.ev_constraints.back());
 
