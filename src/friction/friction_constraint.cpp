@@ -35,9 +35,9 @@ VectorMax12d FrictionConstraint::compute_potential_gradient(
         f1_SF_over_x(tangent_rel_u.norm(), epsv_times_h);
 
     // μ N(xᵗ) f₁(‖ū‖)/‖ū‖ ūᵀ T(xᵗ)ᵀ ∇ₓu(xᵗ, x)
-    return get_multiplicity() * mu * normal_force_magnitude
-        * f1_over_norm_tangent_u * tangent_rel_u.transpose()
-        * tangent_basis.transpose() * jac_global_rel_u;
+    return multiplicity() * mu * normal_force_magnitude * f1_over_norm_tangent_u
+        * tangent_rel_u.transpose() * tangent_basis.transpose()
+        * jac_global_rel_u;
 }
 
 MatrixMax12d FrictionConstraint::compute_potential_hessian(
@@ -73,7 +73,7 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
     const double f1_over_norm_ubar = f1_SF_over_x(norm_u, epsv_times_h);
 
     // compute μ N(xᵗ)
-    double scale = get_multiplicity() * mu * normal_force_magnitude;
+    double scale = multiplicity() * mu * normal_force_magnitude;
 
     MatrixMax12d local_hess;
     if (norm_u >= epsv_times_h) {
@@ -167,7 +167,7 @@ VectorMax12d FrictionConstraint::compute_force(
     const double f1_over_norm_ubar = f1_SF_over_x(ubar.norm(), epsv_times_h);
 
     // μ N(x) f₁(‖ū‖)/‖ū‖ ūᵀ T(x)ᵀ ∇ₓu(xᵗ, x)
-    return -get_multiplicity() * mu * N * f1_over_norm_ubar * ubar.transpose()
+    return -multiplicity() * mu * N * f1_over_norm_ubar * ubar.transpose()
         * T.transpose() * jac_u;
 }
 
@@ -303,7 +303,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
 
     // + -μ N f₁(‖ū‖)/‖ū‖ ūᵀ Tᵀ (∇²u = 0).
 
-    J *= -get_multiplicity() * mu;
+    J *= -multiplicity() * mu;
 
     return J;
 }
@@ -325,7 +325,7 @@ VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
 VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
     const VertexVertexConstraint& constraint)
     : VertexVertexCandidate(constraint.vertex0_index, constraint.vertex1_index)
-    , multiplicity(constraint.multiplicity)
+    , m_multiplicity(constraint.multiplicity)
 {
 }
 
@@ -406,7 +406,7 @@ EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
 EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
     const EdgeVertexConstraint& constraint)
     : EdgeVertexCandidate(constraint.edge_index, constraint.vertex_index)
-    , multiplicity(constraint.multiplicity)
+    , m_multiplicity(constraint.multiplicity)
 {
 }
 
@@ -661,10 +661,10 @@ size_t FrictionConstraints::num_constraints() const
 {
     size_t num_constraints = 0;
     for (const auto& vv_constraint : vv_constraints) {
-        num_constraints += vv_constraint.multiplicity;
+        num_constraints += vv_constraint.multiplicity();
     }
     for (const auto& ev_constraint : ev_constraints) {
-        num_constraints += ev_constraint.multiplicity;
+        num_constraints += ev_constraint.multiplicity();
     }
     num_constraints += ee_constraints.size() + fv_constraints.size();
     return num_constraints;

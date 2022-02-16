@@ -132,9 +132,9 @@ struct FrictionConstraint {
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const = 0;
 
-protected:
-    virtual int get_multiplicity() const { return 1; };
+    virtual unsigned int multiplicity() const { return 1; };
 
+protected:
     template <typename DerivedRelUi, typename T = typename DerivedRelUi::Scalar>
     T compute_potential_common(
         const Eigen::MatrixBase<DerivedRelUi>& rel_ui,
@@ -168,7 +168,7 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
         const double epsv_times_h) const
     {
         VectorMax3<T> rel_u = relative_displacement_T(U);
-        return multiplicity * compute_potential_common(rel_u, epsv_times_h);
+        return multiplicity() * compute_potential_common(rel_u, epsv_times_h);
     }
 
     double compute_normal_force_magnitude(
@@ -210,10 +210,11 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const override;
 
-    long multiplicity = 1;
+    unsigned int& multiplicity() { return m_multiplicity; };
+    unsigned int multiplicity() const override { return m_multiplicity; };
 
 protected:
-    int get_multiplicity() const override { return multiplicity; };
+    unsigned int m_multiplicity = 1;
 
 private:
     template <typename T>
@@ -245,7 +246,7 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
         const double epsv_times_h) const
     {
         VectorMax3<T> rel_u = relative_displacement_T(U, E);
-        return multiplicity * compute_potential_common(rel_u, epsv_times_h);
+        return multiplicity() * compute_potential_common(rel_u, epsv_times_h);
     }
 
     double compute_normal_force_magnitude(
@@ -287,10 +288,11 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const override;
 
-    long multiplicity = 1;
+    unsigned int& multiplicity() { return m_multiplicity; };
+    unsigned int multiplicity() const override { return m_multiplicity; };
 
 protected:
-    int get_multiplicity() const override { return multiplicity; };
+    unsigned int m_multiplicity = 1;
 
 private:
     template <typename T>
