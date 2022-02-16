@@ -132,7 +132,7 @@ struct FrictionConstraint {
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const = 0;
 
-    virtual unsigned int multiplicity() const { return 1; };
+    virtual int multiplicity() const { return 1; };
 
 protected:
     template <typename DerivedRelUi, typename T = typename DerivedRelUi::Scalar>
@@ -210,11 +210,11 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const override;
 
-    unsigned int& multiplicity() { return m_multiplicity; };
-    unsigned int multiplicity() const override { return m_multiplicity; };
+    int& multiplicity() { return m_multiplicity; };
+    int multiplicity() const override { return m_multiplicity; };
 
 protected:
-    unsigned int m_multiplicity = 1;
+    int m_multiplicity = 1;
 
 private:
     template <typename T>
@@ -288,11 +288,11 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const override;
 
-    unsigned int& multiplicity() { return m_multiplicity; };
-    unsigned int multiplicity() const override { return m_multiplicity; };
+    int& multiplicity() { return m_multiplicity; };
+    int multiplicity() const override { return m_multiplicity; };
 
 protected:
-    unsigned int m_multiplicity = 1;
+    int m_multiplicity = 1;
 
 private:
     template <typename T>

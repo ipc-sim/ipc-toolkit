@@ -9,7 +9,7 @@ namespace ipc {
 
 struct CollisionConstraint {
 public:
-    virtual ~CollisionConstraint() {}
+    virtual ~CollisionConstraint() { }
 
     virtual std::vector<long> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const = 0;
@@ -97,7 +97,7 @@ struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
         const double dhat,
         const bool project_hessian_to_psd) const override;
 
-    unsigned int multiplicity = 1;
+    int multiplicity = 1;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -146,7 +146,7 @@ struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
         const double dhat,
         const bool project_hessian_to_psd) const override;
 
-    unsigned int multiplicity = 1;
+    int multiplicity = 1;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

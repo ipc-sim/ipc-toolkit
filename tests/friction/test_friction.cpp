@@ -354,7 +354,7 @@ void mmcvids_to_friction_constraints(
             if (mmcvid[2] < 0) { // Is VV?
                 constraints.vv_constraints.emplace_back(
                     -mmcvid[0] - 1, mmcvid[1]);
-                assert(-mmcvid[3] >= 1);
+                CHECK(-mmcvid[3] >= 1);
                 constraints.vv_constraints.back().multiplicity() = -mmcvid[3];
                 normal_force_magnitudes[i] /= -mmcvid[3];
                 constraint = &(constraints.vv_constraints.back());
@@ -363,6 +363,7 @@ void mmcvids_to_friction_constraints(
                 edges.emplace_back(mmcvid[1], mmcvid[2]);
                 constraints.ev_constraints.emplace_back(
                     edges.size() - 1, -mmcvid[0] - 1);
+                CHECK(-mmcvid[3] >= 1);
                 constraints.ev_constraints.back().multiplicity() = -mmcvid[3];
                 normal_force_magnitudes[i] /= -mmcvid[3];
                 constraint = &(constraints.ev_constraints.back());
