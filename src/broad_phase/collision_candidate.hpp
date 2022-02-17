@@ -7,11 +7,6 @@
 
 #include <ipc/ccd/ccd.hpp>
 
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include <cuda_runtime.h> // for gcc/g++
-#include <gpubf/aabb.cuh>
-#endif
-
 namespace ipc {
 
 /// Virtual class for candidates that support CCD.
@@ -195,12 +190,6 @@ struct Candidates {
     std::vector<FaceVertexCandidate> fv_candidates;
 
     Candidates() { }
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-    Candidates(
-        const std::vector<std::pair<int, int>>& overlaps,
-        const std::vector<ccdgpu::Aabb> boxes);
-#endif
 
     size_t size() const;
 

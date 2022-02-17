@@ -3,14 +3,81 @@
 #include <ipc/broad_phase/brute_force.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <ccdgpu/helper.cuh>
-#endif
+#include <ipc/broad_phase/sweep.hpp>
 
 namespace ipc {
+
+void BroadPhase::build(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    double inflation_radius)
+{
+    assert(E.size() == 0 || E.cols() == 2);
+    assert(F.size() == 0 || F.cols() == 3);
+    clear();
+    build_vertex_boxes(V, vertex_boxes, inflation_radius);
+    build_edge_boxes(vertex_boxes, E, edge_boxes);
+    build_face_boxes(vertex_boxes, F, face_boxes);
+}
+
+void BroadPhase::build(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    double inflation_radius)
+{
+    assert(E.size() == 0 || E.cols() == 2);
+    assert(F.size() == 0 || F.cols() == 3);
+    clear();
+    build_vertex_boxes(V0, V1, vertex_boxes, inflation_radius);
+    build_edge_boxes(vertex_boxes, E, edge_boxes);
+    build_face_boxes(vertex_boxes, F, face_boxes);
+}
+
+void BroadPhase::clear()
+{
+    vertex_boxes.clear();
+    edge_boxes.clear();
+    face_boxes.clear();
+}
+
+void BroadPhase::detect_collision_candidates(
+    int dim, Candidates& candidates) const
+{
+    candidates.clear();
+    if (dim == 2) {
+        // This is not needed for 3D
+        detect_edge_vertex_candidates(candidates.ev_candidates);
+    } else {
+        // These are not needed for 2D
+        detect_edge_edge_candidates(candidates.ee_candidates);
+        detect_face_vertex_candidates(candidates.fv_candidates);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+std::unique_ptr<BroadPhase> make_broad_phase(const BroadPhaseMethod& method)
+{
+    switch (method) {
+    case BroadPhaseMethod::BRUTE_FORCE:
+        return std::make_unique<BruteForce>();
+    case BroadPhaseMethod::HASH_GRID:
+        return std::make_unique<HashGrid>();
+    case BroadPhaseMethod::SPATIAL_HASH:
+        return std::make_unique<SpatialHash>();
+    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
+        return std::make_unique<SweepAndTiniestQueue>();
+#ifdef IPC_TOOLKIT_WITH_CUDA
+    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU:
+        return std::make_unique<SweepAndTiniestQueueGPU>();
+#endif
+    default:
+        throw "Invalid BroadPhaseMethod!";
+    }
+}
 
 void construct_collision_candidates(
     const CollisionMesh& mesh,
@@ -20,68 +87,14 @@ void construct_collision_candidates(
     const BroadPhaseMethod& method)
 {
     const int dim = V.cols();
-    const Eigen::MatrixXi& E = mesh.edges();
-    const Eigen::MatrixXi& F = mesh.faces();
-    const auto& can_collide = mesh.can_collide;
 
     candidates.clear();
 
-    switch (method) {
-    case BroadPhaseMethod::BRUTE_FORCE: {
-        detect_collision_candidates_brute_force(
-            V, E, F, candidates,
-            /*detect_edge_vertex=*/dim == 2,
-            /*detect_edge_edge=*/dim == 3,
-            /*detect_face_vertex=*/dim == 3,
-            /*perform_aabb_check=*/true,
-            /*aabb_inflation_radius=*/inflation_radius, can_collide);
-    } break;
-    case BroadPhaseMethod::HASH_GRID: {
-        HashGrid hash_grid;
-        hash_grid.resize(V, E, inflation_radius);
-
-        // Assumes the edges connect to all boundary vertices
-        hash_grid.addVertices(V, inflation_radius);
-        hash_grid.addEdges(V, E, inflation_radius);
-        if (dim == 3) {
-            // These are not needed for 2D
-            hash_grid.addFaces(V, F, inflation_radius);
-        }
-
-        if (dim == 2) {
-            // This is not needed for 3D
-            hash_grid.getVertexEdgePairs(
-                E, candidates.ev_candidates, can_collide);
-        } else {
-            // These are not needed for 2D
-            hash_grid.getEdgeEdgePairs(
-                E, candidates.ee_candidates, can_collide);
-            hash_grid.getFaceVertexPairs(
-                F, candidates.fv_candidates, can_collide);
-        }
-    } break;
-    case BroadPhaseMethod::SPATIAL_HASH: {
-        // TODO: Use can_collide
-        SpatialHash sh(V, E, F, inflation_radius);
-        sh.queryMeshForCandidates(
-            V, E, F, candidates,
-            /*queryEV=*/dim == 2,
-            /*queryEE=*/dim == 3,
-            /*queryFV=*/dim == 3);
-    } break;
-#ifdef IPC_TOOLKIT_WITH_CUDA
-    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE: {
-        // TODO: Use can_collide
-        std::vector<std::pair<int, int>> overlaps;
-        std::vector<ccdgpu::Aabb> boxes;
-        construct_static_collision_candidates(
-            V, E, F, overlaps, boxes, inflation_radius);
-        candidates = Candidates(overlaps, boxes);
-    } break;
-#endif
-    default:
-        throw "Invalid BroadPhaseMethod!";
-    }
+    std::unique_ptr<BroadPhase> broad_phase = make_broad_phase(method);
+    broad_phase->can_vertices_collide = mesh.can_collide;
+    broad_phase->build(V, mesh.edges(), mesh.faces(), inflation_radius);
+    broad_phase->detect_collision_candidates(dim, candidates);
+    broad_phase->clear();
 }
 
 void construct_collision_candidates(
@@ -93,69 +106,62 @@ void construct_collision_candidates(
     const BroadPhaseMethod& method)
 {
     const int dim = V0.cols();
-    assert(V1.cols() == dim);
-    const Eigen::MatrixXi& E = mesh.edges();
-    const Eigen::MatrixXi& F = mesh.faces();
-    const auto& can_collide = mesh.can_collide;
 
     candidates.clear();
 
-    switch (method) {
-    case BroadPhaseMethod::BRUTE_FORCE: {
-        detect_collision_candidates_brute_force(
-            V0, V1, E, F, candidates,
-            /*detect_edge_vertex=*/dim == 2,
-            /*detect_edge_edge=*/dim == 3,
-            /*detect_face_vertex=*/dim == 3,
-            /*perform_aabb_check=*/true,
-            /*aabb_inflation_radius=*/inflation_radius, can_collide);
-    } break;
-    case BroadPhaseMethod::HASH_GRID: {
-        HashGrid hash_grid;
-        hash_grid.resize(V0, V1, E, inflation_radius);
+    std::unique_ptr<BroadPhase> broad_phase = make_broad_phase(method);
+    broad_phase->can_vertices_collide = mesh.can_collide;
+    broad_phase->build(V0, V1, mesh.edges(), mesh.faces(), inflation_radius);
+    broad_phase->detect_collision_candidates(dim, candidates);
+    broad_phase->clear();
+}
 
-        // Assumes the edges connect to all boundary vertices
-        hash_grid.addVertices(V0, V1, inflation_radius);
-        hash_grid.addEdges(V0, V1, E, inflation_radius);
-        if (dim == 3) {
-            // These are not needed for 2D
-            hash_grid.addFaces(V0, V1, F, inflation_radius);
-        }
+////////////////////////////////////////////////////////////////////////////////
 
-        if (dim == 2) {
-            // This is not needed for 3D
-            hash_grid.getVertexEdgePairs(
-                E, candidates.ev_candidates, can_collide);
-        } else {
-            // These are not needed for 2D
-            hash_grid.getEdgeEdgePairs(
-                E, candidates.ee_candidates, can_collide);
-            hash_grid.getFaceVertexPairs(
-                F, candidates.fv_candidates, can_collide);
-        }
-    } break;
-    case BroadPhaseMethod::SPATIAL_HASH: {
-        // TODO: Use can_collide
-        SpatialHash sh(V0, V1, E, F, inflation_radius);
-        sh.queryMeshForCandidates(
-            V0, V1, E, F, candidates,
-            /*queryEV=*/dim == 2,
-            /*queryEE=*/dim == 3,
-            /*queryFV=*/dim == 3);
-    } break;
-#ifdef IPC_TOOLKIT_WITH_CUDA
-    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE: {
-        // TODO: Use can_collide
-        std::vector<std::pair<int, int>> overlaps;
-        std::vector<ccdgpu::Aabb> boxes;
-        construct_continuous_collision_candidates(
-            V0, V1, E, F, overlaps, boxes, inflation_radius);
-        candidates = Candidates(overlaps, boxes);
-    } break;
-#endif
-    default:
-        throw "Invalid BroadPhaseMethod!";
-    }
+bool BroadPhase::can_edge_vertex_collide(size_t ei, size_t vi) const
+{
+    const auto& [e0i, e1i, _] = edge_boxes[ei].vertex_ids;
+
+    return vi != e0i && vi != e1i
+        && (can_vertices_collide(vi, e0i) || can_vertices_collide(vi, e1i));
+}
+
+bool BroadPhase::can_edges_collide(size_t eai, size_t ebi) const
+{
+    const auto& [ea0i, ea1i, _] = edge_boxes[eai].vertex_ids;
+    const auto& [eb0i, eb1i, __] = edge_boxes[ebi].vertex_ids;
+
+    bool share_endpoint =
+        ea0i == eb0i || ea0i == eb1i || ea1i == eb0i || ea1i == eb1i;
+
+    return !share_endpoint
+        && (can_vertices_collide(ea0i, eb0i) || can_vertices_collide(ea0i, eb1i)
+            || can_vertices_collide(ea1i, eb0i)
+            || can_vertices_collide(ea1i, eb1i));
+}
+
+bool BroadPhase::can_face_vertex_collide(size_t fi, size_t vi) const
+{
+    const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
+
+    return vi != f0i && vi != f1i && vi != f2i
+        && (can_vertices_collide(vi, f0i) || can_vertices_collide(vi, f1i)
+            || can_vertices_collide(vi, f2i));
+}
+
+bool BroadPhase::can_edge_face_collide(size_t ei, size_t fi) const
+{
+    const auto& [e0i, e1i, _] = edge_boxes[ei].vertex_ids;
+    const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
+
+    bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i || e1i == f0i
+        || e1i == f1i || e1i == f2i;
+
+    return !share_endpoint
+        && (can_vertices_collide(e0i, f0i) || can_vertices_collide(e0i, f1i)
+            || can_vertices_collide(e0i, f2i) || can_vertices_collide(e1i, f0i)
+            || can_vertices_collide(e1i, f1i)
+            || can_vertices_collide(e1i, f2i));
 }
 
 } // namespace ipc

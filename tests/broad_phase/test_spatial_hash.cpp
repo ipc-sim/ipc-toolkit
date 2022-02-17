@@ -8,6 +8,8 @@
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/utils/logger.hpp>
 
+#include "test_utils.hpp"
+
 using namespace ipc;
 
 TEST_CASE("Test build SpatialHash", "[spatial_hash][build]")
@@ -15,12 +17,12 @@ TEST_CASE("Test build SpatialHash", "[spatial_hash][build]")
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
 
-    bool success = igl::read_triangle_mesh(
-        std::string(TEST_DATA_DIR) + "cloth_ball92.ply", V0, F);
+    bool success =
+        igl::read_triangle_mesh(TEST_DATA_DIR + "cloth_ball92.ply", V0, F);
     REQUIRE(success);
 
-    success = igl::read_triangle_mesh(
-        std::string(TEST_DATA_DIR) + "cloth_ball93.ply", V1, F);
+    success =
+        igl::read_triangle_mesh(TEST_DATA_DIR + "cloth_ball93.ply", V1, F);
     REQUIRE(success);
 
     igl::edges(F, E);
@@ -31,7 +33,7 @@ TEST_CASE("Test build SpatialHash", "[spatial_hash][build]")
     sh.build(V0, V1, E, F, inflation_radius);
 
     Candidates candidates;
-    sh.queryMeshForCandidates(
-        V0, V1, E, F, candidates,
-        /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true);
+    sh.detect_collision_candidates(V0.cols(), candidates);
+
+    sh.clear();
 }

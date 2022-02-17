@@ -1,63 +1,18 @@
 #pragma once
 
-#include <vector>
-
-#include <Eigen/Core>
-
-#include <ipc/broad_phase/collision_candidate.hpp>
-#include <ipc/utils/eigen_ext.hpp>
+#include <ipc/broad_phase/broad_phase.hpp>
 
 namespace ipc {
 
-/// @brief Axis aligned bounding-box of some type
-class AABB {
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-    AABB() { }
-
-    AABB(const ArrayMax3d& min, const ArrayMax3d& max);
-
-    AABB(const AABB& aabb1, const AABB& aabb2)
-        : AABB(aabb1.min.min(aabb2.min), aabb1.max.max(aabb2.max))
-    {
-    }
-
-    AABB(const AABB& aabb1, const AABB& aabb2, const AABB& aabb3)
-        : AABB(
-            aabb1.min.min(aabb2.min).min(aabb3.min),
-            aabb1.max.max(aabb2.max).max(aabb3.max))
-    {
-    }
-
-    static bool are_overlapping(const AABB& a, const AABB& b);
-
-    inline const ArrayMax3d& getMin() const { return min; }
-    inline const ArrayMax3d& getMax() const { return max; }
-    // inline const ArrayMax3d& getHalfExtent() const { return half_extent; }
-    // inline const ArrayMax3d& getCenter() const { return center; }
-
-protected:
-    ArrayMax3d min;
-    ArrayMax3d max;
-    // ArrayMax3d half_extent;
-    // ArrayMax3d center;
-};
-
 /// @brief An entry into the hash grid as a (key, value) pair.
-class HashItem {
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-    int key;   /// @brief The key of the item.
-    int id;    /// @brief The value of the item.
-    AABB aabb; /// @brief The axis-aligned bounding box of the element
+struct HashItem {
+    long key; /// @brief The key of the item.
+    long id;  /// @brief The value of the item.
 
     /// @brief Construct a hash item as a (key, value) pair.
-    HashItem(int key, int id, const AABB& aabb)
+    HashItem(int key, int id)
         : key(key)
         , id(id)
-        , aabb(aabb)
     {
     }
 
@@ -71,242 +26,64 @@ public:
     }
 };
 
-class HashGrid {
+class HashGrid : public BroadPhase {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+    void build(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        double inflation_radius = 0) override;
+
+    void build(
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        double inflation_radius = 0) override;
+
+    /// @brief Clear the hash grid.
+    void clear() override
+    {
+        BroadPhase::clear();
+        vertex_items.clear();
+        edge_items.clear();
+        face_items.clear();
+    }
+
+    /// @brief Find the candidate edge-vertex collisisons.
+    void detect_edge_vertex_candidates(
+        std::vector<EdgeVertexCandidate>& candidates) const override;
+
+    /// @brief Find the candidate edge-edge collisions.
+    void detect_edge_edge_candidates(
+        std::vector<EdgeEdgeCandidate>& candidates) const override;
+
+    /// @brief Find the candidate face-vertex collisions.
+    void detect_face_vertex_candidates(
+        std::vector<FaceVertexCandidate>& candidates) const override;
+
+    /// @brief Find the candidate edge-face intersections.
+    void detect_edge_face_candidates(
+        std::vector<EdgeFaceCandidate>& candidates) const override;
 
     double cellSize() const { return m_cellSize; }
     const ArrayMax3i& gridSize() const { return m_gridSize; }
     const ArrayMax3d& domainMin() const { return m_domainMin; }
     const ArrayMax3d& domainMax() const { return m_domainMax; }
 
-    void resizeFromBox(
-        const ArrayMax3d& min, const ArrayMax3d& max, double cellSize);
-
-    void resize(
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& edges,
-        const double inflation_radius = 0.0);
-
-    void resize(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const double inflation_radius = 0.0)
-    {
-        resize(vertices, vertices, edges, inflation_radius);
-    }
-
-    /// @brief Add a vertex as a AABB containing the time swept edge.
-    void addVertex(
-        const VectorMax3d& vertex_t0,
-        const VectorMax3d& vertex_t1,
-        const long index,
-        const double inflation_radius = 0.0);
-
-    /// @brief Add a vertex.
-    void addVertex(
-        const VectorMax3d& vertex,
-        const long index,
-        const double inflation_radius = 0.0)
-    {
-        addVertex(vertex, vertex, index, inflation_radius);
-    }
-
-    /// @brief Add all vertices as AABBs containing the time swept edge.
-    void addVertices(
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const double inflation_radius = 0.0);
-
-    /// @brief Add all vertices.
-    void addVertices(
-        const Eigen::MatrixXd& vertices, const double inflation_radius = 0.0)
-    {
-        addVertices(vertices, vertices, inflation_radius);
-    }
-
-    /// @brief Add all selected vertices as AABBs containing the time swept
-    /// edge.
-    void addSelectVertices(
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::VectorXi& vertex_indices,
-        const double inflation_radius = 0.0);
-
-    /// @brief Add all selected vertices.
-    void addSelectVertices(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::VectorXi& vertex_indices,
-        const double inflation_radius = 0.0)
-    {
-        addSelectVertices(vertices, vertices, vertex_indices, inflation_radius);
-    }
-
-    /// @brief Add all vertices as AABBs containing the time swept edge.
-    void addVerticesFromEdges(
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& edges,
-        const double inflation_radius = 0.0);
-
-    /// @brief Add all vertices as AABBs containing the time swept edge.
-    void addVerticesFromEdges(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const double inflation_radius = 0.0)
-    {
-        addVerticesFromEdges(vertices, vertices, edges, inflation_radius);
-    }
-
-    /// @brief Add an edge as a AABB containing the time swept quad.
-    void addEdge(
-        const VectorMax3d& edge_vertex0_t0,
-        const VectorMax3d& edge_vertex1_t0,
-        const VectorMax3d& edge_vertex0_t1,
-        const VectorMax3d& edge_vertex1_t1,
-        const long index,
-        const double inflation_radius = 0.0);
-
-    /// @brief Add an edge as a AABB.
-    void addEdge(
-        const VectorMax3d& edge_vertex0,
-        const VectorMax3d& edge_vertex1,
-        const long index,
-        const double inflation_radius = 0.0)
-    {
-        addEdge(
-            edge_vertex0, edge_vertex1, edge_vertex0, edge_vertex1, index,
-            inflation_radius);
-    }
-
-    /// @brief Add all edges as AABBs containing the time swept quad.
-    void addEdges(
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& edges,
-        const double inflation_radius = 0.0);
-
-    /// @brief Add all edges as AABBs.
-    void addEdges(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const double inflation_radius = 0.0)
-    {
-        addEdges(vertices, vertices, edges, inflation_radius);
-    }
-
-    /// @brief Add an edge as a AABB containing the time swept prism.
-    void addFace(
-        const VectorMax3d& face_vertex0_t0,
-        const VectorMax3d& face_vertex1_t0,
-        const VectorMax3d& face_vertex2_t0,
-        const VectorMax3d& face_vertex0_t1,
-        const VectorMax3d& face_vertex1_t1,
-        const VectorMax3d& face_vertex2_t1,
-        const long index,
-        const double inflation_radius = 0.0);
-
-    /// @brief Add an edge as a AABB.
-    void addFace(
-        const VectorMax3d& face_vertex0,
-        const VectorMax3d& face_vertex1,
-        const VectorMax3d& face_vertex2,
-        const long index,
-        const double inflation_radius = 0.0)
-    {
-        addFace(
-            face_vertex0, face_vertex1, face_vertex2, face_vertex0,
-            face_vertex1, face_vertex2, index, inflation_radius);
-    }
-
-    /// @brief Add all edges as AABBs containing the time swept prism.
-    void addFaces(
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& faces,
-        const double inflation_radius = 0.0);
-
-    /// @brief Add all edges as AABBs.
-    void addFaces(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& faces,
-        const double inflation_radius = 0.0)
-    {
-        addFaces(vertices, vertices, faces, inflation_radius);
-    }
-
-    /// @brief Compute the candidate edge-vertex candidate collisisons.
-    void getVertexEdgePairs(
-        const Eigen::MatrixXi& edges,
-        std::vector<EdgeVertexCandidate>& ev_candidates,
-        const std::function<bool(size_t, size_t)>& can_vertices_collide =
-            [](size_t, size_t) { return true; });
-
-    /// @brief Compute the candidate edge-edge candidate collisions.
-    void getEdgeEdgePairs(
-        const Eigen::MatrixXi& edges,
-        std::vector<EdgeEdgeCandidate>& ee_candidates,
-        const std::function<bool(size_t, size_t)>& can_vertices_collide =
-            [](size_t, size_t) { return true; });
-
-    /// @brief Compute the candidate edge-face candidate intersections.
-    void getEdgeFacePairs(
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        std::vector<EdgeFaceCandidate>& ef_candidates,
-        const std::function<bool(size_t, size_t)>& can_vertices_collide =
-            [](size_t, size_t) { return true; });
-
-    /// @brief Compute the candidate edge-edge candidate collisions.
-    void getFaceVertexPairs(
-        const Eigen::MatrixXi& faces,
-        std::vector<FaceVertexCandidate>& fv_candidates,
-        const std::function<bool(size_t, size_t)>& can_vertices_collide =
-            [](size_t, size_t) { return true; });
-
-    /// @brief Clear the hash grid.
-    inline void clear()
-    {
-        m_vertexItems.clear();
-        m_edgeItems.clear();
-        m_faceItems.clear();
-    }
-
 protected:
+    void resize(const ArrayMax3d& min, const ArrayMax3d& max, double cellSize);
+
+    void insert_boxes();
+
+    void insert_boxes(
+        const std::vector<AABB>& boxes, std::vector<HashItem>& items) const;
+
     /// @brief Add an AABB of the extents to the hash grid.
-    void addElement(
-        const AABB& aabb, const int id, std::vector<HashItem>& items) const;
-
-    /// @brief Add a vertex as a AABB containing the time swept edge.
-    void addVertex(
-        const VectorMax3d& vertex_t0,
-        const VectorMax3d& vertex_t1,
-        const long index,
-        std::vector<HashItem>& vertex_items,
-        const double inflation_radius = 0.0) const;
-
-    /// @brief Add an edge as a AABB containing the time swept quad.
-    void addEdge(
-        const VectorMax3d& edge_vertex0_t0,
-        const VectorMax3d& edge_vertex1_t0,
-        const VectorMax3d& edge_vertex0_t1,
-        const VectorMax3d& edge_vertex1_t1,
-        const long index,
-        std::vector<HashItem>& edge_items,
-        const double inflation_radius = 0.0) const;
-
-    /// @brief Add an edge as a AABB containing the time swept quad.
-    void addFace(
-        const VectorMax3d& face_vertex0_t0,
-        const VectorMax3d& face_vertex1_t0,
-        const VectorMax3d& face_vertex2_t0,
-        const VectorMax3d& face_vertex0_t1,
-        const VectorMax3d& face_vertex1_t1,
-        const VectorMax3d& face_vertex2_t1,
-        const long index,
-        std::vector<HashItem>& face_items,
-        const double inflation_radius = 0.0) const;
+    void insert_box(
+        const AABB& aabb, const long id, std::vector<HashItem>& items) const;
 
     /// @brief Create the hash of a cell location.
     inline long hash(int x, int y, int z) const
@@ -319,20 +96,21 @@ protected:
     }
 
 private:
-    template <typename T>
-    void getPairs(
-        const std::function<bool(int, int)>& is_endpoint,
-        const std::function<bool(int, int)>& can_collide,
-        std::vector<HashItem>& items0,
-        std::vector<HashItem>& items1,
-        T& candidates);
+    template <typename Candidate>
+    void detect_candidates(
+        const std::vector<HashItem>& items0,
+        const std::vector<HashItem>& items1,
+        const std::vector<AABB>& boxes0,
+        const std::vector<AABB>& boxes1,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<Candidate>& candidates) const;
 
-    template <typename T>
-    void getPairs(
-        const std::function<bool(int, int)>& is_endpoint,
-        const std::function<bool(int, int)>& can_collide,
-        std::vector<HashItem>& items,
-        T& candidates);
+    template <typename Candidate>
+    void detect_candidates(
+        const std::vector<HashItem>& items,
+        const std::vector<AABB>& boxes,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<Candidate>& candidates) const;
 
 protected:
     double m_cellSize;
@@ -340,9 +118,9 @@ protected:
     ArrayMax3d m_domainMin;
     ArrayMax3d m_domainMax;
 
-    std::vector<HashItem> m_vertexItems;
-    std::vector<HashItem> m_edgeItems;
-    std::vector<HashItem> m_faceItems;
+    std::vector<HashItem> vertex_items;
+    std::vector<HashItem> edge_items;
+    std::vector<HashItem> face_items;
 };
 
 } // namespace ipc

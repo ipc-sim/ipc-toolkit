@@ -1,4 +1,6 @@
 set(SOURCES
+  aabb.cpp
+  aabb.hpp
   broad_phase.cpp
   broad_phase.hpp
   brute_force.cpp
@@ -9,6 +11,8 @@ set(SOURCES
   hash_grid.hpp
   spatial_hash.cpp
   spatial_hash.hpp
+  sweep.cpp
+  sweep.hpp
   voxel_size_heuristic.cpp
   voxel_size_heuristic.hpp
 )

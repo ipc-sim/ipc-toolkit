@@ -1,95 +1,84 @@
 #include <catch2/catch.hpp>
 
+#include <broad_phase/brute_force_comparison.hpp>
+
 #include <tbb/parallel_sort.h>
 
-#include <ipc/broad_phase/brute_force.hpp>
+#include <ipc/broad_phase/broad_phase.hpp>
 
 void brute_force_comparison(
+    const ipc::CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const Eigen::VectorXi& group_ids,
     ipc::Candidates& candidates,
     const double inflation_radius)
 {
     using namespace ipc;
 
     Candidates bf_candidates;
+    construct_collision_candidates(
+        mesh, V0, V1, bf_candidates, inflation_radius,
+        BroadPhaseMethod::BRUTE_FORCE);
 
-    auto can_collide = [&group_ids](size_t vi, size_t vj) {
-        return group_ids.size() == 0 || group_ids(vi) != group_ids(vj);
-    };
+    CAPTURE(candidates.size(), bf_candidates.size());
 
-    detect_collision_candidates_brute_force(
-        V0, V1, E, F, bf_candidates,
-        /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true,
-        /*perform_aabb_check=*/false, inflation_radius, can_collide);
-
-    auto& ev_candidates = candidates.ev_candidates;
-    auto& ee_candidates = candidates.ee_candidates;
-    auto& fv_candidates = candidates.fv_candidates;
-    auto& bf_ev_candidates = bf_candidates.ev_candidates;
-    auto& bf_ee_candidates = bf_candidates.ee_candidates;
-    auto& bf_fv_candidates = bf_candidates.fv_candidates;
-
-    // CHECK(ev_candidates.size() <= bf_ev_candidates.size());
-    CHECK(ee_candidates.size() <= bf_ee_candidates.size());
-    CHECK(fv_candidates.size() <= bf_fv_candidates.size());
-
-    // tbb::parallel_sort(ev_candidates.begin(), ev_candidates.end());
-    // tbb::parallel_sort(bf_ev_candidates.begin(), bf_ev_candidates.end());
-    int ci = 0;
-    // for (int bf_ci = 0; bf_ci < bf_ev_candidates.size(); bf_ci++) {
-    //     if (ev_candidates.size() <= ci
-    //         || bf_ev_candidates[bf_ci] != ev_candidates[ci]) {
-    //         // Perform CCD to make sure the candidate is not a collision
-    //         double toi;
-    //         bool hit = bf_ev_candidates[bf_ci].ccd(
-    //             V0, V1, E, F, toi, /*tmax=*/1.0, /*tolerance=*/1e-6,
-    //             /*max_iterations=*/1e7, /*conservative_rescaling=*/1.0);
-    //         CHECK(!hit); // Check for FN
-
-    //     } else {
-    //         ci++;
-    //     }
-    // }
-    // CHECK(ci >= ev_candidates.size());
-
-    tbb::parallel_sort(ee_candidates.begin(), ee_candidates.end());
-    tbb::parallel_sort(bf_ee_candidates.begin(), bf_ee_candidates.end());
-    ci = 0;
-    for (int bf_ci = 0; bf_ci < bf_ee_candidates.size(); bf_ci++) {
-        if (ee_candidates.size() <= ci
-            || bf_ee_candidates[bf_ci] != ee_candidates[ci]) {
-            // Perform CCD to make sure the candidate is not a collision
-            double toi;
-            bool hit = bf_ee_candidates[bf_ci].ccd(
-                V0, V1, E, F, toi, /*tmax=*/1.0, /*tolerance=*/1e-6,
-                /*max_iterations=*/1e7, /*conservative_rescaling=*/1.0);
-            CHECK(!hit); // Check for FN
-
-        } else {
-            ci++;
-        }
-    }
-    CHECK(ci >= ee_candidates.size());
-
-    tbb::parallel_sort(fv_candidates.begin(), fv_candidates.end());
-    tbb::parallel_sort(bf_fv_candidates.begin(), bf_fv_candidates.end());
-    ci = 0;
-    for (int bf_ci = 0; bf_ci < bf_fv_candidates.size(); bf_ci++) {
-        if (fv_candidates.size() <= ci
-            || bf_fv_candidates[bf_ci] != fv_candidates[ci]) {
-            // Perform CCD to make sure the candidate is not a collision
-            double toi;
-            bool hit = bf_fv_candidates[bf_ci].ccd(
-                V0, V1, E, F, toi, /*tmax=*/1.0, /*tolerance=*/1e-6,
-                /*max_iterations=*/1e7, /*conservative_rescaling=*/1.0);
-            CHECK(!hit); // Check for FN
-        } else {
-            ci++;
-        }
-    }
-    CHECK(ci >= fv_candidates.size());
+    CAPTURE("EV");
+    brute_force_comparison(
+        mesh, V0, V1, candidates.ev_candidates, bf_candidates.ev_candidates);
+    CAPTURE("EE");
+    brute_force_comparison(
+        mesh, V0, V1, candidates.ee_candidates, bf_candidates.ee_candidates);
+    CAPTURE("FV");
+    brute_force_comparison(
+        mesh, V0, V1, candidates.fv_candidates, bf_candidates.fv_candidates);
 }
+
+template <typename Candidate>
+void brute_force_comparison(
+    const ipc::CollisionMesh& mesh,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    std::vector<Candidate>& candidates,
+    std::vector<Candidate>& bf_candidates)
+{
+    CHECK(candidates.size() <= bf_candidates.size());
+
+    tbb::parallel_sort(candidates.begin(), candidates.end());
+    tbb::parallel_sort(bf_candidates.begin(), bf_candidates.end());
+
+    int ci = 0;
+    for (int bf_ci = 0; bf_ci < bf_candidates.size(); bf_ci++) {
+        if (candidates.size() <= ci || bf_candidates[bf_ci] != candidates[ci]) {
+            // Perform CCD to make sure the candidate is not a collision
+            double toi;
+            bool hit = bf_candidates[bf_ci].ccd(
+                V0, V1, mesh.edges(), mesh.faces(), toi, /*tmax=*/1.0,
+                /*tolerance=*/1e-6, /*max_iterations=*/1e7,
+                /*conservative_rescaling=*/1.0);
+            CHECK(!hit); // Check for FN
+        } else {
+            ci++;
+        }
+    }
+
+    CHECK(ci >= candidates.size());
+}
+
+template void brute_force_comparison<ipc::EdgeVertexCandidate>(
+    const ipc::CollisionMesh& mesh,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    std::vector<ipc::EdgeVertexCandidate>& candidates,
+    std::vector<ipc::EdgeVertexCandidate>& bf_candidates);
+template void brute_force_comparison<ipc::EdgeEdgeCandidate>(
+    const ipc::CollisionMesh& mesh,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    std::vector<ipc::EdgeEdgeCandidate>& candidates,
+    std::vector<ipc::EdgeEdgeCandidate>& bf_candidates);
+template void brute_force_comparison<ipc::FaceVertexCandidate>(
+    const ipc::CollisionMesh& mesh,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    std::vector<ipc::FaceVertexCandidate>& candidates,
+    std::vector<ipc::FaceVertexCandidate>& bf_candidates);

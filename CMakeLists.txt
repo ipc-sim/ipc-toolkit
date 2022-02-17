@@ -40,7 +40,7 @@ option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle inters
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
@@ -133,10 +133,16 @@ if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
 endif()
 
+# Sweep and Tiniest Queue and CCD
 if(IPC_TOOLKIT_WITH_CUDA)
   include(gpu_ccd)
   target_link_libraries(ipc_toolkit PUBLIC gpu_ccd::gpu_ccd)
+  target_link_libraries(ipc_toolkit PUBLIC STQ::CPU)
   target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_CUDA)
+else()
+  set(STQ_WITH_CUDA OFF CACHE BOOL "Enable CUDA Implementation" FORCE)
+  include(sweep_and_tiniest_queue)
+  target_link_libraries(ipc_toolkit PUBLIC STQ::CPU)
 endif()
 
 ################################################################################
@@ -159,8 +165,8 @@ if(IPC_TOOLKIT_WITH_SIMD)
   target_compile_options(ipc_toolkit PRIVATE ${SIMD_FLAGS})
 endif()
 
-# Use C++14
-target_compile_features(ipc_toolkit PUBLIC cxx_std_14)
+# Use C++17
+target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
 
 ################################################################################
 # CUDA

@@ -8,6 +8,7 @@
 
 #include <ipc/ccd/aabb.hpp>
 #include <ipc/broad_phase/voxel_size_heuristic.hpp>
+#include <ipc/utils/merge_thread_local_vectors.hpp>
 
 // Uncomment this to construct spatial hash in parallel.
 // #define IPC_TOOLKIT_PARALLEL_SH_CONSTRUCT
@@ -33,7 +34,9 @@ void SpatialHash::build(
     double voxelSize)
 {
     assert(V0.rows() == V1.rows() && V0.cols() == V1.cols());
-    clear();
+
+    BroadPhase::build(V0, V1, E, F, inflation_radius); // also calls clear()
+
     dim = V0.cols();
     builtInRadius = inflation_radius;
 
@@ -762,149 +765,112 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
     }
 }
 
-typedef tbb::enumerable_thread_specific<Candidates> ThreadSpecificCandidates;
+////////////////////////////////////////////////////////////////////////////
+// BroadPhase API
 
-void merge_local_candidates(
-    const ThreadSpecificCandidates& storages, Candidates& candidates)
+void SpatialHash::detect_edge_vertex_candidates(
+    std::vector<EdgeVertexCandidate>& candidates) const
 {
-    // size up the candidates
-    size_t ev_size = 0, ee_size = 0, fv_size = 0;
-    for (const auto& local_candidates : storages) {
-        ev_size += local_candidates.ev_candidates.size();
-        ee_size += local_candidates.ee_candidates.size();
-        fv_size += local_candidates.fv_candidates.size();
-    }
-    // serial merge!
-    candidates.ev_candidates.reserve(ev_size);
-    candidates.ee_candidates.reserve(ee_size);
-    candidates.fv_candidates.reserve(fv_size);
-    for (const auto& local_candidates : storages) {
-        candidates.ev_candidates.insert(
-            candidates.ev_candidates.end(),
-            local_candidates.ev_candidates.begin(),
-            local_candidates.ev_candidates.end());
-        candidates.ee_candidates.insert(
-            candidates.ee_candidates.end(),
-            local_candidates.ee_candidates.begin(),
-            local_candidates.ee_candidates.end());
-        candidates.fv_candidates.insert(
-            candidates.fv_candidates.end(),
-            local_candidates.fv_candidates.begin(),
-            local_candidates.fv_candidates.end());
-    }
-}
+    tbb::enumerable_thread_specific<std::vector<EdgeVertexCandidate>> storages;
 
-void SpatialHash::queryMeshForCandidates(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    Candidates& candidates,
-    bool queryEV,
-    bool queryEE,
-    bool queryFV) const
-{
-    queryMeshForCandidates(V, V, E, F, candidates, queryEV, queryEE, queryFV);
-}
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0ul, vertex_boxes.size()),
+        [&](const tbb::blocked_range<size_t>& range) {
+            auto& local_candidates = storages.local();
 
-void SpatialHash::queryMeshForCandidates(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    Candidates& candidates,
-    bool queryEV,
-    bool queryEE,
-    bool queryFV) const
-{
-    assert(V0.rows() == V1.rows() && V0.cols() == V1.cols());
+            for (long vi = range.begin(); vi != range.end(); vi++) {
+                const AABB& vertex_box = vertex_boxes[vi];
 
-    ThreadSpecificCandidates storages;
+                unordered_set<int> edgeInds;
+                queryPointForEdges(vi, edgeInds);
 
-    // edge-vertex
-    if (queryEV) {
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), size_t(V0.rows())),
-            [&](const tbb::blocked_range<size_t>& range) {
-                ThreadSpecificCandidates::reference local_storage_candidates =
-                    storages.local();
+                for (const auto& ei : edgeInds) {
+                    if (!can_edge_vertex_collide(ei, vi)) {
+                        continue;
+                    }
 
-                for (long vi = range.begin(); vi != range.end(); vi++) {
-                    unordered_set<int> edgeInds;
-                    queryPointForEdges(vi, edgeInds);
-
-                    for (const auto& ei : edgeInds) {
-                        if (vi != E(ei, 0) && vi != E(ei, 1)
-                            && point_edge_aabb_ccd(
-                                V0.row(vi), V0.row(E(ei, 0)), V0.row(E(ei, 1)),
-                                V1.row(vi), V1.row(E(ei, 0)), V1.row(E(ei, 1)),
-                                2 * builtInRadius)) {
-                            local_storage_candidates.ev_candidates.emplace_back(
-                                ei, vi);
-                        }
+                    const AABB& edge_box = edge_boxes[ei];
+                    if (vertex_box.intersects(edge_box)) {
+                        local_candidates.emplace_back(ei, vi);
                     }
                 }
-            });
-    }
+            }
+        });
 
-    // edge-edge
-    if (queryEE) {
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), size_t(E.rows())),
-            [&](const tbb::blocked_range<size_t>& range) {
-                ThreadSpecificCandidates::reference local_storage_candidates =
-                    storages.local();
-
-                for (long eai = range.begin(); eai != range.end(); eai++) {
-                    unordered_set<int> edgeInds;
-                    queryEdgeForEdges(eai, edgeInds);
-
-                    for (const auto& ebi : edgeInds) {
-                        if (E(eai, 0) != E(ebi, 0) && E(eai, 0) != E(ebi, 1)
-                            && E(eai, 1) != E(ebi, 0) && E(eai, 1) != E(ebi, 1)
-                            && eai < ebi
-                            && edge_edge_aabb_ccd(
-                                V0.row(E(eai, 0)), V0.row(E(eai, 1)),
-                                V0.row(E(ebi, 0)), V0.row(E(ebi, 1)),
-                                V1.row(E(eai, 0)), V1.row(E(eai, 1)),
-                                V1.row(E(ebi, 0)), V1.row(E(ebi, 1)),
-                                2 * builtInRadius)) {
-                            local_storage_candidates.ee_candidates.emplace_back(
-                                eai, ebi);
-                        }
-                    }
-                }
-            });
-    }
-
-    // face-vertex
-    if (queryFV) {
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), size_t(V0.rows())),
-            [&](const tbb::blocked_range<size_t>& range) {
-                ThreadSpecificCandidates::reference local_storage_candidates =
-                    storages.local();
-
-                for (long vi = range.begin(); vi != range.end(); vi++) {
-                    unordered_set<int> triInds;
-                    queryPointForTriangles(vi, triInds);
-
-                    for (const auto& fi : triInds) {
-                        if (vi != F(fi, 0) && vi != F(fi, 1) && vi != F(fi, 2)
-                            && point_triangle_aabb_ccd(
-                                V0.row(vi), V0.row(F(fi, 0)), V0.row(F(fi, 1)),
-                                V0.row(F(fi, 2)), V1.row(vi), V1.row(F(fi, 0)),
-                                V1.row(F(fi, 1)), V1.row(F(fi, 2)),
-                                2 * builtInRadius)) {
-                            local_storage_candidates.fv_candidates.emplace_back(
-                                fi, vi);
-                        }
-                    }
-                }
-            });
-    }
-
-    merge_local_candidates(storages, candidates);
+    merge_thread_local_vectors(storages, candidates);
 }
+
+void SpatialHash::detect_edge_edge_candidates(
+    std::vector<EdgeEdgeCandidate>& candidates) const
+{
+    tbb::enumerable_thread_specific<std::vector<EdgeEdgeCandidate>> storages;
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0ul, edge_boxes.size()),
+        [&](const tbb::blocked_range<size_t>& range) {
+            auto& local_candidates = storages.local();
+
+            for (long eai = range.begin(); eai != range.end(); eai++) {
+                const AABB& edge_a_box = edge_boxes[eai];
+
+                unordered_set<int> edgeInds;
+                queryEdgeForEdges(eai, edgeInds);
+
+                for (const auto& ebi : edgeInds) {
+                    if (eai >= ebi || !can_edges_collide(eai, ebi)) {
+                        continue;
+                    }
+
+                    const AABB& edge_b_box = edge_boxes[ebi];
+                    if (edge_a_box.intersects(edge_b_box)) {
+                        local_candidates.emplace_back(eai, ebi);
+                    }
+                }
+            }
+        });
+
+    merge_thread_local_vectors(storages, candidates);
+}
+
+void SpatialHash::detect_face_vertex_candidates(
+    std::vector<FaceVertexCandidate>& candidates) const
+{
+    tbb::enumerable_thread_specific<std::vector<FaceVertexCandidate>> storages;
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0ul, vertex_boxes.size()),
+        [&](const tbb::blocked_range<size_t>& range) {
+            auto& local_candidates = storages.local();
+
+            for (long vi = range.begin(); vi != range.end(); vi++) {
+                const AABB& vertex_box = vertex_boxes[vi];
+
+                unordered_set<int> triInds;
+                queryPointForTriangles(vi, triInds);
+
+                for (const auto& fi : triInds) {
+                    if (!can_face_vertex_collide(fi, vi)) {
+                        continue;
+                    }
+
+                    const AABB& face_box = face_boxes[fi];
+                    if (vertex_box.intersects(face_box)) {
+                        local_candidates.emplace_back(fi, vi);
+                    }
+                }
+            }
+        });
+
+    merge_thread_local_vectors(storages, candidates);
+}
+
+void SpatialHash::detect_edge_face_candidates(
+    std::vector<EdgeFaceCandidate>& candidates) const
+{
+    throw "not implemented!";
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 int SpatialHash::locateVoxelIndex(const VectorMax3d& p) const
 {

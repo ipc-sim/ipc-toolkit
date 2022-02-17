@@ -1,12 +1,10 @@
 #include <catch2/catch.hpp>
 
-#include <Eigen/Core>
-
-#include <ipc/broad_phase/hash_grid.hpp>
+#include <ipc/broad_phase/aabb.hpp>
 
 using namespace ipc;
 
-// TEST_CASE("AABB initilization", "[hash_grid][AABB]")
+// TEST_CASE("AABB initilization", "[broad_phase][AABB]")
 // {
 //     int dim = GENERATE(2, 3);
 //     CAPTURE(dim);
@@ -43,7 +41,7 @@ using namespace ipc;
 //     CHECK(center_diff.matrix().norm() == Approx(0.0).margin(1e-12));
 // }
 
-TEST_CASE("AABB overlapping", "[has_grid][AABB]")
+TEST_CASE("AABB overlapping", "[broad_phase][AABB]")
 {
     AABB a, b;
     bool are_overlapping = false;
@@ -103,5 +101,5 @@ TEST_CASE("AABB overlapping", "[has_grid][AABB]")
             are_overlapping = false;
         }
     }
-    CHECK(AABB::are_overlapping(a, b) == are_overlapping);
+    CHECK(a.intersects(b) == are_overlapping);
 }

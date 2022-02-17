@@ -16,19 +16,26 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
-    Eigen::VectorXi group_ids;
 
-    std::string mesh_path =
-        std::string(TEST_DATA_DIR) + "slow-broadphase-ccd/0.obj";
-    // std::string(TEST_DATA_DIR) + "slow-broadphase-ccd/s0.obj";
-    bool success = igl::read_triangle_mesh(mesh_path, V0, F);
+    std::string mesh_path_t0, mesh_path_t1;
+    const std::string dir = TEST_DATA_DIR + "slow-broadphase-ccd/";
+    SECTION("Data 0")
+    {
+        mesh_path_t0 = dir + "0.obj";
+        mesh_path_t1 = dir + "1.obj";
+    }
+    SECTION("Data 1")
+    {
+        mesh_path_t0 = dir + "s0.obj";
+        mesh_path_t1 = dir + "s1.obj";
+    }
+
+    bool success = igl::read_triangle_mesh(mesh_path_t0, V0, F);
     if (!success) {
         return; // Data is private
     }
 
-    mesh_path = std::string(TEST_DATA_DIR) + "slow-broadphase-ccd/1.obj";
-    // mesh_path = std::string(TEST_DATA_DIR) + "slow-broadphase-ccd/s1.obj";
-    success = igl::read_triangle_mesh(mesh_path, V1, F);
+    success = igl::read_triangle_mesh(mesh_path_t1, V1, F);
     if (!success) {
         return; // Data is private
     }
@@ -40,7 +47,7 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
     V0 = mesh.vertices(V0);
     V1 = mesh.vertices(V1);
 
-    std::vector<std::string> BP_names = { "BF", "HG", "SH", "GPU_STQ" };
+    std::vector<std::string> BP_names = { "BF", "HG", "SH", "STQ", "GPU_STQ" };
 
     double tolerance = 1e-6;
     int max_iterations = 1e7;
