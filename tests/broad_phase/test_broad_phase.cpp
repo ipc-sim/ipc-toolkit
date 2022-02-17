@@ -80,7 +80,11 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase][2D]")
     test_broad_phase(mesh, V0, V1, method);
 }
 
+#if defined(NDEBUG) || !(defined(WIN32) || defined(_WIN32) || defined(__WIN32))
 TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D]")
+#else
+TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D][!hide]")
+#endif
 {
     Eigen::MatrixXd V0;
     REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/V_t0.csv", V0));
