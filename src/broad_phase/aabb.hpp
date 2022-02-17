@@ -48,7 +48,7 @@ public:
 
     ArrayMax3d min;
     ArrayMax3d max;
-    std::array<int, 3> vertex_ids;
+    std::array<long, 3> vertex_ids;
     // ArrayMax3d half_extent;
     // ArrayMax3d center;
 };
