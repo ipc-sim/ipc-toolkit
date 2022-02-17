@@ -14,8 +14,8 @@ else()
     include(FetchContent)
     FetchContent_Declare(
         gpu_ccd
-        GIT_REPOSITORY git@github.com:dbelgrod/CCD-GPU.git
-        GIT_TAG 80f19430d8fef3d2cbee809594ef9e863186863d
+        GIT_REPOSITORY https://github.com/dbelgrod/CCD-GPU.git
+        GIT_TAG a506125f71ac1fea06211fb1d4345caa78800e01
         GIT_SHALLOW FALSE
     )
     FetchContent_MakeAvailable(gpu_ccd)

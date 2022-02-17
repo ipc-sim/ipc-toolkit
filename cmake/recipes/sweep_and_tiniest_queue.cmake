@@ -14,8 +14,8 @@ else()
     include(FetchContent)
     FetchContent_Declare(
         sweep_and_tiniest_queue
-        GIT_REPOSITORY git@github.com:dbelgrod/broadphase-gpu.git
-        GIT_TAG d6ff9010fd690fd52ba7e639ea50fbaa25eddc48
+        GIT_REPOSITORY https://github.com/dbelgrod/broadphase-gpu.git
+        GIT_TAG 340ee75d4fc69a9661a08679ec5d44c65f01b70f
         GIT_SHALLOW FALSE
     )
     FetchContent_MakeAvailable(sweep_and_tiniest_queue)
