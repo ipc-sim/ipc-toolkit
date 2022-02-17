@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
