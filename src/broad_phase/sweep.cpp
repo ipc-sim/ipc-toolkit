@@ -32,7 +32,7 @@ void SweepAndTiniestQueue::build(
     num_vertices = V0.rows();
     num_edges = E.rows();
     num_faces = F.rows();
-    stq::cpu::constructBoxes(V0, V1, E, F, boxes);
+    stq::cpu::constructBoxes(V0, V1, E, F, boxes, inflation_radius);
     stq::cpu::run_sweep_cpu(boxes, overlaps);
 }
 
@@ -98,7 +98,7 @@ void SweepAndTiniestQueue::detect_edge_face_candidates(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// #ifdef IPC_TOOLKIT_WITH_CUDA
+#ifdef IPC_TOOLKIT_WITH_CUDA
 void SweepAndTiniestQueueGPU::build(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
@@ -187,7 +187,6 @@ void SweepAndTiniestQueueGPU::detect_edge_face_candidates(
 {
     throw "Not implemented!";
 }
-
-// #endif
+#endif
 
 } // namespace ipc

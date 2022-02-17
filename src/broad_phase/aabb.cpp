@@ -42,7 +42,7 @@ void build_vertex_boxes(
     vertex_boxes.resize(V.rows());
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(0ul, V.rows()),
+        tbb::blocked_range<size_t>(0, V.rows()),
         [&](const tbb::blocked_range<size_t>& r) {
             for (size_t i = r.begin(); i < r.end(); i++) {
                 vertex_boxes[i] = AABB::from_point(V.row(i), inflation_radius);
@@ -59,7 +59,7 @@ void build_vertex_boxes(
     vertex_boxes.resize(V0.rows());
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(0ul, V0.rows()),
+        tbb::blocked_range<size_t>(0, V0.rows()),
         [&](const tbb::blocked_range<size_t>& r) {
             for (size_t i = r.begin(); i < r.end(); i++) {
                 vertex_boxes[i] =
@@ -77,7 +77,7 @@ void build_edge_boxes(
     edge_boxes.resize(E.rows());
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(0ul, E.rows()),
+        tbb::blocked_range<size_t>(0, E.rows()),
         [&](const tbb::blocked_range<size_t>& r) {
             for (size_t i = r.begin(); i < r.end(); i++) {
                 edge_boxes[i] =
@@ -95,7 +95,7 @@ void build_face_boxes(
     face_boxes.resize(F.rows());
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(0ul, F.rows()),
+        tbb::blocked_range<size_t>(0, F.rows()),
         [&](const tbb::blocked_range<size_t>& r) {
             for (size_t i = r.begin(); i < r.end(); i++) {
                 face_boxes[i] = AABB(
