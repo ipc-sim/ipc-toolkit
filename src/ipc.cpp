@@ -16,6 +16,8 @@
 #include <ccdgpu/helper.cuh>
 #endif
 
+#include <igl/Timer.h>
+
 #include <ipc/ccd/ccd.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
@@ -92,6 +94,9 @@ void construct_constraint_set(
     Constraints& constraint_set,
     const double dmin)
 {
+    static double sum_timers = 0;
+    igl::Timer timer;
+    timer.start();
     constraint_set.clear();
 
     const Eigen::MatrixXd& V_rest = mesh.vertices_at_rest();
@@ -112,10 +117,27 @@ void construct_constraint_set(
     unordered_map<EdgeVertexConstraint, long> ev_to_index(
         /*min_buckets=*/candidates.size());
 
-    for (const auto& ev_candidate : candidates.ev_candidates) {
-        long vi = ev_candidate.vertex_index;
-        long e0i = E(ev_candidate.edge_index, 0);
-        long e1i = E(ev_candidate.edge_index, 1);
+    // std::vector<PointEdgeDistanceType>
+    // dtypes(candidates.ev_candidates.size()); std::vector<double>
+    // distances(candidates.ev_candidates.size()); tbb::parallel_for(
+    //     tbb::blocked_range<size_t>(size_t(0), constraint_set.size()),
+    //     [&](const tbb::blocked_range<size_t>& r) {
+    //         for (size_t i = r.begin(); i < r.end(); i++) {
+    //             long vi = candidates.ev_candidates[i].vertex_index;
+    //             long e0i = E(candidates.ev_candidates[i].edge_index, 0);
+    //             long e1i = E(candidates.ev_candidates[i].edge_index, 1);
+    //             dtypes[i] =
+    //                 point_edge_distance_type(V.row(vi), V.row(e0i),
+    //                 V.row(e1i));
+    //             distances[i] = point_edge_distance(
+    //                 V.row(vi), V.row(e0i), V.row(e1i), dtypes[i]);
+    //         }
+    //     });
+
+    for (int i = 0; i < candidates.size(); i++) {
+        const auto& ev_candidate = candidates.ev_candidates[i];
+        const auto& [ei, vi] = ev_candidate;
+        long e0i = E(ei, 0), e1i = E(ei, 1);
 
         PointEdgeDistanceType dtype =
             point_edge_distance_type(V.row(vi), V.row(e0i), V.row(e1i));
@@ -147,7 +169,7 @@ void construct_constraint_set(
     }
 
     for (const auto& ee_candidate : candidates.ee_candidates) {
-        long eai = ee_candidate.edge0_index, ebi = ee_candidate.edge1_index;
+        const auto& [eai, ebi] = ee_candidate;
         long ea0i = E(eai, 0), ea1i = E(eai, 1);
         long eb0i = E(ebi, 0), eb1i = E(ebi, 1);
 
@@ -218,11 +240,8 @@ void construct_constraint_set(
     }
 
     for (const auto& fv_candidate : candidates.fv_candidates) {
-        long vi = fv_candidate.vertex_index;
-        long fi = fv_candidate.face_index;
-        long f0i = F(fi, 0);
-        long f1i = F(fi, 1);
-        long f2i = F(fi, 2);
+        const auto& [fi, vi] = fv_candidate;
+        long f0i = F(fi, 0), f1i = F(fi, 1), f2i = F(fi, 2);
 
         // Compute distance type
         PointTriangleDistanceType dtype = point_triangle_distance_type(
@@ -275,6 +294,10 @@ void construct_constraint_set(
     for (size_t ci = 0; ci < constraint_set.size(); ci++) {
         constraint_set[ci].minimum_distance = dmin;
     }
+
+    timer.stop();
+    sum_timers += timer.getElapsedTime();
+    IPC_LOG(critical("sum_time = {}", sum_time));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
