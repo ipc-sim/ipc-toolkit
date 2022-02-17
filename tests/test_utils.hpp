@@ -11,8 +11,10 @@
 #include <ipc/broad_phase/broad_phase.hpp>
 
 #define GENERATE_BROAD_PHASE_METHODS()                                         \
-    static_cast<BroadPhaseMethod>(                                             \
-        GENERATE(range(0, static_cast<int>(BroadPhaseMethod::NUM_METHODS))));
+    static_cast<BroadPhaseMethod>(GENERATE(                                    \
+        range(0, static_cast<int>(BroadPhaseMethod::NUM_METHODS) - 2)));
+
+static const std::string TEST_DATA_DIR(TEST_DATA_DIR_CSTR);
 
 bool load_mesh(
     const std::string& mesh_name,

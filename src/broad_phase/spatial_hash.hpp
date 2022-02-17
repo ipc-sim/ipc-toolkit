@@ -7,12 +7,12 @@
 #include <Eigen/Core>
 #include <ipc/utils/eigen_ext.hpp>
 
-#include <ipc/broad_phase/collision_candidate.hpp>
+#include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
 
 namespace ipc {
 
-class SpatialHash {
+class SpatialHash : public BroadPhase {
 public: // data
     VectorMax3d leftBottomCorner, rightTopCorner;
     ArrayMax3i voxelCount;
@@ -31,7 +31,7 @@ protected:
 public: // constructor
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    SpatialHash() {}
+    SpatialHash() { }
 
     SpatialHash(
         const Eigen::MatrixXd& V,
@@ -59,19 +59,39 @@ public: // API
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        double inflation_radius = 0,
-        double voxelSize = -1);
+        double inflation_radius = 0) override
+    {
+        build(V, E, F, inflation_radius, /*voxelSize=*/-1);
+    }
 
     void build(
         const Eigen::MatrixXd& V0,
         const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
-        double inflation_radius = 0,
-        double voxelSize = -1);
-
-    void clear()
+        double inflation_radius = 0) override
     {
+        build(V0, V1, E, F, inflation_radius, /*voxelSize=*/-1);
+    }
+
+    void build(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        double inflation_radius,
+        double voxelSize);
+
+    void build(
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        double inflation_radius,
+        double voxelSize);
+
+    void clear() override
+    {
+        BroadPhase::clear();
         voxel.clear();
         pointAndEdgeOccupancy.clear();
     }
@@ -177,26 +197,26 @@ public: // API
         int eai,
         unordered_set<int>& edgeInds) const;
 
-    void queryMeshForCandidates(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        Candidates& candidates,
-        bool queryEV = false,
-        bool queryEE = true,
-        bool queryFV = true) const;
+    ////////////////////////////////////////////////////////////////////////////
+    // BroadPhase API
 
-    void queryMeshForCandidates(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        Candidates& candidates,
-        bool queryEV = false,
-        bool queryEE = true,
-        bool queryFV = true) const;
+    /// @brief Find the candidate edge-vertex collisisons.
+    void detect_edge_vertex_candidates(
+        std::vector<EdgeVertexCandidate>& candidates) const override;
 
-public: // helper functions
+    /// @brief Find the candidate edge-edge collisions.
+    void detect_edge_edge_candidates(
+        std::vector<EdgeEdgeCandidate>& candidates) const override;
+
+    /// @brief Find the candidate face-vertex collisions.
+    void detect_face_vertex_candidates(
+        std::vector<FaceVertexCandidate>& candidates) const override;
+
+    /// @brief Find the candidate edge-face intersections.
+    void detect_edge_face_candidates(
+        std::vector<EdgeFaceCandidate>& candidates) const override;
+
+protected: // helper functions
     int locateVoxelIndex(const VectorMax3d& p) const;
 
     void locateVoxelAxisIndex(

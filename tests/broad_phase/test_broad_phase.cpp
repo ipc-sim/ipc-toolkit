@@ -4,103 +4,104 @@
 
 #include <igl/IO>
 #include <igl/edges.h>
-#include <igl/Timer.h>
 
 #include <ipc/ipc.hpp>
-#include <ipc/broad_phase/hash_grid.hpp>
-#include <ipc/broad_phase/spatial_hash.hpp>
+#include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/ccd/ccd.hpp>
 
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <ccdgpu/helper.cuh>
-#endif
-
-#include <broad_phase/brute_force_comparison.hpp>
-
+#include "brute_force_comparison.hpp"
 #include "test_utils.hpp"
 
 using namespace ipc;
 
+void test_broad_phase(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    BroadPhaseMethod method,
+    bool expect_collision = true)
+{
+    CAPTURE(method);
+
+    double inflation_radius = 0;
+
+    Candidates candidates;
+    construct_collision_candidates(
+        mesh, V0, V1, candidates, inflation_radius, method);
+
+    if (expect_collision) {
+        CHECK(!ipc::is_step_collision_free(candidates, mesh, V0, V1));
+    }
+
+    if (method != BroadPhaseMethod::BRUTE_FORCE) {
+        brute_force_comparison(mesh, V0, V1, candidates, inflation_radius);
+    }
+}
+
+void test_broad_phase(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& V,
+    BroadPhaseMethod method,
+    double inflation_radius)
+{
+    CAPTURE(method);
+
+    Candidates candidates;
+    construct_collision_candidates(
+        mesh, V, candidates, inflation_radius, method);
+
+    if (method != BroadPhaseMethod::BRUTE_FORCE) {
+        brute_force_comparison(mesh, V, V, candidates, inflation_radius);
+    }
+}
+
 TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase][2D]")
 {
-    Eigen::MatrixXd V_t0(4, 2);
-    V_t0.row(0) << 1.11111, 0.5;  // edge 0 vertex 0
-    V_t0.row(1) << 1.11111, 0.75; // edge 0 vertex 1
-    V_t0.row(2) << 1, 0.5;        // edge 1 vertex 0
-    V_t0.row(3) << 1, 0.75;       // edge 1 vertex 1
+    Eigen::MatrixXd V0(4, 2);
+    V0.row(0) << 1.11111, 0.5;  // edge 0 vertex 0
+    V0.row(1) << 1.11111, 0.75; // edge 0 vertex 1
+    V0.row(2) << 1, 0.5;        // edge 1 vertex 0
+    V0.row(3) << 1, 0.75;       // edge 1 vertex 1
 
-    Eigen::MatrixXd V_t1 = V_t0;
-    V_t1.row(0) << 0.888889, 0.5;  // edge 0 vertex 0
-    V_t1.row(1) << 0.888889, 0.75; // edge 0 vertex 1
+    Eigen::MatrixXd V1 = V0;
+    V1.row(0) << 0.888889, 0.5;  // edge 0 vertex 0
+    V1.row(1) << 0.888889, 0.75; // edge 0 vertex 1
 
     Eigen::MatrixXi E(2, 2);
     E.row(0) << 1, 0;
     E.row(1) << 2, 3;
 
-    bool ignore_internal_vertices = GENERATE(false, true);
+    CollisionMesh mesh(V0, E, /*F=*/Eigen::MatrixXi());
 
     BroadPhaseMethod method = GENERATE(
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
         BroadPhaseMethod::SPATIAL_HASH);
 
-    double tolerance = 1e-6;
-    int max_iterations = 1e7;
-
-    bool is_valid_step;
-    if (ignore_internal_vertices) {
-        CollisionMesh mesh = CollisionMesh::build_from_full_mesh(
-            V_t0, E, /*F=*/Eigen::MatrixXi());
-        is_valid_step = ipc::is_step_collision_free(
-            mesh, V_t0, V_t1, method, tolerance, max_iterations);
-    } else {
-        CollisionMesh mesh(V_t0, E, /*F=*/Eigen::MatrixXi());
-        is_valid_step = ipc::is_step_collision_free(
-            mesh, V_t0, V_t1, method, tolerance, max_iterations);
-    }
-
-    CAPTURE(ignore_internal_vertices);
-    CHECK(!is_valid_step);
+    test_broad_phase(mesh, V0, V1, method);
 }
 
 TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D]")
 {
-    Eigen::MatrixXd V_t0;
-    igl::readCSV(std::string(TEST_DATA_DIR) + "V_t0.csv", V_t0);
+    Eigen::MatrixXd V0;
+    REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/V_t0.csv", V0));
+    V0 = V0.leftCols(2);
 
-    Eigen::MatrixXd V_t1;
-    igl::readCSV(std::string(TEST_DATA_DIR) + "V_t1.csv", V_t1);
+    Eigen::MatrixXd V1;
+    REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/V_t1.csv", V1));
+    V1 = V1.leftCols(2);
 
     Eigen::MatrixXi E;
-    igl::readCSV(std::string(TEST_DATA_DIR) + "E.csv", E);
+    REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/E.csv", E));
     E.array() -= 1; // NOTE: Convert from OBJ format to index
 
     CollisionMesh mesh =
-        CollisionMesh::build_from_full_mesh(V_t0, E, /*F=*/Eigen::MatrixXi());
+        CollisionMesh::build_from_full_mesh(V0, E, /*F=*/Eigen::MatrixXi());
 
     BroadPhaseMethod method = GENERATE(
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
         BroadPhaseMethod::SPATIAL_HASH);
 
-    double tolerance = 1e-6;
-    int max_iterations = 1e7;
-
-    bool is_valid_step;
-    SECTION("2D")
-    {
-        is_valid_step = ipc::is_step_collision_free(
-            mesh, V_t0.leftCols(2), V_t1.leftCols(2), method, tolerance,
-            max_iterations);
-    }
-    SECTION("3D")
-    {
-        is_valid_step = ipc::is_step_collision_free(
-            mesh, V_t0, V_t1, method, tolerance, max_iterations);
-    }
-
-    CAPTURE(method);
-    CHECK(!is_valid_step);
+    test_broad_phase(mesh, V0, V1, method);
 }
 
 TEST_CASE(
@@ -109,38 +110,28 @@ TEST_CASE(
 {
     const double dhat = 1e-3;
     Eigen::MatrixXd V_rest, V;
-    igl::readDMAT(
-        std::string(TEST_DATA_DIR) + "codim-points/V_rest.dmat", V_rest);
-    igl::readDMAT(std::string(TEST_DATA_DIR) + "codim-points/V.dmat", V);
+    igl::readDMAT(TEST_DATA_DIR + "codim-points/V_rest.dmat", V_rest);
+    igl::readDMAT(TEST_DATA_DIR + "codim-points/V.dmat", V);
     Eigen::MatrixXi E, F;
-    igl::readDMAT(std::string(TEST_DATA_DIR) + "codim-points/E.dmat", E);
-    igl::readDMAT(std::string(TEST_DATA_DIR) + "codim-points/F.dmat", F);
+    igl::readDMAT(TEST_DATA_DIR + "codim-points/E.dmat", E);
+    igl::readDMAT(TEST_DATA_DIR + "codim-points/F.dmat", F);
 
     CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V_rest, E, F);
 
     BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
-#ifndef NDEBUG
-    if (method == BroadPhaseMethod::BRUTE_FORCE) {
-        return;
-    }
-#endif
+
+    test_broad_phase(mesh, V, method, dhat);
 
     Constraints constraint_set;
     construct_constraint_set(mesh, V, dhat, constraint_set, /*dmin=*/0, method);
-
     CHECK(constraint_set.size() != 0);
 }
 
-TEST_CASE(
-    "Compare HashGrid/SpatialHash against brute force",
-    "[hash_grid][spatial_hash][brute_force]")
+TEST_CASE("Compare HashGrid/SpatialHash against brute force", "[broad_phase]")
 {
     using namespace ipc;
 
     BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
-    if (method == BroadPhaseMethod::BRUTE_FORCE) {
-        return;
-    }
 
     Eigen::MatrixXd V0, U;
     Eigen::MatrixXi E, F;
@@ -174,7 +165,7 @@ TEST_CASE(
     SECTION("Complex")
     {
         std::string filename = "cube.obj";
-        std::string mesh_path = std::string(TEST_DATA_DIR) + filename;
+        std::string mesh_path = TEST_DATA_DIR + filename;
         bool success = igl::read_triangle_mesh(mesh_path, V0, F);
         REQUIRE(success);
         igl::edges(F, E);
@@ -183,66 +174,44 @@ TEST_CASE(
         U.col(1).setOnes();
     }
 
-    double inflation_radius = 1e-2;
-
-    auto can_collide = [&group_ids](size_t vi, size_t vj) {
+    CollisionMesh mesh(V0, E, F);
+    mesh.can_collide = [&group_ids](size_t vi, size_t vj) {
         return group_ids.size() == 0 || group_ids(vi) != group_ids(vj);
     };
 
-    std::function<Candidates(const Eigen::MatrixXd&)> build_candidates;
-    if (method == BroadPhaseMethod::HASH_GRID) {
-        build_candidates = [&](const Eigen::MatrixXd& V1) {
-            Candidates candidates;
-
-            HashGrid hashgrid;
-            hashgrid.resize(V0, V1, E, inflation_radius);
-            hashgrid.addVertices(V0, V1, inflation_radius);
-            hashgrid.addEdges(V0, V1, E, inflation_radius);
-            hashgrid.addFaces(V0, V1, F, inflation_radius);
-
-            hashgrid.getVertexEdgePairs(
-                E, candidates.ev_candidates, can_collide);
-            hashgrid.getEdgeEdgePairs(E, candidates.ee_candidates, can_collide);
-            hashgrid.getFaceVertexPairs(
-                F, candidates.fv_candidates, can_collide);
-            return candidates;
-        };
-    } else if (method == BroadPhaseMethod::SPATIAL_HASH) {
-        build_candidates = [&](const Eigen::MatrixXd& V1) {
-            Candidates candidates;
-
-            SpatialHash sh;
-            sh.build(V0, V1, E, F, inflation_radius);
-            // TODO: use can_collide
-            group_ids.resize(0);
-            sh.queryMeshForCandidates(
-                V0, V1, E, F, candidates,
-                /*queryEV=*/true, /*queryEE=*/true, /*queryFV=*/true);
-            return candidates;
-        };
-    } else {
-#if IPC_TOOLKIT_WITH_CUDA
-        build_candidates = [&](const Eigen::MatrixXd& V1) {
-            std::vector<std::pair<int, int>> overlaps;
-            std::vector<ccdgpu::Aabb> boxes;
-            construct_continuous_collision_candidates(
-                V0, V1, E, F, overlaps, boxes, inflation_radius);
-            return Candidates(overlaps, boxes);
-        };
-#else
-        CHECK(false);
-#endif
-    }
+    // double inflation_radius = 1e-2;
 
     for (int i = 0; i < 2; i++) {
         Eigen::MatrixXd V1 = V0 + U;
 
-        Candidates candidates = build_candidates(V1);
-
-        brute_force_comparison(
-            V0, V1, E, F, group_ids, candidates, inflation_radius);
+        test_broad_phase(mesh, V0, V1, method, false);
 
         U.setRandom();
         U *= 3;
     }
+}
+
+TEST_CASE(
+    "Cloth-Ball",
+#ifdef NDEBUG
+    "[ccd][broad_phase]")
+#else
+    "[ccd][broad_phase][!hide]")
+#endif
+{
+    Eigen::MatrixXd V0, V1;
+    Eigen::MatrixXi E, F;
+
+    REQUIRE(igl::read_triangle_mesh(TEST_DATA_DIR + "cloth_ball92.ply", V0, F));
+    REQUIRE(igl::read_triangle_mesh(TEST_DATA_DIR + "cloth_ball93.ply", V1, F));
+
+    igl::edges(F, E);
+
+    CollisionMesh mesh(V0, E, F);
+
+    double inflation_radius = 0;
+
+    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+
+    test_broad_phase(mesh, V0, V1, method);
 }

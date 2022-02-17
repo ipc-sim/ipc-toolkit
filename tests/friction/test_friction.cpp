@@ -516,7 +516,7 @@ TEST_CASE(
     Eigen::SparseMatrix<double> expected_hess;
 
     std::string scene_folder;
-    int file_number;
+    int file_number = 0;
     SECTION("cube_cube")
     {
         scene_folder = "friction/cube_cube";

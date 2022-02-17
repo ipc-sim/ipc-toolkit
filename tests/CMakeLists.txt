@@ -9,11 +9,11 @@ add_executable(ipc_toolkit_tests
   barrier/test_barrier.cpp
 
   # Test CCD
-  broad_phase/benchmark_spatial_hash.cpp
+  broad_phase/benchmark_broad_phase.cpp
   broad_phase/brute_force_comparison.cpp
   broad_phase/brute_force_comparison.hpp
+  broad_phase/test_aabb.cpp
   broad_phase/test_broad_phase.cpp
-  broad_phase/test_hash_grid.cpp
   broad_phase/test_spatial_hash.cpp
   ccd/benchmark_ccd.cpp
   ccd/collision_generator.cpp
@@ -88,9 +88,9 @@ target_compile_definitions(ipc_toolkit_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMAR
 
 # Test data directory definition
 if(WIN32)
-  target_compile_definitions(ipc_toolkit_tests PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}\\\\data\\\\")
+  target_compile_definitions(ipc_toolkit_tests PUBLIC TEST_DATA_DIR_CSTR="${CMAKE_CURRENT_SOURCE_DIR}\\\\data\\\\")
 else()
-  target_compile_definitions(ipc_toolkit_tests PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data/")
+  target_compile_definitions(ipc_toolkit_tests PUBLIC TEST_DATA_DIR_CSTR="${CMAKE_CURRENT_SOURCE_DIR}/data/")
 endif()
 
 ################################################################################

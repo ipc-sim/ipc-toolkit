@@ -451,11 +451,14 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXi& F = mesh.faces();
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
-    if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE) {
+    if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
         double min_distance = 0; // TODO
-        const double step_size = compute_toi_strategy(
+        const double step_size = ccd::gpu::compute_toi_strategy(
             V0, V1, E, F, max_iterations, min_distance, tolerance);
-        return 0.8 * step_size;
+        if (step_size < 1.0) {
+            return 0.8 * step_size;
+        }
+        return 1.0;
     }
 #endif
 
@@ -576,19 +579,16 @@ bool has_intersections(const CollisionMesh& mesh, const Eigen::MatrixXd& V)
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
 
+    double conservative_inflation_radius = 1e-2 * world_bbox_diagonal_length(V);
+
     // TODO: Expose the broad-phase method
     HashGrid hash_grid;
-    double conservative_inflation_radius = 1e-2 * world_bbox_diagonal_length(V);
-    hash_grid.resize(V, E, conservative_inflation_radius);
-    hash_grid.addEdges(V, E, conservative_inflation_radius);
-    if (V.cols() == 3) {
-        // These are not needed for 2D
-        hash_grid.addFaces(V, F, conservative_inflation_radius);
-    }
+    hash_grid.can_vertices_collide = mesh.can_collide;
+    hash_grid.build(V, E, F, conservative_inflation_radius);
 
     if (V.cols() == 2) { // Need to check segment-segment intersections in 2D
         std::vector<EdgeEdgeCandidate> ee_candidates;
-        hash_grid.getEdgeEdgePairs(E, ee_candidates, mesh.can_collide);
+        hash_grid.detect_edge_edge_candidates(ee_candidates);
 
         // narrow-phase using igl
         igl::predicates::exactinit();
@@ -605,7 +605,7 @@ bool has_intersections(const CollisionMesh& mesh, const Eigen::MatrixXd& V)
         assert(V.cols() == 3);
 
         std::vector<EdgeFaceCandidate> ef_candidates;
-        hash_grid.getEdgeFacePairs(E, F, ef_candidates, mesh.can_collide);
+        hash_grid.detect_edge_face_candidates(ef_candidates);
 
         for (const EdgeFaceCandidate& ef_candidate : ef_candidates) {
             if (is_edge_intersecting_triangle(

@@ -8,64 +8,54 @@
 #include <tbb/parallel_sort.h>
 
 #include <ipc/broad_phase/voxel_size_heuristic.hpp>
-#include <ipc/utils/vertex_to_min_edge.hpp>
+#include <ipc/utils/merge_thread_local_vectors.hpp>
 #include <ipc/utils/logger.hpp>
 
-// NOTE: Uncomment for expiermental parallel version of getPairs()
+// NOTE: Uncomment for expiermental parallel version of detect_candidates()
 #define IPC_HASH_GRID_PARALLEL_GET_PAIR
 
 namespace ipc {
 
-AABB::AABB(const ArrayMax3d& min, const ArrayMax3d& max)
-    : min(min)
-    , max(max)
+void HashGrid::build(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    double inflation_radius)
 {
-    assert(min.size() == max.size());
-    assert((min <= max).all());
-    // half_extent = (max - min) / 2;
-    // center = min + half_extent;
+    BroadPhase::build(V, E, F, inflation_radius); // also calls clear()
+
+    ArrayMax3d mesh_min = V.colwise().minCoeff().array() - inflation_radius;
+    ArrayMax3d mesh_max = V.colwise().maxCoeff().array() + inflation_radius;
+    double cell_size = suggest_good_voxel_size(V, E, inflation_radius);
+    resize(mesh_min, mesh_max, cell_size);
+
+    insert_boxes();
 }
 
-bool AABB::are_overlapping(const AABB& a, const AABB& b)
+void HashGrid::build(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    double inflation_radius)
 {
-    assert(a.min.size() == b.min.size());
+    BroadPhase::build(V0, V1, E, F, inflation_radius); // also calls clear()
 
-    // NOTE: This is a faster check (https://gamedev.stackexchange.com/a/587),
-    // but it is inexact and can result in false negatives.
-    // return (abs(a.center.x() - b.center.x())
-    //         <= (a.half_extent.x() + b.half_extent.x()))
-    //     && (abs(a.center.y() - b.center.y())
-    //         <= (a.half_extent.y() + b.half_extent.y()))
-    //     && (a.min.size() == 2
-    //         || abs(a.center.z() - b.center.z())
-    //             <= (a.half_extent.z() + b.half_extent.z()));
+    const ArrayMax3d mesh_min_t0 = V0.colwise().minCoeff();
+    const ArrayMax3d mesh_max_t0 = V0.colwise().maxCoeff();
+    const ArrayMax3d mesh_min_t1 = V0.colwise().minCoeff();
+    const ArrayMax3d mesh_max_t1 = V0.colwise().maxCoeff();
+    ArrayMax3d mesh_min = mesh_min_t0.min(mesh_min_t1) - inflation_radius;
+    ArrayMax3d mesh_max = mesh_max_t0.max(mesh_max_t1) + inflation_radius;
+    double cell_size = suggest_good_voxel_size(V0, V1, E, inflation_radius);
+    resize(mesh_min, mesh_max, cell_size);
 
-    // This on the otherhand, is exact because there is no rounding.
-    return (a.min <= b.max).all() && (b.min <= a.max).all();
-};
-
-typedef tbb::enumerable_thread_specific<std::vector<HashItem>>
-    ThreadSpecificHashItems;
-
-void merge_local_items(
-    const ThreadSpecificHashItems& storages, std::vector<HashItem>& items)
-{
-    // size up the hash items
-    size_t num_items = items.size();
-    for (const auto& local_items : storages) {
-        num_items += local_items.size();
-    }
-    // serial merge!
-    items.reserve(num_items);
-    for (const auto& local_items : storages) {
-        items.insert(items.end(), local_items.begin(), local_items.end());
-    }
+    insert_boxes();
 }
 
-void HashGrid::resizeFromBox(
+void HashGrid::resize(
     const ArrayMax3d& min, const ArrayMax3d& max, double cellSize)
 {
-    clear();
     assert(cellSize != 0.0);
     m_cellSize = cellSize;
     m_domainMin = min;
@@ -76,323 +66,44 @@ void HashGrid::resizeFromBox(
         m_gridSize[1], m_gridSize.size() == 3 ? m_gridSize[2] : 1));
 }
 
-/// @brief Compute an AABB around a given 2D mesh.
-void calculate_mesh_extents(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    ArrayMax3d& lower_bound,
-    ArrayMax3d& upper_bound)
+void HashGrid::insert_boxes()
 {
-    ArrayMax3d lower_bound_t0 = vertices_t0.colwise().minCoeff();
-    ArrayMax3d upper_bound_t0 = vertices_t0.colwise().maxCoeff();
-    ArrayMax3d lower_bound_t1 = vertices_t1.colwise().minCoeff();
-    ArrayMax3d upper_bound_t1 = vertices_t1.colwise().maxCoeff();
-    lower_bound = lower_bound_t0.min(lower_bound_t1);
-    upper_bound = upper_bound_t0.max(upper_bound_t1);
+    insert_boxes(this->vertex_boxes, vertex_items);
+    insert_boxes(this->edge_boxes, edge_items);
+    insert_boxes(this->face_boxes, face_items);
 }
 
-void HashGrid::resize(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const double inflation_radius)
+void HashGrid::insert_boxes(
+    const std::vector<AABB>& boxes, std::vector<HashItem>& items) const
 {
-    ArrayMax3d mesh_min, mesh_max;
-    calculate_mesh_extents(vertices_t0, vertices_t1, mesh_min, mesh_max);
-    double cell_size = suggest_good_voxel_size(
-        vertices_t0, vertices_t1, edges, inflation_radius);
-    resizeFromBox(
-        mesh_min - inflation_radius, mesh_max + inflation_radius, cell_size);
-}
-
-/// @brief Compute a AABB for a vertex moving through time (i.e. temporal edge).
-void calculate_vertex_extents(
-    const VectorMax3d& vertex_t0,
-    const VectorMax3d& vertex_t1,
-    ArrayMax3d& lower_bound,
-    ArrayMax3d& upper_bound)
-{
-    lower_bound = vertex_t0.cwiseMin(vertex_t1);
-    upper_bound = vertex_t0.cwiseMax(vertex_t1);
-}
-
-void HashGrid::addVertex(
-    const VectorMax3d& vertex_t0,
-    const VectorMax3d& vertex_t1,
-    const long index,
-    const double inflation_radius)
-{
-    addVertex(vertex_t0, vertex_t1, index, m_vertexItems, inflation_radius);
-}
-
-void HashGrid::addVertex(
-    const VectorMax3d& vertex_t0,
-    const VectorMax3d& vertex_t1,
-    const long index,
-    std::vector<HashItem>& vertex_items,
-    const double inflation_radius) const
-{
-    ArrayMax3d lower_bound, upper_bound;
-    calculate_vertex_extents(vertex_t0, vertex_t1, lower_bound, upper_bound);
-    addElement(
-        AABB(lower_bound - inflation_radius, upper_bound + inflation_radius),
-        index, vertex_items);
-}
-
-void HashGrid::addVertices(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const double inflation_radius)
-{
-    assert(vertices_t0.rows() == vertices_t1.rows());
-
-    ThreadSpecificHashItems storage;
+    tbb::enumerable_thread_specific<std::vector<HashItem>> storage;
 
     tbb::parallel_for(
-        tbb::blocked_range<long>(0l, long(vertices_t0.rows())),
+        tbb::blocked_range<long>(0l, long(boxes.size())),
         [&](const tbb::blocked_range<long>& range) {
-            ThreadSpecificHashItems::reference local_items = storage.local();
-
+            auto& local_items = storage.local();
             for (long i = range.begin(); i != range.end(); i++) {
-                addVertex(
-                    vertices_t0.row(i), vertices_t1.row(i), i, local_items,
-                    inflation_radius);
+                insert_box(boxes[i], i, local_items);
             }
         });
 
-    merge_local_items(storage, m_vertexItems);
+    merge_thread_local_vectors(storage, items);
+
+    // Sorted all they (key, value) pairs, where key is the hash key, and
+    // value is the element index
+    tbb::parallel_sort(items.begin(), items.end());
 }
 
-void HashGrid::addSelectVertices(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::VectorXi& vertex_indices,
-    const double inflation_radius)
+void HashGrid::insert_box(
+    const AABB& aabb, const long id, std::vector<HashItem>& items) const
 {
-    assert(vertices_t0.rows() == vertices_t1.rows());
-
-    ThreadSpecificHashItems storage;
-
-    tbb::parallel_for(
-        tbb::blocked_range<long>(0l, long(vertex_indices.size())),
-        [&](const tbb::blocked_range<long>& range) {
-            ThreadSpecificHashItems::reference local_items = storage.local();
-
-            for (long i = range.begin(); i != range.end(); i++) {
-                const size_t vi = vertex_indices[i];
-                addVertex(
-                    vertices_t0.row(vi), vertices_t1.row(vi), vi, local_items,
-                    inflation_radius);
-            }
-        });
-
-    merge_local_items(storage, m_vertexItems);
-}
-
-void HashGrid::addVerticesFromEdges(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const double inflation_radius)
-{
-    assert(vertices_t0.rows() == vertices_t1.rows());
-
-    std::vector<size_t> V2E = vertex_to_min_edge(vertices_t0.rows(), edges);
-
-    ThreadSpecificHashItems storage;
-
-    tbb::parallel_for(
-        tbb::blocked_range<long>(0l, long(edges.rows())),
-        [&](const tbb::blocked_range<long>& range) {
-            ThreadSpecificHashItems::reference local_items = storage.local();
-
-            for (long ei = range.begin(); ei < range.end(); ei++) {
-                for (long ej = 0; ej < edges.cols(); ej++) {
-                    const size_t vi = edges(ei, ej);
-                    if (V2E[vi] == ei) {
-                        addVertex(
-                            vertices_t0.row(vi), vertices_t1.row(vi), vi,
-                            local_items, inflation_radius);
-                    }
-                }
-            }
-        });
-
-    merge_local_items(storage, m_vertexItems);
-}
-
-/// @brief Compute a AABB for an edge moving through time (i.e. temporal quad).
-void calculate_edge_extents(
-    const VectorMax3d& edge_vertex0_t0,
-    const VectorMax3d& edge_vertex1_t0,
-    const VectorMax3d& edge_vertex0_t1,
-    const VectorMax3d& edge_vertex1_t1,
-    ArrayMax3d& lower_bound,
-    ArrayMax3d& upper_bound)
-{
-    lower_bound = edge_vertex0_t0.cwiseMin(edge_vertex1_t0)
-                      .cwiseMin(edge_vertex0_t1)
-                      .cwiseMin(edge_vertex1_t1);
-    upper_bound = edge_vertex0_t0.cwiseMax(edge_vertex1_t0)
-                      .cwiseMax(edge_vertex0_t1)
-                      .cwiseMax(edge_vertex1_t1);
-}
-
-void HashGrid::addEdge(
-    const VectorMax3d& edge_vertex0_t0,
-    const VectorMax3d& edge_vertex1_t0,
-    const VectorMax3d& edge_vertex0_t1,
-    const VectorMax3d& edge_vertex1_t1,
-    const long index,
-    const double inflation_radius)
-{
-    addEdge(
-        edge_vertex0_t0, edge_vertex1_t0, edge_vertex0_t1, edge_vertex1_t1,
-        index, m_edgeItems, inflation_radius);
-}
-
-void HashGrid::addEdge(
-    const VectorMax3d& edge_vertex0_t0,
-    const VectorMax3d& edge_vertex1_t0,
-    const VectorMax3d& edge_vertex0_t1,
-    const VectorMax3d& edge_vertex1_t1,
-    const long index,
-    std::vector<HashItem>& edge_items,
-    const double inflation_radius) const
-{
-    ArrayMax3d lower_bound, upper_bound;
-    calculate_edge_extents(
-        edge_vertex0_t0, edge_vertex1_t0, edge_vertex0_t1, edge_vertex1_t1,
-        lower_bound, upper_bound);
-    addElement(
-        AABB(lower_bound - inflation_radius, upper_bound + inflation_radius),
-        index, edge_items);
-}
-
-void HashGrid::addEdges(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const double inflation_radius)
-{
-    assert(vertices_t0.rows() == vertices_t1.rows());
-
-    ThreadSpecificHashItems storage;
-
-    tbb::parallel_for(
-        tbb::blocked_range<long>(0l, long(edges.rows())),
-        [&](const tbb::blocked_range<long>& range) {
-            ThreadSpecificHashItems::reference local_items = storage.local();
-
-            for (long i = range.begin(); i != range.end(); i++) {
-                addEdge(
-                    vertices_t0.row(edges(i, 0)), vertices_t0.row(edges(i, 1)),
-                    vertices_t1.row(edges(i, 0)), vertices_t1.row(edges(i, 1)),
-                    i, local_items, inflation_radius);
-            }
-        });
-
-    merge_local_items(storage, m_edgeItems);
-}
-
-/// @brief Compute a AABB for an edge moving through time (i.e. temporal quad).
-void calculate_face_extents(
-    const VectorMax3d& face_vertex0_t0,
-    const VectorMax3d& face_vertex1_t0,
-    const VectorMax3d& face_vertex2_t0,
-    const VectorMax3d& face_vertex0_t1,
-    const VectorMax3d& face_vertex1_t1,
-    const VectorMax3d& face_vertex2_t1,
-    ArrayMax3d& lower_bound,
-    ArrayMax3d& upper_bound)
-{
-    lower_bound = face_vertex0_t0.cwiseMin(face_vertex1_t0)
-                      .cwiseMin(face_vertex2_t0)
-                      .cwiseMin(face_vertex0_t1)
-                      .cwiseMin(face_vertex1_t1)
-                      .cwiseMin(face_vertex2_t1);
-    upper_bound = face_vertex0_t0.cwiseMax(face_vertex1_t0)
-                      .cwiseMax(face_vertex2_t0)
-                      .cwiseMax(face_vertex0_t1)
-                      .cwiseMax(face_vertex1_t1)
-                      .cwiseMax(face_vertex2_t1);
-}
-
-void HashGrid::addFace(
-    const VectorMax3d& face_vertex0_t0,
-    const VectorMax3d& face_vertex1_t0,
-    const VectorMax3d& face_vertex2_t0,
-    const VectorMax3d& face_vertex0_t1,
-    const VectorMax3d& face_vertex1_t1,
-    const VectorMax3d& face_vertex2_t1,
-    const long index,
-    const double inflation_radius)
-{
-    addFace(
-        face_vertex0_t0, face_vertex1_t0, face_vertex2_t0, face_vertex0_t1,
-        face_vertex1_t1, face_vertex2_t1, index, m_faceItems, inflation_radius);
-}
-
-void HashGrid::addFace(
-    const VectorMax3d& face_vertex0_t0,
-    const VectorMax3d& face_vertex1_t0,
-    const VectorMax3d& face_vertex2_t0,
-    const VectorMax3d& face_vertex0_t1,
-    const VectorMax3d& face_vertex1_t1,
-    const VectorMax3d& face_vertex2_t1,
-    const long index,
-    std::vector<HashItem>& face_items,
-    const double inflation_radius) const
-{
-    ArrayMax3d lower_bound, upper_bound;
-    calculate_face_extents(
-        face_vertex0_t0, face_vertex1_t0, face_vertex2_t0, //
-        face_vertex0_t1, face_vertex1_t1, face_vertex2_t1, //
-        lower_bound, upper_bound);
-    addElement(
-        AABB(lower_bound - inflation_radius, upper_bound + inflation_radius),
-        index, face_items);
-}
-
-void HashGrid::addFaces(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& faces,
-    const double inflation_radius)
-{
-    assert(vertices_t0.rows() == vertices_t1.rows());
-
-    ThreadSpecificHashItems storage;
-
-    tbb::parallel_for(
-        tbb::blocked_range<long>(0l, long(faces.rows())),
-        [&](const tbb::blocked_range<long>& range) {
-            ThreadSpecificHashItems::reference local_items = storage.local();
-
-            for (long i = range.begin(); i != range.end(); i++) {
-                addFace(
-                    vertices_t0.row(faces(i, 0)), vertices_t0.row(faces(i, 1)),
-                    vertices_t0.row(faces(i, 2)), vertices_t1.row(faces(i, 0)),
-                    vertices_t1.row(faces(i, 1)), vertices_t1.row(faces(i, 2)),
-                    i, local_items, inflation_radius);
-            }
-        });
-
-    merge_local_items(storage, m_faceItems);
-}
-
-void HashGrid::addElement(
-    const AABB& aabb, const int id, std::vector<HashItem>& items) const
-{
-    ArrayMax3i int_min =
-        ((aabb.getMin() - m_domainMin) / m_cellSize).cast<int>();
+    ArrayMax3i int_min = ((aabb.min - m_domainMin) / m_cellSize).cast<int>();
     // We can round down to -1, but not less
     assert((int_min >= -1).all());
     assert((int_min <= m_gridSize).all());
     int_min = int_min.max(0).min(m_gridSize - 1);
 
-    ArrayMax3i int_max =
-        ((aabb.getMax() - m_domainMin) / m_cellSize).cast<int>();
+    ArrayMax3i int_max = ((aabb.max - m_domainMin) / m_cellSize).cast<int>();
     assert((int_max >= -1).all());
     assert((int_max <= m_gridSize).all());
     int_max = int_max.max(0).min(m_gridSize - 1);
@@ -403,130 +114,93 @@ void HashGrid::addElement(
     for (int x = int_min.x(); x <= int_max.x(); ++x) {
         for (int y = int_min.y(); y <= int_max.y(); ++y) {
             for (int z = min_z; z <= max_z; ++z) {
-                items.emplace_back(hash(x, y, z), id, aabb);
+                items.emplace_back(hash(x, y, z), id);
             }
         }
     }
 }
 
-template <typename T>
-void HashGrid::getPairs(
-    const std::function<bool(int, int)>& is_endpoint,
-    const std::function<bool(int, int)>& can_collide,
-    std::vector<HashItem>& items0,
-    std::vector<HashItem>& items1,
-    T& candidates)
+template <typename Candidate>
+void HashGrid::detect_candidates(
+    const std::vector<HashItem>& items0,
+    const std::vector<HashItem>& items1,
+    const std::vector<AABB>& boxes0,
+    const std::vector<AABB>& boxes1,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<Candidate>& candidates) const
 {
-    // Sorted all they (key,value) pairs, where key is the hash key, and value
-    // is the element index
-    tbb::parallel_sort(items0.begin(), items0.end());
-    tbb::parallel_sort(items1.begin(), items1.end());
-
     // Entries with the same key means they share a cell (that cell index
     // hashes to the same key) and should be flagged for low-level intersection
     // testing. We loop over the entire sorted set of (key,value) pairs
     // creating Candidate entries for pairs with the same key
 
-    // 1. Find start of cells in items0 and items1. Store the start and end of
-    // each cell in a vector.
-    int num_cells = m_gridSize.prod();
-
-    std::vector<long> cell_starts0(num_cells, -1);
-    std::vector<long> cell_ends0(num_cells, -1);
-    for (long i = 0; i < items0.size(); i++) {
-        if (i == 0 || items0[i].key != items0[i - 1].key) {
-            cell_starts0[items0[i].key] = i;
-        }
-        if (i == items0.size() - 1 || items0[i].key != items0[i + 1].key) {
-            cell_ends0[items0[i].key] = i;
+    // 1. Soft merge of items (assuming items are sorted)
+    size_t num_items = items0.size() + items1.size();
+    std::vector<long> merged_item_indices;
+    merged_item_indices.reserve(num_items);
+    long i = 0, j = 0;
+    while (i < items0.size() && j < items1.size()) {
+        if (items0[i] < items1[j]) {
+            merged_item_indices.push_back(-(i++) - 1);
+        } else {
+            merged_item_indices.push_back(j++);
         }
     }
-
-    std::vector<long> cell_starts1(num_cells, -1);
-    std::vector<long> cell_ends1(num_cells, -1);
-    for (long i = 0; i < items1.size(); i++) {
-        if (i == 0 || items1[i].key != items1[i - 1].key) {
-            cell_starts1[items1[i].key] = i;
-        }
-        if (i == items1.size() - 1 || items1[i].key != items1[i + 1].key) {
-            cell_ends1[items1[i].key] = i;
-        }
+    while (i < items0.size()) {
+        merged_item_indices.push_back(-(i++) - 1);
     }
+    while (j < items1.size()) {
+        merged_item_indices.push_back(j++);
+    }
+    assert(merged_item_indices.size() == num_items);
 
-    // 2. Perform a double for loop for each cell, building the candidates.
-#ifdef IPC_HASH_GRID_PARALLEL_GET_PAIR
-    tbb::enumerable_thread_specific<T> storages;
+    const auto get_item = [&](long i) -> const HashItem& {
+        return i < 0 ? items0[-(i + 1)] : items1[i];
+    };
+
+    // 2. Enumerate hash collisions
+    tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
     tbb::parallel_for(
-        tbb::blocked_range<int>(0, num_cells),
-        [&](const tbb::blocked_range<int>& c_ids) {
-            for (int ci = c_ids.begin(); ci < c_ids.end(); ci++) {
-                auto& local_candidates = storages.local();
-#else
-    for (int ci = 0; ci < num_cells; ci++) {
-        auto& local_candidates = candidates;
-#endif
-                // Check if the cell is empty
-                if (cell_starts0[ci] < 0 || cell_starts1[ci] < 0) {
-                    continue;
-                }
-                assert(cell_ends0[ci] >= 0 && cell_ends1[ci] >= 0);
+        tbb::blocked_range2d<long>(0l, num_items - 1, 0l, num_items),
+        [&](const tbb::blocked_range2d<long>& r) {
+            auto& local_candidates = storage.local();
 
-                for (int i = cell_starts0[ci]; i <= cell_ends0[ci]; i++) {
-                    for (int j = cell_starts1[ci]; j <= cell_ends1[ci]; j++) {
-                        if (!is_endpoint(items0[i].id, items1[j].id)
-                            && can_collide(items0[i].id, items1[j].id)
-                            && AABB::are_overlapping(
-                                items0[i].aabb, items1[j].aabb)) {
-                            local_candidates.emplace_back(
-                                items0[i].id, items1[j].id);
-                        }
+            // i < j
+            long i_end = std::min(r.rows().end(), r.cols().end());
+            for (long i = r.rows().begin(); i < i_end; i++) {
+                const long idx0 = merged_item_indices[i];
+                const HashItem& item0 = get_item(idx0);
+
+                // i < r.cols().end() → i + 1 <= r.cols().end()
+                long j_begin = std::max(i + 1, r.cols().begin());
+                for (long j = j_begin; j < r.cols().end(); j++) {
+                    const long idx1 = merged_item_indices[j];
+                    const HashItem& item1 = get_item(idx1);
+
+                    if (item0.key != item1.key) {
+                        break; // This avoids a brute force comparison
+                    }
+
+                    long id0 = item0.id, id1 = item1.id;
+                    if (idx0 >= 0 && idx1 < 0) {
+                        std::swap(id0, id1);
+                    } else if (idx0 >= 0 || idx1 < 0) {
+                        continue;
+                    }
+                    assert(id0 < boxes0.size() && id1 < boxes1.size());
+
+                    if (!can_collide(id0, id1)) {
+                        continue;
+                    }
+
+                    if (boxes0[id0].intersects(boxes1[id1])) {
+                        local_candidates.emplace_back(id0, id1);
                     }
                 }
             }
-#ifdef IPC_HASH_GRID_PARALLEL_GET_PAIR
         });
 
-    // size up the candidates
-    size_t num_candidates = candidates.size();
-    for (const auto& local_candidates : storages) {
-        num_candidates += local_candidates.size();
-    }
-    // serial merge!
-    candidates.reserve(num_candidates);
-    for (const auto& local_candidates : storages) {
-        candidates.insert(
-            candidates.end(), local_candidates.begin(), local_candidates.end());
-    }
-#endif
-
-    // WARNING: This version is buggy and I am not sure why.
-    /*
-    int i = 0, j_start = 0;
-    while (i < items0.size() && j_start < items1.size()) {
-        const HashItem& item0 = items0[i];
-
-        int j = j_start;
-        while (j < items1.size()) {
-            const HashItem& item1 = items1[j];
-
-            if (item0.key == item1.key) {
-                if (!is_endpoint(item0.id, item1.id)
-                    && can_collide(item0.id, item1.id)
-                    && AABB::are_overlapping(item0.aabb, item1.aabb)) {
-                    candidates.emplace_back(item0.id, item1.id);
-                }
-            } else {
-                break;
-            }
-            j++;
-        }
-
-        if (i == items0.size() - 1 || item0.key != items0[i + 1].key) {
-            j_start = j;
-        }
-        i++;
-    }
-    */
+    merge_thread_local_vectors(storage, candidates);
 
     // Remove the duplicate candidates
     tbb::parallel_sort(candidates.begin(), candidates.end());
@@ -534,88 +208,53 @@ void HashGrid::getPairs(
     candidates.erase(new_end, candidates.end());
 }
 
-template <typename T>
-void HashGrid::getPairs(
-    const std::function<bool(int, int)>& is_endpoint,
-    const std::function<bool(int, int)>& can_collide,
-    std::vector<HashItem>& items,
-    T& candidates)
+template <typename Candidate>
+void HashGrid::detect_candidates(
+    const std::vector<HashItem>& items,
+    const std::vector<AABB>& boxes,
+    const std::function<bool(size_t, size_t)>& can_collide,
+    std::vector<Candidate>& candidates) const
 {
-    // Sorted all they (key,value) pairs, where key is the hash key, and
-    // value is the element index
-    tbb::parallel_sort(items.begin(), items.end());
-
-#ifndef IPC_HASH_GRID_PARALLEL_GET_PAIR
     // Entries with the same key means they share a cell (that cell index
     // hashes to the same key) and should be flagged for low-level
     // intersection testing. So we loop over the entire sorted set of
     // (key,value) pairs creating Candidate entries for pairs with the same key
-    for (int i = 0; i < items.size(); i++) {
-        const HashItem& item0 = items[i];
-        for (int j = i + 1; j < items.size(); j++) {
-            const HashItem& item1 = items[j];
-            if (item0.key == item1.key) {
-                if (!is_endpoint(item0.id, item1.id)
-                    && can_collide(item0.id, item1.id)
-                    && AABB::are_overlapping(item0.aabb, item1.aabb)) {
-                    candidates.emplace_back(item0.id, item1.id);
-                }
-            } else {
-                break; // This avoids a brute force comparison
-            }
-        }
-    }
-#else
-    tbb::enumerable_thread_specific<T> storages;
+    tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
 
     tbb::parallel_for(
-        tbb::blocked_range2d<int>(0, items.size(), 0, items.size()),
-        [&](const tbb::blocked_range2d<int>& r) {
-            if (r.rows().begin() >= r.cols().end()) {
-                return; // i needs to be less than j
-            }
+        tbb::blocked_range2d<long>(0l, items.size() - 1, 0l, items.size()),
+        [&](const tbb::blocked_range2d<long>& r) {
+            auto& local_candidates = storage.local();
 
-            auto& local_candidates = storages.local();
-
-            for (int i = r.rows().begin(); i < r.rows().end(); i++) {
+            // i < j
+            long i_end = std::min(r.rows().end(), r.cols().end());
+            for (long i = r.rows().begin(); i < i_end; i++) {
                 const HashItem& item0 = items[i];
-
-                if (i >= r.cols().end()) {
-                    return; // i will increase but r.cols().end() will not
-                }
+                const AABB& box0 = boxes[item0.id];
 
                 // i < r.cols().end() → i + 1 <= r.cols().end()
-                int j_start = std::max(i + 1, r.cols().begin());
-                assert(j_start > i);
-
-                for (int j = j_start; j < r.cols().end(); j++) {
+                long j_begin = std::max(i + 1, r.cols().begin());
+                assert(j_begin > i);
+                for (long j = j_begin; j < r.cols().end(); j++) {
                     const HashItem& item1 = items[j];
 
-                    if (item0.key == item1.key) {
-                        if (!is_endpoint(item0.id, item1.id)
-                            && can_collide(item0.id, item1.id)
-                            && AABB::are_overlapping(item0.aabb, item1.aabb)) {
-                            local_candidates.emplace_back(item0.id, item1.id);
-                        }
-                    } else {
+                    if (item0.key != item1.key) {
                         break; // This avoids a brute force comparison
+                    }
+
+                    if (!can_collide(item0.id, item1.id)) {
+                        continue;
+                    }
+
+                    const AABB& box1 = boxes[item1.id];
+                    if (box0.intersects(box1)) {
+                        local_candidates.emplace_back(item0.id, item1.id);
                     }
                 }
             }
         });
 
-    // size up the candidates
-    size_t num_candidates = candidates.size();
-    for (const auto& local_candidates : storages) {
-        num_candidates += local_candidates.size();
-    }
-    // serial merge!
-    candidates.reserve(num_candidates);
-    for (const auto& local_candidates : storages) {
-        candidates.insert(
-            candidates.end(), local_candidates.begin(), local_candidates.end());
-    }
-#endif
+    merge_thread_local_vectors(storage, candidates);
 
     // Remove the duplicate candidates
     tbb::parallel_sort(candidates.begin(), candidates.end());
@@ -623,86 +262,40 @@ void HashGrid::getPairs(
     candidates.erase(new_end, candidates.end());
 }
 
-void HashGrid::getVertexEdgePairs(
-    const Eigen::MatrixXi& edges,
-    std::vector<EdgeVertexCandidate>& ev_candidates,
-    const std::function<bool(size_t, size_t)>& can_vertices_collide)
+void HashGrid::detect_edge_vertex_candidates(
+    std::vector<EdgeVertexCandidate>& candidates) const
 {
-    auto is_endpoint = [&](int ei, int vi) {
-        return edges(ei, 0) == vi || edges(ei, 1) == vi;
-    };
-
-    auto can_collide = [&](int ei, int vi) {
-        return can_vertices_collide(vi, edges(ei, 0))
-            || can_vertices_collide(vi, edges(ei, 1));
-    };
-
-    getPairs(
-        is_endpoint, can_collide, m_edgeItems, m_vertexItems, ev_candidates);
+    detect_candidates(
+        edge_items, vertex_items, edge_boxes, vertex_boxes,
+        [&](size_t ei, size_t vi) { return can_edge_vertex_collide(ei, vi); },
+        candidates);
 }
 
-void HashGrid::getEdgeEdgePairs(
-    const Eigen::MatrixXi& edges,
-    std::vector<EdgeEdgeCandidate>& ee_candidates,
-    const std::function<bool(size_t, size_t)>& can_vertices_collide)
+void HashGrid::detect_edge_edge_candidates(
+    std::vector<EdgeEdgeCandidate>& candidates) const
 {
-    auto is_endpoint = [&](int ei, int ej) {
-        return edges(ei, 0) == edges(ej, 0) || edges(ei, 0) == edges(ej, 1)
-            || edges(ei, 1) == edges(ej, 0) || edges(ei, 1) == edges(ej, 1);
-    };
-
-    auto can_collide = [&](int ei, int ej) {
-        return can_vertices_collide(edges(ei, 0), edges(ej, 0))
-            || can_vertices_collide(edges(ei, 0), edges(ej, 1))
-            || can_vertices_collide(edges(ei, 1), edges(ej, 0))
-            || can_vertices_collide(edges(ei, 1), edges(ej, 1));
-    };
-
-    getPairs(is_endpoint, can_collide, m_edgeItems, ee_candidates);
+    detect_candidates(
+        edge_items, edge_boxes,
+        [&](size_t eai, size_t ebi) { return can_edges_collide(eai, ebi); },
+        candidates);
 }
 
-void HashGrid::getEdgeFacePairs(
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    std::vector<EdgeFaceCandidate>& ef_candidates,
-    const std::function<bool(size_t, size_t)>& can_vertices_collide)
+void HashGrid::detect_face_vertex_candidates(
+    std::vector<FaceVertexCandidate>& candidates) const
 {
-    auto is_endpoint = [&](int ei, int fi) {
-        // Check if the edge and face have a common end-point
-        return edges(ei, 0) == faces(fi, 0) || edges(ei, 0) == faces(fi, 1)
-            || edges(ei, 0) == faces(fi, 2) || edges(ei, 1) == faces(fi, 0)
-            || edges(ei, 1) == faces(fi, 1) || edges(ei, 1) == faces(fi, 2);
-    };
-
-    auto can_collide = [&](int ei, int fi) {
-        return can_vertices_collide(edges(ei, 0), faces(fi, 0))
-            || can_vertices_collide(edges(ei, 0), faces(fi, 1))
-            || can_vertices_collide(edges(ei, 0), faces(fi, 2))
-            || can_vertices_collide(edges(ei, 1), faces(fi, 0))
-            || can_vertices_collide(edges(ei, 1), faces(fi, 1))
-            || can_vertices_collide(edges(ei, 1), faces(fi, 2));
-    };
-
-    getPairs(is_endpoint, can_collide, m_edgeItems, m_faceItems, ef_candidates);
+    detect_candidates(
+        face_items, vertex_items, face_boxes, vertex_boxes,
+        [&](size_t fi, size_t vi) { return can_face_vertex_collide(fi, vi); },
+        candidates);
 }
 
-void HashGrid::getFaceVertexPairs(
-    const Eigen::MatrixXi& faces,
-    std::vector<FaceVertexCandidate>& fv_candidates,
-    const std::function<bool(size_t, size_t)>& can_vertices_collide)
+void HashGrid::detect_edge_face_candidates(
+    std::vector<EdgeFaceCandidate>& candidates) const
 {
-    auto is_endpoint = [&](int fi, int vi) {
-        return vi == faces(fi, 0) || vi == faces(fi, 1) || vi == faces(fi, 2);
-    };
-
-    auto can_collide = [&](int fi, int vi) {
-        return can_vertices_collide(vi, faces(fi, 0))
-            || can_vertices_collide(vi, faces(fi, 1))
-            || can_vertices_collide(vi, faces(fi, 2));
-    };
-
-    getPairs(
-        is_endpoint, can_collide, m_faceItems, m_vertexItems, fv_candidates);
+    detect_candidates(
+        edge_items, face_items, edge_boxes, face_boxes,
+        [&](size_t ei, size_t fi) { return can_edge_face_collide(ei, fi); },
+        candidates);
 }
 
 } // namespace ipc

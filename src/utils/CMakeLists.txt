@@ -7,6 +7,7 @@ set(SOURCES
   local_to_global.hpp
   logger.cpp
   logger.hpp
+  merge_thread_local_vectors.hpp
   rational.hpp
   unordered_map_and_set.hpp
   vertex_to_min_edge.cpp
