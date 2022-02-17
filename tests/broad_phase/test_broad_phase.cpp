@@ -191,14 +191,11 @@ TEST_CASE("Compare HashGrid/SpatialHash against brute force", "[broad_phase]")
     }
 }
 
-TEST_CASE(
-    "Cloth-Ball",
 #ifdef NDEBUG
-    "[ccd][broad_phase]"
+TEST_CASE("Cloth-Ball", "[ccd][broad_phase]")
 #else
-    "[ccd][broad_phase][!hide]"
+TEST_CASE("Cloth-Ball", "[ccd][broad_phase][!hide]")
 #endif
-)
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
