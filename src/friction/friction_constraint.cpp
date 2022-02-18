@@ -132,7 +132,9 @@ VectorMax12d FrictionConstraint::compute_force(
 {
     // X is the rest position of all vertices
     // Uᵗ is the displacment at the begining of the timestep of all vertices
+    // Uⁱ is the displacment at the begginging of the lagged solve
     // U is the displacment at the end of the timestep of all vertices
+    // (U⁰ = Uᵗ; Uⁿ = U)
     //
     // Static simulation:
     // u(U) is the displacment of the point of contact
@@ -141,11 +143,14 @@ VectorMax12d FrictionConstraint::compute_force(
     //
     // Time-dependent simulation:
     // u(U - Uᵗ) is the displacment of the point of contact over the timestep
-    // ū = T(X + Uᵗ)ᵀu(U - Uᵗ) is the tangential displacment of u
-    // F(X, Uᵗ, U) = -μ N(X + Uᵗ) f₁(‖ū‖)/‖ū‖ ūᵀ T(X + Uᵗ)ᵀ ∇ᵤu(U - Uᵗ)
+    // ū = T(X + Uⁱ)ᵀu(U - Uᵗ) is the tangential displacment of u
+    // F(X, Uᵗ, U) = -μ N(X + Uⁱ) f₁(‖ū‖)/‖ū‖ ūᵀ T(X + Uⁱ)ᵀ ∇ᵤu(U - Uᵗ)
     const bool is_time_dependent = Ut.size() != 0;
 
-    Eigen::MatrixXd displaced_X = X + (is_time_dependent ? Ut : U);
+    // Assume Uⁱ = U
+
+    // Eigen::MatrixXd displaced_X = X + (is_time_dependent ? Ut : U);
+    Eigen::MatrixXd displaced_X = X + U;
 
     double N = compute_normal_force_magnitude(
         displaced_X, E, F, dhat, barrier_stiffness, dmin);
@@ -192,7 +197,9 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
 
     // X is the rest position of all vertices
     // Uᵗ is the displacment at the begining of the timestep of all vertices
+    // Uⁱ is the displacment at the begginging of the lagged solve
     // U is the displacment at the end of the timestep of all vertices
+    // (U⁰ = Uᵗ; Uⁿ = U)
     //
     // Static simulation:
     // u(U) is the displacment of the point of contact
@@ -201,15 +208,19 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     //
     // Time-dependent simulation:
     // u(U - Uᵗ) is the displacment of the point of contact over the timestep
-    // ū = T(X + Uᵗ)ᵀu(U - Uᵗ) is the tangential displacment of u
-    // F(X, Uᵗ, U) = -μ N(X + Uᵗ) f₁(‖ū‖)/‖ū‖ ūᵀ T(X + Uᵗ)ᵀ ∇ᵤu(U - Uᵗ)
+    // ū = T(X + Uⁱ)ᵀu(U - Uᵗ) is the tangential displacment of u
+    // F(X, Uᵗ, U) = -μ N(X + Uⁱ) f₁(‖ū‖)/‖ū‖ ūᵀ T(X + Uⁱ)ᵀ ∇ᵤu(U - Uᵗ)
     //
     // Compute ∇F
 
-    // Boolean for if we need to compute the derivative of N and T.
-    bool need_jac_N_or_T = !is_time_dependent || wrt != DiffWRT::U;
+    // Assume Uⁱ = U
 
-    Eigen::MatrixXd displaced_X = X + (is_time_dependent ? Ut : U);
+    // Boolean for if we need to compute the derivative of N and T.
+    // bool need_jac_N_or_T = !is_time_dependent || wrt != DiffWRT::U;
+    bool need_jac_N_or_T = !is_time_dependent || wrt != DiffWRT::Ut;
+
+    // Eigen::MatrixXd displaced_X = X + (is_time_dependent ? Ut : U);
+    Eigen::MatrixXd displaced_X = X + U;
 
     // Compute N
     double N = compute_normal_force_magnitude(
@@ -263,14 +274,14 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     }
     switch (wrt) {
     case DiffWRT::X:
-        // ∇ₓū = ∇ₓT(X + U)ᵀu(U) or ∇ₓū = ∇ₓT(X + Uᵗ)ᵀu(U - Uᵗ)
+        // ∇ₓū = ∇ₓT(X + U)ᵀu(U) or ∇ₓū = ∇ₓT(X + Uⁱ)ᵀu(U - Uᵗ)
         break;
     case DiffWRT::Ut:
-        // ∇_{Uᵗ} ū = ∇_{Uᵗ} T(X + Uᵗ)ᵀu(U - Uᵗ) + T(X + U)ᵀ ∇_{Uᵗ}u(U - Uᵗ)
+        // ∇_{Uᵗ} ū = ∇_{Uᵗ} T(X + Uⁱ)ᵀu(U - Uᵗ) + T(X + Uⁱ)ᵀ ∇_{Uᵗ}u(U - Uᵗ)
         jac_ubar -= T_Ju; // ∇_{Uᵗ} u = -∇_{U} u
         break;
     case DiffWRT::U:
-        // ∇ᵤū = ∇ᵤT(X+U)ᵀu(U) + T(X+U)ᵀ∇ᵤu(U) or ∇ᵤū = T(X+Uᵗ)ᵀ∇ᵤu(U-Uᵗ)
+        // ∇ᵤū = ∇ᵤT(X+U)ᵀu(U) + T(X+U)ᵀ∇ᵤu(U) or ∇ᵤū = T(X+Uⁱ)ᵀ∇ᵤu(U-Uᵗ)
         jac_ubar += T_Ju;
     }
 
