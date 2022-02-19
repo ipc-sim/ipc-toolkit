@@ -159,7 +159,6 @@ void construct_constraint_set(
             }
         });
 
-    // for (const auto& ee_candidate : candidates.ee_candidates) {
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), candidates.ee_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {

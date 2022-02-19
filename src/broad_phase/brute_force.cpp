@@ -30,7 +30,6 @@ void BruteForce::detect_candidates(
                 i_end = r.rows().end();
             }
 
-            // Loop over edges
             for (size_t i = r.rows().begin(); i < i_end; i++) {
                 const AABB& box0 = boxes0[i];
 
@@ -42,7 +41,6 @@ void BruteForce::detect_candidates(
                     j_begin = r.cols().begin();
                 }
 
-                // Loop over vertices
                 for (size_t j = j_begin; j < r.cols().end(); j++) {
                     if (!can_collide(i, j)) {
                         continue;
