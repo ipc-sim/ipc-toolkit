@@ -46,6 +46,7 @@ void build_vertex_boxes(
         [&](const tbb::blocked_range<size_t>& r) {
             for (size_t i = r.begin(); i < r.end(); i++) {
                 vertex_boxes[i] = AABB::from_point(V.row(i), inflation_radius);
+                vertex_boxes[i].vertex_ids = { { long(i), -1, -1 } };
             }
         });
 }

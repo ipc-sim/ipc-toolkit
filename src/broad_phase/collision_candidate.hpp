@@ -10,46 +10,6 @@
 namespace ipc {
 
 /// Virtual class for candidates that support CCD.
-template <typename DType> struct DistanceCandidate {
-    virtual ~DistanceCandidate() { }
-
-    /// @brief Determine the distance type.
-    /// @param[in] V Mesh vertex positions.
-    /// @param[in] E Mesh edges as rows of indicies into V.
-    /// @param[in] F Mesh triangular faces as rows of indicies into V.
-    /// @return The distance type for this candidate.
-    virtual DType distance_type(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const = 0;
-
-    /// @brief Compute the minimum distance between the candidate.
-    /// @param[in] V Mesh vertex positions.
-    /// @param[in] E Mesh edges as rows of indicies into V.
-    /// @param[in] F Mesh triangular faces as rows of indicies into V.
-    /// @return The minimum distance between candidate elements.
-    virtual double compute_distance(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const
-    {
-        return compute_distance(V, E, F, distance_type(V, E, F));
-    }
-
-    /// @brief Compute the minimum distance between the candidate.
-    /// @param[in] V Mesh vertex positions.
-    /// @param[in] E Mesh edges as rows of indicies into V.
-    /// @param[in] F Mesh triangular faces as rows of indicies into V.
-    /// @param[in] dtype The distance type.
-    /// @return The minimum distance between candidate elements.
-    virtual double compute_distance(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const DType& dtype) const = 0;
-};
-
-/// Virtual class for candidates that support CCD.
 struct ContinuousCollisionCandidate {
     virtual ~ContinuousCollisionCandidate() { }
 
