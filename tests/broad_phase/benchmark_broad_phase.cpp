@@ -133,10 +133,7 @@ TEST_CASE(
     V1 = mesh.vertices(V1);
 
     std::vector<std::string> BP_names = { "BF", "HG", "SH", "STQ", "GPU_STQ" };
-    for (int i = 3; i < static_cast<int>(BroadPhaseMethod::NUM_METHODS); i++) {
-        if (i == 2) {
-            continue;
-        }
+    for (int i = 0; i < static_cast<int>(BroadPhaseMethod::NUM_METHODS); i++) {
         BroadPhaseMethod method = static_cast<BroadPhaseMethod>(i);
         BENCHMARK(fmt::format("BP Real Data ({})", BP_names[i]))
         {
