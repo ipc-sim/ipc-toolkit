@@ -124,6 +124,8 @@ TEST_CASE(
 
     BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 
+    CAPTURE(method);
+
     test_broad_phase(mesh, V, method, dhat);
 
     Constraints constraint_set;
