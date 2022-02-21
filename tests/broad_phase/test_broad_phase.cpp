@@ -133,7 +133,7 @@ TEST_CASE(
     CHECK(constraint_set.size() != 0);
 }
 
-TEST_CASE("Compare HashGrid/SpatialHash against brute force", "[broad_phase]")
+TEST_CASE("Compare BP against brute force", "[broad_phase]")
 {
     using namespace ipc;
 

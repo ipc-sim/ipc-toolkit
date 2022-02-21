@@ -61,10 +61,10 @@ public:
         [](size_t, size_t) { return true; };
 
 protected:
-    bool can_edge_vertex_collide(size_t ei, size_t vi) const;
-    bool can_edges_collide(size_t eai, size_t ebi) const;
-    bool can_face_vertex_collide(size_t fi, size_t vi) const;
-    bool can_edge_face_collide(size_t ei, size_t fi) const;
+    virtual bool can_edge_vertex_collide(size_t ei, size_t vi) const;
+    virtual bool can_edges_collide(size_t eai, size_t ebi) const;
+    virtual bool can_face_vertex_collide(size_t fi, size_t vi) const;
+    virtual bool can_edge_face_collide(size_t ei, size_t fi) const;
 
     std::vector<AABB> vertex_boxes;
     std::vector<AABB> edge_boxes;

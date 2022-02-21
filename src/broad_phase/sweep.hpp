@@ -12,7 +12,22 @@
 
 namespace ipc {
 
-class SweepAndTiniestQueue : public BroadPhase {
+// A version of the BP that copies the meshes into the class rather than making
+// the AABBs.
+class CopyMeshBroadPhase : public BroadPhase {
+protected:
+    void copy_mesh(const Eigen::MatrixXi& E, const Eigen::MatrixXi& F);
+
+    bool can_edge_vertex_collide(size_t ei, size_t vi) const override;
+    bool can_edges_collide(size_t eai, size_t ebi) const override;
+    bool can_face_vertex_collide(size_t fi, size_t vi) const override;
+    bool can_edge_face_collide(size_t ei, size_t fi) const override;
+
+    Eigen::MatrixXi edges;
+    Eigen::MatrixXi faces;
+};
+
+class SweepAndTiniestQueue : public CopyMeshBroadPhase {
 public:
     void build(
         const Eigen::MatrixXd& V,
@@ -46,15 +61,20 @@ public:
         std::vector<EdgeFaceCandidate>& candidates) const override;
 
 protected:
+    long to_edge_id(long id) const;
+    long to_face_id(long id) const;
+
+    bool is_vertex(long id) const;
+    bool is_edge(long id) const;
+    bool is_face(long id) const;
+
     std::vector<stq::cpu::Aabb> boxes;
     std::vector<std::pair<int, int>> overlaps;
-    size_t num_vertices;
-    size_t num_edges;
-    size_t num_faces;
+    long num_vertices;
 };
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
-class SweepAndTiniestQueueGPU : public BroadPhase {
+class SweepAndTiniestQueueGPU : public CopyMeshBroadPhase {
 public:
     void build(
         const Eigen::MatrixXd& V,
