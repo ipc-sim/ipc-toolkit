@@ -60,6 +60,9 @@ include(ipc_toolkit_prepend_current_path)
 include(ipc_toolkit_copy_headers)
 include(ipc_toolkit_set_source_group)
 
+# Generate position independent code by default
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 ################################################################################
 # IPC Toolkit Library
 ################################################################################
