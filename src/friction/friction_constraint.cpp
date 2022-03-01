@@ -147,10 +147,11 @@ VectorMax12d FrictionConstraint::compute_force(
     // F(X, Uᵗ, U) = -μ N(X + Uⁱ) f₁(‖ū‖)/‖ū‖ ūᵀ T(X + Uⁱ)ᵀ ∇ᵤu(U - Uᵗ)
     const bool is_time_dependent = Ut.size() != 0;
 
-    // Assume Uⁱ = U
+    // Assume Uⁱ = Uᵗ
+    //// Assume Uⁱ = U
 
-    // Eigen::MatrixXd displaced_X = X + (is_time_dependent ? Ut : U);
-    Eigen::MatrixXd displaced_X = X + U;
+    Eigen::MatrixXd displaced_X = X + (is_time_dependent ? Ut : U);
+    // Eigen::MatrixXd displaced_X = X + U;
 
     double N = compute_normal_force_magnitude(
         displaced_X, E, F, dhat, barrier_stiffness, dmin);
@@ -213,14 +214,15 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     //
     // Compute ∇F
 
-    // Assume Uⁱ = U
+    // Assume Uⁱ = Uᵗ
+    //// Assume Uⁱ = U
 
     // Boolean for if we need to compute the derivative of N and T.
-    // bool need_jac_N_or_T = !is_time_dependent || wrt != DiffWRT::U;
-    bool need_jac_N_or_T = !is_time_dependent || wrt != DiffWRT::Ut;
+    bool need_jac_N_or_T = !is_time_dependent || wrt != DiffWRT::U;
+    // bool need_jac_N_or_T = !is_time_dependent || wrt != DiffWRT::Ut;
 
-    // Eigen::MatrixXd displaced_X = X + (is_time_dependent ? Ut : U);
-    Eigen::MatrixXd displaced_X = X + U;
+    Eigen::MatrixXd displaced_X = X + (is_time_dependent ? Ut : U);
+    // Eigen::MatrixXd displaced_X = X + U;
 
     // Compute N
     double N = compute_normal_force_magnitude(
