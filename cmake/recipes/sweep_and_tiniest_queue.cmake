@@ -15,7 +15,7 @@ else()
     FetchContent_Declare(
         sweep_and_tiniest_queue
         GIT_REPOSITORY https://github.com/dbelgrod/broadphase-gpu.git
-        GIT_TAG 340ee75d4fc69a9661a08679ec5d44c65f01b70f
+        GIT_TAG 6b8edb7a85fc8aec5d4a7846632eb40dad7e4e74
         GIT_SHALLOW FALSE
     )
     FetchContent_MakeAvailable(sweep_and_tiniest_queue)
