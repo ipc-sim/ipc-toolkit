@@ -51,8 +51,8 @@ struct FrictionConstraint {
         const double dmin = 0) const
     {
         return compute_force(
-            X, Eigen::MatrixXd(), U, E, F, dhat, barrier_stiffness,
-            epsv_times_h, dmin);
+            X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, E, F, dhat,
+            barrier_stiffness, epsv_times_h, dmin);
     }
 
     virtual VectorMax12d compute_force(
@@ -80,8 +80,8 @@ struct FrictionConstraint {
         const double dmin = 0) const
     {
         return compute_force_jacobian(
-            X, Eigen::MatrixXd(), U, E, F, dhat, barrier_stiffness,
-            epsv_times_h, wrt, dmin);
+            X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, E, F, dhat,
+            barrier_stiffness, epsv_times_h, wrt, dmin);
     }
 
     virtual MatrixMax12d compute_force_jacobian(
@@ -96,45 +96,49 @@ struct FrictionConstraint {
         const DiffWRT wrt,
         const double dmin = 0) const;
 
-    virtual double compute_normal_force_magnitude(
-        const Eigen::MatrixXd& V,
+    virtual int multiplicity() const { return 1; };
+
+protected:
+    int dim() const { return tangent_basis.rows(); }
+    virtual int ndof() const = 0;
+
+    template <typename T>
+    VectorMax12<T> select_dofs(
+        const MatrixX<T>& X,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXi& F) const
+    {
+        VectorMax12<T> x(ndof());
+        const std::vector<long> idx = vertex_indices(E, F);
+        assert(ndof() == dim() * idx.size());
+        for (int i = 0; i < idx.size(); i++) {
+            x.segment(i * dim(), dim()) = X.row(idx[i]);
+        }
+        return x;
+    }
+
+    virtual double compute_normal_force_magnitude(
+        const VectorMax12d& x,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0) const = 0;
 
     virtual VectorMax12d compute_normal_force_magnitude_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const VectorMax12d& x,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0) const = 0;
 
-    virtual MatrixMax<double, 3, 2> compute_tangent_basis(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const = 0;
+    virtual MatrixMax<double, 3, 2>
+    compute_tangent_basis(const VectorMax12d& x) const = 0;
 
-    virtual MatrixMax<double, 3, 24> compute_tangent_basis_jacobian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const = 0;
+    virtual MatrixMax<double, 36, 2>
+    compute_tangent_basis_jacobian(const VectorMax12d& x) const = 0;
 
-    virtual VectorMax3d relative_displacement(
-        const Eigen::MatrixXd& U,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const = 0;
+    virtual VectorMax3d relative_displacement(const VectorMax12d& u) const = 0;
 
-    virtual MatrixMax<double, 3, 12> relative_displacement_jacobian(
-        const Eigen::MatrixXd& U,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const = 0;
+    virtual MatrixMax<double, 3, 12> relative_displacement_jacobian() const = 0;
 
-    virtual int multiplicity() const { return 1; };
-
-protected:
     template <typename DerivedRelUi, typename T = typename DerivedRelUi::Scalar>
     T compute_potential_common(
         const Eigen::MatrixBase<DerivedRelUi>& rel_ui,
@@ -142,7 +146,8 @@ protected:
     {
         // u is the relative displacement in the tangential space
         const VectorMax2d u = tangent_basis.transpose().cast<T>() * rel_ui;
-        return mu * normal_force_magnitude * f0_SF(u.norm(), epsv_times_h);
+        return multiplicity() * mu * normal_force_magnitude
+            * f0_SF(u.norm(), epsv_times_h);
     }
 };
 
@@ -167,61 +172,49 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const
     {
-        VectorMax3<T> rel_u = relative_displacement_T(U);
-        return multiplicity() * compute_potential_common(rel_u, epsv_times_h);
+        return compute_potential_common(
+            relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
-
-    double compute_normal_force_magnitude(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
-
-    VectorMax12d compute_normal_force_magnitude_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
-
-    MatrixMax<double, 3, 2> compute_tangent_basis(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
-
-    MatrixMax<double, 3, 24> compute_tangent_basis_jacobian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
-
-    VectorMax3d relative_displacement(
-        const Eigen::MatrixXd& U,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
-    {
-        return relative_displacement_T(U);
-    }
-
-    MatrixMax<double, 3, 12> relative_displacement_jacobian(
-        const Eigen::MatrixXd& U,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
 
     int& multiplicity() { return m_multiplicity; };
     int multiplicity() const override { return m_multiplicity; };
 
 protected:
+    int ndof() const override { return dim() * 2; }
+
+    double compute_normal_force_magnitude(
+        const VectorMax12d& x,
+        const double dhat,
+        const double barrier_stiffness,
+        const double dmin = 0) const override;
+
+    VectorMax12d compute_normal_force_magnitude_gradient(
+        const VectorMax12d& x,
+        const double dhat,
+        const double barrier_stiffness,
+        const double dmin = 0) const override;
+
+    MatrixMax<double, 3, 2>
+    compute_tangent_basis(const VectorMax12d& x) const override;
+
+    MatrixMax<double, 36, 2>
+    compute_tangent_basis_jacobian(const VectorMax12d& x) const override;
+
+    VectorMax3d relative_displacement(const VectorMax12d& u) const override
+    {
+        return relative_displacement_T(u);
+    }
+
+    MatrixMax<double, 3, 12> relative_displacement_jacobian() const override;
+
     int m_multiplicity = 1;
 
 private:
     template <typename T>
-    VectorMax3<T> relative_displacement_T(const MatrixX<T>& U) const
+    VectorMax3<T> relative_displacement_T(const VectorMax12<T>& u) const
     {
-        return point_point_relative_displacement(
-            U.row(vertex0_index), U.row(vertex1_index));
+        assert(u.size() == ndof());
+        return point_point_relative_displacement(u.head(dim()), u.tail(dim()));
     }
 };
 
@@ -245,63 +238,50 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
         const Eigen::MatrixXi& F,
         const double epsv_times_h) const
     {
-        VectorMax3<T> rel_u = relative_displacement_T(U, E);
-        return multiplicity() * compute_potential_common(rel_u, epsv_times_h);
+        return compute_potential_common(
+            relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
-
-    double compute_normal_force_magnitude(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
-
-    VectorMax12d compute_normal_force_magnitude_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
-
-    MatrixMax<double, 3, 2> compute_tangent_basis(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
-
-    MatrixMax<double, 3, 24> compute_tangent_basis_jacobian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
-
-    VectorMax3d relative_displacement(
-        const Eigen::MatrixXd& U,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
-    {
-        return relative_displacement_T(U, E);
-    }
-
-    MatrixMax<double, 3, 12> relative_displacement_jacobian(
-        const Eigen::MatrixXd& U,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
 
     int& multiplicity() { return m_multiplicity; };
     int multiplicity() const override { return m_multiplicity; };
 
 protected:
+    int ndof() const override { return dim() * 3; }
+
+    double compute_normal_force_magnitude(
+        const VectorMax12d& x,
+        const double dhat,
+        const double barrier_stiffness,
+        const double dmin = 0) const override;
+
+    VectorMax12d compute_normal_force_magnitude_gradient(
+        const VectorMax12d& x,
+        const double dhat,
+        const double barrier_stiffness,
+        const double dmin = 0) const override;
+
+    MatrixMax<double, 3, 2>
+    compute_tangent_basis(const VectorMax12d& x) const override;
+
+    MatrixMax<double, 36, 2>
+    compute_tangent_basis_jacobian(const VectorMax12d& x) const override;
+
+    VectorMax3d relative_displacement(const VectorMax12d& u) const override
+    {
+        return relative_displacement_T(u);
+    }
+
+    MatrixMax<double, 3, 12> relative_displacement_jacobian() const override;
+
     int m_multiplicity = 1;
 
 private:
     template <typename T>
-    VectorMax3<T>
-    relative_displacement_T(const MatrixX<T>& U, const Eigen::MatrixXi& E) const
+    VectorMax3<T> relative_displacement_T(const VectorMax12<T>& u) const
     {
+        assert(u.size() == ndof());
         return point_edge_relative_displacement(
-            U.row(vertex_index), //
-            U.row(E(edge_index, 0)), U.row(E(edge_index, 1)),
+            u.head(dim()), u.segment(dim(), dim()), u.tail(dim()),
             T(closest_point[0]));
     }
 };
@@ -328,57 +308,45 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
         const double epsv_times_h) const
     {
         return compute_potential_common(
-            relative_displacement_T(U, E), epsv_times_h);
+            relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
 
+protected:
+    int ndof() const override { return dim() * 4; }
+
     double compute_normal_force_magnitude(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const VectorMax12d& x,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0) const override;
 
     VectorMax12d compute_normal_force_magnitude_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const VectorMax12d& x,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0) const override;
 
-    MatrixMax<double, 3, 2> compute_tangent_basis(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+    MatrixMax<double, 3, 2>
+    compute_tangent_basis(const VectorMax12d& x) const override;
 
-    MatrixMax<double, 3, 24> compute_tangent_basis_jacobian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+    MatrixMax<double, 36, 2>
+    compute_tangent_basis_jacobian(const VectorMax12d& x) const override;
 
-    VectorMax3d relative_displacement(
-        const Eigen::MatrixXd& U,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
+    VectorMax3d relative_displacement(const VectorMax12d& u) const override
     {
-        return relative_displacement_T(U, E);
+        return relative_displacement_T(u);
     }
 
-    MatrixMax<double, 3, 12> relative_displacement_jacobian(
-        const Eigen::MatrixXd& U,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+    MatrixMax<double, 3, 12> relative_displacement_jacobian() const override;
 
 private:
     template <typename T>
-    VectorMax3<T>
-    relative_displacement_T(const MatrixX<T>& U, const Eigen::MatrixXi& E) const
+    VectorMax3<T> relative_displacement_T(const VectorMax12<T>& u) const
     {
+        assert(u.size() == ndof());
         return edge_edge_relative_displacement(
-            U.row(E(edge0_index, 0)), U.row(E(edge0_index, 1)),
-            U.row(E(edge1_index, 0)), U.row(E(edge1_index, 1)),
-            closest_point.cast<T>());
+            u.head(dim()), u.segment(dim(), dim()), u.segment(2 * dim(), dim()),
+            u.tail(dim()), closest_point.cast<T>());
     }
 };
 
@@ -404,57 +372,45 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
         const double epsv_times_h) const
     {
         return compute_potential_common(
-            relative_displacement_T(U, F), epsv_times_h);
+            relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
 
+protected:
+    int ndof() const override { return dim() * 4; }
+
     double compute_normal_force_magnitude(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const VectorMax12d& x,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0) const override;
 
     VectorMax12d compute_normal_force_magnitude_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const VectorMax12d& x,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0) const override;
 
-    MatrixMax<double, 3, 2> compute_tangent_basis(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+    MatrixMax<double, 3, 2>
+    compute_tangent_basis(const VectorMax12d& x) const override;
 
-    MatrixMax<double, 3, 24> compute_tangent_basis_jacobian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+    MatrixMax<double, 36, 2>
+    compute_tangent_basis_jacobian(const VectorMax12d& x) const override;
 
-    VectorMax3d relative_displacement(
-        const Eigen::MatrixXd& U,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
+    VectorMax3d relative_displacement(const VectorMax12d& u) const override
     {
-        return relative_displacement_T(U, F);
+        return relative_displacement_T(u);
     }
 
-    MatrixMax<double, 3, 12> relative_displacement_jacobian(
-        const Eigen::MatrixXd& U,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+    MatrixMax<double, 3, 12> relative_displacement_jacobian() const override;
 
 private:
     template <typename T>
-    VectorMax3<T>
-    relative_displacement_T(const MatrixX<T>& U, const Eigen::MatrixXi& F) const
+    VectorMax3<T> relative_displacement_T(const VectorMax12<T>& u) const
     {
+        assert(u.size() == ndof());
         return point_triangle_relative_displacement(
-            U.row(vertex_index), U.row(F(face_index, 0)),
-            U.row(F(face_index, 1)), U.row(F(face_index, 2)),
-            closest_point.cast<T>());
+            u.head(dim()), u.segment(dim(), dim()), u.segment(2 * dim(), dim()),
+            u.tail(dim()), closest_point.cast<T>());
     }
 };
 

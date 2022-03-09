@@ -91,8 +91,8 @@ inline Eigen::VectorXd compute_friction_force(
     const double dmin = 0)
 {
     return compute_friction_force(
-        mesh, X, Eigen::MatrixXd(), U, friction_constraint_set, dhat,
-        barrier_stiffness, epsv_times_h, dmin);
+        mesh, X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U,
+        friction_constraint_set, dhat, barrier_stiffness, epsv_times_h, dmin);
 }
 
 Eigen::SparseMatrix<double> compute_friction_force_jacobian(
@@ -119,8 +119,9 @@ inline Eigen::SparseMatrix<double> compute_friction_force_jacobian(
     const double dmin = 0)
 {
     return compute_friction_force_jacobian(
-        mesh, X, Eigen::MatrixXd(), U, friction_constraint_set, dhat,
-        barrier_stiffness, epsv_times_h, wrt, dmin);
+        mesh, X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U,
+        friction_constraint_set, dhat, barrier_stiffness, epsv_times_h, wrt,
+        dmin);
 }
 
 } // namespace ipc

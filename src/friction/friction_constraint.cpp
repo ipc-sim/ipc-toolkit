@@ -17,27 +17,23 @@ VectorMax12d FrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXi& F,
     double epsv_times_h) const
 {
-    // ∇ₓ μ N(xᵗ) f₀(‖ū‖) (where ū = T(xᵗ)ᵀ u(xᵗ, x))
-    //  = μ N(xᵗ) f₁(‖ū‖)/‖ū‖ ūᵀ T(xᵗ)ᵀ ∇ₓu(xᵗ, x)
+    // ∇ₓ μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀ(x - xᵗ))
+    //  = μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u
 
-    // compute u(xᵗ, x)
-    const VectorMax3d global_rel_u = relative_displacement(U, E, F);
+    // Compute u = PᵀΓ(x - xᵗ)
+    const VectorMax2d u =
+        tangent_basis.transpose() * relative_displacement(select_dofs(U, E, F));
 
-    // compute ∇ₓ u(xᵗ, x)
-    const MatrixMax<double, 3, 12> jac_global_rel_u =
-        relative_displacement_jacobian(U, E, F);
+    // Compute T = ΓᵀP
+    const MatrixMax<double, 12, 2> T =
+        relative_displacement_jacobian().transpose() * tangent_basis;
 
-    // compute ū
-    const VectorMax2d tangent_rel_u = tangent_basis.transpose() * global_rel_u;
+    // Compute f₁(‖ū‖)/‖ū‖
+    const double f1_over_norm_u = f1_SF_over_x(u.norm(), epsv_times_h);
 
-    // compute f₁(‖ū‖)/‖ū‖
-    const double f1_over_norm_tangent_u =
-        f1_SF_over_x(tangent_rel_u.norm(), epsv_times_h);
-
-    // μ N(xᵗ) f₁(‖ū‖)/‖ū‖ ūᵀ T(xᵗ)ᵀ ∇ₓu(xᵗ, x)
-    return multiplicity() * mu * normal_force_magnitude * f1_over_norm_tangent_u
-        * tangent_rel_u.transpose() * tangent_basis.transpose()
-        * jac_global_rel_u;
+    // μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u ∈ ℝⁿ
+    return multiplicity() * mu * normal_force_magnitude * f1_over_norm_u
+        * (T * u); // (n×2)(2×1) = (n×1)
 }
 
 MatrixMax12d FrictionConstraint::compute_potential_hessian(
@@ -47,76 +43,67 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
     const double epsv_times_h,
     bool project_hessian_to_psd) const
 {
-    int dim = U.cols();
-    // ∇ₓ μ N(xᵗ) f₁(‖ū‖)/‖ū‖ ūᵀ T(xᵗ)ᵀ ∇ₓu(xᵗ, x) (where ū = T(xᵗ)ᵀ u(xᵗ, x))
-    //  = μ N ∇uᵀ T [(f₁'(‖ū‖)‖ū‖ − f₁(‖ū‖))/‖ū‖³ ūūᵀ + f₁(‖ū‖)/‖ū‖ I] Tᵀ ∇u
-    //  = μ N ∇uᵀ T [f₂(‖ū‖) ūūᵀ + f₁(‖ū‖)/‖ū‖ I] Tᵀ ∇u
+    // ∇ₓ μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u (where u = T(xᵗ)ᵀ (x - xᵗ))
+    //  = μ N T [(f₁'(‖u‖)‖u‖ − f₁(‖u‖))/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
+    //  = μ N T [f₂(‖u‖) uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
 
-    // compute u(xᵗ, x)
-    const VectorMax3d global_rel_u = relative_displacement(U, E, F);
+    // Compute u = PᵀΓ(x - xᵗ)
+    const VectorMax2d u =
+        tangent_basis.transpose() * relative_displacement(select_dofs(U, E, F));
 
-    // compute ∇ₓ u(xᵗ, x)
-    const MatrixMax<double, 3, 12> jac_global_rel_u =
-        relative_displacement_jacobian(U, E, F);
+    // Compute T = ΓᵀP
+    const MatrixMax<double, 12, 2> T =
+        relative_displacement_jacobian().transpose() * tangent_basis;
 
-    // compute ū
-    const VectorMax2d tangent_rel_u = tangent_basis.transpose() * global_rel_u;
+    // Compute ‖u‖
+    const double norm_u = u.norm();
 
-    // compute TJᵤ = T(xᵗ)ᵀ ∇ₓu(xᵗ, x)
-    const MatrixMax<double, 2, 12> TJ_u =
-        tangent_basis.transpose() * jac_global_rel_u;
+    // Compute f₁(‖u‖)/‖u‖
+    const double f1_over_norm_u = f1_SF_over_x(norm_u, epsv_times_h);
 
-    // compute ‖ū‖
-    const double norm_u = tangent_rel_u.norm();
-
-    // compute f₁(‖ū‖)/‖ū‖
-    const double f1_over_norm_ubar = f1_SF_over_x(norm_u, epsv_times_h);
-
-    // compute μ N(xᵗ)
+    // Compute μ N(xᵗ)
     double scale = multiplicity() * mu * normal_force_magnitude;
 
-    MatrixMax12d local_hess;
+    MatrixMax12d hess;
     if (norm_u >= epsv_times_h) {
-        // f₁(‖ū‖) = 1
-        //  ⟹ ∇²D(x) = μ N ∇uᵀ T [-f₁(‖ū‖)/‖ū‖³ ūūᵀ + f₁(‖ū‖)/‖ū‖ I] Tᵀ ∇u
-        //            = μ N ∇uᵀ T [-f₁(‖ū‖)/‖ū‖ ūūᵀ/‖ū‖² + f₁(‖ū‖)/‖ū‖ I] Tᵀ ∇u
-        //            = μ N ∇uᵀ T [f₁(‖ū‖)/‖ū‖ (I - ūūᵀ/‖ū‖²)] Tᵀ ∇u
-        //  ⟹ no SPD projection needed because f₁(‖ū‖)/‖ū‖ ≥ 0
-        // ∧ dim = 2 ⟹
-        if (dim == 2) {
-            // I - ūūᵀ/‖ū‖² = 1 - ū²/ū² = 0 ⟹ ∇²D(x) = 0
-            int n = jac_global_rel_u.cols(); // num_vars
-            local_hess.setZero(n, n);
+        // f₁(‖u‖) = 1
+        //  ⟹ ∇²D(x) = μ N T [-f₁(‖u‖)/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
+        //            = μ N T [-f₁(‖u‖)/‖u‖ uuᵀ/‖u‖² + f₁(‖u‖)/‖u‖ I] Tᵀ
+        //            = μ N T [f₁(‖u‖)/‖u‖ (I - uuᵀ/‖u‖²)] Tᵀ
+        //  ⟹ no SPD projection needed because f₁(‖u‖)/‖u‖ ≥ 0
+        if (dim() == 2) {
+            // I - uuᵀ/‖u‖² = 1 - u²/u² = 0 ⟹ ∇²D(x) = 0
+            int n = T.rows(); // num vars
+            hess.setZero(n, n);
         } else {
-            assert(dim == 3);
-            // I - ūūᵀ/‖ū‖² = ūᵖ(ūᵖ)ᵀ / ‖ū‖² (where ūᵖ⋅ū = 0)
-            Eigen::Vector2d u_perp(-tangent_rel_u[1], tangent_rel_u[0]);
-            local_hess = // grouped to reduce number of operations
-                (TJ_u.transpose()
-                 * ((scale * f1_over_norm_ubar / (norm_u * norm_u)) * u_perp))
-                * (u_perp.transpose() * TJ_u);
+            assert(dim() == 3);
+            // I - uuᵀ/‖u‖² = ūūᵀ / ‖u‖² (where ū⋅u = 0)
+            Eigen::Vector2d u_perp(-u[1], u[0]);
+            hess = // grouped to reduce number of operations
+                (T * ((scale * f1_over_norm_u / (norm_u * norm_u)) * u_perp))
+                * (u_perp.transpose() * T.transpose());
         }
     } else if (norm_u == 0) {
-        // ∇²D = μ N ∇uᵀT[(f₁'(‖ū‖)‖ū‖ − f₁(‖ū‖))/‖ū‖³ ūūᵀ + f₁(‖ū‖)/‖ū‖ I]Tᵀ∇u
-        // lim_{‖ū‖→0} ∇²D = μ N ∇uᵀT [f₁(‖ū‖)/‖ū‖ I] Tᵀ ∇u
+        // ∇²D = μ N T [(f₁'(‖u‖)‖u‖ − f₁(‖u‖))/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
+        // lim_{‖u‖→0} ∇²D = μ N T [f₁(‖u‖)/‖u‖ I] Tᵀ
         // no SPD projection needed because μ N f₁(‖ū‖)/‖ū‖ ≥ 0
-        local_hess = scale * f1_over_norm_ubar * TJ_u.transpose() * TJ_u;
+        hess = scale * f1_over_norm_u * T * T.transpose();
     } else {
-        // ∇²D(x) = μ N ∇uᵀ T [f₂(‖ū‖) ūūᵀ + f₁(‖ū‖)/‖ū‖ I] Tᵀ ∇u
+        // ∇²D(x) = μ N T [f₂(‖u‖) uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
         //  ⟹ only need to project the inner 2x2 matrix to SPD
         const double f2 = df1_x_minus_f1_over_x3(norm_u, epsv_times_h);
 
-        MatrixMax2d inner_hess = f2 * tangent_rel_u * tangent_rel_u.transpose();
-        inner_hess.diagonal().array() += f1_over_norm_ubar;
+        MatrixMax2d inner_hess = f2 * u * u.transpose();
+        inner_hess.diagonal().array() += f1_over_norm_u;
         inner_hess *= scale;
         if (project_hessian_to_psd) {
             inner_hess = project_to_psd(inner_hess);
         }
 
-        local_hess = TJ_u.transpose() * inner_hess * TJ_u;
+        hess = T * inner_hess * T.transpose();
     }
 
-    return local_hess;
+    return hess;
 }
 
 VectorMax12d FrictionConstraint::compute_force(
@@ -130,51 +117,52 @@ VectorMax12d FrictionConstraint::compute_force(
     const double epsv_times_h,
     const double dmin) const
 {
-    // X is the rest position of all vertices
-    // Uᵗ is the displacment at the begining of the timestep of all vertices
-    // Uⁱ is the displacment at the begginging of the lagged solve
-    // U is the displacment at the end of the timestep of all vertices
-    // (U⁰ = Uᵗ; Uⁿ = U)
+    // x is the rest position
+    // uᵗ is the displacment at the begining of the timestep
+    // uᵢ is the displacment at the begginging of the lagged solve
+    // u is the displacment at the end of the timestep
+    // (uᵢ = uᵗ; uₙ = u)
     //
     // Static simulation:
-    // u(U) is the displacment of the point of contact
-    // ū = T(X + U)ᵀu(U) is the tangential displacment of u
-    // F(X, U) = -μ N(X + U) f₁(‖ū‖)/‖ū‖ ūᵀ T(X + U)ᵀ ∇u(U)
+    // τ = T(x + uᵢ)ᵀu is the tangential displacment
+    // F(x, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
     //
     // Time-dependent simulation:
-    // u(U - Uᵗ) is the displacment of the point of contact over the timestep
-    // ū = T(X + Uⁱ)ᵀu(U - Uᵗ) is the tangential displacment of u
-    // F(X, Uᵗ, U) = -μ N(X + Uⁱ) f₁(‖ū‖)/‖ū‖ ūᵀ T(X + Uⁱ)ᵀ ∇ᵤu(U - Uᵗ)
-    const bool is_time_dependent = Ut.size() != 0;
+    // τ = T(x + uᵢ)ᵀ(u - uᵗ) is the tangential displacment
+    // F(x, uᵗ, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
+    assert(X.size() == U.size() && Ut.size() == U.size());
 
-    // Assume Uⁱ = Uᵗ
-    //// Assume Uⁱ = U
+    const VectorMax12d x = select_dofs(X, E, F);
+    const VectorMax12d ut = select_dofs(Ut, E, F);
+    const VectorMax12d u = select_dofs(U, E, F);
 
-    Eigen::MatrixXd displaced_X = X + (is_time_dependent ? Ut : U);
-    // Eigen::MatrixXd displaced_X = X + U;
+    // Assume uᵢ = uᵗ
+    VectorMax12d x_plus_ui = x + ut;
 
+    // Assume uᵢ = u
+    // VectorMax12d x_plus_ui = x + u;
+
+    // Compute N(x + uᵢ)
     double N = compute_normal_force_magnitude(
-        displaced_X, E, F, dhat, barrier_stiffness, dmin);
+        x_plus_ui, dhat, barrier_stiffness, dmin);
 
-    MatrixMax<double, 3, 2> T = compute_tangent_basis(displaced_X, E, F);
+    // Compute P
+    const MatrixMax<double, 3, 2> P = compute_tangent_basis(x_plus_ui);
 
-    // compute u
-    const VectorMax3d u =
-        relative_displacement(is_time_dependent ? (U - Ut) : U, E, F);
+    // Compute Γ
+    const MatrixMax<double, 3, 12> Gamma = relative_displacement_jacobian();
 
-    // compute ∇ᵤu
-    const MatrixMax<double, 3, 12> jac_u =
-        relative_displacement_jacobian(is_time_dependent ? (U - Ut) : U, E, F);
+    // Compute T = ΓᵀP
+    const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
 
-    // compute ū
-    const VectorMax2d ubar = T.transpose() * u;
+    // Compute τ = PᵀΓ(u - uᵗ)
+    const VectorMax2d tau = T.transpose() * (u - ut);
 
-    // compute f₁(‖ū‖)/‖ū‖
-    const double f1_over_norm_ubar = f1_SF_over_x(ubar.norm(), epsv_times_h);
+    // Compute f₁(‖τ‖)/‖τ‖
+    const double f1_over_norm_tau = f1_SF_over_x(tau.norm(), epsv_times_h);
 
-    // μ N(x) f₁(‖ū‖)/‖ū‖ ūᵀ T(x)ᵀ ∇ₓu(xᵗ, x)
-    return -multiplicity() * mu * N * f1_over_norm_ubar * ubar.transpose()
-        * T.transpose() * jac_u;
+    // F = -μ N f₁(‖τ‖)/‖τ‖ T τ
+    return -multiplicity() * mu * N * f1_over_norm_tau * T * tau;
 }
 
 MatrixMax12d FrictionConstraint::compute_force_jacobian(
@@ -189,132 +177,133 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     const DiffWRT wrt,
     const double dmin) const
 {
-    int dim = U.cols();
-    int n = dim * vertex_indices(E, F).size();
-    const bool is_time_dependent = Ut.size() != 0;
-    assert(wrt != DiffWRT::Ut || is_time_dependent);
-    assert(
-        !is_time_dependent || (U.rows() == Ut.rows() && U.cols() == Ut.cols()));
-
-    // X is the rest position of all vertices
-    // Uᵗ is the displacment at the begining of the timestep of all vertices
-    // Uⁱ is the displacment at the begginging of the lagged solve
-    // U is the displacment at the end of the timestep of all vertices
-    // (U⁰ = Uᵗ; Uⁿ = U)
+    // x is the rest position
+    // uᵗ is the displacment at the begining of the timestep
+    // uᵢ is the displacment at the begginging of the lagged solve
+    // u is the displacment at the end of the timestep
+    // (uᵢ = uᵗ; uₙ = u)
     //
     // Static simulation:
-    // u(U) is the displacment of the point of contact
-    // ū = T(X + U)ᵀu(U) is the tangential displacment of u
-    // F(X, U) = -μ N(X + U) f₁(‖ū‖)/‖ū‖ ūᵀ T(X + U)ᵀ ∇u(U)
+    // τ = T(x + uᵢ)ᵀu is the tangential displacment
+    // F(x, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
     //
     // Time-dependent simulation:
-    // u(U - Uᵗ) is the displacment of the point of contact over the timestep
-    // ū = T(X + Uⁱ)ᵀu(U - Uᵗ) is the tangential displacment of u
-    // F(X, Uᵗ, U) = -μ N(X + Uⁱ) f₁(‖ū‖)/‖ū‖ ūᵀ T(X + Uⁱ)ᵀ ∇ᵤu(U - Uᵗ)
+    // τ = T(x + uᵢ)ᵀ(u - uᵗ) is the tangential displacment
+    // F(x, uᵗ, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
     //
     // Compute ∇F
+    assert(X.size() == U.size() && Ut.size() == U.size());
+    int dim = U.cols();
+    int n = dim * vertex_indices(E, F).size();
 
-    // Assume Uⁱ = Uᵗ
-    //// Assume Uⁱ = U
+    const VectorMax12d x = select_dofs(X, E, F);
+    const VectorMax12d ut = select_dofs(Ut, E, F);
+    const VectorMax12d u = select_dofs(U, E, F);
 
-    // Boolean for if we need to compute the derivative of N and T.
-    bool need_jac_N_or_T = !is_time_dependent || wrt != DiffWRT::U;
-    // bool need_jac_N_or_T = !is_time_dependent || wrt != DiffWRT::Ut;
+    // Assume uᵢ = uᵗ
+    Eigen::MatrixXd x_plus_ui = x + ut;
+    bool need_jac_N_or_T = wrt != DiffWRT::U;
 
-    Eigen::MatrixXd displaced_X = X + (is_time_dependent ? Ut : U);
-    // Eigen::MatrixXd displaced_X = X + U;
+    // Assume uᵢ = u
+    // Eigen::MatrixXd x_plus_ui = x + u;
+    // bool need_jac_N_or_T = wrt != DiffWRT::Ut;
 
     // Compute N
     double N = compute_normal_force_magnitude(
-        displaced_X, E, F, dhat, barrier_stiffness, dmin);
+        x_plus_ui, dhat, barrier_stiffness, dmin);
 
     // Compute ∇N
     VectorMax12d grad_N;
     if (need_jac_N_or_T) {
         // ∇ₓN = ∇ᵤN
         grad_N = compute_normal_force_magnitude_gradient(
-            displaced_X, E, F, dhat, barrier_stiffness, dmin);
+            x_plus_ui, dhat, barrier_stiffness, dmin);
     }
 
-    // Compute T
-    MatrixMax<double, 3, 2> T = compute_tangent_basis(displaced_X, E, F);
+    // Compute P
+    const MatrixMax<double, 3, 2> P = compute_tangent_basis(x_plus_ui);
+
+    // Compute Γ
+    const MatrixMax<double, 3, 12> Gamma = relative_displacement_jacobian();
+
+    // Compute T = ΓᵀP
+    const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
 
     // Compute ∇T
-    MatrixMax<double, 3, 24> jac_T;
+    MatrixMax<double, 144, 2> jac_T;
     if (need_jac_N_or_T) {
-        // ∇ₓT = ∇ᵤT
-        jac_T = compute_tangent_basis_jacobian(displaced_X, E, F);
+        jac_T.resize(n * n, dim - 1);
+        // ∇T = ∇(ΓᵀP) = ∇ΓᵀP + Γᵀ∇P
+        const MatrixMax<double, 36, 2> jac_P =
+            compute_tangent_basis_jacobian(x_plus_ui);
+        for (int i = 0; i < n; i++) {
+            jac_T.middleRows(i * n, n) =
+                Gamma.transpose() * jac_P.middleRows(i * dim, dim);
+        }
+        // WARNING: Ignoring dependency of coords on (x + uᵢ)
+        // const MatrixMax<double, 36, 12> jac_Gamma;
+        // for (int i = 0; i < n; i++) {
+        //     jac_T.middleRows(i * n, n) +=
+        //         jac_Gamma.middleRows(i * dim).transpose() * P;
+        // }
     }
 
-    // Compute u
-    VectorMax3d u =
-        relative_displacement(is_time_dependent ? (U - Ut) : U, E, F);
+    // Compute τ = PᵀΓ(u - uᵗ)
+    const VectorMax12d u_minus_ut = u - ut;
+    const VectorMax2d tau = P.transpose() * relative_displacement(u_minus_ut);
 
-    // Compute ∇ᵤu
-    const MatrixMax<double, 3, 12> jac_u_wrt_U =
-        relative_displacement_jacobian(is_time_dependent ? (U - Ut) : U, E, F);
-
-    // Compute ū
-    VectorMax2d ubar = T.transpose() * u;
-
-    // Compute f₁(‖ū‖)/‖ū‖
-    double f1_over_norm_ubar = f1_SF_over_x(ubar.norm(), epsv_times_h);
-
-    // Premultiplied values
-    const MatrixMax<double, 2, 12> T_Ju = T.transpose() * jac_u_wrt_U;
-    const RowVectorMax12d ubar_T_Ju = ubar.transpose() * T_Ju;
-
-    ///////////////////////////////////////////////////////////////////////////
-    // Compute ∇ū
-    MatrixMax<double, 2, 12> jac_ubar;
+    // Compute ∇τ = ∇T(x + uᵢ)ᵀ(u - uᵗ) + T(x + uᵢ)ᵀ∇(u - uᵗ)
+    MatrixMax<double, 2, 12> jac_tau;
     if (need_jac_N_or_T) {
-        MatrixMax<double, 24, 1> JT_u = jac_T.transpose() * u;
-        jac_ubar =
-            Eigen::Map<MatrixMax<double, 2, 12>>(JT_u.data(), dim - 1, n);
+        jac_tau.resize(dim - 1, n);
+        // Compute ∇T(x + uᵢ)ᵀ(u - uᵗ)
+        for (int i = 0; i < n; i++) {
+            jac_tau.col(i) =
+                jac_T.middleRows(i * n, n).transpose() * (u_minus_ut);
+        }
     } else {
-        jac_ubar.setZero(dim - 1, n);
+        jac_tau.setZero(dim - 1, n);
     }
     switch (wrt) {
     case DiffWRT::X:
-        // ∇ₓū = ∇ₓT(X + U)ᵀu(U) or ∇ₓū = ∇ₓT(X + Uⁱ)ᵀu(U - Uᵗ)
-        break;
+        break; // Tᵀ ∇ₓ(u - uᵗ) = 0
     case DiffWRT::Ut:
-        // ∇_{Uᵗ} ū = ∇_{Uᵗ} T(X + Uⁱ)ᵀu(U - Uᵗ) + T(X + Uⁱ)ᵀ ∇_{Uᵗ}u(U - Uᵗ)
-        jac_ubar -= T_Ju; // ∇_{Uᵗ} u = -∇_{U} u
+        jac_tau -= T.transpose(); // Tᵀ ∇_{uᵗ}(u - uᵗ) = -Tᵀ
         break;
     case DiffWRT::U:
-        // ∇ᵤū = ∇ᵤT(X+U)ᵀu(U) + T(X+U)ᵀ∇ᵤu(U) or ∇ᵤū = T(X+Uⁱ)ᵀ∇ᵤu(U-Uᵗ)
-        jac_ubar += T_Ju;
+        jac_tau += T.transpose(); // Tᵀ ∇ᵤ(u - uᵗ) = Tᵀ
     }
+
+    // Compute f₁(‖τ‖)/‖τ‖
+    double f1_over_norm_tau = f1_SF_over_x(tau.norm(), epsv_times_h);
+
+    // Premultiplied values
+    const VectorMax12d T_times_tau = T * tau;
 
     ///////////////////////////////////////////////////////////////////////////
-    // compute ∇F
+    // Compute ∇F = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
     MatrixMax12d J = MatrixMax12d::Zero(n, n);
 
-    // = -μ [∇N] f₁(‖ū‖)/‖ū‖ ūᵀ Tᵀ ∇ᵤu
+    // = -μ f₁(‖ū‖)/‖ū‖ (T τ) [∇N]ᵀ
     if (need_jac_N_or_T) {
+        J = f1_over_norm_tau * T_times_tau * grad_N.transpose();
+    }
+
+    // + -μ N [(f₁'(‖τ‖)‖τ‖ - f₁(‖τ‖))/‖τ‖³ τᵀ ∇τ]ᵀ (T τ)ᵀ
+    double f2 = df1_x_minus_f1_over_x3(tau.norm(), epsv_times_h);
+    J += (N * f2 * tau.transpose() * jac_tau).transpose()
+        * T_times_tau.transpose();
+
+    // + -μ N f₁(‖τ‖)/‖τ‖ [∇T] τ
+    if (need_jac_N_or_T) {
+        const VectorMax2d scaled_tau = N * f1_over_norm_tau * tau;
         for (int i = 0; i < n; i++) {
-            J.col(i) = grad_N(i) * f1_over_norm_ubar * ubar_T_Ju;
+            J.col(i) += jac_T.middleRows(i * n, n) * scaled_tau;
         }
     }
 
-    // + -μ N [(f₁'(‖ū‖)‖ū‖ - f₁(‖ū‖))/‖ū‖³ (ūᵀ ∇ū)ᵀ] ūᵀ Tᵀ ∇ᵤu
-    double f2 = df1_x_minus_f1_over_x3(ubar.norm(), epsv_times_h);
-    J += (N * f2 * ubar.transpose() * jac_ubar).transpose() * ubar_T_Ju;
-
-    // + -μ N f₁(‖ū‖)/‖ū‖ (∇ū)ᵀ Tᵀ ∇ᵤu
-    J += N * f1_over_norm_ubar * jac_ubar.transpose() * T_Ju;
-
-    // + -μ N f₁(‖ū‖)/‖ū‖ ūᵀ ∇Tᵀ ∇ᵤu
-    if (need_jac_N_or_T) {
-        for (int i = 0; i < n; i++) {
-            J.col(i) += N * f1_over_norm_ubar * ubar.transpose()
-                * jac_T.middleCols((dim - 1) * i, (dim - 1)).transpose()
-                * jac_u_wrt_U;
-        }
-    }
-
-    // + -μ N f₁(‖ū‖)/‖ū‖ ūᵀ Tᵀ (∇²u = 0).
+    // + -μ N f₁(‖τ‖)/‖τ‖ T [∇τ]
+    J += N * f1_over_norm_tau * T * jac_tau;
 
     J *= -multiplicity() * mu;
 
@@ -343,30 +332,27 @@ VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
 }
 
 double VertexVertexFrictionConstraint::compute_normal_force_magnitude(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const VectorMax12d& x,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
-    const auto& p0 = V.row(vertex0_index);
-    const auto& p1 = V.row(vertex1_index);
+    assert(x.size() == ndof());
     return ipc::compute_normal_force_magnitude(
-        point_point_distance(p0, p1), dhat, barrier_stiffness, dmin);
+        point_point_distance(x.head(dim()), x.tail(dim())), dhat,
+        barrier_stiffness, dmin);
 }
 
 VectorMax12d
 VertexVertexFrictionConstraint::compute_normal_force_magnitude_gradient(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const VectorMax12d& x,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
-    const auto& p0 = V.row(vertex0_index);
-    const auto& p1 = V.row(vertex1_index);
+    assert(x.size() == ndof());
+    const auto& p0 = x.head(dim());
+    const auto& p1 = x.tail(dim());
     VectorMax6d grad_d;
     point_point_distance_gradient(p0, p1, grad_d);
     return ipc::compute_normal_force_magnitude_gradient(
@@ -374,32 +360,24 @@ VertexVertexFrictionConstraint::compute_normal_force_magnitude_gradient(
 }
 
 MatrixMax<double, 3, 2> VertexVertexFrictionConstraint::compute_tangent_basis(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+    const VectorMax12d& x) const
 {
-    return point_point_tangent_basis(
-        V.row(vertex0_index), V.row(vertex1_index));
+    assert(x.size() == ndof());
+    return point_point_tangent_basis(x.head(dim()), x.tail(dim()));
 }
 
-MatrixMax<double, 3, 24>
+MatrixMax<double, 36, 2>
 VertexVertexFrictionConstraint::compute_tangent_basis_jacobian(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+    const VectorMax12d& x) const
 {
-    return point_point_tangent_basis_jacobian(
-        V.row(vertex0_index), V.row(vertex1_index));
+    assert(x.size() == ndof());
+    return point_point_tangent_basis_jacobian(x.head(dim()), x.tail(dim()));
 }
 
 MatrixMax<double, 3, 12>
-VertexVertexFrictionConstraint::relative_displacement_jacobian(
-    const Eigen::MatrixXd& U,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+VertexVertexFrictionConstraint::relative_displacement_jacobian() const
 {
-    return point_point_relative_displacement_jacobian(
-        U.row(vertex0_index), U.row(vertex1_index));
+    return point_point_relative_displacement_jacobian(dim());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -424,66 +402,57 @@ EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
 }
 
 double EdgeVertexFrictionConstraint::compute_normal_force_magnitude(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const VectorMax12d& x,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
-    const auto& p = V.row(vertex_index);
-    const auto& e0 = V.row(E(edge_index, 0));
-    const auto& e1 = V.row(E(edge_index, 1));
+    assert(x.size() == ndof());
+    const auto& p = x.head(dim());
+    const auto& e0 = x.segment(dim(), dim());
+    const auto& e1 = x.tail(dim());
     return ipc::compute_normal_force_magnitude(
         point_edge_distance(p, e0, e1), dhat, barrier_stiffness, dmin);
 }
 
 VectorMax12d
 EdgeVertexFrictionConstraint::compute_normal_force_magnitude_gradient(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const VectorMax12d& x,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
-    const auto& p = V.row(vertex_index);
-    const auto& e0 = V.row(E(edge_index, 0));
-    const auto& e1 = V.row(E(edge_index, 1));
+    assert(x.size() == ndof());
+    const auto& p = x.head(dim());
+    const auto& e0 = x.segment(dim(), dim());
+    const auto& e1 = x.tail(dim());
     VectorMax9d grad_d;
     point_edge_distance_gradient(p, e0, e1, grad_d);
     return ipc::compute_normal_force_magnitude_gradient(
         point_edge_distance(p, e0, e1), grad_d, dhat, barrier_stiffness, dmin);
 }
 
-MatrixMax<double, 3, 2> EdgeVertexFrictionConstraint::compute_tangent_basis(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+MatrixMax<double, 3, 2>
+EdgeVertexFrictionConstraint::compute_tangent_basis(const VectorMax12d& x) const
 {
+    assert(x.size() == ndof());
     return point_edge_tangent_basis(
-        V.row(vertex_index), V.row(E(edge_index, 0)), V.row(E(edge_index, 1)));
+        x.head(dim()), x.segment(dim(), dim()), x.tail(dim()));
 }
 
-MatrixMax<double, 3, 24>
+MatrixMax<double, 36, 2>
 EdgeVertexFrictionConstraint::compute_tangent_basis_jacobian(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+    const VectorMax12d& x) const
 {
+    assert(x.size() == ndof());
     return point_edge_tangent_basis_jacobian(
-        V.row(vertex_index), V.row(E(edge_index, 0)), V.row(E(edge_index, 1)));
+        x.head(dim()), x.segment(dim(), dim()), x.tail(dim()));
 }
 
 MatrixMax<double, 3, 12>
-EdgeVertexFrictionConstraint::relative_displacement_jacobian(
-    const Eigen::MatrixXd& U,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+EdgeVertexFrictionConstraint::relative_displacement_jacobian() const
 {
-    return point_edge_relative_displacement_jacobian(
-        U.row(vertex_index), U.row(E(edge_index, 0)), U.row(E(edge_index, 1)),
-        closest_point[0]);
+    return point_edge_relative_displacement_jacobian(dim(), closest_point[0]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -507,34 +476,32 @@ EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
 }
 
 double EdgeEdgeFrictionConstraint::compute_normal_force_magnitude(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const VectorMax12d& x,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
-    const auto& ea0 = V.row(E(edge0_index, 0));
-    const auto& ea1 = V.row(E(edge0_index, 1));
-    const auto& eb0 = V.row(E(edge1_index, 0));
-    const auto& eb1 = V.row(E(edge1_index, 1));
+    assert(x.size() == ndof());
+    const auto& ea0 = x.head(dim());
+    const auto& ea1 = x.segment(dim(), dim());
+    const auto& eb0 = x.segment(2 * dim(), dim());
+    const auto& eb1 = x.tail(dim());
     return ipc::compute_normal_force_magnitude(
         edge_edge_distance(ea0, ea1, eb0, eb1), dhat, barrier_stiffness, dmin);
 }
 
 VectorMax12d
 EdgeEdgeFrictionConstraint::compute_normal_force_magnitude_gradient(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const VectorMax12d& x,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
-    const auto& ea0 = V.row(E(edge0_index, 0));
-    const auto& ea1 = V.row(E(edge0_index, 1));
-    const auto& eb0 = V.row(E(edge1_index, 0));
-    const auto& eb1 = V.row(E(edge1_index, 1));
+    assert(x.size() == ndof());
+    const auto& ea0 = x.head(dim());
+    const auto& ea1 = x.segment(dim(), dim());
+    const auto& eb0 = x.segment(2 * dim(), dim());
+    const auto& eb1 = x.tail(dim());
     VectorMax12d grad_d;
     edge_edge_distance_gradient(ea0, ea1, eb0, eb1, grad_d);
     return ipc::compute_normal_force_magnitude_gradient(
@@ -542,36 +509,29 @@ EdgeEdgeFrictionConstraint::compute_normal_force_magnitude_gradient(
         dmin);
 }
 
-MatrixMax<double, 3, 2> EdgeEdgeFrictionConstraint::compute_tangent_basis(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+MatrixMax<double, 3, 2>
+EdgeEdgeFrictionConstraint::compute_tangent_basis(const VectorMax12d& x) const
 {
+    assert(x.size() == ndof());
     return edge_edge_tangent_basis(
-        V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
-        V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)));
+        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
+        x.tail(dim()));
 }
 
-MatrixMax<double, 3, 24>
+MatrixMax<double, 36, 2>
 EdgeEdgeFrictionConstraint::compute_tangent_basis_jacobian(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+    const VectorMax12d& x) const
 {
+    assert(x.size() == ndof());
     return edge_edge_tangent_basis_jacobian(
-        V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
-        V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)));
+        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
+        x.tail(dim()));
 }
 
 MatrixMax<double, 3, 12>
-EdgeEdgeFrictionConstraint::relative_displacement_jacobian(
-    const Eigen::MatrixXd& U,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+EdgeEdgeFrictionConstraint::relative_displacement_jacobian() const
 {
-    return edge_edge_relative_displacement_jacobian(
-        U.row(E(edge0_index, 0)), U.row(E(edge0_index, 1)),
-        U.row(E(edge1_index, 0)), U.row(E(edge1_index, 1)), closest_point);
+    return edge_edge_relative_displacement_jacobian(dim(), closest_point);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -595,34 +555,32 @@ FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
 }
 
 double FaceVertexFrictionConstraint::compute_normal_force_magnitude(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const VectorMax12d& x,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
-    const auto& p = V.row(vertex_index);
-    const auto& t0 = V.row(F(face_index, 0));
-    const auto& t1 = V.row(F(face_index, 1));
-    const auto& t2 = V.row(F(face_index, 2));
+    assert(x.size() == ndof());
+    const auto& p = x.head(dim());
+    const auto& t0 = x.segment(dim(), dim());
+    const auto& t1 = x.segment(2 * dim(), dim());
+    const auto& t2 = x.tail(dim());
     return ipc::compute_normal_force_magnitude(
         point_triangle_distance(p, t0, t1, t2), dhat, barrier_stiffness, dmin);
 }
 
 VectorMax12d
 FaceVertexFrictionConstraint::compute_normal_force_magnitude_gradient(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const VectorMax12d& x,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
-    const auto& p = V.row(vertex_index);
-    const auto& t0 = V.row(F(face_index, 0));
-    const auto& t1 = V.row(F(face_index, 1));
-    const auto& t2 = V.row(F(face_index, 2));
+    assert(x.size() == ndof());
+    const auto& p = x.head(dim());
+    const auto& t0 = x.segment(dim(), dim());
+    const auto& t1 = x.segment(2 * dim(), dim());
+    const auto& t2 = x.tail(dim());
     VectorMax12d grad_d;
     point_triangle_distance_gradient(p, t0, t1, t2, grad_d);
     return ipc::compute_normal_force_magnitude_gradient(
@@ -630,36 +588,29 @@ FaceVertexFrictionConstraint::compute_normal_force_magnitude_gradient(
         dmin);
 }
 
-MatrixMax<double, 3, 2> FaceVertexFrictionConstraint::compute_tangent_basis(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+MatrixMax<double, 3, 2>
+FaceVertexFrictionConstraint::compute_tangent_basis(const VectorMax12d& x) const
 {
+    assert(x.size() == ndof());
     return point_triangle_tangent_basis(
-        V.row(vertex_index), V.row(F(face_index, 0)), V.row(F(face_index, 1)),
-        V.row(F(face_index, 2)));
+        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
+        x.tail(dim()));
 }
 
-MatrixMax<double, 3, 24>
+MatrixMax<double, 36, 2>
 FaceVertexFrictionConstraint::compute_tangent_basis_jacobian(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+    const VectorMax12d& x) const
 {
+    assert(x.size() == ndof());
     return point_triangle_tangent_basis_jacobian(
-        V.row(vertex_index), V.row(F(face_index, 0)), V.row(F(face_index, 1)),
-        V.row(F(face_index, 2)));
+        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
+        x.tail(dim()));
 }
 
 MatrixMax<double, 3, 12>
-FaceVertexFrictionConstraint::relative_displacement_jacobian(
-    const Eigen::MatrixXd& U,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+FaceVertexFrictionConstraint::relative_displacement_jacobian() const
 {
-    return point_triangle_relative_displacement_jacobian(
-        U.row(vertex_index), U.row(F(face_index, 0)), U.row(F(face_index, 1)),
-        U.row(F(face_index, 2)), closest_point);
+    return point_triangle_relative_displacement_jacobian(dim(), closest_point);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
