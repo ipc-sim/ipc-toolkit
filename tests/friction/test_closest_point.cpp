@@ -2,6 +2,10 @@
 
 #include <ipc/friction/closest_point.hpp>
 
+#include <finitediff.hpp>
+
+#include <iostream>
+
 using namespace ipc;
 
 TEST_CASE(
@@ -21,6 +25,28 @@ TEST_CASE(
         + barycentric_coords[1] * (t2 - t0);
     CAPTURE(barycentric_coords);
     CHECK((p - p_actual).norm() == Approx(0).margin(1e-12));
+
+    // test Jacobian
+    Eigen::Matrix<double, 2, 12> J =
+        point_triangle_closest_point_jacobian(p, t0, t1, t2);
+
+    Eigen::VectorXd x(12);
+    x.segment<3>(0) = p;
+    x.segment<3>(3) = t0;
+    x.segment<3>(6) = t1;
+    x.segment<3>(9) = t2;
+
+    Eigen::MatrixXd J_FD;
+    fd::finite_jacobian(
+        x,
+        [&](const Eigen::VectorXd& x) {
+            return point_triangle_closest_point(
+                x.segment<3>(0), x.segment<3>(3), x.segment<3>(6),
+                x.segment<3>(9));
+        },
+        J_FD);
+
+    CHECK(fd::compare_jacobian(J, J_FD));
 }
 
 TEST_CASE("Edge-edge closest point", "[friction][edge-edge][closest_point]")
@@ -32,6 +58,28 @@ TEST_CASE("Edge-edge closest point", "[friction][edge-edge][closest_point]")
     CAPTURE(barycentric_coords);
     CHECK(barycentric_coords[0] == Approx(0.5));
     CHECK(barycentric_coords[1] == Approx(0.5));
+
+    // test Jacobian
+    Eigen::Matrix<double, 2, 12> J =
+        edge_edge_closest_point_jacobian(ea0, ea1, eb0, eb1);
+
+    Eigen::VectorXd x(12);
+    x.segment<3>(0) = ea0;
+    x.segment<3>(3) = ea1;
+    x.segment<3>(6) = eb0;
+    x.segment<3>(9) = eb1;
+
+    Eigen::MatrixXd J_FD;
+    fd::finite_jacobian(
+        x,
+        [&](const Eigen::VectorXd& x) {
+            return edge_edge_closest_point(
+                x.segment<3>(0), x.segment<3>(3), x.segment<3>(6),
+                x.segment<3>(9));
+        },
+        J_FD);
+
+    CHECK(fd::compare_jacobian(J, J_FD));
 }
 
 TEST_CASE("Point-edge closest point", "[friction][point-edge][closest_point]")
@@ -40,6 +88,25 @@ TEST_CASE("Point-edge closest point", "[friction][point-edge][closest_point]")
 
     double alpha = point_edge_closest_point(p, e0, e1);
     CHECK(alpha == Approx(0.5));
+
+    // test Jacobian
+    VectorMax9d J = point_edge_closest_point_jacobian(p, e0, e1);
+
+    Eigen::VectorXd x(9);
+    x.segment<3>(0) = p;
+    x.segment<3>(3) = e0;
+    x.segment<3>(6) = e1;
+
+    Eigen::VectorXd J_FD;
+    fd::finite_gradient(
+        x,
+        [&](const Eigen::VectorXd& x) {
+            return point_edge_closest_point(
+                x.segment<3>(0), x.segment<3>(3), x.segment<3>(6));
+        },
+        J_FD);
+
+    CHECK(fd::compare_gradient(J, J_FD));
 }
 
 TEST_CASE(
@@ -50,4 +117,23 @@ TEST_CASE(
 
     double alpha = point_edge_closest_point(p, e0, e1);
     CHECK(alpha == Approx(0.5));
+
+    // test Jacobian
+    VectorMax9d J = point_edge_closest_point_jacobian(p, e0, e1);
+
+    Eigen::VectorXd x(6);
+    x.segment<2>(0) = p;
+    x.segment<2>(2) = e0;
+    x.segment<2>(4) = e1;
+
+    Eigen::VectorXd J_FD;
+    fd::finite_gradient(
+        x,
+        [&](const Eigen::VectorXd& x) {
+            return point_edge_closest_point(
+                x.segment<2>(0), x.segment<2>(2), x.segment<2>(4));
+        },
+        J_FD);
+
+    CHECK(fd::compare_gradient(J, J_FD));
 }

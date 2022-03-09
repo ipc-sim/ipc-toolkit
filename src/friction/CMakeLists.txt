@@ -1,4 +1,5 @@
 set(SOURCES
+  closest_point.cpp
   closest_point.hpp
   friction.cpp
   friction.hpp
