@@ -238,6 +238,7 @@ TEST_CASE(
     Eigen::MatrixXd fd_JF_wrt_X;
     fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
     CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
+    // std::cout << JF_wrt_X << "\n\n" << fd_JF_wrt_X << std::endl;
 
     ///////////////////////////////////////////////////////////////////////////
 

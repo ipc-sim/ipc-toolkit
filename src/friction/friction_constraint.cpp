@@ -151,7 +151,7 @@ VectorMax12d FrictionConstraint::compute_force(
     const MatrixMax<double, 3, 2> P = compute_tangent_basis(x_plus_ui);
 
     // compute β
-    const VectorMax2d beta = closest_point; // compute_closest_point(x_plus_ui);
+    const VectorMax2d beta = compute_closest_point(x_plus_ui);
 
     // Compute Γ
     const MatrixMax<double, 3, 12> Gamma = relative_displacement_matrix(beta);
@@ -228,7 +228,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     const MatrixMax<double, 3, 2> P = compute_tangent_basis(x_plus_ui);
 
     // Compute β
-    const VectorMax2d beta = closest_point; // compute_closest_point(x_plus_ui);
+    const VectorMax2d beta = compute_closest_point(x_plus_ui);
 
     // Compute Γ
     const MatrixMax<double, 3, 12> Gamma = relative_displacement_matrix(beta);
@@ -244,36 +244,36 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
         const MatrixMax<double, 36, 2> jac_P =
             compute_tangent_basis_jacobian(x_plus_ui);
         for (int i = 0; i < n; i++) {
+            // ∂T/∂xᵢ += Γᵀ ∂P/∂xᵢ
             jac_T.middleRows(i * n, n) =
                 Gamma.transpose() * jac_P.middleRows(i * dim, dim);
         }
 
-        /*
         if (beta.size()) {
             // ∇Γ(β) = ∇ᵦΓ∇β ∈ ℝ^{d×n×n} ≡ ℝ^{nd×n}
             const MatrixMax<double, 2, 12> jac_beta =
                 compute_closest_point_jacobian(x_plus_ui);
-            // ∈ ℝ^{3×12×2}
             const MatrixMax<double, 6, 12> jac_Gamma_wrt_beta =
                 relative_displacement_matrix_jacobian(beta);
 
             MatrixMax<double, 36, 12> jac_Gamma(n * dim, n);
-            for (int i = 0; i < dim; i++) {
-                // (3×12×2)(2×12) = (3×12×12) ≡ (36×12)
-                jac_Gamma.middleRows(i * n, n) =
-                    jac_Gamma_wrt_beta.middleRows(i * beta.size(), beta.size())
-                        .transpose()
-                    * jac_beta;
+            for (int k = 0; k < n; k++) {
+                for (int i = 0; i < dim; i++) {
+                    // ∂Γᵢⱼ/∂xₖ = ∂Γᵢⱼ/∂β ⋅ ∂β/∂xₖ
+                    jac_Gamma.row(k * dim + i) =
+                        jac_Gamma_wrt_beta
+                            .middleRows(i * beta.size(), beta.size())
+                            .transpose()
+                        * jac_beta.col(k);
+                }
             }
 
-            // (3×12×12)ᵀ(3×2) = (12×12×2)
             for (int i = 0; i < n; i++) {
-                // (3×12)ᵀ(3×2) = (12×2)
+                // ∂T/∂xᵢ += ∂Γ/∂xᵢᵀ P
                 jac_T.middleRows(i * n, n) +=
                     jac_Gamma.middleRows(i * dim, dim).transpose() * P;
             }
         }
-        */
     }
 
     // Compute τ = PᵀΓ(u - uᵗ)
