@@ -14,6 +14,8 @@
 #include "friction_data_generator.hpp"
 #include "../test_utils.hpp"
 
+#include <unsupported/Eigen/SparseExtra>
+
 using namespace ipc;
 
 TEST_CASE("Test friction gradient and hessian", "[friction][gradient][hessian]")
@@ -89,6 +91,9 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
         epsv_times_h, FrictionConstraint::DiffWRT::X);
 
     auto F_X = [&](const Eigen::VectorXd& x) {
+        construct_friction_constraint_set(
+            mesh, fd::unflatten(x, X.cols()) + Ut, data.constraints, data.dhat,
+            data.barrier_stiffness, data.mu, friction_constraint_set);
         return compute_friction_force(
             mesh, fd::unflatten(x, X.cols()), Ut, U, friction_constraint_set,
             data.dhat, data.barrier_stiffness, data.epsv_times_h);
@@ -104,6 +109,9 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
         epsv_times_h, FrictionConstraint::DiffWRT::Ut);
 
     auto F_Ut = [&](const Eigen::VectorXd& ut) {
+        construct_friction_constraint_set(
+            mesh, X + fd::unflatten(ut, Ut.cols()), data.constraints, data.dhat,
+            data.barrier_stiffness, data.mu, friction_constraint_set);
         return compute_friction_force(
             mesh, X, fd::unflatten(ut, Ut.cols()), U, friction_constraint_set,
             data.dhat, data.barrier_stiffness, data.epsv_times_h);
@@ -143,6 +151,142 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
         epsv_times_h, FrictionConstraint::DiffWRT::U);
     Eigen::MatrixXd hess_D = compute_friction_potential_hessian(
         mesh, X + Ut, X + U, friction_constraint_set, epsv_times_h, false);
+    CHECK(fd::compare_jacobian(-jac_force, hess_D));
+}
+
+inline Eigen::MatrixXd loadMarketXd(const std::string& f)
+{
+    Eigen::SparseMatrix<double> tmp;
+    REQUIRE(Eigen::loadMarket(tmp, f));
+    return Eigen::MatrixXd(tmp);
+}
+
+inline Eigen::MatrixXi loadMarketXi(const std::string& f)
+{
+    Eigen::SparseMatrix<int> tmp;
+    REQUIRE(Eigen::loadMarket(tmp, f));
+    return Eigen::MatrixXi(tmp);
+}
+
+TEST_CASE(
+    "Test friction force jacobian on real data",
+    "[friction][force-jacobian][thisone]")
+{
+    std::string scene;
+    bool is_2D = true;
+    SECTION("point-plane") { scene = "point-plane"; }
+    SECTION("square-incline") { scene = "square-incline"; }
+
+    Eigen::MatrixXd X, Ut, U;
+    Eigen::MatrixXi E, F;
+    {
+        X = loadMarketXd(fmt::format(
+            "{}friction-force-jacobian/{}/X.mat", TEST_DATA_DIR, scene));
+        Ut = loadMarketXd(fmt::format(
+            "{}friction-force-jacobian/{}/Ut.mat", TEST_DATA_DIR, scene));
+        Ut = fd::unflatten(Ut, X.cols());
+        REQUIRE(X.rows() == Ut.rows());
+        REQUIRE(X.cols() == Ut.cols());
+        U = loadMarketXd(fmt::format(
+            "{}friction-force-jacobian/{}/U.mat", TEST_DATA_DIR, scene));
+        U = fd::unflatten(U, X.cols());
+        REQUIRE(X.rows() == U.rows());
+        REQUIRE(X.cols() == U.cols());
+        if (is_2D) {
+            E = loadMarketXi(fmt::format(
+                "{}friction-force-jacobian/{}/F.mat", TEST_DATA_DIR, scene));
+        } else {
+            F = loadMarketXi(fmt::format(
+                "{}friction-force-jacobian/{}/F.mat", TEST_DATA_DIR, scene));
+            igl::edges(F, E);
+        }
+    }
+
+    CollisionMesh mesh(X, E, F);
+
+    double mu = 0.5;
+    double dhat = 0.1;
+    double kappa = 141;
+    double epsv_dt = 5e-6;
+
+    Constraints contact_constraint_set;
+    construct_constraint_set(mesh, X + Ut, dhat, contact_constraint_set);
+
+    CHECK(compute_minimum_distance(mesh, X + Ut, contact_constraint_set) != 0);
+    CHECK(compute_minimum_distance(mesh, X + U, contact_constraint_set) != 0);
+
+    FrictionConstraints friction_constraint_set;
+    construct_friction_constraint_set(
+        mesh, X + Ut, contact_constraint_set, dhat, kappa, mu,
+        friction_constraint_set);
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    Eigen::MatrixXd JF_wrt_X = compute_friction_force_jacobian(
+        mesh, X, Ut, U, friction_constraint_set, dhat, kappa, epsv_dt,
+        FrictionConstraint::DiffWRT::X);
+
+    auto F_X = [&](const Eigen::VectorXd& x) {
+        // construct_friction_constraint_set(
+        //     mesh, fd::unflatten(x, X.cols()) + Ut, constraints,
+        //     dhat, kappa, mu,
+        //     friction_constraint_set);
+        return compute_friction_force(
+            mesh, fd::unflatten(x, X.cols()), Ut, U, friction_constraint_set,
+            dhat, kappa, epsv_dt);
+    };
+    Eigen::MatrixXd fd_JF_wrt_X;
+    fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
+    CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    Eigen::MatrixXd JF_wrt_Ut = compute_friction_force_jacobian(
+        mesh, X, Ut, U, friction_constraint_set, dhat, kappa, epsv_dt,
+        FrictionConstraint::DiffWRT::Ut);
+
+    auto F_Ut = [&](const Eigen::VectorXd& ut) {
+        // construct_friction_constraint_set(
+        //     mesh, X + fd::unflatten(ut, Ut.cols()), contact_constraint_set,
+        //     dhat, kappa, mu, friction_constraint_set);
+        return compute_friction_force(
+            mesh, X, fd::unflatten(ut, Ut.cols()), U, friction_constraint_set,
+            dhat, kappa, epsv_dt);
+    };
+    Eigen::MatrixXd fd_JF_wrt_Ut;
+    fd::finite_jacobian(fd::flatten(Ut), F_Ut, fd_JF_wrt_Ut);
+    CHECK(fd::compare_jacobian(JF_wrt_Ut, fd_JF_wrt_Ut));
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    Eigen::MatrixXd JF_wrt_U = compute_friction_force_jacobian(
+        mesh, X, Ut, U, friction_constraint_set, dhat, kappa, epsv_dt,
+        FrictionConstraint::DiffWRT::U);
+
+    auto F_U = [&](const Eigen::VectorXd& u) {
+        return compute_friction_force(
+            mesh, X, Ut, fd::unflatten(u, U.cols()), friction_constraint_set,
+            dhat, kappa, epsv_dt);
+    };
+    Eigen::MatrixXd fd_JF_wrt_U;
+    fd::finite_jacobian(fd::flatten(U), F_U, fd_JF_wrt_U);
+    CHECK(fd::compare_jacobian(JF_wrt_U, fd_JF_wrt_U));
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    Eigen::VectorXd force = compute_friction_force(
+        mesh, X, Ut, U, friction_constraint_set, dhat, kappa, epsv_dt);
+    Eigen::VectorXd grad_D = compute_friction_potential_gradient(
+        mesh, X + Ut, X + U, friction_constraint_set, epsv_dt);
+    CHECK(fd::compare_gradient(-force, grad_D));
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    Eigen::MatrixXd jac_force = compute_friction_force_jacobian(
+        mesh, X, Ut, U, friction_constraint_set, dhat, kappa, epsv_dt,
+        FrictionConstraint::DiffWRT::U);
+    Eigen::MatrixXd hess_D = compute_friction_potential_hessian(
+        mesh, X + Ut, X + U, friction_constraint_set, epsv_dt, false);
     CHECK(fd::compare_jacobian(-jac_force, hess_D));
 }
 

@@ -151,7 +151,7 @@ VectorMax12d FrictionConstraint::compute_force(
     const MatrixMax<double, 3, 2> P = compute_tangent_basis(x_plus_ui);
 
     // compute β
-    const VectorMax2d beta = compute_closest_point(x_plus_ui);
+    const VectorMax2d beta = closest_point; // compute_closest_point(x_plus_ui);
 
     // Compute Γ
     const MatrixMax<double, 3, 12> Gamma = relative_displacement_matrix(beta);
@@ -205,11 +205,11 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     const VectorMax12d u = select_dofs(U, E, F);
 
     // Assume uᵢ = uᵗ
-    Eigen::MatrixXd x_plus_ui = x + ut;
+    VectorMax12d x_plus_ui = x + ut;
     bool need_jac_N_or_T = wrt != DiffWRT::U;
 
     // Assume uᵢ = u
-    // Eigen::MatrixXd x_plus_ui = x + u;
+    // VectorMax12d x_plus_ui = x + u;
     // bool need_jac_N_or_T = wrt != DiffWRT::Ut;
 
     // Compute N
@@ -228,7 +228,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     const MatrixMax<double, 3, 2> P = compute_tangent_basis(x_plus_ui);
 
     // Compute β
-    const VectorMax2d beta = compute_closest_point(x_plus_ui);
+    const VectorMax2d beta = closest_point; // compute_closest_point(x_plus_ui);
 
     // Compute Γ
     const MatrixMax<double, 3, 12> Gamma = relative_displacement_matrix(beta);
@@ -247,6 +247,8 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
             jac_T.middleRows(i * n, n) =
                 Gamma.transpose() * jac_P.middleRows(i * dim, dim);
         }
+
+        /*
         if (beta.size()) {
             // ∇Γ(β) = ∇ᵦΓ∇β ∈ ℝ^{d×n×n} ≡ ℝ^{nd×n}
             const MatrixMax<double, 2, 12> jac_beta =
@@ -260,6 +262,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
                 // (3×12×2)(2×12) = (3×12×12) ≡ (36×12)
                 jac_Gamma.middleRows(i * n, n) =
                     jac_Gamma_wrt_beta.middleRows(i * beta.size(), beta.size())
+                        .transpose()
                     * jac_beta;
             }
 
@@ -270,11 +273,12 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
                     jac_Gamma.middleRows(i * dim, dim).transpose() * P;
             }
         }
+        */
     }
 
     // Compute τ = PᵀΓ(u - uᵗ)
     const VectorMax12d u_minus_ut = u - ut;
-    const VectorMax2d tau = P.transpose() * relative_displacement(u_minus_ut);
+    const VectorMax2d tau = P.transpose() * Gamma * u_minus_ut;
 
     // Compute ∇τ = ∇T(x + uᵢ)ᵀ(u - uᵗ) + T(x + uᵢ)ᵀ∇(u - uᵗ)
     MatrixMax<double, 2, 12> jac_tau;
@@ -308,20 +312,20 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     // Compute ∇F = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
     MatrixMax12d J = MatrixMax12d::Zero(n, n);
 
-    // = -μ f₁(‖ū‖)/‖ū‖ (T τ) [∇N]ᵀ
+    // = -μ f₁(‖τ‖)/‖τ‖ (T τ) [∇N]ᵀ
     if (need_jac_N_or_T) {
         J = f1_over_norm_tau * T_times_tau * grad_N.transpose();
     }
 
-    // + -μ N [(f₁'(‖τ‖)‖τ‖ - f₁(‖τ‖))/‖τ‖³ τᵀ ∇τ]ᵀ (T τ)ᵀ
+    // + -μ N T τ [(f₁'(‖τ‖)‖τ‖ - f₁(‖τ‖))/‖τ‖³ τᵀ ∇τ]
     double f2 = df1_x_minus_f1_over_x3(tau.norm(), epsv_times_h);
-    J += (N * f2 * tau.transpose() * jac_tau).transpose()
-        * T_times_tau.transpose();
+    J += T_times_tau * (N * f2 * tau.transpose() * jac_tau);
 
     // + -μ N f₁(‖τ‖)/‖τ‖ [∇T] τ
     if (need_jac_N_or_T) {
         const VectorMax2d scaled_tau = N * f1_over_norm_tau * tau;
         for (int i = 0; i < n; i++) {
+            // ∂J/∂xᵢ = ∂T/∂xᵢ * τ
             J.col(i) += jac_T.middleRows(i * n, n) * scaled_tau;
         }
     }
