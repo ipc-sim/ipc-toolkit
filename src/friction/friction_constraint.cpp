@@ -2,6 +2,7 @@
 
 #include <stdexcept> // std::out_of_range
 
+#include <ipc/friction/closest_point.hpp>
 #include <ipc/friction/tangent_basis.hpp>
 #include <ipc/friction/normal_force_magnitude.hpp>
 #include <ipc/distance/point_point.hpp>
@@ -26,7 +27,7 @@ VectorMax12d FrictionConstraint::compute_potential_gradient(
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T =
-        relative_displacement_jacobian().transpose() * tangent_basis;
+        relative_displacement_matrix().transpose() * tangent_basis;
 
     // Compute f₁(‖ū‖)/‖ū‖
     const double f1_over_norm_u = f1_SF_over_x(u.norm(), epsv_times_h);
@@ -53,7 +54,7 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T =
-        relative_displacement_jacobian().transpose() * tangent_basis;
+        relative_displacement_matrix().transpose() * tangent_basis;
 
     // Compute ‖u‖
     const double norm_u = u.norm();
@@ -149,8 +150,11 @@ VectorMax12d FrictionConstraint::compute_force(
     // Compute P
     const MatrixMax<double, 3, 2> P = compute_tangent_basis(x_plus_ui);
 
+    // compute β
+    const VectorMax2d beta = compute_closest_point(x_plus_ui);
+
     // Compute Γ
-    const MatrixMax<double, 3, 12> Gamma = relative_displacement_jacobian();
+    const MatrixMax<double, 3, 12> Gamma = relative_displacement_matrix(beta);
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
@@ -223,8 +227,11 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     // Compute P
     const MatrixMax<double, 3, 2> P = compute_tangent_basis(x_plus_ui);
 
+    // Compute β
+    const VectorMax2d beta = compute_closest_point(x_plus_ui);
+
     // Compute Γ
-    const MatrixMax<double, 3, 12> Gamma = relative_displacement_jacobian();
+    const MatrixMax<double, 3, 12> Gamma = relative_displacement_matrix(beta);
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
@@ -240,12 +247,29 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
             jac_T.middleRows(i * n, n) =
                 Gamma.transpose() * jac_P.middleRows(i * dim, dim);
         }
-        // WARNING: Ignoring dependency of coords on (x + uᵢ)
-        // const MatrixMax<double, 36, 12> jac_Gamma;
-        // for (int i = 0; i < n; i++) {
-        //     jac_T.middleRows(i * n, n) +=
-        //         jac_Gamma.middleRows(i * dim).transpose() * P;
-        // }
+        if (beta.size()) {
+            // ∇Γ(β) = ∇ᵦΓ∇β ∈ ℝ^{d×n×n} ≡ ℝ^{nd×n}
+            const MatrixMax<double, 2, 12> jac_beta =
+                compute_closest_point_jacobian(x_plus_ui);
+            // ∈ ℝ^{3×12×2}
+            const MatrixMax<double, 6, 12> jac_Gamma_wrt_beta =
+                relative_displacement_matrix_jacobian(beta);
+
+            MatrixMax<double, 36, 12> jac_Gamma(n * dim, n);
+            for (int i = 0; i < dim; i++) {
+                // (3×12×2)(2×12) = (3×12×12) ≡ (36×12)
+                jac_Gamma.middleRows(i * n, n) =
+                    jac_Gamma_wrt_beta.middleRows(i * beta.size(), beta.size())
+                    * jac_beta;
+            }
+
+            // (3×12×12)ᵀ(3×2) = (12×12×2)
+            for (int i = 0; i < n; i++) {
+                // (3×12)ᵀ(3×2) = (12×2)
+                jac_T.middleRows(i * n, n) +=
+                    jac_Gamma.middleRows(i * dim, dim).transpose() * P;
+            }
+        }
     }
 
     // Compute τ = PᵀΓ(u - uᵗ)
@@ -374,10 +398,33 @@ VertexVertexFrictionConstraint::compute_tangent_basis_jacobian(
     return point_point_tangent_basis_jacobian(x.head(dim()), x.tail(dim()));
 }
 
-MatrixMax<double, 3, 12>
-VertexVertexFrictionConstraint::relative_displacement_jacobian() const
+VectorMax2d VertexVertexFrictionConstraint::compute_closest_point(
+    const VectorMax12d& x) const
 {
-    return point_point_relative_displacement_jacobian(dim());
+    return VectorMax2d();
+}
+
+MatrixMax<double, 2, 12>
+VertexVertexFrictionConstraint::compute_closest_point_jacobian(
+    const VectorMax12d& x) const
+{
+    return MatrixMax<double, 2, 12>();
+}
+
+MatrixMax<double, 3, 12>
+VertexVertexFrictionConstraint::relative_displacement_matrix(
+    const VectorMax2d& closest_point) const
+{
+    assert(closest_point.size() == 0);
+    return point_point_relative_displacement_matrix(dim());
+}
+
+MatrixMax<double, 6, 12>
+VertexVertexFrictionConstraint::relative_displacement_matrix_jacobian(
+    const VectorMax2d& closest_point) const
+{
+    assert(closest_point.size() == 0);
+    return point_point_relative_displacement_matrix_jacobian(dim());
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -449,10 +496,41 @@ EdgeVertexFrictionConstraint::compute_tangent_basis_jacobian(
         x.head(dim()), x.segment(dim(), dim()), x.tail(dim()));
 }
 
-MatrixMax<double, 3, 12>
-EdgeVertexFrictionConstraint::relative_displacement_jacobian() const
+VectorMax2d
+EdgeVertexFrictionConstraint::compute_closest_point(const VectorMax12d& x) const
 {
-    return point_edge_relative_displacement_jacobian(dim(), closest_point[0]);
+    assert(x.size() == ndof());
+    VectorMax2d closest_point(1);
+    closest_point[0] = point_edge_closest_point(
+        x.head(dim()), x.segment(dim(), dim()), x.tail(dim()));
+    return closest_point;
+}
+
+MatrixMax<double, 2, 12>
+EdgeVertexFrictionConstraint::compute_closest_point_jacobian(
+    const VectorMax12d& x) const
+{
+    assert(x.size() == ndof());
+    return point_edge_closest_point_jacobian(
+               x.head(dim()), x.segment(dim(), dim()), x.tail(dim()))
+        .transpose();
+}
+
+MatrixMax<double, 3, 12>
+EdgeVertexFrictionConstraint::relative_displacement_matrix(
+    const VectorMax2d& closest_point) const
+{
+    assert(closest_point.size() == 1);
+    return point_edge_relative_displacement_matrix(dim(), closest_point[0]);
+}
+
+MatrixMax<double, 6, 12>
+EdgeVertexFrictionConstraint::relative_displacement_matrix_jacobian(
+    const VectorMax2d& closest_point) const
+{
+    assert(closest_point.size() == 1);
+    return point_edge_relative_displacement_matrix_jacobian(
+        dim(), closest_point[0]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -528,10 +606,40 @@ EdgeEdgeFrictionConstraint::compute_tangent_basis_jacobian(
         x.tail(dim()));
 }
 
-MatrixMax<double, 3, 12>
-EdgeEdgeFrictionConstraint::relative_displacement_jacobian() const
+VectorMax2d
+EdgeEdgeFrictionConstraint::compute_closest_point(const VectorMax12d& x) const
 {
-    return edge_edge_relative_displacement_jacobian(dim(), closest_point);
+    assert(x.size() == ndof());
+    return edge_edge_closest_point(
+        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
+        x.tail(dim()));
+}
+
+MatrixMax<double, 2, 12>
+EdgeEdgeFrictionConstraint::compute_closest_point_jacobian(
+    const VectorMax12d& x) const
+{
+    assert(x.size() == ndof());
+    return edge_edge_closest_point_jacobian(
+        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
+        x.tail(dim()));
+}
+
+MatrixMax<double, 3, 12>
+EdgeEdgeFrictionConstraint::relative_displacement_matrix(
+    const VectorMax2d& closest_point) const
+{
+    assert(closest_point.size() == 2);
+    return edge_edge_relative_displacement_matrix(dim(), closest_point);
+}
+
+MatrixMax<double, 6, 12>
+EdgeEdgeFrictionConstraint::relative_displacement_matrix_jacobian(
+    const VectorMax2d& closest_point) const
+{
+    assert(closest_point.size() == 2);
+    return edge_edge_relative_displacement_matrix_jacobian(
+        dim(), closest_point);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -607,10 +715,39 @@ FaceVertexFrictionConstraint::compute_tangent_basis_jacobian(
         x.tail(dim()));
 }
 
-MatrixMax<double, 3, 12>
-FaceVertexFrictionConstraint::relative_displacement_jacobian() const
+VectorMax2d
+FaceVertexFrictionConstraint::compute_closest_point(const VectorMax12d& x) const
 {
-    return point_triangle_relative_displacement_jacobian(dim(), closest_point);
+    assert(x.size() == ndof());
+    return point_triangle_closest_point(
+        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
+        x.tail(dim()));
+}
+
+MatrixMax<double, 2, 12>
+FaceVertexFrictionConstraint::compute_closest_point_jacobian(
+    const VectorMax12d& x) const
+{
+    assert(x.size() == ndof());
+    return point_triangle_closest_point_jacobian(
+        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
+        x.tail(dim()));
+}
+
+MatrixMax<double, 3, 12>
+FaceVertexFrictionConstraint::relative_displacement_matrix(
+    const VectorMax2d& closest_point) const
+{
+    assert(closest_point.size() == 2);
+    return point_triangle_relative_displacement_matrix(dim(), closest_point);
+}
+
+MatrixMax<double, 6, 12>
+FaceVertexFrictionConstraint::relative_displacement_matrix_jacobian(
+    const VectorMax2d& closest_point) const
+{
+    assert(closest_point.size() == 2);
+    return point_triangle_relative_displacement_matrix(dim(), closest_point);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

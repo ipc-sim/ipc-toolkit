@@ -72,9 +72,10 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
         contact_constraint_set.size());
 
     Eigen::MatrixXd X, Ut, U;
-    X = V0;
-    Ut = Eigen::MatrixXd::Zero(V0.rows(), V0.cols());
-    U = V1 - V0;
+    SECTION("X = V0") { X = V0; }
+    SECTION("X = V0 - (V1 - V0)") { X = V0 - (V1 - V0); }
+    Ut = V0 - X;
+    U = V1 - X;
 
     FrictionConstraints friction_constraint_set;
     construct_friction_constraint_set(

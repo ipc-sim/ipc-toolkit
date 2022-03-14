@@ -19,12 +19,19 @@ inline auto point_point_relative_displacement(
 
 template <typename T = double>
 inline MatrixMax<T, 3, 6>
-point_point_relative_displacement_jacobian(const int dim)
+point_point_relative_displacement_matrix(const int dim)
 {
     MatrixMax<T, 3, 6> J(dim, 2 * dim);
-    J.leftCols(dim) = MatrixMax<T, 3, 6>::Identity(dim, dim);
-    J.rightCols(dim) = -MatrixMax<T, 3, 6>::Identity(dim, dim);
+    J.leftCols(dim) = MatrixMax<T, 3, 3>::Identity(dim, dim);
+    J.rightCols(dim) = -MatrixMax<T, 3, 3>::Identity(dim, dim);
     return J;
+}
+
+template <typename T = double>
+inline MatrixMax<T, 3, 6>
+point_point_relative_displacement_matrix_jacobian(const int dim)
+{
+    return MatrixMax<T, 3, 6>::Zero(dim, 2 * dim);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -46,12 +53,22 @@ inline auto point_edge_relative_displacement(
 
 template <typename T>
 inline MatrixMax<T, 3, 9>
-point_edge_relative_displacement_jacobian(const int dim, const T& alpha)
+point_edge_relative_displacement_matrix(const int dim, const T& alpha)
 {
     MatrixMax<T, 3, 9> J = MatrixMax<T, 3, 9>::Zero(dim, 3 * dim);
     J.leftCols(dim).diagonal().setOnes();
     J.middleCols(dim, dim).diagonal().setConstant(alpha - 1);
     J.rightCols(dim).diagonal().setConstant(-alpha);
+    return J;
+}
+
+template <typename T>
+inline MatrixMax<T, 3, 9>
+point_edge_relative_displacement_matrix_jacobian(const int dim, const T& alpha)
+{
+    MatrixMax<T, 3, 9> J = MatrixMax<T, 3, 9>::Zero(dim, 3 * dim);
+    J.middleCols(dim, dim).diagonal().setConstant(1);
+    J.rightCols(dim).diagonal().setConstant(-1);
     return J;
 }
 
@@ -78,7 +95,7 @@ inline auto edge_edge_relative_displacement(
 }
 
 template <typename DerivedCoords, typename T = typename DerivedCoords::Scalar>
-inline MatrixMax<T, 3, 12> edge_edge_relative_displacement_jacobian(
+inline MatrixMax<T, 3, 12> edge_edge_relative_displacement_matrix(
     const int dim, const Eigen::MatrixBase<DerivedCoords>& coords)
 {
     MatrixMax<T, 3, 12> J = MatrixMax<T, 3, 12>::Zero(dim, 4 * dim);
@@ -86,6 +103,20 @@ inline MatrixMax<T, 3, 12> edge_edge_relative_displacement_jacobian(
     J.middleCols(dim, dim).diagonal().setConstant(coords[0]);
     J.middleCols(2 * dim, dim).diagonal().setConstant(coords[1] - 1);
     J.rightCols(dim).diagonal().setConstant(-coords[1]);
+    return J;
+}
+
+template <typename DerivedCoords, typename T = typename DerivedCoords::Scalar>
+inline MatrixMax<T, 6, 12> edge_edge_relative_displacement_matrix_jacobian(
+    const int dim, const Eigen::MatrixBase<DerivedCoords>& coords)
+{
+    MatrixMax<T, 6, 12> J = MatrixMax<T, 6, 12>::Zero(dim, 4 * dim);
+    // wrt β₁
+    J.block(0, 0, dim, dim).diagonal().setConstant(-1);
+    J.block(0, dim, dim, dim).diagonal().setConstant(1);
+    // wrt β₂
+    J.block(dim, 2 * dim, dim, dim).diagonal().setConstant(1);
+    J.block(dim, 3 * dim, dim, dim).diagonal().setConstant(-1);
     return J;
 }
 
@@ -112,7 +143,7 @@ inline auto point_triangle_relative_displacement(
 }
 
 template <typename DerivedCoords, typename T = typename DerivedCoords::Scalar>
-inline MatrixMax<T, 3, 12> point_triangle_relative_displacement_jacobian(
+inline MatrixMax<T, 3, 12> point_triangle_relative_displacement_matrix(
     const int dim, const Eigen::MatrixBase<DerivedCoords>& coords)
 {
     MatrixMax<T, 3, 12> J = MatrixMax<T, 3, 12>::Zero(dim, 4 * dim);
@@ -120,6 +151,20 @@ inline MatrixMax<T, 3, 12> point_triangle_relative_displacement_jacobian(
     J.middleCols(dim, dim).diagonal().setConstant(coords[0] + coords[1] - 1);
     J.middleCols(2 * dim, dim).diagonal().setConstant(-coords[0]);
     J.rightCols(dim).diagonal().setConstant(-coords[1]);
+    return J;
+}
+
+template <typename DerivedCoords, typename T = typename DerivedCoords::Scalar>
+inline MatrixMax<T, 6, 12> point_triangle_relative_displacement_matrix_jacobian(
+    const int dim, const Eigen::MatrixBase<DerivedCoords>& coords)
+{
+    MatrixMax<T, 6, 12> J = MatrixMax<T, 6, 12>::Zero(dim, 4 * dim);
+    // wrt β₁
+    J.block(0, dim, dim, dim).diagonal().setConstant(1);
+    J.block(0, 2 * dim, dim, dim).diagonal().setConstant(-1);
+    // wrt β₂
+    J.block(dim, dim, dim, dim).diagonal().setConstant(1);
+    J.block(dim, 3 * dim, dim, dim).diagonal().setConstant(-1);
     return J;
 }
 

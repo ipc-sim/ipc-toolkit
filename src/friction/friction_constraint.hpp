@@ -135,9 +135,23 @@ protected:
     virtual MatrixMax<double, 36, 2>
     compute_tangent_basis_jacobian(const VectorMax12d& x) const = 0;
 
+    virtual VectorMax2d compute_closest_point(const VectorMax12d& x) const = 0;
+
+    virtual MatrixMax<double, 2, 12>
+    compute_closest_point_jacobian(const VectorMax12d& x) const = 0;
+
     virtual VectorMax3d relative_displacement(const VectorMax12d& u) const = 0;
 
-    virtual MatrixMax<double, 3, 12> relative_displacement_jacobian() const = 0;
+    virtual MatrixMax<double, 3, 12> relative_displacement_matrix() const
+    {
+        return relative_displacement_matrix(closest_point);
+    }
+
+    virtual MatrixMax<double, 3, 12>
+    relative_displacement_matrix(const VectorMax2d& closest_point) const = 0;
+
+    virtual MatrixMax<double, 6, 12> relative_displacement_matrix_jacobian(
+        const VectorMax2d& closest_point) const = 0;
 
     template <typename DerivedRelUi, typename T = typename DerivedRelUi::Scalar>
     T compute_potential_common(
@@ -200,12 +214,21 @@ protected:
     MatrixMax<double, 36, 2>
     compute_tangent_basis_jacobian(const VectorMax12d& x) const override;
 
+    VectorMax2d compute_closest_point(const VectorMax12d& x) const override;
+
+    MatrixMax<double, 2, 12>
+    compute_closest_point_jacobian(const VectorMax12d& x) const override;
+
     VectorMax3d relative_displacement(const VectorMax12d& u) const override
     {
         return relative_displacement_T(u);
     }
 
-    MatrixMax<double, 3, 12> relative_displacement_jacobian() const override;
+    MatrixMax<double, 3, 12> relative_displacement_matrix(
+        const VectorMax2d& closest_point) const override;
+
+    MatrixMax<double, 6, 12> relative_displacement_matrix_jacobian(
+        const VectorMax2d& closest_point) const override;
 
     int m_multiplicity = 1;
 
@@ -266,12 +289,21 @@ protected:
     MatrixMax<double, 36, 2>
     compute_tangent_basis_jacobian(const VectorMax12d& x) const override;
 
+    VectorMax2d compute_closest_point(const VectorMax12d& x) const override;
+
+    MatrixMax<double, 2, 12>
+    compute_closest_point_jacobian(const VectorMax12d& x) const override;
+
     VectorMax3d relative_displacement(const VectorMax12d& u) const override
     {
         return relative_displacement_T(u);
     }
 
-    MatrixMax<double, 3, 12> relative_displacement_jacobian() const override;
+    MatrixMax<double, 3, 12> relative_displacement_matrix(
+        const VectorMax2d& closest_point) const override;
+
+    MatrixMax<double, 6, 12> relative_displacement_matrix_jacobian(
+        const VectorMax2d& closest_point) const override;
 
     int m_multiplicity = 1;
 
@@ -332,12 +364,21 @@ protected:
     MatrixMax<double, 36, 2>
     compute_tangent_basis_jacobian(const VectorMax12d& x) const override;
 
+    VectorMax2d compute_closest_point(const VectorMax12d& x) const override;
+
+    MatrixMax<double, 2, 12>
+    compute_closest_point_jacobian(const VectorMax12d& x) const override;
+
     VectorMax3d relative_displacement(const VectorMax12d& u) const override
     {
         return relative_displacement_T(u);
     }
 
-    MatrixMax<double, 3, 12> relative_displacement_jacobian() const override;
+    MatrixMax<double, 3, 12> relative_displacement_matrix(
+        const VectorMax2d& closest_point) const override;
+
+    MatrixMax<double, 6, 12> relative_displacement_matrix_jacobian(
+        const VectorMax2d& closest_point) const override;
 
 private:
     template <typename T>
@@ -396,12 +437,21 @@ protected:
     MatrixMax<double, 36, 2>
     compute_tangent_basis_jacobian(const VectorMax12d& x) const override;
 
+    VectorMax2d compute_closest_point(const VectorMax12d& x) const override;
+
+    MatrixMax<double, 2, 12>
+    compute_closest_point_jacobian(const VectorMax12d& x) const override;
+
     VectorMax3d relative_displacement(const VectorMax12d& u) const override
     {
         return relative_displacement_T(u);
     }
 
-    MatrixMax<double, 3, 12> relative_displacement_jacobian() const override;
+    MatrixMax<double, 3, 12> relative_displacement_matrix(
+        const VectorMax2d& closest_point) const override;
+
+    MatrixMax<double, 6, 12> relative_displacement_matrix_jacobian(
+        const VectorMax2d& closest_point) const override;
 
 private:
     template <typename T>
