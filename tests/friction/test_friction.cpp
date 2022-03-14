@@ -11,130 +11,16 @@
 #include <ipc/friction/friction.hpp>
 #include <ipc/utils/logger.hpp>
 
+#include "friction_data_generator.hpp"
 #include "../test_utils.hpp"
 
 using namespace ipc;
 
 TEST_CASE("Test friction gradient and hessian", "[friction][gradient][hessian]")
 {
-#ifdef NDEBUG
-    double mu = GENERATE(range(0.0, 1.0, 0.1));
-    double epsv_times_h = pow(10, GENERATE(range(-6, 0)));
-    double dhat = pow(10, GENERATE(range(-4, 0)));
-    double barrier_stiffness = pow(10, GENERATE(range(0, 2)));
-#else
-    double mu = GENERATE(range(0.0, 1.0, 0.1));
-    double epsv_times_h = pow(10, GENERATE(range(-6, 0, 2)));
-    double dhat = pow(10, GENERATE(range(-4, 0, 2)));
-    double barrier_stiffness = 100;
-#endif
-    CAPTURE(mu, epsv_times_h, dhat, barrier_stiffness);
-
-    Eigen::MatrixXd V0, V1;
-    Eigen::MatrixXi E, F;
-    Constraints contact_constraint_set;
-    SECTION("point-triangle")
-    {
-        V0.resize(4, 3);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
-        V0.row(0) << 0, d, 0;   // point at t=0
-        V0.row(1) << -1, 0, 1;  // triangle vertex 0 at t=0
-        V0.row(2) << 2, 0, 0;   // triangle vertex 1 at t=0
-        V0.row(3) << -1, 0, -1; // triangle vertex 2 at t=0
-
-        V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 1, d + dy, 0; // point at t=1
-
-        F.resize(1, 3);
-        F << 1, 2, 3;
-        igl::edges(F, E);
-        REQUIRE(E.rows() == 3);
-
-        contact_constraint_set.fv_constraints.emplace_back(0, 0);
-    }
-    SECTION("edge-edge")
-    {
-        V0.resize(4, 3);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
-        V0.row(0) << -1, d, 0; // edge a vertex 0 at t=0
-        V0.row(1) << 1, d, 0;  // edge a vertex 1 at t=0
-        V0.row(2) << 0, 0, -1; // edge b vertex 0 at t=0
-        V0.row(3) << 0, 0, 1;  // edge b vertex 1 at t=0
-
-        V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 0.5, d, 0; // edge a vertex 0 at t=1
-        V1.row(1) << 2.5, d, 0; // edge a vertex 1 at t=1
-
-        E.resize(2, 2);
-        E.row(0) << 0, 1;
-        E.row(1) << 2, 3;
-
-        contact_constraint_set.ee_constraints.emplace_back(0, 1, 0.0);
-    }
-    SECTION("point-edge")
-    {
-        V0.resize(3, 3);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
-        V0.row(0) << -0.5, d, 0; // point at t=0
-        V0.row(1) << 0, 0, -1;   // edge vertex 0 at t=0
-        V0.row(2) << 0, 0, 1;    // edge vertex 1 at t=0
-
-        V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 0.5, d, 0; // point at t=1
-
-        E.resize(1, 2);
-        E.row(0) << 1, 2;
-
-        contact_constraint_set.ev_constraints.emplace_back(0, 1);
-    }
-    SECTION("point-point")
-    {
-        V0.resize(2, 3);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
-        V0.row(0) << -1, d, 0; // point 0 at t=0
-        V0.row(1) << 1, d, 0;  // point 1 at t=0
-
-        V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 0.5, d, 0;  // edge a vertex 0 at t=1
-        V1.row(1) << -0.5, d, 0; // edge a vertex 1 at t=1
-
-        contact_constraint_set.vv_constraints.emplace_back(0, 1);
-    }
-    SECTION("point-edge")
-    {
-        V0.resize(3, 2);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
-        V0.row(0) << -0.5, d; // point at t=0
-        V0.row(1) << -1, 0;   // edge vertex 0 at t=0
-        V0.row(2) << 1, 0;    // edge vertex 1 at t=0
-
-        V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 0.5, d; // point at t=1
-
-        E.resize(1, 2);
-        E.row(0) << 1, 2;
-
-        contact_constraint_set.ev_constraints.emplace_back(0, 1);
-    }
-    SECTION("point-point")
-    {
-        V0.resize(2, 2);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
-        V0.row(0) << -1, d; // point 0 at t=0
-        V0.row(1) << 1, d;  // point 1 at t=0
-
-        V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 0.5, d;  // edge a vertex 0 at t=1
-        V1.row(1) << -0.5, d; // edge a vertex 1 at t=1
-
-        contact_constraint_set.vv_constraints.emplace_back(0, 1);
-    }
+    const FrictionData& data = GENERATE(FrictionDataGenerator::create());
+    const auto& [V0, V1, E, F, contact_constraint_set, mu, epsv_times_h, dhat, barrier_stiffness] =
+        data;
 
     CollisionMesh mesh(V0, E, F);
 
@@ -149,8 +35,8 @@ TEST_CASE("Test friction gradient and hessian", "[friction][gradient][hessian]")
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
         return compute_friction_potential(
-            mesh, V0, fd::unflatten(x, V1.cols()), friction_constraint_set,
-            epsv_times_h);
+            mesh, data.V0, fd::unflatten(x, data.V1.cols()),
+            friction_constraint_set, data.epsv_times_h);
     };
     Eigen::VectorXd fgrad;
     fd::finite_gradient(fd::flatten(V1), f, fgrad);
@@ -165,123 +51,9 @@ TEST_CASE("Test friction gradient and hessian", "[friction][gradient][hessian]")
 
 TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
 {
-#ifdef NDEBUG
-    double mu = GENERATE(range(0.0, 1.0, 0.1));
-    double epsv_times_h = pow(10, GENERATE(range(-6, 0)));
-    double dhat = pow(10, GENERATE(range(-4, -1)));
-    double barrier_stiffness = pow(10, GENERATE(range(0, 2)));
-#else
-    double mu = GENERATE(range(0.0, 1.0, 0.1));
-    double epsv_times_h = pow(10, GENERATE(range(-6, 0, 2)));
-    double dhat = pow(10, GENERATE(range(-4, -1, 2)));
-    double barrier_stiffness = 10;
-#endif
-
-    Eigen::MatrixXd V0, V1;
-    Eigen::MatrixXi E, F;
-    Constraints contact_constraint_set;
-    SECTION("point-triangle")
-    {
-        V0.resize(4, 3);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
-        V0.row(0) << 0, d, 0;   // point at t=0
-        V0.row(1) << -1, 0, 1;  // triangle vertex 0 at t=0
-        V0.row(2) << 2, 0, 0;   // triangle vertex 1 at t=0
-        V0.row(3) << -1, 0, -1; // triangle vertex 2 at t=0
-
-        V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 1, d + dy, 0; // point at t=1
-
-        F.resize(1, 3);
-        F << 1, 2, 3;
-        igl::edges(F, E);
-        REQUIRE(E.rows() == 3);
-
-        contact_constraint_set.fv_constraints.emplace_back(0, 0);
-    }
-    SECTION("edge-edge")
-    {
-        V0.resize(4, 3);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
-        V0.row(0) << -1, d, 0; // edge a vertex 0 at t=0
-        V0.row(1) << 1, d, 0;  // edge a vertex 1 at t=0
-        V0.row(2) << 0, 0, -1; // edge b vertex 0 at t=0
-        V0.row(3) << 0, 0, 1;  // edge b vertex 1 at t=0
-
-        V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 0.5, d, 0; // edge a vertex 0 at t=1
-        V1.row(1) << 2.5, d, 0; // edge a vertex 1 at t=1
-
-        E.resize(2, 2);
-        E.row(0) << 0, 1;
-        E.row(1) << 2, 3;
-
-        contact_constraint_set.ee_constraints.emplace_back(0, 1, 0.0);
-    }
-    SECTION("point-edge")
-    {
-        V0.resize(3, 3);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
-        V0.row(0) << -0.5, d, 0; // point at t=0
-        V0.row(1) << 0, 0, -1;   // edge vertex 0 at t=0
-        V0.row(2) << 0, 0, 1;    // edge vertex 1 at t=0
-
-        V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 0.5, d, 0; // point at t=1
-
-        E.resize(1, 2);
-        E.row(0) << 1, 2;
-
-        contact_constraint_set.ev_constraints.emplace_back(0, 1);
-    }
-    SECTION("point-point")
-    {
-        V0.resize(2, 3);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
-        V0.row(0) << -1, d, 0; // point 0 at t=0
-        V0.row(1) << 1, d, 0;  // point 1 at t=0
-
-        V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 0.5, d, 0;  // edge a vertex 0 at t=1
-        V1.row(1) << -0.5, d, 0; // edge a vertex 1 at t=1
-
-        contact_constraint_set.vv_constraints.emplace_back(0, 1);
-    }
-    SECTION("point-edge")
-    {
-        V0.resize(3, 2);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
-        V0.row(0) << -0.5, d; // point at t=0
-        V0.row(1) << -1, 0;   // edge vertex 0 at t=0
-        V0.row(2) << 1, 0;    // edge vertex 1 at t=0
-
-        V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 0.5, d; // point at t=1
-
-        E.resize(1, 2);
-        E.row(0) << 1, 2;
-
-        contact_constraint_set.ev_constraints.emplace_back(0, 1);
-    }
-    SECTION("point-point")
-    {
-        V0.resize(2, 2);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
-        V0.row(0) << -1, d; // point 0 at t=0
-        V0.row(1) << 1, d;  // point 1 at t=0
-
-        V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 0.5, d;  // edge a vertex 0 at t=1
-        V1.row(1) << -0.5, d; // edge a vertex 1 at t=1
-
-        contact_constraint_set.vv_constraints.emplace_back(0, 1);
-    }
+    const FrictionData& data = GENERATE(FrictionDataGenerator::create());
+    const auto& [V0, V1, E, F, contact_constraint_set, mu, epsv_times_h, dhat, barrier_stiffness] =
+        data;
 
     CollisionMesh mesh(V0, E, F);
 
@@ -296,59 +68,84 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
     }
 
     CAPTURE(
-        mu, epsv_times_h, dhat, barrier_stiffness,
+        data.mu, data.epsv_times_h, data.dhat, data.barrier_stiffness,
         contact_constraint_set.size());
+
+    Eigen::MatrixXd X, Ut, U;
+    X = V0;
+    Ut = Eigen::MatrixXd::Zero(V0.rows(), V0.cols());
+    U = V1 - V0;
 
     FrictionConstraints friction_constraint_set;
     construct_friction_constraint_set(
-        mesh, V0, contact_constraint_set, dhat, barrier_stiffness, mu,
+        mesh, X + Ut, contact_constraint_set, dhat, barrier_stiffness, mu,
         friction_constraint_set);
 
-    CHECK(friction_constraint_set.size() > 0);
-
-    Eigen::MatrixXd X = V0;
-    Eigen::MatrixXd Ut = Eigen::MatrixXd::Zero(V0.rows(), V0.cols());
-    Eigen::MatrixXd U = V1 - V0;
+    ///////////////////////////////////////////////////////////////////////////
 
     Eigen::MatrixXd JF_wrt_X = compute_friction_force_jacobian(
         mesh, X, Ut, U, friction_constraint_set, dhat, barrier_stiffness,
         epsv_times_h, FrictionConstraint::DiffWRT::X);
 
-    Eigen::MatrixXd JF_wrt_Ut = compute_friction_force_jacobian(
-        mesh, X, Ut, U, friction_constraint_set, dhat, barrier_stiffness,
-        epsv_times_h, FrictionConstraint::DiffWRT::Ut);
-
-    Eigen::MatrixXd JF_wrt_U = compute_friction_force_jacobian(
-        mesh, X, Ut, U, friction_constraint_set, dhat, barrier_stiffness,
-        epsv_times_h, FrictionConstraint::DiffWRT::U);
-
     auto F_X = [&](const Eigen::VectorXd& x) {
         return compute_friction_force(
             mesh, fd::unflatten(x, X.cols()), Ut, U, friction_constraint_set,
-            dhat, barrier_stiffness, epsv_times_h);
+            data.dhat, data.barrier_stiffness, data.epsv_times_h);
     };
     Eigen::MatrixXd fd_JF_wrt_X;
     fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
     CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
 
+    ///////////////////////////////////////////////////////////////////////////
+
+    Eigen::MatrixXd JF_wrt_Ut = compute_friction_force_jacobian(
+        mesh, X, Ut, U, friction_constraint_set, dhat, barrier_stiffness,
+        epsv_times_h, FrictionConstraint::DiffWRT::Ut);
+
     auto F_Ut = [&](const Eigen::VectorXd& ut) {
         return compute_friction_force(
             mesh, X, fd::unflatten(ut, Ut.cols()), U, friction_constraint_set,
-            dhat, barrier_stiffness, epsv_times_h);
+            data.dhat, data.barrier_stiffness, data.epsv_times_h);
     };
     Eigen::MatrixXd fd_JF_wrt_Ut;
     fd::finite_jacobian(fd::flatten(Ut), F_Ut, fd_JF_wrt_Ut);
     CHECK(fd::compare_jacobian(JF_wrt_Ut, fd_JF_wrt_Ut));
 
+    ///////////////////////////////////////////////////////////////////////////
+
+    Eigen::MatrixXd JF_wrt_U = compute_friction_force_jacobian(
+        mesh, X, Ut, U, friction_constraint_set, dhat, barrier_stiffness,
+        epsv_times_h, FrictionConstraint::DiffWRT::U);
+
     auto F_U = [&](const Eigen::VectorXd& u) {
         return compute_friction_force(
             mesh, X, Ut, fd::unflatten(u, U.cols()), friction_constraint_set,
-            dhat, barrier_stiffness, epsv_times_h);
+            data.dhat, data.barrier_stiffness, data.epsv_times_h);
     };
     Eigen::MatrixXd fd_JF_wrt_U;
     fd::finite_jacobian(fd::flatten(U), F_U, fd_JF_wrt_U);
     CHECK(fd::compare_jacobian(JF_wrt_U, fd_JF_wrt_U));
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    Eigen::VectorXd force = compute_friction_force(
+        mesh, X, Ut, U, friction_constraint_set, dhat, barrier_stiffness,
+        epsv_times_h);
+    Eigen::VectorXd grad_D = compute_friction_potential_gradient(
+        mesh, X + Ut, X + U, friction_constraint_set, epsv_times_h);
+    CHECK(fd::compare_gradient(-force, grad_D));
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    Eigen::MatrixXd jac_force = compute_friction_force_jacobian(
+        mesh, X, Ut, U, friction_constraint_set, dhat, barrier_stiffness,
+        epsv_times_h, FrictionConstraint::DiffWRT::U);
+    Eigen::MatrixXd hess_D = compute_friction_potential_hessian(
+        mesh, X + Ut, X + U, friction_constraint_set, epsv_times_h, false);
+    CHECK(fd::compare_jacobian(-jac_force, hess_D));
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 void mmcvids_to_friction_constraints(
     Eigen::MatrixXi& E,

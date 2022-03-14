@@ -11,7 +11,6 @@ add_executable(ipc_toolkit_tests
   # Test CCD
   broad_phase/benchmark_broad_phase.cpp
   broad_phase/brute_force_comparison.cpp
-  broad_phase/brute_force_comparison.hpp
   broad_phase/test_aabb.cpp
   broad_phase/test_broad_phase.cpp
   broad_phase/test_spatial_hash.cpp
@@ -30,6 +29,7 @@ add_executable(ipc_toolkit_tests
   distance/test_point_triangle.cpp
 
   # Test friction
+  friction/friction_data_generator.cpp
   friction/test_friction.cpp
   friction/test_tangent_basis.cpp
   friction/test_closest_point.cpp
