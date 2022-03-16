@@ -28,7 +28,7 @@ inline T f1_SF_over_x(const T& x, const double& epsv_times_h)
     return (-x / epsv_times_h + 2) / epsv_times_h;
 }
 
-/// \f$\frac{f_1'(x)x + f_1(x)}{x^2}\f$
+/// \f$\frac{f_1'(x)x + f_1(x)}{x^3}\f$
 template <typename T>
 inline T df1_x_minus_f1_over_x3(const T& x, const double& epsv_times_h)
 {

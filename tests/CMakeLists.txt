@@ -30,10 +30,11 @@ add_executable(ipc_toolkit_tests
 
   # Test friction
   friction/friction_data_generator.cpp
-  friction/test_friction.cpp
-  friction/test_tangent_basis.cpp
   friction/test_closest_point.cpp
+  friction/test_friction.cpp
   friction/test_relative_displacement.cpp
+  friction/test_smooth_friction_mollifier.cpp
+  friction/test_tangent_basis.cpp
 
   # Test general interface
   test_ipc.cpp

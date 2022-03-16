@@ -67,7 +67,7 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
 
     MatrixMax12d hess;
     if (norm_u >= epsv_times_h) {
-        // f₁(‖u‖) = 1
+        // f₁(‖u‖) = 1 ⟹ f₁'(‖u‖) = 0
         //  ⟹ ∇²D(x) = μ N T [-f₁(‖u‖)/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
         //            = μ N T [-f₁(‖u‖)/‖u‖ uuᵀ/‖u‖² + f₁(‖u‖)/‖u‖ I] Tᵀ
         //            = μ N T [f₁(‖u‖)/‖u‖ (I - uuᵀ/‖u‖²)] Tᵀ
@@ -222,6 +222,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
         // ∇ₓN = ∇ᵤN
         grad_N = compute_normal_force_magnitude_gradient(
             x_plus_ui, dhat, barrier_stiffness, dmin);
+        assert(grad_N.array().isFinite().all());
     }
 
     // Compute P
@@ -303,7 +304,20 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     }
 
     // Compute f₁(‖τ‖)/‖τ‖
-    double f1_over_norm_tau = f1_SF_over_x(tau.norm(), epsv_times_h);
+    const double tau_norm = tau.norm();
+    const double f1_over_norm_tau = f1_SF_over_x(tau_norm, epsv_times_h);
+
+    // Compute ∇(f₁(‖τ‖)/‖τ‖)
+    VectorMax12d grad_f1_over_norm_tau;
+    if (tau_norm == 0) {
+        // lim_{x→0} f₂(x)x² = 0
+        grad_f1_over_norm_tau.setZero(n);
+    } else {
+        // ∇ (f₁(‖τ‖)/‖τ‖) = (f₁'(‖τ‖)‖τ‖ - f₁(‖τ‖)) / ‖τ‖³ τᵀ ∇τ
+        double f2 = df1_x_minus_f1_over_x3(tau_norm, epsv_times_h);
+        assert(std::isfinite(f2));
+        grad_f1_over_norm_tau = f2 * tau.transpose() * jac_tau;
+    }
 
     // Premultiplied values
     const VectorMax12d T_times_tau = T * tau;
@@ -317,9 +331,8 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
         J = f1_over_norm_tau * T_times_tau * grad_N.transpose();
     }
 
-    // + -μ N T τ [(f₁'(‖τ‖)‖τ‖ - f₁(‖τ‖))/‖τ‖³ τᵀ ∇τ]
-    double f2 = df1_x_minus_f1_over_x3(tau.norm(), epsv_times_h);
-    J += T_times_tau * (N * f2 * tau.transpose() * jac_tau);
+    // + -μ N T τ [∇(f₁(‖τ‖)/‖τ‖)]
+    J += N * T_times_tau * grad_f1_over_norm_tau.transpose();
 
     // + -μ N f₁(‖τ‖)/‖τ‖ [∇T] τ
     if (need_jac_N_or_T) {

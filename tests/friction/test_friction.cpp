@@ -175,7 +175,7 @@ TEST_CASE(
     std::string scene;
     bool is_2D = true;
     SECTION("point-plane") { scene = "point-plane"; }
-    SECTION("square-incline") { scene = "square-incline"; }
+    // SECTION("square-incline") { scene = "square-incline"; }
 
     Eigen::MatrixXd X, Ut, U;
     Eigen::MatrixXi E, F;
@@ -202,7 +202,16 @@ TEST_CASE(
         }
     }
 
-    CollisionMesh mesh(X, E, F);
+    std::vector<bool> is_on_surface =
+        CollisionMesh::construct_is_on_surface(X.rows(), E);
+    CollisionMesh mesh(is_on_surface, X, E, F);
+
+    X = mesh.vertices(X);
+    Ut = mesh.vertices(Ut);
+    U = mesh.vertices(U);
+
+    E = mesh.edges();
+    F = mesh.faces();
 
     double mu = 0.5;
     double dhat = 0.1;
@@ -227,10 +236,15 @@ TEST_CASE(
         FrictionConstraint::DiffWRT::X);
 
     auto F_X = [&](const Eigen::VectorXd& x) {
-        // construct_friction_constraint_set(
-        //     mesh, fd::unflatten(x, X.cols()) + Ut, constraints,
-        //     dhat, kappa, mu,
-        //     friction_constraint_set);
+        CollisionMesh mesh(fd::unflatten(x, X.cols()), E, F);
+        Constraints contact_constraint_set;
+        construct_constraint_set(
+            mesh, fd::unflatten(x, X.cols()) + Ut, dhat,
+            contact_constraint_set);
+        FrictionConstraints friction_constraint_set;
+        construct_friction_constraint_set(
+            mesh, fd::unflatten(x, X.cols()) + Ut, contact_constraint_set, dhat,
+            kappa, mu, friction_constraint_set);
         return compute_friction_force(
             mesh, fd::unflatten(x, X.cols()), Ut, U, friction_constraint_set,
             dhat, kappa, epsv_dt);
@@ -247,16 +261,23 @@ TEST_CASE(
         FrictionConstraint::DiffWRT::Ut);
 
     auto F_Ut = [&](const Eigen::VectorXd& ut) {
-        // construct_friction_constraint_set(
-        //     mesh, X + fd::unflatten(ut, Ut.cols()), contact_constraint_set,
-        //     dhat, kappa, mu, friction_constraint_set);
+        Constraints contact_constraint_set;
+        construct_constraint_set(
+            mesh, X + fd::unflatten(ut, Ut.cols()), dhat,
+            contact_constraint_set);
+        FrictionConstraints friction_constraint_set;
+        construct_friction_constraint_set(
+            mesh, X + fd::unflatten(ut, Ut.cols()), contact_constraint_set,
+            dhat, kappa, mu, friction_constraint_set);
         return compute_friction_force(
             mesh, X, fd::unflatten(ut, Ut.cols()), U, friction_constraint_set,
             dhat, kappa, epsv_dt);
     };
     Eigen::MatrixXd fd_JF_wrt_Ut;
     fd::finite_jacobian(fd::flatten(Ut), F_Ut, fd_JF_wrt_Ut);
+    CAPTURE(scene);
     CHECK(fd::compare_jacobian(JF_wrt_Ut, fd_JF_wrt_Ut));
+    // std::cout << JF_wrt_Ut << "\n\n" << fd_JF_wrt_Ut << "\n" << std::endl;
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -271,7 +292,9 @@ TEST_CASE(
     };
     Eigen::MatrixXd fd_JF_wrt_U;
     fd::finite_jacobian(fd::flatten(U), F_U, fd_JF_wrt_U);
+
     CHECK(fd::compare_jacobian(JF_wrt_U, fd_JF_wrt_U));
+    // std::cout << JF_wrt_U << "\n\n" << fd_JF_wrt_U << "\n" << std::endl;
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -289,6 +312,8 @@ TEST_CASE(
     Eigen::MatrixXd hess_D = compute_friction_potential_hessian(
         mesh, X + Ut, X + U, friction_constraint_set, epsv_dt, false);
     CHECK(fd::compare_jacobian(-jac_force, hess_D));
+    // std::cout << (-jac_force - hess_D).lpNorm<Eigen::Infinity>() <<
+    // std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
