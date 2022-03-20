@@ -52,15 +52,17 @@ bool ccd_strategy(
     bool is_impacting =
         ccd(max_iterations, min_distance, /*no_zero_toi=*/false, toi);
 
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-    // Tight inclusion will have higher accuracy and better performance if we
-    // shrink the minimum distance. The value 1e-10 is arbitrary.
-    while (is_impacting && toi < SMALL_TOI && min_distance > 1e-10) {
-        min_distance /= 10;
-        is_impacting =
-            ccd(max_iterations, min_distance, /*no_zero_toi=*/false, toi);
-    }
-#endif
+    // #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+    //     // Tight inclusion will have higher accuracy and better performance
+    //     if we
+    //     // shrink the minimum distance. The value 1e-10 is arbitrary.
+    //     while (is_impacting && toi < SMALL_TOI && min_distance > 1e-10) {
+    //         min_distance /= 10;
+    //         is_impacting =
+    //             ccd(max_iterations, min_distance, /*no_zero_toi=*/false,
+    //             toi);
+    //     }
+    // #endif
 
     if (is_impacting && toi < SMALL_TOI) {
         is_impacting = ccd(

@@ -31,6 +31,7 @@ add_executable(ipc_toolkit_tests
   # Test friction
   friction/friction_data_generator.cpp
   friction/test_closest_point.cpp
+  friction/test_force_jacobian.cpp
   friction/test_friction.cpp
   friction/test_relative_displacement.cpp
   friction/test_smooth_friction_mollifier.cpp
