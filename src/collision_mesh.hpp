@@ -31,9 +31,13 @@ public:
     const Eigen::MatrixXi& faces() const { return m_faces; }
     const Eigen::MatrixXi& faces_to_edges() const { return m_faces_to_edges; }
 
-    size_t num_vertices() const { return vertices_at_rest().rows(); }
-    size_t dim() const { return vertices_at_rest().cols(); }
+    void set_linear_vertex_map(const Eigen::MatrixXd& linear_vertex_map);
+
+    size_t num_vertices() const { return m_num_vertices; }
+    size_t dim() const { return m_dim; }
     size_t ndof() const { return num_vertices() * dim(); }
+    size_t full_num_vertices() const { return m_full_num_vertices; }
+    size_t full_ndof() const { return full_num_vertices() * dim(); }
 
     size_t to_full_vertex_id(const size_t id)
     {
@@ -72,8 +76,7 @@ public:
 
 protected:
     void init_dof_to_full_dof();
-
-    size_t full_ndof() const { return full_vertex_to_vertex.size() * dim(); }
+    void set_identity_linear_vertex_map();
 
     Eigen::MatrixXd m_vertices_at_rest;
     /// Edges as rows of indicies into V.
@@ -86,6 +89,15 @@ protected:
     Eigen::VectorXi full_vertex_to_vertex;
     Eigen::VectorXi vertex_to_full_vertex;
     Eigen::VectorXi dof_to_full_dof;
+
+    /// Mapping from collision vertices to full vertices
+    Eigen::MatrixXd m_linear_vertex_map;
+    /// Mapping from collision DOF to full DOF
+    Eigen::SparseMatrix<double> m_linear_dof_map;
+
+    int m_full_num_vertices;
+    int m_num_vertices;
+    int m_dim;
 };
 
 } // namespace ipc
