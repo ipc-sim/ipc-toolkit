@@ -10,6 +10,24 @@ All notable changes to this project will be documented in this file.
 #### Fixed
 -->
 
+## C++
+
+### 2021-02-21 ([pr-7](https://github.com/ipc-sim/ipc-toolkit/pull/7))
+#### Added
+* CollisionMesh to wrap up face and edges into a single data structure.
+#### Removed
+* Support for ignoring internal vertices.
+    * Instead, users should use the CollisionMesh to map from the full mesh to the surface mesh.
+    * This also includes a `to_full_dof` function that can map the reduced gradient/hessian to the full mesh's DOF
+
+### 2021-10-05 ([9e2cc2a](https://github.com/ipc-sim/ipc-toolkit/commit/574f7577daa5e0b51bf5baf20998994b8371216e))
+#### Added
+* Added implicits source folder to organize point-plane collisions
+
+### 2021-09-05 ([9e2cc2a](https://github.com/ipc-sim/ipc-toolkit/commit/9e22cc2a5f7e7ca048a579f2c94d2241782ecf17))
+#### Added
+* Added support for point vs. (static) analytical plane contact
+
 ### 2021-08-21 ([acf2a80](https://github.com/ipc-sim/ipc-toolkit/commit/acf2a80544ebe27dc5e440602a3a89243e575e8a))
 #### Changed
 * Changed CMake target name to `ipc::toolkit`
@@ -251,3 +269,5 @@ parameters to these functions
 * `Constraints` replaced `Candidates`
 * `construct_constraint_set()` now takes the rest vertex position (`V_rest`)
 * `compute_barrier_potential*()` no longer take the rest vertex position
+
+## Python
