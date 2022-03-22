@@ -9,6 +9,10 @@ double suggest_good_voxel_size(
 {
     double edge_len = average_edge_length(V, V, E);
     double voxel_size = 2 * edge_len + inflation_radius;
+    if (voxel_size == 0) { // this case should not happen in real simulations
+        voxel_size = std::numeric_limits<double>::max();
+    }
+    assert(std::isfinite(voxel_size));
     IPC_LOG(trace(
         "suggesting voxel size of {} (avg_edge_len={})", voxel_size, edge_len));
     return voxel_size;
@@ -23,6 +27,10 @@ double suggest_good_voxel_size(
     double edge_len = average_edge_length(V0, V1, E);
     double disp_len = average_displacement_length(V1 - V0);
     double voxel_size = 2 * std::max(edge_len, disp_len) + inflation_radius;
+    if (voxel_size == 0) { // this case should not happen in real simulations
+        voxel_size = std::numeric_limits<double>::max();
+    }
+    assert(std::isfinite(voxel_size));
     // double voxel_size = 2 * edge_len + inflation_radius;
     IPC_LOG(trace(
         "suggesting voxel size of {} (avg_edge_len={} avg_disp_len={})",
@@ -36,6 +44,9 @@ double average_edge_length(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& E)
 {
+    if (E.rows() == 0) {
+        return 0;
+    }
     double avg = 0;
     for (unsigned i = 0; i < E.rows(); i++) {
         avg += (V0.row(E(i, 0)) - V0.row(E(i, 1))).norm();

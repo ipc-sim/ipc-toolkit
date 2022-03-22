@@ -27,6 +27,7 @@ void HashGrid::build(
     ArrayMax3d mesh_min = V.colwise().minCoeff().array() - inflation_radius;
     ArrayMax3d mesh_max = V.colwise().maxCoeff().array() + inflation_radius;
     double cell_size = suggest_good_voxel_size(V, E, inflation_radius);
+    assert(std::isfinite(cell_size));
     resize(mesh_min, mesh_max, cell_size);
 
     insert_boxes();
@@ -48,6 +49,7 @@ void HashGrid::build(
     ArrayMax3d mesh_min = mesh_min_t0.min(mesh_min_t1) - inflation_radius;
     ArrayMax3d mesh_max = mesh_max_t0.max(mesh_max_t1) + inflation_radius;
     double cell_size = suggest_good_voxel_size(V0, V1, E, inflation_radius);
+    assert(std::isfinite(cell_size));
     resize(mesh_min, mesh_max, cell_size);
 
     insert_boxes();
@@ -57,6 +59,7 @@ void HashGrid::resize(
     const ArrayMax3d& min, const ArrayMax3d& max, double cellSize)
 {
     assert(cellSize != 0.0);
+    assert(std::isfinite(cellSize));
     m_cellSize = cellSize;
     m_domainMin = min;
     m_domainMax = max;
