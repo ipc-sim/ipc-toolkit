@@ -3,21 +3,18 @@ API
 
 Main Functions
 -----
-.. doxygenfunction:: construct_constraint_set(const Eigen::MatrixXd &V_rest, const Eigen::MatrixXd &V, const Eigen::MatrixXi &E, const Eigen::MatrixXi &F, const double dhat, Constraints &constraint_set, const Eigen::MatrixXi &F2E = Eigen::MatrixXi(), const double dmin = 0, const BroadPhaseMethod &method = BroadPhaseMethod::HASH_GRID, const std::function<bool(size_t, size_t)> &can_collide = [](size_t, size_t) { return true;})
-.. doxygenfunction:: construct_constraint_set(const Eigen::MatrixXd &V_rest, const Eigen::MatrixXd &V, const Eigen::VectorXi &codim_V, const Eigen::MatrixXi &E, const Eigen::MatrixXi &F, const double dhat, Constraints &constraint_set, const Eigen::MatrixXi &F2E = Eigen::MatrixXi(), const double dmin = 0, const BroadPhaseMethod &method = BroadPhaseMethod::HASH_GRID, const std::function<bool(size_t, size_t)> &can_collide = [](size_t, size_t) { return true;})
-.. doxygenfunction:: construct_constraint_set(const Candidates &candidates, const Eigen::MatrixXd &V_rest, const Eigen::MatrixXd &V, const Eigen::MatrixXi &E, const Eigen::MatrixXi &F, const double dhat, Constraints &constraint_set, const Eigen::MatrixXi &F2E = Eigen::MatrixXi(), const double dmin = 0)
+.. doxygenfunction:: construct_constraint_set(const CollisionMesh& mesh, const Eigen::MatrixXd& V, const double dhat, Constraints& constraint_set, const double dmin = 0, const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID)
+.. doxygenfunction:: construct_constraint_set(const Candidates& candidates, const CollisionMesh& mesh, const Eigen::MatrixXd& V, const double dhat, Constraints& constraint_set, const double dmin = 0)
 
 .. doxygenfunction:: compute_barrier_potential
 .. doxygenfunction:: compute_barrier_potential_gradient
 .. doxygenfunction:: compute_barrier_potential_hessian
 
-.. doxygenfunction:: is_step_collision_free(const Eigen::MatrixXd &V0, const Eigen::MatrixXd &V1, const Eigen::MatrixXi &E, const Eigen::MatrixXi &F, const BroadPhaseMethod &method = BroadPhaseMethod::HASH_GRID, const double tolerance = 1e-6, const long max_iterations = 1e7, const std::function<bool(size_t, size_t)> &can_collide = [](size_t, size_t) { return true;})
-.. doxygenfunction:: is_step_collision_free(const Eigen::MatrixXd &V0, const Eigen::MatrixXd &V1, const Eigen::VectorXi &codim_V, const Eigen::MatrixXi &E, const Eigen::MatrixXi &F, const BroadPhaseMethod &method = BroadPhaseMethod::HASH_GRID, const double tolerance = 1e-6, const long max_iterations = 1e7, const std::function<bool(size_t, size_t)> &can_collide = [](size_t, size_t) { return true;})
-.. doxygenfunction:: is_step_collision_free(const Candidates &candidates, const Eigen::MatrixXd &V0, const Eigen::MatrixXd &V1, const Eigen::MatrixXi &E, const Eigen::MatrixXi &F, const double tolerance = 1e-6, const long max_iterations = 1e7)
+.. doxygenfunction:: is_step_collision_free(const CollisionMesh& mesh, const Eigen::MatrixXd& V0, const Eigen::MatrixXd& V1, const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID, const double tolerance = 1e-6, const long max_iterations = 1e7)
+.. doxygenfunction:: is_step_collision_free(const Candidates& candidates, const CollisionMesh& mesh, const Eigen::MatrixXd& V0, const Eigen::MatrixXd& V1, const double tolerance = 1e-6, const long max_iterations = 1e7)
 
-.. doxygenfunction:: compute_collision_free_stepsize(const Eigen::MatrixXd &V0, const Eigen::MatrixXd &V1, const Eigen::MatrixXi &E, const Eigen::MatrixXi &F, const BroadPhaseMethod &method = BroadPhaseMethod::HASH_GRID, const double tolerance = 1e-6, const long max_iterations = 1e7, const std::function<bool(size_t, size_t)> &can_collide = [](size_t, size_t) { return true;})
-.. doxygenfunction:: compute_collision_free_stepsize(const Eigen::MatrixXd &V0, const Eigen::MatrixXd &V1, const Eigen::VectorXi &codim_V, const Eigen::MatrixXi &E, const Eigen::MatrixXi &F, const BroadPhaseMethod &method = BroadPhaseMethod::HASH_GRID, const double tolerance = 1e-6, const long max_iterations = 1e7, const std::function<bool(size_t, size_t)> &can_collide = [](size_t, size_t) { return true;})
-.. doxygenfunction:: compute_collision_free_stepsize(const Candidates &candidates, const Eigen::MatrixXd &V0, const Eigen::MatrixXd &V1, const Eigen::MatrixXi &E, const Eigen::MatrixXi &F, const double tolerance = 1e-6, const long max_iterations = 1e7)
+.. doxygenfunction:: compute_collision_free_stepsize(const CollisionMesh& mesh, const Eigen::MatrixXd& V0, const Eigen::MatrixXd& V1, const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID, const double tolerance = 1e-6, const long max_iterations = 1e7)
+.. doxygenfunction:: compute_collision_free_stepsize(const Candidates& candidates, const CollisionMesh& mesh, const Eigen::MatrixXd& V0, const Eigen::MatrixXd& V1, const double tolerance = 1e-6, const long max_iterations = 1e7)
 
 Collision Constraints
 ---------------------
