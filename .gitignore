@@ -1,4 +1,7 @@
-## macOS
+###############################################################################
+# macOS
+###############################################################################
+
 default.profraw
 
 # General
@@ -29,8 +32,9 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-
-## C++
+###############################################################################
+# C++
+###############################################################################
 
 # Prerequisites
 *.d
@@ -90,7 +94,10 @@ bin*
 *.code-workspace
 *.vscode
 
-## python
+###############################################################################
+# Python
+###############################################################################
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -221,24 +228,14 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-## AUTOGEN!
-src/autogen/*.ipp
-#src/autogen/*.hpp
-fixtures/auto_*.json
-figures/*.data
-data/*.local/
-data/linesearch_*.csv
-logs/*.csv
-logs/**/*.csv
-logs/*.log
-logs/**/*.log
+###############################################################################
+# Custom
+###############################################################################
 
 /external*
 
-
 # Atom beautifier files
 .atom-beautify.*
-distance_AABB.cpp.bak
 
 core*
 *.blend[123456789]

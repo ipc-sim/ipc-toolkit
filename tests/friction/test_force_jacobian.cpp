@@ -32,19 +32,31 @@ inline Eigen::MatrixXi loadMarketXi(const std::string& f)
     return Eigen::MatrixXi(tmp);
 }
 
-void print_compare_nonzero(const Eigen::MatrixXd& A, const Eigen::MatrixXd& B)
+void print_compare_nonzero(
+    const Eigen::MatrixXd& A,
+    const Eigen::MatrixXd& B,
+    bool print_only_different = true)
 {
+    fmt::print(
+        "A.norm()={}, B.norm()={} (A-B).norm()={}\n", A.norm(), B.norm(),
+        (A - B).norm());
     fmt::print("(i,j): A(i,j), B(i,j), abs_diff, rel_diff\n");
     assert(A.rows() == B.rows());
     assert(A.cols() == B.cols());
     for (int i = 0; i < A.rows(); i++) {
         for (int j = 0; j < A.rows(); j++) {
-            if (A(i, j) != 0 || B(i, j) != 0) {
+            const double abs_diff = abs(A(i, j) - B(i, j));
+            const double rel_diff =
+                abs_diff / std::max(abs(A(i, j)), abs(B(i, j)));
+
+            const double tol =
+                std::max({ abs(A(i, j)), abs(B(i, j)), double(1.0) }) * 1e-5;
+
+            if ((A(i, j) != 0 || B(i, j) != 0)
+                && (!print_only_different || abs_diff > tol)) {
                 fmt::print(
                     "({:d},{:d}): {:g}, {:g}, {:g}, {:g}\n", i, j, A(i, j),
-                    B(i, j), abs(A(i, j) - B(i, j)),
-                    abs(A(i, j) - B(i, j))
-                        / std::max(abs(A(i, j)), abs(B(i, j))));
+                    B(i, j), abs_diff, rel_diff);
             }
         }
     }
@@ -103,6 +115,9 @@ void check_friction_force_jacobian(
     Eigen::MatrixXd fd_JF_wrt_X;
     fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
     CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
+    if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
+        print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -127,9 +142,9 @@ void check_friction_force_jacobian(
     Eigen::MatrixXd fd_JF_wrt_Ut;
     fd::finite_jacobian(fd::flatten(Ut), F_Ut, fd_JF_wrt_Ut);
     CHECK(fd::compare_jacobian(JF_wrt_Ut, fd_JF_wrt_Ut));
-    // if (!fd::compare_jacobian(JF_wrt_Ut, fd_JF_wrt_Ut)) {
-    print_compare_nonzero(JF_wrt_Ut, fd_JF_wrt_Ut);
-    // }
+    if (!fd::compare_jacobian(JF_wrt_Ut, fd_JF_wrt_Ut)) {
+        print_compare_nonzero(JF_wrt_Ut, fd_JF_wrt_Ut);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -145,9 +160,9 @@ void check_friction_force_jacobian(
     Eigen::MatrixXd fd_JF_wrt_U;
     fd::finite_jacobian(fd::flatten(U), F_U, fd_JF_wrt_U);
     CHECK(fd::compare_jacobian(JF_wrt_U, fd_JF_wrt_U));
-    // if (!fd::compare_jacobian(JF_wrt_U, fd_JF_wrt_U)) {
-    print_compare_nonzero(JF_wrt_U, fd_JF_wrt_U);
-    // }
+    if (!fd::compare_jacobian(JF_wrt_U, fd_JF_wrt_U)) {
+        print_compare_nonzero(JF_wrt_U, fd_JF_wrt_U);
+    }
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -215,13 +230,21 @@ TEST_CASE(
         kappa = 141;
         epsv_dt = 5e-6;
     }
-    SECTION("point-plane")
+    SECTION("square-circle")
     {
         scene = "square-circle";
         mu = 0.5;
         dhat = 1e-3;
         kappa = 67873353;
         epsv_dt = 1e-4;
+    }
+    SECTION("square-circle-dense")
+    {
+        scene = "square-circle-dense";
+        mu = 0.5;
+        dhat = 1e-2;
+        kappa = GENERATE(8.6e9, 1e6);
+        epsv_dt = 1.5e-5;
     }
     // SECTION("square-incline")
     // {
@@ -231,6 +254,8 @@ TEST_CASE(
     //     kappa = 141;
     //     epsv_dt = 5e-6;
     // }
+
+    CAPTURE(scene, mu, dhat, kappa, epsv_dt);
 
     Eigen::MatrixXd X, Ut, U;
     Eigen::MatrixXi E, F;
