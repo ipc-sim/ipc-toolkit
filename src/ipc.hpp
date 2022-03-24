@@ -196,6 +196,9 @@ double compute_minimum_distance(
 ///
 /// @param[in] mesh The collision mesh.
 /// @param[in] V Vertices of the collision mesh.
-bool has_intersections(const CollisionMesh& mesh, const Eigen::MatrixXd& V);
+bool has_intersections(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& V,
+    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID);
 
 } // namespace ipc

@@ -627,7 +627,10 @@ double compute_minimum_distance(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool has_intersections(const CollisionMesh& mesh, const Eigen::MatrixXd& V)
+bool has_intersections(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& V,
+    const BroadPhaseMethod& method)
 {
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
@@ -635,13 +638,17 @@ bool has_intersections(const CollisionMesh& mesh, const Eigen::MatrixXd& V)
     double conservative_inflation_radius = 1e-2 * world_bbox_diagonal_length(V);
 
     // TODO: Expose the broad-phase method
-    HashGrid hash_grid;
-    hash_grid.can_vertices_collide = mesh.can_collide;
-    hash_grid.build(V, E, F, conservative_inflation_radius);
+    std::unique_ptr<BroadPhase> broad_phase =
+        BroadPhase::make_broad_phase(method);
+    broad_phase->can_vertices_collide = mesh.can_collide;
+
+    broad_phase->build(V, E, F, conservative_inflation_radius);
 
     if (V.cols() == 2) { // Need to check segment-segment intersections in 2D
         std::vector<EdgeEdgeCandidate> ee_candidates;
-        hash_grid.detect_edge_edge_candidates(ee_candidates);
+
+        broad_phase->detect_edge_edge_candidates(ee_candidates);
+        broad_phase->clear();
 
         // narrow-phase using igl
         igl::predicates::exactinit();
@@ -658,7 +665,8 @@ bool has_intersections(const CollisionMesh& mesh, const Eigen::MatrixXd& V)
         assert(V.cols() == 3);
 
         std::vector<EdgeFaceCandidate> ef_candidates;
-        hash_grid.detect_edge_face_candidates(ef_candidates);
+        broad_phase->detect_edge_face_candidates(ef_candidates);
+        broad_phase->clear();
 
         for (const EdgeFaceCandidate& ef_candidate : ef_candidates) {
             if (is_edge_intersecting_triangle(

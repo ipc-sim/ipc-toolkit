@@ -59,7 +59,8 @@ void BroadPhase::detect_collision_candidates(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<BroadPhase> make_broad_phase(const BroadPhaseMethod& method)
+std::unique_ptr<BroadPhase>
+BroadPhase::make_broad_phase(const BroadPhaseMethod& method)
 {
     switch (method) {
     case BroadPhaseMethod::BRUTE_FORCE:
@@ -90,7 +91,8 @@ void construct_collision_candidates(
 
     candidates.clear();
 
-    std::unique_ptr<BroadPhase> broad_phase = make_broad_phase(method);
+    std::unique_ptr<BroadPhase> broad_phase =
+        BroadPhase::make_broad_phase(method);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(V, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, candidates);
@@ -109,7 +111,8 @@ void construct_collision_candidates(
 
     candidates.clear();
 
-    std::unique_ptr<BroadPhase> broad_phase = make_broad_phase(method);
+    std::unique_ptr<BroadPhase> broad_phase =
+        BroadPhase::make_broad_phase(method);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(V0, V1, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, candidates);

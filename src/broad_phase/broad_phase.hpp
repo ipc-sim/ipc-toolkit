@@ -23,6 +23,9 @@ class BroadPhase {
 public:
     virtual ~BroadPhase() { clear(); }
 
+    static std::unique_ptr<BroadPhase>
+    make_broad_phase(const BroadPhaseMethod& method);
+
     virtual void build(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,

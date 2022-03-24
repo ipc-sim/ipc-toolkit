@@ -197,6 +197,8 @@ public: // API
         int eai,
         unordered_set<int>& edgeInds) const;
 
+    void queryEdgeForTriangles(int ei, unordered_set<int>& triInds) const;
+
     ////////////////////////////////////////////////////////////////////////////
     // BroadPhase API
 

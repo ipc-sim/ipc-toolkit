@@ -224,6 +224,8 @@ protected:
         return relative_displacement_T(u);
     }
 
+    using FrictionConstraint::relative_displacement_matrix;
+
     MatrixMax<double, 3, 12> relative_displacement_matrix(
         const VectorMax2d& closest_point) const override;
 
@@ -298,6 +300,8 @@ protected:
     {
         return relative_displacement_T(u);
     }
+
+    using FrictionConstraint::relative_displacement_matrix;
 
     MatrixMax<double, 3, 12> relative_displacement_matrix(
         const VectorMax2d& closest_point) const override;
@@ -374,6 +378,8 @@ protected:
         return relative_displacement_T(u);
     }
 
+    using FrictionConstraint::relative_displacement_matrix;
+
     MatrixMax<double, 3, 12> relative_displacement_matrix(
         const VectorMax2d& closest_point) const override;
 
@@ -446,6 +452,8 @@ protected:
     {
         return relative_displacement_T(u);
     }
+
+    using FrictionConstraint::relative_displacement_matrix;
 
     MatrixMax<double, 3, 12> relative_displacement_matrix(
         const VectorMax2d& closest_point) const override;

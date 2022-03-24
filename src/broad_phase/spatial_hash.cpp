@@ -765,6 +765,20 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
     }
 }
 
+void SpatialHash::queryEdgeForTriangles(
+    int ei, unordered_set<int>& triInds) const
+{
+    triInds.clear();
+    for (const auto& voxelInd : pointAndEdgeOccupancy[ei + edgeStartInd]) {
+        const auto& voxelI = voxel.at(voxelInd);
+        for (const auto& indI : voxelI) {
+            if (indI >= triStartInd) {
+                triInds.insert(indI - triStartInd);
+            }
+        }
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////
 // BroadPhase API
 
@@ -867,7 +881,33 @@ void SpatialHash::detect_face_vertex_candidates(
 void SpatialHash::detect_edge_face_candidates(
     std::vector<EdgeFaceCandidate>& candidates) const
 {
-    throw "not implemented!";
+    tbb::enumerable_thread_specific<std::vector<EdgeFaceCandidate>> storages;
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0ul, edge_boxes.size()),
+        [&](const tbb::blocked_range<size_t>& range) {
+            auto& local_candidates = storages.local();
+
+            for (long ei = range.begin(); ei != range.end(); ei++) {
+                const AABB& edge_box = edge_boxes[ei];
+
+                unordered_set<int> triInds;
+                queryEdgeForTriangles(ei, triInds);
+
+                for (const auto& fi : triInds) {
+                    if (!can_edge_face_collide(ei, fi)) {
+                        continue;
+                    }
+
+                    const AABB& face_box = face_boxes[fi];
+                    if (edge_box.intersects(face_box)) {
+                        local_candidates.emplace_back(ei, fi);
+                    }
+                }
+            }
+        });
+
+    merge_thread_local_vectors(storages, candidates);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
