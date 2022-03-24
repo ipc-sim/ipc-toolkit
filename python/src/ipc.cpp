@@ -100,5 +100,6 @@ void define_ipc_functions(py::module_& m)
         Returns:
             A boolean for if the mesh has intersections.
         )ipc_Qu8mg5v7",
-        py::arg("mesh"), py::arg("V"));
+        py::arg("mesh"), py::arg("V"),
+        py::arg("method") = BroadPhaseMethod::HASH_GRID);
 }
