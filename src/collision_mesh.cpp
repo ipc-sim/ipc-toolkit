@@ -83,13 +83,14 @@ CollisionMesh::CollisionMesh(
 void CollisionMesh::set_identity_linear_vertex_map()
 {
     // Initilize linear map with identity
-    m_linear_vertex_map.setIdentity(full_num_vertices(), full_num_vertices());
+    m_linear_vertex_map.resize(full_num_vertices(), full_num_vertices());
+    m_linear_vertex_map.setIdentity();
     m_linear_dof_map.resize(full_ndof(), full_ndof());
     m_linear_dof_map.setIdentity();
 }
 
 void CollisionMesh::set_linear_vertex_map(
-    const Eigen::MatrixXd& linear_vertex_map)
+    const Eigen::SparseMatrix<double>& linear_vertex_map)
 {
     int n = linear_vertex_map.rows(), m = linear_vertex_map.cols();
 
@@ -97,11 +98,12 @@ void CollisionMesh::set_linear_vertex_map(
     m_linear_vertex_map = linear_vertex_map;
 
     std::vector<Eigen::Triplet<double>> triplets;
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
+    using InnerIterator = Eigen::SparseMatrix<double>::InnerIterator;
+    for (int k = 0; k < m_linear_vertex_map.outerSize(); ++k) {
+        for (InnerIterator it(m_linear_vertex_map, k); it; ++it) {
             for (int d = 0; d < dim(); d++) {
                 triplets.emplace_back(
-                    dim() * i + d, dim() * j + d, linear_vertex_map(i, j));
+                    dim() * it.row() + d, dim() * it.col() + d, it.value());
             }
         }
     }

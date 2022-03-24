@@ -31,7 +31,8 @@ public:
     const Eigen::MatrixXi& faces() const { return m_faces; }
     const Eigen::MatrixXi& faces_to_edges() const { return m_faces_to_edges; }
 
-    void set_linear_vertex_map(const Eigen::MatrixXd& linear_vertex_map);
+    void
+    set_linear_vertex_map(const Eigen::SparseMatrix<double>& linear_vertex_map);
 
     size_t num_vertices() const { return m_num_vertices; }
     size_t dim() const { return m_dim; }
@@ -91,7 +92,7 @@ protected:
     Eigen::VectorXi dof_to_full_dof;
 
     /// Mapping from collision vertices to full vertices
-    Eigen::MatrixXd m_linear_vertex_map;
+    Eigen::SparseMatrix<double> m_linear_vertex_map;
     /// Mapping from collision DOF to full DOF
     Eigen::SparseMatrix<double> m_linear_dof_map;
 
