@@ -86,7 +86,7 @@ bool is_step_point_plane_collision_free(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool compute_point_plane_collision_free_stepsize(
+double compute_point_plane_collision_free_stepsize(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXd& plane_origins,
@@ -99,7 +99,6 @@ bool compute_point_plane_collision_free_stepsize(
 
     tbb::enumerable_thread_specific<double> storage(1);
 
-    // Do a single block range over all three candidate vectors
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, V0.rows()),
         [&](tbb::blocked_range<size_t> r) {

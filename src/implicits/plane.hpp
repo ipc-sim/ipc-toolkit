@@ -73,7 +73,7 @@ bool is_step_point_plane_collision_free(
 ///     number in plane_origins) then returns true if the vertex can collide
 ///     with the plane. By default all points can collide with all planes.
 /// @returns A step-size \f$\in [0, 1]\f$ that is collision free.
-bool compute_point_plane_collision_free_stepsize(
+double compute_point_plane_collision_free_stepsize(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXd& plane_origins,
