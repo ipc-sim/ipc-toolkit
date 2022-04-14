@@ -1,8 +1,5 @@
 #pragma once
 
-// Comment out this line to switch to the standard unordered_map/set
-// #define IPC_TOOLKIT_USE_ROBIN_MAP
-
 #ifdef IPC_TOOLKIT_USE_ROBIN_MAP
 
 #include <tsl/robin_map.h>

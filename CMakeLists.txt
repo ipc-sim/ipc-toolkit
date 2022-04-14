@@ -126,9 +126,10 @@ else()
   target_link_libraries(ipc_toolkit PRIVATE fmt::fmt)
 endif()
 
-# Faster unoredered map
-include(robin_map)
-target_link_libraries(ipc_toolkit PUBLIC tsl::robin_map)
+# Faster unordered map
+# include(robin_map)
+# target_link_libraries(ipc_toolkit PUBLIC tsl::robin_map)
+# target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_USE_ROBIN_MAP)
 
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   include(gmp)
