@@ -8,8 +8,6 @@
 namespace ipc {
 
 struct FrictionConstraint {
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
     /// @brief Barycentric coordinates of the closest point(s)
     VectorMax2d closest_point;
 

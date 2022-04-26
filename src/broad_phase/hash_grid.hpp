@@ -28,8 +28,6 @@ struct HashItem {
 
 class HashGrid : public BroadPhase {
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
     void build(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
