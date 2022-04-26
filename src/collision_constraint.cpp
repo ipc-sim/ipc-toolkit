@@ -465,7 +465,7 @@ double PlaneVertexConstraint::compute_distance(
     const Eigen::MatrixXi& F) const
 {
     return point_plane_distance(
-        V.row(vertex_index), plane_origin, plane_normal);
+        V.row(vertex_index).transpose(), plane_origin, plane_normal);
 }
 
 VectorMax12d PlaneVertexConstraint::compute_distance_gradient(
@@ -475,7 +475,8 @@ VectorMax12d PlaneVertexConstraint::compute_distance_gradient(
 {
     VectorMax3d distance_grad;
     point_plane_distance_gradient(
-        V.row(vertex_index), plane_origin, plane_normal, distance_grad);
+        V.row(vertex_index).transpose(), plane_origin, plane_normal,
+        distance_grad);
     return distance_grad;
 }
 
@@ -486,7 +487,8 @@ MatrixMax12d PlaneVertexConstraint::compute_distance_hessian(
 {
     MatrixMax3d distance_hess;
     point_plane_distance_hessian(
-        V.row(vertex_index), plane_origin, plane_normal, distance_hess);
+        V.row(vertex_index).transpose(), plane_origin, plane_normal,
+        distance_hess);
     return distance_hess;
 }
 
