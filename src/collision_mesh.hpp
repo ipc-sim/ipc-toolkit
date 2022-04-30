@@ -76,8 +76,13 @@ public:
     };
 
 protected:
-    void init_dof_to_full_dof();
+    void init_selection_matrix();
     void set_identity_linear_vertex_map();
+
+    // Convert a matrix meant for M_V * V to M_dof * x by duplicating the
+    // entries dim times.
+    static Eigen::SparseMatrix<double> vertex_matrix_to_dof_matrix(
+        const Eigen::SparseMatrix<double>& M_V, int dim);
 
     Eigen::MatrixXd m_vertices_at_rest;
     /// Edges as rows of indicies into V.
@@ -89,12 +94,15 @@ protected:
 
     Eigen::VectorXi full_vertex_to_vertex;
     Eigen::VectorXi vertex_to_full_vertex;
-    Eigen::VectorXi dof_to_full_dof;
 
-    /// Mapping from collision vertices to full vertices
-    Eigen::SparseMatrix<double> m_linear_vertex_map;
+    // Selection matrix S ∈ ℝ^{collision×full}
+    Eigen::SparseMatrix<double> select_vertices;
+    Eigen::SparseMatrix<double> select_dof;
+
+    /// Mapping from full vertices to collision vertices
+    Eigen::SparseMatrix<double> m_full_to_collision_vertices;
     /// Mapping from collision DOF to full DOF
-    Eigen::SparseMatrix<double> m_linear_dof_map;
+    Eigen::SparseMatrix<double> m_full_to_collision_dof;
 
     int m_full_num_vertices;
     int m_num_vertices;
