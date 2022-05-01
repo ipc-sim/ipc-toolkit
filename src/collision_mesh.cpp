@@ -3,10 +3,6 @@
 #include <ipc/utils/unordered_map_and_set.hpp>
 #include <ipc/utils/logger.hpp>
 
-#include <igl/slice.h>
-#include <igl/slice_into.h>
-#include <igl/Timer.h>
-
 namespace ipc {
 
 CollisionMesh::CollisionMesh(
@@ -165,15 +161,7 @@ CollisionMesh::to_full_dof(const Eigen::SparseMatrix<double>& X) const
     // ∇_{full} Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
     //      = Tᵀ * Sᵀ * ∇_{collision}² f(S * T * x_full) * S * T
     // X = ∇_{collision}² f(S * T * x_full); m_full_to_collision_dof = S * T
-
-    igl::Timer timer;
-    timer.start();
-    Eigen::SparseMatrix<double> R =
-        m_full_to_collision_dof.transpose() * X * m_full_to_collision_dof;
-    timer.stop();
-    IPC_LOG(critical("matrix multiply time {}s", timer.getElapsedTime()));
-
-    return R;
+    return m_full_to_collision_dof.transpose() * X * m_full_to_collision_dof;
 }
 
 Eigen::MatrixXd CollisionMesh::vertices(const Eigen::MatrixXd& full_V) const
