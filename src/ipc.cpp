@@ -332,6 +332,19 @@ void construct_constraint_set(
     for (size_t ci = 0; ci < constraint_set.size(); ci++) {
         constraint_set[ci].minimum_distance = dmin;
     }
+
+    for (auto& vv : constraint_set.vv_constraints) {
+        vv.weight = mesh.point_area(vv.vertex1_index);
+    }
+    for (auto& ev : constraint_set.ev_constraints) {
+        ev.weight = mesh.point_area(ev.vertex_index);
+    }
+    for (auto& ee : constraint_set.ee_constraints) {
+        ee.weight = mesh.edge_area(ee.edge0_index);
+    }
+    for (auto& fv : constraint_set.fv_constraints) {
+        fv.weight = mesh.point_area(fv.vertex_index);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -358,6 +371,7 @@ double compute_barrier_potential(
         [&](const tbb::blocked_range<size_t>& r) {
             auto& local_potential = storage.local();
             for (size_t i = r.begin(); i < r.end(); i++) {
+                // Quadrature weight is premultiplied by compute_potential
                 local_potential +=
                     constraint_set[i].compute_potential(V, E, F, dhat);
             }
@@ -367,7 +381,7 @@ double compute_barrier_potential(
     for (const auto& local_potential : storage) {
         potential += local_potential;
     }
-    return potential;
+    return 0.5 * potential;
 }
 
 Eigen::VectorXd compute_barrier_potential_gradient(
@@ -405,7 +419,7 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     for (const auto& local_grad : storage) {
         grad += local_grad;
     }
-    return grad;
+    return 0.5 * grad;
 }
 
 Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
@@ -450,7 +464,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
             local_hess_triplets.begin(), local_hess_triplets.end());
         hess += local_hess;
     }
-    return hess;
+    return 0.5 * hess;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

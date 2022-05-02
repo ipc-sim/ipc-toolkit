@@ -18,9 +18,10 @@ double CollisionConstraint::compute_potential(
 {
     const double dhat_squared = dhat * dhat;
     const double distance = compute_distance(V, E, F); // Squared distance
-    return barrier(
-        distance - minimum_distance * minimum_distance,
-        2 * minimum_distance * dhat + dhat_squared);
+    return weight
+        * physical_barrier(
+               distance - minimum_distance * minimum_distance,
+               2 * minimum_distance * dhat + dhat_squared);
 }
 
 VectorMax12d CollisionConstraint::compute_potential_gradient(
@@ -35,10 +36,10 @@ VectorMax12d CollisionConstraint::compute_potential_gradient(
     const double distance = compute_distance(V, E, F);
     const VectorMax12d distance_grad = compute_distance_gradient(V, E, F);
 
-    const double grad_b = barrier_gradient(
+    const double grad_b = physical_barrier_gradient(
         distance - minimum_distance * minimum_distance,
         2 * minimum_distance * dhat + dhat_squared);
-    return grad_b * distance_grad;
+    return weight * grad_b * distance_grad;
 }
 
 MatrixMax12d CollisionConstraint::compute_potential_hessian(
@@ -58,19 +59,22 @@ MatrixMax12d CollisionConstraint::compute_potential_hessian(
     const VectorMax12d distance_grad = compute_distance_gradient(V, E, F);
     const MatrixMax12d distance_hess = compute_distance_hessian(V, E, F);
 
-    const double grad_b = barrier_gradient(
+    const double grad_b = physical_barrier_gradient(
         distance - min_dist_squrared,
         2 * minimum_distance * dhat + dhat_squared);
-    const double hess_b = barrier_hessian(
+    const double hess_b = physical_barrier_hessian(
         distance - min_dist_squrared,
         2 * minimum_distance * dhat + dhat_squared);
 
     // b"(x) ≥ 0 ⟹ b"(x) * ∇d(x) * ∇d(x)ᵀ is PSD
     assert(hess_b >= 0);
-    return hess_b * distance_grad * distance_grad.transpose()
-        + (project_hessian_to_psd
-               ? project_to_psd((grad_b * distance_hess).eval())
-               : (grad_b * distance_hess));
+    MatrixMax12d term1 = hess_b * distance_grad * distance_grad.transpose();
+    MatrixMax12d term2 = grad_b * distance_hess;
+    if (project_hessian_to_psd) {
+        term2 = project_to_psd(term2);
+    }
+
+    return weight * (term1 + term2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -325,15 +329,15 @@ VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
     edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x, mollifier_grad);
 
     // b(d(x))
-    const double b = barrier(
+    const double b = physical_barrier(
         distance - minimum_distance * minimum_distance,
         2 * minimum_distance * dhat + dhat_squared);
     // b'(d(x))
-    const double grad_b = barrier_gradient(
+    const double grad_b = physical_barrier_gradient(
         distance - minimum_distance * minimum_distance,
         2 * minimum_distance * dhat + dhat_squared);
 
-    return mollifier_grad * b + mollifier * grad_b * distance_grad;
+    return weight * (mollifier_grad * b + mollifier * grad_b * distance_grad);
 }
 
 MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
@@ -374,14 +378,14 @@ MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
     MatrixMax12d mollifier_hess;
     edge_edge_mollifier_hessian(ea0, ea1, eb0, eb1, eps_x, mollifier_hess);
 
-    // Compute barrier derivatives
-    const double b = barrier(
+    // Compute physical_barrier derivatives
+    const double b = physical_barrier(
         distance - min_dist_squrared,
         2 * minimum_distance * dhat + dhat_squared);
-    const double grad_b = barrier_gradient(
+    const double grad_b = physical_barrier_gradient(
         distance - min_dist_squrared,
         2 * minimum_distance * dhat + dhat_squared);
-    const double hess_b = barrier_hessian(
+    const double hess_b = physical_barrier_hessian(
         distance - min_dist_squrared,
         2 * minimum_distance * dhat + dhat_squared);
 
@@ -397,7 +401,7 @@ MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
         hess = project_to_psd(hess);
     }
 
-    return hess;
+    return weight * hess;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

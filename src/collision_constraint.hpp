@@ -57,6 +57,7 @@ public:
         const bool project_hessian_to_psd) const;
 
     double minimum_distance = 0;
+    double weight = 1;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
