@@ -135,7 +135,7 @@ void CollisionMesh::init_areas()
         const auto& e0 = m_vertices_at_rest.row(m_edges(i, 0));
         const auto& e1 = m_vertices_at_rest.row(m_edges(i, 1));
         double edge_len = (e1 - e0).norm();
-        for (int j = 0; j < 2; j++) {
+        for (int j = 0; j < m_edges.cols(); j++) {
             if (point_edge_areas[m_edges(i, j)] < 0) {
                 point_edge_areas[m_edges(i, j)] = 0;
             }
@@ -154,14 +154,14 @@ void CollisionMesh::init_areas()
             const auto& f2 = m_vertices_at_rest.row(m_faces(i, 2));
             double face_area = cross(f1 - f0, f2 - f0).norm() / 2;
 
-            for (int j = 0; j < 3; ++j) {
-                if (point_face_areas[m_edges(i, j)] < 0) {
-                    point_face_areas[m_edges(i, j)] = 0;
+            for (int j = 0; j < m_faces.cols(); ++j) {
+                if (point_face_areas[m_faces(i, j)] < 0) {
+                    point_face_areas[m_faces(i, j)] = 0;
                 }
                 point_face_areas[m_faces(i, j)] += face_area / 3;
 
-                if (m_edge_areas[m_edges(i, j)] < 0) {
-                    m_edge_areas[m_edges(i, j)] = 0;
+                if (m_edge_areas[m_faces_to_edges(i, j)] < 0) {
+                    m_edge_areas[m_faces_to_edges(i, j)] = 0;
                 }
                 m_edge_areas[m_faces_to_edges(i, j)] += face_area / 3;
             }
