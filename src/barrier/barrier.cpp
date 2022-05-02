@@ -41,7 +41,9 @@ double physical_barrier_hessian(const double d, const double dhat)
     if (d <= 0.0 || d >= dhat) {
         return 0.0;
     }
-    return (-2 * log(d / dhat) + std::pow(d - dhat, 2) / (d * d) - 4) / dhat
+    const double d_minus_dhat = d - dhat;
+    return (-2 * log(d / dhat) + (d_minus_dhat * d_minus_dhat) / (d * d) - 4)
+        / dhat
         + 4 / d;
 }
 
