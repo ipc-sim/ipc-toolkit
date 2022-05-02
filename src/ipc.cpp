@@ -107,10 +107,8 @@ void construct_constraint_set(
     };
 
     // Store the indices to VV and EV pairs to avoid duplicates.
-    unordered_map<VertexVertexConstraint, long> vv_to_index(
-        /*min_buckets=*/candidates.size());
-    unordered_map<EdgeVertexConstraint, long> ev_to_index(
-        /*min_buckets=*/candidates.size());
+    unordered_map<VertexVertexConstraint, long> vv_to_index;
+    unordered_map<EdgeVertexConstraint, long> ev_to_index;
 
     std::mutex vv_mutex, ev_mutex, ee_mutex, fv_mutex;
 

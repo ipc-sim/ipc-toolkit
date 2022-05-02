@@ -196,27 +196,20 @@ Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
     }
     assert(edges.size() != 0);
 
-    auto max_vi = edges.maxCoeff();
-    auto hash_edge = [&max_vi](const Eigen::RowVector2i& e) {
-        return e.minCoeff() * max_vi + e.maxCoeff();
-    };
-    auto eq_edges = [](const Eigen::RowVector2i& ea,
-                       const Eigen::RowVector2i& eb) {
-        return ea.minCoeff() == eb.minCoeff() && ea.maxCoeff() == eb.maxCoeff();
-    };
-
-    unordered_map<
-        Eigen::RowVector2i, int, decltype(hash_edge), decltype(eq_edges)>
-        edge_map(/*bucket_count=*/edges.rows(), hash_edge, eq_edges);
-    for (int ei = 0; ei < edges.rows(); ei++) {
-        edge_map[edges.row(ei)] = ei;
+    unordered_map<std::pair<int, int>, size_t> edge_map;
+    for (size_t ei = 0; ei < edges.rows(); ei++) {
+        edge_map.emplace(
+            std::make_pair<int, int>(
+                edges.row(ei).minCoeff(), edges.row(ei).maxCoeff()),
+            ei);
     }
 
     Eigen::MatrixXi faces_to_edges(faces.rows(), faces.cols());
     for (int fi = 0; fi < faces.rows(); fi++) {
         for (int fj = 0; fj < faces.cols(); fj++) {
-            Eigen::RowVector2i e(
-                faces(fi, fj), faces(fi, (fj + 1) % faces.cols()));
+            const int vi = faces(fi, fj);
+            const int vj = faces(fi, (fj + 1) % faces.cols());
+            std::pair<int, int> e(std::min(vi, vj), std::max(vi, vj));
             auto search = edge_map.find(e);
             if (search != edge_map.end()) {
                 faces_to_edges(fi, fj) = search->second;

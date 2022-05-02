@@ -126,11 +126,6 @@ else()
   target_link_libraries(ipc_toolkit PRIVATE fmt::fmt)
 endif()
 
-# Faster unordered map
-# include(robin_map)
-# target_link_libraries(ipc_toolkit PUBLIC tsl::robin_map)
-# target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_USE_ROBIN_MAP)
-
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   include(gmp)
   target_link_libraries(ipc_toolkit PUBLIC GMP::GMP)
@@ -148,6 +143,16 @@ else()
   include(sweep_and_tiniest_queue)
   target_link_libraries(ipc_toolkit PUBLIC STQ::CPU)
 endif()
+
+# Faster unordered map
+include(robin_map)
+target_link_libraries(ipc_toolkit PUBLIC tsl::robin_map)
+target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_USE_ROBIN_MAP)
+
+# Hashes
+include(abseil)
+target_link_libraries(ipc_toolkit PUBLIC absl::flat_hash_map)
+target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_USE_ABSL_HASH)
 
 ################################################################################
 # Compiler options

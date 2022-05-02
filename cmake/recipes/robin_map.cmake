@@ -8,7 +8,7 @@ include(FetchContent)
 FetchContent_Declare(
     robin-map
     GIT_REPOSITORY https://github.com/Tessil/robin-map.git
-    GIT_TAG v0.6.3
+    GIT_TAG v1.0.1
     GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(robin-map)
