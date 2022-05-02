@@ -3,6 +3,8 @@
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
+#include <ipc/utils/unordered_map_and_set.hpp>
+
 namespace ipc {
 
 class CollisionMesh {
@@ -44,6 +46,21 @@ public:
     Eigen::SparseMatrix<double>
     to_full_dof(const Eigen::SparseMatrix<double>& X) const;
 
+    const std::vector<unordered_set<int>>& point_point_adjacencies() const
+    {
+        return m_point_point_adjacencies;
+    }
+    const std::vector<unordered_set<int>>& edge_point_adjacencies() const
+    {
+        return m_edge_point_adjacencies;
+    }
+    bool is_point_on_boundary(const int i) const
+    {
+        return m_is_point_on_boundary[i];
+    }
+    const Eigen::VectorXd& point_areas() const { return m_point_areas; }
+    const Eigen::VectorXd& edge_areas() const { return m_edge_areas; }
+
     static std::vector<bool> construct_is_on_surface(
         const int num_vertices, const Eigen::MatrixXi& edges);
 
@@ -72,6 +89,8 @@ public:
 
 protected:
     void init_dof_to_full_dof();
+    void init_adjacencies();
+    void init_areas();
 
     size_t full_ndof() const { return full_vertex_to_vertex.size() * dim(); }
 
@@ -86,6 +105,17 @@ protected:
     Eigen::VectorXi full_vertex_to_vertex;
     Eigen::VectorXi vertex_to_full_vertex;
     Eigen::VectorXi dof_to_full_dof;
+
+    /// Points adjacent to points
+    std::vector<unordered_set<int>> m_point_point_adjacencies;
+    /// Edges adjacent to edges
+    std::vector<unordered_set<int>> m_edge_point_adjacencies;
+
+    /// Is point on the boundary of the triangle mesh in 3D or polyline in 2D?
+    std::vector<bool> m_is_point_on_boundary;
+
+    Eigen::VectorXd m_point_areas;
+    Eigen::VectorXd m_edge_areas;
 };
 
 } // namespace ipc

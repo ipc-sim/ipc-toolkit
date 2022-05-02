@@ -1,9 +1,9 @@
 #include <ipc/collision_mesh.hpp>
 
-#include <ipc/utils/unordered_map_and_set.hpp>
-
 #include <igl/slice.h>
 #include <igl/slice_into.h>
+
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
@@ -21,6 +21,9 @@ CollisionMesh::CollisionMesh(
     full_vertex_to_vertex.setLinSpaced(num_vertices(), 0, num_vertices() - 1);
     vertex_to_full_vertex = full_vertex_to_vertex;
     init_dof_to_full_dof();
+
+    init_adjacencies();
+    init_areas();
 }
 
 CollisionMesh::CollisionMesh(
@@ -69,6 +72,9 @@ CollisionMesh::CollisionMesh(
     m_faces_to_edges = construct_faces_to_edges(m_faces, m_edges);
 
     init_dof_to_full_dof();
+
+    init_adjacencies();
+    init_areas();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,6 +89,97 @@ void CollisionMesh::init_dof_to_full_dof()
         }
     }
 }
+
+void CollisionMesh::init_adjacencies()
+{
+    m_point_point_adjacencies.resize(num_vertices());
+    // Edges includes the edges of the faces
+    for (int i = 0; i < m_edges.rows(); i++) {
+        m_point_point_adjacencies[m_edges(i, 0)].insert(m_edges(i, 1));
+        m_point_point_adjacencies[m_edges(i, 1)].insert(m_edges(i, 0));
+    }
+
+    m_edge_point_adjacencies.resize(m_edges.rows());
+    for (int i = 0; i < m_faces.rows(); i++) {
+        for (int j = 0; j < 3; ++j) {
+            m_edge_point_adjacencies[m_faces_to_edges(i, j)].insert(
+                m_faces(i, (j + 2) % 3));
+        }
+    }
+
+    // Is the point on the boundary of the triangle mesh in 3D or polyline in 2D
+    m_is_point_on_boundary.resize(num_vertices(), true);
+    if (dim() == 2) {
+        for (int i = 0; i < num_vertices(); i++) {
+            m_is_point_on_boundary[i] =
+                m_point_point_adjacencies[i].size() <= 1;
+        }
+    } else {
+        for (int i = 0; i < m_edges.rows(); i++) {
+            // If edge is part of two triangles
+            if (m_edge_point_adjacencies[i].size() >= 2) {
+                for (int j = 0; j < 2; j++) {
+                    m_is_point_on_boundary[m_edges(i, j)] = false;
+                }
+            }
+        }
+    }
+}
+
+void CollisionMesh::init_areas()
+{
+    // Compute point areas as the sum of ½ the length of connected edges
+    Eigen::VectorXd point_edge_areas =
+        Eigen::VectorXd::Constant(num_vertices(), -1);
+    for (int i = 0; i < m_edges.rows(); i++) {
+        const auto& e0 = m_vertices_at_rest.row(m_edges(i, 0));
+        const auto& e1 = m_vertices_at_rest.row(m_edges(i, 1));
+        double edge_len = (e1 - e0).norm();
+        for (int j = 0; j < 2; j++) {
+            if (point_edge_areas[m_edges(i, j)] < 0) {
+                point_edge_areas[m_edges(i, j)] = 0;
+            }
+            point_edge_areas[m_edges(i, j)] += edge_len / 2;
+        }
+    }
+
+    // Compute point/edge areas as the sum of ⅓ the area of connected face
+    Eigen::VectorXd point_face_areas =
+        Eigen::VectorXd::Constant(num_vertices(), -1);
+    m_edge_areas.setConstant(m_edges.rows(), -1);
+    if (dim() == 3) {
+        for (int i = 0; i < m_faces.rows(); i++) {
+            const auto& f0 = m_vertices_at_rest.row(m_faces(i, 0));
+            const auto& f1 = m_vertices_at_rest.row(m_faces(i, 1));
+            const auto& f2 = m_vertices_at_rest.row(m_faces(i, 2));
+            double face_area = cross(f1 - f0, f2 - f0).norm() / 2;
+
+            for (int j = 0; j < 3; ++j) {
+                if (point_face_areas[m_edges(i, j)] < 0) {
+                    point_face_areas[m_edges(i, j)] = 0;
+                }
+                point_face_areas[m_faces(i, j)] += face_area / 3;
+
+                if (m_edge_areas[m_edges(i, j)] < 0) {
+                    m_edge_areas[m_edges(i, j)] = 0;
+                }
+                m_edge_areas[m_faces_to_edges(i, j)] += face_area / 3;
+            }
+        }
+    }
+
+    // Select the area based on the order face, edge, codim
+    m_point_areas =
+        (point_face_areas.array() < 0)
+            .select(
+                (point_edge_areas.array() < 0).select(1, point_edge_areas),
+                point_face_areas);
+
+    // Select the area based on the order face, codim
+    m_edge_areas = (m_edge_areas.array() < 0).select(1, m_edge_areas);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 Eigen::VectorXd CollisionMesh::to_full_dof(const Eigen::VectorXd& x) const
 {
