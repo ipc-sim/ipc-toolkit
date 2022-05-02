@@ -101,7 +101,7 @@ void construct_constraint_set(
 
     // Cull the candidates by measuring the distance and dropping those that are
     // greater than dhat.
-    const double offset_sqr = std::pow(dmin + dhat, 2);
+    const double offset_sqr = (dmin + dhat) * (dmin + dhat);
     auto is_active = [&](double distance_sqr) {
         return distance_sqr < offset_sqr;
     };
