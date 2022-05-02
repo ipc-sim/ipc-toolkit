@@ -28,7 +28,7 @@ template <typename T> T physical_barrier(const T& d, double dhat)
         return T(0);
     }
 
-    // b(d) = -d̂(d/d̂-1)²ln(d / d̂)'
+    // b(d) = -d̂(d/d̂-1)²ln(d / d̂)
     const double d_over_dhat = d / dhat;
     const double d_over_dhat_minus_1 = d_over_dhat - 1;
     return -dhat * d_over_dhat_minus_1 * d_over_dhat_minus_1 * log(d_over_dhat);

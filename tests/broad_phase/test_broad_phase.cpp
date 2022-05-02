@@ -22,6 +22,8 @@ void test_broad_phase(
     bool expect_collision = true)
 {
     CAPTURE(method);
+    REQUIRE(V0.rows() == mesh.num_vertices());
+    REQUIRE(V1.rows() == mesh.num_vertices());
 
     double inflation_radius = 0;
 
@@ -45,6 +47,7 @@ void test_broad_phase(
     double inflation_radius)
 {
     CAPTURE(method);
+    REQUIRE(V.rows() == mesh.num_vertices());
 
     Candidates candidates;
     construct_collision_candidates(
@@ -101,6 +104,9 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D][!hide]")
     CollisionMesh mesh =
         CollisionMesh::build_from_full_mesh(V0, E, /*F=*/Eigen::MatrixXi());
 
+    V0 = mesh.vertices(V0);
+    V1 = mesh.vertices(V1);
+
     BroadPhaseMethod method = GENERATE(
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
         BroadPhaseMethod::SPATIAL_HASH);
@@ -120,7 +126,7 @@ TEST_CASE(
     igl::readDMAT(TEST_DATA_DIR + "codim-points/E.dmat", E);
     igl::readDMAT(TEST_DATA_DIR + "codim-points/F.dmat", F);
 
-    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V_rest, E, F);
+    CollisionMesh mesh(V_rest, E, F);
 
     BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 

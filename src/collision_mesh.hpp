@@ -50,20 +50,28 @@ public:
     {
         return m_point_point_adjacencies;
     }
+
     const std::vector<unordered_set<int>>& edge_point_adjacencies() const
     {
         return m_edge_point_adjacencies;
     }
+
     bool is_point_on_boundary(const int i) const
     {
         return m_is_point_on_boundary[i];
     }
+
+    double point_area(const size_t pi) const { return m_point_areas[pi]; }
     const Eigen::VectorXd& point_areas() const { return m_point_areas; }
+
+    double edge_area(const size_t ei) const { return m_edge_areas[ei]; }
     const Eigen::VectorXd& edge_areas() const { return m_edge_areas; }
 
     static std::vector<bool> construct_is_on_surface(
         const int num_vertices, const Eigen::MatrixXi& edges);
 
+    /// Helper function that automatically builds include_vertex using
+    /// construct_is_on_surface.
     static CollisionMesh build_from_full_mesh(
         const Eigen::MatrixXd& full_vertices_at_rest,
         const Eigen::MatrixXi& edges,

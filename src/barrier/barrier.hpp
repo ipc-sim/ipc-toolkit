@@ -45,7 +45,7 @@ double barrier_hessian(double d, double dhat);
 // Physically based barrier functions from [Li et al. 2022]
 ///////////////////////////////////////////////////////////////////////////////
 
-double physical_barrier(const double d, const double dhat);
+template <typename T> T physical_barrier(const T& d, const double dhat);
 
 double physical_barrier_gradient(const double d, const double dhat);
 
