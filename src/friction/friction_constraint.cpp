@@ -12,6 +12,22 @@
 
 namespace ipc {
 
+void FrictionConstraint::init(
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& F,
+    const double dhat,
+    const double barrier_stiffness,
+    const double dmin)
+{
+    tangent_basis.resize(V.cols(), V.cols() - 1); // do this to initialize dim()
+    VectorMax12d x = select_dofs(V, E, F);
+    closest_point = compute_closest_point(x);
+    tangent_basis = compute_tangent_basis(x);
+    normal_force_magnitude =
+        compute_normal_force_magnitude(x, dhat, barrier_stiffness, dmin);
+}
+
 VectorMax12d FrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& E,
@@ -198,7 +214,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     // Compute ∇F
     assert(X.size() == U.size() && Ut.size() == U.size());
     int dim = U.cols();
-    int n = dim * vertex_indices(E, F).size();
+    int n = dim * num_vertices();
 
     const VectorMax12d x = select_dofs(X, E, F);
     const VectorMax12d ut = select_dofs(Ut, E, F);
@@ -476,7 +492,8 @@ double EdgeVertexFrictionConstraint::compute_normal_force_magnitude(
     const auto& e0 = x.segment(dim(), dim());
     const auto& e1 = x.tail(dim());
     return ipc::compute_normal_force_magnitude(
-        point_edge_distance(p, e0, e1), dhat, barrier_stiffness, dmin);
+        point_edge_distance(p, e0, e1, PointEdgeDistanceType::P_E), dhat,
+        barrier_stiffness, dmin);
 }
 
 VectorMax12d
@@ -491,9 +508,10 @@ EdgeVertexFrictionConstraint::compute_normal_force_magnitude_gradient(
     const auto& e0 = x.segment(dim(), dim());
     const auto& e1 = x.tail(dim());
     VectorMax9d grad_d;
-    point_edge_distance_gradient(p, e0, e1, grad_d);
+    point_edge_distance_gradient(p, e0, e1, PointEdgeDistanceType::P_E, grad_d);
     return ipc::compute_normal_force_magnitude_gradient(
-        point_edge_distance(p, e0, e1), grad_d, dhat, barrier_stiffness, dmin);
+        point_edge_distance(p, e0, e1, PointEdgeDistanceType::P_E), grad_d,
+        dhat, barrier_stiffness, dmin);
 }
 
 MatrixMax<double, 3, 2>
@@ -581,8 +599,10 @@ double EdgeEdgeFrictionConstraint::compute_normal_force_magnitude(
     const auto& ea1 = x.segment(dim(), dim());
     const auto& eb0 = x.segment(2 * dim(), dim());
     const auto& eb1 = x.tail(dim());
+    // The distance type is known because mollified PP and PE were skipped.
     return ipc::compute_normal_force_magnitude(
-        edge_edge_distance(ea0, ea1, eb0, eb1), dhat, barrier_stiffness, dmin);
+        edge_edge_distance(ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB),
+        dhat, barrier_stiffness, dmin);
 }
 
 VectorMax12d
@@ -598,10 +618,12 @@ EdgeEdgeFrictionConstraint::compute_normal_force_magnitude_gradient(
     const auto& eb0 = x.segment(2 * dim(), dim());
     const auto& eb1 = x.tail(dim());
     VectorMax12d grad_d;
-    edge_edge_distance_gradient(ea0, ea1, eb0, eb1, grad_d);
+    // The distance type is known because mollified PP and PE were skipped.
+    edge_edge_distance_gradient(
+        ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB, grad_d);
     return ipc::compute_normal_force_magnitude_gradient(
-        edge_edge_distance(ea0, ea1, eb0, eb1), grad_d, dhat, barrier_stiffness,
-        dmin);
+        edge_edge_distance(ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB),
+        grad_d, dhat, barrier_stiffness, dmin);
 }
 
 MatrixMax<double, 3, 2>
@@ -691,7 +713,8 @@ double FaceVertexFrictionConstraint::compute_normal_force_magnitude(
     const auto& t1 = x.segment(2 * dim(), dim());
     const auto& t2 = x.tail(dim());
     return ipc::compute_normal_force_magnitude(
-        point_triangle_distance(p, t0, t1, t2), dhat, barrier_stiffness, dmin);
+        point_triangle_distance(p, t0, t1, t2, PointTriangleDistanceType::P_T),
+        dhat, barrier_stiffness, dmin);
 }
 
 VectorMax12d
@@ -707,10 +730,11 @@ FaceVertexFrictionConstraint::compute_normal_force_magnitude_gradient(
     const auto& t1 = x.segment(2 * dim(), dim());
     const auto& t2 = x.tail(dim());
     VectorMax12d grad_d;
-    point_triangle_distance_gradient(p, t0, t1, t2, grad_d);
+    point_triangle_distance_gradient(
+        p, t0, t1, t2, PointTriangleDistanceType::P_T, grad_d);
     return ipc::compute_normal_force_magnitude_gradient(
-        point_triangle_distance(p, t0, t1, t2), grad_d, dhat, barrier_stiffness,
-        dmin);
+        point_triangle_distance(p, t0, t1, t2, PointTriangleDistanceType::P_T),
+        grad_d, dhat, barrier_stiffness, dmin);
 }
 
 MatrixMax<double, 3, 2>
