@@ -333,17 +333,18 @@ void construct_constraint_set(
         constraint_set[ci].minimum_distance = dmin;
     }
 
+    // Divide area by 2 to handle fouble counting for correct integration.
     for (auto& vv : constraint_set.vv_constraints) {
-        vv.weight = mesh.point_area(vv.vertex1_index);
+        vv.weight = mesh.point_area(vv.vertex1_index) / 2;
     }
     for (auto& ev : constraint_set.ev_constraints) {
-        ev.weight = mesh.point_area(ev.vertex_index);
+        ev.weight = mesh.point_area(ev.vertex_index) / 2;
     }
     for (auto& ee : constraint_set.ee_constraints) {
-        ee.weight = mesh.edge_area(ee.edge0_index);
+        ee.weight = mesh.edge_area(ee.edge0_index) / 2;
     }
     for (auto& fv : constraint_set.fv_constraints) {
-        fv.weight = mesh.point_area(fv.vertex_index);
+        fv.weight = mesh.point_area(fv.vertex_index) / 2;
     }
 }
 
@@ -381,7 +382,7 @@ double compute_barrier_potential(
     for (const auto& local_potential : storage) {
         potential += local_potential;
     }
-    return 0.5 * potential;
+    return potential;
 }
 
 Eigen::VectorXd compute_barrier_potential_gradient(
@@ -419,7 +420,7 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     for (const auto& local_grad : storage) {
         grad += local_grad;
     }
-    return 0.5 * grad;
+    return grad;
 }
 
 Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
@@ -464,7 +465,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
             local_hess_triplets.begin(), local_hess_triplets.end());
         hess += local_hess;
     }
-    return 0.5 * hess;
+    return hess;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
