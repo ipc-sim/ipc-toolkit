@@ -49,7 +49,7 @@ void mmcvids_to_constraints(
                 constraints.vv_constraints.emplace_back(
                     -mmcvid[0] - 1, mmcvid[1]);
                 assert(-mmcvid[3] >= 1);
-                constraints.vv_constraints.back().multiplicity = -mmcvid[3];
+                constraints.vv_constraints.back().weight = -mmcvid[3];
 
             } else if (mmcvid[3] < 0) { // Is EV?
                 int ei;
@@ -60,7 +60,7 @@ void mmcvids_to_constraints(
                 }
                 assert(ei < E.rows());
                 constraints.ev_constraints.emplace_back(ei, -mmcvid[0] - 1);
-                constraints.ev_constraints.back().multiplicity = -mmcvid[3];
+                constraints.ev_constraints.back().weight = -mmcvid[3];
 
             } else { // Is FV.
                 int fi;

@@ -5,6 +5,9 @@ namespace ipc {
 
 template <typename T> T barrier(const T& d, double dhat)
 {
+#ifdef IPC_TOOLKIT_CONVERGENT
+    return physical_barrier(d, dhat);
+#else
     if (d <= 0.0) {
         return T(std::numeric_limits<double>::infinity());
     }
@@ -14,6 +17,7 @@ template <typename T> T barrier(const T& d, double dhat)
     // b(d) = -(d-d̂)²ln(d / d̂)
     const T tmp = (d - dhat);
     return -tmp * tmp * log(d / dhat);
+#endif
 }
 
 template <typename T> T physical_barrier(const T& d, double dhat)

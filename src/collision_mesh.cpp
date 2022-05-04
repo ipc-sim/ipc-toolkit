@@ -184,6 +184,20 @@ void CollisionMesh::init_adjacencies()
 
 void CollisionMesh::init_areas()
 {
+    m_vertices_to_edges.resize(num_vertices());
+    for (int i = 0; i < m_edges.rows(); i++) {
+        for (int j = 0; j < m_edges.cols(); j++) {
+            m_vertices_to_edges[m_edges(i, j)].push_back(i);
+        }
+    }
+
+    m_vertices_to_faces.resize(num_vertices());
+    for (int i = 0; i < m_faces.rows(); i++) {
+        for (int j = 0; j < m_faces.cols(); j++) {
+            m_vertices_to_faces[m_faces(i, j)].push_back(i);
+        }
+    }
+
     // Compute point areas as the sum of ½ the length of connected edges
     Eigen::VectorXd point_edge_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);

@@ -36,7 +36,7 @@ TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
     Constraints constraint_set;
     construct_constraint_set(mesh, V, dhat, constraint_set);
     CAPTURE(mesh_name, dhat);
-    CHECK(constraint_set.num_constraints() > 0);
+    CHECK(constraint_set.size() > 0);
 
     BENCHMARK("Compute barrier potential")
     {
@@ -111,7 +111,7 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
             mesh, V, dhat, constraint_set, /*dmin=*/0, method);
     }
     CAPTURE(dhat, method, all_vertices_on_surface);
-    CHECK(constraint_set.num_constraints() > 0);
+    CHECK(constraint_set.size() > 0);
 
     Eigen::VectorXd grad_b =
         ipc::compute_barrier_potential_gradient(mesh, V, constraint_set, dhat);
@@ -180,7 +180,7 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
             mesh, V, dhat, constraint_set, /*dmin=*/0, method);
     }
     CAPTURE(dhat, method, all_vertices_on_surface);
-    CHECK(constraint_set.num_constraints() > 0);
+    CHECK(constraint_set.size() > 0);
 
     Eigen::MatrixXd hess_b = ipc::compute_barrier_potential_hessian(
         mesh, V, constraint_set, dhat, /*project_to_psd=*/false);

@@ -17,14 +17,28 @@ TEST_CASE("Test barrier derivatives", "[barrier]")
 
     // Check gradient
 
+    std::function<double(double, double)> barrier, barrier_gradient,
+        barrier_hessian;
+    SECTION("Original IPC barrier")
+    {
+        barrier = ipc::barrier<double>;
+        barrier_gradient = ipc::barrier_gradient;
+        barrier_hessian = ipc::barrier_hessian;
+    }
+    SECTION("Barrier with physical units")
+    {
+        barrier = ipc::physical_barrier<double>;
+        barrier_gradient = ipc::physical_barrier_gradient;
+        barrier_hessian = ipc::physical_barrier_hessian;
+    }
+
     Eigen::VectorXd fgrad(1);
     fd::finite_gradient(
-        d_vec,
-        [&](const Eigen::VectorXd& d) { return ipc::barrier(d[0], dhat); },
+        d_vec, [&](const Eigen::VectorXd& d) { return barrier(d[0], dhat); },
         fgrad);
 
     Eigen::VectorXd grad(1);
-    grad << ipc::barrier_gradient(d, dhat);
+    grad << barrier_gradient(d, dhat);
 
     CAPTURE(dhat, d, fgrad(0), grad(0));
     CHECK(fd::compare_gradient(fgrad, grad));
@@ -33,12 +47,10 @@ TEST_CASE("Test barrier derivatives", "[barrier]")
 
     fd::finite_gradient(
         d_vec,
-        [&](const Eigen::VectorXd& d) {
-            return ipc::barrier_gradient(d[0], dhat);
-        },
+        [&](const Eigen::VectorXd& d) { return barrier_gradient(d[0], dhat); },
         fgrad);
 
-    grad << ipc::barrier_hessian(d, dhat);
+    grad << barrier_hessian(d, dhat);
 
     CAPTURE(dhat, d, fgrad(0), grad(0));
     CHECK(fd::compare_gradient(fgrad, grad));

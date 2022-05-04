@@ -4,7 +4,7 @@
 #include <Eigen/Sparse>
 
 #include <ipc/collision_mesh.hpp>
-#include <ipc/collision_constraint.hpp>
+#include <ipc/collisions/constraints.hpp>
 #include <ipc/friction/friction_constraint.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 

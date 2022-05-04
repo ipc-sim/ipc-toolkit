@@ -1,9 +1,5 @@
 #pragma once
 
-#include <ipc/collision_constraint.hpp>
-#include <ipc/friction/relative_displacement.hpp>
-#include <ipc/utils/eigen_ext.hpp>
-
 namespace ipc {
 
 // C1 clamping

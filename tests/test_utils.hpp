@@ -6,7 +6,7 @@
 
 #include <Eigen/Core>
 
-#include <ipc/collision_constraint.hpp>
+#include <ipc/collisions/constraints.hpp>
 
 #include <ipc/broad_phase/broad_phase.hpp>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/collision_constraint.hpp>
+#include <ipc/collisions/constraints.hpp>
 #include <ipc/friction/relative_displacement.hpp>
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 #include <ipc/utils/eigen_ext.hpp>
@@ -19,6 +19,8 @@ struct FrictionConstraint {
 
     /// @brief Coefficient of friction
     double mu;
+
+    double weight = 1;
 
     virtual ~FrictionConstraint() { }
 
@@ -95,8 +97,6 @@ struct FrictionConstraint {
         const DiffWRT wrt,
         const double dmin = 0) const;
 
-    virtual int multiplicity() const { return 1; };
-
 protected:
     int dim() const { return tangent_basis.rows(); }
     int ndof() const { return dim() * num_vertices(); };
@@ -123,17 +123,21 @@ protected:
         return x;
     }
 
+    virtual double compute_distance(const VectorMax12d& x) const = 0;
+    virtual VectorMax12d
+    compute_distance_gradient(const VectorMax12d& x) const = 0;
+
     virtual double compute_normal_force_magnitude(
         const VectorMax12d& x,
         const double dhat,
         const double barrier_stiffness,
-        const double dmin = 0) const = 0;
+        const double dmin = 0) const;
 
     virtual VectorMax12d compute_normal_force_magnitude_gradient(
         const VectorMax12d& x,
         const double dhat,
         const double barrier_stiffness,
-        const double dmin = 0) const = 0;
+        const double dmin = 0) const;
 
     virtual MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& x) const = 0;
@@ -166,7 +170,7 @@ protected:
     {
         // u is the relative displacement in the tangential space
         const VectorMax2d u = tangent_basis.transpose().cast<T>() * rel_ui;
-        return multiplicity() * mu * normal_force_magnitude
+        return weight * mu * normal_force_magnitude
             * f0_SF(u.norm(), epsv_times_h);
     }
 };
@@ -209,21 +213,12 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
             relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
 
-    int& multiplicity() { return m_multiplicity; };
-    int multiplicity() const override { return m_multiplicity; };
+    using FrictionConstraint::weight;
 
 protected:
-    double compute_normal_force_magnitude(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
-
-    VectorMax12d compute_normal_force_magnitude_gradient(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
+    virtual double compute_distance(const VectorMax12d& x) const override;
+    virtual VectorMax12d
+    compute_distance_gradient(const VectorMax12d& x) const override;
 
     MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& x) const override;
@@ -248,8 +243,6 @@ protected:
 
     MatrixMax<double, 6, 12> relative_displacement_matrix_jacobian(
         const VectorMax2d& closest_point) const override;
-
-    int m_multiplicity = 1;
 
 private:
     template <typename T>
@@ -297,21 +290,12 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
             relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
 
-    int& multiplicity() { return m_multiplicity; };
-    int multiplicity() const override { return m_multiplicity; };
+    using FrictionConstraint::weight;
 
 protected:
-    double compute_normal_force_magnitude(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
-
-    VectorMax12d compute_normal_force_magnitude_gradient(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
+    virtual double compute_distance(const VectorMax12d& x) const override;
+    virtual VectorMax12d
+    compute_distance_gradient(const VectorMax12d& x) const override;
 
     MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& x) const override;
@@ -336,8 +320,6 @@ protected:
 
     MatrixMax<double, 6, 12> relative_displacement_matrix_jacobian(
         const VectorMax2d& closest_point) const override;
-
-    int m_multiplicity = 1;
 
 private:
     template <typename T>
@@ -388,18 +370,12 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
             relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
 
-protected:
-    double compute_normal_force_magnitude(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
+    using FrictionConstraint::weight;
 
-    VectorMax12d compute_normal_force_magnitude_gradient(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
+protected:
+    virtual double compute_distance(const VectorMax12d& x) const override;
+    virtual VectorMax12d
+    compute_distance_gradient(const VectorMax12d& x) const override;
 
     MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& x) const override;
@@ -474,18 +450,12 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
             relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
 
-protected:
-    double compute_normal_force_magnitude(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
+    using FrictionConstraint::weight;
 
-    VectorMax12d compute_normal_force_magnitude_gradient(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
+protected:
+    virtual double compute_distance(const VectorMax12d& x) const override;
+    virtual VectorMax12d
+    compute_distance_gradient(const VectorMax12d& x) const override;
 
     MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& x) const override;

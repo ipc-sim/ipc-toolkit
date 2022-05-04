@@ -41,6 +41,14 @@ public:
     const Eigen::MatrixXi& edges() const { return m_edges; }
     const Eigen::MatrixXi& faces() const { return m_faces; }
     const Eigen::MatrixXi& faces_to_edges() const { return m_faces_to_edges; }
+    const std::vector<std::vector<int>>& vertices_to_edges() const
+    {
+        return m_vertices_to_edges;
+    }
+    const std::vector<std::vector<int>>& vertices_to_faces() const
+    {
+        return m_vertices_to_faces;
+    }
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -168,6 +176,9 @@ protected:
     std::vector<unordered_set<int>> m_point_point_adjacencies;
     /// Edges adjacent to edges
     std::vector<unordered_set<int>> m_edge_point_adjacencies;
+
+    std::vector<std::vector<int>> m_vertices_to_faces;
+    std::vector<std::vector<int>> m_vertices_to_edges;
 
     /// Is point on the boundary of the triangle mesh in 3D or polyline in 2D?
     std::vector<bool> m_is_point_on_boundary;

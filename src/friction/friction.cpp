@@ -290,6 +290,7 @@ Eigen::SparseMatrix<double> compute_friction_force_jacobian(
             auto& local_jac_triplets = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
+                // TODO: if wrt == X then compute ∇ₓ w(x)
                 local_hessian_to_global_triplets(
                     friction_constraint_set[i].compute_force_jacobian(
                         X, Ut, U, E, F, dhat, barrier_stiffness, epsv_times_h,

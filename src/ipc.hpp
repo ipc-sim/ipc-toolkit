@@ -3,44 +3,14 @@
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
-#include <ipc/collision_constraint.hpp>
 // NOTE: Include this so the user can just include ipc.hpp
+#include <ipc/collisions/construct_constraint_set.hpp>
 #include <ipc/friction/friction.hpp>
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/collision_mesh.hpp>
 
 /// Incremental Potential Contact functions
 namespace ipc {
-
-/// @brief Construct a set of constraints used to compute the barrier potential.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V Vertices of the collision mesh.
-/// @param[in] dhat The activation distance of the barrier.
-/// @param[out] constraint_set The constructed set of constraints (any existing constraints will be cleared).
-/// @param[in] dmin Minimum distance.
-/// @param[in] method Broad-phase method to use.
-void construct_constraint_set(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const double dhat,
-    Constraints& constraint_set,
-    const double dmin = 0,
-    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID);
-
-/// @brief Construct a set of constraints used to compute the barrier potential.
-/// @param[in] candidates Distance candidates from which the constraint set is built.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V Vertices of the collision mesh.
-/// @param[in] dhat The activation distance of the barrier.
-/// @param[out] constraint_set The constructed set of constraints (any existing constraints will be cleared).
-/// @param[in]  dmin  Minimum distance.
-void construct_constraint_set(
-    const Candidates& candidates,
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const double dhat,
-    Constraints& constraint_set,
-    const double dmin = 0);
 
 /// @brief Compute the barrier potential for a given constraint set.
 /// @param[in] mesh The collision mesh.
