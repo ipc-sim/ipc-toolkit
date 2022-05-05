@@ -90,7 +90,7 @@ target_include_directories(ipc_toolkit PUBLIC ${PROJECT_BINARY_DIR}/include)
 # For MSVC, do not use the min and max macros.
 target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
 
-# target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_CONVERGENT)
+target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_CONVERGENT)
 
 ################################################################################
 # Dependencies
