@@ -1,4 +1,6 @@
 set(SOURCES
+  area_gradient.cpp
+  area_gradient.hpp
   eigen_ext.cpp
   eigen_ext.hpp
   eigen_ext.tpp
