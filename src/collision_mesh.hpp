@@ -29,6 +29,8 @@ public:
     ~CollisionMesh() { }
 
     size_t num_vertices() const { return m_vertex_to_full_vertex.size(); }
+    size_t num_edges() const { return edges().rows(); }
+    size_t num_faces() const { return faces().rows(); }
     size_t dim() const { return m_vertices_at_rest.cols(); }
     size_t ndof() const { return num_vertices() * dim(); }
     size_t full_num_vertices() const { return m_full_vertex_to_vertex.size(); }
@@ -41,14 +43,14 @@ public:
     const Eigen::MatrixXi& edges() const { return m_edges; }
     const Eigen::MatrixXi& faces() const { return m_faces; }
     const Eigen::MatrixXi& faces_to_edges() const { return m_faces_to_edges; }
-    const std::vector<std::vector<int>>& vertices_to_edges() const
-    {
-        return m_vertices_to_edges;
-    }
-    const std::vector<std::vector<int>>& vertices_to_faces() const
-    {
-        return m_vertices_to_faces;
-    }
+    // const std::vector<std::vector<int>>& vertices_to_edges() const
+    // {
+    //     return m_vertices_to_edges;
+    // }
+    // const std::vector<std::vector<int>>& vertices_to_faces() const
+    // {
+    //     return m_vertices_to_faces;
+    // }
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -68,6 +70,16 @@ public:
 
     ///////////////////////////////////////////////////////////////////////////
 
+    const Eigen::SparseVector<double>&
+    point_area_gradient(const size_t pi) const
+    {
+        return m_point_area_jacobian[pi];
+    }
+
+    const Eigen::SparseVector<double>& edge_area_gradient(const size_t ei) const
+    {
+        return m_edge_area_jacobian[ei];
+    }
     const std::vector<unordered_set<int>>& point_point_adjacencies() const
     {
         return m_point_point_adjacencies;
@@ -90,6 +102,17 @@ public:
     const Eigen::VectorXd& edge_areas() const { return m_edge_areas; }
 
     ///////////////////////////////////////////////////////////////////////////
+
+    const Eigen::SparseVector<double>&
+    point_area_gradient(const size_t pi) const
+    {
+        return m_point_area_jacobian[pi];
+    }
+
+    const Eigen::SparseVector<double>& edge_area_gradient(const size_t ei) const
+    {
+        return m_edge_area_jacobian[ei];
+    }
 
     static std::vector<bool> construct_is_on_surface(
         const int num_vertices, const Eigen::MatrixXi& edges);
@@ -177,8 +200,8 @@ protected:
     /// Edges adjacent to edges
     std::vector<unordered_set<int>> m_edge_point_adjacencies;
 
-    std::vector<std::vector<int>> m_vertices_to_faces;
-    std::vector<std::vector<int>> m_vertices_to_edges;
+    // std::vector<std::vector<int>> m_vertices_to_faces;
+    // std::vector<std::vector<int>> m_vertices_to_edges;
 
     /// Is point on the boundary of the triangle mesh in 3D or polyline in 2D?
     std::vector<bool> m_is_point_on_boundary;
@@ -190,6 +213,12 @@ protected:
     /// Edge areas
     /// 3D: 1/3 sum of area of connected triangles
     Eigen::VectorXd m_edge_areas;
+
+    // Stored as a std::vector so it is easier to access the rows directly.
+    /// The rows of the Jacobian of the point areas vector.
+    std::vector<Eigen::SparseVector<double>> m_point_area_jacobian;
+    /// The rows of the Jacobian of the edge areas vector.
+    std::vector<Eigen::SparseVector<double>> m_edge_area_jacobian;
 
 private:
     /// By default all primitives can collide with all other primitives.

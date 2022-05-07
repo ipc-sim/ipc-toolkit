@@ -91,18 +91,25 @@ void add_vertex_vertex_constraint(
     unordered_map<VertexVertexConstraint, long, Hash>& vv_to_index,
     const long v0i,
     const long v1i,
-    const double weight)
+    const double weight,
+    const Eigen::SparseVector<double>& weight_gradient)
 {
     VertexVertexConstraint vv_constraint(v0i, v1i);
     auto found_item = vv_to_index.find(vv_constraint);
     if (found_item != vv_to_index.end()) {
         // Constraint already exists, so increase weight
         vv_constraints[found_item->second].weight += weight;
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+        vv_constraints[found_item->second].weight_gradient += weight_gradient;
+#endif
     } else {
         // New constraint, so add it to the end of vv_constraints
         vv_to_index.emplace(vv_constraint, vv_constraints.size());
         vv_constraints.push_back(vv_constraint);
         vv_constraints.back().weight = weight;
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+        vv_constraints.back().weight_gradient = weight_gradient;
+#endif
     }
 }
 
@@ -112,18 +119,25 @@ void add_edge_vertex_constraint(
     unordered_map<EdgeVertexConstraint, long, Hash>& ev_to_index,
     const long ei,
     const long vi,
-    const double weight)
+    const double weight,
+    const Eigen::SparseVector<double>& weight_gradient)
 {
     EdgeVertexConstraint ev_constraint(ei, vi);
     auto found_item = ev_to_index.find(ev_constraint);
     if (found_item != ev_to_index.end()) {
         // Constraint already exists, so increase weight
         ev_constraints[found_item->second].weight += weight;
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+        ev_constraints[found_item->second].weight_gradient += weight_gradient;
+#endif
     } else {
         // New constraint, so add it to the end of vv_constraints
         ev_to_index.emplace(ev_constraint, ev_constraints.size());
         ev_constraints.push_back(ev_constraint);
         ev_constraints.back().weight = weight;
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+        ev_constraints.back().weight_gradient = weight_gradient;
+#endif
     }
 }
 
@@ -156,17 +170,22 @@ void edge_vertex_candiates_to_constraints(
 #ifdef IPC_TOOLKIT_CONVERGENT
         // ÷ 2 to handle double counting for correct integration
         const double weight = mesh.point_area(vi) / 2;
+        const Eigen::SparseVector<double> weight_gradient =
+            mesh.point_area_gradient(vi) / 2;
 #else
         const double weight = 1;
+        const Eigen::SparseVector<double> weight_gradient(V.rows());
 #endif
 
         switch (dtype) {
         case PointEdgeDistanceType::P_E0:
-            add_vertex_vertex_constraint(C_vv, vv_to_index, vi, e0i, weight);
+            add_vertex_vertex_constraint(
+                C_vv, vv_to_index, vi, e0i, weight, weight_gradient);
             break;
 
         case PointEdgeDistanceType::P_E1:
-            add_vertex_vertex_constraint(C_vv, vv_to_index, vi, e1i, weight);
+            add_vertex_vertex_constraint(
+                C_vv, vv_to_index, vi, e1i, weight, weight_gradient);
             break;
 
         case PointEdgeDistanceType::P_E:
@@ -174,6 +193,9 @@ void edge_vertex_candiates_to_constraints(
             // constraints
             C_ev.emplace_back(ei, vi);
             C_ev.back().weight = weight;
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+            C_ev.back().weight_gradient = weight_gradient;
+#endif
             ev_to_index.emplace(C_ev.back(), C_ev.size() - 1);
             break;
         }
@@ -212,8 +234,11 @@ void edge_edge_candiates_to_constraints(
         // ÷ 4 to handle double counting and PT + EE for correct integration.
         // Sum edge areas because duplicate edge candidates were removed.
         const double weight = (mesh.edge_area(eai) + mesh.edge_area(ebi)) / 4;
+        const Eigen::SparseVector<double> weight_gradient =
+            (mesh.edge_area_gradient(eai) + mesh.edge_area_gradient(ebi)) / 4;
 #else
         const double weight = 1;
+        const Eigen::SparseVector<double> weight_gradient(V.rows());
 #endif
 
         double eps_x = edge_edge_mollifier_threshold(
@@ -229,40 +254,51 @@ void edge_edge_candiates_to_constraints(
 
         switch (dtype) {
         case EdgeEdgeDistanceType::EA0_EB0:
-            add_vertex_vertex_constraint(C_vv, vv_to_index, ea0i, eb0i, weight);
+            add_vertex_vertex_constraint(
+                C_vv, vv_to_index, ea0i, eb0i, weight, weight_gradient);
             break;
 
         case EdgeEdgeDistanceType::EA0_EB1:
-            add_vertex_vertex_constraint(C_vv, vv_to_index, ea0i, eb1i, weight);
+            add_vertex_vertex_constraint(
+                C_vv, vv_to_index, ea0i, eb1i, weight, weight_gradient);
             break;
 
         case EdgeEdgeDistanceType::EA1_EB0:
-            add_vertex_vertex_constraint(C_vv, vv_to_index, ea1i, eb0i, weight);
+            add_vertex_vertex_constraint(
+                C_vv, vv_to_index, ea1i, eb0i, weight, weight_gradient);
             break;
 
         case EdgeEdgeDistanceType::EA1_EB1:
-            add_vertex_vertex_constraint(C_vv, vv_to_index, ea1i, eb1i, weight);
+            add_vertex_vertex_constraint(
+                C_vv, vv_to_index, ea1i, eb1i, weight, weight_gradient);
             break;
 
         case EdgeEdgeDistanceType::EA_EB0:
-            add_edge_vertex_constraint(C_ev, ev_to_index, eai, eb0i, weight);
+            add_edge_vertex_constraint(
+                C_ev, ev_to_index, eai, eb0i, weight, weight_gradient);
             break;
 
         case EdgeEdgeDistanceType::EA_EB1:
-            add_edge_vertex_constraint(C_ev, ev_to_index, eai, eb1i, weight);
+            add_edge_vertex_constraint(
+                C_ev, ev_to_index, eai, eb1i, weight, weight_gradient);
             break;
 
         case EdgeEdgeDistanceType::EA0_EB:
-            add_edge_vertex_constraint(C_ev, ev_to_index, ebi, ea0i, weight);
+            add_edge_vertex_constraint(
+                C_ev, ev_to_index, ebi, ea0i, weight, weight_gradient);
             break;
 
         case EdgeEdgeDistanceType::EA1_EB:
-            add_edge_vertex_constraint(C_ev, ev_to_index, ebi, ea1i, weight);
+            add_edge_vertex_constraint(
+                C_ev, ev_to_index, ebi, ea1i, weight, weight_gradient);
             break;
 
         case EdgeEdgeDistanceType::EA_EB:
             C_ee.emplace_back(eai, ebi, eps_x);
             C_ee.back().weight = weight;
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+            C_ee.back().weight_gradient = weight_gradient;
+#endif
             break;
         }
     }
@@ -299,41 +335,50 @@ void face_vertex_candiates_to_constraints(
 #ifdef IPC_TOOLKIT_CONVERGENT
         // ÷ 4 to handle double counting and PT + EE) for correct integration
         const double weight = mesh.point_area(vi) / 4;
+        const Eigen::SparseVector<double> weight_gradient =
+            mesh.point_area_gradient(vi) / 4;
 #else
         const double weight = 1;
+        const Eigen::SparseVector<double> weight_gradient(V.rows());
 #endif
 
         switch (dtype) {
         case PointTriangleDistanceType::P_T0:
-            add_vertex_vertex_constraint(C_vv, vv_to_index, vi, f0i, weight);
+            add_vertex_vertex_constraint(
+                C_vv, vv_to_index, vi, f0i, weight, weight_gradient);
             break;
 
         case PointTriangleDistanceType::P_T1:
-            add_vertex_vertex_constraint(C_vv, vv_to_index, vi, f1i, weight);
+            add_vertex_vertex_constraint(
+                C_vv, vv_to_index, vi, f1i, weight, weight_gradient);
             break;
 
         case PointTriangleDistanceType::P_T2:
-            add_vertex_vertex_constraint(C_vv, vv_to_index, vi, f2i, weight);
+            add_vertex_vertex_constraint(
+                C_vv, vv_to_index, vi, f2i, weight, weight_gradient);
             break;
 
         case PointTriangleDistanceType::P_E0:
             add_edge_vertex_constraint(
-                C_ev, ev_to_index, F2E(fi, 0), vi, weight);
+                C_ev, ev_to_index, F2E(fi, 0), vi, weight, weight_gradient);
             break;
 
         case PointTriangleDistanceType::P_E1:
             add_edge_vertex_constraint(
-                C_ev, ev_to_index, F2E(fi, 1), vi, weight);
+                C_ev, ev_to_index, F2E(fi, 1), vi, weight, weight_gradient);
             break;
 
         case PointTriangleDistanceType::P_E2:
             add_edge_vertex_constraint(
-                C_ev, ev_to_index, F2E(fi, 2), vi, weight);
+                C_ev, ev_to_index, F2E(fi, 2), vi, weight, weight_gradient);
             break;
 
         case PointTriangleDistanceType::P_T:
             C_fv.emplace_back(fi, vi);
             C_fv.back().weight = weight;
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+            C_fv.back().weight_gradient = weight_gradient;
+#endif
             break;
         }
     }
@@ -370,9 +415,15 @@ void merge_thread_local_constraints(
             C_vv.insert(C_vv.end(), lC_vv.begin(), lC_vv.end());
         } else {
             for (const VertexVertexConstraint& vv : lC_vv) {
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+                const Eigen::SparseVector<double>& weight_gradient =
+                    vv.weight_gradient;
+#else
+                const Eigen::SparseVector<double> weight_gradient;
+#endif
                 add_vertex_vertex_constraint(
                     C_vv, vv_to_index, vv.vertex0_index, vv.vertex1_index,
-                    vv.weight);
+                    vv.weight, weight_gradient);
             }
         }
 
@@ -381,9 +432,15 @@ void merge_thread_local_constraints(
             C_ev.insert(C_ev.end(), lC_ev.begin(), lC_ev.end());
         } else {
             for (const EdgeVertexConstraint& ev : lC_ev) {
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+                const Eigen::SparseVector<double>& weight_gradient =
+                    ev.weight_gradient;
+#else
+                const Eigen::SparseVector<double> weight_gradient;
+#endif
                 add_edge_vertex_constraint(
                     C_ev, ev_to_index, ev.edge_index, ev.vertex_index,
-                    ev.weight);
+                    ev.weight, weight_gradient);
             }
         }
 

@@ -132,7 +132,8 @@ VectorMax12d FrictionConstraint::compute_force(
     const double dhat,
     const double barrier_stiffness,
     const double epsv_times_h,
-    const double dmin) const
+    const double dmin,
+    const bool no_mu) const
 {
     // x is the rest position
     // uᵗ is the displacment at the begining of the timestep
@@ -182,7 +183,8 @@ VectorMax12d FrictionConstraint::compute_force(
     const double f1_over_norm_tau = f1_SF_over_x(tau.norm(), epsv_times_h);
 
     // F = -μ N f₁(‖τ‖)/‖τ‖ T τ
-    return -weight * mu * N * f1_over_norm_tau * T * tau;
+    // NOTE: no_mu -> leave mu out of this function (i.e., assuming mu = 1)
+    return -weight * (no_mu ? 1.0 : mu) * N * f1_over_norm_tau * T * tau;
 }
 
 MatrixMax12d FrictionConstraint::compute_force_jacobian(
@@ -411,7 +413,10 @@ VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
     const VertexVertexConstraint& constraint)
     : VertexVertexCandidate(constraint.vertex0_index, constraint.vertex1_index)
 {
-    weight = constraint.weight;
+    this->weight = constraint.weight;
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+    this->weight_gradient = constraint.weight_gradient;
+#endif
 }
 
 double
@@ -492,7 +497,10 @@ EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
     const EdgeVertexConstraint& constraint)
     : EdgeVertexCandidate(constraint.edge_index, constraint.vertex_index)
 {
-    weight = constraint.weight;
+    this->weight = constraint.weight;
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+    this->weight_gradient = constraint.weight_gradient;
+#endif
 }
 
 double
@@ -587,7 +595,10 @@ EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
     const EdgeEdgeConstraint& constraint)
     : EdgeEdgeCandidate(constraint.edge0_index, constraint.edge1_index)
 {
-    weight = constraint.weight;
+    this->weight = constraint.weight;
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+    this->weight_gradient = constraint.weight_gradient;
+#endif
 }
 
 double EdgeEdgeFrictionConstraint::compute_distance(const VectorMax12d& x) const
@@ -684,7 +695,10 @@ FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
     const FaceVertexConstraint& constraint)
     : FaceVertexCandidate(constraint.face_index, constraint.vertex_index)
 {
-    weight = constraint.weight;
+    this->weight = constraint.weight;
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+    this->weight_gradient = constraint.weight_gradient;
+#endif
 }
 
 double

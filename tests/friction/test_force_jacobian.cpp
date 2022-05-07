@@ -91,6 +91,42 @@ void check_friction_force_jacobian(
 
     ///////////////////////////////////////////////////////////////////////////
 
+    Eigen::MatrixXd JPA_wrt_X(mesh.num_vertices(), mesh.ndof());
+    for (int i = 0; i < mesh.num_vertices(); i++) {
+        JPA_wrt_X.row(i) = Eigen::VectorXd(mesh.point_area_gradient(i));
+    }
+    auto PA_X = [&](const Eigen::VectorXd& x) {
+        CollisionMesh fd_mesh(
+            fd::unflatten(x, X.cols()), mesh.edges(), mesh.faces());
+        return fd_mesh.point_areas();
+    };
+    Eigen::MatrixXd fd_JPA_wrt_X;
+    fd::finite_jacobian(fd::flatten(X), PA_X, fd_JPA_wrt_X);
+    CHECK(fd::compare_jacobian(JPA_wrt_X, fd_JPA_wrt_X));
+    if (!fd::compare_jacobian(JPA_wrt_X, fd_JPA_wrt_X)) {
+        print_compare_nonzero(JPA_wrt_X, fd_JPA_wrt_X);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    Eigen::MatrixXd JEA_wrt_X(mesh.num_edges(), mesh.ndof());
+    for (int i = 0; i < mesh.num_edges(); i++) {
+        JEA_wrt_X.row(i) = Eigen::VectorXd(mesh.edge_area_gradient(i));
+    }
+    auto EA_X = [&](const Eigen::VectorXd& x) {
+        CollisionMesh fd_mesh(
+            fd::unflatten(x, X.cols()), mesh.edges(), mesh.faces());
+        return fd_mesh.edge_areas();
+    };
+    Eigen::MatrixXd fd_JEA_wrt_X;
+    fd::finite_jacobian(fd::flatten(X), EA_X, fd_JEA_wrt_X);
+    CHECK(fd::compare_jacobian(JEA_wrt_X, fd_JEA_wrt_X));
+    if (!fd::compare_jacobian(JEA_wrt_X, fd_JEA_wrt_X)) {
+        print_compare_nonzero(JEA_wrt_X, fd_JEA_wrt_X);
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+
     Eigen::MatrixXd JF_wrt_X = compute_friction_force_jacobian(
         mesh, X, Ut, U, friction_pairs, dhat, barrier_stiffness, epsv_times_h,
         FrictionConstraint::DiffWRT::X);
@@ -235,7 +271,8 @@ TEST_CASE(
         scene = "square-circle";
         mu = 0.5;
         dhat = 1e-3;
-        kappa = 67873353;
+        // kappa = 67873353;
+        kappa = 67873353 / 10;
         epsv_dt = 1e-4;
     }
     SECTION("square-circle-dense")

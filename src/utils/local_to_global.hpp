@@ -7,11 +7,10 @@
 
 namespace ipc {
 
-// IDs can be either std::array<long, N> or std::vector<long>
-template <typename DerivedLocalGrad, typename IDs, typename DerivedGrad>
+template <typename DerivedLocalGrad, typename IDContainer, typename DerivedGrad>
 void local_gradient_to_global_gradient(
     const Eigen::MatrixBase<DerivedLocalGrad>& local_grad,
-    const IDs& ids,
+    const IDContainer& ids,
     int dim,
     Eigen::PlainObjectBase<DerivedGrad>& grad)
 {
@@ -23,11 +22,30 @@ void local_gradient_to_global_gradient(
     }
 }
 
-// IDs can be either std::array<long, N> or std::vector<long>
-template <typename Derived, typename IDs>
+template <
+    typename DerivedLocalGrad,
+    typename IDContainer,
+    typename Scalar = typename DerivedLocalGrad::Scalar>
+void local_gradient_to_global_gradient(
+    const Eigen::MatrixBase<DerivedLocalGrad>& local_grad,
+    const IDContainer& ids,
+    int dim,
+    Eigen::SparseVector<Scalar>& grad)
+{
+    assert(local_grad.size() % dim == 0);
+    const int n_verts = local_grad.size() / dim;
+    assert(ids.size() >= n_verts); // Can be extra ids
+    for (int i = 0; i < n_verts; i++) {
+        for (int d = 0; d < dim; d++) {
+            grad.coeffRef(dim * ids[i] + d) += local_grad(dim * i + d);
+        }
+    }
+}
+
+template <typename Derived, typename IDContainer>
 void local_hessian_to_global_triplets(
     const Eigen::MatrixBase<Derived>& local_hessian,
-    const IDs& ids,
+    const IDContainer& ids,
     int dim,
     std::vector<Eigen::Triplet<double>>& triplets)
 {

@@ -69,6 +69,8 @@ bool FrictionDataGenerator::next()
         REQUIRE(data.E.rows() == 3);
 
         data.constraints.fv_constraints.emplace_back(0, 0);
+        data.constraints.fv_constraints.back().weight_gradient.resize(
+            data.V0.size());
     } break;
     case 1: { // edge-edge
         data.V0.resize(4, 3);
@@ -86,6 +88,8 @@ bool FrictionDataGenerator::next()
         data.E.row(1) << 2, 3;
 
         data.constraints.ee_constraints.emplace_back(0, 1, 0.0);
+        data.constraints.ee_constraints.back().weight_gradient.resize(
+            data.V0.size());
     } break;
     case 2: { // point-edge
         data.V0.resize(3, 3);
@@ -100,6 +104,8 @@ bool FrictionDataGenerator::next()
         data.E.row(0) << 1, 2;
 
         data.constraints.ev_constraints.emplace_back(0, 1);
+        data.constraints.ev_constraints.back().weight_gradient.resize(
+            data.V0.size());
     } break;
     case 3: { // point-point
         data.V0.resize(2, 3);
@@ -111,6 +117,8 @@ bool FrictionDataGenerator::next()
         data.V1.row(1) << -0.5, d, 0; // edge a vertex 1 at t=1
 
         data.constraints.vv_constraints.emplace_back(0, 1);
+        data.constraints.vv_constraints.back().weight_gradient.resize(
+            data.V0.size());
     } break;
     case 4: { // point-edge
         data.V0.resize(3, 2);
@@ -125,6 +133,8 @@ bool FrictionDataGenerator::next()
         data.E.row(0) << 1, 2;
 
         data.constraints.ev_constraints.emplace_back(0, 1);
+        data.constraints.ev_constraints.back().weight_gradient.resize(
+            data.V0.size());
     } break;
     case 5: { // point-point
         data.V0.resize(2, 2);
@@ -136,6 +146,8 @@ bool FrictionDataGenerator::next()
         data.V1.row(1) << -0.5, d; // edge a vertex 1 at t=1
 
         data.constraints.vv_constraints.emplace_back(0, 1);
+        data.constraints.vv_constraints.back().weight_gradient.resize(
+            data.V0.size());
     } break;
     default:
         throw "invalid i";

@@ -21,6 +21,10 @@ struct FrictionConstraint {
     double mu;
 
     double weight = 1;
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+    // Gradient of weight with respect to all DOF
+    Eigen::SparseVector<double> weight_gradient;
+#endif
 
     virtual ~FrictionConstraint() { }
 
@@ -49,7 +53,8 @@ struct FrictionConstraint {
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
-        const double dmin = 0) const
+        const double dmin = 0,
+        const bool no_mu = false) const //< whether to not multiply by mu
     {
         return compute_force(
             X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, E, F, dhat,
@@ -65,7 +70,8 @@ struct FrictionConstraint {
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
-        const double dmin = 0) const;
+        const double dmin = 0,
+        const bool no_mu = false) const; //< whether to not multiply by mu
 
     enum class DiffWRT { X, Ut, U };
 
@@ -213,8 +219,6 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
             relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
 
-    using FrictionConstraint::weight;
-
 protected:
     virtual double compute_distance(const VectorMax12d& x) const override;
     virtual VectorMax12d
@@ -289,8 +293,6 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
         return compute_potential_common(
             relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
-
-    using FrictionConstraint::weight;
 
 protected:
     virtual double compute_distance(const VectorMax12d& x) const override;
@@ -370,8 +372,6 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
             relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
 
-    using FrictionConstraint::weight;
-
 protected:
     virtual double compute_distance(const VectorMax12d& x) const override;
     virtual VectorMax12d
@@ -449,8 +449,6 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
         return compute_potential_common(
             relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
-
-    using FrictionConstraint::weight;
 
 protected:
     virtual double compute_distance(const VectorMax12d& x) const override;

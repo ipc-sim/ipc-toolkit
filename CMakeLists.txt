@@ -91,6 +91,7 @@ target_include_directories(ipc_toolkit PUBLIC ${PROJECT_BINARY_DIR}/include)
 target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
 
 target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_CONVERGENT)
+target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE)
 
 ################################################################################
 # Dependencies

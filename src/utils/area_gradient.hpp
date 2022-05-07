@@ -21,7 +21,7 @@ void edge_length_gradient(
     // ∇ ‖e₁ - e₀‖
     grad.resize(e0.size() + e1.size());
     grad.head(e0.size()) = (e0 - e1) / (e1 - e0).norm();
-    grad.head(e1.size()) = -grad.head(e0.size());
+    grad.tail(e1.size()) = -grad.head(e0.size());
 }
 
 namespace autogen {

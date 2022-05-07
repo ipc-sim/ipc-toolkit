@@ -225,7 +225,8 @@ Eigen::VectorXd compute_friction_force(
     const double dhat,
     const double barrier_stiffness,
     const double epsv_times_h,
-    const double dmin)
+    const double dmin,
+    const bool no_mu)
 {
     if (friction_constraint_set.empty()) {
         return Eigen::VectorXd::Zero(U.size());
@@ -246,7 +247,7 @@ Eigen::VectorXd compute_friction_force(
                 local_gradient_to_global_gradient(
                     friction_constraint_set[i].compute_force(
                         X, Ut, U, E, F, dhat, barrier_stiffness, epsv_times_h,
-                        dmin),
+                        dmin, no_mu),
                     friction_constraint_set[i].vertex_indices(E, F), dim,
                     local_force);
             }
@@ -290,7 +291,6 @@ Eigen::SparseMatrix<double> compute_friction_force_jacobian(
             auto& local_jac_triplets = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-                // TODO: if wrt == X then compute ∇ₓ w(x)
                 local_hessian_to_global_triplets(
                     friction_constraint_set[i].compute_force_jacobian(
                         X, Ut, U, E, F, dhat, barrier_stiffness, epsv_times_h,
@@ -307,6 +307,29 @@ Eigen::SparseMatrix<double> compute_friction_force_jacobian(
             local_jac_triplets.begin(), local_jac_triplets.end());
         jacobian += local_jacobian;
     }
+
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
+    // if wrt == X then compute ∇ₓ w(x)
+    if (wrt == FrictionConstraint::DiffWRT::X) {
+        for (int i = 0; i < friction_constraint_set.size(); i++) {
+            const FrictionConstraint& constraint = friction_constraint_set[i];
+            assert(constraint.weight_gradient.size() == X.size());
+
+            VectorMax12d local_force = constraint.compute_force(
+                X, Ut, U, E, F, dhat, barrier_stiffness, epsv_times_h, dmin);
+            assert(constraint.weight != 0);
+            local_force.array() /= constraint.weight;
+
+            Eigen::SparseVector<double> force(X.size());
+            force.reserve(local_force.size());
+            local_gradient_to_global_gradient(
+                local_force, constraint.vertex_indices(E, F), dim, force);
+
+            jacobian += force * constraint.weight_gradient.transpose();
+        }
+    }
+#endif
+
     return jacobian;
 }
 

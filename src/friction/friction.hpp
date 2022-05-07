@@ -88,7 +88,8 @@ Eigen::VectorXd compute_friction_force(
     const double dhat,
     const double barrier_stiffness,
     const double epsv_times_h,
-    const double dmin = 0);
+    const double dmin = 0,
+    const bool no_mu = false); //< whether to not multiply by mu
 
 inline Eigen::VectorXd compute_friction_force(
     const CollisionMesh& mesh,
@@ -98,11 +99,13 @@ inline Eigen::VectorXd compute_friction_force(
     const double dhat,
     const double barrier_stiffness,
     const double epsv_times_h,
-    const double dmin = 0)
+    const double dmin = 0,
+    const bool no_mu = false) //< whether to not multiply by mu
 {
     return compute_friction_force(
         mesh, X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U,
-        friction_constraint_set, dhat, barrier_stiffness, epsv_times_h, dmin);
+        friction_constraint_set, dhat, barrier_stiffness, epsv_times_h, dmin,
+        no_mu);
 }
 
 Eigen::SparseMatrix<double> compute_friction_force_jacobian(
