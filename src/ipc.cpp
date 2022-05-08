@@ -143,6 +143,38 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     return hess;
 }
 
+Eigen::SparseMatrix<double> compute_barrier_shape_derivative(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& V,
+    const Constraints& constraint_set,
+    const double dhat)
+{
+    Eigen::SparseMatrix<double> shape_derivative =
+        compute_barrier_potential_hessian(mesh, V, constraint_set, dhat, false);
+
+    for (int i = 0; i < constraint_set.size(); i++) {
+        const CollisionConstraint& constraint = constraint_set[i];
+        assert(constraint.weight_gradient.size() == V.size());
+
+        VectorMax12d local_barrier_grad = constraint.compute_potential_gradient(
+            V, mesh.edges(), mesh.faces(), dhat);
+        assert(constraint.weight != 0);
+        local_barrier_grad.array() /= constraint.weight;
+
+        Eigen::SparseVector<double> barrier_grad(V.size());
+        barrier_grad.reserve(local_barrier_grad.size());
+        local_gradient_to_global_gradient(
+            local_barrier_grad,
+            constraint.vertex_indices(mesh.edges(), mesh.faces()), V.cols(),
+            barrier_grad);
+
+        shape_derivative +=
+            barrier_grad * constraint.weight_gradient.transpose();
+    }
+
+    return shape_derivative;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 bool is_step_collision_free(

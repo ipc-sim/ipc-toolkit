@@ -50,6 +50,18 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const double dhat,
     const bool project_hessian_to_psd = true);
 
+/// @brief Compute the barrier shape derivative.
+/// @param[in] mesh The collision mesh.
+/// @param[in] V Vertices of the collision mesh.
+/// @param[in] constraint_set The set of constraints.
+/// @param[in] dhat The activation distance of the barrier.
+/// @returns The derivative of the force with respect to X, the rest positions.
+Eigen::SparseMatrix<double> compute_barrier_shape_derivative(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& V,
+    const Constraints& constraint_set,
+    const double dhat);
+
 ///////////////////////////////////////////////////////////////////////////////
 // Collision detection
 
