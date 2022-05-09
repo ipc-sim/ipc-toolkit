@@ -15,7 +15,7 @@ struct PlaneVertexConstraint : CollisionConstraint {
     std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
     {
-        return { vertex_index, -1, -1, -1 };
+        return { { vertex_index, -1, -1, -1 } };
     }
 
     double compute_distance(
