@@ -1,5 +1,7 @@
 #include "test_utils.hpp"
 
+#include <unsupported/Eigen/SparseExtra>
+
 #include <igl/dirname.h>
 #include <igl/edges.h>
 #include <igl/read_triangle_mesh.h>
@@ -96,4 +98,54 @@ Catch::Generators::GeneratorWrapper<Eigen::Matrix3d> RotationGenerator::create()
 {
     return Catch::Generators::GeneratorWrapper<Eigen::Matrix3d>(
         std::make_unique<RotationGenerator>());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Matrix Market file utils
+
+Eigen::MatrixXd loadMarketXd(const std::string& f)
+{
+    Eigen::SparseMatrix<double> tmp;
+    REQUIRE(Eigen::loadMarket(tmp, f));
+    return Eigen::MatrixXd(tmp);
+}
+
+Eigen::MatrixXi loadMarketXi(const std::string& f)
+{
+    Eigen::SparseMatrix<int> tmp;
+    REQUIRE(Eigen::loadMarket(tmp, f));
+    return Eigen::MatrixXi(tmp);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void print_compare_nonzero(
+    const Eigen::MatrixXd& A,
+    const Eigen::MatrixXd& B,
+    bool print_only_different)
+{
+    fmt::print(
+        "A.norm()={}, B.norm()={} (A-B).norm()={}\n", A.norm(), B.norm(),
+        (A - B).norm());
+    fmt::print("(i,j): A(i,j), B(i,j), abs_diff, rel_diff\n");
+    assert(A.rows() == B.rows());
+    assert(A.cols() == B.cols());
+    for (int i = 0; i < A.rows(); i++) {
+        for (int j = 0; j < A.rows(); j++) {
+            const double abs_diff = abs(A(i, j) - B(i, j));
+            const double rel_diff =
+                abs_diff / std::max(abs(A(i, j)), abs(B(i, j)));
+
+            const double tol =
+                std::max({ abs(A(i, j)), abs(B(i, j)), double(1.0) }) * 1e-5;
+
+            if ((A(i, j) != 0 || B(i, j) != 0)
+                && (!print_only_different || abs_diff > tol)) {
+                fmt::print(
+                    "({:d},{:d}): {:g}, {:g}, {:g}, {:g}\n", i, j, A(i, j),
+                    B(i, j), abs_diff, rel_diff);
+            }
+        }
+    }
+    fmt::print("\n");
 }

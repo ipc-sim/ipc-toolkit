@@ -1,11 +1,9 @@
 #include <catch2/catch.hpp>
 
-#include <array>
 #include <vector>
 
 #include <finitediff.hpp>
 #include <igl/edges.h>
-#include <nlohmann/json.hpp>
 
 #include <ipc/ipc.hpp>
 #include <ipc/friction/friction.hpp>
@@ -14,54 +12,7 @@
 #include "friction_data_generator.hpp"
 #include "../test_utils.hpp"
 
-#include <unsupported/Eigen/SparseExtra>
-
 using namespace ipc;
-
-inline Eigen::MatrixXd loadMarketXd(const std::string& f)
-{
-    Eigen::SparseMatrix<double> tmp;
-    REQUIRE(Eigen::loadMarket(tmp, f));
-    return Eigen::MatrixXd(tmp);
-}
-
-inline Eigen::MatrixXi loadMarketXi(const std::string& f)
-{
-    Eigen::SparseMatrix<int> tmp;
-    REQUIRE(Eigen::loadMarket(tmp, f));
-    return Eigen::MatrixXi(tmp);
-}
-
-void print_compare_nonzero(
-    const Eigen::MatrixXd& A,
-    const Eigen::MatrixXd& B,
-    bool print_only_different = true)
-{
-    fmt::print(
-        "A.norm()={}, B.norm()={} (A-B).norm()={}\n", A.norm(), B.norm(),
-        (A - B).norm());
-    fmt::print("(i,j): A(i,j), B(i,j), abs_diff, rel_diff\n");
-    assert(A.rows() == B.rows());
-    assert(A.cols() == B.cols());
-    for (int i = 0; i < A.rows(); i++) {
-        for (int j = 0; j < A.rows(); j++) {
-            const double abs_diff = abs(A(i, j) - B(i, j));
-            const double rel_diff =
-                abs_diff / std::max(abs(A(i, j)), abs(B(i, j)));
-
-            const double tol =
-                std::max({ abs(A(i, j)), abs(B(i, j)), double(1.0) }) * 1e-5;
-
-            if ((A(i, j) != 0 || B(i, j) != 0)
-                && (!print_only_different || abs_diff > tol)) {
-                fmt::print(
-                    "({:d},{:d}): {:g}, {:g}, {:g}, {:g}\n", i, j, A(i, j),
-                    B(i, j), abs_diff, rel_diff);
-            }
-        }
-    }
-    fmt::print("\n");
-}
 
 void check_friction_force_jacobian(
     CollisionMesh mesh,

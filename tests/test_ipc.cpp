@@ -1,6 +1,7 @@
 #include <catch2/catch.hpp>
 
 #include <iostream>
+#include <fstream>
 
 #include <finitediff.hpp>
 
@@ -195,4 +196,59 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
 
     REQUIRE(hess_b.squaredNorm() > 1e-3);
     CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
+}
+
+TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
+{
+    nlohmann::json data;
+    {
+        std::ifstream input(TEST_DATA_DIR + "shape_derivative_data.json");
+        REQUIRE(input.good());
+
+        data = nlohmann::json::parse(input, nullptr, false);
+        REQUIRE(!data.is_discarded());
+    }
+
+    // Parameters
+    double dhat = data["dhat"];
+
+    // Mesh
+    Eigen::MatrixXd X, V;
+    from_json(data["boundary_nodes_pos"], X);
+    from_json(data["displaced"], V);
+
+    Eigen::MatrixXi E;
+    from_json(data["boundary_edges"], E);
+
+    CollisionMesh mesh =
+        CollisionMesh::build_from_full_mesh(X, E, /*faces=*/Eigen::MatrixXi());
+
+    X = mesh.vertices(X);
+    V = mesh.vertices(V);
+    const Eigen::MatrixXd U = V - X;
+
+    Constraints constraint_set;
+    construct_constraint_set(mesh, V, dhat, constraint_set);
+
+    Eigen::MatrixXd JF_wrt_X =
+        compute_barrier_shape_derivative(mesh, V, constraint_set, dhat);
+
+    auto F_X = [&](const Eigen::VectorXd& x) {
+        const Eigen::MatrixXd fd_X = fd::unflatten(x, X.cols());
+        const Eigen::MatrixXd fd_V = fd_X + U;
+
+        CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
+
+        Constraints fd_constraint_set;
+        construct_constraint_set(fd_mesh, fd_V, dhat, fd_constraint_set);
+
+        return compute_barrier_potential_gradient(
+            fd_mesh, fd_V, fd_constraint_set, dhat);
+    };
+    Eigen::MatrixXd fd_JF_wrt_X;
+    fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
+    CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
+    if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
+        print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
+    }
 }

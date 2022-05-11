@@ -5,7 +5,6 @@
 
 #include <finitediff.hpp>
 #include <igl/edges.h>
-#include <nlohmann/json.hpp>
 
 #include <ipc/ipc.hpp>
 #include <ipc/friction/friction.hpp>
@@ -112,32 +111,6 @@ void mmcvids_to_friction_constraints(
     F.resize(faces.size(), 3);
     for (int i = 0; i < faces.size(); i++) {
         F.row(i) = faces[i];
-    }
-}
-
-template <typename T>
-inline void from_json(const nlohmann::json& json, VectorX<T>& vec)
-{
-    vec =
-        Eigen::Map<VectorX<T>>(json.get<std::vector<T>>().data(), json.size());
-}
-
-template <typename T>
-void from_json(const nlohmann::json& json, MatrixX<T>& mat)
-{
-    typedef std::vector<std::vector<T>> L;
-    L list = json.get<L>();
-
-    size_t num_rows = list.size();
-    if (num_rows == 0) {
-        return;
-    }
-    size_t num_cols = list[0].size();
-    mat.resize(num_rows, num_cols);
-
-    for (size_t i = 0; i < num_rows; ++i) {
-        assert(num_cols == list[i].size());
-        mat.row(i) = Eigen::Map<RowVectorX<T>>(list[i].data(), num_cols);
     }
 }
 
