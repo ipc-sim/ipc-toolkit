@@ -41,7 +41,7 @@ void SpatialHash::build(
     builtInRadius = inflation_radius;
 
     if (voxelSize <= 0) {
-        voxelSize = suggest_good_voxel_size(V0, V1, E);
+        voxelSize = suggest_good_voxel_size(V0, V1, E, inflation_radius);
     }
 
     leftBottomCorner =
