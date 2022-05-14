@@ -26,10 +26,13 @@ public:
     {
         return m_vertices_at_rest;
     }
-    Eigen::MatrixXd vertices(const Eigen::MatrixXd& full_V) const;
     const Eigen::MatrixXi& edges() const { return m_edges; }
     const Eigen::MatrixXi& faces() const { return m_faces; }
     const Eigen::MatrixXi& faces_to_edges() const { return m_faces_to_edges; }
+
+    // Eigen::MatrixXd vertices(const Eigen::MatrixXd& full_V) const;
+    Eigen::MatrixXd
+    vertices_from_displacements(const Eigen::MatrixXd& full_U) const;
 
     void
     set_linear_vertex_map(const Eigen::SparseMatrix<double>& linear_vertex_map);
@@ -96,8 +99,8 @@ protected:
     Eigen::VectorXi vertex_to_full_vertex;
 
     // Selection matrix S ∈ ℝ^{collision×full}
-    Eigen::SparseMatrix<double> select_vertices;
-    Eigen::SparseMatrix<double> select_dof;
+    Eigen::SparseMatrix<double> m_select_vertices;
+    Eigen::SparseMatrix<double> m_select_dof;
 
     /// Mapping from full vertices to collision vertices
     Eigen::SparseMatrix<double> m_full_to_collision_vertices;
