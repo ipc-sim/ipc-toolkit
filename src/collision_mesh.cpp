@@ -66,7 +66,7 @@ CollisionMesh::CollisionMesh(
     set_identity_linear_vertex_map();
 
     // Set vertices at rest using full → reduced map
-    m_vertices_at_rest = m_select_vertices * m_full_vertices_at_rest;
+    m_vertices_at_rest = m_select_vertices * full_vertices_at_rest;
     // m_vertices_at_rest = vertices(full_vertices_at_rest);
 
     // Map faces and edges to only included vertices
