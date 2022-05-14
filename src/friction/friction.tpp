@@ -18,6 +18,7 @@ T compute_friction_potential(
     if (friction_constraint_set.empty()) {
         return T(0);
     }
+    assert(epsv_times_h > 0);
 
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();

@@ -198,6 +198,7 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
 }
 
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
 TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
 {
     nlohmann::json data;
@@ -252,3 +253,4 @@ TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
         print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
     }
 }
+#endif

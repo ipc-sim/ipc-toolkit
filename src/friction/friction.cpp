@@ -138,6 +138,7 @@ Eigen::VectorXd compute_friction_potential_gradient(
     if (friction_constraint_set.empty()) {
         return Eigen::VectorXd::Zero(V0.size());
     }
+    assert(epsv_times_h > 0);
 
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
@@ -181,6 +182,7 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     if (friction_constraint_set.empty()) {
         return Eigen::SparseMatrix<double>(V0.size(), V0.size());
     }
+    assert(epsv_times_h > 0);
 
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
@@ -231,6 +233,7 @@ Eigen::VectorXd compute_friction_force(
     if (friction_constraint_set.empty()) {
         return Eigen::VectorXd::Zero(U.size());
     }
+    assert(epsv_times_h > 0);
 
     int dim = U.cols();
     const Eigen::MatrixXi& E = mesh.edges();
@@ -277,6 +280,7 @@ Eigen::SparseMatrix<double> compute_friction_force_jacobian(
     if (friction_constraint_set.empty()) {
         return Eigen::SparseMatrix<double>(U.size(), U.size());
     }
+    assert(epsv_times_h > 0);
 
     int dim = U.cols();
     const Eigen::MatrixXi& E = mesh.edges();

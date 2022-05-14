@@ -143,6 +143,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     return hess;
 }
 
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
 Eigen::SparseMatrix<double> compute_barrier_shape_derivative(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
@@ -174,6 +175,7 @@ Eigen::SparseMatrix<double> compute_barrier_shape_derivative(
 
     return shape_derivative;
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

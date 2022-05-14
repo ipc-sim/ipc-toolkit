@@ -34,6 +34,7 @@ VectorMax12d FrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXi& F,
     double epsv_times_h) const
 {
+    assert(epsv_times_h > 0);
     // ∇ₓ μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀ(x - xᵗ))
     //  = μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u
 
@@ -60,6 +61,7 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
     const double epsv_times_h,
     bool project_hessian_to_psd) const
 {
+    assert(epsv_times_h > 0);
     // ∇ₓ μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u (where u = T(xᵗ)ᵀ (x - xᵗ))
     //  = μ N T [(f₁'(‖u‖)‖u‖ − f₁(‖u‖))/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
     //  = μ N T [f₂(‖u‖) uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
