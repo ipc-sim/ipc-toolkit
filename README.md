@@ -105,6 +105,34 @@ Simply fork this repository and make a Pull Request! We'd definitely appreciate:
 * Documentation
 * Testing
 
+## Citation
+
+If you use the IPC Toolkit in your project, please consider citing our work:
+
+```bibtex
+@software{ipc_toolkit,
+  author = {Zachary Ferguson and others},
+  title = {{IPC Toolkit}},
+  url = {https://ipc-sim.github.io/ipc-toolkit/},
+  year = {2020},
+}
+```
+
+Additionally you can cite the original IPC paper:
+
+```bibtex
+@article{Li2020IPC,
+    author = {Minchen Li and Zachary Ferguson and Teseo Schneider and Timothy Langlois and
+        Denis Zorin and Daniele Panozzo and Chenfanfu Jiang and Danny M. Kaufman},
+    title = {Incremental Potential Contact: Intersection- and Inversion-free Large Deformation Dynamics},
+    journal = {ACM Trans. Graph. (SIGGRAPH)},
+    year = {2020},
+    volume = {39},
+    number = {4},
+    articleno = {49}
+} 
+```
+
 ## License
 
 MIT License © 2020, the IPC-Sim organization (See <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><code>LICENSE.txt</code></a> for details)
