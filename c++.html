@@ -682,7 +682,8 @@
 <dt class="sig sig-object cpp" id="_CPPv4N3ipc16barrier_gradientEdd">
 <span class="target" id="namespaceipc_1ab1a8f472720b4154ab8693143512576a"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">ipc</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">barrier_gradient</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">d</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">dhat</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3ipc16barrier_gradientEdd" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Derivative of the barrier function. </p>
-<p><span class="math notranslate nohighlight">\(b'(d) = (\hat{d}-d) \left( 2\ln\left( \frac{d}{\hat{d}} \right) - \frac{\hat{d}}{d} + 1\right)\)</span></p>
+<p><span class="math notranslate nohighlight">\(b'(d) = (\hat{d}-d) \left( 2\ln\left( \frac{d}{\hat{d}} \right) -
+\frac{\hat{d}}{d} + 1\right)\)</span></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -700,7 +701,8 @@
 <dt class="sig sig-object cpp" id="_CPPv4N3ipc15barrier_hessianEdd">
 <span class="target" id="namespaceipc_1ab6668771f873bc217133038e838565c5"></span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">ipc</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">barrier_hessian</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">d</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">dhat</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3ipc15barrier_hessianEdd" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Second derivative of the barrier function. </p>
-<p><span class="math notranslate nohighlight">\(b''(d) = \left( \frac{\hat{d}}{d} + 2 \right) \frac{\hat{d}}{d} - 2\ln\left( \frac{d}{\hat{d}} \right) - 3\)</span></p>
+<p><span class="math notranslate nohighlight">\(b''(d) = \left( \frac{\hat{d}}{d} + 2 \right) \frac{\hat{d}}{d} -
+2\ln\left( \frac{d}{\hat{d}} \right) - 3\)</span></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
