@@ -788,7 +788,8 @@ FaceVertexFrictionConstraint::relative_displacement_matrix_jacobian(
     const VectorMax2d& closest_point) const
 {
     assert(closest_point.size() == 2);
-    return point_triangle_relative_displacement_matrix(dim(), closest_point);
+    return point_triangle_relative_displacement_matrix_jacobian(
+        dim(), closest_point);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
