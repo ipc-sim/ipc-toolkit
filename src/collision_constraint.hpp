@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include <Eigen/Core>
 
 #include <ipc/broad_phase/collision_candidate.hpp>
