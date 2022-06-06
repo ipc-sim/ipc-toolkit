@@ -652,12 +652,12 @@ bool has_intersections(
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
 
-    const double conservative_inflation_radius = 1e-6
-        * world_bbox_diagonal_length(V)
+    const double conservative_inflation_radius =
+        1e-6 * world_bbox_diagonal_length(V);
 
-        // TODO: Expose the broad-phase method
-        std::unique_ptr<BroadPhase>
-            broad_phase = BroadPhase::make_broad_phase(method);
+    // TODO: Expose the broad-phase method
+    std::unique_ptr<BroadPhase> broad_phase =
+        BroadPhase::make_broad_phase(method);
     broad_phase->can_vertices_collide = mesh.can_collide;
 
     broad_phase->build(V, E, F, conservative_inflation_radius);
