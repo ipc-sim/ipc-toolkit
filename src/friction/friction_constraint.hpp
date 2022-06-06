@@ -8,8 +8,6 @@
 namespace ipc {
 
 struct FrictionConstraint {
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
     /// @brief Barycentric coordinates of the closest point(s)
     VectorMax2d closest_point;
 
@@ -24,7 +22,8 @@ struct FrictionConstraint {
 
     virtual ~FrictionConstraint() { }
 
-    virtual std::vector<long> vertex_indices(
+    virtual int num_vertices() const = 0;
+    virtual std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const = 0;
 
     virtual VectorMax12d compute_potential_gradient(
@@ -100,7 +99,15 @@ struct FrictionConstraint {
 
 protected:
     int dim() const { return tangent_basis.rows(); }
-    virtual int ndof() const = 0;
+    int ndof() const { return dim() * num_vertices(); };
+
+    void init(
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const double barrier_stiffness,
+        const double dmin);
 
     template <typename T>
     VectorMax12<T> select_dofs(
@@ -109,9 +116,8 @@ protected:
         const Eigen::MatrixXi& F) const
     {
         VectorMax12<T> x(ndof());
-        const std::vector<long> idx = vertex_indices(E, F);
-        assert(ndof() == dim() * idx.size());
-        for (int i = 0; i < idx.size(); i++) {
+        const std::array<long, 4> idx = vertex_indices(E, F);
+        for (int i = 0; i < num_vertices(); i++) {
             x.segment(i * dim(), dim()) = X.row(idx[i]);
         }
         return x;
@@ -172,11 +178,24 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
     VertexVertexFrictionConstraint(long vertex0_index, long vertex1_index);
     VertexVertexFrictionConstraint(const VertexVertexCandidate& candidate);
     VertexVertexFrictionConstraint(const VertexVertexConstraint& constraint);
+    VertexVertexFrictionConstraint(
+        const VertexVertexConstraint& constraint,
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const double barrier_stiffness)
+        : VertexVertexFrictionConstraint(constraint)
+    {
+        FrictionConstraint::init(
+            V, E, F, dhat, barrier_stiffness, constraint.minimum_distance);
+    }
 
-    std::vector<long> vertex_indices(
+    int num_vertices() const override { return 2; }
+    std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
     {
-        return { { vertex0_index, vertex1_index } };
+        return { { vertex0_index, vertex1_index, -1, -1 } };
     }
 
     template <typename T>
@@ -194,8 +213,6 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
     int multiplicity() const override { return m_multiplicity; };
 
 protected:
-    int ndof() const override { return dim() * 2; }
-
     double compute_normal_force_magnitude(
         const VectorMax12d& x,
         const double dhat,
@@ -249,11 +266,24 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
     EdgeVertexFrictionConstraint(long edge_index, long vertex_index);
     EdgeVertexFrictionConstraint(const EdgeVertexCandidate& constraint);
     EdgeVertexFrictionConstraint(const EdgeVertexConstraint& constraint);
+    EdgeVertexFrictionConstraint(
+        const EdgeVertexConstraint& constraint,
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const double barrier_stiffness)
+        : EdgeVertexFrictionConstraint(constraint)
+    {
+        FrictionConstraint::init(
+            V, E, F, dhat, barrier_stiffness, constraint.minimum_distance);
+    }
 
-    std::vector<long> vertex_indices(
+    int num_vertices() const override { return 3; }
+    std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
     {
-        return { { vertex_index, E(edge_index, 0), E(edge_index, 1) } };
+        return { { vertex_index, E(edge_index, 0), E(edge_index, 1), -1 } };
     }
 
     template <typename T>
@@ -271,8 +301,6 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
     int multiplicity() const override { return m_multiplicity; };
 
 protected:
-    int ndof() const override { return dim() * 3; }
-
     double compute_normal_force_magnitude(
         const VectorMax12d& x,
         const double dhat,
@@ -328,8 +356,21 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
     EdgeEdgeFrictionConstraint(long edge0_index, long edge1_index);
     EdgeEdgeFrictionConstraint(const EdgeEdgeCandidate& constraint);
     EdgeEdgeFrictionConstraint(const EdgeEdgeConstraint& constraint);
+    EdgeEdgeFrictionConstraint(
+        const EdgeEdgeConstraint& constraint,
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const double barrier_stiffness)
+        : EdgeEdgeFrictionConstraint(constraint)
+    {
+        FrictionConstraint::init(
+            V, E, F, dhat, barrier_stiffness, constraint.minimum_distance);
+    }
 
-    std::vector<long> vertex_indices(
+    int num_vertices() const override { return 4; }
+    std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
     {
         return { { E(edge0_index, 0), E(edge0_index, 1), //
@@ -348,8 +389,6 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
     }
 
 protected:
-    int ndof() const override { return dim() * 4; }
-
     double compute_normal_force_magnitude(
         const VectorMax12d& x,
         const double dhat,
@@ -403,8 +442,21 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
     FaceVertexFrictionConstraint(long face_index, long vertex_index);
     FaceVertexFrictionConstraint(const FaceVertexCandidate& constraint);
     FaceVertexFrictionConstraint(const FaceVertexConstraint& constraint);
+    FaceVertexFrictionConstraint(
+        const FaceVertexConstraint& constraint,
+        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXi& F,
+        const double dhat,
+        const double barrier_stiffness)
+        : FaceVertexFrictionConstraint(constraint)
+    {
+        FrictionConstraint::init(
+            V, E, F, dhat, barrier_stiffness, constraint.minimum_distance);
+    }
 
-    std::vector<long> vertex_indices(
+    int num_vertices() const override { return 4; }
+    std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
     {
         return { { vertex_index, //
@@ -423,8 +475,6 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
     }
 
 protected:
-    int ndof() const override { return dim() * 4; }
-
     double compute_normal_force_magnitude(
         const VectorMax12d& x,
         const double dhat,

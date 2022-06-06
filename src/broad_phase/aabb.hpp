@@ -9,8 +9,6 @@ namespace ipc {
 /// @brief Axis aligned bounding-box of some type
 class AABB {
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
     AABB() { }
 
     AABB(const ArrayMax3d& min, const ArrayMax3d& max);

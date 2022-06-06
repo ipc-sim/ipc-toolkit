@@ -8,6 +8,10 @@
 
 namespace ipc {
 
+///////////////////////////////////////////////////////////////////////////////
+// Barrier functions from [Li et al. 2020]
+///////////////////////////////////////////////////////////////////////////////
+
 /// @brief Function that grows to infinity as x approaches 0 from the right.
 ///
 /// \f$b(d) = -(d-\hat{d})^2\ln\left(\frac{d}{\hat{d}}\right)\f$
@@ -36,6 +40,16 @@ double barrier_gradient(double d, double dhat);
 /// @param dhat Activation distance of the barrier.
 /// @return The second derivative of the barrier wrt d.
 double barrier_hessian(double d, double dhat);
+
+///////////////////////////////////////////////////////////////////////////////
+// Physically based barrier functions from [Li et al. 2022]
+///////////////////////////////////////////////////////////////////////////////
+
+template <typename T> T physical_barrier(const T& d, const double dhat);
+
+double physical_barrier_gradient(const double d, const double dhat);
+
+double physical_barrier_hessian(const double d, const double dhat);
 
 } // namespace ipc
 

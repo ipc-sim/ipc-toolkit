@@ -53,7 +53,7 @@ TEST_CASE(
 {
     Eigen::Vector2d p(0, 1), e0(-1, 0), e1(1, 0);
 
-    MatrixMax<double, 2, 1> basis = point_edge_tangent_basis(p, e0, e1);
+    Eigen::Matrix<double, 2, 1> basis = point_edge_tangent_basis(p, e0, e1);
     CAPTURE(basis);
     CHECK(abs(basis.dot(Eigen::Vector2d::UnitX())) == Approx(1));
 }

@@ -465,7 +465,7 @@ double PlaneVertexConstraint::compute_distance(
     const Eigen::MatrixXi& F) const
 {
     return point_plane_distance(
-        V.row(vertex_index), plane_origin, plane_normal);
+        V.row(vertex_index).transpose(), plane_origin, plane_normal);
 }
 
 VectorMax12d PlaneVertexConstraint::compute_distance_gradient(
@@ -475,7 +475,8 @@ VectorMax12d PlaneVertexConstraint::compute_distance_gradient(
 {
     VectorMax3d distance_grad;
     point_plane_distance_gradient(
-        V.row(vertex_index), plane_origin, plane_normal, distance_grad);
+        V.row(vertex_index).transpose(), plane_origin, plane_normal,
+        distance_grad);
     return distance_grad;
 }
 
@@ -486,7 +487,8 @@ MatrixMax12d PlaneVertexConstraint::compute_distance_hessian(
 {
     MatrixMax3d distance_hess;
     point_plane_distance_hessian(
-        V.row(vertex_index), plane_origin, plane_normal, distance_hess);
+        V.row(vertex_index).transpose(), plane_origin, plane_normal,
+        distance_hess);
     return distance_hess;
 }
 
@@ -577,3 +579,35 @@ const CollisionConstraint& Constraints::operator[](size_t idx) const
 }
 
 } // namespace ipc
+
+namespace std {
+size_t hash<ipc::VertexVertexConstraint>::operator()(
+    ipc::VertexVertexConstraint const& vv) const noexcept
+{
+    long min_vi = std::min(vv.vertex0_index, vv.vertex1_index);
+    long max_vi = std::max(vv.vertex0_index, vv.vertex1_index);
+    return std::hash<long>()(min_vi) ^ std::hash<long>()(max_vi);
+}
+
+size_t hash<ipc::EdgeVertexConstraint>::operator()(
+    ipc::EdgeVertexConstraint const& ev) const noexcept
+{
+    return std::hash<long>()(ev.edge_index)
+        ^ std::hash<long>()(ev.vertex_index);
+}
+
+size_t hash<ipc::EdgeEdgeConstraint>::operator()(
+    ipc::EdgeEdgeConstraint const& ee) const noexcept
+{
+    long min_ei = std::min(ee.edge0_index, ee.edge1_index);
+    long max_ei = std::max(ee.edge0_index, ee.edge1_index);
+    return std::hash<long>()(min_ei) ^ std::hash<long>()(max_ei);
+}
+
+size_t hash<ipc::FaceVertexConstraint>::operator()(
+    ipc::FaceVertexConstraint const& fv) const noexcept
+{
+    return std::hash<long>()(fv.face_index)
+        ^ std::hash<long>()(fv.vertex_index);
+}
+} // namespace std

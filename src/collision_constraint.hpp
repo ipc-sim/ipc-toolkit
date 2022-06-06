@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 #include <Eigen/Core>
 
 #include <ipc/broad_phase/collision_candidate.hpp>
@@ -11,7 +13,8 @@ struct CollisionConstraint {
 public:
     virtual ~CollisionConstraint() { }
 
-    virtual std::vector<long> vertex_indices(
+    virtual int num_vertices() const = 0;
+    virtual std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const = 0;
 
     virtual double compute_distance(
@@ -57,10 +60,11 @@ struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
     VertexVertexConstraint(long vertex0_index, long vertex1_index);
     VertexVertexConstraint(const VertexVertexCandidate& candidate);
 
-    std::vector<long> vertex_indices(
+    int num_vertices() const override { return 2; };
+    std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
     {
-        return { { vertex0_index, vertex1_index } };
+        return { { vertex0_index, vertex1_index, -1, -1 } };
     }
 
     double compute_distance(
@@ -114,10 +118,11 @@ struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
     EdgeVertexConstraint(long edge_index, long vertex_index);
     EdgeVertexConstraint(const EdgeVertexCandidate& candidate);
 
-    std::vector<long> vertex_indices(
+    int num_vertices() const override { return 3; };
+    std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
     {
-        return { { vertex_index, E(edge_index, 0), E(edge_index, 1) } };
+        return { { vertex_index, E(edge_index, 0), E(edge_index, 1), -1 } };
     }
 
     double compute_distance(
@@ -169,7 +174,8 @@ struct EdgeEdgeConstraint : EdgeEdgeCandidate, CollisionConstraint {
     EdgeEdgeConstraint(long edge0_index, long edge1_index, double eps_x);
     EdgeEdgeConstraint(const EdgeEdgeCandidate& candidate, double eps_x);
 
-    std::vector<long> vertex_indices(
+    int num_vertices() const override { return 4; };
+    std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
     {
         return { { E(edge0_index, 0), E(edge0_index, 1), //
@@ -227,7 +233,8 @@ struct FaceVertexConstraint : FaceVertexCandidate, CollisionConstraint {
     FaceVertexConstraint(long face_index, long vertex_index);
     FaceVertexConstraint(const FaceVertexCandidate& candidate);
 
-    std::vector<long> vertex_indices(
+    int num_vertices() const override { return 4; };
+    std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
     {
         return { { vertex_index, //
@@ -264,10 +271,11 @@ struct PlaneVertexConstraint : CollisionConstraint {
         const VectorMax3d& plane_normal,
         const long vertex_index);
 
-    std::vector<long> vertex_indices(
+    int num_vertices() const override { return 1; };
+    std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
     {
-        return { vertex_index };
+        return { { vertex_index, -1, -1, -1 } };
     }
 
     double compute_distance(
@@ -312,3 +320,18 @@ struct Constraints {
 };
 
 } // namespace ipc
+
+namespace std {
+template <> struct hash<ipc::VertexVertexConstraint> {
+    size_t operator()(ipc::VertexVertexConstraint const& vv) const noexcept;
+};
+template <> struct hash<ipc::EdgeVertexConstraint> {
+    size_t operator()(ipc::EdgeVertexConstraint const& ev) const noexcept;
+};
+template <> struct hash<ipc::EdgeEdgeConstraint> {
+    size_t operator()(ipc::EdgeEdgeConstraint const& ee) const noexcept;
+};
+template <> struct hash<ipc::FaceVertexConstraint> {
+    size_t operator()(ipc::FaceVertexConstraint const& fv) const noexcept;
+};
+} // namespace std

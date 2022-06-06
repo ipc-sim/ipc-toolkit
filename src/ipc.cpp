@@ -75,6 +75,8 @@ void construct_constraint_set(
     const double dmin,
     const BroadPhaseMethod& method)
 {
+    assert(V.rows() == mesh.num_vertices());
+
     double inflation_radius = (dhat + dmin) / 1.99; // Conservative inflation
 
     Candidates candidates;
@@ -92,6 +94,8 @@ void construct_constraint_set(
     Constraints& constraint_set,
     const double dmin)
 {
+    assert(V.rows() == mesh.num_vertices());
+
     constraint_set.clear();
 
     const Eigen::MatrixXd& V_rest = mesh.vertices_at_rest();
@@ -101,7 +105,7 @@ void construct_constraint_set(
 
     // Cull the candidates by measuring the distance and dropping those that are
     // greater than dhat.
-    const double offset_sqr = std::pow(dmin + dhat, 2);
+    const double offset_sqr = (dmin + dhat) * (dmin + dhat);
     auto is_active = [&](double distance_sqr) {
         return distance_sqr < offset_sqr;
     };
@@ -336,6 +340,8 @@ double compute_barrier_potential(
     const Constraints& constraint_set,
     const double dhat)
 {
+    assert(V.rows() == mesh.num_vertices());
+
     if (constraint_set.empty()) {
         return 0;
     }
@@ -368,6 +374,8 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     const Constraints& constraint_set,
     const double dhat)
 {
+    assert(V.rows() == mesh.num_vertices());
+
     if (constraint_set.empty()) {
         return Eigen::VectorXd::Zero(V.size());
     }
@@ -405,6 +413,8 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const double dhat,
     const bool project_hessian_to_psd)
 {
+    assert(V.rows() == mesh.num_vertices());
+
     if (constraint_set.empty()) {
         return Eigen::SparseMatrix<double>(V.size(), V.size());
     }
@@ -451,6 +461,9 @@ bool is_step_collision_free(
     const double tolerance,
     const long max_iterations)
 {
+    assert(V0.rows() == mesh.num_vertices());
+    assert(V1.rows() == mesh.num_vertices());
+
     // Broad phase
     Candidates candidates;
     construct_collision_candidates(
@@ -469,7 +482,8 @@ bool is_step_collision_free(
     const double tolerance,
     const long max_iterations)
 {
-    assert(V0.cols() == V1.cols());
+    assert(V0.rows() == mesh.num_vertices());
+    assert(V1.rows() == mesh.num_vertices());
 
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
@@ -498,6 +512,8 @@ double compute_collision_free_stepsize(
     const double tolerance,
     const long max_iterations)
 {
+    assert(V0.rows() == mesh.num_vertices());
+    assert(V1.rows() == mesh.num_vertices());
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
 
@@ -533,8 +549,8 @@ double compute_collision_free_stepsize(
     const double tolerance,
     const long max_iterations)
 {
-    assert(V0.cols() == V1.cols());
-
+    assert(V0.rows() == mesh.num_vertices());
+    assert(V1.rows() == mesh.num_vertices());
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
 
@@ -591,6 +607,8 @@ double compute_minimum_distance(
     const Eigen::MatrixXd& V,
     const Constraints& constraint_set)
 {
+    assert(V.rows() == mesh.num_vertices());
+
     if (constraint_set.empty()) {
         return std::numeric_limits<double>::infinity();
     }
@@ -630,6 +648,7 @@ bool has_intersections(
     const Eigen::MatrixXd& V,
     const BroadPhaseMethod& method)
 {
+    assert(V.rows() == mesh.num_vertices());
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
 

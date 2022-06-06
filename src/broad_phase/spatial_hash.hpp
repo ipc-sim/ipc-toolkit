@@ -29,8 +29,6 @@ protected:
     double builtInRadius;
 
 public: // constructor
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
     SpatialHash() { }
 
     SpatialHash(

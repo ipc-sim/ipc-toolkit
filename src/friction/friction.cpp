@@ -69,112 +69,56 @@ void construct_friction_constraint_set(
 
     friction_constraint_set.clear();
 
-    friction_constraint_set.vv_constraints.reserve(
-        contact_constraint_set.vv_constraints.size());
-    for (const auto& vv_constraint : contact_constraint_set.vv_constraints) {
-        const auto& p0 = V.row(vv_constraint.vertex0_index);
-        const auto& p1 = V.row(vv_constraint.vertex1_index);
+    const auto& [C_vv, C_ev, C_ee, C_fv, _] = contact_constraint_set;
+    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = friction_constraint_set;
 
-        friction_constraint_set.vv_constraints.emplace_back(vv_constraint);
-        // Do not initialize closest point because it is trivial
-        friction_constraint_set.vv_constraints.back().tangent_basis =
-            point_point_tangent_basis(p0, p1);
-        friction_constraint_set.vv_constraints.back().normal_force_magnitude =
-            compute_normal_force_magnitude(
-                point_point_distance(p0, p1), dhat, barrier_stiffness,
-                vv_constraint.minimum_distance);
-        friction_constraint_set.vv_constraints.back().mu = blend_mu(
-            mus(vv_constraint.vertex0_index), mus(vv_constraint.vertex1_index));
+    FC_vv.reserve(C_vv.size());
+    for (const auto& c_vv : C_vv) {
+        FC_vv.emplace_back(c_vv, V, E, F, dhat, barrier_stiffness);
+        const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_indices(E, F);
+
+        FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
     }
 
-    friction_constraint_set.ev_constraints.reserve(
-        contact_constraint_set.ev_constraints.size());
-    for (const auto& ev_constraint : contact_constraint_set.ev_constraints) {
-        const long& vi = ev_constraint.vertex_index;
-        const long& e0i = E(ev_constraint.edge_index, 0);
-        const long& e1i = E(ev_constraint.edge_index, 1);
-        const auto &p = V.row(vi), &e0 = V.row(e0i), &e1 = V.row(e1i);
+    FC_ev.reserve(C_ev.size());
+    for (const auto& c_ev : C_ev) {
+        FC_ev.emplace_back(c_ev, V, E, F, dhat, barrier_stiffness);
+        const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_indices(E, F);
 
-        friction_constraint_set.ev_constraints.emplace_back(ev_constraint);
-
-        friction_constraint_set.ev_constraints.back().closest_point.resize(1);
-        double alpha = point_edge_closest_point(p, e0, e1);
-        friction_constraint_set.ev_constraints.back().closest_point[0] = alpha;
-        friction_constraint_set.ev_constraints.back().tangent_basis =
-            point_edge_tangent_basis(p, e0, e1);
-        friction_constraint_set.ev_constraints.back().normal_force_magnitude =
-            compute_normal_force_magnitude(
-                point_edge_distance(p, e0, e1, PointEdgeDistanceType::P_E),
-                dhat, barrier_stiffness, ev_constraint.minimum_distance);
-        double edge_mu = (mus(e1i) - mus(e0i)) * alpha + mus(e0i);
-        friction_constraint_set.ev_constraints.back().mu =
-            blend_mu(edge_mu, mus(vi));
+        const double edge_mu =
+            (mus(e1i) - mus(e0i)) * FC_ev.back().closest_point[0] + mus(e0i);
+        FC_ev.back().mu = blend_mu(edge_mu, mus(vi));
     }
 
-    friction_constraint_set.ee_constraints.reserve(
-        contact_constraint_set.ee_constraints.size());
-    for (const auto& ee_constraint : contact_constraint_set.ee_constraints) {
-        const long& ea0i = E(ee_constraint.edge0_index, 0);
-        const long& ea1i = E(ee_constraint.edge0_index, 1);
-        const long& eb0i = E(ee_constraint.edge1_index, 0);
-        const long& eb1i = E(ee_constraint.edge1_index, 1);
-        const auto& ea0 = V.row(ea0i);
-        const auto& ea1 = V.row(ea1i);
-        const auto& eb0 = V.row(eb0i);
-        const auto& eb1 = V.row(eb1i);
+    FC_ee.reserve(C_ee.size());
+    for (const auto& c_ee : C_ee) {
+        const auto& [ea0i, ea1i, eb0i, eb1i] = c_ee.vertex_indices(E, F);
+        const Eigen::Vector3d ea0 = V.row(ea0i), ea1 = V.row(ea1i),
+                              eb0 = V.row(eb0i), eb1 = V.row(eb1i);
 
         // Skip EE constraints that are close to parallel
-        if (edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1)
-            < ee_constraint.eps_x) {
+        if (edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1) < c_ee.eps_x) {
             continue;
         }
 
-        friction_constraint_set.ee_constraints.emplace_back(ee_constraint);
+        FC_ee.emplace_back(c_ee, V, E, F, dhat, barrier_stiffness);
 
-        Eigen::Vector2d alphas = edge_edge_closest_point(ea0, ea1, eb0, eb1);
-        friction_constraint_set.ee_constraints.back().closest_point = alphas;
-        friction_constraint_set.ee_constraints.back().tangent_basis =
-            edge_edge_tangent_basis(ea0, ea1, eb0, eb1);
-        friction_constraint_set.ee_constraints.back().normal_force_magnitude =
-            compute_normal_force_magnitude(
-                // The distance type is known because mollified PP and PE were
-                // skipped above.
-                edge_edge_distance(
-                    ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB),
-                dhat, barrier_stiffness, ee_constraint.minimum_distance);
-        double ea_mu = (mus(ea1i) - mus(ea0i)) * alphas[0] + mus(ea0i);
-        double eb_mu = (mus(eb1i) - mus(eb0i)) * alphas[1] + mus(eb0i);
-        friction_constraint_set.ee_constraints.back().mu =
-            blend_mu(ea_mu, eb_mu);
+        double ea_mu =
+            (mus(ea1i) - mus(ea0i)) * FC_ee.back().closest_point[0] + mus(ea0i);
+        double eb_mu =
+            (mus(eb1i) - mus(eb0i)) * FC_ee.back().closest_point[1] + mus(eb0i);
+        FC_ee.back().mu = blend_mu(ea_mu, eb_mu);
     }
 
-    friction_constraint_set.fv_constraints.reserve(
-        contact_constraint_set.fv_constraints.size());
-    for (const auto& fv_constraint : contact_constraint_set.fv_constraints) {
-        const long& vi = fv_constraint.vertex_index;
-        const long& f0i = F(fv_constraint.face_index, 0);
-        const long& f1i = F(fv_constraint.face_index, 1);
-        const long& f2i = F(fv_constraint.face_index, 2);
-        const auto& p = V.row(vi);
-        const auto& t0 = V.row(f0i);
-        const auto& t1 = V.row(f1i);
-        const auto& t2 = V.row(f2i);
+    FC_fv.reserve(C_fv.size());
+    for (const auto& c_fv : C_fv) {
+        FC_fv.emplace_back(c_fv, V, E, F, dhat, barrier_stiffness);
+        const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_indices(E, F);
 
-        friction_constraint_set.fv_constraints.emplace_back(fv_constraint);
-
-        Eigen::Vector2d bc = point_triangle_closest_point(p, t0, t1, t2);
-        friction_constraint_set.fv_constraints.back().closest_point = bc;
-        friction_constraint_set.fv_constraints.back().tangent_basis =
-            point_triangle_tangent_basis(p, t0, t1, t2);
-        friction_constraint_set.fv_constraints.back().normal_force_magnitude =
-            compute_normal_force_magnitude(
-                point_triangle_distance(
-                    p, t0, t1, t2, PointTriangleDistanceType::P_T),
-                dhat, barrier_stiffness, fv_constraint.minimum_distance);
-        double face_mu = mus(f0i) + bc[0] * (mus(f1i) - mus(f0i))
-            + bc[1] * (mus(f2i) - mus(f0i));
-        friction_constraint_set.fv_constraints.back().mu =
-            blend_mu(face_mu, mus(vi));
+        double face_mu = mus(f0i)
+            + FC_fv.back().closest_point[0] * (mus(f1i) - mus(f0i))
+            + FC_fv.back().closest_point[1] * (mus(f2i) - mus(f0i));
+        FC_fv.back().mu = blend_mu(face_mu, mus(vi));
     }
 }
 

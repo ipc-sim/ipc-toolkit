@@ -34,7 +34,7 @@ inline T df1_x_minus_f1_over_x3(const T& x, const double& epsv_times_h)
 {
     assert(epsv_times_h >= 0);
     if (abs(x) >= epsv_times_h) {
-        return -1 / std::pow(x, 3);
+        return -1 / (x * x * x);
     }
     return -1 / (x * epsv_times_h * epsv_times_h);
 }

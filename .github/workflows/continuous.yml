@@ -93,17 +93,18 @@ jobs:
           fetch-depth: 10
       - uses: seanmiddleditch/gha-setup-ninja@master
 
-        # https://github.com/actions/cache/issues/101
+      # https://github.com/actions/cache/issues/101
       - name: Set env
         run: |
           echo "appdata=$env:LOCALAPPDATA" >> ${env:GITHUB_ENV}
 
       - name: Cache build
         id: cache-build
-        uses: actions/cache@v1
+        uses: actions/cache@v2
         with:
           path: ${{ env.appdata }}\Mozilla\sccache
-          key: ${{ runner.os }}-${{ matrix.config }}-cache
+          key: ${{ runner.os }}-${{ matrix.config }}-${{ matrix.threading }}-cache-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-${{ matrix.config }}-${{ matrix.threading }}-cache
 
       - name: Prepare sccache
         run: |
@@ -113,19 +114,21 @@ jobs:
           # Scoop modifies the PATH so we make it available for the next steps of the job
           echo "${env:PATH}" >> ${env:GITHUB_PATH}
 
-        # We run configure + build in the same step, since they both need to call VsDevCmd
-        # Also, cmd uses ^ to break commands into multiple lines (in powershell this is `)
+      # We run configure + build in the same step, since they both need to call VsDevCmd
+      # Also, cmd uses ^ to break commands into multiple lines (in powershell this is `)
       - name: Configure and build
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
           cmake -G Ninja ^
-            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ^
             -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
             -DIPC_TOOLKIT_BUILD_UNIT_TESTS=ON ^
             -B build ^
             -S .
-          cmake --build build
+          cd build
+          ninja -j1
 
       - name: Tests
-        run: cd build; ctest --verbose
+        run: |
+          cd build
+          ctest --verbose --output-on-failure

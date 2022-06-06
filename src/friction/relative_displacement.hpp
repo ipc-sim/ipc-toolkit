@@ -110,7 +110,7 @@ template <typename DerivedCoords, typename T = typename DerivedCoords::Scalar>
 inline MatrixMax<T, 6, 12> edge_edge_relative_displacement_matrix_jacobian(
     const int dim, const Eigen::MatrixBase<DerivedCoords>& coords)
 {
-    MatrixMax<T, 6, 12> J = MatrixMax<T, 6, 12>::Zero(dim, 4 * dim);
+    MatrixMax<T, 6, 12> J = MatrixMax<T, 6, 12>::Zero(2 * dim, 4 * dim);
     // wrt β₁
     J.block(0, 0, dim, dim).diagonal().setConstant(-1);
     J.block(0, dim, dim, dim).diagonal().setConstant(1);
@@ -158,7 +158,7 @@ template <typename DerivedCoords, typename T = typename DerivedCoords::Scalar>
 inline MatrixMax<T, 6, 12> point_triangle_relative_displacement_matrix_jacobian(
     const int dim, const Eigen::MatrixBase<DerivedCoords>& coords)
 {
-    MatrixMax<T, 6, 12> J = MatrixMax<T, 6, 12>::Zero(dim, 4 * dim);
+    MatrixMax<T, 6, 12> J = MatrixMax<T, 6, 12>::Zero(2 * dim, 4 * dim);
     // wrt β₁
     J.block(0, dim, dim, dim).diagonal().setConstant(1);
     J.block(0, 2 * dim, dim, dim).diagonal().setConstant(-1);

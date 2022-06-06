@@ -9,8 +9,8 @@ namespace autogen {
     {
         const auto t0 = p0_x - p1_x;
         const auto t1 = p0_y - p1_y;
-        const auto t2 = std::pow(t0, 2);
-        const auto t3 = std::pow(t1, 2);
+        const auto t2 = t0 * t0;
+        const auto t3 = t1 * t1;
         const auto t4 = t2 + t3;
         const auto t5 = t0 * t1 / std::pow(t4, 3.0 / 2.0);
         const auto t6 = -t5;
@@ -39,11 +39,11 @@ namespace autogen {
         double J[36])
     {
         const auto t0 = p0_x - p1_x;
-        const auto t1 = std::pow(t0, 2);
+        const auto t1 = t0 * t0;
         const auto t2 = p0_z - p1_z;
-        const auto t3 = std::pow(t2, 2);
+        const auto t3 = t2 * t2;
         const auto t4 = p0_y - p1_y;
-        const auto t5 = std::pow(t4, 2);
+        const auto t5 = t4 * t4;
         const auto t6 = t1 + t3 < t3 + t5;
         const auto t7 = -p0_z + p1_z;
         const auto t8 = ((t6) ? (0) : (t7));
@@ -64,7 +64,7 @@ namespace autogen {
         const auto t22 = ((t6) ? (-1) : (0));
         const auto t23 = ((t6) ? (0) : (-1));
         const auto t24 = (1.0 / 2.0) * t8;
-        const auto t25 = t1 + std::pow(t7, 2) < std::pow(t16, 2) + t3;
+        const auto t25 = t1 + (t7 * t7) < (t16 * t16) + t3;
         const auto t26 = 2 * t2;
         const auto t27 = t18 * (((t25) ? (0) : (t26)) + ((t25) ? (t26) : (0)));
         const auto t28 = ((t6) ? (1) : (0));
@@ -89,7 +89,7 @@ namespace autogen {
         const auto t47 = t13 * t2;
         const auto t48 = t17 * t4;
         const auto t49 = t47 - t48;
-        const auto t50 = std::pow(t41, 2) + std::pow(t46, 2) + std::pow(t49, 2);
+        const auto t50 = t41 * t41 + t46 * t46 + t49 * t49;
         const auto t51 = std::pow(t50, -1.0 / 2.0);
         const auto t52 = t15 * t4;
         const auto t53 = 1.0 / t50;
@@ -104,7 +104,7 @@ namespace autogen {
         const auto t62 = -t39 + t40;
         const auto t63 = -t0 * t17 + t2 * t8;
         const auto t64 = -t47 + t48;
-        const auto t65 = std::pow(t62, 2) + std::pow(t63, 2) + std::pow(t64, 2);
+        const auto t65 = t62 * t62 + t63 * t63 + t64 * t64;
         const auto t66 = std::pow(t65, -1.0 / 2.0);
         const auto t67 = t13 * t41;
         const auto t68 = t0 * t15 + t17;
@@ -194,9 +194,9 @@ namespace autogen {
         double J[12])
     {
         const auto t0 = e0_x - e1_x;
-        const auto t1 = std::pow(t0, 2);
+        const auto t1 = t0 * t0;
         const auto t2 = e0_y - e1_y;
-        const auto t3 = std::pow(t2, 2);
+        const auto t3 = t2 * t2;
         const auto t4 = t1 + t3;
         const auto t5 = std::pow(t4, -1.0 / 2.0);
         const auto t6 = 1.0 / t4;
@@ -233,13 +233,13 @@ namespace autogen {
     {
         const auto t0 = -e1_x;
         const auto t1 = e0_x + t0;
-        const auto t2 = std::pow(t1, 2);
+        const auto t2 = t1 * t1;
         const auto t3 = -e1_y;
         const auto t4 = e0_y + t3;
-        const auto t5 = std::pow(t4, 2);
+        const auto t5 = t4 * t4;
         const auto t6 = -e1_z;
         const auto t7 = e0_z + t6;
-        const auto t8 = std::pow(t7, 2);
+        const auto t8 = t7 * t7;
         const auto t9 = t2 + t5 + t8;
         const auto t10 = std::pow(t9, -1.0 / 2.0);
         const auto t11 = 1.0 / t9;
@@ -273,11 +273,11 @@ namespace autogen {
         const auto t39 = e0_z + t38;
         const auto t40 = -t24 * t7 + t39 * t4;
         const auto t41 = t1 * t39 - t26 * t7;
-        const auto t42 = std::pow(t27, 2) + std::pow(t40, 2);
-        const auto t43 = std::pow(t41, 2) + t42;
+        const auto t42 = t27 * t27 + t40 * t40;
+        const auto t43 = t41 * t41 + t42;
         const auto t44 = std::pow(t43, -3.0 / 2.0);
         const auto t45 = t40 * t44;
-        const auto t46 = std::pow(t36, 2) + t42;
+        const auto t46 = t36 * t36 + t42;
         const auto t47 = std::pow(t46, -1.0 / 2.0);
         const auto t48 = -e0_y;
         const auto t49 = p_y + t48;
@@ -381,11 +381,11 @@ namespace autogen {
         double J[72])
     {
         const auto t0 = ea0_x - ea1_x;
-        const auto t1 = std::pow(t0, 2);
+        const auto t1 = t0 * t0;
         const auto t2 = ea0_y - ea1_y;
-        const auto t3 = std::pow(t2, 2);
+        const auto t3 = t2 * t2;
         const auto t4 = ea0_z - ea1_z;
-        const auto t5 = std::pow(t4, 2);
+        const auto t5 = t4 * t4;
         const auto t6 = t3 + t5;
         const auto t7 = t1 + t6;
         const auto t8 = std::pow(t7, -1.0 / 2.0);
@@ -426,7 +426,7 @@ namespace autogen {
         const auto t43 = t0 * t41;
         const auto t44 = t35 * t4;
         const auto t45 = t43 - t44;
-        const auto t46 = std::pow(t36, 2) + std::pow(t42, 2) + std::pow(t45, 2);
+        const auto t46 = t36 * t36 + t42 * t42 + t45 * t45;
         const auto t47 = std::pow(t46, -1.0 / 2.0);
         const auto t48 = 1.0 / t46;
         const auto t49 = 2 * t37;
@@ -472,7 +472,7 @@ namespace autogen {
         const auto t89 = t31 - t88;
         const auto t90 = -2 * t66 + t67;
         const auto t91 = t48 * (t51 * t89 - t64 * t90 - t87);
-        const auto t92 = std::pow(t51, 2) + std::pow(t64, 2) + std::pow(t76, 2);
+        const auto t92 = t51 * t51 + t64 * t64 + t76 * t76;
         const auto t93 = std::pow(t92, -1.0 / 2.0);
         const auto t94 = -t70 + t75;
         const auto t95 = t23 * t59 - t26 * t74;
@@ -507,15 +507,12 @@ namespace autogen {
         const auto t123 = t122 * t76;
         const auto t124 = t120 - t121 + t123;
         const auto t125 = t2 * t23;
-        const auto t126 =
-            t0 * t119 + t125 * t95 + t96 * (std::pow(t26, 2) + t3);
+        const auto t126 = t0 * t119 + t125 * t95 + t96 * (t26 * t26 + t3);
         const auto t127 = -t14;
         const auto t128 = t76 * t97;
         const auto t129 = t4 * t55;
-        const auto t130 =
-            t125 * t96 + t129 * t94 + t95 * (std::pow(t23, 2) + t5);
-        const auto t131 =
-            t0 * t26 * t96 + t129 * t95 + t94 * (t1 + std::pow(t55, 2));
+        const auto t130 = t125 * t96 + t129 * t94 + t95 * (t23 * t23 + t5);
+        const auto t131 = t0 * t26 * t96 + t129 * t95 + t94 * (t1 + t55 * t55);
         J[0] = t8 * (t10 - 1);
         J[1] = t13;
         J[2] = t15;
@@ -618,13 +615,13 @@ namespace autogen {
         double J[72])
     {
         const auto t0 = t0_x - t1_x;
-        const auto t1 = std::pow(t0, 2);
+        const auto t1 = t0 * t0;
         const auto t2 = -t1_y;
         const auto t3 = t0_y + t2;
-        const auto t4 = std::pow(t3, 2);
+        const auto t4 = t3 * t3;
         const auto t5 = -t1_z;
         const auto t6 = t0_z + t5;
-        const auto t7 = std::pow(t6, 2);
+        const auto t7 = t6 * t6;
         const auto t8 = t4 + t7;
         const auto t9 = t1 + t8;
         const auto t10 = std::pow(t9, -1.0 / 2.0);
@@ -670,7 +667,7 @@ namespace autogen {
         const auto t50 = t0 * t48;
         const auto t51 = t41 * t6;
         const auto t52 = t50 - t51;
-        const auto t53 = std::pow(t42, 2) + std::pow(t49, 2) + std::pow(t52, 2);
+        const auto t53 = t42 * t42 + t49 * t49 + t52 * t52;
         const auto t54 = std::pow(t53, -1.0 / 2.0);
         const auto t55 = 1.0 / t53;
         const auto t56 = t1_y + t37;
@@ -705,7 +702,7 @@ namespace autogen {
         const auto t85 = t62 * t84;
         const auto t86 = t80 - t85;
         const auto t87 = t55 * (-t60 * t71 + t74 * t75 - t79 * t86);
-        const auto t88 = std::pow(t71, 2) + std::pow(t75, 2) + std::pow(t86, 2);
+        const auto t88 = t71 * t71 + t75 * t75 + t86 * t86;
         const auto t89 = std::pow(t88, -1.0 / 2.0);
         const auto t90 = t2_z + t5;
         const auto t91 = -t67 + t70;
@@ -748,15 +745,12 @@ namespace autogen {
         const auto t126 = t42 * t55;
         const auto t127 = t26 * t3;
         const auto t128 = t0 * t31;
-        const auto t129 =
-            t127 * t93 + t128 * t94 + t91 * (std::pow(t31, 2) + t4);
+        const auto t129 = t127 * t93 + t128 * t94 + t91 * (t31 * t31 + t4);
         const auto t130 = -t16;
         const auto t131 = t86 * t95;
         const auto t132 = t6 * t62;
-        const auto t133 =
-            t127 * t91 + t132 * t94 + t93 * (std::pow(t26, 2) + t7);
-        const auto t134 =
-            t128 * t91 + t132 * t93 + t94 * (t1 + std::pow(t62, 2));
+        const auto t133 = t127 * t91 + t132 * t94 + t93 * (t26 * t26 + t7);
+        const auto t134 = t128 * t91 + t132 * t93 + t94 * (t1 + t62 * t62);
         const auto t135 = t1 + t4;
         J[0] = 0;
         J[1] = 0;
