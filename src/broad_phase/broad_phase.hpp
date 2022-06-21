@@ -24,7 +24,7 @@ public:
     virtual ~BroadPhase() { clear(); }
 
     static std::unique_ptr<BroadPhase>
-    make_broad_phase(const BroadPhaseMethod& method);
+    make_broad_phase(const BroadPhaseMethod method);
 
     virtual void build(
         const Eigen::MatrixXd& V,
@@ -85,7 +85,7 @@ void construct_collision_candidates(
     const Eigen::MatrixXd& V,
     Candidates& candidates,
     double inflation_radius = 0,
-    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID);
+    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID);
 
 /// @brief Construct a set of continous collision detection candidates.
 /// @note Assumes the trajectory is linear.
@@ -101,6 +101,6 @@ void construct_collision_candidates(
     const Eigen::MatrixXd& V1,
     Candidates& candidates,
     double inflation_radius = 0,
-    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID);
+    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID);
 
 } // namespace ipc

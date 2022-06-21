@@ -39,7 +39,6 @@ void construct_point_plane_constraint_set(
 /// @brief Determine if the step is collision free.
 ///
 /// @note Assumes the trajectory is linear.
-/// @note V can either be the surface vertices or the entire mesh vertices.
 ///
 /// @param[in] V0 Vertex positions at start as rows of a matrix.
 /// @param[in] V1 Vertex positions at end as rows of a matrix.

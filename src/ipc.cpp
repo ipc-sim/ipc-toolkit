@@ -73,7 +73,7 @@ void construct_constraint_set(
     const double dhat,
     Constraints& constraint_set,
     const double dmin,
-    const BroadPhaseMethod& method)
+    const BroadPhaseMethod method)
 {
     assert(V.rows() == mesh.num_vertices());
 
@@ -459,7 +459,7 @@ bool is_step_collision_free(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const BroadPhaseMethod& method,
+    const BroadPhaseMethod method,
     const double tolerance,
     const long max_iterations)
 {
@@ -510,7 +510,7 @@ double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const BroadPhaseMethod& method,
+    const BroadPhaseMethod method,
     const double tolerance,
     const long max_iterations)
 {
@@ -648,7 +648,7 @@ double compute_minimum_distance(
 bool has_intersections(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const BroadPhaseMethod& method)
+    const BroadPhaseMethod method)
 {
     assert(V.rows() == mesh.num_vertices());
     const Eigen::MatrixXi& E = mesh.edges();
