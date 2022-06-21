@@ -11,5 +11,8 @@ void define_broad_phase_functions(py::module_& m)
         .value("BRUTE_FORCE", BroadPhaseMethod::BRUTE_FORCE)
         .value("HASH_GRID", BroadPhaseMethod::HASH_GRID)
         .value("SPATIAL_HASH", BroadPhaseMethod::SPATIAL_HASH)
+        .value(
+            "SWEEP_AND_TINIEST_QUEUE",
+            BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE)
         .export_values();
 }
