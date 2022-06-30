@@ -14,8 +14,8 @@ else()
     FetchContent_Declare(
         tight_inclusion
         GIT_REPOSITORY https://github.com/Continuous-Collision-Detection/Tight-Inclusion.git
-        GIT_TAG d820fe14b518da3715d7518e5d2c5c851d087af7
-        GIT_SHALLOW FALSE
+        GIT_TAG v1.0.2
+        GIT_SHALLOW TRUE
     )
     FetchContent_MakeAvailable(tight_inclusion)
 endif()

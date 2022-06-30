@@ -30,10 +30,10 @@ project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
         LANGUAGES CXX)
 
-option(IPC_TOOLKIT_BUILD_UNIT_TESTS           "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
+option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
+option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
 option(IPC_TOOLKIT_WITH_LOGGER                "Enable logger"                                  ON)
 option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"                     ON)
-option(IPC_TOOLKIT_WITH_PYTHON                "Build Python bindings"                         OFF)
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
@@ -59,6 +59,7 @@ include(ipc_toolkit_use_colors)
 include(ipc_toolkit_prepend_current_path)
 include(ipc_toolkit_copy_headers)
 include(ipc_toolkit_set_source_group)
+include(ipc_toolkit_target_link_system_libraries)
 
 # Generate position independent code by default
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -94,7 +95,7 @@ target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
 # libigl
 include(eigen)
 include(libigl)
-target_link_libraries(ipc_toolkit PUBLIC
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC
   Eigen3::Eigen
   igl::core
   igl::predicates
@@ -102,56 +103,56 @@ target_link_libraries(ipc_toolkit PUBLIC
 
 # TBB
 include(onetbb)
-target_link_libraries(ipc_toolkit PUBLIC TBB::tbb)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC TBB::tbb)
 
 # CCD
 if(IPC_TOOLKIT_WITH_CORRECT_CCD)
   # Provably conservative CCD of [Wang and Ferguson et al. 2021]
   include(tight_inclusion)
-  target_link_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
   target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_CORRECT_CCD)
 else()
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
   include(evouga_ccd)
-  target_link_libraries(ipc_toolkit PUBLIC evouga::ccd)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC evouga::ccd)
 endif()
 
 # Logger
 if(IPC_TOOLKIT_WITH_LOGGER)
   include(spdlog)
-  target_link_libraries(ipc_toolkit PRIVATE spdlog::spdlog)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PRIVATE spdlog::spdlog)
   target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_LOGGER)
 else()
   include(fmt)
-  target_link_libraries(ipc_toolkit PRIVATE fmt::fmt)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PRIVATE fmt::fmt)
 endif()
 
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   include(gmp)
-  target_link_libraries(ipc_toolkit PUBLIC GMP::GMP)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC GMP::GMP)
   target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
 endif()
 
 # Sweep and Tiniest Queue and CCD
 if(IPC_TOOLKIT_WITH_CUDA)
   include(gpu_ccd)
-  target_link_libraries(ipc_toolkit PUBLIC gpu_ccd::gpu_ccd)
-  target_link_libraries(ipc_toolkit PUBLIC STQ::CPU)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC gpu_ccd::gpu_ccd)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC STQ::CPU)
   target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_CUDA)
 else()
   set(STQ_WITH_CUDA OFF CACHE BOOL "Enable CUDA Implementation" FORCE)
   include(sweep_and_tiniest_queue)
-  target_link_libraries(ipc_toolkit PUBLIC STQ::CPU)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC STQ::CPU)
 endif()
 
 # Faster unordered map
 include(robin_map)
-target_link_libraries(ipc_toolkit PUBLIC tsl::robin_map)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC tsl::robin_map)
 target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_USE_ROBIN_MAP)
 
 # Hashes
 include(abseil)
-target_link_libraries(ipc_toolkit PUBLIC absl::flat_hash_map)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC absl::flat_hash_map)
 target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_USE_ABSL_HASH)
 
 ################################################################################
@@ -190,8 +191,8 @@ if(IPC_TOOLKIT_WITH_CUDA)
     message(FATAL_ERROR "No CUDA support found!")
   endif()
 
-  # We need to explicitly state that we need all CUDA files in the particle 
-  # library to be built with -dc as the member functions could be called by 
+  # We need to explicitly state that we need all CUDA files in the particle
+  # library to be built with -dc as the member functions could be called by
   # other libraries and executables.
   set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
@@ -205,15 +206,15 @@ if(IPC_TOOLKIT_WITH_CUDA)
   set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "70;75;86")
 
   if(APPLE)
-    # We need to add the path to the driver (libcuda.dylib) as an rpath, 
+    # We need to add the path to the driver (libcuda.dylib) as an rpath,
     # so that the static cuda runtime can find it at runtime.
-    set_property(TARGET ipc_toolkit 
+    set_property(TARGET ipc_toolkit
                  PROPERTY
                  BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
   endif()
 
   find_package(CUDAToolkit)
-  target_link_libraries(ipc_toolkit PRIVATE CUDA::cudart)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PRIVATE CUDA::cudart)
 endif()
 
 ################################################################################
@@ -221,7 +222,7 @@ endif()
 ################################################################################
 
 # Enable unit testing at the root level
-if(IPC_TOOLKIT_BUILD_UNIT_TESTS)
+if(IPC_TOOLKIT_BUILD_TESTS)
   include(CTest)
   enable_testing()
   add_subdirectory(tests)
@@ -231,6 +232,6 @@ endif()
 # Python bindings
 ################################################################################
 
-if(IPC_TOOLKIT_WITH_PYTHON)
+if(IPC_TOOLKIT_BUILD_PYTHON)
   add_subdirectory(python)
 endif()
