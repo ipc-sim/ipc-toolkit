@@ -22,6 +22,18 @@ void define_collision_constraint(py::module_& m)
                 List of vertex indices
             )ipc_Qu8mg5v7",
             py::arg("E"), py::arg("F"))
+        .def("num_vertices", &CollisionConstraint::num_vertices)
+        .def(
+            "vertex_indices", &CollisionConstraint::vertex_indices,
+            py::arg("E"), py::arg("F"))
+        .def(
+            "compute_distance_gradient",
+            &CollisionConstraint::compute_distance_gradient, py::arg("V"),
+            py::arg("E"), py::arg("F"))
+        .def(
+            "compute_distance_hessian",
+            &CollisionConstraint::compute_distance_hessian, py::arg("V"),
+            py::arg("E"), py::arg("F"))
         .def(
             "compute_distance", &CollisionConstraint::compute_distance, "",
             py::arg("V"), py::arg("E"), py::arg("F"))
