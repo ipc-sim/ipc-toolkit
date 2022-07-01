@@ -1,6 +1,6 @@
 #include "common.hpp"
 
-#include <ipc/collision_constraint.hpp>
+#include <ipc/collisions/constraints.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
@@ -44,9 +44,10 @@ void define_collision_constraint(py::module_& m)
             "compute_potential_hessian",
             &CollisionConstraint::compute_potential_hessian, "", py::arg("V"),
             py::arg("E"), py::arg("F"), py::arg("dhat"),
-            py::arg("project_hessian_to_psd"))
+            py::arg("project_to_psd"))
         .def_readwrite(
-            "minimum_distance", &CollisionConstraint::minimum_distance, "");
+            "minimum_distance", &CollisionConstraint::minimum_distance)
+        .def_readwrite("weight", &CollisionConstraint::weight);
 
     py::class_<
         VertexVertexConstraint, VertexVertexCandidate, CollisionConstraint>(
@@ -207,7 +208,6 @@ void define_collision_constraint(py::module_& m)
 
     py::class_<Constraints>(m, "Constraints")
         .def("__len__", &Constraints::size, "")
-        .def("num_constraints", &Constraints::num_constraints, "")
         .def("empty", &Constraints::empty, "")
         .def("clear", &Constraints::clear, "")
         .def(
