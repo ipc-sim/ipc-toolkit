@@ -1,0 +1,28 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "ninja",
+    "cmake>=3.14",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ipc-toolkit"
+version = "0.0.1"
+authors = [
+  { name="Zachary Ferguson", email="zfergus@nyu.edu" },
+]
+description = "A set of reusable functions to integrate IPC into an existing simulation."
+readme = "README.md"
+license = { file="LICENSE" }
+classifiers = [
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+    "Topic :: Games/Entertainment :: Simulation",
+    "License :: OSI Approved :: MIT License",
+]
+
+[project.urls]
+"Homepage" = "https://ipc-sim.github.io/ipc-toolkit/"
+"Bug Tracker" = "https://github.com/ipc-sim/ipc-toolkit/issues"
