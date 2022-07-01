@@ -10,7 +10,8 @@ namespace ipc {
 CollisionMesh::CollisionMesh(
     const Eigen::MatrixXd& vertices_at_rest,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces)
+    const Eigen::MatrixXi& faces,
+    const Eigen::SparseMatrix<double>& displacement_map)
     : CollisionMesh(
         std::vector<bool>(vertices_at_rest.rows(), true),
         vertices_at_rest,
@@ -19,53 +20,63 @@ CollisionMesh::CollisionMesh(
 {
 }
 
-bool all(const std::vector<bool>& v)
-{
-    for (bool b : v) {
-        if (!b) {
-            return false;
-        }
-    }
-    return true;
-}
-
 CollisionMesh::CollisionMesh(
     const std::vector<bool>& include_vertex,
     const Eigen::MatrixXd& full_vertices_at_rest,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces)
-    : m_edges(edges)
+    const Eigen::MatrixXi& faces,
+    const Eigen::SparseMatrix<double>& displacement_map)
+    : m_full_vertices_at_rest(full_vertices_at_rest)
+    , m_edges(edges)
     , m_faces(faces)
 {
     assert(include_vertex.size() == full_vertices_at_rest.rows());
-    bool include_all_vertices = all(include_vertex);
-
-    m_full_num_vertices = full_vertices_at_rest.rows();
-    m_dim = full_vertices_at_rest.cols();
+    const bool include_all_vertices = std::all_of(
+        include_vertex.begin(), include_vertex.end(), [](bool b) { return b; });
 
     if (include_all_vertices) {
-        m_num_vertices = full_num_vertices();
         // set full ↔ reduced ≡ identity
-        full_vertex_to_vertex.setLinSpaced(
-            num_vertices(), 0, num_vertices() - 1);
-        vertex_to_full_vertex = full_vertex_to_vertex;
+        m_full_vertex_to_vertex.setLinSpaced(
+            full_vertices_at_rest.rows(), 0, full_vertices_at_rest.rows() - 1);
+        m_vertex_to_full_vertex = m_full_vertex_to_vertex;
     } else {
-        full_vertex_to_vertex.setConstant(full_num_vertices(), -1);
+        m_full_vertex_to_vertex.setConstant(full_vertices_at_rest.rows(), -1);
         std::vector<int> dynamic_vertex_to_full_vertex;
-        m_num_vertices = 0;
-        for (size_t i = 0; i < full_num_vertices(); i++) {
+        for (size_t i = 0; i < full_vertices_at_rest.rows(); i++) {
             if (include_vertex[i]) {
-                full_vertex_to_vertex[i] = m_num_vertices;
+                m_full_vertex_to_vertex[i] =
+                    dynamic_vertex_to_full_vertex.size();
                 dynamic_vertex_to_full_vertex.push_back(i);
-                m_num_vertices++;
             }
         }
-        vertex_to_full_vertex = Eigen::Map<Eigen::VectorXi>(
+        m_vertex_to_full_vertex = Eigen::Map<Eigen::VectorXi>(
             dynamic_vertex_to_full_vertex.data(),
             dynamic_vertex_to_full_vertex.size());
     }
-    init_selection_matrix();
-    set_identity_linear_vertex_map();
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    const int dim = full_vertices_at_rest.cols();
+
+    // Selection matrix S ∈ ℝ^{collision×full}
+    init_selection_matrices(dim);
+
+    if (displacement_map.size() == 0) {
+        m_displacement_map = m_select_vertices;
+        m_displacement_dof_map = m_select_dof;
+    } else {
+        assert(displacement_map.rows() == num_vertices());
+        assert(displacement_map.cols() == full_num_vertices());
+
+        m_displacement_map = m_select_vertices * displacement_map;
+        m_displacement_map.makeCompressed();
+
+        m_displacement_dof_map =
+            m_select_dof * vertex_matrix_to_dof_matrix(displacement_map, dim);
+        m_displacement_dof_map.makeCompressed();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
 
     // Set vertices at rest using full → reduced map
     m_vertices_at_rest = m_select_vertices * full_vertices_at_rest;
@@ -75,16 +86,16 @@ CollisionMesh::CollisionMesh(
     if (!include_all_vertices) {
         for (int i = 0; i < m_edges.rows(); i++) {
             for (int j = 0; j < m_edges.cols(); j++) {
-                long new_id = full_vertex_to_vertex[m_edges(i, j)];
-                assert(new_id >= 0 && new_id < m_num_vertices);
+                long new_id = m_full_vertex_to_vertex[m_edges(i, j)];
+                assert(new_id >= 0 && new_id < num_vertices());
                 m_edges(i, j) = new_id;
             }
         }
 
         for (int i = 0; i < m_faces.rows(); i++) {
             for (int j = 0; j < m_faces.cols(); j++) {
-                long new_id = full_vertex_to_vertex[m_faces(i, j)];
-                assert(new_id >= 0 && new_id < m_num_vertices);
+                long new_id = m_full_vertex_to_vertex[m_faces(i, j)];
+                assert(new_id >= 0 && new_id < num_vertices());
                 m_faces(i, j) = new_id;
             }
         }
@@ -94,6 +105,23 @@ CollisionMesh::CollisionMesh(
 
     init_adjacencies();
     init_areas();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void CollisionMesh::init_selection_matrices(const int dim)
+{
+    std::vector<Eigen::Triplet<double>> triplets;
+    triplets.reserve(num_vertices());
+    for (int vi = 0; vi < num_vertices(); vi++) {
+        triplets.emplace_back(vi, m_vertex_to_full_vertex[vi], 1.0);
+    }
+
+    m_select_vertices.resize(num_vertices(), full_num_vertices());
+    m_select_vertices.setFromTriplets(triplets.begin(), triplets.end());
+    m_select_vertices.makeCompressed();
+
+    m_select_dof = vertex_matrix_to_dof_matrix(m_select_vertices, dim);
 }
 
 Eigen::SparseMatrix<double> CollisionMesh::vertex_matrix_to_dof_matrix(
@@ -112,68 +140,11 @@ Eigen::SparseMatrix<double> CollisionMesh::vertex_matrix_to_dof_matrix(
 
     Eigen::SparseMatrix<double> M_dof(M_V.rows() * dim, M_V.cols() * dim);
     M_dof.setFromTriplets(triplets.begin(), triplets.end());
+    M_dof.makeCompressed();
     return M_dof;
 }
 
-void CollisionMesh::init_selection_matrix()
-{
-    std::vector<Eigen::Triplet<double>> triplets;
-    triplets.reserve(num_vertices());
-    for (int vi = 0; vi < num_vertices(); vi++) {
-        triplets.emplace_back(vi, vertex_to_full_vertex[vi], 1.0);
-    }
-
-    m_select_vertices.resize(num_vertices(), full_num_vertices());
-    m_select_vertices.setFromTriplets(triplets.begin(), triplets.end());
-    m_select_vertices.makeCompressed();
-
-    m_select_dof = vertex_matrix_to_dof_matrix(m_select_vertices, dim());
-    m_select_dof.makeCompressed();
-}
-
-void CollisionMesh::set_identity_linear_vertex_map()
-{
-    // Initilize linear map with identity
-    // S * T = S * I = S
-    m_full_to_collision_vertices = m_select_vertices;
-    m_full_to_collision_dof = m_select_dof;
-}
-
-void CollisionMesh::set_linear_vertex_map(
-    const Eigen::SparseMatrix<double>& T_vertices)
-{
-    assert(T_vertices.rows() == full_num_vertices());
-
-    m_full_to_collision_vertices = m_select_vertices * T_vertices;
-    m_full_to_collision_vertices.makeCompressed();
-
-    m_full_to_collision_dof =
-        m_select_dof * vertex_matrix_to_dof_matrix(T_vertices, dim());
-    m_full_to_collision_dof.makeCompressed();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-// Eigen::MatrixXd CollisionMesh::vertices(const Eigen::MatrixXd& full_V) const
-// {
-//     // full_U = full_V - full_V_rest
-//     // assert(full_V.rows() == full_num_vertices());
-//     // assert(full_V.cols() == dim());
-//     // return vertices_from_displacements(full_V - m_full_vertices_at_rest);
-//     // S * full_V; m_select_vertices = S
-//     assert(full_V.rows() == m_select_vertices.cols());
-//     assert(full_V.cols() == dim());
-//     return m_select_vertices * full_V;
-// }
-
-Eigen::MatrixXd
-CollisionMesh::vertices_from_displacements(const Eigen::MatrixXd& full_U) const
-{
-    // V_rest + S * T * full_U; m_full_to_collision_vertices = S * T
-    assert(full_U.rows() == m_full_to_collision_vertices.cols());
-    assert(full_U.cols() == dim());
-    return m_vertices_at_rest + m_full_to_collision_vertices * full_U;
-}
+///////////////////////////////////////////////////////////////////////////////
 
 void CollisionMesh::init_adjacencies()
 {
@@ -266,20 +237,40 @@ void CollisionMesh::init_areas()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+Eigen::MatrixXd
+CollisionMesh::vertices(const Eigen::MatrixXd& full_vertices) const
+{
+    // full_U = full_V - full_V_rest
+    assert(full_vertices.rows() == full_num_vertices());
+    assert(full_vertices.cols() == dim());
+    return displace_vertices(full_vertices - m_full_vertices_at_rest);
+}
+
+Eigen::MatrixXd CollisionMesh::displace_vertices(
+    const Eigen::MatrixXd& full_displacements) const
+{
+    // V_rest + S * T * full_U; m_displacement_map = S * T
+    assert(m_displacement_map.cols() == full_displacements.rows());
+    assert(full_displacements.cols() == dim());
+    return m_vertices_at_rest + m_displacement_map * full_displacements;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 Eigen::VectorXd CollisionMesh::to_full_dof(const Eigen::VectorXd& x) const
 {
     // ∇_{full} f(S * T * x_full) = Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
-    // x = ∇_{collision} f(S * T * x_full); m_full_to_collision_dof = S * T
-    return m_full_to_collision_dof.transpose() * x;
+    // x = ∇_{collision} f(S * T * x_full); m_displacement_map = S * T
+    return m_displacement_map.transpose() * x;
 }
 
 Eigen::SparseMatrix<double>
 CollisionMesh::to_full_dof(const Eigen::SparseMatrix<double>& X) const
 {
     // ∇_{full} Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
-    //      = Tᵀ * Sᵀ * ∇_{collision}² f(S * T * x_full) * S * T
-    // X = ∇_{collision}² f(S * T * x_full); m_full_to_collision_dof = S * T
-    return m_full_to_collision_dof.transpose() * X * m_full_to_collision_dof;
+    //      = Tᵀ * Sᵀ * [∇_{collision}² f(S * T * x_full)] * S * T
+    // X = ∇_{collision}² f(S * T * x_full); m_displacement_dof_map = S * T
+    return m_displacement_dof_map.transpose() * X * m_displacement_dof_map;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

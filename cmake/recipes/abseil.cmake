@@ -8,6 +8,7 @@ include(FetchContent)
 FetchContent_Declare(
     abseil
     GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
-    GIT_TAG fad73ab077b846ff83e921ea1f5a6f831ea07ec2
+    GIT_TAG 20220623.0
+    GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(abseil)

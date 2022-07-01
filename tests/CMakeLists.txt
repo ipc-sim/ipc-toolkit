@@ -75,7 +75,7 @@ else()
 endif()
 
 include(json)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC nlohmann::json)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC nlohmann_json::nlohmann_json)
 
 if(IPC_TOOLKIT_WITH_CUDA)
   find_package(CUDAToolkit)

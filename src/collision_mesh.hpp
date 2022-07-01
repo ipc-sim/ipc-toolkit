@@ -14,15 +14,25 @@ public:
     CollisionMesh(
         const Eigen::MatrixXd& vertices_at_rest,
         const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces);
+        const Eigen::MatrixXi& faces,
+        const Eigen::SparseMatrix<double>& displacement_map =
+            Eigen::SparseMatrix<double>());
 
     CollisionMesh(
         const std::vector<bool>& include_vertex,
         const Eigen::MatrixXd& full_vertices_at_rest,
         const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces);
+        const Eigen::MatrixXi& faces,
+        const Eigen::SparseMatrix<double>& displacement_map =
+            Eigen::SparseMatrix<double>());
 
     ~CollisionMesh() { }
+
+    size_t num_vertices() const { return m_vertex_to_full_vertex.size(); }
+    size_t dim() const { return m_vertices_at_rest.cols(); }
+    size_t ndof() const { return num_vertices() * dim(); }
+    size_t full_num_vertices() const { return m_full_vertex_to_vertex.size(); }
+    size_t full_ndof() const { return full_num_vertices() * dim(); }
 
     const Eigen::MatrixXd& vertices_at_rest() const
     {
@@ -32,27 +42,23 @@ public:
     const Eigen::MatrixXi& faces() const { return m_faces; }
     const Eigen::MatrixXi& faces_to_edges() const { return m_faces_to_edges; }
 
-    // Eigen::MatrixXd vertices(const Eigen::MatrixXd& full_V) const;
+    ///////////////////////////////////////////////////////////////////////////
+
+    Eigen::MatrixXd vertices(const Eigen::MatrixXd& full_vertices) const;
+
     Eigen::MatrixXd
-    vertices_from_displacements(const Eigen::MatrixXd& full_U) const;
+    displace_vertices(const Eigen::MatrixXd& full_displacements) const;
 
-    void
-    set_linear_vertex_map(const Eigen::SparseMatrix<double>& linear_vertex_map);
-
-    size_t num_vertices() const { return m_num_vertices; }
-    size_t dim() const { return m_dim; }
-    size_t ndof() const { return num_vertices() * dim(); }
-    size_t full_num_vertices() const { return m_full_num_vertices; }
-    size_t full_ndof() const { return full_num_vertices() * dim(); }
-
-    size_t to_full_vertex_id(const size_t id)
+    size_t to_full_vertex_id(const size_t id) const
     {
         assert(id < num_vertices());
-        return vertex_to_full_vertex[id];
+        return m_vertex_to_full_vertex[id];
     }
     Eigen::VectorXd to_full_dof(const Eigen::VectorXd& x) const;
     Eigen::SparseMatrix<double>
     to_full_dof(const Eigen::SparseMatrix<double>& X) const;
+
+    ///////////////////////////////////////////////////////////////////////////
 
     const std::vector<unordered_set<int>>& point_point_adjacencies() const
     {
@@ -74,6 +80,8 @@ public:
 
     double edge_area(const size_t ei) const { return m_edge_areas[ei]; }
     const Eigen::VectorXd& edge_areas() const { return m_edge_areas; }
+
+    ///////////////////////////////////////////////////////////////////////////
 
     static std::vector<bool> construct_is_on_surface(
         const int num_vertices, const Eigen::MatrixXi& edges);
@@ -104,17 +112,29 @@ public:
     };
 
 protected:
+    ///////////////////////////////////////////////////////////////////////////
     // Helper initialization functions
-    void init_selection_matrix();
-    void set_identity_linear_vertex_map();
+
+    /// Initialize the selection matrix from full vertices/DOF to collision
+    /// vertices/DOF.
+    void init_selection_matrices(const int dim);
+
+    /// Initialize point-point and edge-point adjacencies.
     void init_adjacencies();
+
+    /// Initialize point and edge areas.
     void init_areas();
 
-    // Convert a matrix meant for M_V * V to M_dof * x by duplicating the
-    // entries dim times.
+    /// Convert a matrix meant for M_V * V to M_dof * x by duplicating the
+    /// entries dim times.
     static Eigen::SparseMatrix<double> vertex_matrix_to_dof_matrix(
         const Eigen::SparseMatrix<double>& M_V, int dim);
 
+    ///////////////////////////////////////////////////////////////////////////
+
+    /// The full vertex positions at rest.
+    Eigen::MatrixXd m_full_vertices_at_rest;
+    /// The vertex positions at rest.
     Eigen::MatrixXd m_vertices_at_rest;
     /// Edges as rows of indicies into V.
     Eigen::MatrixXi m_edges;
@@ -123,21 +143,23 @@ protected:
     /// Map from F edges to rows of E.
     Eigen::MatrixXi m_faces_to_edges;
 
-    Eigen::VectorXi full_vertex_to_vertex;
-    Eigen::VectorXi vertex_to_full_vertex;
+    /// Map from full vertices to collision vertices.
+    /// @note Negative values indicate full vertex is dropped.
+    Eigen::VectorXi m_full_vertex_to_vertex;
+    /// Map from collision vertices to full vertices.
+    Eigen::VectorXi m_vertex_to_full_vertex;
 
-    // Selection matrix S ∈ ℝ^{collision×full}
+    /// Selection matrix S ∈ ℝ^{collision×full} for vertices
     Eigen::SparseMatrix<double> m_select_vertices;
+    /// Selection matrix S ∈ ℝ^{collision×full} for DOF
     Eigen::SparseMatrix<double> m_select_dof;
 
-    /// Mapping from full vertices to collision vertices
-    Eigen::SparseMatrix<double> m_full_to_collision_vertices;
-    /// Mapping from collision DOF to full DOF
-    Eigen::SparseMatrix<double> m_full_to_collision_dof;
-
-    int m_full_num_vertices;
-    int m_num_vertices;
-    int m_dim;
+    /// Mapping from full displacements to collision displacements
+    /// @note this is premultiplied by m_select_vertices
+    Eigen::SparseMatrix<double> m_displacement_map;
+    /// Mapping from full displacements to collision displacements
+    /// @note this is premultiplied by m_select_dof
+    Eigen::SparseMatrix<double> m_displacement_dof_map;
 
     /// Points adjacent to points
     std::vector<unordered_set<int>> m_point_point_adjacencies;
@@ -147,7 +169,12 @@ protected:
     /// Is point on the boundary of the triangle mesh in 3D or polyline in 2D?
     std::vector<bool> m_is_point_on_boundary;
 
+    /// Point areas
+    /// 2D: 1/2 sum of length of connected edges
+    /// 3D: 1/3 sum of area of connected triangles
     Eigen::VectorXd m_point_areas;
+    /// Edge areas
+    /// 3D: 1/3 sum of area of connected triangles
     Eigen::VectorXd m_edge_areas;
 };
 
