@@ -3,6 +3,7 @@
 #include <pybind11/functional.h>
 
 #include <ipc/ipc.hpp>
+#include <igl/edges.h>
 
 namespace py = pybind11;
 using namespace ipc;
@@ -12,7 +13,7 @@ void define_ipc_functions(py::module_& m)
     m.def(
         "construct_constraint_set",
         [](const CollisionMesh& mesh, const Eigen::MatrixXd& V, double dhat,
-           double dmin, const BroadPhaseMethod& method) {
+           double dmin, const BroadPhaseMethod method) {
             Constraints constraint_set;
             construct_constraint_set(
                 mesh, V, dhat, constraint_set, dmin, method);
@@ -87,6 +88,63 @@ void define_ipc_functions(py::module_& m)
         py::arg("mesh"), py::arg("V"), py::arg("constraint_set"),
         py::arg("dhat"), py::arg("project_to_psd") = true);
 
+    m.def(
+        "is_step_collision_free",
+        [](const CollisionMesh& mesh, const Eigen::MatrixXd& V0,
+           const Eigen::MatrixXd& V1, const BroadPhaseMethod method,
+           const double tolerance, const long max_iterations) {
+            return is_step_collision_free(
+                mesh, V0, V1, method, tolerance, max_iterations);
+        },
+
+        R"ipc_Qu8mg5v7(
+        Determine if the step is collision free.
+
+        Note: Assumes the trajectory is linear.
+
+        Parameters:
+            mesh: The collision mesh.
+            V0: Surface vertex positions at start as rows of a matrix.
+            V1: Surface vertex positions at end as rows of a matrix.
+            method: (optional) broad-phase method to use
+            tolerance: (optional) query tolerance
+            max_iterations: (optional) maximal number of bisection operationices.
+
+        Returns:
+            A boolean for if the mesh has intersections.
+        )ipc_Qu8mg5v7",
+        py::arg("mesh"), py::arg("V0"), py::arg("V1"),
+        py::arg("method") = BroadPhaseMethod::HASH_GRID,
+        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = 10000000);
+
+    m.def(
+        "compute_collision_free_stepsize",
+        [](const CollisionMesh& mesh, const Eigen::MatrixXd& V0,
+           const Eigen::MatrixXd& V1, const BroadPhaseMethod method,
+           const double tolerance, const long max_iterations) {
+            return compute_collision_free_stepsize(
+                mesh, V0, V1, method, tolerance, max_iterations);
+        },
+        R"ipc_Qu8mg5v7(
+        Computes a maximal step size that is collision free.
+
+        Note: Assumes the trajectory is linear.
+
+        Parameters:
+            mesh: The collision mesh.
+            V0: Vertex positions at start as rows of a matrix. Assumes V0 is intersection free.
+            V1: Surface vertex positions at end as rows of a matrix.
+            method: (optional) broad-phase method to use
+            tolerance: (optional) query tolerance
+            max_iterations: (optional) maximal number of bisection operation
+
+        Returns:
+            A step-size in [0, 1] that is collision free. A value of 1.0 if a full step and 0.0 is no step.
+        )ipc_Qu8mg5v7",
+        py::arg("mesh"), py::arg("V0"), py::arg("V1"),
+        py::arg("method") = BroadPhaseMethod::HASH_GRID,
+        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = 10000000);
+
     // ...
 
     m.def(
@@ -102,4 +160,23 @@ void define_ipc_functions(py::module_& m)
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("V"),
         py::arg("method") = BroadPhaseMethod::HASH_GRID);
+
+    m.def(
+        "edges",
+        [](const Eigen::MatrixXi& F) {
+            Eigen::MatrixXi E;
+            igl::edges(F, E);
+            return E;
+        },
+        R"ipc_Qu8mg5v7(
+        
+        Constructs a list of unique edges represented in a given mesh F
+
+        Parameters:
+            F: #F by 3 list of mesh faces (must be triangles)
+
+        Returns:
+            #E by 2 list of edges in no particular order
+        )ipc_Qu8mg5v7",
+        py::arg("F"));
 }

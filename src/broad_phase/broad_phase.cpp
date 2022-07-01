@@ -60,7 +60,7 @@ void BroadPhase::detect_collision_candidates(
 ////////////////////////////////////////////////////////////////////////////////
 
 std::unique_ptr<BroadPhase>
-BroadPhase::make_broad_phase(const BroadPhaseMethod& method)
+BroadPhase::make_broad_phase(const BroadPhaseMethod method)
 {
     switch (method) {
     case BroadPhaseMethod::BRUTE_FORCE:
@@ -85,7 +85,7 @@ void construct_collision_candidates(
     const Eigen::MatrixXd& V,
     Candidates& candidates,
     double inflation_radius,
-    const BroadPhaseMethod& method)
+    const BroadPhaseMethod method)
 {
     const int dim = V.cols();
 
@@ -105,7 +105,7 @@ void construct_collision_candidates(
     const Eigen::MatrixXd& V1,
     Candidates& candidates,
     double inflation_radius,
-    const BroadPhaseMethod& method)
+    const BroadPhaseMethod method)
 {
     const int dim = V0.cols();
 

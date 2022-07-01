@@ -27,7 +27,7 @@ void construct_constraint_set(
     const double dhat,
     Constraints& constraint_set,
     const double dmin = 0,
-    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID);
+    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID);
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
 /// @param[in] candidates Distance candidates from which the constraint set is
@@ -109,14 +109,11 @@ bool is_step_collision_free(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
+    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID,
     const double tolerance = 1e-6,
     const long max_iterations = 1e7);
 
 /// @brief Determine if the step is collision free from a set of candidates.
-///
-/// V can either be the surface vertices or the entire mesh vertices. The edges
-/// and face should be only for the surface elements.
 ///
 /// @note Assumes the trajectory is linear.
 ///
@@ -136,10 +133,6 @@ bool is_step_collision_free(
 
 /// @brief Computes a maximal step size that is collision free.
 ///
-/// All vertices in V0 and V1 will be considered for collisions, so V0 and
-/// V1 should be only the surface vertices. The edges and face should be only
-/// for the surface elements.
-///
 /// @note Assumes the trajectory is linear.
 ///
 /// @param[in] mesh The collision mesh.
@@ -153,7 +146,7 @@ double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID,
+    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID,
     const double tolerance = 1e-6,
     const long max_iterations = 1e7);
 
@@ -199,6 +192,6 @@ double compute_minimum_distance(
 bool has_intersections(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID);
+    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID);
 
 } // namespace ipc
