@@ -35,6 +35,8 @@ public:
     size_t ndof() const { return num_vertices() * dim(); }
     size_t full_num_vertices() const { return m_full_vertex_to_vertex.size(); }
     size_t full_ndof() const { return full_num_vertices() * dim(); }
+    size_t num_edges() const { return edges().rows(); }
+    size_t num_faces() const { return faces().rows(); }
 
     const Eigen::MatrixXd& vertices_at_rest() const
     {

@@ -14,6 +14,11 @@ public:
     virtual ~CollisionConstraint() { }
 
     virtual int num_vertices() const = 0;
+
+    /// @brief Get the indices of the vertices
+    /// @param E edge matrix of mesh
+    /// @param F face matrix of mesh
+    /// @return List of vertex indices
     virtual std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const = 0;
 

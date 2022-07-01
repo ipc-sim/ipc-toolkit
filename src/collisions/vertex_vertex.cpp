@@ -47,15 +47,3 @@ MatrixMax12d VertexVertexConstraint::compute_distance_hessian(
 }
 
 } // namespace ipc
-
-namespace std {
-
-size_t hash<ipc::VertexVertexConstraint>::operator()(
-    ipc::VertexVertexConstraint const& vv) const noexcept
-{
-    long min_vi = std::min(vv.vertex0_index, vv.vertex1_index);
-    long max_vi = std::max(vv.vertex0_index, vv.vertex1_index);
-    return std::hash<long>()(min_vi) ^ std::hash<long>()(max_vi);
-}
-
-} // namespace std

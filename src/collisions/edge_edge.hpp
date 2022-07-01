@@ -52,13 +52,15 @@ struct EdgeEdgeConstraint : EdgeEdgeCandidate, CollisionConstraint {
         const double dhat,
         const bool project_hessian_to_psd) const override;
 
+    template <typename H>
+    friend H AbslHashValue(H h, const EdgeEdgeConstraint& ee)
+    {
+        long min_ei = std::min(ee.edge0_index, ee.edge1_index);
+        long max_ei = std::max(ee.edge0_index, ee.edge1_index);
+        return H::combine(std::move(h), min_ei, max_ei);
+    }
+
     double eps_x;
 };
 
 } // namespace ipc
-
-namespace std {
-template <> struct hash<ipc::EdgeEdgeConstraint> {
-    size_t operator()(ipc::EdgeEdgeConstraint const& ee) const noexcept;
-};
-} // namespace std

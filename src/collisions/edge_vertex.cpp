@@ -50,14 +50,3 @@ MatrixMax12d EdgeVertexConstraint::compute_distance_hessian(
 }
 
 } // namespace ipc
-
-namespace std {
-
-size_t hash<ipc::EdgeVertexConstraint>::operator()(
-    ipc::EdgeVertexConstraint const& ev) const noexcept
-{
-    return std::hash<long>()(ev.edge_index)
-        ^ std::hash<long>()(ev.vertex_index);
-}
-
-} // namespace std

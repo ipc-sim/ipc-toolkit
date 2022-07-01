@@ -31,12 +31,14 @@ struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const override;
+
+    template <typename H>
+    friend H AbslHashValue(H h, const VertexVertexConstraint& vv)
+    {
+        long min_vi = std::min(vv.vertex0_index, vv.vertex1_index);
+        long max_vi = std::max(vv.vertex0_index, vv.vertex1_index);
+        return H::combine(std::move(h), min_vi, max_vi);
+    }
 };
 
 } // namespace ipc
-
-namespace std {
-template <> struct hash<ipc::VertexVertexConstraint> {
-    size_t operator()(ipc::VertexVertexConstraint const& vv) const noexcept;
-};
-} // namespace std

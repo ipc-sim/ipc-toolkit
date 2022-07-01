@@ -32,12 +32,12 @@ struct FaceVertexConstraint : FaceVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const override;
+
+    template <typename H>
+    friend H AbslHashValue(H h, const FaceVertexConstraint& fv)
+    {
+        return H::combine(std::move(h), fv.face_index, fv.vertex_index);
+    }
 };
 
 } // namespace ipc
-
-namespace std {
-template <> struct hash<ipc::FaceVertexConstraint> {
-    size_t operator()(ipc::FaceVertexConstraint const& fv) const noexcept;
-};
-} // namespace std

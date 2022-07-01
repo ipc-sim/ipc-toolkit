@@ -50,14 +50,3 @@ MatrixMax12d FaceVertexConstraint::compute_distance_hessian(
 }
 
 } // namespace ipc
-
-namespace std {
-
-size_t hash<ipc::FaceVertexConstraint>::operator()(
-    ipc::FaceVertexConstraint const& fv) const noexcept
-{
-    return std::hash<long>()(fv.face_index)
-        ^ std::hash<long>()(fv.vertex_index);
-}
-
-} // namespace std

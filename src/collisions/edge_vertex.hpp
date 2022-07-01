@@ -31,12 +31,12 @@ struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const override;
+
+    template <typename H>
+    friend H AbslHashValue(H h, const EdgeVertexConstraint& ev)
+    {
+        return H::combine(std::move(h), ev.edge_index, ev.vertex_index);
+    }
 };
 
 } // namespace ipc
-
-namespace std {
-template <> struct hash<ipc::EdgeVertexConstraint> {
-    size_t operator()(ipc::EdgeVertexConstraint const& ev) const noexcept;
-};
-} // namespace std

@@ -173,15 +173,3 @@ MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
 }
 
 } // namespace ipc
-
-namespace std {
-
-size_t hash<ipc::EdgeEdgeConstraint>::operator()(
-    ipc::EdgeEdgeConstraint const& ee) const noexcept
-{
-    long min_ei = std::min(ee.edge0_index, ee.edge1_index);
-    long max_ei = std::max(ee.edge0_index, ee.edge1_index);
-    return std::hash<long>()(min_ei) ^ std::hash<long>()(max_ei);
-}
-
-} // namespace std
