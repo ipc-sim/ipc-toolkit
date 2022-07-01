@@ -35,10 +35,10 @@ target_link_libraries(ipctk PRIVATE ipc::toolkit)
 
 if(IPC_TOOLKIT_WITH_LOGGER)
   include(spdlog)
-  target_link_libraries(ipctk PRIVATE spdlog::spdlog)
+  ipc_toolkit_target_link_system_libraries(ipctk PRIVATE spdlog::spdlog)
 else()
   include(fmt)
-  target_link_libraries(ipctk PRIVATE fmt::fmt)
+  ipc_toolkit_target_link_system_libraries(ipctk PRIVATE fmt::fmt)
 endif()
 
 # Extra warnings

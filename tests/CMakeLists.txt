@@ -61,25 +61,25 @@ include(ipc_toolkit_warnings)
 target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)
 
 include(catch2)
-target_link_libraries(ipc_toolkit_tests PUBLIC Catch2::Catch2)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC Catch2::Catch2)
 
 include(finite_diff)
-target_link_libraries(ipc_toolkit_tests PUBLIC finitediff::finitediff)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC finitediff::finitediff)
 
 if(IPC_TOOLKIT_WITH_LOGGER)
   include(spdlog)
-  target_link_libraries(ipc_toolkit_tests PRIVATE spdlog::spdlog)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PRIVATE spdlog::spdlog)
 else()
   include(fmt)
-  target_link_libraries(ipc_toolkit_tests PRIVATE fmt::fmt)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PRIVATE fmt::fmt)
 endif()
 
 include(json)
-target_link_libraries(ipc_toolkit_tests PUBLIC nlohmann::json)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC nlohmann_json::nlohmann_json)
 
 if(IPC_TOOLKIT_WITH_CUDA)
   find_package(CUDAToolkit)
-  target_link_libraries(ipc_toolkit_tests PRIVATE CUDA::cudart)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PRIVATE CUDA::cudart)
 endif()
 
 ################################################################################

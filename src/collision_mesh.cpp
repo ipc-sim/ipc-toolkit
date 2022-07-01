@@ -1,7 +1,7 @@
 #include <ipc/collision_mesh.hpp>
 
-#include <igl/slice.h>
-#include <igl/slice_into.h>
+#include <ipc/utils/unordered_map_and_set.hpp>
+#include <ipc/utils/logger.hpp>
 
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -10,85 +10,141 @@ namespace ipc {
 CollisionMesh::CollisionMesh(
     const Eigen::MatrixXd& vertices_at_rest,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces)
-    : m_vertices_at_rest(vertices_at_rest)
-    , m_edges(edges)
-    , m_faces(faces)
+    const Eigen::MatrixXi& faces,
+    const Eigen::SparseMatrix<double>& displacement_map)
+    : CollisionMesh(
+        std::vector<bool>(vertices_at_rest.rows(), true),
+        vertices_at_rest,
+        edges,
+        faces)
 {
-    m_faces_to_edges = construct_faces_to_edges(m_faces, m_edges);
-
-    // Assumes collision mesh is full mesh
-    full_vertex_to_vertex.setLinSpaced(num_vertices(), 0, num_vertices() - 1);
-    vertex_to_full_vertex = full_vertex_to_vertex;
-    init_dof_to_full_dof();
-
-    init_adjacencies();
-    init_areas();
 }
 
 CollisionMesh::CollisionMesh(
     const std::vector<bool>& include_vertex,
     const Eigen::MatrixXd& full_vertices_at_rest,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces)
-    : m_edges(edges)
+    const Eigen::MatrixXi& faces,
+    const Eigen::SparseMatrix<double>& displacement_map)
+    : m_full_vertices_at_rest(full_vertices_at_rest)
+    , m_edges(edges)
     , m_faces(faces)
 {
-    size_t num_full_verts = full_vertices_at_rest.rows();
-    assert(include_vertex.size() == num_full_verts);
+    assert(include_vertex.size() == full_vertices_at_rest.rows());
+    const bool include_all_vertices = std::all_of(
+        include_vertex.begin(), include_vertex.end(), [](bool b) { return b; });
 
-    full_vertex_to_vertex.setConstant(num_full_verts, -1);
-    std::vector<int> dynamic_vertex_to_full_vertex;
-    size_t num_verts = 0;
-    for (size_t i = 0; i < num_full_verts; i++) {
-        if (include_vertex[i]) {
-            full_vertex_to_vertex[i] = num_verts;
-            dynamic_vertex_to_full_vertex.push_back(i);
-            num_verts++;
+    if (include_all_vertices) {
+        // set full ↔ reduced ≡ identity
+        m_full_vertex_to_vertex.setLinSpaced(
+            full_vertices_at_rest.rows(), 0, full_vertices_at_rest.rows() - 1);
+        m_vertex_to_full_vertex = m_full_vertex_to_vertex;
+    } else {
+        m_full_vertex_to_vertex.setConstant(full_vertices_at_rest.rows(), -1);
+        std::vector<int> dynamic_vertex_to_full_vertex;
+        for (size_t i = 0; i < full_vertices_at_rest.rows(); i++) {
+            if (include_vertex[i]) {
+                m_full_vertex_to_vertex[i] =
+                    dynamic_vertex_to_full_vertex.size();
+                dynamic_vertex_to_full_vertex.push_back(i);
+            }
         }
-    }
-    vertex_to_full_vertex = Eigen::Map<Eigen::VectorXi>(
-        dynamic_vertex_to_full_vertex.data(),
-        dynamic_vertex_to_full_vertex.size());
-
-    m_vertices_at_rest = vertices(full_vertices_at_rest);
-
-    for (int i = 0; i < m_edges.rows(); i++) {
-        for (int j = 0; j < m_edges.cols(); j++) {
-            long new_id = full_vertex_to_vertex[m_edges(i, j)];
-            assert(new_id >= 0 && new_id < num_verts);
-            m_edges(i, j) = new_id;
-        }
+        m_vertex_to_full_vertex = Eigen::Map<Eigen::VectorXi>(
+            dynamic_vertex_to_full_vertex.data(),
+            dynamic_vertex_to_full_vertex.size());
     }
 
-    for (int i = 0; i < m_faces.rows(); i++) {
-        for (int j = 0; j < m_faces.cols(); j++) {
-            long new_id = full_vertex_to_vertex[m_faces(i, j)];
-            assert(new_id >= 0 && new_id < num_verts);
-            m_faces(i, j) = new_id;
-        }
+    ///////////////////////////////////////////////////////////////////////////
+
+    const int dim = full_vertices_at_rest.cols();
+
+    // Selection matrix S ∈ ℝ^{collision×full}
+    init_selection_matrices(dim);
+
+    if (displacement_map.size() == 0) {
+        m_displacement_map = m_select_vertices;
+        m_displacement_dof_map = m_select_dof;
+    } else {
+        assert(displacement_map.rows() == num_vertices());
+        assert(displacement_map.cols() == full_num_vertices());
+
+        m_displacement_map = m_select_vertices * displacement_map;
+        m_displacement_map.makeCompressed();
+
+        m_displacement_dof_map =
+            m_select_dof * vertex_matrix_to_dof_matrix(displacement_map, dim);
+        m_displacement_dof_map.makeCompressed();
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    // Set vertices at rest using full → reduced map
+    m_vertices_at_rest = m_select_vertices * full_vertices_at_rest;
+    // m_vertices_at_rest = vertices(full_vertices_at_rest);
+
+    // Map faces and edges to only included vertices
+    if (!include_all_vertices) {
+        for (int i = 0; i < m_edges.rows(); i++) {
+            for (int j = 0; j < m_edges.cols(); j++) {
+                long new_id = m_full_vertex_to_vertex[m_edges(i, j)];
+                assert(new_id >= 0 && new_id < num_vertices());
+                m_edges(i, j) = new_id;
+            }
+        }
+
+        for (int i = 0; i < m_faces.rows(); i++) {
+            for (int j = 0; j < m_faces.cols(); j++) {
+                long new_id = m_full_vertex_to_vertex[m_faces(i, j)];
+                assert(new_id >= 0 && new_id < num_vertices());
+                m_faces(i, j) = new_id;
+            }
+        }
+    } // else no need to change the edges and faces
 
     m_faces_to_edges = construct_faces_to_edges(m_faces, m_edges);
-
-    init_dof_to_full_dof();
 
     init_adjacencies();
     init_areas();
 }
 
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
-void CollisionMesh::init_dof_to_full_dof()
+void CollisionMesh::init_selection_matrices(const int dim)
 {
-    dof_to_full_dof.resize(ndof());
-    for (int i = 0; i < num_vertices(); i++) {
-        for (int d = 0; d < dim(); d++) {
-            dof_to_full_dof[dim() * i + d] =
-                dim() * vertex_to_full_vertex[i] + d;
+    std::vector<Eigen::Triplet<double>> triplets;
+    triplets.reserve(num_vertices());
+    for (int vi = 0; vi < num_vertices(); vi++) {
+        triplets.emplace_back(vi, m_vertex_to_full_vertex[vi], 1.0);
+    }
+
+    m_select_vertices.resize(num_vertices(), full_num_vertices());
+    m_select_vertices.setFromTriplets(triplets.begin(), triplets.end());
+    m_select_vertices.makeCompressed();
+
+    m_select_dof = vertex_matrix_to_dof_matrix(m_select_vertices, dim);
+}
+
+Eigen::SparseMatrix<double> CollisionMesh::vertex_matrix_to_dof_matrix(
+    const Eigen::SparseMatrix<double>& M_V, int dim)
+{
+    std::vector<Eigen::Triplet<double>> triplets;
+    using InnerIterator = Eigen::SparseMatrix<double>::InnerIterator;
+    for (int k = 0; k < M_V.outerSize(); ++k) {
+        for (InnerIterator it(M_V, k); it; ++it) {
+            for (int d = 0; d < dim; d++) {
+                triplets.emplace_back(
+                    dim * it.row() + d, dim * it.col() + d, it.value());
+            }
         }
     }
+
+    Eigen::SparseMatrix<double> M_dof(M_V.rows() * dim, M_V.cols() * dim);
+    M_dof.setFromTriplets(triplets.begin(), triplets.end());
+    M_dof.makeCompressed();
+    return M_dof;
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 void CollisionMesh::init_adjacencies()
 {
@@ -181,29 +237,40 @@ void CollisionMesh::init_areas()
 
 ////////////////////////////////////////////////////////////////////////////////
 
+Eigen::MatrixXd
+CollisionMesh::vertices(const Eigen::MatrixXd& full_vertices) const
+{
+    // full_U = full_V - full_V_rest
+    assert(full_vertices.rows() == full_num_vertices());
+    assert(full_vertices.cols() == dim());
+    return displace_vertices(full_vertices - m_full_vertices_at_rest);
+}
+
+Eigen::MatrixXd CollisionMesh::displace_vertices(
+    const Eigen::MatrixXd& full_displacements) const
+{
+    // V_rest + S * T * full_U; m_displacement_map = S * T
+    assert(m_displacement_map.cols() == full_displacements.rows());
+    assert(full_displacements.cols() == dim());
+    return m_vertices_at_rest + m_displacement_map * full_displacements;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 Eigen::VectorXd CollisionMesh::to_full_dof(const Eigen::VectorXd& x) const
 {
-    Eigen::VectorXd full_x = Eigen::VectorXd::Zero(full_ndof());
-    igl::slice_into(x, dof_to_full_dof, full_x);
-    return full_x;
+    // ∇_{full} f(S * T * x_full) = Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
+    // x = ∇_{collision} f(S * T * x_full); m_displacement_map = S * T
+    return m_displacement_map.transpose() * x;
 }
 
 Eigen::SparseMatrix<double>
 CollisionMesh::to_full_dof(const Eigen::SparseMatrix<double>& X) const
 {
-    // initializes to zero
-    Eigen::SparseMatrix<double> full_X(full_ndof(), full_ndof());
-    full_X.reserve(X.nonZeros());
-    igl::slice_into(X, dof_to_full_dof, dof_to_full_dof, full_X);
-    full_X.makeCompressed();
-    return full_X;
-}
-
-Eigen::MatrixXd CollisionMesh::vertices(const Eigen::MatrixXd& full_V) const
-{
-    Eigen::MatrixXd V(num_vertices(), full_V.cols());
-    igl::slice(full_V, vertex_to_full_vertex, /*dim=*/1, V);
-    return V;
+    // ∇_{full} Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
+    //      = Tᵀ * Sᵀ * [∇_{collision}² f(S * T * x_full)] * S * T
+    // X = ∇_{collision}² f(S * T * x_full); m_displacement_dof_map = S * T
+    return m_displacement_dof_map.transpose() * X * m_displacement_dof_map;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -232,27 +299,20 @@ Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
     }
     assert(edges.size() != 0);
 
-    auto max_vi = edges.maxCoeff();
-    auto hash_edge = [&max_vi](const Eigen::RowVector2i& e) {
-        return e.minCoeff() * max_vi + e.maxCoeff();
-    };
-    auto eq_edges = [](const Eigen::RowVector2i& ea,
-                       const Eigen::RowVector2i& eb) {
-        return ea.minCoeff() == eb.minCoeff() && ea.maxCoeff() == eb.maxCoeff();
-    };
-
-    unordered_map<
-        Eigen::RowVector2i, int, decltype(hash_edge), decltype(eq_edges)>
-        edge_map(/*bucket_count=*/edges.rows(), hash_edge, eq_edges);
-    for (int ei = 0; ei < edges.rows(); ei++) {
-        edge_map[edges.row(ei)] = ei;
+    unordered_map<std::pair<int, int>, size_t> edge_map;
+    for (size_t ei = 0; ei < edges.rows(); ei++) {
+        edge_map.emplace(
+            std::make_pair<int, int>(
+                edges.row(ei).minCoeff(), edges.row(ei).maxCoeff()),
+            ei);
     }
 
     Eigen::MatrixXi faces_to_edges(faces.rows(), faces.cols());
     for (int fi = 0; fi < faces.rows(); fi++) {
         for (int fj = 0; fj < faces.cols(); fj++) {
-            Eigen::RowVector2i e(
-                faces(fi, fj), faces(fi, (fj + 1) % faces.cols()));
+            const int vi = faces(fi, fj);
+            const int vj = faces(fi, (fj + 1) % faces.cols());
+            std::pair<int, int> e(std::min(vi, vj), std::max(vi, vj));
             auto search = edge_map.find(e);
             if (search != edge_map.end()) {
                 faces_to_edges(fi, fj) = search->second;

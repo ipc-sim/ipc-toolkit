@@ -12,7 +12,7 @@ template <typename T> T barrier(const T& d, double dhat)
         return T(0);
     }
     // b(d) = -(d-d̂)²ln(d / d̂)
-    const double tmp = (d - dhat);
+    const T tmp = (d - dhat);
     return -tmp * tmp * log(d / dhat);
 }
 

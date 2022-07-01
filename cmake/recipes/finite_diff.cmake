@@ -8,7 +8,7 @@ include(FetchContent)
 FetchContent_Declare(
     finite-diff
     GIT_REPOSITORY https://github.com/zfergus/finite-diff.git
-    GIT_TAG c5961a6014b725ac00cfc2df9ecba048766e9b46
-    GIT_SHALLOW FALSE
+    GIT_TAG v1.0.0
+    GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(finite-diff)

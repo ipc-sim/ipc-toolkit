@@ -111,10 +111,8 @@ void construct_constraint_set(
     };
 
     // Store the indices to VV and EV pairs to avoid duplicates.
-    unordered_map<VertexVertexConstraint, long> vv_to_index(
-        /*min_buckets=*/candidates.size());
-    unordered_map<EdgeVertexConstraint, long> ev_to_index(
-        /*min_buckets=*/candidates.size());
+    unordered_map<VertexVertexConstraint, long> vv_to_index;
+    unordered_map<EdgeVertexConstraint, long> ev_to_index;
 
     std::mutex vv_mutex, ev_mutex, ee_mutex, fv_mutex;
 
@@ -654,7 +652,8 @@ bool has_intersections(
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
 
-    double conservative_inflation_radius = 1e-2 * world_bbox_diagonal_length(V);
+    const double conservative_inflation_radius =
+        1e-6 * world_bbox_diagonal_length(V);
 
     // TODO: Expose the broad-phase method
     std::unique_ptr<BroadPhase> broad_phase =
