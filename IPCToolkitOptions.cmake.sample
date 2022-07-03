@@ -58,14 +58,23 @@
 # FetchContent Options
 ################################################################################
 
-# option(FETCHCONTENT_FULLY_DISCONNECTED   "Disables all attempts to download or update content and assumes source dirs already exist")
-# option(FETCHCONTENT_UPDATES_DISCONNECTED "Enables UPDATE_DISCONNECTED behavior for all content population")
+# option(FETCHCONTENT_FULLY_DISCONNECTED   "Disables all attempts to download or update content and assumes source dirs already exist" OFF)
+# option(FETCHCONTENT_UPDATES_DISCONNECTED "Enables UPDATE_DISCONNECTED behavior for all content population" OFF)
 # option(FETCHCONTENT_QUIET                "Enables QUIET option for all content population" ON)
 # set(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/_deps" CACHE PATH "Directory under which to collect all populated content")
 
-################################################################################
 # Development Locations for Third Party Libraries
-################################################################################
-
-# set(IPC_TOOLKIT_TIGHT_INCLUSION_PATH "" CACHE STRING "path to tight inclusion")
-# set(IPC_TOOLKIT_GPU_CCD_PATH "" CACHE STRING "path to GPU CCD")
+# set(FETCHCONTENT_SOURCE_DIR_ABSEIL "" CACHE PATH "When not empty, overrides where to find pre-populated content for abseil")
+# set(FETCHCONTENT_SOURCE_DIR_BROADPHASE "" CACHE PATH "When not empty, overrides where to find pre-populated content for broadphase")
+# set(FETCHCONTENT_SOURCE_DIR_CATCH2 "" CACHE PATH "When not empty, overrides where to find pre-populated content for catch2")
+# set(FETCHCONTENT_SOURCE_DIR_EIGEN "" CACHE PATH "When not empty, overrides where to find pre-populated content for eigen")
+# set(FETCHCONTENT_SOURCE_DIR_FINITE-DIFF "" CACHE PATH "When not empty, overrides where to find pre-populated content for finite-diff")
+# set(FETCHCONTENT_SOURCE_DIR_GPU_CCD "" CACHE PATH "When not empty, overrides where to find pre-populated content for gpu_ccd")
+# set(FETCHCONTENT_SOURCE_DIR_LIBIGL "" CACHE PATH "When not empty, overrides where to find pre-populated content for libigl")
+# set(FETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON "" CACHE PATH "When not empty, overrides where to find pre-populated content for nlohmann_json")
+# set(FETCHCONTENT_SOURCE_DIR_PREDICATES "" CACHE PATH "When not empty, overrides where to find pre-populated content for predicates")
+# set(FETCHCONTENT_SOURCE_DIR_PYBIND11 "" CACHE PATH "When not empty, overrides where to find pre-populated content for pybind11")
+# set(FETCHCONTENT_SOURCE_DIR_ROBIN-MAP "" CACHE PATH "When not empty, overrides where to find pre-populated content for robin-map")
+# set(FETCHCONTENT_SOURCE_DIR_SPDLOG "" CACHE PATH "When not empty, overrides where to find pre-populated content for spdlog")
+# set(FETCHCONTENT_SOURCE_DIR_TBB "" CACHE PATH "When not empty, overrides where to find pre-populated content for tbb")
+# set(FETCHCONTENT_SOURCE_DIR_TIGHT_INCLUSION "" CACHE PATH "When not empty, overrides where to find pre-populated content for tight_inclusion")

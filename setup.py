@@ -123,8 +123,6 @@ class CMakeBuild(build_ext):
                               build_args, cwd=build_temp)
 
 
-# The information here can also be placed in setup.cfg - better separation of
-# logic and declaration, and simpler if you include description/version in a file.
 setup(
     ext_modules=[CMakeExtension('ipctk')],
     cmdclass={"build_ext": CMakeBuild},
