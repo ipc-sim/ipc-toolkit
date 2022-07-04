@@ -39,7 +39,7 @@ endif ()
 # Pybind11 still uses the deprecated FindPythonInterp. So let's call CMake's
 # new FindPython module and set PYTHON_EXECUTABLE for Pybind11 to pick up.
 # This works well with conda environments.
-find_package(Python REQUIRED COMPONENTS Interpreter Development)
+find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
 set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
 
 FetchContent_MakeAvailable(pybind11)
