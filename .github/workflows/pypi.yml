@@ -9,12 +9,19 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.os }}
+    name: Build wheels on ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-20.04, windows-2019, macos-10.15]
+        include:
+          - os: ubuntu-20.04
+            name: Linux
+          - os: windows-2019
+            name: Windows
+          - os: macOS-10.15
+            name: macOS
 
     steps:
       - uses: actions/checkout@v3
@@ -22,8 +29,10 @@ jobs:
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.7.0
         # to supply options, put them in 'env', like:
-        # env:
-        #   CIBW_SOME_OPTION: value
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "10.14"
+          CIBW_SKIP: "cp36-* pp* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
+          CIBW_BUILD_FRONTEND: "build"
 
       - uses: actions/upload-artifact@v3
         with:
