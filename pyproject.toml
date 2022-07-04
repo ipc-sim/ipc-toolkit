@@ -9,7 +9,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ipc-toolkit"
+name = "ipctk"
 version = "0.0.1"
 authors = [
   { name="Zachary Ferguson", email="zfergus@nyu.edu" },
@@ -21,7 +21,10 @@ classifiers = [
     "Programming Language :: C++",
     "Programming Language :: Python :: 3",
     "Topic :: Games/Entertainment :: Simulation",
+    "Topic :: Scientific/Engineering :: Physics",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
 ]
 
 [project.urls]
