@@ -28,11 +28,11 @@ endif()
 
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
-        LANGUAGES CXX)
+        LANGUAGES CXX
+        VERSION "0.0.1")
 
 option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
 option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
-option(IPC_TOOLKIT_WITH_LOGGER                "Enable logger"                                  ON)
 option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"                     ON)
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
@@ -77,6 +77,11 @@ add_subdirectory(src)
 # Public include directory for IPC Toolkit
 target_include_directories(ipc_toolkit PUBLIC ${PROJECT_BINARY_DIR}/include)
 
+# Fill in configuration options
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp")
+
 ################################################################################
 # Optional Definitions
 ################################################################################
@@ -110,7 +115,6 @@ if(IPC_TOOLKIT_WITH_CORRECT_CCD)
   # Provably conservative CCD of [Wang and Ferguson et al. 2021]
   include(tight_inclusion)
   ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
-  target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_CORRECT_CCD)
 else()
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
   include(evouga_ccd)
@@ -118,19 +122,12 @@ else()
 endif()
 
 # Logger
-if(IPC_TOOLKIT_WITH_LOGGER)
-  include(spdlog)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit PRIVATE spdlog::spdlog)
-  target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_LOGGER)
-else()
-  include(fmt)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit PRIVATE fmt::fmt)
-endif()
+include(spdlog)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   include(gmp)
   ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC GMP::GMP)
-  target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
 endif()
 
 # Sweep and Tiniest Queue and CCD
@@ -138,7 +135,6 @@ if(IPC_TOOLKIT_WITH_CUDA)
   include(gpu_ccd)
   ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC gpu_ccd::gpu_ccd)
   ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC STQ::CPU)
-  target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_CUDA)
 else()
   set(STQ_WITH_CUDA OFF CACHE BOOL "Enable CUDA Implementation" FORCE)
   include(sweep_and_tiniest_queue)
@@ -148,12 +144,10 @@ endif()
 # Faster unordered map
 include(robin_map)
 ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC tsl::robin_map)
-target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_USE_ROBIN_MAP)
 
 # Hashes
 include(abseil)
 ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC absl::flat_hash_map)
-target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_USE_ABSL_HASH)
 
 ################################################################################
 # Compiler options

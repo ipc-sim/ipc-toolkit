@@ -16,10 +16,11 @@ void define_broad_phase(py::module_& m)
         .value(
             "SWEEP_AND_TINIEST_QUEUE",
             BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE, "")
+#ifdef IPC_TOOLKIT_WITH_CUDA
         .value(
             "SWEEP_AND_TINIEST_QUEUE_GPU",
             BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU, "")
-        .value("NUM_METHODS", BroadPhaseMethod::NUM_METHODS, "")
+#endif
         .export_values();
 
     py::class_<BroadPhase>(m, "BroadPhase")

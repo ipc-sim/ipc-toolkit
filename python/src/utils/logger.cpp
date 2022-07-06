@@ -7,7 +7,6 @@ using namespace ipc;
 
 void define_logger(py::module_& m)
 {
-#ifdef IPC_TOOLKIT_WITH_LOGGER
     py::enum_<spdlog::level::level_enum>(m, "LoggerLevel")
         .value("trace", spdlog::level::level_enum::trace)
         .value("debug", spdlog::level::level_enum::debug)
@@ -24,5 +23,4 @@ void define_logger(py::module_& m)
             logger().set_level(level);
         },
         "Set log level", py::arg("level"));
-#endif
 }

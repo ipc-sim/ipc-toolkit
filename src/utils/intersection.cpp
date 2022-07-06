@@ -4,6 +4,7 @@
 
 #include <igl/predicates/predicates.h>
 
+#include <ipc/config.hpp>
 #ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
 #include <ipc/utils/rational.hpp>
 #endif

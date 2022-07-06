@@ -4,6 +4,8 @@
 
 #include <stq/cpu/aabb.hpp>
 
+#include <ipc/config.hpp>
+
 #ifdef IPC_TOOLKIT_WITH_CUDA
 #include <cuda.h>
 #include <cuda_runtime.h>

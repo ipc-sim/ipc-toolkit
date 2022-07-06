@@ -1,13 +1,11 @@
 #include <ipc/broad_phase/sweep.hpp>
 
-#include <tbb/parallel_sort.h>
-
 #include <stq/cpu/io.hpp>
 #include <stq/cpu/sweep.hpp>
 
+#include <ipc/config.hpp>
+
 #ifdef IPC_TOOLKIT_WITH_CUDA
-#include <cuda.h>
-#include <cuda_runtime.h>
 #include <ccdgpu/helper.cuh>
 #endif
 

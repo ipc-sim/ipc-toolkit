@@ -1,5 +1,3 @@
-#ifdef IPC_TOOLKIT_WITH_LOGGER
-
 #include <ipc/utils/logger.hpp>
 
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -41,4 +39,3 @@ void set_logger(std::shared_ptr<spdlog::logger> x)
 }
 
 } // namespace ipc
-#endif

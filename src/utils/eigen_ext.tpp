@@ -28,7 +28,7 @@ project_to_pd(
         Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
         eigensolver(A);
     if (eigensolver.info() != Eigen::Success) {
-        IPC_LOG(error("unable to project matrix onto positive definite cone"));
+        logger().error("unable to project matrix onto positive definite cone");
         throw std::runtime_error(
             "unable to project matrix onto positive definite cone");
     }
@@ -67,8 +67,8 @@ project_to_psd(
         Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
         eigensolver(A);
     if (eigensolver.info() != Eigen::Success) {
-        IPC_LOG(
-            error("unable to project matrix onto positive semi-definite cone"));
+        logger().error(
+            "unable to project matrix onto positive semi-definite cone");
         throw std::runtime_error(
             "unable to project matrix onto positive definite cone");
     }

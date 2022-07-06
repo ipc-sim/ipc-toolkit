@@ -3,6 +3,8 @@
 #include <stdexcept> // std::runtime_error
 #include <algorithm> // std::min/max
 
+#include <ipc/config.hpp>
+
 #define IPC_EARLIEST_TOI_USE_MUTEX
 #ifdef IPC_EARLIEST_TOI_USE_MUTEX
 #include <mutex>
@@ -526,10 +528,6 @@ double compute_collision_free_stepsize(
             return 0.8 * step_size;
         }
         return 1.0;
-    }
-#else
-    if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
-        throw std::runtime_error("IPC_TOOLKIT_WITH_CUDA is not enabled");
     }
 #endif
 

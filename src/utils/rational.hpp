@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ipc/config.hpp>
+
 #ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
 
 #include <gmp.h>

@@ -58,7 +58,7 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
         {
             double stepsize = compute_collision_free_stepsize(
                 mesh, V0, V1, method, tolerance, max_iterations);
-            // IPC_LOG(critical("stepsize={}", stepsize));
+            // logger().critical("stepsize={}", stepsize);
         };
     }
 }

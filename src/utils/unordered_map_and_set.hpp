@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ipc/config.hpp>
+
 #ifdef IPC_TOOLKIT_USE_ROBIN_MAP
 
 #include <tsl/robin_map.h>

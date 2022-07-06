@@ -8,7 +8,6 @@
 
 #include <ipc/utils/logger.hpp>
 
-#ifdef IPC_TOOLKIT_WITH_LOGGER
 Catch::clara::ParserResult parse_log_level(int const d, int& log_level)
 {
     if (d < 0 || d > spdlog::level::off) {
@@ -20,16 +19,15 @@ Catch::clara::ParserResult parse_log_level(int const d, int& log_level)
             Catch::clara::ParseResultType::Matched);
     }
 }
-#endif
 
 Catch::clara::ParserResult parse_num_threads(int const d, int& num_threads)
 {
     if (num_threads <= 0) {
         num_threads = tbb::info::default_concurrency();
     } else if (num_threads > tbb::info::default_concurrency()) {
-        IPC_LOG(warn(
+        ipc::logger().warn(
             "Attempting to use more threads than available ({:d} > {:d})!",
-            num_threads, tbb::info::default_concurrency()));
+            num_threads, tbb::info::default_concurrency());
         num_threads = tbb::info::default_concurrency();
     } else {
         num_threads = d;
@@ -46,13 +44,11 @@ int main(int argc, char* argv[])
     using namespace Catch::clara;
     auto cli = session.cli();
 
-#ifdef IPC_TOOLKIT_WITH_LOGGER
     int log_level = spdlog::level::warn;
     cli |=
         Opt([&log_level](int const d) { return parse_log_level(d, log_level); },
             "log_level")["--log"]["--logger-level"](
             "logger verbosity level int (0-6)");
-#endif
 
     int num_threads = tbb::info::default_concurrency();
     cli |=
@@ -67,10 +63,8 @@ int main(int argc, char* argv[])
     if (returnCode != 0) // Indicates a command line error
         return returnCode;
 
-#ifdef IPC_TOOLKIT_WITH_LOGGER
     spdlog::set_level(static_cast<spdlog::level::level_enum>(log_level));
     ipc::logger().set_level(static_cast<spdlog::level::level_enum>(log_level));
-#endif
 
     tbb::global_control thread_limiter(
         tbb::global_control::max_allowed_parallelism, num_threads);

@@ -66,14 +66,6 @@ ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC Catch2::Catch2
 include(finite_diff)
 ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC finitediff::finitediff)
 
-if(IPC_TOOLKIT_WITH_LOGGER)
-  include(spdlog)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PRIVATE spdlog::spdlog)
-else()
-  include(fmt)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PRIVATE fmt::fmt)
-endif()
-
 include(json)
 ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC nlohmann_json::nlohmann_json)
 

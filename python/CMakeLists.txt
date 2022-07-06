@@ -53,14 +53,6 @@ pybind11_add_module(ipctk
 
 target_link_libraries(ipctk PRIVATE ipc::toolkit)
 
-if(IPC_TOOLKIT_WITH_LOGGER)
-  include(spdlog)
-  ipc_toolkit_target_link_system_libraries(ipctk PRIVATE spdlog::spdlog)
-else()
-  include(fmt)
-  ipc_toolkit_target_link_system_libraries(ipctk PRIVATE fmt::fmt)
-endif()
-
 # Extra warnings
 # target_link_libraries(ipctk PRIVATE IPCToolkit::warnings)
 

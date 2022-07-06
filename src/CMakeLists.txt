@@ -1,10 +1,11 @@
 set(SOURCES
   collision_constraint.cpp
   collision_constraint.hpp
-  ipc.hpp
-  ipc.cpp
   collision_mesh.cpp
   collision_mesh.hpp
+  config.hpp
+  ipc.hpp
+  ipc.cpp
 )
 
 ipc_toolkit_prepend_current_path(SOURCES)

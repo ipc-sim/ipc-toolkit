@@ -1,5 +1,7 @@
 #include <ipc/broad_phase/broad_phase.hpp>
 
+#include <ipc/config.hpp>
+
 #include <ipc/broad_phase/brute_force.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>

@@ -18,8 +18,8 @@ double suggest_good_voxel_size(
         voxel_size = std::numeric_limits<double>::max();
     }
     assert(std::isfinite(voxel_size));
-    IPC_LOG(trace(
-        "suggesting voxel size of {} (avg_edge_len={})", voxel_size, edge_len));
+    logger().trace(
+        "suggesting voxel size of {} (avg_edge_len={})", voxel_size, edge_len);
     return voxel_size;
 }
 
@@ -46,9 +46,9 @@ double suggest_good_voxel_size(
         voxel_size = std::numeric_limits<double>::max();
     }
     assert(std::isfinite(voxel_size));
-    IPC_LOG(trace(
+    logger().trace(
         "suggesting voxel size of {} (avg_edge_len={} avg_disp_len={})",
-        voxel_size, edge_len, disp_len));
+        voxel_size, edge_len, disp_len);
     return voxel_size;
 }
 

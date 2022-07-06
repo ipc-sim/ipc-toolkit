@@ -27,7 +27,7 @@ bool point_static_plane_ccd(
         sqrt(point_plane_distance(p_t0, plane_origin, plane_normal));
 
     if (initial_distance == 0) {
-        IPC_LOG(warn("Initial point-plane distance is 0, returning toi=0!"));
+        logger().warn("Initial point-plane distance is 0, returning toi=0!");
         toi = 0;
         return true;
     }
@@ -59,10 +59,10 @@ bool point_static_plane_ccd(
         if (is_impacting) {
             toi *= conservative_rescaling;
             if (toi == 0) {
-                IPC_LOG(warn(
+                logger().warn(
                     "Point-static plane CCD is overly conservative (toi={:g} "
                     "and trajectory_length={:g}, but initial_distance={:g})!",
-                    toi, (p_t1 - p_t0).norm(), initial_distance));
+                    toi, (p_t1 - p_t0).norm(), initial_distance);
             }
         }
     }

@@ -2,6 +2,7 @@
 
 #include <Eigen/Core>
 
+#include <ipc/config.hpp>
 #include <ipc/collision_mesh.hpp>
 #include <ipc/broad_phase/aabb.hpp>
 #include <ipc/broad_phase/collision_candidate.hpp>
@@ -14,7 +15,9 @@ enum class BroadPhaseMethod {
     HASH_GRID,
     SPATIAL_HASH,
     SWEEP_AND_TINIEST_QUEUE,
+#ifdef IPC_TOOLKIT_WITH_CUDA
     SWEEP_AND_TINIEST_QUEUE_GPU,
+#endif
     NUM_METHODS
 };
 

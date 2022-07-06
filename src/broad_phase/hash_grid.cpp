@@ -64,9 +64,9 @@ void HashGrid::resize(
     m_domainMin = min;
     m_domainMax = max;
     m_gridSize = ((max - min) / m_cellSize).ceil().cast<int>().max(1);
-    IPC_LOG(trace(
+    logger().trace(
         "hash-grid resized with a size of {:d}x{:d}x{:d}", m_gridSize[0],
-        m_gridSize[1], m_gridSize.size() == 3 ? m_gridSize[2] : 1));
+        m_gridSize[1], m_gridSize.size() == 3 ? m_gridSize[2] : 1);
 }
 
 void HashGrid::insert_boxes()

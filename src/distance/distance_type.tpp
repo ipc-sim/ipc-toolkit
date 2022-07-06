@@ -22,7 +22,7 @@ PointEdgeDistanceType point_edge_distance_type(
     const auto e = e1 - e0;
     const auto e_length_sqr = e.squaredNorm();
     if (e_length_sqr == 0) {
-        IPC_LOG(warn("Degenerate edge in point_edge_distance_type!"));
+        logger().warn("Degenerate edge in point_edge_distance_type!");
         return PointEdgeDistanceType::P_E0; // WARNING: use arbitrary end-point
     }
     auto ratio = e.dot(p - e0) / e_length_sqr;

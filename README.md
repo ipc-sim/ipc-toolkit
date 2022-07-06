@@ -52,17 +52,14 @@ The following libraries are used in this project:
 * [libigl](https://github.com/libigl/libigl): basic geometry functions and predicates
 * [TBB](https://github.com/wjakob/tbb): parallelization
 * [Tight Inclusion CCD](https://github.com/Continuous-Collision-Detection/Tight-Inclusion): correct (conservative) continuous collision detection between triangle meshes in 3D
+* [spdlog](https://github.com/gabime/spdlog): logging information
 
 ### Optional
 
 * [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection): continuous collision detection between triangle meshes in 3D
     * Enable by using the CMake flag `-DIPC_TOOLKIT_WITH_CORRECT_CCD=OFF`
-* [spdlog](https://github.com/gabime/spdlog): logging information (enabled by default)
-    * Disable logging completely using the CMake flag `-DIPC_TOOLKIT_WITH_LOGGER=OFF`
-* [fmt](https://github.com/fmtlib/fmt): string formatting
-    * This is either provided through spdlog or downloaded directly if logging is disabled (`-DIPC_TOOLKIT_WITH_LOGGER=OFF`)
 * [Catch2](https://github.com/catchorg/Catch2.git): testing (see [Unit Tests](#unit_tests))
-* [finite-diff](https://github.com/zfergus/finite-diff): finite difference comparisons
+* [finite-diff](https://github.com/zfergus/finite-diff): finite-difference comparisons
     * Only used by the unit tests (if they are enabled)
 
 
@@ -130,7 +127,7 @@ Additionally you can cite the original IPC paper:
     volume = {39},
     number = {4},
     articleno = {49}
-} 
+}
 ```
 
 ## License

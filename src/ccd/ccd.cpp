@@ -3,6 +3,8 @@
 #include <algorithm> // std::min/max
 #include <array>
 
+#include <ipc/config.hpp>
+
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
 #include <tight_inclusion/ccd.hpp>
 #else
@@ -34,7 +36,7 @@ bool ccd_strategy(
 {
 
     if (initial_distance == 0) {
-        IPC_LOG(warn("Initial distance is 0, returning toi=0!"));
+        logger().warn("Initial distance is 0, returning toi=0!");
         toi = 0;
         return true;
     }
@@ -173,11 +175,11 @@ bool point_edge_ccd_2D(
             output_tolerance,             // delta_actual
             no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
-            IPC_LOG(trace(
+            logger().trace(
                 "ticcd::edgeEdgeCCD exceeded iteration limit (min_dist={:g} "
                 "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
                 min_distance, max_iterations, adjusted_tolerance,
-                output_tolerance, toi));
+                output_tolerance, toi);
         }
         return is_impacting;
     };
@@ -223,11 +225,11 @@ bool point_edge_ccd_3D(
             output_tolerance,             // delta_actual
             no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
-            IPC_LOG(trace(
+            logger().trace(
                 "ticcd::edgeEdgeCCD exceeded iteration limit (min_dist={:g} "
                 "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
                 min_distance, max_iterations, adjusted_tolerance,
-                output_tolerance, toi));
+                output_tolerance, toi);
         }
         return is_impacting;
 #else
@@ -308,11 +310,11 @@ bool edge_edge_ccd(
             output_tolerance,             // delta_actual
             no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
-            IPC_LOG(trace(
+            logger().trace(
                 "ticcd::edgeEdgeCCD exceeded iteration limit (min_dist={:g} "
                 "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
                 min_distance, max_iterations, adjusted_tolerance,
-                output_tolerance, toi));
+                output_tolerance, toi);
         }
         return is_impacting;
 #else
@@ -364,11 +366,11 @@ bool point_triangle_ccd(
             output_tolerance,             // delta_actual
             no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
-            IPC_LOG(trace(
+            logger().trace(
                 "ticcd::vertexFaceCCD exceeded iteration limit (min_dist={:g} "
                 "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
                 min_distance, max_iterations, adjusted_tolerance,
-                output_tolerance, toi));
+                output_tolerance, toi);
         }
         return is_impacting;
 #else
