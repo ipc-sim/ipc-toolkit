@@ -17,6 +17,11 @@ pybind11_add_module(ipctk
   src/broad_phase/sweep.cpp
   src/broad_phase/voxel_size_heuristic.cpp
 
+  src/ccd/aabb.cpp
+  src/ccd/ccd.cpp
+  src/ccd/inexact_point_edge.cpp
+  src/ccd/point_static_plane.cpp
+
   src/collision_constraint.cpp
 
   src/distance/distance_type.cpp
