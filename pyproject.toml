@@ -3,8 +3,7 @@ requires = [
     "setuptools>=42",
     "wheel",
     "ninja",
-    "cmake>=3.14",
-    "numpy"
+    # "cmake>=3.14",
 ]
 build-backend = "setuptools.build_meta"
 
@@ -27,6 +26,10 @@ classifiers = [
     "Intended Audience :: Science/Research",
 ]
 requires-python = ">=3.6"
+dependencies = [
+    "numpy",
+    "scipy",
+]
 
 [project.urls]
 "Homepage" = "https://ipc-sim.github.io/ipc-toolkit/"
