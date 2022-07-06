@@ -16,9 +16,7 @@ namespace ipc {
 /// @param[in] mesh The collision mesh.
 /// @param[in] V Vertices of the collision mesh.
 /// @param[in] dhat The activation distance of the barrier.
-/// @param[out] constraint_set
-///     The constructed set of constraints (any existing constraints will be
-///     cleared).
+/// @param[out] constraint_set The constructed set of constraints (any existing constraints will be cleared).
 /// @param[in] dmin Minimum distance.
 /// @param[in] method Broad-phase method to use.
 void construct_constraint_set(
@@ -30,14 +28,11 @@ void construct_constraint_set(
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID);
 
 /// @brief Construct a set of constraints used to compute the barrier potential.
-/// @param[in] candidates Distance candidates from which the constraint set is
-///                       built.
+/// @param[in] candidates Distance candidates from which the constraint set is built.
 /// @param[in] mesh The collision mesh.
 /// @param[in] V Vertices of the collision mesh.
 /// @param[in] dhat The activation distance of the barrier.
-/// @param[out] constraint_set
-///     The constructed set of constraints (any existing constraints will be
-///     cleared).
+/// @param[out] constraint_set The constructed set of constraints (any existing constraints will be cleared).
 /// @param[in]  dmin  Minimum distance.
 void construct_constraint_set(
     const Candidates& candidates,
@@ -48,13 +43,11 @@ void construct_constraint_set(
     const double dmin = 0);
 
 /// @brief Compute the barrier potential for a given constraint set.
-///
 /// @param[in] mesh The collision mesh.
 /// @param[in] V Vertices of the collision mesh.
 /// @param[in] constraint_set The set of constraints.
 /// @param[in] dhat The activation distance of the barrier.
-/// @returns The sum of all barrier potentials (not scaled by the barrier
-/// stiffness).
+/// @returns The sum of all barrier potentials (not scaled by the barrier stiffness).
 double compute_barrier_potential(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
@@ -62,13 +55,11 @@ double compute_barrier_potential(
     const double dhat);
 
 /// @brief Compute the gradient of the barrier potential.
-///
 /// @param[in] mesh The collision mesh.
 /// @param[in] V Vertices of the collision mesh.
 /// @param[in] constraint_set The set of constraints.
 /// @param[in] dhat The activation distance of the barrier.
-/// @returns The gradient of all barrier potentials (not scaled by the barrier
-/// stiffness). This will have a size of |V|.
+/// @returns The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |V|.
 Eigen::VectorXd compute_barrier_potential_gradient(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
@@ -76,15 +67,12 @@ Eigen::VectorXd compute_barrier_potential_gradient(
     const double dhat);
 
 /// @brief Compute the hessian of the barrier potential.
-///
 /// @param[in] mesh The collision mesh.
 /// @param[in] V Vertices of the collision mesh.
 /// @param[in] constraint_set The set of constraints.
 /// @param[in] dhat The activation distance of the barrier.
-/// @param[in] project_hessian_to_psd Make sure the hessian is positive
-///            semi-definite.
-/// @returns The hessian of all barrier potentials (not scaled by the barrier
-///     stiffness). This will have a size of |V|x|V|.
+/// @param[in] project_hessian_to_psd Make sure the hessian is positive semi-definite.
+/// @returns The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |V|x|V|.
 Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
@@ -96,11 +84,7 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
 // Collision detection
 
 /// @brief Determine if the step is collision free.
-///
-/// V* can either be the surface vertices or the entire mesh vertices.
-///
 /// @note Assumes the trajectory is linear.
-///
 /// @param[in] mesh The collision mesh.
 /// @param[in] V0 Surface vertex positions at start as rows of a matrix.
 /// @param[in] V1 Surface vertex positions at end as rows of a matrix.
@@ -114,14 +98,11 @@ bool is_step_collision_free(
     const long max_iterations = 1e7);
 
 /// @brief Determine if the step is collision free from a set of candidates.
-///
 /// @note Assumes the trajectory is linear.
-///
 /// @param[in] candidates Set of candidates to check for collisions.
 /// @param[in] mesh The collision mesh.
 /// @param[in] V0 Surface vertex positions at start as rows of a matrix.
 /// @param[in] V1 Surface vertex positions at end as rows of a matrix.
-///
 /// @returns True if <b>any</b> collisions occur.
 bool is_step_collision_free(
     const Candidates& candidates,
@@ -132,16 +113,11 @@ bool is_step_collision_free(
     const long max_iterations = 1e7);
 
 /// @brief Computes a maximal step size that is collision free.
-///
 /// @note Assumes the trajectory is linear.
-///
 /// @param[in] mesh The collision mesh.
-/// @param[in] V0
-///     Vertex positions at start as rows of a matrix. Assumes V0 is
-///     intersection free.
+/// @param[in] V0 Vertex positions at start as rows of a matrix. Assumes V0 is intersection free.
 /// @param[in] V1 Surface vertex positions at end as rows of a matrix.
-/// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0
-/// if a full step and 0.0 is no step.
+/// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
 double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
@@ -150,20 +126,13 @@ double compute_collision_free_stepsize(
     const double tolerance = 1e-6,
     const long max_iterations = 1e7);
 
-/// @brief Computes a maximal step size that is collision free using a set of
-/// collision candidates.
-///
+/// @brief Computes a maximal step size that is collision free using a set of collision candidates.
 /// @note Assumes the trajectory is linear.
-///
 /// @param[in] candidates Set of candidates to check for collisions.
 /// @param[in] mesh The collision mesh.
-/// @param[in] V0
-///     Vertex positions at start as rows of a matrix. Assumes V0 is
-///     intersection free.
+/// @param[in] V0 Vertex positions at start as rows of a matrix. Assumes V0 is intersection free.
 /// @param[in] V1 Surface vertex positions at end as rows of a matrix.
-////
-/// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0
-/// if a full step and 0.0 is no step.
+/// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
 double compute_collision_free_stepsize(
     const Candidates& candidates,
     const CollisionMesh& mesh,
@@ -176,7 +145,6 @@ double compute_collision_free_stepsize(
 // Utilities
 
 /// @brief Computes the minimum distance between any non-adjacent elements.
-///
 /// @param[in] mesh The collision mesh.
 /// @param[in] V Vertices of the collision mesh.
 /// @returns The minimum distance between any non-adjacent elements.
@@ -186,9 +154,9 @@ double compute_minimum_distance(
     const Constraints& constraint_set);
 
 /// @brief Determine if the mesh has self intersections.
-///
 /// @param[in] mesh The collision mesh.
 /// @param[in] V Vertices of the collision mesh.
+/// @return A boolean for if the mesh has intersections.
 bool has_intersections(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,

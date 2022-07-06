@@ -1,6 +1,4 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
-#include <pybind11/functional.h>
+#include "common.hpp"
 
 #include <ipc/ipc.hpp>
 #include <igl/edges.h>
@@ -8,12 +6,13 @@
 namespace py = pybind11;
 using namespace ipc;
 
-void define_ipc_functions(py::module_& m)
+void define_ipc(py::module_& m)
 {
     m.def(
         "construct_constraint_set",
-        [](const CollisionMesh& mesh, const Eigen::MatrixXd& V, double dhat,
-           double dmin, const BroadPhaseMethod method) {
+        [](const CollisionMesh& mesh, const Eigen::MatrixXd& V,
+           const double dhat, const double dmin = 0,
+           const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID) {
             Constraints constraint_set;
             construct_constraint_set(
                 mesh, V, dhat, constraint_set, dmin, method);
@@ -25,15 +24,40 @@ void define_ipc_functions(py::module_& m)
         Parameters:
             mesh: The collision mesh.
             V: Vertices of the collision mesh.
-            dhat: the activation distance of the barrier
-            dmin: (optional) minimum distance
-            method: (optional) broad-phase method to use
+            dhat: The activation distance of the barrier.
+            dmin: (optional) Minimum distance.
+            method: (optional) Broad-phase method to use.
 
         Returns:
             The constructed set of constraints.
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("V"), py::arg("dhat"), py::arg("dmin") = 0,
         py::arg("method") = BroadPhaseMethod::HASH_GRID);
+
+    m.def(
+        "construct_constraint_set",
+        [](const Candidates& candidates, const CollisionMesh& mesh,
+           const Eigen::MatrixXd& V, const double dhat, const double dmin = 0) {
+            Constraints constraint_set;
+            construct_constraint_set(
+                candidates, mesh, V, dhat, constraint_set, dmin);
+            return constraint_set;
+        },
+        R"ipc_Qu8mg5v7(
+        Construct a set of constraints used to compute the barrier potential.
+
+        Parameters:
+            candidates: Distance candidates from which the constraint set is built.
+            mesh: The collision mesh.
+            V: Vertices of the collision mesh.
+            dhat: The activation distance of the barrier.
+            dmin:  Minimum distance.
+
+        Returns:
+            The constructed set of constraints (any existing constraints will be cleared).
+        )ipc_Qu8mg5v7",
+        py::arg("candidates"), py::arg("mesh"), py::arg("V"), py::arg("dhat"),
+        py::arg("dmin") = 0);
 
     m.def(
         "compute_barrier_potential", &compute_barrier_potential,
@@ -43,8 +67,8 @@ void define_ipc_functions(py::module_& m)
         Parameters:
             mesh: The collision mesh.
             V: Vertices of the collision mesh.
-            constraint_set: the set of constraints
-            dhat: the activation distance of the barrier
+            constraint_set: The set of constraints.
+            dhat: The activation distance of the barrier.
 
         Returns:
             The sum of all barrier potentials (not scaled by the barrier stiffness).
@@ -61,11 +85,11 @@ void define_ipc_functions(py::module_& m)
         Parameters:
             mesh: The collision mesh.
             V: Vertices of the collision mesh.
-            constraint_set: the set of constraints
-            dhat: the activation distance of the barrier
+            constraint_set: The set of constraints.
+            dhat: The activation distance of the barrier.
 
         Returns:
-            The gradient of all barrier potentials (not scaled by the barrier stiffness).
+            The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |V|.
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("V"), py::arg("constraint_set"),
         py::arg("dhat"));
@@ -78,78 +102,130 @@ void define_ipc_functions(py::module_& m)
         Parameters:
             mesh: The collision mesh.
             V: Vertices of the collision mesh.
-            constraint_set: the set of constraints
-            dhat: the activation distance of the barrier
-            project_to_psd: make sure the hessian is positive semi-definite
+            constraint_set: The set of constraints.
+            dhat: The activation distance of the barrier.
+            project_hessian_to_psd: Make sure the hessian is positive semi-definite.
 
         Returns:
-            The hessian of all barrier potentials (not scaled by the barrier stiffness).
+            The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |V|x|V|.
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("V"), py::arg("constraint_set"),
-        py::arg("dhat"), py::arg("project_to_psd") = true);
+        py::arg("dhat"), py::arg("project_hessian_to_psd") = true);
 
     m.def(
         "is_step_collision_free",
-        [](const CollisionMesh& mesh, const Eigen::MatrixXd& V0,
-           const Eigen::MatrixXd& V1, const BroadPhaseMethod method,
-           const double tolerance, const long max_iterations) {
-            return is_step_collision_free(
-                mesh, V0, V1, method, tolerance, max_iterations);
-        },
-
+        py::overload_cast<
+            const CollisionMesh&, const Eigen::MatrixXd&,
+            const Eigen::MatrixXd&, const BroadPhaseMethod, const double,
+            const long>(&is_step_collision_free),
         R"ipc_Qu8mg5v7(
         Determine if the step is collision free.
 
-        Note: Assumes the trajectory is linear.
+        Note:
+            Assumes the trajectory is linear.
 
         Parameters:
             mesh: The collision mesh.
             V0: Surface vertex positions at start as rows of a matrix.
             V1: Surface vertex positions at end as rows of a matrix.
-            method: (optional) broad-phase method to use
-            tolerance: (optional) query tolerance
-            max_iterations: (optional) maximal number of bisection operationices.
 
         Returns:
-            A boolean for if the mesh has intersections.
+            True if <b>any</b> collisions occur.
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("V0"), py::arg("V1"),
         py::arg("method") = BroadPhaseMethod::HASH_GRID,
-        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = 10000000);
+        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = long(1e7));
+
+    m.def(
+        "is_step_collision_free",
+        py::overload_cast<
+            const Candidates&, const CollisionMesh&, const Eigen::MatrixXd&,
+            const Eigen::MatrixXd&, const double, const long>(
+            &is_step_collision_free),
+        R"ipc_Qu8mg5v7(
+        Determine if the step is collision free from a set of candidates.
+
+        Note:
+            Assumes the trajectory is linear.
+
+        Parameters:
+            candidates: Set of candidates to check for collisions.
+            mesh: The collision mesh.
+            V0: Surface vertex positions at start as rows of a matrix.
+            V1: Surface vertex positions at end as rows of a matrix.
+
+        Returns:
+            True if <b>any</b> collisions occur.
+        )ipc_Qu8mg5v7",
+        py::arg("candidates"), py::arg("mesh"), py::arg("V0"), py::arg("V1"),
+        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = long(1e7));
 
     m.def(
         "compute_collision_free_stepsize",
-        [](const CollisionMesh& mesh, const Eigen::MatrixXd& V0,
-           const Eigen::MatrixXd& V1, const BroadPhaseMethod method,
-           const double tolerance, const long max_iterations) {
-            return compute_collision_free_stepsize(
-                mesh, V0, V1, method, tolerance, max_iterations);
-        },
+        py::overload_cast<
+            const CollisionMesh&, const Eigen::MatrixXd&,
+            const Eigen::MatrixXd&, const BroadPhaseMethod, const double,
+            const long>(&compute_collision_free_stepsize),
         R"ipc_Qu8mg5v7(
         Computes a maximal step size that is collision free.
 
-        Note: Assumes the trajectory is linear.
+        Note:
+            Assumes the trajectory is linear.
 
         Parameters:
             mesh: The collision mesh.
             V0: Vertex positions at start as rows of a matrix. Assumes V0 is intersection free.
             V1: Surface vertex positions at end as rows of a matrix.
-            method: (optional) broad-phase method to use
-            tolerance: (optional) query tolerance
-            max_iterations: (optional) maximal number of bisection operation
 
         Returns:
-            A step-size in [0, 1] that is collision free. A value of 1.0 if a full step and 0.0 is no step.
+            A step-size $\in [0, 1]$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("V0"), py::arg("V1"),
         py::arg("method") = BroadPhaseMethod::HASH_GRID,
-        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = 10000000);
+        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = long(1e7));
 
-    // ...
+    m.def(
+        "compute_collision_free_stepsize",
+        py::overload_cast<
+            const Candidates&, const CollisionMesh&, const Eigen::MatrixXd&,
+            const Eigen::MatrixXd&, const double, const long>(
+            &compute_collision_free_stepsize),
+        R"ipc_Qu8mg5v7(
+        Computes a maximal step size that is collision free using a set of collision candidates.
+
+        Note:
+            Assumes the trajectory is linear.
+
+        Parameters:
+            candidates: Set of candidates to check for collisions.
+            mesh: The collision mesh.
+            V0: Vertex positions at start as rows of a matrix. Assumes V0 is intersection free.
+            V1: Surface vertex positions at end as rows of a matrix.
+
+        Returns:
+            A step-size $\in [0, 1]$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
+        )ipc_Qu8mg5v7",
+        py::arg("candidates"), py::arg("mesh"), py::arg("V0"), py::arg("V1"),
+        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = long(1e7));
+
+    m.def(
+        "compute_minimum_distance", &compute_minimum_distance,
+        R"ipc_Qu8mg5v7(
+        Computes the minimum distance between any non-adjacent elements.
+
+        Parameters:
+            mesh: The collision mesh.
+            V: Vertices of the collision mesh.
+
+        Returns:
+            The minimum distance between any non-adjacent elements.
+        )ipc_Qu8mg5v7",
+        py::arg("mesh"), py::arg("V"), py::arg("constraint_set"));
 
     m.def(
         "has_intersections", &has_intersections,
         R"ipc_Qu8mg5v7(
+        Determine if the mesh has self intersections.
 
         Parameters:
             mesh: The collision mesh.
@@ -169,7 +245,6 @@ void define_ipc_functions(py::module_& m)
             return E;
         },
         R"ipc_Qu8mg5v7(
-        
         Constructs a list of unique edges represented in a given mesh F
 
         Parameters:

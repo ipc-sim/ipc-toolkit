@@ -76,7 +76,7 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod method)
         return std::make_unique<SweepAndTiniestQueueGPU>();
 #endif
     default:
-        throw "Invalid BroadPhaseMethod!";
+        throw std::runtime_error("Invalid BroadPhaseMethod!");
     }
 }
 

@@ -150,6 +150,9 @@ template <
 Result cross(
     const Eigen::MatrixBase<DerivedA>& a, const Eigen::MatrixBase<DerivedB>& b);
 
+const Eigen::IOFormat OBJ_VERTEX_FORMAT(
+    Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "", "");
+
 } // namespace ipc
 
 #include "eigen_ext.tpp"

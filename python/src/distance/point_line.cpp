@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
+#include "../common.hpp"
 
 #include <ipc/distance/point_line.hpp>
-
-#include "../utils.hpp"
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_point_line_distance_functions(py::module_& m)
+void define_point_line_distance(py::module_& m)
 {
     m.def(
         "point_line_distance",
@@ -46,6 +43,7 @@ void define_point_line_distance_functions(py::module_& m)
         },
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a point and line.
+
         Parameters:
             p: point
             e0: first vertex of the edge defining the line.
@@ -71,6 +69,7 @@ void define_point_line_distance_functions(py::module_& m)
         },
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and line.
+
         Parameters:
             p: point
             e0: first vertex of the edge defining the line

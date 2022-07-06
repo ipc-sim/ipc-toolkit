@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
+#include "../common.hpp"
 
 #include <ipc/distance/distance_type.hpp>
-
-#include "../utils.hpp"
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_distance_type_functions(py::module_& m)
+void define_distance_type(py::module_& m)
 {
     py::enum_<PointEdgeDistanceType>(m, "PointEdgeDistanceType")
         .value(

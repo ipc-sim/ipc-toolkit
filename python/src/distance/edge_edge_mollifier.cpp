@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
+#include "../common.hpp"
 
 #include <ipc/distance/edge_edge_mollifier.hpp>
-
-#include "../utils.hpp"
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_edge_edge_mollifier_functions(py::module_& m)
+void define_edge_edge_mollifier(py::module_& m)
 {
     m.def(
         "edge_edge_cross_squarednorm",

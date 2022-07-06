@@ -25,7 +25,7 @@ public:
     {
     }
 
-    /// @brief Compute a AABB for a moving point (i.e. temporal edge).
+    /// @brief Compute a AABB for a static point.
     static AABB from_point(const VectorMax3d& p, double inflation_radius = 0)
     {
         return AABB(p.array() - inflation_radius, p.array() + inflation_radius);

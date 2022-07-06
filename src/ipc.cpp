@@ -527,6 +527,10 @@ double compute_collision_free_stepsize(
         }
         return 1.0;
     }
+#else
+    if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+        throw std::runtime_error("IPC_TOOLKIT_WITH_CUDA is not enabled");
+    }
 #endif
 
     // Broad phase

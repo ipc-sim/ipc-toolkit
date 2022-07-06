@@ -39,7 +39,6 @@ void construct_friction_constraint_set(
     FrictionConstraints& friction_constraint_set);
 
 /// @brief Compute the friction potential between to positions.
-///
 /// @param V0 Vertex positions at start of time-step (rowwise)
 /// @param V1 Current vertex positions (rowwise)
 /// @param E  Edge vertex indicies

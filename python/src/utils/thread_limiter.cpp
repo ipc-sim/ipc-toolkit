@@ -1,4 +1,4 @@
-#include <pybind11/pybind11.h>
+#include "../common.hpp"
 
 #include <memory>
 
@@ -31,7 +31,7 @@ void set_num_threads(int nthreads)
         tbb::global_control::max_allowed_parallelism, nthreads);
 }
 
-void define_thread_limiter_functions(py::module_& m)
+void define_thread_limiter(py::module_& m)
 {
     m.def(
         "get_num_threads", &get_num_threads,

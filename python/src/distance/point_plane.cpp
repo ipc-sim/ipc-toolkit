@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
+#include "../common.hpp"
 
 #include <ipc/distance/point_plane.hpp>
-
-#include "../utils.hpp"
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_point_plane_distance_functions(py::module_& m)
+void define_point_plane_distance(py::module_& m)
 {
     m.def(
         "point_plane_distance",
