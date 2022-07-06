@@ -10,9 +10,20 @@
 
 #include <ipc/broad_phase/broad_phase.hpp>
 
+#ifdef IPC_TOOLKIT_WITH_CUDA
 #define GENERATE_BROAD_PHASE_METHODS()                                         \
-    static_cast<BroadPhaseMethod>(                                             \
-        GENERATE(range(0, static_cast<int>(BroadPhaseMethod::NUM_METHODS))));
+    GENERATE(                                                                  \
+        ipc::BroadPhaseMethod::BRUTE_FORCE, ipc::BroadPhaseMethod::HASH_GRID,  \
+        ipc::BroadPhaseMethod::SPATIAL_HASH,                                   \
+        ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE,                        \
+        ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU);
+#else
+#define GENERATE_BROAD_PHASE_METHODS()                                         \
+    GENERATE(                                                                  \
+        ipc::BroadPhaseMethod::BRUTE_FORCE, ipc::BroadPhaseMethod::HASH_GRID,  \
+        ipc::BroadPhaseMethod::SPATIAL_HASH,                                   \
+        ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE);
+#endif
 
 static const std::string TEST_DATA_DIR(TEST_DATA_DIR_CSTR);
 
