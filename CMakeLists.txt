@@ -148,7 +148,7 @@ ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC tsl::robin_map)
 
 # Hashes
 include(abseil)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC absl::flat_hash_map)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC absl::hash)
 
 ################################################################################
 # Compiler options
