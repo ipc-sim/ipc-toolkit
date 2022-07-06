@@ -22,6 +22,14 @@ pybind11_add_module(ipctk
   src/ccd/inexact_point_edge.cpp
   src/ccd/point_static_plane.cpp
 
+  src/friction/closest_point.cpp
+  src/friction/friction_constraint.cpp
+  src/friction/friction.cpp
+  src/friction/normal_force_magnitude.cpp
+  src/friction/relative_displacement.cpp
+  src/friction/smooth_friction_mollifier.cpp
+  src/friction/tangent_basis.cpp
+
   src/collision_constraint.cpp
 
   src/distance/distance_type.cpp
