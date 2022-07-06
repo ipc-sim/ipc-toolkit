@@ -92,6 +92,7 @@ The following libraries are used in this project:</p>
 <li><p><a class="reference external" href="https://github.com/libigl/libigl">libigl</a>: basic geometry functions and predicates</p></li>
 <li><p><a class="reference external" href="https://github.com/wjakob/tbb">TBB</a>: parallelization</p></li>
 <li><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Tight-Inclusion">Tight Inclusion CCD</a>: correct (conservative) continuous collision detection between triangle meshes in 3D</p></li>
+<li><p><a class="reference external" href="https://github.com/gabime/spdlog">spdlog</a>: logging information</p></li>
 </ul>
 <section id="optional">
 <h3>Optional<a class="headerlink" href="#optional" title="Permalink to this heading">¶</a></h3>
@@ -101,18 +102,8 @@ The following libraries are used in this project:</p>
 <li><p>Enable by using the CMake flag <code class="docutils literal notranslate"><span class="pre">-DIPC_TOOLKIT_WITH_CORRECT_CCD=OFF</span></code></p></li>
 </ul>
 </li>
-<li><p><a class="reference external" href="https://github.com/gabime/spdlog">spdlog</a>: logging information (enabled by default)</p>
-<ul>
-<li><p>Disable logging completely using the CMake flag <code class="docutils literal notranslate"><span class="pre">-DIPC_TOOLKIT_WITH_LOGGER=OFF</span></code></p></li>
-</ul>
-</li>
-<li><p><a class="reference external" href="https://github.com/fmtlib/fmt">fmt</a>: string formatting</p>
-<ul>
-<li><p>This is either provided through spdlog or downloaded directly if logging is disabled (<code class="docutils literal notranslate"><span class="pre">-DIPC_TOOLKIT_WITH_LOGGER=OFF</span></code>)</p></li>
-</ul>
-</li>
 <li><p><a class="reference external" href="https://github.com/catchorg/Catch2.git">Catch2</a>: testing (see <a class="reference external" href="#unit_tests">Unit Tests</a>)</p></li>
-<li><p><a class="reference external" href="https://github.com/zfergus/finite-diff">finite-diff</a>: finite difference comparisons</p>
+<li><p><a class="reference external" href="https://github.com/zfergus/finite-diff">finite-diff</a>: finite-difference comparisons</p>
 <ul>
 <li><p>Only used by the unit tests (if they are enabled)</p></li>
 </ul>
