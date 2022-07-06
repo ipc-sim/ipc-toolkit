@@ -9,6 +9,8 @@ set(SOURCES
   logger.hpp
   merge_thread_local_vectors.hpp
   rational.hpp
+  save_obj.cpp
+  save_obj.hpp
   unordered_map_and_set.hpp
   vertex_to_min_edge.cpp
   vertex_to_min_edge.hpp

@@ -5,11 +5,17 @@ include(pybind11)
 pybind11_add_module(ipctk
   src/bindings.cpp
 
+  src/barrier/adaptive_stiffness.cpp
   src/barrier/barrier.cpp
 
+  src/broad_phase/aabb.cpp
   src/broad_phase/broad_phase.cpp
-
+  src/broad_phase/brute_force.cpp
   src/broad_phase/collision_candidate.cpp
+  src/broad_phase/hash_grid.cpp
+  src/broad_phase/spatial_hash.cpp
+  src/broad_phase/sweep.cpp
+  src/broad_phase/voxel_size_heuristic.cpp
 
   src/collision_constraint.cpp
 

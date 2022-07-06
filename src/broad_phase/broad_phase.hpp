@@ -8,14 +8,13 @@
 
 namespace ipc {
 
+/// Enumeration of implemented broad phase methods.
 enum class BroadPhaseMethod {
-    BRUTE_FORCE,
+    BRUTE_FORCE = 0,
     HASH_GRID,
     SPATIAL_HASH,
     SWEEP_AND_TINIEST_QUEUE,
-#ifdef IPC_TOOLKIT_WITH_CUDA
     SWEEP_AND_TINIEST_QUEUE_GPU,
-#endif
     NUM_METHODS
 };
 
@@ -23,15 +22,29 @@ class BroadPhase {
 public:
     virtual ~BroadPhase() { clear(); }
 
+    /// @brief Construct a registered broad phase object.
+    /// @param method The broad phase method to use.
+    /// @return The constructed broad phase object.
     static std::unique_ptr<BroadPhase>
     make_broad_phase(const BroadPhaseMethod method);
 
+    /// @brief Build the broad phase for static collision detection.
+    /// @param V0 Positions of the vertices.
+    /// @param E Edges of the mesh.
+    /// @param F Faces of the mesh.
+    /// @param inflation_radius Radius of inflation around all elements.
     virtual void build(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         double inflation_radius = 0);
 
+    /// @brief Build the broad phase for continous collision detection.
+    /// @param V0 Starting positions of the vertices.
+    /// @param V1 Ending positions of the vertices.
+    /// @param E Edges of the mesh.
+    /// @param F Faces of the mesh.
+    /// @param inflation_radius Radius of inflation around all elements.
     virtual void build(
         const Eigen::MatrixXd& V0,
         const Eigen::MatrixXd& V1,
@@ -39,27 +52,36 @@ public:
         const Eigen::MatrixXi& F,
         double inflation_radius = 0);
 
+    /// @brief Clear any built data.
     virtual void clear();
 
     /// @brief Find the candidate edge-vertex collisisons.
+    /// @param[out] candidates The candidate edge-vertex collisisons.
     virtual void detect_edge_vertex_candidates(
         std::vector<EdgeVertexCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate edge-edge collisions.
+    /// @param[out] candidates The candidate edge-edge collisisons.
     virtual void detect_edge_edge_candidates(
         std::vector<EdgeEdgeCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate face-vertex collisions.
+    /// @param[out] candidates The candidate face-vertex collisisons.
     virtual void detect_face_vertex_candidates(
         std::vector<FaceVertexCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate edge-face intersections.
+    /// @param[out] candidates The candidate edge-face intersections.
     virtual void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const = 0;
 
+    /// @brief Detect all collision candidates needed for a given dimensional simulation.
+    /// @param dim The dimension of the simulation (i.e., 2 or 3).
+    /// @param candidates The detected collision candidates.
     virtual void
     detect_collision_candidates(int dim, Candidates& candidates) const;
 
+    /// @brief Function for determining if two vertices can collide.
     std::function<bool(size_t, size_t)> can_vertices_collide =
         [](size_t, size_t) { return true; };
 

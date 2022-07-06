@@ -47,7 +47,7 @@ void SweepAndTiniestQueue::clear()
 void SweepAndTiniestQueue::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
-    throw "Not implemented!";
+    throw std::runtime_error("Not implemented!");
 }
 
 /// @brief Find the candidate edge-edge collisions.
@@ -82,7 +82,7 @@ void SweepAndTiniestQueue::detect_face_vertex_candidates(
 void SweepAndTiniestQueue::detect_edge_face_candidates(
     std::vector<EdgeFaceCandidate>& candidates) const
 {
-    throw "Not implemented!";
+    throw std::runtime_error("Not implemented!");
 }
 
 long SweepAndTiniestQueue::to_edge_id(long id) const
@@ -153,7 +153,7 @@ void SweepAndTiniestQueueGPU::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
     // 2D SQT is not implemented!
-    throw "Not implemented!";
+    throw std::runtime_error("Not implemented!");
     // using namespace stq::gpu;
     // for (const std::pair<int, int>& overlap : overlaps) {
     //     const Aabb& boxA = boxes[overlap.first];
@@ -207,7 +207,7 @@ void SweepAndTiniestQueueGPU::detect_face_vertex_candidates(
 void SweepAndTiniestQueueGPU::detect_edge_face_candidates(
     std::vector<EdgeFaceCandidate>& candidates) const
 {
-    throw "Not implemented!";
+    throw std::runtime_error("Not implemented!");
 }
 #endif
 

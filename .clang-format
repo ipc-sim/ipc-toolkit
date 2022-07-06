@@ -9,4 +9,5 @@ AllowAllParametersOfDeclarationOnNextLine: true
 AlignAfterOpenBracket: AlwaysBreak
 BreakBeforeBinaryOperators: NonAssignment
 SortIncludes: false
+CommentPragmas:  '^@.+'
 # BreakStringLiterals: false

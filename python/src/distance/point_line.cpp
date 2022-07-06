@@ -46,6 +46,7 @@ void define_point_line_distance_functions(py::module_& m)
         },
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a point and line.
+
         Parameters:
             p: point
             e0: first vertex of the edge defining the line.
@@ -71,6 +72,7 @@ void define_point_line_distance_functions(py::module_& m)
         },
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and line.
+
         Parameters:
             p: point
             e0: first vertex of the edge defining the line

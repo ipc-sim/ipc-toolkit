@@ -2,13 +2,12 @@
 
 #include <algorithm> // std::min/max
 #include <iostream>
+#include <fstream>
 
 #include <ipc/utils/logger.hpp>
+#include <ipc/utils/save_obj.hpp>
 
 namespace ipc {
-
-static const Eigen::IOFormat OBJ_VERTEX_FORMAT(
-    Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "", "");
 
 VertexVertexCandidate::VertexVertexCandidate(
     long vertex0_index, long vertex1_index)
@@ -311,90 +310,6 @@ bool Candidates::save_obj(
     v_offset += ee_candidates.size() * 4;
     ipc::save_obj(obj, V, F, F, fv_candidates, v_offset);
     return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void save_obj(
-    std::ofstream& out,
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const std::vector<EdgeVertexCandidate>& ev_candidates,
-    const int v_offset)
-{
-    out << "o EV\n";
-    int i = v_offset + 1;
-    for (const auto& ev_candidate : ev_candidates) {
-        out << V.row(E(ev_candidate.edge_index, 0)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(E(ev_candidate.edge_index, 1)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(ev_candidate.vertex_index).format(OBJ_VERTEX_FORMAT);
-        out << fmt::format("l {:d} {:d}\n", i, i + 1);
-        i += 3;
-    }
-}
-
-void save_obj(
-    std::ofstream& out,
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const std::vector<EdgeEdgeCandidate>& ee_candidates,
-    const int v_offset)
-{
-    out << "o EE\n";
-    int i = v_offset + 1;
-    for (const auto& ee_candidate : ee_candidates) {
-        out << V.row(E(ee_candidate.edge0_index, 0)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(E(ee_candidate.edge0_index, 1)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(E(ee_candidate.edge1_index, 0)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(E(ee_candidate.edge1_index, 1)).format(OBJ_VERTEX_FORMAT);
-        out << fmt::format("l {:d} {:d}\n", i + 0, i + 1);
-        out << fmt::format("l {:d} {:d}\n", i + 2, i + 3);
-        i += 4;
-    }
-}
-
-void save_obj(
-    std::ofstream& out,
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const std::vector<FaceVertexCandidate>& fv_candidates,
-    const int v_offset)
-{
-    out << "o FV\n";
-    int i = v_offset + 1;
-    for (const auto& fv_candidate : fv_candidates) {
-        out << V.row(F(fv_candidate.face_index, 0)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(F(fv_candidate.face_index, 1)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(F(fv_candidate.face_index, 2)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(fv_candidate.vertex_index).format(OBJ_VERTEX_FORMAT);
-        out << fmt::format("f {:d} {:d} {:d}\n", i, i + 1, i + 2);
-        i += 4;
-    }
-}
-
-void save_obj(
-    std::ofstream& out,
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const std::vector<EdgeFaceCandidate>& ef_candidates,
-    const int v_offset)
-{
-    out << "o EF\n";
-    int i = v_offset + 1;
-    for (const auto& ef_candidate : ef_candidates) {
-        out << V.row(E(ef_candidate.edge_index, 0)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(E(ef_candidate.edge_index, 1)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(F(ef_candidate.face_index, 0)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(F(ef_candidate.face_index, 1)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(F(ef_candidate.face_index, 2)).format(OBJ_VERTEX_FORMAT);
-        out << fmt::format("l {:d} {:d}\n", i, i + 1);
-        out << fmt::format("f {:d} {:d} {:d}\n", i + 2, i + 3, i + 4);
-        i += 5;
-    }
 }
 
 } // namespace ipc
