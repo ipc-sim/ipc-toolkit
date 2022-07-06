@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "../common.hpp"
 
 #include <ipc/broad_phase/spatial_hash.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_spatial_hash_members(py::module_& m)
+void define_spatial_hash(py::module_& m)
 {
     py::class_<SpatialHash, BroadPhase>(m, "SpatialHash")
         .def(py::init(), "")

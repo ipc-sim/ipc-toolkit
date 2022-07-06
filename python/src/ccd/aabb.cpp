@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "../common.hpp"
 
 #include <ipc/ccd/aabb.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_ccd_aabb_members(py::module_& m)
+void define_ccd_aabb(py::module_& m)
 {
     m.def(
         "point_edge_aabb_cd", &point_edge_aabb_cd, "", py::arg("p"),

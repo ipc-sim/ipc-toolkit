@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "../common.hpp"
 
 #include <ipc/broad_phase/voxel_size_heuristic.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_voxel_size_heuristic_members(py::module_& m)
+void define_voxel_size_heuristic(py::module_& m)
 {
     m.def(
         "suggest_good_voxel_size",

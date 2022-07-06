@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "../common.hpp"
 
 #include <ipc/friction/friction.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_friction_members(py::module_& m)
+void define_friction(py::module_& m)
 {
     m.def(
         "construct_friction_constraint_set",

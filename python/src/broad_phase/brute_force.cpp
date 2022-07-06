@@ -1,12 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
+#include "../common.hpp"
 
 #include <ipc/broad_phase/brute_force.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_brute_force_members(py::module_& m)
+void define_brute_force(py::module_& m)
 {
     py::class_<BruteForce, BroadPhase>(m, "BruteForce")
         .def(

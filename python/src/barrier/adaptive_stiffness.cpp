@@ -1,11 +1,11 @@
-#include <pybind11/pybind11.h>
+#include "../common.hpp"
 
 #include <ipc/barrier/adaptive_stiffness.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_adaptive_stiffness_members(py::module_& m)
+void define_adaptive_stiffness(py::module_& m)
 {
     m.def(
         "initial_barrier_stiffness",

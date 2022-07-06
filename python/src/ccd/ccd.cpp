@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "../common.hpp"
 
 #include <ipc/ccd/ccd.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_ccd_members(py::module_& m)
+void define_ccd(py::module_& m)
 {
     m.def(
         "point_edge_ccd_2D",

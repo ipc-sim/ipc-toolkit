@@ -1,11 +1,11 @@
-#include <pybind11/pybind11.h>
+#include "../common.hpp"
 
 #include <ipc/broad_phase/aabb.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_aabb_members(py::module_& m)
+void define_aabb(py::module_& m)
 {
     py::class_<AABB>(m, "AABB")
         .def(py::init(), "")

@@ -1,11 +1,11 @@
-#include <pybind11/pybind11.h>
+#include "../common.hpp"
 
 #include <ipc/broad_phase/broad_phase.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_broad_phase_members(py::module_& m)
+void define_broad_phase(py::module_& m)
 {
     py::enum_<BroadPhaseMethod>(
         m, "BroadPhaseMethod",

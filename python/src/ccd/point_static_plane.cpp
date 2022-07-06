@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "../common.hpp"
 
 #include <ipc/ccd/point_static_plane.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_point_static_plane_members(py::module_& m)
+void define_point_static_plane(py::module_& m)
 {
     m.def(
         "point_static_plane_ccd",

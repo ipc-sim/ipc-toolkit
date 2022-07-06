@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "../common.hpp"
 
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_smooth_friction_mollifier_members(py::module_& m)
+void define_smooth_friction_mollifier(py::module_& m)
 {
     m.def("f0_SF", &f0_SF<double>, "", py::arg("x"), py::arg("epsv_times_h"));
 

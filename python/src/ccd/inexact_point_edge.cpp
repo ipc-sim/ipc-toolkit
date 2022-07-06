@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "../common.hpp"
 
 #include <ipc/ccd/inexact_point_edge.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_inexact_point_edge_members(py::module_& m)
+void define_inexact_point_edge(py::module_& m)
 {
     m.def(
         "inexact_point_edge_ccd_2D",

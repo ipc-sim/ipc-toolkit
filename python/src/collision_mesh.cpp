@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "common.hpp"
 
-#include <ipc/src/collision_mesh.hpp>
+#include <ipc/collision_mesh.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_collision_mesh_members(py::module_& m)
+void define_collision_mesh(py::module_& m)
 {
     py::class_<CollisionMesh>(m, "CollisionMesh")
         .def(py::init(), "")
@@ -26,15 +23,18 @@ void define_collision_mesh_members(py::module_& m)
             "", py::arg("include_vertex"), py::arg("full_vertices_at_rest"),
             py::arg("edges"), py::arg("faces"),
             py::arg("displacement_map") = Eigen::SparseMatrix<double>())
-        .def("num_vertices", &CollisionMesh::num_vertices, "")
-        .def("dim", &CollisionMesh::dim, "")
-        .def("ndof", &CollisionMesh::ndof, "")
-        .def("full_num_vertices", &CollisionMesh::full_num_vertices, "")
-        .def("full_ndof", &CollisionMesh::full_ndof, "")
-        .def("vertices_at_rest", &CollisionMesh::vertices_at_rest, "")
-        .def("edges", &CollisionMesh::edges, "")
-        .def("faces", &CollisionMesh::faces, "")
-        .def("faces_to_edges", &CollisionMesh::faces_to_edges, "")
+        .def_property_readonly("num_vertices", &CollisionMesh::num_vertices, "")
+        .def_property_readonly("dim", &CollisionMesh::dim, "")
+        .def_property_readonly("ndof", &CollisionMesh::ndof, "")
+        .def_property_readonly(
+            "full_num_vertices", &CollisionMesh::full_num_vertices, "")
+        .def_property_readonly("full_ndof", &CollisionMesh::full_ndof, "")
+        .def_property_readonly(
+            "vertices_at_rest", &CollisionMesh::vertices_at_rest, "")
+        .def_property_readonly("edges", &CollisionMesh::edges, "")
+        .def_property_readonly("faces", &CollisionMesh::faces, "")
+        .def_property_readonly(
+            "faces_to_edges", &CollisionMesh::faces_to_edges, "")
         .def("vertices", &CollisionMesh::vertices, "", py::arg("full_vertices"))
         .def(
             "displace_vertices", &CollisionMesh::displace_vertices, "",
@@ -45,26 +45,26 @@ void define_collision_mesh_members(py::module_& m)
         .def(
             "to_full_dof",
             py::overload_cast<const Eigen::VectorXd&>(
-                &CollisionMesh::to_full_dof),
+                &CollisionMesh::to_full_dof, py::const_),
             "", py::arg("x"))
         .def(
             "to_full_dof",
             py::overload_cast<const Eigen::SparseMatrix<double>&>(
-                &CollisionMesh::to_full_dof),
+                &CollisionMesh::to_full_dof, py::const_),
             "", py::arg("X"))
-        .def(
+        .def_property_readonly(
             "point_point_adjacencies", &CollisionMesh::point_point_adjacencies,
             "")
-        .def(
+        .def_property_readonly(
             "edge_point_adjacencies", &CollisionMesh::edge_point_adjacencies,
             "")
         .def(
             "is_point_on_boundary", &CollisionMesh::is_point_on_boundary, "",
             py::arg("i"))
         .def("point_area", &CollisionMesh::point_area, "", py::arg("pi"))
-        .def("point_areas", &CollisionMesh::point_areas, "")
+        .def_property_readonly("point_areas", &CollisionMesh::point_areas, "")
         .def("edge_area", &CollisionMesh::edge_area, "", py::arg("ei"))
-        .def("edge_areas", &CollisionMesh::edge_areas, "")
+        .def_property_readonly("edge_areas", &CollisionMesh::edge_areas, "")
         .def_static(
             "construct_is_on_surface", &CollisionMesh::construct_is_on_surface,
             "", py::arg("num_vertices"), py::arg("edges"))

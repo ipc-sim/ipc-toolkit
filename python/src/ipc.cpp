@@ -1,6 +1,4 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
-#include <pybind11/functional.h>
+#include "common.hpp"
 
 #include <ipc/ipc.hpp>
 #include <igl/edges.h>
@@ -8,7 +6,7 @@
 namespace py = pybind11;
 using namespace ipc;
 
-void define_ipc_functions(py::module_& m)
+void define_ipc(py::module_& m)
 {
     m.def(
         "construct_constraint_set",
@@ -136,7 +134,7 @@ void define_ipc_functions(py::module_& m)
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("V0"), py::arg("V1"),
         py::arg("method") = BroadPhaseMethod::HASH_GRID,
-        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = 1e7);
+        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = long(1e7));
 
     m.def(
         "is_step_collision_free",
@@ -160,7 +158,7 @@ void define_ipc_functions(py::module_& m)
             True if <b>any</b> collisions occur.
         )ipc_Qu8mg5v7",
         py::arg("candidates"), py::arg("mesh"), py::arg("V0"), py::arg("V1"),
-        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = 1e7);
+        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = long(1e7));
 
     m.def(
         "compute_collision_free_stepsize",
@@ -184,7 +182,7 @@ void define_ipc_functions(py::module_& m)
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("V0"), py::arg("V1"),
         py::arg("method") = BroadPhaseMethod::HASH_GRID,
-        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = 1e7);
+        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = long(1e7));
 
     m.def(
         "compute_collision_free_stepsize",
@@ -208,7 +206,7 @@ void define_ipc_functions(py::module_& m)
             A step-size $\in [0, 1]$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
         )ipc_Qu8mg5v7",
         py::arg("candidates"), py::arg("mesh"), py::arg("V0"), py::arg("V1"),
-        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = 1e7);
+        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = long(1e7));
 
     m.def(
         "compute_minimum_distance", &compute_minimum_distance,

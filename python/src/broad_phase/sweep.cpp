@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "../common.hpp"
 
 #include <ipc/broad_phase/sweep.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_sweep_members(py::module_& m)
+void define_sweep(py::module_& m)
 {
     py::class_<CopyMeshBroadPhase, BroadPhase>(m, "CopyMeshBroadPhase");
 

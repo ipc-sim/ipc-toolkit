@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "../common.hpp"
 
 #include <ipc/friction/normal_force_magnitude.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_normal_force_magnitude_members(py::module_& m)
+void define_normal_force_magnitude(py::module_& m)
 {
     m.def(
         "compute_normal_force_magnitude", &compute_normal_force_magnitude, "",

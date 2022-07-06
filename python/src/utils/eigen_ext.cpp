@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "../common.hpp"
 
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_eigen_ext_members(py::module_& m)
+void define_eigen_ext(py::module_& m)
 {
     m.def(
         "project_to_pd",

@@ -1,14 +1,11 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "../common.hpp"
 
 #include <ipc/friction/friction_constraint.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_friction_constraint_members(py::module_& m)
+void define_friction_constraint(py::module_& m)
 {
     py::class_<FrictionConstraint> friction_constraint(m, "FrictionConstraint");
 
@@ -32,48 +29,49 @@ void define_friction_constraint_members(py::module_& m)
             &FrictionConstraint::compute_potential_hessian, "", py::arg("U"),
             py::arg("E"), py::arg("F"), py::arg("epsv_times_h"),
             py::arg("project_hessian_to_psd"))
-        // .def(
-        //     "compute_force",
-        //     py::overload_cast<
-        //         const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-        //         const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double,
-        //         const double, const double, const double>(
-        //         &FrictionConstraint::compute_force),
-        //     "", py::arg("X"), py::arg("U"), py::arg("E"), py::arg("F"),
-        //     py::arg("dhat"), py::arg("barrier_stiffness"),
-        //     py::arg("epsv_times_h"), py::arg("dmin") = 0)
-        // .def(
-        //     "compute_force",
-        //     py::overload_cast<
-        //         const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-        //         const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-        //         const Eigen::MatrixXi&, const double, const double,
-        //         const double, const
-        //         double>(&FrictionConstraint::compute_force),
-        //     "", py::arg("X"), py::arg("Ut"), py::arg("U"), py::arg("E"),
-        //     py::arg("F"), py::arg("dhat"), py::arg("barrier_stiffness"),
-        //     py::arg("epsv_times_h"), py::arg("dmin") = 0)
-        // .def(
-        //     "compute_force_jacobian",
-        //     py::overload_cast<
-        //         const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-        //         const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double,
-        //         const double, const double, FrictionConstraint::DiffWRT,
-        //         const double>(&FrictionConstraint::compute_force_jacobian),
-        //     "", py::arg("X"), py::arg("U"), py::arg("E"), py::arg("F"),
-        //     py::arg("dhat"), py::arg("barrier_stiffness"),
-        //     py::arg("epsv_times_h"), py::arg("wrt"), py::arg("dmin") = 0)
-        // .def(
-        //     "compute_force_jacobian",
-        //     py::overload_cast<
-        //         const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-        //         const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-        //         const Eigen::MatrixXi&, const double, const double,
-        //         const double, FrictionConstraint::DiffWRT, const double>(
-        //         &FrictionConstraint::compute_force_jacobian),
-        //     "", py::arg("X"), py::arg("Ut"), py::arg("U"), py::arg("E"),
-        //     py::arg("F"), py::arg("dhat"), py::arg("barrier_stiffness"),
-        //     py::arg("epsv_times_h"), py::arg("wrt"), py::arg("dmin") = 0)
+        .def(
+            "compute_force",
+            py::overload_cast<
+                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
+                const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double,
+                const double, const double, const double>(
+                &FrictionConstraint::compute_force, py::const_),
+            "", py::arg("X"), py::arg("U"), py::arg("E"), py::arg("F"),
+            py::arg("dhat"), py::arg("barrier_stiffness"),
+            py::arg("epsv_times_h"), py::arg("dmin") = 0)
+        .def(
+            "compute_force",
+            py::overload_cast<
+                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
+                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
+                const Eigen::MatrixXi&, const double, const double,
+                const double, const double>(
+                &FrictionConstraint::compute_force, py::const_),
+            "", py::arg("X"), py::arg("Ut"), py::arg("U"), py::arg("E"),
+            py::arg("F"), py::arg("dhat"), py::arg("barrier_stiffness"),
+            py::arg("epsv_times_h"), py::arg("dmin") = 0)
+        .def(
+            "compute_force_jacobian",
+            py::overload_cast<
+                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
+                const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double,
+                const double, const double, FrictionConstraint::DiffWRT,
+                const double>(
+                &FrictionConstraint::compute_force_jacobian, py::const_),
+            "", py::arg("X"), py::arg("U"), py::arg("E"), py::arg("F"),
+            py::arg("dhat"), py::arg("barrier_stiffness"),
+            py::arg("epsv_times_h"), py::arg("wrt"), py::arg("dmin") = 0)
+        .def(
+            "compute_force_jacobian",
+            py::overload_cast<
+                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
+                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
+                const Eigen::MatrixXi&, const double, const double,
+                const double, FrictionConstraint::DiffWRT, const double>(
+                &FrictionConstraint::compute_force_jacobian, py::const_),
+            "", py::arg("X"), py::arg("Ut"), py::arg("U"), py::arg("E"),
+            py::arg("F"), py::arg("dhat"), py::arg("barrier_stiffness"),
+            py::arg("epsv_times_h"), py::arg("wrt"), py::arg("dmin") = 0)
         .def("multiplicity", &FrictionConstraint::multiplicity, "")
         .def_readwrite(
             "closest_point", &FrictionConstraint::closest_point,
