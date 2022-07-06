@@ -145,7 +145,7 @@ Potential matches:
 <dd><p>Determine if the step is collision free from a set of candidates. </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Assumes the trajectory is linear.</p>
+<p>Assumes the trajectory is linear. </p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -153,7 +153,7 @@ Potential matches:
 <li><p><strong>candidates</strong> – <strong>[in]</strong> Set of candidates to check for collisions. </p></li>
 <li><p><strong>mesh</strong> – <strong>[in]</strong> The collision mesh. </p></li>
 <li><p><strong>V0</strong> – <strong>[in]</strong> Surface vertex positions at start as rows of a matrix. </p></li>
-<li><p><strong>V1</strong> – <strong>[in]</strong> Surface vertex positions at end as rows of a matrix.</p></li>
+<li><p><strong>V1</strong> – <strong>[in]</strong> Surface vertex positions at end as rows of a matrix. </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -178,7 +178,7 @@ Potential matches:
 <dd><p>Computes a maximal step size that is collision free using a set of collision candidates. </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Assumes the trajectory is linear.</p>
+<p>Assumes the trajectory is linear. </p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -186,7 +186,7 @@ Potential matches:
 <li><p><strong>candidates</strong> – <strong>[in]</strong> Set of candidates to check for collisions. </p></li>
 <li><p><strong>mesh</strong> – <strong>[in]</strong> The collision mesh. </p></li>
 <li><p><strong>V0</strong> – <strong>[in]</strong> Vertex positions at start as rows of a matrix. Assumes V0 is intersection free. </p></li>
-<li><p><strong>V1</strong> – <strong>[in]</strong> Surface vertex positions at end as rows of a matrix.</p></li>
+<li><p><strong>V1</strong> – <strong>[in]</strong> Surface vertex positions at end as rows of a matrix. </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -217,7 +217,19 @@ Potential matches:
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3ipc19CollisionConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
 <span class="target" id="structipc_1_1_collision_constraint_1ac6c36341947f31fbd6bb1a8ecfc81c50"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">long</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">vertex_indices</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">E</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">F</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4NK3ipc19CollisionConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<dd><p>Get the indices of the vertices. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>E</strong> – edge matrix of mesh </p></li>
+<li><p><strong>F</strong> – face matrix of mesh </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of vertex indices </p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3ipc19CollisionConstraint16compute_distanceERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
@@ -283,7 +295,19 @@ Potential matches:
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3ipc22VertexVertexConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
 <span class="target" id="structipc_1_1_vertex_vertex_constraint_1a6080c273270600d854bdede71ea139cf"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">long</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">vertex_indices</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">E</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">F</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">override</span></span><a class="headerlink" href="#_CPPv4NK3ipc22VertexVertexConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<dd><p>Get the indices of the vertices. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>E</strong> – edge matrix of mesh </p></li>
+<li><p><strong>F</strong> – face matrix of mesh </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of vertex indices </p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3ipc22VertexVertexConstraint16compute_distanceERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
@@ -357,7 +381,19 @@ Potential matches:
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3ipc20EdgeVertexConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
 <span class="target" id="structipc_1_1_edge_vertex_constraint_1ac91cde2640cf92513e6f5bd0791d34f3"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">long</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">vertex_indices</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">E</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">F</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">override</span></span><a class="headerlink" href="#_CPPv4NK3ipc20EdgeVertexConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<dd><p>Get the indices of the vertices. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>E</strong> – edge matrix of mesh </p></li>
+<li><p><strong>F</strong> – face matrix of mesh </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of vertex indices </p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3ipc20EdgeVertexConstraint16compute_distanceERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
@@ -431,7 +467,19 @@ Potential matches:
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3ipc18EdgeEdgeConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
 <span class="target" id="structipc_1_1_edge_edge_constraint_1a728705a81fb006a66bcb06ff569f9f4d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">long</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">vertex_indices</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">E</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">F</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">override</span></span><a class="headerlink" href="#_CPPv4NK3ipc18EdgeEdgeConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<dd><p>Get the indices of the vertices. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>E</strong> – edge matrix of mesh </p></li>
+<li><p><strong>F</strong> – face matrix of mesh </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of vertex indices </p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3ipc18EdgeEdgeConstraint16compute_distanceERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
@@ -505,7 +553,19 @@ Potential matches:
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3ipc20FaceVertexConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
 <span class="target" id="structipc_1_1_face_vertex_constraint_1a8b38e63399acf16009cbbeffc698b79b"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">long</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">vertex_indices</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">E</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">F</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">override</span></span><a class="headerlink" href="#_CPPv4NK3ipc20FaceVertexConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<dd><p>Get the indices of the vertices. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>E</strong> – edge matrix of mesh </p></li>
+<li><p><strong>F</strong> – face matrix of mesh </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of vertex indices </p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3ipc20FaceVertexConstraint16compute_distanceERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
@@ -551,7 +611,19 @@ Potential matches:
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3ipc21PlaneVertexConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
 <span class="target" id="structipc_1_1_plane_vertex_constraint_1a631f4e0ec9c583874428678e4766bc7b"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">array</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">long</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">vertex_indices</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">E</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Eigen</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">MatrixXi</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">F</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">override</span></span><a class="headerlink" href="#_CPPv4NK3ipc21PlaneVertexConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
+<dd><p>Get the indices of the vertices. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>E</strong> – edge matrix of mesh </p></li>
+<li><p><strong>F</strong> – face matrix of mesh </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of vertex indices </p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3ipc21PlaneVertexConstraint16compute_distanceERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
@@ -1845,7 +1917,8 @@ Potential matches:
 <dl class="cpp enum-class">
 <dt class="sig sig-object cpp" id="_CPPv4N3ipc16BroadPhaseMethodE">
 <span class="target" id="namespaceipc_1a351a099db7744033543d348172b8dbd8"></span><span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">ipc</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">BroadPhaseMethod</span></span></span><a class="headerlink" href="#_CPPv4N3ipc16BroadPhaseMethodE" title="Permalink to this definition">¶</a><br /></dt>
-<dd><p><em>Values:</em></p>
+<dd><p>Enumeration of implemented broad phase methods. </p>
+<p><em>Values:</em></p>
 <dl class="cpp enumerator">
 <dt class="sig sig-object cpp" id="_CPPv4N3ipc16BroadPhaseMethod11BRUTE_FORCEE">
 <span class="target" id="namespaceipc_1a351a099db7744033543d348172b8dbd8a6ef113c006f2854dd4343c24cd2bd58d"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BRUTE_FORCE</span></span></span><a class="headerlink" href="#_CPPv4N3ipc16BroadPhaseMethod11BRUTE_FORCEE" title="Permalink to this definition">¶</a><br /></dt>
@@ -1864,6 +1937,11 @@ Potential matches:
 <dl class="cpp enumerator">
 <dt class="sig sig-object cpp" id="_CPPv4N3ipc16BroadPhaseMethod23SWEEP_AND_TINIEST_QUEUEE">
 <span class="target" id="namespaceipc_1a351a099db7744033543d348172b8dbd8afd58a2a21047cf63656d631b64495623"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">SWEEP_AND_TINIEST_QUEUE</span></span></span><a class="headerlink" href="#_CPPv4N3ipc16BroadPhaseMethod23SWEEP_AND_TINIEST_QUEUEE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N3ipc16BroadPhaseMethod27SWEEP_AND_TINIEST_QUEUE_GPUE">
+<span class="target" id="namespaceipc_1a351a099db7744033543d348172b8dbd8a11c601e710f799863e6a06efc05ef86f"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">SWEEP_AND_TINIEST_QUEUE_GPU</span></span></span><a class="headerlink" href="#_CPPv4N3ipc16BroadPhaseMethod27SWEEP_AND_TINIEST_QUEUE_GPUE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="cpp enumerator">
@@ -2336,6 +2414,9 @@ Potential matches:
 <li><p><strong>mesh</strong> – <strong>[in]</strong> The collision mesh. </p></li>
 <li><p><strong>V</strong> – <strong>[in]</strong> Vertices of the collision mesh. </p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A boolean for if the mesh has intersections. </p>
 </dd>
 </dl>
 </dd></dl>
