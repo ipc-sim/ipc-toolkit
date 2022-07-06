@@ -72,15 +72,16 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_library(ipc_toolkit)
 add_library(ipc::toolkit ALIAS ipc_toolkit)
 
-add_subdirectory(src)
-
-# Public include directory for IPC Toolkit
-target_include_directories(ipc_toolkit PUBLIC ${PROJECT_BINARY_DIR}/include)
-
 # Fill in configuration options
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp.in"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp")
+
+# Add source and header files to ipc_toolkit
+add_subdirectory(src)
+
+# Public include directory for IPC Toolkit
+target_include_directories(ipc_toolkit PUBLIC ${PROJECT_BINARY_DIR}/include)
 
 ################################################################################
 # Optional Definitions
