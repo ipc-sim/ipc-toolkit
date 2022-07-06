@@ -86,8 +86,11 @@ public:
     static std::vector<bool> construct_is_on_surface(
         const int num_vertices, const Eigen::MatrixXi& edges);
 
-    /// Helper function that automatically builds include_vertex using
-    /// construct_is_on_surface.
+    /// @brief Helper function that automatically builds include_vertex using construct_is_on_surface.
+    /// @param full_vertices_at_rest The full vertices at rest.
+    /// @param edges The edge matrix of mesh.
+    /// @param faces The face matrix of mesh.
+    /// @return Constructed CollisionMesh.
     static CollisionMesh build_from_full_mesh(
         const Eigen::MatrixXd& full_vertices_at_rest,
         const Eigen::MatrixXi& edges,
@@ -98,8 +101,10 @@ public:
             full_vertices_at_rest, edges, faces);
     }
 
-    /// Construct a matrix that maps from the faces' edges to rows in the edges
-    /// matrix.
+    /// @brief Construct a matrix that maps from the faces' edges to rows in the edges matrix.
+    /// @param faces The face matrix of mesh.
+    /// @param edges The edge matrix of mesh.
+    /// @return Matrix that maps from the faces' edges to rows in the edges matrix.
     static Eigen::MatrixXi construct_faces_to_edges(
         const Eigen::MatrixXi& faces, const Eigen::MatrixXi& edges);
 
