@@ -1,16 +1,16 @@
 name: PyPi Release
 
-# on:
-#   release:
-#     types: [published]
 on:
-  push:
-    branches:
-      - main
-      - python
-  pull_request:
-    branches:
-      - main
+  release:
+    types: [published]
+# on:
+#   push:
+#     branches:
+#       - main
+#       - python
+#   pull_request:
+#     branches:
+#       - main
 
 jobs:
   build_wheels:
