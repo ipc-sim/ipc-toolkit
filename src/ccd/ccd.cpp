@@ -21,6 +21,7 @@ static constexpr double INITIAL_DISTANCE_TOLERANCE_SCALE = 0.5;
 static constexpr long TIGHT_INCLUSION_UNLIMITED_ITERATIONS = -1;
 #endif
 
+/// @brief Tolerance for small time of impact which triggers rerunning CCD without a minimum separation.
 static constexpr double SMALL_TOI = 1e-6;
 
 bool ccd_strategy(

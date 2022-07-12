@@ -8,7 +8,7 @@ using namespace ipc;
 void define_spatial_hash(py::module_& m)
 {
     py::class_<SpatialHash, BroadPhase>(m, "SpatialHash")
-        .def(py::init(), "")
+        .def(py::init())
         .def(
             py::init<
                 const Eigen::MatrixXd&, const Eigen::MatrixXi&,

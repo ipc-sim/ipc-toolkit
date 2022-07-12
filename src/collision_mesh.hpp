@@ -112,9 +112,7 @@ public:
     /// if the vertices (and faces or edges containing the vertices) can
     /// collide. By default all primitives can collide with all other
     /// primitives.
-    std::function<bool(size_t, size_t)> can_collide = [](size_t, size_t) {
-        return true;
-    };
+    std::function<bool(size_t, size_t)> can_collide = default_can_collide;
 
 protected:
     ///////////////////////////////////////////////////////////////////////////
@@ -181,6 +179,10 @@ protected:
     /// Edge areas
     /// 3D: 1/3 sum of area of connected triangles
     Eigen::VectorXd m_edge_areas;
+
+private:
+    /// By default all primitives can collide with all other primitives.
+    static int default_can_collide(size_t, size_t) { return true; }
 };
 
 } // namespace ipc

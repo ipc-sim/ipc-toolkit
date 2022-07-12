@@ -19,6 +19,7 @@ void define_hash_grid(py::module_& m)
         .def_readwrite("id", &HashItem::id, "The value of the item.");
 
     py::class_<HashGrid, BroadPhase>(m, "HashGrid")
+        .def(py::init())
         .def(
             "build",
             py::overload_cast<
@@ -42,7 +43,7 @@ void define_hash_grid(py::module_& m)
                 const Eigen::MatrixXi&, const Eigen::MatrixXi&, double>(
                 &HashGrid::build),
             R"ipc_Qu8mg5v7(
-            Build the broad phase for continous collision detection.
+            Build the broad phase for continuous collision detection.
 
             Parameters:
                 V0: Starting positions of the vertices.

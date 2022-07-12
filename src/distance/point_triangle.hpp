@@ -200,7 +200,7 @@ void point_triangle_distance_gradient(
 /// @param[in] t0 The first vertex of the triangle.
 /// @param[in] t1 The second vertex of the triangle.
 /// @param[in] t2 The third vertex of the triangle.
-/// @param[out] grad The hessian of the distance wrt p, t0, t1, and t2.
+/// @param[out] hess The hessian of the distance wrt p, t0, t1, and t2.
 template <
     typename DerivedP,
     typename DerivedT0,
@@ -230,7 +230,7 @@ void point_triangle_distance_hessian(
 /// @param[in] t1 The second vertex of the triangle.
 /// @param[in] t2 The third vertex of the triangle.
 /// @param dtype The point-triangle distance type to compute.
-/// @param[out] grad The hessian of the distance wrt p, t0, t1, and t2.
+/// @param[out] hess The hessian of the distance wrt p, t0, t1, and t2.
 template <
     typename DerivedP,
     typename DerivedT0,

@@ -89,7 +89,7 @@ void define_ipc(py::module_& m)
             dhat: The activation distance of the barrier.
 
         Returns:
-            The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |V|.
+            The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of `V.size`.
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("V"), py::arg("constraint_set"),
         py::arg("dhat"));
@@ -107,7 +107,7 @@ void define_ipc(py::module_& m)
             project_hessian_to_psd: Make sure the hessian is positive semi-definite.
 
         Returns:
-            The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |V|x|V|.
+            The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a shape of `(V.size, V.size).
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("V"), py::arg("constraint_set"),
         py::arg("dhat"), py::arg("project_hessian_to_psd") = true);
@@ -230,6 +230,7 @@ void define_ipc(py::module_& m)
         Parameters:
             mesh: The collision mesh.
             V: Vertices of the collision mesh.
+            method: The broad-phase method to use.
 
         Returns:
             A boolean for if the mesh has intersections.

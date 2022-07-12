@@ -76,7 +76,7 @@ namespace autogen {
 /// @param[in] ea1 The second vertex of the edge defining the first line.
 /// @param[in] ea0 The first vertex of the edge defining the second line.
 /// @param[in] ea1 The second vertex of the edge defining the second line.
-/// @param[out] hess The gradient of the distance wrt ea0, ea1, eb0, and eb1.
+/// @param[out] grad The gradient of the distance wrt ea0, ea1, eb0, and eb1.
 template <
     typename DerivedEA0,
     typename DerivedEA1,

@@ -21,18 +21,50 @@ void define_aabb(py::module_& m)
         .def_static(
             "from_point",
             py::overload_cast<const VectorMax3d&, double>(&AABB::from_point),
-            "Compute a AABB for a static point.", py::arg("p"),
-            py::arg("inflation_radius") = 0)
+            R"ipc_Qu8mg5v7(
+            Compute a AABB for a static point.
+
+            Parameters:
+                p: The point's position.
+                inflation_radius: Radius of a sphere around the point which the AABB encloses.
+
+            Returns:
+                The constructed AABB.
+            )ipc_Qu8mg5v7",
+            py::arg("p"), py::arg("inflation_radius") = 0)
         .def_static(
             "from_point",
             py::overload_cast<const VectorMax3d&, const VectorMax3d&, double>(
                 &AABB::from_point),
-            "Compute a AABB for a moving point (i.e. temporal edge).",
+            R"ipc_Qu8mg5v7(
+            Compute a AABB for a moving point (i.e. temporal edge).
+
+            Parameters:
+                p_t0: The point's position at time t=0.
+                p_t1: The point's position at time t=1.
+                inflation_radius: Radius of a capsule around the temporal edge which the AABB encloses.
+
+            Returns:
+                The constructed AABB.
+            )ipc_Qu8mg5v7",
             py::arg("p_t0"), py::arg("p_t1"), py::arg("inflation_radius") = 0)
-        .def("intersects", &AABB::intersects, "", py::arg("other"))
-        .def_readwrite("min", &AABB::min, "")
-        .def_readwrite("max", &AABB::max, "")
-        .def_readwrite("vertex_ids", &AABB::vertex_ids, "");
+        .def(
+            "intersects", &AABB::intersects,
+            R"ipc_Qu8mg5v7(
+            Check if another AABB intersects with this one.
+
+            Parameters:
+                other: The other AABB.
+
+            Returns:
+                If the two AABBs intersect.
+            )ipc_Qu8mg5v7",
+            py::arg("other"))
+        .def_readwrite("min", &AABB::min, "Minimum corner of the AABB.")
+        .def_readwrite("max", &AABB::max, "Maximum corner of the AABB.")
+        .def_readwrite(
+            "vertex_ids", &AABB::vertex_ids,
+            "Vertex IDs attached to the AABB.");
 
     m.def(
         "build_vertex_boxes",
@@ -41,7 +73,8 @@ void define_aabb(py::module_& m)
             build_vertex_boxes(V, vertex_boxes, inflation_radius);
             return vertex_boxes;
         },
-        "", py::arg("V"), py::arg("inflation_radius") = 0);
+        "Build one AABB per vertex position (row of V).", py::arg("V"),
+        py::arg("inflation_radius") = 0);
 
     m.def(
         "build_vertex_boxes",

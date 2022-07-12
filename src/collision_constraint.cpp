@@ -579,35 +579,3 @@ const CollisionConstraint& Constraints::operator[](size_t idx) const
 }
 
 } // namespace ipc
-
-namespace std {
-size_t hash<ipc::VertexVertexConstraint>::operator()(
-    ipc::VertexVertexConstraint const& vv) const noexcept
-{
-    long min_vi = std::min(vv.vertex0_index, vv.vertex1_index);
-    long max_vi = std::max(vv.vertex0_index, vv.vertex1_index);
-    return std::hash<long>()(min_vi) ^ std::hash<long>()(max_vi);
-}
-
-size_t hash<ipc::EdgeVertexConstraint>::operator()(
-    ipc::EdgeVertexConstraint const& ev) const noexcept
-{
-    return std::hash<long>()(ev.edge_index)
-        ^ std::hash<long>()(ev.vertex_index);
-}
-
-size_t hash<ipc::EdgeEdgeConstraint>::operator()(
-    ipc::EdgeEdgeConstraint const& ee) const noexcept
-{
-    long min_ei = std::min(ee.edge0_index, ee.edge1_index);
-    long max_ei = std::max(ee.edge0_index, ee.edge1_index);
-    return std::hash<long>()(min_ei) ^ std::hash<long>()(max_ei);
-}
-
-size_t hash<ipc::FaceVertexConstraint>::operator()(
-    ipc::FaceVertexConstraint const& fv) const noexcept
-{
-    return std::hash<long>()(fv.face_index)
-        ^ std::hash<long>()(fv.vertex_index);
-}
-} // namespace std

@@ -17,7 +17,7 @@ void define_point_plane_distance(py::module_& m)
         Compute the distance between a point and a plane.
 
         Parameters:
-            p : point
+            p: point
             t0: first vertex of the triangle
             t1: second vertex of the triangle
             t2: third vertex of the triangle
@@ -42,7 +42,7 @@ void define_point_plane_distance(py::module_& m)
         Compute the gradient of the distance between a point and a plane.
 
         Parameters:
-            p : point
+            p: point
             t0: first vertex of the triangle
             t1: second vertex of the triangle
             t2: third vertex of the triangle
@@ -67,7 +67,7 @@ void define_point_plane_distance(py::module_& m)
         Compute the hessian of the distance between a point and a plane.
 
         Parameters:
-            p : point
+            p: point
             t0: first vertex of the triangle
             t1: second vertex of the triangle
             t2: third vertex of the triangle

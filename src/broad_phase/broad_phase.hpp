@@ -42,7 +42,7 @@ public:
         const Eigen::MatrixXi& F,
         double inflation_radius = 0);
 
-    /// @brief Build the broad phase for continous collision detection.
+    /// @brief Build the broad phase for continuous collision detection.
     /// @param V0 Starting positions of the vertices.
     /// @param V1 Ending positions of the vertices.
     /// @param E Edges of the mesh.
@@ -112,7 +112,7 @@ void construct_collision_candidates(
     double inflation_radius = 0,
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID);
 
-/// @brief Construct a set of continous collision detection candidates.
+/// @brief Construct a set of continuous collision detection candidates.
 /// @note Assumes the trajectory is linear.
 /// @param[in] mesh The surface of the contact mesh.
 /// @param[in] V0 Surface vertex positions at start as rows of a matrix.
