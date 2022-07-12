@@ -325,18 +325,3 @@ struct Constraints {
 };
 
 } // namespace ipc
-
-namespace std {
-template <> struct hash<ipc::VertexVertexConstraint> {
-    size_t operator()(ipc::VertexVertexConstraint const& vv) const noexcept;
-};
-template <> struct hash<ipc::EdgeVertexConstraint> {
-    size_t operator()(ipc::EdgeVertexConstraint const& ev) const noexcept;
-};
-template <> struct hash<ipc::EdgeEdgeConstraint> {
-    size_t operator()(ipc::EdgeEdgeConstraint const& ee) const noexcept;
-};
-template <> struct hash<ipc::FaceVertexConstraint> {
-    size_t operator()(ipc::FaceVertexConstraint const& fv) const noexcept;
-};
-} // namespace std

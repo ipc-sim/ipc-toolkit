@@ -11,6 +11,7 @@ void define_sweep(py::module_& m)
 
     py::class_<SweepAndTiniestQueue, CopyMeshBroadPhase>(
         m, "SweepAndTiniestQueue")
+        .def(py::init())
         .def(
             "build",
             py::overload_cast<
@@ -34,7 +35,7 @@ void define_sweep(py::module_& m)
                 const Eigen::MatrixXi&, const Eigen::MatrixXi&, double>(
                 &SweepAndTiniestQueue::build),
             R"ipc_Qu8mg5v7(
-            Build the broad phase for continous collision detection.
+            Build the broad phase for continuous collision detection.
 
             Parameters:
                 V0: Starting positions of the vertices.
@@ -102,6 +103,7 @@ void define_sweep(py::module_& m)
 #ifdef IPC_TOOLKIT_WITH_CUDA
     py::class_<SweepAndTiniestQueueGPU, CopyMeshBroadPhase>(
         m, "SweepAndTiniestQueueGPU")
+        .def(py::init())
         .def(
             "build",
             py::overload_cast<
@@ -126,7 +128,7 @@ void define_sweep(py::module_& m)
                 const Eigen::MatrixXi&, const Eigen::MatrixXi&, double>(
                 &SweepAndTiniestQueueGPU::build),
             R"ipc_Qu8mg5v7(
-            Build the broad phase for continous collision detection.
+            Build the broad phase for continuous collision detection.
 
             Parameters:
                 V0: Starting positions of the vertices.

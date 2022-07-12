@@ -42,7 +42,7 @@ public:
         const Eigen::MatrixXi& F,
         double inflation_radius = 0) override;
 
-    /// @brief Build the broad phase for continous collision detection.
+    /// @brief Build the broad phase for continuous collision detection.
     /// @param V0 Starting positions of the vertices.
     /// @param V1 Ending positions of the vertices.
     /// @param E Edges of the mesh.
@@ -105,7 +105,7 @@ public:
         const Eigen::MatrixXi& F,
         double inflation_radius = 0) override;
 
-    /// @brief Build the broad phase for continous collision detection.
+    /// @brief Build the broad phase for continuous collision detection.
     /// @param V0 Starting positions of the vertices.
     /// @param V1 Ending positions of the vertices.
     /// @param E Edges of the mesh.

@@ -8,6 +8,7 @@ using namespace ipc;
 void define_brute_force(py::module_& m)
 {
     py::class_<BruteForce, BroadPhase>(m, "BruteForce")
+        .def(py::init())
         .def(
             "detect_edge_vertex_candidates",
             [](BruteForce& self) {

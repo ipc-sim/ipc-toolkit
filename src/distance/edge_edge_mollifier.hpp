@@ -70,8 +70,7 @@ namespace autogen {
 /// @param[in] ea1 The second vertex of the first edge.
 /// @param[in] eb0 The first vertex of the second edge.
 /// @param[in] eb1 The second vertex of the second edge.
-/// @param[out] grad The gradient of the squared norm of the edge cross product
-///                  wrt ea0, ea1, eb0, and eb1.
+/// @param[out] grad The gradient of the squared norm of the edge cross product wrt ea0, ea1, eb0, and eb1.
 template <
     typename DerivedEA0,
     typename DerivedEA1,
@@ -102,8 +101,7 @@ void edge_edge_cross_squarednorm_gradient(
 /// @param eb0 The first vertex of the second edge.
 /// @param eb1 The second vertex of the second edge.
 /// @return The squared norm of the edge-edge cross product.
-/// @param[out] hess The hessian of the squared norm of the edge cross product
-///                  wrt ea0, ea1, eb0, and eb1.
+/// @param[out] hess The hessian of the squared norm of the edge cross product wrt ea0, ea1, eb0, and eb1.
 template <
     typename DerivedEA0,
     typename DerivedEA1,

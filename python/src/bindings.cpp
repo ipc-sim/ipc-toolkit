@@ -56,6 +56,9 @@ void define_ipc(py::module_& m);
 
 PYBIND11_MODULE(ipctk, m)
 {
+    // py::options options;
+    // options.disable_function_signatures();
+
     m.doc() = "IPC Toolkit";
 
     // barrier

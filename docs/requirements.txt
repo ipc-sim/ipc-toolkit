@@ -1,6 +1,7 @@
 sphinx
 sphinx-sitemap
+sphinx-immaterial
 breathe
-m2r2
 nbsphinx
 pandoc
+myst_parser

@@ -150,7 +150,8 @@ template <
 Result cross(
     const Eigen::MatrixBase<DerivedA>& a, const Eigen::MatrixBase<DerivedB>& b);
 
-const Eigen::IOFormat OBJ_VERTEX_FORMAT(
+/// Eigen IO Format to format vectors like vertex rows in an OBJ file.
+static const Eigen::IOFormat OBJ_VERTEX_FORMAT = Eigen::IOFormat(
     Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "", "");
 
 } // namespace ipc

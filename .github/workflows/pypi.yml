@@ -3,6 +3,14 @@ name: PyPi Release
 on:
   release:
     types: [published]
+# on:
+#   push:
+#     branches:
+#       - main
+#       - python
+#   pull_request:
+#     branches:
+#       - main
 
 jobs:
   build_wheels:
@@ -29,7 +37,6 @@ jobs:
         env:
           MACOSX_DEPLOYMENT_TARGET: "10.14"
           CIBW_SKIP: "cp36-* pp* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
-          CIBW_BUILD_FRONTEND: "build"
 
       - uses: actions/upload-artifact@v3
         with:

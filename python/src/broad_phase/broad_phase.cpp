@@ -59,7 +59,7 @@ void define_broad_phase(py::module_& m)
                 const Eigen::MatrixXi&, const Eigen::MatrixXi&, double>(
                 &BroadPhase::build),
             R"ipc_Qu8mg5v7(
-            Build the broad phase for continous collision detection.
+            Build the broad phase for continuous collision detection.
 
             Parameters:
                 V0: Starting positions of the vertices.
@@ -178,7 +178,7 @@ void define_broad_phase(py::module_& m)
             return candidates;
         },
         R"ipc_Qu8mg5v7(
-        Construct a set of continous collision detection candidates.
+        Construct a set of continuous collision detection candidates.
 
         Note:
             Assumes the trajectory is linear.
