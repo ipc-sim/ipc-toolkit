@@ -1,187 +1,298 @@
-Build and Install
-=================
+# API
 
-We provide Python bindings for functions in the toolkit using
-`pybind11`_.
+% .. automodule:: ipctk
+% :members:
+% :undoc-members:
+% :show-inheritance:
 
-.. _pybind11: https://github.com/pybind/pybind11
+## Main Functions
 
-Currently, the bindings must be built from scratch. The easiest way to
-do this is to use the ``setup.py`` script which uses ``setuptools``. For
-example:
-
-.. code:: sh
-
-   python setup.py install
-
-will build the library and python bindings and then install them on your
-system.
-
-You can test the install was successful by doing
-``python -c "import ipctk"``.
-
-API
-===
-
-Main Functions
---------------
-
+```{eval-rst}
 .. autofunction:: ipctk.construct_constraint_set
+```
 
+```{eval-rst}
 .. autofunction:: ipctk.compute_barrier_potential
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.compute_barrier_potential_gradient
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.compute_barrier_potential_hessian
+```
 
-Collision Constraints
----------------------
+## Collision Constraints
 
+```{eval-rst}
 .. autoclass:: ipctk.CollisionConstraint
     :members:
     :show-inheritance:
+```
+
+```{eval-rst}
 .. autoclass:: ipctk.VertexVertexConstraint
     :members:
     :show-inheritance:
+```
+
+```{eval-rst}
 .. autoclass:: ipctk.EdgeVertexConstraint
     :members:
     :show-inheritance:
+```
+
+```{eval-rst}
 .. autoclass:: ipctk.EdgeEdgeConstraint
     :members:
     :show-inheritance:
+```
+
+```{eval-rst}
 .. autoclass:: ipctk.FaceVertexConstraint
     :members:
     :show-inheritance:
+```
+
+```{eval-rst}
 .. autoclass:: ipctk.Constraints
     :members:
+```
 
-Barrier
--------
+## Barrier
 
+```{eval-rst}
 .. autofunction:: ipctk.barrier
+```
 
+```{eval-rst}
 .. autofunction:: ipctk.barrier_gradient
+```
 
+```{eval-rst}
 .. autofunction:: ipctk.barrier_hessian
+```
 
-Distance
---------
+## Distance
 
-Distance Type
-^^^^^^^^^^^^^
+### Distance Type
 
+```{eval-rst}
 .. autoclass:: ipctk.PointEdgeDistanceType
+```
+
+```{eval-rst}
 .. autoclass:: ipctk.EdgeEdgeDistanceType
+```
+
+```{eval-rst}
 .. autoclass:: ipctk.PointTriangleDistanceType
+```
 
+```{eval-rst}
 .. autofunction:: ipctk.point_edge_distance_type
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.edge_edge_distance_type
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.point_triangle_distance_type
+```
 
-Edge-Edge Mollifier
-^^^^^^^^^^^^^^^^^^^
+### Edge-Edge Mollifier
 
+```{eval-rst}
 .. autofunction:: ipctk.edge_edge_mollifier_threshold
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.edge_edge_cross_squarednorm
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.edge_edge_cross_squarednorm_gradient
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.edge_edge_cross_squarednorm_hessian
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.edge_edge_mollifier
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.edge_edge_mollifier_gradient
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.edge_edge_mollifier_hessian
+```
 
-Edge-Edge
-^^^^^^^^^
+### Edge-Edge
 
+```{eval-rst}
 .. autofunction:: ipctk.edge_edge_distance
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.edge_edge_distance_gradient
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.edge_edge_distance_hessian
+```
 
-Line-Line
-^^^^^^^^^
+### Line-Line
 
+```{eval-rst}
 .. autofunction:: ipctk.line_line_distance
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.line_line_distance_gradient
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.line_line_distance_hessian
+```
 
-Point-Edge
-^^^^^^^^^^^
+### Point-Edge
 
+```{eval-rst}
 .. autofunction:: ipctk.point_edge_distance
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.point_edge_distance_gradient
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.point_edge_distance_hessian
+```
 
-Point-Line
-^^^^^^^^^^^
+### Point-Line
 
+```{eval-rst}
 .. autofunction:: ipctk.point_line_distance
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.point_line_distance_gradient
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.point_line_distance_hessian
+```
 
-Point-Plane
-^^^^^^^^^^^
+### Point-Plane
 
+```{eval-rst}
 .. autofunction:: ipctk.point_plane_distance
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.point_plane_distance_gradient
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.point_plane_distance_hessian
+```
 
-Point-Point
-^^^^^^^^^^^
+### Point-Point
 
+```{eval-rst}
 .. autofunction:: ipctk.point_point_distance
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.point_point_distance_gradient
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.point_point_distance_hessian
+```
 
-Point-Triangle
-^^^^^^^^^^^^^^
+### Point-Triangle
 
+```{eval-rst}
 .. autofunction:: ipctk.point_triangle_distance
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.point_triangle_distance_gradient
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.point_triangle_distance_hessian
+```
 
-CCD
----
+## CCD
 
-Broad-Phase
-^^^^^^^^^^^
+### Broad-Phase
 
+```{eval-rst}
 .. autoclass:: ipctk.BroadPhaseMethod
+```
 
-Candidates
-""""""""""
+#### Candidates
 
+```{eval-rst}
 .. autoclass:: ipctk.VertexVertexCandidate
     :members:
+```
+
+```{eval-rst}
 .. autoclass:: ipctk.EdgeVertexCandidate
     :members:
+```
+
+```{eval-rst}
 .. autoclass:: ipctk.EdgeEdgeCandidate
     :members:
+```
+
+```{eval-rst}
 .. autoclass:: ipctk.EdgeFaceCandidate
     :members:
+```
+
+```{eval-rst}
 .. autoclass:: ipctk.FaceVertexCandidate
     :members:
+```
 
+```{eval-rst}
 .. autoclass:: ipctk.Candidates
+```
 
-Narrow-Phase
-^^^^^^^^^^^^
+### Narrow-Phase
 
-Utils
------
+## Utils
 
+```{eval-rst}
 .. autofunction:: ipctk.has_intersections
+```
 
-Logger
-^^^^^^
+### Logger
 
+```{eval-rst}
 .. autoclass:: ipctk.LoggerLevel
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.set_logger_level
+```
 
-Multi-Threading
-^^^^^^^^^^^^^^^
+### Multi-Threading
 
+```{eval-rst}
 .. autofunction:: ipctk.get_num_threads
+```
+
+```{eval-rst}
 .. autofunction:: ipctk.set_num_threads
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`search`
+```

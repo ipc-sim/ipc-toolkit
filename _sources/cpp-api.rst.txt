@@ -2,19 +2,24 @@ API
 ===
 
 Main Functions
------
-.. doxygenfunction:: construct_constraint_set(const CollisionMesh& mesh, const Eigen::MatrixXd& V, const double dhat, Constraints& constraint_set, const double dmin = 0, const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID)
+--------------
+.. doxygenfunction:: construct_constraint_set(const CollisionMesh& mesh, const Eigen::MatrixXd& V, const double dhat, Constraints& constraint_set, const double dmin = 0, const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID)
 .. doxygenfunction:: construct_constraint_set(const Candidates& candidates, const CollisionMesh& mesh, const Eigen::MatrixXd& V, const double dhat, Constraints& constraint_set, const double dmin = 0)
 
 .. doxygenfunction:: compute_barrier_potential
 .. doxygenfunction:: compute_barrier_potential_gradient
 .. doxygenfunction:: compute_barrier_potential_hessian
 
-.. doxygenfunction:: is_step_collision_free(const CollisionMesh& mesh, const Eigen::MatrixXd& V0, const Eigen::MatrixXd& V1, const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID, const double tolerance = 1e-6, const long max_iterations = 1e7)
-.. doxygenfunction:: is_step_collision_free(const Candidates& candidates, const CollisionMesh& mesh, const Eigen::MatrixXd& V0, const Eigen::MatrixXd& V1, const double tolerance = 1e-6, const long max_iterations = 1e7)
+.. doxygenfunction:: is_step_collision_free(const CollisionMesh& mesh,const Eigen::MatrixXd& V0,const Eigen::MatrixXd& V1,const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID,const double tolerance = 1e-6,const long max_iterations = 1e7)
+.. doxygenfunction:: is_step_collision_free(const Candidates& candidates,const CollisionMesh& mesh,const Eigen::MatrixXd& V0,const Eigen::MatrixXd& V1,const double tolerance = 1e-6,const long max_iterations = 1e7)
 
-.. doxygenfunction:: compute_collision_free_stepsize(const CollisionMesh& mesh, const Eigen::MatrixXd& V0, const Eigen::MatrixXd& V1, const BroadPhaseMethod& method = BroadPhaseMethod::HASH_GRID, const double tolerance = 1e-6, const long max_iterations = 1e7)
-.. doxygenfunction:: compute_collision_free_stepsize(const Candidates& candidates, const CollisionMesh& mesh, const Eigen::MatrixXd& V0, const Eigen::MatrixXd& V1, const double tolerance = 1e-6, const long max_iterations = 1e7)
+.. doxygenfunction:: compute_collision_free_stepsize(const CollisionMesh& mesh,const Eigen::MatrixXd& V0,const Eigen::MatrixXd& V1,const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID,const double tolerance = 1e-6,const long max_iterations = 1e7)
+.. doxygenfunction:: compute_collision_free_stepsize(const Candidates& candidates,const CollisionMesh& mesh,const Eigen::MatrixXd& V0,const Eigen::MatrixXd& V1,const double tolerance = 1e-6,const long max_iterations = 1e7)
+
+Collision Mesh
+--------------
+
+.. doxygenclass:: ipc::CollisionMesh
 
 Collision Constraints
 ---------------------
@@ -28,7 +33,7 @@ Collision Constraints
 .. doxygenstruct:: ipc::Constraints
 
 Barrier
------
+-------
 
 .. doxygenfunction:: barrier
 
@@ -82,7 +87,7 @@ Line-Line
 .. doxygenfunction:: ipc::line_line_distance_hessian
 
 Point-Edge
-^^^^^^^^^^^
+^^^^^^^^^^
 
 .. doxygenfunction:: point_edge_distance(const Eigen::MatrixBase<DerivedP> &p, const Eigen::MatrixBase<DerivedE0> &e0, const Eigen::MatrixBase<DerivedE1> &e1)
 .. doxygenfunction:: point_edge_distance(const Eigen::MatrixBase<DerivedP> &p, const Eigen::MatrixBase<DerivedE0> &e0, const Eigen::MatrixBase<DerivedE1> &e1, const PointEdgeDistanceType dtype)
@@ -92,7 +97,7 @@ Point-Edge
 .. doxygenfunction:: point_edge_distance_hessian(const Eigen::MatrixBase<DerivedP> &p, const Eigen::MatrixBase<DerivedE0> &e0, const Eigen::MatrixBase<DerivedE1> &e1, const PointEdgeDistanceType dtype, Eigen::PlainObjectBase<DerivedHess> &hess)
 
 Point-Line
-^^^^^^^^^^^
+^^^^^^^^^^
 
 .. doxygenfunction:: point_line_distance
 .. doxygenfunction:: point_line_distance_gradient
