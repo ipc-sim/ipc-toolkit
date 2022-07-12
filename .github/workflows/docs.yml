@@ -8,10 +8,10 @@ on:
 
 jobs:
   Docs:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 10
 
@@ -22,7 +22,8 @@ jobs:
 
       - name: Requirements
         run: |
-          brew install doxygen sphinx-doc
+          sudo apt-get update
+          sudo apt-get install doxygen python3-sphinx
           python -m pip install --upgrade pip
           pip install -r docs/requirements.txt
 
