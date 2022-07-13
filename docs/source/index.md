@@ -12,7 +12,14 @@ license
 :hidden:
 
 Getting Started <cpp>
-cpp-api
+cpp-api/main.rst
+cpp-api/collision_constraints.rst
+cpp-api/friction.rst
+cpp-api/ccd.rst
+cpp-api/distance.rst
+cpp-api/barrier.rst
+cpp-api/collision_mesh.rst
+cpp-api/utils.rst
 ```
 
 ```{toctree}

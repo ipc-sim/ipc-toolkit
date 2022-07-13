@@ -46,6 +46,7 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.viewcode",
     "sphinx.ext.inheritance_diagram",
+    "sphinx.ext.graphviz",
     "breathe",
     "myst_parser",
     "nbsphinx",
@@ -69,6 +70,13 @@ breathe_projects = {
 }
 breathe_default_project = project
 breathe_default_members = ("members", "undoc-members")
+breathe_show_define_initializer = True
+# breathe_show_include = True
+
+# -- GraphViz configuration ----------------------------------
+graphviz_output_format = 'svg'
+
+graphviz_dot_args = ["-Ecolor=#CE93D8", "-Kdot"]
 
 # python_apigen_modules = {
 #     "ipctk": "",
@@ -168,6 +176,7 @@ html_theme_options = {
 
 html_title = "IPC Toolkit"
 
+html_logo = "_static/hammer-wrench.svg"
 html_favicon = "_static/favicon.ico"
 
 # Add any paths that contain custom static files (such as style sheets) here,

@@ -38,13 +38,12 @@ void construct_friction_constraint_set(
     const std::function<double(double, double)>& blend_mu,
     FrictionConstraints& friction_constraint_set);
 
-/// @brief Compute the friction potential between to positions.
-/// @param V0 Vertex positions at start of time-step (rowwise)
-/// @param V1 Current vertex positions (rowwise)
-/// @param E  Edge vertex indicies
-/// @param F  Face vertex indicies (empty in 2D)
-/// @param friction_constraint_set
-/// @param epsv_times_h
+/// @brief Compute the friction potential between two positions.
+/// @param[in] mesh The collision mesh.
+/// @param[in] V0 Vertex positions at start of time-step (rowwise)
+/// @param[in] V1 Current vertex positions (rowwise)
+/// @param[in] friction_constraint_set The set of friction constraints.
+/// @param[in] epsv_times_h Tolerance for the transition between static and dynamic friction.
 template <typename T>
 T compute_friction_potential(
     const CollisionMesh& mesh,
@@ -53,6 +52,12 @@ T compute_friction_potential(
     const FrictionConstraints& friction_constraint_set,
     double epsv_times_h);
 
+/// @brief Compute the gradient of the friction potential wrt V1.
+/// @param[in] mesh The collision mesh.
+/// @param[in] V0 Vertex positions at start of time-step (rowwise)
+/// @param[in] V1 Current vertex positions (rowwise)
+/// @param[in] friction_constraint_set The set of friction constraints.
+/// @param[in] epsv_times_h Tolerance for the transition between static and dynamic friction.
 Eigen::VectorXd compute_friction_potential_gradient(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
@@ -60,6 +65,12 @@ Eigen::VectorXd compute_friction_potential_gradient(
     const FrictionConstraints& friction_constraint_set,
     double epsv_times_h);
 
+/// @brief Compute the Hessian of the friction potential wrt V1.
+/// @param[in] mesh The collision mesh.
+/// @param[in] V0 Vertex positions at start of time-step (rowwise)
+/// @param[in] V1 Current vertex positions (rowwise)
+/// @param[in] friction_constraint_set The set of friction constraints.
+/// @param[in] epsv_times_h Tolerance for the transition between static and dynamic friction.
 Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
