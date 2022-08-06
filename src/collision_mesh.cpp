@@ -260,8 +260,8 @@ Eigen::MatrixXd CollisionMesh::displace_vertices(
 Eigen::VectorXd CollisionMesh::to_full_dof(const Eigen::VectorXd& x) const
 {
     // ∇_{full} f(S * T * x_full) = Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
-    // x = ∇_{collision} f(S * T * x_full); m_displacement_map = S * T
-    return m_displacement_map.transpose() * x;
+    // x = ∇_{collision} f(S * T * x_full); m_displacement_dof_map = S * T
+    return m_displacement_dof_map.transpose() * x;
 }
 
 Eigen::SparseMatrix<double>

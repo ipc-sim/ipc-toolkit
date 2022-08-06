@@ -217,7 +217,7 @@ endif()
 ################################################################################
 
 # Enable unit testing at the root level
-if(IPC_TOOLKIT_BUILD_TESTS)
+if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_TESTS)
   include(CTest)
   enable_testing()
   add_subdirectory(tests)
@@ -227,6 +227,6 @@ endif()
 # Python bindings
 ################################################################################
 
-if(IPC_TOOLKIT_BUILD_PYTHON)
+if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_PYTHON)
   add_subdirectory(python)
 endif()
