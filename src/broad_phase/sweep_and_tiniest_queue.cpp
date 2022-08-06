@@ -1,4 +1,4 @@
-#include <ipc/broad_phase/sweep.hpp>
+#include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 
 #include <stq/cpu/io.hpp>
 #include <stq/cpu/sweep.hpp>
@@ -30,7 +30,9 @@ void SweepAndTiniestQueue::build(
     CopyMeshBroadPhase::copy_mesh(E, F);
     num_vertices = V0.rows();
     stq::cpu::constructBoxes(V0, V1, E, F, boxes, inflation_radius);
-    stq::cpu::run_sweep_cpu(boxes, overlaps);
+    int n = boxes.size();
+    stq::cpu::sort_along_xaxis(boxes);
+    stq::cpu::run_sweep_cpu(boxes, n, overlaps);
 }
 
 void SweepAndTiniestQueue::clear()
@@ -150,7 +152,7 @@ void SweepAndTiniestQueueGPU::clear()
 void SweepAndTiniestQueueGPU::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
-    // 2D SQT is not implemented!
+    // 2D STQ is not implemented!
     throw std::runtime_error("Not implemented!");
     // using namespace stq::gpu;
     // for (const std::pair<int, int>& overlap : overlaps) {
@@ -231,7 +233,7 @@ bool CopyMeshBroadPhase::can_edges_collide(size_t eai, size_t ebi) const
     const long ea0i = edges(eai, 0), ea1i = edges(eai, 1);
     const long eb0i = edges(ebi, 0), eb1i = edges(ebi, 1);
 
-    bool share_endpoint =
+    const bool share_endpoint =
         ea0i == eb0i || ea0i == eb1i || ea1i == eb0i || ea1i == eb1i;
 
     return !share_endpoint
@@ -254,8 +256,8 @@ bool CopyMeshBroadPhase::can_edge_face_collide(size_t ei, size_t fi) const
     const long e0i = edges(ei, 0), e1i = edges(ei, 1);
     const long f0i = faces(fi, 0), f1i = faces(fi, 1), f2i = faces(fi, 2);
 
-    bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i || e1i == f0i
-        || e1i == f1i || e1i == f2i;
+    const bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i
+        || e1i == f0i || e1i == f1i || e1i == f2i;
 
     return !share_endpoint
         && (can_vertices_collide(e0i, f0i) || can_vertices_collide(e0i, f1i)
