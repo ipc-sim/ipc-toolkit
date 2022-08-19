@@ -10,9 +10,15 @@
 
 #include <ipc/broad_phase/broad_phase.hpp>
 
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#define NUM_BROAD_PHASE_METHODS static_cast<int>(BroadPhaseMethod::NUM_METHODS)
+#else
+#define NUM_BROAD_PHASE_METHODS                                                \
+    (static_cast<int>(BroadPhaseMethod::NUM_METHODS) - 1)
+#endif
+
 #define GENERATE_BROAD_PHASE_METHODS()                                         \
-    static_cast<BroadPhaseMethod>(                                             \
-        GENERATE(range(0, static_cast<int>(BroadPhaseMethod::NUM_METHODS))));
+    static_cast<BroadPhaseMethod>(GENERATE(range(0, NUM_BROAD_PHASE_METHODS)));
 
 static const std::string TEST_DATA_DIR(TEST_DATA_DIR_CSTR);
 

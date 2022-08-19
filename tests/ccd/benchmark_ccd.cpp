@@ -52,7 +52,7 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
     double tolerance = 1e-6;
     int max_iterations = 1e7;
 
-    for (int i = 0; i < static_cast<int>(BroadPhaseMethod::NUM_METHODS); i++) {
+    for (int i = 0; i < NUM_BROAD_PHASE_METHODS; i++) {
         BroadPhaseMethod method = static_cast<BroadPhaseMethod>(i);
         BENCHMARK(fmt::format("Earliest ToI {}", BP_names[i]))
         {

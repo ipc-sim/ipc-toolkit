@@ -73,9 +73,12 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod method)
         return std::make_unique<SpatialHash>();
     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
         return std::make_unique<SweepAndTiniestQueue>();
-#ifdef IPC_TOOLKIT_WITH_CUDA
     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU:
+#ifdef IPC_TOOLKIT_WITH_CUDA
         return std::make_unique<SweepAndTiniestQueueGPU>();
+#else
+        throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
+                                 "because CUDA is disabled!");
 #endif
     default:
         throw std::runtime_error("Invalid BroadPhaseMethod!");

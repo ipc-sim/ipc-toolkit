@@ -519,8 +519,8 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
 
-#ifdef IPC_TOOLKIT_WITH_CUDA
     if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+#ifdef IPC_TOOLKIT_WITH_CUDA
         double min_distance = 0; // TODO
         const double step_size = ccd::gpu::compute_toi_strategy(
             V0, V1, E, F, max_iterations, min_distance, tolerance);
@@ -528,8 +528,11 @@ double compute_collision_free_stepsize(
             return 0.8 * step_size;
         }
         return 1.0;
-    }
+#else
+        throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
+                                 "because CUDA is disabled!");
 #endif
+    }
 
     // Broad phase
     Candidates candidates;
