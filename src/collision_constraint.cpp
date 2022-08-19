@@ -265,7 +265,7 @@ VectorMax12d EdgeEdgeConstraint::compute_distance_gradient(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F) const
 {
-    VectorMax9d distance_grad;
+    VectorMax12d distance_grad;
     edge_edge_distance_gradient(
         V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
         V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)), distance_grad);
