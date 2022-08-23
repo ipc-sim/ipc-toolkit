@@ -203,7 +203,8 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian][thisone]")
 }
 
 TEST_CASE(
-    "Test friction force jacobian on real data", "[friction][force-jacobian]")
+    "Test friction force jacobian on real data",
+    "[friction][force-jacobian][real-data]")
 {
     std::string scene;
     bool is_2D = true;

@@ -15,7 +15,7 @@ Eigen::VectorXd GeomSpaced(int num, double start, double stop)
     return LogSpaced(num, log10(start), log10(stop), /*base=*/10);
 }
 
-template <typename Vector> auto get_val(const Vector& vals, int& i)
+double get_val(const Eigen::VectorXd& vals, int& i)
 {
     double r = vals[i % vals.size()];
     i /= vals.size();
