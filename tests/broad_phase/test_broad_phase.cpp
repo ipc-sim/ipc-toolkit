@@ -93,23 +93,22 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D]")
 TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D][!hide]")
 #endif
 {
-    Eigen::MatrixXd V0;
-    REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/V_t0.csv", V0));
-    V0 = V0.leftCols(2);
+    Eigen::MatrixXd tmp;
+    REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/V_t0.csv", tmp));
+    const Eigen::MatrixXd V0_full = tmp.leftCols(2);
 
-    Eigen::MatrixXd V1;
-    REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/V_t1.csv", V1));
-    V1 = V1.leftCols(2);
+    REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/V_t1.csv", tmp));
+    const Eigen::MatrixXd V1_full = tmp.leftCols(2);
 
     Eigen::MatrixXi E;
     REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/E.csv", E));
     E.array() -= 1; // NOTE: Convert from OBJ format to index
 
-    CollisionMesh mesh =
-        CollisionMesh::build_from_full_mesh(V0, E, /*F=*/Eigen::MatrixXi());
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(
+        V0_full, E, /*F=*/Eigen::MatrixXi());
 
-    V0 = mesh.vertices(V0);
-    V1 = mesh.vertices(V1);
+    const Eigen::MatrixXd V0 = mesh.vertices(V0_full);
+    const Eigen::MatrixXd V1 = mesh.vertices(V1_full);
 
     BroadPhaseMethod method = GENERATE(
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,

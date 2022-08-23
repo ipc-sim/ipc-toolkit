@@ -184,7 +184,7 @@ void check_friction_force_jacobian(
     CHECK(fd::compare_jacobian(-jac_force, hess_D));
 }
 
-TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
+TEST_CASE("Test friction force jacobian", "[friction][force-jacobian][thisone]")
 {
     const FrictionData& data = GENERATE(FrictionDataGenerator::create());
     const auto& [V0, V1, E, F, contacts, mu, epsv_times_h, dhat, barrier_stiffness] =
@@ -203,8 +203,7 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian]")
 }
 
 TEST_CASE(
-    "Test friction force jacobian on real data",
-    "[friction][force-jacobian][thisone]")
+    "Test friction force jacobian on real data", "[friction][force-jacobian]")
 {
     std::string scene;
     bool is_2D = true;

@@ -1,5 +1,7 @@
 #include "friction_data_generator.hpp"
 
+#include <ipc/config.hpp>
+
 #include <igl/edges.h>
 #include <iostream>
 
@@ -13,7 +15,7 @@ Eigen::VectorXd GeomSpaced(int num, double start, double stop)
     return LogSpaced(num, log10(start), log10(stop), /*base=*/10);
 }
 
-template <typename Vector> int get_val(const Vector& vals, int& i)
+template <typename Vector> auto get_val(const Vector& vals, int& i)
 {
     double r = vals[i % vals.size()];
     i /= vals.size();
@@ -69,8 +71,10 @@ bool FrictionDataGenerator::next()
         REQUIRE(data.E.rows() == 3);
 
         data.constraints.fv_constraints.emplace_back(0, 0);
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
         data.constraints.fv_constraints.back().weight_gradient.resize(
             data.V0.size());
+#endif
     } break;
     case 1: { // edge-edge
         data.V0.resize(4, 3);
@@ -88,8 +92,10 @@ bool FrictionDataGenerator::next()
         data.E.row(1) << 2, 3;
 
         data.constraints.ee_constraints.emplace_back(0, 1, 0.0);
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
         data.constraints.ee_constraints.back().weight_gradient.resize(
             data.V0.size());
+#endif
     } break;
     case 2: { // point-edge
         data.V0.resize(3, 3);
@@ -104,8 +110,10 @@ bool FrictionDataGenerator::next()
         data.E.row(0) << 1, 2;
 
         data.constraints.ev_constraints.emplace_back(0, 1);
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
         data.constraints.ev_constraints.back().weight_gradient.resize(
             data.V0.size());
+#endif
     } break;
     case 3: { // point-point
         data.V0.resize(2, 3);
@@ -117,8 +125,10 @@ bool FrictionDataGenerator::next()
         data.V1.row(1) << -0.5, d, 0; // edge a vertex 1 at t=1
 
         data.constraints.vv_constraints.emplace_back(0, 1);
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
         data.constraints.vv_constraints.back().weight_gradient.resize(
             data.V0.size());
+#endif
     } break;
     case 4: { // point-edge
         data.V0.resize(3, 2);
@@ -133,8 +143,10 @@ bool FrictionDataGenerator::next()
         data.E.row(0) << 1, 2;
 
         data.constraints.ev_constraints.emplace_back(0, 1);
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
         data.constraints.ev_constraints.back().weight_gradient.resize(
             data.V0.size());
+#endif
     } break;
     case 5: { // point-point
         data.V0.resize(2, 2);
@@ -146,8 +158,10 @@ bool FrictionDataGenerator::next()
         data.V1.row(1) << -0.5, d; // edge a vertex 1 at t=1
 
         data.constraints.vv_constraints.emplace_back(0, 1);
+#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
         data.constraints.vv_constraints.back().weight_gradient.resize(
             data.V0.size());
+#endif
     } break;
     default:
         throw "invalid i";
