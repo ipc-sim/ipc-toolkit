@@ -59,7 +59,9 @@ void define_collision_constraint(py::module_& m)
             py::arg("project_to_psd"))
         .def_readwrite(
             "minimum_distance", &CollisionConstraint::minimum_distance)
-        .def_readwrite("weight", &CollisionConstraint::weight);
+        .def_readwrite(
+            "weight", &CollisionConstraint::weight,
+            "Weight in the final sum of potentials");
 
     py::class_<
         VertexVertexConstraint, VertexVertexCandidate, CollisionConstraint>(
@@ -94,9 +96,7 @@ void define_collision_constraint(py::module_& m)
             "compute_potential_hessian",
             &VertexVertexConstraint::compute_potential_hessian, "",
             py::arg("V"), py::arg("E"), py::arg("F"), py::arg("dhat"),
-            py::arg("project_hessian_to_psd"))
-        .def_readwrite(
-            "multiplicity", &VertexVertexConstraint::multiplicity, "");
+            py::arg("project_hessian_to_psd"));
 
     py::class_<EdgeVertexConstraint, EdgeVertexCandidate, CollisionConstraint>(
         m, "EdgeVertexConstraint")
@@ -130,8 +130,7 @@ void define_collision_constraint(py::module_& m)
             "compute_potential_hessian",
             &EdgeVertexConstraint::compute_potential_hessian, "", py::arg("V"),
             py::arg("E"), py::arg("F"), py::arg("dhat"),
-            py::arg("project_hessian_to_psd"))
-        .def_readwrite("multiplicity", &EdgeVertexConstraint::multiplicity, "");
+            py::arg("project_hessian_to_psd"));
 
     py::class_<EdgeEdgeConstraint, EdgeEdgeCandidate, CollisionConstraint>(
         m, "EdgeEdgeConstraint")

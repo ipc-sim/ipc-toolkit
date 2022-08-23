@@ -6,6 +6,7 @@
 #include <finitediff.hpp>
 
 #include <ipc/ipc.hpp>
+#include <ipc/config.hpp>
 
 #include "test_utils.hpp"
 

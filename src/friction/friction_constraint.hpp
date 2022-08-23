@@ -5,6 +5,8 @@
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
+#include <ipc/config.hpp>
+
 namespace ipc {
 
 struct FrictionConstraint {

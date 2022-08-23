@@ -1,14 +1,16 @@
 #include <ipc/collisions/construct_constraint_set.hpp>
 
-#include <tbb/parallel_for.h>
-#include <tbb/blocked_range.h>
-#include <tbb/enumerable_thread_specific.h>
-
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
+
+#include <ipc/config.hpp>
+
+#include <tbb/parallel_for.h>
+#include <tbb/blocked_range.h>
+#include <tbb/enumerable_thread_specific.h>
 
 namespace ipc {
 

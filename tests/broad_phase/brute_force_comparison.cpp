@@ -8,6 +8,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <fstream>
+
 void save_candidates(
     const std::string& filename, const ipc::Candidates& candidates);
 bool load_candidates(const std::string& filename, ipc::Candidates& candidates);

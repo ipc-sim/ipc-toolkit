@@ -1,11 +1,5 @@
 #include <ipc/friction/friction.hpp>
 
-#include <tbb/parallel_for.h>
-#include <tbb/blocked_range.h>
-#include <tbb/enumerable_thread_specific.h>
-
-#include <Eigen/Sparse>
-
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
@@ -17,6 +11,14 @@
 #include <ipc/friction/tangent_basis.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/local_to_global.hpp>
+
+#include <ipc/config.hpp>
+
+#include <tbb/parallel_for.h>
+#include <tbb/blocked_range.h>
+#include <tbb/enumerable_thread_specific.h>
+
+#include <Eigen/Sparse>
 
 namespace ipc {
 

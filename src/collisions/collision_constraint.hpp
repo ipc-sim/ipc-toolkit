@@ -1,11 +1,12 @@
 #pragma once
 
-#include <array>
+#include <ipc/broad_phase/collision_candidate.hpp>
+
+#include <ipc/config.hpp>
 
 #include <Eigen/Core>
 
-#include <ipc/broad_phase/collision_candidate.hpp>
-#include <ipc/utils/eigen_ext.hpp>
+#include <array>
 
 namespace ipc {
 
