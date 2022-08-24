@@ -60,7 +60,7 @@ struct FrictionConstraint {
     {
         return compute_force(
             X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, E, F, dhat,
-            barrier_stiffness, epsv_times_h, dmin);
+            barrier_stiffness, epsv_times_h, dmin, no_mu);
     }
 
     virtual VectorMax12d compute_force(

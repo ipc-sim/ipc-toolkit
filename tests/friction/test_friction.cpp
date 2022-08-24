@@ -19,7 +19,7 @@ using namespace ipc;
 
 TEST_CASE("Test friction gradient and hessian", "[friction][gradient][hessian]")
 {
-    const FrictionData& data = GENERATE(FrictionDataGenerator::create());
+    FrictionData data = friction_data_generator();
     const auto& [V0, V1, E, F, contact_constraint_set, mu, epsv_times_h, dhat, barrier_stiffness] =
         data;
 

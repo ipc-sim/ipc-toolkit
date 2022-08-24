@@ -272,6 +272,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
                 Gamma.transpose() * jac_P.middleRows(i * dim, dim);
         }
 
+        // Vertex-vertex does not have a closest point
         if (beta.size()) {
             // ∇Γ(β) = ∇ᵦΓ∇β ∈ ℝ^{d×n×n} ≡ ℝ^{nd×n}
             const MatrixMax<double, 2, 12> jac_beta =
@@ -284,8 +285,9 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
                 for (int i = 0; i < dim; i++) {
                     // ∂Γᵢⱼ/∂xₖ = ∂Γᵢⱼ/∂β ⋅ ∂β/∂xₖ
                     jac_Gamma.row(k * dim + i) =
-                        jac_Gamma_wrt_beta
-                            .middleRows(i * beta.size(), beta.size())
+                        jac_Gamma_wrt_beta(
+                            Eigen::seqN(i, beta.size(), dim), Eigen::all)
+                            .eval()
                             .transpose()
                         * jac_beta.col(k);
                 }
