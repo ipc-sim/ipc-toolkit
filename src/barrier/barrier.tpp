@@ -5,7 +5,7 @@
 
 namespace ipc {
 
-template <typename T> T barrier(const T& d, double dhat)
+template <typename T> T barrier(const T& d, const double dhat)
 {
 #ifdef IPC_TOOLKIT_CONVERGENT
     return physical_barrier(d, dhat);
@@ -22,7 +22,7 @@ template <typename T> T barrier(const T& d, double dhat)
 #endif
 }
 
-template <typename T> T physical_barrier(const T& d, double dhat)
+template <typename T> T physical_barrier(const T& d, const double dhat)
 {
     // units(d) = m and units(d̂) = m ⟹ units(b(d)) = m
     // units(κ) = Pa ⟹ units(κ b(d)) = Pa m

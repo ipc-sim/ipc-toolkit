@@ -1,6 +1,7 @@
 #include "friction_data_generator.hpp"
 
 #include <ipc/config.hpp>
+#include <ipc/utils/logger.hpp>
 
 #include <igl/edges.h>
 #include <iostream>
@@ -33,10 +34,11 @@ FrictionData friction_data_generator()
     barrier_stiffness = 100;
 #endif
 
+    const double max_d = dhat - 2e-8;
+    const double d = GENERATE_COPY(range(0.0, max_d, max_d / 10));
     SECTION("point-triangle")
     {
         V0.resize(4, 3);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
         V0.row(0) << 0, d, 0;   // point at t=0
         V0.row(1) << -1, 0, 1;  // triangle vertex 0 at t=0
         V0.row(2) << 2, 0, 0;   // triangle vertex 1 at t=0
@@ -59,14 +61,13 @@ FrictionData friction_data_generator()
     SECTION("edge-edge")
     {
         V0.resize(4, 3);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
         V0.row(0) << -1, d, 0; // edge a vertex 0 at t=0
         V0.row(1) << 1, d, 0;  // edge a vertex 1 at t=0
         V0.row(2) << 0, 0, -1; // edge b vertex 0 at t=0
         V0.row(3) << 0, 0, 1;  // edge b vertex 1 at t=0
 
         V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
+        // double dy = GENERATE(-1, 1, 1e-1);
         V1.row(0) << 0.5, d, 0; // edge a vertex 0 at t=1
         V1.row(1) << 2.5, d, 0; // edge a vertex 1 at t=1
 
@@ -82,13 +83,12 @@ FrictionData friction_data_generator()
     SECTION("point-edge")
     {
         V0.resize(3, 3);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
         V0.row(0) << -0.5, d, 0; // point at t=0
         V0.row(1) << 0, 0, -1;   // edge vertex 0 at t=0
         V0.row(2) << 0, 0, 1;    // edge vertex 1 at t=0
 
         V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
+        // double dy = GENERATE(-1, 1, 1e-1);
         V1.row(0) << 0.5, d, 0; // point at t=1
 
         E.resize(1, 2);
@@ -102,12 +102,11 @@ FrictionData friction_data_generator()
     SECTION("point-point")
     {
         V0.resize(2, 3);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
         V0.row(0) << -1, d, 0; // point 0 at t=0
         V0.row(1) << 1, d, 0;  // point 1 at t=0
 
         V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
+        // double dy = GENERATE(-1, 1, 1e-1);
         V1.row(0) << 0.5, d, 0;  // edge a vertex 0 at t=1
         V1.row(1) << -0.5, d, 0; // edge a vertex 1 at t=1
 
@@ -116,16 +115,15 @@ FrictionData friction_data_generator()
         constraints.vv_constraints.back().weight_gradient.resize(V0.size());
 #endif
     }
-    SECTION("point-edge")
+    SECTION("point-edge 2D")
     {
         V0.resize(3, 2);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
         V0.row(0) << -0.5, d; // point at t=0
         V0.row(1) << -1, 0;   // edge vertex 0 at t=0
         V0.row(2) << 1, 0;    // edge vertex 1 at t=0
 
         V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
+        // double dy = GENERATE(-1, 1, 1e-1);
         V1.row(0) << 0.5, d; // point at t=1
 
         E.resize(1, 2);
@@ -136,15 +134,14 @@ FrictionData friction_data_generator()
         constraints.ev_constraints.back().weight_gradient.resize(V0.size());
 #endif
     }
-    SECTION("point-point")
+    SECTION("point-point 2D")
     {
         V0.resize(2, 2);
-        double d = GENERATE_COPY(range(0.0, 2 * dhat, 2 * dhat / 10.0));
         V0.row(0) << -1, d; // point 0 at t=0
         V0.row(1) << 1, d;  // point 1 at t=0
 
         V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
+        // double dy = GENERATE(-1, 1, 1e-1);
         V1.row(0) << 0.5, d;  // edge a vertex 0 at t=1
         V1.row(1) << -0.5, d; // edge a vertex 1 at t=1
 

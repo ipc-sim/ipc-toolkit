@@ -21,7 +21,7 @@ namespace ipc {
 /// @param d The distance.
 /// @param dhat Activation distance of the barrier.
 /// @return The value of the barrier function at d.
-template <typename T> T barrier(const T& d, double dhat);
+template <typename T> T barrier(const T& d, const double dhat);
 
 /// @brief Derivative of the barrier function.
 ///
@@ -33,7 +33,7 @@ template <typename T> T barrier(const T& d, double dhat);
 /// @param d The distance.
 /// @param dhat Activation distance of the barrier.
 /// @return The derivative of the barrier wrt d.
-double barrier_gradient(double d, double dhat);
+double barrier_gradient(const double d, const double dhat);
 
 /// @brief Second derivative of the barrier function.
 ///
@@ -45,7 +45,7 @@ double barrier_gradient(double d, double dhat);
 /// @param d The distance.
 /// @param dhat Activation distance of the barrier.
 /// @return The second derivative of the barrier wrt d.
-double barrier_hessian(double d, double dhat);
+double barrier_hessian(const double d, const double dhat);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Physically based barrier functions from [Li et al. 2022]

@@ -7,7 +7,7 @@
 
 namespace ipc {
 
-double barrier_gradient(double d, double dhat)
+double barrier_gradient(const double d, const double dhat)
 {
 #ifdef IPC_TOOLKIT_CONVERGENT
     return physical_barrier_gradient(d, dhat);
@@ -23,7 +23,7 @@ double barrier_gradient(double d, double dhat)
 #endif
 }
 
-double barrier_hessian(double d, double dhat)
+double barrier_hessian(const double d, const double dhat)
 {
 #ifdef IPC_TOOLKIT_CONVERGENT
     return physical_barrier_hessian(d, dhat);
@@ -38,7 +38,7 @@ double barrier_hessian(double d, double dhat)
 #endif
 }
 
-double physical_barrier_gradient(double d, double dhat)
+double physical_barrier_gradient(const double d, const double dhat)
 {
     if (d <= 0.0 || d >= dhat) {
         return 0.0;
