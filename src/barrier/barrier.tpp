@@ -1,6 +1,8 @@
 #pragma once
 #include <ipc/barrier/barrier.hpp>
 
+#include <ipc/config.hpp>
+
 namespace ipc {
 
 template <typename T> T barrier(const T& d, double dhat)

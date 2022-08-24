@@ -3,6 +3,8 @@
 // inequlity constraints on a function.
 #include <ipc/barrier/barrier.hpp>
 
+#include <ipc/config.hpp>
+
 namespace ipc {
 
 double barrier_gradient(double d, double dhat)

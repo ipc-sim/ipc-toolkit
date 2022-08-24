@@ -9,6 +9,7 @@
 #include <ipc/ipc.hpp>
 #include <ipc/friction/friction.hpp>
 #include <ipc/utils/logger.hpp>
+#include <ipc/config.hpp>
 
 #include "friction_data_generator.hpp"
 #include "../test_utils.hpp"
