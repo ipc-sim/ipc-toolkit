@@ -1,11 +1,5 @@
 #include <catch2/catch.hpp>
 
-#include <Eigen/Geometry>
-
-#include <tbb/parallel_sort.h>
-
-#include <igl/predicates/segment_segment_intersect.h>
-
 #include <ipc/ipc.hpp>
 #include <ipc/broad_phase/brute_force.hpp>
 #include <ipc/broad_phase/collision_candidate.hpp>
@@ -14,7 +8,29 @@
 
 #include "test_utils.hpp"
 
+#include <tbb/parallel_sort.h>
+
+#include <igl/predicates/segment_segment_intersect.h>
+#include <igl/edges.h>
+
+#include <Eigen/Geometry>
+
 using namespace ipc;
+
+Eigen::MatrixXi remove_faces_with_degenerate_edges(
+    const Eigen::MatrixXd& V, const Eigen::MatrixXi& F)
+{
+    Eigen::MatrixXi F_new(F.rows(), F.cols());
+    int num_faces = 0;
+    for (int i = 0; i < F.rows(); ++i) {
+        if (V.row(F(i, 0)) != V.row(F(i, 1)) && V.row(F(i, 0)) != V.row(F(i, 2))
+            && V.row(F(i, 1)) != V.row(F(i, 2))) {
+            F_new.row(num_faces++) = F.row(i);
+        }
+    }
+    F_new.conservativeResize(num_faces, F.cols());
+    return F_new;
+}
 
 bool combine_meshes(
     const std::string& mesh1_name,
@@ -55,6 +71,11 @@ bool combine_meshes(
     F.topRows(F1.rows()) = F1;
     F.bottomRows(F2.rows()) = F2;
     F.bottomRows(F2.rows()).array() += V1.rows();
+
+    F = remove_faces_with_degenerate_edges(V, F);
+    if (F.rows() != 0) {
+        igl::edges(F, E);
+    }
 
     return true;
 }
