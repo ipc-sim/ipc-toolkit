@@ -176,7 +176,7 @@ void edge_vertex_candiates_to_constraints(
             mesh.point_area_gradient(vi) / 2;
 #else
         const double weight = 1;
-        const Eigen::SparseVector<double> weight_gradient(V.rows());
+        const Eigen::SparseVector<double> weight_gradient(V.size());
 #endif
 
         switch (dtype) {
@@ -240,7 +240,7 @@ void edge_edge_candiates_to_constraints(
             (mesh.edge_area_gradient(eai) + mesh.edge_area_gradient(ebi)) / 4;
 #else
         const double weight = 1;
-        const Eigen::SparseVector<double> weight_gradient(V.rows());
+        const Eigen::SparseVector<double> weight_gradient(V.size());
 #endif
 
         double eps_x = edge_edge_mollifier_threshold(
@@ -341,7 +341,7 @@ void face_vertex_candiates_to_constraints(
             mesh.point_area_gradient(vi) / 4;
 #else
         const double weight = 1;
-        const Eigen::SparseVector<double> weight_gradient(V.rows());
+        const Eigen::SparseVector<double> weight_gradient(V.size());
 #endif
 
         switch (dtype) {
