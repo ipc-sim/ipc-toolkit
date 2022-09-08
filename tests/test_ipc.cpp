@@ -254,4 +254,45 @@ TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
         print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
     }
 }
+
+TEST_CASE("Benchmark IPC shape derivative", "[ipc][shape_opt][!benchmark]")
+{
+    nlohmann::json data;
+    {
+        std::ifstream input(TEST_DATA_DIR + "shape_derivative_data.json");
+        REQUIRE(input.good());
+
+        data = nlohmann::json::parse(input, nullptr, false);
+        REQUIRE(!data.is_discarded());
+    }
+
+    // Parameters
+    double dhat = data["dhat"];
+
+    // Mesh
+    Eigen::MatrixXd X, V;
+    from_json(data["boundary_nodes_pos"], X);
+    from_json(data["displaced"], V);
+
+    Eigen::MatrixXi E;
+    from_json(data["boundary_edges"], E);
+
+    CollisionMesh mesh =
+        CollisionMesh::build_from_full_mesh(X, E, /*faces=*/Eigen::MatrixXi());
+
+    X = mesh.vertices(X);
+    V = mesh.vertices(V);
+    const Eigen::MatrixXd U = V - X;
+
+    Constraints constraint_set;
+    construct_constraint_set(mesh, V, dhat, constraint_set);
+
+    Eigen::SparseMatrix<double> JF_wrt_X;
+
+    BENCHMARK("Shape Derivative")
+    {
+        JF_wrt_X =
+            compute_barrier_shape_derivative(mesh, V, constraint_set, dhat);
+    };
+}
 #endif
