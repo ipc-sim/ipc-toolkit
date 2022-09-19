@@ -47,16 +47,6 @@ double barrier_gradient(const double d, const double dhat);
 /// @return The second derivative of the barrier wrt d.
 double barrier_hessian(const double d, const double dhat);
 
-///////////////////////////////////////////////////////////////////////////////
-// Physically based barrier functions from [Li et al. 2022]
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename T> T physical_barrier(const T& d, const double dhat);
-
-double physical_barrier_gradient(const double d, const double dhat);
-
-double physical_barrier_hessian(const double d, const double dhat);
-
 } // namespace ipc
 
 #include "barrier.tpp"
