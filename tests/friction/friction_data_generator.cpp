@@ -54,9 +54,7 @@ FrictionData friction_data_generator()
         REQUIRE(E.rows() == 3);
 
         constraints.fv_constraints.emplace_back(0, 0);
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
         constraints.fv_constraints.back().weight_gradient.resize(V0.size());
-#endif
     }
     SECTION("edge-edge")
     {
@@ -76,9 +74,7 @@ FrictionData friction_data_generator()
         E.row(1) << 2, 3;
 
         constraints.ee_constraints.emplace_back(0, 1, 0.0);
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
         constraints.ee_constraints.back().weight_gradient.resize(V0.size());
-#endif
     }
     SECTION("point-edge")
     {
@@ -95,9 +91,7 @@ FrictionData friction_data_generator()
         E.row(0) << 1, 2;
 
         constraints.ev_constraints.emplace_back(0, 1);
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
         constraints.ev_constraints.back().weight_gradient.resize(V0.size());
-#endif
     }
     SECTION("point-point")
     {
@@ -111,9 +105,7 @@ FrictionData friction_data_generator()
         V1.row(1) << -0.5, d, 0; // edge a vertex 1 at t=1
 
         constraints.vv_constraints.emplace_back(0, 1);
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
         constraints.vv_constraints.back().weight_gradient.resize(V0.size());
-#endif
     }
     SECTION("point-edge 2D")
     {
@@ -130,9 +122,7 @@ FrictionData friction_data_generator()
         E.row(0) << 1, 2;
 
         constraints.ev_constraints.emplace_back(0, 1);
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
         constraints.ev_constraints.back().weight_gradient.resize(V0.size());
-#endif
     }
     SECTION("point-point 2D")
     {
@@ -146,10 +136,9 @@ FrictionData friction_data_generator()
         V1.row(1) << -0.5, d; // edge a vertex 1 at t=1
 
         constraints.vv_constraints.emplace_back(0, 1);
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
         constraints.vv_constraints.back().weight_gradient.resize(V0.size());
-#endif
     }
+    constraints.compute_shape_derivatives = true;
 
     return data;
 }

@@ -23,6 +23,7 @@ struct Constraints {
     std::vector<EdgeEdgeConstraint> ee_constraints;
     std::vector<FaceVertexConstraint> fv_constraints;
     std::vector<PlaneVertexConstraint> pv_constraints;
+    bool compute_shape_derivatives = false;
 
     /// @brief Construct a set of constraints used to compute the barrier potential.
     /// @param mesh The collision mesh.
@@ -69,6 +70,7 @@ protected:
         const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i,
+        const bool compute_shape_derivatives,
         Builder& constraint_builder);
 
     static void edge_edge_candiates_to_constraints(
@@ -78,6 +80,7 @@ protected:
         const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i,
+        const bool compute_shape_derivatives,
         Builder& constraint_builder);
 
     static void face_vertex_candiates_to_constraints(
@@ -87,6 +90,7 @@ protected:
         const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i,
+        const bool compute_shape_derivatives,
         Builder& constraint_builder);
 
     void merge_thread_local_constraints(

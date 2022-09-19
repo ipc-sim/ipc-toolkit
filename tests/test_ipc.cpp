@@ -195,7 +195,6 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
 }
 
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
 TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
 {
     nlohmann::json data;
@@ -226,6 +225,7 @@ TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
     const Eigen::MatrixXd U = V - X;
 
     Constraints constraint_set;
+    constraint_set.compute_shape_derivatives = true;
     constraint_set.build(mesh, V, dhat);
 
     Eigen::MatrixXd JF_wrt_X =
@@ -281,6 +281,7 @@ TEST_CASE("Benchmark IPC shape derivative", "[ipc][shape_opt][!benchmark]")
     const Eigen::MatrixXd U = V - X;
 
     Constraints constraint_set;
+    constraint_set.compute_shape_derivatives = true;
     constraint_set.build(mesh, V, dhat);
 
     Eigen::SparseMatrix<double> JF_wrt_X;
@@ -291,4 +292,3 @@ TEST_CASE("Benchmark IPC shape derivative", "[ipc][shape_opt][!benchmark]")
             compute_barrier_shape_derivative(mesh, V, constraint_set, dhat);
     };
 }
-#endif

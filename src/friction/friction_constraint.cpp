@@ -420,9 +420,7 @@ VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
     : VertexVertexCandidate(constraint.vertex0_index, constraint.vertex1_index)
 {
     this->weight = constraint.weight;
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
     this->weight_gradient = constraint.weight_gradient;
-#endif
 }
 
 double
@@ -504,9 +502,7 @@ EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
     : EdgeVertexCandidate(constraint.edge_index, constraint.vertex_index)
 {
     this->weight = constraint.weight;
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
     this->weight_gradient = constraint.weight_gradient;
-#endif
 }
 
 double
@@ -602,9 +598,7 @@ EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
     : EdgeEdgeCandidate(constraint.edge0_index, constraint.edge1_index)
 {
     this->weight = constraint.weight;
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
     this->weight_gradient = constraint.weight_gradient;
-#endif
 }
 
 double EdgeEdgeFrictionConstraint::compute_distance(const VectorMax12d& x) const
@@ -702,9 +696,7 @@ FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
     : FaceVertexCandidate(constraint.face_index, constraint.vertex_index)
 {
     this->weight = constraint.weight;
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
     this->weight_gradient = constraint.weight_gradient;
-#endif
 }
 
 double

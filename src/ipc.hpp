@@ -50,7 +50,6 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     const double dhat,
     const bool project_hessian_to_psd = true);
 
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
 /// @brief Compute the barrier shape derivative.
 /// @param[in] mesh The collision mesh.
 /// @param[in] V Vertices of the collision mesh.
@@ -62,7 +61,6 @@ Eigen::SparseMatrix<double> compute_barrier_shape_derivative(
     const Eigen::MatrixXd& V,
     const Constraints& constraint_set,
     const double dhat);
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Collision detection

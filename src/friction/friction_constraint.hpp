@@ -10,12 +10,6 @@
 namespace ipc {
 
 struct FrictionConstraint {
-    /// @brief Barycentric coordinates of the closest point(s)
-    VectorMax2d closest_point;
-
-    /// @brief Tangent basis of the contact (max size 3×2)
-    MatrixMax<double, 3, 2> tangent_basis;
-
     /// @brief Contact force magnitude
     double normal_force_magnitude;
 
@@ -23,10 +17,14 @@ struct FrictionConstraint {
     double mu;
 
     double weight = 1;
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
-    // Gradient of weight with respect to all DOF
+    /// @brief Gradient of weight with respect to all DOF
     Eigen::SparseVector<double> weight_gradient;
-#endif
+
+    /// @brief Barycentric coordinates of the closest point(s)
+    VectorMax2d closest_point;
+
+    /// @brief Tangent basis of the contact (max size 3×2)
+    MatrixMax<double, 3, 2> tangent_basis;
 
     virtual ~FrictionConstraint() { }
 
@@ -495,13 +493,11 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 
 struct FrictionConstraints {
-    template <typename T>
-    using aligned_vector = std::vector<T, Eigen::aligned_allocator<T>>;
-
-    aligned_vector<VertexVertexFrictionConstraint> vv_constraints;
-    aligned_vector<EdgeVertexFrictionConstraint> ev_constraints;
-    aligned_vector<EdgeEdgeFrictionConstraint> ee_constraints;
-    aligned_vector<FaceVertexFrictionConstraint> fv_constraints;
+    std::vector<VertexVertexFrictionConstraint> vv_constraints;
+    std::vector<EdgeVertexFrictionConstraint> ev_constraints;
+    std::vector<EdgeEdgeFrictionConstraint> ee_constraints;
+    std::vector<FaceVertexFrictionConstraint> fv_constraints;
+    bool compute_shape_derivatives = false;
 
     size_t size() const;
 

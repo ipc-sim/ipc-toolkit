@@ -59,7 +59,7 @@ void Constraints::build(
         [&](const tbb::blocked_range<size_t>& r) {
             edge_vertex_candiates_to_constraints(
                 mesh, V, candidates.ev_candidates, is_active, r.begin(),
-                r.end(), storage.local());
+                r.end(), compute_shape_derivatives, storage.local());
         });
 
     tbb::parallel_for(
@@ -67,7 +67,7 @@ void Constraints::build(
         [&](const tbb::blocked_range<size_t>& r) {
             edge_edge_candiates_to_constraints(
                 mesh, V, candidates.ee_candidates, is_active, r.begin(),
-                r.end(), storage.local());
+                r.end(), compute_shape_derivatives, storage.local());
         });
 
     tbb::parallel_for(
@@ -75,7 +75,7 @@ void Constraints::build(
         [&](const tbb::blocked_range<size_t>& r) {
             face_vertex_candiates_to_constraints(
                 mesh, V, candidates.fv_candidates, is_active, r.begin(),
-                r.end(), storage.local());
+                r.end(), compute_shape_derivatives, storage.local());
         });
 
     merge_thread_local_constraints(storage);
@@ -180,18 +180,14 @@ namespace {
         if (found_item != vv_to_index.end()) {
             // Constraint already exists, so increase weight
             vv_constraints[found_item->second].weight += weight;
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
             vv_constraints[found_item->second].weight_gradient +=
                 weight_gradient;
-#endif
         } else {
             // New constraint, so add it to the end of vv_constraints
             vv_to_index.emplace(vv_constraint, vv_constraints.size());
             vv_constraints.push_back(vv_constraint);
             vv_constraints.back().weight = weight;
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
             vv_constraints.back().weight_gradient = weight_gradient;
-#endif
         }
     }
 
@@ -209,18 +205,14 @@ namespace {
         if (found_item != ev_to_index.end()) {
             // Constraint already exists, so increase weight
             ev_constraints[found_item->second].weight += weight;
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
             ev_constraints[found_item->second].weight_gradient +=
                 weight_gradient;
-#endif
         } else {
             // New constraint, so add it to the end of vv_constraints
             ev_to_index.emplace(ev_constraint, ev_constraints.size());
             ev_constraints.push_back(ev_constraint);
             ev_constraints.back().weight = weight;
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
             ev_constraints.back().weight_gradient = weight_gradient;
-#endif
         }
     }
 
@@ -233,10 +225,12 @@ void Constraints::edge_vertex_candiates_to_constraints(
     const std::function<bool(double)>& is_active,
     const size_t start_i,
     const size_t end_i,
+    const bool compute_shape_derivatives,
     Builder& constraint_builder)
 {
     auto& [vv_to_index, ev_to_index, constraint_set] = constraint_builder;
-    auto& [C_vv, C_ev, _, __, ___] = constraint_set;
+    auto& C_vv = constraint_set.vv_constraints;
+    auto& C_ev = constraint_set.ev_constraints;
     const Eigen::MatrixXi& E = mesh.edges();
 
     for (size_t i = start_i; i < end_i; i++) {
@@ -255,8 +249,10 @@ void Constraints::edge_vertex_candiates_to_constraints(
 #ifdef IPC_TOOLKIT_CONVERGENT
         // ÷ 2 to handle double counting for correct integration
         const double weight = mesh.point_area(vi) / 2;
-        const Eigen::SparseVector<double> weight_gradient =
-            mesh.point_area_gradient(vi) / 2;
+        Eigen::SparseVector<double> weight_gradient(V.size());
+        if (compute_shape_derivatives) {
+            weight_gradient = mesh.point_area_gradient(vi) / 2;
+        }
 #else
         const double weight = 1;
         const Eigen::SparseVector<double> weight_gradient(V.size());
@@ -277,9 +273,7 @@ void Constraints::edge_vertex_candiates_to_constraints(
             // ev_candidates is a set, so no duplicate EV constraints
             C_ev.emplace_back(ei, vi);
             C_ev.back().weight = weight;
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
             C_ev.back().weight_gradient = weight_gradient;
-#endif
             ev_to_index.emplace(C_ev.back(), C_ev.size() - 1);
             break;
         }
@@ -293,10 +287,13 @@ void Constraints::edge_edge_candiates_to_constraints(
     const std::function<bool(double)>& is_active,
     const size_t start_i,
     const size_t end_i,
+    const bool compute_shape_derivatives,
     Builder& constraint_builder)
 {
     auto& [vv_to_index, ev_to_index, constraint_set] = constraint_builder;
-    auto& [C_vv, C_ev, C_ee, _, __] = constraint_set;
+    auto& C_vv = constraint_set.vv_constraints;
+    auto& C_ev = constraint_set.ev_constraints;
+    auto& C_ee = constraint_set.ee_constraints;
     const Eigen::MatrixXd& V_rest = mesh.vertices_at_rest();
     const Eigen::MatrixXi& E = mesh.edges();
 
@@ -318,8 +315,12 @@ void Constraints::edge_edge_candiates_to_constraints(
         // ÷ 4 to handle double counting and PT + EE for correct integration.
         // Sum edge areas because duplicate edge candidates were removed.
         const double weight = (mesh.edge_area(eai) + mesh.edge_area(ebi)) / 4;
-        const Eigen::SparseVector<double> weight_gradient =
-            (mesh.edge_area_gradient(eai) + mesh.edge_area_gradient(ebi)) / 4;
+        Eigen::SparseVector<double> weight_gradient(V.size());
+        if (compute_shape_derivatives) {
+            weight_gradient =
+                (mesh.edge_area_gradient(eai) + mesh.edge_area_gradient(ebi))
+                / 4;
+        }
 #else
         const double weight = 1;
         const Eigen::SparseVector<double> weight_gradient(V.size());
@@ -380,9 +381,7 @@ void Constraints::edge_edge_candiates_to_constraints(
         case EdgeEdgeDistanceType::EA_EB:
             C_ee.emplace_back(eai, ebi, eps_x);
             C_ee.back().weight = weight;
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
             C_ee.back().weight_gradient = weight_gradient;
-#endif
             break;
         }
     }
@@ -395,10 +394,13 @@ void Constraints::face_vertex_candiates_to_constraints(
     const std::function<bool(double)>& is_active,
     const size_t start_i,
     const size_t end_i,
+    const bool compute_shape_derivatives,
     Builder& constraint_builder)
 {
     auto& [vv_to_index, ev_to_index, constraint_set] = constraint_builder;
-    auto& [C_vv, C_ev, _, C_fv, __] = constraint_set;
+    auto& C_vv = constraint_set.vv_constraints;
+    auto& C_ev = constraint_set.ev_constraints;
+    auto& C_fv = constraint_set.fv_constraints;
     const Eigen::MatrixXi& F = mesh.faces();
     const Eigen::MatrixXi& F2E = mesh.faces_to_edges();
 
@@ -419,8 +421,10 @@ void Constraints::face_vertex_candiates_to_constraints(
 #ifdef IPC_TOOLKIT_CONVERGENT
         // ÷ 4 to handle double counting and PT + EE) for correct integration
         const double weight = mesh.point_area(vi) / 4;
-        const Eigen::SparseVector<double> weight_gradient =
-            mesh.point_area_gradient(vi) / 4;
+        Eigen::SparseVector<double> weight_gradient(V.size());
+        if (compute_shape_derivatives) {
+            weight_gradient = mesh.point_area_gradient(vi) / 4;
+        }
 #else
         const double weight = 1;
         const Eigen::SparseVector<double> weight_gradient(V.size());
@@ -460,9 +464,7 @@ void Constraints::face_vertex_candiates_to_constraints(
         case PointTriangleDistanceType::P_T:
             C_fv.emplace_back(fi, vi);
             C_fv.back().weight = weight;
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
             C_fv.back().weight_gradient = weight_gradient;
-#endif
             break;
         }
     }
@@ -471,7 +473,6 @@ void Constraints::face_vertex_candiates_to_constraints(
 void Constraints::merge_thread_local_constraints(
     const tbb::enumerable_thread_specific<Builder>& local_storage)
 {
-    auto& [C_vv, C_ev, C_ee, C_fv, _] = *this;
     unordered_map<VertexVertexConstraint, long> vv_to_index;
     unordered_map<EdgeVertexConstraint, long> ev_to_index;
 
@@ -484,51 +485,47 @@ void Constraints::merge_thread_local_constraints(
         n_ee += storage.constraint_set.ee_constraints.size();
         n_fv += storage.constraint_set.fv_constraints.size();
     }
-    C_vv.reserve(n_vv);
-    C_ev.reserve(n_ev);
-    C_ee.reserve(n_ee);
-    C_fv.reserve(n_fv);
+    vv_constraints.reserve(n_vv);
+    ev_constraints.reserve(n_ev);
+    ee_constraints.reserve(n_ee);
+    fv_constraints.reserve(n_fv);
 
     // merge
     for (const auto& storage : local_storage) {
-        auto& [lC_vv, lC_ev, lC_ee, lC_fv, __] = storage.constraint_set;
+        const auto& local_constraints = storage.constraint_set;
 
-        if (C_vv.empty()) {
+        if (vv_constraints.empty()) {
             vv_to_index = storage.vv_to_index;
-            C_vv.insert(C_vv.end(), lC_vv.begin(), lC_vv.end());
+            vv_constraints.insert(
+                vv_constraints.end(), local_constraints.vv_constraints.begin(),
+                local_constraints.vv_constraints.end());
         } else {
-            for (const VertexVertexConstraint& vv : lC_vv) {
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
-                const Eigen::SparseVector<double>& weight_gradient =
-                    vv.weight_gradient;
-#else
-                const Eigen::SparseVector<double> weight_gradient;
-#endif
+            for (const auto& vv : local_constraints.vv_constraints) {
                 add_vertex_vertex_constraint(
-                    C_vv, vv_to_index, vv.vertex0_index, vv.vertex1_index,
-                    vv.weight, weight_gradient);
+                    vv_constraints, vv_to_index, vv.vertex0_index,
+                    vv.vertex1_index, vv.weight, vv.weight_gradient);
             }
         }
 
-        if (C_ev.empty()) {
+        if (ev_constraints.empty()) {
             ev_to_index = storage.ev_to_index;
-            C_ev.insert(C_ev.end(), lC_ev.begin(), lC_ev.end());
+            ev_constraints.insert(
+                ev_constraints.end(), local_constraints.ev_constraints.begin(),
+                local_constraints.ev_constraints.end());
         } else {
-            for (const EdgeVertexConstraint& ev : lC_ev) {
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
-                const Eigen::SparseVector<double>& weight_gradient =
-                    ev.weight_gradient;
-#else
-                const Eigen::SparseVector<double> weight_gradient;
-#endif
+            for (const auto& ev : local_constraints.ev_constraints) {
                 add_edge_vertex_constraint(
-                    C_ev, ev_to_index, ev.edge_index, ev.vertex_index,
-                    ev.weight, weight_gradient);
+                    ev_constraints, ev_to_index, ev.edge_index, ev.vertex_index,
+                    ev.weight, ev.weight_gradient);
             }
         }
 
-        C_ee.insert(C_ee.end(), lC_ee.begin(), lC_ee.end());
-        C_fv.insert(C_fv.end(), lC_fv.begin(), lC_fv.end());
+        ee_constraints.insert(
+            ee_constraints.end(), local_constraints.ee_constraints.begin(),
+            local_constraints.ee_constraints.end());
+        fv_constraints.insert(
+            fv_constraints.end(), local_constraints.fv_constraints.begin(),
+            local_constraints.fv_constraints.end());
     }
 }
 

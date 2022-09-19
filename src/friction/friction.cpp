@@ -71,8 +71,8 @@ void construct_friction_constraint_set(
 
     friction_constraint_set.clear();
 
-    const auto& [C_vv, C_ev, C_ee, C_fv, _] = contact_constraint_set;
-    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = friction_constraint_set;
+    const auto& [C_vv, C_ev, C_ee, C_fv, _, __] = contact_constraint_set;
+    auto& [FC_vv, FC_ev, FC_ee, FC_fv, ___] = friction_constraint_set;
 
     FC_vv.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
@@ -122,6 +122,9 @@ void construct_friction_constraint_set(
             + FC_fv.back().closest_point[1] * (mus(f2i) - mus(f0i));
         FC_fv.back().mu = blend_mu(face_mu, mus(vi));
     }
+
+    friction_constraint_set.compute_shape_derivatives =
+        contact_constraint_set.compute_shape_derivatives;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -314,9 +317,14 @@ Eigen::SparseMatrix<double> compute_friction_force_jacobian(
         jacobian += local_jacobian;
     }
 
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
     // if wrt == X then compute ∇ₓ w(x)
     if (wrt == FrictionConstraint::DiffWRT::X) {
+#ifdef IPC_TOOLKIT_CONVERGENT
+        if (!friction_constraint_set.compute_shape_derivatives) {
+            throw std::runtime_error("Shape derivatives are not computed!");
+        }
+#endif
+
         for (int i = 0; i < friction_constraint_set.size(); i++) {
             const FrictionConstraint& constraint = friction_constraint_set[i];
             assert(constraint.weight_gradient.size() == X.size());
@@ -334,7 +342,6 @@ Eigen::SparseMatrix<double> compute_friction_force_jacobian(
             jacobian += force * constraint.weight_gradient.transpose();
         }
     }
-#endif
 
     return jacobian;
 }

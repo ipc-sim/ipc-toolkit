@@ -59,9 +59,7 @@ public:
 
     double minimum_distance = 0;
     double weight = 1;
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
     Eigen::SparseVector<double> weight_gradient;
-#endif
 };
 
 } // namespace ipc

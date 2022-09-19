@@ -143,13 +143,18 @@ Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
     return hess;
 }
 
-#ifdef IPC_TOOLKIT_COMPUTE_SHAPE_DERIVATIVE
 Eigen::SparseMatrix<double> compute_barrier_shape_derivative(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const Constraints& constraint_set,
     const double dhat)
 {
+#ifdef IPC_TOOLKIT_CONVERGENT
+    if (!constraint_set.compute_shape_derivatives) {
+        throw std::runtime_error("Shape derivatives are not computed!");
+    }
+#endif
+
     Eigen::SparseMatrix<double> shape_derivative =
         compute_barrier_potential_hessian(mesh, V, constraint_set, dhat, false);
 
@@ -206,7 +211,6 @@ Eigen::SparseMatrix<double> compute_barrier_shape_derivative(
 
     return shape_derivative;
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 

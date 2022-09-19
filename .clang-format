@@ -10,4 +10,4 @@ AlignAfterOpenBracket: AlwaysBreak
 BreakBeforeBinaryOperators: NonAssignment
 SortIncludes: false
 CommentPragmas:  '^@.+'
-# BreakStringLiterals: false
+BreakStringLiterals: false
