@@ -189,7 +189,6 @@ void define_friction_constraint(py::module_& m)
 
     py::class_<FrictionConstraints>(m, "FrictionConstraints")
         .def("__len__", &FrictionConstraints::size, "")
-        .def("num_constraints", &FrictionConstraints::num_constraints, "")
         .def("empty", &FrictionConstraints::empty, "")
         .def("clear", &FrictionConstraints::clear, "")
         .def(

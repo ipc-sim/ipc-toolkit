@@ -505,8 +505,6 @@ struct FrictionConstraints {
 
     size_t size() const;
 
-    size_t num_constraints() const;
-
     bool empty() const;
 
     void clear();
