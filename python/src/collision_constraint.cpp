@@ -218,6 +218,46 @@ void define_collision_constraint(py::module_& m)
             "vertex_index", &PlaneVertexConstraint::vertex_index, "");
 
     py::class_<Constraints>(m, "Constraints")
+        .def(
+            "build",
+            py::overload_cast<
+                const CollisionMesh&, const Eigen::MatrixXd&, const double,
+                const double, const BroadPhaseMethod>(&Constraints::build),
+            R"ipc_Qu8mg5v7(
+            Construct a set of constraints used to compute the barrier potential.
+
+            Parameters:
+                mesh: The collision mesh.
+                V: Vertices of the collision mesh.
+                dhat: The activation distance of the barrier.
+                dmin: (optional) Minimum distance.
+                method: (optional) Broad-phase method to use.
+
+            Returns:
+                The constructed set of constraints.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("V"), py::arg("dhat"), py::arg("dmin") = 0,
+            py::arg("method") = BroadPhaseMethod::HASH_GRID)
+        .def(
+            "build",
+            py::overload_cast<
+                const Candidates&, const CollisionMesh&, const Eigen::MatrixXd&,
+                const double, const double>(&Constraints::build),
+            R"ipc_Qu8mg5v7(
+            Construct a set of constraints used to compute the barrier potential.
+
+            Parameters:
+                candidates: Distance candidates from which the constraint set is built.
+                mesh: The collision mesh.
+                V: Vertices of the collision mesh.
+                dhat: The activation distance of the barrier.
+                dmin:  Minimum distance.
+
+            Returns:
+                The constructed set of constraints (any existing constraints will be cleared).
+            )ipc_Qu8mg5v7",
+            py::arg("candidates"), py::arg("mesh"), py::arg("V"),
+            py::arg("dhat"), py::arg("dmin") = 0)
         .def("__len__", &Constraints::size, "")
         .def("empty", &Constraints::empty, "")
         .def("clear", &Constraints::clear, "")

@@ -118,8 +118,8 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D][!hide]")
 }
 
 TEST_CASE(
-    "Test construct_constraint_set() with codimensional points",
-    "[construct_constraint_set][broad_phase]")
+    "Test constraint_set.build() with codimensional points",
+    "[broad_phase][constraints]")
 {
     const double dhat = 1e-3;
     Eigen::MatrixXd V_rest, V;
@@ -138,7 +138,7 @@ TEST_CASE(
     test_broad_phase(mesh, V, method, dhat);
 
     Constraints constraint_set;
-    construct_constraint_set(mesh, V, dhat, constraint_set, /*dmin=*/0, method);
+    constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
     CHECK(constraint_set.size() != 0);
 }
 

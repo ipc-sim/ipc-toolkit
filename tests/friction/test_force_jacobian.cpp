@@ -94,7 +94,7 @@ void check_friction_force_jacobian(
         FrictionConstraints fd_friction_pairs;
         if (recompute_constraints) {
             Constraints contacts;
-            construct_constraint_set(fd_mesh, fd_X + Ut, dhat, contacts);
+            contacts.build(fd_mesh, fd_X + Ut, dhat);
 
             construct_friction_constraint_set(
                 fd_mesh, fd_X + Ut, contacts, dhat, barrier_stiffness, mu,
@@ -126,7 +126,7 @@ void check_friction_force_jacobian(
         FrictionConstraints fd_friction_pairs;
         if (recompute_constraints) {
             Constraints contacts;
-            construct_constraint_set(mesh, X + fd_Ut, dhat, contacts);
+            contacts.build(mesh, X + fd_Ut, dhat);
 
             construct_friction_constraint_set(
                 mesh, X + fd_Ut, contacts, dhat, barrier_stiffness, mu,
@@ -301,7 +301,7 @@ TEST_CASE(
     }
 
     Constraints contacts;
-    construct_constraint_set(mesh, X + Ut, dhat, contacts);
+    contacts.build(mesh, X + Ut, dhat);
 
     CHECK(compute_minimum_distance(mesh, X + Ut, contacts) != 0);
     CHECK(compute_minimum_distance(mesh, X + U, contacts) != 0);

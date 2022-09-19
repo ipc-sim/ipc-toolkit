@@ -4,7 +4,7 @@
 #include <Eigen/Sparse>
 
 // NOTE: Include this so the user can just include ipc.hpp
-#include <ipc/collisions/construct_constraint_set.hpp>
+#include <ipc/collisions/constraints.hpp>
 #include <ipc/friction/friction.hpp>
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/collision_mesh.hpp>

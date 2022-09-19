@@ -36,7 +36,7 @@ TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
     CollisionMesh mesh(V, E, F);
 
     Constraints constraint_set;
-    construct_constraint_set(mesh, V, dhat, constraint_set);
+    constraint_set.build(mesh, V, dhat);
     CAPTURE(mesh_name, dhat);
     CHECK(constraint_set.size() > 0);
 
@@ -104,13 +104,11 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
     Constraints constraint_set;
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(V, E, F);
-        ipc::construct_constraint_set(
-            mesh, V, dhat, constraint_set, /*dmin=*/0, method);
+        constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
     } else {
         mesh = CollisionMesh::build_from_full_mesh(V, E, F);
         V = mesh.vertices(V);
-        ipc::construct_constraint_set(
-            mesh, V, dhat, constraint_set, /*dmin=*/0, method);
+        constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
     }
     CAPTURE(dhat, method, all_vertices_on_surface);
     CHECK(constraint_set.size() > 0);
@@ -173,13 +171,11 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     Constraints constraint_set;
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(V, E, F);
-        ipc::construct_constraint_set(
-            mesh, V, dhat, constraint_set, /*dmin=*/0, method);
+        constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
     } else {
         mesh = CollisionMesh::build_from_full_mesh(V, E, F);
         V = mesh.vertices(V);
-        ipc::construct_constraint_set(
-            mesh, V, dhat, constraint_set, /*dmin=*/0, method);
+        constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
     }
     CAPTURE(dhat, method, all_vertices_on_surface);
     CHECK(constraint_set.size() > 0);
@@ -230,7 +226,7 @@ TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
     const Eigen::MatrixXd U = V - X;
 
     Constraints constraint_set;
-    construct_constraint_set(mesh, V, dhat, constraint_set);
+    constraint_set.build(mesh, V, dhat);
 
     Eigen::MatrixXd JF_wrt_X =
         compute_barrier_shape_derivative(mesh, V, constraint_set, dhat);
@@ -242,7 +238,7 @@ TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
         CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
 
         Constraints fd_constraint_set;
-        construct_constraint_set(fd_mesh, fd_V, dhat, fd_constraint_set);
+        fd_constraint_set.build(fd_mesh, fd_V, dhat);
 
         return compute_barrier_potential_gradient(
             fd_mesh, fd_V, fd_constraint_set, dhat);
@@ -285,7 +281,7 @@ TEST_CASE("Benchmark IPC shape derivative", "[ipc][shape_opt][!benchmark]")
     const Eigen::MatrixXd U = V - X;
 
     Constraints constraint_set;
-    construct_constraint_set(mesh, V, dhat, constraint_set);
+    constraint_set.build(mesh, V, dhat);
 
     Eigen::SparseMatrix<double> JF_wrt_X;
 

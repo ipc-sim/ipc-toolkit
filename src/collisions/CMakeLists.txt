@@ -3,8 +3,6 @@ set(SOURCES
   collision_constraint.hpp
   constraints.cpp
   constraints.hpp
-  construct_constraint_set.cpp
-  construct_constraint_set.hpp
   edge_edge.cpp
   edge_edge.hpp
   edge_vertex.cpp
