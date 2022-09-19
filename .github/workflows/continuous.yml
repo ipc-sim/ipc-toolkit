@@ -77,9 +77,9 @@ jobs:
 
   Windows:
     runs-on: windows-latest
-    env:
-      CC: cl.exe
-      CXX: cl.exe
+    # env:
+    #   CC: cl.exe
+    #   CXX: cl.exe
     strategy:
       fail-fast: false
       matrix:
