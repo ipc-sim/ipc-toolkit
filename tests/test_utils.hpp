@@ -102,3 +102,13 @@ void print_compare_nonzero(
     const Eigen::MatrixXd& A,
     const Eigen::MatrixXd& B,
     bool print_only_different = true);
+
+///////////////////////////////////////////////////////////////////////////////
+
+inline Eigen::Vector2d
+edge_normal(const Eigen::Vector2d& e0, const Eigen::Vector2d& e1)
+{
+    Eigen::Vector2d e = e1 - e0;
+    Eigen::Vector2d normal(-e.y(), e.x());
+    return normal.normalized();
+}

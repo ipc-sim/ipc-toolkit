@@ -1,5 +1,7 @@
 #include <catch2/catch.hpp>
 
+#include <test_utils.hpp>
+
 #include <iostream>
 
 #include <finitediff.hpp>
@@ -28,6 +30,36 @@ TEST_CASE("Point-line distance", "[distance][point-line]")
     double distance = point_line_distance(p, e0, e1);
     double expected_distance = std::abs(y_point - y_line);
     CHECK(distance == Approx(expected_distance * expected_distance));
+}
+
+TEST_CASE("Point-line distance 2", "[distance][point-line]")
+{
+    const double alpha = GENERATE(range(-1.0, 2.0, 0.1));
+    const double expected_distance = GENERATE(range(-10.0, 10.0, 1.0));
+    const int dim = GENERATE(2, 3);
+    const int n_random_edges = 20;
+
+    for (int i = 0; i < n_random_edges; i++) {
+        VectorMax3d e0, e1, n;
+        if (dim == 2) {
+            e0 = Eigen::Vector2d::Random();
+            e1 = Eigen::Vector2d::Random();
+            n = edge_normal(e0, e1);
+        } else {
+            e0 = Eigen::Vector3d::Random();
+            e1 = Eigen::Vector3d::Random();
+            n = cross(e1 - e0, Eigen::Vector3d::UnitX()).normalized();
+        }
+
+        const VectorMax3d p = ((e1 - e0) * alpha + e0) + expected_distance * n;
+
+        CAPTURE(alpha, expected_distance, dim);
+
+        const double distance = point_line_distance(p, e0, e1);
+        CHECK(
+            distance
+            == Approx(expected_distance * expected_distance).margin(1e-15));
+    }
 }
 
 TEST_CASE("Point-line distance gradient", "[distance][point-line][gradient]")

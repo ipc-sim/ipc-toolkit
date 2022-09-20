@@ -37,6 +37,128 @@ TEST_CASE("Edge-edge distance", "[distance][edge-edge]")
     CHECK(distance == Approx(expected_distance).margin(1e-12));
 }
 
+TEST_CASE("Edge-edge distance !EA_EB", "[distance][edge-edge]")
+{
+    double alpha = GENERATE(range(-1.0, 2.0, 0.1));
+    double s = GENERATE(range(-10.0, 10.0, 1.0));
+    if (s == 0)
+        return;
+    const bool swap_ea = GENERATE(false, true);
+    const bool swap_eb = GENERATE(false, true);
+    const bool swap_edges = GENERATE(false, true);
+    const int n_random_edges = 20;
+
+    const auto sign = [](double x) { return x < 0 ? -1 : 1; };
+
+    for (int i = 0; i < n_random_edges; i++) {
+        Eigen::Vector3d ea0 = Eigen::Vector3d::Random();
+        Eigen::Vector3d ea1 = Eigen::Vector3d::Random();
+        Eigen::Vector3d n =
+            cross(ea1 - ea0, Eigen::Vector3d::UnitX()).normalized();
+
+        Eigen::Vector3d eb0 = ((ea1 - ea0) * alpha + ea0) + s * n;
+        if (alpha < 0) {
+            alpha = 0;
+            n = eb0 - ea0;
+            s = n.norm();
+            n /= s;
+        } else if (alpha > 1) {
+            alpha = 1;
+            n = eb0 - ea1;
+            s = n.norm();
+            n /= s;
+        }
+        REQUIRE(s != 0);
+
+        Eigen::Vector3d eb1 =
+            ((ea1 - ea0) * alpha + ea0) + (s + sign(s) * 1) * n;
+
+        if (swap_ea) {
+            std::swap(ea0, ea1);
+        }
+        if (swap_eb) {
+            std::swap(eb0, eb1);
+        }
+        if (swap_edges) {
+            std::swap(ea0, eb0);
+            std::swap(ea1, eb1);
+        }
+
+        const double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
+
+        CAPTURE(alpha, s, swap_ea, swap_eb, swap_edges);
+
+        CHECK(distance == Approx(s * s).margin(1e-15));
+    }
+}
+
+TEST_CASE("Edge-edge distance EA_EB", "[distance][edge-edge]")
+{
+    double alpha = GENERATE(take(5, random(0.01, 0.99)));
+    double beta = GENERATE(take(5, random(0.01, 0.99)));
+    double s = GENERATE(range(-5.0, 5.0, 1.0));
+    const bool swap_ea = GENERATE(false, true);
+    const bool swap_eb = GENERATE(false, true);
+    const bool swap_edges = GENERATE(false, true);
+    const int n_random_edges = 20;
+
+    for (int i = 0; i < n_random_edges; i++) {
+        Eigen::Vector3d ea1 = Eigen::Vector3d::Random();
+        Eigen::Vector3d eb1 = Eigen::Vector3d::Random();
+
+        Eigen::Vector3d ea0 = alpha / (alpha - 1) * ea1;
+        Eigen::Vector3d eb0 = beta / (beta - 1) * eb1;
+
+        Eigen::Vector3d n = ea1.cross(eb1);
+        REQUIRE(n.norm() != 0);
+        n.normalize();
+
+        ea0 += -s / 2 * n;
+        ea1 += -s / 2 * n;
+        eb0 += s / 2 * n;
+        eb1 += s / 2 * n;
+
+        if (swap_ea) {
+            std::swap(ea0, ea1);
+        }
+        if (swap_eb) {
+            std::swap(eb0, eb1);
+        }
+        if (swap_edges) {
+            std::swap(ea0, eb0);
+            std::swap(ea1, eb1);
+        }
+
+        const double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
+        CHECK(distance == Approx(s * s).margin(1e-15));
+    }
+}
+
+TEST_CASE("Edge-edge distance parallel", "[distance][edge-edge][parallel]")
+{
+    double alpha = GENERATE(take(10, random(0.01, 0.99)));
+    double s = GENERATE(take(10, random(-5.0, 5.0)));
+    const int n_random_edges = 20;
+
+    for (int i = 0; i < n_random_edges; i++) {
+        const Eigen::Vector3d ea0 = Eigen::Vector3d::Random();
+        const Eigen::Vector3d ea1 = Eigen::Vector3d::Random();
+        const double edge_len = (ea1 - ea0).norm();
+
+        Eigen::Vector3d n = (ea1 - ea0).cross(Eigen::Vector3d::UnitX());
+        REQUIRE(n.norm() != 0);
+        n.normalize();
+
+        const Eigen::Vector3d eb0 = (ea1 - ea0) * alpha + ea0 + s * n;
+        const Eigen::Vector3d eb1 = (ea1 - ea0) + eb0;
+        REQUIRE((ea1 - ea0).dot(eb1 - eb0) == Approx(edge_len * edge_len));
+        REQUIRE((ea1 - ea0).cross(eb1 - eb0).norm() == Approx(0).margin(1e-14));
+
+        const double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
+        CHECK(distance == Approx(s * s).margin(1e-15));
+    }
+}
+
 TEST_CASE("Edge-edge distance degenerate case", "[distance][edge-edge]")
 {
     double e0y = GENERATE(-10, -1, -1e-4, 0, 1e-4, 1, 10);
@@ -77,7 +199,7 @@ TEST_CASE(
     Eigen::Vector3d e10(-1, 0, 0);
     Eigen::Vector3d e11(-gap, 0, 0);
 
-    SECTION("original order") {}
+    SECTION("original order") { }
     SECTION("swap e0") { std::swap(e00, e01); }
     SECTION("swap e1") { std::swap(e10, e11); }
     SECTION("swap e0 and e1")

@@ -1,5 +1,7 @@
 #include <catch2/catch.hpp>
 
+#include <test_utils.hpp>
+
 #include <finitediff.hpp>
 #include <igl/PI.h>
 
@@ -21,6 +23,39 @@ TEST_CASE("Point-edge distance", "[distance][point-edge]")
 
     double distance = point_edge_distance(p, e0, e1);
     CHECK(distance == Approx(expected_distance * expected_distance));
+}
+
+TEST_CASE("Point-edge distance all types", "[distance][point-edge]")
+{
+    const double alpha = GENERATE(range(-1.0, 2.0, 0.1));
+    const double d = GENERATE(range(-10.0, 10.0, 1.0));
+    const int dim = GENERATE(2, 3);
+    const int n_random_edges = 20;
+
+    for (int i = 0; i < n_random_edges; i++) {
+        VectorMax3d e0, e1, n;
+        if (dim == 2) {
+            e0 = Eigen::Vector2d::Random();
+            e1 = Eigen::Vector2d::Random();
+            n = edge_normal(e0, e1);
+        } else {
+            e0 = Eigen::Vector3d::Random();
+            e1 = Eigen::Vector3d::Random();
+            n = cross(e1 - e0, Eigen::Vector3d::UnitX()).normalized();
+        }
+
+        const VectorMax3d p = ((e1 - e0) * alpha + e0) + d * n;
+
+        const double expected_distance =
+            alpha < 0 ? (e0 - p).norm() : (alpha > 1 ? (e1 - p).norm() : d);
+
+        CAPTURE(alpha, expected_distance, dim);
+
+        const double distance = point_edge_distance(p, e0, e1);
+        CHECK(
+            distance
+            == Approx(expected_distance * expected_distance).margin(1e-15));
+    }
 }
 
 TEST_CASE("Point-edge distance gradient", "[distance][point-edge][gradient]")

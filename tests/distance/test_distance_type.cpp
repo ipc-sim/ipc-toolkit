@@ -1,21 +1,53 @@
 #include <catch2/catch.hpp>
 
+#include <test_utils.hpp>
+
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
 using namespace ipc;
 
-inline Eigen::Vector2d
-edge_normal(const Eigen::Vector2d& e0, const Eigen::Vector2d& e1)
-{
-    Eigen::Vector2d e = e1 - e0;
-    Eigen::Vector2d normal(-e.y(), e.x());
-    return normal.normalized();
-}
-
 TEST_CASE("Point-edge distance type", "[distance][distance-type][point-edge]")
 {
-    // TODO: Implement tests
+    const double alpha = GENERATE(range(-1.0, 2.0, 0.1));
+    const double distance = GENERATE(range(-10.0, 10.0, 1.0));
+    const int dim = GENERATE(2, 3);
+    const int n_random_edges = 20;
+
+    for (int i = 0; i < n_random_edges; i++) {
+        VectorMax3d e0, e1, n;
+        if (dim == 2) {
+            e0 = Eigen::Vector2d::Random();
+            e1 = Eigen::Vector2d::Random();
+            n = edge_normal(e0, e1);
+        } else {
+            e0 = Eigen::Vector3d::Random();
+            e1 = Eigen::Vector3d::Random();
+            n = cross(e1 - e0, Eigen::Vector3d::UnitX()).normalized();
+        }
+
+        const VectorMax3d p = ((e1 - e0) * alpha + e0) + distance * n;
+
+        const PointEdgeDistanceType dtype = point_edge_distance_type(p, e0, e1);
+
+        CAPTURE(alpha, distance, dim, dtype);
+
+        if (std::abs(alpha) < 1e-8) {
+            CHECK(
+                (dtype == PointEdgeDistanceType::P_E0
+                 || dtype == PointEdgeDistanceType::P_E));
+        } else if (std::abs(alpha - 1) < 1e-8) {
+            CHECK(
+                (dtype == PointEdgeDistanceType::P_E1
+                 || dtype == PointEdgeDistanceType::P_E));
+        } else if (alpha < 0) {
+            CHECK(dtype == PointEdgeDistanceType::P_E0);
+        } else if (alpha > 1) {
+            CHECK(dtype == PointEdgeDistanceType::P_E1);
+        } else {
+            CHECK(dtype == PointEdgeDistanceType::P_E);
+        }
+    }
 }
 
 struct RandomBarycentricCoordGenerator
@@ -185,5 +217,193 @@ TEST_CASE(
 
 TEST_CASE("Edge-edge distance type", "[distance][distance-type][edge-edge]")
 {
-    // TODO: Implement tests
+    double alpha = GENERATE(range(-1.0, 2.0, 0.1));
+    double s = GENERATE(range(-10.0, 10.0, 1.0));
+    if (s == 0)
+        return;
+    const bool swap_ea = GENERATE(false, true);
+    const bool swap_eb = GENERATE(false, true);
+    const bool swap_edges = GENERATE(false, true);
+    const int n_random_edges = 20;
+
+    const auto sign = [](double x) { return x < 0 ? -1 : 1; };
+
+    for (int i = 0; i < n_random_edges; i++) {
+        Eigen::Vector3d ea0 = Eigen::Vector3d::Random();
+        Eigen::Vector3d ea1 = Eigen::Vector3d::Random();
+        Eigen::Vector3d n =
+            (ea1 - ea0).cross(Eigen::Vector3d::UnitX()).normalized();
+
+        Eigen::Vector3d eb0 = ((ea1 - ea0) * alpha + ea0) + s * n;
+        if (alpha < 0) {
+            alpha = 0;
+            n = eb0 - ea0;
+            s = n.norm();
+            n /= s;
+        } else if (alpha > 1) {
+            alpha = 1;
+            n = eb0 - ea1;
+            s = n.norm();
+            n /= s;
+        }
+        REQUIRE(s != 0);
+
+        Eigen::Vector3d eb1 =
+            ((ea1 - ea0) * alpha + ea0) + (s + sign(s) * 1) * n;
+
+        if (swap_ea) {
+            std::swap(ea0, ea1);
+        }
+        if (swap_eb) {
+            std::swap(eb0, eb1);
+        }
+        if (swap_edges) {
+            std::swap(ea0, eb0);
+            std::swap(ea1, eb1);
+        }
+
+        // EA0_EB0=0 ✅
+        // EA0_EB1=1 ✅
+        // EA1_EB0=2 ✅
+        // EA1_EB1=3 ✅
+        // EA_EB0 =4 ✅
+        // EA_EB1 =5 ✅
+        // EA0_EB =6 ✅
+        // EA1_EB =7 ✅
+        // EA_EB  =8 ❌
+        EdgeEdgeDistanceType ea0_eb0, ea1_eb0, ea_eb0;
+        if (!swap_edges) {
+            if (swap_ea && swap_eb) {
+                ea0_eb0 = EdgeEdgeDistanceType::EA1_EB1;
+                ea1_eb0 = EdgeEdgeDistanceType::EA0_EB1;
+                ea_eb0 = EdgeEdgeDistanceType::EA_EB1;
+            } else if (swap_ea) {
+                ea0_eb0 = EdgeEdgeDistanceType::EA1_EB0;
+                ea1_eb0 = EdgeEdgeDistanceType::EA0_EB0;
+                ea_eb0 = EdgeEdgeDistanceType::EA_EB0;
+            } else if (swap_eb) {
+                ea0_eb0 = EdgeEdgeDistanceType::EA0_EB1;
+                ea1_eb0 = EdgeEdgeDistanceType::EA1_EB1;
+                ea_eb0 = EdgeEdgeDistanceType::EA_EB1;
+            } else {
+                ea0_eb0 = EdgeEdgeDistanceType::EA0_EB0;
+                ea1_eb0 = EdgeEdgeDistanceType::EA1_EB0;
+                ea_eb0 = EdgeEdgeDistanceType::EA_EB0;
+            }
+        } else {
+            if (swap_ea && swap_eb) {
+                ea0_eb0 = EdgeEdgeDistanceType::EA1_EB1;
+                ea1_eb0 = EdgeEdgeDistanceType::EA1_EB0;
+                ea_eb0 = EdgeEdgeDistanceType::EA1_EB;
+            } else if (swap_ea) {
+                ea0_eb0 = EdgeEdgeDistanceType::EA0_EB1;
+                ea1_eb0 = EdgeEdgeDistanceType::EA0_EB0;
+                ea_eb0 = EdgeEdgeDistanceType::EA0_EB;
+            } else if (swap_eb) {
+                ea0_eb0 = EdgeEdgeDistanceType::EA1_EB0;
+                ea1_eb0 = EdgeEdgeDistanceType::EA1_EB1;
+                ea_eb0 = EdgeEdgeDistanceType::EA1_EB;
+            } else {
+                ea0_eb0 = EdgeEdgeDistanceType::EA0_EB0;
+                ea1_eb0 = EdgeEdgeDistanceType::EA0_EB1;
+                ea_eb0 = EdgeEdgeDistanceType::EA0_EB;
+            }
+        }
+
+        const EdgeEdgeDistanceType dtype =
+            edge_edge_distance_type(ea0, ea1, eb0, eb1);
+
+        CAPTURE(alpha, s, dtype, swap_ea, swap_eb, swap_edges);
+
+        if (alpha == Approx(0).margin(1e-15)) {
+            CHECK((dtype == ea0_eb0 || dtype == ea_eb0));
+        } else if (alpha == Approx(1).margin(1e-15)) {
+            CHECK((dtype == ea1_eb0 || dtype == ea_eb0));
+        } else if (alpha < 0) {
+            CHECK(dtype == ea0_eb0);
+        } else if (alpha > 1) {
+            CHECK(dtype == ea1_eb0);
+        } else {
+            CHECK(dtype == ea_eb0);
+        }
+    }
+}
+
+TEST_CASE(
+    "Edge-edge EA_EB distance type", "[distance][distance-type][edge-edge]")
+{
+    double alpha = GENERATE(take(5, random(0.01, 0.99)));
+    double beta = GENERATE(take(5, random(0.01, 0.99)));
+    double s = GENERATE(range(-5.0, 5.0, 1.0));
+    const bool swap_ea = GENERATE(false, true);
+    const bool swap_eb = GENERATE(false, true);
+    const bool swap_edges = GENERATE(false, true);
+    const int n_random_edges = 20;
+
+    for (int i = 0; i < n_random_edges; i++) {
+        Eigen::Vector3d ea1 = Eigen::Vector3d::Random();
+        Eigen::Vector3d eb1 = Eigen::Vector3d::Random();
+
+        Eigen::Vector3d ea0 = alpha / (alpha - 1) * ea1;
+        Eigen::Vector3d eb0 = beta / (beta - 1) * eb1;
+
+        Eigen::Vector3d n = ea1.cross(eb1);
+        REQUIRE(n.norm() != 0);
+        n.normalize();
+
+        ea0 += -s / 2 * n;
+        ea1 += -s / 2 * n;
+        eb0 += s / 2 * n;
+        eb1 += s / 2 * n;
+
+        if (swap_ea) {
+            std::swap(ea0, ea1);
+        }
+        if (swap_eb) {
+            std::swap(eb0, eb1);
+        }
+        if (swap_edges) {
+            std::swap(ea0, eb0);
+            std::swap(ea1, eb1);
+        }
+
+        const EdgeEdgeDistanceType dtype =
+            edge_edge_distance_type(ea0, ea1, eb0, eb1);
+
+        CAPTURE(alpha, beta, s, dtype, swap_ea, swap_eb, swap_edges);
+
+        // EA_EB  =8 ✅
+        CHECK(dtype == EdgeEdgeDistanceType::EA_EB);
+    }
+}
+
+TEST_CASE(
+    "Edge-edge parallel distance type",
+    "[distance][distance-type][edge-edge][parallel]")
+{
+    double alpha = GENERATE(take(10, random(0.01, 0.99)));
+    double s = GENERATE(take(10, random(-5.0, 5.0)));
+    const int n_random_edges = 20;
+
+    for (int i = 0; i < n_random_edges; i++) {
+        const Eigen::Vector3d ea0 = Eigen::Vector3d::Random();
+        const Eigen::Vector3d ea1 = Eigen::Vector3d::Random();
+        const double edge_len = (ea1 - ea0).norm();
+
+        Eigen::Vector3d n = (ea1 - ea0).cross(Eigen::Vector3d::UnitX());
+        REQUIRE(n.norm() != 0);
+        n.normalize();
+
+        const Eigen::Vector3d eb0 = (ea1 - ea0) * alpha + ea0 + s * n;
+        const Eigen::Vector3d eb1 = (ea1 - ea0) + eb0;
+        REQUIRE((ea1 - ea0).dot(eb1 - eb0) == Approx(edge_len * edge_len));
+        REQUIRE((ea1 - ea0).cross(eb1 - eb0).norm() == Approx(0).margin(1e-14));
+
+        const EdgeEdgeDistanceType dtype =
+            edge_edge_distance_type(ea0, ea1, eb0, eb1);
+
+        CHECK(
+            (dtype == EdgeEdgeDistanceType::EA_EB0
+             || dtype == EdgeEdgeDistanceType::EA1_EB));
+    }
 }
