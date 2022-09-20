@@ -12,8 +12,8 @@ TEST_CASE(
     Eigen::Matrix<double, 3, 2> basis =
         point_triangle_tangent_basis(p, t0, t1, t2);
     CAPTURE(basis);
-    CHECK(abs(basis.col(0).dot(Eigen::Vector3d::UnitX())) == Approx(1));
-    CHECK(abs(basis.col(1).dot(Eigen::Vector3d::UnitZ())) == Approx(1));
+    CHECK(std::abs(basis.col(0).dot(Eigen::Vector3d::UnitX())) == Approx(1));
+    CHECK(std::abs(basis.col(1).dot(Eigen::Vector3d::UnitZ())) == Approx(1));
 }
 
 TEST_CASE("Edge-edge tangent basis", "[friction][edge-edge][tangent_basis]")
@@ -23,8 +23,8 @@ TEST_CASE("Edge-edge tangent basis", "[friction][edge-edge][tangent_basis]")
     Eigen::Matrix<double, 3, 2> basis =
         edge_edge_tangent_basis(ea0, ea1, eb0, eb1);
     CAPTURE(basis);
-    CHECK(abs(basis.col(0).dot(Eigen::Vector3d::UnitX())) == Approx(1));
-    CHECK(abs(basis.col(1).dot(Eigen::Vector3d::UnitZ())) == Approx(1));
+    CHECK(std::abs(basis.col(0).dot(Eigen::Vector3d::UnitX())) == Approx(1));
+    CHECK(std::abs(basis.col(1).dot(Eigen::Vector3d::UnitZ())) == Approx(1));
 }
 
 TEST_CASE("Point-edge tangent basis", "[friction][point-edge][tangent_basis]")
@@ -33,8 +33,8 @@ TEST_CASE("Point-edge tangent basis", "[friction][point-edge][tangent_basis]")
 
     Eigen::Matrix<double, 3, 2> basis = point_edge_tangent_basis(p, e0, e1);
     CAPTURE(basis);
-    CHECK(abs(basis.col(0).dot(Eigen::Vector3d::UnitX())) == Approx(1));
-    CHECK(abs(basis.col(1).dot(Eigen::Vector3d::UnitZ())) == Approx(1));
+    CHECK(std::abs(basis.col(0).dot(Eigen::Vector3d::UnitX())) == Approx(1));
+    CHECK(std::abs(basis.col(1).dot(Eigen::Vector3d::UnitZ())) == Approx(1));
 }
 
 TEST_CASE("Point-point tangent basis", "[friction][point-point][tangent_basis]")
@@ -43,8 +43,8 @@ TEST_CASE("Point-point tangent basis", "[friction][point-point][tangent_basis]")
 
     Eigen::Matrix<double, 3, 2> basis = point_point_tangent_basis(p0, p1);
     CAPTURE(basis);
-    CHECK(abs(basis.col(0).dot(Eigen::Vector3d::UnitX())) == Approx(1));
-    CHECK(abs(basis.col(1).dot(Eigen::Vector3d::UnitY())) == Approx(1));
+    CHECK(std::abs(basis.col(0).dot(Eigen::Vector3d::UnitX())) == Approx(1));
+    CHECK(std::abs(basis.col(1).dot(Eigen::Vector3d::UnitY())) == Approx(1));
 }
 
 TEST_CASE(
@@ -55,7 +55,7 @@ TEST_CASE(
 
     Eigen::Matrix<double, 2, 1> basis = point_edge_tangent_basis(p, e0, e1);
     CAPTURE(basis);
-    CHECK(abs(basis.dot(Eigen::Vector2d::UnitX())) == Approx(1));
+    CHECK(std::abs(basis.dot(Eigen::Vector2d::UnitX())) == Approx(1));
 }
 
 TEST_CASE(
@@ -66,5 +66,5 @@ TEST_CASE(
 
     Eigen::Matrix<double, 2, 1> basis = point_point_tangent_basis(p0, p1);
     CAPTURE(basis);
-    CHECK(abs(basis.dot(Eigen::Vector2d::UnitX())) == Approx(1));
+    CHECK(std::abs(basis.dot(Eigen::Vector2d::UnitX())) == Approx(1));
 }

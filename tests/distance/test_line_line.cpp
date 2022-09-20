@@ -17,7 +17,7 @@ TEST_CASE("Line-line distance", "[distance][line-line]")
     Eigen::Vector3d eb0(0, yb, -1), eb1(0, yb, 1);
 
     double distance = line_line_distance(ea0, ea1, eb0, eb1);
-    double expected_distance = abs(ya - yb);
+    double expected_distance = std::abs(ya - yb);
     CHECK(distance == Approx(expected_distance * expected_distance));
 }
 

@@ -26,7 +26,7 @@ TEST_CASE("Point-line distance", "[distance][point-line]")
     e1.y() = y_line;
 
     double distance = point_line_distance(p, e0, e1);
-    double expected_distance = abs(y_point - y_line);
+    double expected_distance = std::abs(y_point - y_line);
     CHECK(distance == Approx(expected_distance * expected_distance));
 }
 

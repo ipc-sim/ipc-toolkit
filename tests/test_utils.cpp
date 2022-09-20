@@ -132,12 +132,13 @@ void print_compare_nonzero(
     assert(A.cols() == B.cols());
     for (int i = 0; i < A.rows(); i++) {
         for (int j = 0; j < A.rows(); j++) {
-            const double abs_diff = abs(A(i, j) - B(i, j));
+            const double abs_diff = std::abs(A(i, j) - B(i, j));
             const double rel_diff =
-                abs_diff / std::max(abs(A(i, j)), abs(B(i, j)));
+                abs_diff / std::max(std::abs(A(i, j)), std::abs(B(i, j)));
 
             const double tol =
-                std::max({ abs(A(i, j)), abs(B(i, j)), double(1.0) }) * 1e-5;
+                std::max({ std::abs(A(i, j)), std::abs(B(i, j)), double(1.0) })
+                * 1e-5;
 
             if ((A(i, j) != 0 || B(i, j) != 0)
                 && (!print_only_different || abs_diff > tol)) {

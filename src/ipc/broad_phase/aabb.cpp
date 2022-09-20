@@ -22,12 +22,12 @@ bool AABB::intersects(const AABB& other) const
 
     // NOTE: This is a faster check (https://gamedev.stackexchange.com/a/587),
     // but it is inexact and can result in false negatives.
-    // return (abs(a.center.x() - b.center.x())
+    // return (std::abs(a.center.x() - b.center.x())
     //         <= (a.half_extent.x() + b.half_extent.x()))
-    //     && (abs(a.center.y() - b.center.y())
+    //     && (std::abs(a.center.y() - b.center.y())
     //         <= (a.half_extent.y() + b.half_extent.y()))
     //     && (a.min.size() == 2
-    //         || abs(a.center.z() - b.center.z())
+    //         || std::abs(a.center.z() - b.center.z())
     //             <= (a.half_extent.z() + b.half_extent.z()));
 
     // This on the otherhand, is exact because there is no rounding.
