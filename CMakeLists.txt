@@ -37,7 +37,6 @@ option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"      
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
-option(IPC_TOOLKIT_CONVERGENT                 "Use the convergent formulation"                 ON)
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)

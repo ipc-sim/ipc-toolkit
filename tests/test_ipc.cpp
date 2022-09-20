@@ -17,6 +17,8 @@ TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
     double dhat = -1;
     std::string mesh_name;
 
+    bool use_convergent_formulation = GENERATE(true, false);
+
     SECTION("cube")
     {
         dhat = sqrt(2.0);
@@ -36,6 +38,7 @@ TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
     CollisionMesh mesh(V, E, F);
 
     Constraints constraint_set;
+    constraint_set.use_convergent_formulation = use_convergent_formulation;
     constraint_set.build(mesh, V, dhat);
     CAPTURE(mesh_name, dhat);
     CHECK(constraint_set.size() > 0);
@@ -69,6 +72,7 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
     bool all_vertices_on_surface = true;
 
     BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    bool use_convergent_formulation = GENERATE(true, false);
 
     SECTION("cube")
     {
@@ -102,6 +106,7 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
     CollisionMesh mesh;
 
     Constraints constraint_set;
+    constraint_set.use_convergent_formulation = use_convergent_formulation;
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(V, E, F);
         constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
@@ -135,6 +140,7 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     bool all_vertices_on_surface = true;
 
     BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    bool use_convergent_formulation = GENERATE(true, false);
 
     SECTION("cube")
     {
@@ -169,6 +175,7 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     CollisionMesh mesh;
 
     Constraints constraint_set;
+    constraint_set.use_convergent_formulation = use_convergent_formulation;
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(V, E, F);
         constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
@@ -225,6 +232,7 @@ TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
     const Eigen::MatrixXd U = V - X;
 
     Constraints constraint_set;
+    constraint_set.use_convergent_formulation = GENERATE(true, false);
     constraint_set.compute_shape_derivatives = true;
     constraint_set.build(mesh, V, dhat);
 
@@ -238,6 +246,8 @@ TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
         CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
 
         Constraints fd_constraint_set;
+        fd_constraint_set.use_convergent_formulation =
+            constraint_set.use_convergent_formulation;
         fd_constraint_set.build(fd_mesh, fd_V, dhat);
 
         return compute_barrier_potential_gradient(
@@ -281,6 +291,7 @@ TEST_CASE("Benchmark IPC shape derivative", "[ipc][shape_opt][!benchmark]")
     const Eigen::MatrixXd U = V - X;
 
     Constraints constraint_set;
+    constraint_set.use_convergent_formulation = GENERATE(true, false);
     constraint_set.compute_shape_derivatives = true;
     constraint_set.build(mesh, V, dhat);
 

@@ -149,12 +149,6 @@ Eigen::SparseMatrix<double> compute_barrier_shape_derivative(
     const Constraints& constraint_set,
     const double dhat)
 {
-#ifdef IPC_TOOLKIT_CONVERGENT
-    if (!constraint_set.compute_shape_derivatives) {
-        throw std::runtime_error("Shape derivatives are not computed!");
-    }
-#endif
-
     Eigen::SparseMatrix<double> shape_derivative =
         compute_barrier_potential_hessian(mesh, V, constraint_set, dhat, false);
 
@@ -177,7 +171,10 @@ Eigen::SparseMatrix<double> compute_barrier_shape_derivative(
                 const CollisionConstraint& constraint = constraint_set[ci];
                 const Eigen::SparseVector<double>& weight_gradient =
                     constraint.weight_gradient;
-                assert(weight_gradient.size() == V.size());
+                if (weight_gradient.size() != V.size()) {
+                    throw std::runtime_error(
+                        "Shape derivative is not computed for contact constraint!");
+                }
 
                 VectorMax12d local_barrier_grad =
                     constraint.compute_potential_gradient(V, E, F, dhat);

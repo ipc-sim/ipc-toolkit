@@ -95,7 +95,6 @@ TEST_CASE("Test barrier derivatives", "[barrier]")
     CHECK(fd::compare_gradient(fgrad, grad));
 }
 
-#ifdef IPC_TOOLKIT_CONVERGENT
 TEST_CASE("Test physical barrier", "[barrier]")
 {
     double dhat = GENERATE(range(-5, 2));
@@ -104,19 +103,18 @@ TEST_CASE("Test physical barrier", "[barrier]")
     double d =
         GENERATE_COPY(take(10, random(dhat / 2, 0.9 * dhat))); // ∈ [0, d̂]
 
-    double b_original = ipc::barrier(d, dhat);
+    double b_original = ipc::barrier(d, dhat) / dhat;
     double b_new = physical_barrier(d, dhat);
 
     CHECK(b_original == Approx(b_new));
 
-    double b_original_gradient = ipc::barrier_gradient(d, dhat);
+    double b_original_gradient = ipc::barrier_gradient(d, dhat) / dhat;
     double b_new_gradient = physical_barrier_gradient(d, dhat);
 
     CHECK(b_original_gradient == Approx(b_new_gradient));
 
-    double b_original_hessian = ipc::barrier_hessian(d, dhat);
+    double b_original_hessian = ipc::barrier_hessian(d, dhat) / dhat;
     double b_new_hessian = physical_barrier_hessian(d, dhat);
 
     CHECK(b_original_hessian == Approx(b_new_hessian));
 }
-#endif

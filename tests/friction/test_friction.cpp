@@ -267,11 +267,9 @@ TEST_CASE(
         }
         CHECK(constraint.tangent_basis.isApprox(
             expected_constraint.tangent_basis, 1e-12));
-#ifndef IPC_TOOLKIT_CONVERGENT
         CHECK(
             constraint.normal_force_magnitude
             == Approx(expected_constraint.normal_force_magnitude));
-#endif
         CHECK(constraint.mu == Approx(expected_constraint.mu));
 
         CHECK(
@@ -279,7 +277,6 @@ TEST_CASE(
             == expected_constraint.vertex_indices(E, F));
     }
 
-#ifndef IPC_TOOLKIT_CONVERGENT
     double potential = compute_friction_potential(
         mesh, V_start, V_end, friction_constraint_set, epsv_times_h);
 
@@ -294,5 +291,4 @@ TEST_CASE(
         mesh, V_start, V_end, friction_constraint_set, epsv_times_h);
 
     CHECK(hess.isApprox(expected_hess));
-#endif
 }

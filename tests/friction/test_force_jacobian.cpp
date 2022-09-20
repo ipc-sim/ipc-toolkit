@@ -44,7 +44,6 @@ void check_friction_force_jacobian(
     construct_friction_constraint_set(
         mesh, X + Ut, constraints, dhat, barrier_stiffness, mu,
         friction_constraints);
-    REQUIRE(friction_constraints.compute_shape_derivatives);
     CHECK(friction_constraints.size());
 
     ///////////////////////////////////////////////////////////////////////////
@@ -96,17 +95,18 @@ void check_friction_force_jacobian(
 
         FrictionConstraints fd_friction_constraints;
         if (recompute_constraints) {
-            Constraints constraints;
-            constraints.compute_shape_derivatives = true;
-            constraints.build(fd_mesh, fd_X + Ut, dhat);
+            Constraints fd_constraints;
+            fd_constraints.use_convergent_formulation =
+                constraints.use_convergent_formulation;
+            fd_constraints.compute_shape_derivatives = true;
+            fd_constraints.build(fd_mesh, fd_X + Ut, dhat);
 
             construct_friction_constraint_set(
-                fd_mesh, fd_X + Ut, constraints, dhat, barrier_stiffness, mu,
+                fd_mesh, fd_X + Ut, fd_constraints, dhat, barrier_stiffness, mu,
                 fd_friction_constraints);
         } else {
             fd_friction_constraints = friction_constraints;
         }
-        REQUIRE(fd_friction_constraints.compute_shape_derivatives);
 
         return compute_friction_force(
             fd_mesh, fd_X, Ut, U, fd_friction_constraints, dhat,
@@ -130,17 +130,18 @@ void check_friction_force_jacobian(
 
         FrictionConstraints fd_friction_constraints;
         if (recompute_constraints) {
-            Constraints constraints;
-            constraints.compute_shape_derivatives = true;
-            constraints.build(mesh, X + fd_Ut, dhat);
+            Constraints fd_constraints;
+            fd_constraints.use_convergent_formulation =
+                constraints.use_convergent_formulation;
+            fd_constraints.compute_shape_derivatives = true;
+            fd_constraints.build(mesh, X + fd_Ut, dhat);
 
             construct_friction_constraint_set(
-                mesh, X + fd_Ut, constraints, dhat, barrier_stiffness, mu,
+                mesh, X + fd_Ut, fd_constraints, dhat, barrier_stiffness, mu,
                 fd_friction_constraints);
         } else {
             fd_friction_constraints = friction_constraints;
         }
-        REQUIRE(fd_friction_constraints.compute_shape_derivatives);
 
         return compute_friction_force(
             mesh, X, fd_Ut, U, friction_constraints, dhat, barrier_stiffness,
@@ -237,6 +238,8 @@ TEST_CASE(
     "Test friction force jacobian on real data",
     "[friction][force-jacobian][real-data]")
 {
+    bool use_convergent_formulation = GENERATE(true, false);
+
     std::string scene;
     bool is_2D = true;
     double mu, dhat, kappa, epsv_dt;
@@ -274,7 +277,7 @@ TEST_CASE(
     //     epsv_dt = 5e-6;
     // }
 
-    CAPTURE(scene, mu, dhat, kappa, epsv_dt);
+    CAPTURE(scene, mu, dhat, kappa, epsv_dt, use_convergent_formulation);
 
     Eigen::MatrixXd X, Ut, U;
     Eigen::MatrixXi E, F;
@@ -310,6 +313,7 @@ TEST_CASE(
     }
 
     Constraints constraints;
+    constraints.use_convergent_formulation = use_convergent_formulation;
     constraints.compute_shape_derivatives = true;
     constraints.build(mesh, X + Ut, dhat);
 

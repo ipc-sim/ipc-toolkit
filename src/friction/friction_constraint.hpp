@@ -497,7 +497,6 @@ struct FrictionConstraints {
     std::vector<EdgeVertexFrictionConstraint> ev_constraints;
     std::vector<EdgeEdgeFrictionConstraint> ee_constraints;
     std::vector<FaceVertexFrictionConstraint> fv_constraints;
-    bool compute_shape_derivatives = false;
 
     size_t size() const;
 

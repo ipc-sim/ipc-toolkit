@@ -23,6 +23,7 @@ struct Constraints {
     std::vector<EdgeEdgeConstraint> ee_constraints;
     std::vector<FaceVertexConstraint> fv_constraints;
     std::vector<PlaneVertexConstraint> pv_constraints;
+    bool use_convergent_formulation = false;
     bool compute_shape_derivatives = false;
 
     /// @brief Construct a set of constraints used to compute the barrier potential.
@@ -63,35 +64,32 @@ struct Constraints {
 protected:
     struct Builder;
 
-    static void edge_vertex_candiates_to_constraints(
+    void edge_vertex_candiates_to_constraints(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& V,
         const std::vector<EdgeVertexCandidate>& candidates,
         const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i,
-        const bool compute_shape_derivatives,
-        Builder& constraint_builder);
+        Builder& constraint_builder) const;
 
-    static void edge_edge_candiates_to_constraints(
+    void edge_edge_candiates_to_constraints(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& V,
         const std::vector<EdgeEdgeCandidate>& candidates,
         const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i,
-        const bool compute_shape_derivatives,
-        Builder& constraint_builder);
+        Builder& constraint_builder) const;
 
-    static void face_vertex_candiates_to_constraints(
+    void face_vertex_candiates_to_constraints(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& V,
         const std::vector<FaceVertexCandidate>& candidates,
         const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i,
-        const bool compute_shape_derivatives,
-        Builder& constraint_builder);
+        Builder& constraint_builder) const;
 
     void merge_thread_local_constraints(
         const tbb::enumerable_thread_specific<Builder>& local_storage);

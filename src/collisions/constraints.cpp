@@ -59,7 +59,7 @@ void Constraints::build(
         [&](const tbb::blocked_range<size_t>& r) {
             edge_vertex_candiates_to_constraints(
                 mesh, V, candidates.ev_candidates, is_active, r.begin(),
-                r.end(), compute_shape_derivatives, storage.local());
+                r.end(), storage.local());
         });
 
     tbb::parallel_for(
@@ -67,7 +67,7 @@ void Constraints::build(
         [&](const tbb::blocked_range<size_t>& r) {
             edge_edge_candiates_to_constraints(
                 mesh, V, candidates.ee_candidates, is_active, r.begin(),
-                r.end(), compute_shape_derivatives, storage.local());
+                r.end(), storage.local());
         });
 
     tbb::parallel_for(
@@ -75,13 +75,25 @@ void Constraints::build(
         [&](const tbb::blocked_range<size_t>& r) {
             face_vertex_candiates_to_constraints(
                 mesh, V, candidates.fv_candidates, is_active, r.begin(),
-                r.end(), compute_shape_derivatives, storage.local());
+                r.end(), storage.local());
         });
 
     merge_thread_local_constraints(storage);
 
+    // This is the dhat that is used in the barrier potential (because we use
+    // squared distances).
+    const double effective_dhat = 2 * dmin * dhat + dhat * dhat;
+
     for (size_t ci = 0; ci < size(); ci++) {
-        (*this)[ci].minimum_distance = dmin;
+        CollisionConstraint& constraint = (*this)[ci];
+        constraint.minimum_distance = dmin;
+        if (use_convergent_formulation) {
+            // Divide by dhat to equivalently use the "physical" barrier
+            constraint.weight /= effective_dhat;
+            if (compute_shape_derivatives) {
+                constraint.weight_gradient /= effective_dhat;
+            }
+        }
     }
 }
 
@@ -225,8 +237,7 @@ void Constraints::edge_vertex_candiates_to_constraints(
     const std::function<bool(double)>& is_active,
     const size_t start_i,
     const size_t end_i,
-    const bool compute_shape_derivatives,
-    Builder& constraint_builder)
+    Builder& constraint_builder) const
 {
     auto& [vv_to_index, ev_to_index, constraint_set] = constraint_builder;
     auto& C_vv = constraint_set.vv_constraints;
@@ -246,17 +257,16 @@ void Constraints::edge_vertex_candiates_to_constraints(
         if (!is_active(distance_sqr))
             continue;
 
-#ifdef IPC_TOOLKIT_CONVERGENT
         // ÷ 2 to handle double counting for correct integration
-        const double weight = mesh.point_area(vi) / 2;
-        Eigen::SparseVector<double> weight_gradient(V.size());
+        const double weight =
+            use_convergent_formulation ? (mesh.point_area(vi) / 2) : 1;
+
+        Eigen::SparseVector<double> weight_gradient;
         if (compute_shape_derivatives) {
-            weight_gradient = mesh.point_area_gradient(vi) / 2;
+            weight_gradient = use_convergent_formulation
+                ? (mesh.point_area_gradient(vi) / 2)
+                : Eigen::SparseVector<double>(V.size());
         }
-#else
-        const double weight = 1;
-        const Eigen::SparseVector<double> weight_gradient(V.size());
-#endif
 
         switch (dtype) {
         case PointEdgeDistanceType::P_E0:
@@ -287,8 +297,7 @@ void Constraints::edge_edge_candiates_to_constraints(
     const std::function<bool(double)>& is_active,
     const size_t start_i,
     const size_t end_i,
-    const bool compute_shape_derivatives,
-    Builder& constraint_builder)
+    Builder& constraint_builder) const
 {
     auto& [vv_to_index, ev_to_index, constraint_set] = constraint_builder;
     auto& C_vv = constraint_set.vv_constraints;
@@ -311,20 +320,19 @@ void Constraints::edge_edge_candiates_to_constraints(
         if (!is_active(distance_sqr))
             continue;
 
-#ifdef IPC_TOOLKIT_CONVERGENT
         // ÷ 4 to handle double counting and PT + EE for correct integration.
         // Sum edge areas because duplicate edge candidates were removed.
-        const double weight = (mesh.edge_area(eai) + mesh.edge_area(ebi)) / 4;
-        Eigen::SparseVector<double> weight_gradient(V.size());
+        const double weight = use_convergent_formulation
+            ? ((mesh.edge_area(eai) + mesh.edge_area(ebi)) / 4)
+            : 1;
+
+        Eigen::SparseVector<double> weight_gradient;
         if (compute_shape_derivatives) {
-            weight_gradient =
-                (mesh.edge_area_gradient(eai) + mesh.edge_area_gradient(ebi))
-                / 4;
+            weight_gradient = use_convergent_formulation
+                ? ((mesh.edge_area_gradient(eai) + mesh.edge_area_gradient(ebi))
+                   / 4)
+                : Eigen::SparseVector<double>(V.size());
         }
-#else
-        const double weight = 1;
-        const Eigen::SparseVector<double> weight_gradient(V.size());
-#endif
 
         double eps_x = edge_edge_mollifier_threshold(
             V_rest.row(ea0i), V_rest.row(ea1i), //
@@ -394,8 +402,7 @@ void Constraints::face_vertex_candiates_to_constraints(
     const std::function<bool(double)>& is_active,
     const size_t start_i,
     const size_t end_i,
-    const bool compute_shape_derivatives,
-    Builder& constraint_builder)
+    Builder& constraint_builder) const
 {
     auto& [vv_to_index, ev_to_index, constraint_set] = constraint_builder;
     auto& C_vv = constraint_set.vv_constraints;
@@ -418,17 +425,16 @@ void Constraints::face_vertex_candiates_to_constraints(
         if (!is_active(distance_sqr))
             continue;
 
-#ifdef IPC_TOOLKIT_CONVERGENT
         // ÷ 4 to handle double counting and PT + EE) for correct integration
-        const double weight = mesh.point_area(vi) / 4;
-        Eigen::SparseVector<double> weight_gradient(V.size());
+        const double weight =
+            use_convergent_formulation ? (mesh.point_area(vi) / 4) : 1;
+
+        Eigen::SparseVector<double> weight_gradient;
         if (compute_shape_derivatives) {
-            weight_gradient = mesh.point_area_gradient(vi) / 4;
+            weight_gradient = use_convergent_formulation
+                ? (mesh.point_area_gradient(vi) / 4)
+                : Eigen::SparseVector<double>(V.size());
         }
-#else
-        const double weight = 1;
-        const Eigen::SparseVector<double> weight_gradient(V.size());
-#endif
 
         switch (dtype) {
         case PointTriangleDistanceType::P_T0:
