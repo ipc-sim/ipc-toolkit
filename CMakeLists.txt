@@ -46,7 +46,8 @@ if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
 endif()
 
 ### Configuration
-set(IPC_TOOLKIT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
+set(IPC_TOOLKIT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/ipc")
+set(IPC_TOOLKIT_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src")
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/ipc_toolkit/")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/recipes/")
@@ -57,7 +58,6 @@ include(ipc_toolkit_use_colors)
 
 # IPC Toolkit utils
 include(ipc_toolkit_prepend_current_path)
-include(ipc_toolkit_copy_headers)
 include(ipc_toolkit_set_source_group)
 include(ipc_toolkit_target_link_system_libraries)
 
@@ -74,14 +74,14 @@ add_library(ipc::toolkit ALIAS ipc_toolkit)
 
 # Fill in configuration options
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp.in"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/config.hpp")
+  "${IPC_TOOLKIT_SOURCE_DIR}/config.hpp.in"
+  "${IPC_TOOLKIT_SOURCE_DIR}/config.hpp")
 
 # Add source and header files to ipc_toolkit
-add_subdirectory(src)
+add_subdirectory("${IPC_TOOLKIT_SOURCE_DIR}")
 
 # Public include directory for IPC Toolkit
-target_include_directories(ipc_toolkit PUBLIC ${PROJECT_BINARY_DIR}/include)
+target_include_directories(ipc_toolkit PUBLIC "${IPC_TOOLKIT_INCLUDE_DIR}")
 
 ################################################################################
 # Optional Definitions
@@ -93,10 +93,6 @@ target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
 ################################################################################
 # Dependencies
 ################################################################################
-
-# Extra warnings
-include(ipc_toolkit_warnings)
-target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
 
 # libigl
 include(eigen)
@@ -149,6 +145,10 @@ ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC tsl::robin_map)
 # Hashes
 include(abseil)
 ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC absl::hash)
+
+# Extra warnings (link last for highest priority)
+include(ipc_toolkit_warnings)
+target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
 
 ################################################################################
 # Compiler options
