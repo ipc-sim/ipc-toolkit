@@ -5,11 +5,11 @@
 
 #include <finitediff.hpp>
 #include <igl/edges.h>
-#include <nlohmann/json.hpp>
 
 #include <ipc/ipc.hpp>
 #include <ipc/friction/friction.hpp>
 #include <ipc/utils/logger.hpp>
+#include <ipc/config.hpp>
 
 #include "friction_data_generator.hpp"
 #include "../test_utils.hpp"
@@ -20,7 +20,7 @@ using namespace ipc;
 
 TEST_CASE("Test friction gradient and hessian", "[friction][gradient][hessian]")
 {
-    const FrictionData& data = GENERATE(FrictionDataGenerator::create());
+    FrictionData data = friction_data_generator();
     const auto& [V0, V1, E, F, contact_constraint_set, mu, epsv_times_h, dhat, barrier_stiffness] =
         data;
 
@@ -79,7 +79,7 @@ void mmcvids_to_friction_constraints(
                 constraints.vv_constraints.emplace_back(
                     -mmcvid[0] - 1, mmcvid[1]);
                 CHECK(-mmcvid[3] >= 1);
-                constraints.vv_constraints.back().multiplicity() = -mmcvid[3];
+                constraints.vv_constraints.back().weight = -mmcvid[3];
                 normal_force_magnitudes[i] /= -mmcvid[3];
                 constraint = &(constraints.vv_constraints.back());
 
@@ -88,7 +88,7 @@ void mmcvids_to_friction_constraints(
                 constraints.ev_constraints.emplace_back(
                     edges.size() - 1, -mmcvid[0] - 1);
                 CHECK(-mmcvid[3] >= 1);
-                constraints.ev_constraints.back().multiplicity() = -mmcvid[3];
+                constraints.ev_constraints.back().weight = -mmcvid[3];
                 normal_force_magnitudes[i] /= -mmcvid[3];
                 constraint = &(constraints.ev_constraints.back());
 
@@ -112,32 +112,6 @@ void mmcvids_to_friction_constraints(
     F.resize(faces.size(), 3);
     for (int i = 0; i < faces.size(); i++) {
         F.row(i) = faces[i];
-    }
-}
-
-template <typename T>
-inline void from_json(const nlohmann::json& json, VectorX<T>& vec)
-{
-    vec =
-        Eigen::Map<VectorX<T>>(json.get<std::vector<T>>().data(), json.size());
-}
-
-template <typename T>
-void from_json(const nlohmann::json& json, MatrixX<T>& mat)
-{
-    typedef std::vector<std::vector<T>> L;
-    L list = json.get<L>();
-
-    size_t num_rows = list.size();
-    if (num_rows == 0) {
-        return;
-    }
-    size_t num_cols = list[0].size();
-    mat.resize(num_rows, num_cols);
-
-    for (size_t i = 0; i < num_rows; ++i) {
-        assert(num_cols == list[i].size());
-        mat.row(i) = Eigen::Map<RowVectorX<T>>(list[i].data(), num_cols);
     }
 }
 

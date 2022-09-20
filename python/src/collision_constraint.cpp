@@ -1,6 +1,6 @@
 #include "common.hpp"
 
-#include <ipc/collision_constraint.hpp>
+#include <ipc/collisions/constraints.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
@@ -21,6 +21,18 @@ void define_collision_constraint(py::module_& m)
             Returns:
                 List of vertex indices
             )ipc_Qu8mg5v7",
+            py::arg("E"), py::arg("F"))
+        .def("num_vertices", &CollisionConstraint::num_vertices)
+        .def(
+            "vertex_indices", &CollisionConstraint::vertex_indices,
+            py::arg("E"), py::arg("F"))
+        .def(
+            "compute_distance_gradient",
+            &CollisionConstraint::compute_distance_gradient, py::arg("V"),
+            py::arg("E"), py::arg("F"))
+        .def(
+            "compute_distance_hessian",
+            &CollisionConstraint::compute_distance_hessian, py::arg("V"),
             py::arg("E"), py::arg("F"))
         .def(
             "compute_distance", &CollisionConstraint::compute_distance, "",
@@ -44,9 +56,12 @@ void define_collision_constraint(py::module_& m)
             "compute_potential_hessian",
             &CollisionConstraint::compute_potential_hessian, "", py::arg("V"),
             py::arg("E"), py::arg("F"), py::arg("dhat"),
-            py::arg("project_hessian_to_psd"))
+            py::arg("project_to_psd"))
         .def_readwrite(
-            "minimum_distance", &CollisionConstraint::minimum_distance, "");
+            "minimum_distance", &CollisionConstraint::minimum_distance)
+        .def_readwrite(
+            "weight", &CollisionConstraint::weight,
+            "Weight in the final sum of potentials");
 
     py::class_<
         VertexVertexConstraint, VertexVertexCandidate, CollisionConstraint>(
@@ -81,9 +96,7 @@ void define_collision_constraint(py::module_& m)
             "compute_potential_hessian",
             &VertexVertexConstraint::compute_potential_hessian, "",
             py::arg("V"), py::arg("E"), py::arg("F"), py::arg("dhat"),
-            py::arg("project_hessian_to_psd"))
-        .def_readwrite(
-            "multiplicity", &VertexVertexConstraint::multiplicity, "");
+            py::arg("project_hessian_to_psd"));
 
     py::class_<EdgeVertexConstraint, EdgeVertexCandidate, CollisionConstraint>(
         m, "EdgeVertexConstraint")
@@ -117,8 +130,7 @@ void define_collision_constraint(py::module_& m)
             "compute_potential_hessian",
             &EdgeVertexConstraint::compute_potential_hessian, "", py::arg("V"),
             py::arg("E"), py::arg("F"), py::arg("dhat"),
-            py::arg("project_hessian_to_psd"))
-        .def_readwrite("multiplicity", &EdgeVertexConstraint::multiplicity, "");
+            py::arg("project_hessian_to_psd"));
 
     py::class_<EdgeEdgeConstraint, EdgeEdgeCandidate, CollisionConstraint>(
         m, "EdgeEdgeConstraint")
@@ -206,8 +218,47 @@ void define_collision_constraint(py::module_& m)
             "vertex_index", &PlaneVertexConstraint::vertex_index, "");
 
     py::class_<Constraints>(m, "Constraints")
+        .def(
+            "build",
+            py::overload_cast<
+                const CollisionMesh&, const Eigen::MatrixXd&, const double,
+                const double, const BroadPhaseMethod>(&Constraints::build),
+            R"ipc_Qu8mg5v7(
+            Construct a set of constraints used to compute the barrier potential.
+
+            Parameters:
+                mesh: The collision mesh.
+                V: Vertices of the collision mesh.
+                dhat: The activation distance of the barrier.
+                dmin: (optional) Minimum distance.
+                method: (optional) Broad-phase method to use.
+
+            Returns:
+                The constructed set of constraints.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("V"), py::arg("dhat"), py::arg("dmin") = 0,
+            py::arg("method") = BroadPhaseMethod::HASH_GRID)
+        .def(
+            "build",
+            py::overload_cast<
+                const Candidates&, const CollisionMesh&, const Eigen::MatrixXd&,
+                const double, const double>(&Constraints::build),
+            R"ipc_Qu8mg5v7(
+            Construct a set of constraints used to compute the barrier potential.
+
+            Parameters:
+                candidates: Distance candidates from which the constraint set is built.
+                mesh: The collision mesh.
+                V: Vertices of the collision mesh.
+                dhat: The activation distance of the barrier.
+                dmin:  Minimum distance.
+
+            Returns:
+                The constructed set of constraints (any existing constraints will be cleared).
+            )ipc_Qu8mg5v7",
+            py::arg("candidates"), py::arg("mesh"), py::arg("V"),
+            py::arg("dhat"), py::arg("dmin") = 0)
         .def("__len__", &Constraints::size, "")
-        .def("num_constraints", &Constraints::num_constraints, "")
         .def("empty", &Constraints::empty, "")
         .def("clear", &Constraints::clear, "")
         .def(

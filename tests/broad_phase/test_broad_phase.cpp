@@ -19,7 +19,8 @@ void test_broad_phase(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     BroadPhaseMethod method,
-    bool expect_collision = true)
+    bool expect_collision = true,
+    const std::string& cached_bf_candidates = "")
 {
     CAPTURE(method);
     REQUIRE(V0.rows() == mesh.num_vertices());
@@ -36,7 +37,8 @@ void test_broad_phase(
     }
 
     if (method != BroadPhaseMethod::BRUTE_FORCE) {
-        brute_force_comparison(mesh, V0, V1, candidates, inflation_radius);
+        brute_force_comparison(
+            mesh, V0, V1, candidates, inflation_radius, cached_bf_candidates);
     }
 }
 
@@ -44,7 +46,8 @@ void test_broad_phase(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     BroadPhaseMethod method,
-    double inflation_radius)
+    double inflation_radius,
+    const std::string& cached_bf_candidates = "")
 {
     CAPTURE(method);
     REQUIRE(V.rows() == mesh.num_vertices());
@@ -54,7 +57,8 @@ void test_broad_phase(
         mesh, V, candidates, inflation_radius, method);
 
     if (method != BroadPhaseMethod::BRUTE_FORCE) {
-        brute_force_comparison(mesh, V, V, candidates, inflation_radius);
+        brute_force_comparison(
+            mesh, V, V, candidates, inflation_radius, cached_bf_candidates);
     }
 }
 
@@ -89,23 +93,22 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D]")
 TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D][!hide]")
 #endif
 {
-    Eigen::MatrixXd V0;
-    REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/V_t0.csv", V0));
-    V0 = V0.leftCols(2);
+    Eigen::MatrixXd tmp;
+    REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/V_t0.csv", tmp));
+    const Eigen::MatrixXd V0_full = tmp.leftCols(2);
 
-    Eigen::MatrixXd V1;
-    REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/V_t1.csv", V1));
-    V1 = V1.leftCols(2);
+    REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/V_t1.csv", tmp));
+    const Eigen::MatrixXd V1_full = tmp.leftCols(2);
 
     Eigen::MatrixXi E;
     REQUIRE(igl::readCSV(TEST_DATA_DIR + "mesh-2D/E.csv", E));
     E.array() -= 1; // NOTE: Convert from OBJ format to index
 
-    CollisionMesh mesh =
-        CollisionMesh::build_from_full_mesh(V0, E, /*F=*/Eigen::MatrixXi());
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(
+        V0_full, E, /*F=*/Eigen::MatrixXi());
 
-    V0 = mesh.vertices(V0);
-    V1 = mesh.vertices(V1);
+    const Eigen::MatrixXd V0 = mesh.vertices(V0_full);
+    const Eigen::MatrixXd V1 = mesh.vertices(V1_full);
 
     BroadPhaseMethod method = GENERATE(
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
@@ -115,8 +118,8 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D][!hide]")
 }
 
 TEST_CASE(
-    "Test construct_constraint_set() with codimensional points",
-    "[construct_constraint_set][broad_phase]")
+    "Test constraint_set.build() with codimensional points",
+    "[broad_phase][constraints]")
 {
     const double dhat = 1e-3;
     Eigen::MatrixXd V_rest, V;
@@ -135,7 +138,7 @@ TEST_CASE(
     test_broad_phase(mesh, V, method, dhat);
 
     Constraints constraint_set;
-    construct_constraint_set(mesh, V, dhat, constraint_set, /*dmin=*/0, method);
+    constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
     CHECK(constraint_set.size() != 0);
 }
 
@@ -203,11 +206,7 @@ TEST_CASE("Compare BP against brute force", "[broad_phase]")
     }
 }
 
-#ifdef NDEBUG
-TEST_CASE("Cloth-Ball", "[ccd][broad_phase]")
-#else
-TEST_CASE("Cloth-Ball", "[ccd][broad_phase][!hide]")
-#endif
+TEST_CASE("Cloth-Ball", "[ccd][broad_phase][cloth-ball][!hide]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
@@ -223,5 +222,7 @@ TEST_CASE("Cloth-Ball", "[ccd][broad_phase][!hide]")
 
     BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 
-    test_broad_phase(mesh, V0, V1, method);
+    test_broad_phase(
+        mesh, V0, V1, method, true,
+        TEST_DATA_DIR + "cloth_ball_bf_ccd_candidated.json");
 }

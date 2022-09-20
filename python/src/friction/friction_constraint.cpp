@@ -34,22 +34,24 @@ void define_friction_constraint(py::module_& m)
             py::overload_cast<
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&,
                 const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double,
-                const double, const double, const double>(
+                const double, const double, const double, const bool>(
                 &FrictionConstraint::compute_force, py::const_),
             "", py::arg("X"), py::arg("U"), py::arg("E"), py::arg("F"),
             py::arg("dhat"), py::arg("barrier_stiffness"),
-            py::arg("epsv_times_h"), py::arg("dmin") = 0)
+            py::arg("epsv_times_h"), py::arg("dmin") = 0,
+            py::arg("no_mu") = false)
         .def(
             "compute_force",
             py::overload_cast<
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&,
                 const Eigen::MatrixXd&, const Eigen::MatrixXi&,
                 const Eigen::MatrixXi&, const double, const double,
-                const double, const double>(
+                const double, const double, const bool>(
                 &FrictionConstraint::compute_force, py::const_),
             "", py::arg("X"), py::arg("Ut"), py::arg("U"), py::arg("E"),
             py::arg("F"), py::arg("dhat"), py::arg("barrier_stiffness"),
-            py::arg("epsv_times_h"), py::arg("dmin") = 0)
+            py::arg("epsv_times_h"), py::arg("dmin") = 0,
+            py::arg("no_mu") = false)
         .def(
             "compute_force_jacobian",
             py::overload_cast<
@@ -72,7 +74,6 @@ void define_friction_constraint(py::module_& m)
             "", py::arg("X"), py::arg("Ut"), py::arg("U"), py::arg("E"),
             py::arg("F"), py::arg("dhat"), py::arg("barrier_stiffness"),
             py::arg("epsv_times_h"), py::arg("wrt"), py::arg("dmin") = 0)
-        .def("multiplicity", &FrictionConstraint::multiplicity, "")
         .def_readwrite(
             "closest_point", &FrictionConstraint::closest_point,
             "Barycentric coordinates of the closest point(s)")
@@ -83,8 +84,10 @@ void define_friction_constraint(py::module_& m)
             "normal_force_magnitude",
             &FrictionConstraint::normal_force_magnitude,
             "Contact force magnitude")
+        .def_readwrite("mu", &FrictionConstraint::mu, "Coefficient of friction")
         .def_readwrite(
-            "mu", &FrictionConstraint::mu, "Coefficient of friction");
+            "weight", &FrictionConstraint::weight,
+            "Weight in the final sum of potentials");
 
     py::class_<
         VertexVertexFrictionConstraint, VertexVertexCandidate,
@@ -110,11 +113,7 @@ void define_friction_constraint(py::module_& m)
         .def(
             "compute_potential",
             &VertexVertexFrictionConstraint::compute_potential<double>, "",
-            py::arg("U"), py::arg("E"), py::arg("F"), py::arg("epsv_times_h"))
-        .def(
-            "multiplicity",
-            py::overload_cast<>(&VertexVertexFrictionConstraint::multiplicity),
-            "");
+            py::arg("U"), py::arg("E"), py::arg("F"), py::arg("epsv_times_h"));
 
     py::class_<
         EdgeVertexFrictionConstraint, EdgeVertexCandidate, FrictionConstraint>(
@@ -138,11 +137,7 @@ void define_friction_constraint(py::module_& m)
         .def(
             "compute_potential",
             &EdgeVertexFrictionConstraint::compute_potential<double>, "",
-            py::arg("U"), py::arg("E"), py::arg("F"), py::arg("epsv_times_h"))
-        .def(
-            "multiplicity",
-            py::overload_cast<>(&EdgeVertexFrictionConstraint::multiplicity),
-            "");
+            py::arg("U"), py::arg("E"), py::arg("F"), py::arg("epsv_times_h"));
 
     py::class_<
         EdgeEdgeFrictionConstraint, EdgeEdgeCandidate, FrictionConstraint>(
@@ -194,7 +189,6 @@ void define_friction_constraint(py::module_& m)
 
     py::class_<FrictionConstraints>(m, "FrictionConstraints")
         .def("__len__", &FrictionConstraints::size, "")
-        .def("num_constraints", &FrictionConstraints::num_constraints, "")
         .def("empty", &FrictionConstraints::empty, "")
         .def("clear", &FrictionConstraints::clear, "")
         .def(

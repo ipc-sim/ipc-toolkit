@@ -33,6 +33,7 @@ add_executable(ipc_toolkit_tests
   friction/test_closest_point.cpp
   friction/test_force_jacobian.cpp
   friction/test_friction.cpp
+  friction/test_normal_force_magnitude.cpp
   friction/test_relative_displacement.cpp
   friction/test_smooth_friction_mollifier.cpp
   friction/test_tangent_basis.cpp

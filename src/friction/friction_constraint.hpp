@@ -1,24 +1,30 @@
 #pragma once
 
-#include <ipc/collision_constraint.hpp>
+#include <ipc/collisions/constraints.hpp>
 #include <ipc/friction/relative_displacement.hpp>
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
+#include <ipc/config.hpp>
+
 namespace ipc {
 
 struct FrictionConstraint {
-    /// @brief Barycentric coordinates of the closest point(s)
-    VectorMax2d closest_point;
-
-    /// @brief Tangent basis of the contact (max size 3×2)
-    MatrixMax<double, 3, 2> tangent_basis;
-
     /// @brief Contact force magnitude
     double normal_force_magnitude;
 
     /// @brief Coefficient of friction
     double mu;
+
+    double weight = 1;
+    /// @brief Gradient of weight with respect to all DOF
+    Eigen::SparseVector<double> weight_gradient;
+
+    /// @brief Barycentric coordinates of the closest point(s)
+    VectorMax2d closest_point;
+
+    /// @brief Tangent basis of the contact (max size 3×2)
+    MatrixMax<double, 3, 2> tangent_basis;
 
     virtual ~FrictionConstraint() { }
 
@@ -47,11 +53,12 @@ struct FrictionConstraint {
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
-        const double dmin = 0) const
+        const double dmin = 0,
+        const bool no_mu = false) const //< whether to not multiply by mu
     {
         return compute_force(
             X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, E, F, dhat,
-            barrier_stiffness, epsv_times_h, dmin);
+            barrier_stiffness, epsv_times_h, dmin, no_mu);
     }
 
     virtual VectorMax12d compute_force(
@@ -63,7 +70,8 @@ struct FrictionConstraint {
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
-        const double dmin = 0) const;
+        const double dmin = 0,
+        const bool no_mu = false) const; //< whether to not multiply by mu
 
     enum class DiffWRT { X, Ut, U };
 
@@ -95,8 +103,6 @@ struct FrictionConstraint {
         const DiffWRT wrt,
         const double dmin = 0) const;
 
-    virtual int multiplicity() const { return 1; };
-
 protected:
     int dim() const { return tangent_basis.rows(); }
     int ndof() const { return dim() * num_vertices(); };
@@ -123,17 +129,21 @@ protected:
         return x;
     }
 
+    virtual double compute_distance(const VectorMax12d& x) const = 0;
+    virtual VectorMax12d
+    compute_distance_gradient(const VectorMax12d& x) const = 0;
+
     virtual double compute_normal_force_magnitude(
         const VectorMax12d& x,
         const double dhat,
         const double barrier_stiffness,
-        const double dmin = 0) const = 0;
+        const double dmin = 0) const;
 
     virtual VectorMax12d compute_normal_force_magnitude_gradient(
         const VectorMax12d& x,
         const double dhat,
         const double barrier_stiffness,
-        const double dmin = 0) const = 0;
+        const double dmin = 0) const;
 
     virtual MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& x) const = 0;
@@ -166,7 +176,7 @@ protected:
     {
         // u is the relative displacement in the tangential space
         const VectorMax2d u = tangent_basis.transpose().cast<T>() * rel_ui;
-        return multiplicity() * mu * normal_force_magnitude
+        return weight * mu * normal_force_magnitude
             * f0_SF(u.norm(), epsv_times_h);
     }
 };
@@ -209,21 +219,10 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
             relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
 
-    int& multiplicity() { return m_multiplicity; };
-    int multiplicity() const override { return m_multiplicity; };
-
 protected:
-    double compute_normal_force_magnitude(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
-
-    VectorMax12d compute_normal_force_magnitude_gradient(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
+    virtual double compute_distance(const VectorMax12d& x) const override;
+    virtual VectorMax12d
+    compute_distance_gradient(const VectorMax12d& x) const override;
 
     MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& x) const override;
@@ -248,8 +247,6 @@ protected:
 
     MatrixMax<double, 6, 12> relative_displacement_matrix_jacobian(
         const VectorMax2d& closest_point) const override;
-
-    int m_multiplicity = 1;
 
 private:
     template <typename T>
@@ -297,21 +294,10 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
             relative_displacement_T(select_dofs(U, E, F)), epsv_times_h);
     }
 
-    int& multiplicity() { return m_multiplicity; };
-    int multiplicity() const override { return m_multiplicity; };
-
 protected:
-    double compute_normal_force_magnitude(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
-
-    VectorMax12d compute_normal_force_magnitude_gradient(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
+    virtual double compute_distance(const VectorMax12d& x) const override;
+    virtual VectorMax12d
+    compute_distance_gradient(const VectorMax12d& x) const override;
 
     MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& x) const override;
@@ -336,8 +322,6 @@ protected:
 
     MatrixMax<double, 6, 12> relative_displacement_matrix_jacobian(
         const VectorMax2d& closest_point) const override;
-
-    int m_multiplicity = 1;
 
 private:
     template <typename T>
@@ -389,17 +373,9 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
     }
 
 protected:
-    double compute_normal_force_magnitude(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
-
-    VectorMax12d compute_normal_force_magnitude_gradient(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
+    virtual double compute_distance(const VectorMax12d& x) const override;
+    virtual VectorMax12d
+    compute_distance_gradient(const VectorMax12d& x) const override;
 
     MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& x) const override;
@@ -475,17 +451,9 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
     }
 
 protected:
-    double compute_normal_force_magnitude(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
-
-    VectorMax12d compute_normal_force_magnitude_gradient(
-        const VectorMax12d& x,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin = 0) const override;
+    virtual double compute_distance(const VectorMax12d& x) const override;
+    virtual VectorMax12d
+    compute_distance_gradient(const VectorMax12d& x) const override;
 
     MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& x) const override;
@@ -525,17 +493,12 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 
 struct FrictionConstraints {
-    template <typename T>
-    using aligned_vector = std::vector<T, Eigen::aligned_allocator<T>>;
-
-    aligned_vector<VertexVertexFrictionConstraint> vv_constraints;
-    aligned_vector<EdgeVertexFrictionConstraint> ev_constraints;
-    aligned_vector<EdgeEdgeFrictionConstraint> ee_constraints;
-    aligned_vector<FaceVertexFrictionConstraint> fv_constraints;
+    std::vector<VertexVertexFrictionConstraint> vv_constraints;
+    std::vector<EdgeVertexFrictionConstraint> ev_constraints;
+    std::vector<EdgeEdgeFrictionConstraint> ee_constraints;
+    std::vector<FaceVertexFrictionConstraint> fv_constraints;
 
     size_t size() const;
-
-    size_t num_constraints() const;
 
     bool empty() const;
 

@@ -85,22 +85,23 @@ void define_friction(py::module_& m)
             const CollisionMesh&, const Eigen::MatrixXd&,
             const Eigen::MatrixXd&, const Eigen::MatrixXd&,
             const FrictionConstraints&, const double, const double,
-            const double, const double>(&compute_friction_force),
+            const double, const double, const bool>(&compute_friction_force),
         "", py::arg("mesh"), py::arg("X"), py::arg("Ut"), py::arg("U"),
         py::arg("friction_constraint_set"), py::arg("dhat"),
         py::arg("barrier_stiffness"), py::arg("epsv_times_h"),
-        py::arg("dmin") = 0);
+        py::arg("dmin") = 0, py::arg("no_mu") = false);
 
     m.def(
         "compute_friction_force",
         py::overload_cast<
             const CollisionMesh&, const Eigen::MatrixXd&,
             const Eigen::MatrixXd&, const FrictionConstraints&, const double,
-            const double, const double, const double>(&compute_friction_force),
+            const double, const double, const double, const bool>(
+            &compute_friction_force),
         "", py::arg("mesh"), py::arg("X"), py::arg("U"),
         py::arg("friction_constraint_set"), py::arg("dhat"),
         py::arg("barrier_stiffness"), py::arg("epsv_times_h"),
-        py::arg("dmin") = 0);
+        py::arg("dmin") = 0, py::arg("no_mu") = false);
 
     m.def(
         "compute_friction_force_jacobian",

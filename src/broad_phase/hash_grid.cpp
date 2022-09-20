@@ -11,9 +11,6 @@
 #include <ipc/utils/merge_thread_local_vectors.hpp>
 #include <ipc/utils/logger.hpp>
 
-// NOTE: Uncomment for expiermental parallel version of detect_candidates()
-#define IPC_HASH_GRID_PARALLEL_GET_PAIR
-
 namespace ipc {
 
 void HashGrid::build(

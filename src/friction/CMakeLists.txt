@@ -10,6 +10,7 @@ set(SOURCES
   normal_force_magnitude.hpp
   relative_displacement.hpp
   smooth_friction_mollifier.hpp
+  smooth_friction_mollifier.tpp
   tangent_basis.cpp
   tangent_basis.hpp
 )

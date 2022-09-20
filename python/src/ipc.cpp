@@ -9,57 +9,6 @@ using namespace ipc;
 void define_ipc(py::module_& m)
 {
     m.def(
-        "construct_constraint_set",
-        [](const CollisionMesh& mesh, const Eigen::MatrixXd& V,
-           const double dhat, const double dmin = 0,
-           const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID) {
-            Constraints constraint_set;
-            construct_constraint_set(
-                mesh, V, dhat, constraint_set, dmin, method);
-            return constraint_set;
-        },
-        R"ipc_Qu8mg5v7(
-        Construct a set of constraints used to compute the barrier potential.
-
-        Parameters:
-            mesh: The collision mesh.
-            V: Vertices of the collision mesh.
-            dhat: The activation distance of the barrier.
-            dmin: (optional) Minimum distance.
-            method: (optional) Broad-phase method to use.
-
-        Returns:
-            The constructed set of constraints.
-        )ipc_Qu8mg5v7",
-        py::arg("mesh"), py::arg("V"), py::arg("dhat"), py::arg("dmin") = 0,
-        py::arg("method") = BroadPhaseMethod::HASH_GRID);
-
-    m.def(
-        "construct_constraint_set",
-        [](const Candidates& candidates, const CollisionMesh& mesh,
-           const Eigen::MatrixXd& V, const double dhat, const double dmin = 0) {
-            Constraints constraint_set;
-            construct_constraint_set(
-                candidates, mesh, V, dhat, constraint_set, dmin);
-            return constraint_set;
-        },
-        R"ipc_Qu8mg5v7(
-        Construct a set of constraints used to compute the barrier potential.
-
-        Parameters:
-            candidates: Distance candidates from which the constraint set is built.
-            mesh: The collision mesh.
-            V: Vertices of the collision mesh.
-            dhat: The activation distance of the barrier.
-            dmin:  Minimum distance.
-
-        Returns:
-            The constructed set of constraints (any existing constraints will be cleared).
-        )ipc_Qu8mg5v7",
-        py::arg("candidates"), py::arg("mesh"), py::arg("V"), py::arg("dhat"),
-        py::arg("dmin") = 0);
-
-    m.def(
         "compute_barrier_potential", &compute_barrier_potential,
         R"ipc_Qu8mg5v7(
         Compute the barrier potential for a given constraint set.

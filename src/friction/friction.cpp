@@ -1,11 +1,5 @@
 #include <ipc/friction/friction.hpp>
 
-#include <tbb/parallel_for.h>
-#include <tbb/blocked_range.h>
-#include <tbb/enumerable_thread_specific.h>
-
-#include <Eigen/Sparse>
-
 #include <ipc/barrier/barrier.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
@@ -17,6 +11,14 @@
 #include <ipc/friction/tangent_basis.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/local_to_global.hpp>
+
+#include <ipc/config.hpp>
+
+#include <tbb/parallel_for.h>
+#include <tbb/blocked_range.h>
+#include <tbb/enumerable_thread_specific.h>
+
+#include <Eigen/Sparse>
 
 namespace ipc {
 
@@ -69,7 +71,7 @@ void construct_friction_constraint_set(
 
     friction_constraint_set.clear();
 
-    const auto& [C_vv, C_ev, C_ee, C_fv, _] = contact_constraint_set;
+    const auto& [C_vv, C_ev, C_ee, C_fv, _, __, ___] = contact_constraint_set;
     auto& [FC_vv, FC_ev, FC_ee, FC_fv] = friction_constraint_set;
 
     FC_vv.reserve(C_vv.size());
@@ -138,6 +140,7 @@ Eigen::VectorXd compute_friction_potential_gradient(
     if (friction_constraint_set.empty()) {
         return Eigen::VectorXd::Zero(V0.size());
     }
+    assert(epsv_times_h > 0);
 
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
@@ -181,6 +184,7 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
     if (friction_constraint_set.empty()) {
         return Eigen::SparseMatrix<double>(V0.size(), V0.size());
     }
+    assert(epsv_times_h > 0);
 
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
@@ -225,11 +229,13 @@ Eigen::VectorXd compute_friction_force(
     const double dhat,
     const double barrier_stiffness,
     const double epsv_times_h,
-    const double dmin)
+    const double dmin,
+    const bool no_mu)
 {
     if (friction_constraint_set.empty()) {
         return Eigen::VectorXd::Zero(U.size());
     }
+    assert(epsv_times_h > 0);
 
     int dim = U.cols();
     const Eigen::MatrixXi& E = mesh.edges();
@@ -246,7 +252,7 @@ Eigen::VectorXd compute_friction_force(
                 local_gradient_to_global_gradient(
                     friction_constraint_set[i].compute_force(
                         X, Ut, U, E, F, dhat, barrier_stiffness, epsv_times_h,
-                        dmin),
+                        dmin, no_mu),
                     friction_constraint_set[i].vertex_indices(E, F), dim,
                     local_force);
             }
@@ -276,6 +282,7 @@ Eigen::SparseMatrix<double> compute_friction_force_jacobian(
     if (friction_constraint_set.empty()) {
         return Eigen::SparseMatrix<double>(U.size(), U.size());
     }
+    assert(epsv_times_h > 0);
 
     int dim = U.cols();
     const Eigen::MatrixXi& E = mesh.edges();
@@ -306,6 +313,31 @@ Eigen::SparseMatrix<double> compute_friction_force_jacobian(
             local_jac_triplets.begin(), local_jac_triplets.end());
         jacobian += local_jacobian;
     }
+
+    // if wrt == X then compute ∇ₓ w(x)
+    if (wrt == FrictionConstraint::DiffWRT::X) {
+        for (int i = 0; i < friction_constraint_set.size(); i++) {
+            const FrictionConstraint& constraint = friction_constraint_set[i];
+            assert(constraint.weight_gradient.size() == X.size());
+            if (constraint.weight_gradient.size() != X.size()) {
+                throw std::runtime_error(
+                    "Shape derivative is not computed for friction constraint!");
+            }
+
+            VectorMax12d local_force = constraint.compute_force(
+                X, Ut, U, E, F, dhat, barrier_stiffness, epsv_times_h, dmin);
+            assert(constraint.weight != 0);
+            local_force.array() /= constraint.weight;
+
+            Eigen::SparseVector<double> force(X.size());
+            force.reserve(local_force.size());
+            local_gradient_to_global_gradient(
+                local_force, constraint.vertex_indices(E, F), dim, force);
+
+            jacobian += force * constraint.weight_gradient.transpose();
+        }
+    }
+
     return jacobian;
 }
 

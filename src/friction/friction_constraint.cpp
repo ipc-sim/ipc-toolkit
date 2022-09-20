@@ -1,7 +1,5 @@
 #include <ipc/friction/friction_constraint.hpp>
 
-#include <stdexcept> // std::out_of_range
-
 #include <ipc/friction/closest_point.hpp>
 #include <ipc/friction/tangent_basis.hpp>
 #include <ipc/friction/normal_force_magnitude.hpp>
@@ -9,6 +7,10 @@
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
+
+#include <ipc/config.hpp>
+
+#include <stdexcept> // std::out_of_range
 
 namespace ipc {
 
@@ -34,6 +36,7 @@ VectorMax12d FrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXi& F,
     double epsv_times_h) const
 {
+    assert(epsv_times_h > 0);
     // ∇ₓ μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀ(x - xᵗ))
     //  = μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u
 
@@ -49,7 +52,7 @@ VectorMax12d FrictionConstraint::compute_potential_gradient(
     const double f1_over_norm_u = f1_SF_over_x(u.norm(), epsv_times_h);
 
     // μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u ∈ ℝⁿ
-    return multiplicity() * mu * normal_force_magnitude * f1_over_norm_u
+    return weight * mu * normal_force_magnitude * f1_over_norm_u
         * (T * u); // (n×2)(2×1) = (n×1)
 }
 
@@ -60,6 +63,7 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
     const double epsv_times_h,
     bool project_hessian_to_psd) const
 {
+    assert(epsv_times_h > 0);
     // ∇ₓ μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u (where u = T(xᵗ)ᵀ (x - xᵗ))
     //  = μ N T [(f₁'(‖u‖)‖u‖ − f₁(‖u‖))/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
     //  = μ N T [f₂(‖u‖) uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
@@ -79,7 +83,7 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
     const double f1_over_norm_u = f1_SF_over_x(norm_u, epsv_times_h);
 
     // Compute μ N(xᵗ)
-    double scale = multiplicity() * mu * normal_force_magnitude;
+    double scale = weight * mu * normal_force_magnitude;
 
     MatrixMax12d hess;
     if (norm_u >= epsv_times_h) {
@@ -132,7 +136,8 @@ VectorMax12d FrictionConstraint::compute_force(
     const double dhat,
     const double barrier_stiffness,
     const double epsv_times_h,
-    const double dmin) const
+    const double dmin,
+    const bool no_mu) const
 {
     // x is the rest position
     // uᵗ is the displacment at the begining of the timestep
@@ -182,7 +187,8 @@ VectorMax12d FrictionConstraint::compute_force(
     const double f1_over_norm_tau = f1_SF_over_x(tau.norm(), epsv_times_h);
 
     // F = -μ N f₁(‖τ‖)/‖τ‖ T τ
-    return -multiplicity() * mu * N * f1_over_norm_tau * T * tau;
+    // NOTE: no_mu -> leave mu out of this function (i.e., assuming mu = 1)
+    return -weight * (no_mu ? 1.0 : mu) * N * f1_over_norm_tau * T * tau;
 }
 
 MatrixMax12d FrictionConstraint::compute_force_jacobian(
@@ -266,6 +272,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
                 Gamma.transpose() * jac_P.middleRows(i * dim, dim);
         }
 
+        // Vertex-vertex does not have a closest point
         if (beta.size()) {
             // ∇Γ(β) = ∇ᵦΓ∇β ∈ ℝ^{d×n×n} ≡ ℝ^{nd×n}
             const MatrixMax<double, 2, 12> jac_beta =
@@ -278,8 +285,9 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
                 for (int i = 0; i < dim; i++) {
                     // ∂Γᵢⱼ/∂xₖ = ∂Γᵢⱼ/∂β ⋅ ∂β/∂xₖ
                     jac_Gamma.row(k * dim + i) =
-                        jac_Gamma_wrt_beta
-                            .middleRows(i * beta.size(), beta.size())
+                        jac_Gamma_wrt_beta(
+                            Eigen::seqN(i, beta.size(), dim), Eigen::all)
+                            .eval()
                             .transpose()
                         * jac_beta.col(k);
                 }
@@ -362,9 +370,35 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     // + -μ N f₁(‖τ‖)/‖τ‖ T [∇τ]
     J += N * f1_over_norm_tau * T * jac_tau;
 
-    J *= -multiplicity() * mu;
+    // NOTE: ∇ₓw(x) is not local to the contact pair (i.e., it involves more
+    // than the 4 contacting vertices), so we do not have enough information
+    // here to compute the gradient. Instead this should be handled outside of
+    // the function. For a simple multiplicitive model (∑ᵢ wᵢ Fᵢ) this can be
+    // done easily.
+    J *= -weight * mu;
 
     return J;
+}
+
+double FrictionConstraint::compute_normal_force_magnitude(
+    const VectorMax12d& x,
+    const double dhat,
+    const double barrier_stiffness,
+    const double dmin) const
+{
+    return ipc::compute_normal_force_magnitude(
+        compute_distance(x), dhat, barrier_stiffness, dmin);
+}
+
+VectorMax12d FrictionConstraint::compute_normal_force_magnitude_gradient(
+    const VectorMax12d& x,
+    const double dhat,
+    const double barrier_stiffness,
+    const double dmin) const
+{
+    return ipc::compute_normal_force_magnitude_gradient(
+        compute_distance(x), compute_distance_gradient(x), dhat,
+        barrier_stiffness, dmin);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -384,36 +418,25 @@ VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
 VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
     const VertexVertexConstraint& constraint)
     : VertexVertexCandidate(constraint.vertex0_index, constraint.vertex1_index)
-    , m_multiplicity(constraint.multiplicity)
 {
+    this->weight = constraint.weight;
+    this->weight_gradient = constraint.weight_gradient;
 }
 
-double VertexVertexFrictionConstraint::compute_normal_force_magnitude(
-    const VectorMax12d& x,
-    const double dhat,
-    const double barrier_stiffness,
-    const double dmin) const
+double
+VertexVertexFrictionConstraint::compute_distance(const VectorMax12d& x) const
 {
     assert(x.size() == ndof());
-    return ipc::compute_normal_force_magnitude(
-        point_point_distance(x.head(dim()), x.tail(dim())), dhat,
-        barrier_stiffness, dmin);
+    return point_point_distance(x.head(dim()), x.tail(dim()));
 }
 
-VectorMax12d
-VertexVertexFrictionConstraint::compute_normal_force_magnitude_gradient(
-    const VectorMax12d& x,
-    const double dhat,
-    const double barrier_stiffness,
-    const double dmin) const
+VectorMax12d VertexVertexFrictionConstraint::compute_distance_gradient(
+    const VectorMax12d& x) const
 {
     assert(x.size() == ndof());
-    const auto& p0 = x.head(dim());
-    const auto& p1 = x.tail(dim());
     VectorMax6d grad_d;
-    point_point_distance_gradient(p0, p1, grad_d);
-    return ipc::compute_normal_force_magnitude_gradient(
-        point_point_distance(p0, p1), grad_d, dhat, barrier_stiffness, dmin);
+    point_point_distance_gradient(x.head(dim()), x.tail(dim()), grad_d);
+    return grad_d;
 }
 
 MatrixMax<double, 3, 2> VertexVertexFrictionConstraint::compute_tangent_basis(
@@ -477,41 +500,29 @@ EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
 EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
     const EdgeVertexConstraint& constraint)
     : EdgeVertexCandidate(constraint.edge_index, constraint.vertex_index)
-    , m_multiplicity(constraint.multiplicity)
 {
+    this->weight = constraint.weight;
+    this->weight_gradient = constraint.weight_gradient;
 }
 
-double EdgeVertexFrictionConstraint::compute_normal_force_magnitude(
-    const VectorMax12d& x,
-    const double dhat,
-    const double barrier_stiffness,
-    const double dmin) const
+double
+EdgeVertexFrictionConstraint::compute_distance(const VectorMax12d& x) const
 {
     assert(x.size() == ndof());
-    const auto& p = x.head(dim());
-    const auto& e0 = x.segment(dim(), dim());
-    const auto& e1 = x.tail(dim());
-    return ipc::compute_normal_force_magnitude(
-        point_edge_distance(p, e0, e1, PointEdgeDistanceType::P_E), dhat,
-        barrier_stiffness, dmin);
+    return point_edge_distance(
+        x.head(dim()), x.segment(dim(), dim()), x.tail(dim()),
+        PointEdgeDistanceType::P_E);
 }
 
-VectorMax12d
-EdgeVertexFrictionConstraint::compute_normal_force_magnitude_gradient(
-    const VectorMax12d& x,
-    const double dhat,
-    const double barrier_stiffness,
-    const double dmin) const
+VectorMax12d EdgeVertexFrictionConstraint::compute_distance_gradient(
+    const VectorMax12d& x) const
 {
     assert(x.size() == ndof());
-    const auto& p = x.head(dim());
-    const auto& e0 = x.segment(dim(), dim());
-    const auto& e1 = x.tail(dim());
     VectorMax9d grad_d;
-    point_edge_distance_gradient(p, e0, e1, PointEdgeDistanceType::P_E, grad_d);
-    return ipc::compute_normal_force_magnitude_gradient(
-        point_edge_distance(p, e0, e1, PointEdgeDistanceType::P_E), grad_d,
-        dhat, barrier_stiffness, dmin);
+    point_edge_distance_gradient(
+        x.head(dim()), x.segment(dim(), dim()), x.tail(dim()),
+        PointEdgeDistanceType::P_E, grad_d);
+    return grad_d;
 }
 
 MatrixMax<double, 3, 2>
@@ -586,44 +597,29 @@ EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
     const EdgeEdgeConstraint& constraint)
     : EdgeEdgeCandidate(constraint.edge0_index, constraint.edge1_index)
 {
+    this->weight = constraint.weight;
+    this->weight_gradient = constraint.weight_gradient;
 }
 
-double EdgeEdgeFrictionConstraint::compute_normal_force_magnitude(
-    const VectorMax12d& x,
-    const double dhat,
-    const double barrier_stiffness,
-    const double dmin) const
+double EdgeEdgeFrictionConstraint::compute_distance(const VectorMax12d& x) const
 {
     assert(x.size() == ndof());
-    const auto& ea0 = x.head(dim());
-    const auto& ea1 = x.segment(dim(), dim());
-    const auto& eb0 = x.segment(2 * dim(), dim());
-    const auto& eb1 = x.tail(dim());
     // The distance type is known because mollified PP and PE were skipped.
-    return ipc::compute_normal_force_magnitude(
-        edge_edge_distance(ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB),
-        dhat, barrier_stiffness, dmin);
+    return edge_edge_distance(
+        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
+        x.tail(dim()), EdgeEdgeDistanceType::EA_EB);
 }
 
-VectorMax12d
-EdgeEdgeFrictionConstraint::compute_normal_force_magnitude_gradient(
-    const VectorMax12d& x,
-    const double dhat,
-    const double barrier_stiffness,
-    const double dmin) const
+VectorMax12d EdgeEdgeFrictionConstraint::compute_distance_gradient(
+    const VectorMax12d& x) const
 {
     assert(x.size() == ndof());
-    const auto& ea0 = x.head(dim());
-    const auto& ea1 = x.segment(dim(), dim());
-    const auto& eb0 = x.segment(2 * dim(), dim());
-    const auto& eb1 = x.tail(dim());
     VectorMax12d grad_d;
     // The distance type is known because mollified PP and PE were skipped.
     edge_edge_distance_gradient(
-        ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB, grad_d);
-    return ipc::compute_normal_force_magnitude_gradient(
-        edge_edge_distance(ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::EA_EB),
-        grad_d, dhat, barrier_stiffness, dmin);
+        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
+        x.tail(dim()), EdgeEdgeDistanceType::EA_EB, grad_d);
+    return grad_d;
 }
 
 MatrixMax<double, 3, 2>
@@ -699,42 +695,28 @@ FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
     const FaceVertexConstraint& constraint)
     : FaceVertexCandidate(constraint.face_index, constraint.vertex_index)
 {
+    this->weight = constraint.weight;
+    this->weight_gradient = constraint.weight_gradient;
 }
 
-double FaceVertexFrictionConstraint::compute_normal_force_magnitude(
-    const VectorMax12d& x,
-    const double dhat,
-    const double barrier_stiffness,
-    const double dmin) const
+double
+FaceVertexFrictionConstraint::compute_distance(const VectorMax12d& x) const
 {
     assert(x.size() == ndof());
-    const auto& p = x.head(dim());
-    const auto& t0 = x.segment(dim(), dim());
-    const auto& t1 = x.segment(2 * dim(), dim());
-    const auto& t2 = x.tail(dim());
-    return ipc::compute_normal_force_magnitude(
-        point_triangle_distance(p, t0, t1, t2, PointTriangleDistanceType::P_T),
-        dhat, barrier_stiffness, dmin);
+    return point_triangle_distance(
+        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
+        x.tail(dim()), PointTriangleDistanceType::P_T);
 }
 
-VectorMax12d
-FaceVertexFrictionConstraint::compute_normal_force_magnitude_gradient(
-    const VectorMax12d& x,
-    const double dhat,
-    const double barrier_stiffness,
-    const double dmin) const
+VectorMax12d FaceVertexFrictionConstraint::compute_distance_gradient(
+    const VectorMax12d& x) const
 {
     assert(x.size() == ndof());
-    const auto& p = x.head(dim());
-    const auto& t0 = x.segment(dim(), dim());
-    const auto& t1 = x.segment(2 * dim(), dim());
-    const auto& t2 = x.tail(dim());
     VectorMax12d grad_d;
     point_triangle_distance_gradient(
-        p, t0, t1, t2, PointTriangleDistanceType::P_T, grad_d);
-    return ipc::compute_normal_force_magnitude_gradient(
-        point_triangle_distance(p, t0, t1, t2, PointTriangleDistanceType::P_T),
-        grad_d, dhat, barrier_stiffness, dmin);
+        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
+        x.tail(dim()), PointTriangleDistanceType::P_T, grad_d);
+    return grad_d;
 }
 
 MatrixMax<double, 3, 2>
@@ -798,19 +780,6 @@ size_t FrictionConstraints::size() const
 {
     return vv_constraints.size() + ev_constraints.size() + ee_constraints.size()
         + fv_constraints.size();
-}
-
-size_t FrictionConstraints::num_constraints() const
-{
-    size_t num_constraints = 0;
-    for (const auto& vv_constraint : vv_constraints) {
-        num_constraints += vv_constraint.multiplicity();
-    }
-    for (const auto& ev_constraint : ev_constraints) {
-        num_constraints += ev_constraint.multiplicity();
-    }
-    num_constraints += ee_constraints.size() + fv_constraints.size();
-    return num_constraints;
 }
 
 bool FrictionConstraints::empty() const

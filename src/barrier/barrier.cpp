@@ -3,9 +3,11 @@
 // inequlity constraints on a function.
 #include <ipc/barrier/barrier.hpp>
 
+#include <ipc/config.hpp>
+
 namespace ipc {
 
-double barrier_gradient(double d, double dhat)
+double barrier_gradient(const double d, const double dhat)
 {
     if (d <= 0.0 || d >= dhat) {
         return 0.0;
@@ -17,34 +19,13 @@ double barrier_gradient(double d, double dhat)
     return (dhat - d) * (2 * log(d / dhat) - dhat / d + 1);
 }
 
-double barrier_hessian(double d, double dhat)
+double barrier_hessian(const double d, const double dhat)
 {
     if (d <= 0.0 || d >= dhat) {
         return 0.0;
     }
-
-    double dhat_d = dhat / d;
-
+    const double dhat_d = dhat / d;
     return (dhat_d + 2) * dhat_d - 2 * log(d / dhat) - 3;
-}
-
-double physical_barrier_gradient(double d, double dhat)
-{
-    if (d <= 0.0 || d >= dhat) {
-        return 0.0;
-    }
-    return (d - dhat) * (-2 * d * log(d / dhat) - d + dhat) / (d * dhat);
-}
-
-double physical_barrier_hessian(const double d, const double dhat)
-{
-    if (d <= 0.0 || d >= dhat) {
-        return 0.0;
-    }
-    const double d_minus_dhat = d - dhat;
-    return (-2 * log(d / dhat) + (d_minus_dhat * d_minus_dhat) / (d * d) - 4)
-        / dhat
-        + 4 / d;
 }
 
 } // namespace ipc

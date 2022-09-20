@@ -4,7 +4,7 @@
 
 #include <Eigen/Core>
 
-#include <ipc/collision_constraint.hpp>
+#include <ipc/collisions/plane_vertex.hpp>
 
 namespace ipc {
 

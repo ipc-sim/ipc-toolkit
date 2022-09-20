@@ -4,6 +4,8 @@
 #include <ipc/utils/logger.hpp>
 
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/area_gradient.hpp>
 
 namespace ipc {
 
@@ -184,18 +186,42 @@ void CollisionMesh::init_adjacencies()
 
 void CollisionMesh::init_areas()
 {
+    // m_vertices_to_edges.resize(num_vertices());
+    // for (int i = 0; i < m_edges.rows(); i++) {
+    //     for (int j = 0; j < m_edges.cols(); j++) {
+    //         m_vertices_to_edges[m_edges(i, j)].push_back(i);
+    //     }
+    // }
+    //
+    // m_vertices_to_faces.resize(num_vertices());
+    // for (int i = 0; i < m_faces.rows(); i++) {
+    //     for (int j = 0; j < m_faces.cols(); j++) {
+    //         m_vertices_to_faces[m_faces(i, j)].push_back(i);
+    //     }
+    // }
+
     // Compute point areas as the sum of ½ the length of connected edges
     Eigen::VectorXd point_edge_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);
+    m_point_area_jacobian.resize(
+        num_vertices(), Eigen::SparseVector<double>(ndof()));
     for (int i = 0; i < m_edges.rows(); i++) {
         const auto& e0 = m_vertices_at_rest.row(m_edges(i, 0));
         const auto& e1 = m_vertices_at_rest.row(m_edges(i, 1));
         double edge_len = (e1 - e0).norm();
+
+        VectorMax6d edge_len_gradient;
+        edge_length_gradient(e0, e1, edge_len_gradient);
+
         for (int j = 0; j < m_edges.cols(); j++) {
             if (point_edge_areas[m_edges(i, j)] < 0) {
                 point_edge_areas[m_edges(i, j)] = 0;
             }
             point_edge_areas[m_edges(i, j)] += edge_len / 2;
+
+            local_gradient_to_global_gradient(
+                edge_len_gradient / 2, m_edges.row(i), dim(),
+                m_point_area_jacobian[m_edges(i, j)]);
         }
     }
 
@@ -203,6 +229,8 @@ void CollisionMesh::init_areas()
     Eigen::VectorXd point_face_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);
     m_edge_areas.setConstant(m_edges.rows(), -1);
+    m_edge_area_jacobian.resize(
+        m_edges.rows(), Eigen::SparseVector<double>(ndof()));
     if (dim() == 3) {
         for (int i = 0; i < m_faces.rows(); i++) {
             const auto& f0 = m_vertices_at_rest.row(m_faces(i, 0));
@@ -210,9 +238,14 @@ void CollisionMesh::init_areas()
             const auto& f2 = m_vertices_at_rest.row(m_faces(i, 2));
             double face_area = cross(f1 - f0, f2 - f0).norm() / 2;
 
+            VectorMax9d face_area_gradient;
+            triangle_area_gradient(f0, f1, f2, face_area_gradient);
+
             for (int j = 0; j < m_faces.cols(); ++j) {
                 if (point_face_areas[m_faces(i, j)] < 0) {
                     point_face_areas[m_faces(i, j)] = 0;
+                    // remove the computed value from point_edge_areas
+                    m_point_area_jacobian[m_faces(i, j)].setZero();
                 }
                 point_face_areas[m_faces(i, j)] += face_area / 3;
 
@@ -220,6 +253,16 @@ void CollisionMesh::init_areas()
                     m_edge_areas[m_faces_to_edges(i, j)] = 0;
                 }
                 m_edge_areas[m_faces_to_edges(i, j)] += face_area / 3;
+
+                // compute gradient of area
+
+                local_gradient_to_global_gradient(
+                    face_area_gradient / 3, m_faces.row(i), dim(),
+                    m_point_area_jacobian[m_faces(i, j)]);
+
+                local_gradient_to_global_gradient(
+                    face_area_gradient / 3, m_faces.row(i), dim(),
+                    m_edge_area_jacobian[m_faces_to_edges(i, j)]);
             }
         }
     }
