@@ -257,12 +257,12 @@ void Constraints::edge_vertex_candiates_to_constraints(
 
         // ÷ 2 to handle double counting for correct integration
         const double weight =
-            use_convergent_formulation ? (mesh.point_area(vi) / 2) : 1;
+            use_convergent_formulation ? (mesh.vertex_area(vi) / 2) : 1;
 
         Eigen::SparseVector<double> weight_gradient;
         if (compute_shape_derivatives) {
             weight_gradient = use_convergent_formulation
-                ? (mesh.point_area_gradient(vi) / 2)
+                ? (mesh.vertex_area_gradient(vi) / 2)
                 : Eigen::SparseVector<double>(V.size());
         }
 
@@ -425,12 +425,12 @@ void Constraints::face_vertex_candiates_to_constraints(
 
         // ÷ 4 to handle double counting and PT + EE) for correct integration
         const double weight =
-            use_convergent_formulation ? (mesh.point_area(vi) / 4) : 1;
+            use_convergent_formulation ? (mesh.vertex_area(vi) / 4) : 1;
 
         Eigen::SparseVector<double> weight_gradient;
         if (compute_shape_derivatives) {
             weight_gradient = use_convergent_formulation
-                ? (mesh.point_area_gradient(vi) / 4)
+                ? (mesh.vertex_area_gradient(vi) / 4)
                 : Eigen::SparseVector<double>(V.size());
         }
 

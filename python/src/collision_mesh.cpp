@@ -53,16 +53,16 @@ void define_collision_mesh(py::module_& m)
                 &CollisionMesh::to_full_dof, py::const_),
             "", py::arg("X"))
         .def_property_readonly(
-            "point_point_adjacencies", &CollisionMesh::point_point_adjacencies,
-            "")
+            "vertex_vertex_adjacencies",
+            &CollisionMesh::vertex_vertex_adjacencies, "")
         .def_property_readonly(
-            "edge_point_adjacencies", &CollisionMesh::edge_point_adjacencies,
+            "edge_vertex_adjacencies", &CollisionMesh::edge_vertex_adjacencies,
             "")
         .def(
-            "is_point_on_boundary", &CollisionMesh::is_point_on_boundary, "",
+            "is_vertex_on_boundary", &CollisionMesh::is_vertex_on_boundary, "",
             py::arg("i"))
-        .def("point_area", &CollisionMesh::point_area, "", py::arg("pi"))
-        .def_property_readonly("point_areas", &CollisionMesh::point_areas, "")
+        .def("vertex_area", &CollisionMesh::vertex_area, "", py::arg("pi"))
+        .def_property_readonly("vertex_areas", &CollisionMesh::vertex_areas, "")
         .def("edge_area", &CollisionMesh::edge_area, "", py::arg("ei"))
         .def_property_readonly("edge_areas", &CollisionMesh::edge_areas, "")
         .def_static(

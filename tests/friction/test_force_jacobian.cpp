@@ -50,12 +50,12 @@ void check_friction_force_jacobian(
 
     Eigen::MatrixXd JPA_wrt_X(mesh.num_vertices(), mesh.ndof());
     for (int i = 0; i < mesh.num_vertices(); i++) {
-        JPA_wrt_X.row(i) = Eigen::VectorXd(mesh.point_area_gradient(i));
+        JPA_wrt_X.row(i) = Eigen::VectorXd(mesh.vertex_area_gradient(i));
     }
     auto PA_X = [&](const Eigen::VectorXd& x) {
         CollisionMesh fd_mesh(
             fd::unflatten(x, X.cols()), mesh.edges(), mesh.faces());
-        return fd_mesh.point_areas();
+        return fd_mesh.vertex_areas();
     };
     Eigen::MatrixXd fd_JPA_wrt_X;
     fd::finite_jacobian(fd::flatten(X), PA_X, fd_JPA_wrt_X);

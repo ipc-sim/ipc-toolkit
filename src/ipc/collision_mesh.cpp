@@ -149,34 +149,35 @@ Eigen::SparseMatrix<double> CollisionMesh::vertex_matrix_to_dof_matrix(
 
 void CollisionMesh::init_adjacencies()
 {
-    m_point_point_adjacencies.resize(num_vertices());
+    m_vertex_vertex_adjacencies.resize(num_vertices());
     // Edges includes the edges of the faces
     for (int i = 0; i < m_edges.rows(); i++) {
-        m_point_point_adjacencies[m_edges(i, 0)].insert(m_edges(i, 1));
-        m_point_point_adjacencies[m_edges(i, 1)].insert(m_edges(i, 0));
+        m_vertex_vertex_adjacencies[m_edges(i, 0)].insert(m_edges(i, 1));
+        m_vertex_vertex_adjacencies[m_edges(i, 1)].insert(m_edges(i, 0));
     }
 
-    m_edge_point_adjacencies.resize(m_edges.rows());
+    m_edge_vertex_adjacencies.resize(m_edges.rows());
     for (int i = 0; i < m_faces.rows(); i++) {
         for (int j = 0; j < 3; ++j) {
-            m_edge_point_adjacencies[m_faces_to_edges(i, j)].insert(
+            m_edge_vertex_adjacencies[m_faces_to_edges(i, j)].insert(
                 m_faces(i, (j + 2) % 3));
         }
     }
 
-    // Is the point on the boundary of the triangle mesh in 3D or polyline in 2D
-    m_is_point_on_boundary.resize(num_vertices(), true);
+    // Is the vertex on the boundary of the triangle mesh in 3D or polyline in
+    // 2D
+    m_is_vertex_on_boundary.resize(num_vertices(), true);
     if (dim() == 2) {
         for (int i = 0; i < num_vertices(); i++) {
-            m_is_point_on_boundary[i] =
-                m_point_point_adjacencies[i].size() <= 1;
+            m_is_vertex_on_boundary[i] =
+                m_vertex_vertex_adjacencies[i].size() <= 1;
         }
     } else {
         for (int i = 0; i < m_edges.rows(); i++) {
             // If edge is part of two triangles
-            if (m_edge_point_adjacencies[i].size() >= 2) {
+            if (m_edge_vertex_adjacencies[i].size() >= 2) {
                 for (int j = 0; j < 2; j++) {
-                    m_is_point_on_boundary[m_edges(i, j)] = false;
+                    m_is_vertex_on_boundary[m_edges(i, j)] = false;
                 }
             }
         }
@@ -199,10 +200,10 @@ void CollisionMesh::init_areas()
     //     }
     // }
 
-    // Compute point areas as the sum of ½ the length of connected edges
-    Eigen::VectorXd point_edge_areas =
+    // Compute vertex areas as the sum of ½ the length of connected edges
+    Eigen::VectorXd vertex_edge_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);
-    m_point_area_jacobian.resize(
+    m_vertex_area_jacobian.resize(
         num_vertices(), Eigen::SparseVector<double>(ndof()));
     for (int i = 0; i < m_edges.rows(); i++) {
         const auto& e0 = m_vertices_at_rest.row(m_edges(i, 0));
@@ -213,19 +214,19 @@ void CollisionMesh::init_areas()
         edge_length_gradient(e0, e1, edge_len_gradient);
 
         for (int j = 0; j < m_edges.cols(); j++) {
-            if (point_edge_areas[m_edges(i, j)] < 0) {
-                point_edge_areas[m_edges(i, j)] = 0;
+            if (vertex_edge_areas[m_edges(i, j)] < 0) {
+                vertex_edge_areas[m_edges(i, j)] = 0;
             }
-            point_edge_areas[m_edges(i, j)] += edge_len / 2;
+            vertex_edge_areas[m_edges(i, j)] += edge_len / 2;
 
             local_gradient_to_global_gradient(
                 edge_len_gradient / 2, m_edges.row(i), dim(),
-                m_point_area_jacobian[m_edges(i, j)]);
+                m_vertex_area_jacobian[m_edges(i, j)]);
         }
     }
 
-    // Compute point/edge areas as the sum of ⅓ the area of connected face
-    Eigen::VectorXd point_face_areas =
+    // Compute vertex/edge areas as the sum of ⅓ the area of connected face
+    Eigen::VectorXd vertex_face_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);
     m_edge_areas.setConstant(m_edges.rows(), -1);
     m_edge_area_jacobian.resize(
@@ -241,12 +242,12 @@ void CollisionMesh::init_areas()
             triangle_area_gradient(f0, f1, f2, face_area_gradient);
 
             for (int j = 0; j < m_faces.cols(); ++j) {
-                if (point_face_areas[m_faces(i, j)] < 0) {
-                    point_face_areas[m_faces(i, j)] = 0;
-                    // remove the computed value from point_edge_areas
-                    m_point_area_jacobian[m_faces(i, j)].setZero();
+                if (vertex_face_areas[m_faces(i, j)] < 0) {
+                    vertex_face_areas[m_faces(i, j)] = 0;
+                    // remove the computed value from vertex_edge_areas
+                    m_vertex_area_jacobian[m_faces(i, j)].setZero();
                 }
-                point_face_areas[m_faces(i, j)] += face_area / 3;
+                vertex_face_areas[m_faces(i, j)] += face_area / 3;
 
                 if (m_edge_areas[m_faces_to_edges(i, j)] < 0) {
                     m_edge_areas[m_faces_to_edges(i, j)] = 0;
@@ -257,7 +258,7 @@ void CollisionMesh::init_areas()
 
                 local_gradient_to_global_gradient(
                     face_area_gradient / 3, m_faces.row(i), dim(),
-                    m_point_area_jacobian[m_faces(i, j)]);
+                    m_vertex_area_jacobian[m_faces(i, j)]);
 
                 local_gradient_to_global_gradient(
                     face_area_gradient / 3, m_faces.row(i), dim(),
@@ -267,11 +268,11 @@ void CollisionMesh::init_areas()
     }
 
     // Select the area based on the order face, edge, codim
-    m_point_areas =
-        (point_face_areas.array() < 0)
+    m_vertex_areas =
+        (vertex_face_areas.array() < 0)
             .select(
-                (point_edge_areas.array() < 0).select(1, point_edge_areas),
-                point_face_areas);
+                (vertex_edge_areas.array() < 0).select(1, vertex_edge_areas),
+                vertex_face_areas);
 
     // Select the area based on the order face, codim
     m_edge_areas = (m_edge_areas.array() < 0).select(1, m_edge_areas);
@@ -292,9 +293,15 @@ Eigen::MatrixXd CollisionMesh::displace_vertices(
     const Eigen::MatrixXd& full_displacements) const
 {
     // V_rest + S * T * full_U; m_displacement_map = S * T
+    return m_vertices_at_rest + map_displacements(full_displacements);
+}
+
+Eigen::MatrixXd CollisionMesh::map_displacements(
+    const Eigen::MatrixXd& full_displacements) const
+{
     assert(m_displacement_map.cols() == full_displacements.rows());
     assert(full_displacements.cols() == dim());
-    return m_vertices_at_rest + m_displacement_map * full_displacements;
+    return m_displacement_map * full_displacements;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
