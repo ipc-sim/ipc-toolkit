@@ -700,6 +700,7 @@
  | <a href="#P"><strong>P</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
  
 </div>
 <h2 id="B">B</h2>
@@ -714,6 +715,8 @@
       <li><a href="python-api.html#ipctk.barrier_hessian">barrier_hessian() (in module ipctk)</a>
 </li>
       <li><a href="python-api.html#ipctk.BroadPhaseMethod">BroadPhaseMethod (class in ipctk)</a>
+</li>
+      <li><a href="python-api.html#ipctk.Constraints.build">build() (ipctk.Constraints method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -811,8 +814,6 @@
       </ul></li>
       <li><a href="python-api.html#ipctk.Constraints">Constraints (class in ipctk)</a>
 </li>
-      <li><a href="python-api.html#ipctk.construct_constraint_set">construct_constraint_set() (in module ipctk)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -891,11 +892,11 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="cpp-api/barrier.html#_CPPv4I0EN3ipc7barrierE1TRK1Td">ipc::barrier (C++ function)</a>
+      <li><a href="cpp-api/barrier.html#_CPPv4I0EN3ipc7barrierE1TRK1TKd">ipc::barrier (C++ function)</a>
 </li>
-      <li><a href="cpp-api/barrier.html#_CPPv4N3ipc16barrier_gradientEdd">ipc::barrier_gradient (C++ function)</a>
+      <li><a href="cpp-api/barrier.html#_CPPv4N3ipc16barrier_gradientEKdKd">ipc::barrier_gradient (C++ function)</a>
 </li>
-      <li><a href="cpp-api/barrier.html#_CPPv4N3ipc15barrier_hessianEdd">ipc::barrier_hessian (C++ function)</a>
+      <li><a href="cpp-api/barrier.html#_CPPv4N3ipc15barrier_hessianEKdKd">ipc::barrier_hessian (C++ function)</a>
 </li>
       <li><a href="cpp-api/ccd.html#_CPPv4N3ipc16BroadPhaseMethodE">ipc::BroadPhaseMethod (C++ enum)</a>
 </li>
@@ -951,6 +952,10 @@
 </li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc19CollisionConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">ipc::CollisionConstraint::vertex_indices (C++ function)</a>
 </li>
+      <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc19CollisionConstraint6weightE">ipc::CollisionConstraint::weight (C++ member)</a>
+</li>
+      <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc19CollisionConstraint15weight_gradientE">ipc::CollisionConstraint::weight_gradient (C++ member)</a>
+</li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc19CollisionConstraintD0Ev">ipc::CollisionConstraint::~CollisionConstraint (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4N3ipc13CollisionMeshE">ipc::CollisionMesh (C++ class)</a>
@@ -971,6 +976,8 @@
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh9edge_areaEK6size_t">ipc::CollisionMesh::edge_area (C++ function)</a>
 </li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh18edge_area_gradientEK6size_t">ipc::CollisionMesh::edge_area_gradient (C++ function)</a>
+</li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh10edge_areasEv">ipc::CollisionMesh::edge_areas (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh22edge_point_adjacenciesEv">ipc::CollisionMesh::edge_point_adjacencies (C++ function)</a>
@@ -989,9 +996,15 @@
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh4ndofEv">ipc::CollisionMesh::ndof (C++ function)</a>
 </li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh9num_edgesEv">ipc::CollisionMesh::num_edges (C++ function)</a>
+</li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh9num_facesEv">ipc::CollisionMesh::num_faces (C++ function)</a>
+</li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh12num_verticesEv">ipc::CollisionMesh::num_vertices (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh10point_areaEK6size_t">ipc::CollisionMesh::point_area (C++ function)</a>
+</li>
+      <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh19point_area_gradientEK6size_t">ipc::CollisionMesh::point_area_gradient (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_mesh.html#_CPPv4NK3ipc13CollisionMesh11point_areasEv">ipc::CollisionMesh::point_areas (C++ function)</a>
 </li>
@@ -1025,7 +1038,19 @@
 </li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11ConstraintsE">ipc::Constraints (C++ struct)</a>
 </li>
+      <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints5buildERK10CandidatesRK13CollisionMeshRKN5Eigen8MatrixXdEKdKd">ipc::Constraints::build (C++ function)</a>, <a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints5buildERK13CollisionMeshRKN5Eigen8MatrixXdEKdKdK16BroadPhaseMethod">[1]</a>
+</li>
+      <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints7BuilderE">ipc::Constraints::Builder (C++ struct)</a>
+</li>
+      <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints7Builder14constraint_setE">ipc::Constraints::Builder::constraint_set (C++ member)</a>
+</li>
+      <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints7Builder11ev_to_indexE">ipc::Constraints::Builder::ev_to_index (C++ member)</a>
+</li>
+      <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints7Builder11vv_to_indexE">ipc::Constraints::Builder::vv_to_index (C++ member)</a>
+</li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints5clearEv">ipc::Constraints::clear (C++ function)</a>
+</li>
+      <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints25compute_shape_derivativesE">ipc::Constraints::compute_shape_derivatives (C++ member)</a>
 </li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints14ee_constraintsE">ipc::Constraints::ee_constraints (C++ member)</a>
 </li>
@@ -1035,17 +1060,15 @@
 </li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints14fv_constraintsE">ipc::Constraints::fv_constraints (C++ member)</a>
 </li>
-      <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc11Constraints15num_constraintsEv">ipc::Constraints::num_constraints (C++ function)</a>
-</li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11ConstraintsixE6size_t">ipc::Constraints::operator[] (C++ function)</a>, <a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc11ConstraintsixE6size_t">[1]</a>
 </li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints14pv_constraintsE">ipc::Constraints::pv_constraints (C++ member)</a>
 </li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc11Constraints4sizeEv">ipc::Constraints::size (C++ function)</a>
 </li>
-      <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints14vv_constraintsE">ipc::Constraints::vv_constraints (C++ member)</a>
+      <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints26use_convergent_formulationE">ipc::Constraints::use_convergent_formulation (C++ member)</a>
 </li>
-      <li><a href="cpp-api/main.html#_CPPv4N3ipc24construct_constraint_setERK10CandidatesRK13CollisionMeshRKN5Eigen8MatrixXdEKdR11ConstraintsKd">ipc::construct_constraint_set (C++ function)</a>, <a href="cpp-api/main.html#_CPPv4N3ipc24construct_constraint_setERK13CollisionMeshRKN5Eigen8MatrixXdEKdR11ConstraintsKdK16BroadPhaseMethod">[1]</a>
+      <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc11Constraints14vv_constraintsE">ipc::Constraints::vv_constraints (C++ member)</a>
 </li>
       <li><a href="cpp-api/main.html#_CPPv4N3ipc33construct_friction_constraint_setERK13CollisionMeshRKN5Eigen8MatrixXdERK11ConstraintsddRKN5Eigen8VectorXdER19FrictionConstraints">ipc::construct_friction_constraint_set (C++ function)</a>, <a href="cpp-api/main.html#_CPPv4N3ipc33construct_friction_constraint_setERK13CollisionMeshRKN5Eigen8MatrixXdERK11ConstraintsddRKN5Eigen8VectorXdERKNSt8functionIFdddEEER19FrictionConstraints">[1]</a>, <a href="cpp-api/main.html#_CPPv4N3ipc33construct_friction_constraint_setERK13CollisionMeshRKN5Eigen8MatrixXdERK11ConstraintsdddR19FrictionConstraints">[2]</a>
 </li>
@@ -1107,6 +1130,8 @@
 </li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4I0EN3ipc18EdgeEdgeConstraint13AbslHashValueE1H1HRK18EdgeEdgeConstraint">ipc::EdgeEdgeConstraint::AbslHashValue (C++ function)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc18EdgeEdgeConstraint16compute_distanceERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">ipc::EdgeEdgeConstraint::compute_distance (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc18EdgeEdgeConstraint25compute_distance_gradientERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">ipc::EdgeEdgeConstraint::compute_distance_gradient (C++ function)</a>
@@ -1127,8 +1152,6 @@
 </li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc18EdgeEdgeConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">ipc::EdgeEdgeConstraint::vertex_indices (C++ function)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="cpp-api/distance.html#_CPPv4N3ipc20EdgeEdgeDistanceTypeE">ipc::EdgeEdgeDistanceType (C++ enum)</a>
 </li>
       <li><a href="cpp-api/distance.html#_CPPv4N3ipc20EdgeEdgeDistanceType6EA0_EBE">ipc::EdgeEdgeDistanceType::EA0_EB (C++ enumerator)</a>
@@ -1191,15 +1214,7 @@
 </li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc20EdgeVertexConstraint24compute_distance_hessianERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">ipc::EdgeVertexConstraint::compute_distance_hessian (C++ function)</a>
 </li>
-      <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc20EdgeVertexConstraint17compute_potentialERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiEKd">ipc::EdgeVertexConstraint::compute_potential (C++ function)</a>
-</li>
-      <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc20EdgeVertexConstraint26compute_potential_gradientERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiEKd">ipc::EdgeVertexConstraint::compute_potential_gradient (C++ function)</a>
-</li>
-      <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc20EdgeVertexConstraint25compute_potential_hessianERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiEKdKb">ipc::EdgeVertexConstraint::compute_potential_hessian (C++ function)</a>
-</li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc20EdgeVertexConstraint20EdgeVertexConstraintERK19EdgeVertexCandidate">ipc::EdgeVertexConstraint::EdgeVertexConstraint (C++ function)</a>, <a href="cpp-api/collision_constraints.html#_CPPv4N3ipc20EdgeVertexConstraint20EdgeVertexConstraintEll">[1]</a>
-</li>
-      <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc20EdgeVertexConstraint12multiplicityE">ipc::EdgeVertexConstraint::multiplicity (C++ member)</a>
 </li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc20EdgeVertexConstraint12num_verticesEv">ipc::EdgeVertexConstraint::num_vertices (C++ function)</a>
 </li>
@@ -1351,14 +1366,6 @@
 </li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc22VertexVertexConstraint24compute_distance_hessianERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">ipc::VertexVertexConstraint::compute_distance_hessian (C++ function)</a>
 </li>
-      <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc22VertexVertexConstraint17compute_potentialERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiEKd">ipc::VertexVertexConstraint::compute_potential (C++ function)</a>
-</li>
-      <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc22VertexVertexConstraint26compute_potential_gradientERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiEKd">ipc::VertexVertexConstraint::compute_potential_gradient (C++ function)</a>
-</li>
-      <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc22VertexVertexConstraint25compute_potential_hessianERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiEKdKb">ipc::VertexVertexConstraint::compute_potential_hessian (C++ function)</a>
-</li>
-      <li><a href="cpp-api/collision_constraints.html#_CPPv4N3ipc22VertexVertexConstraint12multiplicityE">ipc::VertexVertexConstraint::multiplicity (C++ member)</a>
-</li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc22VertexVertexConstraint12num_verticesEv">ipc::VertexVertexConstraint::num_vertices (C++ function)</a>
 </li>
       <li><a href="cpp-api/collision_constraints.html#_CPPv4NK3ipc22VertexVertexConstraint14vertex_indicesERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">ipc::VertexVertexConstraint::vertex_indices (C++ function)</a>
@@ -1387,8 +1394,6 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="python-api.html#ipctk.Constraints.num_constraints">num_constraints() (ipctk.Constraints method)</a>
-</li>
       <li><a href="python-api.html#ipctk.CollisionConstraint.num_vertices">num_vertices() (ipctk.CollisionConstraint method)</a>
 
       <ul>
@@ -1488,6 +1493,14 @@
   </ul></td>
 </tr></table>
 
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="python-api.html#ipctk.CollisionConstraint.weight">weight (ipctk.CollisionConstraint property)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 
 
 
@@ -1496,7 +1509,7 @@
   <small>
     
       Last update:
-      September 19, 2022
+      September 20, 2022
     
   </small>
 </div>
