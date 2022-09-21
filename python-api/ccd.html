@@ -1,0 +1,2063 @@
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../_static/favicon.ico">
+    
+    
+      
+        <title>CCD - IPC Toolkit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../_static/stylesheets/main.b0359c04.min.css">
+      
+        
+        <link rel="stylesheet" href="../_static/stylesheets/palette.92c9fe4a.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/google_fonts.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#broad-phase" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="IPC Toolkit" class="md-header__button md-logo" aria-label="IPC Toolkit" data-md-component="logo">
+      <img src="../_static/hammer-wrench.svg" alt="logo">
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IPC Toolkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CCD
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7 0-.24-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91 1.61 0 2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08Z"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ipc-sim/ipc-toolkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ipc-sim/ipc-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../index.html" class="md-tabs__link">
+      <span class="md-ellipsis">General</span>
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../cpp.html" class="md-tabs__link">
+      <span class="md-ellipsis">C++</span>
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../python.html" class="md-tabs__link md-tabs__link--active">
+      <span class="md-ellipsis">Python</span>
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../contributing.html" class="md-tabs__link">
+      <span class="md-ellipsis">Developers</span>
+    </a>
+  </li>
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="IPC Toolkit" class="md-nav__button md-logo" aria-label="IPC Toolkit" data-md-component="logo">
+      <img src="../_static/hammer-wrench.svg" alt="logo">
+    </a>
+    IPC Toolkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ipc-sim/ipc-toolkit/" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ipc-sim/ipc-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_1" data-md-state="indeterminate" type="checkbox" id="__nav_1" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          <span class="md-ellipsis">General</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="General" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">General</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        <span title="/index.md (reference label)" class="md-ellipsis">Home</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog.html" class="md-nav__link">
+        <span title="/changelog.md (reference label)" class="md-ellipsis">Changelog</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../license.html" class="md-nav__link">
+        <span title="/license.md (reference label)" class="md-ellipsis">License</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" data-md-state="indeterminate" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          <span class="md-ellipsis">C++</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="C++" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">C++</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp.html" class="md-nav__link">
+        <span title="/cpp.md (reference label)" class="md-ellipsis">Getting Started</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/main.html" class="md-nav__link">
+        <span title="/cpp-api/main.rst (reference label)" class="md-ellipsis">Main Functions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/collision_constraints.html" class="md-nav__link">
+        <span title="/cpp-api/collision_constraints.rst (reference label)" class="md-ellipsis">Collision Constraints</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/friction.html" class="md-nav__link">
+        <span title="/cpp-api/friction.rst (reference label)" class="md-ellipsis">Friction</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/ccd.html" class="md-nav__link">
+        <span title="/cpp-api/ccd.rst (reference label)" class="md-ellipsis">CCD</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/distance.html" class="md-nav__link">
+        <span title="/cpp-api/distance.rst (reference label)" class="md-ellipsis">Distance</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/barrier.html" class="md-nav__link">
+        <span title="/cpp-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/collision_mesh.html" class="md-nav__link">
+        <span title="/cpp-api/collision_mesh.rst (reference label)" class="md-ellipsis">Collision Mesh</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/utils.html" class="md-nav__link">
+        <span title="/cpp-api/utils.rst (reference label)" class="md-ellipsis">Utils</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          <span class="md-ellipsis">Python</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Python" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Python</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python.html" class="md-nav__link">
+        <span title="/python.md (reference label)" class="md-ellipsis">Getting Started</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="main.html" class="md-nav__link">
+        <span title="/python-api/main.rst (reference label)" class="md-ellipsis">Main Functions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="collision_constraints.html" class="md-nav__link">
+        <span title="/python-api/collision_constraints.rst (reference label)" class="md-ellipsis">Collision Constraints</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="friction.html" class="md-nav__link">
+        <span title="/python-api/friction.rst (reference label)" class="md-ellipsis">Friction</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          <span title="/python-api/ccd.rst (reference label)" class="md-ellipsis">CCD</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
+        <span title="/python-api/ccd.rst (reference label)" class="md-ellipsis">CCD</span>
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#broad-phase" class="md-nav__link">
+    <span title="broad phase (reference label)" class="md-ellipsis">Broad Phase</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Broad Phase">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.BroadPhaseMethod" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.BroadPhaseMethod (Python class) — Enumeration of implemented broad phase methods." class="md-ellipsis">ipctk.<wbr>Broad<wbr>Phase<wbr>Method</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#candidates" class="md-nav__link">
+    <span title="candidates (reference label)" class="md-ellipsis">Candidates</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Candidates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.ContinuousCollisionCandidate (Python class) — Perform narrow-phase CCD on the candidate." class="md-ellipsis">ipctk.<wbr>Continuous<wbr>Collision<wbr>Candidate</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipctk.ContinuousCollisionCandidate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.ContinuousCollisionCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate." class="md-ellipsis">ccd</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ccd">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.V0" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.V0 (Python parameter) — Mesh vertex positions at the start of the time step." class="md-ellipsis">V0</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.V1" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.V1 (Python parameter) — Mesh vertex positions at the end of the time step." class="md-ellipsis">V1</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.E" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.E (Python parameter) — Mesh edges as rows of indicies into V." class="md-ellipsis">E</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.F" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.F (Python parameter) — Mesh triangular faces as rows of indicies into V." class="md-ellipsis">F</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.tmax" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.tmax (Python parameter) — Maximum time (normalized) to look for collisions. Should be in [0, 1]." class="md-ellipsis">tmax</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.tolerance" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.tolerance (Python parameter) — CCD tolerance used by Tight-Inclusion CCD." class="md-ellipsis">tolerance</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.max_iterations" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.max_iterations (Python parameter) — Maximum iterations used by Tight-Inclusion CCD." class="md-ellipsis">max_<wbr>iterations</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.conservative_rescaling" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.conservative_rescaling (Python parameter) — Conservative rescaling value used to avoid taking steps exactly to impact." class="md-ellipsis">conservative_<wbr>rescaling</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd-return-type" class="md-nav__link">
+    <span class="md-ellipsis">Return type</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.print_ccd_query" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.ContinuousCollisionCandidate.print_ccd_query (Python method)" class="md-ellipsis">print_<wbr>ccd_<wbr>query</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.VertexVertexCandidate" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.VertexVertexCandidate (Python class)" class="md-ellipsis">ipctk.<wbr>Vertex<wbr>Vertex<wbr>Candidate</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.EdgeVertexCandidate (Python class) — Perform narrow-phase CCD on the candidate." class="md-ellipsis">ipctk.<wbr>Edge<wbr>Vertex<wbr>Candidate</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipctk.EdgeVertexCandidate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeVertexCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate." class="md-ellipsis">ccd</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ccd">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.V0" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.V0 (Python parameter) — Mesh vertex positions at the start of the time step." class="md-ellipsis">V0</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.V1" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.V1 (Python parameter) — Mesh vertex positions at the end of the time step." class="md-ellipsis">V1</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.E" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.E (Python parameter) — Mesh edges as rows of indicies into V." class="md-ellipsis">E</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.F" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.F (Python parameter) — Mesh triangular faces as rows of indicies into V." class="md-ellipsis">F</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.tmax" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.tmax (Python parameter) — Maximum time (normalized) to look for collisions. Should be in [0, 1]." class="md-ellipsis">tmax</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.tolerance" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.tolerance (Python parameter) — CCD tolerance used by Tight-Inclusion CCD." class="md-ellipsis">tolerance</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.max_iterations" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.max_iterations (Python parameter) — Maximum iterations used by Tight-Inclusion CCD." class="md-ellipsis">max_<wbr>iterations</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.conservative_rescaling" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.conservative_rescaling (Python parameter) — Conservative rescaling value used to avoid taking steps exactly to impact." class="md-ellipsis">conservative_<wbr>rescaling</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd-return-type" class="md-nav__link">
+    <span class="md-ellipsis">Return type</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.print_ccd_query" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeVertexCandidate.print_ccd_query (Python method)" class="md-ellipsis">print_<wbr>ccd_<wbr>query</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.EdgeEdgeCandidate (Python class) — Perform narrow-phase CCD on the candidate." class="md-ellipsis">ipctk.<wbr>Edge<wbr>Edge<wbr>Candidate</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipctk.EdgeEdgeCandidate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeEdgeCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate." class="md-ellipsis">ccd</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ccd">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.V0" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.V0 (Python parameter) — Mesh vertex positions at the start of the time step." class="md-ellipsis">V0</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.V1" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.V1 (Python parameter) — Mesh vertex positions at the end of the time step." class="md-ellipsis">V1</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.E" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.E (Python parameter) — Mesh edges as rows of indicies into V." class="md-ellipsis">E</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.F" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.F (Python parameter) — Mesh triangular faces as rows of indicies into V." class="md-ellipsis">F</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.tmax" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.tmax (Python parameter) — Maximum time (normalized) to look for collisions. Should be in [0, 1]." class="md-ellipsis">tmax</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.tolerance" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.tolerance (Python parameter) — CCD tolerance used by Tight-Inclusion CCD." class="md-ellipsis">tolerance</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.max_iterations" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.max_iterations (Python parameter) — Maximum iterations used by Tight-Inclusion CCD." class="md-ellipsis">max_<wbr>iterations</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.conservative_rescaling" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.conservative_rescaling (Python parameter) — Conservative rescaling value used to avoid taking steps exactly to impact." class="md-ellipsis">conservative_<wbr>rescaling</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd-return-type" class="md-nav__link">
+    <span class="md-ellipsis">Return type</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.print_ccd_query" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeEdgeCandidate.print_ccd_query (Python method)" class="md-ellipsis">print_<wbr>ccd_<wbr>query</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeFaceCandidate" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.EdgeFaceCandidate (Python class)" class="md-ellipsis">ipctk.<wbr>Edge<wbr>Face<wbr>Candidate</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.FaceVertexCandidate" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.FaceVertexCandidate (Python class) — ccd(self, V0: numpy.ndarray[numpy.float64[m, n]], V1: numpy.ndarray[numpy.float64[m, n]], E: numpy.ndarray[numpy.int32[m, n]], F: numpy.ndarray[numpy.int32[m, n]], tmax: float = 1.0, tolerance: float = 1e-06, max_iterations: int = 10000000, conservative_rescaling: float = 0.8) -&gt; tuple[bool, float]      print_ccd_query(self, V0: numpy.ndarray[numpy.float64[m, n]], V1: numpy.ndarray[numpy.float64[m, n]], E: numpy.ndarray[numpy.int32[m, n]], F: numpy.ndarray[numpy.int32[m, n]]) -&gt; None" class="md-ellipsis">ipctk.<wbr>Face<wbr>Vertex<wbr>Candidate</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipctk.FaceVertexCandidate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.FaceVertexCandidate.ccd" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.FaceVertexCandidate.ccd (Python method)" class="md-ellipsis">ccd</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.FaceVertexCandidate.print_ccd_query" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.FaceVertexCandidate.print_ccd_query (Python method)" class="md-ellipsis">print_<wbr>ccd_<wbr>query</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.Candidates" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.Candidates (Python class) — clear(self) -&gt; None      empty(self) -&gt; bool      save_obj(self, filename: str, V: numpy.ndarray[numpy.float64[m, n]], E: numpy.ndarray[numpy.int32[m, n]], F: numpy.ndarray[numpy.int32[m, n]]) -&gt; bool" class="md-ellipsis">ipctk.<wbr>Candidates</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipctk.Candidates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.Candidates.clear" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.Candidates.clear (Python method)" class="md-ellipsis">clear</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.Candidates.empty" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.Candidates.empty (Python method)" class="md-ellipsis">empty</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.Candidates.save_obj" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.Candidates.save_obj (Python method)" class="md-ellipsis">save_<wbr>obj</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#narrow-phase" class="md-nav__link">
+    <span title="narrow phase (reference label)" class="md-ellipsis">Narrow Phase</span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="distance.html" class="md-nav__link">
+        <span title="/python-api/distance.rst (reference label)" class="md-ellipsis">Distance</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="barrier.html" class="md-nav__link">
+        <span title="/python-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="collision_mesh.html" class="md-nav__link">
+        <span title="/python-api/collision_mesh.rst (reference label)" class="md-ellipsis">Collision Mesh</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="utils.html" class="md-nav__link">
+        <span title="/python-api/utils.rst (reference label)" class="md-ellipsis">Utils</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" data-md-state="indeterminate" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          <span class="md-ellipsis">Developers</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Developers" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Developers</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing.html" class="md-nav__link">
+        <span title="/contributing.md (reference label)" class="md-ellipsis">Contributing</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code_of_conduct.html" class="md-nav__link">
+        <span title="/code_of_conduct.md (reference label)" class="md-ellipsis">Code of Conduct</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#broad-phase" class="md-nav__link">
+    <span title="broad phase (reference label)" class="md-ellipsis">Broad Phase</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Broad Phase">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.BroadPhaseMethod" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.BroadPhaseMethod (Python class) — Enumeration of implemented broad phase methods." class="md-ellipsis">ipctk.<wbr>Broad<wbr>Phase<wbr>Method</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#candidates" class="md-nav__link">
+    <span title="candidates (reference label)" class="md-ellipsis">Candidates</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Candidates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.ContinuousCollisionCandidate (Python class) — Perform narrow-phase CCD on the candidate." class="md-ellipsis">ipctk.<wbr>Continuous<wbr>Collision<wbr>Candidate</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipctk.ContinuousCollisionCandidate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.ContinuousCollisionCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate." class="md-ellipsis">ccd</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ccd">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.V0" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.V0 (Python parameter) — Mesh vertex positions at the start of the time step." class="md-ellipsis">V0</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.V1" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.V1 (Python parameter) — Mesh vertex positions at the end of the time step." class="md-ellipsis">V1</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.E" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.E (Python parameter) — Mesh edges as rows of indicies into V." class="md-ellipsis">E</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.F" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.F (Python parameter) — Mesh triangular faces as rows of indicies into V." class="md-ellipsis">F</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.tmax" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.tmax (Python parameter) — Maximum time (normalized) to look for collisions. Should be in [0, 1]." class="md-ellipsis">tmax</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.tolerance" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.tolerance (Python parameter) — CCD tolerance used by Tight-Inclusion CCD." class="md-ellipsis">tolerance</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.max_iterations" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.max_iterations (Python parameter) — Maximum iterations used by Tight-Inclusion CCD." class="md-ellipsis">max_<wbr>iterations</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd.conservative_rescaling" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.ContinuousCollisionCandidate.ccd.conservative_rescaling (Python parameter) — Conservative rescaling value used to avoid taking steps exactly to impact." class="md-ellipsis">conservative_<wbr>rescaling</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.ccd-return-type" class="md-nav__link">
+    <span class="md-ellipsis">Return type</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.ContinuousCollisionCandidate.print_ccd_query" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.ContinuousCollisionCandidate.print_ccd_query (Python method)" class="md-ellipsis">print_<wbr>ccd_<wbr>query</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.VertexVertexCandidate" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.VertexVertexCandidate (Python class)" class="md-ellipsis">ipctk.<wbr>Vertex<wbr>Vertex<wbr>Candidate</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.EdgeVertexCandidate (Python class) — Perform narrow-phase CCD on the candidate." class="md-ellipsis">ipctk.<wbr>Edge<wbr>Vertex<wbr>Candidate</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipctk.EdgeVertexCandidate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeVertexCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate." class="md-ellipsis">ccd</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ccd">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.V0" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.V0 (Python parameter) — Mesh vertex positions at the start of the time step." class="md-ellipsis">V0</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.V1" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.V1 (Python parameter) — Mesh vertex positions at the end of the time step." class="md-ellipsis">V1</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.E" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.E (Python parameter) — Mesh edges as rows of indicies into V." class="md-ellipsis">E</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.F" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.F (Python parameter) — Mesh triangular faces as rows of indicies into V." class="md-ellipsis">F</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.tmax" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.tmax (Python parameter) — Maximum time (normalized) to look for collisions. Should be in [0, 1]." class="md-ellipsis">tmax</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.tolerance" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.tolerance (Python parameter) — CCD tolerance used by Tight-Inclusion CCD." class="md-ellipsis">tolerance</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.max_iterations" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.max_iterations (Python parameter) — Maximum iterations used by Tight-Inclusion CCD." class="md-ellipsis">max_<wbr>iterations</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd.conservative_rescaling" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeVertexCandidate.ccd.conservative_rescaling (Python parameter) — Conservative rescaling value used to avoid taking steps exactly to impact." class="md-ellipsis">conservative_<wbr>rescaling</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.ccd-return-type" class="md-nav__link">
+    <span class="md-ellipsis">Return type</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeVertexCandidate.print_ccd_query" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeVertexCandidate.print_ccd_query (Python method)" class="md-ellipsis">print_<wbr>ccd_<wbr>query</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.EdgeEdgeCandidate (Python class) — Perform narrow-phase CCD on the candidate." class="md-ellipsis">ipctk.<wbr>Edge<wbr>Edge<wbr>Candidate</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipctk.EdgeEdgeCandidate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeEdgeCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate." class="md-ellipsis">ccd</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ccd">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.V0" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.V0 (Python parameter) — Mesh vertex positions at the start of the time step." class="md-ellipsis">V0</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.V1" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.V1 (Python parameter) — Mesh vertex positions at the end of the time step." class="md-ellipsis">V1</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.E" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.E (Python parameter) — Mesh edges as rows of indicies into V." class="md-ellipsis">E</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.F" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.F (Python parameter) — Mesh triangular faces as rows of indicies into V." class="md-ellipsis">F</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.tmax" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.tmax (Python parameter) — Maximum time (normalized) to look for collisions. Should be in [0, 1]." class="md-ellipsis">tmax</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.tolerance" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.tolerance (Python parameter) — CCD tolerance used by Tight-Inclusion CCD." class="md-ellipsis">tolerance</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.max_iterations" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.max_iterations (Python parameter) — Maximum iterations used by Tight-Inclusion CCD." class="md-ellipsis">max_<wbr>iterations</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd.conservative_rescaling" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.EdgeEdgeCandidate.ccd.conservative_rescaling (Python parameter) — Conservative rescaling value used to avoid taking steps exactly to impact." class="md-ellipsis">conservative_<wbr>rescaling</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.ccd-return-type" class="md-nav__link">
+    <span class="md-ellipsis">Return type</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeEdgeCandidate.print_ccd_query" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeEdgeCandidate.print_ccd_query (Python method)" class="md-ellipsis">print_<wbr>ccd_<wbr>query</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.EdgeFaceCandidate" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.EdgeFaceCandidate (Python class)" class="md-ellipsis">ipctk.<wbr>Edge<wbr>Face<wbr>Candidate</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.FaceVertexCandidate" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.FaceVertexCandidate (Python class) — ccd(self, V0: numpy.ndarray[numpy.float64[m, n]], V1: numpy.ndarray[numpy.float64[m, n]], E: numpy.ndarray[numpy.int32[m, n]], F: numpy.ndarray[numpy.int32[m, n]], tmax: float = 1.0, tolerance: float = 1e-06, max_iterations: int = 10000000, conservative_rescaling: float = 0.8) -&gt; tuple[bool, float]      print_ccd_query(self, V0: numpy.ndarray[numpy.float64[m, n]], V1: numpy.ndarray[numpy.float64[m, n]], E: numpy.ndarray[numpy.int32[m, n]], F: numpy.ndarray[numpy.int32[m, n]]) -&gt; None" class="md-ellipsis">ipctk.<wbr>Face<wbr>Vertex<wbr>Candidate</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipctk.FaceVertexCandidate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.FaceVertexCandidate.ccd" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.FaceVertexCandidate.ccd (Python method)" class="md-ellipsis">ccd</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.FaceVertexCandidate.print_ccd_query" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.FaceVertexCandidate.print_ccd_query (Python method)" class="md-ellipsis">print_<wbr>ccd_<wbr>query</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.Candidates" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.Candidates (Python class) — clear(self) -&gt; None      empty(self) -&gt; bool      save_obj(self, filename: str, V: numpy.ndarray[numpy.float64[m, n]], E: numpy.ndarray[numpy.int32[m, n]], F: numpy.ndarray[numpy.int32[m, n]]) -&gt; bool" class="md-ellipsis">ipctk.<wbr>Candidates</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipctk.Candidates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.Candidates.clear" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.Candidates.clear (Python method)" class="md-ellipsis">clear</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.Candidates.empty" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.Candidates.empty (Python method)" class="md-ellipsis">empty</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.Candidates.save_obj" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.Candidates.save_obj (Python method)" class="md-ellipsis">save_<wbr>obj</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#narrow-phase" class="md-nav__link">
+    <span title="narrow phase (reference label)" class="md-ellipsis">Narrow Phase</span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset" role="main">
+                
+  <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/docs/src/python-api/ccd.rst" title="Edit this page" class="md-content__button md-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+
+
+  <h1 id="ccd">CCD<a class="headerlink" href="#ccd" title="Permalink to this heading">¶</a></h1>
+<h2 id="broad-phase">Broad Phase<a class="headerlink" href="#broad-phase" title="Permalink to this heading">¶</a></h2>
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.BroadPhaseMethod">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">BroadPhaseMethod</span></span><a class="headerlink" href="#ipctk.BroadPhaseMethod" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enumeration of implemented broad phase methods.</p>
+<p>Members:</p>
+<blockquote>
+<div><p>BRUTE_FORCE :</p>
+<p>HASH_GRID :</p>
+<p>SPATIAL_HASH :</p>
+<p>SWEEP_AND_TINIEST_QUEUE :</p>
+</div></blockquote>
+</dd></dl>
+
+<h3 id="candidates">Candidates<a class="headerlink" href="#candidates" title="Permalink to this heading">¶</a></h3>
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.ContinuousCollisionCandidate">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">ContinuousCollisionCandidate</span></span><a class="headerlink" href="#ipctk.ContinuousCollisionCandidate" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.ContinuousCollisionCandidate.ccd">
+<span class="sig-name descname"><span class="pre">ccd</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.ContinuousCollisionCandidate.ccd.V0" title="ipctk.ContinuousCollisionCandidate.ccd.V0 (Python parameter) — Mesh vertex positions at the start of the time step."><span class="n"><span class="pre">V0</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.ContinuousCollisionCandidate.ccd.V1" title="ipctk.ContinuousCollisionCandidate.ccd.V1 (Python parameter) — Mesh vertex positions at the end of the time step."><span class="n"><span class="pre">V1</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.ContinuousCollisionCandidate.ccd.E" title="ipctk.ContinuousCollisionCandidate.ccd.E (Python parameter) — Mesh edges as rows of indicies into V."><span class="n"><span class="pre">E</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.ContinuousCollisionCandidate.ccd.F" title="ipctk.ContinuousCollisionCandidate.ccd.F (Python parameter) — Mesh triangular faces as rows of indicies into V."><span class="n"><span class="pre">F</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.ContinuousCollisionCandidate.ccd.tmax" title="ipctk.ContinuousCollisionCandidate.ccd.tmax (Python parameter) — Maximum time (normalized) to look for collisions. Should be in [0, 1]."><span class="n"><span class="pre">tmax</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1.0</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.ContinuousCollisionCandidate.ccd.tolerance" title="ipctk.ContinuousCollisionCandidate.ccd.tolerance (Python parameter) — CCD tolerance used by Tight-Inclusion CCD."><span class="n"><span class="pre">tolerance</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1e-06</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.ContinuousCollisionCandidate.ccd.max_iterations" title="ipctk.ContinuousCollisionCandidate.ccd.max_iterations (Python parameter) — Maximum iterations used by Tight-Inclusion CCD."><span class="n"><span class="pre">max_iterations</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mi">10000000</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.ContinuousCollisionCandidate.ccd.conservative_rescaling" title="ipctk.ContinuousCollisionCandidate.ccd.conservative_rescaling (Python parameter) — Conservative rescaling value used to avoid taking steps exactly to impact."><span class="n"><span class="pre">conservative_rescaling</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.8</span></code></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span></span><a class="headerlink" href="#ipctk.ContinuousCollisionCandidate.ccd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform narrow-phase CCD on the candidate.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.ContinuousCollisionCandidate.ccd-parameters">Parameters<a class="headerlink" href="#ipctk.ContinuousCollisionCandidate.ccd-parameters" title="Permalink to this headline">¶</a><span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.ContinuousCollisionCandidate.ccd.V0"><span class="n sig-name">V0</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.float64<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.ContinuousCollisionCandidate.ccd.V0" title="Permalink to this definition">¶</a></dt><dd><p>Mesh vertex positions at the start of the time step.</p>
+</dd>
+<dt id="ipctk.ContinuousCollisionCandidate.ccd.V1"><span class="n sig-name">V1</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.float64<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.ContinuousCollisionCandidate.ccd.V1" title="Permalink to this definition">¶</a></dt><dd><p>Mesh vertex positions at the end of the time step.</p>
+</dd>
+<dt id="ipctk.ContinuousCollisionCandidate.ccd.E"><span class="n sig-name">E</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.int32<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.ContinuousCollisionCandidate.ccd.E" title="Permalink to this definition">¶</a></dt><dd><p>Mesh edges as rows of indicies into V.</p>
+</dd>
+<dt id="ipctk.ContinuousCollisionCandidate.ccd.F"><span class="n sig-name">F</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.int32<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.ContinuousCollisionCandidate.ccd.F" title="Permalink to this definition">¶</a></dt><dd><p>Mesh triangular faces as rows of indicies into V.</p>
+</dd>
+<dt id="ipctk.ContinuousCollisionCandidate.ccd.tmax"><span class="n sig-name">tmax</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><span class="w">   </span><span class="o">=</span><span class="w">   </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1.0</span></code><a class="headerlink" href="#ipctk.ContinuousCollisionCandidate.ccd.tmax" title="Permalink to this definition">¶</a></dt><dd><p>Maximum time (normalized) to look for collisions. Should be in [0, 1].</p>
+</dd>
+<dt id="ipctk.ContinuousCollisionCandidate.ccd.tolerance"><span class="n sig-name">tolerance</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><span class="w">   </span><span class="o">=</span><span class="w">   </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1e-06</span></code><a class="headerlink" href="#ipctk.ContinuousCollisionCandidate.ccd.tolerance" title="Permalink to this definition">¶</a></dt><dd><p>CCD tolerance used by Tight-Inclusion CCD.</p>
+</dd>
+<dt id="ipctk.ContinuousCollisionCandidate.ccd.max_iterations"><span class="n sig-name">max_iterations</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">int</span></span><span class="w">   </span><span class="o">=</span><span class="w">   </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mi">10000000</span></code><a class="headerlink" href="#ipctk.ContinuousCollisionCandidate.ccd.max_iterations" title="Permalink to this definition">¶</a></dt><dd><p>Maximum iterations used by Tight-Inclusion CCD.</p>
+</dd>
+<dt id="ipctk.ContinuousCollisionCandidate.ccd.conservative_rescaling"><span class="n sig-name">conservative_rescaling</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><span class="w">   </span><span class="o">=</span><span class="w">   </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.8</span></code><a class="headerlink" href="#ipctk.ContinuousCollisionCandidate.ccd.conservative_rescaling" title="Permalink to this definition">¶</a></dt><dd><p>Conservative rescaling value used to avoid taking steps exactly to impact.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.ContinuousCollisionCandidate.ccd-returns">Returns<a class="headerlink" href="#ipctk.ContinuousCollisionCandidate.ccd-returns" title="Permalink to this headline">¶</a><span class="colon">:</span></dt>
+<dd class="field-even"><p>If the candidate had a collision over the time interval.
+Computed time of impact (normalized).</p>
+</dd>
+<dt class="field-odd" id="ipctk.ContinuousCollisionCandidate.ccd-return-type">Return type<a class="headerlink" href="#ipctk.ContinuousCollisionCandidate.ccd-return-type" title="Permalink to this headline">¶</a><span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple of</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.ContinuousCollisionCandidate.print_ccd_query">
+<span class="sig-name descname"><span class="pre">print_ccd_query</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">V0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">V1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">E</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">F</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.ContinuousCollisionCandidate.print_ccd_query" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.VertexVertexCandidate">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">VertexVertexCandidate</span></span><a class="headerlink" href="#ipctk.VertexVertexCandidate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.EdgeVertexCandidate">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">EdgeVertexCandidate</span></span><a class="headerlink" href="#ipctk.EdgeVertexCandidate" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.EdgeVertexCandidate.ccd">
+<span class="sig-name descname"><span class="pre">ccd</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeVertexCandidate.ccd.V0" title="ipctk.EdgeVertexCandidate.ccd.V0 (Python parameter) — Mesh vertex positions at the start of the time step."><span class="n"><span class="pre">V0</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeVertexCandidate.ccd.V1" title="ipctk.EdgeVertexCandidate.ccd.V1 (Python parameter) — Mesh vertex positions at the end of the time step."><span class="n"><span class="pre">V1</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeVertexCandidate.ccd.E" title="ipctk.EdgeVertexCandidate.ccd.E (Python parameter) — Mesh edges as rows of indicies into V."><span class="n"><span class="pre">E</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeVertexCandidate.ccd.F" title="ipctk.EdgeVertexCandidate.ccd.F (Python parameter) — Mesh triangular faces as rows of indicies into V."><span class="n"><span class="pre">F</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeVertexCandidate.ccd.tmax" title="ipctk.EdgeVertexCandidate.ccd.tmax (Python parameter) — Maximum time (normalized) to look for collisions. Should be in [0, 1]."><span class="n"><span class="pre">tmax</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1.0</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeVertexCandidate.ccd.tolerance" title="ipctk.EdgeVertexCandidate.ccd.tolerance (Python parameter) — CCD tolerance used by Tight-Inclusion CCD."><span class="n"><span class="pre">tolerance</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1e-06</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeVertexCandidate.ccd.max_iterations" title="ipctk.EdgeVertexCandidate.ccd.max_iterations (Python parameter) — Maximum iterations used by Tight-Inclusion CCD."><span class="n"><span class="pre">max_iterations</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mi">10000000</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeVertexCandidate.ccd.conservative_rescaling" title="ipctk.EdgeVertexCandidate.ccd.conservative_rescaling (Python parameter) — Conservative rescaling value used to avoid taking steps exactly to impact."><span class="n"><span class="pre">conservative_rescaling</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.8</span></code></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span></span><a class="headerlink" href="#ipctk.EdgeVertexCandidate.ccd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform narrow-phase CCD on the candidate.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.EdgeVertexCandidate.ccd-parameters">Parameters<a class="headerlink" href="#ipctk.EdgeVertexCandidate.ccd-parameters" title="Permalink to this headline">¶</a><span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.EdgeVertexCandidate.ccd.V0"><span class="n sig-name">V0</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.float64<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.EdgeVertexCandidate.ccd.V0" title="Permalink to this definition">¶</a></dt><dd><p>Mesh vertex positions at the start of the time step.</p>
+</dd>
+<dt id="ipctk.EdgeVertexCandidate.ccd.V1"><span class="n sig-name">V1</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.float64<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.EdgeVertexCandidate.ccd.V1" title="Permalink to this definition">¶</a></dt><dd><p>Mesh vertex positions at the end of the time step.</p>
+</dd>
+<dt id="ipctk.EdgeVertexCandidate.ccd.E"><span class="n sig-name">E</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.int32<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.EdgeVertexCandidate.ccd.E" title="Permalink to this definition">¶</a></dt><dd><p>Mesh edges as rows of indicies into V.</p>
+</dd>
+<dt id="ipctk.EdgeVertexCandidate.ccd.F"><span class="n sig-name">F</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.int32<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.EdgeVertexCandidate.ccd.F" title="Permalink to this definition">¶</a></dt><dd><p>Mesh triangular faces as rows of indicies into V.</p>
+</dd>
+<dt id="ipctk.EdgeVertexCandidate.ccd.tmax"><span class="n sig-name">tmax</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><span class="w">   </span><span class="o">=</span><span class="w">   </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1.0</span></code><a class="headerlink" href="#ipctk.EdgeVertexCandidate.ccd.tmax" title="Permalink to this definition">¶</a></dt><dd><p>Maximum time (normalized) to look for collisions. Should be in [0, 1].</p>
+</dd>
+<dt id="ipctk.EdgeVertexCandidate.ccd.tolerance"><span class="n sig-name">tolerance</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><span class="w">   </span><span class="o">=</span><span class="w">   </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1e-06</span></code><a class="headerlink" href="#ipctk.EdgeVertexCandidate.ccd.tolerance" title="Permalink to this definition">¶</a></dt><dd><p>CCD tolerance used by Tight-Inclusion CCD.</p>
+</dd>
+<dt id="ipctk.EdgeVertexCandidate.ccd.max_iterations"><span class="n sig-name">max_iterations</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">int</span></span><span class="w">   </span><span class="o">=</span><span class="w">   </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mi">10000000</span></code><a class="headerlink" href="#ipctk.EdgeVertexCandidate.ccd.max_iterations" title="Permalink to this definition">¶</a></dt><dd><p>Maximum iterations used by Tight-Inclusion CCD.</p>
+</dd>
+<dt id="ipctk.EdgeVertexCandidate.ccd.conservative_rescaling"><span class="n sig-name">conservative_rescaling</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><span class="w">   </span><span class="o">=</span><span class="w">   </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.8</span></code><a class="headerlink" href="#ipctk.EdgeVertexCandidate.ccd.conservative_rescaling" title="Permalink to this definition">¶</a></dt><dd><p>Conservative rescaling value used to avoid taking steps exactly to impact.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.EdgeVertexCandidate.ccd-returns">Returns<a class="headerlink" href="#ipctk.EdgeVertexCandidate.ccd-returns" title="Permalink to this headline">¶</a><span class="colon">:</span></dt>
+<dd class="field-even"><p>If the candidate had a collision over the time interval.
+Computed time of impact (normalized).</p>
+</dd>
+<dt class="field-odd" id="ipctk.EdgeVertexCandidate.ccd-return-type">Return type<a class="headerlink" href="#ipctk.EdgeVertexCandidate.ccd-return-type" title="Permalink to this headline">¶</a><span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple of</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.EdgeVertexCandidate.print_ccd_query">
+<span class="sig-name descname"><span class="pre">print_ccd_query</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">V0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">V1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">E</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">F</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.EdgeVertexCandidate.print_ccd_query" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.EdgeEdgeCandidate">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">EdgeEdgeCandidate</span></span><a class="headerlink" href="#ipctk.EdgeEdgeCandidate" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.EdgeEdgeCandidate.ccd">
+<span class="sig-name descname"><span class="pre">ccd</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeEdgeCandidate.ccd.V0" title="ipctk.EdgeEdgeCandidate.ccd.V0 (Python parameter) — Mesh vertex positions at the start of the time step."><span class="n"><span class="pre">V0</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeEdgeCandidate.ccd.V1" title="ipctk.EdgeEdgeCandidate.ccd.V1 (Python parameter) — Mesh vertex positions at the end of the time step."><span class="n"><span class="pre">V1</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeEdgeCandidate.ccd.E" title="ipctk.EdgeEdgeCandidate.ccd.E (Python parameter) — Mesh edges as rows of indicies into V."><span class="n"><span class="pre">E</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeEdgeCandidate.ccd.F" title="ipctk.EdgeEdgeCandidate.ccd.F (Python parameter) — Mesh triangular faces as rows of indicies into V."><span class="n"><span class="pre">F</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeEdgeCandidate.ccd.tmax" title="ipctk.EdgeEdgeCandidate.ccd.tmax (Python parameter) — Maximum time (normalized) to look for collisions. Should be in [0, 1]."><span class="n"><span class="pre">tmax</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1.0</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeEdgeCandidate.ccd.tolerance" title="ipctk.EdgeEdgeCandidate.ccd.tolerance (Python parameter) — CCD tolerance used by Tight-Inclusion CCD."><span class="n"><span class="pre">tolerance</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1e-06</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeEdgeCandidate.ccd.max_iterations" title="ipctk.EdgeEdgeCandidate.ccd.max_iterations (Python parameter) — Maximum iterations used by Tight-Inclusion CCD."><span class="n"><span class="pre">max_iterations</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mi">10000000</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.EdgeEdgeCandidate.ccd.conservative_rescaling" title="ipctk.EdgeEdgeCandidate.ccd.conservative_rescaling (Python parameter) — Conservative rescaling value used to avoid taking steps exactly to impact."><span class="n"><span class="pre">conservative_rescaling</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.8</span></code></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span></span><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.ccd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform narrow-phase CCD on the candidate.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.EdgeEdgeCandidate.ccd-parameters">Parameters<a class="headerlink" href="#ipctk.EdgeEdgeCandidate.ccd-parameters" title="Permalink to this headline">¶</a><span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.EdgeEdgeCandidate.ccd.V0"><span class="n sig-name">V0</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.float64<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.ccd.V0" title="Permalink to this definition">¶</a></dt><dd><p>Mesh vertex positions at the start of the time step.</p>
+</dd>
+<dt id="ipctk.EdgeEdgeCandidate.ccd.V1"><span class="n sig-name">V1</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.float64<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.ccd.V1" title="Permalink to this definition">¶</a></dt><dd><p>Mesh vertex positions at the end of the time step.</p>
+</dd>
+<dt id="ipctk.EdgeEdgeCandidate.ccd.E"><span class="n sig-name">E</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.int32<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.ccd.E" title="Permalink to this definition">¶</a></dt><dd><p>Mesh edges as rows of indicies into V.</p>
+</dd>
+<dt id="ipctk.EdgeEdgeCandidate.ccd.F"><span class="n sig-name">F</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.int32<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.ccd.F" title="Permalink to this definition">¶</a></dt><dd><p>Mesh triangular faces as rows of indicies into V.</p>
+</dd>
+<dt id="ipctk.EdgeEdgeCandidate.ccd.tmax"><span class="n sig-name">tmax</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><span class="w">   </span><span class="o">=</span><span class="w">   </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1.0</span></code><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.ccd.tmax" title="Permalink to this definition">¶</a></dt><dd><p>Maximum time (normalized) to look for collisions. Should be in [0, 1].</p>
+</dd>
+<dt id="ipctk.EdgeEdgeCandidate.ccd.tolerance"><span class="n sig-name">tolerance</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><span class="w">   </span><span class="o">=</span><span class="w">   </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1e-06</span></code><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.ccd.tolerance" title="Permalink to this definition">¶</a></dt><dd><p>CCD tolerance used by Tight-Inclusion CCD.</p>
+</dd>
+<dt id="ipctk.EdgeEdgeCandidate.ccd.max_iterations"><span class="n sig-name">max_iterations</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">int</span></span><span class="w">   </span><span class="o">=</span><span class="w">   </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mi">10000000</span></code><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.ccd.max_iterations" title="Permalink to this definition">¶</a></dt><dd><p>Maximum iterations used by Tight-Inclusion CCD.</p>
+</dd>
+<dt id="ipctk.EdgeEdgeCandidate.ccd.conservative_rescaling"><span class="n sig-name">conservative_rescaling</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><span class="w">   </span><span class="o">=</span><span class="w">   </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.8</span></code><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.ccd.conservative_rescaling" title="Permalink to this definition">¶</a></dt><dd><p>Conservative rescaling value used to avoid taking steps exactly to impact.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.EdgeEdgeCandidate.ccd-returns">Returns<a class="headerlink" href="#ipctk.EdgeEdgeCandidate.ccd-returns" title="Permalink to this headline">¶</a><span class="colon">:</span></dt>
+<dd class="field-even"><p>If the candidate had a collision over the time interval.
+Computed time of impact (normalized).</p>
+</dd>
+<dt class="field-odd" id="ipctk.EdgeEdgeCandidate.ccd-return-type">Return type<a class="headerlink" href="#ipctk.EdgeEdgeCandidate.ccd-return-type" title="Permalink to this headline">¶</a><span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple of</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.EdgeEdgeCandidate.print_ccd_query">
+<span class="sig-name descname"><span class="pre">print_ccd_query</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">V0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">V1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">E</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">F</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.EdgeEdgeCandidate.print_ccd_query" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.EdgeFaceCandidate">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">EdgeFaceCandidate</span></span><a class="headerlink" href="#ipctk.EdgeFaceCandidate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.FaceVertexCandidate">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">FaceVertexCandidate</span></span><a class="headerlink" href="#ipctk.FaceVertexCandidate" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.FaceVertexCandidate.ccd">
+<span class="sig-name descname"><span class="pre">ccd</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">V0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">V1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">E</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">F</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">tmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1.0</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">1e-06</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">max_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mi">10000000</span></code></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">conservative_rescaling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="mf">0.8</span></code></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span></span><a class="headerlink" href="#ipctk.FaceVertexCandidate.ccd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.FaceVertexCandidate.print_ccd_query">
+<span class="sig-name descname"><span class="pre">print_ccd_query</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">V0</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">V1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">E</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">F</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.FaceVertexCandidate.print_ccd_query" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.Candidates">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">Candidates</span></span><a class="headerlink" href="#ipctk.Candidates" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.Candidates.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.Candidates.clear" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.Candidates.empty">
+<span class="sig-name descname"><span class="pre">empty</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.Candidates.empty" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.Candidates.save_obj">
+<span class="sig-name descname"><span class="pre">save_obj</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">str</span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">V</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">E</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">F</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.Candidates.save_obj" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<h2 id="narrow-phase">Narrow Phase<a class="headerlink" href="#narrow-phase" title="Permalink to this heading">¶</a></h2>
+
+
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      September 21, 2022
+    
+  </small>
+</div>
+
+              
+            </article>
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="Footer">
+      
+        
+        <a href="friction.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Friction" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Friction
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="distance.html" class="md-footer__link md-footer__link--next" aria-label="Next: Distance" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Distance
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  
+  
+  <div class="md-footer-meta md-typeset">
+    
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-footer-copyright__highlight">
+        &#169; Copyright 2020-2022, IPC-Sim Organization; MIT License.
+        
+    </div>
+  
+    Created using
+    <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
+    5.1.1.
+     and
+    <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
+  
+</div>
+      
+    </div>
+    
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    
+    
+      <script src="../_static/javascripts/bundle.dc1bded0.min.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+  </body>
+</html>

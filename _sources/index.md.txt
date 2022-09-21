@@ -27,7 +27,14 @@ cpp-api/utils.rst
 :hidden:
 
 Getting Started <python.md>
-python-api
+python-api/main.rst
+python-api/collision_constraints.rst
+python-api/friction.rst
+python-api/ccd.rst
+python-api/distance.rst
+python-api/barrier.rst
+python-api/collision_mesh.rst
+python-api/utils.rst
 ```
 
 ```{toctree}
