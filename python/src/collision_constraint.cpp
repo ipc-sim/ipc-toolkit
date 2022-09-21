@@ -218,6 +218,7 @@ void define_collision_constraint(py::module_& m)
             "vertex_index", &PlaneVertexConstraint::vertex_index, "");
 
     py::class_<Constraints>(m, "Constraints")
+        .def(py::init<>(), "")
         .def(
             "build",
             py::overload_cast<
@@ -270,5 +271,11 @@ void define_collision_constraint(py::module_& m)
         .def_readwrite("ev_constraints", &Constraints::ev_constraints, "")
         .def_readwrite("ee_constraints", &Constraints::ee_constraints, "")
         .def_readwrite("fv_constraints", &Constraints::fv_constraints, "")
-        .def_readwrite("pv_constraints", &Constraints::pv_constraints, "");
+        .def_readwrite("pv_constraints", &Constraints::pv_constraints, "")
+        .def_readwrite(
+            "use_convergent_formulation",
+            &Constraints::use_convergent_formulation, "")
+        .def_readwrite(
+            "compute_shape_derivatives",
+            &Constraints::compute_shape_derivatives, "");
 }

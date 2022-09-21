@@ -1,9 +1,6 @@
 Main Functions
 ==============
 
-.. doxygenfunction:: construct_constraint_set(const CollisionMesh& mesh, const Eigen::MatrixXd& V, const double dhat, Constraints& constraint_set, const double dmin = 0, const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID)
-.. doxygenfunction:: construct_constraint_set(const Candidates& candidates, const CollisionMesh& mesh, const Eigen::MatrixXd& V, const double dhat, Constraints& constraint_set, const double dmin = 0)
-
 .. doxygenfunction:: construct_friction_constraint_set(const CollisionMesh& mesh, const Eigen::MatrixXd& V, const Constraints& contact_constraint_set, double dhat, double barrier_stiffness, double mu, FrictionConstraints& friction_constraint_set)
 .. doxygenfunction:: construct_friction_constraint_set(const CollisionMesh& mesh, const Eigen::MatrixXd& V, const Constraints& contact_constraint_set, double dhat, double barrier_stiffness, const Eigen::VectorXd& mus, FrictionConstraints& friction_constraint_set)
 .. doxygenfunction:: construct_friction_constraint_set( const CollisionMesh& mesh, const Eigen::MatrixXd& V, const Constraints& contact_constraint_set, double dhat, double barrier_stiffness, const Eigen::VectorXd& mus, const std::function<double(double, double)>& blend_mu, FrictionConstraints& friction_constraint_set)
