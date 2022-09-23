@@ -20,57 +20,24 @@
 
 namespace ipc {
 
-void construct_friction_constraint_set(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const Constraints& contact_constraint_set,
-    double dhat,
-    double barrier_stiffness,
-    double mu,
-    FrictionConstraints& friction_constraint_set)
-{
-    return construct_friction_constraint_set(
-        mesh, V, contact_constraint_set, dhat, barrier_stiffness,
-        Eigen::VectorXd::Constant(V.rows(), mu), friction_constraint_set);
-}
-
-void construct_friction_constraint_set(
+void FrictionConstraints::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     const Constraints& contact_constraint_set,
     double dhat,
     double barrier_stiffness,
     const Eigen::VectorXd& mus,
-    FrictionConstraints& friction_constraint_set)
-{
-    return construct_friction_constraint_set(
-        mesh, V, contact_constraint_set, dhat, barrier_stiffness, mus,
-        [](double mu0, double mu1) { return (mu0 + mu1) / 2; },
-        // [](double mu0, double mu1) { return mu0 * mu1; },
-        // [](double mu0, double mu1) { return std::min(mu0, mu1); },
-        // [](double mu0, double mu1) { return std::max(mu0, mu1); },
-        friction_constraint_set);
-}
-
-void construct_friction_constraint_set(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const Constraints& contact_constraint_set,
-    double dhat,
-    double barrier_stiffness,
-    const Eigen::VectorXd& mus,
-    const std::function<double(double, double)>& blend_mu,
-    FrictionConstraints& friction_constraint_set)
+    const std::function<double(double, double)>& blend_mu)
 {
     assert(mus.size() == V.rows());
 
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
 
-    friction_constraint_set.clear();
+    clear();
 
     const auto& [C_vv, C_ev, C_ee, C_fv, _, __, ___] = contact_constraint_set;
-    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = friction_constraint_set;
+    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
 
     FC_vv.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
@@ -124,45 +91,47 @@ void construct_friction_constraint_set(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// compute_friction_potential() in friction.tpp
+// FrictionConstraints::compute_potential() in friction.tpp
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-Eigen::VectorXd compute_friction_potential_gradient(
+Eigen::VectorXd FrictionConstraints::compute_potential_gradient(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const FrictionConstraints& friction_constraint_set,
+    const Eigen::MatrixXd& velocity,
     double epsv_times_h)
 {
-    if (friction_constraint_set.empty()) {
-        return Eigen::VectorXd::Zero(V0.size());
+    const int dim = velocity.cols();
+    const int ndof = velocity.size();
+
+    if (empty()) {
+        return Eigen::VectorXd::Zero(ndof);
     }
     assert(epsv_times_h > 0);
 
-    const Eigen::MatrixXi& E = mesh.edges();
-    const Eigen::MatrixXi& F = mesh.faces();
-
-    auto U = V1 - V0; // absolute linear dislacement of each point
-    int dim = U.cols();
-
     tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
-        Eigen::VectorXd::Zero(U.size()));
+        Eigen::VectorXd::Zero(ndof));
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), friction_constraint_set.size()),
+        tbb::blocked_range<size_t>(size_t(0), size()),
         [&](const tbb::blocked_range<size_t>& r) {
-            auto& local_grad = storage.local();
+            auto& global_grad = storage.local();
+
             for (size_t i = r.begin(); i < r.end(); i++) {
+                const auto& constraint = (*this)[i];
+
+                const VectorMax12d local_grad =
+                    constraint.compute_potential_gradient(
+                        velocity, mesh.edges(), mesh.faces(), epsv_times_h);
+
+                const std::array<long, 4> vis =
+                    constraint.vertex_indices(mesh.edges(), mesh.faces());
+
                 local_gradient_to_global_gradient(
-                    friction_constraint_set[i].compute_potential_gradient(
-                        U, E, F, epsv_times_h),
-                    friction_constraint_set[i].vertex_indices(E, F), dim,
-                    local_grad);
+                    local_grad, vis, dim, global_grad);
             }
         });
 
-    Eigen::VectorXd grad = Eigen::VectorXd::Zero(U.size());
+    Eigen::VectorXd grad = Eigen::VectorXd::Zero(ndof);
     for (const auto& local_grad : storage) {
         grad += local_grad;
     }
@@ -171,44 +140,47 @@ Eigen::VectorXd compute_friction_potential_gradient(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Eigen::SparseMatrix<double> compute_friction_potential_hessian(
+Eigen::SparseMatrix<double> FrictionConstraints::compute_potential_hessian(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const FrictionConstraints& friction_constraint_set,
+    const Eigen::MatrixXd& velocity,
     double epsv_times_h,
     bool project_hessian_to_psd)
 {
-    if (friction_constraint_set.empty()) {
-        return Eigen::SparseMatrix<double>(V0.size(), V0.size());
+    const int dim = velocity.cols();
+    const int ndof = velocity.size();
+
+    if (empty()) {
+        return Eigen::SparseMatrix<double>(ndof, ndof);
     }
     assert(epsv_times_h > 0);
 
-    const Eigen::MatrixXi& E = mesh.edges();
-    const Eigen::MatrixXi& F = mesh.faces();
-
-    auto U = V1 - V0; // absolute linear dislacement of each point
-    int dim = U.cols();
-
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
         storage;
+
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), friction_constraint_set.size()),
+        tbb::blocked_range<size_t>(size_t(0), size()),
         [&](const tbb::blocked_range<size_t>& r) {
-            auto& local_hess_triplets = storage.local();
+            auto& hess_triplets = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
+                const auto& constraint = (*this)[i];
+
+                const VectorMax12d local_hess =
+                    constraint.compute_potential_hessian(
+                        velocity, mesh.edges(), mesh.faces(), epsv_times_h,
+                        project_hessian_to_psd);
+
+                const std::array<long, 4> vis =
+                    constraint.vertex_indices(mesh.edges(), mesh.faces());
+
                 local_hessian_to_global_triplets(
-                    friction_constraint_set[i].compute_potential_hessian(
-                        U, E, F, epsv_times_h, project_hessian_to_psd),
-                    friction_constraint_set[i].vertex_indices(E, F), dim,
-                    local_hess_triplets);
+                    local_hess, vis, dim, hess_triplets);
             }
         });
 
-    Eigen::SparseMatrix<double> hess(U.size(), U.size());
+    Eigen::SparseMatrix<double> hess(ndof, ndof);
     for (const auto& local_hess_triplets : storage) {
-        Eigen::SparseMatrix<double> local_hess(U.size(), U.size());
+        Eigen::SparseMatrix<double> local_hess(ndof, ndof);
         local_hess.setFromTriplets(
             local_hess_triplets.begin(), local_hess_triplets.end());
         hess += local_hess;
@@ -218,19 +190,18 @@ Eigen::SparseMatrix<double> compute_friction_potential_hessian(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Eigen::VectorXd compute_friction_force(
+Eigen::VectorXd FrictionConstraints::compute_force(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& X,
     const Eigen::MatrixXd& Ut,
     const Eigen::MatrixXd& U,
-    const FrictionConstraints& friction_constraint_set,
     const double dhat,
     const double barrier_stiffness,
     const double epsv_times_h,
     const double dmin,
     const bool no_mu)
 {
-    if (friction_constraint_set.empty()) {
+    if (empty()) {
         return Eigen::VectorXd::Zero(U.size());
     }
     assert(epsv_times_h > 0);
@@ -243,10 +214,19 @@ Eigen::VectorXd compute_friction_force(
         Eigen::VectorXd::Zero(U.size()));
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), friction_constraint_set.size()),
+        tbb::blocked_range<size_t>(size_t(0), size()),
         [&](const tbb::blocked_range<size_t>& r) {
-            auto& local_force = storage.local();
+            Eigen::VectorXd& force = storage.local();
             for (size_t i = r.begin(); i < r.end(); i++) {
+                const auto& constraint = (*this)[i];
+
+                const VectorMax12d local_grad =
+                    constraint.compute_potential_gradient(
+                        velocity, mesh.edges(), mesh.faces(), epsv_times_h);
+
+                const std::array<long, 4> vis =
+                    constraint.vertex_indices(mesh.edges(), mesh.faces());
+
                 local_gradient_to_global_gradient(
                     friction_constraint_set[i].compute_force(
                         X, Ut, U, E, F, dhat, barrier_stiffness, epsv_times_h,
@@ -265,19 +245,18 @@ Eigen::VectorXd compute_friction_force(
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Eigen::SparseMatrix<double> compute_friction_force_jacobian(
+Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& X,
     const Eigen::MatrixXd& Ut,
     const Eigen::MatrixXd& U,
-    const FrictionConstraints& friction_constraint_set,
     const double dhat,
     const double barrier_stiffness,
     const double epsv_times_h,
     const FrictionConstraint::DiffWRT wrt,
     const double dmin)
 {
-    if (friction_constraint_set.empty()) {
+    if (empty()) {
         return Eigen::SparseMatrix<double>(U.size(), U.size());
     }
     assert(epsv_times_h > 0);
@@ -290,7 +269,7 @@ Eigen::SparseMatrix<double> compute_friction_force_jacobian(
         storage;
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), friction_constraint_set.size()),
+        tbb::blocked_range<size_t>(size_t(0), size()),
         [&](const tbb::blocked_range<size_t>& r) {
             auto& local_jac_triplets = storage.local();
 

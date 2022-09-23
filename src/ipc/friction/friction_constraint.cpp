@@ -51,9 +51,8 @@ VectorMax12d FrictionConstraint::compute_potential_gradient(
     // Compute f₁(‖ū‖)/‖ū‖
     const double f1_over_norm_u = f1_SF_over_x(u.norm(), epsv_times_h);
 
-    // μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u ∈ ℝⁿ
-    return weight * mu * normal_force_magnitude * f1_over_norm_u
-        * (T * u); // (n×2)(2×1) = (n×1)
+    // μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u ∈ ℝⁿ // (n×2)(2×1) = (n×1)
+    return weight * mu * normal_force_magnitude * f1_over_norm_u * (T * u);
 }
 
 MatrixMax12d FrictionConstraint::compute_potential_hessian(
