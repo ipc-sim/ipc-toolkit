@@ -17,11 +17,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
-
-#define IPC_EARLIEST_TOI_USE_MUTEX
-#ifdef IPC_EARLIEST_TOI_USE_MUTEX
 #include <mutex>
-#endif
 
 #include <algorithm> // std::min/max
 
@@ -321,20 +317,12 @@ double compute_collision_free_stepsize(
         return 1; // No possible collisions, so can take full step.
     }
 
-    // Narrow phase
-#ifdef IPC_EARLIEST_TOI_USE_MUTEX
     double earliest_toi = 1;
     std::mutex earliest_toi_mutex;
-#else
-    tbb::enumerable_thread_specific<double> storage(1);
-#endif
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, candidates.size()),
         [&](tbb::blocked_range<size_t> r) {
-#ifndef IPC_EARLIEST_TOI_USE_MUTEX
-            double& earliest_toi = storage.local();
-#endif
             for (size_t i = r.begin(); i < r.end(); i++) {
                 double toi = std::numeric_limits<double>::infinity();
                 bool are_colliding = candidates[i].ccd(
@@ -342,9 +330,7 @@ double compute_collision_free_stepsize(
                     max_iterations);
 
                 if (are_colliding) {
-#ifdef IPC_EARLIEST_TOI_USE_MUTEX
                     std::lock_guard<std::mutex> lock(earliest_toi_mutex);
-#endif
                     if (toi < earliest_toi) {
                         earliest_toi = toi;
                     }
@@ -352,12 +338,6 @@ double compute_collision_free_stepsize(
             }
         });
 
-#ifndef IPC_EARLIEST_TOI_USE_MUTEX
-    double earliest_toi = 1;
-    for (const auto& local_earliest_toi : storage) {
-        earliest_toi = std::min(earliest_toi, local_earliest_toi);
-    }
-#endif
     assert(earliest_toi >= 0 && earliest_toi <= 1.0);
     return earliest_toi;
 }
