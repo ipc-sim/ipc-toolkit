@@ -324,13 +324,20 @@ double compute_collision_free_stepsize(
         tbb::blocked_range<size_t>(0, candidates.size()),
         [&](tbb::blocked_range<size_t> r) {
             for (size_t i = r.begin(); i < r.end(); i++) {
-                double toi = std::numeric_limits<double>::infinity();
+                // Use the mutex to read as well in case writing double takes
+                // more than one clock cycle.
+                double tmax;
+                {
+                    std::scoped_lock<std::mutex> lock(earliest_toi_mutex);
+                    tmax = earliest_toi;
+                }
+
+                double toi = std::numeric_limits<double>::infinity(); // output
                 bool are_colliding = candidates[i].ccd(
-                    V0, V1, E, F, toi, /*tmax=*/earliest_toi, tolerance,
-                    max_iterations);
+                    V0, V1, E, F, toi, tmax, tolerance, max_iterations);
 
                 if (are_colliding) {
-                    std::lock_guard<std::mutex> lock(earliest_toi_mutex);
+                    std::scoped_lock<std::mutex> lock(earliest_toi_mutex);
                     if (toi < earliest_toi) {
                         earliest_toi = toi;
                     }
