@@ -19,7 +19,7 @@ double EdgeVertexConstraint::compute_distance(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F) const
 {
-    // The distance type is known because of Constraints::build()
+    // The distance type is known because of CollisionConstraints::build()
     return point_edge_distance(
         V.row(vertex_index), V.row(E(edge_index, 0)), V.row(E(edge_index, 1)),
         PointEdgeDistanceType::P_E);

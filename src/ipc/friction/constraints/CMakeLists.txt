@@ -1,18 +1,12 @@
 set(SOURCES
-  constraints_builder.cpp
-  constraints_builder.hpp
-  collision_constraint.cpp
-  collision_constraint.hpp
-  constraints.cpp
-  constraints.hpp
   edge_edge.cpp
   edge_edge.hpp
   edge_vertex.cpp
   edge_vertex.hpp
   face_vertex.cpp
   face_vertex.hpp
-  plane_vertex.cpp
-  plane_vertex.hpp
+  friction_constraint.cpp
+  friction_constraint.hpp
   vertex_vertex.cpp
   vertex_vertex.hpp
 )

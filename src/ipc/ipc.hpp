@@ -2,7 +2,8 @@
 
 // NOTE: Include this so the user can just include ipc.hpp
 #include <ipc/collisions/constraints.hpp>
-#include <ipc/friction/friction.hpp>
+#include <ipc/friction/constraints.hpp>
+
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/collision_mesh.hpp>
 
@@ -11,56 +12,6 @@
 
 /// Incremental Potential Contact functions
 namespace ipc {
-
-/// @brief Compute the barrier potential for a given constraint set.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V Vertices of the collision mesh.
-/// @param[in] constraint_set The set of constraints.
-/// @param[in] dhat The activation distance of the barrier.
-/// @returns The sum of all barrier potentials (not scaled by the barrier stiffness).
-double compute_barrier_potential(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const Constraints& constraint_set,
-    const double dhat);
-
-/// @brief Compute the gradient of the barrier potential.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V Vertices of the collision mesh.
-/// @param[in] constraint_set The set of constraints.
-/// @param[in] dhat The activation distance of the barrier.
-/// @returns The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |V|.
-Eigen::VectorXd compute_barrier_potential_gradient(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const Constraints& constraint_set,
-    const double dhat);
-
-/// @brief Compute the hessian of the barrier potential.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V Vertices of the collision mesh.
-/// @param[in] constraint_set The set of constraints.
-/// @param[in] dhat The activation distance of the barrier.
-/// @param[in] project_hessian_to_psd Make sure the hessian is positive semi-definite.
-/// @returns The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |V|x|V|.
-Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const Constraints& constraint_set,
-    const double dhat,
-    const bool project_hessian_to_psd = true);
-
-/// @brief Compute the barrier shape derivative.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V Vertices of the collision mesh.
-/// @param[in] constraint_set The set of constraints.
-/// @param[in] dhat The activation distance of the barrier.
-/// @returns The derivative of the force with respect to X, the rest positions.
-Eigen::SparseMatrix<double> compute_barrier_shape_derivative(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const Constraints& constraint_set,
-    const double dhat);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Collision detection
@@ -125,15 +76,6 @@ double compute_collision_free_stepsize(
 
 ///////////////////////////////////////////////////////////////////////////////
 // Utilities
-
-/// @brief Computes the minimum distance between any non-adjacent elements.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V Vertices of the collision mesh.
-/// @returns The minimum distance between any non-adjacent elements.
-double compute_minimum_distance(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const Constraints& constraint_set);
 
 /// @brief Determine if the mesh has self intersections.
 /// @param[in] mesh The collision mesh.

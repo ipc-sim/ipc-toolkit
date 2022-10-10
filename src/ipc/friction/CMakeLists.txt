@@ -4,11 +4,9 @@ set(SOURCES
   friction.cpp
   friction.hpp
   friction.tpp
-  friction_constraint.cpp
-  friction_constraint.hpp
   normal_force_magnitude.cpp
   normal_force_magnitude.hpp
-  relative_displacement.hpp
+  relative_velocity.hpp
   smooth_friction_mollifier.hpp
   smooth_friction_mollifier.tpp
   tangent_basis.cpp
@@ -18,3 +16,9 @@ set(SOURCES
 ipc_toolkit_prepend_current_path(SOURCES)
 ipc_toolkit_set_source_group(${SOURCES})
 target_sources(ipc_toolkit PRIVATE ${SOURCES})
+
+################################################################################
+# Subfolders
+################################################################################
+
+add_subdirectory(constraints)

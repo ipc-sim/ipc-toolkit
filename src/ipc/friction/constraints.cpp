@@ -1,35 +1,26 @@
-#include "friction.hpp"
+#include "constraints.hpp"
 
-#include <ipc/barrier/barrier.hpp>
-#include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
-#include <ipc/distance/point_edge.hpp>
-#include <ipc/distance/point_triangle.hpp>
-#include <ipc/friction/closest_point.hpp>
-#include <ipc/friction/normal_force_magnitude.hpp>
-#include <ipc/friction/relative_displacement.hpp>
-#include <ipc/friction/tangent_basis.hpp>
-#include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/local_to_global.hpp>
-
-#include <ipc/config.hpp>
 
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
 
+#include <stdexcept> // std::out_of_range
+
 namespace ipc {
 
 void FrictionConstraints::build(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const Constraints& contact_constraint_set,
+    const Eigen::MatrixXd& positions,
+    const CollisionConstraints& contact_constraint_set,
     double dhat,
     double barrier_stiffness,
     const Eigen::VectorXd& mus,
     const std::function<double(double, double)>& blend_mu)
 {
-    assert(mus.size() == V.rows());
+    assert(mus.size() == positions.rows());
 
     const Eigen::MatrixXi& E = mesh.edges();
     const Eigen::MatrixXi& F = mesh.faces();
@@ -41,7 +32,7 @@ void FrictionConstraints::build(
 
     FC_vv.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
-        FC_vv.emplace_back(c_vv, V, E, F, dhat, barrier_stiffness);
+        FC_vv.emplace_back(c_vv, positions, E, F, dhat, barrier_stiffness);
         const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_indices(E, F);
 
         FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
@@ -49,7 +40,7 @@ void FrictionConstraints::build(
 
     FC_ev.reserve(C_ev.size());
     for (const auto& c_ev : C_ev) {
-        FC_ev.emplace_back(c_ev, V, E, F, dhat, barrier_stiffness);
+        FC_ev.emplace_back(c_ev, positions, E, F, dhat, barrier_stiffness);
         const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_indices(E, F);
 
         const double edge_mu =
@@ -60,15 +51,17 @@ void FrictionConstraints::build(
     FC_ee.reserve(C_ee.size());
     for (const auto& c_ee : C_ee) {
         const auto& [ea0i, ea1i, eb0i, eb1i] = c_ee.vertex_indices(E, F);
-        const Eigen::Vector3d ea0 = V.row(ea0i), ea1 = V.row(ea1i),
-                              eb0 = V.row(eb0i), eb1 = V.row(eb1i);
+        const Eigen::Vector3d ea0 = positions.row(ea0i);
+        const Eigen::Vector3d ea1 = positions.row(ea1i);
+        const Eigen::Vector3d eb0 = positions.row(eb0i);
+        const Eigen::Vector3d eb1 = positions.row(eb1i);
 
         // Skip EE constraints that are close to parallel
         if (edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1) < c_ee.eps_x) {
             continue;
         }
 
-        FC_ee.emplace_back(c_ee, V, E, F, dhat, barrier_stiffness);
+        FC_ee.emplace_back(c_ee, positions, E, F, dhat, barrier_stiffness);
 
         double ea_mu =
             (mus(ea1i) - mus(ea0i)) * FC_ee.back().closest_point[0] + mus(ea0i);
@@ -79,7 +72,7 @@ void FrictionConstraints::build(
 
     FC_fv.reserve(C_fv.size());
     for (const auto& c_fv : C_fv) {
-        FC_fv.emplace_back(c_fv, V, E, F, dhat, barrier_stiffness);
+        FC_fv.emplace_back(c_fv, positions, E, F, dhat, barrier_stiffness);
         const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_indices(E, F);
 
         double face_mu = mus(f0i)
@@ -98,7 +91,7 @@ void FrictionConstraints::build(
 Eigen::VectorXd FrictionConstraints::compute_potential_gradient(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& velocity,
-    double epsv_times_h)
+    double epsv_times_h) const
 {
     const int dim = velocity.cols();
     const int ndof = velocity.size();
@@ -144,7 +137,7 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_potential_hessian(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& velocity,
     double epsv_times_h,
-    bool project_hessian_to_psd)
+    bool project_hessian_to_psd) const
 {
     const int dim = velocity.cols();
     const int ndof = velocity.size();
@@ -199,7 +192,7 @@ Eigen::VectorXd FrictionConstraints::compute_force(
     const double barrier_stiffness,
     const double epsv_times_h,
     const double dmin,
-    const bool no_mu)
+    const bool no_mu) const
 {
     if (empty()) {
         return Eigen::VectorXd::Zero(U.size());
@@ -207,8 +200,6 @@ Eigen::VectorXd FrictionConstraints::compute_force(
     assert(epsv_times_h > 0);
 
     int dim = U.cols();
-    const Eigen::MatrixXi& E = mesh.edges();
-    const Eigen::MatrixXi& F = mesh.faces();
 
     tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
         Eigen::VectorXd::Zero(U.size()));
@@ -220,19 +211,14 @@ Eigen::VectorXd FrictionConstraints::compute_force(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const auto& constraint = (*this)[i];
 
-                const VectorMax12d local_grad =
-                    constraint.compute_potential_gradient(
-                        velocity, mesh.edges(), mesh.faces(), epsv_times_h);
+                const VectorMax12d local_force = constraint.compute_force(
+                    X, Ut, U, mesh.edges(), mesh.faces(), dhat,
+                    barrier_stiffness, epsv_times_h, dmin, no_mu);
 
                 const std::array<long, 4> vis =
                     constraint.vertex_indices(mesh.edges(), mesh.faces());
 
-                local_gradient_to_global_gradient(
-                    friction_constraint_set[i].compute_force(
-                        X, Ut, U, E, F, dhat, barrier_stiffness, epsv_times_h,
-                        dmin, no_mu),
-                    friction_constraint_set[i].vertex_indices(E, F), dim,
-                    local_force);
+                local_gradient_to_global_gradient(local_force, vis, dim, force);
             }
         });
 
@@ -254,7 +240,7 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
     const double barrier_stiffness,
     const double epsv_times_h,
     const FrictionConstraint::DiffWRT wrt,
-    const double dmin)
+    const double dmin) const
 {
     if (empty()) {
         return Eigen::SparseMatrix<double>(U.size(), U.size());
@@ -271,15 +257,21 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), size()),
         [&](const tbb::blocked_range<size_t>& r) {
-            auto& local_jac_triplets = storage.local();
+            auto& jac_triplets = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-                local_hessian_to_global_triplets(
-                    friction_constraint_set[i].compute_force_jacobian(
+                const FrictionConstraint& constraint = (*this)[i];
+
+                const MatrixMax12d local_force_jacobian =
+                    constraint.compute_force_jacobian(
                         X, Ut, U, E, F, dhat, barrier_stiffness, epsv_times_h,
-                        wrt, dmin),
-                    friction_constraint_set[i].vertex_indices(E, F), dim,
-                    local_jac_triplets);
+                        wrt, dmin);
+
+                const std::array<long, 4> vis =
+                    constraint.vertex_indices(mesh.edges(), mesh.faces());
+
+                local_hessian_to_global_triplets(
+                    local_force_jacobian, vis, dim, jac_triplets);
             }
         });
 
@@ -293,8 +285,8 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
 
     // if wrt == X then compute ∇ₓ w(x)
     if (wrt == FrictionConstraint::DiffWRT::X) {
-        for (int i = 0; i < friction_constraint_set.size(); i++) {
-            const FrictionConstraint& constraint = friction_constraint_set[i];
+        for (int i = 0; i < this->size(); i++) {
+            const FrictionConstraint& constraint = (*this)[i];
             assert(constraint.weight_gradient.size() == X.size());
             if (constraint.weight_gradient.size() != X.size()) {
                 throw std::runtime_error(
@@ -316,6 +308,68 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
     }
 
     return jacobian;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+size_t FrictionConstraints::size() const
+{
+    return vv_constraints.size() + ev_constraints.size() + ee_constraints.size()
+        + fv_constraints.size();
+}
+
+bool FrictionConstraints::empty() const
+{
+    return vv_constraints.empty() && ev_constraints.empty()
+        && ee_constraints.empty() && fv_constraints.empty();
+}
+
+void FrictionConstraints::clear()
+{
+    vv_constraints.clear();
+    ev_constraints.clear();
+    ee_constraints.clear();
+    fv_constraints.clear();
+}
+
+FrictionConstraint& FrictionConstraints::operator[](size_t idx)
+{
+    if (idx < vv_constraints.size()) {
+        return vv_constraints[idx];
+    }
+    idx -= vv_constraints.size();
+    if (idx < ev_constraints.size()) {
+        return ev_constraints[idx];
+    }
+    idx -= ev_constraints.size();
+    if (idx < ee_constraints.size()) {
+        return ee_constraints[idx];
+    }
+    idx -= ee_constraints.size();
+    if (idx < fv_constraints.size()) {
+        return fv_constraints[idx];
+    }
+    throw std::out_of_range("Friction constraint index is out of range!");
+}
+
+const FrictionConstraint& FrictionConstraints::operator[](size_t idx) const
+{
+    if (idx < vv_constraints.size()) {
+        return vv_constraints[idx];
+    }
+    idx -= vv_constraints.size();
+    if (idx < ev_constraints.size()) {
+        return ev_constraints[idx];
+    }
+    idx -= ev_constraints.size();
+    if (idx < ee_constraints.size()) {
+        return ee_constraints[idx];
+    }
+    idx -= ee_constraints.size();
+    if (idx < fv_constraints.size()) {
+        return fv_constraints[idx];
+    }
+    throw std::out_of_range("Friction constraint index is out of range!");
 }
 
 } // namespace ipc

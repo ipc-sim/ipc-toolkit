@@ -19,7 +19,7 @@ double FaceVertexConstraint::compute_distance(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F) const
 {
-    // The distance type is known because of Constraints::build()
+    // The distance type is known because of CollisionConstraints::build()
     return point_triangle_distance(
         V.row(vertex_index), V.row(F(face_index, 0)), V.row(F(face_index, 1)),
         V.row(F(face_index, 2)), PointTriangleDistanceType::P_T);
