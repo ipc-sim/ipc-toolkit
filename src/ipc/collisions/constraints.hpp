@@ -8,7 +8,6 @@
 #include <ipc/collisions/face_vertex.hpp>
 #include <ipc/collisions/plane_vertex.hpp>
 #include <ipc/broad_phase/broad_phase.hpp>
-#include <ipc/barrier/dual_stiffness.hpp>
 
 #include <Eigen/Core>
 
