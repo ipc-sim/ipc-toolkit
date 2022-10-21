@@ -25,7 +25,7 @@ double EdgeVertexCandidate::compute_distance(
         dtype);
 }
 
-VectorMax12d EdgeVertexCandidate::compute_distance_gradient(
+VectorMax9d EdgeVertexCandidate::compute_distance_gradient(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -38,7 +38,7 @@ VectorMax12d EdgeVertexCandidate::compute_distance_gradient(
     return distance_grad;
 }
 
-MatrixMax12d EdgeVertexCandidate::compute_distance_hessian(
+MatrixMax9d EdgeVertexCandidate::compute_distance_hessian(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
