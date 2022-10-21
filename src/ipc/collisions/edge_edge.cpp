@@ -133,7 +133,7 @@ MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
         hess = project_to_psd(hess);
     }
 
-    return std::max(weight, 0.0) * hess;
+    return weight * hess;
 }
 
 } // namespace ipc

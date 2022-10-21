@@ -83,7 +83,7 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
     const double f1_over_norm_u = f1_SF_over_x(norm_u, epsv_times_h);
 
     // Compute μ N(xᵗ)
-    double scale = std::max(weight, 0.0) * mu * normal_force_magnitude;
+    double scale = weight * mu * normal_force_magnitude;
 
     MatrixMax12d hess;
     if (norm_u >= epsv_times_h) {
