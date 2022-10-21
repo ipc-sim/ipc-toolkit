@@ -8,7 +8,8 @@ namespace ipc {
 enum class PointEdgeDistanceType {
     P_E0, ///< The point is closest to edge vertex zero.
     P_E1, ///< The point is closest to edge vertex one.
-    P_E   ///< The point is closest to the interior of the edge.
+    P_E,  ///< The point is closest to the interior of the edge.
+    AUTO  ///< Automatically determine the closest pair.
 };
 
 /// @brief Closest pair between a point and triangle.
@@ -19,7 +20,8 @@ enum class PointTriangleDistanceType {
     P_E0, ///< The point is closest to triangle edge zero (vertex zero to one).
     P_E1, ///< The point is closest to triangle edge one (vertex one to two).
     P_E2, ///< The point is closest to triangle edge two (vertex two to zero).
-    P_T   ///< The point is closest to the interior of the triangle.
+    P_T,  ///< The point is closest to the interior of the triangle.
+    AUTO  ///< Automatically determine the closest pair.
 };
 
 /// @brief Closest pair between two edges.
@@ -36,7 +38,8 @@ enum class EdgeEdgeDistanceType {
     EA0_EB,
     /// The edges are closest at vertex 1 of edge A and the interior of edge B.
     EA1_EB,
-    EA_EB ///< The edges are closest at an interior point of edge A and B.
+    EA_EB, ///< The edges are closest at an interior point of edge A and B.
+    AUTO   ///< Automatically determine the closest pair.
 };
 
 /// @brief Determine the closest pair between a point and edge.

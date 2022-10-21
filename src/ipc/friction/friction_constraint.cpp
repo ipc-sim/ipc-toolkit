@@ -83,7 +83,7 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
     const double f1_over_norm_u = f1_SF_over_x(norm_u, epsv_times_h);
 
     // Compute μ N(xᵗ)
-    double scale = weight * mu * normal_force_magnitude;
+    double scale = std::max(weight, 0.0) * mu * normal_force_magnitude;
 
     MatrixMax12d hess;
     if (norm_u >= epsv_times_h) {
@@ -520,8 +520,8 @@ VectorMax12d EdgeVertexFrictionConstraint::compute_distance_gradient(
     assert(x.size() == ndof());
     VectorMax9d grad_d;
     point_edge_distance_gradient(
-        x.head(dim()), x.segment(dim(), dim()), x.tail(dim()),
-        PointEdgeDistanceType::P_E, grad_d);
+        x.head(dim()), x.segment(dim(), dim()), x.tail(dim()), grad_d,
+        PointEdgeDistanceType::P_E);
     return grad_d;
 }
 
@@ -618,7 +618,7 @@ VectorMax12d EdgeEdgeFrictionConstraint::compute_distance_gradient(
     // The distance type is known because mollified PP and PE were skipped.
     edge_edge_distance_gradient(
         x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
-        x.tail(dim()), EdgeEdgeDistanceType::EA_EB, grad_d);
+        x.tail(dim()), grad_d, EdgeEdgeDistanceType::EA_EB);
     return grad_d;
 }
 
@@ -715,7 +715,7 @@ VectorMax12d FaceVertexFrictionConstraint::compute_distance_gradient(
     VectorMax12d grad_d;
     point_triangle_distance_gradient(
         x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
-        x.tail(dim()), PointTriangleDistanceType::P_T, grad_d);
+        x.tail(dim()), grad_d, PointTriangleDistanceType::P_T);
     return grad_d;
 }
 

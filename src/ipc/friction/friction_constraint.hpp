@@ -220,8 +220,8 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
     }
 
 protected:
-    virtual double compute_distance(const VectorMax12d& x) const override;
-    virtual VectorMax12d
+    double compute_distance(const VectorMax12d& x) const override;
+    VectorMax12d
     compute_distance_gradient(const VectorMax12d& x) const override;
 
     MatrixMax<double, 3, 2>
@@ -295,8 +295,8 @@ struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
     }
 
 protected:
-    virtual double compute_distance(const VectorMax12d& x) const override;
-    virtual VectorMax12d
+    double compute_distance(const VectorMax12d& x) const override;
+    VectorMax12d
     compute_distance_gradient(const VectorMax12d& x) const override;
 
     MatrixMax<double, 3, 2>
@@ -373,8 +373,8 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
     }
 
 protected:
-    virtual double compute_distance(const VectorMax12d& x) const override;
-    virtual VectorMax12d
+    double compute_distance(const VectorMax12d& x) const override;
+    VectorMax12d
     compute_distance_gradient(const VectorMax12d& x) const override;
 
     MatrixMax<double, 3, 2>
@@ -451,8 +451,8 @@ struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
     }
 
 protected:
-    virtual double compute_distance(const VectorMax12d& x) const override;
-    virtual VectorMax12d
+    double compute_distance(const VectorMax12d& x) const override;
+    VectorMax12d
     compute_distance_gradient(const VectorMax12d& x) const override;
 
     MatrixMax<double, 3, 2>

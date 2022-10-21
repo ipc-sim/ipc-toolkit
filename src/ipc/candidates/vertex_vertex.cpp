@@ -4,19 +4,14 @@
 
 namespace ipc {
 
-VertexVertexConstraint::VertexVertexConstraint(
+VertexVertexCandidate::VertexVertexCandidate(
     long vertex0_index, long vertex1_index)
-    : VertexVertexCandidate(vertex0_index, vertex1_index)
+    : vertex0_index(vertex0_index)
+    , vertex1_index(vertex1_index)
 {
 }
 
-VertexVertexConstraint::VertexVertexConstraint(
-    const VertexVertexCandidate& candidate)
-    : VertexVertexCandidate(candidate)
-{
-}
-
-double VertexVertexConstraint::compute_distance(
+double VertexVertexCandidate::compute_distance(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F) const
@@ -24,7 +19,7 @@ double VertexVertexConstraint::compute_distance(
     return point_point_distance(V.row(vertex0_index), V.row(vertex1_index));
 }
 
-VectorMax12d VertexVertexConstraint::compute_distance_gradient(
+VectorMax6d VertexVertexCandidate::compute_distance_gradient(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F) const
@@ -35,7 +30,7 @@ VectorMax12d VertexVertexConstraint::compute_distance_gradient(
     return distance_grad;
 }
 
-MatrixMax12d VertexVertexConstraint::compute_distance_hessian(
+MatrixMax6d VertexVertexCandidate::compute_distance_hessian(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F) const
@@ -44,6 +39,25 @@ MatrixMax12d VertexVertexConstraint::compute_distance_hessian(
     point_point_distance_hessian(
         V.row(vertex0_index), V.row(vertex1_index), distance_hess);
     return distance_hess;
+}
+
+bool VertexVertexCandidate::operator==(const VertexVertexCandidate& other) const
+{
+    return vertex0_index == other.vertex0_index
+        && vertex1_index == other.vertex1_index;
+}
+
+bool VertexVertexCandidate::operator!=(const VertexVertexCandidate& other) const
+{
+    return !(*this == other);
+}
+
+bool VertexVertexCandidate::operator<(const VertexVertexCandidate& other) const
+{
+    if (vertex0_index == other.vertex0_index) {
+        return vertex1_index < other.vertex1_index;
+    }
+    return vertex0_index < other.vertex0_index;
 }
 
 } // namespace ipc

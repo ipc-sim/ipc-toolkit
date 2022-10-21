@@ -5,8 +5,6 @@ set(SOURCES
   broad_phase.hpp
   brute_force.cpp
   brute_force.hpp
-  collision_candidate.cpp
-  collision_candidate.hpp
   hash_grid.cpp
   hash_grid.hpp
   spatial_hash.cpp

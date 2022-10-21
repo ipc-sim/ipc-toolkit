@@ -1,14 +1,13 @@
 #pragma once
 
-#include <ipc/broad_phase/collision_candidate.hpp>
+#include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/collisions/collision_constraint.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
 struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
-    EdgeVertexConstraint(long edge_index, long vertex_index);
-    EdgeVertexConstraint(const EdgeVertexCandidate& candidate);
+    using EdgeVertexCandidate::EdgeVertexCandidate;
 
     int num_vertices() const override { return 3; };
     std::array<long, 4> vertex_indices(
@@ -20,22 +19,35 @@ struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
     double compute_distance(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+        const Eigen::MatrixXi& F) const override
+    {
+        return EdgeVertexCandidate::compute_distance(
+            V, E, F, PointEdgeDistanceType::P_E);
+    }
 
     VectorMax12d compute_distance_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+        const Eigen::MatrixXi& F) const override
+    {
+        return EdgeVertexCandidate::compute_distance_gradient(
+            V, E, F, PointEdgeDistanceType::P_E);
+    }
 
     MatrixMax12d compute_distance_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+        const Eigen::MatrixXi& F) const override
+    {
+        return EdgeVertexCandidate::compute_distance_hessian(
+            V, E, F, PointEdgeDistanceType::P_E);
+    }
 
     template <typename H>
     friend H AbslHashValue(H h, const EdgeVertexConstraint& ev)
     {
-        return H::combine(std::move(h), ev.edge_index, ev.vertex_index);
+        return AbslHashValue(
+            std::move(h), static_cast<const EdgeVertexCandidate&>(ev));
     }
 };
 

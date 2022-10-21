@@ -284,6 +284,10 @@ void Constraints::edge_vertex_candiates_to_constraints(
             C_ev.back().weight_gradient = weight_gradient;
             ev_to_index.emplace(C_ev.back(), C_ev.size() - 1);
             break;
+
+        case PointEdgeDistanceType::AUTO:
+            assert(false);
+            break;
         }
     }
 }
@@ -389,6 +393,10 @@ void Constraints::edge_edge_candiates_to_constraints(
             C_ee.back().weight = weight;
             C_ee.back().weight_gradient = weight_gradient;
             break;
+
+        case EdgeEdgeDistanceType::AUTO:
+            assert(false);
+            break;
         }
     }
 }
@@ -469,6 +477,10 @@ void Constraints::face_vertex_candiates_to_constraints(
             C_fv.emplace_back(fi, vi);
             C_fv.back().weight = weight;
             C_fv.back().weight_gradient = weight_gradient;
+            break;
+
+        case PointTriangleDistanceType::AUTO:
+            assert(false);
             break;
         }
     }

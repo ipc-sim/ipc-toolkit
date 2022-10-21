@@ -65,7 +65,7 @@ MatrixMax12d CollisionConstraint::compute_potential_hessian(
         term2 = project_to_psd(term2);
     }
 
-    return weight * (term1 + term2);
+    return std::max(weight, 0.0) * (term1 + term2);
 }
 
 } // namespace ipc
