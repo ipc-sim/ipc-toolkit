@@ -11,15 +11,11 @@ void define_point_edge_distance(py::module_& m)
     m.def(
         "point_edge_distance",
         [](const VectorMax3d& p, const VectorMax3d& e0, const VectorMax3d& e1,
-           const PointEdgeDistanceType* dtype) {
+           const PointEdgeDistanceType dtype) {
             assert_2D_or_3D_vector(p, "p");
             assert_2D_or_3D_vector(e0, "e0");
             assert_2D_or_3D_vector(e1, "e1");
-            if (dtype == nullptr) {
-                return point_edge_distance(p, e0, e1);
-            } else {
-                return point_edge_distance(p, e0, e1, *dtype);
-            }
+            return point_edge_distance(p, e0, e1, dtype);
         },
         R"ipc_Qu8mg5v7(
         Compute the distance between a point and edge in 2D or 3D.
@@ -37,21 +33,17 @@ void define_point_edge_distance(py::module_& m)
             The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"),
-        py::arg("dtype") = py::none());
+        py::arg("dtype") = PointEdgeDistanceType::AUTO);
 
     m.def(
         "point_edge_distance_gradient",
         [](const VectorMax3d& p, const VectorMax3d& e0, const VectorMax3d& e1,
-           const PointEdgeDistanceType* dtype) {
+           const PointEdgeDistanceType dtype) {
             assert_2D_or_3D_vector(p, "p");
             assert_2D_or_3D_vector(e0, "e0");
             assert_2D_or_3D_vector(e1, "e1");
             VectorMax9d grad;
-            if (dtype == nullptr) {
-                point_edge_distance_gradient(p, e0, e1, grad);
-            } else {
-                point_edge_distance_gradient(p, e0, e1, *dtype, grad);
-            }
+            point_edge_distance_gradient(p, e0, e1, grad, dtype);
             return grad;
         },
         R"ipc_Qu8mg5v7(
@@ -70,21 +62,17 @@ void define_point_edge_distance(py::module_& m)
             The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"),
-        py::arg("dtype") = py::none());
+        py::arg("dtype") = PointEdgeDistanceType::AUTO);
 
     m.def(
         "point_edge_distance_hessian",
         [](const VectorMax3d& p, const VectorMax3d& e0, const VectorMax3d& e1,
-           const PointEdgeDistanceType* dtype) {
+           const PointEdgeDistanceType dtype) {
             assert_2D_or_3D_vector(p, "p");
             assert_2D_or_3D_vector(e0, "e0");
             assert_2D_or_3D_vector(e1, "e1");
             MatrixMax9d hess;
-            if (dtype == nullptr) {
-                point_edge_distance_hessian(p, e0, e1, hess);
-            } else {
-                point_edge_distance_hessian(p, e0, e1, *dtype, hess);
-            }
+            point_edge_distance_hessian(p, e0, e1, hess, dtype);
             return hess;
         },
         R"ipc_Qu8mg5v7(
@@ -103,5 +91,5 @@ void define_point_edge_distance(py::module_& m)
             The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"),
-        py::arg("dtype") = py::none());
+        py::arg("dtype") = PointEdgeDistanceType::AUTO);
 }

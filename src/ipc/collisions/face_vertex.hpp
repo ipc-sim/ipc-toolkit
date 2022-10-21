@@ -9,6 +9,11 @@ namespace ipc {
 struct FaceVertexConstraint : FaceVertexCandidate, CollisionConstraint {
     using FaceVertexCandidate::FaceVertexCandidate;
 
+    FaceVertexConstraint(const FaceVertexCandidate& candidate)
+        : FaceVertexCandidate(candidate)
+    {
+    }
+
     int num_vertices() const override
     {
         return FaceVertexCandidate::num_vertices();

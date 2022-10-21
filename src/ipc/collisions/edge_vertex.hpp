@@ -9,6 +9,11 @@ namespace ipc {
 struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
     using EdgeVertexCandidate::EdgeVertexCandidate;
 
+    EdgeVertexConstraint(const EdgeVertexCandidate& candidate)
+        : EdgeVertexCandidate(candidate)
+    {
+    }
+
     int num_vertices() const override { return 3; };
     std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override

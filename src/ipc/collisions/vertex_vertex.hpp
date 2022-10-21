@@ -9,6 +9,11 @@ namespace ipc {
 struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
     using VertexVertexCandidate::VertexVertexCandidate;
 
+    VertexVertexConstraint(const VertexVertexCandidate& candidate)
+        : VertexVertexCandidate(candidate)
+    {
+    }
+
     int num_vertices() const override
     {
         return VertexVertexCandidate::num_vertices();

@@ -16,6 +16,15 @@ void define_spatial_hash(py::module_& m);
 void define_sweep(py::module_& m);
 void define_voxel_size_heuristic(py::module_& m);
 
+// candidates
+void define_candidates(py::module_& m);
+void define_continuous_collision_candidate(py::module_& m);
+void define_edge_edge_candidate(py::module_& m);
+void define_edge_face_candidate(py::module_& m);
+void define_edge_vertex_candidate(py::module_& m);
+void define_face_vertex_candidate(py::module_& m);
+void define_vertex_vertex_candidate(py::module_& m);
+
 // ccd
 void define_ccd_aabb(py::module_& m);
 void define_ccd(py::module_& m);
