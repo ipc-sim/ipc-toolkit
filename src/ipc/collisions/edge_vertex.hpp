@@ -21,6 +21,7 @@ struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const override
     {
+        // The distance type is known because of Constraints::build()
         return EdgeVertexCandidate::compute_distance(
             V, E, F, PointEdgeDistanceType::P_E);
     }
@@ -30,6 +31,7 @@ struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const override
     {
+        // The distance type is known because of Constraints::build()
         return EdgeVertexCandidate::compute_distance_gradient(
             V, E, F, PointEdgeDistanceType::P_E);
     }
@@ -39,6 +41,7 @@ struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const override
     {
+        // The distance type is known because of Constraints::build()
         return EdgeVertexCandidate::compute_distance_hessian(
             V, E, F, PointEdgeDistanceType::P_E);
     }

@@ -19,7 +19,6 @@ double EdgeVertexCandidate::compute_distance(
     const Eigen::MatrixXi& F,
     const PointEdgeDistanceType dtype) const
 {
-    // The distance type is known because of Constraints::build()
     return point_edge_distance(
         V.row(vertex_index), V.row(E(edge_index, 0)), V.row(E(edge_index, 1)),
         dtype);

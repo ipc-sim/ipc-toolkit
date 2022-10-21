@@ -25,6 +25,7 @@ struct FaceVertexConstraint : FaceVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const override
     {
+        // The distance type is known because of Constraints::build()
         return FaceVertexCandidate::compute_distance(
             V, E, F, PointTriangleDistanceType::P_T);
     }
@@ -34,6 +35,7 @@ struct FaceVertexConstraint : FaceVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const override
     {
+        // The distance type is known because of Constraints::build()
         return FaceVertexCandidate::compute_distance_gradient(
             V, E, F, PointTriangleDistanceType::P_T);
     }
@@ -43,6 +45,7 @@ struct FaceVertexConstraint : FaceVertexCandidate, CollisionConstraint {
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F) const override
     {
+        // The distance type is known because of Constraints::build()
         return FaceVertexCandidate::compute_distance_hessian(
             V, E, F, PointTriangleDistanceType::P_T);
     }

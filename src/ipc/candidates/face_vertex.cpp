@@ -19,7 +19,6 @@ double FaceVertexCandidate::compute_distance(
     const Eigen::MatrixXi& F,
     const PointTriangleDistanceType dtype) const
 {
-    // The distance type is known because of Constraints::build()
     return point_triangle_distance(
         V.row(vertex_index), V.row(F(face_index, 0)), V.row(F(face_index, 1)),
         V.row(F(face_index, 2)), dtype);
