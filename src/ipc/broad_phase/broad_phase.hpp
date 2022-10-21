@@ -2,7 +2,8 @@
 
 #include <ipc/collision_mesh.hpp>
 #include <ipc/broad_phase/aabb.hpp>
-#include <ipc/broad_phase/collision_candidate.hpp>
+#include <ipc/candidates/candidates.hpp>
+#include <ipc/candidates/edge_face.hpp>
 
 #include <Eigen/Core>
 

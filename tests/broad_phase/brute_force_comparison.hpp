@@ -3,7 +3,7 @@
 #include <Eigen/Core>
 
 #include <ipc/collision_mesh.hpp>
-#include <ipc/broad_phase/collision_candidate.hpp>
+#include <ipc/candidates/candidates.hpp>
 
 void brute_force_comparison(
     const ipc::CollisionMesh& mesh,

@@ -20,42 +20,6 @@ EdgeEdgeConstraint::EdgeEdgeConstraint(
 {
 }
 
-double EdgeEdgeConstraint::compute_distance(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
-{
-    // The distance type is unknown because of mollified PP and PE
-    // constraints where also added as EE constraints.
-    return edge_edge_distance(
-        V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
-        V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)));
-}
-
-VectorMax12d EdgeEdgeConstraint::compute_distance_gradient(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
-{
-    VectorMax12d distance_grad;
-    edge_edge_distance_gradient(
-        V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
-        V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)), distance_grad);
-    return distance_grad;
-}
-
-MatrixMax12d EdgeEdgeConstraint::compute_distance_hessian(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
-{
-    MatrixMax12d distance_hess;
-    edge_edge_distance_hessian(
-        V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
-        V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)), distance_hess);
-    return distance_hess;
-}
-
 double EdgeEdgeConstraint::compute_potential(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
@@ -88,7 +52,7 @@ VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
         edge_edge_distance_type(ea0, ea1, eb0, eb1);
     const double distance = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
     VectorMax12d distance_grad;
-    edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype, distance_grad);
+    edge_edge_distance_gradient(ea0, ea1, eb0, eb1, distance_grad, dtype);
 
     // m(x)
     const double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
@@ -135,9 +99,9 @@ MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
         edge_edge_distance_type(ea0, ea1, eb0, eb1);
     const double distance = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
     VectorMax12d distance_grad;
-    edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype, distance_grad);
+    edge_edge_distance_gradient(ea0, ea1, eb0, eb1, distance_grad, dtype);
     MatrixMax12d distance_hess;
-    edge_edge_distance_hessian(ea0, ea1, eb0, eb1, dtype, distance_hess);
+    edge_edge_distance_hessian(ea0, ea1, eb0, eb1, distance_hess, dtype);
 
     // Compute mollifier derivatives
     const double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);

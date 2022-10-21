@@ -12,12 +12,8 @@ void define_point_triangle_distance(py::module_& m)
         "point_triangle_distance",
         [](const Eigen::Vector3d& p, const Eigen::Vector3d& t0,
            const Eigen::Vector3d& t1, const Eigen::Vector3d& t2,
-           const PointTriangleDistanceType* dtype) {
-            if (dtype == nullptr) {
-                return point_triangle_distance(p, t0, t1, t2);
-            } else {
-                return point_triangle_distance(p, t0, t1, t2, *dtype);
-            }
+           const PointTriangleDistanceType dtype) {
+            return point_triangle_distance(p, t0, t1, t2, dtype);
         },
         R"ipc_Qu8mg5v7(
         Compute the distance between a two lines segments in 3D.
@@ -36,19 +32,15 @@ void define_point_triangle_distance(py::module_& m)
             The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"),
-        py::arg("dtype") = py::none());
+        py::arg("dtype") = PointTriangleDistanceType::AUTO);
 
     m.def(
         "point_triangle_distance_gradient",
         [](const Eigen::Vector3d& p, const Eigen::Vector3d& t0,
            const Eigen::Vector3d& t1, const Eigen::Vector3d& t2,
-           const PointTriangleDistanceType* dtype) {
+           const PointTriangleDistanceType dtype) {
             Vector<double, 12> grad;
-            if (dtype == nullptr) {
-                point_triangle_distance_gradient(p, t0, t1, t2, grad);
-            } else {
-                point_triangle_distance_gradient(p, t0, t1, t2, *dtype, grad);
-            }
+            point_triangle_distance_gradient(p, t0, t1, t2, grad, dtype);
             return grad;
         },
         R"ipc_Qu8mg5v7(
@@ -68,19 +60,15 @@ void define_point_triangle_distance(py::module_& m)
             The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"),
-        py::arg("dtype") = py::none());
+        py::arg("dtype") = PointTriangleDistanceType::AUTO);
 
     m.def(
         "point_triangle_distance_hessian",
         [](const Eigen::Vector3d& p, const Eigen::Vector3d& t0,
            const Eigen::Vector3d& t1, const Eigen::Vector3d& t2,
-           const PointTriangleDistanceType* dtype) {
+           const PointTriangleDistanceType dtype) {
             Eigen::Matrix<double, 12, 12> hess;
-            if (dtype == nullptr) {
-                point_triangle_distance_hessian(p, t0, t1, t2, hess);
-            } else {
-                point_triangle_distance_hessian(p, t0, t1, t2, *dtype, hess);
-            }
+            point_triangle_distance_hessian(p, t0, t1, t2, hess, dtype);
             return hess;
         },
         R"ipc_Qu8mg5v7(
@@ -100,5 +88,5 @@ void define_point_triangle_distance(py::module_& m)
             The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"),
-        py::arg("dtype") = py::none());
+        py::arg("dtype") = PointTriangleDistanceType::AUTO);
 }

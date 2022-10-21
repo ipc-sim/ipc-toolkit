@@ -1,17 +1,18 @@
 set(SOURCES
-  collision_constraint.cpp
-  collision_constraint.hpp
-  constraints.cpp
-  constraints.hpp
+  candidates.cpp
+  candidates.hpp
+  continuous_collision_candidate.hpp
   edge_edge.cpp
   edge_edge.hpp
-  # edge_vertex.cpp
+  edge_face.cpp
+  edge_face.hpp
+  edge_vertex.cpp
   edge_vertex.hpp
-  # face_vertex.cpp
+  face_vertex.cpp
   face_vertex.hpp
-  plane_vertex.cpp
-  plane_vertex.hpp
-  # vertex_vertex.cpp
+  # plane_vertex.cpp
+  # plane_vertex.hpp
+  vertex_vertex.cpp
   vertex_vertex.hpp
 )
 

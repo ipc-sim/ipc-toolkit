@@ -11,3 +11,4 @@ BreakBeforeBinaryOperators: NonAssignment
 SortIncludes: false
 CommentPragmas:  '^@.+'
 BreakStringLiterals: false
+PackConstructorInitializers: CurrentLine

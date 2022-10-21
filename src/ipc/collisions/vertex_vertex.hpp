@@ -1,43 +1,59 @@
 #pragma once
 
-#include <ipc/broad_phase/collision_candidate.hpp>
+#include <ipc/candidates/vertex_vertex.hpp>
 #include <ipc/collisions/collision_constraint.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
 struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
-    VertexVertexConstraint(long vertex0_index, long vertex1_index);
-    VertexVertexConstraint(const VertexVertexCandidate& candidate);
+    using VertexVertexCandidate::VertexVertexCandidate;
 
-    int num_vertices() const override { return 2; };
+    VertexVertexConstraint(const VertexVertexCandidate& candidate)
+        : VertexVertexCandidate(candidate)
+    {
+    }
+
+    int num_vertices() const override
+    {
+        return VertexVertexCandidate::num_vertices();
+    }
+
     std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
     {
-        return { { vertex0_index, vertex1_index, -1, -1 } };
+        return VertexVertexCandidate::vertex_indices(E, F);
     }
 
     double compute_distance(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+        const Eigen::MatrixXi& F) const override
+    {
+        return VertexVertexCandidate::compute_distance(V, E, F);
+    }
 
     VectorMax12d compute_distance_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+        const Eigen::MatrixXi& F) const override
+    {
+        return VertexVertexCandidate::compute_distance_gradient(V, E, F);
+    }
 
     MatrixMax12d compute_distance_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+        const Eigen::MatrixXi& F) const override
+    {
+        return VertexVertexCandidate::compute_distance_hessian(V, E, F);
+    }
 
     template <typename H>
     friend H AbslHashValue(H h, const VertexVertexConstraint& vv)
     {
-        long min_vi = std::min(vv.vertex0_index, vv.vertex1_index);
-        long max_vi = std::max(vv.vertex0_index, vv.vertex1_index);
-        return H::combine(std::move(h), min_vi, max_vi);
+        return AbslHashValue(
+            std::move(h), static_cast<const VertexVertexCandidate&>(vv));
     }
 };
 

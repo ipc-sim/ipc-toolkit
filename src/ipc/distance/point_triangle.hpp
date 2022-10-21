@@ -15,33 +15,6 @@ namespace ipc {
 /// @param t0 The first vertex of the triangle.
 /// @param t1 The second vertex of the triangle.
 /// @param t2 The third vertex of the triangle.
-/// @return The distance between the point and triangle.
-template <
-    typename DerivedP,
-    typename DerivedT0,
-    typename DerivedT1,
-    typename DerivedT2>
-auto point_triangle_distance(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedT0>& t0,
-    const Eigen::MatrixBase<DerivedT1>& t1,
-    const Eigen::MatrixBase<DerivedT2>& t2)
-{
-    assert(p.size() == 3);
-    assert(t0.size() == 3);
-    assert(t1.size() == 3);
-    assert(t2.size() == 3);
-
-    return point_triangle_distance(
-        p, t0, t1, t2, point_triangle_distance_type(p, t0, t1, t2));
-}
-
-/// @brief Compute the distance between a points and a triangle.
-/// @note The distance is actually squared distance.
-/// @param p The point.
-/// @param t0 The first vertex of the triangle.
-/// @param t1 The second vertex of the triangle.
-/// @param t2 The third vertex of the triangle.
 /// @param dtype The point-triangle distance type to compute.
 /// @return The distance between the point and triangle.
 template <
@@ -54,7 +27,7 @@ auto point_triangle_distance(
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2,
-    const PointTriangleDistanceType dtype)
+    const PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO)
 {
     assert(p.size() == 3);
     assert(t0.size() == 3);
@@ -83,39 +56,14 @@ auto point_triangle_distance(
     case PointTriangleDistanceType::P_T:
         return point_plane_distance(p, t0, t1, t2);
 
+    case PointTriangleDistanceType::AUTO:
+        return point_triangle_distance(
+            p, t0, t1, t2, point_triangle_distance_type(p, t0, t1, t2));
+
     default:
         throw std::invalid_argument(
             "Invalid distance type for point-triangle distance!");
     }
-}
-
-/// @brief Compute the gradient of the distance between a points and a triangle.
-/// @note The distance is actually squared distance.
-/// @param[in] p The point.
-/// @param[in] t0 The first vertex of the triangle.
-/// @param[in] t1 The second vertex of the triangle.
-/// @param[in] t2 The third vertex of the triangle.
-/// @param[out] grad The gradient of the distance wrt p, t0, t1, and t2.
-template <
-    typename DerivedP,
-    typename DerivedT0,
-    typename DerivedT1,
-    typename DerivedT2,
-    typename DerivedGrad>
-void point_triangle_distance_gradient(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedT0>& t0,
-    const Eigen::MatrixBase<DerivedT1>& t1,
-    const Eigen::MatrixBase<DerivedT2>& t2,
-    Eigen::PlainObjectBase<DerivedGrad>& grad)
-{
-    assert(p.size() == 3);
-    assert(t0.size() == 3);
-    assert(t1.size() == 3);
-    assert(t2.size() == 3);
-
-    return point_triangle_distance_gradient(
-        p, t0, t1, t2, point_triangle_distance_type(p, t0, t1, t2), grad);
 }
 
 /// @brief Compute the gradient of the distance between a points and a triangle.
@@ -137,8 +85,8 @@ void point_triangle_distance_gradient(
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2,
-    const PointTriangleDistanceType dtype,
-    Eigen::PlainObjectBase<DerivedGrad>& grad)
+    Eigen::PlainObjectBase<DerivedGrad>& grad,
+    const PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO)
 {
     int dim = p.size();
     assert(t0.size() == dim);
@@ -189,39 +137,15 @@ void point_triangle_distance_gradient(
         point_plane_distance_gradient(p, t0, t1, t2, grad);
         break;
 
+    case PointTriangleDistanceType::AUTO:
+        point_triangle_distance_gradient(
+            p, t0, t1, t2, grad, point_triangle_distance_type(p, t0, t1, t2));
+        break;
+
     default:
         throw std::invalid_argument(
             "Invalid distance type for point-triangle distance gradient!");
     }
-}
-
-/// @brief Compute the hessian of the distance between a points and a triangle.
-/// @note The distance is actually squared distance.
-/// @param[in] p The point.
-/// @param[in] t0 The first vertex of the triangle.
-/// @param[in] t1 The second vertex of the triangle.
-/// @param[in] t2 The third vertex of the triangle.
-/// @param[out] hess The hessian of the distance wrt p, t0, t1, and t2.
-template <
-    typename DerivedP,
-    typename DerivedT0,
-    typename DerivedT1,
-    typename DerivedT2,
-    typename DerivedHess>
-void point_triangle_distance_hessian(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedT0>& t0,
-    const Eigen::MatrixBase<DerivedT1>& t1,
-    const Eigen::MatrixBase<DerivedT2>& t2,
-    Eigen::PlainObjectBase<DerivedHess>& hess)
-{
-    assert(p.size() == 3);
-    assert(t0.size() == 3);
-    assert(t1.size() == 3);
-    assert(t2.size() == 3);
-
-    return point_triangle_distance_hessian(
-        p, t0, t1, t2, point_triangle_distance_type(p, t0, t1, t2), hess);
 }
 
 /// @brief Compute the hessian of the distance between a points and a triangle.
@@ -243,8 +167,8 @@ void point_triangle_distance_hessian(
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2,
-    const PointTriangleDistanceType dtype,
-    Eigen::PlainObjectBase<DerivedHess>& hess)
+    Eigen::PlainObjectBase<DerivedHess>& hess,
+    const PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO)
 {
     int dim = p.size();
     assert(t0.size() == dim);
@@ -313,6 +237,11 @@ void point_triangle_distance_hessian(
 
     case PointTriangleDistanceType::P_T:
         point_plane_distance_hessian(p, t0, t1, t2, hess);
+        break;
+
+    case PointTriangleDistanceType::AUTO:
+        point_triangle_distance_hessian(
+            p, t0, t1, t2, hess, point_triangle_distance_type(p, t0, t1, t2));
         break;
 
     default:

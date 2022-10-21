@@ -1,7 +1,5 @@
 #pragma once
 
-#include <ipc/broad_phase/collision_candidate.hpp>
-
 #include <Eigen/Core>
 
 #include <vector>
@@ -15,7 +13,7 @@ void save_obj(
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
-    const std::vector<Candidate>& ef_candidates,
+    const std::vector<Candidate>& candidates,
     const int v_offset = 0);
 
 template <typename Candidate>
