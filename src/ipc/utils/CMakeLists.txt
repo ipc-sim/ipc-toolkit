@@ -8,7 +8,7 @@ set(SOURCES
   local_to_global.hpp
   logger.cpp
   logger.hpp
-  merge_thread_local_vectors.hpp
+  merge_thread_local.hpp
   rational.hpp
   save_obj.cpp
   save_obj.hpp

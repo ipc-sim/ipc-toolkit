@@ -35,4 +35,13 @@ double median_edge_length(
 /// @brief Compute the median displacement length.
 double median_displacement_length(const Eigen::MatrixXd& U);
 
+/// @brief Compute the maximum edge length of a mesh.
+double max_edge_length(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E);
+
+/// @brief Compute the maximum displacement length.
+double max_displacement_length(const Eigen::MatrixXd& U);
+
 } // namespace ipc

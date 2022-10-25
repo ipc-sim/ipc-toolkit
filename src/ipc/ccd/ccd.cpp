@@ -43,7 +43,8 @@ bool ccd_strategy(
         return true;
     }
 
-    double min_distance = (1.0 - conservative_rescaling) * initial_distance;
+    const double min_distance =
+        (1.0 - conservative_rescaling) * initial_distance;
     // #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
     // Tight Inclusion performs better when the minimum separation is small
     // min_distance = std::min(min_distance, 1e-4);
@@ -58,8 +59,7 @@ bool ccd_strategy(
 
     // #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
     //     // Tight inclusion will have higher accuracy and better performance
-    //     if we
-    //     // shrink the minimum distance. The value 1e-10 is arbitrary.
+    //     // if we shrink the minimum distance. The value 1e-10 is arbitrary.
     //     while (is_impacting && toi < SMALL_TOI && min_distance > 1e-10) {
     //         min_distance /= 10;
     //         is_impacting =
@@ -95,9 +95,9 @@ bool point_point_ccd(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
-    double initial_distance = sqrt(point_point_distance(p0_t0, p1_t0));
+    const double initial_distance = sqrt(point_point_distance(p0_t0, p1_t0));
 
-    double adjusted_tolerance = std::min(
+    const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
     const auto ccd = [&](long max_iterations, double min_distance,
@@ -149,16 +149,17 @@ bool point_edge_ccd_2D(
 #else
     assert(0 <= tmax && tmax <= 1.0);
 
-    Eigen::Vector3d p_t0_3D = to_3D(p_t0);
-    Eigen::Vector3d e0_t0_3D = to_3D(e0_t0);
-    Eigen::Vector3d e1_t0_3D = to_3D(e1_t0);
-    Eigen::Vector3d p_t1_3D = to_3D(p_t1);
-    Eigen::Vector3d e0_t1_3D = to_3D(e0_t1);
-    Eigen::Vector3d e1_t1_3D = to_3D(e1_t1);
+    const Eigen::Vector3d p_t0_3D = to_3D(p_t0);
+    const Eigen::Vector3d e0_t0_3D = to_3D(e0_t0);
+    const Eigen::Vector3d e1_t0_3D = to_3D(e1_t0);
+    const Eigen::Vector3d p_t1_3D = to_3D(p_t1);
+    const Eigen::Vector3d e0_t1_3D = to_3D(e0_t1);
+    const Eigen::Vector3d e1_t1_3D = to_3D(e1_t1);
 
-    double initial_distance = sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
+    const double initial_distance =
+        sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
 
-    double adjusted_tolerance = std::min(
+    const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
     const auto ccd = [&](long max_iterations, double min_distance,
@@ -206,9 +207,10 @@ bool point_edge_ccd_3D(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
-    double initial_distance = sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
+    const double initial_distance =
+        sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
 
-    double adjusted_tolerance = std::min(
+    const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
     const auto ccd = [&](long max_iterations, double min_distance,
@@ -291,10 +293,10 @@ bool edge_edge_ccd(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
-    double initial_distance =
+    const double initial_distance =
         sqrt(edge_edge_distance(ea0_t0, ea1_t0, eb0_t0, eb1_t0));
 
-    double adjusted_tolerance = std::min(
+    const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
     const auto ccd = [&](long max_iterations, double min_distance,
@@ -347,10 +349,10 @@ bool point_triangle_ccd(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
-    double initial_distance =
+    const double initial_distance =
         sqrt(point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0));
 
-    double adjusted_tolerance = std::min(
+    const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
     const auto ccd = [&](long max_iterations, double min_distance,
