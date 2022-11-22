@@ -193,8 +193,8 @@ void define_friction_constraint(py::module_& m)
         .def("clear", &FrictionConstraints::clear, "")
         .def(
             "__getitem__",
-            [](FrictionConstraints& self, size_t idx) -> FrictionConstraint* {
-                return &self[idx];
+            [](FrictionConstraints& self, size_t idx) -> FrictionConstraint& {
+                return self[idx];
             }, py::return_value_policy::reference)
         .def_readwrite(
             "vv_constraints", &FrictionConstraints::vv_constraints, "")

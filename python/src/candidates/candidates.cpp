@@ -17,8 +17,8 @@ void define_candidates(py::module_& m)
         .def("clear", &Candidates::clear, "")
         .def(
             "__getitem__",
-            [](Candidates& self, size_t idx) -> ContinuousCollisionCandidate* {
-                return &self[idx];
+            [](Candidates& self, size_t idx) -> ContinuousCollisionCandidate& {
+                return self[idx];
             }, py::return_value_policy::reference)
         .def(
             "save_obj", &Candidates::save_obj, "", py::arg("filename"),
