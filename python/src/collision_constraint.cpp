@@ -264,9 +264,9 @@ void define_collision_constraint(py::module_& m)
         .def("clear", &Constraints::clear, "")
         .def(
             "__getitem__",
-            [](Constraints& self, size_t idx) -> CollisionConstraint* {
-                return &self[idx];
-            })
+            [](Constraints& self, size_t idx) -> CollisionConstraint& {
+                return self[idx];
+            }, py::return_value_policy::reference)
         .def_readwrite("vv_constraints", &Constraints::vv_constraints, "")
         .def_readwrite("ev_constraints", &Constraints::ev_constraints, "")
         .def_readwrite("ee_constraints", &Constraints::ee_constraints, "")
