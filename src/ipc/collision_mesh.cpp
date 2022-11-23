@@ -67,7 +67,7 @@ CollisionMesh::CollisionMesh(
         m_displacement_dof_map = m_select_dof;
     } else {
         assert(displacement_map.rows() == num_vertices());
-        assert(displacement_map.cols() == full_num_vertices());
+        // assert(displacement_map.cols() == full_num_vertices());
 
         m_displacement_map = m_select_vertices * displacement_map;
         m_displacement_map.makeCompressed();
