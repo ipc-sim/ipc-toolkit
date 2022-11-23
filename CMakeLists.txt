@@ -146,6 +146,10 @@ ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC tsl::robin_map)
 include(abseil)
 ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC absl::hash)
 
+# Intervals
+include(filib)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC filib::filib)
+
 # Extra warnings (link last for highest priority)
 include(ipc_toolkit_warnings)
 target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
