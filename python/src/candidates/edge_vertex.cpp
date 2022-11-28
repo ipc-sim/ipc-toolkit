@@ -1,7 +1,4 @@
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-#include <pybind11/iostream.h>
-#include <pybind11/operators.h>
+#include "../common.hpp"
 
 #include <ipc/candidates/edge_vertex.hpp>
 
