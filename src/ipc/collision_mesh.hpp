@@ -7,11 +7,11 @@
 
 namespace ipc {
 
+/// @brief A class for encapsolating the transformation/selections needed to go from a volumetric FE mesh to a surface collision mesh.
 class CollisionMesh {
 public:
     /// @brief Construct a new Collision Mesh object.
-    /// Collision Mesh objects are immutable after construction, so use the
-    /// other constructors.
+    /// Collision Mesh objects are immutable, so use the other constructors.
     CollisionMesh() { }
 
     /// @brief Construct a new Collision Mesh object directly from the collision mesh vertices.
@@ -39,6 +39,21 @@ public:
         const Eigen::MatrixXi& faces,
         const Eigen::SparseMatrix<double>& displacement_map =
             Eigen::SparseMatrix<double>());
+
+    /// @brief Helper function that automatically builds include_vertex using construct_is_on_surface.
+    /// @param full_vertices_at_rest The full vertices at rest.
+    /// @param edges The edge matrix of mesh.
+    /// @param faces The face matrix of mesh.
+    /// @return Constructed CollisionMesh.
+    static CollisionMesh build_from_full_mesh(
+        const Eigen::MatrixXd& full_vertices_at_rest,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces)
+    {
+        return CollisionMesh(
+            construct_is_on_surface(full_vertices_at_rest.rows(), edges),
+            full_vertices_at_rest, edges, faces);
+    }
 
     /// @brief Destroy the Collision Mesh object
     ~CollisionMesh() { }
@@ -195,21 +210,6 @@ public:
     /// @return A vector of bools indicating whether each vertex is on the surface.
     static std::vector<bool> construct_is_on_surface(
         const int num_vertices, const Eigen::MatrixXi& edges);
-
-    /// @brief Helper function that automatically builds include_vertex using construct_is_on_surface.
-    /// @param full_vertices_at_rest The full vertices at rest.
-    /// @param edges The edge matrix of mesh.
-    /// @param faces The face matrix of mesh.
-    /// @return Constructed CollisionMesh.
-    static CollisionMesh build_from_full_mesh(
-        const Eigen::MatrixXd& full_vertices_at_rest,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces)
-    {
-        return CollisionMesh(
-            construct_is_on_surface(full_vertices_at_rest.rows(), edges),
-            full_vertices_at_rest, edges, faces);
-    }
 
     /// @brief Construct a matrix that maps from the faces' edges to rows in the edges matrix.
     /// @param faces The face matrix of mesh.
