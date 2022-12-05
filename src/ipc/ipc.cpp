@@ -17,7 +17,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
-#include <mutex>
+#include <shared_mutex>
 
 #include <algorithm> // std::min/max
 
@@ -318,7 +318,7 @@ double compute_collision_free_stepsize(
     }
 
     double earliest_toi = 1;
-    std::mutex earliest_toi_mutex;
+    std::shared_mutex earliest_toi_mutex;
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, candidates.size()),
@@ -328,7 +328,7 @@ double compute_collision_free_stepsize(
                 // more than one clock cycle.
                 double tmax;
                 {
-                    std::scoped_lock<std::mutex> lock(earliest_toi_mutex);
+                    std::shared_lock lock(earliest_toi_mutex);
                     tmax = earliest_toi;
                 }
 
@@ -337,7 +337,7 @@ double compute_collision_free_stepsize(
                     V0, V1, E, F, toi, tmax, tolerance, max_iterations);
 
                 if (are_colliding) {
-                    std::scoped_lock<std::mutex> lock(earliest_toi_mutex);
+                    std::unique_lock lock(earliest_toi_mutex);
                     if (toi < earliest_toi) {
                         earliest_toi = toi;
                     }
