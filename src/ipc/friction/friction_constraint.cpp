@@ -280,23 +280,12 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
             const MatrixMax<double, 6, 12> jac_Gamma_wrt_beta =
                 relative_displacement_matrix_jacobian(beta);
 
-            MatrixMax<double, 36, 12> jac_Gamma(n * dim, n);
             for (int k = 0; k < n; k++) {
-                for (int i = 0; i < dim; i++) {
-                    // ∂Γᵢⱼ/∂xₖ = ∂Γᵢⱼ/∂β ⋅ ∂β/∂xₖ
-                    jac_Gamma.row(k * dim + i) =
-                        jac_Gamma_wrt_beta(
-                            Eigen::seqN(i, beta.size(), dim), Eigen::all)
-                            .eval()
-                            .transpose()
-                        * jac_beta.col(k);
+                for (int b = 0; b < beta.size(); b++) {
+                    jac_T.middleRows(k * n, n) +=
+                        jac_Gamma_wrt_beta.transpose().middleCols(b * dim, dim)
+                            * (jac_beta(b, k) * P);
                 }
-            }
-
-            for (int i = 0; i < n; i++) {
-                // ∂T/∂xᵢ += ∂Γ/∂xᵢᵀ P
-                jac_T.middleRows(i * n, n) +=
-                    jac_Gamma.middleRows(i * dim, dim).transpose() * P;
             }
         }
     }
