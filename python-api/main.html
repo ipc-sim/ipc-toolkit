@@ -34,7 +34,7 @@
     
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
         <link rel="stylesheet" type="text/css" href="../_static/google_fonts.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/stylesheets/sphinx_immaterial_theme.e10f1df50225cf229.min.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/stylesheets/sphinx_immaterial_theme.7e770c658028b1997.min.css" />
         <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -1455,7 +1455,7 @@
 <span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">is_step_collision_free</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.is_step_collision_free" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>is_step_collision_free(mesh: ipctk.CollisionMesh, V0: numpy.ndarray[numpy.float64[m, n]], V1: numpy.ndarray[numpy.float64[m, n]], method: ipctk.BroadPhaseMethod = &lt;BroadPhaseMethod.HASH_GRID: 1&gt;, tolerance: float = 1e-06, max_iterations: int = 10000000) -&gt; bool</p>
+<li><p>is_step_collision_free(mesh: ipctk.CollisionMesh, V0: numpy.ndarray[numpy.float64[m, n]], V1: numpy.ndarray[numpy.float64[m, n]], method: ipctk.BroadPhaseMethod = &lt;BroadPhaseMethod.HASH_GRID: 1&gt;, min_distance: float = 0.0, tolerance: float = 1e-06, max_iterations: int = 10000000) -&gt; bool</p>
 <blockquote>
 <div><p>Determine if the step is collision free.</p>
 <dl class="simple">
@@ -1470,7 +1470,7 @@ V1: Surface vertex positions at end as rows of a matrix.</p>
 </dl>
 </div></blockquote>
 </li>
-<li><p>is_step_collision_free(candidates: ipctk.Candidates, mesh: ipctk.CollisionMesh, V0: numpy.ndarray[numpy.float64[m, n]], V1: numpy.ndarray[numpy.float64[m, n]], tolerance: float = 1e-06, max_iterations: int = 10000000) -&gt; bool</p>
+<li><p>is_step_collision_free(candidates: ipctk.Candidates, mesh: ipctk.CollisionMesh, V0: numpy.ndarray[numpy.float64[m, n]], V1: numpy.ndarray[numpy.float64[m, n]], min_distance: float = 0.0, tolerance: float = 1e-06, max_iterations: int = 10000000) -&gt; bool</p>
 <blockquote>
 <div><p>Determine if the step is collision free from a set of candidates.</p>
 <dl class="simple">
@@ -1494,7 +1494,7 @@ V1: Surface vertex positions at end as rows of a matrix.</p>
 <span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">compute_collision_free_stepsize</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.compute_collision_free_stepsize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>compute_collision_free_stepsize(mesh: ipctk.CollisionMesh, V0: numpy.ndarray[numpy.float64[m, n]], V1: numpy.ndarray[numpy.float64[m, n]], method: ipctk.BroadPhaseMethod = &lt;BroadPhaseMethod.HASH_GRID: 1&gt;, tolerance: float = 1e-06, max_iterations: int = 10000000) -&gt; float</p>
+<li><p>compute_collision_free_stepsize(mesh: ipctk.CollisionMesh, V0: numpy.ndarray[numpy.float64[m, n]], V1: numpy.ndarray[numpy.float64[m, n]], method: ipctk.BroadPhaseMethod = &lt;BroadPhaseMethod.HASH_GRID: 1&gt;, min_distance: float = 0.0, tolerance: float = 1e-06, max_iterations: int = 10000000) -&gt; float</p>
 <blockquote>
 <div><p>Computes a maximal step size that is collision free.</p>
 <dl class="simple">
@@ -1509,7 +1509,7 @@ V1: Surface vertex positions at end as rows of a matrix.</p>
 </dl>
 </div></blockquote>
 </li>
-<li><p>compute_collision_free_stepsize(candidates: ipctk.Candidates, mesh: ipctk.CollisionMesh, V0: numpy.ndarray[numpy.float64[m, n]], V1: numpy.ndarray[numpy.float64[m, n]], tolerance: float = 1e-06, max_iterations: int = 10000000) -&gt; float</p>
+<li><p>compute_collision_free_stepsize(candidates: ipctk.Candidates, mesh: ipctk.CollisionMesh, V0: numpy.ndarray[numpy.float64[m, n]], V1: numpy.ndarray[numpy.float64[m, n]], min_distance: float = 0.0, tolerance: float = 1e-06, max_iterations: int = 10000000) -&gt; float</p>
 <blockquote>
 <div><p>Computes a maximal step size that is collision free using a set of collision candidates.</p>
 <dl class="simple">
@@ -1535,7 +1535,7 @@ V1: Surface vertex positions at end as rows of a matrix.</p>
   <small>
     
       Last update:
-      December 05, 2022
+      January 17, 2023
     
   </small>
 </div>

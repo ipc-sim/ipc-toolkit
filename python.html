@@ -34,7 +34,7 @@
     
         <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
         <link rel="stylesheet" type="text/css" href="_static/google_fonts.css" />
-        <link rel="stylesheet" type="text/css" href="_static/stylesheets/sphinx_immaterial_theme.e10f1df50225cf229.min.css" />
+        <link rel="stylesheet" type="text/css" href="_static/stylesheets/sphinx_immaterial_theme.7e770c658028b1997.min.css" />
         <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -922,7 +922,7 @@
 <p>We provide Python bindings for functions in the toolkit using <a class="reference external" href="https://github.com/pybind/pybind11">pybind11</a>.</p>
 <h2 id="build-and-install">Build and Install<a class="headerlink" href="#build-and-install" title="Permalink to this heading">¶</a></h2>
 <p>Currently, the bindings must be built from scratch. The easiest way to do this is to use the <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> script which uses <code class="docutils literal notranslate"><span class="pre">setuptools</span></code>. For example:</p>
-<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>python setup.py install
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>python<span class="w"> </span>setup.py<span class="w"> </span>install
 </code></pre></div>
 </div>
 <p>will build the library and python bindings and then install them on your system.</p>
@@ -940,25 +940,25 @@
 </ul>
 <h2 id="citation">Citation<a class="headerlink" href="#citation" title="Permalink to this heading">¶</a></h2>
 <p>If you use the IPC Toolkit in your project, please consider citing our work:</p>
-<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><code><span class="nc">@software</span><span class="p">{</span><span class="nl">ipc_toolkit</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Zachary Ferguson and others}</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{{IPC Toolkit}}</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="na">url</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://ipc-sim.github.io/ipc-toolkit/}</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2020}</span><span class="p">,</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><code><span class="nc">@software</span><span class="p">{</span><span class="nl">ipc_toolkit</span><span class="p">,</span>
+<span class="w">  </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Zachary Ferguson and others}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{{IPC Toolkit}}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">url</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://ipc-sim.github.io/ipc-toolkit/}</span><span class="p">,</span>
+<span class="w">  </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2020}</span><span class="p">,</span>
+<span class="p">}</span>
 </code></pre></div>
 </div>
 <p>Additionally, you can cite the original IPC paper:</p>
-<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><code><span class="nc">@article</span><span class="p">{</span><span class="nl">Li2020IPC</span><span class="p">,</span><span class="w"></span>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><code><span class="nc">@article</span><span class="p">{</span><span class="nl">Li2020IPC</span><span class="p">,</span>
 <span class="w">    </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Minchen Li and Zachary Ferguson and Teseo Schneider and Timothy Langlois and</span>
-<span class="s">        Denis Zorin and Daniele Panozzo and Chenfanfu Jiang and Danny M. Kaufman}</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Incremental Potential Contact: Intersection- and Inversion-free Large Deformation Dynamics}</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{ACM Trans. Graph. (SIGGRAPH)}</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2020}</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="na">volume</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{39}</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="na">number</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{4}</span><span class="p">,</span><span class="w"></span>
-<span class="w">    </span><span class="na">articleno</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{49}</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="s">        Denis Zorin and Daniele Panozzo and Chenfanfu Jiang and Danny M. Kaufman}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Incremental Potential Contact: Intersection- and Inversion-free Large Deformation Dynamics}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">journal</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{ACM Trans. Graph. (SIGGRAPH)}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">year</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{2020}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">volume</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{39}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">number</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{4}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">articleno</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{49}</span>
+<span class="p">}</span>
 </code></pre></div>
 </div>
 <h2 id="license">License<a class="headerlink" href="#license" title="Permalink to this heading">¶</a></h2>
@@ -970,7 +970,7 @@
   <small>
     
       Last update:
-      December 05, 2022
+      January 17, 2023
     
   </small>
 </div>
