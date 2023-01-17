@@ -60,6 +60,7 @@ bool EdgeEdgeCandidate::ccd(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     double& toi,
+    const double min_distance,
     const double tmax,
     const double tolerance,
     const long max_iterations,

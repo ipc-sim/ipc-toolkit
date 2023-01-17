@@ -32,6 +32,7 @@ bool ccd_strategy(
         bool /*no_zero_toi*/,
         double& /*toi*/)>& ccd,
     const double max_iterations,
+    const double min_distance,
     const double initial_distance,
     const double conservative_rescaling,
     double& toi)
@@ -43,19 +44,19 @@ bool ccd_strategy(
         return true;
     }
 
-    const double min_distance =
-        (1.0 - conservative_rescaling) * initial_distance;
+    const double min_effective_distance =
+        min_distance + (1.0 - conservative_rescaling) * initial_distance;
     // #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
     // Tight Inclusion performs better when the minimum separation is small
     // min_distance = std::min(min_distance, 1e-4);
     // #endif
 
-    assert(min_distance < initial_distance);
+    assert(min_effective_distance < initial_distance);
 
     // Do not use no_zero_toi because the minimum distance is arbitrary and can
     // be removed if the query is challenging (i.e., produces small ToI).
     bool is_impacting =
-        ccd(max_iterations, min_distance, /*no_zero_toi=*/false, toi);
+        ccd(max_iterations, min_effective_distance, /*no_zero_toi=*/false, toi);
 
     // #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
     //     // Tight inclusion will have higher accuracy and better performance
@@ -71,7 +72,7 @@ bool ccd_strategy(
     if (is_impacting && toi < SMALL_TOI) {
         is_impacting = ccd(
             /*max_iterations=*/TIGHT_INCLUSION_UNLIMITED_ITERATIONS,
-            /*min_distance=*/0, /*no_zero_toi=*/true, toi);
+            /*min_distance=*/min_distance, /*no_zero_toi=*/true, toi);
 
         if (is_impacting) {
             toi *= conservative_rescaling;
@@ -88,6 +89,7 @@ bool point_point_ccd(
     const Eigen::Vector3d& p0_t1,
     const Eigen::Vector3d& p1_t1,
     double& toi,
+    const double min_distance,
     const double tmax,
     const double tolerance,
     const long max_iterations,
@@ -122,7 +124,8 @@ bool point_point_ccd(
     };
 
     return ccd_strategy(
-        ccd, max_iterations, initial_distance, conservative_rescaling, toi);
+        ccd, max_iterations, min_distance, initial_distance,
+        conservative_rescaling, toi);
 }
 
 inline Eigen::Vector3d to_3D(const Eigen::Vector2d& v)
@@ -138,6 +141,7 @@ bool point_edge_ccd_2D(
     const Eigen::Vector2d& e0_t1,
     const Eigen::Vector2d& e1_t1,
     double& toi,
+    const double min_distance,
     const double tmax,
     const double tolerance,
     const long max_iterations,
@@ -188,7 +192,8 @@ bool point_edge_ccd_2D(
     };
 
     return ccd_strategy(
-        ccd, max_iterations, initial_distance, conservative_rescaling, toi);
+        ccd, max_iterations, min_distance, initial_distance,
+        conservative_rescaling, toi);
 #endif
 }
 
@@ -200,6 +205,7 @@ bool point_edge_ccd_3D(
     const Eigen::Vector3d& e0_t1,
     const Eigen::Vector3d& e1_t1,
     double& toi,
+    const double min_distance,
     const double tmax,
     const double tolerance,
     const long max_iterations,
@@ -243,7 +249,8 @@ bool point_edge_ccd_3D(
     };
 
     return ccd_strategy(
-        ccd, max_iterations, initial_distance, conservative_rescaling, toi);
+        ccd, max_iterations, min_distance, initial_distance,
+        conservative_rescaling, toi);
 }
 
 bool point_edge_ccd(
@@ -254,6 +261,7 @@ bool point_edge_ccd(
     const VectorMax3d& e0_t1,
     const VectorMax3d& e1_t1,
     double& toi,
+    const double min_distance,
     const double tmax,
     const double tolerance,
     const long max_iterations,
@@ -268,11 +276,13 @@ bool point_edge_ccd(
     if (dim == 2) {
         return point_edge_ccd_2D(
             p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, //
-            toi, tmax, tolerance, max_iterations, conservative_rescaling);
+            toi, min_distance, tmax, tolerance, max_iterations,
+            conservative_rescaling);
     } else {
         return point_edge_ccd_3D(
             p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, //
-            toi, tmax, tolerance, max_iterations, conservative_rescaling);
+            toi, min_distance, tmax, tolerance, max_iterations,
+            conservative_rescaling);
     }
 }
 
@@ -286,6 +296,7 @@ bool edge_edge_ccd(
     const Eigen::Vector3d& eb0_t1,
     const Eigen::Vector3d& eb1_t1,
     double& toi,
+    const double min_distance,
     const double tmax,
     const double tolerance,
     const long max_iterations,
@@ -329,7 +340,8 @@ bool edge_edge_ccd(
     };
 
     return ccd_strategy(
-        ccd, max_iterations, initial_distance, conservative_rescaling, toi);
+        ccd, max_iterations, min_distance, initial_distance,
+        conservative_rescaling, toi);
 }
 
 bool point_triangle_ccd(
@@ -342,6 +354,7 @@ bool point_triangle_ccd(
     const Eigen::Vector3d& t1_t1,
     const Eigen::Vector3d& t2_t1,
     double& toi,
+    const double min_distance,
     const double tmax,
     const double tolerance,
     const long max_iterations,
@@ -385,7 +398,8 @@ bool point_triangle_ccd(
     };
 
     return ccd_strategy(
-        ccd, max_iterations, initial_distance, conservative_rescaling, toi);
+        ccd, max_iterations, min_distance, initial_distance,
+        conservative_rescaling, toi);
 }
 
 } // namespace ipc

@@ -120,6 +120,7 @@ TEST_CASE("Point-edge 2D CCD", "[ccd]")
     double toi, alpha;
     bool is_colliding = point_edge_ccd(
         p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi,
+        /*min_distance=*/0.0,
         /*tmax=*/1.0,
         /*tolerance=*/1e-6,
         /*max_iterations=*/1e7,
@@ -153,6 +154,7 @@ void check_toi(
     toi_actual = -1.0;
     bool has_collision = point_edge_ccd(
         p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi_actual,
+        /*min_distance=*/0.0,
         /*tmax=*/1.0,
         /*tolerance=*/1e-6,
         /*max_iterations=*/1e7,
@@ -603,7 +605,7 @@ TEST_CASE("Slow EE CCD", "[ccd][edge-edge][slow]")
         double toi;
         bool is_impacting = edge_edge_ccd(
             ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
-            1.0, tol, max_iter);
+            0.0, 1.0, tol, max_iter);
         tol *= 10;
 
         CAPTURE(toi);
@@ -631,7 +633,7 @@ TEST_CASE("Slow EE CCD 2", "[ccd][edge-edge][slow][thisone]")
     double toi;
     bool is_impacting = edge_edge_ccd(
         ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
-        tmax, tol, max_iter);
+        0.0, tmax, tol, max_iter);
 
     CAPTURE(toi);
     CHECK(is_impacting);

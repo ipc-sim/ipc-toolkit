@@ -214,6 +214,7 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const BroadPhaseMethod method,
+    const double min_distance,
     const double tolerance,
     const long max_iterations)
 {
@@ -227,7 +228,7 @@ bool is_step_collision_free(
 
     // Narrow phase
     return is_step_collision_free(
-        candidates, mesh, V0, V1, tolerance, max_iterations);
+        candidates, mesh, V0, V1, min_distance, tolerance, max_iterations);
 }
 
 bool is_step_collision_free(
@@ -235,6 +236,7 @@ bool is_step_collision_free(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
+    const double min_distance,
     const double tolerance,
     const long max_iterations)
 {
@@ -248,7 +250,8 @@ bool is_step_collision_free(
     for (size_t i = 0; i < candidates.size(); i++) {
         double toi;
         bool is_collision = candidates[i].ccd(
-            V0, V1, E, F, toi, /*tmax=*/1.0, tolerance, max_iterations);
+            V0, V1, E, F, toi, min_distance, /*tmax=*/1.0, tolerance,
+            max_iterations);
 
         if (is_collision) {
             return false;
@@ -265,6 +268,7 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const BroadPhaseMethod method,
+    const double min_distance,
     const double tolerance,
     const long max_iterations)
 {
@@ -295,7 +299,7 @@ double compute_collision_free_stepsize(
 
     // Narrow phase
     double step_size = compute_collision_free_stepsize(
-        candidates, mesh, V0, V1, tolerance, max_iterations);
+        candidates, mesh, V0, V1, min_distance, tolerance, max_iterations);
 
     return step_size;
 }
@@ -305,6 +309,7 @@ double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
+    const double min_distance,
     const double tolerance,
     const long max_iterations)
 {
@@ -334,7 +339,8 @@ double compute_collision_free_stepsize(
 
                 double toi = std::numeric_limits<double>::infinity(); // output
                 bool are_colliding = candidates[i].ccd(
-                    V0, V1, E, F, toi, tmax, tolerance, max_iterations);
+                    V0, V1, E, F, toi, min_distance, tmax, tolerance,
+                    max_iterations);
 
                 if (are_colliding) {
                     std::unique_lock lock(earliest_toi_mutex);
