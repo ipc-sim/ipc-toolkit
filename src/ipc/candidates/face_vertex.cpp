@@ -73,7 +73,8 @@ bool FaceVertexCandidate::ccd(
         // Triangle at t=1
         V1.row(F(face_index, 0)), V1.row(F(face_index, 1)),
         V1.row(F(face_index, 2)), //
-        toi, tmax, tolerance, max_iterations, conservative_rescaling);
+        toi, min_distance, tmax, tolerance, max_iterations,
+        conservative_rescaling);
 }
 
 void FaceVertexCandidate::print_ccd_query(

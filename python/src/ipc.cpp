@@ -66,7 +66,7 @@ void define_ipc(py::module_& m)
         py::overload_cast<
             const CollisionMesh&, const Eigen::MatrixXd&,
             const Eigen::MatrixXd&, const BroadPhaseMethod, const double,
-            const long>(&is_step_collision_free),
+            const double, const long>(&is_step_collision_free),
         R"ipc_Qu8mg5v7(
         Determine if the step is collision free.
 
@@ -83,13 +83,14 @@ void define_ipc(py::module_& m)
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("V0"), py::arg("V1"),
         py::arg("method") = BroadPhaseMethod::HASH_GRID,
-        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = long(1e7));
+        py::arg("min_distance") = 0.0, py::arg("tolerance") = 1e-6,
+        py::arg("max_iterations") = long(1e7));
 
     m.def(
         "is_step_collision_free",
         py::overload_cast<
             const Candidates&, const CollisionMesh&, const Eigen::MatrixXd&,
-            const Eigen::MatrixXd&, const double, const long>(
+            const Eigen::MatrixXd&, const double, const double, const long>(
             &is_step_collision_free),
         R"ipc_Qu8mg5v7(
         Determine if the step is collision free from a set of candidates.
@@ -107,14 +108,15 @@ void define_ipc(py::module_& m)
             True if <b>any</b> collisions occur.
         )ipc_Qu8mg5v7",
         py::arg("candidates"), py::arg("mesh"), py::arg("V0"), py::arg("V1"),
-        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = long(1e7));
+        py::arg("min_distance") = 0.0, py::arg("tolerance") = 1e-6,
+        py::arg("max_iterations") = long(1e7));
 
     m.def(
         "compute_collision_free_stepsize",
         py::overload_cast<
             const CollisionMesh&, const Eigen::MatrixXd&,
             const Eigen::MatrixXd&, const BroadPhaseMethod, const double,
-            const long>(&compute_collision_free_stepsize),
+            const double, const long>(&compute_collision_free_stepsize),
         R"ipc_Qu8mg5v7(
         Computes a maximal step size that is collision free.
 
@@ -131,13 +133,14 @@ void define_ipc(py::module_& m)
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("V0"), py::arg("V1"),
         py::arg("method") = BroadPhaseMethod::HASH_GRID,
-        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = long(1e7));
+        py::arg("min_distance") = 0.0, py::arg("tolerance") = 1e-6,
+        py::arg("max_iterations") = long(1e7));
 
     m.def(
         "compute_collision_free_stepsize",
         py::overload_cast<
             const Candidates&, const CollisionMesh&, const Eigen::MatrixXd&,
-            const Eigen::MatrixXd&, const double, const long>(
+            const Eigen::MatrixXd&, const double, const double, const long>(
             &compute_collision_free_stepsize),
         R"ipc_Qu8mg5v7(
         Computes a maximal step size that is collision free using a set of collision candidates.
@@ -155,7 +158,8 @@ void define_ipc(py::module_& m)
             A step-size $\in [0, 1]$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
         )ipc_Qu8mg5v7",
         py::arg("candidates"), py::arg("mesh"), py::arg("V0"), py::arg("V1"),
-        py::arg("tolerance") = 1e-6, py::arg("max_iterations") = long(1e7));
+        py::arg("min_distance") = 0.0, py::arg("tolerance") = 1e-6,
+        py::arg("max_iterations") = long(1e7));
 
     m.def(
         "compute_minimum_distance", &compute_minimum_distance,

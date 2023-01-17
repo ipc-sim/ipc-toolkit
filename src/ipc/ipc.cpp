@@ -224,7 +224,8 @@ bool is_step_collision_free(
     // Broad phase
     Candidates candidates;
     construct_collision_candidates(
-        mesh, V0, V1, candidates, /*inflation_radius=*/0, method);
+        mesh, V0, V1, candidates, /*inflation_radius=*/min_distance / 2.,
+        method);
 
     // Narrow phase
     return is_step_collision_free(
@@ -295,7 +296,8 @@ double compute_collision_free_stepsize(
     // Broad phase
     Candidates candidates;
     construct_collision_candidates(
-        mesh, V0, V1, candidates, /*inflation_radius=*/0, method);
+        mesh, V0, V1, candidates, /*inflation_radius=*/min_distance / 2.,
+        method);
 
     // Narrow phase
     double step_size = compute_collision_free_stepsize(

@@ -18,6 +18,7 @@ struct ContinuousCollisionCandidate {
     /// @param[in] E Mesh edges as rows of indicies into V.
     /// @param[in] F Mesh triangular faces as rows of indicies into V.
     /// @param[out] toi Computed time of impact (normalized).
+    /// @param[in] min_distance Minimum separation distance between primitives.
     /// @param[in] tmax Maximum time (normalized) to look for collisions. Should be in [0, 1].
     /// @param[in] tolerance CCD tolerance used by Tight-Inclusion CCD.
     /// @param[in] max_iterations Maximum iterations used by Tight-Inclusion CCD.
