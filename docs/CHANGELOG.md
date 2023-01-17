@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 -->
 
+## 2023-01-17 ([pr-22](https://github.com/ipc-sim/ipc-toolkit/pull/22))
+### Changed
+* Added a minimum distance optional parameter to all CCD functions (`const double min_distance = 0.0`). This is placed as the first optional argument which can break calling code if optional parameters were previously used.
+
 ## 2022-02-21 ([pr-7](https://github.com/ipc-sim/ipc-toolkit/pull/7))
 ### Added
 * CollisionMesh to wrap up face and edges into a single data structure.
