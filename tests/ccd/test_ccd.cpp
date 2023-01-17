@@ -266,6 +266,7 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
 {
     const double FIRST_TOL = 1e-6, SECOND_TOL = 1e-7;
     const double FIRST_MAX_ITER = 1e6, SECOND_MAX_ITER = 1e6;
+    const double MIN_DISTANCE = 0.0;
 
     // BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
     BroadPhaseMethod broadphase_method = BroadPhaseMethod::HASH_GRID;
@@ -324,10 +325,10 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
         mesh, V0, V1, candidates, inflation_radius, broadphase_method);
 
     bool has_collisions = !is_step_collision_free(
-        candidates, mesh, V0, V1, FIRST_TOL, FIRST_MAX_ITER);
+        candidates, mesh, V0, V1, MIN_DISTANCE, FIRST_TOL, FIRST_MAX_ITER);
 
     double stepsize = compute_collision_free_stepsize(
-        candidates, mesh, V0, V1, FIRST_TOL, FIRST_MAX_ITER);
+        candidates, mesh, V0, V1, MIN_DISTANCE, FIRST_TOL, FIRST_MAX_ITER);
 
     if (!has_collisions) {
         CHECK(stepsize == 1.0);
@@ -347,10 +348,12 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
         }
 
         has_collisions_repeated = !is_step_collision_free(
-            candidates, mesh, V0, Vt, SECOND_TOL, SECOND_MAX_ITER);
+            candidates, mesh, V0, Vt, MIN_DISTANCE, SECOND_TOL,
+            SECOND_MAX_ITER);
 
         stepsize_repeated = compute_collision_free_stepsize(
-            candidates, mesh, V0, Vt, SECOND_TOL, SECOND_MAX_ITER);
+            candidates, mesh, V0, Vt, MIN_DISTANCE, SECOND_TOL,
+            SECOND_MAX_ITER);
 
         CAPTURE(
             t0_filename, t1_filename, broadphase_method, recompute_candidates,
