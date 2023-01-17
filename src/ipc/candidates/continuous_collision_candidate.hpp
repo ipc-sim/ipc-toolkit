@@ -18,6 +18,7 @@ struct ContinuousCollisionCandidate {
     /// @param[in] E Mesh edges as rows of indicies into V.
     /// @param[in] F Mesh triangular faces as rows of indicies into V.
     /// @param[out] toi Computed time of impact (normalized).
+    /// @param[in] min_distance Minimum separation distance between primitives.
     /// @param[in] tmax Maximum time (normalized) to look for collisions. Should be in [0, 1].
     /// @param[in] tolerance CCD tolerance used by Tight-Inclusion CCD.
     /// @param[in] max_iterations Maximum iterations used by Tight-Inclusion CCD.
@@ -29,6 +30,7 @@ struct ContinuousCollisionCandidate {
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         double& toi,
+        const double min_distance = 0.0,
         const double tmax = 1.0,
         const double tolerance = DEFAULT_CCD_TOLERANCE,
         const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,

@@ -76,6 +76,7 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID,
+    const double min_distance = 0.0,
     const double tolerance = 1e-6,
     const long max_iterations = 1e7);
 
@@ -91,6 +92,7 @@ bool is_step_collision_free(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
+    const double min_distance = 0.0,
     const double tolerance = 1e-6,
     const long max_iterations = 1e7);
 
@@ -105,6 +107,7 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID,
+    const double min_distance = 0.0,
     const double tolerance = 1e-6,
     const long max_iterations = 1e7);
 
@@ -120,6 +123,7 @@ double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
+    const double min_distance = 0.0,
     const double tolerance = 1e-6,
     const long max_iterations = 1e7);
 

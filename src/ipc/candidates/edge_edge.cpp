@@ -60,6 +60,7 @@ bool EdgeEdgeCandidate::ccd(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     double& toi,
+    const double min_distance,
     const double tmax,
     const double tolerance,
     const long max_iterations,
@@ -74,7 +75,8 @@ bool EdgeEdgeCandidate::ccd(
         V1.row(E(edge0_index, 0)), V1.row(E(edge0_index, 1)),
         // Edge 2 at t=1
         V1.row(E(edge1_index, 0)), V1.row(E(edge1_index, 1)), //
-        toi, tmax, tolerance, max_iterations, conservative_rescaling);
+        toi, min_distance, tmax, tolerance, max_iterations,
+        conservative_rescaling);
 }
 
 void EdgeEdgeCandidate::print_ccd_query(

@@ -58,6 +58,7 @@ struct EdgeEdgeCandidate : ContinuousCollisionCandidate {
         const Eigen::MatrixXi& E,
         const Eigen::MatrixXi& F,
         double& toi,
+        const double min_distance = 0.0,
         const double tmax = 1.0,
         const double tolerance = DEFAULT_CCD_TOLERANCE,
         const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,

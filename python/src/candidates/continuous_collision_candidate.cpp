@@ -12,7 +12,8 @@ void define_continuous_collision_candidate(py::module_& m)
             "ccd",
             [](ContinuousCollisionCandidate& self, const Eigen::MatrixXd& V0,
                const Eigen::MatrixXd& V1, const Eigen::MatrixXi& E,
-               const Eigen::MatrixXi& F, const double tmax = 1.0,
+               const Eigen::MatrixXi& F, const double min_distance = 0.0,
+               const double tmax = 1.0,
                const double tolerance = DEFAULT_CCD_TOLERANCE,
                const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
                const double conservative_rescaling =
@@ -42,7 +43,8 @@ void define_continuous_collision_candidate(py::module_& m)
                 Computed time of impact (normalized).
             )ipc_Qu8mg5v7",
             py::arg("V0"), py::arg("V1"), py::arg("E"), py::arg("F"),
-            py::arg("tmax") = 1.0, py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
+            py::arg("min_distance") = 0.0, py::arg("tmax") = 1.0,
+            py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
             py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
             py::arg("conservative_rescaling") =
                 DEFAULT_CCD_CONSERVATIVE_RESCALING)
