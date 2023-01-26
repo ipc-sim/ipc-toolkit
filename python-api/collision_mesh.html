@@ -32,9 +32,8 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.fa3fbbd75cfdd7cef.min.css" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/google_fonts.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/stylesheets/sphinx_immaterial_theme.7e770c658028b1997.min.css" />
         <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -706,11 +705,25 @@
       
         <li class="md-nav__item">
   <a href="#ipctk.CollisionMesh" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.CollisionMesh (Python class) — Helper function that automatically builds include_vertex using construct_is_on_surface." class="md-ellipsis">ipctk.<wbr>Collision<wbr>Mesh</span>
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.CollisionMesh (Python class) — Determine if the adjacencies have been initialized by calling init_adjacencies()." class="md-ellipsis">ipctk.<wbr>Collision<wbr>Mesh</span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.CollisionMesh">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.are_adjacencies_initialized" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.are_adjacencies_initialized (Python method) — Determine if the adjacencies have been initialized by calling init_adjacencies()." class="md-ellipsis">are_<wbr>adjacencies_<wbr>initialized</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.are_area_jacobians_initialized" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.are_area_jacobians_initialized (Python method)" class="md-ellipsis">are_<wbr>area_<wbr>jacobians_<wbr>initialized</span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#ipctk.CollisionMesh.build_from_full_mesh" class="md-nav__link">
@@ -837,6 +850,13 @@
           <li class="md-nav__item">
   <a href="#ipctk.CollisionMesh.edge_area" class="md-nav__link">
     <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.edge_area (Python method)" class="md-ellipsis">edge_<wbr>area</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.init_adjacencies" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.init_adjacencies (Python method) — Initialize vertex-vertex and edge-vertex adjacencies." class="md-ellipsis">init_<wbr>adjacencies</span>
   </a>
   
 </li>
@@ -1003,11 +1023,25 @@
       
         <li class="md-nav__item">
   <a href="#ipctk.CollisionMesh" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.CollisionMesh (Python class) — Helper function that automatically builds include_vertex using construct_is_on_surface." class="md-ellipsis">ipctk.<wbr>Collision<wbr>Mesh</span>
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.CollisionMesh (Python class) — Determine if the adjacencies have been initialized by calling init_adjacencies()." class="md-ellipsis">ipctk.<wbr>Collision<wbr>Mesh</span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.CollisionMesh">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.are_adjacencies_initialized" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.are_adjacencies_initialized (Python method) — Determine if the adjacencies have been initialized by calling init_adjacencies()." class="md-ellipsis">are_<wbr>adjacencies_<wbr>initialized</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.are_area_jacobians_initialized" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.are_area_jacobians_initialized (Python method)" class="md-ellipsis">are_<wbr>area_<wbr>jacobians_<wbr>initialized</span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#ipctk.CollisionMesh.build_from_full_mesh" class="md-nav__link">
@@ -1139,6 +1173,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.init_adjacencies" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.init_adjacencies (Python method) — Initialize vertex-vertex and edge-vertex adjacencies." class="md-ellipsis">init_<wbr>adjacencies</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ipctk.CollisionMesh.is_vertex_on_boundary" class="md-nav__link">
     <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.is_vertex_on_boundary (Python method)" class="md-ellipsis">is_<wbr>vertex_<wbr>on_<wbr>boundary</span>
   </a>
@@ -1202,8 +1243,19 @@
 <dt class="sig sig-object highlight py" id="ipctk.CollisionMesh">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">CollisionMesh</span></span><a class="headerlink" href="#ipctk.CollisionMesh" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.are_adjacencies_initialized">
+<span class="sig-name descname"><span class="pre">are_adjacencies_initialized</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.are_adjacencies_initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if the adjacencies have been initialized by calling init_adjacencies().</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.are_area_jacobians_initialized">
+<span class="sig-name descname"><span class="pre">are_area_jacobians_initialized</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.are_area_jacobians_initialized" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.build_from_full_mesh">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_from_full_mesh</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.build_from_full_mesh.full_vertices_at_rest" title="ipctk.CollisionMesh.build_from_full_mesh.full_vertices_at_rest (Python parameter) — The full vertices at rest."><span class="n"><span class="pre">full_vertices_at_rest</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.build_from_full_mesh.edges" title="ipctk.CollisionMesh.build_from_full_mesh.edges (Python parameter) — The edge matrix of mesh."><span class="n"><span class="pre">edges</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.build_from_full_mesh.faces" title="ipctk.CollisionMesh.build_from_full_mesh.faces (Python parameter) — The face matrix of mesh."><span class="n"><span class="pre">faces</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><a class="reference internal" href="#ipctk.CollisionMesh" title="ipctk.CollisionMesh (Python class) — Helper function that automatically builds include_vertex using construct_is_on_surface."><span class="pre">ipctk.CollisionMesh</span></a></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.build_from_full_mesh" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_from_full_mesh</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.build_from_full_mesh.full_vertices_at_rest" title="ipctk.CollisionMesh.build_from_full_mesh.full_vertices_at_rest (Python parameter) — The full vertices at rest."><span class="n"><span class="pre">full_vertices_at_rest</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.build_from_full_mesh.edges" title="ipctk.CollisionMesh.build_from_full_mesh.edges (Python parameter) — The edge matrix of mesh."><span class="n"><span class="pre">edges</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.build_from_full_mesh.faces" title="ipctk.CollisionMesh.build_from_full_mesh.faces (Python parameter) — The face matrix of mesh."><span class="n"><span class="pre">faces</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><a class="reference internal" href="#ipctk.CollisionMesh" title="ipctk.CollisionMesh (Python class) — Determine if the adjacencies have been initialized by calling init_adjacencies()."><span class="pre">ipctk.CollisionMesh</span></a></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.build_from_full_mesh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper function that automatically builds include_vertex using construct_is_on_surface.</p>
 <dl class="field-list simple">
 <dt class="field-odd" id="ipctk.CollisionMesh.build_from_full_mesh-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.build_from_full_mesh-parameters" title="Permalink to this headline">¶</a></dt>
@@ -1265,6 +1317,12 @@ collide. By default all primitives can collide with all other primitives.</p>
 <dd></dd></dl>
 
 <dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.init_adjacencies">
+<span class="sig-name descname"><span class="pre">init_adjacencies</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.init_adjacencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize vertex-vertex and edge-vertex adjacencies.</p>
+</dd></dl>
+
+<dl class="py method objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.is_vertex_on_boundary">
 <span class="sig-name descname"><span class="pre">is_vertex_on_boundary</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.is_vertex_on_boundary" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1286,7 +1344,7 @@ collide. By default all primitives can collide with all other primitives.</p>
 
 <dl class="py method objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.vertex_area">
-<span class="sig-name descname"><span class="pre">vertex_area</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">pi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_area" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">vertex_area</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">vi</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_area" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method objdesc">
@@ -1303,7 +1361,7 @@ collide. By default all primitives can collide with all other primitives.</p>
   <small>
     
       Last update:
-      January 17, 2023
+      January 26, 2023
     
   </small>
 </div>
@@ -1396,9 +1454,8 @@ collide. By default all primitives can collide with all other primitives.</p>
     
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
     
-    
-      <script src="../_static/javascripts/bundle.444abb77.min.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
+      
+        <script src="../_static/sphinx_immaterial_theme.cea6a0c1d5b0618cf.min.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     
   </body>
