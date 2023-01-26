@@ -236,7 +236,8 @@ public:
     /// @brief Determine if the area Jacobians have been initialized by calling init_area_jacobians().
     bool are_area_jacobians_initialized() const
     {
-        return !m_vertex_area_jacobian.empty() && !m_edge_area_jacobian.empty();
+        return m_vertex_area_jacobian.size() == num_vertices()
+            && m_edge_area_jacobian.size() == num_edges();
     }
 
     // -----------------------------------------------------------------------
