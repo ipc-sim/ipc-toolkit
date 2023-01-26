@@ -55,6 +55,14 @@ public:
             full_vertices_at_rest, edges, faces);
     }
 
+    // The following functions are used to initialize optional data structures.
+
+    /// @brief Initialize vertex-vertex and edge-vertex adjacencies.
+    void init_adjacencies();
+
+    /// @brief Initialize vertex and edge areas.
+    void init_area_jacobians();
+
     /// @brief Destroy the Collision Mesh object
     ~CollisionMesh() { }
 
@@ -152,13 +160,28 @@ public:
     /// @brief Get the vertex-vertex adjacency matrix.
     const std::vector<unordered_set<int>>& vertex_vertex_adjacencies() const
     {
+        if (!are_adjacencies_initialized()) {
+            throw std::runtime_error(
+                "Vertex-vertex adjacencies not initialized. Call init_adjacencies() first.");
+        }
         return m_vertex_vertex_adjacencies;
     }
 
     /// @brief Get the edge-vertex adjacency matrix.
     const std::vector<unordered_set<int>>& edge_vertex_adjacencies() const
     {
+        if (!are_adjacencies_initialized()) {
+            throw std::runtime_error(
+                "Edge-vertex adjacencies not initialized. Call init_area_jacobians() first.");
+        }
         return m_edge_vertex_adjacencies;
+    }
+
+    /// @brief Determine if the adjacencies have been initialized by calling init_adjacencies().
+    bool are_adjacencies_initialized() const
+    {
+        return !m_vertex_vertex_adjacencies.empty()
+            && !m_edge_vertex_adjacencies.empty();
     }
 
     /// @brief Is a vertex on the boundary of the collision mesh?
@@ -183,6 +206,10 @@ public:
     const Eigen::SparseVector<double>&
     vertex_area_gradient(const size_t vi) const
     {
+        if (!are_area_jacobians_initialized()) {
+            throw std::runtime_error(
+                "Vertex area Jacobian not initialized. Call init_area_jacobians() first.");
+        }
         return m_vertex_area_jacobian[vi];
     }
 
@@ -199,7 +226,17 @@ public:
     /// @return Gradient of the barycentric area of edge ei wrt the rest positions of all points.
     const Eigen::SparseVector<double>& edge_area_gradient(const size_t ei) const
     {
+        if (!are_area_jacobians_initialized()) {
+            throw std::runtime_error(
+                "Edge area Jacobian not initialized. Call init_area_jacobians() first.");
+        }
         return m_edge_area_jacobian[ei];
+    }
+
+    /// @brief Determine if the area Jacobians have been initialized by calling init_area_jacobians().
+    bool are_area_jacobians_initialized() const
+    {
+        return !m_vertex_area_jacobian.empty() && !m_edge_area_jacobian.empty();
     }
 
     // -----------------------------------------------------------------------
@@ -230,9 +267,6 @@ protected:
 
     /// @brief Initialize the selection matrix from full vertices/DOF to collision vertices/DOF.
     void init_selection_matrices(const int dim);
-
-    /// @brief Initialize vertex-vertex and edge-vertex adjacencies.
-    void init_adjacencies();
 
     /// @brief Initialize vertex and edge areas.
     void init_areas();

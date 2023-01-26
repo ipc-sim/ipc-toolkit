@@ -52,6 +52,9 @@ void define_collision_mesh(py::module_& m)
             py::overload_cast<const Eigen::SparseMatrix<double>&>(
                 &CollisionMesh::to_full_dof, py::const_),
             "", py::arg("X"))
+        .def(
+            "init_adjacencies", &CollisionMesh::init_adjacencies,
+            "Initialize vertex-vertex and edge-vertex adjacencies.")
         .def_property_readonly(
             "vertex_vertex_adjacencies",
             &CollisionMesh::vertex_vertex_adjacencies, "")
@@ -59,12 +62,29 @@ void define_collision_mesh(py::module_& m)
             "edge_vertex_adjacencies", &CollisionMesh::edge_vertex_adjacencies,
             "")
         .def(
+            "are_adjacencies_initialized",
+            &CollisionMesh::are_adjacencies_initialized,
+            "Determine if the adjacencies have been initialized by calling init_adjacencies().")
+        .def(
             "is_vertex_on_boundary", &CollisionMesh::is_vertex_on_boundary, "",
             py::arg("i"))
-        .def("vertex_area", &CollisionMesh::vertex_area, "", py::arg("pi"))
+        .def("vertex_area", &CollisionMesh::vertex_area, "", py::arg("vi"))
         .def_property_readonly("vertex_areas", &CollisionMesh::vertex_areas, "")
+        // TODO: enable these functions when Pybind11 supports
+        // Eigen::SparseVector
+        // .def(
+        //     "vertex_area_gradient", &CollisionMesh::vertex_area_gradient, "",
+        //     py::arg("vi"))
         .def("edge_area", &CollisionMesh::edge_area, "", py::arg("ei"))
         .def_property_readonly("edge_areas", &CollisionMesh::edge_areas, "")
+        // TODO: enable these functions when Pybind11 supports
+        // Eigen::SparseVector
+        // .def(
+        //     "edge_area_gradient", &CollisionMesh::edge_area_gradient, "",
+        //     py::arg("ei"))
+        .def(
+            "are_area_jacobians_initialized",
+            &CollisionMesh::are_area_jacobians_initialized, "")
         .def_static(
             "construct_is_on_surface", &CollisionMesh::construct_is_on_surface,
             "", py::arg("num_vertices"), py::arg("edges"))

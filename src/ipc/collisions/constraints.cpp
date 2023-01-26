@@ -261,6 +261,7 @@ void Constraints::edge_vertex_candiates_to_constraints(
 
         Eigen::SparseVector<double> weight_gradient;
         if (compute_shape_derivatives) {
+            assert(mesh.are_area_jacobians_initialized());
             weight_gradient = use_convergent_formulation
                 ? (mesh.vertex_area_gradient(vi) / 2)
                 : Eigen::SparseVector<double>(V.size());
@@ -330,6 +331,7 @@ void Constraints::edge_edge_candiates_to_constraints(
 
         Eigen::SparseVector<double> weight_gradient;
         if (compute_shape_derivatives) {
+            assert(mesh.are_area_jacobians_initialized());
             weight_gradient = use_convergent_formulation
                 ? ((mesh.edge_area_gradient(eai) + mesh.edge_area_gradient(ebi))
                    / 4)
@@ -437,6 +439,7 @@ void Constraints::face_vertex_candiates_to_constraints(
 
         Eigen::SparseVector<double> weight_gradient;
         if (compute_shape_derivatives) {
+            assert(mesh.are_area_jacobians_initialized());
             weight_gradient = use_convergent_formulation
                 ? (mesh.vertex_area_gradient(vi) / 4)
                 : Eigen::SparseVector<double>(V.size());
