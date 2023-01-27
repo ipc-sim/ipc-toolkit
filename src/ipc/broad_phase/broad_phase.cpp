@@ -1,6 +1,7 @@
 #include "broad_phase.hpp"
 
 #include <ipc/broad_phase/brute_force.hpp>
+#include <ipc/broad_phase/bvh.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
@@ -14,7 +15,7 @@ void BroadPhase::build(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     assert(edges.size() == 0 || edges.cols() == 2);
     assert(faces.size() == 0 || faces.cols() == 3);
@@ -29,7 +30,7 @@ void BroadPhase::build(
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     assert(edges.size() == 0 || edges.cols() == 2);
     assert(faces.size() == 0 || faces.cols() == 3);
@@ -63,25 +64,27 @@ void BroadPhase::detect_collision_candidates(
 
 // ============================================================================
 
-std::unique_ptr<BroadPhase>
-BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
+std::shared_ptr<BroadPhase>
+BroadPhase::make_broad_phase(const BroadPhaseMethod method)
 {
     switch (broad_phase_method) {
     case BroadPhaseMethod::BRUTE_FORCE:
-        return std::make_unique<BruteForce>();
+        return std::make_shared<BruteForce>();
     case BroadPhaseMethod::HASH_GRID:
-        return std::make_unique<HashGrid>();
+        return std::make_shared<HashGrid>();
     case BroadPhaseMethod::SPATIAL_HASH:
-        return std::make_unique<SpatialHash>();
+        return std::make_shared<SpatialHash>();
     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
-        return std::make_unique<SweepAndTiniestQueue>();
+        return std::make_shared<SweepAndTiniestQueue>();
     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU:
 #ifdef IPC_TOOLKIT_WITH_CUDA
-        return std::make_unique<SweepAndTiniestQueueGPU>();
+        return std::make_shared<SweepAndTiniestQueueGPU>();
 #else
         throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
                                  "because CUDA is disabled!");
 #endif
+    case BroadPhaseMethod::BVH:
+        return std::make_shared<BVH>();
     default:
         throw std::runtime_error("Invalid BroadPhaseMethod!");
     }

@@ -188,6 +188,11 @@ if(IPC_TOOLKIT_WITH_FILIB)
   target_link_libraries(ipc_toolkit PUBLIC filib::filib)
 endif()
 
+# SimpleBVH
+include(simple_bvh)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC BVH_lib)
+
+
 # Extra warnings (link last for highest priority)
 include(ipc_toolkit_warnings)
 target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)

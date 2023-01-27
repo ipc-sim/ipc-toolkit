@@ -61,7 +61,7 @@ void AABB::conservative_inflation(
 void build_vertex_boxes(
     const Eigen::MatrixXd& vertices,
     std::vector<AABB>& vertex_boxes,
-    double inflation_radius)
+    const double inflation_radius = 0);
 {
     vertex_boxes.resize(vertices.rows());
 
@@ -80,7 +80,7 @@ void build_vertex_boxes(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     std::vector<AABB>& vertex_boxes,
-    double inflation_radius)
+    const double inflation_radius = 0);
 {
     vertex_boxes.resize(vertices_t0.rows());
 

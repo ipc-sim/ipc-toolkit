@@ -14,7 +14,7 @@ void SweepAndTiniestQueue::build(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& _edges,
     const Eigen::MatrixXi& _faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     build(vertices, vertices, _edges, _faces, inflation_radius);
 }
@@ -24,7 +24,7 @@ void SweepAndTiniestQueue::build(
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& _edges,
     const Eigen::MatrixXi& _faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     CopyMeshBroadPhase::copy_mesh(_edges, _faces);
     num_vertices = vertices_t0.rows();
@@ -124,7 +124,7 @@ void SweepAndTiniestQueueGPU::build(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& _edges,
     const Eigen::MatrixXi& _faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     CopyMeshBroadPhase::copy_mesh(_edges, _faces);
     ccd::gpu::construct_static_collision_candidates(
@@ -136,7 +136,7 @@ void SweepAndTiniestQueueGPU::build(
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& _edges,
     const Eigen::MatrixXi& _faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     CopyMeshBroadPhase::copy_mesh(_edges, _faces);
     ccd::gpu::construct_continuous_collision_candidates(

@@ -19,6 +19,7 @@ enum class BroadPhaseMethod {
     SPATIAL_HASH,
     SWEEP_AND_TINIEST_QUEUE,
     SWEEP_AND_TINIEST_QUEUE_GPU, // Requires CUDA
+    BVH,
     NUM_METHODS
 };
 
@@ -34,8 +35,8 @@ public:
     /// @brief Construct a registered broad phase object.
     /// @param broad_phase_method The broad phase method to use.
     /// @return The constructed broad phase object.
-    static std::unique_ptr<BroadPhase>
-    make_broad_phase(const BroadPhaseMethod broad_phase_method);
+    static std::shared_ptr<BroadPhase>
+    make_broad_phase(const BroadPhaseMethod method);
 
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
@@ -46,7 +47,7 @@ public:
         const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
-        double inflation_radius = 0);
+        const double inflation_radius = 0);
 
     /// @brief Build the broad phase for continuous collision detection.
     /// @param vertices_t0 Starting vertices of the vertices.
@@ -59,7 +60,7 @@ public:
         const Eigen::MatrixXd& vertices_t1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
-        double inflation_radius = 0);
+        const double inflation_radius = 0);
 
     /// @brief Clear any built data.
     virtual void clear();

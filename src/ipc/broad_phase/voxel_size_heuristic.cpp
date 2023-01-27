@@ -14,7 +14,7 @@ namespace {
 double suggest_good_voxel_size(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
-    double inflation_radius)
+    const double inflation_radius)
 {
     // double edge_len_std_deviation;
     // double edge_len =
@@ -40,7 +40,7 @@ double suggest_good_voxel_size(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
-    double inflation_radius)
+    const double inflation_radius)
 {
     // double edge_len_std_deviation;
     // double edge_len = mean_edge_length(
