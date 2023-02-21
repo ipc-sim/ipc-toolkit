@@ -258,3 +258,5 @@ IPCToolkitOptions.cmake
 src/ipc/config.hpp
 
 docs/_doxygen
+
+notebooks/*.[ch]pp
