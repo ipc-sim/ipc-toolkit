@@ -15,7 +15,7 @@
 using namespace ipc;
 
 void check_friction_force_jacobian(
-    CollisionMesh mesh,
+    const CollisionMesh& mesh,
     const Eigen::MatrixXd& Ut,
     const Eigen::MatrixXd& U,
     const Constraints& constraints,
@@ -92,6 +92,7 @@ void check_friction_force_jacobian(
         Eigen::MatrixXd fd_X = fd::unflatten(x, X.cols());
 
         CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
+        fd_mesh.init_area_jacobians();
 
         FrictionConstraints fd_friction_constraints;
         if (recompute_constraints) {
@@ -228,6 +229,7 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian][thisone]")
     U = V1 - X;
 
     CollisionMesh mesh(X, E, F);
+    mesh.init_area_jacobians();
 
     check_friction_force_jacobian(
         mesh, Ut, U, constraints, mu, epsv_times_h, dhat, barrier_stiffness,
@@ -303,6 +305,7 @@ TEST_CASE(
     std::vector<bool> is_on_surface =
         CollisionMesh::construct_is_on_surface(X.rows(), E);
     CollisionMesh mesh(is_on_surface, X, E, F);
+    mesh.init_area_jacobians();
 
     X = mesh.vertices(X);
     if (Ut.rows() != X.rows()) {

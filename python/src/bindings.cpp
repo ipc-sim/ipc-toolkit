@@ -10,11 +10,19 @@ void define_barrier(py::module_& m);
 void define_aabb(py::module_& m);
 void define_broad_phase(py::module_& m);
 void define_brute_force(py::module_& m);
-void define_collision_candidate(py::module_& m);
 void define_hash_grid(py::module_& m);
 void define_spatial_hash(py::module_& m);
 void define_sweep(py::module_& m);
 void define_voxel_size_heuristic(py::module_& m);
+
+// candidates
+void define_candidates(py::module_& m);
+void define_continuous_collision_candidate(py::module_& m);
+void define_edge_edge_candidate(py::module_& m);
+void define_edge_face_candidate(py::module_& m);
+void define_edge_vertex_candidate(py::module_& m);
+void define_face_vertex_candidate(py::module_& m);
+void define_vertex_vertex_candidate(py::module_& m);
 
 // ccd
 void define_ccd_aabb(py::module_& m);
@@ -69,17 +77,10 @@ PYBIND11_MODULE(ipctk, m)
     define_aabb(m);
     define_broad_phase(m);
     define_brute_force(m);
-    define_collision_candidate(m);
     define_hash_grid(m);
     define_spatial_hash(m);
     define_sweep(m);
     define_voxel_size_heuristic(m);
-
-    // ccd
-    define_ccd_aabb(m);
-    define_ccd(m);
-    define_inexact_point_edge(m);
-    define_point_static_plane(m);
 
     // distance
     define_distance_type(m);
@@ -91,6 +92,21 @@ PYBIND11_MODULE(ipctk, m)
     define_point_point_distance(m);
     define_point_plane_distance(m);
     define_point_triangle_distance(m);
+
+    // candidates
+    define_candidates(m);
+    define_continuous_collision_candidate(m);
+    define_edge_edge_candidate(m);
+    define_edge_face_candidate(m);
+    define_edge_vertex_candidate(m);
+    define_face_vertex_candidate(m);
+    define_vertex_vertex_candidate(m);
+
+    // ccd
+    define_ccd_aabb(m);
+    define_ccd(m);
+    define_inexact_point_edge(m);
+    define_point_static_plane(m);
 
     // friction
     define_closest_point(m);

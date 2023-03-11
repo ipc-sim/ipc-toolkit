@@ -4,7 +4,7 @@
 
 #include <ipc/ccd/aabb.hpp>
 #include <ipc/broad_phase/voxel_size_heuristic.hpp>
-#include <ipc/utils/merge_thread_local_vectors.hpp>
+#include <ipc/utils/merge_thread_local.hpp>
 
 #include <ipc/config.hpp>
 

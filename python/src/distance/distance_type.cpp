@@ -17,6 +17,9 @@ void define_distance_type(py::module_& m)
         .value(
             "P_E", PointEdgeDistanceType::P_E,
             "point is closest to the interior of the edge")
+        .value(
+            "AUTO", PointEdgeDistanceType::AUTO,
+            "automatically determine the closest point")
         .export_values();
 
     py::enum_<PointTriangleDistanceType>(m, "PointTriangleDistanceType")
@@ -41,6 +44,9 @@ void define_distance_type(py::module_& m)
         .value(
             "P_T", PointTriangleDistanceType::P_T,
             "point is closest to the interior of the triangle")
+        .value(
+            "AUTO", PointTriangleDistanceType::AUTO,
+            "automatically determine the closest point")
         .export_values();
 
     py::enum_<EdgeEdgeDistanceType>(m, "EdgeEdgeDistanceType")
@@ -75,6 +81,9 @@ void define_distance_type(py::module_& m)
         .value(
             "EA_EB", EdgeEdgeDistanceType::EA_EB,
             "edges are closest at an interior point of edge A and B")
+        .value(
+            "AUTO", EdgeEdgeDistanceType::AUTO,
+            "automatically determine the closest point")
         .export_values();
 
     m.def(

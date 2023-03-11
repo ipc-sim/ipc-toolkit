@@ -226,6 +226,8 @@ TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
 
     CollisionMesh mesh =
         CollisionMesh::build_from_full_mesh(X, E, /*faces=*/Eigen::MatrixXi());
+    mesh.init_area_jacobians();
+    REQUIRE(mesh.are_area_jacobians_initialized());
 
     X = mesh.vertices(X);
     V = mesh.vertices(V);
@@ -285,6 +287,8 @@ TEST_CASE("Benchmark IPC shape derivative", "[ipc][shape_opt][!benchmark]")
 
     CollisionMesh mesh =
         CollisionMesh::build_from_full_mesh(X, E, /*faces=*/Eigen::MatrixXi());
+    mesh.init_area_jacobians();
+    REQUIRE(mesh.are_area_jacobians_initialized());
 
     X = mesh.vertices(X);
     V = mesh.vertices(V);

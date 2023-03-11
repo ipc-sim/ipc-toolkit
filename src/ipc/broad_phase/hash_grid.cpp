@@ -1,7 +1,7 @@
 #include "hash_grid.hpp"
 
 #include <ipc/broad_phase/voxel_size_heuristic.hpp>
-#include <ipc/utils/merge_thread_local_vectors.hpp>
+#include <ipc/utils/merge_thread_local.hpp>
 #include <ipc/utils/logger.hpp>
 
 #include <tbb/enumerable_thread_specific.h>
@@ -10,6 +10,8 @@
 #include <tbb/parallel_sort.h>
 
 #include <algorithm> // std::min/max
+
+#define IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE // else use unordered_set
 
 namespace ipc {
 
@@ -159,7 +161,12 @@ void HashGrid::detect_candidates(
     };
 
     // 2. Enumerate hash collisions
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
     tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
+#else
+    tbb::enumerable_thread_specific<unordered_set<Candidate>> storage;
+#endif
+
     tbb::parallel_for(
         tbb::blocked_range2d<long>(0l, num_items - 1, 0l, num_items),
         [&](const tbb::blocked_range2d<long>& r) {
@@ -194,18 +201,31 @@ void HashGrid::detect_candidates(
                     }
 
                     if (boxes0[id0].intersects(boxes1[id1])) {
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
                         local_candidates.emplace_back(id0, id1);
+#else
+                        local_candidates.emplace(id0, id1);
+#endif
                     }
                 }
             }
         });
 
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
     merge_thread_local_vectors(storage, candidates);
 
     // Remove the duplicate candidates
     tbb::parallel_sort(candidates.begin(), candidates.end());
     auto new_end = std::unique(candidates.begin(), candidates.end());
     candidates.erase(new_end, candidates.end());
+#else
+    unordered_set<Candidate> candidates_set;
+    merge_thread_local_unordered_sets(storage, candidates_set);
+
+    candidates.reserve(candidates_set.size());
+    candidates.insert(
+        candidates.end(), candidates_set.begin(), candidates_set.end());
+#endif
 }
 
 template <typename Candidate>
@@ -219,7 +239,12 @@ void HashGrid::detect_candidates(
     // hashes to the same key) and should be flagged for low-level
     // intersection testing. So we loop over the entire sorted set of
     // (key,value) pairs creating Candidate entries for pairs with the same key
+
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
     tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
+#else
+    tbb::enumerable_thread_specific<unordered_set<Candidate>> storage;
+#endif
 
     tbb::parallel_for(
         tbb::blocked_range2d<long>(0l, items.size() - 1, 0l, items.size()),
@@ -248,18 +273,31 @@ void HashGrid::detect_candidates(
 
                     const AABB& box1 = boxes[item1.id];
                     if (box0.intersects(box1)) {
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
                         local_candidates.emplace_back(item0.id, item1.id);
+#else
+                        local_candidates.emplace(item0.id, item1.id);
+#endif
                     }
                 }
             }
         });
 
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
     merge_thread_local_vectors(storage, candidates);
 
     // Remove the duplicate candidates
     tbb::parallel_sort(candidates.begin(), candidates.end());
     auto new_end = std::unique(candidates.begin(), candidates.end());
     candidates.erase(new_end, candidates.end());
+#else
+    unordered_set<Candidate> candidates_set;
+    merge_thread_local_unordered_sets(storage, candidates_set);
+
+    candidates.reserve(candidates_set.size());
+    candidates.insert(
+        candidates.end(), candidates_set.begin(), candidates_set.end());
+#endif
 }
 
 void HashGrid::detect_edge_vertex_candidates(

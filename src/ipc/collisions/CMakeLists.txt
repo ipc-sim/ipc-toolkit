@@ -7,13 +7,13 @@ set(SOURCES
   constraints.hpp
   edge_edge.cpp
   edge_edge.hpp
-  edge_vertex.cpp
+  # edge_vertex.cpp
   edge_vertex.hpp
-  face_vertex.cpp
+  # face_vertex.cpp
   face_vertex.hpp
   plane_vertex.cpp
   plane_vertex.hpp
-  vertex_vertex.cpp
+  # vertex_vertex.cpp
   vertex_vertex.hpp
 )
 

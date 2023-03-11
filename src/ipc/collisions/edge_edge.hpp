@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/broad_phase/collision_candidate.hpp>
+#include <ipc/candidates/edge_edge.hpp>
 #include <ipc/collisions/collision_constraint.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -10,28 +10,40 @@ struct EdgeEdgeConstraint : EdgeEdgeCandidate, CollisionConstraint {
     EdgeEdgeConstraint(long edge0_index, long edge1_index, double eps_x);
     EdgeEdgeConstraint(const EdgeEdgeCandidate& candidate, double eps_x);
 
-    int num_vertices() const override { return 4; };
+    int num_vertices() const override
+    {
+        return EdgeEdgeCandidate::num_vertices();
+    }
+
     std::array<long, 4> vertex_indices(
         const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
     {
-        return { { E(edge0_index, 0), E(edge0_index, 1), //
-                   E(edge1_index, 0), E(edge1_index, 1) } };
+        return EdgeEdgeCandidate::vertex_indices(E, F);
     }
 
     double compute_distance(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+        const Eigen::MatrixXi& F) const override
+    {
+        return EdgeEdgeCandidate::compute_distance(V, E, F);
+    }
 
     VectorMax12d compute_distance_gradient(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+        const Eigen::MatrixXi& F) const override
+    {
+        return EdgeEdgeCandidate::compute_distance_gradient(V, E, F);
+    }
 
     MatrixMax12d compute_distance_hessian(
         const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+        const Eigen::MatrixXi& F) const override
+    {
+        return EdgeEdgeCandidate::compute_distance_hessian(V, E, F);
+    }
 
     double compute_potential(
         const Eigen::MatrixXd& V,
@@ -55,9 +67,8 @@ struct EdgeEdgeConstraint : EdgeEdgeCandidate, CollisionConstraint {
     template <typename H>
     friend H AbslHashValue(H h, const EdgeEdgeConstraint& ee)
     {
-        long min_ei = std::min(ee.edge0_index, ee.edge1_index);
-        long max_ei = std::max(ee.edge0_index, ee.edge1_index);
-        return H::combine(std::move(h), min_ei, max_ei);
+        return AbslHashValue(
+            std::move(h), static_cast<const EdgeEdgeCandidate&>(ee));
     }
 
     double eps_x;

@@ -66,8 +66,8 @@ CollisionMesh::CollisionMesh(
         m_displacement_map = m_select_vertices;
         m_displacement_dof_map = m_select_dof;
     } else {
-        assert(displacement_map.rows() == num_vertices());
-        assert(displacement_map.cols() == full_num_vertices());
+        assert(displacement_map.rows() == full_num_vertices());
+        // assert(displacement_map.cols() == full_num_vertices());
 
         m_displacement_map = m_select_vertices * displacement_map;
         m_displacement_map.makeCompressed();
@@ -104,8 +104,10 @@ CollisionMesh::CollisionMesh(
 
     m_faces_to_edges = construct_faces_to_edges(m_faces, m_edges);
 
-    init_adjacencies();
     init_areas();
+    // Compute these manually if needed.
+    // init_adjacencies();
+    // init_area_jacobian();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -203,25 +205,16 @@ void CollisionMesh::init_areas()
     // Compute vertex areas as the sum of ½ the length of connected edges
     Eigen::VectorXd vertex_edge_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);
-    m_vertex_area_jacobian.resize(
-        num_vertices(), Eigen::SparseVector<double>(ndof()));
     for (int i = 0; i < m_edges.rows(); i++) {
         const auto& e0 = m_vertices_at_rest.row(m_edges(i, 0));
         const auto& e1 = m_vertices_at_rest.row(m_edges(i, 1));
         double edge_len = (e1 - e0).norm();
-
-        VectorMax6d edge_len_gradient;
-        edge_length_gradient(e0, e1, edge_len_gradient);
 
         for (int j = 0; j < m_edges.cols(); j++) {
             if (vertex_edge_areas[m_edges(i, j)] < 0) {
                 vertex_edge_areas[m_edges(i, j)] = 0;
             }
             vertex_edge_areas[m_edges(i, j)] += edge_len / 2;
-
-            local_gradient_to_global_gradient(
-                edge_len_gradient / 2, m_edges.row(i), dim(),
-                m_vertex_area_jacobian[m_edges(i, j)]);
         }
     }
 
@@ -229,8 +222,6 @@ void CollisionMesh::init_areas()
     Eigen::VectorXd vertex_face_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);
     m_edge_areas.setConstant(m_edges.rows(), -1);
-    m_edge_area_jacobian.resize(
-        m_edges.rows(), Eigen::SparseVector<double>(ndof()));
     if (dim() == 3) {
         for (int i = 0; i < m_faces.rows(); i++) {
             const auto& f0 = m_vertices_at_rest.row(m_faces(i, 0));
@@ -238,14 +229,9 @@ void CollisionMesh::init_areas()
             const auto& f2 = m_vertices_at_rest.row(m_faces(i, 2));
             double face_area = cross(f1 - f0, f2 - f0).norm() / 2;
 
-            VectorMax9d face_area_gradient;
-            triangle_area_gradient(f0, f1, f2, face_area_gradient);
-
             for (int j = 0; j < m_faces.cols(); ++j) {
                 if (vertex_face_areas[m_faces(i, j)] < 0) {
                     vertex_face_areas[m_faces(i, j)] = 0;
-                    // remove the computed value from vertex_edge_areas
-                    m_vertex_area_jacobian[m_faces(i, j)].setZero();
                 }
                 vertex_face_areas[m_faces(i, j)] += face_area / 3;
 
@@ -253,16 +239,6 @@ void CollisionMesh::init_areas()
                     m_edge_areas[m_faces_to_edges(i, j)] = 0;
                 }
                 m_edge_areas[m_faces_to_edges(i, j)] += face_area / 3;
-
-                // compute gradient of area
-
-                local_gradient_to_global_gradient(
-                    face_area_gradient / 3, m_faces.row(i), dim(),
-                    m_vertex_area_jacobian[m_faces(i, j)]);
-
-                local_gradient_to_global_gradient(
-                    face_area_gradient / 3, m_faces.row(i), dim(),
-                    m_edge_area_jacobian[m_faces_to_edges(i, j)]);
             }
         }
     }
@@ -276,6 +252,59 @@ void CollisionMesh::init_areas()
 
     // Select the area based on the order face, codim
     m_edge_areas = (m_edge_areas.array() < 0).select(1, m_edge_areas);
+}
+
+void CollisionMesh::init_area_jacobians()
+{
+    // Compute vertex areas as the sum of ½ the length of connected edges
+    m_vertex_area_jacobian.resize(
+        num_vertices(), Eigen::SparseVector<double>(ndof()));
+    for (int i = 0; i < m_edges.rows(); i++) {
+        const auto& e0 = m_vertices_at_rest.row(m_edges(i, 0));
+        const auto& e1 = m_vertices_at_rest.row(m_edges(i, 1));
+
+        VectorMax6d edge_len_gradient;
+        edge_length_gradient(e0, e1, edge_len_gradient);
+
+        for (int j = 0; j < m_edges.cols(); j++) {
+            local_gradient_to_global_gradient(
+                edge_len_gradient / 2, m_edges.row(i), dim(),
+                m_vertex_area_jacobian[m_edges(i, j)]);
+        }
+    }
+
+    // Compute vertex/edge areas as the sum of ⅓ the area of connected face
+    m_edge_area_jacobian.resize(
+        m_edges.rows(), Eigen::SparseVector<double>(ndof()));
+    if (dim() == 3) {
+        std::vector<bool> visited_vertex_before(num_vertices(), false);
+        for (int i = 0; i < m_faces.rows(); i++) {
+            const auto& f0 = m_vertices_at_rest.row(m_faces(i, 0));
+            const auto& f1 = m_vertices_at_rest.row(m_faces(i, 1));
+            const auto& f2 = m_vertices_at_rest.row(m_faces(i, 2));
+
+            VectorMax9d face_area_gradient;
+            triangle_area_gradient(f0, f1, f2, face_area_gradient);
+
+            for (int j = 0; j < m_faces.cols(); ++j) {
+                if (!visited_vertex_before[m_faces(i, j)]) {
+                    // remove the computed value from vertex_edge_areas
+                    m_vertex_area_jacobian[m_faces(i, j)].setZero();
+                    visited_vertex_before[m_faces(i, j)] = true;
+                }
+
+                // compute gradient of area
+
+                local_gradient_to_global_gradient(
+                    face_area_gradient / 3, m_faces.row(i), dim(),
+                    m_vertex_area_jacobian[m_faces(i, j)]);
+
+                local_gradient_to_global_gradient(
+                    face_area_gradient / 3, m_faces.row(i), dim(),
+                    m_edge_area_jacobian[m_faces_to_edges(i, j)]);
+            }
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -11,11 +11,18 @@ pybind11_add_module(ipctk
   src/broad_phase/aabb.cpp
   src/broad_phase/broad_phase.cpp
   src/broad_phase/brute_force.cpp
-  src/broad_phase/collision_candidate.cpp
   src/broad_phase/hash_grid.cpp
   src/broad_phase/spatial_hash.cpp
   src/broad_phase/sweep_and_tiniest_queue.cpp
   src/broad_phase/voxel_size_heuristic.cpp
+
+  src/candidates/candidates.cpp
+  src/candidates/continuous_collision_candidate.cpp
+  src/candidates/edge_edge.cpp
+  src/candidates/edge_face.cpp
+  src/candidates/edge_vertex.cpp
+  src/candidates/face_vertex.cpp
+  src/candidates/vertex_vertex.cpp
 
   src/ccd/aabb.cpp
   src/ccd/ccd.cpp

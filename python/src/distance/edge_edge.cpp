@@ -12,12 +12,8 @@ void define_edge_edge_distance(py::module_& m)
         "edge_edge_distance",
         [](const Eigen::Vector3d& ea0, const Eigen::Vector3d& ea1,
            const Eigen::Vector3d& eb0, const Eigen::Vector3d& eb1,
-           const EdgeEdgeDistanceType* dtype) {
-            if (dtype == nullptr) {
-                return edge_edge_distance(ea0, ea1, eb0, eb1);
-            } else {
-                return edge_edge_distance(ea0, ea1, eb0, eb1, *dtype);
-            }
+           const EdgeEdgeDistanceType dtype) {
+            return edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
         },
         R"ipc_Qu8mg5v7(
         Compute the distance between a two lines segments in 3D.
@@ -36,19 +32,15 @@ void define_edge_edge_distance(py::module_& m)
             The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"),
-        py::arg("dtype") = py::none());
+        py::arg("dtype") = EdgeEdgeDistanceType::AUTO);
 
     m.def(
         "edge_edge_distance_gradient",
         [](const Eigen::Vector3d& ea0, const Eigen::Vector3d& ea1,
            const Eigen::Vector3d& eb0, const Eigen::Vector3d& eb1,
-           const EdgeEdgeDistanceType* dtype) {
+           const EdgeEdgeDistanceType dtype) {
             Vector<double, 12> grad;
-            if (dtype == nullptr) {
-                edge_edge_distance_gradient(ea0, ea1, eb0, eb1, grad);
-            } else {
-                edge_edge_distance_gradient(ea0, ea1, eb0, eb1, *dtype, grad);
-            }
+            edge_edge_distance_gradient(ea0, ea1, eb0, eb1, grad, dtype);
             return grad;
         },
         R"ipc_Qu8mg5v7(
@@ -68,19 +60,15 @@ void define_edge_edge_distance(py::module_& m)
             The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"),
-        py::arg("dtype") = py::none());
+        py::arg("dtype") = EdgeEdgeDistanceType::AUTO);
 
     m.def(
         "edge_edge_distance_hessian",
         [](const Eigen::Vector3d& ea0, const Eigen::Vector3d& ea1,
            const Eigen::Vector3d& eb0, const Eigen::Vector3d& eb1,
-           const EdgeEdgeDistanceType* dtype) {
+           const EdgeEdgeDistanceType dtype) {
             Eigen::Matrix<double, 12, 12> hess;
-            if (dtype == nullptr) {
-                edge_edge_distance_hessian(ea0, ea1, eb0, eb1, hess);
-            } else {
-                edge_edge_distance_hessian(ea0, ea1, eb0, eb1, *dtype, hess);
-            }
+            edge_edge_distance_hessian(ea0, ea1, eb0, eb1, hess, dtype);
             return hess;
         },
         R"ipc_Qu8mg5v7(
@@ -100,5 +88,5 @@ void define_edge_edge_distance(py::module_& m)
             The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"),
-        py::arg("dtype") = py::none());
+        py::arg("dtype") = EdgeEdgeDistanceType::AUTO);
 }

@@ -2,8 +2,8 @@
 
 #include <ipc/ipc.hpp>
 #include <ipc/broad_phase/brute_force.hpp>
-#include <ipc/broad_phase/collision_candidate.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>
+#include <ipc/candidates/edge_face.hpp>
 #include <ipc/utils/intersection.hpp>
 
 #include "test_utils.hpp"

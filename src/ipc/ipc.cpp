@@ -17,11 +17,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
-
-#define IPC_EARLIEST_TOI_USE_MUTEX
-#ifdef IPC_EARLIEST_TOI_USE_MUTEX
-#include <mutex>
-#endif
+#include <shared_mutex>
 
 #include <algorithm> // std::min/max
 
@@ -32,6 +28,7 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const BroadPhaseMethod method,
+    const double min_distance,
     const double tolerance,
     const long max_iterations)
 {
@@ -41,11 +38,12 @@ bool is_step_collision_free(
     // Broad phase
     Candidates candidates;
     construct_collision_candidates(
-        mesh, V0, V1, candidates, /*inflation_radius=*/0, method);
+        mesh, V0, V1, candidates, /*inflation_radius=*/min_distance / 1.99,
+        method);
 
     // Narrow phase
     return is_step_collision_free(
-        candidates, mesh, V0, V1, tolerance, max_iterations);
+        candidates, mesh, V0, V1, min_distance, tolerance, max_iterations);
 }
 
 bool is_step_collision_free(
@@ -53,6 +51,7 @@ bool is_step_collision_free(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
+    const double min_distance,
     const double tolerance,
     const long max_iterations)
 {
@@ -66,7 +65,8 @@ bool is_step_collision_free(
     for (size_t i = 0; i < candidates.size(); i++) {
         double toi;
         bool is_collision = candidates[i].ccd(
-            V0, V1, E, F, toi, /*tmax=*/1.0, tolerance, max_iterations);
+            V0, V1, E, F, toi, min_distance, /*tmax=*/1.0, tolerance,
+            max_iterations);
 
         if (is_collision) {
             return false;
@@ -83,6 +83,7 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
     const BroadPhaseMethod method,
+    const double min_distance,
     const double tolerance,
     const long max_iterations)
 {
@@ -109,11 +110,12 @@ double compute_collision_free_stepsize(
     // Broad phase
     Candidates candidates;
     construct_collision_candidates(
-        mesh, V0, V1, candidates, /*inflation_radius=*/0, method);
+        mesh, V0, V1, candidates, /*inflation_radius=*/min_distance / 1.99,
+        method);
 
     // Narrow phase
     double step_size = compute_collision_free_stepsize(
-        candidates, mesh, V0, V1, tolerance, max_iterations);
+        candidates, mesh, V0, V1, min_distance, tolerance, max_iterations);
 
     return step_size;
 }
@@ -123,6 +125,7 @@ double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
+    const double min_distance,
     const double tolerance,
     const long max_iterations)
 {
@@ -135,30 +138,28 @@ double compute_collision_free_stepsize(
         return 1; // No possible collisions, so can take full step.
     }
 
-    // Narrow phase
-#ifdef IPC_EARLIEST_TOI_USE_MUTEX
     double earliest_toi = 1;
-    std::mutex earliest_toi_mutex;
-#else
-    tbb::enumerable_thread_specific<double> storage(1);
-#endif
+    std::shared_mutex earliest_toi_mutex;
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, candidates.size()),
         [&](tbb::blocked_range<size_t> r) {
-#ifndef IPC_EARLIEST_TOI_USE_MUTEX
-            double& earliest_toi = storage.local();
-#endif
             for (size_t i = r.begin(); i < r.end(); i++) {
-                double toi = std::numeric_limits<double>::infinity();
+                // Use the mutex to read as well in case writing double takes
+                // more than one clock cycle.
+                double tmax;
+                {
+                    std::shared_lock lock(earliest_toi_mutex);
+                    tmax = earliest_toi;
+                }
+
+                double toi = std::numeric_limits<double>::infinity(); // output
                 bool are_colliding = candidates[i].ccd(
-                    V0, V1, E, F, toi, /*tmax=*/earliest_toi, tolerance,
+                    V0, V1, E, F, toi, min_distance, tmax, tolerance,
                     max_iterations);
 
                 if (are_colliding) {
-#ifdef IPC_EARLIEST_TOI_USE_MUTEX
-                    std::lock_guard<std::mutex> lock(earliest_toi_mutex);
-#endif
+                    std::unique_lock lock(earliest_toi_mutex);
                     if (toi < earliest_toi) {
                         earliest_toi = toi;
                     }
@@ -166,12 +167,6 @@ double compute_collision_free_stepsize(
             }
         });
 
-#ifndef IPC_EARLIEST_TOI_USE_MUTEX
-    double earliest_toi = 1;
-    for (const auto& local_earliest_toi : storage) {
-        earliest_toi = std::min(earliest_toi, local_earliest_toi);
-    }
-#endif
     assert(earliest_toi >= 0 && earliest_toi <= 1.0);
     return earliest_toi;
 }

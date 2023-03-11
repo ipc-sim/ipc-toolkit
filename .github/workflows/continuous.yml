@@ -2,11 +2,8 @@ name: Build
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
 
 env:
   CTEST_OUTPUT_ON_FAILURE: ON
@@ -32,7 +29,7 @@ jobs:
             name: Linux
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2.5.0
         with:
           fetch-depth: 10
 
@@ -46,7 +43,7 @@ jobs:
 
       - name: Cache Build
         id: cache-build
-        uses: actions/cache@v1
+        uses: actions/cache@v3.0.11
         with:
           path: ~/.ccache
           key: ${{ runner.os }}-${{ matrix.config }}-cache
@@ -83,7 +80,7 @@ jobs:
         config: [Debug, Release]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2.5.0
         with:
           fetch-depth: 10
 
@@ -96,7 +93,7 @@ jobs:
 
       - name: Cache build
         id: cache-build
-        uses: actions/cache@v2
+        uses: actions/cache@v3.0.11
         with:
           path: ${{ env.appdata }}\Mozilla\sccache
           key: ${{ runner.os }}-${{ matrix.config }}-cache

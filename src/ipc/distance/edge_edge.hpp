@@ -15,33 +15,6 @@ namespace ipc {
 /// @param ea1 The second vertex of the first edge.
 /// @param eb0 The first vertex of the second edge.
 /// @param eb1 The second vertex of the second edge.
-/// @return The distance between the two edges.
-template <
-    typename DerivedEA0,
-    typename DerivedEA1,
-    typename DerivedEB0,
-    typename DerivedEB1>
-auto edge_edge_distance(
-    const Eigen::MatrixBase<DerivedEA0>& ea0,
-    const Eigen::MatrixBase<DerivedEA1>& ea1,
-    const Eigen::MatrixBase<DerivedEB0>& eb0,
-    const Eigen::MatrixBase<DerivedEB1>& eb1)
-{
-    assert(ea0.size() == 3);
-    assert(ea1.size() == 3);
-    assert(eb0.size() == 3);
-    assert(eb1.size() == 3);
-
-    return edge_edge_distance(
-        ea0, ea1, eb0, eb1, edge_edge_distance_type(ea0, ea1, eb0, eb1));
-}
-
-/// @brief Compute the distance between a two lines segments in 3D.
-/// @note The distance is actually squared distance.
-/// @param ea0 The first vertex of the first edge.
-/// @param ea1 The second vertex of the first edge.
-/// @param eb0 The first vertex of the second edge.
-/// @param eb1 The second vertex of the second edge.
 /// @param dtype The point edge distance type to compute.
 /// @return The distance between the two edges.
 template <
@@ -54,7 +27,7 @@ auto edge_edge_distance(
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
-    const EdgeEdgeDistanceType dtype)
+    const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
 {
     assert(ea0.size() == 3);
     assert(ea1.size() == 3);
@@ -89,39 +62,14 @@ auto edge_edge_distance(
     case EdgeEdgeDistanceType::EA_EB:
         return line_line_distance(ea0, ea1, eb0, eb1);
 
+    case EdgeEdgeDistanceType::AUTO:
+        return edge_edge_distance(
+            ea0, ea1, eb0, eb1, edge_edge_distance_type(ea0, ea1, eb0, eb1));
+
     default:
         throw std::invalid_argument(
             "Invalid distance type for edge-edge distance!");
     }
-}
-
-/// @brief Compute the gradient of the distance between a two lines segments.
-/// @note The distance is actually squared distance.
-/// @param[in] ea0 The first vertex of the first edge.
-/// @param[in] ea1 The second vertex of the first edge.
-/// @param[in] eb0 The first vertex of the second edge.
-/// @param[in] eb1 The second vertex of the second edge.
-/// @param[out] grad The gradient of the distance wrt ea0, ea1, eb0, and eb1.
-template <
-    typename DerivedEA0,
-    typename DerivedEA1,
-    typename DerivedEB0,
-    typename DerivedEB1,
-    typename DerivedGrad>
-void edge_edge_distance_gradient(
-    const Eigen::MatrixBase<DerivedEA0>& ea0,
-    const Eigen::MatrixBase<DerivedEA1>& ea1,
-    const Eigen::MatrixBase<DerivedEB0>& eb0,
-    const Eigen::MatrixBase<DerivedEB1>& eb1,
-    Eigen::PlainObjectBase<DerivedGrad>& grad)
-{
-    assert(ea0.size() == 3);
-    assert(ea1.size() == 3);
-    assert(eb0.size() == 3);
-    assert(eb1.size() == 3);
-
-    return edge_edge_distance_gradient(
-        ea0, ea1, eb0, eb1, edge_edge_distance_type(ea0, ea1, eb0, eb1), grad);
 }
 
 /// @brief Compute the gradient of the distance between a two lines segments.
@@ -143,8 +91,8 @@ void edge_edge_distance_gradient(
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
-    const EdgeEdgeDistanceType dtype,
-    Eigen::PlainObjectBase<DerivedGrad>& grad)
+    Eigen::PlainObjectBase<DerivedGrad>& grad,
+    const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
 {
     int dim = ea0.size();
     assert(ea1.size() == dim);
@@ -207,39 +155,16 @@ void edge_edge_distance_gradient(
         line_line_distance_gradient(ea0, ea1, eb0, eb1, grad);
         break;
 
+    case EdgeEdgeDistanceType::AUTO:
+        edge_edge_distance_gradient(
+            ea0, ea1, eb0, eb1, grad,
+            edge_edge_distance_type(ea0, ea1, eb0, eb1));
+        break;
+
     default:
         throw std::invalid_argument(
             "Invalid distance type for edge-edge distance gradient!");
     }
-}
-
-/// @brief Compute the hessian of the distance between a two lines segments.
-/// @note The distance is actually squared distance.
-/// @param[in] ea0 The first vertex of the first edge.
-/// @param[in] ea1 The second vertex of the first edge.
-/// @param[in] eb0 The first vertex of the second edge.
-/// @param[in] eb1 The second vertex of the second edge.
-/// @param[out] hess The hessian of the distance wrt ea0, ea1, eb0, and eb1.
-template <
-    typename DerivedEA0,
-    typename DerivedEA1,
-    typename DerivedEB0,
-    typename DerivedEB1,
-    typename DerivedHess>
-void edge_edge_distance_hessian(
-    const Eigen::MatrixBase<DerivedEA0>& ea0,
-    const Eigen::MatrixBase<DerivedEA1>& ea1,
-    const Eigen::MatrixBase<DerivedEB0>& eb0,
-    const Eigen::MatrixBase<DerivedEB1>& eb1,
-    Eigen::PlainObjectBase<DerivedHess>& hess)
-{
-    assert(ea0.size() == 3);
-    assert(ea1.size() == 3);
-    assert(eb0.size() == 3);
-    assert(eb1.size() == 3);
-
-    return edge_edge_distance_hessian(
-        ea0, ea1, eb0, eb1, edge_edge_distance_type(ea0, ea1, eb0, eb1), hess);
 }
 
 /// @brief Compute the hessian of the distance between a two lines segments.
@@ -261,8 +186,8 @@ void edge_edge_distance_hessian(
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
-    const EdgeEdgeDistanceType dtype,
-    Eigen::PlainObjectBase<DerivedHess>& hess)
+    Eigen::PlainObjectBase<DerivedHess>& hess,
+    const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
 {
     int dim = ea0.size();
     assert(ea1.size() == dim);
@@ -350,6 +275,12 @@ void edge_edge_distance_hessian(
 
     case EdgeEdgeDistanceType::EA_EB:
         line_line_distance_hessian(ea0, ea1, eb0, eb1, hess);
+        break;
+
+    case EdgeEdgeDistanceType::AUTO:
+        edge_edge_distance_hessian(
+            ea0, ea1, eb0, eb1, hess,
+            edge_edge_distance_type(ea0, ea1, eb0, eb1));
         break;
 
     default:

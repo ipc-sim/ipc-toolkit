@@ -120,6 +120,7 @@ TEST_CASE("Point-edge 2D CCD", "[ccd]")
     double toi, alpha;
     bool is_colliding = point_edge_ccd(
         p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi,
+        /*min_distance=*/0.0,
         /*tmax=*/1.0,
         /*tolerance=*/1e-6,
         /*max_iterations=*/1e7,
@@ -153,6 +154,7 @@ void check_toi(
     toi_actual = -1.0;
     bool has_collision = point_edge_ccd(
         p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi_actual,
+        /*min_distance=*/0.0,
         /*tmax=*/1.0,
         /*tolerance=*/1e-6,
         /*max_iterations=*/1e7,
@@ -264,6 +266,7 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
 {
     const double FIRST_TOL = 1e-6, SECOND_TOL = 1e-7;
     const double FIRST_MAX_ITER = 1e6, SECOND_MAX_ITER = 1e6;
+    const double MIN_DISTANCE = 0.0;
 
     // BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
     BroadPhaseMethod broadphase_method = BroadPhaseMethod::HASH_GRID;
@@ -322,10 +325,10 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
         mesh, V0, V1, candidates, inflation_radius, broadphase_method);
 
     bool has_collisions = !is_step_collision_free(
-        candidates, mesh, V0, V1, FIRST_TOL, FIRST_MAX_ITER);
+        candidates, mesh, V0, V1, MIN_DISTANCE, FIRST_TOL, FIRST_MAX_ITER);
 
     double stepsize = compute_collision_free_stepsize(
-        candidates, mesh, V0, V1, FIRST_TOL, FIRST_MAX_ITER);
+        candidates, mesh, V0, V1, MIN_DISTANCE, FIRST_TOL, FIRST_MAX_ITER);
 
     if (!has_collisions) {
         CHECK(stepsize == 1.0);
@@ -345,10 +348,12 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
         }
 
         has_collisions_repeated = !is_step_collision_free(
-            candidates, mesh, V0, Vt, SECOND_TOL, SECOND_MAX_ITER);
+            candidates, mesh, V0, Vt, MIN_DISTANCE, SECOND_TOL,
+            SECOND_MAX_ITER);
 
         stepsize_repeated = compute_collision_free_stepsize(
-            candidates, mesh, V0, Vt, SECOND_TOL, SECOND_MAX_ITER);
+            candidates, mesh, V0, Vt, MIN_DISTANCE, SECOND_TOL,
+            SECOND_MAX_ITER);
 
         CAPTURE(
             t0_filename, t1_filename, broadphase_method, recompute_candidates,
@@ -603,7 +608,7 @@ TEST_CASE("Slow EE CCD", "[ccd][edge-edge][slow]")
         double toi;
         bool is_impacting = edge_edge_ccd(
             ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
-            1.0, tol, max_iter);
+            0.0, 1.0, tol, max_iter);
         tol *= 10;
 
         CAPTURE(toi);
@@ -631,7 +636,7 @@ TEST_CASE("Slow EE CCD 2", "[ccd][edge-edge][slow][thisone]")
     double toi;
     bool is_impacting = edge_edge_ccd(
         ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
-        tmax, tol, max_iter);
+        0.0, tmax, tol, max_iter);
 
     CAPTURE(toi);
     CHECK(is_impacting);

@@ -12,7 +12,7 @@ void define_ccd(py::module_& m)
         [](const Eigen::Vector2d& p_t0, const Eigen::Vector2d& e0_t0,
            const Eigen::Vector2d& e1_t0, const Eigen::Vector2d& p_t1,
            const Eigen::Vector2d& e0_t1, const Eigen::Vector2d& e1_t1,
-           const double tmax = 1.0,
+           const double min_distance = 0.0, const double tmax = 1.0,
            const double tolerance = DEFAULT_CCD_TOLERANCE,
            const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
            const double conservative_rescaling =
@@ -25,7 +25,8 @@ void define_ccd(py::module_& m)
         },
         "", py::arg("p_t0"), py::arg("e0_t0"), py::arg("e1_t0"),
         py::arg("p_t1"), py::arg("e0_t1"), py::arg("e1_t1"),
-        py::arg("tmax") = 1.0, py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
+        py::arg("min_distance") = 0.0, py::arg("tmax") = 1.0,
+        py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
         py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
         py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
@@ -33,7 +34,7 @@ void define_ccd(py::module_& m)
         "point_point_ccd",
         [](const Eigen::Vector3d& p0_t0, const Eigen::Vector3d& p1_t0,
            const Eigen::Vector3d& p0_t1, const Eigen::Vector3d& p1_t1,
-           const double tmax = 1.0,
+           const double min_distance = 0.0, const double tmax = 1.0,
            const double tolerance = DEFAULT_CCD_TOLERANCE,
            const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
            const double conservative_rescaling =
@@ -45,7 +46,7 @@ void define_ccd(py::module_& m)
             return std::make_tuple(r, toi);
         },
         "", py::arg("p0_t0"), py::arg("p1_t0"), py::arg("p0_t1"),
-        py::arg("p1_t1"), py::arg("tmax") = 1.0,
+        py::arg("p1_t1"), py::arg("min_distance") = 0.0, py::arg("tmax") = 1.0,
         py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
         py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
         py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
@@ -55,7 +56,7 @@ void define_ccd(py::module_& m)
         [](const Eigen::Vector3d& p_t0, const Eigen::Vector3d& e0_t0,
            const Eigen::Vector3d& e1_t0, const Eigen::Vector3d& p_t1,
            const Eigen::Vector3d& e0_t1, const Eigen::Vector3d& e1_t1,
-           const double tmax = 1.0,
+           const double min_distance = 0.0, const double tmax = 1.0,
            const double tolerance = DEFAULT_CCD_TOLERANCE,
            const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
            const double conservative_rescaling =
@@ -68,7 +69,8 @@ void define_ccd(py::module_& m)
         },
         "", py::arg("p_t0"), py::arg("e0_t0"), py::arg("e1_t0"),
         py::arg("p_t1"), py::arg("e0_t1"), py::arg("e1_t1"),
-        py::arg("tmax") = 1.0, py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
+        py::arg("min_distance") = 0.0, py::arg("tmax") = 1.0,
+        py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
         py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
         py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
@@ -78,7 +80,7 @@ void define_ccd(py::module_& m)
            const Eigen::Vector3d& t1_t0, const Eigen::Vector3d& t2_t0,
            const Eigen::Vector3d& p_t1, const Eigen::Vector3d& t0_t1,
            const Eigen::Vector3d& t1_t1, const Eigen::Vector3d& t2_t1,
-           const double tmax = 1.0,
+           const double min_distance = 0.0, const double tmax = 1.0,
            const double tolerance = DEFAULT_CCD_TOLERANCE,
            const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
            const double conservative_rescaling =
@@ -91,7 +93,7 @@ void define_ccd(py::module_& m)
         },
         "", py::arg("p_t0"), py::arg("t0_t0"), py::arg("t1_t0"),
         py::arg("t2_t0"), py::arg("p_t1"), py::arg("t0_t1"), py::arg("t1_t1"),
-        py::arg("t2_t1"), py::arg("tmax") = 1.0,
+        py::arg("t2_t1"), py::arg("min_distance") = 0.0, py::arg("tmax") = 1.0,
         py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
         py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
         py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
@@ -102,7 +104,7 @@ void define_ccd(py::module_& m)
            const Eigen::Vector3d& eb0_t0, const Eigen::Vector3d& eb1_t0,
            const Eigen::Vector3d& ea0_t1, const Eigen::Vector3d& ea1_t1,
            const Eigen::Vector3d& eb0_t1, const Eigen::Vector3d& eb1_t1,
-           const double tmax = 1.0,
+           const double min_distance = 0.0, const double tmax = 1.0,
            const double tolerance = DEFAULT_CCD_TOLERANCE,
            const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
            const double conservative_rescaling =
@@ -115,8 +117,8 @@ void define_ccd(py::module_& m)
         },
         "", py::arg("ea0_t0"), py::arg("ea1_t0"), py::arg("eb0_t0"),
         py::arg("eb1_t0"), py::arg("ea0_t1"), py::arg("ea1_t1"),
-        py::arg("eb0_t1"), py::arg("eb1_t1"), py::arg("tmax") = 1.0,
-        py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
+        py::arg("eb0_t1"), py::arg("eb1_t1"), py::arg("min_distance") = 0.0,
+        py::arg("tmax") = 1.0, py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
         py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
         py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
@@ -125,7 +127,7 @@ void define_ccd(py::module_& m)
         [](const VectorMax3d& p_t0, const VectorMax3d& e0_t0,
            const VectorMax3d& e1_t0, const VectorMax3d& p_t1,
            const VectorMax3d& e0_t1, const VectorMax3d& e1_t1,
-           const double tmax = 1.0,
+           const double min_distance = 0.0, const double tmax = 1.0,
            const double tolerance = DEFAULT_CCD_TOLERANCE,
            const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
            const double conservative_rescaling =
@@ -138,7 +140,8 @@ void define_ccd(py::module_& m)
         },
         "", py::arg("p_t0"), py::arg("e0_t0"), py::arg("e1_t0"),
         py::arg("p_t1"), py::arg("e0_t1"), py::arg("e1_t1"),
-        py::arg("tmax") = 1.0, py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
+        py::arg("min_distance") = 0.0, py::arg("tmax") = 1.0,
+        py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
         py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
         py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 }

@@ -255,6 +255,8 @@ python/bunny.obj
 
 IPCToolkitOptions.cmake
 
-src/config.hpp
+src/ipc/config.hpp
 
 docs/_doxygen
+
+notebooks/*.[ch]pp

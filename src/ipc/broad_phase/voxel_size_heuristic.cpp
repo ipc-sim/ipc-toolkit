@@ -11,9 +11,13 @@ double suggest_good_voxel_size(
 {
     // double edge_len_std_deviation;
     // double edge_len = mean_edge_length(V, V, E, edge_len_std_deviation);
+    // double voxel_size = edge_len + edge_len_std_deviation + inflation_radius;
+
     double edge_len = median_edge_length(V, V, E);
     double voxel_size = 2 * edge_len + inflation_radius;
-    // double voxel_size = edge_len + edge_len_std_deviation + inflation_radius;
+
+    // double voxel_size = max_edge_length(V, V, E) + inflation_radius;
+
     if (voxel_size <= 0) { // this case should not happen in real simulations
         voxel_size = std::numeric_limits<double>::max();
     }
@@ -33,15 +37,20 @@ double suggest_good_voxel_size(
     // double edge_len = mean_edge_length(V0, V1, E, edge_len_std_deviation);
     // double disp_len_std_deviation;
     // double disp_len = mean_displacement_length(V1 - V0,
-    // disp_len_std_deviation);
-    double edge_len = median_edge_length(V0, V1, E);
-    double disp_len = median_displacement_length(V1 - V0);
-    // double voxel_size = 2 * edge_len + inflation_radius;
-    double voxel_size = 2 * std::max(edge_len, disp_len) + inflation_radius;
-    // double voxel_size = std::max(
+    // disp_len_std_deviation); double voxel_size = std::max(
     //                         edge_len + edge_len_std_deviation,
     //                         disp_len + disp_len_std_deviation)
     //     + inflation_radius;
+
+    double edge_len = median_edge_length(V0, V1, E);
+    double disp_len = median_displacement_length(V1 - V0);
+    double voxel_size = 2 * std::max(edge_len, disp_len) + inflation_radius;
+
+    // double voxel_size =
+    //     std::max(max_edge_length(V0, V1, E), max_displacement_length(V1 -
+    //     V0))
+    //     + inflation_radius;
+
     if (voxel_size <= 0) { // this case should not happen in real simulations
         voxel_size = std::numeric_limits<double>::max();
     }
@@ -82,7 +91,6 @@ double mean_edge_length(
     return mean;
 }
 
-/// @brief Compute the mean displacement length.
 double mean_displacement_length(const Eigen::MatrixXd& U, double& std_deviation)
 {
     const double mean = U.rowwise().norm().mean();
@@ -91,7 +99,6 @@ double mean_displacement_length(const Eigen::MatrixXd& U, double& std_deviation)
     return mean;
 }
 
-/// @brief Compute the median edge length of a mesh.
 double median_edge_length(
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
@@ -113,13 +120,33 @@ double median_edge_length(
     return median;
 }
 
-/// @brief Compute the median displacement length.
 double median_displacement_length(const Eigen::MatrixXd& U)
 {
     double median = -1;
     const bool success = igl::median(U.rowwise().norm(), median);
     assert(success);
     return median;
+}
+
+double max_edge_length(
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXi& E)
+{
+    double max_edge = -std::numeric_limits<double>::infinity();
+    for (int i = 0; i < E.rows(); i++) {
+        max_edge = std::max({
+            max_edge,
+            (V0.row(E(i, 0)) - V0.row(E(i, 1))).norm(),
+            (V1.row(E(i, 0)) - V1.row(E(i, 1))).norm(),
+        });
+    }
+    return max_edge;
+}
+
+double max_displacement_length(const Eigen::MatrixXd& U)
+{
+    return U.rowwise().norm().maxCoeff();
 }
 
 } // namespace ipc

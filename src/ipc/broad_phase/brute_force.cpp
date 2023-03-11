@@ -1,6 +1,6 @@
 #include "brute_force.hpp"
 
-#include <ipc/utils/merge_thread_local_vectors.hpp>
+#include <ipc/utils/merge_thread_local.hpp>
 
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
