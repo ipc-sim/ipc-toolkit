@@ -42,6 +42,7 @@ python-api/utils.rst
 :hidden:
 
 contributing
+style_guide
 Code of Conduct <code_of_conduct.md>
 ```
 
