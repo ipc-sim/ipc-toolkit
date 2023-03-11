@@ -15,43 +15,43 @@ public:
     virtual int num_vertices() const = 0;
 
     /// @brief Get the indices of the vertices
-    /// @param E edge matrix of mesh
-    /// @param F face matrix of mesh
+    /// @param edges edge matrix of mesh
+    /// @param faces face matrix of mesh
     /// @return List of vertex indices
-    virtual std::array<long, 4> vertex_indices(
-        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const = 0;
+    virtual std::array<long, 4> vertex_ids(
+        const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const = 0;
 
     virtual double compute_distance(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const = 0;
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const = 0;
 
     virtual VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const = 0;
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const = 0;
 
     virtual MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const = 0;
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const = 0;
 
     virtual double compute_potential(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double dhat) const;
 
     virtual VectorMax12d compute_potential_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double dhat) const;
 
     virtual MatrixMax12d compute_potential_hessian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double dhat,
         const bool project_hessian_to_psd) const;
 

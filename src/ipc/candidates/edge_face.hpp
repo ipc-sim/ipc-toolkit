@@ -12,7 +12,7 @@ namespace ipc {
 ///
 /// Not included in Candidates because it is not a collision candidate.
 struct EdgeFaceCandidate {
-    EdgeFaceCandidate(long edge_index, long face_index);
+    EdgeFaceCandidate(long edge_id, long face_id);
 
     bool operator==(const EdgeFaceCandidate& other) const;
     bool operator!=(const EdgeFaceCandidate& other) const;
@@ -22,11 +22,11 @@ struct EdgeFaceCandidate {
     template <typename H>
     friend H AbslHashValue(H h, const EdgeFaceCandidate& fv)
     {
-        return H::combine(std::move(h), fv.edge_index, fv.face_index);
+        return H::combine(std::move(h), fv.edge_id, fv.face_id);
     }
 
-    long edge_index;
-    long face_index;
+    long edge_id; ///< @brief ID of the edge
+    long face_id; ///< @brief ID of the face
 };
 
 } // namespace ipc

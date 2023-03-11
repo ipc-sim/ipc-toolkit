@@ -11,24 +11,25 @@
 namespace ipc {
 
 void SweepAndTiniestQueue::build(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     double inflation_radius)
 {
-    build(V, V, E, F, inflation_radius);
+    build(positions, positions, edges, faces, inflation_radius);
 }
 
 void SweepAndTiniestQueue::build(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& positions_t0,
+    const Eigen::MatrixXd& positions_t1,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     double inflation_radius)
 {
-    CopyMeshBroadPhase::copy_mesh(E, F);
-    num_vertices = V0.rows();
-    stq::cpu::constructBoxes(V0, V1, E, F, boxes, inflation_radius);
+    CopyMeshBroadPhase::copy_mesh(edges, faces);
+    num_vertices = positions_t0.rows();
+    stq::cpu::constructBoxes(
+        positions_t0, positions_t1, edges, faces, boxes, inflation_radius);
     int n = boxes.size();
     stq::cpu::sort_along_xaxis(boxes);
     stq::cpu::run_sweep_cpu(boxes, n, overlaps);
@@ -118,26 +119,27 @@ bool SweepAndTiniestQueue::is_face(long id) const
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
 void SweepAndTiniestQueueGPU::build(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     double inflation_radius)
 {
-    CopyMeshBroadPhase::copy_mesh(E, F);
+    CopyMeshBroadPhase::copy_mesh(edges, faces);
     ccd::gpu::construct_static_collision_candidates(
-        V, E, F, overlaps, boxes, inflation_radius);
+        positions, edges, faces, overlaps, boxes, inflation_radius);
 }
 
 void SweepAndTiniestQueueGPU::build(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& positions_t0,
+    const Eigen::MatrixXd& positions_t1,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     double inflation_radius)
 {
-    CopyMeshBroadPhase::copy_mesh(E, F);
+    CopyMeshBroadPhase::copy_mesh(edges, faces);
     ccd::gpu::construct_continuous_collision_candidates(
-        V0, V1, E, F, overlaps, boxes, inflation_radius);
+        positions_t0, positions_t1, edges, faces, overlaps, boxes,
+        inflation_radius);
 }
 
 void SweepAndTiniestQueueGPU::clear()
@@ -213,10 +215,10 @@ void SweepAndTiniestQueueGPU::detect_edge_face_candidates(
 ////////////////////////////////////////////////////////////////////////////////
 
 void CopyMeshBroadPhase::copy_mesh(
-    const Eigen::MatrixXi& E, const Eigen::MatrixXi& F)
+    const Eigen::MatrixXi& p_edges, const Eigen::MatrixXi& p_faces)
 {
-    edges = E;
-    faces = F;
+    edges = p_edges;
+    faces = p_faces;
 }
 
 bool CopyMeshBroadPhase::can_edge_vertex_collide(size_t ei, size_t vi) const

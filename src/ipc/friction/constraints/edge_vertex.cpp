@@ -8,8 +8,8 @@
 namespace ipc {
 
 EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
-    long edge_index, long vertex_index)
-    : EdgeVertexCandidate(edge_index, vertex_index)
+    long edge_id, long vertex_id)
+    : EdgeVertexCandidate(edge_id, vertex_id)
 {
 }
 
@@ -21,7 +21,7 @@ EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
 
 EdgeVertexFrictionConstraint::EdgeVertexFrictionConstraint(
     const EdgeVertexConstraint& constraint)
-    : EdgeVertexCandidate(constraint.edge_index, constraint.vertex_index)
+    : EdgeVertexCandidate(constraint.edge_id, constraint.vertex_id)
 {
     this->weight = constraint.weight;
     this->weight_gradient = constraint.weight_gradient;
@@ -44,8 +44,8 @@ VectorMax12d EdgeVertexFrictionConstraint::compute_distance_gradient(
     assert(x.size() == ndof());
     VectorMax9d grad_d;
     point_edge_distance_gradient(
-        x.head(dim()), x.segment(dim(), dim()), x.tail(dim()),
-        PointEdgeDistanceType::P_E, grad_d);
+        x.head(dim()), x.segment(dim(), dim()), x.tail(dim()), grad_d,
+        PointEdgeDistanceType::P_E);
     return grad_d;
 }
 

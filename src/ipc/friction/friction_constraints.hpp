@@ -7,7 +7,7 @@
 #include <ipc/friction/constraints/face_vertex.hpp>
 
 #include <ipc/collision_mesh.hpp>
-#include <ipc/collisions/constraints.hpp>
+#include <ipc/collisions/collision_constraints.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Core>
@@ -80,7 +80,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
         const Eigen::MatrixXd& Ut,
-        const Eigen::MatrixXd& U,
+        const Eigen::MatrixXd& velocities,
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
@@ -90,7 +90,7 @@ public:
     Eigen::VectorXd compute_force(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
-        const Eigen::MatrixXd& U,
+        const Eigen::MatrixXd& velocities,
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
@@ -98,15 +98,16 @@ public:
         const bool no_mu = false) const //< whether to not multiply by mu
     {
         return compute_force(
-            mesh, X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, dhat,
-            barrier_stiffness, epsv_times_h, dmin, no_mu);
+            mesh, X,
+            Eigen::MatrixXd::Zero(velocities.rows(), velocities.cols()),
+            velocities, dhat, barrier_stiffness, epsv_times_h, dmin, no_mu);
     }
 
     Eigen::SparseMatrix<double> compute_force_jacobian(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
         const Eigen::MatrixXd& Ut,
-        const Eigen::MatrixXd& U,
+        const Eigen::MatrixXd& velocities,
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
@@ -116,7 +117,7 @@ public:
     Eigen::SparseMatrix<double> compute_force_jacobian(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
-        const Eigen::MatrixXd& U,
+        const Eigen::MatrixXd& velocities,
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
@@ -124,8 +125,9 @@ public:
         const double dmin = 0) const
     {
         return compute_force_jacobian(
-            mesh, X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, dhat,
-            barrier_stiffness, epsv_times_h, wrt, dmin);
+            mesh, X,
+            Eigen::MatrixXd::Zero(velocities.rows(), velocities.cols()),
+            velocities, dhat, barrier_stiffness, epsv_times_h, wrt, dmin);
     }
 
     // ------------------------------------------------------------------------
@@ -167,4 +169,4 @@ private:
 
 } // namespace ipc
 
-#include "constraints.tpp"
+#include "friction_constraints.tpp"

@@ -1,9 +1,9 @@
 set(SOURCES
   closest_point.cpp
   closest_point.hpp
-  friction.cpp
-  friction.hpp
-  friction.tpp
+  friction_constraints.cpp
+  friction_constraints.hpp
+  friction_constraints.tpp
   normal_force_magnitude.cpp
   normal_force_magnitude.hpp
   relative_velocity.hpp

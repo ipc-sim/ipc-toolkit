@@ -8,8 +8,8 @@
 namespace ipc {
 
 FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
-    long face_index, long vertex_index)
-    : FaceVertexCandidate(face_index, vertex_index)
+    long face_id, long vertex_id)
+    : FaceVertexCandidate(face_id, vertex_id)
 {
 }
 
@@ -21,7 +21,7 @@ FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
 
 FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
     const FaceVertexConstraint& constraint)
-    : FaceVertexCandidate(constraint.face_index, constraint.vertex_index)
+    : FaceVertexCandidate(constraint.face_id, constraint.vertex_id)
 {
     this->weight = constraint.weight;
     this->weight_gradient = constraint.weight_gradient;
@@ -45,7 +45,7 @@ VectorMax12d FaceVertexFrictionConstraint::compute_distance_gradient(
     VectorMax12d grad_d;
     point_triangle_distance_gradient(
         x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
-        x.tail(dim()), PointTriangleDistanceType::P_T, grad_d);
+        x.tail(dim()), grad_d, PointTriangleDistanceType::P_T);
     return grad_d;
 }
 

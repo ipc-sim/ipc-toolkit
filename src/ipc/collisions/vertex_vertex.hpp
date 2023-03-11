@@ -19,34 +19,37 @@ struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
         return VertexVertexCandidate::num_vertices();
     }
 
-    std::array<long, 4> vertex_indices(
-        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
+    std::array<long, 4> vertex_ids(
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
-        return VertexVertexCandidate::vertex_indices(E, F);
+        return VertexVertexCandidate::vertex_ids(edges, faces);
     }
 
     double compute_distance(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
-        return VertexVertexCandidate::compute_distance(V, E, F);
+        return VertexVertexCandidate::compute_distance(positions, edges, faces);
     }
 
     VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
-        return VertexVertexCandidate::compute_distance_gradient(V, E, F);
+        return VertexVertexCandidate::compute_distance_gradient(
+            positions, edges, faces);
     }
 
     MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
-        return VertexVertexCandidate::compute_distance_hessian(V, E, F);
+        return VertexVertexCandidate::compute_distance_hessian(
+            positions, edges, faces);
     }
 
     template <typename H>

@@ -10,45 +10,59 @@
 namespace ipc {
 
 struct FaceVertexCandidate : ContinuousCollisionCandidate {
-    FaceVertexCandidate(long face_index, long vertex_index);
+    FaceVertexCandidate(long face_id, long vertex_id);
 
     int num_vertices() const { return 4; };
 
     std::array<long, 4>
-    vertex_indices(const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const
+    vertex_ids(const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const
     {
-        return { { vertex_index, //
-                   F(face_index, 0), F(face_index, 1), F(face_index, 2) } };
+        return { { vertex_id, //
+                   faces(face_id, 0), faces(face_id, 1), faces(face_id, 2) } };
+    }
+
+    std::array<Eigen::Vector3d, 4> vertices(
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const
+    {
+        assert(positions.cols() == 3);
+        return { {
+            positions.row(vertex_id),
+            positions.row(faces(face_id, 0)),
+            positions.row(faces(face_id, 1)),
+            positions.row(faces(face_id, 2)),
+        } };
     }
 
     double compute_distance(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const PointTriangleDistanceType dtype =
             PointTriangleDistanceType::AUTO) const;
 
     VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const PointTriangleDistanceType dtype =
             PointTriangleDistanceType::AUTO) const;
 
     MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const PointTriangleDistanceType dtype =
             PointTriangleDistanceType::AUTO) const;
 
     // ------------------------------------------------------------------------
 
     bool
-    ccd(const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+    ccd(const Eigen::MatrixXd& positions_t0,
+        const Eigen::MatrixXd& positions_t1,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
@@ -58,10 +72,10 @@ struct FaceVertexCandidate : ContinuousCollisionCandidate {
             DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
 
     void print_ccd_query(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+        const Eigen::MatrixXd& positions_t0,
+        const Eigen::MatrixXd& positions_t1,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override;
 
     // ------------------------------------------------------------------------
 
@@ -73,11 +87,11 @@ struct FaceVertexCandidate : ContinuousCollisionCandidate {
     template <typename H>
     friend H AbslHashValue(H h, const FaceVertexCandidate& fv)
     {
-        return H::combine(std::move(h), fv.face_index, fv.vertex_index);
+        return H::combine(std::move(h), fv.face_id, fv.vertex_id);
     }
 
-    long face_index;
-    long vertex_index;
+    long face_id;   ///< @brief ID of the face
+    long vertex_id; ///< @brief ID of the vertex
 };
 
 } // namespace ipc

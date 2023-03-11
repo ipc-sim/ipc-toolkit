@@ -8,8 +8,8 @@
 namespace ipc {
 
 VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
-    long vertex0_index, long vertex1_index)
-    : VertexVertexCandidate(vertex0_index, vertex1_index)
+    long vertex0_id, long vertex1_id)
+    : VertexVertexCandidate(vertex0_id, vertex1_id)
 {
 }
 
@@ -21,7 +21,7 @@ VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
 
 VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
     const VertexVertexConstraint& constraint)
-    : VertexVertexCandidate(constraint.vertex0_index, constraint.vertex1_index)
+    : VertexVertexCandidate(constraint.vertex0_id, constraint.vertex1_id)
 {
     this->weight = constraint.weight;
     this->weight_gradient = constraint.weight_gradient;

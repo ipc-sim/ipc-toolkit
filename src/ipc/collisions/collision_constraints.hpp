@@ -8,8 +8,11 @@
 #include <ipc/collisions/face_vertex.hpp>
 #include <ipc/collisions/plane_vertex.hpp>
 #include <ipc/broad_phase/broad_phase.hpp>
+#include <ipc/candidates/candidates.hpp>
 
 #include <Eigen/Core>
+
+#include <tbb/enumerable_thread_specific.h>
 
 #include <vector>
 
@@ -19,29 +22,30 @@ class CollisionConstraints {
 public:
     CollisionConstraints() { }
 
-    /// @brief Construct a set of constraints used to compute the barrier potential.
+    /// @brief Initialize the set of constraints used to compute the barrier potential.
     /// @param mesh The collision mesh.
-    /// @param V Vertices of the collision mesh.
+    /// @param positions Vertices of the collision mesh.
     /// @param dhat The activation distance of the barrier.
     /// @param dmin Minimum distance.
-    /// @param method Broad-phase method to use.
+    /// @param broad_phase_method Broad-phase method to use.
     void build(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& positions,
         const double dhat,
         const double dmin = 0,
-        const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID);
+        const BroadPhaseMethod broad_phase_method =
+            BroadPhaseMethod::HASH_GRID);
 
-    /// @brief Construct a set of constraints used to compute the barrier potential.
+    /// @brief Initialize the set of constraints used to compute the barrier potential.
     /// @param candidates Distance candidates from which the constraint set is built.
     /// @param mesh The collision mesh.
-    /// @param V Vertices of the collision mesh.
+    /// @param positions Vertices of the collision mesh.
     /// @param dhat The activation distance of the barrier.
     /// @param  dmin  Minimum distance.
     void build(
         const Candidates& candidates,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& positions,
         const double dhat,
         const double dmin = 0);
 
@@ -49,36 +53,36 @@ public:
 
     /// @brief Compute the barrier potential for a given constraint set.
     /// @param[in] mesh The collision mesh.
-    /// @param[in] V Vertices of the collision mesh.
+    /// @param[in] positions Vertices of the collision mesh.
     /// @param[in] constraint_set The set of constraints.
     /// @param[in] dhat The activation distance of the barrier.
     /// @returns The sum of all barrier potentials (not scaled by the barrier stiffness).
     double compute_potential(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& positions,
         const double dhat) const;
 
     /// @brief Compute the gradient of the barrier potential.
     /// @param[in] mesh The collision mesh.
-    /// @param[in] V Vertices of the collision mesh.
+    /// @param[in] positions Vertices of the collision mesh.
     /// @param[in] constraint_set The set of constraints.
     /// @param[in] dhat The activation distance of the barrier.
-    /// @returns The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |V|.
+    /// @returns The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |positions|.
     Eigen::VectorXd compute_potential_gradient(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& positions,
         const double dhat) const;
 
     /// @brief Compute the hessian of the barrier potential.
     /// @param[in] mesh The collision mesh.
-    /// @param[in] V Vertices of the collision mesh.
+    /// @param[in] positions Vertices of the collision mesh.
     /// @param[in] constraint_set The set of constraints.
     /// @param[in] dhat The activation distance of the barrier.
     /// @param[in] project_hessian_to_psd Make sure the hessian is positive semi-definite.
-    /// @returns The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |V|x|V|.
+    /// @returns The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |positions|x|positions|.
     Eigen::SparseMatrix<double> compute_potential_hessian(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& positions,
         const double dhat,
         const bool project_hessian_to_psd = true) const;
 
@@ -86,21 +90,22 @@ public:
 
     /// @brief Compute the barrier shape derivative.
     /// @param[in] mesh The collision mesh.
-    /// @param[in] V Vertices of the collision mesh.
+    /// @param[in] positions Vertices of the collision mesh.
     /// @param[in] constraint_set The set of constraints.
     /// @param[in] dhat The activation distance of the barrier.
+    /// @throws std::runtime_error If the collision constraints were not built with shape derivatives enabled.
     /// @returns The derivative of the force with respect to X, the rest positions.
     Eigen::SparseMatrix<double> compute_shape_derivative(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& positions,
         const double dhat) const;
 
     /// @brief Computes the minimum distance between any non-adjacent elements.
     /// @param[in] mesh The collision mesh.
-    /// @param[in] V Vertices of the collision mesh.
+    /// @param[in] positions Vertices of the collision mesh.
     /// @returns The minimum distance between any non-adjacent elements.
     double compute_minimum_distance(
-        const CollisionMesh& mesh, const Eigen::MatrixXd& V) const;
+        const CollisionMesh& mesh, const Eigen::MatrixXd& positions) const;
 
     // ------------------------------------------------------------------------
 
@@ -123,14 +128,43 @@ public:
     /// @return A const reference to the constraint.
     const CollisionConstraint& operator[](size_t idx) const;
 
+    /// @brief Get if the collision constraints should use the convergent formulation.
+    /// @note If not empty, this is the current value not necessarily the value used to build the constraints.
+    /// @return If the collision constraints should use the convergent formulation.
+    bool use_convergent_formulation() const
+    {
+        return m_use_convergent_formulation;
+    }
+
+    /// @brief Set if the collision constraints should use the convergent formulation.
+    /// @warning This must be set before the constraints are built.
+    /// @param use_convergent_formulation If the collision constraints should use the convergent formulation.
+    void set_use_convergent_formulation(const bool use_convergent_formulation);
+
+    /// @brief Get if the collision constraints are using the convergent formulation.
+    /// @note If not empty, this is the current value not necessarily the value used to build the constraints.
+    /// @return If the collision constraints are using the convergent formulation.
+    bool are_shape_derivatives_enabled() const
+    {
+        return m_are_shape_derivatives_enabled;
+    }
+
+    /// @brief Set if the collision constraints should enable shape derivative computation.
+    /// @warning This must be set before the constraints are built.
+    /// @param are_shape_derivatives_enabled If the collision constraints should enable shape derivative computation.
+    void
+    set_are_shape_derivatives_enabled(const bool are_shape_derivatives_enabled);
+
 public:
     std::vector<VertexVertexConstraint> vv_constraints;
     std::vector<EdgeVertexConstraint> ev_constraints;
     std::vector<EdgeEdgeConstraint> ee_constraints;
     std::vector<FaceVertexConstraint> fv_constraints;
     std::vector<PlaneVertexConstraint> pv_constraints;
-    bool use_convergent_formulation = false;
-    bool compute_shape_derivatives = false;
+
+protected:
+    bool m_use_convergent_formulation = false;
+    bool m_are_shape_derivatives_enabled = false;
 };
 
 } // namespace ipc

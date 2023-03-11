@@ -7,7 +7,7 @@
 namespace ipc {
 
 struct EdgeEdgeConstraint : EdgeEdgeCandidate, CollisionConstraint {
-    EdgeEdgeConstraint(long edge0_index, long edge1_index, double eps_x);
+    EdgeEdgeConstraint(long edge0_id, long edge1_id, double eps_x);
     EdgeEdgeConstraint(const EdgeEdgeCandidate& candidate, double eps_x);
 
     int num_vertices() const override
@@ -15,52 +15,55 @@ struct EdgeEdgeConstraint : EdgeEdgeCandidate, CollisionConstraint {
         return EdgeEdgeCandidate::num_vertices();
     }
 
-    std::array<long, 4> vertex_indices(
-        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
+    std::array<long, 4> vertex_ids(
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
-        return EdgeEdgeCandidate::vertex_indices(E, F);
+        return EdgeEdgeCandidate::vertex_ids(edges, faces);
     }
 
     double compute_distance(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
-        return EdgeEdgeCandidate::compute_distance(V, E, F);
+        return EdgeEdgeCandidate::compute_distance(positions, edges, faces);
     }
 
     VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
-        return EdgeEdgeCandidate::compute_distance_gradient(V, E, F);
+        return EdgeEdgeCandidate::compute_distance_gradient(
+            positions, edges, faces);
     }
 
     MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
-        return EdgeEdgeCandidate::compute_distance_hessian(V, E, F);
+        return EdgeEdgeCandidate::compute_distance_hessian(
+            positions, edges, faces);
     }
 
     double compute_potential(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double dhat) const override;
 
     VectorMax12d compute_potential_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double dhat) const override;
 
     MatrixMax12d compute_potential_hessian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double dhat,
         const bool project_hessian_to_psd) const override;
 

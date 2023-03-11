@@ -10,11 +10,7 @@ struct HashItem {
     long id;  /// @brief The value of the item.
 
     /// @brief Construct a hash item as a (key, value) pair.
-    HashItem(int key, int id)
-        : key(key)
-        , id(id)
-    {
-    }
+    HashItem(int key, int id) : key(key), id(id) { }
 
     /// @brief Compare HashItems by their keys for sorting.
     bool operator<(const HashItem& other) const
@@ -29,27 +25,27 @@ struct HashItem {
 class HashGrid : public BroadPhase {
 public:
     /// @brief Build the broad phase for static collision detection.
-    /// @param V0 Positions of the vertices.
-    /// @param E Edges of the mesh.
-    /// @param F Faces of the mesh.
+    /// @param positions_t0 Positions of the vertices.
+    /// @param edges Edges of the mesh.
+    /// @param faces Faces of the mesh.
     /// @param inflation_radius Radius of inflation around all elements.
     void build(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         double inflation_radius = 0) override;
 
     /// @brief Build the broad phase for continuous collision detection.
-    /// @param V0 Starting positions of the vertices.
-    /// @param V1 Ending positions of the vertices.
-    /// @param E Edges of the mesh.
-    /// @param F Faces of the mesh.
+    /// @param positions_t0 Starting positions of the vertices.
+    /// @param positions_t1 Ending positions of the vertices.
+    /// @param edges Edges of the mesh.
+    /// @param faces Faces of the mesh.
     /// @param inflation_radius Radius of inflation around all elements.
     void build(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& positions_t0,
+        const Eigen::MatrixXd& positions_t1,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         double inflation_radius = 0) override;
 
     /// @brief Clear the hash grid.

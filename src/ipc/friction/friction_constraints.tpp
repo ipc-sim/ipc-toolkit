@@ -1,5 +1,5 @@
 #pragma once
-#include "constraints.hpp"
+#include "friction_constraints.hpp"
 
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
@@ -18,8 +18,8 @@ T FrictionConstraints::compute_potential(
     }
     assert(epsv_times_h > 0);
 
-    const Eigen::MatrixXi& E = mesh.edges();
-    const Eigen::MatrixXi& F = mesh.faces();
+    const Eigen::MatrixXi& edges = mesh.edges();
+    const Eigen::MatrixXi& faces = mesh.faces();
 
     tbb::enumerable_thread_specific<T> storage(0);
 
@@ -37,18 +37,18 @@ T FrictionConstraints::compute_potential(
                 size_t ci = i;
                 if (ci < num_vv) {
                     local_potential += vv_constraints[ci].compute_potential(
-                        velocity, E, F, epsv_times_h);
+                        velocity, edges, faces, epsv_times_h);
                 } else if ((ci -= num_vv) < num_ev) {
                     local_potential += ev_constraints[ci].compute_potential(
-                        velocity, E, F, epsv_times_h);
+                        velocity, edges, faces, epsv_times_h);
                 } else if ((ci -= num_ev) < num_ee) {
                     local_potential += ee_constraints[ci].compute_potential(
-                        velocity, E, F, epsv_times_h);
+                        velocity, edges, faces, epsv_times_h);
                 } else {
                     ci -= num_ee;
                     assert(ci < num_fv);
                     local_potential += fv_constraints[ci].compute_potential(
-                        velocity, E, F, epsv_times_h);
+                        velocity, edges, faces, epsv_times_h);
                 }
             }
         });

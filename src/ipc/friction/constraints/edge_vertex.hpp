@@ -1,44 +1,47 @@
 #pragma once
 
 #include <ipc/friction/constraints/friction_constraint.hpp>
-#include <ipc/broad_phase/collision_candidate.hpp>
+#include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
 struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
-    EdgeVertexFrictionConstraint(long edge_index, long vertex_index);
+    EdgeVertexFrictionConstraint(long edge_id, long vertex_id);
     EdgeVertexFrictionConstraint(const EdgeVertexCandidate& constraint);
     EdgeVertexFrictionConstraint(const EdgeVertexConstraint& constraint);
     EdgeVertexFrictionConstraint(
         const EdgeVertexConstraint& constraint,
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double dhat,
         const double barrier_stiffness)
         : EdgeVertexFrictionConstraint(constraint)
     {
         FrictionConstraint::init(
-            V, E, F, dhat, barrier_stiffness, constraint.minimum_distance);
+            positions, edges, faces, dhat, barrier_stiffness,
+            constraint.minimum_distance);
     }
 
     int num_vertices() const override { return 3; }
-    std::array<long, 4> vertex_indices(
-        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
+    std::array<long, 4> vertex_ids(
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
-        return { { vertex_index, E(edge_index, 0), E(edge_index, 1), -1 } };
+        return { { vertex_id, edges(edge_id, 0), edges(edge_id, 1), -1 } };
     }
 
     template <typename T>
     T compute_potential(
-        const MatrixX<T>& U,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const MatrixX<T>& velocities,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double epsv_times_h) const
     {
         return compute_potential_common(
-            relative_velocity_T(select_dofs(U, E, F)), epsv_times_h);
+            relative_velocity_T(select_dofs(velocities, edges, faces)),
+            epsv_times_h);
     }
 
 protected:

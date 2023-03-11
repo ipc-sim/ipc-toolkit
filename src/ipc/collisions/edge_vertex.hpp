@@ -15,40 +15,41 @@ struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
     }
 
     int num_vertices() const override { return 3; };
-    std::array<long, 4> vertex_indices(
-        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
+    std::array<long, 4> vertex_ids(
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
-        return { { vertex_index, E(edge_index, 0), E(edge_index, 1), -1 } };
+        return { { vertex_id, edges(edge_id, 0), edges(edge_id, 1), -1 } };
     }
 
     double compute_distance(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
         // The distance type is known because of Constraints::build()
         return EdgeVertexCandidate::compute_distance(
-            V, E, F, PointEdgeDistanceType::P_E);
+            positions, edges, faces, PointEdgeDistanceType::P_E);
     }
 
     VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
         // The distance type is known because of Constraints::build()
         return EdgeVertexCandidate::compute_distance_gradient(
-            V, E, F, PointEdgeDistanceType::P_E);
+            positions, edges, faces, PointEdgeDistanceType::P_E);
     }
 
     MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
         // The distance type is known because of Constraints::build()
         return EdgeVertexCandidate::compute_distance_hessian(
-            V, E, F, PointEdgeDistanceType::P_E);
+            positions, edges, faces, PointEdgeDistanceType::P_E);
     }
 
     template <typename H>

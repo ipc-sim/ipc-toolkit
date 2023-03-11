@@ -8,8 +8,8 @@
 namespace ipc {
 
 EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
-    long edge0_index, long edge1_index)
-    : EdgeEdgeCandidate(edge0_index, edge1_index)
+    long edge0_id, long edge1_id)
+    : EdgeEdgeCandidate(edge0_id, edge1_id)
 {
 }
 
@@ -21,7 +21,7 @@ EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
 
 EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
     const EdgeEdgeConstraint& constraint)
-    : EdgeEdgeCandidate(constraint.edge0_index, constraint.edge1_index)
+    : EdgeEdgeCandidate(constraint.edge0_id, constraint.edge1_id)
 {
     this->weight = constraint.weight;
     this->weight_gradient = constraint.weight_gradient;
@@ -46,7 +46,7 @@ VectorMax12d EdgeEdgeFrictionConstraint::compute_distance_gradient(
     // The distance type is known because mollified PP and PE were skipped.
     edge_edge_distance_gradient(
         x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
-        x.tail(dim()), EdgeEdgeDistanceType::EA_EB, grad_d);
+        x.tail(dim()), grad_d, EdgeEdgeDistanceType::EA_EB);
     return grad_d;
 }
 

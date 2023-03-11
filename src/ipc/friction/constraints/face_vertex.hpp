@@ -1,45 +1,48 @@
 #pragma once
 
 #include <ipc/friction/constraints/friction_constraint.hpp>
-#include <ipc/broad_phase/collision_candidate.hpp>
+#include <ipc/candidates/face_vertex.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
 struct FaceVertexFrictionConstraint : FaceVertexCandidate, FrictionConstraint {
-    FaceVertexFrictionConstraint(long face_index, long vertex_index);
+    FaceVertexFrictionConstraint(long face_id, long vertex_id);
     FaceVertexFrictionConstraint(const FaceVertexCandidate& constraint);
     FaceVertexFrictionConstraint(const FaceVertexConstraint& constraint);
     FaceVertexFrictionConstraint(
         const FaceVertexConstraint& constraint,
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double dhat,
         const double barrier_stiffness)
         : FaceVertexFrictionConstraint(constraint)
     {
         FrictionConstraint::init(
-            V, E, F, dhat, barrier_stiffness, constraint.minimum_distance);
+            positions, edges, faces, dhat, barrier_stiffness,
+            constraint.minimum_distance);
     }
 
     int num_vertices() const override { return 4; }
-    std::array<long, 4> vertex_indices(
-        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
+    std::array<long, 4> vertex_ids(
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
-        return { { vertex_index, //
-                   F(face_index, 0), F(face_index, 1), F(face_index, 2) } };
+        return { { vertex_id, //
+                   faces(face_id, 0), faces(face_id, 1), faces(face_id, 2) } };
     }
 
     template <typename T>
     T compute_potential(
-        const MatrixX<T>& U,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const MatrixX<T>& velocities,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double epsv_times_h) const
     {
         return compute_potential_common(
-            relative_velocity_T(select_dofs(U, E, F)), epsv_times_h);
+            relative_velocity_T(select_dofs(velocities, edges, faces)),
+            epsv_times_h);
     }
 
 protected:

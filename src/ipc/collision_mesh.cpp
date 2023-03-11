@@ -9,13 +9,13 @@
 namespace ipc {
 
 CollisionMesh::CollisionMesh(
-    const Eigen::MatrixXd& vertices_at_rest,
+    const Eigen::MatrixXd& rest_positions,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const Eigen::SparseMatrix<double>& displacement_map)
     : CollisionMesh(
-        std::vector<bool>(vertices_at_rest.rows(), true),
-        vertices_at_rest,
+        std::vector<bool>(rest_positions.rows(), true),
+        rest_positions,
         edges,
         faces)
 {
@@ -23,27 +23,27 @@ CollisionMesh::CollisionMesh(
 
 CollisionMesh::CollisionMesh(
     const std::vector<bool>& include_vertex,
-    const Eigen::MatrixXd& full_vertices_at_rest,
+    const Eigen::MatrixXd& full_rest_positions,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const Eigen::SparseMatrix<double>& displacement_map)
-    : m_full_vertices_at_rest(full_vertices_at_rest)
+    : m_full_rest_positions(full_rest_positions)
     , m_edges(edges)
     , m_faces(faces)
 {
-    assert(include_vertex.size() == full_vertices_at_rest.rows());
+    assert(include_vertex.size() == full_rest_positions.rows());
     const bool include_all_vertices = std::all_of(
         include_vertex.begin(), include_vertex.end(), [](bool b) { return b; });
 
     if (include_all_vertices) {
         // set full ↔ reduced ≡ identity
         m_full_vertex_to_vertex.setLinSpaced(
-            full_vertices_at_rest.rows(), 0, full_vertices_at_rest.rows() - 1);
+            full_rest_positions.rows(), 0, full_rest_positions.rows() - 1);
         m_vertex_to_full_vertex = m_full_vertex_to_vertex;
     } else {
-        m_full_vertex_to_vertex.setConstant(full_vertices_at_rest.rows(), -1);
+        m_full_vertex_to_vertex.setConstant(full_rest_positions.rows(), -1);
         std::vector<int> dynamic_vertex_to_full_vertex;
-        for (size_t i = 0; i < full_vertices_at_rest.rows(); i++) {
+        for (size_t i = 0; i < full_rest_positions.rows(); i++) {
             if (include_vertex[i]) {
                 m_full_vertex_to_vertex[i] =
                     dynamic_vertex_to_full_vertex.size();
@@ -57,7 +57,7 @@ CollisionMesh::CollisionMesh(
 
     ///////////////////////////////////////////////////////////////////////////
 
-    const int dim = full_vertices_at_rest.cols();
+    const int dim = full_rest_positions.cols();
 
     // Selection matrix S ∈ ℝ^{collision×full}
     init_selection_matrices(dim);
@@ -80,8 +80,8 @@ CollisionMesh::CollisionMesh(
     ///////////////////////////////////////////////////////////////////////////
 
     // Set vertices at rest using full → reduced map
-    m_vertices_at_rest = m_select_vertices * full_vertices_at_rest;
-    // m_vertices_at_rest = vertices(full_vertices_at_rest);
+    m_rest_positions = m_select_vertices * full_rest_positions;
+    // m_rest_positions = vertices(full_rest_positions);
 
     // Map faces and edges to only included vertices
     if (!include_all_vertices) {
@@ -206,8 +206,8 @@ void CollisionMesh::init_areas()
     Eigen::VectorXd vertex_edge_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);
     for (int i = 0; i < m_edges.rows(); i++) {
-        const auto& e0 = m_vertices_at_rest.row(m_edges(i, 0));
-        const auto& e1 = m_vertices_at_rest.row(m_edges(i, 1));
+        const auto& e0 = m_rest_positions.row(m_edges(i, 0));
+        const auto& e1 = m_rest_positions.row(m_edges(i, 1));
         double edge_len = (e1 - e0).norm();
 
         for (int j = 0; j < m_edges.cols(); j++) {
@@ -224,9 +224,9 @@ void CollisionMesh::init_areas()
     m_edge_areas.setConstant(m_edges.rows(), -1);
     if (dim() == 3) {
         for (int i = 0; i < m_faces.rows(); i++) {
-            const auto& f0 = m_vertices_at_rest.row(m_faces(i, 0));
-            const auto& f1 = m_vertices_at_rest.row(m_faces(i, 1));
-            const auto& f2 = m_vertices_at_rest.row(m_faces(i, 2));
+            const auto& f0 = m_rest_positions.row(m_faces(i, 0));
+            const auto& f1 = m_rest_positions.row(m_faces(i, 1));
+            const auto& f2 = m_rest_positions.row(m_faces(i, 2));
             double face_area = cross(f1 - f0, f2 - f0).norm() / 2;
 
             for (int j = 0; j < m_faces.cols(); ++j) {
@@ -260,8 +260,8 @@ void CollisionMesh::init_area_jacobians()
     m_vertex_area_jacobian.resize(
         num_vertices(), Eigen::SparseVector<double>(ndof()));
     for (int i = 0; i < m_edges.rows(); i++) {
-        const auto& e0 = m_vertices_at_rest.row(m_edges(i, 0));
-        const auto& e1 = m_vertices_at_rest.row(m_edges(i, 1));
+        const auto& e0 = m_rest_positions.row(m_edges(i, 0));
+        const auto& e1 = m_rest_positions.row(m_edges(i, 1));
 
         VectorMax6d edge_len_gradient;
         edge_length_gradient(e0, e1, edge_len_gradient);
@@ -279,9 +279,9 @@ void CollisionMesh::init_area_jacobians()
     if (dim() == 3) {
         std::vector<bool> visited_vertex_before(num_vertices(), false);
         for (int i = 0; i < m_faces.rows(); i++) {
-            const auto& f0 = m_vertices_at_rest.row(m_faces(i, 0));
-            const auto& f1 = m_vertices_at_rest.row(m_faces(i, 1));
-            const auto& f2 = m_vertices_at_rest.row(m_faces(i, 2));
+            const auto& f0 = m_rest_positions.row(m_faces(i, 0));
+            const auto& f1 = m_rest_positions.row(m_faces(i, 1));
+            const auto& f2 = m_rest_positions.row(m_faces(i, 2));
 
             VectorMax9d face_area_gradient;
             triangle_area_gradient(f0, f1, f2, face_area_gradient);
@@ -310,19 +310,19 @@ void CollisionMesh::init_area_jacobians()
 ////////////////////////////////////////////////////////////////////////////////
 
 Eigen::MatrixXd
-CollisionMesh::vertices(const Eigen::MatrixXd& full_vertices) const
+CollisionMesh::vertex_positions(const Eigen::MatrixXd& full_positions) const
 {
     // full_U = full_V - full_V_rest
-    assert(full_vertices.rows() == full_num_vertices());
-    assert(full_vertices.cols() == dim());
-    return displace_vertices(full_vertices - m_full_vertices_at_rest);
+    assert(full_positions.rows() == full_num_vertices());
+    assert(full_positions.cols() == dim());
+    return displace_vertices(full_positions - m_full_rest_positions);
 }
 
 Eigen::MatrixXd CollisionMesh::displace_vertices(
     const Eigen::MatrixXd& full_displacements) const
 {
     // V_rest + S * T * full_U; m_displacement_map = S * T
-    return m_vertices_at_rest + map_displacements(full_displacements);
+    return m_rest_positions + map_displacements(full_displacements);
 }
 
 Eigen::MatrixXd CollisionMesh::map_displacements(
