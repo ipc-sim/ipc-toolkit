@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <finitediff.hpp>
 #include <igl/PI.h>
@@ -18,7 +18,7 @@ TEST_CASE("Line-line distance", "[distance][line-line]")
 
     double distance = line_line_distance(ea0, ea1, eb0, eb1);
     double expected_distance = std::abs(ya - yb);
-    CHECK(distance == Approx(expected_distance * expected_distance));
+    CHECK(distance == Catch::Approx(expected_distance * expected_distance));
 }
 
 TEST_CASE("Line-line distance gradient", "[distance][line-line][gradient]")

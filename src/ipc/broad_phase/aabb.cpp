@@ -57,37 +57,36 @@ void AABB::conservative_inflation(
 }
 
 void build_vertex_boxes(
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     std::vector<AABB>& vertex_boxes,
     double inflation_radius)
 {
-    vertex_boxes.resize(positions.rows());
+    vertex_boxes.resize(V.rows());
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, positions.rows()),
+        tbb::blocked_range<size_t>(0, V.rows()),
         [&](const tbb::blocked_range<size_t>& r) {
             for (size_t i = r.begin(); i < r.end(); i++) {
-                vertex_boxes[i] =
-                    AABB::from_point(positions.row(i), inflation_radius);
+                vertex_boxes[i] = AABB::from_point(V.row(i), inflation_radius);
                 vertex_boxes[i].vertex_ids = { { long(i), -1, -1 } };
             }
         });
 }
 
 void build_vertex_boxes(
-    const Eigen::MatrixXd& positions_t0,
-    const Eigen::MatrixXd& positions_t1,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
     std::vector<AABB>& vertex_boxes,
     double inflation_radius)
 {
-    vertex_boxes.resize(positions_t0.rows());
+    vertex_boxes.resize(V0.rows());
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, positions_t0.rows()),
+        tbb::blocked_range<size_t>(0, V0.rows()),
         [&](const tbb::blocked_range<size_t>& r) {
             for (size_t i = r.begin(); i < r.end(); i++) {
-                vertex_boxes[i] = AABB::from_point(
-                    positions_t0.row(i), positions_t1.row(i), inflation_radius);
+                vertex_boxes[i] =
+                    AABB::from_point(V0.row(i), V1.row(i), inflation_radius);
                 vertex_boxes[i].vertex_ids = { { long(i), -1, -1 } };
             }
         });

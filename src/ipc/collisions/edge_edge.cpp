@@ -21,21 +21,19 @@ EdgeEdgeConstraint::EdgeEdgeConstraint(
 }
 
 double EdgeEdgeConstraint::compute_potential(
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const double dhat) const
 {
     return edge_edge_mollifier(
-               positions.row(edges(edge0_id, 0)),
-               positions.row(edges(edge0_id, 1)),
-               positions.row(edges(edge1_id, 0)),
-               positions.row(edges(edge1_id, 1)), eps_x)
-        * CollisionConstraint::compute_potential(positions, edges, faces, dhat);
+               V.row(edges(edge0_id, 0)), V.row(edges(edge0_id, 1)),
+               V.row(edges(edge1_id, 0)), V.row(edges(edge1_id, 1)), eps_x)
+        * CollisionConstraint::compute_potential(V, edges, faces, dhat);
 }
 
 VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const double dhat) const
@@ -43,10 +41,10 @@ VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
     const double dhat_squared = dhat * dhat;
 
     // ∇[m(x) * b(d(x))] = (∇m(x)) * b(d(x)) + m(x) * b'(d(x)) * ∇d(x)
-    const auto& ea0 = positions.row(edges(edge0_id, 0));
-    const auto& ea1 = positions.row(edges(edge0_id, 1));
-    const auto& eb0 = positions.row(edges(edge1_id, 0));
-    const auto& eb1 = positions.row(edges(edge1_id, 1));
+    const auto& ea0 = V.row(edges(edge0_id, 0));
+    const auto& ea1 = V.row(edges(edge0_id, 1));
+    const auto& eb0 = V.row(edges(edge1_id, 0));
+    const auto& eb1 = V.row(edges(edge1_id, 1));
 
     // The distance type is unknown because of mollified PP and PE
     // constraints where also added as EE constraints.
@@ -75,7 +73,7 @@ VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
 }
 
 MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const double dhat,
@@ -89,10 +87,10 @@ MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
     //                      + ∇m(x) * b'(d(x)) * ∇d(x))ᵀ
     //                      + m(x) * b"(d(x)) * ∇d(x) * ∇d(x)ᵀ
     //                      + m(x) * b'(d(x)) * ∇²d(x)
-    const auto& ea0 = positions.row(edges(edge0_id, 0));
-    const auto& ea1 = positions.row(edges(edge0_id, 1));
-    const auto& eb0 = positions.row(edges(edge1_id, 0));
-    const auto& eb1 = positions.row(edges(edge1_id, 1));
+    const auto& ea0 = V.row(edges(edge0_id, 0));
+    const auto& ea1 = V.row(edges(edge0_id, 1));
+    const auto& eb0 = V.row(edges(edge1_id, 0));
+    const auto& eb1 = V.row(edges(edge1_id, 1));
 
     // Compute distance derivatives
     // The distance type is unknown because of mollified PP and PE

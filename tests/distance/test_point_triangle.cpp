@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <finitediff.hpp>
 #include <igl/PI.h>
@@ -87,7 +87,7 @@ TEST_CASE("Point-triangle distance", "[distance][point-triangle]")
     CAPTURE(py, closest_point.x(), closest_point.y(), closest_point.z());
     CHECK(
         distance
-        == Approx(point_point_distance(p, closest_point)).margin(1e-12));
+        == Catch::Approx(point_point_distance(p, closest_point)).margin(1e-12));
 }
 
 TEST_CASE(

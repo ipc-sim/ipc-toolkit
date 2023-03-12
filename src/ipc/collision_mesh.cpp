@@ -310,7 +310,7 @@ void CollisionMesh::init_area_jacobians()
 ////////////////////////////////////////////////////////////////////////////////
 
 Eigen::MatrixXd
-CollisionMesh::vertex_positions(const Eigen::MatrixXd& full_positions) const
+CollisionMesh::vertices(const Eigen::MatrixXd& full_positions) const
 {
     // full_U = full_V - full_V_rest
     assert(full_positions.rows() == full_num_vertices());

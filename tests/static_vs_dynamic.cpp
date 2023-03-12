@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/utils/eigen_ext.hpp>

@@ -114,8 +114,7 @@ public:
     /// @brief Compute the vertex positions from the positions of the full mesh.
     /// @param full_vertices The vertex positions of the full mesh.
     /// @return The vertex positions of the collision mesh.
-    Eigen::MatrixXd
-    vertex_positions(const Eigen::MatrixXd& full_positions) const;
+    Eigen::MatrixXd vertices(const Eigen::MatrixXd& full_positions) const;
 
     /// @brief Compute the vertex positions from vertex displacements on the full mesh.
     /// @param full_displacements The vertex displacements on the full mesh.
@@ -254,10 +253,9 @@ public:
     static Eigen::MatrixXi construct_faces_to_edges(
         const Eigen::MatrixXi& faces, const Eigen::MatrixXi& edges);
 
-    /// A function that takes two vertex IDs (row numbers in positions) and
-    /// returns true if the vertices (and faces or edges containing the
-    /// vertices) can collide. By default all primitives can collide with all
-    /// other primitives.
+    /// A function that takes two vertex IDs and returns true if the vertices
+    /// (and faces or edges containing the vertices) can collide. By default all
+    /// primitives can collide with all other primitives.
     std::function<bool(size_t, size_t)> can_collide = default_can_collide;
 
 protected:

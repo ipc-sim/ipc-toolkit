@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <broad_phase/brute_force_comparison.hpp>
 
@@ -27,9 +27,8 @@ void brute_force_comparison(
     Candidates bf_candidates;
     if (cached_bf_candidates.empty()
         || !load_candidates(cached_bf_candidates, bf_candidates)) {
-        construct_collision_candidates(
-            mesh, V0, V1, bf_candidates, inflation_radius,
-            BroadPhaseMethod::BRUTE_FORCE);
+        bf_candidates.build(
+            mesh, V0, V1, inflation_radius, BroadPhaseMethod::BRUTE_FORCE);
         // save_candidates("bf_candidates.json", bf_candidates);
     }
 
@@ -52,19 +51,19 @@ void save_candidates(
     std::vector<std::array<long, 2>> ev_candidates;
     ev_candidates.reserve(candidates.ev_candidates.size());
     for (const auto& ev : candidates.ev_candidates) {
-        ev_candidates.push_back({ { ev.edge_index, ev.vertex_index } });
+        ev_candidates.push_back({ { ev.edge_id, ev.vertex_id } });
     }
 
     std::vector<std::array<long, 2>> ee_candidates;
     ee_candidates.reserve(candidates.ee_candidates.size());
     for (const auto& ee : candidates.ee_candidates) {
-        ee_candidates.push_back({ { ee.edge0_index, ee.edge1_index } });
+        ee_candidates.push_back({ { ee.edge0_id, ee.edge1_id } });
     }
 
     std::vector<std::array<long, 2>> fv_candidates;
     fv_candidates.reserve(candidates.fv_candidates.size());
     for (const auto& fv : candidates.fv_candidates) {
-        fv_candidates.push_back({ { fv.face_index, fv.vertex_index } });
+        fv_candidates.push_back({ { fv.face_id, fv.vertex_id } });
     }
 
     nlohmann::json out;
@@ -125,8 +124,9 @@ void brute_force_comparison(
             // Perform CCD to make sure the candidate is not a collision
             double toi;
             bool hit = bf_candidates[bf_ci].ccd(
-                V0, V1, mesh.edges(), mesh.faces(), toi, /*tmax=*/1.0,
-                /*tolerance=*/1e-6, /*max_iterations=*/1e7,
+                V0, V1, mesh.edges(), mesh.faces(), toi, /*min_distance=*/0,
+                /*tmax=*/1.0, /*tolerance=*/ipc::DEFAULT_CCD_TOLERANCE,
+                /*max_iterations=*/ipc::DEFAULT_CCD_MAX_ITERATIONS,
                 /*conservative_rescaling=*/1.0);
             CHECK(!hit); // Check for FN
         } else {

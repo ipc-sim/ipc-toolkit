@@ -26,11 +26,11 @@ void FrictionConstraint::init(
     const int dim = all_positions.cols();
     tangent_basis.resize(dim, dim - 1);
 
-    const VectorMax12d positions = select_dof(all_positions, edges, faces);
-    closest_point = compute_closest_point(positions);
-    tangent_basis = compute_tangent_basis(positions);
-    normal_force_magnitude = compute_normal_force_magnitude(
-        positions, dhat, barrier_stiffness, dmin);
+    const VectorMax12d V = select_dof(all_positions, edges, faces);
+    closest_point = compute_closest_point(V);
+    tangent_basis = compute_tangent_basis(V);
+    normal_force_magnitude =
+        compute_normal_force_magnitude(V, dhat, barrier_stiffness, dmin);
 }
 
 VectorMax12d FrictionConstraint::compute_potential_gradient(
@@ -231,7 +231,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
 
     // Assume uᵢ = uᵗ
     VectorMax12d x_plus_ui = x + ut;
-    bool need_jac_N_or_T = wrt != DiffWRT::velocities;
+    bool need_jac_N_or_T = wrt != DiffWRT::U;
 
     // Assume uᵢ = u
     // VectorMax12d x_plus_ui = x + u;
@@ -326,7 +326,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     case DiffWRT::Ut:
         jac_tau -= T.transpose(); // Tᵀ ∇_{uᵗ}(u - uᵗ) = -Tᵀ
         break;
-    case DiffWRT::velocities:
+    case DiffWRT::U:
         jac_tau += T.transpose(); // Tᵀ ∇ᵤ(u - uᵗ) = Tᵀ
     }
 
@@ -384,23 +384,23 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
 }
 
 double FrictionConstraint::compute_normal_force_magnitude(
-    const VectorMax12d& positions,
+    const VectorMax12d& V,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
     return ipc::compute_normal_force_magnitude(
-        compute_distance(positions), dhat, barrier_stiffness, dmin);
+        compute_distance(V), dhat, barrier_stiffness, dmin);
 }
 
 VectorMax12d FrictionConstraint::compute_normal_force_magnitude_gradient(
-    const VectorMax12d& positions,
+    const VectorMax12d& V,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
     return ipc::compute_normal_force_magnitude_gradient(
-        compute_distance(positions), compute_distance_gradient(positions), dhat,
+        compute_distance(V), compute_distance_gradient(V), dhat,
         barrier_stiffness, dmin);
 }
 

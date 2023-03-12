@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <test_utils.hpp>
 
@@ -22,7 +22,7 @@ TEST_CASE("Point-edge distance", "[distance][point-edge]")
     e1.x() = 10;
 
     double distance = point_edge_distance(p, e0, e1);
-    CHECK(distance == Approx(expected_distance * expected_distance));
+    CHECK(distance == Catch::Approx(expected_distance * expected_distance));
 }
 
 TEST_CASE("Point-edge distance all types", "[distance][point-edge]")
@@ -54,7 +54,8 @@ TEST_CASE("Point-edge distance all types", "[distance][point-edge]")
         const double distance = point_edge_distance(p, e0, e1);
         CHECK(
             distance
-            == Approx(expected_distance * expected_distance).margin(1e-15));
+            == Catch::Approx(expected_distance * expected_distance)
+                   .margin(1e-15));
     }
 }
 

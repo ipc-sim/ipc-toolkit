@@ -5,13 +5,13 @@
 namespace ipc {
 
 double CollisionConstraint::compute_potential(
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const double dhat) const
 {
     const double distance =
-        compute_distance(positions, edges, faces); // Squared distance
+        compute_distance(V, edges, faces); // Squared distance
     return weight
         * barrier(
                distance - minimum_distance * minimum_distance,
@@ -19,15 +19,15 @@ double CollisionConstraint::compute_potential(
 }
 
 VectorMax12d CollisionConstraint::compute_potential_gradient(
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const double dhat) const
 {
     // ∇b(d(x)) = b'(d(x)) * ∇d(x)
-    const double distance = compute_distance(positions, edges, faces);
+    const double distance = compute_distance(V, edges, faces);
     const VectorMax12d distance_grad =
-        compute_distance_gradient(positions, edges, faces);
+        compute_distance_gradient(V, edges, faces);
 
     const double grad_b = barrier_gradient(
         distance - minimum_distance * minimum_distance,
@@ -36,7 +36,7 @@ VectorMax12d CollisionConstraint::compute_potential_gradient(
 }
 
 MatrixMax12d CollisionConstraint::compute_potential_hessian(
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const double dhat,
@@ -48,11 +48,11 @@ MatrixMax12d CollisionConstraint::compute_potential_hessian(
     // ∇²[b(d(x))] = ∇(b'(d(x)) * ∇d(x))
     //             = b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)
 
-    const double distance = compute_distance(positions, edges, faces);
+    const double distance = compute_distance(V, edges, faces);
     const VectorMax12d distance_grad =
-        compute_distance_gradient(positions, edges, faces);
+        compute_distance_gradient(V, edges, faces);
     const MatrixMax12d distance_hess =
-        compute_distance_hessian(positions, edges, faces);
+        compute_distance_hessian(V, edges, faces);
 
     const double grad_b = barrier_gradient(
         distance - min_dist_squrared,

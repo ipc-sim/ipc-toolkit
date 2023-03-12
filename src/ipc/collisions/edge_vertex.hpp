@@ -23,33 +23,33 @@ struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
     }
 
     double compute_distance(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override
     {
         // The distance type is known because of Constraints::build()
         return EdgeVertexCandidate::compute_distance(
-            positions, edges, faces, PointEdgeDistanceType::P_E);
+            V, edges, faces, PointEdgeDistanceType::P_E);
     }
 
     VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override
     {
         // The distance type is known because of Constraints::build()
         return EdgeVertexCandidate::compute_distance_gradient(
-            positions, edges, faces, PointEdgeDistanceType::P_E);
+            V, edges, faces, PointEdgeDistanceType::P_E);
     }
 
     MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override
     {
         // The distance type is known because of Constraints::build()
         return EdgeVertexCandidate::compute_distance_hessian(
-            positions, edges, faces, PointEdgeDistanceType::P_E);
+            V, edges, faces, PointEdgeDistanceType::P_E);
     }
 
     template <typename H>

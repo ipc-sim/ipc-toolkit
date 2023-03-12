@@ -22,33 +22,33 @@ struct EdgeEdgeCandidate : ContinuousCollisionCandidate {
     }
 
     std::array<Eigen::Vector3d, 4> vertices(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const
     {
-        assert(positions.cols() == 3);
+        assert(V.cols() == 3);
         return { {
-            positions.row(edges(edge0_id, 0)),
-            positions.row(edges(edge0_id, 1)),
-            positions.row(edges(edge1_id, 0)),
-            positions.row(edges(edge1_id, 1)),
+            V.row(edges(edge0_id, 0)),
+            V.row(edges(edge0_id, 1)),
+            V.row(edges(edge1_id, 0)),
+            V.row(edges(edge1_id, 1)),
         } };
     }
 
     double compute_distance(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
 
     VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
 
     MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
@@ -56,10 +56,10 @@ struct EdgeEdgeCandidate : ContinuousCollisionCandidate {
     // ------------------------------------------------------------------------
 
     /// Perform narrow-phase CCD on the candidate.
-    /// @param[in] positions_t0 Mesh vertex positions at the start of the time step.
-    /// @param[in] positions_t1 Mesh vertex positions at the end of the time step.
-    /// @param[in] edges Mesh edges as rows of indicies into positions.
-    /// @param[in] faces Mesh triangular faces as rows of indicies into positions.
+    /// @param[in] V0 Mesh vertex V at the start of the time step.
+    /// @param[in] V1 Mesh vertex V at the end of the time step.
+    /// @param[in] edges Mesh edges as rows of indicies into V.
+    /// @param[in] faces Mesh triangular faces as rows of indicies into V.
     /// @param[out] toi Computed time of impact (normalized).
     /// @param[in] tmax Maximum time (normalized) to look for collisions. Should be in [0, 1].
     /// @param[in] tolerance CCD tolerance used by Tight-Inclusion CCD.
@@ -67,8 +67,8 @@ struct EdgeEdgeCandidate : ContinuousCollisionCandidate {
     /// @param[in] conservative_rescaling Conservative rescaling value used to avoid taking steps exactly to impact.
     /// @return If the candidate had a collision over the time interval.
     bool
-    ccd(const Eigen::MatrixXd& positions_t0,
-        const Eigen::MatrixXd& positions_t1,
+    ccd(const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double& toi,
@@ -80,8 +80,8 @@ struct EdgeEdgeCandidate : ContinuousCollisionCandidate {
             DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
 
     void print_ccd_query(
-        const Eigen::MatrixXd& positions_t0,
-        const Eigen::MatrixXd& positions_t1,
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override;
 

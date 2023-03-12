@@ -25,7 +25,7 @@ void mmcvids_to_constraints(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Eigen::MatrixXi& mmcvids,
-    ipc::Constraints& constraints)
+    ipc::CollisionConstraints& constraints)
 {
     for (int mmcvid_i = 0; mmcvid_i < mmcvids.rows(); mmcvid_i++) {
         const auto mmcvid = mmcvids.row(mmcvid_i);
@@ -97,7 +97,7 @@ Eigen::Matrix3d const& RotationGenerator::get() const { return R; }
 Catch::Generators::GeneratorWrapper<Eigen::Matrix3d> RotationGenerator::create()
 {
     return Catch::Generators::GeneratorWrapper<Eigen::Matrix3d>(
-        std::make_unique<RotationGenerator>());
+        Catch::Detail::make_unique<RotationGenerator>());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

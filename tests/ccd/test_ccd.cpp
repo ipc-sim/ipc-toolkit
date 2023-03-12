@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <ipc/ipc.hpp>
 #include <ipc/ccd/ccd.hpp>
@@ -321,14 +321,13 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
     V1 = mesh.vertices(V1);
 
     Candidates candidates;
-    construct_collision_candidates(
-        mesh, V0, V1, candidates, inflation_radius, broadphase_method);
+    candidates.build(mesh, V0, V1, inflation_radius, broadphase_method);
 
-    bool has_collisions = !is_step_collision_free(
-        candidates, mesh, V0, V1, MIN_DISTANCE, FIRST_TOL, FIRST_MAX_ITER);
+    bool has_collisions = !candidates.is_step_collision_free(
+        mesh, V0, V1, MIN_DISTANCE, FIRST_TOL, FIRST_MAX_ITER);
 
-    double stepsize = compute_collision_free_stepsize(
-        candidates, mesh, V0, V1, MIN_DISTANCE, FIRST_TOL, FIRST_MAX_ITER);
+    double stepsize = candidates.compute_collision_free_stepsize(
+        mesh, V0, V1, MIN_DISTANCE, FIRST_TOL, FIRST_MAX_ITER);
 
     if (!has_collisions) {
         CHECK(stepsize == 1.0);
@@ -343,17 +342,14 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
         // CHECK(!has_intersections(Vt, E, F));
 
         if (recompute_candidates) {
-            construct_collision_candidates(
-                mesh, V0, Vt, candidates, inflation_radius, broadphase_method);
+            candidates.build(mesh, V0, Vt, inflation_radius, broadphase_method);
         }
 
-        has_collisions_repeated = !is_step_collision_free(
-            candidates, mesh, V0, Vt, MIN_DISTANCE, SECOND_TOL,
-            SECOND_MAX_ITER);
+        has_collisions_repeated = !candidates.is_step_collision_free(
+            mesh, V0, Vt, MIN_DISTANCE, SECOND_TOL, SECOND_MAX_ITER);
 
-        stepsize_repeated = compute_collision_free_stepsize(
-            candidates, mesh, V0, Vt, MIN_DISTANCE, SECOND_TOL,
-            SECOND_MAX_ITER);
+        stepsize_repeated = candidates.compute_collision_free_stepsize(
+            mesh, V0, Vt, MIN_DISTANCE, SECOND_TOL, SECOND_MAX_ITER);
 
         CAPTURE(
             t0_filename, t1_filename, broadphase_method, recompute_candidates,

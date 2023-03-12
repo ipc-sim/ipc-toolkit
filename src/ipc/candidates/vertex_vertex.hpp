@@ -24,17 +24,17 @@ struct VertexVertexCandidate {
     }
 
     double compute_distance(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const;
 
     VectorMax6d compute_distance_gradient(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const;
 
     MatrixMax6d compute_distance_hessian(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const;
 

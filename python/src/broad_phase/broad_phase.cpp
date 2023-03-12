@@ -1,6 +1,7 @@
 #include "../common.hpp"
 
 #include <ipc/broad_phase/broad_phase.hpp>
+#include <ipc/candidates/candidates.hpp>
 
 namespace py = pybind11;
 using namespace ipc;

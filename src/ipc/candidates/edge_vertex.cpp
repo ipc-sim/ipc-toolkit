@@ -14,45 +14,45 @@ EdgeVertexCandidate::EdgeVertexCandidate(long edge_id, long vertex_id)
 }
 
 double EdgeVertexCandidate::compute_distance(
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const PointEdgeDistanceType dtype) const
 {
     return point_edge_distance(
-        positions.row(vertex_id), positions.row(edges(edge_id, 0)),
-        positions.row(edges(edge_id, 1)), dtype);
+        V.row(vertex_id), V.row(edges(edge_id, 0)), V.row(edges(edge_id, 1)),
+        dtype);
 }
 
 VectorMax9d EdgeVertexCandidate::compute_distance_gradient(
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const PointEdgeDistanceType dtype) const
 {
     VectorMax9d distance_grad;
     point_edge_distance_gradient(
-        positions.row(vertex_id), positions.row(edges(edge_id, 0)),
-        positions.row(edges(edge_id, 1)), distance_grad, dtype);
+        V.row(vertex_id), V.row(edges(edge_id, 0)), V.row(edges(edge_id, 1)),
+        distance_grad, dtype);
     return distance_grad;
 }
 
 MatrixMax9d EdgeVertexCandidate::compute_distance_hessian(
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const PointEdgeDistanceType dtype) const
 {
     MatrixMax9d distance_hess;
     point_edge_distance_hessian(
-        positions.row(vertex_id), positions.row(edges(edge_id, 0)),
-        positions.row(edges(edge_id, 1)), distance_hess, dtype);
+        V.row(vertex_id), V.row(edges(edge_id, 0)), V.row(edges(edge_id, 1)),
+        distance_hess, dtype);
     return distance_hess;
 }
 
 bool EdgeVertexCandidate::ccd(
-    const Eigen::MatrixXd& positions_t0,
-    const Eigen::MatrixXd& positions_t1,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     double& toi,
@@ -64,31 +64,29 @@ bool EdgeVertexCandidate::ccd(
 {
     return point_edge_ccd(
         // Point at t=0
-        positions_t0.row(vertex_id),
+        V0.row(vertex_id),
         // Edge at t=0
-        positions_t0.row(edges(edge_id, 0)),
-        positions_t0.row(edges(edge_id, 1)),
+        V0.row(edges(edge_id, 0)), V0.row(edges(edge_id, 1)),
         // Point at t=1
-        positions_t1.row(vertex_id),
+        V1.row(vertex_id),
         // Edge at t=1
-        positions_t1.row(edges(edge_id, 0)),
-        positions_t1.row(edges(edge_id, 1)), //
+        V1.row(edges(edge_id, 0)), V1.row(edges(edge_id, 1)), //
         toi, min_distance, tmax, tolerance, max_iterations,
         conservative_rescaling);
 }
 
 void EdgeVertexCandidate::print_ccd_query(
-    const Eigen::MatrixXd& positions_t0,
-    const Eigen::MatrixXd& positions_t1,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces) const
 {
-    std::cout << positions_t0.row(edges(edge_id, 0)).format(OBJ_VERTEX_FORMAT);
-    std::cout << positions_t0.row(edges(edge_id, 1)).format(OBJ_VERTEX_FORMAT);
-    std::cout << positions_t0.row(vertex_id).format(OBJ_VERTEX_FORMAT);
-    std::cout << positions_t1.row(edges(edge_id, 0)).format(OBJ_VERTEX_FORMAT);
-    std::cout << positions_t1.row(edges(edge_id, 1)).format(OBJ_VERTEX_FORMAT);
-    std::cout << positions_t1.row(vertex_id).format(OBJ_VERTEX_FORMAT);
+    std::cout << V0.row(edges(edge_id, 0)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V0.row(edges(edge_id, 1)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V0.row(vertex_id).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(edges(edge_id, 0)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(edges(edge_id, 1)).format(OBJ_VERTEX_FORMAT);
+    std::cout << V1.row(vertex_id).format(OBJ_VERTEX_FORMAT);
     std::cout << std::flush;
 }
 

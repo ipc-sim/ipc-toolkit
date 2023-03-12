@@ -13,14 +13,14 @@ namespace ipc {
 
 void FrictionConstraints::build(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     const CollisionConstraints& contact_constraint_set,
     double dhat,
     double barrier_stiffness,
     const Eigen::VectorXd& mus,
     const std::function<double(double, double)>& blend_mu)
 {
-    assert(mus.size() == positions.rows());
+    assert(mus.size() == V.rows());
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
@@ -35,8 +35,7 @@ void FrictionConstraints::build(
 
     FC_vv.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
-        FC_vv.emplace_back(
-            c_vv, positions, edges, faces, dhat, barrier_stiffness);
+        FC_vv.emplace_back(c_vv, V, edges, faces, dhat, barrier_stiffness);
         const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
 
         FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
@@ -44,8 +43,7 @@ void FrictionConstraints::build(
 
     FC_ev.reserve(C_ev.size());
     for (const auto& c_ev : C_ev) {
-        FC_ev.emplace_back(
-            c_ev, positions, edges, faces, dhat, barrier_stiffness);
+        FC_ev.emplace_back(c_ev, V, edges, faces, dhat, barrier_stiffness);
         const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
 
         const double edge_mu =
@@ -56,18 +54,17 @@ void FrictionConstraints::build(
     FC_ee.reserve(C_ee.size());
     for (const auto& c_ee : C_ee) {
         const auto& [ea0i, ea1i, eb0i, eb1i] = c_ee.vertex_ids(edges, faces);
-        const Eigen::Vector3d ea0 = positions.row(ea0i);
-        const Eigen::Vector3d ea1 = positions.row(ea1i);
-        const Eigen::Vector3d eb0 = positions.row(eb0i);
-        const Eigen::Vector3d eb1 = positions.row(eb1i);
+        const Eigen::Vector3d ea0 = V.row(ea0i);
+        const Eigen::Vector3d ea1 = V.row(ea1i);
+        const Eigen::Vector3d eb0 = V.row(eb0i);
+        const Eigen::Vector3d eb1 = V.row(eb1i);
 
         // Skip EE constraints that are close to parallel
         if (edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1) < c_ee.eps_x) {
             continue;
         }
 
-        FC_ee.emplace_back(
-            c_ee, positions, edges, faces, dhat, barrier_stiffness);
+        FC_ee.emplace_back(c_ee, V, edges, faces, dhat, barrier_stiffness);
 
         double ea_mu =
             (mus(ea1i) - mus(ea0i)) * FC_ee.back().closest_point[0] + mus(ea0i);
@@ -78,8 +75,7 @@ void FrictionConstraints::build(
 
     FC_fv.reserve(C_fv.size());
     for (const auto& c_fv : C_fv) {
-        FC_fv.emplace_back(
-            c_fv, positions, edges, faces, dhat, barrier_stiffness);
+        FC_fv.emplace_back(c_fv, V, edges, faces, dhat, barrier_stiffness);
         const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
 
         double face_mu = mus(f0i)
@@ -165,7 +161,7 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_potential_hessian(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const auto& constraint = (*this)[i];
 
-                const VectorMax12d local_hess =
+                const MatrixMax12d local_hess =
                     constraint.compute_potential_hessian(
                         velocity, mesh.edges(), mesh.faces(), epsv_times_h,
                         project_hessian_to_psd);

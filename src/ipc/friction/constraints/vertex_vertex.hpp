@@ -13,7 +13,7 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
     VertexVertexFrictionConstraint(const VertexVertexConstraint& constraint);
     VertexVertexFrictionConstraint(
         const VertexVertexConstraint& constraint,
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat,
@@ -21,16 +21,20 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
         : VertexVertexFrictionConstraint(constraint)
     {
         FrictionConstraint::init(
-            positions, edges, faces, dhat, barrier_stiffness,
+            V, edges, faces, dhat, barrier_stiffness,
             constraint.minimum_distance);
     }
 
-    int num_vertices() const override { return 2; }
+    int num_vertices() const override
+    {
+        return VertexVertexCandidate::num_vertices();
+    }
+
     std::array<long, 4> vertex_ids(
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override
     {
-        return { { vertex0_id, vertex1_id, -1, -1 } };
+        return VertexVertexCandidate::vertex_ids(edges, faces);
     }
 
     template <typename T>
@@ -41,7 +45,7 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
         const double epsv_times_h) const
     {
         return compute_potential_common(
-            relative_velocity_T(select_dofs(velocities, edges, faces)),
+            relative_velocity_T(select_dof(velocities, edges, faces)),
             epsv_times_h);
     }
 

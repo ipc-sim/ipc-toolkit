@@ -34,7 +34,7 @@ add_executable(ipc_toolkit_tests
   friction/test_force_jacobian.cpp
   friction/test_friction.cpp
   friction/test_normal_force_magnitude.cpp
-  friction/test_relative_displacement.cpp
+  friction/test_relative_velocity.cpp
   friction/test_smooth_friction_mollifier.cpp
   friction/test_tangent_basis.cpp
 
@@ -92,10 +92,10 @@ endif()
 # Register tests
 ################################################################################
 
-set(PARSE_CATCH_TESTS_ADD_TO_CONFIGURE_DEPENDS ON)
-
-# Include Catch2 and provide function `catch_discover_tests` to register tests.
 FetchContent_GetProperties(catch2)
-include("${catch2_SOURCE_DIR}/contrib/Catch.cmake")
+list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+include(Catch)
 
+# Register tests
+set(PARSE_CATCH_TESTS_ADD_TO_CONFIGURE_DEPENDS ON)
 catch_discover_tests(ipc_toolkit_tests)

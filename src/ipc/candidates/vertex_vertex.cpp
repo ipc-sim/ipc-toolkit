@@ -11,33 +11,32 @@ VertexVertexCandidate::VertexVertexCandidate(long vertex0_id, long vertex1_id)
 }
 
 double VertexVertexCandidate::compute_distance(
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces) const
 {
-    return point_point_distance(
-        positions.row(vertex0_id), positions.row(vertex1_id));
+    return point_point_distance(V.row(vertex0_id), V.row(vertex1_id));
 }
 
 VectorMax6d VertexVertexCandidate::compute_distance_gradient(
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces) const
 {
     VectorMax6d distance_grad;
     point_point_distance_gradient(
-        positions.row(vertex0_id), positions.row(vertex1_id), distance_grad);
+        V.row(vertex0_id), V.row(vertex1_id), distance_grad);
     return distance_grad;
 }
 
 MatrixMax6d VertexVertexCandidate::compute_distance_hessian(
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces) const
 {
     MatrixMax6d distance_hess;
     point_point_distance_hessian(
-        positions.row(vertex0_id), positions.row(vertex1_id), distance_hess);
+        V.row(vertex0_id), V.row(vertex1_id), distance_hess);
     return distance_hess;
 }
 

@@ -15,48 +15,47 @@ namespace ipc {
 
 bool is_step_collision_free(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& positions_t0,
-    const Eigen::MatrixXd& positions_t1,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
     const BroadPhaseMethod broad_phase_method,
     const double min_distance,
     const double tolerance,
     const long max_iterations)
 {
-    assert(positions_t0.rows() == mesh.num_vertices());
-    assert(positions_t1.rows() == mesh.num_vertices());
+    assert(V0.rows() == mesh.num_vertices());
+    assert(V1.rows() == mesh.num_vertices());
 
     // Broad phase
     Candidates candidates;
     candidates.build(
-        mesh, positions_t0, positions_t1,
+        mesh, V0, V1,
         /*inflation_radius=*/min_distance / 2, broad_phase_method);
 
     // Narrow phase
     return candidates.is_step_collision_free(
-        mesh, positions_t0, positions_t1, min_distance, tolerance,
-        max_iterations);
+        mesh, V0, V1, min_distance, tolerance, max_iterations);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& positions_t0,
-    const Eigen::MatrixXd& positions_t1,
+    const Eigen::MatrixXd& V0,
+    const Eigen::MatrixXd& V1,
     const BroadPhaseMethod broad_phase_method,
     const double min_distance,
     const double tolerance,
     const long max_iterations)
 {
-    assert(positions_t0.rows() == mesh.num_vertices());
-    assert(positions_t1.rows() == mesh.num_vertices());
+    assert(V0.rows() == mesh.num_vertices());
+    assert(V1.rows() == mesh.num_vertices());
 
     if (broad_phase_method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
 #ifdef IPC_TOOLKIT_WITH_CUDA
         double min_distance = 0; // TODO
         const double step_size = ccd::gpu::compute_toi_strategy(
-            positions_t0, positions_t1, mesh.edges(), mesh.faces(),
-            max_iterations, min_distance, tolerance);
+            V0, V1, mesh.edges(), mesh.faces(), max_iterations, min_distance,
+            tolerance);
         if (step_size < 1.0) {
             return 0.8 * step_size;
         }
@@ -70,35 +69,34 @@ double compute_collision_free_stepsize(
     // Broad phase
     Candidates candidates;
     candidates.build(
-        mesh, positions_t0, positions_t1,
+        mesh, V0, V1,
         /*inflation_radius=*/min_distance / 2, broad_phase_method);
 
     // Narrow phase
     return candidates.compute_collision_free_stepsize(
-        mesh, positions_t0, positions_t1, min_distance, tolerance,
-        max_iterations);
+        mesh, V0, V1, min_distance, tolerance, max_iterations);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 bool has_intersections(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& positions,
+    const Eigen::MatrixXd& vertices,
     const BroadPhaseMethod broad_phase_method)
 {
-    assert(positions.rows() == mesh.num_vertices());
+    assert(vertices.rows() == mesh.num_vertices());
 
     const double conservative_inflation_radius =
-        1e-6 * world_bbox_diagonal_length(positions);
+        1e-6 * world_bbox_diagonal_length(vertices);
 
     std::unique_ptr<BroadPhase> broad_phase =
         BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
 
     broad_phase->build(
-        positions, mesh.edges(), mesh.faces(), conservative_inflation_radius);
+        vertices, mesh.edges(), mesh.faces(), conservative_inflation_radius);
 
-    if (positions.cols() == 2) {
+    if (vertices.cols() == 2) {
         // Need to check segment-segment intersections in 2D
         std::vector<EdgeEdgeCandidate> ee_candidates;
 
@@ -109,16 +107,16 @@ bool has_intersections(
         igl::predicates::exactinit();
         for (const auto& [ea_id, eb_id] : ee_candidates) {
             if (igl::predicates::segment_segment_intersect(
-                    positions.row(mesh.edges()(ea_id, 0)).head<2>(),
-                    positions.row(mesh.edges()(ea_id, 1)).head<2>(),
-                    positions.row(mesh.edges()(eb_id, 0)).head<2>(),
-                    positions.row(mesh.edges()(eb_id, 1)).head<2>())) {
+                    vertices.row(mesh.edges()(ea_id, 0)).head<2>(),
+                    vertices.row(mesh.edges()(ea_id, 1)).head<2>(),
+                    vertices.row(mesh.edges()(eb_id, 0)).head<2>(),
+                    vertices.row(mesh.edges()(eb_id, 1)).head<2>())) {
                 return true;
             }
         }
     } else {
         // Need to check segment-triangle intersections in 3D
-        assert(positions.cols() == 3);
+        assert(vertices.cols() == 3);
 
         std::vector<EdgeFaceCandidate> ef_candidates;
         broad_phase->detect_edge_face_candidates(ef_candidates);
@@ -126,11 +124,11 @@ bool has_intersections(
 
         for (const auto& [e_id, f_id] : ef_candidates) {
             if (is_edge_intersecting_triangle(
-                    positions.row(mesh.edges()(e_id, 0)),
-                    positions.row(mesh.edges()(e_id, 1)),
-                    positions.row(mesh.faces()(f_id, 0)),
-                    positions.row(mesh.faces()(f_id, 1)),
-                    positions.row(mesh.faces()(f_id, 2)))) {
+                    vertices.row(mesh.edges()(e_id, 0)),
+                    vertices.row(mesh.edges()(e_id, 1)),
+                    vertices.row(mesh.faces()(f_id, 0)),
+                    vertices.row(mesh.faces()(f_id, 1)),
+                    vertices.row(mesh.faces()(f_id, 2)))) {
                 return true;
             }
         }

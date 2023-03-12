@@ -37,25 +37,25 @@ public:
     make_broad_phase(const BroadPhaseMethod broad_phase_method);
 
     /// @brief Build the broad phase for static collision detection.
-    /// @param positions Positions of the vertices.
+    /// @param V Positions of the vertices.
     /// @param edges Edges of the mesh.
     /// @param faces Faces of the mesh.
     /// @param inflation_radius Radius of inflation around all elements.
     virtual void build(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double inflation_radius = 0);
 
     /// @brief Build the broad phase for continuous collision detection.
-    /// @param positions_t0 Starting positions of the vertices.
-    /// @param positions_t1 Ending positions of the vertices.
+    /// @param V0 Starting V of the vertices.
+    /// @param V1 Ending V of the vertices.
     /// @param edges Edges of the mesh.
     /// @param faces Faces of the mesh.
     /// @param inflation_radius Radius of inflation around all elements.
     virtual void build(
-        const Eigen::MatrixXd& positions_t0,
-        const Eigen::MatrixXd& positions_t1,
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double inflation_radius = 0);

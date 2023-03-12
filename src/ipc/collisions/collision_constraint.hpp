@@ -22,34 +22,34 @@ public:
         const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const = 0;
 
     virtual double compute_distance(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const = 0;
 
     virtual VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const = 0;
 
     virtual MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const = 0;
 
     virtual double compute_potential(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat) const;
 
     virtual VectorMax12d compute_potential_gradient(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat) const;
 
     virtual MatrixMax12d compute_potential_hessian(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat,

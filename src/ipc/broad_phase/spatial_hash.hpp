@@ -30,60 +30,58 @@ public: // constructor
     SpatialHash() { }
 
     SpatialHash(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double inflation_radius = 0,
         double voxelSize = -1)
     {
-        build(positions, edges, faces, inflation_radius, voxelSize);
+        build(V, edges, faces, inflation_radius, voxelSize);
     }
 
     SpatialHash(
-        const Eigen::MatrixXd& positions_t0,
-        const Eigen::MatrixXd& positions_t1,
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double inflation_radius = 0,
         double voxelSize = -1)
     {
-        build(
-            positions_t0, positions_t1, edges, faces, inflation_radius,
-            voxelSize);
+        build(V0, V1, edges, faces, inflation_radius, voxelSize);
     }
 
 public: // API
     void build(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double inflation_radius = 0) override
     {
-        build(positions, edges, faces, inflation_radius, /*voxelSize=*/-1);
+        build(V, edges, faces, inflation_radius, /*voxelSize=*/-1);
     }
 
     void build(
-        const Eigen::MatrixXd& positions_t0,
-        const Eigen::MatrixXd& positions_t1,
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double inflation_radius = 0) override
     {
         build(
-            positions_t0, positions_t1, edges, faces, inflation_radius,
+            V0, V1, edges, faces, inflation_radius,
             /*voxelSize=*/-1);
     }
 
     void build(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double inflation_radius,
         double voxelSize);
 
     void build(
-        const Eigen::MatrixXd& positions_t0,
-        const Eigen::MatrixXd& positions_t1,
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double inflation_radius,
@@ -130,7 +128,7 @@ public: // API
         int eai = -1) const;
 
     void queryEdgeForEdgesWithBBoxCheck(
-        const Eigen::MatrixXd& positions,
+        const Eigen::MatrixXd& V,
         const Eigen::MatrixXi& edges,
         const VectorMax3d& ea0,
         const VectorMax3d& ea1,
@@ -191,8 +189,8 @@ public: // API
     void queryEdgeForEdges(int eai, unordered_set<int>& edgeInds) const;
 
     void queryEdgeForEdgesWithBBoxCheck(
-        const Eigen::MatrixXd& positions_t0,
-        const Eigen::MatrixXd& positions_t1,
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& edges,
         int eai,
         unordered_set<int>& edgeInds) const;

@@ -13,10 +13,10 @@ struct ContinuousCollisionCandidate {
     virtual ~ContinuousCollisionCandidate() { }
 
     /// Perform narrow-phase CCD on the candidate.
-    /// @param[in] positions_t0 Mesh vertex positions at the start of the time step.
-    /// @param[in] positions_t1 Mesh vertex positions at the end of the time step.
-    /// @param[in] edges Mesh edges as rows of indicies into positions.
-    /// @param[in] faces Mesh triangular faces as rows of indicies into positions.
+    /// @param[in] V0 Mesh vertex V at the start of the time step.
+    /// @param[in] V1 Mesh vertex V at the end of the time step.
+    /// @param[in] edges Mesh edges as rows of indicies into V.
+    /// @param[in] faces Mesh triangular faces as rows of indicies into V.
     /// @param[out] toi Computed time of impact (normalized).
     /// @param[in] min_distance Minimum separation distance between primitives.
     /// @param[in] tmax Maximum time (normalized) to look for collisions. Should be in [0, 1].
@@ -25,8 +25,8 @@ struct ContinuousCollisionCandidate {
     /// @param[in] conservative_rescaling Conservative rescaling value used to avoid taking steps exactly to impact.
     /// @return If the candidate had a collision over the time interval.
     virtual bool
-    ccd(const Eigen::MatrixXd& positions_t0,
-        const Eigen::MatrixXd& positions_t1,
+    ccd(const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double& toi,
@@ -39,8 +39,8 @@ struct ContinuousCollisionCandidate {
 
     // Print the vertices of the CCD query for debugging.
     virtual void print_ccd_query(
-        const Eigen::MatrixXd& positions_t0,
-        const Eigen::MatrixXd& positions_t1,
+        const Eigen::MatrixXd& V0,
+        const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const = 0;
 };
