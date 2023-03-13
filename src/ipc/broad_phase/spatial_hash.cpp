@@ -642,9 +642,9 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
     const VectorMax3d& ea0_t1 = vertices_t1.row(edges(eai, 0));
     const VectorMax3d& ea1_t1 = vertices_t1.row(edges(eai, 1));
 
-    ArrayMax3d bboxEABottomLeft =
+    const ArrayMax3d bboxEABottomLeft =
         ea0_t0.cwiseMin(ea1_t0).cwiseMin(ea0_t1).cwiseMin(ea1_t1);
-    ArrayMax3d bboxEATopRight =
+    const ArrayMax3d bboxEATopRight =
         ea0_t0.cwiseMax(ea1_t0).cwiseMax(ea0_t1).cwiseMax(ea1_t1);
 
     edgeInds.clear();
