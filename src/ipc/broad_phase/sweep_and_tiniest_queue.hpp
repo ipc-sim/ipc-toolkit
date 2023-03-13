@@ -31,7 +31,7 @@ protected:
 class SweepAndTiniestQueue : public CopyMeshBroadPhase {
 public:
     /// @brief Build the broad phase for static collision detection.
-    /// @param vertices_t0 Vertex positions
+    /// @param vertices Vertex positions
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
@@ -42,8 +42,8 @@ public:
         double inflation_radius = 0) override;
 
     /// @brief Build the broad phase for continuous collision detection.
-    /// @param vertices_t0 Starting vertices of the vertices.
-    /// @param vertices_t1 Ending vertices of the vertices.
+    /// @param vertices_t0 Starting vertex positions
+    /// @param vertices_t1 Ending vertex positions
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
@@ -94,7 +94,7 @@ protected:
 class SweepAndTiniestQueueGPU : public CopyMeshBroadPhase {
 public:
     /// @brief Build the broad phase for static collision detection.
-    /// @param vertices_t0 Vertex positions
+    /// @param vertices Vertex positions
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
@@ -105,8 +105,8 @@ public:
         double inflation_radius = 0) override;
 
     /// @brief Build the broad phase for continuous collision detection.
-    /// @param vertices_t0 Starting vertices of the vertices.
-    /// @param vertices_t1 Ending vertices of the vertices.
+    /// @param vertices_t0 Starting vertex positions
+    /// @param vertices_t1 Ending vertex positions
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.

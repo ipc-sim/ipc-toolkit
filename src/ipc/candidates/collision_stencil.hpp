@@ -7,6 +7,7 @@
 
 namespace ipc {
 
+/// @brief A stencil representing a collision between at most four vertices.
 class CollisionStencil {
 public:
     virtual ~CollisionStencil() = default;
@@ -39,9 +40,11 @@ public:
 
         std::array<VectorMax3<T>, 4> stencil_vertices;
         for (int i = 0; i < 4; i++) {
-            stencil_vertices[i] = vertex_ids[i] < 0
-                ? VectorMax3<T>::Constant(T(NaN), vertices.cols())
-                : VectorMax3<T>(vertices.row(vertex_ids[i]));
+            if (vertex_ids[i] >= 0) {
+                stencil_vertices[i] = vertices.row(vertex_ids[i]);
+            } else {
+                stencil_vertices[i].setConstant(vertices.cols(), T(NaN));
+            }
         }
 
         return stencil_vertices;

@@ -43,9 +43,8 @@ void HashGrid::build(
     const Eigen::MatrixXi& faces,
     double inflation_radius)
 {
-    BroadPhase::build(
-        vertices_t0, vertices_t1, edges, faces,
-        inflation_radius); // also calls clear()
+    BroadPhase::build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
+    // BroadPhase::build also calls clear()
 
     const ArrayMax3d mesh_min_t0 = vertices_t0.colwise().minCoeff();
     const ArrayMax3d mesh_max_t0 = vertices_t0.colwise().maxCoeff();

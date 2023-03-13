@@ -109,7 +109,7 @@ double Candidates::compute_collision_free_stepsize(
                 }
 
                 double toi = std::numeric_limits<double>::infinity(); // output
-                bool are_colliding = (*this)[i].ccd(
+                const bool are_colliding = (*this)[i].ccd(
                     vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), toi,
                     min_distance, tmax, tolerance, max_iterations);
 

@@ -10,8 +10,8 @@ double CollisionConstraint::compute_potential(
     const Eigen::MatrixXi& faces,
     const double dhat) const
 {
-    const double distance =
-        compute_distance(vertices, edges, faces); // Squared distance
+    // Squared distance
+    const double distance = compute_distance(vertices, edges, faces);
     return weight
         * barrier(
                distance - minimum_distance * minimum_distance,
@@ -25,9 +25,10 @@ VectorMax12d CollisionConstraint::compute_potential_gradient(
     const double dhat) const
 {
     // ∇b(d(x)) = b'(d(x)) * ∇d(x)
-    const double distance = compute_distance(vertices, edges, faces);
-    const VectorMax12d distance_grad =
-        compute_distance_gradient(vertices, edges, faces);
+
+    const VectorMax12d positions = dof(vertices, edges, faces);
+    const double distance = compute_distance(positions);
+    const VectorMax12d distance_grad = compute_distance_gradient(positions);
 
     const double grad_b = barrier_gradient(
         distance - minimum_distance * minimum_distance,
@@ -42,24 +43,21 @@ MatrixMax12d CollisionConstraint::compute_potential_hessian(
     const double dhat,
     const bool project_hessian_to_psd) const
 {
-    const double dhat_squared = dhat * dhat;
+    const double effective_dhat = 2 * minimum_distance * dhat + dhat * dhat;
     const double min_dist_squrared = minimum_distance * minimum_distance;
 
     // ∇²[b(d(x))] = ∇(b'(d(x)) * ∇d(x))
     //             = b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)
 
-    const double distance = compute_distance(vertices, edges, faces);
-    const VectorMax12d distance_grad =
-        compute_distance_gradient(vertices, edges, faces);
-    const MatrixMax12d distance_hess =
-        compute_distance_hessian(vertices, edges, faces);
+    const VectorMax12d positions = dof(vertices, edges, faces);
+    const double distance = compute_distance(positions);
+    const VectorMax12d distance_grad = compute_distance_gradient(positions);
+    const MatrixMax12d distance_hess = compute_distance_hessian(positions);
 
-    const double grad_b = barrier_gradient(
-        distance - min_dist_squrared,
-        2 * minimum_distance * dhat + dhat_squared);
-    const double hess_b = barrier_hessian(
-        distance - min_dist_squrared,
-        2 * minimum_distance * dhat + dhat_squared);
+    const double grad_b =
+        barrier_gradient(distance - min_dist_squrared, effective_dhat);
+    const double hess_b =
+        barrier_hessian(distance - min_dist_squrared, effective_dhat);
 
     // b"(x) ≥ 0 ⟹ b"(x) * ∇d(x) * ∇d(x)ᵀ is PSD
     assert(hess_b >= 0);

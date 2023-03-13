@@ -73,13 +73,12 @@ void SpatialHash::build(
         num_vertices, Eigen::Array3i::Zero());
     std::vector<Eigen::Array3i> vertexMaxVAI(
         num_vertices, Eigen::Array3i::Zero());
-    tbb::parallel_for(size_t(0), size_t(num_vertices), [&](size_t vi) {
-        ArrayMax3i vVAIMin, vVAIMax;
-
+    tbb::parallel_for(0ul, num_vertices, [&](size_t vi) {
         ArrayMax3d v_min = vertices_t0.row(vi).cwiseMin(vertices_t1.row(vi));
         ArrayMax3d v_max = vertices_t0.row(vi).cwiseMax(vertices_t1.row(vi));
         AABB::conservative_inflation(v_min, v_max, inflation_radius);
 
+        ArrayMax3i vVAIMin, vVAIMax;
         locateVoxelAxisIndex(v_min, vVAIMin);
         locateVoxelAxisIndex(v_max, vVAIMax);
 
@@ -89,7 +88,7 @@ void SpatialHash::build(
 
     pointAndEdgeOccupancy.resize(triStartInd);
 
-    tbb::parallel_for(size_t(0), size_t(num_vertices), [&](size_t vi) {
+    tbb::parallel_for(0ul, num_vertices, [&](size_t vi) {
         const Eigen::Array3i &mins = vertexMinVAI[vi], &maxs = vertexMaxVAI[vi];
         assert((mins <= maxs).all());
         pointAndEdgeOccupancy[vi].reserve((maxs - mins + 1).prod());
@@ -104,7 +103,7 @@ void SpatialHash::build(
         }
     });
 
-    tbb::parallel_for(size_t(0), size_t(edges.rows()), [&](size_t ei) {
+    tbb::parallel_for(0ul, size_t(edges.rows()), [&](size_t ei) {
         int eiInd = ei + edgeStartInd;
 
         Eigen::Array3i mins =
