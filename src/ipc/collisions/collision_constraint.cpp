@@ -44,7 +44,7 @@ MatrixMax12d CollisionConstraint::compute_potential_hessian(
     const bool project_hessian_to_psd) const
 {
     const double effective_dhat = 2 * minimum_distance * dhat + dhat * dhat;
-    const double min_dist_squrared = minimum_distance * minimum_distance;
+    const double min_dist_squared = minimum_distance * minimum_distance;
 
     // ∇²[b(d(x))] = ∇(b'(d(x)) * ∇d(x))
     //             = b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)
@@ -55,9 +55,9 @@ MatrixMax12d CollisionConstraint::compute_potential_hessian(
     const MatrixMax12d distance_hess = compute_distance_hessian(positions);
 
     const double grad_b =
-        barrier_gradient(distance - min_dist_squrared, effective_dhat);
+        barrier_gradient(distance - min_dist_squared, effective_dhat);
     const double hess_b =
-        barrier_hessian(distance - min_dist_squrared, effective_dhat);
+        barrier_hessian(distance - min_dist_squared, effective_dhat);
 
     // b"(x) ≥ 0 ⟹ b"(x) * ∇d(x) * ∇d(x)ᵀ is PSD
     assert(hess_b >= 0);
