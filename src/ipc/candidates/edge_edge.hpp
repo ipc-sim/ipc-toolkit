@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/candidates/continuous_collision_candidate.hpp>
 #include <ipc/distance/distance_type.hpp>
 
@@ -9,30 +10,19 @@
 
 namespace ipc {
 
-struct EdgeEdgeCandidate : ContinuousCollisionCandidate {
+class EdgeEdgeCandidate : virtual public CollisionStencil,
+                          public ContinuousCollisionCandidate {
+public:
     EdgeEdgeCandidate(long edge0_id, long edge1_id);
 
-    int num_vertices() const { return 4; };
+    int num_vertices() const override { return 4; };
 
-    std::array<long, 4>
-    vertex_ids(const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const
+    std::array<long, 4> vertex_ids(
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
         return { { edges(edge0_id, 0), edges(edge0_id, 1), //
                    edges(edge1_id, 0), edges(edge1_id, 1) } };
-    }
-
-    std::array<Eigen::Vector3d, 4> vertices(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const
-    {
-        assert(vertices.cols() == 3);
-        return { {
-            vertices.row(edges(edge0_id, 0)),
-            vertices.row(edges(edge0_id, 1)),
-            vertices.row(edges(edge1_id, 0)),
-            vertices.row(edges(edge1_id, 1)),
-        } };
     }
 
     double compute_distance(
@@ -56,10 +46,10 @@ struct EdgeEdgeCandidate : ContinuousCollisionCandidate {
     // ------------------------------------------------------------------------
 
     /// Perform narrow-phase CCD on the candidate.
-    /// @param[in] vertices_t0 Mesh vertex vertices at the start of the time step.
-    /// @param[in] vertices_t1 Mesh vertex vertices at the end of the time step.
+    /// @param[in] vertices_t0 Mesh vertices at the start of the time step.
+    /// @param[in] vertices_t1 Mesh vertices at the end of the time step.
     /// @param[in] edges Collision mesh edges as rows of indicies into vertices.
-    /// @param[in] faces Mesh triangular faces as rows of indicies into vertices.
+    /// @param[in] faces Collision mesh triangular faces as rows of indicies into vertices.
     /// @param[out] toi Computed time of impact (normalized).
     /// @param[in] tmax Maximum time (normalized) to look for collisions. Should be in [0, 1].
     /// @param[in] tolerance CCD tolerance used by Tight-Inclusion CCD.

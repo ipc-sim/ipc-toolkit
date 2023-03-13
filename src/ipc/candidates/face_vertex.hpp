@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/candidates/continuous_collision_candidate.hpp>
 #include <ipc/distance/distance_type.hpp>
 
@@ -9,30 +10,19 @@
 
 namespace ipc {
 
-struct FaceVertexCandidate : ContinuousCollisionCandidate {
+class FaceVertexCandidate : virtual public CollisionStencil,
+                            public ContinuousCollisionCandidate {
+public:
     FaceVertexCandidate(long face_id, long vertex_id);
 
-    int num_vertices() const { return 4; };
+    int num_vertices() const override { return 4; };
 
-    std::array<long, 4>
-    vertex_ids(const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const
+    std::array<long, 4> vertex_ids(
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
         return { { vertex_id, //
                    faces(face_id, 0), faces(face_id, 1), faces(face_id, 2) } };
-    }
-
-    std::array<Eigen::Vector3d, 4> vertices(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const
-    {
-        assert(vertices.cols() == 3);
-        return { {
-            vertices.row(vertex_id),
-            vertices.row(faces(face_id, 0)),
-            vertices.row(faces(face_id, 1)),
-            vertices.row(faces(face_id, 2)),
-        } };
     }
 
     double compute_distance(

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Core>
@@ -8,18 +9,9 @@
 
 namespace ipc {
 
-struct CollisionConstraint {
+class CollisionConstraint : virtual public CollisionStencil {
 public:
     virtual ~CollisionConstraint() { }
-
-    virtual int num_vertices() const = 0;
-
-    /// @brief Get the indices of the vertices
-    /// @param edges edge matrix of mesh
-    /// @param faces face matrix of mesh
-    /// @return List of vertex indices
-    virtual std::array<long, 4> vertex_ids(
-        const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const = 0;
 
     virtual double compute_distance(
         const Eigen::MatrixXd& vertices,

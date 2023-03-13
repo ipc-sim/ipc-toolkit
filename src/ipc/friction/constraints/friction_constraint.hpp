@@ -9,7 +9,7 @@
 
 namespace ipc {
 
-class FrictionConstraint {
+class FrictionConstraint : virtual public CollisionStencil {
 protected:
     /// @brief Initialize the constraint.
     /// @param vertices Vertex positions(rowwise)
@@ -28,13 +28,6 @@ protected:
 
 public:
     virtual ~FrictionConstraint() { }
-
-    /// @brief Get the number of vertices in the friction constraint.
-    virtual int num_vertices() const = 0;
-
-    /// @brief Get the indices of the vertices in the friction constraint.
-    virtual std::array<long, 4> vertex_ids(
-        const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const = 0;
 
     /// @brief Compute the friction dissapative potential gradient wrt velocities.
     /// @param velocities Velocities of the vertices (rowwise)

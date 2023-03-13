@@ -6,7 +6,9 @@
 
 namespace ipc {
 
-struct EdgeVertexFrictionConstraint : EdgeVertexCandidate, FrictionConstraint {
+class EdgeVertexFrictionConstraint : public EdgeVertexCandidate,
+                                     public FrictionConstraint {
+public:
     EdgeVertexFrictionConstraint(long edge_id, long vertex_id);
     EdgeVertexFrictionConstraint(const EdgeVertexCandidate& constraint);
     EdgeVertexFrictionConstraint(const EdgeVertexConstraint& constraint);

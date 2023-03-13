@@ -11,7 +11,8 @@ namespace ipc {
 /// @brief Candidate for <b>intersection</b> between edge and face.
 ///
 /// Not included in Candidates because it is not a collision candidate.
-struct EdgeFaceCandidate {
+class EdgeFaceCandidate {
+public:
     EdgeFaceCandidate(long edge_id, long face_id);
 
     bool operator==(const EdgeFaceCandidate& other) const;

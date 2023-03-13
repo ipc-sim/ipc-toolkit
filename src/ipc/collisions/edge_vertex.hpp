@@ -6,7 +6,9 @@
 
 namespace ipc {
 
-struct EdgeVertexConstraint : EdgeVertexCandidate, CollisionConstraint {
+class EdgeVertexConstraint : public EdgeVertexCandidate,
+                             public CollisionConstraint {
+public:
     using EdgeVertexCandidate::EdgeVertexCandidate;
 
     EdgeVertexConstraint(const EdgeVertexCandidate& candidate)

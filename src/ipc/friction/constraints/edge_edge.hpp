@@ -6,7 +6,9 @@
 
 namespace ipc {
 
-struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
+class EdgeEdgeFrictionConstraint : public EdgeEdgeCandidate,
+                                   public FrictionConstraint {
+public:
     EdgeEdgeFrictionConstraint(long edge0_id, long edge1_id);
     EdgeEdgeFrictionConstraint(const EdgeEdgeCandidate& constraint);
     EdgeEdgeFrictionConstraint(const EdgeEdgeConstraint& constraint);
@@ -22,15 +24,6 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
         FrictionConstraint::init(
             vertices, edges, faces, dhat, barrier_stiffness,
             constraint.minimum_distance);
-    }
-
-    int num_vertices() const override { return 4; }
-    std::array<long, 4> vertex_ids(
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override
-    {
-        return { { edges(edge0_id, 0), edges(edge0_id, 1), //
-                   edges(edge1_id, 0), edges(edge1_id, 1) } };
     }
 
     template <typename T>

@@ -9,14 +9,15 @@
 namespace ipc {
 
 /// Virtual class for candidates that support CCD.
-struct ContinuousCollisionCandidate {
+class ContinuousCollisionCandidate {
+public:
     virtual ~ContinuousCollisionCandidate() { }
 
     /// Perform narrow-phase CCD on the candidate.
-    /// @param[in] vertices_t0 Mesh vertex vertices at the start of the time step.
-    /// @param[in] vertices_t1 Mesh vertex vertices at the end of the time step.
+    /// @param[in] vertices_t0 Mesh vertices at the start of the time step.
+    /// @param[in] vertices_t1 Mesh vertices at the end of the time step.
     /// @param[in] edges Collision mesh edges as rows of indicies into vertices.
-    /// @param[in] faces Mesh triangular faces as rows of indicies into vertices.
+    /// @param[in] faces Collision mesh triangular faces as rows of indicies into vertices.
     /// @param[out] toi Computed time of impact (normalized).
     /// @param[in] min_distance Minimum separation distance between primitives.
     /// @param[in] tmax Maximum time (normalized) to look for collisions. Should be in [0, 1].

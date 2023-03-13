@@ -6,24 +6,14 @@
 
 namespace ipc {
 
-struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
+class VertexVertexConstraint : public VertexVertexCandidate,
+                               public CollisionConstraint {
+public:
     using VertexVertexCandidate::VertexVertexCandidate;
 
     VertexVertexConstraint(const VertexVertexCandidate& candidate)
         : VertexVertexCandidate(candidate)
     {
-    }
-
-    int num_vertices() const override
-    {
-        return VertexVertexCandidate::num_vertices();
-    }
-
-    std::array<long, 4> vertex_ids(
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override
-    {
-        return VertexVertexCandidate::vertex_ids(edges, faces);
     }
 
     double compute_distance(

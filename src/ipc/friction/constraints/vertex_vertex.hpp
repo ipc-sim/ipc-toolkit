@@ -6,8 +6,9 @@
 
 namespace ipc {
 
-struct VertexVertexFrictionConstraint : VertexVertexCandidate,
-                                        FrictionConstraint {
+class VertexVertexFrictionConstraint : public VertexVertexCandidate,
+                                       public FrictionConstraint {
+public:
     VertexVertexFrictionConstraint(long vertex0_id, long vertex1_id);
     VertexVertexFrictionConstraint(const VertexVertexCandidate& candidate);
     VertexVertexFrictionConstraint(const VertexVertexConstraint& constraint);
@@ -23,18 +24,6 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
         FrictionConstraint::init(
             vertices, edges, faces, dhat, barrier_stiffness,
             constraint.minimum_distance);
-    }
-
-    int num_vertices() const override
-    {
-        return VertexVertexCandidate::num_vertices();
-    }
-
-    std::array<long, 4> vertex_ids(
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override
-    {
-        return VertexVertexCandidate::vertex_ids(edges, faces);
     }
 
     template <typename T>

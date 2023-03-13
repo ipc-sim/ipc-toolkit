@@ -6,24 +6,14 @@
 
 namespace ipc {
 
-struct FaceVertexConstraint : FaceVertexCandidate, CollisionConstraint {
+class FaceVertexConstraint : public FaceVertexCandidate,
+                             public CollisionConstraint {
+public:
     using FaceVertexCandidate::FaceVertexCandidate;
 
     FaceVertexConstraint(const FaceVertexCandidate& candidate)
         : FaceVertexCandidate(candidate)
     {
-    }
-
-    int num_vertices() const override
-    {
-        return FaceVertexCandidate::num_vertices();
-    };
-
-    std::array<long, 4> vertex_ids(
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override
-    {
-        return FaceVertexCandidate::vertex_ids(edges, faces);
     }
 
     double compute_distance(

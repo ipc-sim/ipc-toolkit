@@ -5,13 +5,15 @@
 
 namespace ipc {
 
-struct PlaneVertexConstraint : CollisionConstraint {
+class PlaneVertexConstraint : public CollisionConstraint {
+public:
     PlaneVertexConstraint(
         const VectorMax3d& plane_origin,
         const VectorMax3d& plane_normal,
         const long vertex_id);
 
     int num_vertices() const override { return 1; };
+
     std::array<long, 4> vertex_ids(
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override

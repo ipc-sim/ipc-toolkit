@@ -6,21 +6,11 @@
 
 namespace ipc {
 
-struct EdgeEdgeConstraint : EdgeEdgeCandidate, CollisionConstraint {
+class EdgeEdgeConstraint : public EdgeEdgeCandidate,
+                           public CollisionConstraint {
+public:
     EdgeEdgeConstraint(long edge0_id, long edge1_id, double eps_x);
     EdgeEdgeConstraint(const EdgeEdgeCandidate& candidate, double eps_x);
-
-    int num_vertices() const override
-    {
-        return EdgeEdgeCandidate::num_vertices();
-    }
-
-    std::array<long, 4> vertex_ids(
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override
-    {
-        return EdgeEdgeCandidate::vertex_ids(edges, faces);
-    }
 
     double compute_distance(
         const Eigen::MatrixXd& vertices,

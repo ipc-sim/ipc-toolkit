@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Core>
@@ -8,17 +9,19 @@
 
 namespace ipc {
 
-struct VertexVertexCandidate {
+class VertexVertexCandidate : virtual public CollisionStencil {
+public:
     VertexVertexCandidate(long vertex0_id, long vertex1_id);
 
-    int num_vertices() const { return 2; };
+    int num_vertices() const override { return 2; };
 
     /// @brief Get the indices of the vertices
     /// @param edges edge matrix of mesh
     /// @param faces face matrix of mesh
     /// @return List of vertex indices
-    std::array<long, 4>
-    vertex_ids(const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const
+    std::array<long, 4> vertex_ids(
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
         return { { vertex0_id, vertex1_id, -1, -1 } };
     }
