@@ -27,12 +27,16 @@ auto edge_edge_distance(
     const Eigen::MatrixBase<DerivedEA1>& ea1,
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
-    const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
+    EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
 {
     assert(ea0.size() == 3);
     assert(ea1.size() == 3);
     assert(eb0.size() == 3);
     assert(eb1.size() == 3);
+
+    if (dtype == EdgeEdgeDistanceType::AUTO) {
+        dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+    }
 
     switch (dtype) {
     case EdgeEdgeDistanceType::EA0_EB0:
@@ -62,10 +66,6 @@ auto edge_edge_distance(
     case EdgeEdgeDistanceType::EA_EB:
         return line_line_distance(ea0, ea1, eb0, eb1);
 
-    case EdgeEdgeDistanceType::AUTO:
-        return edge_edge_distance(
-            ea0, ea1, eb0, eb1, edge_edge_distance_type(ea0, ea1, eb0, eb1));
-
     default:
         throw std::invalid_argument(
             "Invalid distance type for edge-edge distance!");
@@ -92,12 +92,16 @@ void edge_edge_distance_gradient(
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
     Eigen::PlainObjectBase<DerivedGrad>& grad,
-    const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
+    EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
 {
-    int dim = ea0.size();
+    const int dim = ea0.size();
     assert(ea1.size() == dim);
     assert(eb0.size() == dim);
     assert(eb1.size() == dim);
+
+    if (dtype == EdgeEdgeDistanceType::AUTO) {
+        dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+    }
 
     grad.resize(4 * dim);
     grad.setZero();
@@ -187,12 +191,16 @@ void edge_edge_distance_hessian(
     const Eigen::MatrixBase<DerivedEB0>& eb0,
     const Eigen::MatrixBase<DerivedEB1>& eb1,
     Eigen::PlainObjectBase<DerivedHess>& hess,
-    const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
+    EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO)
 {
-    int dim = ea0.size();
+    const int dim = ea0.size();
     assert(ea1.size() == dim);
     assert(eb0.size() == dim);
     assert(eb1.size() == dim);
+
+    if (dtype == EdgeEdgeDistanceType::AUTO) {
+        dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+    }
 
     hess.resize(4 * dim, 4 * dim);
     hess.setZero();
@@ -275,12 +283,6 @@ void edge_edge_distance_hessian(
 
     case EdgeEdgeDistanceType::EA_EB:
         line_line_distance_hessian(ea0, ea1, eb0, eb1, hess);
-        break;
-
-    case EdgeEdgeDistanceType::AUTO:
-        edge_edge_distance_hessian(
-            ea0, ea1, eb0, eb1, hess,
-            edge_edge_distance_type(ea0, ea1, eb0, eb1));
         break;
 
     default:

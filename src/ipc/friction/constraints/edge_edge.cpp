@@ -8,18 +8,6 @@
 namespace ipc {
 
 EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
-    long edge0_id, long edge1_id)
-    : EdgeEdgeCandidate(edge0_id, edge1_id)
-{
-}
-
-EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
-    const EdgeEdgeCandidate& candidate)
-    : EdgeEdgeCandidate(candidate)
-{
-}
-
-EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
     const EdgeEdgeConstraint& constraint)
     : EdgeEdgeCandidate(constraint.edge0_id, constraint.edge1_id)
 {
@@ -27,69 +15,61 @@ EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
     this->weight_gradient = constraint.weight_gradient;
 }
 
-// ============================================================================
-
-double EdgeEdgeFrictionConstraint::compute_distance(const VectorMax12d& x) const
+EdgeEdgeFrictionConstraint::EdgeEdgeFrictionConstraint(
+    const EdgeEdgeConstraint& constraint,
+    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
+    const double dhat,
+    const double barrier_stiffness)
+    : EdgeEdgeFrictionConstraint(constraint)
 {
-    assert(x.size() == ndof());
-    // The distance type is known because mollified PP and PE were skipped.
-    return edge_edge_distance(
-        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
-        x.tail(dim()), EdgeEdgeDistanceType::EA_EB);
-}
-
-VectorMax12d EdgeEdgeFrictionConstraint::compute_distance_gradient(
-    const VectorMax12d& x) const
-{
-    assert(x.size() == ndof());
-    VectorMax12d grad_d;
-    // The distance type is known because mollified PP and PE were skipped.
-    edge_edge_distance_gradient(
-        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
-        x.tail(dim()), grad_d, EdgeEdgeDistanceType::EA_EB);
-    return grad_d;
+    FrictionConstraint::init(
+        vertices, edges, faces, dhat, barrier_stiffness,
+        constraint.minimum_distance);
 }
 
 // ============================================================================
 
-MatrixMax<double, 3, 2>
-EdgeEdgeFrictionConstraint::compute_tangent_basis(const VectorMax12d& x) const
+MatrixMax<double, 3, 2> EdgeEdgeFrictionConstraint::compute_tangent_basis(
+    const VectorMax12d& positions) const
 {
-    assert(x.size() == ndof());
+
+    assert(positions.size() == ndof());
     return edge_edge_tangent_basis(
-        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
-        x.tail(dim()));
+        positions.head(dim()), positions.segment(dim(), dim()),
+        positions.segment(2 * dim(), dim()), positions.tail(dim()));
 }
 
 MatrixMax<double, 36, 2>
 EdgeEdgeFrictionConstraint::compute_tangent_basis_jacobian(
-    const VectorMax12d& x) const
+    const VectorMax12d& positions) const
 {
-    assert(x.size() == ndof());
+    assert(positions.size() == ndof());
     return edge_edge_tangent_basis_jacobian(
-        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
-        x.tail(dim()));
+        positions.head(dim()), positions.segment(dim(), dim()),
+        positions.segment(2 * dim(), dim()), positions.tail(dim()));
 }
 
 // ============================================================================
 
-VectorMax2d
-EdgeEdgeFrictionConstraint::compute_closest_point(const VectorMax12d& x) const
+VectorMax2d EdgeEdgeFrictionConstraint::compute_closest_point(
+    const VectorMax12d& positions) const
 {
-    assert(x.size() == ndof());
+    assert(positions.size() == ndof());
     return edge_edge_closest_point(
-        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
-        x.tail(dim()));
+        positions.head(dim()), positions.segment(dim(), dim()),
+        positions.segment(2 * dim(), dim()), positions.tail(dim()));
 }
 
 MatrixMax<double, 2, 12>
 EdgeEdgeFrictionConstraint::compute_closest_point_jacobian(
-    const VectorMax12d& x) const
+    const VectorMax12d& positions) const
 {
-    assert(x.size() == ndof());
+    assert(positions.size() == ndof());
     return edge_edge_closest_point_jacobian(
-        x.head(dim()), x.segment(dim(), dim()), x.segment(2 * dim(), dim()),
-        x.tail(dim()));
+        positions.head(dim()), positions.segment(dim(), dim()),
+        positions.segment(2 * dim(), dim()), positions.tail(dim()));
 }
 
 // ============================================================================

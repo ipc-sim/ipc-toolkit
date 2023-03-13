@@ -15,7 +15,7 @@
 namespace ipc {
 
 void FrictionConstraint::init(
-    const Eigen::MatrixXd& all_positions,
+    const Eigen::MatrixXd& positions,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const double dhat,
@@ -23,14 +23,14 @@ void FrictionConstraint::init(
     const double dmin)
 {
     // do this to initialize dim()
-    const int dim = all_positions.cols();
+    const int dim = positions.cols();
     tangent_basis.resize(dim, dim - 1);
 
-    const VectorMax12d vertices = select_dof(all_positions, edges, faces);
-    closest_point = compute_closest_point(vertices);
-    tangent_basis = compute_tangent_basis(vertices);
+    const VectorMax12d pos = dof(positions, edges, faces);
+    closest_point = compute_closest_point(pos);
+    tangent_basis = compute_tangent_basis(pos);
     normal_force_magnitude =
-        compute_normal_force_magnitude(vertices, dhat, barrier_stiffness, dmin);
+        compute_normal_force_magnitude(pos, dhat, barrier_stiffness, dmin);
 }
 
 VectorMax12d FrictionConstraint::compute_potential_gradient(
@@ -45,7 +45,7 @@ VectorMax12d FrictionConstraint::compute_potential_gradient(
 
     // Compute u = PᵀΓv
     const VectorMax2d u = tangent_basis.transpose()
-        * relative_velocity(select_dof(velocities, edges, faces));
+        * relative_velocity(dof(velocities, edges, faces));
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T =
@@ -73,7 +73,7 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
 
     // Compute u = PᵀΓv
     const VectorMax2d u = tangent_basis.transpose()
-        * relative_velocity(select_dof(velocities, edges, faces));
+        * relative_velocity(dof(velocities, edges, faces));
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T =
@@ -133,7 +133,7 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
 VectorMax12d FrictionConstraint::compute_force(
     const Eigen::MatrixXd& X,
     const Eigen::MatrixXd& Ut,
-    const Eigen::MatrixXd& velocities,
+    const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const double dhat,
@@ -150,16 +150,16 @@ VectorMax12d FrictionConstraint::compute_force(
     //
     // Static simulation:
     // τ = T(x + uᵢ)ᵀu is the tangential displacment
-    // faces(x, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
+    // F(x, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
     //
     // Time-dependent simulation:
     // τ = T(x + uᵢ)ᵀ(u - uᵗ) is the tangential displacment
-    // faces(x, uᵗ, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
-    assert(X.size() == velocities.size() && Ut.size() == velocities.size());
+    // F(x, uᵗ, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
+    assert(X.size() == U.size() && Ut.size() == U.size());
 
-    const VectorMax12d x = select_dof(X, edges, faces);
-    const VectorMax12d ut = select_dof(Ut, edges, faces);
-    const VectorMax12d u = select_dof(velocities, edges, faces);
+    const VectorMax12d x = dof(X, edges, faces);
+    const VectorMax12d ut = dof(Ut, edges, faces);
+    const VectorMax12d u = dof(U, edges, faces);
 
     // Assume uᵢ = uᵗ
     VectorMax12d x_plus_ui = x + ut;
@@ -189,7 +189,7 @@ VectorMax12d FrictionConstraint::compute_force(
     // Compute f₁(‖τ‖)/‖τ‖
     const double f1_over_norm_tau = f1_SF_over_x(tau.norm(), epsv_times_h);
 
-    // faces = -μ N f₁(‖τ‖)/‖τ‖ T τ
+    // F = -μ N f₁(‖τ‖)/‖τ‖ T τ
     // NOTE: no_mu -> leave mu out of this function (i.e., assuming mu = 1)
     return -weight * (no_mu ? 1.0 : mu) * N * f1_over_norm_tau * T * tau;
 }
@@ -197,7 +197,7 @@ VectorMax12d FrictionConstraint::compute_force(
 MatrixMax12d FrictionConstraint::compute_force_jacobian(
     const Eigen::MatrixXd& X,
     const Eigen::MatrixXd& Ut,
-    const Eigen::MatrixXd& velocities,
+    const Eigen::MatrixXd& U,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const double dhat,
@@ -214,20 +214,20 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     //
     // Static simulation:
     // τ = T(x + uᵢ)ᵀu is the tangential displacment
-    // faces(x, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
+    // F(x, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
     //
     // Time-dependent simulation:
     // τ = T(x + uᵢ)ᵀ(u - uᵗ) is the tangential displacment
-    // faces(x, uᵗ, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
+    // F(x, uᵗ, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
     //
-    // Compute ∇faces
-    assert(X.size() == velocities.size() && Ut.size() == velocities.size());
-    int dim = velocities.cols();
+    // Compute F
+    assert(X.size() == U.size() && Ut.size() == U.size());
+    int dim = U.cols();
     int n = dim * num_vertices();
 
-    const VectorMax12d x = select_dof(X, edges, faces);
-    const VectorMax12d ut = select_dof(Ut, edges, faces);
-    const VectorMax12d u = select_dof(velocities, edges, faces);
+    const VectorMax12d x = dof(X, edges, faces);
+    const VectorMax12d ut = dof(Ut, edges, faces);
+    const VectorMax12d u = dof(U, edges, faces);
 
     // Assume uᵢ = uᵗ
     VectorMax12d x_plus_ui = x + ut;
@@ -350,7 +350,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     const VectorMax12d T_times_tau = T * tau;
 
     ///////////////////////////////////////////////////////////////////////////
-    // Compute ∇faces = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
+    // Compute F = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
     MatrixMax12d J = MatrixMax12d::Zero(n, n);
 
     // = -μ f₁(‖τ‖)/‖τ‖ (T τ) [∇N]ᵀ
@@ -384,23 +384,23 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
 }
 
 double FrictionConstraint::compute_normal_force_magnitude(
-    const VectorMax12d& vertices,
+    const VectorMax12d& positions,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
     return ipc::compute_normal_force_magnitude(
-        compute_distance(vertices), dhat, barrier_stiffness, dmin);
+        compute_distance(positions), dhat, barrier_stiffness, dmin);
 }
 
 VectorMax12d FrictionConstraint::compute_normal_force_magnitude_gradient(
-    const VectorMax12d& vertices,
+    const VectorMax12d& positions,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
     return ipc::compute_normal_force_magnitude_gradient(
-        compute_distance(vertices), compute_distance_gradient(vertices), dhat,
+        compute_distance(positions), compute_distance_gradient(positions), dhat,
         barrier_stiffness, dmin);
 }
 

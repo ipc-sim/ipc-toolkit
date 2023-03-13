@@ -13,40 +13,37 @@ EdgeVertexCandidate::EdgeVertexCandidate(long edge_id, long vertex_id)
 {
 }
 
-double EdgeVertexCandidate::compute_distance(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    const PointEdgeDistanceType dtype) const
+double
+EdgeVertexCandidate::compute_distance(const VectorMax12d& positions) const
 {
+    assert(positions.size() == 6 || positions.size() == 9);
+    const int dim = positions.size() / 3;
     return point_edge_distance(
-        vertices.row(vertex_id), vertices.row(edges(edge_id, 0)),
-        vertices.row(edges(edge_id, 1)), dtype);
+        positions.head(dim), positions.segment(dim, dim), positions.tail(dim),
+        known_dtype());
 }
 
-VectorMax9d EdgeVertexCandidate::compute_distance_gradient(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    const PointEdgeDistanceType dtype) const
+VectorMax12d EdgeVertexCandidate::compute_distance_gradient(
+    const VectorMax12d& positions) const
 {
-    VectorMax9d distance_grad;
+    assert(positions.size() == 6 || positions.size() == 9);
+    const int dim = positions.size() / 3;
+    VectorMax12d distance_grad;
     point_edge_distance_gradient(
-        vertices.row(vertex_id), vertices.row(edges(edge_id, 0)),
-        vertices.row(edges(edge_id, 1)), distance_grad, dtype);
+        positions.head(dim), positions.segment(dim, dim), positions.tail(dim),
+        distance_grad, known_dtype());
     return distance_grad;
 }
 
-MatrixMax9d EdgeVertexCandidate::compute_distance_hessian(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    const PointEdgeDistanceType dtype) const
+MatrixMax12d EdgeVertexCandidate::compute_distance_hessian(
+    const VectorMax12d& positions) const
 {
-    MatrixMax9d distance_hess;
+    assert(positions.size() == 6 || positions.size() == 9);
+    const int dim = positions.size() / 3;
+    MatrixMax12d distance_hess;
     point_edge_distance_hessian(
-        vertices.row(vertex_id), vertices.row(edges(edge_id, 0)),
-        vertices.row(edges(edge_id, 1)), distance_hess, dtype);
+        positions.head(dim), positions.segment(dim, dim), positions.tail(dim),
+        distance_hess, known_dtype());
     return distance_hess;
 }
 
@@ -70,8 +67,7 @@ bool EdgeVertexCandidate::ccd(
         // Point at t=1
         vertices_t1.row(vertex_id),
         // Edge at t=1
-        vertices_t1.row(edges(edge_id, 0)),
-        vertices_t1.row(edges(edge_id, 1)), //
+        vertices_t1.row(edges(edge_id, 0)), vertices_t1.row(edges(edge_id, 1)),
         toi, min_distance, tmax, tolerance, max_iterations,
         conservative_rescaling);
 }

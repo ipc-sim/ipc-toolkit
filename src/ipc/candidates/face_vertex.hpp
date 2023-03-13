@@ -25,27 +25,6 @@ public:
                    faces(face_id, 0), faces(face_id, 1), faces(face_id, 2) } };
     }
 
-    double compute_distance(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const PointTriangleDistanceType dtype =
-            PointTriangleDistanceType::AUTO) const;
-
-    VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const PointTriangleDistanceType dtype =
-            PointTriangleDistanceType::AUTO) const;
-
-    MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const PointTriangleDistanceType dtype =
-            PointTriangleDistanceType::AUTO) const;
-
     // ------------------------------------------------------------------------
 
     bool
@@ -82,6 +61,20 @@ public:
 
     long face_id;   ///< @brief ID of the face
     long vertex_id; ///< @brief ID of the vertex
+
+protected:
+    double compute_distance(const VectorMax12d& positions) const override;
+
+    VectorMax12d
+    compute_distance_gradient(const VectorMax12d& positions) const override;
+
+    MatrixMax12d
+    compute_distance_hessian(const VectorMax12d& positions) const override;
+
+    virtual PointTriangleDistanceType known_dtype() const
+    {
+        return PointTriangleDistanceType::AUTO;
+    }
 };
 
 } // namespace ipc

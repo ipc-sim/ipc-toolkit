@@ -24,24 +24,6 @@ public:
         return { { vertex_id, edges(edge_id, 0), edges(edge_id, 1), -1 } };
     }
 
-    double compute_distance(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO) const;
-
-    VectorMax9d compute_distance_gradient(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO) const;
-
-    MatrixMax9d compute_distance_hessian(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO) const;
-
     // ------------------------------------------------------------------------
 
     /// Perform narrow-phase CCD on the candidate.
@@ -89,6 +71,20 @@ public:
 
     long edge_id;   ///< @brief ID of the edge
     long vertex_id; ///< @brief ID of the vertex
+
+protected:
+    double compute_distance(const VectorMax12d& positions) const override;
+
+    VectorMax12d
+    compute_distance_gradient(const VectorMax12d& positions) const override;
+
+    MatrixMax12d
+    compute_distance_hessian(const VectorMax12d& positions) const override;
+
+    virtual PointEdgeDistanceType known_dtype() const
+    {
+        return PointEdgeDistanceType::AUTO;
+    }
 };
 
 } // namespace ipc

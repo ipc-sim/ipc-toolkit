@@ -26,21 +26,6 @@ public:
         return { { vertex0_id, vertex1_id, -1, -1 } };
     }
 
-    double compute_distance(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const;
-
-    VectorMax6d compute_distance_gradient(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const;
-
-    MatrixMax6d compute_distance_hessian(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const;
-
     // ------------------------------------------------------------------------
 
     bool operator==(const VertexVertexCandidate& other) const;
@@ -60,6 +45,15 @@ public:
 
     long vertex0_id; ///< @brief ID of the first vertex
     long vertex1_id; ///< @brief ID of the second vertex
+
+protected:
+    double compute_distance(const VectorMax12d& positions) const override;
+
+    VectorMax12d
+    compute_distance_gradient(const VectorMax12d& positions) const override;
+
+    MatrixMax12d
+    compute_distance_hessian(const VectorMax12d& positions) const override;
 };
 
 } // namespace ipc

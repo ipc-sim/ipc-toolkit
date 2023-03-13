@@ -10,34 +10,33 @@ VertexVertexCandidate::VertexVertexCandidate(long vertex0_id, long vertex1_id)
 {
 }
 
-double VertexVertexCandidate::compute_distance(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
+double
+VertexVertexCandidate::compute_distance(const VectorMax12d& positions) const
 {
-    return point_point_distance(
-        vertices.row(vertex0_id), vertices.row(vertex1_id));
+    assert(positions.size() == 4 || positions.size() == 6);
+    const int dim = positions.size() / 2;
+    return point_point_distance(positions.head(dim), positions.tail(dim));
 }
 
-VectorMax6d VertexVertexCandidate::compute_distance_gradient(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
+VectorMax12d VertexVertexCandidate::compute_distance_gradient(
+    const VectorMax12d& positions) const
 {
-    VectorMax6d distance_grad;
+    assert(positions.size() == 4 || positions.size() == 6);
+    const int dim = positions.size() / 2;
+    VectorMax12d distance_grad;
     point_point_distance_gradient(
-        vertices.row(vertex0_id), vertices.row(vertex1_id), distance_grad);
+        positions.head(dim), positions.tail(dim), distance_grad);
     return distance_grad;
 }
 
-MatrixMax6d VertexVertexCandidate::compute_distance_hessian(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
+MatrixMax12d VertexVertexCandidate::compute_distance_hessian(
+    const VectorMax12d& positions) const
 {
-    MatrixMax6d distance_hess;
+    assert(positions.size() == 4 || positions.size() == 6);
+    const int dim = positions.size() / 2;
+    MatrixMax12d distance_hess;
     point_point_distance_hessian(
-        vertices.row(vertex0_id), vertices.row(vertex1_id), distance_hess);
+        positions.head(dim), positions.tail(dim), distance_hess);
     return distance_hess;
 }
 

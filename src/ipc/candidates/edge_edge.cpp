@@ -13,45 +13,33 @@ EdgeEdgeCandidate::EdgeEdgeCandidate(long edge0_id, long edge1_id)
 {
 }
 
-double EdgeEdgeCandidate::compute_distance(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    const EdgeEdgeDistanceType dtype) const
+double EdgeEdgeCandidate::compute_distance(const VectorMax12d& positions) const
 {
-    // The distance type is unknown because of mollified PP and PE
-    // constraints where also added as EE constraints.
+    assert(positions.size() == 12);
     return edge_edge_distance(
-        vertices.row(edges(edge0_id, 0)), vertices.row(edges(edge0_id, 1)),
-        vertices.row(edges(edge1_id, 0)), vertices.row(edges(edge1_id, 1)),
-        dtype);
+        positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
+        positions.tail<3>(), known_dtype());
 }
 
 VectorMax12d EdgeEdgeCandidate::compute_distance_gradient(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    const EdgeEdgeDistanceType dtype) const
+    const VectorMax12d& positions) const
 {
+    assert(positions.size() == 12);
     VectorMax12d distance_grad;
     edge_edge_distance_gradient(
-        vertices.row(edges(edge0_id, 0)), vertices.row(edges(edge0_id, 1)),
-        vertices.row(edges(edge1_id, 0)), vertices.row(edges(edge1_id, 1)),
-        distance_grad, dtype);
+        positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
+        positions.tail<3>(), distance_grad, known_dtype());
     return distance_grad;
 }
 
-MatrixMax12d EdgeEdgeCandidate::compute_distance_hessian(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    const EdgeEdgeDistanceType dtype) const
+MatrixMax12d
+EdgeEdgeCandidate::compute_distance_hessian(const VectorMax12d& positions) const
 {
+    assert(positions.size() == 12);
     MatrixMax12d distance_hess;
     edge_edge_distance_hessian(
-        vertices.row(edges(edge0_id, 0)), vertices.row(edges(edge0_id, 1)),
-        vertices.row(edges(edge1_id, 0)), vertices.row(edges(edge1_id, 1)),
-        distance_hess, dtype);
+        positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
+        positions.tail<3>(), distance_hess, known_dtype());
     return distance_hess;
 }
 

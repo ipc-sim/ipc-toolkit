@@ -12,14 +12,14 @@ namespace ipc {
 class FrictionConstraint : virtual public CollisionStencil {
 protected:
     /// @brief Initialize the constraint.
-    /// @param vertices Vertex positions(rowwise)
+    /// @param positions Vertex positions(rowwise)
     /// @param edges Edges of the mesh
     /// @param faces Faces of the mesh
     /// @param dhat Barrier activation distance
     /// @param barrier_stiffness Barrier stiffness
     /// @param dmin Minimum distance
     void init(
-        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXd& positions,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat,
@@ -55,20 +55,20 @@ public:
         const double epsv_times_h,
         const bool project_hessian_to_psd) const;
 
-    /// @brief
-    /// @param X
-    /// @param velocities
-    /// @param edges
-    /// @param faces
-    /// @param dhat
-    /// @param barrier_stiffness
-    /// @param epsv_times_h
-    /// @param dmin
-    /// @param no_mu
-    /// @return
+    /// @brief Compute the friction force.
+    /// @param X Rest positions of the vertices (rowwise)
+    /// @param U Current displacements of the vertices (rowwise)
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @param dhat Barrier activation distance
+    /// @param barrier_stiffness Barrier stiffness
+    /// @param epsv_times_h $\epsilon_vh$
+    /// @param dmin Minimum distance
+    /// @param no_mu Whether to not multiply by mu
+    /// @return Friction force
     virtual VectorMax12d compute_force(
         const Eigen::MatrixXd& X,
-        const Eigen::MatrixXd& velocities,
+        const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat,
@@ -78,27 +78,26 @@ public:
         const bool no_mu = false) const //< whether to not multiply by mu
     {
         return compute_force(
-            X, Eigen::MatrixXd::Zero(velocities.rows(), velocities.cols()),
-            velocities, edges, faces, dhat, barrier_stiffness, epsv_times_h,
-            dmin, no_mu);
+            X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, edges, faces, dhat,
+            barrier_stiffness, epsv_times_h, dmin, no_mu);
     }
 
-    /// @brief
-    /// @param X
-    /// @param Ut
-    /// @param velocities
-    /// @param edges
-    /// @param faces
-    /// @param dhat
-    /// @param barrier_stiffness
-    /// @param epsv_times_h
-    /// @param dmin
-    /// @param no_mu
-    /// @return
+    /// @brief Compute the friction force.
+    /// @param X Rest positions of the vertices (rowwise)
+    /// @param Ut Previous displacements of the vertices (rowwise)
+    /// @param U Current displacements of the vertices (rowwise)
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @param dhat Barrier activation distance
+    /// @param barrier_stiffness Barrier stiffness
+    /// @param epsv_times_h $\epsilon_vh$
+    /// @param dmin Minimum distance
+    /// @param no_mu Whether to not multiply by mu
+    /// @return Friction force
     virtual VectorMax12d compute_force(
         const Eigen::MatrixXd& X,
         const Eigen::MatrixXd& Ut,
-        const Eigen::MatrixXd& velocities,
+        const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat,
@@ -109,25 +108,25 @@ public:
 
     /// @brief Variable to differentiate the friction force with respect to.
     enum class DiffWRT {
-        X,  ///< Differentiate wrt rest vertices.
-        Ut, ///< Differentiate wrt previous vertices.
-        U   ///< Differentiate wrt current vertices.
+        X,  ///< Differentiate wrt rest positions.
+        Ut, ///< Differentiate wrt previous displacements.
+        U   ///< Differentiate wrt current displacements.
     };
 
-    /// @brief
-    /// @param X
-    /// @param velocities
-    /// @param edges
-    /// @param faces
-    /// @param dhat
-    /// @param barrier_stiffness
-    /// @param epsv_times_h
-    /// @param wrt
-    /// @param dmin
-    /// @return
+    /// @brief Compute the friction force Jacobian.
+    /// @param X Rest positions of the vertices (rowwise)
+    /// @param U Current displacements of the vertices (rowwise)
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @param dhat Barrier activation distance
+    /// @param barrier_stiffness Barrier stiffness
+    /// @param epsv_times_h $\epsilon_vh$
+    /// @param wrt Variable to differentiate the friction force with respect to.
+    /// @param dmin Minimum distance
+    /// @return Friction force Jacobian
     virtual MatrixMax12d compute_force_jacobian(
         const Eigen::MatrixXd& X,
-        const Eigen::MatrixXd& velocities,
+        const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat,
@@ -137,27 +136,26 @@ public:
         const double dmin = 0) const
     {
         return compute_force_jacobian(
-            X, Eigen::MatrixXd::Zero(velocities.rows(), velocities.cols()),
-            velocities, edges, faces, dhat, barrier_stiffness, epsv_times_h,
-            wrt, dmin);
+            X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, edges, faces, dhat,
+            barrier_stiffness, epsv_times_h, wrt, dmin);
     }
 
-    /// @brief
-    /// @param X
-    /// @param Ut
-    /// @param velocities
-    /// @param edges
-    /// @param faces
-    /// @param dhat
-    /// @param barrier_stiffness
-    /// @param epsv_times_h
-    /// @param wrt
-    /// @param dmin
-    /// @return
+    /// @brief Compute the friction force Jacobian.
+    /// @param X Rest positions of the vertices (rowwise)
+    /// @param Ut Previous displacements of the vertices (rowwise)
+    /// @param U Current displacements of the vertices (rowwise)
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @param dhat Barrier activation distance
+    /// @param barrier_stiffness Barrier stiffness
+    /// @param epsv_times_h $\epsilon_vh$
+    /// @param wrt Variable to differentiate the friction force with respect to.
+    /// @param dmin Minimum distance
+    /// @return Friction force Jacobian
     virtual MatrixMax12d compute_force_jacobian(
         const Eigen::MatrixXd& X,
         const Eigen::MatrixXd& Ut,
-        const Eigen::MatrixXd& velocities,
+        const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat,
@@ -173,91 +171,60 @@ protected:
     /// @brief Get the number of degrees of freedom for the constraint.
     int ndof() const { return dim() * num_vertices(); };
 
-    /// @brief Select this constraint's DOF from the full matrix of DOF.
-    /// @tparam T Type of the DOF
-    /// @param X Full matrix of DOF (rowwise).
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @return This constraint's DOF.
-    template <typename T>
-    VectorMax12<T> select_dof(
-        const MatrixX<T>& DOF,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const
-    {
-        VectorMax12<T> dof(ndof());
-        const std::array<long, 4> idx = vertex_ids(edges, faces);
-        for (int i = 0; i < num_vertices(); i++) {
-            dof.segment(i * dim(), dim()) = DOF.row(idx[i]);
-        }
-        return dof;
-    }
-
     // -------------------------------------------------------------------------
     // Abstract methods
     // -------------------------------------------------------------------------
 
-    /// @brief Compute the distance of the constraint.
-    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
-    /// @return Distance of the constraint.
-    virtual double compute_distance(const VectorMax12d& vertices) const = 0;
-
-    /// @brief Compute the gradient of the distance of the constraint.
-    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
-    /// @return Gradient of the distance of the constraint.
-    virtual VectorMax12d
-    compute_distance_gradient(const VectorMax12d& vertices) const = 0;
-
     /// @brief Compute the normal force magnitude.
-    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
+    /// @param positions Constraint's vertex positions.
     /// @param dhat Barrier activiation distance.
     /// @param barrier_stiffness Barrier stiffness.
     /// @param dmin Minimum distance.
     /// @return Normal force magnitude.
-    virtual double compute_normal_force_magnitude(
-        const VectorMax12d& vertices,
+    double compute_normal_force_magnitude(
+        const VectorMax12d& positions,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0) const;
 
     /// @brief Compute the gradient of the normal force magnitude.
-    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
+    /// @param positions Constraint's vertex positions.
     /// @param dhat Barrier activiation distance.
     /// @param barrier_stiffness Barrier stiffness.
     /// @param dmin Minimum distance.
-    /// @return Gradient of the normal force magnitude wrt vertices.
-    virtual VectorMax12d compute_normal_force_magnitude_gradient(
-        const VectorMax12d& vertices,
+    /// @return Gradient of the normal force magnitude wrt positions.
+    VectorMax12d compute_normal_force_magnitude_gradient(
+        const VectorMax12d& positions,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0) const;
 
     /// @brief Compute the tangent basis of the constraint.
-    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
+    /// @param positions Constraint's vertex positions.
     /// @return Tangent basis of the constraint.
     virtual MatrixMax<double, 3, 2>
-    compute_tangent_basis(const VectorMax12d& vertices) const = 0;
+    compute_tangent_basis(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the Jacobian of the tangent basis of the constraint.
-    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
+    /// @param positions Constraint's vertex positions.
     /// @return Jacobian of the tangent basis of the constraint.
     virtual MatrixMax<double, 36, 2>
-    compute_tangent_basis_jacobian(const VectorMax12d& vertices) const = 0;
+    compute_tangent_basis_jacobian(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the barycentric coordinates of the closest point.
-    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
+    /// @param positions Constraint's vertex positions.
     /// @return Barycentric coordinates of the closest point.
     virtual VectorMax2d
-    compute_closest_point(const VectorMax12d& vertices) const = 0;
+    compute_closest_point(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the Jacobian of the barycentric coordinates of the closest point.
-    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
+    /// @param positions Constraint's vertex positions.
     /// @return Jacobian of the barycentric coordinates of the closest point.
     virtual MatrixMax<double, 2, 12>
-    compute_closest_point_jacobian(const VectorMax12d& vertices) const = 0;
+    compute_closest_point_jacobian(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the relative velocity of the constraint.
-    /// @param velocities Vertex velocities for the constraint's vertices (stacked into a vector).
+    /// @param velocities Constraint's vertex velocities.
     virtual VectorMax3d
     relative_velocity(const VectorMax12d& velocities) const = 0;
 

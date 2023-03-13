@@ -13,21 +13,6 @@ class CollisionConstraint : virtual public CollisionStencil {
 public:
     virtual ~CollisionConstraint() { }
 
-    virtual double compute_distance(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const = 0;
-
-    virtual VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const = 0;
-
-    virtual MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const = 0;
-
     virtual double compute_potential(
         const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,

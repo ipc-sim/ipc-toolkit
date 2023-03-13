@@ -14,36 +14,29 @@ PlaneVertexConstraint::PlaneVertexConstraint(
 {
 }
 
-double PlaneVertexConstraint::compute_distance(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
+double PlaneVertexConstraint::compute_distance(const VectorMax12d& point) const
 {
-    return point_plane_distance(
-        vertices.row(vertex_id).transpose(), plane_origin, plane_normal);
+    assert(point.size() == plane_origin.size());
+    return point_plane_distance(point, plane_origin, plane_normal);
 }
 
 VectorMax12d PlaneVertexConstraint::compute_distance_gradient(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
+    const VectorMax12d& point) const
 {
+    assert(point.size() == plane_origin.size());
     VectorMax3d distance_grad;
     point_plane_distance_gradient(
-        vertices.row(vertex_id).transpose(), plane_origin, plane_normal,
-        distance_grad);
+        point, plane_origin, plane_normal, distance_grad);
     return distance_grad;
 }
 
-MatrixMax12d PlaneVertexConstraint::compute_distance_hessian(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
+MatrixMax12d
+PlaneVertexConstraint::compute_distance_hessian(const VectorMax12d& point) const
 {
+    assert(point.size() == plane_origin.size());
     MatrixMax3d distance_hess;
     point_plane_distance_hessian(
-        vertices.row(vertex_id).transpose(), plane_origin, plane_normal,
-        distance_hess);
+        point, plane_origin, plane_normal, distance_hess);
     return distance_hess;
 }
 

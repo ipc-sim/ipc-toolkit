@@ -9,22 +9,17 @@ namespace ipc {
 class FaceVertexFrictionConstraint : public FaceVertexCandidate,
                                      public FrictionConstraint {
 public:
-    FaceVertexFrictionConstraint(long face_id, long vertex_id);
-    FaceVertexFrictionConstraint(const FaceVertexCandidate& constraint);
+    using FaceVertexCandidate::FaceVertexCandidate;
+
     FaceVertexFrictionConstraint(const FaceVertexConstraint& constraint);
+
     FaceVertexFrictionConstraint(
         const FaceVertexConstraint& constraint,
         const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat,
-        const double barrier_stiffness)
-        : FaceVertexFrictionConstraint(constraint)
-    {
-        FrictionConstraint::init(
-            vertices, edges, faces, dhat, barrier_stiffness,
-            constraint.minimum_distance);
-    }
+        const double barrier_stiffness);
 
     template <typename T>
     T compute_potential(
@@ -34,29 +29,25 @@ public:
         const double epsv_times_h) const
     {
         return compute_potential_common(
-            relative_velocity_T(select_dof(velocities, edges, faces)),
-            epsv_times_h);
+            relative_velocity_T(dof(velocities, edges, faces)), epsv_times_h);
     }
 
 protected:
-    virtual double compute_distance(const VectorMax12d& x) const override;
-    virtual VectorMax12d
-    compute_distance_gradient(const VectorMax12d& x) const override;
-
     MatrixMax<double, 3, 2>
-    compute_tangent_basis(const VectorMax12d& x) const override;
+    compute_tangent_basis(const VectorMax12d& positions) const override;
 
-    MatrixMax<double, 36, 2>
-    compute_tangent_basis_jacobian(const VectorMax12d& x) const override;
+    MatrixMax<double, 36, 2> compute_tangent_basis_jacobian(
+        const VectorMax12d& positions) const override;
 
-    VectorMax2d compute_closest_point(const VectorMax12d& x) const override;
+    VectorMax2d
+    compute_closest_point(const VectorMax12d& positions) const override;
 
-    MatrixMax<double, 2, 12>
-    compute_closest_point_jacobian(const VectorMax12d& x) const override;
+    MatrixMax<double, 2, 12> compute_closest_point_jacobian(
+        const VectorMax12d& positions) const override;
 
-    VectorMax3d relative_velocity(const VectorMax12d& u) const override
+    VectorMax3d relative_velocity(const VectorMax12d& velocities) const override
     {
-        return relative_velocity_T(u);
+        return relative_velocity_T(velocities);
     }
 
     using FrictionConstraint::relative_velocity_matrix;
@@ -69,12 +60,13 @@ protected:
 
 private:
     template <typename T>
-    VectorMax3<T> relative_velocity_T(const VectorMax12<T>& u) const
+    VectorMax3<T> relative_velocity_T(const VectorMax12<T>& velocities) const
     {
-        assert(u.size() == ndof());
+        assert(velocities.size() == ndof());
         return point_triangle_relative_velocity(
-            u.head(dim()), u.segment(dim(), dim()), u.segment(2 * dim(), dim()),
-            u.tail(dim()), closest_point.cast<T>());
+            velocities.head(dim()), velocities.segment(dim(), dim()),
+            velocities.segment(2 * dim(), dim()), velocities.tail(dim()),
+            closest_point.cast<T>());
     }
 };
 

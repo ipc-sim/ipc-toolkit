@@ -13,43 +13,34 @@ FaceVertexCandidate::FaceVertexCandidate(long face_id, long vertex_id)
 {
 }
 
-double FaceVertexCandidate::compute_distance(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    const PointTriangleDistanceType dtype) const
+double
+FaceVertexCandidate::compute_distance(const VectorMax12d& positions) const
 {
+    assert(positions.size() == 12);
     return point_triangle_distance(
-        vertices.row(vertex_id), vertices.row(faces(face_id, 0)),
-        vertices.row(faces(face_id, 1)), vertices.row(faces(face_id, 2)),
-        dtype);
+        positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
+        positions.tail<3>(), known_dtype());
 }
 
 VectorMax12d FaceVertexCandidate::compute_distance_gradient(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    const PointTriangleDistanceType dtype) const
+    const VectorMax12d& positions) const
 {
+    assert(positions.size() == 12);
     VectorMax12d distance_grad;
     point_triangle_distance_gradient(
-        vertices.row(vertex_id), vertices.row(faces(face_id, 0)),
-        vertices.row(faces(face_id, 1)), vertices.row(faces(face_id, 2)),
-        distance_grad, dtype);
+        positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
+        positions.tail<3>(), distance_grad, known_dtype());
     return distance_grad;
 }
 
 MatrixMax12d FaceVertexCandidate::compute_distance_hessian(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    const PointTriangleDistanceType dtype) const
+    const VectorMax12d& positions) const
 {
+    assert(positions.size() == 12);
     MatrixMax12d distance_hess;
     point_triangle_distance_hessian(
-        vertices.row(vertex_id), vertices.row(faces(face_id, 0)),
-        vertices.row(faces(face_id, 1)), vertices.row(faces(face_id, 2)),
-        distance_hess, dtype);
+        positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
+        positions.tail<3>(), distance_hess, known_dtype());
     return distance_hess;
 }
 

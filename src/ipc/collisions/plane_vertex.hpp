@@ -21,24 +21,18 @@ public:
         return { { vertex_id, -1, -1, -1 } };
     }
 
-    double compute_distance(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override;
-
-    VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override;
-
-    MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override;
-
     VectorMax3d plane_origin;
     VectorMax3d plane_normal;
     long vertex_id;
+
+protected:
+    double compute_distance(const VectorMax12d& point) const override;
+
+    VectorMax12d
+    compute_distance_gradient(const VectorMax12d& point) const override;
+
+    MatrixMax12d
+    compute_distance_hessian(const VectorMax12d& point) const override;
 };
 
 } // namespace ipc

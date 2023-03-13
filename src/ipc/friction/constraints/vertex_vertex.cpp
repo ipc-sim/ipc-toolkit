@@ -8,18 +8,6 @@
 namespace ipc {
 
 VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
-    long vertex0_id, long vertex1_id)
-    : VertexVertexCandidate(vertex0_id, vertex1_id)
-{
-}
-
-VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
-    const VertexVertexCandidate& candidate)
-    : VertexVertexCandidate(candidate)
-{
-}
-
-VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
     const VertexVertexConstraint& constraint)
     : VertexVertexCandidate(constraint.vertex0_id, constraint.vertex1_id)
 {
@@ -27,52 +15,50 @@ VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
     this->weight_gradient = constraint.weight_gradient;
 }
 
-// ============================================================================
-
-double
-VertexVertexFrictionConstraint::compute_distance(const VectorMax12d& x) const
+VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
+    const VertexVertexConstraint& constraint,
+    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
+    const double dhat,
+    const double barrier_stiffness)
+    : VertexVertexFrictionConstraint(constraint)
 {
-    assert(x.size() == ndof());
-    return point_point_distance(x.head(dim()), x.tail(dim()));
-}
-
-VectorMax12d VertexVertexFrictionConstraint::compute_distance_gradient(
-    const VectorMax12d& x) const
-{
-    assert(x.size() == ndof());
-    VectorMax6d grad_d;
-    point_point_distance_gradient(x.head(dim()), x.tail(dim()), grad_d);
-    return grad_d;
+    FrictionConstraint::init(
+        vertices, edges, faces, dhat, barrier_stiffness,
+        constraint.minimum_distance);
 }
 
 // ============================================================================
 
 MatrixMax<double, 3, 2> VertexVertexFrictionConstraint::compute_tangent_basis(
-    const VectorMax12d& x) const
+    const VectorMax12d& positions) const
 {
-    assert(x.size() == ndof());
-    return point_point_tangent_basis(x.head(dim()), x.tail(dim()));
+    assert(positions.size() == ndof());
+    return point_point_tangent_basis(
+        positions.head(dim()), positions.tail(dim()));
 }
 
 MatrixMax<double, 36, 2>
 VertexVertexFrictionConstraint::compute_tangent_basis_jacobian(
-    const VectorMax12d& x) const
+    const VectorMax12d& positions) const
 {
-    assert(x.size() == ndof());
-    return point_point_tangent_basis_jacobian(x.head(dim()), x.tail(dim()));
+    assert(positions.size() == ndof());
+    return point_point_tangent_basis_jacobian(
+        positions.head(dim()), positions.tail(dim()));
 }
 
 // ============================================================================
 
 VectorMax2d VertexVertexFrictionConstraint::compute_closest_point(
-    const VectorMax12d& x) const
+    const VectorMax12d& positions) const
 {
     return VectorMax2d();
 }
 
 MatrixMax<double, 2, 12>
 VertexVertexFrictionConstraint::compute_closest_point_jacobian(
-    const VectorMax12d& x) const
+    const VectorMax12d& positions) const
 {
     return MatrixMax<double, 2, 12>();
 }

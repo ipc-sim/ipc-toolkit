@@ -12,32 +12,6 @@ public:
     EdgeEdgeConstraint(long edge0_id, long edge1_id, double eps_x);
     EdgeEdgeConstraint(const EdgeEdgeCandidate& candidate, double eps_x);
 
-    double compute_distance(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override
-    {
-        return EdgeEdgeCandidate::compute_distance(vertices, edges, faces);
-    }
-
-    VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override
-    {
-        return EdgeEdgeCandidate::compute_distance_gradient(
-            vertices, edges, faces);
-    }
-
-    MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override
-    {
-        return EdgeEdgeCandidate::compute_distance_hessian(
-            vertices, edges, faces);
-    }
-
     double compute_potential(
         const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,

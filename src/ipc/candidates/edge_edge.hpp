@@ -25,24 +25,6 @@ public:
                    edges(edge1_id, 0), edges(edge1_id, 1) } };
     }
 
-    double compute_distance(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
-
-    VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
-
-    MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
-
     // ------------------------------------------------------------------------
 
     /// Perform narrow-phase CCD on the candidate.
@@ -94,6 +76,20 @@ public:
 
     long edge0_id; ///< @brief ID of the first edge.
     long edge1_id; ///< @brief ID of the second edge.
+
+protected:
+    double compute_distance(const VectorMax12d& positions) const override;
+
+    VectorMax12d
+    compute_distance_gradient(const VectorMax12d& positions) const override;
+
+    MatrixMax12d
+    compute_distance_hessian(const VectorMax12d& positions) const override;
+
+    virtual EdgeEdgeDistanceType known_dtype() const
+    {
+        return EdgeEdgeDistanceType::AUTO;
+    }
 };
 
 } // namespace ipc
