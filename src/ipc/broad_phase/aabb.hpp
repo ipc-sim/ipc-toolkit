@@ -53,13 +53,13 @@ public:
 };
 
 void build_vertex_boxes(
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     std::vector<AABB>& vertex_boxes,
     const double inflation_radius = 0);
 
 void build_vertex_boxes(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
     std::vector<AABB>& vertex_boxes,
     const double inflation_radius = 0);
 

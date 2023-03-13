@@ -11,7 +11,7 @@
 namespace ipc {
 
 void BroadPhase::build(
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     double inflation_radius)
@@ -19,14 +19,14 @@ void BroadPhase::build(
     assert(edges.size() == 0 || edges.cols() == 2);
     assert(faces.size() == 0 || faces.cols() == 3);
     clear();
-    build_vertex_boxes(V, vertex_boxes, inflation_radius);
+    build_vertex_boxes(vertices, vertex_boxes, inflation_radius);
     build_edge_boxes(vertex_boxes, edges, edge_boxes);
     build_face_boxes(vertex_boxes, faces, face_boxes);
 }
 
 void BroadPhase::build(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     double inflation_radius)
@@ -34,7 +34,8 @@ void BroadPhase::build(
     assert(edges.size() == 0 || edges.cols() == 2);
     assert(faces.size() == 0 || faces.cols() == 3);
     clear();
-    build_vertex_boxes(V0, V1, vertex_boxes, inflation_radius);
+    build_vertex_boxes(
+        vertices_t0, vertices_t1, vertex_boxes, inflation_radius);
     build_edge_boxes(vertex_boxes, edges, edge_boxes);
     build_face_boxes(vertex_boxes, faces, face_boxes);
 }

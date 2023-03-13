@@ -26,11 +26,11 @@ void FrictionConstraint::init(
     const int dim = all_positions.cols();
     tangent_basis.resize(dim, dim - 1);
 
-    const VectorMax12d V = select_dof(all_positions, edges, faces);
-    closest_point = compute_closest_point(V);
-    tangent_basis = compute_tangent_basis(V);
+    const VectorMax12d vertices = select_dof(all_positions, edges, faces);
+    closest_point = compute_closest_point(vertices);
+    tangent_basis = compute_tangent_basis(vertices);
     normal_force_magnitude =
-        compute_normal_force_magnitude(V, dhat, barrier_stiffness, dmin);
+        compute_normal_force_magnitude(vertices, dhat, barrier_stiffness, dmin);
 }
 
 VectorMax12d FrictionConstraint::compute_potential_gradient(
@@ -384,23 +384,23 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
 }
 
 double FrictionConstraint::compute_normal_force_magnitude(
-    const VectorMax12d& V,
+    const VectorMax12d& vertices,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
     return ipc::compute_normal_force_magnitude(
-        compute_distance(V), dhat, barrier_stiffness, dmin);
+        compute_distance(vertices), dhat, barrier_stiffness, dmin);
 }
 
 VectorMax12d FrictionConstraint::compute_normal_force_magnitude_gradient(
-    const VectorMax12d& V,
+    const VectorMax12d& vertices,
     const double dhat,
     const double barrier_stiffness,
     const double dmin) const
 {
     return ipc::compute_normal_force_magnitude_gradient(
-        compute_distance(V), compute_distance_gradient(V), dhat,
+        compute_distance(vertices), compute_distance_gradient(vertices), dhat,
         barrier_stiffness, dmin);
 }
 

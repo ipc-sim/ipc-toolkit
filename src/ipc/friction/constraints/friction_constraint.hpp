@@ -12,14 +12,14 @@ namespace ipc {
 class FrictionConstraint {
 protected:
     /// @brief Initialize the constraint.
-    /// @param V Positions of the vertices (rowwise)
+    /// @param vertices Vertex positions(rowwise)
     /// @param edges Edges of the mesh
     /// @param faces Faces of the mesh
     /// @param dhat Barrier activation distance
     /// @param barrier_stiffness Barrier stiffness
     /// @param dmin Minimum distance
     void init(
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat,
@@ -116,9 +116,9 @@ public:
 
     /// @brief Variable to differentiate the friction force with respect to.
     enum class DiffWRT {
-        X,  ///< Differentiate wrt rest V.
-        Ut, ///< Differentiate wrt previous V.
-        U   ///< Differentiate wrt current V.
+        X,  ///< Differentiate wrt rest vertices.
+        Ut, ///< Differentiate wrt previous vertices.
+        U   ///< Differentiate wrt current vertices.
     };
 
     /// @brief
@@ -183,8 +183,8 @@ protected:
     /// @brief Select this constraint's DOF from the full matrix of DOF.
     /// @tparam T Type of the DOF
     /// @param X Full matrix of DOF (rowwise).
-    /// @param edges Edges of the mesh.
-    /// @param faces Faces of the mesh.
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
     /// @return This constraint's DOF.
     template <typename T>
     VectorMax12<T> select_dof(
@@ -205,62 +205,63 @@ protected:
     // -------------------------------------------------------------------------
 
     /// @brief Compute the distance of the constraint.
-    /// @param V Vertex V for the constraint's vertices (stacked into a vector).
+    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
     /// @return Distance of the constraint.
-    virtual double compute_distance(const VectorMax12d& V) const = 0;
+    virtual double compute_distance(const VectorMax12d& vertices) const = 0;
 
     /// @brief Compute the gradient of the distance of the constraint.
-    /// @param V Vertex V for the constraint's vertices (stacked into a vector).
+    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
     /// @return Gradient of the distance of the constraint.
     virtual VectorMax12d
-    compute_distance_gradient(const VectorMax12d& V) const = 0;
+    compute_distance_gradient(const VectorMax12d& vertices) const = 0;
 
     /// @brief Compute the normal force magnitude.
-    /// @param V Vertex V for the constraint's vertices (stacked into a vector).
+    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
     /// @param dhat Barrier activiation distance.
     /// @param barrier_stiffness Barrier stiffness.
     /// @param dmin Minimum distance.
     /// @return Normal force magnitude.
     virtual double compute_normal_force_magnitude(
-        const VectorMax12d& V,
+        const VectorMax12d& vertices,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0) const;
 
     /// @brief Compute the gradient of the normal force magnitude.
-    /// @param V Vertex V for the constraint's vertices (stacked into a vector).
+    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
     /// @param dhat Barrier activiation distance.
     /// @param barrier_stiffness Barrier stiffness.
     /// @param dmin Minimum distance.
-    /// @return Gradient of the normal force magnitude wrt V.
+    /// @return Gradient of the normal force magnitude wrt vertices.
     virtual VectorMax12d compute_normal_force_magnitude_gradient(
-        const VectorMax12d& V,
+        const VectorMax12d& vertices,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0) const;
 
     /// @brief Compute the tangent basis of the constraint.
-    /// @param V Vertex V for the constraint's vertices (stacked into a vector).
+    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
     /// @return Tangent basis of the constraint.
     virtual MatrixMax<double, 3, 2>
-    compute_tangent_basis(const VectorMax12d& V) const = 0;
+    compute_tangent_basis(const VectorMax12d& vertices) const = 0;
 
     /// @brief Compute the Jacobian of the tangent basis of the constraint.
-    /// @param V Vertex V for the constraint's vertices (stacked into a vector).
+    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
     /// @return Jacobian of the tangent basis of the constraint.
     virtual MatrixMax<double, 36, 2>
-    compute_tangent_basis_jacobian(const VectorMax12d& V) const = 0;
+    compute_tangent_basis_jacobian(const VectorMax12d& vertices) const = 0;
 
     /// @brief Compute the barycentric coordinates of the closest point.
-    /// @param V Vertex V for the constraint's vertices (stacked into a vector).
+    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
     /// @return Barycentric coordinates of the closest point.
-    virtual VectorMax2d compute_closest_point(const VectorMax12d& V) const = 0;
+    virtual VectorMax2d
+    compute_closest_point(const VectorMax12d& vertices) const = 0;
 
     /// @brief Compute the Jacobian of the barycentric coordinates of the closest point.
-    /// @param V Vertex V for the constraint's vertices (stacked into a vector).
+    /// @param vertices Vertex vertices for the constraint's vertices (stacked into a vector).
     /// @return Jacobian of the barycentric coordinates of the closest point.
     virtual MatrixMax<double, 2, 12>
-    compute_closest_point_jacobian(const VectorMax12d& V) const = 0;
+    compute_closest_point_jacobian(const VectorMax12d& vertices) const = 0;
 
     /// @brief Compute the relative velocity of the constraint.
     /// @param velocities Vertex velocities for the constraint's vertices (stacked into a vector).

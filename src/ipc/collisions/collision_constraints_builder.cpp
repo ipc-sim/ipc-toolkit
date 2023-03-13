@@ -19,7 +19,7 @@ CollisionConstraintsBuilder::CollisionConstraintsBuilder(
 
 void CollisionConstraintsBuilder::add_edge_vertex_constraints(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const std::vector<EdgeVertexCandidate>& candidates,
     const std::function<bool(double)>& is_active,
     const size_t start_i,
@@ -30,7 +30,7 @@ void CollisionConstraintsBuilder::add_edge_vertex_constraints(
         const long e0i = mesh.edges()(ei, 0), e1i = mesh.edges()(ei, 1);
 
         const auto [v, e0, e1] =
-            candidates[i].vertices(V, mesh.edges(), mesh.faces());
+            candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
         PointEdgeDistanceType dtype = point_edge_distance_type(v, e0, e1);
         double distance_sqr = point_edge_distance(v, e0, e1, dtype);
 
@@ -45,7 +45,7 @@ void CollisionConstraintsBuilder::add_edge_vertex_constraints(
         if (should_compute_weight_gradient()) {
             weight_gradient = use_convergent_formulation()
                 ? (mesh.vertex_area_gradient(vi) / 2)
-                : Eigen::SparseVector<double>(V.size());
+                : Eigen::SparseVector<double>(vertices.size());
         }
 
         switch (dtype) {
@@ -76,7 +76,7 @@ void CollisionConstraintsBuilder::add_edge_vertex_constraints(
 
 void CollisionConstraintsBuilder::add_edge_edge_constraints(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const std::vector<EdgeEdgeCandidate>& candidates,
     const std::function<bool(double)>& is_active,
     const size_t start_i,
@@ -89,7 +89,7 @@ void CollisionConstraintsBuilder::add_edge_edge_constraints(
             candidates[i].vertex_ids(mesh.edges(), mesh.faces());
 
         const auto [ea0, ea1, eb0, eb1] =
-            candidates[i].vertices(V, mesh.edges(), mesh.faces());
+            candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
 
         EdgeEdgeDistanceType dtype =
             edge_edge_distance_type(ea0, ea1, eb0, eb1);
@@ -124,7 +124,7 @@ void CollisionConstraintsBuilder::add_edge_edge_constraints(
             weight_gradient = use_convergent_formulation()
                 ? ((mesh.edge_area_gradient(eai) + mesh.edge_area_gradient(ebi))
                    / 4)
-                : Eigen::SparseVector<double>(V.size());
+                : Eigen::SparseVector<double>(vertices.size());
         }
 
         switch (dtype) {
@@ -175,7 +175,7 @@ void CollisionConstraintsBuilder::add_edge_edge_constraints(
 
 void CollisionConstraintsBuilder::add_face_vertex_constraints(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const std::vector<FaceVertexCandidate>& candidates,
     const std::function<bool(double)>& is_active,
     const size_t start_i,
@@ -187,7 +187,7 @@ void CollisionConstraintsBuilder::add_face_vertex_constraints(
                    f2i = mesh.faces()(fi, 2);
 
         const auto [v, f0, f1, f2] =
-            candidates[i].vertices(V, mesh.edges(), mesh.faces());
+            candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
 
         // Compute distance type
         const PointTriangleDistanceType dtype =
@@ -206,7 +206,7 @@ void CollisionConstraintsBuilder::add_face_vertex_constraints(
         if (should_compute_weight_gradient()) {
             weight_gradient = use_convergent_formulation()
                 ? (mesh.vertex_area_gradient(vi) / 4)
-                : Eigen::SparseVector<double>(V.size());
+                : Eigen::SparseVector<double>(vertices.size());
         }
 
         switch (dtype) {

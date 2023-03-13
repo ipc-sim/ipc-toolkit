@@ -13,14 +13,14 @@ namespace ipc {
 
 void FrictionConstraints::build(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const CollisionConstraints& contact_constraint_set,
     double dhat,
     double barrier_stiffness,
     const Eigen::VectorXd& mus,
     const std::function<double(double, double)>& blend_mu)
 {
-    assert(mus.size() == V.rows());
+    assert(mus.size() == vertices.rows());
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
@@ -35,7 +35,8 @@ void FrictionConstraints::build(
 
     FC_vv.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
-        FC_vv.emplace_back(c_vv, V, edges, faces, dhat, barrier_stiffness);
+        FC_vv.emplace_back(
+            c_vv, vertices, edges, faces, dhat, barrier_stiffness);
         const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
 
         FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
@@ -43,7 +44,8 @@ void FrictionConstraints::build(
 
     FC_ev.reserve(C_ev.size());
     for (const auto& c_ev : C_ev) {
-        FC_ev.emplace_back(c_ev, V, edges, faces, dhat, barrier_stiffness);
+        FC_ev.emplace_back(
+            c_ev, vertices, edges, faces, dhat, barrier_stiffness);
         const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
 
         const double edge_mu =
@@ -54,17 +56,18 @@ void FrictionConstraints::build(
     FC_ee.reserve(C_ee.size());
     for (const auto& c_ee : C_ee) {
         const auto& [ea0i, ea1i, eb0i, eb1i] = c_ee.vertex_ids(edges, faces);
-        const Eigen::Vector3d ea0 = V.row(ea0i);
-        const Eigen::Vector3d ea1 = V.row(ea1i);
-        const Eigen::Vector3d eb0 = V.row(eb0i);
-        const Eigen::Vector3d eb1 = V.row(eb1i);
+        const Eigen::Vector3d ea0 = vertices.row(ea0i);
+        const Eigen::Vector3d ea1 = vertices.row(ea1i);
+        const Eigen::Vector3d eb0 = vertices.row(eb0i);
+        const Eigen::Vector3d eb1 = vertices.row(eb1i);
 
         // Skip EE constraints that are close to parallel
         if (edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1) < c_ee.eps_x) {
             continue;
         }
 
-        FC_ee.emplace_back(c_ee, V, edges, faces, dhat, barrier_stiffness);
+        FC_ee.emplace_back(
+            c_ee, vertices, edges, faces, dhat, barrier_stiffness);
 
         double ea_mu =
             (mus(ea1i) - mus(ea0i)) * FC_ee.back().closest_point[0] + mus(ea0i);
@@ -75,7 +78,8 @@ void FrictionConstraints::build(
 
     FC_fv.reserve(C_fv.size());
     for (const auto& c_fv : C_fv) {
-        FC_fv.emplace_back(c_fv, V, edges, faces, dhat, barrier_stiffness);
+        FC_fv.emplace_back(
+            c_fv, vertices, edges, faces, dhat, barrier_stiffness);
         const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
 
         double face_mu = mus(f0i)

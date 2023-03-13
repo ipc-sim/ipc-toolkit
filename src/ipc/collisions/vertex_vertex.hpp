@@ -27,28 +27,29 @@ struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
     }
 
     double compute_distance(
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override
     {
-        return VertexVertexCandidate::compute_distance(V, edges, faces);
+        return VertexVertexCandidate::compute_distance(vertices, edges, faces);
     }
 
     VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override
     {
         return VertexVertexCandidate::compute_distance_gradient(
-            V, edges, faces);
+            vertices, edges, faces);
     }
 
     MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override
     {
-        return VertexVertexCandidate::compute_distance_hessian(V, edges, faces);
+        return VertexVertexCandidate::compute_distance_hessian(
+            vertices, edges, faces);
     }
 
     template <typename H>

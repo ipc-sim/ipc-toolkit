@@ -13,7 +13,7 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
     VertexVertexFrictionConstraint(const VertexVertexConstraint& constraint);
     VertexVertexFrictionConstraint(
         const VertexVertexConstraint& constraint,
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat,
@@ -21,7 +21,7 @@ struct VertexVertexFrictionConstraint : VertexVertexCandidate,
         : VertexVertexFrictionConstraint(constraint)
     {
         FrictionConstraint::init(
-            V, edges, faces, dhat, barrier_stiffness,
+            vertices, edges, faces, dhat, barrier_stiffness,
             constraint.minimum_distance);
     }
 

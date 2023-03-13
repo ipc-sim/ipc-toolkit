@@ -31,25 +31,25 @@ protected:
 class SweepAndTiniestQueue : public CopyMeshBroadPhase {
 public:
     /// @brief Build the broad phase for static collision detection.
-    /// @param V0 Positions of the vertices.
-    /// @param edges Edges of the mesh.
-    /// @param faces Faces of the mesh.
+    /// @param vertices_t0 Vertex positions
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
     void build(
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double inflation_radius = 0) override;
 
     /// @brief Build the broad phase for continuous collision detection.
-    /// @param V0 Starting V of the vertices.
-    /// @param V1 Ending V of the vertices.
-    /// @param edges Edges of the mesh.
-    /// @param faces Faces of the mesh.
+    /// @param vertices_t0 Starting vertices of the vertices.
+    /// @param vertices_t1 Ending vertices of the vertices.
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
     void build(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double inflation_radius = 0) override;
@@ -94,25 +94,25 @@ protected:
 class SweepAndTiniestQueueGPU : public CopyMeshBroadPhase {
 public:
     /// @brief Build the broad phase for static collision detection.
-    /// @param V0 Positions of the vertices.
-    /// @param edges Edges of the mesh.
-    /// @param faces Faces of the mesh.
+    /// @param vertices_t0 Vertex positions
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
     void build(
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double inflation_radius = 0) override;
 
     /// @brief Build the broad phase for continuous collision detection.
-    /// @param V0 Starting V of the vertices.
-    /// @param V1 Ending V of the vertices.
-    /// @param edges Edges of the mesh.
-    /// @param faces Faces of the mesh.
+    /// @param vertices_t0 Starting vertices of the vertices.
+    /// @param vertices_t1 Ending vertices of the vertices.
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
     void build(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double inflation_radius = 0) override;

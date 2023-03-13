@@ -17,7 +17,7 @@ public:
 
     void add_edge_vertex_constraints(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const std::vector<EdgeVertexCandidate>& candidates,
         const std::function<bool(double)>& is_active,
         const size_t start_i,
@@ -25,7 +25,7 @@ public:
 
     void add_edge_edge_constraints(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const std::vector<EdgeEdgeCandidate>& candidates,
         const std::function<bool(double)>& is_active,
         const size_t start_i,
@@ -33,7 +33,7 @@ public:
 
     void add_face_vertex_constraints(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const std::vector<FaceVertexCandidate>& candidates,
         const std::function<bool(double)>& is_active,
         const size_t start_i,

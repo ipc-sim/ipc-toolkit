@@ -15,40 +15,42 @@
 namespace ipc {
 
 void SpatialHash::build(
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     double inflation_radius,
     double voxelSize)
 {
-    build(V, V, edges, faces, inflation_radius, voxelSize);
+    build(vertices, vertices, edges, faces, inflation_radius, voxelSize);
 }
 
 void SpatialHash::build(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     double inflation_radius,
     double voxelSize)
 {
-    const size_t num_vertices = V0.rows();
-    dim = V0.cols();
+    const size_t num_vertices = vertices_t0.rows();
+    dim = vertices_t0.cols();
 
-    assert(V1.rows() == num_vertices && V1.cols() == dim);
+    assert(vertices_t1.rows() == num_vertices && vertices_t1.cols() == dim);
 
     // also calls clear()
-    BroadPhase::build(V0, V1, edges, faces, inflation_radius);
+    BroadPhase::build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
 
     builtInRadius = inflation_radius;
 
     if (voxelSize <= 0) {
-        voxelSize = suggest_good_voxel_size(V0, V1, edges, inflation_radius);
+        voxelSize = suggest_good_voxel_size(
+            vertices_t0, vertices_t1, edges, inflation_radius);
     }
 
-    leftBottomCorner =
-        V0.colwise().minCoeff().cwiseMin(V1.colwise().minCoeff());
-    rightTopCorner = V0.colwise().maxCoeff().cwiseMax(V1.colwise().maxCoeff());
+    leftBottomCorner = vertices_t0.colwise().minCoeff().cwiseMin(
+        vertices_t1.colwise().minCoeff());
+    rightTopCorner = vertices_t0.colwise().maxCoeff().cwiseMax(
+        vertices_t1.colwise().maxCoeff());
 
     AABB::conservative_inflation(
         leftBottomCorner, rightTopCorner, inflation_radius);
@@ -74,8 +76,8 @@ void SpatialHash::build(
     tbb::parallel_for(size_t(0), size_t(num_vertices), [&](size_t vi) {
         ArrayMax3i vVAIMin, vVAIMax;
 
-        ArrayMax3d v_min = V0.row(vi).cwiseMin(V1.row(vi));
-        ArrayMax3d v_max = V0.row(vi).cwiseMax(V1.row(vi));
+        ArrayMax3d v_min = vertices_t0.row(vi).cwiseMin(vertices_t1.row(vi));
+        ArrayMax3d v_max = vertices_t0.row(vi).cwiseMax(vertices_t1.row(vi));
         AABB::conservative_inflation(v_min, v_max, inflation_radius);
 
         locateVoxelAxisIndex(v_min, vVAIMin);
@@ -331,7 +333,7 @@ void SpatialHash::queryEdgeForEdges(
 }
 
 void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const VectorMax3d& ea0,
     const VectorMax3d& ea1,
@@ -363,8 +365,10 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
                         if (indI >= edgeStartInd && indI < triStartInd
                             && indI - edgeStartInd > eai) {
                             int ebi = indI - edgeStartInd;
-                            const VectorMax3d& eb0 = V.row(edges(ebi, 0));
-                            const VectorMax3d& eb1 = V.row(edges(ebi, 1));
+                            const VectorMax3d& eb0 =
+                                vertices.row(edges(ebi, 0));
+                            const VectorMax3d& eb1 =
+                                vertices.row(edges(ebi, 1));
                             ArrayMax3d bboxEBBottomLeft = eb0.cwiseMin(eb1);
                             ArrayMax3d bboxEBTopRight = eb0.cwiseMax(eb1);
                             if (!((bboxEBBottomLeft > rightTop).any()
@@ -628,16 +632,16 @@ void SpatialHash::queryEdgeForEdges(int eai, unordered_set<int>& edgeInds) const
 }
 
 void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     int eai,
     unordered_set<int>& edgeInds) const
 {
-    const VectorMax3d& ea0_t0 = V0.row(edges(eai, 0));
-    const VectorMax3d& ea1_t0 = V0.row(edges(eai, 1));
-    const VectorMax3d& ea0_t1 = V1.row(edges(eai, 0));
-    const VectorMax3d& ea1_t1 = V1.row(edges(eai, 1));
+    const VectorMax3d& ea0_t0 = vertices_t0.row(edges(eai, 0));
+    const VectorMax3d& ea1_t0 = vertices_t0.row(edges(eai, 1));
+    const VectorMax3d& ea0_t1 = vertices_t1.row(edges(eai, 0));
+    const VectorMax3d& ea1_t1 = vertices_t1.row(edges(eai, 1));
 
     ArrayMax3d bboxEABottomLeft =
         ea0_t0.cwiseMin(ea1_t0).cwiseMin(ea0_t1).cwiseMin(ea1_t1);
@@ -651,10 +655,10 @@ void SpatialHash::queryEdgeForEdgesWithBBoxCheck(
             if (indI >= edgeStartInd && indI < triStartInd
                 && indI - edgeStartInd > eai) {
                 int ebi = indI - edgeStartInd;
-                const VectorMax3d& eb0_t0 = V0.row(edges(ebi, 0));
-                const VectorMax3d& eb1_t0 = V0.row(edges(ebi, 1));
-                const VectorMax3d& eb0_t1 = V1.row(edges(ebi, 0));
-                const VectorMax3d& eb1_t1 = V1.row(edges(ebi, 1));
+                const VectorMax3d& eb0_t0 = vertices_t0.row(edges(ebi, 0));
+                const VectorMax3d& eb1_t0 = vertices_t0.row(edges(ebi, 1));
+                const VectorMax3d& eb0_t1 = vertices_t1.row(edges(ebi, 0));
+                const VectorMax3d& eb1_t1 = vertices_t1.row(edges(ebi, 1));
 
                 const ArrayMax3d bboxEBBottomLeft =
                     eb0_t0.cwiseMin(eb1_t0).cwiseMin(eb0_t1).cwiseMin(eb1_t1);

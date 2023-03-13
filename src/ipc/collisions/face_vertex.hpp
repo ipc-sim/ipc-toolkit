@@ -27,33 +27,33 @@ struct FaceVertexConstraint : FaceVertexCandidate, CollisionConstraint {
     }
 
     double compute_distance(
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override
     {
         // The distance type is known because of Constraints::build()
         return FaceVertexCandidate::compute_distance(
-            V, edges, faces, PointTriangleDistanceType::P_T);
+            vertices, edges, faces, PointTriangleDistanceType::P_T);
     }
 
     VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override
     {
         // The distance type is known because of Constraints::build()
         return FaceVertexCandidate::compute_distance_gradient(
-            V, edges, faces, PointTriangleDistanceType::P_T);
+            vertices, edges, faces, PointTriangleDistanceType::P_T);
     }
 
     MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override
     {
         // The distance type is known because of Constraints::build()
         return FaceVertexCandidate::compute_distance_hessian(
-            V, edges, faces, PointTriangleDistanceType::P_T);
+            vertices, edges, faces, PointTriangleDistanceType::P_T);
     }
 
     template <typename H>

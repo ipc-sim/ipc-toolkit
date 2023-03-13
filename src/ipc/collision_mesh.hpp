@@ -268,7 +268,7 @@ protected:
     /// @brief Initialize vertex and edge areas.
     void init_areas();
 
-    /// @brief Convert a matrix meant for M_V * V to M_dof * x by duplicating the entries dim times.
+    /// @brief Convert a matrix meant for M_V * vertices to M_dof * x by duplicating the entries dim times.
     static Eigen::SparseMatrix<double> vertex_matrix_to_dof_matrix(
         const Eigen::SparseMatrix<double>& M_V, int dim);
 

@@ -22,35 +22,35 @@ struct FaceVertexCandidate : ContinuousCollisionCandidate {
     }
 
     std::array<Eigen::Vector3d, 4> vertices(
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const
     {
-        assert(V.cols() == 3);
+        assert(vertices.cols() == 3);
         return { {
-            V.row(vertex_id),
-            V.row(faces(face_id, 0)),
-            V.row(faces(face_id, 1)),
-            V.row(faces(face_id, 2)),
+            vertices.row(vertex_id),
+            vertices.row(faces(face_id, 0)),
+            vertices.row(faces(face_id, 1)),
+            vertices.row(faces(face_id, 2)),
         } };
     }
 
     double compute_distance(
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const PointTriangleDistanceType dtype =
             PointTriangleDistanceType::AUTO) const;
 
     VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const PointTriangleDistanceType dtype =
             PointTriangleDistanceType::AUTO) const;
 
     MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const PointTriangleDistanceType dtype =
@@ -59,8 +59,8 @@ struct FaceVertexCandidate : ContinuousCollisionCandidate {
     // ------------------------------------------------------------------------
 
     bool
-    ccd(const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
+    ccd(const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         double& toi,
@@ -72,8 +72,8 @@ struct FaceVertexCandidate : ContinuousCollisionCandidate {
             DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
 
     void print_ccd_query(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override;
 

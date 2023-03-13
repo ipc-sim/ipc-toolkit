@@ -14,29 +14,29 @@ namespace ipc {
 
 void CollisionConstraints::build(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const double dhat,
     const double dmin,
     const BroadPhaseMethod broad_phase_method)
 {
-    assert(V.rows() == mesh.num_vertices());
+    assert(vertices.rows() == mesh.num_vertices());
 
     double inflation_radius = (dhat + dmin) / 2;
 
     Candidates candidates;
-    candidates.build(mesh, V, inflation_radius, broad_phase_method);
+    candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
 
-    this->build(candidates, mesh, V, dhat, dmin);
+    this->build(candidates, mesh, vertices, dhat, dmin);
 }
 
 void CollisionConstraints::build(
     const Candidates& candidates,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const double dhat,
     const double dmin)
 {
-    assert(V.rows() == mesh.num_vertices());
+    assert(vertices.rows() == mesh.num_vertices());
 
     clear();
 
@@ -54,7 +54,7 @@ void CollisionConstraints::build(
         tbb::blocked_range<size_t>(size_t(0), candidates.ev_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_edge_vertex_constraints(
-                mesh, V, candidates.ev_candidates, is_active, r.begin(),
+                mesh, vertices, candidates.ev_candidates, is_active, r.begin(),
                 r.end());
         });
 
@@ -62,7 +62,7 @@ void CollisionConstraints::build(
         tbb::blocked_range<size_t>(size_t(0), candidates.ee_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_edge_edge_constraints(
-                mesh, V, candidates.ee_candidates, is_active, r.begin(),
+                mesh, vertices, candidates.ee_candidates, is_active, r.begin(),
                 r.end());
         });
 
@@ -70,7 +70,7 @@ void CollisionConstraints::build(
         tbb::blocked_range<size_t>(size_t(0), candidates.fv_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_face_vertex_constraints(
-                mesh, V, candidates.fv_candidates, is_active, r.begin(),
+                mesh, vertices, candidates.fv_candidates, is_active, r.begin(),
                 r.end());
         });
 
@@ -123,10 +123,10 @@ void CollisionConstraints::set_are_shape_derivatives_enabled(
 
 double CollisionConstraints::compute_potential(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const double dhat) const
 {
-    assert(V.rows() == mesh.num_vertices());
+    assert(vertices.rows() == mesh.num_vertices());
 
     if (empty()) {
         return 0;
@@ -141,7 +141,7 @@ double CollisionConstraints::compute_potential(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 // Quadrature weight is premultiplied by compute_potential
                 local_potential += (*this)[i].compute_potential(
-                    V, mesh.edges(), mesh.faces(), dhat);
+                    vertices, mesh.edges(), mesh.faces(), dhat);
             }
         });
 
@@ -154,22 +154,22 @@ double CollisionConstraints::compute_potential(
 
 Eigen::VectorXd CollisionConstraints::compute_potential_gradient(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const double dhat) const
 {
-    assert(V.rows() == mesh.num_vertices());
+    assert(vertices.rows() == mesh.num_vertices());
 
     if (empty()) {
-        return Eigen::VectorXd::Zero(V.size());
+        return Eigen::VectorXd::Zero(vertices.size());
     }
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
 
-    int dim = V.cols();
+    int dim = vertices.cols();
 
     tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
-        Eigen::VectorXd::Zero(V.size()));
+        Eigen::VectorXd::Zero(vertices.size()));
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), size()),
@@ -178,12 +178,12 @@ Eigen::VectorXd CollisionConstraints::compute_potential_gradient(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 local_gradient_to_global_gradient(
                     (*this)[i].compute_potential_gradient(
-                        V, edges, faces, dhat),
+                        vertices, edges, faces, dhat),
                     (*this)[i].vertex_ids(edges, faces), dim, local_grad);
             }
         });
 
-    Eigen::VectorXd grad = Eigen::VectorXd::Zero(V.size());
+    Eigen::VectorXd grad = Eigen::VectorXd::Zero(vertices.size());
     for (const auto& local_grad : storage) {
         grad += local_grad;
     }
@@ -192,20 +192,20 @@ Eigen::VectorXd CollisionConstraints::compute_potential_gradient(
 
 Eigen::SparseMatrix<double> CollisionConstraints::compute_potential_hessian(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const double dhat,
     const bool project_hessian_to_psd) const
 {
-    assert(V.rows() == mesh.num_vertices());
+    assert(vertices.rows() == mesh.num_vertices());
 
     if (empty()) {
-        return Eigen::SparseMatrix<double>(V.size(), V.size());
+        return Eigen::SparseMatrix<double>(vertices.size(), vertices.size());
     }
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
 
-    const int dim = V.cols();
+    const int dim = vertices.cols();
 
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
         storage;
@@ -218,15 +218,16 @@ Eigen::SparseMatrix<double> CollisionConstraints::compute_potential_hessian(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 local_hessian_to_global_triplets(
                     (*this)[i].compute_potential_hessian(
-                        V, edges, faces, dhat, project_hessian_to_psd),
+                        vertices, edges, faces, dhat, project_hessian_to_psd),
                     (*this)[i].vertex_ids(edges, faces), dim,
                     local_hess_triplets);
             }
         });
 
-    Eigen::SparseMatrix<double> hess(V.size(), V.size());
+    Eigen::SparseMatrix<double> hess(vertices.size(), vertices.size());
     for (const auto& local_hess_triplets : storage) {
-        Eigen::SparseMatrix<double> local_hess(V.size(), V.size());
+        Eigen::SparseMatrix<double> local_hess(
+            vertices.size(), vertices.size());
         local_hess.setFromTriplets(
             local_hess_triplets.begin(), local_hess_triplets.end());
         hess += local_hess;
@@ -238,16 +239,16 @@ Eigen::SparseMatrix<double> CollisionConstraints::compute_potential_hessian(
 
 Eigen::SparseMatrix<double> CollisionConstraints::compute_shape_derivative(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const double dhat) const
 {
     Eigen::SparseMatrix<double> shape_derivative =
-        compute_potential_hessian(mesh, V, dhat, false);
+        compute_potential_hessian(mesh, vertices, dhat, false);
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
 
-    const int dim = V.cols();
+    const int dim = vertices.cols();
 
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
         storage;
@@ -263,14 +264,14 @@ Eigen::SparseMatrix<double> CollisionConstraints::compute_shape_derivative(
                 const CollisionConstraint& constraint = (*this)[ci];
                 const Eigen::SparseVector<double>& weight_gradient =
                     constraint.weight_gradient;
-                if (weight_gradient.size() != V.size()) {
+                if (weight_gradient.size() != vertices.size()) {
                     throw std::runtime_error(
                         "Shape derivative is not computed for contact constraint!");
                 }
 
                 VectorMax12d local_barrier_grad =
                     constraint.compute_potential_gradient(
-                        V, edges, faces, dhat);
+                        vertices, edges, faces, dhat);
                 assert(constraint.weight != 0);
                 local_barrier_grad.array() /= constraint.weight;
 
@@ -294,7 +295,8 @@ Eigen::SparseMatrix<double> CollisionConstraints::compute_shape_derivative(
         });
 
     for (const auto& local_triplets : storage) {
-        Eigen::SparseMatrix<double> local_shape_derivative(V.size(), V.size());
+        Eigen::SparseMatrix<double> local_shape_derivative(
+            vertices.size(), vertices.size());
         local_shape_derivative.setFromTriplets(
             local_triplets.begin(), local_triplets.end());
         shape_derivative += local_shape_derivative;
@@ -307,9 +309,9 @@ Eigen::SparseMatrix<double> CollisionConstraints::compute_shape_derivative(
 
 // NOTE: Actually distance squared
 double CollisionConstraints::compute_minimum_distance(
-    const CollisionMesh& mesh, const Eigen::MatrixXd& V) const
+    const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
 {
-    assert(V.rows() == mesh.num_vertices());
+    assert(vertices.rows() == mesh.num_vertices());
 
     if (empty()) {
         return std::numeric_limits<double>::infinity();
@@ -329,7 +331,7 @@ double CollisionConstraints::compute_minimum_distance(
 
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const double dist =
-                    (*this)[i].compute_distance(V, edges, faces);
+                    (*this)[i].compute_distance(vertices, edges, faces);
 
                 if (dist < local_min_dist) {
                     local_min_dist = dist;

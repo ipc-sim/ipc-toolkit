@@ -15,47 +15,48 @@ namespace ipc {
 
 bool is_step_collision_free(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
     const BroadPhaseMethod broad_phase_method,
     const double min_distance,
     const double tolerance,
     const long max_iterations)
 {
-    assert(V0.rows() == mesh.num_vertices());
-    assert(V1.rows() == mesh.num_vertices());
+    assert(vertices_t0.rows() == mesh.num_vertices());
+    assert(vertices_t1.rows() == mesh.num_vertices());
 
     // Broad phase
     Candidates candidates;
     candidates.build(
-        mesh, V0, V1,
+        mesh, vertices_t0, vertices_t1,
         /*inflation_radius=*/min_distance / 2, broad_phase_method);
 
     // Narrow phase
     return candidates.is_step_collision_free(
-        mesh, V0, V1, min_distance, tolerance, max_iterations);
+        mesh, vertices_t0, vertices_t1, min_distance, tolerance,
+        max_iterations);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
     const BroadPhaseMethod broad_phase_method,
     const double min_distance,
     const double tolerance,
     const long max_iterations)
 {
-    assert(V0.rows() == mesh.num_vertices());
-    assert(V1.rows() == mesh.num_vertices());
+    assert(vertices_t0.rows() == mesh.num_vertices());
+    assert(vertices_t1.rows() == mesh.num_vertices());
 
     if (broad_phase_method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
 #ifdef IPC_TOOLKIT_WITH_CUDA
         double min_distance = 0; // TODO
         const double step_size = ccd::gpu::compute_toi_strategy(
-            V0, V1, mesh.edges(), mesh.faces(), max_iterations, min_distance,
-            tolerance);
+            vertices_t0, vertices_t1, mesh.edges(), mesh.faces(),
+            max_iterations, min_distance, tolerance);
         if (step_size < 1.0) {
             return 0.8 * step_size;
         }
@@ -69,12 +70,13 @@ double compute_collision_free_stepsize(
     // Broad phase
     Candidates candidates;
     candidates.build(
-        mesh, V0, V1,
+        mesh, vertices_t0, vertices_t1,
         /*inflation_radius=*/min_distance / 2, broad_phase_method);
 
     // Narrow phase
     return candidates.compute_collision_free_stepsize(
-        mesh, V0, V1, min_distance, tolerance, max_iterations);
+        mesh, vertices_t0, vertices_t1, min_distance, tolerance,
+        max_iterations);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

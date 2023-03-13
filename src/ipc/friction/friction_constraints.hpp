@@ -21,20 +21,20 @@ public:
 
     void build(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const CollisionConstraints& contact_constraints,
         double dhat,
         double barrier_stiffness,
         double mu)
     {
         this->build(
-            mesh, V, contact_constraints, dhat, barrier_stiffness,
-            Eigen::VectorXd::Constant(V.rows(), mu));
+            mesh, vertices, contact_constraints, dhat, barrier_stiffness,
+            Eigen::VectorXd::Constant(vertices.rows(), mu));
     }
 
     void build(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const CollisionConstraints& contact_constraints,
         double dhat,
         double barrier_stiffness,

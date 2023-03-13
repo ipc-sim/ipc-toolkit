@@ -11,24 +11,25 @@
 namespace ipc {
 
 void SweepAndTiniestQueue::build(
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     double inflation_radius)
 {
-    build(V, V, edges, faces, inflation_radius);
+    build(vertices, vertices, edges, faces, inflation_radius);
 }
 
 void SweepAndTiniestQueue::build(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     double inflation_radius)
 {
     CopyMeshBroadPhase::copy_mesh(edges, faces);
-    num_vertices = V0.rows();
-    stq::cpu::constructBoxes(V0, V1, edges, faces, boxes, inflation_radius);
+    num_vertices = vertices_t0.rows();
+    stq::cpu::constructBoxes(
+        vertices_t0, vertices_t1, edges, faces, boxes, inflation_radius);
     int n = boxes.size();
     stq::cpu::sort_along_xaxis(boxes);
     stq::cpu::run_sweep_cpu(boxes, n, overlaps);
@@ -118,26 +119,27 @@ bool SweepAndTiniestQueue::is_face(long id) const
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
 void SweepAndTiniestQueueGPU::build(
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     double inflation_radius)
 {
     CopyMeshBroadPhase::copy_mesh(edges, faces);
     ccd::gpu::construct_static_collision_candidates(
-        V, edges, faces, overlaps, boxes, inflation_radius);
+        vertices, edges, faces, overlaps, boxes, inflation_radius);
 }
 
 void SweepAndTiniestQueueGPU::build(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     double inflation_radius)
 {
     CopyMeshBroadPhase::copy_mesh(edges, faces);
     ccd::gpu::construct_continuous_collision_candidates(
-        V0, V1, edges, faces, overlaps, boxes, inflation_radius);
+        vertices_t0, vertices_t1, edges, faces, overlaps, boxes,
+        inflation_radius);
 }
 
 void SweepAndTiniestQueueGPU::clear()

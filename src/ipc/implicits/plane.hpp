@@ -13,7 +13,7 @@ namespace ipc {
 ///
 /// @note The given pv_constraints will be cleared.
 ///
-/// @param[in]  points  Point V as rows of a matrix.
+/// @param[in]  points Points as rows of a matrix.
 /// @param[in]  plane_origins  Plane origins as rows of a matrix.
 /// @param[in]  plane_normals  Plane normals as rows of a matrix.
 /// @param[in]  dhat  The activation distance of the barrier.
@@ -41,8 +41,8 @@ void construct_point_plane_constraint_set(
 ///
 /// @note Assumes the trajectory is linear.
 ///
-/// @param[in] points_t0 Point V at start as rows of a matrix.
-/// @param[in] points_t1 Point V at end as rows of a matrix.
+/// @param[in] points_t0 Points at start as rows of a matrix.
+/// @param[in] points_t1 Points at end as rows of a matrix.
 /// @param[in] plane_origins  Plane origins as rows of a matrix.
 /// @param[in] plane_normals  Plane normals as rows of a matrix.
 /// @param[in] can_collide
@@ -65,8 +65,8 @@ bool is_step_point_plane_collision_free(
 /// @note Assumes the trajectory is linear.
 /// @note A value of 1.0 if a full step and 0.0 is no step.
 ///
-/// @param[in] points_t0 Point V at start as rows of a matrix.
-/// @param[in] points_t1 Point V at end as rows of a matrix.
+/// @param[in] points_t0 Points at start as rows of a matrix.
+/// @param[in] points_t1 Points at end as rows of a matrix.
 /// @param[in] plane_origins  Plane origins as rows of a matrix.
 /// @param[in] plane_normals  Plane normals as rows of a matrix.
 /// @param[in] can_collide

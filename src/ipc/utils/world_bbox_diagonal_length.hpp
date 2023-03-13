@@ -5,11 +5,12 @@
 namespace ipc {
 
 /// @brief Compute the diagonal length of the world bounding box.
-/// @param V Positions of the vertices.
+/// @param vertices Vertex positions
 /// @return The diagonal length of the world bounding box.
-inline double world_bbox_diagonal_length(const Eigen::MatrixXd& V)
+inline double world_bbox_diagonal_length(const Eigen::MatrixXd& vertices)
 {
-    return (V.colwise().maxCoeff() - V.colwise().minCoeff()).norm();
+    return (vertices.colwise().maxCoeff() - vertices.colwise().minCoeff())
+        .norm();
 }
 
 } // namespace ipc

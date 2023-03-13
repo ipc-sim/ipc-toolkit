@@ -16,18 +16,20 @@
 namespace ipc {
 
 void HashGrid::build(
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     double inflation_radius)
 {
-    BroadPhase::build(V, edges, faces, inflation_radius); // also calls clear()
+    BroadPhase::build(vertices, edges, faces, inflation_radius);
+    // BroadPhase::build also calls clear()
 
-    ArrayMax3d mesh_min = V.colwise().minCoeff().array();
-    ArrayMax3d mesh_max = V.colwise().maxCoeff().array();
+    ArrayMax3d mesh_min = vertices.colwise().minCoeff().array();
+    ArrayMax3d mesh_max = vertices.colwise().maxCoeff().array();
     AABB::conservative_inflation(mesh_min, mesh_max, inflation_radius);
 
-    double cell_size = suggest_good_voxel_size(V, edges, inflation_radius);
+    double cell_size =
+        suggest_good_voxel_size(vertices, edges, inflation_radius);
     assert(std::isfinite(cell_size));
     resize(mesh_min, mesh_max, cell_size);
 
@@ -35,26 +37,27 @@ void HashGrid::build(
 }
 
 void HashGrid::build(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     double inflation_radius)
 {
     BroadPhase::build(
-        V0, V1, edges, faces,
+        vertices_t0, vertices_t1, edges, faces,
         inflation_radius); // also calls clear()
 
-    const ArrayMax3d mesh_min_t0 = V0.colwise().minCoeff();
-    const ArrayMax3d mesh_max_t0 = V0.colwise().maxCoeff();
-    const ArrayMax3d mesh_min_t1 = V1.colwise().minCoeff();
-    const ArrayMax3d mesh_max_t1 = V1.colwise().maxCoeff();
+    const ArrayMax3d mesh_min_t0 = vertices_t0.colwise().minCoeff();
+    const ArrayMax3d mesh_max_t0 = vertices_t0.colwise().maxCoeff();
+    const ArrayMax3d mesh_min_t1 = vertices_t1.colwise().minCoeff();
+    const ArrayMax3d mesh_max_t1 = vertices_t1.colwise().maxCoeff();
 
     ArrayMax3d mesh_min = mesh_min_t0.min(mesh_min_t1);
     ArrayMax3d mesh_max = mesh_max_t0.max(mesh_max_t1);
     AABB::conservative_inflation(mesh_min, mesh_max, inflation_radius);
 
-    double cell_size = suggest_good_voxel_size(V0, V1, edges, inflation_radius);
+    double cell_size = suggest_good_voxel_size(
+        vertices_t0, vertices_t1, edges, inflation_radius);
     assert(std::isfinite(cell_size));
     resize(mesh_min, mesh_max, cell_size);
 

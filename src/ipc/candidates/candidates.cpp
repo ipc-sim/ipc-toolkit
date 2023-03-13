@@ -15,57 +15,59 @@ namespace ipc {
 
 void Candidates::build(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const double inflation_radius,
     const BroadPhaseMethod broad_phase_method)
 {
-    const int dim = V.cols();
+    const int dim = vertices.cols();
 
     clear();
 
     std::unique_ptr<BroadPhase> broad_phase =
         BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
-    broad_phase->build(V, mesh.edges(), mesh.faces(), inflation_radius);
+    broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this);
     broad_phase->clear();
 }
 
 void Candidates::build(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
     const double inflation_radius,
     const BroadPhaseMethod broad_phase_method)
 {
-    const int dim = V0.cols();
+    const int dim = vertices_t0.cols();
 
     clear();
 
     std::unique_ptr<BroadPhase> broad_phase =
         BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
-    broad_phase->build(V0, V1, mesh.edges(), mesh.faces(), inflation_radius);
+    broad_phase->build(
+        vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this);
     broad_phase->clear();
 }
 
 bool Candidates::is_step_collision_free(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
     const double min_distance,
     const double tolerance,
     const long max_iterations) const
 {
-    assert(V0.rows() == mesh.num_vertices());
-    assert(V1.rows() == mesh.num_vertices());
+    assert(vertices_t0.rows() == mesh.num_vertices());
+    assert(vertices_t1.rows() == mesh.num_vertices());
 
     // Narrow phase
     for (size_t i = 0; i < size(); i++) {
         double toi;
         bool is_collision = (*this)[i].ccd(
-            V0, V1, mesh.edges(), mesh.faces(), toi, min_distance,
+            vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), toi,
+            min_distance,
             /*tmax=*/1.0, tolerance, max_iterations);
 
         if (is_collision) {
@@ -78,14 +80,14 @@ bool Candidates::is_step_collision_free(
 
 double Candidates::compute_collision_free_stepsize(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
     const double min_distance,
     const double tolerance,
     const long max_iterations) const
 {
-    assert(V0.rows() == mesh.num_vertices());
-    assert(V1.rows() == mesh.num_vertices());
+    assert(vertices_t0.rows() == mesh.num_vertices());
+    assert(vertices_t1.rows() == mesh.num_vertices());
 
     if (empty()) {
         return 1; // No possible collisions, so can take full step.
@@ -108,8 +110,8 @@ double Candidates::compute_collision_free_stepsize(
 
                 double toi = std::numeric_limits<double>::infinity(); // output
                 bool are_colliding = (*this)[i].ccd(
-                    V0, V1, mesh.edges(), mesh.faces(), toi, min_distance, tmax,
-                    tolerance, max_iterations);
+                    vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), toi,
+                    min_distance, tmax, tolerance, max_iterations);
 
                 if (are_colliding) {
                     std::unique_lock lock(earliest_toi_mutex);
@@ -176,7 +178,7 @@ const ContinuousCollisionCandidate& Candidates::operator[](size_t idx) const
 
 bool Candidates::save_obj(
     const std::string& filename,
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces) const
 {
@@ -185,11 +187,11 @@ bool Candidates::save_obj(
         return false;
     }
     int v_offset = 0;
-    ipc::save_obj(obj, V, edges, faces, ev_candidates, v_offset);
+    ipc::save_obj(obj, vertices, edges, faces, ev_candidates, v_offset);
     v_offset += ev_candidates.size() * 3;
-    ipc::save_obj(obj, V, edges, faces, ee_candidates, v_offset);
+    ipc::save_obj(obj, vertices, edges, faces, ee_candidates, v_offset);
     v_offset += ee_candidates.size() * 4;
-    ipc::save_obj(obj, V, faces, faces, fv_candidates, v_offset);
+    ipc::save_obj(obj, vertices, faces, faces, fv_candidates, v_offset);
     return true;
 }
 

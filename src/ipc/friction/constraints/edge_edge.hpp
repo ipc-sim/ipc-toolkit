@@ -12,7 +12,7 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
     EdgeEdgeFrictionConstraint(const EdgeEdgeConstraint& constraint);
     EdgeEdgeFrictionConstraint(
         const EdgeEdgeConstraint& constraint,
-        const Eigen::MatrixXd& V,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat,
@@ -20,7 +20,7 @@ struct EdgeEdgeFrictionConstraint : EdgeEdgeCandidate, FrictionConstraint {
         : EdgeEdgeFrictionConstraint(constraint)
     {
         FrictionConstraint::init(
-            V, edges, faces, dhat, barrier_stiffness,
+            vertices, edges, faces, dhat, barrier_stiffness,
             constraint.minimum_distance);
     }
 
