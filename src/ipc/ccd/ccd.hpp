@@ -7,7 +7,7 @@ namespace ipc {
 /// The default tolerance used with Tight-Inclusion CCD.
 static constexpr double DEFAULT_CCD_TOLERANCE = 1e-6;
 /// The default maximum number of iterations used with Tight-Inclusion CCD.
-static constexpr long DEFAULT_CCD_MAX_ITERATIONS = 1e7;
+static constexpr long DEFAULT_CCD_MAX_ITERATIONS = 10'000'000l;
 /// The default conservative rescaling value used to avoid taking steps exactly
 /// to impact.
 static constexpr double DEFAULT_CCD_CONSERVATIVE_RESCALING = 0.8;

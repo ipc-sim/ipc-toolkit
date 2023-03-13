@@ -13,21 +13,22 @@ void define_spatial_hash(py::module_& m)
             py::init<
                 const Eigen::MatrixXd&, const Eigen::MatrixXi&,
                 const Eigen::MatrixXi&, double, double>(),
-            "", py::arg("V"), py::arg("E"), py::arg("F"),
+            "", py::arg("vertices"), py::arg("edges"), py::arg("faces"),
             py::arg("inflation_radius") = 0, py::arg("voxelSize") = -1)
         .def(
             py::init<
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&,
                 const Eigen::MatrixXi&, const Eigen::MatrixXi&, double,
                 double>(),
-            "", py::arg("V0"), py::arg("V1"), py::arg("E"), py::arg("F"),
-            py::arg("inflation_radius") = 0, py::arg("voxelSize") = -1)
+            "", py::arg("vertices_t0"), py::arg("vertices_t1"),
+            py::arg("edges"), py::arg("faces"), py::arg("inflation_radius") = 0,
+            py::arg("voxelSize") = -1)
         .def(
             "build",
             py::overload_cast<
                 const Eigen::MatrixXd&, const Eigen::MatrixXi&,
                 const Eigen::MatrixXi&, double>(&SpatialHash::build),
-            "", py::arg("V"), py::arg("E"), py::arg("F"),
+            "", py::arg("vertices"), py::arg("edges"), py::arg("faces"),
             py::arg("inflation_radius") = 0)
         .def(
             "build",
@@ -35,14 +36,14 @@ void define_spatial_hash(py::module_& m)
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&,
                 const Eigen::MatrixXi&, const Eigen::MatrixXi&, double>(
                 &SpatialHash::build),
-            "", py::arg("V0"), py::arg("V1"), py::arg("E"), py::arg("F"),
-            py::arg("inflation_radius") = 0)
+            "", py::arg("vertices_t0"), py::arg("vertices_t1"),
+            py::arg("edges"), py::arg("faces"), py::arg("inflation_radius") = 0)
         .def(
             "build",
             py::overload_cast<
                 const Eigen::MatrixXd&, const Eigen::MatrixXi&,
                 const Eigen::MatrixXi&, double, double>(&SpatialHash::build),
-            "", py::arg("V"), py::arg("E"), py::arg("F"),
+            "", py::arg("vertices"), py::arg("edges"), py::arg("faces"),
             py::arg("inflation_radius"), py::arg("voxelSize"))
         .def(
             "build",
@@ -50,8 +51,9 @@ void define_spatial_hash(py::module_& m)
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&,
                 const Eigen::MatrixXi&, const Eigen::MatrixXi&, double, double>(
                 &SpatialHash::build),
-            "", py::arg("V0"), py::arg("V1"), py::arg("E"), py::arg("F"),
-            py::arg("inflation_radius"), py::arg("voxelSize"))
+            "", py::arg("vertices_t0"), py::arg("vertices_t1"),
+            py::arg("edges"), py::arg("faces"), py::arg("inflation_radius"),
+            py::arg("voxelSize"))
         .def("clear", &SpatialHash::clear, "")
         .def(
             "queryPointForTriangles",
@@ -104,16 +106,16 @@ void define_spatial_hash(py::module_& m)
             py::arg("eai") = -1)
         .def(
             "queryEdgeForEdgesWithBBoxCheck",
-            [](SpatialHash& self, const Eigen::MatrixXd& V,
-               const Eigen::MatrixXi& E, const VectorMax3d& ea0,
+            [](SpatialHash& self, const Eigen::MatrixXd& vertices,
+               const Eigen::MatrixXi& edges, const VectorMax3d& ea0,
                const VectorMax3d& ea1, double radius = 0, int eai = -1) {
                 std::vector<int> edgeInds;
                 self.queryEdgeForEdgesWithBBoxCheck(
-                    V, E, ea0, ea1, edgeInds, radius, eai);
+                    vertices, edges, ea0, ea1, edgeInds, radius, eai);
                 return edgeInds;
             },
-            "", py::arg("V"), py::arg("E"), py::arg("ea0"), py::arg("ea1"),
-            py::arg("radius") = 0, py::arg("eai") = -1)
+            "", py::arg("vertices"), py::arg("edges"), py::arg("ea0"),
+            py::arg("ea1"), py::arg("radius") = 0, py::arg("eai") = -1)
         .def(
             "queryEdgeForEdges",
             [](SpatialHash& self, const VectorMax3d& ea0_t0,
@@ -206,13 +208,16 @@ void define_spatial_hash(py::module_& m)
             "", py::arg("eai"))
         .def(
             "queryEdgeForEdgesWithBBoxCheck",
-            [](SpatialHash& self, const Eigen::MatrixXd& V0,
-               const Eigen::MatrixXd& V1, const Eigen::MatrixXi& E, int eai) {
+            [](SpatialHash& self, const Eigen::MatrixXd& vertices_t0,
+               const Eigen::MatrixXd& vertices_t1, const Eigen::MatrixXi& edges,
+               int eai) {
                 unordered_set<int> edgeInds;
-                self.queryEdgeForEdgesWithBBoxCheck(V0, V1, E, eai, edgeInds);
+                self.queryEdgeForEdgesWithBBoxCheck(
+                    vertices_t0, vertices_t1, edges, eai, edgeInds);
                 return edgeInds;
             },
-            "", py::arg("V0"), py::arg("V1"), py::arg("E"), py::arg("eai"))
+            "", py::arg("vertices_t0"), py::arg("vertices_t1"),
+            py::arg("edges"), py::arg("eai"))
         .def(
             "queryEdgeForTriangles",
             [](SpatialHash& self, int ei) {

@@ -19,7 +19,6 @@ void define_hash_grid(py::module_& m)
         .def_readwrite("id", &HashItem::id, "The value of the item.");
 
     py::class_<HashGrid, BroadPhase>(m, "HashGrid")
-        .def(py::init())
         .def(
             "build",
             py::overload_cast<
@@ -29,12 +28,12 @@ void define_hash_grid(py::module_& m)
             Build the broad phase for static collision detection.
 
             Parameters:
-                V0: Positions of the vertices.
-                E: Edges of the mesh.
-                F: Faces of the mesh.
+                vertices_t0: Vertex positions
+                edges: Collision mesh edges
+                faces: Collision mesh faces
                 inflation_radius: Radius of inflation around all elements.
             )ipc_Qu8mg5v7",
-            py::arg("V"), py::arg("E"), py::arg("F"),
+            py::arg("vertices"), py::arg("edges"), py::arg("faces"),
             py::arg("inflation_radius") = 0)
         .def(
             "build",
@@ -46,14 +45,14 @@ void define_hash_grid(py::module_& m)
             Build the broad phase for continuous collision detection.
 
             Parameters:
-                V0: Starting positions of the vertices.
-                V1: Ending positions of the vertices.
-                E: Edges of the mesh.
-                F: Faces of the mesh.
+                vertices_t0: Starting vertices of the vertices.
+                vertices_t1: Ending vertices of the vertices.
+                edges: Collision mesh edges
+                faces: Collision mesh faces
                 inflation_radius: Radius of inflation around all elements.
             )ipc_Qu8mg5v7",
-            py::arg("V0"), py::arg("V1"), py::arg("E"), py::arg("F"),
-            py::arg("inflation_radius") = 0)
+            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
+            py::arg("faces"), py::arg("inflation_radius") = 0)
         .def("clear", &HashGrid::clear, "Clear the hash grid.")
         .def(
             "detect_edge_vertex_candidates",

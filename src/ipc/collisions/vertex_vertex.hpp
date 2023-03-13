@@ -11,6 +11,11 @@ class VertexVertexConstraint : public VertexVertexCandidate,
 public:
     using VertexVertexCandidate::VertexVertexCandidate;
 
+    VertexVertexConstraint(const VertexVertexCandidate& candidate)
+        : VertexVertexCandidate(candidate)
+    {
+    }
+
     template <typename H>
     friend H AbslHashValue(H h, const VertexVertexConstraint& vv)
     {

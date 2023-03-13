@@ -1,66 +1,7 @@
 #include "common.hpp"
+#include "bindings.hpp"
 
 namespace py = pybind11;
-
-// barrier
-void define_adaptive_stiffness(py::module_& m);
-void define_barrier(py::module_& m);
-
-// broad_phase
-void define_aabb(py::module_& m);
-void define_broad_phase(py::module_& m);
-void define_brute_force(py::module_& m);
-void define_hash_grid(py::module_& m);
-void define_spatial_hash(py::module_& m);
-void define_sweep(py::module_& m);
-void define_voxel_size_heuristic(py::module_& m);
-
-// candidates
-void define_candidates(py::module_& m);
-void define_continuous_collision_candidate(py::module_& m);
-void define_edge_edge_candidate(py::module_& m);
-void define_edge_face_candidate(py::module_& m);
-void define_edge_vertex_candidate(py::module_& m);
-void define_face_vertex_candidate(py::module_& m);
-void define_vertex_vertex_candidate(py::module_& m);
-
-// ccd
-void define_ccd_aabb(py::module_& m);
-void define_ccd(py::module_& m);
-void define_inexact_point_edge(py::module_& m);
-void define_point_static_plane(py::module_& m);
-
-// distance
-void define_distance_type(py::module_& m);
-void define_edge_edge_mollifier(py::module_& m);
-void define_edge_edge_distance(py::module_& m);
-void define_line_line_distance(py::module_& m);
-void define_point_edge_distance(py::module_& m);
-void define_point_line_distance(py::module_& m);
-void define_point_point_distance(py::module_& m);
-void define_point_plane_distance(py::module_& m);
-void define_point_triangle_distance(py::module_& m);
-
-// friction
-void define_closest_point(py::module_& m);
-void define_friction_constraint(py::module_& m);
-void define_friction(py::module_& m);
-void define_normal_force_magnitude(py::module_& m);
-void define_relative_displacement(py::module_& m);
-void define_smooth_friction_mollifier(py::module_& m);
-void define_tangent_basis(py::module_& m);
-
-// utils
-void define_eigen_ext(py::module_& m);
-void define_intersection(py::module_& m);
-void define_logger(py::module_& m);
-void define_thread_limiter(py::module_& m);
-void define_world_bbox_diagonal_length(py::module_& m);
-
-// root
-void define_collision_constraint(py::module_& m);
-void define_collision_mesh(py::module_& m);
-void define_ipc(py::module_& m);
 
 PYBIND11_MODULE(ipctk, m)
 {
@@ -82,19 +23,9 @@ PYBIND11_MODULE(ipctk, m)
     define_sweep(m);
     define_voxel_size_heuristic(m);
 
-    // distance
-    define_distance_type(m);
-    define_edge_edge_mollifier(m);
-    define_edge_edge_distance(m);
-    define_line_line_distance(m);
-    define_point_edge_distance(m);
-    define_point_line_distance(m);
-    define_point_point_distance(m);
-    define_point_plane_distance(m);
-    define_point_triangle_distance(m);
-
     // candidates
     define_candidates(m);
+    define_collision_stencil(m);
     define_continuous_collision_candidate(m);
     define_edge_edge_candidate(m);
     define_edge_face_candidate(m);
@@ -108,24 +39,55 @@ PYBIND11_MODULE(ipctk, m)
     define_inexact_point_edge(m);
     define_point_static_plane(m);
 
+    // collisions
+    define_collision_constraint(m);
+    define_collision_constraints(m);
+    define_edge_edge_constraint(m);
+    define_edge_vertex_constraint(m);
+    define_face_vertex_constraint(m);
+    define_plane_vertex_constraint(m);
+    define_vertex_vertex_constraint(m);
+
+    // distance
+    define_distance_type(m);
+    define_edge_edge_mollifier(m);
+    define_edge_edge_distance(m);
+    define_line_line_distance(m);
+    define_point_edge_distance(m);
+    define_point_line_distance(m);
+    define_point_point_distance(m);
+    define_point_plane_distance(m);
+    define_point_triangle_distance(m);
+
     // friction
     define_closest_point(m);
-    define_friction_constraint(m);
-    define_friction(m);
+    define_friction_constraints(m);
     define_normal_force_magnitude(m);
-    define_relative_displacement(m);
+    define_relative_velocity(m);
     define_smooth_friction_mollifier(m);
     define_tangent_basis(m);
 
+    // friction/constraints
+    // NOTE: this has to be defined before the other friction constraints
+    define_friction_constraint(m);
+    define_edge_edge_friction_constraint(m);
+    define_edge_vertex_friction_constraint(m);
+    define_face_vertex_friction_constraint(m);
+    define_vertex_vertex_friction_constraint(m);
+
+    // implicits
+    define_plane_implicit(m);
+
     // utils
+    define_area_gradient(m);
     define_eigen_ext(m);
     define_intersection(m);
     define_logger(m);
     define_thread_limiter(m);
+    define_vertex_to_min_edge(m);
     define_world_bbox_diagonal_length(m);
 
     // root
-    define_collision_constraint(m);
     define_collision_mesh(m);
     define_ipc(m);
 }

@@ -10,6 +10,11 @@ class FaceVertexConstraint : public FaceVertexCandidate,
 public:
     using FaceVertexCandidate::FaceVertexCandidate;
 
+    FaceVertexConstraint(const FaceVertexCandidate& candidate)
+        : FaceVertexCandidate(candidate)
+    {
+    }
+
     template <typename H>
     friend H AbslHashValue(H h, const FaceVertexConstraint& fv)
     {

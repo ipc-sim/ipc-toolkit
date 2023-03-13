@@ -10,6 +10,11 @@ class EdgeVertexConstraint : public EdgeVertexCandidate,
 public:
     using EdgeVertexCandidate::EdgeVertexCandidate;
 
+    EdgeVertexConstraint(const EdgeVertexCandidate& candidate)
+        : EdgeVertexCandidate(candidate)
+    {
+    }
+
     template <typename H>
     friend H AbslHashValue(H h, const EdgeVertexConstraint& ev)
     {

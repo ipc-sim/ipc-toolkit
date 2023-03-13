@@ -32,8 +32,7 @@ void define_closest_point(py::module_& m)
            const Eigen::Vector3d& t1, const Eigen::Vector3d& t2) {
             return point_triangle_closest_point(p, t0, t1, t2);
         },
-        "Compute the barycentric coordinates of the closest point on the "
-        "triangle.",
+        "Compute the barycentric coordinates of the closest point on the triangle.",
         py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"));
 
     m.def(

@@ -20,7 +20,8 @@ void define_aabb(py::module_& m)
             py::arg("aabb1"), py::arg("aabb2"), py::arg("aabb3"))
         .def_static(
             "from_point",
-            py::overload_cast<const VectorMax3d&, double>(&AABB::from_point),
+            py::overload_cast<const VectorMax3d&, const double>(
+                &AABB::from_point),
             R"ipc_Qu8mg5v7(
             Compute a AABB for a static point.
 
@@ -34,7 +35,8 @@ void define_aabb(py::module_& m)
             py::arg("p"), py::arg("inflation_radius") = 0)
         .def_static(
             "from_point",
-            py::overload_cast<const VectorMax3d&, const VectorMax3d&, double>(
+            py::overload_cast<
+                const VectorMax3d&, const VectorMax3d&, const double>(
                 &AABB::from_point),
             R"ipc_Qu8mg5v7(
             Compute a AABB for a moving point (i.e. temporal edge).
@@ -60,6 +62,14 @@ void define_aabb(py::module_& m)
                 If the two AABBs intersect.
             )ipc_Qu8mg5v7",
             py::arg("other"))
+        .def_static(
+            "conservative_inflation",
+            [](ArrayMax3d min, ArrayMax3d max, const double inflation_radius) {
+                AABB::conservative_inflation(min, max, inflation_radius);
+                return std::make_tuple(min, max);
+            },
+            "Compute a conservative inflation of the AABB.", py::arg("min"),
+            py::arg("max"), py::arg("inflation_radius"))
         .def_readwrite("min", &AABB::min, "Minimum corner of the AABB.")
         .def_readwrite("max", &AABB::max, "Maximum corner of the AABB.")
         .def_readwrite(
@@ -68,39 +78,44 @@ void define_aabb(py::module_& m)
 
     m.def(
         "build_vertex_boxes",
-        [](const Eigen::MatrixXd& V, double inflation_radius = 0) {
+        [](const Eigen::MatrixXd& vertices, const double inflation_radius = 0) {
             std::vector<AABB> vertex_boxes;
-            build_vertex_boxes(V, vertex_boxes, inflation_radius);
+            build_vertex_boxes(vertices, vertex_boxes, inflation_radius);
             return vertex_boxes;
         },
-        "Build one AABB per vertex position (row of V).", py::arg("V"),
+        "Build one AABB per vertex position (row of V).", py::arg("vertices"),
         py::arg("inflation_radius") = 0);
 
     m.def(
         "build_vertex_boxes",
-        [](const Eigen::MatrixXd& V0, const Eigen::MatrixXd& V1,
-           double inflation_radius = 0) {
+        [](const Eigen::MatrixXd& vertices_t0,
+           const Eigen::MatrixXd& vertices_t1,
+           const double inflation_radius = 0) {
             std::vector<AABB> vertex_boxes;
-            build_vertex_boxes(V0, V1, vertex_boxes, inflation_radius);
+            build_vertex_boxes(
+                vertices_t0, vertices_t1, vertex_boxes, inflation_radius);
             return vertex_boxes;
         },
-        "", py::arg("V0"), py::arg("V1"), py::arg("inflation_radius") = 0);
+        "", py::arg("vertices_t0"), py::arg("vertices_t1"),
+        py::arg("inflation_radius") = 0);
 
     m.def(
         "build_edge_boxes",
-        [](const std::vector<AABB>& vertex_boxes, const Eigen::MatrixXi& E) {
+        [](const std::vector<AABB>& vertex_boxes,
+           const Eigen::MatrixXi& edges) {
             std::vector<AABB> edge_boxes;
-            build_edge_boxes(vertex_boxes, E, edge_boxes);
+            build_edge_boxes(vertex_boxes, edges, edge_boxes);
             return edge_boxes;
         },
-        "", py::arg("vertex_boxes"), py::arg("E"));
+        "", py::arg("vertex_boxes"), py::arg("edges"));
 
     m.def(
         "build_face_boxes",
-        [](const std::vector<AABB>& vertex_boxes, const Eigen::MatrixXi& F) {
+        [](const std::vector<AABB>& vertex_boxes,
+           const Eigen::MatrixXi& faces) {
             std::vector<AABB> face_boxes;
-            build_face_boxes(vertex_boxes, F, face_boxes);
+            build_face_boxes(vertex_boxes, faces, face_boxes);
             return face_boxes;
         },
-        "", py::arg("vertex_boxes"), py::arg("F"));
+        "", py::arg("vertex_boxes"), py::arg("faces"));
 }

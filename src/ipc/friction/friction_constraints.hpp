@@ -76,38 +76,39 @@ public:
 
     // ------------------------------------------------------------------------
 
+    /// @param no_mu whether to not multiply by mu
     Eigen::VectorXd compute_force(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
         const Eigen::MatrixXd& Ut,
-        const Eigen::MatrixXd& velocities,
+        const Eigen::MatrixXd& U,
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
         const double dmin = 0,
-        const bool no_mu = false) const; //< whether to not multiply by mu
+        const bool no_mu = false) const;
 
+    /// @param no_mu whether to not multiply by mu
     Eigen::VectorXd compute_force(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
-        const Eigen::MatrixXd& velocities,
+        const Eigen::MatrixXd& U,
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
         const double dmin = 0,
-        const bool no_mu = false) const //< whether to not multiply by mu
+        const bool no_mu = false) const
     {
         return compute_force(
-            mesh, X,
-            Eigen::MatrixXd::Zero(velocities.rows(), velocities.cols()),
-            velocities, dhat, barrier_stiffness, epsv_times_h, dmin, no_mu);
+            mesh, X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, dhat,
+            barrier_stiffness, epsv_times_h, dmin, no_mu);
     }
 
     Eigen::SparseMatrix<double> compute_force_jacobian(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
         const Eigen::MatrixXd& Ut,
-        const Eigen::MatrixXd& velocities,
+        const Eigen::MatrixXd& U,
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
@@ -117,7 +118,7 @@ public:
     Eigen::SparseMatrix<double> compute_force_jacobian(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
-        const Eigen::MatrixXd& velocities,
+        const Eigen::MatrixXd& U,
         const double dhat,
         const double barrier_stiffness,
         const double epsv_times_h,
@@ -125,9 +126,8 @@ public:
         const double dmin = 0) const
     {
         return compute_force_jacobian(
-            mesh, X,
-            Eigen::MatrixXd::Zero(velocities.rows(), velocities.cols()),
-            velocities, dhat, barrier_stiffness, epsv_times_h, wrt, dmin);
+            mesh, X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, dhat,
+            barrier_stiffness, epsv_times_h, wrt, dmin);
     }
 
     // ------------------------------------------------------------------------
@@ -151,13 +151,6 @@ public:
     /// @return A const reference to the constraint.
     const FrictionConstraint& operator[](const size_t idx) const;
 
-public:
-    std::vector<VertexVertexFrictionConstraint> vv_constraints;
-    std::vector<EdgeVertexFrictionConstraint> ev_constraints;
-    std::vector<EdgeEdgeFrictionConstraint> ee_constraints;
-    std::vector<FaceVertexFrictionConstraint> fv_constraints;
-
-private:
     static double default_blend_mu(double mu0, double mu1)
     {
         // return mu0 * mu1;
@@ -165,6 +158,12 @@ private:
         // return std::max(mu0, mu1);
         return (mu0 + mu1) / 2;
     }
+
+public:
+    std::vector<VertexVertexFrictionConstraint> vv_constraints;
+    std::vector<EdgeVertexFrictionConstraint> ev_constraints;
+    std::vector<EdgeEdgeFrictionConstraint> ee_constraints;
+    std::vector<FaceVertexFrictionConstraint> fv_constraints;
 };
 
 } // namespace ipc
