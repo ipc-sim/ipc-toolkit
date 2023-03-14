@@ -43,7 +43,7 @@ void define_plane_implicit(py::module_& m)
         "construct_point_plane_constraint_set",
         [](const Eigen::MatrixXd& points, const Eigen::MatrixXd& plane_origins,
            const Eigen::MatrixXd& plane_normals, const double dhat,
-           const double dmin = 0,
+           const double dmin,
            const std::function<bool(size_t, size_t)>& can_collide) {
             std::vector<PlaneVertexConstraint> pv_constraints;
             construct_point_plane_constraint_set(
@@ -71,7 +71,7 @@ void define_plane_implicit(py::module_& m)
             The constructed set of constraints.
         )ipc_Qu8mg5v7",
         py::arg("points"), py::arg("plane_origins"), py::arg("plane_normals"),
-        py::arg("dhat"), py::arg("dmin") = 0, py::arg("can_collide"));
+        py::arg("dhat"), py::arg("dmin"), py::arg("can_collide"));
 
     m.def(
         "is_step_point_plane_collision_free",
