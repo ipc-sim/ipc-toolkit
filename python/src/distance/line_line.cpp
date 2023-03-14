@@ -1,4 +1,4 @@
-#include "../common.hpp"
+#include <common.hpp>
 
 #include <ipc/distance/line_line.hpp>
 

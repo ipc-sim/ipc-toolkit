@@ -12,7 +12,7 @@ namespace ipc {
 
 class SpatialHash : public BroadPhase {
 public: // data
-    VectorMax3d leftBottomCorner, rightTopCorner;
+    ArrayMax3d leftBottomCorner, rightTopCorner;
     ArrayMax3i voxelCount;
     double one_div_voxelSize;
     int voxelCount0x1;
@@ -30,58 +30,62 @@ public: // constructor
     SpatialHash() { }
 
     SpatialHash(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         double inflation_radius = 0,
         double voxelSize = -1)
     {
-        build(V, E, F, inflation_radius, voxelSize);
+        build(vertices, edges, faces, inflation_radius, voxelSize);
     }
 
     SpatialHash(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         double inflation_radius = 0,
         double voxelSize = -1)
     {
-        build(V0, V1, E, F, inflation_radius, voxelSize);
+        build(
+            vertices_t0, vertices_t1, edges, faces, inflation_radius,
+            voxelSize);
     }
 
 public: // API
     void build(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         double inflation_radius = 0) override
     {
-        build(V, E, F, inflation_radius, /*voxelSize=*/-1);
+        build(vertices, edges, faces, inflation_radius, /*voxelSize=*/-1);
     }
 
     void build(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         double inflation_radius = 0) override
     {
-        build(V0, V1, E, F, inflation_radius, /*voxelSize=*/-1);
+        build(
+            vertices_t0, vertices_t1, edges, faces, inflation_radius,
+            /*voxelSize=*/-1);
     }
 
     void build(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         double inflation_radius,
         double voxelSize);
 
     void build(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         double inflation_radius,
         double voxelSize);
 
@@ -126,8 +130,8 @@ public: // API
         int eai = -1) const;
 
     void queryEdgeForEdgesWithBBoxCheck(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
         const VectorMax3d& ea0,
         const VectorMax3d& ea1,
         std::vector<int>& edgeInds,
@@ -187,9 +191,9 @@ public: // API
     void queryEdgeForEdges(int eai, unordered_set<int>& edgeInds) const;
 
     void queryEdgeForEdgesWithBBoxCheck(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
+        const Eigen::MatrixXi& edges,
         int eai,
         unordered_set<int>& edgeInds) const;
 
@@ -219,6 +223,13 @@ protected: // helper functions
 
     void locateVoxelAxisIndex(
         const VectorMax3d& p, ArrayMax3i& voxelAxisIndex) const;
+
+    void locateBoxVoxelAxisIndex(
+        ArrayMax3d minCorner,
+        ArrayMax3d maxCorner,
+        ArrayMax3i& minIndex,
+        ArrayMax3i& maxIndex,
+        const double inflation_radius = 0) const;
 
     int voxelAxisIndex2VoxelIndex(const ArrayMax3i& voxelAxisIndex) const;
 

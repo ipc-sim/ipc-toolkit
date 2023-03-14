@@ -2,15 +2,15 @@
 
 namespace ipc {
 
-EdgeFaceCandidate::EdgeFaceCandidate(long edge_index, long face_index)
-    : edge_index(edge_index)
-    , face_index(face_index)
+EdgeFaceCandidate::EdgeFaceCandidate(long edge_id, long face_id)
+    : edge_id(edge_id)
+    , face_id(face_id)
 {
 }
 
 bool EdgeFaceCandidate::operator==(const EdgeFaceCandidate& other) const
 {
-    return edge_index == other.edge_index && face_index == other.face_index;
+    return edge_id == other.edge_id && face_id == other.face_id;
 }
 
 bool EdgeFaceCandidate::operator!=(const EdgeFaceCandidate& other) const
@@ -20,10 +20,10 @@ bool EdgeFaceCandidate::operator!=(const EdgeFaceCandidate& other) const
 
 bool EdgeFaceCandidate::operator<(const EdgeFaceCandidate& other) const
 {
-    if (edge_index == other.edge_index) {
-        return face_index < other.face_index;
+    if (edge_id == other.edge_id) {
+        return face_id < other.face_id;
     }
-    return edge_index < other.edge_index;
+    return edge_id < other.edge_id;
 }
 
 } // namespace ipc

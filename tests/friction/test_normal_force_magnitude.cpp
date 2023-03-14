@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <ipc/friction/normal_force_magnitude.hpp>
 

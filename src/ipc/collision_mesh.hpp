@@ -15,12 +15,12 @@ public:
     CollisionMesh() { }
 
     /// @brief Construct a new Collision Mesh object directly from the collision mesh vertices.
-    /// @param vertices_at_rest The vertices of the collision mesh at rest.
+    /// @param rest_positions The vertices of the collision mesh at rest.
     /// @param edges The edges of the collision mesh.
     /// @param faces The faces of the collision mesh.
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
     CollisionMesh(
-        const Eigen::MatrixXd& vertices_at_rest,
+        const Eigen::MatrixXd& rest_positions,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const Eigen::SparseMatrix<double>& displacement_map =
@@ -28,31 +28,31 @@ public:
 
     /// @brief Construct a new Collision Mesh object from a full mesh vertices.
     /// @param include_vertex Vector of bools indicating whether each vertex should be included in the collision mesh.
-    /// @param full_vertices_at_rest The vertices of the full mesh at rest.
+    /// @param full_rest_positions The vertices of the full mesh at rest.
     /// @param edges The edges of the collision mesh indexed into the full mesh vertices.
     /// @param faces The faces of the collision mesh indexed into the full mesh vertices.
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
     CollisionMesh(
         const std::vector<bool>& include_vertex,
-        const Eigen::MatrixXd& full_vertices_at_rest,
+        const Eigen::MatrixXd& full_rest_positions,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const Eigen::SparseMatrix<double>& displacement_map =
             Eigen::SparseMatrix<double>());
 
     /// @brief Helper function that automatically builds include_vertex using construct_is_on_surface.
-    /// @param full_vertices_at_rest The full vertices at rest.
+    /// @param full_rest_positions The full vertices at rest.
     /// @param edges The edge matrix of mesh.
     /// @param faces The face matrix of mesh.
     /// @return Constructed CollisionMesh.
     static CollisionMesh build_from_full_mesh(
-        const Eigen::MatrixXd& full_vertices_at_rest,
+        const Eigen::MatrixXd& full_rest_positions,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces)
     {
         return CollisionMesh(
-            construct_is_on_surface(full_vertices_at_rest.rows(), edges),
-            full_vertices_at_rest, edges, faces);
+            construct_is_on_surface(full_rest_positions.rows(), edges),
+            full_rest_positions, edges, faces);
     }
 
     // The following functions are used to initialize optional data structures.
@@ -76,7 +76,7 @@ public:
     size_t num_faces() const { return faces().rows(); }
 
     /// @brief Get the dimension of the mesh.
-    size_t dim() const { return m_vertices_at_rest.cols(); }
+    size_t dim() const { return m_rest_positions.cols(); }
 
     /// @brief Get the number of degrees of freedom in the collision mesh.
     size_t ndof() const { return num_vertices() * dim(); }
@@ -88,10 +88,7 @@ public:
     size_t full_ndof() const { return full_num_vertices() * dim(); }
 
     /// @brief Get the vertices of the collision mesh at rest.
-    const Eigen::MatrixXd& vertices_at_rest() const
-    {
-        return m_vertices_at_rest;
-    }
+    const Eigen::MatrixXd& rest_positions() const { return m_rest_positions; }
 
     /// @brief Get the edges of the collision mesh.
     const Eigen::MatrixXi& edges() const { return m_edges; }
@@ -117,7 +114,7 @@ public:
     /// @brief Compute the vertex positions from the positions of the full mesh.
     /// @param full_vertices The vertex positions of the full mesh.
     /// @return The vertex positions of the collision mesh.
-    Eigen::MatrixXd vertices(const Eigen::MatrixXd& full_vertices) const;
+    Eigen::MatrixXd vertices(const Eigen::MatrixXd& full_positions) const;
 
     /// @brief Compute the vertex positions from vertex displacements on the full mesh.
     /// @param full_displacements The vertex displacements on the full mesh.
@@ -256,10 +253,9 @@ public:
     static Eigen::MatrixXi construct_faces_to_edges(
         const Eigen::MatrixXi& faces, const Eigen::MatrixXi& edges);
 
-    /// A function that takes two vertex IDs (row numbers in V) and returns true
-    /// if the vertices (and faces or edges containing the vertices) can
-    /// collide. By default all primitives can collide with all other
-    /// primitives.
+    /// A function that takes two vertex IDs and returns true if the vertices
+    /// (and faces or edges containing the vertices) can collide. By default all
+    /// primitives can collide with all other primitives.
     std::function<bool(size_t, size_t)> can_collide = default_can_collide;
 
 protected:
@@ -272,21 +268,21 @@ protected:
     /// @brief Initialize vertex and edge areas.
     void init_areas();
 
-    /// @brief Convert a matrix meant for M_V * V to M_dof * x by duplicating the entries dim times.
+    /// @brief Convert a matrix meant for M_V * vertices to M_dof * x by duplicating the entries dim times.
     static Eigen::SparseMatrix<double> vertex_matrix_to_dof_matrix(
         const Eigen::SparseMatrix<double>& M_V, int dim);
 
     // -----------------------------------------------------------------------
 
     /// @brief The full vertex positions at rest.
-    Eigen::MatrixXd m_full_vertices_at_rest;
+    Eigen::MatrixXd m_full_rest_positions;
     /// @brief The vertex positions at rest.
-    Eigen::MatrixXd m_vertices_at_rest;
-    /// @brief Edges as rows of indicies into V.
+    Eigen::MatrixXd m_rest_positions;
+    /// @brief Edges as rows of indicies into vertices.
     Eigen::MatrixXi m_edges;
-    /// @brief Triangular faces as rows of indicies into V.
+    /// @brief Triangular faces as rows of indicies into vertices.
     Eigen::MatrixXi m_faces;
-    /// @brief Map from F edges to rows of E.
+    /// @brief Map from faces edges to rows of edges.
     Eigen::MatrixXi m_faces_to_edges;
 
     /// @brief Map from full vertices to collision vertices.

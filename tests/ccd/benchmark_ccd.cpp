@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <Eigen/Core>
 
@@ -65,14 +65,13 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
     // Broad phase
     // BENCHMARK(fmt::format("Earliest ToI Broad-Phase {}", BP_names[i]))
     Candidates candidates;
-    construct_collision_candidates(
-        mesh, V0, V1, candidates, /*inflation_radius=*/0, method);
+    candidates.build(mesh, V0, V1, /*inflation_radius=*/0, method);
     // };
 
     BENCHMARK(fmt::format("Earliest ToI Narrow-Phase"))
     {
-        stepsize = compute_collision_free_stepsize(
-            candidates, mesh, V0, V1, tolerance, max_iterations);
+        stepsize = candidates.compute_collision_free_stepsize(
+            mesh, V0, V1, tolerance, max_iterations);
     };
     // }
 }

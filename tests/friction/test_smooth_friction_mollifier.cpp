@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 
@@ -39,7 +39,7 @@ TEST_CASE("Smooth friction gradient", "[friction][mollifier]")
 
     CHECK(
         f1_over_x * x
-        == Approx(fd_f1_over_x[0]).margin(MARGIN).epsilon(EPSILON));
+        == Catch::Approx(fd_f1_over_x[0]).margin(MARGIN).epsilon(EPSILON));
 
     // Check hessian
     if (x == epsv_times_h) {
@@ -56,5 +56,5 @@ TEST_CASE("Smooth friction gradient", "[friction][mollifier]")
 
     double f2 = ipc::df1_x_minus_f1_over_x3(x, epsv_times_h);
 
-    CHECK(f2 * x == Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
+    CHECK(f2 * x == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
 }

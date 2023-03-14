@@ -20,11 +20,15 @@ auto point_edge_distance(
     const Eigen::MatrixBase<DerivedP>& p,
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1,
-    const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO)
+    PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO)
 {
     assert(p.size() == 2 || p.size() == 3);
     assert(e0.size() == 2 || e0.size() == 3);
     assert(e1.size() == 2 || e1.size() == 3);
+
+    if (dtype == PointEdgeDistanceType::AUTO) {
+        dtype = point_edge_distance_type(p, e0, e1);
+    }
 
     switch (dtype) {
     case PointEdgeDistanceType::P_E0:
@@ -35,10 +39,6 @@ auto point_edge_distance(
 
     case PointEdgeDistanceType::P_E:
         return point_line_distance(p, e0, e1);
-
-    case PointEdgeDistanceType::AUTO:
-        return point_edge_distance(
-            p, e0, e1, point_edge_distance_type(p, e0, e1));
 
     default:
         throw std::invalid_argument(
@@ -63,11 +63,15 @@ void point_edge_distance_gradient(
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1,
     Eigen::PlainObjectBase<DerivedGrad>& grad,
-    const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO)
+    PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO)
 {
-    int dim = p.size();
+    const int dim = p.size();
     assert(e0.size() == dim);
     assert(e1.size() == dim);
+
+    if (dtype == PointEdgeDistanceType::AUTO) {
+        dtype = point_edge_distance_type(p, e0, e1);
+    }
 
     grad.resize(3 * dim);
     grad.setZero();
@@ -87,11 +91,6 @@ void point_edge_distance_gradient(
 
     case PointEdgeDistanceType::P_E:
         point_line_distance_gradient(p, e0, e1, grad);
-        break;
-
-    case PointEdgeDistanceType::AUTO:
-        point_edge_distance_gradient(
-            p, e0, e1, grad, point_edge_distance_type(p, e0, e1));
         break;
 
     default:
@@ -117,11 +116,15 @@ void point_edge_distance_hessian(
     const Eigen::MatrixBase<DerivedE0>& e0,
     const Eigen::MatrixBase<DerivedE1>& e1,
     Eigen::PlainObjectBase<DerivedHess>& hess,
-    const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO)
+    PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO)
 {
-    int dim = p.size();
+    const int dim = p.size();
     assert(e0.size() == dim);
     assert(e1.size() == dim);
+
+    if (dtype == PointEdgeDistanceType::AUTO) {
+        dtype = point_edge_distance_type(p, e0, e1);
+    }
 
     hess.resize(3 * dim, 3 * dim);
     hess.setZero();
@@ -144,11 +147,6 @@ void point_edge_distance_hessian(
 
     case PointEdgeDistanceType::P_E:
         point_line_distance_hessian(p, e0, e1, hess);
-        break;
-
-    case PointEdgeDistanceType::AUTO:
-        point_edge_distance_hessian(
-            p, e0, e1, hess, point_edge_distance_type(p, e0, e1));
         break;
 
     default:

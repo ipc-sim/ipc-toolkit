@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <test_utils.hpp>
 
@@ -29,7 +29,7 @@ TEST_CASE("Point-line distance", "[distance][point-line]")
 
     double distance = point_line_distance(p, e0, e1);
     double expected_distance = std::abs(y_point - y_line);
-    CHECK(distance == Approx(expected_distance * expected_distance));
+    CHECK(distance == Catch::Approx(expected_distance * expected_distance));
 }
 
 TEST_CASE("Point-line distance 2", "[distance][point-line]")
@@ -58,7 +58,8 @@ TEST_CASE("Point-line distance 2", "[distance][point-line]")
         const double distance = point_line_distance(p, e0, e1);
         CHECK(
             distance
-            == Approx(expected_distance * expected_distance).margin(1e-15));
+            == Catch::Approx(expected_distance * expected_distance)
+                   .margin(1e-15));
     }
 }
 

@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <ipc/friction/closest_point.hpp>
 
@@ -24,7 +24,7 @@ TEST_CASE(
     Eigen::Vector3d p_actual = t0 + barycentric_coords[0] * (t1 - t0)
         + barycentric_coords[1] * (t2 - t0);
     CAPTURE(barycentric_coords);
-    CHECK((p - p_actual).norm() == Approx(0).margin(1e-12));
+    CHECK((p - p_actual).norm() == Catch::Approx(0).margin(1e-12));
 
     // test Jacobian
     Eigen::Matrix<double, 2, 12> J =
@@ -56,8 +56,8 @@ TEST_CASE("Edge-edge closest point", "[friction][edge-edge][closest_point]")
     Eigen::Vector2d barycentric_coords =
         edge_edge_closest_point(ea0, ea1, eb0, eb1);
     CAPTURE(barycentric_coords);
-    CHECK(barycentric_coords[0] == Approx(0.5));
-    CHECK(barycentric_coords[1] == Approx(0.5));
+    CHECK(barycentric_coords[0] == Catch::Approx(0.5));
+    CHECK(barycentric_coords[1] == Catch::Approx(0.5));
 
     // test Jacobian
     Eigen::Matrix<double, 2, 12> J =
@@ -87,7 +87,7 @@ TEST_CASE("Point-edge closest point", "[friction][point-edge][closest_point]")
     Eigen::Vector3d p(0, 1, 0), e0(-1, 0, 0), e1(1, 0, 0);
 
     double alpha = point_edge_closest_point(p, e0, e1);
-    CHECK(alpha == Approx(0.5));
+    CHECK(alpha == Catch::Approx(0.5));
 
     // test Jacobian
     VectorMax9d J = point_edge_closest_point_jacobian(p, e0, e1);
@@ -116,7 +116,7 @@ TEST_CASE(
     Eigen::Vector2d p(0, 1), e0(-1, 0), e1(1, 0);
 
     double alpha = point_edge_closest_point(p, e0, e1);
-    CHECK(alpha == Approx(0.5));
+    CHECK(alpha == Catch::Approx(0.5));
 
     // test Jacobian
     VectorMax9d J = point_edge_closest_point_jacobian(p, e0, e1);

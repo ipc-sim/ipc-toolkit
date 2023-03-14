@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <finitediff.hpp>
 
@@ -18,7 +18,7 @@ TEST_CASE("Point-plane distance", "[distance][point-plane]")
 
     double distance = point_plane_distance(p, t0, t1, t2);
     double expected_distance = std::abs(y - y_plane);
-    CHECK(distance == Approx(expected_distance * expected_distance));
+    CHECK(distance == Catch::Approx(expected_distance * expected_distance));
 }
 
 TEST_CASE("Point-plane distance gradient", "[distance][point-plane][gradient]")

@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <Eigen/Core>
 
@@ -88,8 +88,7 @@ TEST_CASE("Benchmark broad phase", "[!benchmark][broad_phase]")
         BENCHMARK(fmt::format("BP {} ({})", testcase_name, BP_names[i]))
         {
             Candidates candidates;
-            construct_collision_candidates(
-                mesh, V0, V1, candidates, inflation_radius, method);
+            candidates.build(mesh, V0, V1, inflation_radius, method);
         };
     }
 }
@@ -138,8 +137,7 @@ TEST_CASE(
         BENCHMARK(fmt::format("BP Real Data ({})", BP_names[i]))
         {
             Candidates candidates;
-            construct_collision_candidates(
-                mesh, V0, V1, candidates, inflation_radius, method);
+            candidates.build(mesh, V0, V1, inflation_radius, method);
         };
     }
 }

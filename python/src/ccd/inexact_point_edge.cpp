@@ -1,4 +1,4 @@
-#include "../common.hpp"
+#include <common.hpp>
 
 #include <ipc/ccd/inexact_point_edge.hpp>
 

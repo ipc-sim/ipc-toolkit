@@ -7,8 +7,8 @@
 namespace ipc {
 
 EdgeEdgeConstraint::EdgeEdgeConstraint(
-    long edge0_index, long edge1_index, double eps_x)
-    : EdgeEdgeCandidate(edge0_index, edge1_index)
+    long edge0_id, long edge1_id, double eps_x)
+    : EdgeEdgeCandidate(edge0_id, edge1_id)
     , eps_x(eps_x)
 {
 }
@@ -21,30 +21,30 @@ EdgeEdgeConstraint::EdgeEdgeConstraint(
 }
 
 double EdgeEdgeConstraint::compute_potential(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     const double dhat) const
 {
     return edge_edge_mollifier(
-               V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
-               V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)), eps_x)
-        * CollisionConstraint::compute_potential(V, E, F, dhat);
+               vertices.row(edges(edge0_id, 0)),
+               vertices.row(edges(edge0_id, 1)),
+               vertices.row(edges(edge1_id, 0)),
+               vertices.row(edges(edge1_id, 1)), eps_x)
+        * CollisionConstraint::compute_potential(vertices, edges, faces, dhat);
 }
 
 VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     const double dhat) const
 {
-    const double dhat_squared = dhat * dhat;
+    const double adjusted_dhat = 2 * minimum_distance * dhat + dhat * dhat;
+    const double min_dist_squared = minimum_distance * minimum_distance;
 
     // ∇[m(x) * b(d(x))] = (∇m(x)) * b(d(x)) + m(x) * b'(d(x)) * ∇d(x)
-    const auto& ea0 = V.row(E(edge0_index, 0));
-    const auto& ea1 = V.row(E(edge0_index, 1));
-    const auto& eb0 = V.row(E(edge1_index, 0));
-    const auto& eb1 = V.row(E(edge1_index, 1));
+    const auto& [ea0, ea1, eb0, eb1] = this->vertices(vertices, edges, faces);
 
     // The distance type is unknown because of mollified PP and PE
     // constraints where also added as EE constraints.
@@ -61,36 +61,30 @@ VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
     edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x, mollifier_grad);
 
     // b(d(x))
-    const double b = barrier(
-        distance - minimum_distance * minimum_distance,
-        2 * minimum_distance * dhat + dhat_squared);
+    const double b = barrier(distance - min_dist_squared, adjusted_dhat);
     // b'(d(x))
-    const double grad_b = barrier_gradient(
-        distance - minimum_distance * minimum_distance,
-        2 * minimum_distance * dhat + dhat_squared);
+    const double grad_b =
+        barrier_gradient(distance - min_dist_squared, adjusted_dhat);
 
     return weight * (mollifier_grad * b + mollifier * grad_b * distance_grad);
 }
 
 MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     const double dhat,
     const bool project_hessian_to_psd) const
 {
-    const double dhat_squared = dhat * dhat;
-    const double min_dist_squrared = minimum_distance * minimum_distance;
+    const double adjusted_dhat = 2 * minimum_distance * dhat + dhat * dhat;
+    const double min_dist_squared = minimum_distance * minimum_distance;
 
     // ∇²[m(x) * b(d(x))] = ∇[∇m(x) * b(d(x)) + m(x) * b'(d(x)) * ∇d(x)]
     //                    = ∇²m(x) * b(d(x)) + b'(d(x)) * ∇d(x) * ∇m(x)ᵀ
     //                      + ∇m(x) * b'(d(x)) * ∇d(x))ᵀ
     //                      + m(x) * b"(d(x)) * ∇d(x) * ∇d(x)ᵀ
     //                      + m(x) * b'(d(x)) * ∇²d(x)
-    const auto& ea0 = V.row(E(edge0_index, 0));
-    const auto& ea1 = V.row(E(edge0_index, 1));
-    const auto& eb0 = V.row(E(edge1_index, 0));
-    const auto& eb1 = V.row(E(edge1_index, 1));
+    const auto& [ea0, ea1, eb0, eb1] = this->vertices(vertices, edges, faces);
 
     // Compute distance derivatives
     // The distance type is unknown because of mollified PP and PE
@@ -111,15 +105,11 @@ MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
     edge_edge_mollifier_hessian(ea0, ea1, eb0, eb1, eps_x, mollifier_hess);
 
     // Compute barrier derivatives
-    const double b = barrier(
-        distance - min_dist_squrared,
-        2 * minimum_distance * dhat + dhat_squared);
-    const double grad_b = barrier_gradient(
-        distance - min_dist_squrared,
-        2 * minimum_distance * dhat + dhat_squared);
-    const double hess_b = barrier_hessian(
-        distance - min_dist_squrared,
-        2 * minimum_distance * dhat + dhat_squared);
+    const double b = barrier(distance - min_dist_squared, adjusted_dhat);
+    const double grad_b =
+        barrier_gradient(distance - min_dist_squared, adjusted_dhat);
+    const double hess_b =
+        barrier_hessian(distance - min_dist_squared, adjusted_dhat);
 
     MatrixMax12d hess = mollifier_hess * b
         + grad_b

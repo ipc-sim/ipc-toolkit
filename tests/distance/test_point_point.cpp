@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <finitediff.hpp>
 
@@ -21,7 +21,7 @@ TEST_CASE("Point-point distance", "[distance][point-point]")
         p1 *= expected_distance;
     }
     double distance = point_point_distance(p0, p1);
-    CHECK(distance == Approx(expected_distance * expected_distance));
+    CHECK(distance == Catch::Approx(expected_distance * expected_distance));
 }
 
 TEST_CASE("Point-point distance gradient", "[distance][point-point][gradient]")

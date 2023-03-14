@@ -1,8 +1,10 @@
 set(SOURCES
   collision_constraint.cpp
   collision_constraint.hpp
-  constraints.cpp
-  constraints.hpp
+  collision_constraints_builder.cpp
+  collision_constraints_builder.hpp
+  collision_constraints.cpp
+  collision_constraints.hpp
   edge_edge.cpp
   edge_edge.hpp
   # edge_vertex.cpp

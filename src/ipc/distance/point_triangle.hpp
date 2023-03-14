@@ -27,12 +27,16 @@ auto point_triangle_distance(
     const Eigen::MatrixBase<DerivedT0>& t0,
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2,
-    const PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO)
+    PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO)
 {
     assert(p.size() == 3);
     assert(t0.size() == 3);
     assert(t1.size() == 3);
     assert(t2.size() == 3);
+
+    if (dtype == PointTriangleDistanceType::AUTO) {
+        dtype = point_triangle_distance_type(p, t0, t1, t2);
+    }
 
     switch (dtype) {
     case PointTriangleDistanceType::P_T0:
@@ -55,10 +59,6 @@ auto point_triangle_distance(
 
     case PointTriangleDistanceType::P_T:
         return point_plane_distance(p, t0, t1, t2);
-
-    case PointTriangleDistanceType::AUTO:
-        return point_triangle_distance(
-            p, t0, t1, t2, point_triangle_distance_type(p, t0, t1, t2));
 
     default:
         throw std::invalid_argument(
@@ -86,12 +86,16 @@ void point_triangle_distance_gradient(
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2,
     Eigen::PlainObjectBase<DerivedGrad>& grad,
-    const PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO)
+    PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO)
 {
-    int dim = p.size();
+    const int dim = p.size();
     assert(t0.size() == dim);
     assert(t1.size() == dim);
     assert(t2.size() == dim);
+
+    if (dtype == PointTriangleDistanceType::AUTO) {
+        dtype = point_triangle_distance_type(p, t0, t1, t2);
+    }
 
     grad.resize(4 * dim);
     grad.setZero();
@@ -137,11 +141,6 @@ void point_triangle_distance_gradient(
         point_plane_distance_gradient(p, t0, t1, t2, grad);
         break;
 
-    case PointTriangleDistanceType::AUTO:
-        point_triangle_distance_gradient(
-            p, t0, t1, t2, grad, point_triangle_distance_type(p, t0, t1, t2));
-        break;
-
     default:
         throw std::invalid_argument(
             "Invalid distance type for point-triangle distance gradient!");
@@ -168,12 +167,16 @@ void point_triangle_distance_hessian(
     const Eigen::MatrixBase<DerivedT1>& t1,
     const Eigen::MatrixBase<DerivedT2>& t2,
     Eigen::PlainObjectBase<DerivedHess>& hess,
-    const PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO)
+    PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO)
 {
-    int dim = p.size();
+    const int dim = p.size();
     assert(t0.size() == dim);
     assert(t1.size() == dim);
     assert(t2.size() == dim);
+
+    if (dtype == PointTriangleDistanceType::AUTO) {
+        dtype = point_triangle_distance_type(p, t0, t1, t2);
+    }
 
     hess.resize(4 * dim, 4 * dim);
     hess.setZero();
@@ -237,11 +240,6 @@ void point_triangle_distance_hessian(
 
     case PointTriangleDistanceType::P_T:
         point_plane_distance_hessian(p, t0, t1, t2, hess);
-        break;
-
-    case PointTriangleDistanceType::AUTO:
-        point_triangle_distance_hessian(
-            p, t0, t1, t2, hess, point_triangle_distance_type(p, t0, t1, t2));
         break;
 
     default:

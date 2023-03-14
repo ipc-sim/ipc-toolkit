@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -14,11 +14,10 @@ using namespace ipc;
 
 TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
 {
+    const bool use_convergent_formulation = GENERATE(true, false);
+
     double dhat = -1;
     std::string mesh_name;
-
-    bool use_convergent_formulation = GENERATE(true, false);
-
     SECTION("cube")
     {
         dhat = sqrt(2.0);
@@ -35,45 +34,41 @@ TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
     bool success = load_mesh(mesh_name, V, E, F);
     REQUIRE(success);
 
-    CollisionMesh mesh(V, E, F);
+    const CollisionMesh mesh(V, E, F);
 
-    Constraints constraint_set;
-    constraint_set.use_convergent_formulation = use_convergent_formulation;
-    constraint_set.build(mesh, V, dhat);
+    CollisionConstraints collision_constraints;
+    collision_constraints.set_use_convergent_formulation(
+        use_convergent_formulation);
+    collision_constraints.build(mesh, V, dhat);
     CAPTURE(mesh_name, dhat);
-    CHECK(constraint_set.size() > 0);
+    CHECK(collision_constraints.size() > 0);
 
     BENCHMARK("Compute barrier potential")
     {
-        double b =
-            ipc::compute_barrier_potential(mesh, V, constraint_set, dhat);
+        return collision_constraints.compute_potential(mesh, V, dhat);
     };
     BENCHMARK("Compute barrier potential gradient")
     {
-        Eigen::VectorXd grad_b = ipc::compute_barrier_potential_gradient(
-            mesh, V, constraint_set, dhat);
+        return collision_constraints.compute_potential_gradient(mesh, V, dhat);
     };
     BENCHMARK("Compute barrier potential hessian")
     {
-        Eigen::MatrixXd hess_b = ipc::compute_barrier_potential_hessian(
-            mesh, V, constraint_set, dhat);
+        return collision_constraints.compute_potential_hessian(mesh, V, dhat);
     };
     BENCHMARK("Compute compute_minimum_distance")
     {
-        double min_dist =
-            ipc::compute_minimum_distance(mesh, V, constraint_set);
+        return collision_constraints.compute_minimum_distance(mesh, V);
     };
 }
 
 TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
 {
+    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const bool use_convergent_formulation = GENERATE(true, false);
+
     double dhat = -1;
     std::string mesh_name = "";
     bool all_vertices_on_surface = true;
-
-    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
-    bool use_convergent_formulation = GENERATE(true, false);
-
     SECTION("cube")
     {
         dhat = sqrt(2.0);
@@ -105,26 +100,27 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
 
     CollisionMesh mesh;
 
-    Constraints constraint_set;
-    constraint_set.use_convergent_formulation = use_convergent_formulation;
+    CollisionConstraints collision_constraints;
+    collision_constraints.set_use_convergent_formulation(
+        use_convergent_formulation);
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(V, E, F);
-        constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
+        collision_constraints.build(mesh, V, dhat, /*dmin=*/0, method);
     } else {
         mesh = CollisionMesh::build_from_full_mesh(V, E, F);
         V = mesh.vertices(V);
-        constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
+        collision_constraints.build(mesh, V, dhat, /*dmin=*/0, method);
     }
     CAPTURE(dhat, method, all_vertices_on_surface);
-    CHECK(constraint_set.size() > 0);
+    CHECK(collision_constraints.size() > 0);
 
-    Eigen::VectorXd grad_b =
-        ipc::compute_barrier_potential_gradient(mesh, V, constraint_set, dhat);
+    const Eigen::VectorXd grad_b =
+        collision_constraints.compute_potential_gradient(mesh, V, dhat);
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
-        return ipc::compute_barrier_potential(
-            mesh, fd::unflatten(x, V.cols()), constraint_set, dhat);
+        return collision_constraints.compute_potential(
+            mesh, fd::unflatten(x, V.cols()), dhat);
     };
     Eigen::VectorXd fgrad_b;
     fd::finite_gradient(fd::flatten(V), f, fgrad_b);
@@ -135,13 +131,12 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
 
 TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
 {
+    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const bool use_convergent_formulation = GENERATE(true, false);
+
     double dhat = -1;
     std::string mesh_name = "";
     bool all_vertices_on_surface = true;
-
-    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
-    bool use_convergent_formulation = GENERATE(true, false);
-
     SECTION("cube")
     {
         dhat = sqrt(2.0);
@@ -174,26 +169,27 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
 
     CollisionMesh mesh;
 
-    Constraints constraint_set;
-    constraint_set.use_convergent_formulation = use_convergent_formulation;
+    CollisionConstraints collision_constraints;
+    collision_constraints.set_use_convergent_formulation(
+        use_convergent_formulation);
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(V, E, F);
-        constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
+        collision_constraints.build(mesh, V, dhat, /*dmin=*/0, method);
     } else {
         mesh = CollisionMesh::build_from_full_mesh(V, E, F);
         V = mesh.vertices(V);
-        constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
+        collision_constraints.build(mesh, V, dhat, /*dmin=*/0, method);
     }
     CAPTURE(dhat, method, all_vertices_on_surface);
-    CHECK(constraint_set.size() > 0);
+    CHECK(collision_constraints.size() > 0);
 
-    Eigen::MatrixXd hess_b = ipc::compute_barrier_potential_hessian(
-        mesh, V, constraint_set, dhat, /*project_to_psd=*/false);
+    Eigen::MatrixXd hess_b = collision_constraints.compute_potential_hessian(
+        mesh, V, dhat, /*project_to_psd=*/false);
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
-        return ipc::compute_barrier_potential_gradient(
-            mesh, fd::unflatten(x, V.cols()), constraint_set, dhat);
+        return collision_constraints.compute_potential_gradient(
+            mesh, fd::unflatten(x, V.cols()), dhat);
     };
     Eigen::MatrixXd fhess_b;
     fd::finite_jacobian(fd::flatten(V), f, fhess_b);
@@ -233,13 +229,15 @@ TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
     V = mesh.vertices(V);
     const Eigen::MatrixXd U = V - X;
 
-    Constraints constraint_set;
-    constraint_set.use_convergent_formulation = GENERATE(true, false);
-    constraint_set.compute_shape_derivatives = true;
-    constraint_set.build(mesh, V, dhat);
+    CollisionConstraints collision_constraints;
+    const bool use_convergent_formulation = GENERATE(true, false);
+    collision_constraints.set_use_convergent_formulation(
+        use_convergent_formulation);
+    collision_constraints.set_are_shape_derivatives_enabled(true);
+    collision_constraints.build(mesh, V, dhat);
 
-    Eigen::MatrixXd JF_wrt_X =
-        compute_barrier_shape_derivative(mesh, V, constraint_set, dhat);
+    const Eigen::MatrixXd JF_wrt_X =
+        collision_constraints.compute_shape_derivative(mesh, V, dhat);
 
     auto F_X = [&](const Eigen::VectorXd& x) {
         const Eigen::MatrixXd fd_X = fd::unflatten(x, X.cols());
@@ -247,13 +245,13 @@ TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
 
         CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
 
-        Constraints fd_constraint_set;
-        fd_constraint_set.use_convergent_formulation =
-            constraint_set.use_convergent_formulation;
+        CollisionConstraints fd_constraint_set;
+        fd_constraint_set.set_use_convergent_formulation(
+            collision_constraints.use_convergent_formulation());
         fd_constraint_set.build(fd_mesh, fd_V, dhat);
 
-        return compute_barrier_potential_gradient(
-            fd_mesh, fd_V, fd_constraint_set, dhat);
+        return fd_constraint_set.compute_potential_gradient(
+            fd_mesh, fd_V, dhat);
     };
     Eigen::MatrixXd fd_JF_wrt_X;
     fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
@@ -294,16 +292,18 @@ TEST_CASE("Benchmark IPC shape derivative", "[ipc][shape_opt][!benchmark]")
     V = mesh.vertices(V);
     const Eigen::MatrixXd U = V - X;
 
-    Constraints constraint_set;
-    constraint_set.use_convergent_formulation = GENERATE(true, false);
-    constraint_set.compute_shape_derivatives = true;
-    constraint_set.build(mesh, V, dhat);
+    CollisionConstraints collision_constraints;
+    const bool use_convergent_formulation = GENERATE(true, false);
+    collision_constraints.set_use_convergent_formulation(
+        use_convergent_formulation);
+    collision_constraints.set_are_shape_derivatives_enabled(true);
+    collision_constraints.build(mesh, V, dhat);
 
     Eigen::SparseMatrix<double> JF_wrt_X;
 
     BENCHMARK("Shape Derivative")
     {
         JF_wrt_X =
-            compute_barrier_shape_derivative(mesh, V, constraint_set, dhat);
+            collision_constraints.compute_shape_derivative(mesh, V, dhat);
     };
 }
