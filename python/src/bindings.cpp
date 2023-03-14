@@ -1,5 +1,5 @@
-#include "common.hpp"
-#include "bindings.hpp"
+#include <common.hpp>
+#include <bindings.hpp>
 
 namespace py = pybind11;
 

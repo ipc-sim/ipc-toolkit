@@ -1,4 +1,4 @@
-#include "../common.hpp"
+#include <common.hpp>
 
 #include <ipc/collisions/collision_constraint.hpp>
 

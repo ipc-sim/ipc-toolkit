@@ -1,4 +1,4 @@
-#include "../common.hpp"
+#include <common.hpp>
 
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/candidates/candidates.hpp>

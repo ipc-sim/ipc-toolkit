@@ -1,4 +1,4 @@
-#include "../common.hpp"
+#include <common.hpp>
 
 #include <ipc/broad_phase/voxel_size_heuristic.hpp>
 

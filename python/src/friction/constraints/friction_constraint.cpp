@@ -1,4 +1,4 @@
-#include "../../common.hpp"
+#include <common.hpp>
 
 #include <ipc/friction/constraints/friction_constraint.hpp>
 

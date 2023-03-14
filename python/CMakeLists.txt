@@ -76,6 +76,7 @@ pybind11_add_module(ipctk
 )
 
 target_link_libraries(ipctk PRIVATE ipc::toolkit)
+target_include_directories(ipctk PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # Extra warnings
 # target_link_libraries(ipctk PRIVATE IPCToolkit::warnings)

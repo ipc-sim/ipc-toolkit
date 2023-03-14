@@ -1,4 +1,4 @@
-#include "../common.hpp"
+#include <common.hpp>
 
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 
