@@ -40,7 +40,7 @@ VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
     const Eigen::MatrixXi& faces,
     const double dhat) const
 {
-    const double effective_dhat = 2 * minimum_distance * dhat + dhat * dhat;
+    const double adjusted_dhat = 2 * minimum_distance * dhat + dhat * dhat;
     const double min_dist_squared = minimum_distance * minimum_distance;
 
     // ∇[m(x) * b(d(x))] = (∇m(x)) * b(d(x)) + m(x) * b'(d(x)) * ∇d(x)
@@ -61,10 +61,10 @@ VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
     edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x, mollifier_grad);
 
     // b(d(x))
-    const double b = barrier(distance - min_dist_squared, effective_dhat);
+    const double b = barrier(distance - min_dist_squared, adjusted_dhat);
     // b'(d(x))
     const double grad_b =
-        barrier_gradient(distance - min_dist_squared, effective_dhat);
+        barrier_gradient(distance - min_dist_squared, adjusted_dhat);
 
     return weight * (mollifier_grad * b + mollifier * grad_b * distance_grad);
 }
@@ -76,7 +76,7 @@ MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
     const double dhat,
     const bool project_hessian_to_psd) const
 {
-    const double effective_dhat = 2 * minimum_distance * dhat + dhat * dhat;
+    const double adjusted_dhat = 2 * minimum_distance * dhat + dhat * dhat;
     const double min_dist_squared = minimum_distance * minimum_distance;
 
     // ∇²[m(x) * b(d(x))] = ∇[∇m(x) * b(d(x)) + m(x) * b'(d(x)) * ∇d(x)]
@@ -105,11 +105,11 @@ MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
     edge_edge_mollifier_hessian(ea0, ea1, eb0, eb1, eps_x, mollifier_hess);
 
     // Compute barrier derivatives
-    const double b = barrier(distance - min_dist_squared, effective_dhat);
+    const double b = barrier(distance - min_dist_squared, adjusted_dhat);
     const double grad_b =
-        barrier_gradient(distance - min_dist_squared, effective_dhat);
+        barrier_gradient(distance - min_dist_squared, adjusted_dhat);
     const double hess_b =
-        barrier_hessian(distance - min_dist_squared, effective_dhat);
+        barrier_hessian(distance - min_dist_squared, adjusted_dhat);
 
     MatrixMax12d hess = mollifier_hess * b
         + grad_b

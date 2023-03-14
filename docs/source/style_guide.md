@@ -21,7 +21,7 @@ In general, we stick to the following naming conventions:
 
 ### Specific
 
-* vertex positions: `positions`
+* vertex positions: `vertices` or `positions`
 * vertex displacements: `displacements`
 * vertex rest positions/material coordinates: `rest_positions`
 * vertex velocities: `velocities`
@@ -29,10 +29,7 @@ In general, we stick to the following naming conventions:
 * mesh face matrix: `faces`
 * element vertices: we use a numeral suffix (e.g., `e0` and `e1` for the end-points of an edge)
 * edge-edge pairings: suffix of `a` and `b`
-* continous collision detection pairs: suffix of `_t0` for starting values and `_t1` for end values
-* `CollisionCandidates`
-* `CollisionConstraints`
-* `FrictionConstraints`
+* continuous collision detection pairs: suffix of `_t0` for starting values and `_t1` for end values
 
 ## Documentation
 

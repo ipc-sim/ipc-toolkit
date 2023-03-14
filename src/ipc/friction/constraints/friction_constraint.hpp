@@ -256,13 +256,15 @@ protected:
     /// @param relative_velocity Relative velocity of the constraint.
     /// @param epsv_times_h Friction mollifier parameter.
     /// @return Friction potential.
-    template <typename DerivedRelUi, typename T = typename DerivedRelUi::Scalar>
+    template <
+        typename DerivedRelVel,
+        typename T = typename DerivedRelVel::Scalar>
     T compute_potential_common(
-        const Eigen::MatrixBase<DerivedRelUi>& relative_velocity,
+        const Eigen::MatrixBase<DerivedRelVel>& relative_velocity,
         const double epsv_times_h) const
     {
         // The relative velocity in the tangential space
-        const VectorMax2d tangent_rel_vel =
+        const VectorMax2<T> tangent_rel_vel =
             tangent_basis.transpose().cast<T>() * relative_velocity;
         return weight * mu * normal_force_magnitude
             * f0_SF(tangent_rel_vel.norm(), epsv_times_h);

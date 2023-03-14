@@ -21,8 +21,8 @@ public:
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override
     {
-        return { { vertex_id, //
-                   faces(face_id, 0), faces(face_id, 1), faces(face_id, 2) } };
+        return { { vertex_id, faces(face_id, 0), faces(face_id, 1),
+                   faces(face_id, 2) } };
     }
 
     // ------------------------------------------------------------------------

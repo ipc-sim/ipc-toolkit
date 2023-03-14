@@ -62,16 +62,16 @@ double compute_collision_free_stepsize(
         }
         return 1.0;
 #else
-        throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
-                                 "because CUDA is disabled!");
+        throw std::runtime_error(
+            "GPU Sweep and Tiniest Queue is disabled because CUDA is disabled!");
 #endif
     }
 
     // Broad phase
     Candidates candidates;
     candidates.build(
-        mesh, vertices_t0, vertices_t1,
-        /*inflation_radius=*/min_distance / 2, broad_phase_method);
+        mesh, vertices_t0, vertices_t1, /*inflation_radius=*/min_distance / 2,
+        broad_phase_method);
 
     // Narrow phase
     return candidates.compute_collision_free_stepsize(

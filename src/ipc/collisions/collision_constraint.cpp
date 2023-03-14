@@ -25,7 +25,6 @@ VectorMax12d CollisionConstraint::compute_potential_gradient(
     const double dhat) const
 {
     // ∇b(d(x)) = b'(d(x)) * ∇d(x)
-
     const VectorMax12d positions = dof(vertices, edges, faces);
     const double distance = compute_distance(positions);
     const VectorMax12d distance_grad = compute_distance_gradient(positions);
@@ -43,7 +42,7 @@ MatrixMax12d CollisionConstraint::compute_potential_hessian(
     const double dhat,
     const bool project_hessian_to_psd) const
 {
-    const double effective_dhat = 2 * minimum_distance * dhat + dhat * dhat;
+    const double adjusted_dhat = 2 * minimum_distance * dhat + dhat * dhat;
     const double min_dist_squared = minimum_distance * minimum_distance;
 
     // ∇²[b(d(x))] = ∇(b'(d(x)) * ∇d(x))
@@ -55,9 +54,9 @@ MatrixMax12d CollisionConstraint::compute_potential_hessian(
     const MatrixMax12d distance_hess = compute_distance_hessian(positions);
 
     const double grad_b =
-        barrier_gradient(distance - min_dist_squared, effective_dhat);
+        barrier_gradient(distance - min_dist_squared, adjusted_dhat);
     const double hess_b =
-        barrier_hessian(distance - min_dist_squared, effective_dhat);
+        barrier_hessian(distance - min_dist_squared, adjusted_dhat);
 
     // b"(x) ≥ 0 ⟹ b"(x) * ∇d(x) * ∇d(x)ᵀ is PSD
     assert(hess_b >= 0);

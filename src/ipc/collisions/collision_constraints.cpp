@@ -78,16 +78,16 @@ void CollisionConstraints::build(
 
     // This is the dhat that is used in the barrier potential (because we use
     // squared distances).
-    const double effective_dhat = 2 * dmin * dhat + dhat * dhat;
+    const double adjusted_dhat = 2 * dmin * dhat + dhat * dhat;
 
     for (size_t ci = 0; ci < size(); ci++) {
         CollisionConstraint& constraint = (*this)[ci];
         constraint.minimum_distance = dmin;
         if (use_convergent_formulation()) {
             // Divide by dhat to equivalently use the "physical" barrier
-            constraint.weight /= effective_dhat;
+            constraint.weight /= adjusted_dhat;
             if (are_shape_derivatives_enabled()) {
-                constraint.weight_gradient /= effective_dhat;
+                constraint.weight_gradient /= adjusted_dhat;
             }
         }
     }
