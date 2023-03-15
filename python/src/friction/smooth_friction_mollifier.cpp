@@ -23,7 +23,7 @@ void define_smooth_friction_mollifier(py::module_& m)
 
         Parameters:
             x: The tangential relative speed.
-            epsv_times_h: Mollifier parameter :math:`\epsilon_v h\f`.
+            epsv_times_h: Mollifier parameter :math:`\epsilon_v h`.
 
         Returns:
             The value of the mollifier function at x.
@@ -33,7 +33,7 @@ void define_smooth_friction_mollifier(py::module_& m)
     m.def(
         "f1_SF_over_x", &f1_SF_over_x<double>,
         R"ipc_Qu8mg5v7(
-        Compute the derivative of f0_SF divided by x (:math:`\frac{f_0'(x)}{x}\f`).
+        Compute the derivative of f0_SF divided by x (:math:`\frac{f_0'(x)}{x}`).
 
         .. math::
 
@@ -53,7 +53,7 @@ void define_smooth_friction_mollifier(py::module_& m)
 
         Parameters:
             x: The tangential relative speed.
-            epsv_times_h: Mollifier parameter :math:`\epsilon_v h\f`.
+            epsv_times_h: Mollifier parameter :math:`\epsilon_v h`.
 
         Returns:
             The value of the derivative of f0_SF divided by x.
@@ -75,7 +75,7 @@ void define_smooth_friction_mollifier(py::module_& m)
 
         Parameters:
             x: The tangential relative speed.
-            epsv_times_h: Mollifier parameter :math:`\epsilon_v h\f`.
+            epsv_times_h: Mollifier parameter :math:`\epsilon_v h`.
 
         Returns:
             The derivative of f1 times x minus f1 all divided by x cubed.
