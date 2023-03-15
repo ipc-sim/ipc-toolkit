@@ -1,23 +1,44 @@
 Collision Constraints
 =====================
 
-.. doxygenstruct:: ipc::Constraints
+Collision Constraints
+---------------------
+
+.. doxygenclass:: ipc::CollisionConstraints
     :allow-dot-graphs:
 
-.. doxygenstruct:: ipc::CollisionConstraint
+Collision Constraint
+--------------------
+
+.. doxygenclass:: ipc::CollisionConstraint
     :allow-dot-graphs:
 
-.. doxygenstruct:: ipc::VertexVertexConstraint
+Vertex-Vertex Collision Constraint
+----------------------------------
+
+.. doxygenclass:: ipc::VertexVertexConstraint
     :allow-dot-graphs:
 
-.. doxygenstruct:: ipc::EdgeVertexConstraint
+Edge-Vertex Collision Constraint
+--------------------------------
+
+.. doxygenclass:: ipc::EdgeVertexConstraint
     :allow-dot-graphs:
 
-.. doxygenstruct:: ipc::EdgeEdgeConstraint
+Edge-Edge Collision Constraint
+------------------------------
+
+.. doxygenclass:: ipc::EdgeEdgeConstraint
     :allow-dot-graphs:
 
-.. doxygenstruct:: ipc::FaceVertexConstraint
+Face-Vertex Collision Constraint
+--------------------------------
+
+.. doxygenclass:: ipc::FaceVertexConstraint
     :allow-dot-graphs:
 
-.. doxygenstruct:: ipc::PlaneVertexConstraint
+Plane-Vertex Collision Constraint
+---------------------------------
+
+.. doxygenclass:: ipc::PlaneVertexConstraint
     :allow-dot-graphs:
