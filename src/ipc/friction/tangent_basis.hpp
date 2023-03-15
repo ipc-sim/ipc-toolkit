@@ -9,6 +9,10 @@ namespace ipc {
 // ============================================================================
 // Point - Point
 
+/// @brief Compute a basis for the space tangent to the point-point pair.
+/// @param p0 First point
+/// @param p1 Second point
+/// @return A 3x2 matrix whose columns are the basis vectors.
 template <
     typename DerivedP0,
     typename DerivedP1,
@@ -121,7 +125,20 @@ inline Eigen::Matrix<T, 3, 2> edge_edge_tangent_basis(
 // ============================================================================
 // Point - Triangle
 
-/// Compute a basis for the space tangent to the point-triangle pair.
+/// @brief Compute a basis for the space tangent to the point-triangle pair.
+///
+/// \f\[
+///     \begin{bmatrix}
+///     \frac{t_1 - t_0}{\|t_1 - t_0\|} & \frac{((t_1 - t_0)\times(t_2 - t_0))
+///     \times(t_1 - t_0)}{\|((t_1 - t_0)\times(t_2 - t_0))\times(t_1 - t_0)\|}
+///     \end{bmatrix}
+/// \f\]
+///
+/// @param p Point
+/// @param t0 Triangle's first vertex
+/// @param t1 Triangle's second vertex
+/// @param t2 Triangle's third vertex
+/// @return A 3x2 matrix whose columns are the basis vectors.
 template <
     typename DerivedP,
     typename DerivedT0,

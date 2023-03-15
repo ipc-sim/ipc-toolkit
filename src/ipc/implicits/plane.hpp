@@ -8,6 +8,8 @@
 
 namespace ipc {
 
+inline bool default_can_point_plane_collide(size_t, size_t) { return true; }
+
 /// @brief Construct a set of point-plane distance constraints used to compute
 /// the barrier potential.
 ///
@@ -32,7 +34,7 @@ void construct_point_plane_constraint_set(
     std::vector<PlaneVertexConstraint>& pv_constraints,
     const double dmin = 0,
     const std::function<bool(size_t, size_t)>& can_collide =
-        [](size_t, size_t) { return true; });
+        default_can_point_plane_collide);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Collision detection
@@ -57,7 +59,7 @@ bool is_step_point_plane_collision_free(
     const Eigen::MatrixXd& plane_origins,
     const Eigen::MatrixXd& plane_normals,
     const std::function<bool(size_t, size_t)>& can_collide =
-        [](size_t, size_t) { return true; });
+        default_can_point_plane_collide);
 
 /// @brief Computes a maximal step size that is collision free.
 ///
@@ -81,6 +83,6 @@ double compute_point_plane_collision_free_stepsize(
     const Eigen::MatrixXd& plane_origins,
     const Eigen::MatrixXd& plane_normals,
     const std::function<bool(size_t, size_t)>& can_collide =
-        [](size_t, size_t) { return true; });
+        default_can_point_plane_collide);
 
 } // namespace ipc

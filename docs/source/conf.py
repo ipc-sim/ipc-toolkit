@@ -29,7 +29,7 @@ version = "1.0.0"
 
 # Doxygen
 pathlib.Path("../build/doxyoutput").mkdir(parents=True, exist_ok=True)
-if(not subprocess.run(["doxygen", "Doxyfile"])):
+if (not subprocess.run(["doxygen", "Doxyfile"])):
     print("Doxygen failed! Exiting")
     exit(1)
 
