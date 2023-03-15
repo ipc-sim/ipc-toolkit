@@ -98,7 +98,7 @@ void define_collision_mesh(py::module_& m)
             Compute the vertex positions from the positions of the full mesh.
 
             Parameters:
-                full_vertices: The vertex positions of the full mesh.
+                full_positions: The vertex positions of the full mesh.
 
             Returns:
                 The vertex positions of the collision mesh.

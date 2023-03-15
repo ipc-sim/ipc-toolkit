@@ -1,9 +1,6 @@
 Utils
 =====
 
-.. autofunction:: ipctk.compute_minimum_distance
-.. autofunction:: ipctk.has_intersections
-
 Logger
 ------
 

@@ -91,7 +91,9 @@ public:
 
     /// @brief Function for determining if two vertices can collide.
     std::function<bool(size_t, size_t)> can_vertices_collide =
-        [](size_t, size_t) { return true; };
+        default_can_vertices_collide;
+
+    static bool default_can_vertices_collide(size_t, size_t) { return true; }
 
 protected:
     virtual bool can_edge_vertex_collide(size_t ei, size_t vi) const;

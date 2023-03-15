@@ -54,7 +54,6 @@ public:
     /// @brief Compute the barrier potential for a given constraint set.
     /// @param[in] mesh The collision mesh.
     /// @param[in] vertices Vertices of the collision mesh.
-    /// @param[in] constraint_set The set of constraints.
     /// @param[in] dhat The activation distance of the barrier.
     /// @returns The sum of all barrier potentials (not scaled by the barrier stiffness).
     double compute_potential(
@@ -65,7 +64,6 @@ public:
     /// @brief Compute the gradient of the barrier potential.
     /// @param[in] mesh The collision mesh.
     /// @param[in] vertices Vertices of the collision mesh.
-    /// @param[in] constraint_set The set of constraints.
     /// @param[in] dhat The activation distance of the barrier.
     /// @returns The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|.
     Eigen::VectorXd compute_potential_gradient(
@@ -76,7 +74,6 @@ public:
     /// @brief Compute the hessian of the barrier potential.
     /// @param[in] mesh The collision mesh.
     /// @param[in] vertices Vertices of the collision mesh.
-    /// @param[in] constraint_set The set of constraints.
     /// @param[in] dhat The activation distance of the barrier.
     /// @param[in] project_hessian_to_psd Make sure the hessian is positive semi-definite.
     /// @returns The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|x|vertices|.
@@ -91,7 +88,6 @@ public:
     /// @brief Compute the barrier shape derivative.
     /// @param[in] mesh The collision mesh.
     /// @param[in] vertices Vertices of the collision mesh.
-    /// @param[in] constraint_set The set of constraints.
     /// @param[in] dhat The activation distance of the barrier.
     /// @throws std::runtime_error If the collision constraints were not built with shape derivatives enabled.
     /// @returns The derivative of the force with respect to X, the rest vertices.

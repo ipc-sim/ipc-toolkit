@@ -1,27 +1,15 @@
-CCD
-===
+Continuous Collision Detection
+==============================
 
-Broad Phase
------------
+.. doxygenfunction:: ipc::is_step_collision_free
 
-.. doxygenenum:: ipc::BroadPhaseMethod
-
-Candidates
-^^^^^^^^^^
-
-.. doxygenstruct:: ipc::ContinuousCollisionCandidate
-
-.. doxygenstruct:: ipc::VertexVertexCandidate
-.. doxygenstruct:: ipc::EdgeVertexCandidate
-.. doxygenstruct:: ipc::EdgeEdgeCandidate
-.. doxygenstruct:: ipc::EdgeFaceCandidate
-.. doxygenstruct:: ipc::FaceVertexCandidate
-
-.. doxygenstruct:: ipc::Candidates
-
-Narrow Phase
-------------
+.. doxygenfunction:: ipc::compute_collision_free_stepsize
 
 .. doxygenvariable:: ipc::DEFAULT_CCD_TOLERANCE
 .. doxygenvariable:: ipc::DEFAULT_CCD_MAX_ITERATIONS
 .. doxygenvariable:: ipc::DEFAULT_CCD_CONSERVATIVE_RESCALING
+
+.. doxygenfunction:: ipc::point_point_ccd
+.. doxygenfunction:: ipc::point_edge_ccd
+.. doxygenfunction:: ipc::edge_edge_ccd
+.. doxygenfunction:: ipc::point_triangle_ccd

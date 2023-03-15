@@ -53,7 +53,6 @@ void define_collision_constraints(py::module_& m)
             Parameters:
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
-                constraint_set: The set of constraints.
                 dhat: The activation distance of the barrier.
 
             Returns:
@@ -69,7 +68,6 @@ void define_collision_constraints(py::module_& m)
             Parameters:
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
-                constraint_set: The set of constraints.
                 dhat: The activation distance of the barrier.
 
             Returns:
@@ -85,7 +83,6 @@ void define_collision_constraints(py::module_& m)
             Parameters:
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
-                constraint_set: The set of constraints.
                 dhat: The activation distance of the barrier.
                 project_hessian_to_psd: Make sure the hessian is positive semi-definite.
 
@@ -105,7 +102,6 @@ void define_collision_constraints(py::module_& m)
             Parameters:
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
-                constraint_set: The set of constraints.
                 dhat: The activation distance of the barrier.
 
             Returns:

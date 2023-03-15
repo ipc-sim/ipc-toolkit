@@ -112,7 +112,7 @@ public:
     // -----------------------------------------------------------------------
 
     /// @brief Compute the vertex positions from the positions of the full mesh.
-    /// @param full_vertices The vertex positions of the full mesh.
+    /// @param full_positions The vertex positions of the full mesh.
     /// @return The vertex positions of the collision mesh.
     Eigen::MatrixXd vertices(const Eigen::MatrixXd& full_positions) const;
 
