@@ -36,8 +36,8 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const CollisionConstraints& contact_constraints,
-        double dhat,
-        double barrier_stiffness,
+        const double dhat,
+        const double barrier_stiffness,
         const Eigen::VectorXd& mus,
         const std::function<double(double, double)>& blend_mu =
             default_blend_mu);
@@ -48,11 +48,10 @@ public:
     /// @param mesh The collision mesh.
     /// @param velocity Current vertex velocity (rowwise).
     /// @return The friction dissapative potential.
-    template <typename T>
-    T compute_potential(
+    double compute_potential(
         const CollisionMesh& mesh,
-        const MatrixX<T>& velocity,
-        double epsv_times_h) const;
+        const Eigen::MatrixXd& velocity,
+        const double epsv_times_h) const;
 
     /// @brief Compute the gradient of the friction dissapative potential wrt the velocity.
     /// @param mesh The collision mesh.
@@ -61,7 +60,7 @@ public:
     Eigen::VectorXd compute_potential_gradient(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& velocity,
-        double epsv_times_h) const;
+        const double epsv_times_h) const;
 
     /// @brief Compute the Hessian of the friction dissapative potential wrt the velocity.
     /// @param mesh The collision mesh.
@@ -71,8 +70,8 @@ public:
     Eigen::SparseMatrix<double> compute_potential_hessian(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& velocity,
-        double epsv_times_h,
-        bool project_hessian_to_psd = true) const;
+        const double epsv_times_h,
+        const bool project_hessian_to_psd = true) const;
 
     // ------------------------------------------------------------------------
 
@@ -167,5 +166,3 @@ public:
 };
 
 } // namespace ipc
-
-#include "friction_constraints.tpp"

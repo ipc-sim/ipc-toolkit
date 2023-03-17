@@ -47,7 +47,7 @@ add_executable(ipc_toolkit_tests
   # Utilities for tests
   test_utils.cpp
 
-  static_vs_dynamic.cpp
+  benchmark_eigen.cpp
 )
 
 target_include_directories(ipc_toolkit_tests PUBLIC ".")

@@ -174,14 +174,13 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
         use_convergent_formulation);
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(V, E, F);
-        collision_constraints.build(mesh, V, dhat, /*dmin=*/0, method);
     } else {
         mesh = CollisionMesh::build_from_full_mesh(V, E, F);
         V = mesh.vertices(V);
-        collision_constraints.build(mesh, V, dhat, /*dmin=*/0, method);
     }
+    collision_constraints.build(mesh, V, dhat, /*dmin=*/0, method);
     CAPTURE(dhat, method, all_vertices_on_surface);
-    CHECK(collision_constraints.size() > 0);
+    REQUIRE(collision_constraints.size() > 0);
 
     Eigen::MatrixXd hess_b = collision_constraints.compute_potential_hessian(
         mesh, V, dhat, /*project_to_psd=*/false);

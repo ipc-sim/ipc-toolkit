@@ -30,11 +30,8 @@ TEST_CASE(
     Eigen::Matrix<double, 2, 12> J =
         point_triangle_closest_point_jacobian(p, t0, t1, t2);
 
-    Eigen::VectorXd x(12);
-    x.segment<3>(0) = p;
-    x.segment<3>(3) = t0;
-    x.segment<3>(6) = t1;
-    x.segment<3>(9) = t2;
+    Vector12d x;
+    x << p, t0, t1, t2;
 
     Eigen::MatrixXd J_FD;
     fd::finite_jacobian(
@@ -63,11 +60,8 @@ TEST_CASE("Edge-edge closest point", "[friction][edge-edge][closest_point]")
     Eigen::Matrix<double, 2, 12> J =
         edge_edge_closest_point_jacobian(ea0, ea1, eb0, eb1);
 
-    Eigen::VectorXd x(12);
-    x.segment<3>(0) = ea0;
-    x.segment<3>(3) = ea1;
-    x.segment<3>(6) = eb0;
-    x.segment<3>(9) = eb1;
+    Vector12d x;
+    x << ea0, ea1, eb0, eb1;
 
     Eigen::MatrixXd J_FD;
     fd::finite_jacobian(
@@ -92,10 +86,8 @@ TEST_CASE("Point-edge closest point", "[friction][point-edge][closest_point]")
     // test Jacobian
     VectorMax9d J = point_edge_closest_point_jacobian(p, e0, e1);
 
-    Eigen::VectorXd x(9);
-    x.segment<3>(0) = p;
-    x.segment<3>(3) = e0;
-    x.segment<3>(6) = e1;
+    Vector9d x;
+    x << p, e0, e1;
 
     Eigen::VectorXd J_FD;
     fd::finite_gradient(
@@ -121,10 +113,8 @@ TEST_CASE(
     // test Jacobian
     VectorMax9d J = point_edge_closest_point_jacobian(p, e0, e1);
 
-    Eigen::VectorXd x(6);
-    x.segment<2>(0) = p;
-    x.segment<2>(2) = e0;
-    x.segment<2>(4) = e1;
+    Vector6d x;
+    x << p, e0, e1;
 
     Eigen::VectorXd J_FD;
     fd::finite_gradient(

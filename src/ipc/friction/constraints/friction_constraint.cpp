@@ -33,6 +33,21 @@ void FrictionConstraint::init(
         compute_normal_force_magnitude(pos, dhat, barrier_stiffness, dmin);
 }
 
+double FrictionConstraint::compute_potential(
+    const Eigen::MatrixXd& velocities,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
+    const double epsv_times_h) const
+{
+    // μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
+
+    // Compute u = PᵀΓv
+    const VectorMax2d u = tangent_basis.transpose()
+        * relative_velocity(dof(velocities, edges, faces));
+
+    return weight * mu * normal_force_magnitude * f0_SF(u.norm(), epsv_times_h);
+}
+
 VectorMax12d FrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& velocities,
     const Eigen::MatrixXi& edges,

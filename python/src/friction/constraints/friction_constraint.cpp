@@ -18,6 +18,10 @@ void define_friction_constraint(py::module_& m)
 
     friction_constraint
         .def(
+            "compute_potential", &FrictionConstraint::compute_potential, "",
+            py::arg("velocities"), py::arg("edges"), py::arg("faces"),
+            py::arg("epsv_times_h"))
+        .def(
             "compute_potential_gradient",
             &FrictionConstraint::compute_potential_gradient,
             R"ipc_Qu8mg5v7(

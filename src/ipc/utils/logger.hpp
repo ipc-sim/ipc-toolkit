@@ -14,7 +14,7 @@ spdlog::logger& logger();
 
 /// Setup a logger object. Calling this function with other function is not
 /// thread-safe.
-/// @param[in] logger New logger object to be used.
+/// @param logger New logger object to be used.
 void set_logger(std::shared_ptr<spdlog::logger> logger);
 
 } // namespace ipc

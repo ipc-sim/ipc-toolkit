@@ -224,10 +224,10 @@ void CollisionMesh::init_areas()
     m_edge_areas.setConstant(m_edges.rows(), -1);
     if (dim() == 3) {
         for (int i = 0; i < m_faces.rows(); i++) {
-            const auto& f0 = m_rest_positions.row(m_faces(i, 0));
-            const auto& f1 = m_rest_positions.row(m_faces(i, 1));
-            const auto& f2 = m_rest_positions.row(m_faces(i, 2));
-            double face_area = cross(f1 - f0, f2 - f0).norm() / 2;
+            const Eigen::Vector3d f0 = m_rest_positions.row(m_faces(i, 0));
+            const Eigen::Vector3d f1 = m_rest_positions.row(m_faces(i, 1));
+            const Eigen::Vector3d f2 = m_rest_positions.row(m_faces(i, 2));
+            double face_area = (f1 - f0).cross(f2 - f0).norm() / 2;
 
             for (int j = 0; j < m_faces.cols(); ++j) {
                 if (vertex_face_areas[m_faces(i, j)] < 0) {
@@ -265,10 +265,11 @@ void CollisionMesh::init_area_jacobians()
 
         VectorMax6d edge_len_gradient;
         edge_length_gradient(e0, e1, edge_len_gradient);
+        edge_len_gradient /= 2.0;
 
         for (int j = 0; j < m_edges.cols(); j++) {
             local_gradient_to_global_gradient(
-                edge_len_gradient / 2, m_edges.row(i), dim(),
+                edge_len_gradient, m_edges.row(i), dim(),
                 m_vertex_area_jacobian[m_edges(i, j)]);
         }
     }
@@ -285,6 +286,7 @@ void CollisionMesh::init_area_jacobians()
 
             VectorMax9d face_area_gradient;
             triangle_area_gradient(f0, f1, f2, face_area_gradient);
+            face_area_gradient /= 3.0;
 
             for (int j = 0; j < m_faces.cols(); ++j) {
                 if (!visited_vertex_before[m_faces(i, j)]) {
@@ -296,11 +298,11 @@ void CollisionMesh::init_area_jacobians()
                 // compute gradient of area
 
                 local_gradient_to_global_gradient(
-                    face_area_gradient / 3, m_faces.row(i), dim(),
+                    face_area_gradient, m_faces.row(i), dim(),
                     m_vertex_area_jacobian[m_faces(i, j)]);
 
                 local_gradient_to_global_gradient(
-                    face_area_gradient / 3, m_faces.row(i), dim(),
+                    face_area_gradient, m_faces.row(i), dim(),
                     m_edge_area_jacobian[m_faces_to_edges(i, j)]);
             }
         }

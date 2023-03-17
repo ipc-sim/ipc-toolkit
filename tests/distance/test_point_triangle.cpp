@@ -3,6 +3,7 @@
 #include <finitediff.hpp>
 #include <igl/PI.h>
 
+#include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -155,19 +156,15 @@ TEST_CASE(
         p.z() = closest_point.z() + scale * perp.y();
     }
 
-    Eigen::VectorXd x(12);
-    x.segment<3>(0) = p;
-    x.segment<3>(3) = t0;
-    x.segment<3>(6) = t1;
-    x.segment<3>(9) = t2;
+    Vector12d x;
+    x << p, t0, t1, t2;
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
         return point_triangle_distance(
             x.segment<3>(0), x.segment<3>(3), x.segment<3>(6), x.segment<3>(9));
     };
 
-    Eigen::VectorXd grad;
-    point_triangle_distance_gradient(p, t0, t1, t2, grad);
+    const Vector12d grad = point_triangle_distance_gradient(p, t0, t1, t2);
 
     Eigen::VectorXd fgrad;
     fd::finite_gradient(x, f, fgrad);
@@ -242,11 +239,8 @@ TEST_CASE("Point-triangle distance hessian", "[distance][point-triangle][hess]")
     PointTriangleDistanceType dtype =
         point_triangle_distance_type(p, t0, t1, t2);
 
-    Eigen::VectorXd x(12);
-    x.segment<3>(0) = p;
-    x.segment<3>(3) = t0;
-    x.segment<3>(6) = t1;
-    x.segment<3>(9) = t2;
+    Vector12d x;
+    x << p, t0, t1, t2;
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
         return point_triangle_distance(
@@ -254,8 +248,7 @@ TEST_CASE("Point-triangle distance hessian", "[distance][point-triangle][hess]")
             dtype);
     };
 
-    Eigen::MatrixXd hess;
-    point_triangle_distance_hessian(p, t0, t1, t2, hess);
+    const Matrix12d hess = point_triangle_distance_hessian(p, t0, t1, t2);
 
     Eigen::MatrixXd fhess;
     fd::finite_hessian(x, f, fhess);

@@ -9,12 +9,38 @@ void define_point_plane_distance(py::module_& m)
 {
     m.def(
         "point_plane_distance",
-        [](const Eigen::Vector3d& p, const Eigen::Vector3d& t0,
-           const Eigen::Vector3d& t1, const Eigen::Vector3d& t2) {
-            return point_plane_distance(p, t0, t1, t2);
-        },
+        py::overload_cast<
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&>(&point_plane_distance),
         R"ipc_Qu8mg5v7(
         Compute the distance between a point and a plane.
+
+        Note:
+            The distance is actually squared distance.
+
+        Parameters:
+            p: point
+            origin: origin of the plane
+            normal: normal of the plane
+
+        Returns:
+            The distance between the point and plane.
+        )ipc_Qu8mg5v7",
+        py::arg("p"), py::arg("origin"), py::arg("normal"));
+
+    m.def(
+        "point_plane_distance",
+        py::overload_cast<
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&>(&point_plane_distance),
+        R"ipc_Qu8mg5v7(
+        Compute the distance between a point and a plane.
+
+        Note:
+            The distance is actually squared distance.
 
         Parameters:
             p: point
@@ -24,22 +50,45 @@ void define_point_plane_distance(py::module_& m)
 
         Returns:
             The distance between the point and plane.
-
-        Note:
-            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t1"));
+        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"));
 
     m.def(
         "point_plane_distance_gradient",
-        [](const Eigen::Vector3d& p, const Eigen::Vector3d& t0,
-           const Eigen::Vector3d& t1, const Eigen::Vector3d& t2) {
-            Vector<double, 12> grad;
-            point_plane_distance_gradient(p, t0, t1, t2, grad);
-            return grad;
-        },
+        py::overload_cast<
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&>(
+            &point_plane_distance_gradient),
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a point and a plane.
+
+        Note:
+            The distance is actually squared distance.
+
+        Parameters:
+            p: point
+            origin: origin of the plane
+            normal: normal of the plane
+
+        Returns:
+            The gradient of the distance wrt p.
+        )ipc_Qu8mg5v7",
+        py::arg("p"), py::arg("origin"), py::arg("normal"));
+
+    m.def(
+        "point_plane_distance_gradient",
+        py::overload_cast<
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&>(
+            &point_plane_distance_gradient),
+        R"ipc_Qu8mg5v7(
+        Compute the gradient of the distance between a point and a plane.
+
+        Note:
+            The distance is actually squared distance.
 
         Parameters:
             p: point
@@ -49,22 +98,45 @@ void define_point_plane_distance(py::module_& m)
 
         Returns:
             The gradient of the distance wrt p, t0, t1, and t2.
-
-        Note:
-            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t1"));
+        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"));
 
     m.def(
         "point_plane_distance_hessian",
-        [](const Eigen::Vector3d& p, const Eigen::Vector3d& t0,
-           const Eigen::Vector3d& t1, const Eigen::Vector3d& t2) {
-            Eigen::Matrix<double, 12, 12> hess;
-            point_plane_distance_hessian(p, t0, t1, t2, hess);
-            return hess;
-        },
+        py::overload_cast<
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&>(
+            &point_plane_distance_hessian),
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and a plane.
+
+        Note:
+            The distance is actually squared distance.
+
+        Parameters:
+            p: point
+            origin: origin of the plane
+            normal: normal of the plane
+
+        Returns:
+            The hessian of the distance wrt p.
+        )ipc_Qu8mg5v7",
+        py::arg("p"), py::arg("origin"), py::arg("normal"));
+
+    m.def(
+        "point_plane_distance_hessian",
+        py::overload_cast<
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&,
+            const Eigen::Ref<const Eigen::Vector3d>&>(
+            &point_plane_distance_hessian),
+        R"ipc_Qu8mg5v7(
+        Compute the hessian of the distance between a point and a plane.
+
+        Note:
+            The distance is actually squared distance.
 
         Parameters:
             p: point
@@ -74,9 +146,6 @@ void define_point_plane_distance(py::module_& m)
 
         Returns:
             The hessian of the distance wrt p, t0, t1, and t2.
-
-        Note:
-            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t1"));
+        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"));
 }

@@ -8,7 +8,7 @@ using namespace ipc;
 void define_smooth_friction_mollifier(py::module_& m)
 {
     m.def(
-        "f0_SF", &f0_SF<double>,
+        "f0_SF", &f0_SF,
         R"ipc_Qu8mg5v7(
         Smooth friction mollifier function.
 
@@ -31,7 +31,7 @@ void define_smooth_friction_mollifier(py::module_& m)
         py::arg("x"), py::arg("epsv_times_h"));
 
     m.def(
-        "f1_SF_over_x", &f1_SF_over_x<double>,
+        "f1_SF_over_x", &f1_SF_over_x,
         R"ipc_Qu8mg5v7(
         Compute the derivative of f0_SF divided by x (:math:`\frac{f_0'(x)}{x}`).
 
@@ -61,7 +61,7 @@ void define_smooth_friction_mollifier(py::module_& m)
         py::arg("x"), py::arg("epsv_times_h"));
 
     m.def(
-        "df1_x_minus_f1_over_x3", &df1_x_minus_f1_over_x3<double>,
+        "df1_x_minus_f1_over_x3", &df1_x_minus_f1_over_x3,
         R"ipc_Qu8mg5v7(
         The derivative of f1 times x minus f1 all divided by x cubed.
 

@@ -21,17 +21,6 @@ public:
         const double dhat,
         const double barrier_stiffness);
 
-    template <typename T>
-    T compute_potential(
-        const MatrixX<T>& velocities,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const double epsv_times_h) const
-    {
-        return compute_potential_common(
-            relative_velocity_T(dof(velocities, edges, faces)), epsv_times_h);
-    }
-
 protected:
     MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& positions) const override;

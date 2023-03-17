@@ -1,6 +1,189 @@
 #include "tangent_basis.hpp"
 
+#include <Eigen/Geometry>
+
 namespace ipc {
+
+// ============================================================================
+// Point - Point
+
+MatrixMax<double, 3, 2> point_point_tangent_basis(
+    const Eigen::Ref<const VectorMax3d>& p0,
+    const Eigen::Ref<const VectorMax3d>& p1)
+{
+    const int dim = p0.size();
+    assert(dim == p1.size());
+
+    if (dim == 2) {
+        const Eigen::Vector2d p0_to_p1 = (p1 - p0).normalized();
+        return Eigen::Vector2d(-p0_to_p1.y(), p0_to_p1.x());
+    } else {
+        assert(dim == 3);
+
+        const Eigen::Vector3d p0_to_p1 = p1 - p0;
+
+        const Eigen::Vector3d cross_x =
+            Eigen::Vector3d::UnitX().cross(p0_to_p1);
+        const Eigen::Vector3d cross_y =
+            Eigen::Vector3d::UnitY().cross(p0_to_p1);
+
+        Eigen::Matrix<double, 3, 2> basis;
+        if (cross_x.squaredNorm() > cross_y.squaredNorm()) {
+            basis.col(0) = cross_x.normalized();
+            basis.col(1) = p0_to_p1.cross(cross_x).normalized();
+        } else {
+            basis.col(0) = cross_y.normalized();
+            basis.col(1) = p0_to_p1.cross(cross_y).normalized();
+        }
+
+        return basis;
+    }
+}
+
+MatrixMax<double, 18, 2> point_point_tangent_basis_jacobian(
+    const Eigen::Ref<const VectorMax3d>& p0,
+    const Eigen::Ref<const VectorMax3d>& p1)
+{
+    const int dim = p0.size();
+    assert(dim == p1.size());
+
+    MatrixMax<double, 18, 2> J;
+    if (dim == 2) {
+        J.resize(8, 1);
+        autogen::point_point_tangent_basis_2D_jacobian(
+            p0[0], p0[1], p1[0], p1[1], J.data());
+    } else {
+        assert(dim == 3);
+        J.resize(18, 2);
+        autogen::point_point_tangent_basis_3D_jacobian(
+            p0[0], p0[1], p0[2], p1[0], p1[1], p1[2], J.data());
+    }
+    return J;
+}
+
+// ============================================================================
+// Point - Edge
+
+MatrixMax<double, 3, 2> point_edge_tangent_basis(
+    const Eigen::Ref<const VectorMax3d>& p,
+    const Eigen::Ref<const VectorMax3d>& e0,
+    const Eigen::Ref<const VectorMax3d>& e1)
+{
+    const int dim = p.size();
+    assert(dim == e0.size() && dim == e1.size());
+
+    if (dim == 2) {
+        return (e1 - e0).normalized();
+    } else {
+        assert(dim == 3);
+
+        const Eigen::Vector3d e = e1 - e0;
+
+        Eigen::Matrix<double, 3, 2> basis;
+        basis.col(0) = e.normalized();
+        basis.col(1) = e.cross(Eigen::Vector3d(p - e0)).normalized();
+        return basis;
+    }
+}
+
+MatrixMax<double, 27, 2> point_edge_tangent_basis_jacobian(
+    const Eigen::Ref<const VectorMax3d>& p,
+    const Eigen::Ref<const VectorMax3d>& e0,
+    const Eigen::Ref<const VectorMax3d>& e1)
+{
+    const int dim = p.size();
+    assert(dim == e0.size() && dim == e1.size());
+
+    MatrixMax<double, 27, 2> J;
+    if (dim == 2) {
+        J.resize(12, 1);
+        autogen::point_edge_tangent_basis_2D_jacobian(
+            p[0], p[1], e0[0], e0[1], e1[0], e1[1], J.data());
+    } else {
+        assert(dim == 3);
+        J.resize(27, 2);
+        autogen::point_edge_tangent_basis_3D_jacobian(
+            p[0], p[1], p[2], e0[0], e0[1], e0[2], e1[0], e1[1], e1[2],
+            J.data());
+    }
+    return J;
+}
+
+// ============================================================================
+// Edge - Edge
+
+Eigen::Matrix<double, 3, 2> edge_edge_tangent_basis(
+    const Eigen::Ref<const Eigen::Vector3d>& ea0,
+    const Eigen::Ref<const Eigen::Vector3d>& ea1,
+    const Eigen::Ref<const Eigen::Vector3d>& eb0,
+    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+{
+    const Eigen::Vector3d ea = ea1 - ea0; // Edge A direction
+    const Eigen::Vector3d normal = ea.cross(eb1 - eb0);
+    // The normal will be zero if the edges are parallel (i.e. coplanar).
+    assert(normal.norm() != 0);
+
+    Eigen::Matrix<double, 3, 2> basis;
+    // The first basis vector is along edge A.
+    basis.col(0) = ea.normalized();
+    // The second basis vector is orthogonal to the first and the edge-edge
+    // normal.
+    basis.col(1) = normal.cross(ea).normalized();
+    return basis;
+}
+
+Eigen::Matrix<double, 36, 2> edge_edge_tangent_basis_jacobian(
+    const Eigen::Ref<const Eigen::Vector3d>& ea0,
+    const Eigen::Ref<const Eigen::Vector3d>& ea1,
+    const Eigen::Ref<const Eigen::Vector3d>& eb0,
+    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+{
+    Eigen::Matrix<double, 36, 2> J;
+    autogen::edge_edge_tangent_basis_jacobian(
+        ea0[0], ea0[1], ea0[2], ea1[0], ea1[1], ea1[2], eb0[0], eb0[1], eb0[2],
+        eb1[0], eb1[1], eb1[2], J.data());
+    return J;
+}
+
+// ============================================================================
+// Point - Triangle
+
+Eigen::Matrix<double, 3, 2> point_triangle_tangent_basis(
+    const Eigen::Ref<const Eigen::Vector3d>& p,
+    const Eigen::Ref<const Eigen::Vector3d>& t0,
+    const Eigen::Ref<const Eigen::Vector3d>& t1,
+    const Eigen::Ref<const Eigen::Vector3d>& t2)
+{
+    const Eigen::Vector3d e0 = t1 - t0;
+    const Eigen::Vector3d normal = e0.cross(t2 - t0);
+    assert(normal.norm() != 0);
+
+    Eigen::Matrix<double, 3, 2> basis;
+
+    // The first basis vector is along first edge of the triangle.
+    basis.col(0) = e0.normalized();
+    // The second basis vector is orthogonal to the first and the triangle
+    // normal.
+    basis.col(1) = normal.cross(e0).normalized();
+
+    return basis;
+}
+
+Eigen::Matrix<double, 36, 2> point_triangle_tangent_basis_jacobian(
+    const Eigen::Ref<const Eigen::Vector3d>& p,
+    const Eigen::Ref<const Eigen::Vector3d>& t0,
+    const Eigen::Ref<const Eigen::Vector3d>& t1,
+    const Eigen::Ref<const Eigen::Vector3d>& t2)
+{
+    Eigen::Matrix<double, 36, 2> J;
+    autogen::point_triangle_tangent_basis_jacobian(
+        p[0], p[1], p[2], t0[0], t0[1], t0[2], t1[0], t1[1], t1[2], t2[0],
+        t2[1], t2[2], J.data());
+    return J;
+}
+
+// ============================================================================
+
 namespace autogen {
 
     // J is (8×1) flattened in column-major order

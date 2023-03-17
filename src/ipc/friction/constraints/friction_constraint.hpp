@@ -29,13 +29,25 @@ protected:
 public:
     virtual ~FrictionConstraint() { }
 
+    /// @brief Compute the friction dissapative potential.
+    /// @param velocities Velocities of the vertices (rowwise)
+    /// @param edges Edges of the mesh
+    /// @param faces Faces of the mesh
+    /// @param epsv_times_h $\epsilon_vh$
+    /// @return The friction dissapative potential.
+    double compute_potential(
+        const Eigen::MatrixXd& velocities,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
+        const double epsv_times_h) const;
+
     /// @brief Compute the friction dissapative potential gradient wrt velocities.
     /// @param velocities Velocities of the vertices (rowwise)
     /// @param edges Edges of the mesh
     /// @param faces Faces of the mesh
     /// @param epsv_times_h $\epsilon_vh$
     /// @return Gradient of the friction dissapative potential wrt velocities
-    virtual VectorMax12d compute_potential_gradient(
+    VectorMax12d compute_potential_gradient(
         const Eigen::MatrixXd& velocities,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
@@ -48,7 +60,7 @@ public:
     /// @param epsv_times_h $\epsilon_vh$
     /// @param project_hessian_to_psd Project the hessian to PSD
     /// @return Hessian of the friction dissapative potential wrt velocities
-    virtual MatrixMax12d compute_potential_hessian(
+    MatrixMax12d compute_potential_hessian(
         const Eigen::MatrixXd& velocities,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
@@ -66,7 +78,7 @@ public:
     /// @param dmin Minimum distance
     /// @param no_mu Whether to not multiply by mu
     /// @return Friction force
-    virtual VectorMax12d compute_force(
+    VectorMax12d compute_force(
         const Eigen::MatrixXd& X,
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& edges,
@@ -94,7 +106,7 @@ public:
     /// @param dmin Minimum distance
     /// @param no_mu Whether to not multiply by mu
     /// @return Friction force
-    virtual VectorMax12d compute_force(
+    VectorMax12d compute_force(
         const Eigen::MatrixXd& X,
         const Eigen::MatrixXd& Ut,
         const Eigen::MatrixXd& U,
@@ -124,7 +136,7 @@ public:
     /// @param wrt Variable to differentiate the friction force with respect to.
     /// @param dmin Minimum distance
     /// @return Friction force Jacobian
-    virtual MatrixMax12d compute_force_jacobian(
+    MatrixMax12d compute_force_jacobian(
         const Eigen::MatrixXd& X,
         const Eigen::MatrixXd& U,
         const Eigen::MatrixXi& edges,
@@ -152,7 +164,7 @@ public:
     /// @param wrt Variable to differentiate the friction force with respect to.
     /// @param dmin Minimum distance
     /// @return Friction force Jacobian
-    virtual MatrixMax12d compute_force_jacobian(
+    MatrixMax12d compute_force_jacobian(
         const Eigen::MatrixXd& X,
         const Eigen::MatrixXd& Ut,
         const Eigen::MatrixXd& U,
@@ -247,28 +259,6 @@ protected:
     /// @return Jacobian of the relative velocity premultiplier wrt the closest points.
     virtual MatrixMax<double, 6, 12> relative_velocity_matrix_jacobian(
         const VectorMax2d& closest_point) const = 0;
-
-    // -------------------------------------------------------------------------
-    // Utility methods
-    // -------------------------------------------------------------------------
-
-    /// @brief Compute the friction potential from the relative velocity.
-    /// @param relative_velocity Relative velocity of the constraint.
-    /// @param epsv_times_h Friction mollifier parameter.
-    /// @return Friction potential.
-    template <
-        typename DerivedRelVel,
-        typename T = typename DerivedRelVel::Scalar>
-    T compute_potential_common(
-        const Eigen::MatrixBase<DerivedRelVel>& relative_velocity,
-        const double epsv_times_h) const
-    {
-        // The relative velocity in the tangential space
-        const VectorMax2<T> tangent_rel_vel =
-            tangent_basis.transpose().cast<T>() * relative_velocity;
-        return weight * mu * normal_force_magnitude
-            * f0_SF(tangent_rel_vel.norm(), epsv_times_h);
-    }
 
 public:
     /// @brief Contact force magnitude

@@ -90,16 +90,4 @@ project_to_psd(
         * eigensolver.eigenvectors().transpose();
 }
 
-template <typename DerivedA, typename DerivedB, typename Result>
-Result cross(
-    const Eigen::MatrixBase<DerivedA>& a, const Eigen::MatrixBase<DerivedB>& b)
-{
-    assert(a.size() == 3 && b.size() == 3);
-    Result c(a.rows(), a.cols());
-    c(0) = a(1) * b(2) - a(2) * b(1);
-    c(1) = a(2) * b(0) - a(0) * b(2);
-    c(2) = a(0) * b(1) - a(1) * b(0);
-    return c;
-}
-
 } // namespace ipc

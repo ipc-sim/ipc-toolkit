@@ -60,7 +60,7 @@ TEST_CASE("Test barrier derivatives", "[barrier]")
         barrier_hessian;
     SECTION("Original IPC barrier")
     {
-        barrier = ipc::barrier<double>;
+        barrier = ipc::barrier;
         barrier_gradient = ipc::barrier_gradient;
         barrier_hessian = ipc::barrier_hessian;
     }

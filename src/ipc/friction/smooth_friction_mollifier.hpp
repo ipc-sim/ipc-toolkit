@@ -16,7 +16,7 @@ namespace ipc {
 /// @param x The tangential relative speed.
 /// @param epsv_times_h Mollifier parameter \f$\epsilon_v h\f$.
 /// @return The value of the mollifier function at x.
-template <typename T> inline T f0_SF(const T& x, const double epsv_times_h);
+double f0_SF(const double x, const double epsv_times_h);
 
 /// @brief Compute the derivative of f0_SF divided by x (\f$\frac{f_0'(x)}{x}\f$).
 ///
@@ -39,8 +39,7 @@ template <typename T> inline T f0_SF(const T& x, const double epsv_times_h);
 /// @param x The tangential relative speed.
 /// @param epsv_times_h Mollifier parameter \f$\epsilon_v h\f$.
 /// @return The value of the derivative of f0_SF divided by x.
-template <typename T>
-inline T f1_SF_over_x(const T& x, const double epsv_times_h);
+double f1_SF_over_x(const double x, const double epsv_times_h);
 
 /// @brief The derivative of f1 times x minus f1 all divided by x cubed.
 ///
@@ -55,9 +54,6 @@ inline T f1_SF_over_x(const T& x, const double epsv_times_h);
 /// @param x The tangential relative speed.
 /// @param epsv_times_h Mollifier parameter \f$\epsilon_v h\f$.
 /// @return The derivative of f1 times x minus f1 all divided by x cubed.
-template <typename T>
-inline T df1_x_minus_f1_over_x3(const T& x, const double epsv_times_h);
+double df1_x_minus_f1_over_x3(const double x, const double epsv_times_h);
 
 } // namespace ipc
-
-#include "smooth_friction_mollifier.tpp"
