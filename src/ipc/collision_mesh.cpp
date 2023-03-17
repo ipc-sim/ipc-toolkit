@@ -206,8 +206,8 @@ void CollisionMesh::init_areas()
     Eigen::VectorXd vertex_edge_areas =
         Eigen::VectorXd::Constant(num_vertices(), -1);
     for (int i = 0; i < m_edges.rows(); i++) {
-        const auto& e0 = m_rest_positions.row(m_edges(i, 0));
-        const auto& e1 = m_rest_positions.row(m_edges(i, 1));
+        const VectorMax3d e0 = m_rest_positions.row(m_edges(i, 0));
+        const VectorMax3d e1 = m_rest_positions.row(m_edges(i, 1));
         double edge_len = (e1 - e0).norm();
 
         for (int j = 0; j < m_edges.cols(); j++) {
@@ -260,8 +260,8 @@ void CollisionMesh::init_area_jacobians()
     m_vertex_area_jacobian.resize(
         num_vertices(), Eigen::SparseVector<double>(ndof()));
     for (int i = 0; i < m_edges.rows(); i++) {
-        const auto& e0 = m_rest_positions.row(m_edges(i, 0));
-        const auto& e1 = m_rest_positions.row(m_edges(i, 1));
+        const VectorMax3d e0 = m_rest_positions.row(m_edges(i, 0));
+        const VectorMax3d e1 = m_rest_positions.row(m_edges(i, 1));
 
         const VectorMax6d edge_len_gradient = edge_length_gradient(e0, e1) / 2;
 
