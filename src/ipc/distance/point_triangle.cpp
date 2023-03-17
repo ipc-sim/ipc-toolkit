@@ -80,7 +80,7 @@ Vector12d point_triangle_distance_gradient(
     }
 
     case PointTriangleDistanceType::P_E0:
-        grad.head<9>(0) = point_line_distance_gradient(p, t0, t1);
+        grad.head<9>() = point_line_distance_gradient(p, t0, t1);
         break;
 
     case PointTriangleDistanceType::P_E1: {
