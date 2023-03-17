@@ -5,6 +5,7 @@ set(SOURCES
   friction_constraints.hpp
   normal_force_magnitude.cpp
   normal_force_magnitude.hpp
+  relative_velocity.cpp
   relative_velocity.hpp
   smooth_friction_mollifier.cpp
   smooth_friction_mollifier.hpp

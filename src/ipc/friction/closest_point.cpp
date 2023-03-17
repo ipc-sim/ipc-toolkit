@@ -1,6 +1,119 @@
 #include "closest_point.hpp"
 
+#include <Eigen/Core>
+#include <Eigen/Cholesky>
+
 namespace ipc {
+
+// ============================================================================
+// Point - Edge
+
+double point_edge_closest_point(
+    const Eigen::Ref<const VectorMax3d>& p,
+    const Eigen::Ref<const VectorMax3d>& e0,
+    const Eigen::Ref<const VectorMax3d>& e1)
+{
+    const VectorMax3d e = e1 - e0;
+    return (p - e0).dot(e) / e.squaredNorm();
+}
+
+VectorMax9d point_edge_closest_point_jacobian(
+    const Eigen::Ref<const VectorMax3d>& p,
+    const Eigen::Ref<const VectorMax3d>& e0,
+    const Eigen::Ref<const VectorMax3d>& e1)
+{
+    const int dim = p.size();
+    assert(dim == 2 || dim == 3);
+    assert(e0.size() == dim && e1.size() == dim);
+
+    const VectorMax3d e = e1 - e0;
+    const VectorMax3d e2p = p - e0;
+    const double e_sqnorm = e.squaredNorm();
+
+    VectorMax9d J(3 * dim);
+    J.head(dim) = e / e_sqnorm;
+    J.segment(dim, dim) = (2 / e_sqnorm * e.dot(e2p) * e - e - e2p) / e_sqnorm;
+    J.tail(dim) = (e2p - 2 / e_sqnorm * e.dot(e2p) * e) / e_sqnorm;
+    return J;
+}
+
+// ============================================================================
+// Edge - Edge
+
+Vector2<double> edge_edge_closest_point(
+    const Eigen::Ref<const Eigen::Vector3d>& ea0,
+    const Eigen::Ref<const Eigen::Vector3d>& ea1,
+    const Eigen::Ref<const Eigen::Vector3d>& eb0,
+    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+{
+    const Eigen::Vector3d eb_to_ea = ea0 - eb0;
+    const Eigen::Vector3d ea = ea1 - ea0;
+    const Eigen::Vector3d eb = eb1 - eb0;
+
+    Eigen::Matrix<double, 2, 2> coefMtr;
+    coefMtr(0, 0) = ea.squaredNorm();
+    coefMtr(0, 1) = coefMtr(1, 0) = -eb.dot(ea);
+    coefMtr(1, 1) = eb.squaredNorm();
+
+    Vector2<double> rhs;
+    rhs[0] = -eb_to_ea.dot(ea);
+    rhs[1] = eb_to_ea.dot(eb);
+
+    const Eigen::Vector2d x = coefMtr.ldlt().solve(rhs);
+    assert((coefMtr * x - rhs).norm() < 1e-10);
+    return x;
+}
+
+Eigen::Matrix<double, 2, 12> edge_edge_closest_point_jacobian(
+    const Eigen::Ref<const Eigen::Vector3d>& ea0,
+    const Eigen::Ref<const Eigen::Vector3d>& ea1,
+    const Eigen::Ref<const Eigen::Vector3d>& eb0,
+    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+{
+    Eigen::Matrix<double, 2, 12> J;
+
+    autogen::edge_edge_closest_point_jacobian(
+        ea0[0], ea0[1], ea0[2], ea1[0], ea1[1], ea1[2], eb0[0], eb0[1], eb0[2],
+        eb1[0], eb1[1], eb1[2], J.data());
+
+    return J;
+}
+
+// ============================================================================
+// Point - Triangle
+
+Vector2<double> point_triangle_closest_point(
+    const Eigen::Ref<const Eigen::Vector3d>& p,
+    const Eigen::Ref<const Eigen::Vector3d>& t0,
+    const Eigen::Ref<const Eigen::Vector3d>& t1,
+    const Eigen::Ref<const Eigen::Vector3d>& t2)
+{
+    Eigen::Matrix<double, 2, 3> basis;
+    basis.row(0) = RowVector3<double>(t1 - t0); // edge 0
+    basis.row(1) = RowVector3<double>(t2 - t0); // edge 1
+    const Eigen::Matrix2d A = basis * basis.transpose();
+    const Eigen::Vector2d b = basis * (p - t0);
+    const Eigen::Vector2d x = A.ldlt().solve(b);
+    assert((A * x - b).norm() < 1e-10);
+    return x;
+}
+
+Eigen::Matrix<double, 2, 12> point_triangle_closest_point_jacobian(
+    const Eigen::Ref<const Eigen::Vector3d>& p,
+    const Eigen::Ref<const Eigen::Vector3d>& t0,
+    const Eigen::Ref<const Eigen::Vector3d>& t1,
+    const Eigen::Ref<const Eigen::Vector3d>& t2)
+{
+    Eigen::Matrix<double, 2, 12> J;
+    autogen::point_triangle_closest_point_jacobian(
+        p[0], p[1], p[2], t0[0], t0[1], t0[2], t1[0], t1[1], t1[2], t2[0],
+        t2[1], t2[2], J.data());
+
+    return J;
+}
+
+// ============================================================================
+
 namespace autogen {
     // J is (6×1) flattened in column-major order
     void point_edge_closest_point_2D_jacobian(

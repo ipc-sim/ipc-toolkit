@@ -263,9 +263,7 @@ void CollisionMesh::init_area_jacobians()
         const auto& e0 = m_rest_positions.row(m_edges(i, 0));
         const auto& e1 = m_rest_positions.row(m_edges(i, 1));
 
-        VectorMax6d edge_len_gradient;
-        edge_length_gradient(e0, e1, edge_len_gradient);
-        edge_len_gradient /= 2.0;
+        const VectorMax6d edge_len_gradient = edge_length_gradient(e0, e1) / 2;
 
         for (int j = 0; j < m_edges.cols(); j++) {
             local_gradient_to_global_gradient(
@@ -280,13 +278,12 @@ void CollisionMesh::init_area_jacobians()
     if (dim() == 3) {
         std::vector<bool> visited_vertex_before(num_vertices(), false);
         for (int i = 0; i < m_faces.rows(); i++) {
-            const auto& f0 = m_rest_positions.row(m_faces(i, 0));
-            const auto& f1 = m_rest_positions.row(m_faces(i, 1));
-            const auto& f2 = m_rest_positions.row(m_faces(i, 2));
+            const Eigen::Vector3d f0 = m_rest_positions.row(m_faces(i, 0));
+            const Eigen::Vector3d f1 = m_rest_positions.row(m_faces(i, 1));
+            const Eigen::Vector3d f2 = m_rest_positions.row(m_faces(i, 2));
 
-            VectorMax9d face_area_gradient;
-            triangle_area_gradient(f0, f1, f2, face_area_gradient);
-            face_area_gradient /= 3.0;
+            const Vector9d face_area_gradient =
+                triangle_area_gradient(f0, f1, f2) / 3.0;
 
             for (int j = 0; j < m_faces.cols(); ++j) {
                 if (!visited_vertex_before[m_faces(i, j)]) {

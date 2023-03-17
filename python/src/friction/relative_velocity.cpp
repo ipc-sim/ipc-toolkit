@@ -8,12 +8,7 @@ using namespace ipc;
 void define_relative_velocity(py::module_& m)
 {
     m.def(
-        "point_point_relative_velocity",
-        [](const VectorMax3d& dp0, const VectorMax3d& dp1) {
-            assert_2D_or_3D_vector(dp0, "dp0");
-            assert_2D_or_3D_vector(dp1, "dp1");
-            return point_point_relative_velocity(dp0, dp1);
-        },
+        "point_point_relative_velocity", &point_point_relative_velocity,
         R"ipc_Qu8mg5v7(
         Compute the relative velocity of two points
 
@@ -28,7 +23,7 @@ void define_relative_velocity(py::module_& m)
 
     m.def(
         "point_point_relative_velocity_matrix",
-        &point_point_relative_velocity_matrix<double>,
+        &point_point_relative_velocity_matrix,
         R"ipc_Qu8mg5v7(
         Compute the relative velocity premultiplier matrix
 
@@ -42,7 +37,7 @@ void define_relative_velocity(py::module_& m)
 
     m.def(
         "point_point_relative_velocity_matrix_jacobian",
-        &point_point_relative_velocity_matrix_jacobian<double>,
+        &point_point_relative_velocity_matrix_jacobian,
         R"ipc_Qu8mg5v7(
         Compute the jacobian of the relative velocity premultiplier matrix
 
@@ -55,14 +50,7 @@ void define_relative_velocity(py::module_& m)
         py::arg("dim"));
 
     m.def(
-        "point_edge_relative_velocity",
-        [](const VectorMax3d& dp, const VectorMax3d& de0,
-           const VectorMax3d& de1, const double alpha) {
-            assert_2D_or_3D_vector(dp, "dp");
-            assert_2D_or_3D_vector(de0, "de0");
-            assert_2D_or_3D_vector(de1, "de1");
-            return point_edge_relative_velocity(dp, de0, de1, alpha);
-        },
+        "point_edge_relative_velocity", &point_edge_relative_velocity,
         R"ipc_Qu8mg5v7(
         Compute the relative velocity of a point and an edge
 
@@ -79,21 +67,16 @@ void define_relative_velocity(py::module_& m)
 
     m.def(
         "point_edge_relative_velocity_matrix",
-        &point_edge_relative_velocity_matrix<double>, "", py::arg("dim"),
+        &point_edge_relative_velocity_matrix, "", py::arg("dim"),
         py::arg("alpha"));
 
     m.def(
         "point_edge_relative_velocity_matrix_jacobian",
-        &point_edge_relative_velocity_matrix_jacobian<double>, "",
-        py::arg("dim"), py::arg("alpha"));
+        &point_edge_relative_velocity_matrix_jacobian, "", py::arg("dim"),
+        py::arg("alpha"));
 
     m.def(
-        "edge_edge_relative_velocity",
-        [](const Eigen::Vector3d& dea0, const Eigen::Vector3d& dea1,
-           const Eigen::Vector3d& deb0, const Eigen::Vector3d& deb1,
-           const Eigen::Vector2d& coords) {
-            return edge_edge_relative_velocity(dea0, dea1, deb0, deb1, coords);
-        },
+        "edge_edge_relative_velocity", &edge_edge_relative_velocity,
         R"ipc_Qu8mg5v7(
         Compute the relative velocity of the edges.
 
@@ -112,25 +95,16 @@ void define_relative_velocity(py::module_& m)
 
     m.def(
         "edge_edge_relative_velocity_matrix",
-        [](const int dim, const Eigen::Vector2d& coords) {
-            return edge_edge_relative_velocity_matrix(dim, coords);
-        },
-        "", py::arg("dim"), py::arg("coords"));
+        &edge_edge_relative_velocity_matrix, "", py::arg("dim"),
+        py::arg("coords"));
 
     m.def(
         "edge_edge_relative_velocity_matrix_jacobian",
-        [](const int dim, const Eigen::Vector2d& coords) {
-            return edge_edge_relative_velocity_matrix_jacobian(dim, coords);
-        },
-        "", py::arg("dim"), py::arg("coords"));
+        &edge_edge_relative_velocity_matrix_jacobian, "", py::arg("dim"),
+        py::arg("coords"));
 
     m.def(
-        "point_triangle_relative_velocity",
-        [](const Eigen::Vector3d& dp, const Eigen::Vector3d& dt0,
-           const Eigen::Vector3d& dt1, const Eigen::Vector3d& dt2,
-           const Eigen::Vector2d& coords) {
-            return point_triangle_relative_velocity(dp, dt0, dt1, dt2, coords);
-        },
+        "point_triangle_relative_velocity", &point_triangle_relative_velocity,
         R"ipc_Qu8mg5v7(
         Compute the relative velocity of the point to the triangle.
 
@@ -149,16 +123,11 @@ void define_relative_velocity(py::module_& m)
 
     m.def(
         "point_triangle_relative_velocity_matrix",
-        [](const int dim, const Eigen::Vector2d& coords) {
-            return point_triangle_relative_velocity_matrix(dim, coords);
-        },
-        "", py::arg("dim"), py::arg("coords"));
+        &point_triangle_relative_velocity_matrix, "", py::arg("dim"),
+        py::arg("coords"));
 
     m.def(
         "point_triangle_relative_velocity_matrix_jacobian",
-        [](const int dim, const Eigen::Vector2d& coords) {
-            return point_triangle_relative_velocity_matrix_jacobian(
-                dim, coords);
-        },
-        "", py::arg("dim"), py::arg("coords"));
+        &point_triangle_relative_velocity_matrix_jacobian, "", py::arg("dim"),
+        py::arg("coords"));
 }

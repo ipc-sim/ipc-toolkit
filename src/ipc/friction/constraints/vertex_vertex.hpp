@@ -34,10 +34,7 @@ protected:
     MatrixMax<double, 2, 12> compute_closest_point_jacobian(
         const VectorMax12d& positions) const override;
 
-    VectorMax3d relative_velocity(const VectorMax12d& velocity) const override
-    {
-        return relative_velocity_T(velocity);
-    }
+    VectorMax3d relative_velocity(const VectorMax12d& velocity) const override;
 
     using FrictionConstraint::relative_velocity_matrix;
 
@@ -46,15 +43,6 @@ protected:
 
     MatrixMax<double, 6, 12> relative_velocity_matrix_jacobian(
         const VectorMax2d& closest_point) const override;
-
-private:
-    template <typename T>
-    VectorMax3<T> relative_velocity_T(const VectorMax12<T>& velocity) const
-    {
-        assert(velocity.size() == ndof());
-        return point_point_relative_velocity(
-            velocity.head(dim()), velocity.tail(dim()));
-    }
 };
 
 } // namespace ipc

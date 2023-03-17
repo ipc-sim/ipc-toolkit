@@ -74,6 +74,15 @@ EdgeEdgeFrictionConstraint::compute_closest_point_jacobian(
 
 // ============================================================================
 
+VectorMax3d EdgeEdgeFrictionConstraint::relative_velocity(
+    const VectorMax12d& velocities) const
+{
+    assert(velocities.size() == 12);
+    return edge_edge_relative_velocity(
+        velocities.head<3>(), velocities.segment<3>(dim()),
+        velocities.segment<3>(2 * dim()), velocities.tail<3>(), closest_point);
+}
+
 MatrixMax<double, 3, 12> EdgeEdgeFrictionConstraint::relative_velocity_matrix(
     const VectorMax2d& closest_point) const
 {
