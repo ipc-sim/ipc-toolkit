@@ -175,7 +175,7 @@ void check_friction_force_jacobian(
 
     const Eigen::MatrixXd hess_D =
         friction_constraints.compute_potential_hessian(
-            mesh, velocity, epsv_times_h, false);
+            mesh, velocity, epsv_times_h);
 
     auto grad = [&](const Eigen::VectorXd& u) {
         const Eigen::MatrixXd fd_velocity = fd::unflatten(u, U.cols()) - Ut;
