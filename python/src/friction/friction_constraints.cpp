@@ -84,7 +84,7 @@ void define_friction_constraints(py::module_& m)
                 The Hessian of the friction dissapative potential wrt the velocity.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("velocity"), py::arg("epsv_times_h"),
-            py::arg("project_hessian_to_psd") = true)
+            py::arg("project_hessian_to_psd") = false)
         .def(
             "compute_force",
             py::overload_cast<

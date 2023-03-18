@@ -81,7 +81,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const double dhat,
-        const bool project_hessian_to_psd = true) const;
+        const bool project_hessian_to_psd = false) const;
 
     // ------------------------------------------------------------------------
 

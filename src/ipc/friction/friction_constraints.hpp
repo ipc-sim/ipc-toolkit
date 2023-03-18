@@ -71,7 +71,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& velocity,
         const double epsv_times_h,
-        const bool project_hessian_to_psd = true) const;
+        const bool project_hessian_to_psd = false) const;
 
     // ------------------------------------------------------------------------
 

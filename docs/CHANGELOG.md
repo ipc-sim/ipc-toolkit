@@ -10,6 +10,12 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 -->
 
+## 2023-03-14 ([pr-30](https://github.com/ipc-sim/ipc-toolkit/pull/30))
+
+### Changed
+
+* Default `project_hessian_to_psd` changed to `false`
+
 ## 2023-03-14 ([pr-25](https://github.com/ipc-sim/ipc-toolkit/pull/25))
 
 ### Added

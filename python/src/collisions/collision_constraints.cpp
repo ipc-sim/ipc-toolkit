@@ -90,7 +90,7 @@ void define_collision_constraints(py::module_& m)
                 The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|x|vertices|.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"), py::arg("dhat"),
-            py::arg("project_hessian_to_psd") = true)
+            py::arg("project_hessian_to_psd") = false)
         .def(
             "compute_shape_derivative",
             &CollisionConstraints::compute_shape_derivative,
