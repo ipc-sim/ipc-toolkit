@@ -2,27 +2,52 @@ Broad Phase
 ===========
 
 .. autoclass:: ipctk.BroadPhaseMethod
-    :members:
+
+    .. autoclasstoc::
 
 .. .. autovariable:: ipctk.DEFAULT_BROAD_PHASE_METHOD
 
-.. autoclass:: ipctk.BroadPhase
-    :members:
+Broad Phase
+-----------
 
-.. autoclass:: ipctk.AABB
-    :members:
+.. autoclass:: ipctk.BroadPhase
+
+    .. autoclasstoc::
+
+Brute Force
+-----------
 
 .. autoclass:: ipctk.BruteForce
-    :members:
+
+    .. autoclasstoc::
+
+Hash Grid
+---------
 
 .. autoclass:: ipctk.HashGrid
-    :members:
+
+    .. autoclasstoc::
+
+Spatial Hash
+------------
 
 .. autoclass:: ipctk.SpatialHash
-    :members:
+
+    .. autoclasstoc::
+
+Sweep and Tiniest Queue
+-----------------------
 
 .. autoclass:: ipctk.SweepAndTiniestQueue
-    :members:
+
+    .. autoclasstoc::
 
 .. .. autoclass:: ipctk.SweepAndTiniestQueueGPU
 ..     :members:
+
+AABB
+----
+
+.. autoclass:: ipctk.AABB
+
+    .. autoclasstoc::

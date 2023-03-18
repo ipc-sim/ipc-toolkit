@@ -1,26 +1,59 @@
 Candidates
 ==========
 
+Candidates
+----------
+
 .. autoclass:: ipctk.Candidates
-    :members:
+
+    .. autoclasstoc::
+
+Collision Stencil
+-----------------
+
+.. error::
+    This ``autoclass`` is not working. I don't know why. I have to investigate.
 
 .. .. autoclass:: ipctk.CollisionStencil
-..     :members:
+
+Continuous Collision Candidate
+------------------------------
+
 .. autoclass:: ipctk.ContinuousCollisionCandidate
-    :members:
+
+    .. autoclasstoc::
+
+Vertex-Vertex Candidate
+-----------------------
 
 .. autoclass:: ipctk.VertexVertexCandidate
-    :members:
-    :show-inheritance:
+
+    .. autoclasstoc::
+
+Edge-Vertex Candidate
+---------------------
+
 .. autoclass:: ipctk.EdgeVertexCandidate
-    :members:
-    :show-inheritance:
+
+    .. autoclasstoc::
+
+Edge-Edge Candidate
+-------------------
+
 .. autoclass:: ipctk.EdgeEdgeCandidate
-    :members:
-    :show-inheritance:
+
+    .. autoclasstoc::
+
+Edge-Face Candidate
+-------------------
+
 .. autoclass:: ipctk.EdgeFaceCandidate
-    :members:
-    :show-inheritance:
+
+    .. autoclasstoc::
+
+Face-Vertex Candidate
+---------------------
+
 .. autoclass:: ipctk.FaceVertexCandidate
-    :members:
-    :show-inheritance:
+
+    .. autoclasstoc::
