@@ -3,12 +3,12 @@ set(SOURCES
   closest_point.hpp
   friction_constraints.cpp
   friction_constraints.hpp
-  friction_constraints.tpp
   normal_force_magnitude.cpp
   normal_force_magnitude.hpp
+  relative_velocity.cpp
   relative_velocity.hpp
+  smooth_friction_mollifier.cpp
   smooth_friction_mollifier.hpp
-  smooth_friction_mollifier.tpp
   tangent_basis.cpp
   tangent_basis.hpp
 )

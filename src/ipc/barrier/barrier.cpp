@@ -3,7 +3,23 @@
 // inequlity constraints on a function.
 #include "barrier.hpp"
 
+#include <cmath>
+#include <limits>
+
 namespace ipc {
+
+double barrier(const double d, const double dhat)
+{
+    if (d <= 0.0) {
+        return std::numeric_limits<double>::infinity();
+    }
+    if (d >= dhat) {
+        return 0;
+    }
+    // b(d) = -(d-d̂)²ln(d / d̂)
+    const double d_minus_dhat = (d - dhat);
+    return -d_minus_dhat * d_minus_dhat * log(d / dhat);
+}
 
 double barrier_gradient(const double d, const double dhat)
 {

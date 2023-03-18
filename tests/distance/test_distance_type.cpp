@@ -23,7 +23,8 @@ TEST_CASE("Point-edge distance type", "[distance][distance-type][point-edge]")
         } else {
             e0 = Eigen::Vector3d::Random();
             e1 = Eigen::Vector3d::Random();
-            n = cross(e1 - e0, Eigen::Vector3d::UnitX()).normalized();
+            n = Eigen::Vector3d(e1 - e0).cross(Eigen::Vector3d::UnitX());
+            n.normalize();
         }
 
         const VectorMax3d p = ((e1 - e0) * alpha + e0) + distance * n;

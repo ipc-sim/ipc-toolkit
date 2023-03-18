@@ -51,14 +51,14 @@ VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
     const EdgeEdgeDistanceType dtype =
         edge_edge_distance_type(ea0, ea1, eb0, eb1);
     const double distance = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
-    VectorMax12d distance_grad;
-    edge_edge_distance_gradient(ea0, ea1, eb0, eb1, distance_grad, dtype);
+    const Vector12d distance_grad =
+        edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype);
 
     // m(x)
     const double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
     // ∇m(x)
-    VectorMax12d mollifier_grad;
-    edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x, mollifier_grad);
+    const Vector12d mollifier_grad =
+        edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x);
 
     // b(d(x))
     const double b = barrier(distance - min_dist_squared, adjusted_dhat);
@@ -92,17 +92,17 @@ MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
     const EdgeEdgeDistanceType dtype =
         edge_edge_distance_type(ea0, ea1, eb0, eb1);
     const double distance = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
-    VectorMax12d distance_grad;
-    edge_edge_distance_gradient(ea0, ea1, eb0, eb1, distance_grad, dtype);
-    MatrixMax12d distance_hess;
-    edge_edge_distance_hessian(ea0, ea1, eb0, eb1, distance_hess, dtype);
+    const Vector12d distance_grad =
+        edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype);
+    const Matrix12d distance_hess =
+        edge_edge_distance_hessian(ea0, ea1, eb0, eb1, dtype);
 
     // Compute mollifier derivatives
     const double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
-    VectorMax12d mollifier_grad;
-    edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x, mollifier_grad);
-    MatrixMax12d mollifier_hess;
-    edge_edge_mollifier_hessian(ea0, ea1, eb0, eb1, eps_x, mollifier_hess);
+    const VectorMax12d mollifier_grad =
+        edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x);
+    const MatrixMax12d mollifier_hess =
+        edge_edge_mollifier_hessian(ea0, ea1, eb0, eb1, eps_x);
 
     // Compute barrier derivatives
     const double b = barrier(distance - min_dist_squared, adjusted_dhat);

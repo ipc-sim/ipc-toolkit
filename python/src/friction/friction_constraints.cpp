@@ -43,8 +43,7 @@ void define_friction_constraints(py::module_& m)
             py::arg("contact_constraints"), py::arg("dhat"),
             py::arg("barrier_stiffness"), py::arg("mus"), py::arg("blend_mu"))
         .def(
-            "compute_potential",
-            &FrictionConstraints::compute_potential<double>,
+            "compute_potential", &FrictionConstraints::compute_potential,
             R"ipc_Qu8mg5v7(
             Compute the friction dissapative potential from the given velocity.
 

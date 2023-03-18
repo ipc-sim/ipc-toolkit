@@ -38,13 +38,11 @@ TEST_CASE("Point-point distance gradient", "[distance][point-point][gradient]")
         p1 *= expected_distance;
     }
 
-    Eigen::VectorXd grad;
-    point_point_distance_gradient(p0, p1, grad);
+    const VectorMax6d grad = point_point_distance_gradient(p0, p1);
 
     // Compute the gradient using finite differences
-    Eigen::VectorXd x(2 * dim);
-    x.head(dim) = p0;
-    x.tail(dim) = p1;
+    VectorMax6d x(2 * dim);
+    x << p0, p1;
     auto f = [&dim](const Eigen::VectorXd& x) {
         return point_point_distance(x.head(dim), x.tail(dim));
     };
@@ -68,17 +66,13 @@ TEST_CASE("Point-point distance hessian", "[distance][point-point][hessian]")
         p1 *= expected_distance;
     }
 
-    Eigen::MatrixXd hess;
-    point_point_distance_hessian(p0, p1, hess);
+    const MatrixMax6d hess = point_point_distance_hessian(p0, p1);
 
     // Compute the gradient using finite differences
-    Eigen::VectorXd x(2 * dim);
-    x.head(dim) = p0;
-    x.tail(dim) = p1;
+    VectorMax6d x(2 * dim);
+    x << p0, p1;
     auto f = [&dim](const Eigen::VectorXd& x) {
-        Eigen::VectorXd grad;
-        point_point_distance_gradient(x.head(dim), x.tail(dim), grad);
-        return grad;
+        return point_point_distance_gradient(x.head(dim), x.tail(dim));
     };
     Eigen::MatrixXd fhess;
     fd::finite_jacobian(x, f, fhess);

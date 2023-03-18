@@ -127,6 +127,7 @@ double CollisionConstraints::compute_potential(
     const double dhat) const
 {
     assert(vertices.rows() == mesh.num_vertices());
+    assert(dhat > 0);
 
     if (empty()) {
         return 0;

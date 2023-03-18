@@ -25,22 +25,18 @@ VectorMax12d EdgeEdgeCandidate::compute_distance_gradient(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == 12);
-    VectorMax12d distance_grad;
-    edge_edge_distance_gradient(
+    return edge_edge_distance_gradient(
         positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
-        positions.tail<3>(), distance_grad, known_dtype());
-    return distance_grad;
+        positions.tail<3>(), known_dtype());
 }
 
 MatrixMax12d
 EdgeEdgeCandidate::compute_distance_hessian(const VectorMax12d& positions) const
 {
     assert(positions.size() == 12);
-    MatrixMax12d distance_hess;
-    edge_edge_distance_hessian(
+    return edge_edge_distance_hessian(
         positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
-        positions.tail<3>(), distance_hess, known_dtype());
-    return distance_hess;
+        positions.tail<3>(), known_dtype());
 }
 
 bool EdgeEdgeCandidate::ccd(

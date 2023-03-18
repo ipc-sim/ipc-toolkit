@@ -20,8 +20,8 @@ TEST_CASE(
     const double dhat = 1e-3, barrier_stiffness = 1e2;
 
     const double distance = point_triangle_distance(p, t0, t1, t2);
-    VectorMax12d distance_grad;
-    point_triangle_distance_gradient(p, t0, t1, t2, distance_grad);
+    const Vector12d distance_grad =
+        point_triangle_distance_gradient(p, t0, t1, t2);
     const VectorMax12d grad = compute_normal_force_magnitude_gradient(
         distance, distance_grad, dhat, barrier_stiffness);
 
@@ -32,7 +32,7 @@ TEST_CASE(
             distance, dhat, barrier_stiffness);
     };
 
-    Eigen::VectorXd x(12);
+    Vector12d x;
     x << p, t0, t1, t2;
 
     Eigen::VectorXd fgrad;
@@ -50,8 +50,8 @@ TEST_CASE(
     const double dhat = 1e-3, barrier_stiffness = 1e2;
 
     const double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
-    VectorMax12d distance_grad;
-    edge_edge_distance_gradient(ea0, ea1, eb0, eb1, distance_grad);
+    const Vector12d distance_grad =
+        edge_edge_distance_gradient(ea0, ea1, eb0, eb1);
     const VectorMax12d grad = compute_normal_force_magnitude_gradient(
         distance, distance_grad, dhat, barrier_stiffness);
 
@@ -62,7 +62,7 @@ TEST_CASE(
             distance, dhat, barrier_stiffness);
     };
 
-    Eigen::VectorXd x(12);
+    Vector12d x;
     x << ea0, ea1, eb0, eb1;
 
     Eigen::VectorXd fgrad;
@@ -79,8 +79,7 @@ TEST_CASE(
     const double dhat = 1e-3, barrier_stiffness = 1e2;
 
     const double distance = point_edge_distance(p, e0, e1);
-    VectorMax12d distance_grad;
-    point_edge_distance_gradient(p, e0, e1, distance_grad);
+    const VectorMax9d distance_grad = point_edge_distance_gradient(p, e0, e1);
     const VectorMax12d grad = compute_normal_force_magnitude_gradient(
         distance, distance_grad, dhat, barrier_stiffness);
 
@@ -91,7 +90,7 @@ TEST_CASE(
             distance, dhat, barrier_stiffness);
     };
 
-    Eigen::VectorXd x(9);
+    Vector9d x;
     x << p, e0, e1;
 
     Eigen::VectorXd fgrad;
@@ -108,8 +107,7 @@ TEST_CASE(
     const double dhat = 1e-3, barrier_stiffness = 1e2;
 
     const double distance = point_point_distance(p0, p1);
-    VectorMax12d distance_grad;
-    point_point_distance_gradient(p0, p1, distance_grad);
+    const VectorMax6d distance_grad = point_point_distance_gradient(p0, p1);
     const VectorMax12d grad = compute_normal_force_magnitude_gradient(
         distance, distance_grad, dhat, barrier_stiffness);
 
@@ -119,7 +117,7 @@ TEST_CASE(
             distance, dhat, barrier_stiffness);
     };
 
-    Eigen::VectorXd x(6);
+    Vector6d x;
     x << p0, p1;
 
     Eigen::VectorXd fgrad;
@@ -135,8 +133,7 @@ TEST_CASE(
     const double dhat = 1e-3, barrier_stiffness = 1e2;
 
     const double distance = point_edge_distance(p, e0, e1);
-    VectorMax12d distance_grad;
-    point_edge_distance_gradient(p, e0, e1, distance_grad);
+    const VectorMax9d distance_grad = point_edge_distance_gradient(p, e0, e1);
     const VectorMax12d grad = compute_normal_force_magnitude_gradient(
         distance, distance_grad, dhat, barrier_stiffness);
 
@@ -147,7 +144,7 @@ TEST_CASE(
             distance, dhat, barrier_stiffness);
     };
 
-    Eigen::VectorXd x(6);
+    Vector6d x;
     x << p, e0, e1;
 
     Eigen::VectorXd fgrad;
@@ -163,8 +160,7 @@ TEST_CASE(
     const double dhat = 1e-3, barrier_stiffness = 1e2;
 
     const double distance = point_point_distance(p0, p1);
-    VectorMax12d distance_grad;
-    point_point_distance_gradient(p0, p1, distance_grad);
+    const VectorMax6d distance_grad = point_point_distance_gradient(p0, p1);
     const VectorMax12d grad = compute_normal_force_magnitude_gradient(
         distance, distance_grad, dhat, barrier_stiffness);
 
@@ -174,7 +170,7 @@ TEST_CASE(
             distance, dhat, barrier_stiffness);
     };
 
-    Eigen::VectorXd x(4);
+    Eigen::Vector4d x;
     x << p0, p1;
 
     Eigen::VectorXd fgrad;

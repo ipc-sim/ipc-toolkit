@@ -51,9 +51,9 @@ public:
     // ------------------------------------------------------------------------
 
     /// @brief Compute the barrier potential for a given constraint set.
-    /// @param[in] mesh The collision mesh.
-    /// @param[in] vertices Vertices of the collision mesh.
-    /// @param[in] dhat The activation distance of the barrier.
+    /// @param mesh The collision mesh.
+    /// @param vertices Vertices of the collision mesh.
+    /// @param dhat The activation distance of the barrier.
     /// @returns The sum of all barrier potentials (not scaled by the barrier stiffness).
     double compute_potential(
         const CollisionMesh& mesh,
@@ -61,9 +61,9 @@ public:
         const double dhat) const;
 
     /// @brief Compute the gradient of the barrier potential.
-    /// @param[in] mesh The collision mesh.
-    /// @param[in] vertices Vertices of the collision mesh.
-    /// @param[in] dhat The activation distance of the barrier.
+    /// @param mesh The collision mesh.
+    /// @param vertices Vertices of the collision mesh.
+    /// @param dhat The activation distance of the barrier.
     /// @returns The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|.
     Eigen::VectorXd compute_potential_gradient(
         const CollisionMesh& mesh,
@@ -71,10 +71,10 @@ public:
         const double dhat) const;
 
     /// @brief Compute the hessian of the barrier potential.
-    /// @param[in] mesh The collision mesh.
-    /// @param[in] vertices Vertices of the collision mesh.
-    /// @param[in] dhat The activation distance of the barrier.
-    /// @param[in] project_hessian_to_psd Make sure the hessian is positive semi-definite.
+    /// @param mesh The collision mesh.
+    /// @param vertices Vertices of the collision mesh.
+    /// @param dhat The activation distance of the barrier.
+    /// @param project_hessian_to_psd Make sure the hessian is positive semi-definite.
     /// @returns The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|x|vertices|.
     Eigen::SparseMatrix<double> compute_potential_hessian(
         const CollisionMesh& mesh,
@@ -85,9 +85,9 @@ public:
     // ------------------------------------------------------------------------
 
     /// @brief Compute the barrier shape derivative.
-    /// @param[in] mesh The collision mesh.
-    /// @param[in] vertices Vertices of the collision mesh.
-    /// @param[in] dhat The activation distance of the barrier.
+    /// @param mesh The collision mesh.
+    /// @param vertices Vertices of the collision mesh.
+    /// @param dhat The activation distance of the barrier.
     /// @throws std::runtime_error If the collision constraints were not built with shape derivatives enabled.
     /// @returns The derivative of the force with respect to X, the rest vertices.
     Eigen::SparseMatrix<double> compute_shape_derivative(
@@ -96,8 +96,8 @@ public:
         const double dhat) const;
 
     /// @brief Computes the minimum distance between any non-adjacent elements.
-    /// @param[in] mesh The collision mesh.
-    /// @param[in] vertices Vertices of the collision mesh.
+    /// @param mesh The collision mesh.
+    /// @param vertices Vertices of the collision mesh.
     /// @returns The minimum distance between any non-adjacent elements.
     double compute_minimum_distance(
         const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;

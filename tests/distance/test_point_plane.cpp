@@ -31,10 +31,9 @@ TEST_CASE("Point-plane distance gradient", "[distance][point-plane][gradient]")
     double y_plane = GENERATE(take(10, random(-10.0, 10.0)));
     Eigen::Vector3d t0(-1, y_plane, 0), t1(1, y_plane, -1), t2(1, y_plane, 0);
 
-    Eigen::VectorXd grad;
-    point_plane_distance_gradient(p, t0, t1, t2, grad);
+    const Vector12d grad = point_plane_distance_gradient(p, t0, t1, t2);
 
-    Eigen::VectorXd x_vec(12);
+    Vector12d x_vec;
     x_vec << p, t0, t1, t2;
     Eigen::VectorXd expected_grad;
     expected_grad.resize(grad.size());
@@ -60,10 +59,9 @@ TEST_CASE("Point-plane distance hessian", "[distance][point-plane][hessian]")
     double y_plane = GENERATE(take(10, random(-10.0, 10.0)));
     Eigen::Vector3d t0(-1, y_plane, 0), t1(1, y_plane, -1), t2(1, y_plane, 0);
 
-    Eigen::MatrixXd hess;
-    point_plane_distance_hessian(p, t0, t1, t2, hess);
+    const Matrix12d hess = point_plane_distance_hessian(p, t0, t1, t2);
 
-    Eigen::VectorXd x_vec(12);
+    Vector12d x_vec;
     x_vec << p, t0, t1, t2;
     Eigen::MatrixXd expected_hess;
     expected_hess.resize(hess.rows(), hess.cols());

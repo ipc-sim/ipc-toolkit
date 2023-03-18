@@ -3,6 +3,7 @@
 #include <finitediff.hpp>
 #include <igl/PI.h>
 
+#include <ipc/distance/point_point.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -54,7 +55,7 @@ TEST_CASE("Edge-edge distance !EA_EB", "[distance][edge-edge]")
         Eigen::Vector3d ea0 = Eigen::Vector3d::Random();
         Eigen::Vector3d ea1 = Eigen::Vector3d::Random();
         Eigen::Vector3d n =
-            cross(ea1 - ea0, Eigen::Vector3d::UnitX()).normalized();
+            (ea1 - ea0).cross(Eigen::Vector3d::UnitX()).normalized();
 
         Eigen::Vector3d eb0 = ((ea1 - ea0) * alpha + ea0) + s * n;
         if (alpha < 0) {
@@ -240,15 +241,11 @@ TEST_CASE("Edge-edge distance gradient", "[distance][edge-edge][gradient]")
     e1_closest =
         shiftz > 1 ? e11 : (shiftz < -1 ? e10 : Eigen::Vector3d(0, 0, e0z));
 
-    Eigen::Matrix<double, 12, 1> grad;
-    edge_edge_distance_gradient(e00, e01, e10, e11, grad);
+    const Vector12d grad = edge_edge_distance_gradient(e00, e01, e10, e11);
 
     // Compute the gradient using finite differences
-    Eigen::VectorXd x(12);
-    x.segment<3>(0) = e00;
-    x.segment<3>(3) = e01;
-    x.segment<3>(6) = e10;
-    x.segment<3>(9) = e11;
+    Vector12d x;
+    x << e00, e01, e10, e11;
     auto f = [](const Eigen::VectorXd& x) {
         return edge_edge_distance(
             x.segment<3>(0), x.segment<3>(3), x.segment<3>(6), x.segment<3>(9));
@@ -277,15 +274,11 @@ TEST_CASE(
         e11(cos(angle + igl::PI), 1, sin(angle + igl::PI));
 
     double distance = edge_edge_distance(e00, e01, e10, e11);
-    Eigen::VectorXd grad;
-    edge_edge_distance_gradient(e00, e01, e10, e11, grad);
+    const Vector12d grad = edge_edge_distance_gradient(e00, e01, e10, e11);
 
     // Compute the gradient using finite differences
-    Eigen::VectorXd x(12);
-    x.segment<3>(0) = e00;
-    x.segment<3>(3) = e01;
-    x.segment<3>(6) = e10;
-    x.segment<3>(9) = e11;
+    Vector12d x;
+    x << e00, e01, e10, e11;
     auto f = [](const Eigen::VectorXd& x) {
         return edge_edge_distance(
             x.segment<3>(0), x.segment<3>(3), x.segment<3>(6), x.segment<3>(9));

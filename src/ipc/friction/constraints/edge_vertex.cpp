@@ -76,6 +76,15 @@ EdgeVertexFrictionConstraint::compute_closest_point_jacobian(
 
 // ============================================================================
 
+VectorMax3d EdgeVertexFrictionConstraint::relative_velocity(
+    const VectorMax12d& velocities) const
+{
+    assert(velocities.size() == ndof());
+    return point_edge_relative_velocity(
+        velocities.head(dim()), velocities.segment(dim(), dim()),
+        velocities.tail(dim()), closest_point[0]);
+}
+
 MatrixMax<double, 3, 12> EdgeVertexFrictionConstraint::relative_velocity_matrix(
     const VectorMax2d& closest_point) const
 {

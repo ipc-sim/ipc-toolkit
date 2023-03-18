@@ -35,7 +35,7 @@ Catch::Clara::ParserResult parse_num_threads(int const d, int& num_threads)
         Catch::Clara::ParseResultType::Matched);
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
     Catch::Session session; // There must be exactly one instance
 

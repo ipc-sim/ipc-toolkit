@@ -87,13 +87,7 @@ void define_distance_type(py::module_& m)
         .export_values();
 
     m.def(
-        "point_edge_distance_type",
-        [](const VectorMax3d& p, const VectorMax3d& e0, const VectorMax3d& e1) {
-            assert_2D_or_3D_vector(p, "p");
-            assert_2D_or_3D_vector(e0, "e0");
-            assert_2D_or_3D_vector(e1, "e1");
-            return point_edge_distance_type(p, e0, e1);
-        },
+        "point_edge_distance_type", &point_edge_distance_type,
         R"ipc_Qu8mg5v7(
         Determine the closest pair between a point and edge.
 
@@ -108,11 +102,7 @@ void define_distance_type(py::module_& m)
         py::arg("p"), py::arg("e0"), py::arg("e1"));
 
     m.def(
-        "point_triangle_distance_type",
-        [](const Eigen::Vector3d& p, const Eigen::Vector3d& t0,
-           const Eigen::Vector3d& t1, const Eigen::Vector3d& t2) {
-            return point_triangle_distance_type(p, t0, t1, t2);
-        },
+        "point_triangle_distance_type", &point_triangle_distance_type,
         R"ipc_Qu8mg5v7(
         Determine the closest pair between a point and triangle.
 
@@ -128,11 +118,7 @@ void define_distance_type(py::module_& m)
         py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"));
 
     m.def(
-        "edge_edge_distance_type",
-        [](const Eigen::Vector3d& ea0, const Eigen::Vector3d& ea1,
-           const Eigen::Vector3d& eb0, const Eigen::Vector3d& eb1) {
-            return edge_edge_distance_type(ea0, ea1, eb0, eb1);
-        },
+        "edge_edge_distance_type", &edge_edge_distance_type,
         R"ipc_Qu8mg5v7(
         Determine the closest pair between two edges.
 

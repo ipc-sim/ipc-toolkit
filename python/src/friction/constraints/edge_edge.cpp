@@ -17,10 +17,5 @@ void define_edge_edge_friction_constraint(py::module_& m)
                 const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double,
                 const double>(),
             "", py::arg("constraint"), py::arg("vertices"), py::arg("edges"),
-            py::arg("faces"), py::arg("dhat"), py::arg("barrier_stiffness"))
-        .def(
-            "compute_potential",
-            &EdgeEdgeFrictionConstraint::compute_potential<double>, "",
-            py::arg("velocities"), py::arg("edges"), py::arg("faces"),
-            py::arg("epsv_times_h"));
+            py::arg("faces"), py::arg("dhat"), py::arg("barrier_stiffness"));
 }
