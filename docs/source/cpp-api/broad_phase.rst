@@ -5,16 +5,34 @@ Broad Phase
 
 .. doxygenvariable:: ipc::DEFAULT_BROAD_PHASE_METHOD
 
+Broad Phase
+-----------
+
 .. doxygenclass:: ipc::BroadPhase
 
-.. doxygenclass:: ipc::AABB
+Brute Force
+-----------
 
 .. doxygenclass:: ipc::BruteForce
 
+Hash Grid
+---------
+
 .. doxygenclass:: ipc::HashGrid
 
+Spatial Hash
+------------
+
 .. doxygenclass:: ipc::SpatialHash
+
+Sweep and Tiniest Queue
+-----------------------
 
 .. doxygenclass:: ipc::SweepAndTiniestQueue
 
 .. .. doxygenclass:: ipc::SweepAndTiniestQueueGPU
+
+AABB
+----
+
+.. doxygenclass:: ipc::AABB

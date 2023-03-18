@@ -1,6 +1,8 @@
 sphinx
 sphinx-sitemap
 sphinx-immaterial
+autoclasstoc
+# sphinx-autodoc-toolbox
 breathe
 nbsphinx
 pandoc

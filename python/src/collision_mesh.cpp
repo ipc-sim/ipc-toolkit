@@ -16,9 +16,9 @@ void define_collision_mesh(py::module_& m)
             Construct a new Collision Mesh object directly from the collision mesh vertices.
 
             Parameters:
-                rest_positions: The vertices of the collision mesh at rest.
-                edges: The edges of the collision mesh.
-                faces: The faces of the collision mesh.
+                rest_positions: The vertices of the collision mesh at rest (#V × dim).
+                edges: The edges of the collision mesh (#E × 2).
+                faces: The faces of the collision mesh (#F × 3).
                 displacement_map: The displacement mapping from displacements on the full mesh to the collision mesh.
             )ipc_Qu8mg5v7",
             py::arg("rest_positions"), py::arg("edges"), py::arg("faces"),
@@ -33,9 +33,9 @@ void define_collision_mesh(py::module_& m)
 
             Parameters:
                 include_vertex: Vector of bools indicating whether each vertex should be included in the collision mesh.
-                full_rest_positions: The vertices of the full mesh at rest.
-                edges: The edges of the collision mesh indexed into the full mesh vertices.
-                faces: The faces of the collision mesh indexed into the full mesh vertices.
+                full_rest_positions: The vertices of the full mesh at rest (#V × dim).
+                edges: The edges of the collision mesh indexed into the full mesh vertices (#E × 2).
+                faces: The faces of the collision mesh indexed into the full mesh vertices (#F × 3).
                 displacement_map: The displacement mapping from displacements on the full mesh to the collision mesh.
             )ipc_Qu8mg5v7",
             py::arg("include_vertex"), py::arg("full_rest_positions"),
@@ -47,9 +47,9 @@ void define_collision_mesh(py::module_& m)
             Helper function that automatically builds include_vertex using construct_is_on_surface.
 
             Parameters:
-                full_rest_positions: The full vertices at rest.
-                edges: The edge matrix of mesh.
-                faces: The face matrix of mesh.
+                full_rest_positions: The full vertices at rest (#V × dim).
+                edges: The edge matrix of mesh (#E × 2).
+                faces: The face matrix of mesh (#F × 3).
 
             Returns:
                 Constructed CollisionMesh.
@@ -82,35 +82,35 @@ void define_collision_mesh(py::module_& m)
             "Get the number of degrees of freedom in the full mesh.")
         .def_property_readonly(
             "rest_positions", &CollisionMesh::rest_positions,
-            "Get the vertices of the collision mesh at rest.")
+            "Get the vertices of the collision mesh at rest (#V × dim).")
         .def_property_readonly(
             "edges", &CollisionMesh::edges,
-            "Get the edges of the collision mesh.")
+            "Get the edges of the collision mesh  (#E × 2).")
         .def_property_readonly(
             "faces", &CollisionMesh::faces,
-            "Get the faces of the collision mesh.")
+            "Get the faces of the collision mesh (#F × 3).")
         .def_property_readonly(
             "faces_to_edges", &CollisionMesh::faces_to_edges,
-            "Get the mapping from faces to edges of the collision mesh.")
+            "Get the mapping from faces to edges of the collision mesh (#F × 3).")
         .def(
             "vertices", &CollisionMesh::vertices,
             R"ipc_Qu8mg5v7(
             Compute the vertex positions from the positions of the full mesh.
 
             Parameters:
-                full_positions: The vertex positions of the full mesh.
+                full_positions: The vertex positions of the full mesh (#FV × dim).
 
             Returns:
-                The vertex positions of the collision mesh.
+                The vertex positions of the collision mesh (#V × dim).
             )ipc_Qu8mg5v7",
             py::arg("full_positions"))
         .def(
             "displace_vertices", &CollisionMesh::displace_vertices,
             R"ipc_Qu8mg5v7(
-            Compute the vertex positions from vertex displacements on the full mesh.
+            Compute the vertex positions from vertex displacements on the full mesh (#FV × dim).
 
             Parameters:
-                full_displacements: The vertex displacements on the full mesh.
+                full_displacements: The vertex displacements on the full mesh (#V × dim).
 
             Returns:
                 The vertex positions of the collision mesh.
@@ -268,7 +268,7 @@ void define_collision_mesh(py::module_& m)
 
             Parameters:
                 num_vertices: The number of vertices in the mesh.
-                edges: The surface edges of the mesh.
+                edges: The surface edges of the mesh (#E × 2).
 
             Returns:
                 A vector of bools indicating whether each vertex is on the surface.
@@ -281,8 +281,8 @@ void define_collision_mesh(py::module_& m)
             Construct a matrix that maps from the faces' edges to rows in the edges matrix.
 
             Parameters:
-                faces: The face matrix of mesh.
-                edges: The edge matrix of mesh.
+                faces: The face matrix of mesh (#F × 3).
+                edges: The edge matrix of mesh (#E × 2).
 
             Returns:
                 Matrix that maps from the faces' edges to rows in the edges matrix.

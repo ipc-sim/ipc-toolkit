@@ -33,8 +33,7 @@ public:
         const Eigen::MatrixXd& vertices,
         const double dhat,
         const double dmin = 0,
-        const BroadPhaseMethod broad_phase_method =
-            BroadPhaseMethod::HASH_GRID);
+        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
 
     /// @brief Initialize the set of constraints used to compute the barrier potential.
     /// @param candidates Distance candidates from which the constraint set is built.
