@@ -55,6 +55,11 @@ TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
     {
         return collision_constraints.compute_potential_hessian(mesh, V, dhat);
     };
+    BENCHMARK("Compute barrier potential hessian with PSD projection")
+    {
+        return collision_constraints.compute_potential_hessian(
+            mesh, V, dhat, true);
+    };
     BENCHMARK("Compute compute_minimum_distance")
     {
         return collision_constraints.compute_minimum_distance(mesh, V);
@@ -183,8 +188,8 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     CAPTURE(dhat, method, all_vertices_on_surface);
     CHECK(collision_constraints.size() > 0);
 
-    Eigen::MatrixXd hess_b = collision_constraints.compute_potential_hessian(
-        mesh, V, dhat, /*project_to_psd=*/false);
+    Eigen::MatrixXd hess_b =
+        collision_constraints.compute_potential_hessian(mesh, V, dhat);
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
