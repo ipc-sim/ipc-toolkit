@@ -5,46 +5,47 @@ Collision Constraints
 ---------------------
 
 .. autoclass:: ipctk.CollisionConstraints
-    :members:
+
+    .. autoclasstoc::
 
 Collision Constraint
 --------------------
 
 .. autoclass:: ipctk.CollisionConstraint
-    :members:
-    :show-inheritance:
+
+    .. autoclasstoc::
 
 Vertex-Vertex Collision Constraint
 ----------------------------------
 
 .. autoclass:: ipctk.VertexVertexConstraint
-    :members:
-    :show-inheritance:
+
+    .. autoclasstoc::
 
 Edge-Vertex Collision Constraint
 --------------------------------
 
 .. autoclass:: ipctk.EdgeVertexConstraint
-    :members:
-    :show-inheritance:
+
+    .. autoclasstoc::
 
 Edge-Edge Collision Constraint
 ------------------------------
 
 .. autoclass:: ipctk.EdgeEdgeConstraint
-    :members:
-    :show-inheritance:
+
+    .. autoclasstoc::
 
 Face-Vertex Collision Constraint
 --------------------------------
 
 .. autoclass:: ipctk.FaceVertexConstraint
-    :members:
-    :show-inheritance:
+
+    .. autoclasstoc::
 
 Plane-Vertex Collision Constraint
 ---------------------------------
 
 .. autoclass:: ipctk.PlaneVertexConstraint
-    :members:
-    :show-inheritance:
+
+    .. autoclasstoc::
