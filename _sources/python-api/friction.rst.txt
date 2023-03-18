@@ -5,43 +5,43 @@ Friction Constraints
 --------------------
 
 .. autoclass:: ipctk.FrictionConstraints
-
-    .. autoclasstoc::
+    :members:
+    :show-inheritance:
 
 Friction Constraint
 ^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: ipctk.FrictionConstraint
-
-    .. autoclasstoc::
+    :members:
+    :show-inheritance:
 
 Vertex-Vertex Friction Constraint
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: ipctk.VertexVertexFrictionConstraint
-
-    .. autoclasstoc::
+    :members:
+    :show-inheritance:
 
 Edge-Vertex Friction Constraint
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: ipctk.EdgeVertexFrictionConstraint
-
-    .. autoclasstoc::
+    :members:
+    :show-inheritance:
 
 Edge-Edge Friction Constraint
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: ipctk.EdgeEdgeFrictionConstraint
-
-    .. autoclasstoc::
+    :members:
+    :show-inheritance:
 
 Triangle-Vertex Friction Constraint
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: ipctk.FaceVertexFrictionConstraint
-
-    .. autoclasstoc::
+    :members:
+    :show-inheritance:
 
 Smooth Mollifier
 ----------------
