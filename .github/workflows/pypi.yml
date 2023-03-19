@@ -3,7 +3,6 @@ name: PyPi Release
 on:
   release:
     types: [published]
-on:
   push:
     branches:
       - pypi
