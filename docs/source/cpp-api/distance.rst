@@ -17,8 +17,8 @@ Edge-Edge Mollifier
 
 .. doxygenfunction:: edge_edge_mollifier_threshold
 .. doxygenfunction:: edge_edge_cross_squarednorm
-.. doxygenfunction:: edge_edge_cross_squarednorm_gradient
-.. doxygenfunction:: edge_edge_cross_squarednorm_hessian
+.. doxygenfunction:: ipc::edge_edge_cross_squarednorm_gradient
+.. doxygenfunction:: ipc::edge_edge_cross_squarednorm_hessian
 .. doxygenfunction:: edge_edge_mollifier(const Eigen::Ref<const Eigen::Vector3d>& ea0, const Eigen::Ref<const Eigen::Vector3d>& ea1, const Eigen::Ref<const Eigen::Vector3d>& eb0, const Eigen::Ref<const Eigen::Vector3d>& eb1, const double eps_x)
 .. doxygenfunction:: edge_edge_mollifier(const double x, const double eps_x)
 .. doxygenfunction:: edge_edge_mollifier_gradient(const Eigen::Ref<const Eigen::Vector3d>& ea0, const Eigen::Ref<const Eigen::Vector3d>& ea1, const Eigen::Ref<const Eigen::Vector3d>& eb0, const Eigen::Ref<const Eigen::Vector3d>& eb1, const double eps_x)
