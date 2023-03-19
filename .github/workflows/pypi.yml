@@ -36,7 +36,9 @@ jobs:
         # to supply options, put them in 'env', like:
         env:
           MACOSX_DEPLOYMENT_TARGET: "10.14"
-          CIBW_SKIP: "cp36-* pp* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
+          CIBW_ARCHS: auto64
+          CIBW_ARCHS_MACOS: x86_64 arm64
+          CIBW_SKIP: "cp36-* cp37-* pp* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -62,7 +64,7 @@ jobs:
     # upload to PyPI on every tag starting with 'v'
     # if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     # alternatively, to publish when a GitHub Release is created, use the following rule:
-    if: github.event_name == 'release' && github.event.action == 'published'
+    # if: github.event_name == 'release' && github.event.action == 'published'
     steps:
       - uses: actions/download-artifact@v3
         with:
@@ -76,5 +78,5 @@ jobs:
           user: __token__
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           # To test:
-          # repository_url: https://test.pypi.org/legacy/
+          repository_url: https://test.pypi.org/legacy/
 
