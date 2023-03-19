@@ -35,7 +35,7 @@ jobs:
         uses: pypa/cibuildwheel@v2.12.1
         # to supply options, put them in 'env', like:
         env:
-          # MACOSX_DEPLOYMENT_TARGET: "10.14"
+          MACOSX_DEPLOYMENT_TARGET: "10.14"
           CIBW_SKIP: "cp36-* pp* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
 
       - uses: actions/upload-artifact@v3
