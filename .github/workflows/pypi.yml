@@ -14,7 +14,7 @@ on:
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ matrix.name }} (${{ matrix.python-version }})
+    name: Build wheels on ${{ matrix.name }} (${{ matrix.python-version }} ${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -46,7 +46,7 @@ jobs:
           CIBW_ARCHS: auto64
           CIBW_ARCHS_MACOS: ${{ matrix.arch }}
           CIBW_BUILD: ${{ matrix.python-version }}-*
-          CIBW_SKIP: "cp36-* cp37-* pp* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
+          CIBW_SKIP: "cp36-* cp37-* pp* *musllinux* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -86,5 +86,5 @@ jobs:
           user: __token__
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           # To test:
-          repository_url: https://test.pypi.org/legacy/
+          repository-url: https://test.pypi.org/legacy/
 
