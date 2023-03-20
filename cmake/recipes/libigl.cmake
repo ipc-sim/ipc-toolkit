@@ -22,8 +22,10 @@ include(eigen)
 include(FetchContent)
 FetchContent_Declare(
     libigl
-    GIT_REPOSITORY https://github.com/libigl/libigl.git
-    GIT_TAG v2.4.0
-    GIT_SHALLOW TRUE
+    # GIT_REPOSITORY https://github.com/libigl/libigl.git
+    # GIT_TAG v2.4.0
+    # GIT_SHALLOW TRUE
+    URL "https://github.com/libigl/libigl/archive/refs/tags/v2.4.0.zip"
+    URL_HASH SHA256=b20d80c9a3fa7d0c6bc3adee58e44f0cdb1cbb49228df6d67f9ddbfc08ee1403
 )
 FetchContent_MakeAvailable(libigl)
