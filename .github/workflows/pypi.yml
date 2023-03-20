@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   # release:
   #   types: [published]
-  push:
-    branches:
-      - pypi
+  # push:
+  #   branches:
+  #     - pypi
   #     - main
   #     - python
   # pull_request:
