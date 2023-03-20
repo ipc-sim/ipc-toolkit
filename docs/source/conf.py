@@ -194,6 +194,8 @@ html_theme_options = {
     },
 
     "toc_title": "Contents",
+
+    "version_dropdown": True,
 }
 
 html_title = "IPC Toolkit"

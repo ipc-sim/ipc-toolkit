@@ -1,0 +1,9 @@
+[{
+    "version": "",
+    "title": "latest",
+    "aliases": ["latest"]
+}, {
+    "version": "v1.0.0",
+    "title": "v1.0.0",
+    "aliases": ["stable"]
+}]

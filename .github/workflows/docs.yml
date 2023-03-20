@@ -27,6 +27,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r docs/requirements.txt
 
+      - name: Build release docs
+        run: |
+          HEAD=$(git rev-parse HEAD)
+          git fetch --all --tags
+          cd docs
+          for version in $(git tag -l); do
+              echo "Processing $version:"
+              git checkout $version
+              pip install --force-reinstall -v "ipctk==$version"
+              sphinx-build source build/html/$version -D html_theme_options.version_dropdown=true
+          done
+          pip uninstall -y ipctk
+          git checkout $HEAD
+          cp source/versions.json build/html/
+          cd ..
+
       - name: Build ipctk
         run: pip install --verbose .
 
