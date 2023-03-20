@@ -40,7 +40,7 @@ jobs:
           done
           pip uninstall -y ipctk
           git checkout $HEAD
-          cp source/versions.json build/html/
+          cp source/_static/versions.json build/html/
           cd ..
 
       - name: Build ipctk
