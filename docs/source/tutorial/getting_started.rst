@@ -51,10 +51,10 @@ The matrix ``rest_positions`` contains the undeformed positions of the vertices.
 Each row of the ``edges`` and ``faces`` matrices contain the vertex IDs (row number in ``rest_positions``) of the edge or face's vertices.
 The size of ``edges`` and ``faces`` are ``#E x 2`` and ``#F x 3`` respectively (``#E`` and ``#F`` are the number of edges and faces).
 
-.. NOTE::
+.. note::
    Only linear triangular faces are supported. If your mesh has nonlinear or non-triangular faces, you will need to triangulate them.
 
-.. NOTE::
+.. note::
    In 2D only the ``edges`` matrix is required. In 3D both ``edges`` and ``faces`` are required.
 
 Collision Constraints
@@ -136,7 +136,7 @@ Mathematically this is defined as
 
 where :math:`C` is the active collision constraints, :math:`d_k` is the distance (squared) of the :math:`k`-th active constraint, and :math:`b` is IPC's C2-clamped log-barrier function.
 
-.. NOTE::
+.. note::
    This is not premultiplied by the barrier stiffness :math:`\kappa`.
 
 Contact Potential Derivative
@@ -375,12 +375,13 @@ Now we can compute the friction dissipative potential using the ``FrictionConstr
 
 Here ``epsv_times_h`` (:math:`\epsilon_v h`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
 
-Notice the friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is
+.. important::
+   The friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is
 
-.. math::
-   v = \frac{x - x_{n-1}}{h},
+   .. math::
+      v = \frac{x - x_{n-1}}{h},
 
-where :math:`x` is the current position, :math:`x_{n-1}` is the previous position, and :math:`h` is the time step size.
+   where :math:`x` is the current position, :math:`x_{n-1}` is the previous position, and :math:`h` is the time step size.
 
 This returns a scalar value ``friction_potential`` which is the sum of the individual friction potentials.
 
