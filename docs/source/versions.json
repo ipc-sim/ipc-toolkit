@@ -1,7 +1,7 @@
 [{
-    "version": "https://ipc-sim.github.io/ipc-toolkit/",
-    "title": "latest",
-    "aliases": ["latest"]
+    "version": "https://ipc-sim.github.io/ipc-toolkit",
+    "title": "main",
+    "aliases": ["latest", "head"]
 }, {
     "version": "v1.0.0",
     "title": "v1.0.0",
