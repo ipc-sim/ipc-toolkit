@@ -29,7 +29,7 @@ endif()
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
         LANGUAGES CXX
-        VERSION "0.0.1")
+        VERSION "1.0.0")
 
 option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
 option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
