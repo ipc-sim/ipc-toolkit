@@ -1,16 +1,17 @@
 name: PyPi Release
 
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+  # release:
+  #   types: [published]
   push:
     branches:
       - pypi
-#       - main
-#       - python
-#   pull_request:
-#     branches:
-#       - main
+  #     - main
+  #     - python
+  # pull_request:
+  #   branches:
+  #     - main
 
 jobs:
   build_wheels:
@@ -86,5 +87,5 @@ jobs:
           user: __token__
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           # To test:
-          repository-url: https://test.pypi.org/legacy/
+          # repository-url: https://test.pypi.org/legacy/
 
