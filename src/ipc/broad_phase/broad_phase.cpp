@@ -4,38 +4,40 @@
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
+#include <ipc/candidates/candidates.hpp>
 
 #include <ipc/config.hpp>
 
 namespace ipc {
 
 void BroadPhase::build(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     double inflation_radius)
 {
-    assert(E.size() == 0 || E.cols() == 2);
-    assert(F.size() == 0 || F.cols() == 3);
+    assert(edges.size() == 0 || edges.cols() == 2);
+    assert(faces.size() == 0 || faces.cols() == 3);
     clear();
-    build_vertex_boxes(V, vertex_boxes, inflation_radius);
-    build_edge_boxes(vertex_boxes, E, edge_boxes);
-    build_face_boxes(vertex_boxes, F, face_boxes);
+    build_vertex_boxes(vertices, vertex_boxes, inflation_radius);
+    build_edge_boxes(vertex_boxes, edges, edge_boxes);
+    build_face_boxes(vertex_boxes, faces, face_boxes);
 }
 
 void BroadPhase::build(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     double inflation_radius)
 {
-    assert(E.size() == 0 || E.cols() == 2);
-    assert(F.size() == 0 || F.cols() == 3);
+    assert(edges.size() == 0 || edges.cols() == 2);
+    assert(faces.size() == 0 || faces.cols() == 3);
     clear();
-    build_vertex_boxes(V0, V1, vertex_boxes, inflation_radius);
-    build_edge_boxes(vertex_boxes, E, edge_boxes);
-    build_face_boxes(vertex_boxes, F, face_boxes);
+    build_vertex_boxes(
+        vertices_t0, vertices_t1, vertex_boxes, inflation_radius);
+    build_edge_boxes(vertex_boxes, edges, edge_boxes);
+    build_face_boxes(vertex_boxes, faces, face_boxes);
 }
 
 void BroadPhase::clear()
@@ -62,9 +64,9 @@ void BroadPhase::detect_collision_candidates(
 ////////////////////////////////////////////////////////////////////////////////
 
 std::unique_ptr<BroadPhase>
-BroadPhase::make_broad_phase(const BroadPhaseMethod method)
+BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
 {
-    switch (method) {
+    switch (broad_phase_method) {
     case BroadPhaseMethod::BRUTE_FORCE:
         return std::make_unique<BruteForce>();
     case BroadPhaseMethod::HASH_GRID:
@@ -83,45 +85,6 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod method)
     default:
         throw std::runtime_error("Invalid BroadPhaseMethod!");
     }
-}
-
-void construct_collision_candidates(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    Candidates& candidates,
-    double inflation_radius,
-    const BroadPhaseMethod method)
-{
-    const int dim = V.cols();
-
-    candidates.clear();
-
-    std::unique_ptr<BroadPhase> broad_phase =
-        BroadPhase::make_broad_phase(method);
-    broad_phase->can_vertices_collide = mesh.can_collide;
-    broad_phase->build(V, mesh.edges(), mesh.faces(), inflation_radius);
-    broad_phase->detect_collision_candidates(dim, candidates);
-    broad_phase->clear();
-}
-
-void construct_collision_candidates(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    Candidates& candidates,
-    double inflation_radius,
-    const BroadPhaseMethod method)
-{
-    const int dim = V0.cols();
-
-    candidates.clear();
-
-    std::unique_ptr<BroadPhase> broad_phase =
-        BroadPhase::make_broad_phase(method);
-    broad_phase->can_vertices_collide = mesh.can_collide;
-    broad_phase->build(V0, V1, mesh.edges(), mesh.faces(), inflation_radius);
-    broad_phase->detect_collision_candidates(dim, candidates);
-    broad_phase->clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

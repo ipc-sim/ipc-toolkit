@@ -1,5 +1,5 @@
 #include <Eigen/Core>
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <finitediff.hpp>
 
@@ -60,7 +60,7 @@ TEST_CASE("Test barrier derivatives", "[barrier]")
         barrier_hessian;
     SECTION("Original IPC barrier")
     {
-        barrier = ipc::barrier<double>;
+        barrier = ipc::barrier;
         barrier_gradient = ipc::barrier_gradient;
         barrier_hessian = ipc::barrier_hessian;
     }
@@ -106,15 +106,15 @@ TEST_CASE("Test physical barrier", "[barrier]")
     double b_original = ipc::barrier(d, dhat) / dhat;
     double b_new = physical_barrier(d, dhat);
 
-    CHECK(b_original == Approx(b_new));
+    CHECK(b_original == Catch::Approx(b_new));
 
     double b_original_gradient = ipc::barrier_gradient(d, dhat) / dhat;
     double b_new_gradient = physical_barrier_gradient(d, dhat);
 
-    CHECK(b_original_gradient == Approx(b_new_gradient));
+    CHECK(b_original_gradient == Catch::Approx(b_new_gradient));
 
     double b_original_hessian = ipc::barrier_hessian(d, dhat) / dhat;
     double b_new_hessian = physical_barrier_hessian(d, dhat);
 
-    CHECK(b_original_hessian == Approx(b_new_hessian));
+    CHECK(b_original_hessian == Catch::Approx(b_new_hessian));
 }

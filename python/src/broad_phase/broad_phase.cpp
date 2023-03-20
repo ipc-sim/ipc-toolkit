@@ -1,6 +1,7 @@
-#include "../common.hpp"
+#include <common.hpp>
 
 #include <ipc/broad_phase/broad_phase.hpp>
+#include <ipc/candidates/candidates.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
@@ -16,11 +17,9 @@ void define_broad_phase(py::module_& m)
         .value(
             "SWEEP_AND_TINIEST_QUEUE",
             BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE, "")
-#ifdef IPC_TOOLKIT_WITH_CUDA
         .value(
             "SWEEP_AND_TINIEST_QUEUE_GPU",
             BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU, "")
-#endif
         .export_values();
 
     py::class_<BroadPhase>(m, "BroadPhase")
@@ -30,12 +29,12 @@ void define_broad_phase(py::module_& m)
             Construct a registered broad phase object.
 
             Parameters:
-                method: The broad phase method to use.
+                broad_phase_method: The broad phase method to use.
 
             Returns:
                 The constructed broad phase object.
             )ipc_Qu8mg5v7",
-            py::arg("method"))
+            py::arg("broad_phase_method"))
         .def(
             "build",
             py::overload_cast<
@@ -45,12 +44,12 @@ void define_broad_phase(py::module_& m)
             Build the broad phase for static collision detection.
 
             Parameters:
-                V0: Positions of the vertices.
-                E: Edges of the mesh.
-                F: Faces of the mesh.
+                vertices: Vertex positions
+                edges: Collision mesh edges
+                faces: Collision mesh faces
                 inflation_radius: Radius of inflation around all elements.
             )ipc_Qu8mg5v7",
-            py::arg("V"), py::arg("E"), py::arg("F"),
+            py::arg("vertices"), py::arg("edges"), py::arg("faces"),
             py::arg("inflation_radius") = 0)
         .def(
             "build",
@@ -62,14 +61,14 @@ void define_broad_phase(py::module_& m)
             Build the broad phase for continuous collision detection.
 
             Parameters:
-                V0: Starting positions of the vertices.
-                V1: Ending positions of the vertices.
-                E: Edges of the mesh.
-                F: Faces of the mesh.
+                vertices_t0: Starting vertices of the vertices.
+                vertices_t1: Ending vertices of the vertices.
+                edges: Collision mesh edges
+                faces: Collision mesh faces
                 inflation_radius: Radius of inflation around all elements.
             )ipc_Qu8mg5v7",
-            py::arg("V0"), py::arg("V1"), py::arg("E"), py::arg("F"),
-            py::arg("inflation_radius") = 0)
+            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
+            py::arg("faces"), py::arg("inflation_radius") = 0)
         .def("clear", &BroadPhase::clear, "Clear any built data.")
         .def(
             "detect_edge_vertex_candidates",
@@ -135,65 +134,9 @@ void define_broad_phase(py::module_& m)
 
             Parameters:
                 dim: The dimension of the simulation (i.e., 2 or 3).
-                candidates: The detected collision candidates.
             )ipc_Qu8mg5v7",
             py::arg("dim"))
         .def_readwrite(
             "can_vertices_collide", &BroadPhase::can_vertices_collide,
             "Function for determining if two vertices can collide.");
-
-    m.def(
-        "construct_collision_candidates",
-        [](const CollisionMesh& mesh, const Eigen::MatrixXd& V,
-           double inflation_radius = 0,
-           const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID) {
-            Candidates candidates;
-            construct_collision_candidates(
-                mesh, V, candidates, inflation_radius, method);
-            return candidates;
-        },
-        R"ipc_Qu8mg5v7(
-        Construct a set of discrete collision detection candidates.
-
-        Parameters:
-            mesh: The surface of the contact mesh.
-            V: Surface Vertex positions at start as rows of a matrix.
-            inflation_radius: Amount to inflate the bounding boxes.
-            method: Broad phase method to use.
-
-        Returns:
-            The constructed candidate set as output.
-        )ipc_Qu8mg5v7",
-        py::arg("mesh"), py::arg("V"), py::arg("inflation_radius") = 0,
-        py::arg("method") = BroadPhaseMethod::HASH_GRID);
-
-    m.def(
-        "construct_collision_candidates",
-        [](const CollisionMesh& mesh, const Eigen::MatrixXd& V0,
-           const Eigen::MatrixXd& V1, double inflation_radius = 0,
-           const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID) {
-            Candidates candidates;
-            construct_collision_candidates(
-                mesh, V0, V1, candidates, inflation_radius, method);
-            return candidates;
-        },
-        R"ipc_Qu8mg5v7(
-        Construct a set of continuous collision detection candidates.
-
-        Note:
-            Assumes the trajectory is linear.
-
-        Parameters:
-            mesh: The surface of the contact mesh.
-            V0: Surface vertex positions at start as rows of a matrix.
-            V1: Surface vertex positions at end as rows of a matrix.
-            inflation_radius: Amount to inflate the bounding boxes.
-            method: Broad phase method to use.
-
-        Returns:
-            The constructed candidate set as output.
-        )ipc_Qu8mg5v7",
-        py::arg("mesh"), py::arg("V0"), py::arg("V1"),
-        py::arg("inflation_radius") = 0,
-        py::arg("method") = BroadPhaseMethod::HASH_GRID);
 }

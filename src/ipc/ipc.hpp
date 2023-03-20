@@ -1,8 +1,9 @@
 #pragma once
 
 // NOTE: Include this so the user can just include ipc.hpp
-#include <ipc/collisions/constraints.hpp>
-#include <ipc/friction/friction.hpp>
+#include <ipc/collisions/collision_constraints.hpp>
+#include <ipc/friction/friction_constraints.hpp>
+
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/collision_mesh.hpp>
 
@@ -12,140 +13,58 @@
 /// Incremental Potential Contact functions
 namespace ipc {
 
-/// @brief Compute the barrier potential for a given constraint set.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V Vertices of the collision mesh.
-/// @param[in] constraint_set The set of constraints.
-/// @param[in] dhat The activation distance of the barrier.
-/// @returns The sum of all barrier potentials (not scaled by the barrier stiffness).
-double compute_barrier_potential(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const Constraints& constraint_set,
-    const double dhat);
-
-/// @brief Compute the gradient of the barrier potential.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V Vertices of the collision mesh.
-/// @param[in] constraint_set The set of constraints.
-/// @param[in] dhat The activation distance of the barrier.
-/// @returns The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |V|.
-Eigen::VectorXd compute_barrier_potential_gradient(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const Constraints& constraint_set,
-    const double dhat);
-
-/// @brief Compute the hessian of the barrier potential.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V Vertices of the collision mesh.
-/// @param[in] constraint_set The set of constraints.
-/// @param[in] dhat The activation distance of the barrier.
-/// @param[in] project_hessian_to_psd Make sure the hessian is positive semi-definite.
-/// @returns The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |V|x|V|.
-Eigen::SparseMatrix<double> compute_barrier_potential_hessian(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const Constraints& constraint_set,
-    const double dhat,
-    const bool project_hessian_to_psd = true);
-
-/// @brief Compute the barrier shape derivative.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V Vertices of the collision mesh.
-/// @param[in] constraint_set The set of constraints.
-/// @param[in] dhat The activation distance of the barrier.
-/// @returns The derivative of the force with respect to X, the rest positions.
-Eigen::SparseMatrix<double> compute_barrier_shape_derivative(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const Constraints& constraint_set,
-    const double dhat);
-
 ///////////////////////////////////////////////////////////////////////////////
 // Collision detection
 
 /// @brief Determine if the step is collision free.
 /// @note Assumes the trajectory is linear.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V0 Surface vertex positions at start as rows of a matrix.
-/// @param[in] V1 Surface vertex positions at end as rows of a matrix.
+/// @param mesh The collision mesh.
+/// @param vertices_t0 Surface vertex vertices at start as rows of a matrix.
+/// @param vertices_t1 Surface vertex vertices at end as rows of a matrix.
+/// @param broad_phase_method The broad phase method to use.
+/// @param min_distance The minimum distance allowable between any two elements.
+/// @param tolerance The tolerance for the CCD algorithm.
+/// @param max_iterations The maximum number of iterations for the CCD algorithm.
 /// @returns True if <b>any</b> collisions occur.
 bool is_step_collision_free(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
+    const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
     const double min_distance = 0.0,
-    const double tolerance = 1e-6,
-    const long max_iterations = 1e7);
-
-/// @brief Determine if the step is collision free from a set of candidates.
-/// @note Assumes the trajectory is linear.
-/// @param[in] candidates Set of candidates to check for collisions.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V0 Surface vertex positions at start as rows of a matrix.
-/// @param[in] V1 Surface vertex positions at end as rows of a matrix.
-/// @returns True if <b>any</b> collisions occur.
-bool is_step_collision_free(
-    const Candidates& candidates,
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const double min_distance = 0.0,
-    const double tolerance = 1e-6,
-    const long max_iterations = 1e7);
+    const double tolerance = DEFAULT_CCD_TOLERANCE,
+    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS);
 
 /// @brief Computes a maximal step size that is collision free.
 /// @note Assumes the trajectory is linear.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V0 Vertex positions at start as rows of a matrix. Assumes V0 is intersection free.
-/// @param[in] V1 Surface vertex positions at end as rows of a matrix.
+/// @param mesh The collision mesh.
+/// @param vertices_t0 Vertex vertices at start as rows of a matrix. Assumes vertices_t0 is intersection free.
+/// @param vertices_t1 Surface vertex vertices at end as rows of a matrix.
+/// @param broad_phase_method The broad phase method to use.
+/// @param min_distance The minimum distance allowable between any two elements.
+/// @param tolerance The tolerance for the CCD algorithm.
+/// @param max_iterations The maximum number of iterations for the CCD algorithm.
 /// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
 double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
+    const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
     const double min_distance = 0.0,
-    const double tolerance = 1e-6,
-    const long max_iterations = 1e7);
-
-/// @brief Computes a maximal step size that is collision free using a set of collision candidates.
-/// @note Assumes the trajectory is linear.
-/// @param[in] candidates Set of candidates to check for collisions.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V0 Vertex positions at start as rows of a matrix. Assumes V0 is intersection free.
-/// @param[in] V1 Surface vertex positions at end as rows of a matrix.
-/// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
-double compute_collision_free_stepsize(
-    const Candidates& candidates,
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const double min_distance = 0.0,
-    const double tolerance = 1e-6,
-    const long max_iterations = 1e7);
+    const double tolerance = DEFAULT_CCD_TOLERANCE,
+    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Utilities
 
-/// @brief Computes the minimum distance between any non-adjacent elements.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V Vertices of the collision mesh.
-/// @returns The minimum distance between any non-adjacent elements.
-double compute_minimum_distance(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const Constraints& constraint_set);
-
 /// @brief Determine if the mesh has self intersections.
-/// @param[in] mesh The collision mesh.
-/// @param[in] V Vertices of the collision mesh.
+/// @param mesh The collision mesh.
+/// @param vertices Vertices of the collision mesh.
+/// @param broad_phase_method The broad phase method to use.
 /// @return A boolean for if the mesh has intersections.
 bool has_intersections(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID);
+    const Eigen::MatrixXd& vertices,
+    const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
 
 } // namespace ipc

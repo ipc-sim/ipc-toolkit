@@ -1,8 +1,6 @@
 #pragma once
 
-#include <ipc/distance/point_point.hpp>
-
-#include <Eigen/Core>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
@@ -12,25 +10,32 @@ namespace ipc {
 /// @param e0 The first vertex of the edge defining the line.
 /// @param e1 The second vertex of the edge defining the line.
 /// @return The distance between the point and line.
-template <typename DerivedP, typename DerivedE0, typename DerivedE1>
-auto point_line_distance(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedE0>& e0,
-    const Eigen::MatrixBase<DerivedE1>& e1)
-{
-    assert(p.size() == 2 || p.size() == 3);
-    assert(e0.size() == 2 || e0.size() == 3);
-    assert(e1.size() == 2 || e1.size() == 3);
+double point_line_distance(
+    const Eigen::Ref<const VectorMax3d>& p,
+    const Eigen::Ref<const VectorMax3d>& e0,
+    const Eigen::Ref<const VectorMax3d>& e1);
 
-    if (p.size() == 2) {
-        auto e = e1 - e0;
-        auto numerator =
-            (e[1] * p[0] - e[0] * p[1] + e1[0] * e0[1] - e1[1] * e0[0]);
-        return numerator * numerator / e.squaredNorm();
-    } else {
-        return cross(e0 - p, e1 - p).squaredNorm() / (e1 - e0).squaredNorm();
-    }
-}
+/// @brief Compute the gradient of the distance between a point and line.
+/// @note The distance is actually squared distance.
+/// @param p The point.
+/// @param e0 The first vertex of the edge defining the line.
+/// @param e1 The second vertex of the edge defining the line.
+/// @return The gradient of the distance wrt p, e0, and e1.
+VectorMax9d point_line_distance_gradient(
+    const Eigen::Ref<const VectorMax3d>& p,
+    const Eigen::Ref<const VectorMax3d>& e0,
+    const Eigen::Ref<const VectorMax3d>& e1);
+
+/// @brief Compute the hessian of the distance between a point and line.
+/// @note The distance is actually squared distance.
+/// @param p The point.
+/// @param e0 The first vertex of the edge defining the line.
+/// @param e1 The second vertex of the edge defining the line.
+/// @return The hessian of the distance wrt p, e0, and e1.
+MatrixMax9d point_line_distance_hessian(
+    const Eigen::Ref<const VectorMax3d>& p,
+    const Eigen::Ref<const VectorMax3d>& e0,
+    const Eigen::Ref<const VectorMax3d>& e1);
 
 // Symbolically generated derivatives;
 namespace autogen {
@@ -76,70 +81,4 @@ namespace autogen {
         double v23,
         double H[81]);
 } // namespace autogen
-
-/// @brief Compute the gradient of the distance between a point and line.
-/// @note The distance is actually squared distance.
-/// @param[in] p The point.
-/// @param[in] e0 The first vertex of the edge defining the line.
-/// @param[in] e1 The second vertex of the edge defining the line.
-/// @param[out] grad The gradient of the distance wrt p, e0, and e1.
-template <
-    typename DerivedP,
-    typename DerivedE0,
-    typename DerivedE1,
-    typename DerivedGrad>
-void point_line_distance_gradient(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedE0>& e0,
-    const Eigen::MatrixBase<DerivedE1>& e1,
-    Eigen::PlainObjectBase<DerivedGrad>& grad)
-{
-    assert(p.size() == 2 || p.size() == 3);
-    assert(e0.size() == 2 || e0.size() == 3);
-    assert(e1.size() == 2 || e1.size() == 3);
-
-    grad.resize(p.size() + e0.size() + e1.size());
-    if (p.size() == 2) {
-        autogen::point_line_distance_gradient_2D(
-            p[0], p[1], e0[0], e0[1], e1[0], e1[1], grad.data());
-    } else {
-        autogen::point_line_distance_gradient_3D(
-            p[0], p[1], p[2], e0[0], e0[1], e0[2], e1[0], e1[1], e1[2],
-            grad.data());
-    }
-}
-
-/// @brief Compute the hessian of the distance between a point and line.
-/// @note The distance is actually squared distance.
-/// @param[in] p The point.
-/// @param[in] e0 The first vertex of the edge defining the line.
-/// @param[in] e1 The second vertex of the edge defining the line.
-/// @param[out] hess The hessian of the distance wrt p, e0, and e1.
-template <
-    typename DerivedP,
-    typename DerivedE0,
-    typename DerivedE1,
-    typename DerivedHess>
-void point_line_distance_hessian(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedE0>& e0,
-    const Eigen::MatrixBase<DerivedE1>& e1,
-    Eigen::PlainObjectBase<DerivedHess>& hess)
-{
-    assert(p.size() == 2 || p.size() == 3);
-    assert(e0.size() == 2 || e0.size() == 3);
-    assert(e1.size() == 2 || e1.size() == 3);
-
-    hess.resize(
-        p.size() + e0.size() + e1.size(), p.size() + e0.size() + e1.size());
-    if (p.size() == 2) {
-        autogen::point_line_distance_hessian_2D(
-            p[0], p[1], e0[0], e0[1], e1[0], e1[1], hess.data());
-    } else {
-        autogen::point_line_distance_hessian_3D(
-            p[0], p[1], p[2], e0[0], e0[1], e0[2], e1[0], e1[1], e1[2],
-            hess.data());
-    }
-}
-
 } // namespace ipc

@@ -1,26 +1,25 @@
 // Catch2 Documentation: https://github.com/catchorg/Catch2/tree/master/docs
 
-#define CATCH_CONFIG_RUNNER
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <tbb/global_control.h>
 #include <tbb/info.h>
 
 #include <ipc/utils/logger.hpp>
 
-Catch::clara::ParserResult parse_log_level(int const d, int& log_level)
+Catch::Clara::ParserResult parse_log_level(int const d, int& log_level)
 {
     if (d < 0 || d > spdlog::level::off) {
-        return Catch::clara::ParserResult::runtimeError(
+        return Catch::Clara::ParserResult::runtimeError(
             "Log level must be between 0 and 6");
     } else {
         log_level = d;
-        return Catch::clara::ParserResult::ok(
-            Catch::clara::ParseResultType::Matched);
+        return Catch::Clara::ParserResult::ok(
+            Catch::Clara::ParseResultType::Matched);
     }
 }
 
-Catch::clara::ParserResult parse_num_threads(int const d, int& num_threads)
+Catch::Clara::ParserResult parse_num_threads(int const d, int& num_threads)
 {
     if (num_threads <= 0) {
         num_threads = tbb::info::default_concurrency();
@@ -32,16 +31,16 @@ Catch::clara::ParserResult parse_num_threads(int const d, int& num_threads)
     } else {
         num_threads = d;
     }
-    return Catch::clara::ParserResult::ok(
-        Catch::clara::ParseResultType::Matched);
+    return Catch::Clara::ParserResult::ok(
+        Catch::Clara::ParseResultType::Matched);
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
     Catch::Session session; // There must be exactly one instance
 
     // Build a new parser on top of Catch's
-    using namespace Catch::clara;
+    using namespace Catch::Clara;
     auto cli = session.cli();
 
     int log_level = spdlog::level::warn;

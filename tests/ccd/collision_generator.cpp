@@ -23,7 +23,7 @@ Catch::Generators::GeneratorWrapper<TestImpact>
 random_impacts(size_t value, bool rigid)
 {
     return Catch::Generators::GeneratorWrapper<TestImpact>(
-        std::make_unique<TestImpactGenerator>(value, rigid));
+        Catch::Detail::make_unique<TestImpactGenerator>(value, rigid));
 }
 
 TestImpact generate_random_impact(const bool rigid)

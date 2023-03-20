@@ -29,7 +29,7 @@ version = "1.0.0"
 
 # Doxygen
 pathlib.Path("../build/doxyoutput").mkdir(parents=True, exist_ok=True)
-if(not subprocess.run(["doxygen", "Doxyfile"])):
+if (not subprocess.run(["doxygen", "Doxyfile"])):
     print("Doxygen failed! Exiting")
     exit(1)
 
@@ -37,7 +37,9 @@ if(not subprocess.run(["doxygen", "Doxyfile"])):
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
+    "autoclasstoc",
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosectionlabel",
@@ -51,7 +53,13 @@ extensions = [
     "myst_parser",
     "nbsphinx",
     "sphinx_immaterial",
-    "sphinx_immaterial.apidoc.python.apigen"
+    "sphinx_immaterial.apidoc.python.apigen",
+    "sphinx_immaterial.apidoc.format_signatures",
+    # 'sphinx_autodoc_toolbox.collapse',
+]
+
+object_description_options = [
+    ("cpp:.*", dict(clang_format_style={"BasedOnStyle": "WebKit"})),
 ]
 
 source_suffix = {
@@ -69,9 +77,22 @@ breathe_projects = {
     project: "../build/doxyoutput/xml"
 }
 breathe_default_project = project
-breathe_default_members = ("members", "undoc-members")
+breathe_default_members = (
+    "members",
+    "undoc-members",
+    "protected-members",
+    "private-members",
+)
 breathe_show_define_initializer = True
 # breathe_show_include = True
+
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "private-members": True,
+    'special-members': True,
+    'show-inheritance': True,
+}
 
 # -- GraphViz configuration ----------------------------------
 graphviz_output_format = 'svg'
@@ -163,7 +184,8 @@ html_theme_options = {
         "navigation.tracking",
         "search.highlight",
         "search.share",
-        "toc.follow"
+        "toc.follow",
+        "content.tabs.link"
     ],
 
     "font": {

@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <test_utils.hpp>
 
@@ -23,7 +23,8 @@ TEST_CASE("Point-edge distance type", "[distance][distance-type][point-edge]")
         } else {
             e0 = Eigen::Vector3d::Random();
             e1 = Eigen::Vector3d::Random();
-            n = cross(e1 - e0, Eigen::Vector3d::UnitX()).normalized();
+            n = Eigen::Vector3d(e1 - e0).cross(Eigen::Vector3d::UnitX());
+            n.normalize();
         }
 
         const VectorMax3d p = ((e1 - e0) * alpha + e0) + distance * n;
@@ -80,6 +81,13 @@ struct RandomBarycentricCoordGenerator
     Eigen::Vector3d const& get() const override { return bc; }
 };
 
+Catch::Generators::GeneratorWrapper<Eigen::Vector3d>
+random_barycentric_coord_generator()
+{
+    return Catch::Generators::GeneratorWrapper<Eigen::Vector3d>(
+        Catch::Detail::make_unique<RandomBarycentricCoordGenerator>());
+}
+
 TEST_CASE(
     "Point-triangle distance type", "[distance][distance-type][point-triangle]")
 {
@@ -99,11 +107,8 @@ TEST_CASE(
     }
     SECTION("random closest to triangle")
     {
-        Eigen::Vector3d bc = GENERATE(take(
-            100,
-            Catch::Generators::GeneratorWrapper<Eigen::Vector3d>(
-                std::unique_ptr<RandomBarycentricCoordGenerator>(
-                    new RandomBarycentricCoordGenerator()))));
+        Eigen::Vector3d bc =
+            GENERATE(take(100, random_barycentric_coord_generator()));
         Eigen::Vector3d point_in_plane = bc(0) * t0 + bc(1) * t1 + bc(2) * t2;
         p.x() = point_in_plane.x();
         p.z() = point_in_plane.z();
@@ -315,9 +320,9 @@ TEST_CASE("Edge-edge distance type", "[distance][distance-type][edge-edge]")
 
         CAPTURE(alpha, s, dtype, swap_ea, swap_eb, swap_edges);
 
-        if (alpha == Approx(0).margin(1e-15)) {
+        if (alpha == Catch::Approx(0).margin(1e-15)) {
             CHECK((dtype == ea0_eb0 || dtype == ea_eb0));
-        } else if (alpha == Approx(1).margin(1e-15)) {
+        } else if (alpha == Catch::Approx(1).margin(1e-15)) {
             CHECK((dtype == ea1_eb0 || dtype == ea_eb0));
         } else if (alpha < 0) {
             CHECK(dtype == ea0_eb0);
@@ -396,8 +401,11 @@ TEST_CASE(
 
         const Eigen::Vector3d eb0 = (ea1 - ea0) * alpha + ea0 + s * n;
         const Eigen::Vector3d eb1 = (ea1 - ea0) + eb0;
-        REQUIRE((ea1 - ea0).dot(eb1 - eb0) == Approx(edge_len * edge_len));
-        REQUIRE((ea1 - ea0).cross(eb1 - eb0).norm() == Approx(0).margin(1e-14));
+        REQUIRE(
+            (ea1 - ea0).dot(eb1 - eb0) == Catch::Approx(edge_len * edge_len));
+        REQUIRE(
+            (ea1 - ea0).cross(eb1 - eb0).norm()
+            == Catch::Approx(0).margin(1e-14));
 
         const EdgeEdgeDistanceType dtype =
             edge_edge_distance_type(ea0, ea1, eb0, eb1);

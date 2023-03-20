@@ -3,7 +3,6 @@ set(SOURCES
   adaptive_stiffness.hpp
   barrier.cpp
   barrier.hpp
-  barrier.tpp
 )
 
 ipc_toolkit_prepend_current_path(SOURCES)

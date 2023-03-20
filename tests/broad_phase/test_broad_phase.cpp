@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <Eigen/Core>
 
@@ -29,11 +29,10 @@ void test_broad_phase(
     double inflation_radius = 0;
 
     Candidates candidates;
-    construct_collision_candidates(
-        mesh, V0, V1, candidates, inflation_radius, method);
+    candidates.build(mesh, V0, V1, inflation_radius, method);
 
     if (expect_collision) {
-        CHECK(!ipc::is_step_collision_free(candidates, mesh, V0, V1));
+        CHECK(!candidates.is_step_collision_free(mesh, V0, V1));
     }
 
     if (method != BroadPhaseMethod::BRUTE_FORCE) {
@@ -53,8 +52,7 @@ void test_broad_phase(
     REQUIRE(V.rows() == mesh.num_vertices());
 
     Candidates candidates;
-    construct_collision_candidates(
-        mesh, V, candidates, inflation_radius, method);
+    candidates.build(mesh, V, inflation_radius, method);
 
     if (method != BroadPhaseMethod::BRUTE_FORCE) {
         brute_force_comparison(
@@ -90,7 +88,7 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase][2D]")
 #if defined(NDEBUG) || !(defined(WIN32) || defined(_WIN32) || defined(__WIN32))
 TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D]")
 #else
-TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D][!hide]")
+TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D][.]")
 #endif
 {
     Eigen::MatrixXd tmp;
@@ -137,7 +135,7 @@ TEST_CASE(
 
     test_broad_phase(mesh, V, method, dhat);
 
-    Constraints constraint_set;
+    CollisionConstraints constraint_set;
     constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
     CHECK(constraint_set.size() != 0);
 }
@@ -206,7 +204,7 @@ TEST_CASE("Compare BP against brute force", "[broad_phase]")
     }
 }
 
-TEST_CASE("Cloth-Ball", "[ccd][broad_phase][cloth-ball][!hide]")
+TEST_CASE("Cloth-Ball", "[ccd][broad_phase][cloth-ball][.]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;

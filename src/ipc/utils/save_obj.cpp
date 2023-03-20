@@ -20,9 +20,9 @@ void save_obj(
     out << "o EV\n";
     int i = v_offset + 1;
     for (const auto& ev_candidate : ev_candidates) {
-        out << V.row(E(ev_candidate.edge_index, 0)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(E(ev_candidate.edge_index, 1)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(ev_candidate.vertex_index).format(OBJ_VERTEX_FORMAT);
+        out << V.row(E(ev_candidate.edge_id, 0)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(E(ev_candidate.edge_id, 1)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(ev_candidate.vertex_id).format(OBJ_VERTEX_FORMAT);
         out << fmt::format("l {:d} {:d}\n", i, i + 1);
         i += 3;
     }
@@ -40,10 +40,10 @@ void save_obj(
     out << "o EE\n";
     int i = v_offset + 1;
     for (const auto& ee_candidate : ee_candidates) {
-        out << V.row(E(ee_candidate.edge0_index, 0)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(E(ee_candidate.edge0_index, 1)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(E(ee_candidate.edge1_index, 0)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(E(ee_candidate.edge1_index, 1)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(E(ee_candidate.edge0_id, 0)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(E(ee_candidate.edge0_id, 1)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(E(ee_candidate.edge1_id, 0)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(E(ee_candidate.edge1_id, 1)).format(OBJ_VERTEX_FORMAT);
         out << fmt::format("l {:d} {:d}\n", i + 0, i + 1);
         out << fmt::format("l {:d} {:d}\n", i + 2, i + 3);
         i += 4;
@@ -62,10 +62,10 @@ void save_obj(
     out << "o FV\n";
     int i = v_offset + 1;
     for (const auto& fv_candidate : fv_candidates) {
-        out << V.row(F(fv_candidate.face_index, 0)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(F(fv_candidate.face_index, 1)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(F(fv_candidate.face_index, 2)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(fv_candidate.vertex_index).format(OBJ_VERTEX_FORMAT);
+        out << V.row(F(fv_candidate.face_id, 0)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(F(fv_candidate.face_id, 1)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(F(fv_candidate.face_id, 2)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(fv_candidate.vertex_id).format(OBJ_VERTEX_FORMAT);
         out << fmt::format("f {:d} {:d} {:d}\n", i, i + 1, i + 2);
         i += 4;
     }
@@ -83,11 +83,11 @@ void save_obj(
     out << "o EF\n";
     int i = v_offset + 1;
     for (const auto& ef_candidate : ef_candidates) {
-        out << V.row(E(ef_candidate.edge_index, 0)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(E(ef_candidate.edge_index, 1)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(F(ef_candidate.face_index, 0)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(F(ef_candidate.face_index, 1)).format(OBJ_VERTEX_FORMAT);
-        out << V.row(F(ef_candidate.face_index, 2)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(E(ef_candidate.edge_id, 0)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(E(ef_candidate.edge_id, 1)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(F(ef_candidate.face_id, 0)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(F(ef_candidate.face_id, 1)).format(OBJ_VERTEX_FORMAT);
+        out << V.row(F(ef_candidate.face_id, 2)).format(OBJ_VERTEX_FORMAT);
         out << fmt::format("l {:d} {:d}\n", i, i + 1);
         out << fmt::format("f {:d} {:d} {:d}\n", i + 2, i + 3, i + 4);
         i += 5;
