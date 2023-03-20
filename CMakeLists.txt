@@ -65,6 +65,14 @@ include(ipc_toolkit_target_link_system_libraries)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ################################################################################
+# CMake Policies
+################################################################################
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
+  cmake_policy(SET CMP0135 NEW) # https://cmake.org/cmake/help/latest/policy/CMP0135.html
+endif()
+
+################################################################################
 # IPC Toolkit Library
 ################################################################################
 

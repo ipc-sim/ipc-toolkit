@@ -21,7 +21,7 @@ import pathlib
 # -- Project information -----------------------------------------------------
 
 project = "IPC Toolkit"
-copyright = '2020-2022, IPC-Sim Organization; MIT License'
+copyright = '2020-2023, IPC-Sim Organization; MIT License'
 author = "Zachary Ferguson"
 version = "1.0.0"
 
@@ -169,13 +169,15 @@ html_theme_options = {
         }
     }],
 
+    "site_url": "https://ipc-sim.github.io/ipc-toolkit",
+
     # Set the repo location to get a badge with stats
-    "repo_url": "https://github.com/ipc-sim/ipc-toolkit/",
+    "repo_url": "https://github.com/ipc-sim/ipc-toolkit",
     "repo_name": "ipc-sim/ipc-toolkit",
     "repo_type": "github",
     "icon": {"repo": "fontawesome/brands/github"},
 
-    "edit_uri": "blob/main/docs/src",
+    "edit_uri": "blob/main/docs/source",
 
     "features": [
         "navigation.expand",
@@ -194,6 +196,9 @@ html_theme_options = {
     },
 
     "toc_title": "Contents",
+
+    "version_dropdown": True,
+    "version_json": "https://ipc-sim.github.io/ipc-toolkit/versions.json",
 }
 
 html_title = "IPC Toolkit"
