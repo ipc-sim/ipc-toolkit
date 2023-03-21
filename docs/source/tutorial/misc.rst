@@ -62,3 +62,84 @@ You can also set the log level:
         .. code-block:: python
 
             ipctk.set_logger_level(ipctk.LoggerLevel.debug)
+
+Multi-threading
+---------------
+
+The IPC Toolkit utilizes `TBB <https://oneapi-src.github.io/oneTBB>`_ to enable multi-threading functionality. This is enabled by default, and significantly improves performance.
+However, with multi-threading enabled, it is expected that the results can be non-deterministic because of rounding differences when adding numbers in different orders. To make the results deterministic you can limit TBB's maximum number of threads to one. The following code shows how to do this:
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            #include <tbb/global_control.h>
+
+            // ...
+
+            tbb::global_control thread_limiter(tbb::global_control::max_allowed_parallelism, 1);
+
+        As long as this `thread_limiter` object stays alive, the number of threads will be limited to 1. This example shows the thread limiter stack allocated, so when the object goes out-of-scope, the limit will be released. If you want this limit for the entire length of your program it is best to define it in ``main`` or to define it statically using a `std::shared_ptr<tbb::global_control>`. For example,
+
+        .. code-block:: c++
+
+            #include <tbb/info.h>
+            #include <tbb/global_control.h>
+
+            static std::shared_ptr<tbb::global_control> thread_limiter;
+
+            void set_num_threads(int nthreads)
+            {
+                if (nthreads <= 0) {
+                    nthreads = tbb::info::default_concurrency();
+                } else if (nthreads > tbb::info::default_concurrency()) {
+                    logger().warn(
+                        "Attempting to use more threads than available ({:d} > {:d})!",
+                        nthreads, tbb::info::default_concurrency());
+                    nthreads = tbb::info::default_concurrency();
+                }
+                thread_limiter = std::make_shared<tbb::global_control>(
+                    tbb::global_control::max_allowed_parallelism, nthreads);
+            }
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            ipctk.set_num_threads(1)
+
+        This limit will persist for the duration of the program or until you call
+
+        .. code-block:: python
+
+            ipctk.set_num_threads(-1)
+
+        to reset the number of threads to the default.
+
+You can also get the current maximum number of threads as follows:
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            int nthreads = tbb::global_control::active_value(tbb::global_control::max_allowed_parallelism);
+
+        Additionally, you can get the number of threads TBB will use by default:
+
+        .. code-block:: c++
+
+            #include <tbb/info.h>
+
+            // ...
+
+            int max_nthreads = tbb::info::default_concurrency();
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            nthreads = ipctk.get_num_threads()
