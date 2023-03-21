@@ -490,6 +490,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#multi-threading" class="md-nav__link">
+    <span title="multi-threading (reference label)" class="md-ellipsis">Multi-<wbr>threading</span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -992,6 +999,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#multi-threading" class="md-nav__link">
+    <span title="multi-threading (reference label)" class="md-ellipsis">Multi-<wbr>threading</span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1070,6 +1084,82 @@ Python</label></div>
 </div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipctk</span><span class="o">.</span><span class="n">set_logger_level</span><span class="p">(</span><span class="n">ipctk</span><span class="o">.</span><span class="n">LoggerLevel</span><span class="o">.</span><span class="n">debug</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><h2 id="multi-threading">Multi-threading<a class="headerlink" href="#multi-threading" title="Permalink to this heading">¶</a></h2>
+<p>The IPC Toolkit utilizes <a class="reference external" href="https://oneapi-src.github.io/oneTBB">TBB</a> to enable multi-threading functionality. This is enabled by default, and significantly improves performance.
+However, with multi-threading enabled, it is expected that the results can be non-deterministic because of rounding differences when adding numbers in different orders. To make the results deterministic you can limit TBB’s maximum number of threads to one. The following code shows how to do this:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2">
+<input checked type="radio" id="__tabbed_4_1" name="__tabbed_4"><input type="radio" id="__tabbed_4_2" name="__tabbed_4"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_4_1">
+C++</label><label class="tabbed-label" for="__tabbed_4_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tbb/global_control.h&gt;</span>
+
+<span class="c1">// ...</span>
+
+<span class="n">tbb</span><span class="o">::</span><span class="n">global_control</span><span class="w"> </span><span class="nf">thread_limiter</span><span class="p">(</span><span class="n">tbb</span><span class="o">::</span><span class="n">global_control</span><span class="o">::</span><span class="n">max_allowed_parallelism</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+</code></pre></div>
+</div>
+<p>As long as this <cite>thread_limiter</cite> object stays alive, the number of threads will be limited to 1. This example shows the thread limiter stack allocated, so when the object goes out-of-scope, the limit will be released. If you want this limit for the entire length of your program it is best to define it in <code class="docutils literal notranslate"><span class="pre">main</span></code> or to define it statically using a <cite>std::shared_ptr&lt;tbb::global_control&gt;</cite>. For example,</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tbb/info.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tbb/global_control.h&gt;</span>
+
+<span class="k">static</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">tbb</span><span class="o">::</span><span class="n">global_control</span><span class="o">&gt;</span><span class="w"> </span><span class="n">thread_limiter</span><span class="p">;</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">set_num_threads</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">nthreads</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">nthreads</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">nthreads</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tbb</span><span class="o">::</span><span class="n">info</span><span class="o">::</span><span class="n">default_concurrency</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">nthreads</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">tbb</span><span class="o">::</span><span class="n">info</span><span class="o">::</span><span class="n">default_concurrency</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">logger</span><span class="p">().</span><span class="n">warn</span><span class="p">(</span>
+<span class="w">            </span><span class="s">&quot;Attempting to use more threads than available ({:d} &gt; {:d})!&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="n">nthreads</span><span class="p">,</span><span class="w"> </span><span class="n">tbb</span><span class="o">::</span><span class="n">info</span><span class="o">::</span><span class="n">default_concurrency</span><span class="p">());</span>
+<span class="w">        </span><span class="n">nthreads</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tbb</span><span class="o">::</span><span class="n">info</span><span class="o">::</span><span class="n">default_concurrency</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">thread_limiter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">tbb</span><span class="o">::</span><span class="n">global_control</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">        </span><span class="n">tbb</span><span class="o">::</span><span class="n">global_control</span><span class="o">::</span><span class="n">max_allowed_parallelism</span><span class="p">,</span><span class="w"> </span><span class="n">nthreads</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipctk</span><span class="o">.</span><span class="n">set_num_threads</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<p>This limit will persist for the duration of the program or until you call</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipctk</span><span class="o">.</span><span class="n">set_num_threads</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<p>to reset the number of threads to the default.</p>
+</div>
+</div>
+</div><p>You can also get the current maximum number of threads as follows:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2">
+<input checked type="radio" id="__tabbed_5_1" name="__tabbed_5"><input type="radio" id="__tabbed_5_2" name="__tabbed_5"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_5_1">
+C++</label><label class="tabbed-label" for="__tabbed_5_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="n">nthreads</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tbb</span><span class="o">::</span><span class="n">global_control</span><span class="o">::</span><span class="n">active_value</span><span class="p">(</span><span class="n">tbb</span><span class="o">::</span><span class="n">global_control</span><span class="o">::</span><span class="n">max_allowed_parallelism</span><span class="p">);</span>
+</code></pre></div>
+</div>
+<p>Additionally, you can get the number of threads TBB will use by default:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tbb/info.h&gt;</span>
+
+<span class="c1">// ...</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="n">max_nthreads</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tbb</span><span class="o">::</span><span class="n">info</span><span class="o">::</span><span class="n">default_concurrency</span><span class="p">();</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">nthreads</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">get_num_threads</span><span class="p">()</span>
 </code></pre></div>
 </div>
 </div>
