@@ -1494,10 +1494,13 @@ Python</label></div>
 </div>
 </div>
 </div><p>Here <code class="docutils literal notranslate"><span class="pre">epsv_times_h</span></code> (<span class="math notranslate nohighlight">\(\epsilon_v h\)</span>) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.</p>
-<p>Notice the friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is</p>
+<div class="important admonition">
+<p class="admonition-title">Important</p>
+<p>The friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is</p>
 <div class="math notranslate nohighlight">
 \[v = \frac{x - x_{n-1}}{h},\]</div>
 <p>where <span class="math notranslate nohighlight">\(x\)</span> is the current position, <span class="math notranslate nohighlight">\(x_{n-1}\)</span> is the previous position, and <span class="math notranslate nohighlight">\(h\)</span> is the time step size.</p>
+</div>
 <p>This returns a scalar value <code class="docutils literal notranslate"><span class="pre">friction_potential</span></code> which is the sum of the individual friction potentials.</p>
 <p>Mathematically this is defined as</p>
 <div class="math notranslate nohighlight">
@@ -1578,7 +1581,7 @@ Python</label></div>
   <small>
     
       Last update:
-      March 20, 2023
+      March 21, 2023
     
   </small>
 </div>

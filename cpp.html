@@ -1117,7 +1117,6 @@ We use this same process to download all external dependencies.</p>
 <span class="w">    </span><span class="s">ipc_toolkit</span>
 <span class="w">    </span><span class="s">GIT_REPOSITORY</span><span class="w"> </span><span class="s">https://github.com/ipc-sim/ipc-toolkit.git</span>
 <span class="w">    </span><span class="s">GIT_TAG</span><span class="w"> </span><span class="o">${</span><span class="nv">IPC_TOOLKIT_GIT_TAG</span><span class="o">}</span>
-<span class="w">    </span><span class="s">GIT_SHALLOW</span><span class="w"> </span><span class="s">TRUE</span>
 <span class="p">)</span>
 <span class="nb">FetchContent_MakeAvailable</span><span class="p">(</span><span class="s">ipc_toolkit</span><span class="p">)</span>
 </code></pre></div>
@@ -1128,6 +1127,11 @@ We use this same process to download all external dependencies.</p>
 </code></pre></div>
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">PROJECT_NAME</span></code> is the name of your library/binary.</p>
+<div class="tip admonition">
+<p class="admonition-title">Tip</p>
+<p>If your <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_GIT_TAG</span></code> is a tag (e.g. <code class="docutils literal notranslate"><span class="pre">v1.0.0</span></code>), then you can use the <code class="docutils literal notranslate"><span class="pre">FetchContent_Declare</span></code> argument <code class="docutils literal notranslate"><span class="pre">GIT_SHALLOW</span> <span class="pre">TRUE</span></code> to download only a single commit.
+Otherwise, you should use the default <code class="docutils literal notranslate"><span class="pre">GIT_SHALLOW</span> <span class="pre">FALSE</span></code>.</p>
+</div>
 <h3 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h3>
 <p><strong>All required dependencies are downloaded through CMake</strong> depending on the build options.</p>
 <p>The following libraries are used in this project:</p>
@@ -1175,7 +1179,7 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
   <small>
     
       Last update:
-      March 20, 2023
+      March 21, 2023
     
   </small>
 </div>

@@ -18,7 +18,6 @@ FetchContent_Declare(
     ipc_toolkit
     GIT_REPOSITORY https://github.com/ipc-sim/ipc-toolkit.git
     GIT_TAG ${IPC_TOOLKIT_GIT_TAG}
-    GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(ipc_toolkit)
 ```
@@ -31,6 +30,12 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ipc::toolkit)
 ```
 
 where `PROJECT_NAME` is the name of your library/binary.
+
+```{eval-rst}
+.. tip::
+   If your ``IPC_TOOLKIT_GIT_TAG`` is a tag (e.g. ``v1.0.0``), then you can use the ``FetchContent_Declare`` argument ``GIT_SHALLOW TRUE`` to download only a single commit.
+   Otherwise, you should use the default ``GIT_SHALLOW FALSE``.
+```
 
 ### Dependencies
 
