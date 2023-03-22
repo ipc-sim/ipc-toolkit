@@ -5,32 +5,31 @@
 
 namespace ipc {
 
-double f0_SF(const double x, const double epsv_times_h)
+double f0_SF(const double s, const double epsv)
 {
-    assert(epsv_times_h > 0);
-    if (std::abs(x) >= epsv_times_h) {
-        return x;
+    assert(epsv > 0);
+    if (std::abs(s) >= epsv) {
+        return s;
     }
-    return x * x * (-x / (3 * epsv_times_h) + 1) / epsv_times_h
-        + epsv_times_h / 3;
+    return s * s * (-s / (3 * epsv) + 1) / epsv + epsv / 3;
 }
 
-double f1_SF_over_x(const double x, const double epsv_times_h)
+double f1_SF_over_x(const double s, const double epsv)
 {
-    assert(epsv_times_h > 0);
-    if (std::abs(x) >= epsv_times_h) {
-        return 1 / x;
+    assert(epsv > 0);
+    if (std::abs(s) >= epsv) {
+        return 1 / s;
     }
-    return (-x / epsv_times_h + 2) / epsv_times_h;
+    return (-s / epsv + 2) / epsv;
 }
 
-double df1_x_minus_f1_over_x3(const double x, const double epsv_times_h)
+double df1_x_minus_f1_over_x3(const double s, const double epsv)
 {
-    assert(epsv_times_h > 0);
-    if (std::abs(x) >= epsv_times_h) {
-        return -1 / (x * x * x);
+    assert(epsv > 0);
+    if (std::abs(s) >= epsv) {
+        return -1 / (s * s * s);
     }
-    return -1 / (x * epsv_times_h * epsv_times_h);
+    return -1 / (s * epsv * epsv);
 }
 
 } // namespace ipc

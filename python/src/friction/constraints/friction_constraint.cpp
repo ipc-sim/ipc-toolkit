@@ -18,9 +18,21 @@ void define_friction_constraint(py::module_& m)
 
     friction_constraint
         .def(
-            "compute_potential", &FrictionConstraint::compute_potential, "",
+            "compute_potential", &FrictionConstraint::compute_potential,
+            R"ipc_Qu8mg5v7(
+            Compute the friction dissapative potential.
+
+            Parameters:
+                velocities: Velocities of the vertices (rowwise)
+                edges: Edges of the mesh
+                faces: Faces of the mesh
+                epsv: Smooth friction mollifier parameter :math:`\epsilon_v`.
+
+            Returns:
+                The friction dissapative potential.
+            )ipc_Qu8mg5v7",
             py::arg("velocities"), py::arg("edges"), py::arg("faces"),
-            py::arg("epsv_times_h"))
+            py::arg("epsv"))
         .def(
             "compute_potential_gradient",
             &FrictionConstraint::compute_potential_gradient,
@@ -31,13 +43,13 @@ void define_friction_constraint(py::module_& m)
                 velocities: Velocities of the vertices (rowwise)
                 edges: Edges of the mesh
                 faces: Faces of the mesh
-                epsv_times_h: $\epsilon_vh$
+                epsv: Smooth friction mollifier parameter :math:`\epsilon_v`.
 
             Returns:
                 Gradient of the friction dissapative potential wrt velocities
             )ipc_Qu8mg5v7",
             py::arg("velocities"), py::arg("edges"), py::arg("faces"),
-            py::arg("epsv_times_h"))
+            py::arg("epsv"))
         .def(
             "compute_potential_hessian",
             &FrictionConstraint::compute_potential_hessian,
@@ -48,14 +60,14 @@ void define_friction_constraint(py::module_& m)
                 velocities: Velocities of the vertices (rowwise)
                 edges: Edges of the mesh
                 faces: Faces of the mesh
-                epsv_times_h: $\epsilon_vh$
+                epsv: Smooth friction mollifier parameter :math:`\epsilon_v`.
                 project_hessian_to_psd: Project the hessian to PSD
 
             Returns:
                 Hessian of the friction dissapative potential wrt velocities
             )ipc_Qu8mg5v7",
             py::arg("velocities"), py::arg("edges"), py::arg("faces"),
-            py::arg("epsv_times_h"), py::arg("project_hessian_to_psd"))
+            py::arg("epsv"), py::arg("project_hessian_to_psd"))
         .def(
             "compute_force",
             py::overload_cast<
@@ -73,7 +85,7 @@ void define_friction_constraint(py::module_& m)
                 faces: Collision mesh faces
                 dhat: Barrier activation distance
                 barrier_stiffness: Barrier stiffness
-                epsv_times_h: $\epsilon_vh$
+                epsv: Smooth friction mollifier parameter :math:`\epsilon_v`.
                 dmin: Minimum distance
                 no_mu: Whether to not multiply by mu
 
@@ -81,9 +93,8 @@ void define_friction_constraint(py::module_& m)
                 Friction force
             )ipc_Qu8mg5v7",
             py::arg("X"), py::arg("U"), py::arg("edges"), py::arg("faces"),
-            py::arg("dhat"), py::arg("barrier_stiffness"),
-            py::arg("epsv_times_h"), py::arg("dmin") = 0,
-            py::arg("no_mu") = false)
+            py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("epsv"),
+            py::arg("dmin") = 0, py::arg("no_mu") = false)
         .def(
             "compute_force",
             py::overload_cast<
@@ -103,7 +114,7 @@ void define_friction_constraint(py::module_& m)
                 faces: Collision mesh faces
                 dhat: Barrier activation distance
                 barrier_stiffness: Barrier stiffness
-                epsv_times_h: $\epsilon_vh$
+                epsv: Smooth friction mollifier parameter :math:`\epsilon_v`.
                 dmin: Minimum distance
                 no_mu: Whether to not multiply by mu
 
@@ -112,8 +123,7 @@ void define_friction_constraint(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("X"), py::arg("Ut"), py::arg("U"), py::arg("edges"),
             py::arg("faces"), py::arg("dhat"), py::arg("barrier_stiffness"),
-            py::arg("epsv_times_h"), py::arg("dmin") = 0,
-            py::arg("no_mu") = false)
+            py::arg("epsv"), py::arg("dmin") = 0, py::arg("no_mu") = false)
         .def(
             "compute_force_jacobian",
             py::overload_cast<
@@ -132,7 +142,7 @@ void define_friction_constraint(py::module_& m)
                 faces: Collision mesh faces
                 dhat: Barrier activation distance
                 barrier_stiffness: Barrier stiffness
-                epsv_times_h: $\epsilon_vh$
+                epsv: Smooth friction mollifier parameter :math:`\epsilon_v`.
                 wrt: Variable to differentiate the friction force with respect to.
                 dmin: Minimum distance
 
@@ -140,8 +150,8 @@ void define_friction_constraint(py::module_& m)
                 Friction force Jacobian
             )ipc_Qu8mg5v7",
             py::arg("X"), py::arg("U"), py::arg("edges"), py::arg("faces"),
-            py::arg("dhat"), py::arg("barrier_stiffness"),
-            py::arg("epsv_times_h"), py::arg("wrt"), py::arg("dmin") = 0)
+            py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("epsv"),
+            py::arg("wrt"), py::arg("dmin") = 0)
         .def(
             "compute_force_jacobian",
             py::overload_cast<
@@ -161,7 +171,7 @@ void define_friction_constraint(py::module_& m)
                 faces: Collision mesh faces
                 dhat: Barrier activation distance
                 barrier_stiffness: Barrier stiffness
-                epsv_times_h: $\epsilon_vh$
+                epsv: Smooth friction mollifier parameter :math:`\epsilon_v`.
                 wrt: Variable to differentiate the friction force with respect to.
                 dmin: Minimum distance
 
@@ -170,7 +180,7 @@ void define_friction_constraint(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("X"), py::arg("Ut"), py::arg("U"), py::arg("edges"),
             py::arg("faces"), py::arg("dhat"), py::arg("barrier_stiffness"),
-            py::arg("epsv_times_h"), py::arg("wrt"), py::arg("dmin") = 0)
+            py::arg("epsv"), py::arg("wrt"), py::arg("dmin") = 0)
         .def_readwrite(
             "normal_force_magnitude",
             &FrictionConstraint::normal_force_magnitude,

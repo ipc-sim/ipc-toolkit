@@ -47,35 +47,48 @@ public:
     /// @brief Compute the friction dissapative potential from the given velocity.
     /// @param mesh The collision mesh.
     /// @param velocity Current vertex velocity (rowwise).
+    /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
     /// @return The friction dissapative potential.
     double compute_potential(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& velocity,
-        const double epsv_times_h) const;
+        const double epsv) const;
 
     /// @brief Compute the gradient of the friction dissapative potential wrt the velocity.
     /// @param mesh The collision mesh.
     /// @param velocity Current vertex velocity (rowwise).
+    /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
     /// @return The gradient of the friction dissapative potential wrt the velocity.
     Eigen::VectorXd compute_potential_gradient(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& velocity,
-        const double epsv_times_h) const;
+        const double epsv) const;
 
     /// @brief Compute the Hessian of the friction dissapative potential wrt the velocity.
     /// @param mesh The collision mesh.
     /// @param velocity Current vertex velocity (rowwise).
+    /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
     /// @param project_hessian_to_psd If true, project the Hessian to be positive semi-definite.
     /// @return The Hessian of the friction dissapative potential wrt the velocity.
     Eigen::SparseMatrix<double> compute_potential_hessian(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& velocity,
-        const double epsv_times_h,
+        const double epsv,
         const bool project_hessian_to_psd = false) const;
 
     // ------------------------------------------------------------------------
 
+    /// @brief Compute the friction force from the given velocity.
+    /// @param mesh The collision mesh.
+    /// @param X Rest vertex positions (rowwise).
+    /// @param Ut Previous vertex displacements (rowwise).
+    /// @param U Current vertex displacements (rowwise).
+    /// @param dhat Barrier activation distance.
+    /// @param barrier_stiffness Barrier stiffness.
+    /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
+    /// @param dmin Minimum distance to use for the barrier.
     /// @param no_mu whether to not multiply by mu
+    /// @return The friction force.
     Eigen::VectorXd compute_force(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
@@ -83,26 +96,46 @@ public:
         const Eigen::MatrixXd& U,
         const double dhat,
         const double barrier_stiffness,
-        const double epsv_times_h,
+        const double epsv,
         const double dmin = 0,
         const bool no_mu = false) const;
 
+    /// @brief Compute the friction force from the given velocity.
+    /// @param mesh The collision mesh.
+    /// @param X Rest vertex positions (rowwise).
+    /// @param U Current vertex displacements (rowwise).
+    /// @param dhat Barrier activation distance.
+    /// @param barrier_stiffness Barrier stiffness.
+    /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
+    /// @param dmin Minimum distance to use for the barrier.
     /// @param no_mu whether to not multiply by mu
+    /// @return The friction force.
     Eigen::VectorXd compute_force(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
         const Eigen::MatrixXd& U,
         const double dhat,
         const double barrier_stiffness,
-        const double epsv_times_h,
+        const double epsv,
         const double dmin = 0,
         const bool no_mu = false) const
     {
         return compute_force(
             mesh, X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, dhat,
-            barrier_stiffness, epsv_times_h, dmin, no_mu);
+            barrier_stiffness, epsv, dmin, no_mu);
     }
 
+    /// @brief Compute the Jacobian of the friction force wrt the velocity.
+    /// @param mesh The collision mesh.
+    /// @param X Rest vertex positions (rowwise).
+    /// @param Ut Previous vertex displacements (rowwise).
+    /// @param U Current vertex displacements (rowwise).
+    /// @param dhat Barrier activation distance.
+    /// @param barrier_stiffness Barrier stiffness.
+    /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
+    /// @param wrt The variable to take the derivative with respect to.
+    /// @param dmin Minimum distance to use for the barrier.
+    /// @return The Jacobian of the friction force wrt the velocity.
     Eigen::SparseMatrix<double> compute_force_jacobian(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
@@ -110,23 +143,34 @@ public:
         const Eigen::MatrixXd& U,
         const double dhat,
         const double barrier_stiffness,
-        const double epsv_times_h,
+        const double epsv,
         const FrictionConstraint::DiffWRT wrt,
         const double dmin = 0) const;
 
+    /// @brief Compute the Jacobian of the friction force wrt the velocity.
+    /// @param mesh The collision mesh.
+    /// @param X Rest vertex positions (rowwise).
+    /// @param Ut Previous vertex displacements (rowwise).
+    /// @param U Current vertex displacements (rowwise).
+    /// @param dhat Barrier activation distance.
+    /// @param barrier_stiffness Barrier stiffness.
+    /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
+    /// @param wrt The variable to take the derivative with respect to.
+    /// @param dmin Minimum distance to use for the barrier.
+    /// @return The Jacobian of the friction force wrt the velocity.
     Eigen::SparseMatrix<double> compute_force_jacobian(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
         const Eigen::MatrixXd& U,
         const double dhat,
         const double barrier_stiffness,
-        const double epsv_times_h,
+        const double epsv,
         const FrictionConstraint::DiffWRT wrt,
         const double dmin = 0) const
     {
         return compute_force_jacobian(
             mesh, X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, dhat,
-            barrier_stiffness, epsv_times_h, wrt, dmin);
+            barrier_stiffness, epsv, wrt, dmin);
     }
 
     // ------------------------------------------------------------------------

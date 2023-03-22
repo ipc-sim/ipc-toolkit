@@ -92,10 +92,10 @@ void FrictionConstraints::build(
 double FrictionConstraints::compute_potential(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& velocity,
-    const double epsv_times_h) const
+    const double epsv) const
 {
     assert(velocity.rows() == mesh.num_vertices());
-    assert(epsv_times_h > 0);
+    assert(epsv > 0);
 
     if (empty()) {
         return 0;
@@ -110,7 +110,7 @@ double FrictionConstraints::compute_potential(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 // Quadrature weight is premultiplied by compute_potential
                 local_potential += (*this)[i].compute_potential(
-                    velocity, mesh.edges(), mesh.faces(), epsv_times_h);
+                    velocity, mesh.edges(), mesh.faces(), epsv);
             }
         });
 
@@ -124,7 +124,7 @@ double FrictionConstraints::compute_potential(
 Eigen::VectorXd FrictionConstraints::compute_potential_gradient(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& velocity,
-    const double epsv_times_h) const
+    const double epsv) const
 {
     const int dim = velocity.cols();
     const int ndof = velocity.size();
@@ -132,7 +132,7 @@ Eigen::VectorXd FrictionConstraints::compute_potential_gradient(
     if (empty()) {
         return Eigen::VectorXd::Zero(ndof);
     }
-    assert(epsv_times_h > 0);
+    assert(epsv > 0);
 
     tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
         Eigen::VectorXd::Zero(ndof));
@@ -147,7 +147,7 @@ Eigen::VectorXd FrictionConstraints::compute_potential_gradient(
 
                 const VectorMax12d local_grad =
                     constraint.compute_potential_gradient(
-                        velocity, mesh.edges(), mesh.faces(), epsv_times_h);
+                        velocity, mesh.edges(), mesh.faces(), epsv);
 
                 const std::array<long, 4> vis =
                     constraint.vertex_ids(mesh.edges(), mesh.faces());
@@ -169,7 +169,7 @@ Eigen::VectorXd FrictionConstraints::compute_potential_gradient(
 Eigen::SparseMatrix<double> FrictionConstraints::compute_potential_hessian(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& velocity,
-    const double epsv_times_h,
+    const double epsv,
     const bool project_hessian_to_psd) const
 {
     const int dim = velocity.cols();
@@ -178,7 +178,7 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_potential_hessian(
     if (empty()) {
         return Eigen::SparseMatrix<double>(ndof, ndof);
     }
-    assert(epsv_times_h > 0);
+    assert(epsv > 0);
 
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
         storage;
@@ -193,7 +193,7 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_potential_hessian(
 
                 const MatrixMax12d local_hess =
                     constraint.compute_potential_hessian(
-                        velocity, mesh.edges(), mesh.faces(), epsv_times_h,
+                        velocity, mesh.edges(), mesh.faces(), epsv,
                         project_hessian_to_psd);
 
                 const std::array<long, 4> vis =
@@ -223,14 +223,14 @@ Eigen::VectorXd FrictionConstraints::compute_force(
     const Eigen::MatrixXd& velocities,
     const double dhat,
     const double barrier_stiffness,
-    const double epsv_times_h,
+    const double epsv,
     const double dmin,
     const bool no_mu) const
 {
     if (empty()) {
         return Eigen::VectorXd::Zero(velocities.size());
     }
-    assert(epsv_times_h > 0);
+    assert(epsv > 0);
 
     int dim = velocities.cols();
 
@@ -246,7 +246,7 @@ Eigen::VectorXd FrictionConstraints::compute_force(
 
                 const VectorMax12d local_force = constraint.compute_force(
                     X, Ut, velocities, mesh.edges(), mesh.faces(), dhat,
-                    barrier_stiffness, epsv_times_h, dmin, no_mu);
+                    barrier_stiffness, epsv, dmin, no_mu);
 
                 const std::array<long, 4> vis =
                     constraint.vertex_ids(mesh.edges(), mesh.faces());
@@ -271,7 +271,7 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
     const Eigen::MatrixXd& velocities,
     const double dhat,
     const double barrier_stiffness,
-    const double epsv_times_h,
+    const double epsv,
     const FrictionConstraint::DiffWRT wrt,
     const double dmin) const
 {
@@ -279,7 +279,7 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
         return Eigen::SparseMatrix<double>(
             velocities.size(), velocities.size());
     }
-    assert(epsv_times_h > 0);
+    assert(epsv > 0);
 
     int dim = velocities.cols();
     const Eigen::MatrixXi& edges = mesh.edges();
@@ -299,7 +299,7 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
                 const MatrixMax12d local_force_jacobian =
                     constraint.compute_force_jacobian(
                         X, Ut, velocities, edges, faces, dhat,
-                        barrier_stiffness, epsv_times_h, wrt, dmin);
+                        barrier_stiffness, epsv, wrt, dmin);
 
                 const std::array<long, 4> vis =
                     constraint.vertex_ids(mesh.edges(), mesh.faces());
@@ -329,8 +329,8 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
             }
 
             VectorMax12d local_force = constraint.compute_force(
-                X, Ut, velocities, edges, faces, dhat, barrier_stiffness,
-                epsv_times_h, dmin);
+                X, Ut, velocities, edges, faces, dhat, barrier_stiffness, epsv,
+                dmin);
             assert(constraint.weight != 0);
             local_force /= constraint.weight;
 
