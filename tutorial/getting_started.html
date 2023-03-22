@@ -1482,18 +1482,18 @@ Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="kt">double</span><span class="w"> </span><span class="n">friction_potential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">friction_constraints</span><span class="p">.</span><span class="n">compute_potential</span><span class="p">(</span>
-<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocity</span><span class="p">,</span><span class="w"> </span><span class="n">epsv_times_h</span><span class="p">);</span>
+<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocity</span><span class="p">,</span><span class="w"> </span><span class="n">epsv</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">friction_potential</span> <span class="o">=</span> <span class="n">friction_constraints</span><span class="o">.</span><span class="n">compute_potential</span><span class="p">(</span>
-    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocity</span><span class="p">,</span> <span class="n">epsv_times_h</span><span class="p">)</span>
+    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocity</span><span class="p">,</span> <span class="n">epsv</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
 </div>
-</div><p>Here <code class="docutils literal notranslate"><span class="pre">epsv_times_h</span></code> (<span class="math notranslate nohighlight">\(\epsilon_v h\)</span>) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.</p>
+</div><p>Here <code class="docutils literal notranslate"><span class="pre">epsv</span></code> (<span class="math notranslate nohighlight">\(\epsilon_v\)</span>) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.</p>
 <div class="important admonition">
 <p class="admonition-title">Important</p>
 <p>The friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is</p>
@@ -1504,7 +1504,7 @@ Python</label></div>
 <p>This returns a scalar value <code class="docutils literal notranslate"><span class="pre">friction_potential</span></code> which is the sum of the individual friction potentials.</p>
 <p>Mathematically this is defined as</p>
 <div class="math notranslate nohighlight">
-\[D(x) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|T_k^Tv\|; \epsilon_v h\right),\]</div>
+\[D(x) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|T_k^Tv\|; \epsilon_v\right),\]</div>
 <p>where <span class="math notranslate nohighlight">\(C\)</span> is the lagged collision constraints, <span class="math notranslate nohighlight">\(\lambda_k^n\)</span> is the normal force magnitude for the <span class="math notranslate nohighlight">\(k\)</span>-th contact, <span class="math notranslate nohighlight">\(T_k\)</span> is the tangential basis for the <span class="math notranslate nohighlight">\(k\)</span>-th contact, and <span class="math notranslate nohighlight">\(f_0\)</span> is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.</p>
 <h3 id="derivatives">Derivatives<a class="headerlink" href="#derivatives" title="Permalink to this heading">¶</a></h3>
 <p>We can also compute the first and second derivatives of the friction dissipative potential with respect to the velocities.</p>
@@ -1517,20 +1517,20 @@ Python</label></div>
 <div class="tabbed-block docutils">
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="n">friction_potential_grad</span><span class="w"> </span><span class="o">=</span>
 <span class="w">    </span><span class="n">friction_constraints</span><span class="p">.</span><span class="n">compute_potential_gradient</span><span class="p">(</span>
-<span class="w">        </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocity</span><span class="p">,</span><span class="w"> </span><span class="n">epsv_times_h</span><span class="p">);</span>
+<span class="w">        </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocity</span><span class="p">,</span><span class="w"> </span><span class="n">epsv</span><span class="p">);</span>
 
 <span class="n">Eigen</span><span class="o">::</span><span class="n">SparseMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">friction_potential_hess</span><span class="w"> </span><span class="o">=</span>
 <span class="w">    </span><span class="n">friction_constraints</span><span class="p">.</span><span class="n">compute_potential_hessian</span><span class="p">(</span>
-<span class="w">        </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocity</span><span class="p">,</span><span class="w"> </span><span class="n">epsv_times_h</span><span class="p">);</span>
+<span class="w">        </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocity</span><span class="p">,</span><span class="w"> </span><span class="n">epsv</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">friction_potential_grad</span> <span class="o">=</span> <span class="n">friction_constraints</span><span class="o">.</span><span class="n">compute_potential_gradient</span><span class="p">(</span>
-    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocity</span><span class="p">,</span> <span class="n">epsv_times_h</span><span class="p">)</span>
+    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocity</span><span class="p">,</span> <span class="n">epsv</span><span class="p">)</span>
 
 <span class="n">friction_potential_hess</span> <span class="o">=</span> <span class="n">friction_constraints</span><span class="o">.</span><span class="n">compute_potential_hessian</span><span class="p">(</span>
-    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocity</span><span class="p">,</span> <span class="n">epsv_times_h</span><span class="p">)</span>
+    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocity</span><span class="p">,</span> <span class="n">epsv</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -1581,7 +1581,7 @@ Python</label></div>
   <small>
     
       Last update:
-      March 21, 2023
+      March 22, 2023
     
   </small>
 </div>
