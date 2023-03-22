@@ -5,55 +5,52 @@ namespace ipc {
 /// @brief Smooth friction mollifier function.
 ///
 /// \f\[
-///     f_0(y)= \begin{cases}
-///         -\frac{x^3}{3\epsilon_v^2 h^2} + \frac{x^2}{\epsilon_vh}
-///             + \frac{\epsilon_v h}{3}, & |x| \in\left[0, \epsilon_v h\right)
+///     f_0(s)= \begin{cases}
+///         -\frac{s^3}{3\epsilon_v^2} + \frac{s^2}{\epsilon_v}
+///             + \frac{\epsilon_v}{3}, & |s| < \epsilon_v
 ///             \newline
-///         x, & |x| \geq \epsilon_v h
+///         s, & |s| \geq \epsilon_v
 ///     \end{cases}
 /// \f\]
 ///
-/// @param x The tangential relative speed.
-/// @param epsv_times_h Mollifier parameter \f$\epsilon_v h\f$.
-/// @return The value of the mollifier function at x.
-double f0_SF(const double x, const double epsv_times_h);
+/// @param s The tangential relative speed.
+/// @param epsv Mollifier parameter \f$\epsilon_v\f$.
+/// @return The value of the mollifier function at s.
+double f0_SF(const double s, const double epsv);
 
-/// @brief Compute the derivative of f0_SF divided by x (\f$\frac{f_0'(x)}{x}\f$).
+/// @brief Compute the derivative of f0_SF divided by s (\f$\frac{f_0'(s)}{s}\f$).
 ///
 /// \f\[
-///     f_1(x) = f_0'(x) = \begin{cases}
-///         -\frac{x^2}{\epsilon_v^2 h^2}+\frac{2 x}{\epsilon_v h}, & |x|
-///             \in\left[0, \epsilon_v h \right) \newline
-///         1, & |x| \geq h \epsilon_v
+///     f_1(s) = f_0'(s) = \begin{cases}
+///         -\frac{s^2}{\epsilon_v^2}+\frac{2 s}{\epsilon_v}, & |s| < \epsilon_v
+///         \newline 1, & |s| \geq \epsilon_v
 ///     \end{cases}
 /// \f\]
 ///
 /// \f\[
-///     \frac{f_1(x)}{x} = \begin{cases}
-///         -\frac{x}{\epsilon_v^2 h^2}+\frac{2}{\epsilon_v h}, & |x|
-///             \in\left[0, \epsilon_v h \right) \newline
-///         \frac{1}{x}, & |x| \geq h \epsilon_v
+///     \frac{f_1(s)}{s} = \begin{cases}
+///         -\frac{s}{\epsilon_v^2}+\frac{2}{\epsilon_v}, & |s| < \epsilon_v
+///         \newline \frac{1}{s}, & |s| \geq \epsilon_v
 ///     \end{cases}
 /// \f\]
 ///
-/// @param x The tangential relative speed.
-/// @param epsv_times_h Mollifier parameter \f$\epsilon_v h\f$.
-/// @return The value of the derivative of f0_SF divided by x.
-double f1_SF_over_x(const double x, const double epsv_times_h);
+/// @param s The tangential relative speed.
+/// @param epsv Mollifier parameter \f$\epsilon_v\f$.
+/// @return The value of the derivative of f0_SF divided by s.
+double f1_SF_over_x(const double s, const double epsv);
 
-/// @brief The derivative of f1 times x minus f1 all divided by x cubed.
+/// @brief The derivative of f1 times s minus f1 all divided by s cubed.
 ///
 /// \f\[
-///     \frac{f_1'(x) x - f_1(x)}{x^3} = \begin{cases}
-///         -\frac{1}{x \epsilon_v^2 h^2}, & |x|
-///             \in\left[0, \epsilon_v h \right) \newline
-///         -\frac{1}{x^3}, & |x| \geq h \epsilon_v
+///     \frac{f_1'(s) s - f_1(s)}{s^3} = \begin{cases}
+///         -\frac{1}{s \epsilon_v^2}, & |s| < \epsilon_v \newline
+///         -\frac{1}{s^3}, & |s| \geq \epsilon_v
 ///     \end{cases}
 /// \f\]
 ///
-/// @param x The tangential relative speed.
-/// @param epsv_times_h Mollifier parameter \f$\epsilon_v h\f$.
-/// @return The derivative of f1 times x minus f1 all divided by x cubed.
-double df1_x_minus_f1_over_x3(const double x, const double epsv_times_h);
+/// @param s The tangential relative speed.
+/// @param epsv Mollifier parameter \f$\epsilon_v\f$.
+/// @return The derivative of f1 times s minus f1 all divided by s cubed.
+double df1_x_minus_f1_over_x3(const double s, const double epsv);
 
 } // namespace ipc

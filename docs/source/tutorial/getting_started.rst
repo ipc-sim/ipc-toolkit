@@ -364,16 +364,16 @@ Now we can compute the friction dissipative potential using the ``FrictionConstr
         .. code-block:: c++
 
             double friction_potential = friction_constraints.compute_potential(
-                collision_mesh, velocity, epsv_times_h);
+                collision_mesh, velocity, epsv);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
             friction_potential = friction_constraints.compute_potential(
-                collision_mesh, velocity, epsv_times_h)
+                collision_mesh, velocity, epsv)
 
-Here ``epsv_times_h`` (:math:`\epsilon_v h`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
+Here ``epsv`` (:math:`\epsilon_v`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
 
 .. important::
    The friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is
@@ -388,7 +388,7 @@ This returns a scalar value ``friction_potential`` which is the sum of the indiv
 Mathematically this is defined as
 
 .. math::
-   D(x) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|T_k^Tv\|; \epsilon_v h\right),
+   D(x) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|T_k^Tv\|; \epsilon_v\right),
 
 where :math:`C` is the lagged collision constraints, :math:`\lambda_k^n` is the normal force magnitude for the :math:`k`-th contact, :math:`T_k` is the tangential basis for the :math:`k`-th contact, and :math:`f_0` is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.
 
@@ -405,21 +405,21 @@ We can also compute the first and second derivatives of the friction dissipative
 
             Eigen::VectorXd friction_potential_grad =
                 friction_constraints.compute_potential_gradient(
-                    collision_mesh, velocity, epsv_times_h);
+                    collision_mesh, velocity, epsv);
 
             Eigen::SparseMatrix<double> friction_potential_hess =
                 friction_constraints.compute_potential_hessian(
-                    collision_mesh, velocity, epsv_times_h);
+                    collision_mesh, velocity, epsv);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
             friction_potential_grad = friction_constraints.compute_potential_gradient(
-                collision_mesh, velocity, epsv_times_h)
+                collision_mesh, velocity, epsv)
 
             friction_potential_hess = friction_constraints.compute_potential_hessian(
-                collision_mesh, velocity, epsv_times_h)
+                collision_mesh, velocity, epsv)
 
 Continuous Collision Detection
 ------------------------------

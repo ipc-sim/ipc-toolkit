@@ -14,71 +14,66 @@ void define_smooth_friction_mollifier(py::module_& m)
 
         .. math::
 
-            f_0(y)= \begin{cases}
-            -\frac{x^3}{3\epsilon_v^2 h^2} + \frac{x^2}{\epsilon_vh}
-            + \frac{\epsilon_v h}{3}, & |x| \in\left[0, \epsilon_v h\right)
+            f_0(s)= \begin{cases}
+            -\frac{s^3}{3\epsilon_v^2} + \frac{s^2}{\epsilon_v}
+            + \frac{\epsilon_v}{3}, & |s| < \epsilon_v
             \newline
-            x, & |x| \geq \epsilon_v h
+            s, & |s| \geq \epsilon_v
             \end{cases}
 
         Parameters:
-            x: The tangential relative speed.
-            epsv_times_h: Mollifier parameter :math:`\epsilon_v h`.
+            s: The tangential relative speed.
+            epsv: Mollifier parameter :math:`\epsilon_v`.
 
         Returns:
-            The value of the mollifier function at x.
+            The value of the mollifier function at s.
         )ipc_Qu8mg5v7",
-        py::arg("x"), py::arg("epsv_times_h"));
+        py::arg("s"), py::arg("epsv"));
 
     m.def(
         "f1_SF_over_x", &f1_SF_over_x,
         R"ipc_Qu8mg5v7(
-        Compute the derivative of f0_SF divided by x (:math:`\frac{f_0'(x)}{x}`).
+        Compute the derivative of f0_SF divided by s (:math:`\frac{f_0'(s)}{s}`).
 
         .. math::
-
-            f_1(x) = f_0'(x) = \begin{cases}
-            -\frac{x^2}{\epsilon_v^2 h^2}+\frac{2 x}{\epsilon_v h}, & |x|
-            \in\left[0, \epsilon_v h \right) \newline
-            1, & |x| \geq h \epsilon_v
+            f_1(s) = f_0'(s) = \begin{cases}
+            -\frac{s^2}{\epsilon_v^2}+\frac{2 s}{\epsilon_v}, & |s| < \epsilon_v
+            \newline 1, & |s| \geq \epsilon_v
             \end{cases}
 
         .. math::
-
-            \frac{f_1(x)}{x} = \begin{cases}
-            -\frac{x}{\epsilon_v^2 h^2}+\frac{2}{\epsilon_v h}, & |x|
-            \in\left[0, \epsilon_v h \right) \newline
-            \frac{1}{x}, & |x| \geq h \epsilon_v
+            \frac{f_1(s)}{s} = \begin{cases}
+            -\frac{s}{\epsilon_v^2}+\frac{2}{\epsilon_v}, & |s| < \epsilon_v
+            \newline \frac{1}{s}, & |s| \geq \epsilon_v
             \end{cases}
 
         Parameters:
-            x: The tangential relative speed.
-            epsv_times_h: Mollifier parameter :math:`\epsilon_v h`.
+            s: The tangential relative speed.
+            epsv: Mollifier parameter :math:`\epsilon_v`.
 
         Returns:
-            The value of the derivative of f0_SF divided by x.
+            The value of the derivative of f0_SF divided by s.
         )ipc_Qu8mg5v7",
-        py::arg("x"), py::arg("epsv_times_h"));
+        py::arg("s"), py::arg("epsv"));
 
     m.def(
         "df1_x_minus_f1_over_x3", &df1_x_minus_f1_over_x3,
         R"ipc_Qu8mg5v7(
-        The derivative of f1 times x minus f1 all divided by x cubed.
+        The derivative of f1 times s minus f1 all divided by s cubed.
 
         .. math::
 
-            \frac{f_1'(x) x - f_1(x)}{x^3} = \begin{cases}
-            -\frac{1}{x \epsilon_v^2 h^2}, & |x|
-            \in\left[0, \epsilon_v h \right) \newline
-            -\frac{1}{x^3}, & |x| \geq h \epsilon_v
+            \frac{f_1'(s) s - f_1(s)}{s^3} = \begin{cases}
+            -\frac{1}{s \epsilon_v^2}, & |s| < \epsilon_v \newline
+            -\frac{1}{s^3}, & |s| \geq \epsilon_v
             \end{cases}
 
         Parameters:
-            x: The tangential relative speed.
-            epsv_times_h: Mollifier parameter :math:`\epsilon_v h`.
+            s: The tangential relative speed.
+            epsv: Mollifier parameter :math:`\epsilon_v`.
 
         Returns:
-            The derivative of f1 times x minus f1 all divided by x cubed.
+            The derivative of f1 times s minus f1 all divided by s cubed.
         )ipc_Qu8mg5v7",
-        py::arg("x"), py::arg("epsv_times_h"));
+        py::arg("s"), py::arg("epsv"));
 }

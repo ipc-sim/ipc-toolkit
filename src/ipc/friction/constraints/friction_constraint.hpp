@@ -33,38 +33,38 @@ public:
     /// @param velocities Velocities of the vertices (rowwise)
     /// @param edges Edges of the mesh
     /// @param faces Faces of the mesh
-    /// @param epsv_times_h $\epsilon_vh$
+    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
     /// @return The friction dissapative potential.
     double compute_potential(
         const Eigen::MatrixXd& velocities,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
-        const double epsv_times_h) const;
+        const double epsv) const;
 
     /// @brief Compute the friction dissapative potential gradient wrt velocities.
     /// @param velocities Velocities of the vertices (rowwise)
     /// @param edges Edges of the mesh
     /// @param faces Faces of the mesh
-    /// @param epsv_times_h $\epsilon_vh$
+    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
     /// @return Gradient of the friction dissapative potential wrt velocities
     VectorMax12d compute_potential_gradient(
         const Eigen::MatrixXd& velocities,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
-        const double epsv_times_h) const;
+        const double epsv) const;
 
     /// @brief Compute the friction dissapative potential hessian wrt velocities.
     /// @param velocities Velocities of the vertices (rowwise)
     /// @param edges Edges of the mesh
     /// @param faces Faces of the mesh
-    /// @param epsv_times_h $\epsilon_vh$
+    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
     /// @param project_hessian_to_psd Project the hessian to PSD
     /// @return Hessian of the friction dissapative potential wrt velocities
     MatrixMax12d compute_potential_hessian(
         const Eigen::MatrixXd& velocities,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
-        const double epsv_times_h,
+        const double epsv,
         const bool project_hessian_to_psd) const;
 
     /// @brief Compute the friction force.
@@ -74,7 +74,7 @@ public:
     /// @param faces Collision mesh faces
     /// @param dhat Barrier activation distance
     /// @param barrier_stiffness Barrier stiffness
-    /// @param epsv_times_h $\epsilon_vh$
+    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
     /// @param dmin Minimum distance
     /// @param no_mu Whether to not multiply by mu
     /// @return Friction force
@@ -85,13 +85,13 @@ public:
         const Eigen::MatrixXi& faces,
         const double dhat,
         const double barrier_stiffness,
-        const double epsv_times_h,
+        const double epsv,
         const double dmin = 0,
         const bool no_mu = false) const //< whether to not multiply by mu
     {
         return compute_force(
             X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, edges, faces, dhat,
-            barrier_stiffness, epsv_times_h, dmin, no_mu);
+            barrier_stiffness, epsv, dmin, no_mu);
     }
 
     /// @brief Compute the friction force.
@@ -102,7 +102,7 @@ public:
     /// @param faces Collision mesh faces
     /// @param dhat Barrier activation distance
     /// @param barrier_stiffness Barrier stiffness
-    /// @param epsv_times_h $\epsilon_vh$
+    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
     /// @param dmin Minimum distance
     /// @param no_mu Whether to not multiply by mu
     /// @return Friction force
@@ -114,7 +114,7 @@ public:
         const Eigen::MatrixXi& faces,
         const double dhat,
         const double barrier_stiffness,
-        const double epsv_times_h,
+        const double epsv,
         const double dmin = 0,
         const bool no_mu = false) const; //< whether to not multiply by mu
 
@@ -132,7 +132,7 @@ public:
     /// @param faces Collision mesh faces
     /// @param dhat Barrier activation distance
     /// @param barrier_stiffness Barrier stiffness
-    /// @param epsv_times_h $\epsilon_vh$
+    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
     /// @param wrt Variable to differentiate the friction force with respect to.
     /// @param dmin Minimum distance
     /// @return Friction force Jacobian
@@ -143,13 +143,13 @@ public:
         const Eigen::MatrixXi& faces,
         const double dhat,
         const double barrier_stiffness,
-        const double epsv_times_h,
+        const double epsv,
         const DiffWRT wrt,
         const double dmin = 0) const
     {
         return compute_force_jacobian(
             X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, edges, faces, dhat,
-            barrier_stiffness, epsv_times_h, wrt, dmin);
+            barrier_stiffness, epsv, wrt, dmin);
     }
 
     /// @brief Compute the friction force Jacobian.
@@ -160,7 +160,7 @@ public:
     /// @param faces Collision mesh faces
     /// @param dhat Barrier activation distance
     /// @param barrier_stiffness Barrier stiffness
-    /// @param epsv_times_h $\epsilon_vh$
+    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
     /// @param wrt Variable to differentiate the friction force with respect to.
     /// @param dmin Minimum distance
     /// @return Friction force Jacobian
@@ -172,7 +172,7 @@ public:
         const Eigen::MatrixXi& faces,
         const double dhat,
         const double barrier_stiffness,
-        const double epsv_times_h,
+        const double epsv,
         const DiffWRT wrt,
         const double dmin = 0) const;
 

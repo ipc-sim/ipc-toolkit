@@ -37,7 +37,7 @@ double FrictionConstraint::compute_potential(
     const Eigen::MatrixXd& velocities,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    const double epsv_times_h) const
+    const double epsv) const
 {
     // μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
 
@@ -45,16 +45,16 @@ double FrictionConstraint::compute_potential(
     const VectorMax2d u = tangent_basis.transpose()
         * relative_velocity(dof(velocities, edges, faces));
 
-    return weight * mu * normal_force_magnitude * f0_SF(u.norm(), epsv_times_h);
+    return weight * mu * normal_force_magnitude * f0_SF(u.norm(), epsv);
 }
 
 VectorMax12d FrictionConstraint::compute_potential_gradient(
     const Eigen::MatrixXd& velocities,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    double epsv_times_h) const
+    double epsv) const
 {
-    assert(epsv_times_h > 0);
+    assert(epsv > 0);
     // ∇ₓ μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
     //  = μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u
 
@@ -67,7 +67,7 @@ VectorMax12d FrictionConstraint::compute_potential_gradient(
         relative_velocity_matrix().transpose() * tangent_basis;
 
     // Compute f₁(‖u‖)/‖u‖
-    const double f1_over_norm_u = f1_SF_over_x(u.norm(), epsv_times_h);
+    const double f1_over_norm_u = f1_SF_over_x(u.norm(), epsv);
 
     // μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u ∈ ℝⁿ
     // (n×2)(2×1) = (n×1)
@@ -78,10 +78,10 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
     const Eigen::MatrixXd& velocities,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    const double epsv_times_h,
+    const double epsv,
     bool project_hessian_to_psd) const
 {
-    assert(epsv_times_h > 0);
+    assert(epsv > 0);
     // ∇ₓ μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u (where u = T(xᵗ)ᵀ v)
     //  = μ N T [(f₁'(‖u‖)‖u‖ − f₁(‖u‖))/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
     //  = μ N T [f₂(‖u‖) uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
@@ -98,13 +98,13 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
     const double norm_u = u.norm();
 
     // Compute f₁(‖u‖)/‖u‖
-    const double f1_over_norm_u = f1_SF_over_x(norm_u, epsv_times_h);
+    const double f1_over_norm_u = f1_SF_over_x(norm_u, epsv);
 
     // Compute μ N(xᵗ)
     const double scale = weight * mu * normal_force_magnitude;
 
     MatrixMax12d hess;
-    if (norm_u >= epsv_times_h) {
+    if (norm_u >= epsv) {
         // f₁(‖u‖) = 1 ⟹ f₁'(‖u‖) = 0
         //  ⟹ ∇²D(x) = μ N T [-f₁(‖u‖)/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
         //            = μ N T [-f₁(‖u‖)/‖u‖ uuᵀ/‖u‖² + f₁(‖u‖)/‖u‖ I] Tᵀ
@@ -130,7 +130,7 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
     } else {
         // ∇²D(x) = μ N T [f₂(‖u‖) uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
         //  ⟹ only need to project the inner 2x2 matrix to SPD
-        const double f2 = df1_x_minus_f1_over_x3(norm_u, epsv_times_h);
+        const double f2 = df1_x_minus_f1_over_x3(norm_u, epsv);
 
         MatrixMax2d inner_hess = f2 * u * u.transpose();
         inner_hess.diagonal().array() += f1_over_norm_u;
@@ -153,7 +153,7 @@ VectorMax12d FrictionConstraint::compute_force(
     const Eigen::MatrixXi& faces,
     const double dhat,
     const double barrier_stiffness,
-    const double epsv_times_h,
+    const double epsv,
     const double dmin,
     const bool no_mu) const
 {
@@ -202,7 +202,7 @@ VectorMax12d FrictionConstraint::compute_force(
     const VectorMax2d tau = T.transpose() * (u - ut);
 
     // Compute f₁(‖τ‖)/‖τ‖
-    const double f1_over_norm_tau = f1_SF_over_x(tau.norm(), epsv_times_h);
+    const double f1_over_norm_tau = f1_SF_over_x(tau.norm(), epsv);
 
     // F = -μ N f₁(‖τ‖)/‖τ‖ T τ
     // NOTE: no_mu -> leave mu out of this function (i.e., assuming mu = 1)
@@ -217,7 +217,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     const Eigen::MatrixXi& faces,
     const double dhat,
     const double barrier_stiffness,
-    const double epsv_times_h,
+    const double epsv,
     const DiffWRT wrt,
     const double dmin) const
 {
@@ -347,7 +347,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
 
     // Compute f₁(‖τ‖)/‖τ‖
     const double tau_norm = tau.norm();
-    const double f1_over_norm_tau = f1_SF_over_x(tau_norm, epsv_times_h);
+    const double f1_over_norm_tau = f1_SF_over_x(tau_norm, epsv);
 
     // Compute ∇(f₁(‖τ‖)/‖τ‖)
     VectorMax12d grad_f1_over_norm_tau;
@@ -356,7 +356,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
         grad_f1_over_norm_tau.setZero(n);
     } else {
         // ∇ (f₁(‖τ‖)/‖τ‖) = (f₁'(‖τ‖)‖τ‖ - f₁(‖τ‖)) / ‖τ‖³ τᵀ ∇τ
-        double f2 = df1_x_minus_f1_over_x3(tau_norm, epsv_times_h);
+        double f2 = df1_x_minus_f1_over_x3(tau_norm, epsv);
         assert(std::isfinite(f2));
         grad_f1_over_norm_tau = f2 * tau.transpose() * jac_tau;
     }

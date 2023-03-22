@@ -22,8 +22,9 @@ void define_friction_constraints(py::module_& m)
             "build",
             [](FrictionConstraints& self, const CollisionMesh& mesh,
                const Eigen::MatrixXd& vertices,
-               const CollisionConstraints& contact_constraints, double dhat,
-               double barrier_stiffness, const Eigen::VectorXd& mus) {
+               const CollisionConstraints& contact_constraints,
+               const double dhat, const double barrier_stiffness,
+               const Eigen::VectorXd& mus) {
                 self.build(
                     mesh, vertices, contact_constraints, dhat,
                     barrier_stiffness, mus);
@@ -35,7 +36,7 @@ void define_friction_constraints(py::module_& m)
             "build",
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&,
-                const CollisionConstraints&, double, double,
+                const CollisionConstraints&, const double, const double,
                 const Eigen::VectorXd&,
                 const std::function<double(double, double)>&>(
                 &FrictionConstraints::build),
@@ -50,11 +51,12 @@ void define_friction_constraints(py::module_& m)
             Parameters:
                 mesh: The collision mesh.
                 velocity: Current vertex velocity (rowwise).
+                epsv: Mollifier parameter :math:`\epsilon_v`.
 
             Returns:
                 The friction dissapative potential.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("velocity"), py::arg("epsv_times_h"))
+            py::arg("mesh"), py::arg("velocity"), py::arg("epsv"))
         .def(
             "compute_potential_gradient",
             &FrictionConstraints::compute_potential_gradient,
@@ -64,11 +66,12 @@ void define_friction_constraints(py::module_& m)
             Parameters:
                 mesh: The collision mesh.
                 velocity: Current vertex velocity (rowwise).
+                epsv: Mollifier parameter :math:`\epsilon_v`.
 
             Returns:
                 The gradient of the friction dissapative potential wrt the velocity.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("velocity"), py::arg("epsv_times_h"))
+            py::arg("mesh"), py::arg("velocity"), py::arg("epsv"))
         .def(
             "compute_potential_hessian",
             &FrictionConstraints::compute_potential_hessian,
@@ -78,12 +81,13 @@ void define_friction_constraints(py::module_& m)
             Parameters:
                 mesh: The collision mesh.
                 velocity: Current vertex velocity (rowwise).
+                epsv: Mollifier parameter :math:`\epsilon_v`.
                 project_hessian_to_psd: If true, project the Hessian to be positive semi-definite.
 
             Returns:
                 The Hessian of the friction dissapative potential wrt the velocity.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("velocity"), py::arg("epsv_times_h"),
+            py::arg("mesh"), py::arg("velocity"), py::arg("epsv"),
             py::arg("project_hessian_to_psd") = false)
         .def(
             "compute_force",
@@ -92,10 +96,26 @@ void define_friction_constraints(py::module_& m)
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&, const double,
                 const double, const double, const double, const bool>(
                 &FrictionConstraints::compute_force, py::const_),
-            "", py::arg("mesh"), py::arg("X"), py::arg("Ut"), py::arg("U"),
-            py::arg("dhat"), py::arg("barrier_stiffness"),
-            py::arg("epsv_times_h"), py::arg("dmin") = 0,
-            py::arg("no_mu") = false)
+            R"ipc_Qu8mg5v7(
+            Compute the friction force from the given velocity.
+
+            Parameters:
+                mesh: The collision mesh.
+                X: Rest vertex positions (rowwise).
+                Ut: Previous vertex displacements (rowwise).
+                U: Current vertex displacements (rowwise).
+                dhat: Barrier activation distance.
+                barrier_stiffness: Barrier stiffness.
+                epsv: Mollifier parameter :math:`\epsilon_v`.
+                dmin: Minimum distance to use for the barrier.
+                no_mu: whether to not multiply by mu
+
+            Returns:
+                The friction force.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("X"), py::arg("Ut"), py::arg("U"),
+            py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("epsv"),
+            py::arg("dmin") = 0, py::arg("no_mu") = false)
         .def(
             "compute_force",
             py::overload_cast<
@@ -103,9 +123,25 @@ void define_friction_constraints(py::module_& m)
                 const Eigen::MatrixXd&, const double, const double,
                 const double, const double, const bool>(
                 &FrictionConstraints::compute_force, py::const_),
-            "", py::arg("mesh"), py::arg("X"), py::arg("U"), py::arg("dhat"),
-            py::arg("barrier_stiffness"), py::arg("epsv_times_h"),
-            py::arg("dmin") = 0, py::arg("no_mu") = false)
+            R"ipc_Qu8mg5v7(
+            Compute the friction force from the given velocity.
+
+            Parameters:
+                mesh: The collision mesh.
+                X: Rest vertex positions (rowwise).
+                U: Current vertex displacements (rowwise).
+                dhat: Barrier activation distance.
+                barrier_stiffness: Barrier stiffness.
+                epsv: Mollifier parameter :math:`\epsilon_v`.
+                dmin: Minimum distance to use for the barrier.
+                no_mu: whether to not multiply by mu
+
+            Returns:
+                The friction force.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("X"), py::arg("U"), py::arg("dhat"),
+            py::arg("barrier_stiffness"), py::arg("epsv"), py::arg("dmin") = 0,
+            py::arg("no_mu") = false)
         .def(
             "compute_force_jacobian",
             py::overload_cast<
@@ -114,9 +150,26 @@ void define_friction_constraints(py::module_& m)
                 const double, const double, const FrictionConstraint::DiffWRT,
                 const double>(
                 &FrictionConstraints::compute_force_jacobian, py::const_),
-            "", py::arg("mesh"), py::arg("X"), py::arg("Ut"), py::arg("U"),
-            py::arg("dhat"), py::arg("barrier_stiffness"),
-            py::arg("epsv_times_h"), py::arg("wrt"), py::arg("dmin") = 0)
+            R"ipc_Qu8mg5v7(
+            Compute the Jacobian of the friction force wrt the velocity.
+
+            Parameters:
+                mesh: The collision mesh.
+                X: Rest vertex positions (rowwise).
+                Ut: Previous vertex displacements (rowwise).
+                U: Current vertex displacements (rowwise).
+                dhat: Barrier activation distance.
+                barrier_stiffness: Barrier stiffness.
+                epsv: Mollifier parameter :math:`\epsilon_v`.
+                wrt: The variable to take the derivative with respect to.
+                dmin: Minimum distance to use for the barrier.
+
+            Returns:
+                The Jacobian of the friction force wrt the velocity.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("X"), py::arg("Ut"), py::arg("U"),
+            py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("epsv"),
+            py::arg("wrt"), py::arg("dmin") = 0)
         .def(
             "compute_force_jacobian",
             py::overload_cast<
@@ -124,9 +177,26 @@ void define_friction_constraints(py::module_& m)
                 const Eigen::MatrixXd&, const double, const double,
                 const double, const FrictionConstraint::DiffWRT, const double>(
                 &FrictionConstraints::compute_force_jacobian, py::const_),
-            "", py::arg("mesh"), py::arg("X"), py::arg("U"), py::arg("dhat"),
-            py::arg("barrier_stiffness"), py::arg("epsv_times_h"),
-            py::arg("wrt"), py::arg("dmin") = 0)
+            R"ipc_Qu8mg5v7(
+            Compute the Jacobian of the friction force wrt the velocity.
+
+            Parameters:
+                mesh: The collision mesh.
+                X: Rest vertex positions (rowwise).
+                Ut: Previous vertex displacements (rowwise).
+                U: Current vertex displacements (rowwise).
+                dhat: Barrier activation distance.
+                barrier_stiffness: Barrier stiffness.
+                epsv: Mollifier parameter :math:`\epsilon_v`.
+                wrt: The variable to take the derivative with respect to.
+                dmin: Minimum distance to use for the barrier.
+
+            Returns:
+                The Jacobian of the friction force wrt the velocity.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("X"), py::arg("U"), py::arg("dhat"),
+            py::arg("barrier_stiffness"), py::arg("epsv"), py::arg("wrt"),
+            py::arg("dmin") = 0)
         .def(
             "__len__", &FrictionConstraints::size,
             "Get the number of friction constraints.")
@@ -152,6 +222,9 @@ void define_friction_constraints(py::module_& m)
                 A reference to the constraint.
             )ipc_Qu8mg5v7",
             py::arg("idx"))
+        .def_static(
+            "default_blend_mu", &FrictionConstraints::default_blend_mu, "",
+            py::arg("mu0"), py::arg("mu1"))
         .def_readwrite(
             "vv_constraints", &FrictionConstraints::vv_constraints, "")
         .def_readwrite(
