@@ -96,32 +96,31 @@ double Candidates::compute_collision_free_stepsize(
     double earliest_toi = 1;
     std::shared_mutex earliest_toi_mutex;
 
-    // tbb::parallel_for(
-    //     tbb::blocked_range<size_t>(0, size()),
-    //     [&](tbb::blocked_range<size_t> r) {
-    //         for (size_t i = r.begin(); i < r.end(); i++) {
-    for (size_t i = 0; i < size(); i++) {
-        // Use the mutex to read as well in case writing double takes
-        // more than one clock cycle.
-        double tmax;
-        {
-            std::shared_lock lock(earliest_toi_mutex);
-            tmax = earliest_toi;
-        }
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, size()),
+        [&](tbb::blocked_range<size_t> r) {
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                // Use the mutex to read as well in case writing double takes
+                // more than one clock cycle.
+                double tmax;
+                {
+                    std::shared_lock lock(earliest_toi_mutex);
+                    tmax = earliest_toi;
+                }
 
-        double toi = std::numeric_limits<double>::infinity(); // output
-        const bool are_colliding = (*this)[i].ccd(
-            vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), toi,
-            min_distance, tmax, tolerance, max_iterations);
+                double toi = std::numeric_limits<double>::infinity(); // output
+                const bool are_colliding = (*this)[i].ccd(
+                    vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), toi,
+                    min_distance, tmax, tolerance, max_iterations);
 
-        if (are_colliding) {
-            std::unique_lock lock(earliest_toi_mutex);
-            if (toi < earliest_toi) {
-                earliest_toi = toi;
+                if (are_colliding) {
+                    std::unique_lock lock(earliest_toi_mutex);
+                    if (toi < earliest_toi) {
+                        earliest_toi = toi;
+                    }
+                }
             }
-        }
-    }
-    // });
+        });
 
     assert(earliest_toi >= 0 && earliest_toi <= 1.0);
     return earliest_toi;

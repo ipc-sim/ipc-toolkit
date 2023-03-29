@@ -666,11 +666,6 @@ TEST_CASE("Squash Tet", "[ccd]")
         0, 3, 2,      //
         1, 2, 3;
 
-    logger().info("rest_vertices:\n{}", rest_vertices);
-    logger().info("deformed_vertices:\n{}", deformed_vertices);
-    logger().info("edges:\n{}", edges);
-    logger().info("faces:\n{}", faces);
-
     ipc::CollisionMesh mesh =
         ipc::CollisionMesh::build_from_full_mesh(rest_vertices, edges, faces);
 

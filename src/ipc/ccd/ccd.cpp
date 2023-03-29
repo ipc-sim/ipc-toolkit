@@ -53,7 +53,7 @@ bool ccd_strategy(
         (1.0 - conservative_rescaling) * initial_distance;
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
     // Tight Inclusion performs better when the minimum separation is small
-    min_effective_distance = std::min(min_effective_distance, 5e-4);
+    min_effective_distance = std::min(min_effective_distance, 1e-4);
 #endif
     min_effective_distance += min_distance;
 
@@ -61,17 +61,17 @@ bool ccd_strategy(
 
     // Do not use no_zero_toi because the minimum distance is arbitrary and can
     // be removed if the query is challenging (i.e., produces small ToI).
-    ticcd::ccd_times.reset();
-    igl::Timer timer;
-    timer.start();
+    // ticcd::ccd_times.reset();
+    // igl::Timer timer;
+    // timer.start();
     bool is_impacting =
         ccd(max_iterations, min_effective_distance, /*no_zero_toi=*/false, toi);
-    timer.stop();
-    logger().debug(
-        "CCD took {} s; d0={} d_min={} is_impacting={} toi={}",
-        timer.getElapsedTime(), initial_distance, min_effective_distance,
-        is_impacting, toi);
-    ticcd::ccd_times.print();
+    // timer.stop();
+    // logger().debug(
+    //     "CCD took {} s; d0={} d_min={} is_impacting={} toi={}",
+    //     timer.getElapsedTime(), initial_distance, min_effective_distance,
+    //     is_impacting, toi);
+    // ticcd::ccd_times.print();
 
     // #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
     //     // Tight inclusion will have higher accuracy and better performance
