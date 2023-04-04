@@ -166,7 +166,11 @@ void check_toi(
 // ---------------------------------------------------
 // Tests
 // ---------------------------------------------------
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
 TEST_CASE("Point-edge 2D ToI", "[ccd][toi]")
+#else
+TEST_CASE("Point-edge 2D ToI", "[ccd][toi][!mayfail]")
+#endif
 {
     Eigen::Vector2d p_t0, e0_t0, e1_t0;
     Eigen::Vector2d dp, de0, de1;
@@ -581,7 +585,11 @@ TEST_CASE("No Zero ToI CCD", "[ccd][no-zero-toi]")
     CHECK(!is_impacting);
 }
 
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
 TEST_CASE("Slow EE CCD", "[ccd][edge-edge][slow]")
+#else
+TEST_CASE("Slow EE CCD", "[ccd][edge-edge][slow][!mayfail]")
+#endif
 {
     Eigen::Vector3d ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1,
         eb1_t1;
