@@ -46,6 +46,10 @@ public:
     long vertex0_id; ///< @brief ID of the first vertex
     long vertex1_id; ///< @brief ID of the second vertex
 
+    using CollisionStencil::compute_distance;
+    using CollisionStencil::compute_distance_gradient;
+    using CollisionStencil::compute_distance_hessian;
+
 protected:
     double compute_distance(const VectorMax12d& positions) const override;
 
