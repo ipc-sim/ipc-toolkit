@@ -258,7 +258,7 @@ TEST_CASE(
         mu = 0.5;
         dhat = 1e-3;
         // kappa = 67873353;
-        kappa = 67873353 / 10;
+        kappa = 67873353 / 10 * dhat;
         epsv_dt = 1e-4;
     }
     SECTION("square-circle-dense")
