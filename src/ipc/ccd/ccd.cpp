@@ -9,6 +9,7 @@
 
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
 #include <tight_inclusion/ccd.hpp>
+#include <tight_inclusion/interval_root_finder.hpp>
 #else
 #include <CTCD.h>
 #endif
@@ -32,25 +33,27 @@ bool ccd_strategy(
         double /*min_distance*/,
         bool /*no_zero_toi*/,
         double& /*toi*/)>& ccd,
-    const double max_iterations,
+    const long max_iterations,
     const double min_distance,
     const double initial_distance,
     const double conservative_rescaling,
     double& toi)
 {
-
-    if (initial_distance == 0) {
-        logger().warn("Initial distance is 0, returning toi=0!");
+    if (initial_distance <= min_distance) {
+        logger().warn(
+            "Initial distance {} ≤ d_min={}, returning toi=0!",
+            initial_distance, min_distance);
         toi = 0;
         return true;
     }
 
-    const double min_effective_distance =
-        min_distance + (1.0 - conservative_rescaling) * initial_distance;
-    // #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+    double min_effective_distance =
+        (1.0 - conservative_rescaling) * initial_distance;
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
     // Tight Inclusion performs better when the minimum separation is small
-    // min_distance = std::min(min_distance, 1e-4);
-    // #endif
+    min_effective_distance = std::min(min_effective_distance, 1e-4);
+#endif
+    min_effective_distance += min_distance;
 
     assert(min_effective_distance < initial_distance);
 
