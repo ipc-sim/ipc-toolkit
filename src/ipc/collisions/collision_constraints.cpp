@@ -76,18 +76,25 @@ void CollisionConstraints::build(
 
     CollisionConstraintsBuilder::merge(storage, *this);
 
-    // This is the dhat that is used in the barrier potential (because we use
-    // squared distances).
-    const double adjusted_dhat = 2 * dmin * dhat + dhat * dhat;
-
     for (size_t ci = 0; ci < size(); ci++) {
         CollisionConstraint& constraint = (*this)[ci];
         constraint.minimum_distance = dmin;
-        if (use_convergent_formulation()) {
-            // Divide by dhat to equivalently use the "physical" barrier
-            constraint.weight /= adjusted_dhat;
+    }
+
+    if (use_convergent_formulation()) {
+        // NOTE: When using the convergent formulation we want the barrier to
+        // have units of Pa⋅m, so κ gets units of Pa and the barrier function
+        // should have units of m. See notebooks/physical_barrier.ipynb for more
+        // details.
+        const double barrier_to_physical_barrier_divisor =
+            dhat * std::pow(dhat + 2 * dmin, 2);
+
+        for (size_t ci = 0; ci < size(); ci++) {
+            CollisionConstraint& constraint = (*this)[ci];
+            constraint.weight /= barrier_to_physical_barrier_divisor;
             if (are_shape_derivatives_enabled()) {
-                constraint.weight_gradient /= adjusted_dhat;
+                constraint.weight_gradient /=
+                    barrier_to_physical_barrier_divisor;
             }
         }
     }
