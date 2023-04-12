@@ -8,9 +8,6 @@
 namespace {
 double normalized_barrier(const double d, const double dhat)
 {
-    // units(d) = m and units(d̂) = m ⟹ units(b(d)) = m
-    // units(κ) = Pa ⟹ units(κ b(d)) = Pa m
-
     if (d <= 0.0) {
         return std::numeric_limits<double>::infinity();
     }
@@ -18,9 +15,9 @@ double normalized_barrier(const double d, const double dhat)
         return 0;
     }
 
-    // b(d) = -d̂(d/d̂-1)²ln(d / d̂)
-    const double t0 = d / dhat;
-    return -dhat * std::pow(1 - t0, 2) * std::log(t0);
+    // b(d) = -(d/d̂-1)²ln(d / d̂)
+    const auto t0 = d / dhat;
+    return -std::pow(1 - t0, 2) * std::log(t0);
 }
 
 double normalized_barrier_gradient(const double d, const double dhat)
@@ -69,12 +66,12 @@ TEST_CASE("Test barrier derivatives", "[barrier]")
         barrier_gradient = ipc::barrier_gradient;
         barrier_hessian = ipc::barrier_hessian;
     }
-    // SECTION("Normalized barrier")
-    // {
-    //     barrier = normalized_barrier;
-    //     barrier_gradient = normalized_barrier_gradient;
-    //     barrier_hessian = normalized_barrier_hessian;
-    // }
+    SECTION("Normalized barrier")
+    {
+        barrier = normalized_barrier;
+        barrier_gradient = normalized_barrier_gradient;
+        barrier_hessian = normalized_barrier_hessian;
+    }
     SECTION("Barrier with physical units")
     {
         barrier = [dhat](double d, double p_dhat) {
@@ -120,24 +117,33 @@ TEST_CASE("Test barrier derivatives", "[barrier]")
 
 TEST_CASE("Test physical barrier", "[barrier]")
 {
-    double dhat = GENERATE(range(-5, 2));
-    dhat = pow(10, dhat);
+    const bool use_dist_sqr = GENERATE(false, true);
+    const double dhat =
+        pow(10, GENERATE_COPY(range(use_dist_sqr ? -5 : -5, 0)));
 
-    double d =
-        GENERATE_COPY(take(10, random(dhat / 2, 0.9 * dhat))); // ∈ [0, d̂]
+    const double d = GENERATE_COPY(take(10, random(dhat / 2, 0.9 * dhat)));
 
-    double b_original = ipc::barrier(d, dhat) / dhat;
-    double b_new = dhat * normalized_barrier(d, dhat);
+    const double p_d = (use_dist_sqr ? d : 1) * d;
+    const double p_dhat = (use_dist_sqr ? dhat : 1) * dhat;
+    const double divisor = use_dist_sqr ? std::pow(dhat, 3) : dhat;
+
+    CAPTURE(use_dist_sqr, dhat, d, divisor, p_d, p_dhat);
+
+    const double b_original = ipc::barrier(p_d, p_dhat) / divisor;
+    const double b_new = dhat * normalized_barrier(p_d, p_dhat);
 
     CHECK(b_original == Catch::Approx(b_new));
 
-    double b_original_gradient = ipc::barrier_gradient(d, dhat) / dhat;
-    double b_new_gradient = dhat * normalized_barrier_gradient(d, dhat);
+    const double b_original_gradient =
+        ipc::barrier_gradient(p_d, p_dhat) / divisor;
+    const double b_new_gradient =
+        dhat * normalized_barrier_gradient(p_d, p_dhat);
 
     CHECK(b_original_gradient == Catch::Approx(b_new_gradient));
 
-    double b_original_hessian = ipc::barrier_hessian(d, dhat) / dhat;
-    double b_new_hessian = dhat * normalized_barrier_hessian(d, dhat);
+    const double b_original_hessian =
+        ipc::barrier_hessian(p_d, p_dhat) / divisor;
+    const double b_new_hessian = dhat * normalized_barrier_hessian(p_d, p_dhat);
 
     CHECK(b_original_hessian == Catch::Approx(b_new_hessian));
 }
