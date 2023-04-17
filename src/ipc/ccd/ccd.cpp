@@ -11,6 +11,7 @@
 #include <tight_inclusion/ccd.hpp>
 #include <tight_inclusion/interval_root_finder.hpp>
 #else
+#include <ipc/ccd/inexact_point_edge.hpp>
 #include <CTCD.h>
 #endif
 
@@ -19,10 +20,11 @@
 
 namespace ipc {
 
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+/// @brief Scale the distance tolerance to be at most this fraction of the initial distance.
 static constexpr double INITIAL_DISTANCE_TOLERANCE_SCALE = 0.5;
+
+/// @brief Special value for max_iterations to run tight inclusion without a maximum number of iterations.
 static constexpr long TIGHT_INCLUSION_UNLIMITED_ITERATIONS = -1;
-#endif
 
 /// @brief Tolerance for small time of impact which triggers rerunning CCD without a minimum separation.
 static constexpr double SMALL_TOI = 1e-6;
@@ -152,7 +154,7 @@ bool point_edge_ccd_2D(
     const double conservative_rescaling)
 {
 #ifndef IPC_TOOLKIT_WITH_CORRECT_CCD
-    inexact_point_edge_ccd_2D(
+    return inexact_point_edge_ccd_2D(
         p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi, conservative_rescaling);
 #else
     assert(0 <= tmax && tmax <= 1.0);
