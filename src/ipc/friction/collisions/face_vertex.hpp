@@ -18,6 +18,7 @@ public:
         const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
+        const Barrier& barrier,
         const double dhat,
         const double barrier_stiffness);
 

@@ -5,18 +5,22 @@
 
 #include <cmath>
 #include <limits>
+#include <stdexcept>
 
 namespace ipc {
 
-std::shared_ptr<Barrier> Barrier::get(Type type, double dhat)
+const Barrier& Barrier::get(Type type)
 {
+    static IPCBarrier ipc_barrier;
+    static NormalizedBarrier normalized_barrier;
+    static PhysicalBarrier physical_barrier;
     switch (type) {
     case IPC:
-        return std::make_shared<IPCBarrier>(dhat);
+        return ipc_barrier;
     case NORMALIZED:
-        return std::make_shared<NormalizedBarrier>(dhat);
-    case PHYISCAL:
-        return std::make_shared<PhysicalBarrier>(dhat);
+        return normalized_barrier;
+    case PHYSICAL:
+        return physical_barrier;
     default:
         throw std::runtime_error("Unknown barrier type");
     }
@@ -24,7 +28,7 @@ std::shared_ptr<Barrier> Barrier::get(Type type, double dhat)
 
 // =============================================================================
 
-double NormalizedBarrier::value(const double d, const double dhat)
+double normalized_barrier(const double d, const double dhat)
 {
     if (d <= 0.0) {
         return std::numeric_limits<double>::infinity();
@@ -38,7 +42,7 @@ double NormalizedBarrier::value(const double d, const double dhat)
     return -std::pow(1 - t0, 2) * std::log(t0);
 }
 
-double NormalizedBarrier::first_derivative(const double d, const double dhat)
+double normalized_barrier_first_derivative(const double d, const double dhat)
 {
     if (d <= 0.0 || d >= dhat) {
         return 0.0;
@@ -49,7 +53,7 @@ double NormalizedBarrier::first_derivative(const double d, const double dhat)
     return t2 * (2 * t0 * std::log(t1) - t2 / d);
 }
 
-double NormalizedBarrier::second_derivative(const double d, const double dhat)
+double normalized_barrier_second_derivative(const double d, const double dhat)
 {
     if (d <= 0.0 || d >= dhat) {
         return 0.0;
@@ -64,36 +68,36 @@ double NormalizedBarrier::second_derivative(const double d, const double dhat)
 
 // =============================================================================
 
-double IPCBarrier::barrier(const double d, const double dhat)
+double ipc_barrier(const double d, const double dhat)
 {
-    return dhat * dhat * NormalizedBarrier::value(d, dhat);
+    return dhat * dhat * normalized_barrier(d, dhat);
 }
 
-double IPCBarrier::barrier_gradient(const double d, const double dhat)
+double ipc_barrier_first_derivative(const double d, const double dhat)
 {
-    return dhat * dhat * NormalizedBarrier::first_derivative(d, dhat);
+    return dhat * dhat * normalized_barrier_first_derivative(d, dhat);
 }
 
-double IPCBarrier::barrier_hessian(const double d, const double dhat)
+double ipc_barrier_second_derivative(const double d, const double dhat)
 {
-    return dhat * dhat * NormalizedBarrier::second_derivative(d, dhat);
+    return dhat * dhat * normalized_barrier_second_derivative(d, dhat);
 }
 
 // =============================================================================
 
-double PhysicalBarrier::barrier(const double d, const double dhat)
+double physical_barrier(const double d, const double dhat)
 {
-    return dhat * NormalizedBarrier::value(d, dhat);
+    return dhat * normalized_barrier(d, dhat);
 }
 
-double PhysicalBarrier::barrier_gradient(const double d, const double dhat)
+double physical_barrier_first_derivative(const double d, const double dhat)
 {
-    return dhat * NormalizedBarrier::first_derivative(d, dhat);
+    return dhat * normalized_barrier_first_derivative(d, dhat);
 }
 
-double PhysicalBarrier::barrier_hessian(const double d, const double dhat)
+double physical_barrier_second_derivative(const double d, const double dhat)
 {
-    return dhat * NormalizedBarrier::second_derivative(d, dhat);
+    return dhat * normalized_barrier_second_derivative(d, dhat);
 }
 
 } // namespace ipc

@@ -20,12 +20,14 @@ FaceVertexFrictionCollision::FaceVertexFrictionCollision(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
+    const Barrier& barrier,
     const double dhat,
     const double barrier_stiffness)
     : FaceVertexFrictionCollision(collision)
 {
-    FrictionCollision::init(
-        vertices, edges, faces, dhat, barrier_stiffness, collision.dmin);
+    FrictionConstraint::init(
+        vertices, edges, faces, barrier, dhat, barrier_stiffness,
+        constraint.dmin);
 }
 
 // ============================================================================

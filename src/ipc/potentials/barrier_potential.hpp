@@ -22,6 +22,8 @@ public:
         m_dhat = dhat;
     }
 
+    std::shared_pointer<Barrier> barrier = std::make_shared<IPCBarrier>();
+
 protected:
     /// @brief Compute the barrier potential for a collision.
     /// @param distance_sqr The distance (squared) between the two objects.

@@ -27,6 +27,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const Collisions& collisions,
+        const Barrier& barrier,
         double dhat,
         double barrier_stiffness,
         double mu)
@@ -40,6 +41,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const Collisions& collisions,
+        const Barrier& barrier,
         const double dhat,
         const double barrier_stiffness,
         const Eigen::VectorXd& mus,

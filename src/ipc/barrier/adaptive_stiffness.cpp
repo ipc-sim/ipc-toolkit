@@ -9,6 +9,7 @@
 namespace ipc {
 
 double initial_barrier_stiffness(
+    const Barrier& barrier,
     const double bbox_diagonal,
     const double dhat,
     const double average_mass,
@@ -31,7 +32,8 @@ double initial_barrier_stiffness(
         d0 = dmin * dhat + 0.5 * dhat_squared; // NOTE: this is untested
     }
     double min_barrier_stiffness = 4 * d0
-        * barrier_hessian(d0 - dmin_squared, 2 * dmin * dhat + dhat_squared);
+        * barrier.second_derivative(
+            d0 - dmin_squared, 2 * dmin * dhat + dhat_squared);
     min_barrier_stiffness =
         min_barrier_stiffness_scale * average_mass / min_barrier_stiffness;
     assert(std::isfinite(min_barrier_stiffness));

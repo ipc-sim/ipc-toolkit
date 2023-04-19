@@ -22,6 +22,7 @@ protected:
         const Eigen::MatrixXd& positions,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
+        const Barrier& barrier,
         const double dhat,
         const double barrier_stiffness,
         const double dmin);
@@ -45,6 +46,7 @@ public:
     /// @return Normal force magnitude.
     double compute_normal_force_magnitude(
         const VectorMax12d& positions,
+        const Barrier& barrier,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0) const;
@@ -57,6 +59,7 @@ public:
     /// @return Gradient of the normal force magnitude wrt positions.
     VectorMax12d compute_normal_force_magnitude_gradient(
         const VectorMax12d& positions,
+        const Barrier& barrier,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0) const;
