@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <ipc/ipc.hpp>
 #include <ipc/ccd/ccd.hpp>
@@ -120,6 +120,7 @@ TEST_CASE("Point-edge 2D CCD", "[ccd]")
     double toi, alpha;
     bool is_colliding = point_edge_ccd(
         p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi,
+        /*min_distance=*/0.0,
         /*tmax=*/1.0,
         /*tolerance=*/1e-6,
         /*max_iterations=*/1e7,
@@ -153,6 +154,7 @@ void check_toi(
     toi_actual = -1.0;
     bool has_collision = point_edge_ccd(
         p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi_actual,
+        /*min_distance=*/0.0,
         /*tmax=*/1.0,
         /*tolerance=*/1e-6,
         /*max_iterations=*/1e7,
@@ -164,7 +166,11 @@ void check_toi(
 // ---------------------------------------------------
 // Tests
 // ---------------------------------------------------
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
 TEST_CASE("Point-edge 2D ToI", "[ccd][toi]")
+#else
+TEST_CASE("Point-edge 2D ToI", "[ccd][toi][!mayfail]")
+#endif
 {
     Eigen::Vector2d p_t0, e0_t0, e1_t0;
     Eigen::Vector2d dp, de0, de1;
@@ -264,11 +270,10 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
 {
     const double FIRST_TOL = 1e-6, SECOND_TOL = 1e-7;
     const double FIRST_MAX_ITER = 1e6, SECOND_MAX_ITER = 1e6;
+    const double MIN_DISTANCE = 0.0;
 
-    // BroadPhaseMethod broadphase_method =
-    //     GENERATE(BroadPhaseMethod::HASH_GRID, BroadPhaseMethod::BRUTE_FORCE);
+    // BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
     BroadPhaseMethod broadphase_method = BroadPhaseMethod::HASH_GRID;
-    Eigen::VectorXi codim_V;
     double inflation_radius = 0;
 
     bool recompute_candidates = GENERATE(false, true);
@@ -314,15 +319,19 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
     }
     // REQUIRE(success);
 
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0, E, F);
+    // Discard codimensional/internal vertices
+    V0 = mesh.vertices(V0);
+    V1 = mesh.vertices(V1);
+
     Candidates candidates;
-    construct_collision_candidates(
-        V0, V1, codim_V, E, F, candidates, inflation_radius, broadphase_method);
+    candidates.build(mesh, V0, V1, inflation_radius, broadphase_method);
 
-    bool has_collisions = !is_step_collision_free(
-        candidates, V0, V1, E, F, FIRST_TOL, FIRST_MAX_ITER);
+    bool has_collisions = !candidates.is_step_collision_free(
+        mesh, V0, V1, MIN_DISTANCE, FIRST_TOL, FIRST_MAX_ITER);
 
-    double stepsize = compute_collision_free_stepsize(
-        candidates, V0, V1, E, F, FIRST_TOL, FIRST_MAX_ITER);
+    double stepsize = candidates.compute_collision_free_stepsize(
+        mesh, V0, V1, MIN_DISTANCE, FIRST_TOL, FIRST_MAX_ITER);
 
     if (!has_collisions) {
         CHECK(stepsize == 1.0);
@@ -337,16 +346,14 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
         // CHECK(!has_intersections(Vt, E, F));
 
         if (recompute_candidates) {
-            construct_collision_candidates(
-                V0, Vt, codim_V, E, F, candidates, inflation_radius,
-                broadphase_method);
+            candidates.build(mesh, V0, Vt, inflation_radius, broadphase_method);
         }
 
-        has_collisions_repeated = !is_step_collision_free(
-            candidates, V0, Vt, E, F, SECOND_TOL, SECOND_MAX_ITER);
+        has_collisions_repeated = !candidates.is_step_collision_free(
+            mesh, V0, Vt, MIN_DISTANCE, SECOND_TOL, SECOND_MAX_ITER);
 
-        stepsize_repeated = compute_collision_free_stepsize(
-            candidates, V0, Vt, E, F, SECOND_TOL, SECOND_MAX_ITER);
+        stepsize_repeated = candidates.compute_collision_free_stepsize(
+            mesh, V0, Vt, MIN_DISTANCE, SECOND_TOL, SECOND_MAX_ITER);
 
         CAPTURE(
             t0_filename, t1_filename, broadphase_method, recompute_candidates,
@@ -574,7 +581,11 @@ TEST_CASE("No Zero ToI CCD", "[ccd][no-zero-toi]")
     CHECK(!is_impacting);
 }
 
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
 TEST_CASE("Slow EE CCD", "[ccd][edge-edge][slow]")
+#else
+TEST_CASE("Slow EE CCD", "[ccd][edge-edge][slow][!mayfail]")
+#endif
 {
     Eigen::Vector3d ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1,
         eb1_t1;
@@ -601,10 +612,76 @@ TEST_CASE("Slow EE CCD", "[ccd][edge-edge][slow]")
         double toi;
         bool is_impacting = edge_edge_ccd(
             ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
-            1.0, tol, max_iter);
+            0.0, 1.0, tol, max_iter);
         tol *= 10;
 
         CAPTURE(toi);
         CHECK(is_impacting);
     }
+}
+
+TEST_CASE("Slow EE CCD 2", "[ccd][edge-edge][slow][thisone]")
+{
+    Eigen::Vector3d ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1,
+        eb1_t1;
+    ea0_t0 << 1.00002232466453, 0.500004786049044, -2.06727783590977e-05;
+    ea1_t0 << 1.64687846177844e-05, 0.499996645067319, 1.63939999009028e-05;
+    eb0_t0 << 1, 0.5, 0;
+    eb1_t0 << 0, 0.5, 0;
+    ea0_t1 << 1.00294282700155, 0.498652627047143, 0.003626320742036;
+    ea1_t1 << -0.00219276550735626, 0.500871179186644, -0.00315828804921928;
+    eb0_t1 << 1, 0.5, 0;
+    eb1_t1 << 0, 0.5, 0;
+
+    double tol = 1e-6;
+    long max_iter = 1e6;
+    double tmax = 2.8076171875e-03;
+
+    double toi;
+    bool is_impacting = edge_edge_ccd(
+        ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
+        0.0, tmax, tol, max_iter);
+
+    CAPTURE(toi);
+    CHECK(is_impacting);
+}
+
+TEST_CASE("Squash Tet", "[ccd]")
+{
+    const double dhat = 1e-3;
+
+    Eigen::MatrixXd rest_vertices(4, 3);
+    rest_vertices << 0.0, 0.0, 0.0, //
+        1.0, 0.0, 0.0,              //
+        0.0, 1.0, 0.0,              //
+        0.0, 0.0, 1.0;
+
+    Eigen::MatrixXd deformed_vertices = rest_vertices;
+    deformed_vertices(3, 0) += 0.1;
+    deformed_vertices(3, 1) -= 0.1;
+    deformed_vertices(3, 2) = -0.5 * dhat;
+
+    Eigen::MatrixXi edges(6, 2);
+    edges << 0, 1, //
+        0, 2,      //
+        0, 3,      //
+        1, 2,      //
+        1, 3,      //
+        2, 3;
+    Eigen::MatrixXi faces(4, 3);
+    faces << 0, 2, 1, //
+        0, 1, 3,      //
+        0, 3, 2,      //
+        1, 2, 3;
+
+    ipc::CollisionMesh mesh =
+        ipc::CollisionMesh::build_from_full_mesh(rest_vertices, edges, faces);
+
+    // BENCHMARK("compute toi")
+    // {
+    logger().debug(
+        "toi={}",
+        ipc::compute_collision_free_stepsize(
+            mesh, rest_vertices, deformed_vertices));
+    // };
 }

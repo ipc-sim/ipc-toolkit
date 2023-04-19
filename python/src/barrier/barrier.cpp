@@ -1,14 +1,14 @@
-#include <pybind11/pybind11.h>
+#include <common.hpp>
 
 #include <ipc/barrier/barrier.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_barrier_functions(py::module_& m)
+void define_barrier(py::module_& m)
 {
     m.def(
-        "barrier", &barrier<double>,
+        "barrier", &barrier,
         R"ipc_Qu8mg5v7(
         Function that grows to infinity as d approaches 0 from the right.
 

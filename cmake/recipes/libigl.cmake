@@ -15,29 +15,17 @@ endif()
 
 message(STATUS "Third-party: creating target 'igl::core'")
 
-include(FetchContent)
-FetchContent_Declare(
-    libigl
-    GIT_REPOSITORY https://github.com/libigl/libigl.git
-    GIT_TAG v2.3.0
-    GIT_SHALLOW TRUE
-)
-FetchContent_GetProperties(libigl)
-if(libigl_POPULATED)
-    return()
-endif()
-FetchContent_Populate(libigl)
+set(LIBIGL_PREDICATES ON CACHE BOOL "Use exact predicates" FORCE)
 
 include(eigen)
 
-set(LIBIGL_WITH_PREDICATES ON CACHE BOOL "Use exact predicates" FORCE)
-
-list(APPEND CMAKE_MODULE_PATH ${libigl_SOURCE_DIR}/cmake)
-include(${libigl_SOURCE_DIR}/cmake/libigl.cmake ${libigl_BINARY_DIR})
-
-# Install rules
-set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME libigl)
-set_target_properties(igl PROPERTIES EXPORT_NAME core)
-install(DIRECTORY ${libigl_SOURCE_DIR}/include/igl DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(TARGETS igl igl_common EXPORT Libigl_Targets)
-install(EXPORT Libigl_Targets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/igl NAMESPACE igl::)
+include(FetchContent)
+FetchContent_Declare(
+    libigl
+    # GIT_REPOSITORY https://github.com/libigl/libigl.git
+    # GIT_TAG v2.4.0
+    # GIT_SHALLOW TRUE
+    URL "https://github.com/libigl/libigl/archive/refs/tags/v2.4.0.zip"
+    URL_HASH SHA256=b20d80c9a3fa7d0c6bc3adee58e44f0cdb1cbb49228df6d67f9ddbfc08ee1403
+)
+FetchContent_MakeAvailable(libigl)

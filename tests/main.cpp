@@ -1,58 +1,55 @@
 // Catch2 Documentation: https://github.com/catchorg/Catch2/tree/master/docs
 
-#define CATCH_CONFIG_RUNNER
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <tbb/global_control.h>
-#include <tbb/task_scheduler_init.h>
-#include <thread>
+#include <tbb/info.h>
 
 #include <ipc/utils/logger.hpp>
 
-#ifdef IPC_TOOLKIT_WITH_LOGGER
-Catch::clara::ParserResult parse_log_level(int const d, int& log_level)
+Catch::Clara::ParserResult parse_log_level(int const d, int& log_level)
 {
     if (d < 0 || d > spdlog::level::off) {
-        return Catch::clara::ParserResult::runtimeError(
+        return Catch::Clara::ParserResult::runtimeError(
             "Log level must be between 0 and 6");
     } else {
         log_level = d;
-        return Catch::clara::ParserResult::ok(
-            Catch::clara::ParseResultType::Matched);
+        return Catch::Clara::ParserResult::ok(
+            Catch::Clara::ParseResultType::Matched);
     }
 }
-#endif
 
-Catch::clara::ParserResult parse_num_threads(int const d, int& num_threads)
+Catch::Clara::ParserResult parse_num_threads(int const d, int& num_threads)
 {
     if (num_threads <= 0) {
-        num_threads = tbb::task_scheduler_init::default_num_threads();
-    } else if (num_threads > tbb::task_scheduler_init::default_num_threads()) {
-        IPC_LOG(warn(
+        num_threads = tbb::info::default_concurrency();
+    } else if (num_threads > tbb::info::default_concurrency()) {
+        ipc::logger().warn(
             "Attempting to use more threads than available ({:d} > {:d})!",
-            num_threads, tbb::task_scheduler_init::default_num_threads()));
+            num_threads, tbb::info::default_concurrency());
+        num_threads = tbb::info::default_concurrency();
+    } else {
+        num_threads = d;
     }
-    return Catch::clara::ParserResult::ok(
-        Catch::clara::ParseResultType::Matched);
+    return Catch::Clara::ParserResult::ok(
+        Catch::Clara::ParseResultType::Matched);
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
     Catch::Session session; // There must be exactly one instance
 
     // Build a new parser on top of Catch's
-    using namespace Catch::clara;
+    using namespace Catch::Clara;
     auto cli = session.cli();
 
-#ifdef IPC_TOOLKIT_WITH_LOGGER
     int log_level = spdlog::level::warn;
     cli |=
         Opt([&log_level](int const d) { return parse_log_level(d, log_level); },
             "log_level")["--log"]["--logger-level"](
             "logger verbosity level int (0-6)");
-#endif
 
-    int num_threads = tbb::task_scheduler_init::default_num_threads();
+    int num_threads = tbb::info::default_concurrency();
     cli |=
         Opt([&num_threads](
                 int const d) { return parse_num_threads(d, num_threads); },
@@ -65,7 +62,8 @@ int main(int argc, char* argv[])
     if (returnCode != 0) // Indicates a command line error
         return returnCode;
 
-    IPC_LOG(set_level(static_cast<spdlog::level::level_enum>(log_level)));
+    spdlog::set_level(static_cast<spdlog::level::level_enum>(log_level));
+    ipc::logger().set_level(static_cast<spdlog::level::level_enum>(log_level));
 
     tbb::global_control thread_limiter(
         tbb::global_control::max_allowed_parallelism, num_threads);

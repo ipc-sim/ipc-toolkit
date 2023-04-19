@@ -1,13 +1,12 @@
-#include <pybind11/pybind11.h>
+#include <common.hpp>
 
 #include <ipc/utils/logger.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
-void define_logger_functions(py::module_& m)
+void define_logger(py::module_& m)
 {
-#ifdef IPC_TOOLKIT_WITH_LOGGER
     py::enum_<spdlog::level::level_enum>(m, "LoggerLevel")
         .value("trace", spdlog::level::level_enum::trace)
         .value("debug", spdlog::level::level_enum::debug)
@@ -24,5 +23,4 @@ void define_logger_functions(py::module_& m)
             logger().set_level(level);
         },
         "Set log level", py::arg("level"));
-#endif
 }

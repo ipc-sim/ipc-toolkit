@@ -28,24 +28,26 @@ endif()
 
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
-        LANGUAGES CXX)
+        LANGUAGES CXX
+        VERSION "1.0.0")
 
-option(IPC_TOOLKIT_BUILD_UNIT_TESTS           "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
-option(IPC_TOOLKIT_WITH_LOGGER                "Enable logger"                                  ON)
+option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
+option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
 option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"                     ON)
-option(IPC_TOOLKIT_WITH_PYTHON                "Build Python bindings"                         OFF)
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
+option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
 ### Configuration
-set(IPC_TOOLKIT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
+set(IPC_TOOLKIT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/ipc")
+set(IPC_TOOLKIT_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src")
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/ipc_toolkit/")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/recipes/")
@@ -56,8 +58,19 @@ include(ipc_toolkit_use_colors)
 
 # IPC Toolkit utils
 include(ipc_toolkit_prepend_current_path)
-include(ipc_toolkit_copy_headers)
 include(ipc_toolkit_set_source_group)
+include(ipc_toolkit_target_link_system_libraries)
+
+# Generate position independent code by default
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+################################################################################
+# CMake Policies
+################################################################################
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
+  cmake_policy(SET CMP0135 NEW) # https://cmake.org/cmake/help/latest/policy/CMP0135.html
+endif()
 
 ################################################################################
 # IPC Toolkit Library
@@ -67,10 +80,16 @@ include(ipc_toolkit_set_source_group)
 add_library(ipc_toolkit)
 add_library(ipc::toolkit ALIAS ipc_toolkit)
 
-add_subdirectory(src)
+# Fill in configuration options
+configure_file(
+  "${IPC_TOOLKIT_SOURCE_DIR}/config.hpp.in"
+  "${IPC_TOOLKIT_SOURCE_DIR}/config.hpp")
+
+# Add source and header files to ipc_toolkit
+add_subdirectory("${IPC_TOOLKIT_SOURCE_DIR}")
 
 # Public include directory for IPC Toolkit
-target_include_directories(ipc_toolkit PUBLIC ${PROJECT_BINARY_DIR}/include)
+target_include_directories(ipc_toolkit PUBLIC "${IPC_TOOLKIT_INCLUDE_DIR}")
 
 ################################################################################
 # Optional Definitions
@@ -83,58 +102,61 @@ target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
 # Dependencies
 ################################################################################
 
-# Extra warnings
-include(ipc_toolkit_warnings)
-target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
-
 # libigl
 include(eigen)
 include(libigl)
-target_link_libraries(ipc_toolkit PUBLIC
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC
   Eigen3::Eigen
   igl::core
   igl::predicates
 )
 
 # TBB
-include(tbb)
-target_link_libraries(ipc_toolkit PUBLIC TBB::tbb)
+include(onetbb)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC TBB::tbb)
 
 # CCD
 if(IPC_TOOLKIT_WITH_CORRECT_CCD)
   # Provably conservative CCD of [Wang and Ferguson et al. 2021]
   include(tight_inclusion)
-  target_link_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
-  target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_CORRECT_CCD)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
 else()
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
   include(evouga_ccd)
-  target_link_libraries(ipc_toolkit PUBLIC evouga::ccd)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC evouga::ccd)
 endif()
 
 # Logger
-if(IPC_TOOLKIT_WITH_LOGGER)
-  include(spdlog)
-  target_link_libraries(ipc_toolkit PRIVATE spdlog::spdlog)
-  target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_LOGGER)
-else()
-  include(fmt)
-  target_link_libraries(ipc_toolkit PRIVATE fmt::fmt)
-endif()
-
-# Faster unoredered map
-include(robin_map)
-target_link_libraries(ipc_toolkit PUBLIC tsl::robin_map)
+include(spdlog)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
-  find_package(GMP REQUIRED)
-  IF(NOT ${GMP_FOUND})
-    MESSAGE(FATAL_ERROR "Unable to find GMP necessary for rational intersection")
-  ENDIF()
-  target_include_directories(ipc_toolkit PUBLIC ${GMP_INCLUDE_DIRS})
-  target_link_libraries(ipc_toolkit PUBLIC ${GMP_LIBRARIES})
-  target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
+  include(gmp)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC GMP::GMP)
 endif()
+
+# Sweep and Tiniest Queue and CCD
+if(IPC_TOOLKIT_WITH_CUDA)
+  include(gpu_ccd)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC gpu_ccd::gpu_ccd)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC STQ::CPU)
+else()
+  set(STQ_WITH_CUDA OFF CACHE BOOL "Enable CUDA Implementation" FORCE)
+  include(sweep_and_tiniest_queue)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC STQ::CPU)
+endif()
+
+# Faster unordered map
+include(robin_map)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC tsl::robin_map)
+
+# Hashes
+include(abseil)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC absl::hash)
+
+# Extra warnings (link last for highest priority)
+include(ipc_toolkit_warnings)
+target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
 
 ################################################################################
 # Compiler options
@@ -156,15 +178,58 @@ if(IPC_TOOLKIT_WITH_SIMD)
   target_compile_options(ipc_toolkit PRIVATE ${SIMD_FLAGS})
 endif()
 
-# Use C++14
-target_compile_features(ipc_toolkit PUBLIC cxx_std_14)
+# Use C++17
+target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
+
+################################################################################
+# CUDA
+################################################################################
+
+if(IPC_TOOLKIT_WITH_CUDA)
+  include(CheckLanguage)
+  check_language(CUDA)
+  if(CMAKE_CUDA_COMPILER)
+    enable_language(CUDA)
+  else()
+    message(FATAL_ERROR "No CUDA support found!")
+  endif()
+
+  # We need to explicitly state that we need all CUDA files in the particle
+  # library to be built with -dc as the member functions could be called by
+  # other libraries and executables.
+  set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+  if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
+    set(CMAKE_CUDA_ARCHITECTURES "native")
+    set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "native")
+  else()
+    include(FindCUDA/select_compute_arch)
+    CUDA_DETECT_INSTALLED_GPUS(CUDA_ARCH_LIST)
+    string(STRIP "${CUDA_ARCH_LIST}" CUDA_ARCH_LIST)
+    string(REPLACE " " ";" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
+    string(REPLACE "." "" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
+    set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
+    set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}")
+  endif()
+
+  if(APPLE)
+    # We need to add the path to the driver (libcuda.dylib) as an rpath,
+    # so that the static cuda runtime can find it at runtime.
+    set_property(TARGET ipc_toolkit
+                 PROPERTY
+                 BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
+  endif()
+
+  find_package(CUDAToolkit)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PRIVATE CUDA::cudart)
+endif()
 
 ################################################################################
 # Tests
 ################################################################################
 
 # Enable unit testing at the root level
-if(IPC_TOOLKIT_BUILD_UNIT_TESTS)
+if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_TESTS)
   include(CTest)
   enable_testing()
   add_subdirectory(tests)
@@ -174,6 +239,6 @@ endif()
 # Python bindings
 ################################################################################
 
-if(IPC_TOOLKIT_WITH_PYTHON)
+if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_PYTHON)
   add_subdirectory(python)
 endif()

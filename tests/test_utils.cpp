@@ -1,35 +1,12 @@
 #include "test_utils.hpp"
 
+#include <unsupported/Eigen/SparseExtra>
+
 #include <igl/dirname.h>
 #include <igl/edges.h>
 #include <igl/read_triangle_mesh.h>
 
 #include <ipc/utils/eigen_ext.hpp>
-
-// Flatten the matrix rowwise
-Eigen::VectorXd flatten(const Eigen::MatrixXd& X)
-{
-    Eigen::MatrixXd XT = X.transpose();
-    return Eigen::VectorXd(Eigen::Map<Eigen::VectorXd>(XT.data(), XT.size()));
-}
-
-/// Unflatten rowwise
-Eigen::MatrixXd unflatten(const Eigen::VectorXd& x, int dim)
-{
-    assert(x.size() % dim == 0);
-    Eigen::MatrixXd unflat_x(x.size() / dim, dim);
-    for (int i = 0; i < x.size(); i++) {
-        unflat_x(i / dim, i % dim) = x(i);
-    }
-    return unflat_x;
-}
-
-TEST_CASE("Flatten and unflatten", "[utils]")
-{
-    Eigen::MatrixXd X = Eigen::MatrixXd::Random(1000, 3);
-    Eigen::MatrixXd R = unflatten(flatten(X), X.cols());
-    CHECK(X == R);
-}
 
 bool load_mesh(
     const std::string& mesh_name,
@@ -48,7 +25,7 @@ void mmcvids_to_constraints(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Eigen::MatrixXi& mmcvids,
-    ipc::Constraints& constraints)
+    ipc::CollisionConstraints& constraints)
 {
     for (int mmcvid_i = 0; mmcvid_i < mmcvids.rows(); mmcvid_i++) {
         const auto mmcvid = mmcvids.row(mmcvid_i);
@@ -74,7 +51,7 @@ void mmcvids_to_constraints(
                 constraints.vv_constraints.emplace_back(
                     -mmcvid[0] - 1, mmcvid[1]);
                 assert(-mmcvid[3] >= 1);
-                constraints.vv_constraints.back().multiplicity = -mmcvid[3];
+                constraints.vv_constraints.back().weight = -mmcvid[3];
 
             } else if (mmcvid[3] < 0) { // Is EV?
                 int ei;
@@ -85,7 +62,7 @@ void mmcvids_to_constraints(
                 }
                 assert(ei < E.rows());
                 constraints.ev_constraints.emplace_back(ei, -mmcvid[0] - 1);
-                constraints.ev_constraints.back().multiplicity = -mmcvid[3];
+                constraints.ev_constraints.back().weight = -mmcvid[3];
 
             } else { // Is FV.
                 int fi;
@@ -120,5 +97,56 @@ Eigen::Matrix3d const& RotationGenerator::get() const { return R; }
 Catch::Generators::GeneratorWrapper<Eigen::Matrix3d> RotationGenerator::create()
 {
     return Catch::Generators::GeneratorWrapper<Eigen::Matrix3d>(
-        std::unique_ptr<RotationGenerator>(new RotationGenerator()));
+        Catch::Detail::make_unique<RotationGenerator>());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Matrix Market file utils
+
+Eigen::MatrixXd loadMarketXd(const std::string& f)
+{
+    Eigen::SparseMatrix<double> tmp;
+    REQUIRE(Eigen::loadMarket(tmp, f));
+    return Eigen::MatrixXd(tmp);
+}
+
+Eigen::MatrixXi loadMarketXi(const std::string& f)
+{
+    Eigen::SparseMatrix<int> tmp;
+    REQUIRE(Eigen::loadMarket(tmp, f));
+    return Eigen::MatrixXi(tmp);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void print_compare_nonzero(
+    const Eigen::MatrixXd& A,
+    const Eigen::MatrixXd& B,
+    bool print_only_different)
+{
+    fmt::print(
+        "A.norm()={}, B.norm()={} (A-B).norm()={}\n", A.norm(), B.norm(),
+        (A - B).norm());
+    fmt::print("(i,j): A(i,j), B(i,j), abs_diff, rel_diff\n");
+    assert(A.rows() == B.rows());
+    assert(A.cols() == B.cols());
+    for (int i = 0; i < A.rows(); i++) {
+        for (int j = 0; j < A.rows(); j++) {
+            const double abs_diff = std::abs(A(i, j) - B(i, j));
+            const double rel_diff =
+                abs_diff / std::max(std::abs(A(i, j)), std::abs(B(i, j)));
+
+            const double tol =
+                std::max({ std::abs(A(i, j)), std::abs(B(i, j)), double(1.0) })
+                * 1e-5;
+
+            if ((A(i, j) != 0 || B(i, j) != 0)
+                && (!print_only_different || abs_diff > tol)) {
+                fmt::print(
+                    "({:d},{:d}): {:g}, {:g}, {:g}, {:g}\n", i, j, A(i, j),
+                    B(i, j), abs_diff, rel_diff);
+            }
+        }
+    }
+    fmt::print("\n");
 }

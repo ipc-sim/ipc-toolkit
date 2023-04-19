@@ -1,9 +1,9 @@
 #pragma once
 
-#include <memory>
+#include <catch2/generators/catch_generators.hpp>
+#include <catch2/generators/catch_generators_adapters.hpp>
 
 #include <Eigen/Core>
-#include <catch2/catch.hpp>
 
 struct TestImpact {
     Eigen::Vector2d p_t0, e0_t0, e1_t0;

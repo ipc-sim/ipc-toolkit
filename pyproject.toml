@@ -1,0 +1,48 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel",
+    "ninja",
+    # "cmake>=3.14",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ipctk"
+version = "1.0.0"
+authors = [
+  { name="Zachary Ferguson", email="zfergus@nyu.edu" },
+]
+description = "A set of reusable functions to integrate Incremental Potential Contact (IPC) into a simulation."
+readme = "docs/PYPI_README.md"
+license = { file="LICENSE" }
+classifiers = [
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+    "Topic :: Games/Entertainment :: Simulation",
+    "Topic :: Scientific/Engineering :: Physics",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+]
+requires-python = ">=3.6"
+dependencies = [
+    "numpy",
+    "scipy",
+]
+keywords = [
+    "IPC",
+    "simulation",
+    "physics",
+    "science",
+    "reserch",
+]
+
+[project.urls]
+"Homepage" = "https://ipc-sim.github.io/ipc-toolkit/"
+"Bug Tracker" = "https://github.com/ipc-sim/ipc-toolkit/issues"
+"Source Code" = "https://github.com/ipc-sim/ipc-toolkit"
+
+[tools.cibuildwheel]
+build-frontend = "build"
+

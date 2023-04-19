@@ -1,0 +1,4 @@
+recursive-include src *.hpp *.cpp *.tpp CMakeLists.txt
+recursive-include python *.hpp *.cpp CMakeLists.txt
+recursive-include cmake *.cmake
+include LICENSE README.md pyproject.toml setup.py CMakeLists.txt

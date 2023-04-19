@@ -9,11 +9,13 @@
 # OF ANY KIND, either express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
 #
-if(TARGET nlohmann::json)
+
+# JSON MIT
+if(TARGET nlohmann_json::nlohmann_json)
     return()
 endif()
 
-message(STATUS "Third-party: creating target 'nlohmann::json'")
+message(STATUS "Third-party: creating target 'nlohmann_json::nlohmann_json'")
 
 # nlohmann_json is a big repo for a single header, so we just download the release archive
 set(NLOHMANNJSON_VERSION "v3.10.2")
@@ -27,7 +29,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(nlohmann_json)
 
 add_library(nlohmann_json INTERFACE)
-add_library(nlohmann::json ALIAS nlohmann_json)
+add_library(nlohmann_json::nlohmann_json ALIAS nlohmann_json)
 
 include(GNUInstallDirs)
 target_include_directories(nlohmann_json INTERFACE

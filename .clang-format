@@ -9,4 +9,6 @@ AllowAllParametersOfDeclarationOnNextLine: true
 AlignAfterOpenBracket: AlwaysBreak
 BreakBeforeBinaryOperators: NonAssignment
 SortIncludes: false
-# BreakStringLiterals: false
+CommentPragmas:  '^@.+'
+BreakStringLiterals: false
+PackConstructorInitializers: CurrentLine

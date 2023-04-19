@@ -9,11 +9,10 @@ add_executable(ipc_toolkit_tests
   barrier/test_barrier.cpp
 
   # Test CCD
-  broad_phase/benchmark_spatial_hash.cpp
+  broad_phase/benchmark_broad_phase.cpp
   broad_phase/brute_force_comparison.cpp
-  broad_phase/brute_force_comparison.hpp
+  broad_phase/test_aabb.cpp
   broad_phase/test_broad_phase.cpp
-  broad_phase/test_hash_grid.cpp
   broad_phase/test_spatial_hash.cpp
   ccd/benchmark_ccd.cpp
   ccd/collision_generator.cpp
@@ -30,10 +29,14 @@ add_executable(ipc_toolkit_tests
   distance/test_point_triangle.cpp
 
   # Test friction
-  friction/test_friction.cpp
-  friction/test_tangent_basis.cpp
+  friction/friction_data_generator.cpp
   friction/test_closest_point.cpp
-  friction/test_relative_displacement.cpp
+  friction/test_force_jacobian.cpp
+  friction/test_friction.cpp
+  friction/test_normal_force_magnitude.cpp
+  friction/test_relative_velocity.cpp
+  friction/test_smooth_friction_mollifier.cpp
+  friction/test_tangent_basis.cpp
 
   # Test general interface
   test_ipc.cpp
@@ -44,7 +47,7 @@ add_executable(ipc_toolkit_tests
   # Utilities for tests
   test_utils.cpp
 
-  static_vs_dynamic.cpp
+  benchmark_eigen.cpp
 )
 
 target_include_directories(ipc_toolkit_tests PUBLIC ".")
@@ -59,22 +62,18 @@ include(ipc_toolkit_warnings)
 target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)
 
 include(catch2)
-target_link_libraries(ipc_toolkit_tests PUBLIC Catch2::Catch2)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC Catch2::Catch2)
 
 include(finite_diff)
-target_link_libraries(ipc_toolkit_tests PUBLIC finitediff::finitediff)
-
-if(IPC_TOOLKIT_WITH_LOGGER)
-  include(spdlog)
-  target_link_libraries(ipc_toolkit_tests PRIVATE spdlog::spdlog)
-else()
-  include(fmt)
-  target_link_libraries(ipc_toolkit_tests PRIVATE fmt::fmt)
-endif()
+ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC finitediff::finitediff)
 
 include(json)
-target_link_libraries(ipc_toolkit_tests PUBLIC nlohmann::json)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC nlohmann_json::nlohmann_json)
 
+if(IPC_TOOLKIT_WITH_CUDA)
+  find_package(CUDAToolkit)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PRIVATE CUDA::cudart)
+endif()
 
 ################################################################################
 # Compiler options
@@ -84,19 +83,19 @@ target_compile_definitions(ipc_toolkit_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMAR
 
 # Test data directory definition
 if(WIN32)
-  target_compile_definitions(ipc_toolkit_tests PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}\\\\data\\\\")
+  target_compile_definitions(ipc_toolkit_tests PUBLIC TEST_DATA_DIR_CSTR="${CMAKE_CURRENT_SOURCE_DIR}\\\\data\\\\")
 else()
-  target_compile_definitions(ipc_toolkit_tests PUBLIC TEST_DATA_DIR="${CMAKE_CURRENT_SOURCE_DIR}/data/")
+  target_compile_definitions(ipc_toolkit_tests PUBLIC TEST_DATA_DIR_CSTR="${CMAKE_CURRENT_SOURCE_DIR}/data/")
 endif()
 
 ################################################################################
 # Register tests
 ################################################################################
 
-set(PARSE_CATCH_TESTS_ADD_TO_CONFIGURE_DEPENDS ON)
-
-# Include Catch2 and provide function `catch_discover_tests` to register tests.
 FetchContent_GetProperties(catch2)
-include("${catch2_SOURCE_DIR}/contrib/Catch.cmake")
+list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+include(Catch)
 
+# Register tests
+set(PARSE_CATCH_TESTS_ADD_TO_CONFIGURE_DEPENDS ON)
 catch_discover_tests(ipc_toolkit_tests)

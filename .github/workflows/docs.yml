@@ -5,33 +5,46 @@ on:
     branches:
       - main
       - docs
-  pull_request:
-    branches:
-      - main
 
 jobs:
   Docs:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 10
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4.3.0
         with:
-          python-version: 3.9
+          python-version: "3.10"
 
       - name: Requirements
         run: |
-          brew install doxygen sphinx-doc
+          sudo apt-get update
+          sudo apt-get install doxygen python3-sphinx graphviz
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
           pip install -r docs/requirements.txt
 
+      - name: Build release docs
+        run: |
+          HEAD=$(git rev-parse HEAD)
+          git fetch --all --tags
+          cd docs
+          for version in $(git tag -l); do
+              echo "Processing $version:"
+              git checkout $version
+              pip install --force-reinstall -v "ipctk==$version"
+              sphinx-build source build/html/$version -D html_theme_options.version_dropdown=true
+          done
+          pip uninstall -y ipctk
+          git checkout $HEAD
+          cp source/_static/versions.json build/html/
+          cd ..
+
       - name: Build ipctk
-        run: python setup.py install
+        run: pip install --verbose .
 
       - name: Build docs
         run: |
@@ -41,7 +54,7 @@ jobs:
           touch .nojekyll
 
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@releases/v3
+        uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BRANCH: gh-pages # The branch the action should deploy to.

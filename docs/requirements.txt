@@ -1,6 +1,9 @@
 sphinx
 sphinx-sitemap
+sphinx-immaterial
+autoclasstoc
+# sphinx-autodoc-toolbox
 breathe
-m2r2
 nbsphinx
 pandoc
+myst_parser

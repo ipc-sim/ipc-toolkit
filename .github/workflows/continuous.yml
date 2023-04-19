@@ -2,11 +2,8 @@ name: Build
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
 
 env:
   CTEST_OUTPUT_ON_FAILURE: ON
@@ -23,34 +20,36 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, macos-latest]
+        os: [ubuntu-latest, macos-latest]
         config: [Debug, Release]
         include:
           - os: macos-latest
             name: macOS
-          - os: ubuntu-18.04
-            name: Linux
-          - os: ubuntu-20.04
+          - os: ubuntu-latest
             name: Linux
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2.5.0
         with:
           fetch-depth: 10
 
       - name: Dependencies (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get install ccache
+        run: |
+          sudo apt-get install ccache
+          echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
 
       - name: Dependencies (macOS)
         if: runner.os == 'macOS'
-        run: brew install ccache
+        run: |
+          brew install ccache
+          echo 'CACHE_PATH=~/Library/Caches/ccache' >> "$GITHUB_ENV"
 
       - name: Cache Build
         id: cache-build
-        uses: actions/cache@v1
+        uses: actions/cache@v3.0.11
         with:
-          path: ~/.ccache
+          path: ${{ env.CACHE_PATH }}
           key: ${{ runner.os }}-${{ matrix.config }}-cache
 
       - name: Prepare ccache
@@ -78,53 +77,50 @@ jobs:
   ####################
 
   Windows:
-    runs-on: windows-2019
-    env:
-      CC: cl.exe
-      CXX: cl.exe
+    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
         config: [Debug, Release]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2.5.0
         with:
           fetch-depth: 10
-      - uses: seanmiddleditch/gha-setup-ninja@master
 
-        # https://github.com/actions/cache/issues/101
-      - name: Set env
+      - name: Install Ninja
+        uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Set env variable for sccache
         run: |
           echo "appdata=$env:LOCALAPPDATA" >> ${env:GITHUB_ENV}
 
       - name: Cache build
         id: cache-build
-        uses: actions/cache@v1
+        uses: actions/cache@v3.0.11
         with:
           path: ${{ env.appdata }}\Mozilla\sccache
           key: ${{ runner.os }}-${{ matrix.config }}-cache
 
       - name: Prepare sccache
         run: |
-          Invoke-Expression (New-Object System.Net.WebClient).DownloadString('https://get.scoop.sh')
+          iwr -useb 'https://raw.githubusercontent.com/scoopinstaller/install/master/install.ps1' -outfile 'install.ps1'
+          .\install.ps1 -RunAsAdmin
           scoop install sccache --global
           # Scoop modifies the PATH so we make it available for the next steps of the job
           echo "${env:PATH}" >> ${env:GITHUB_PATH}
 
-        # We run configure + build in the same step, since they both need to call VsDevCmd
-        # Also, cmd uses ^ to break commands into multiple lines (in powershell this is `)
       - name: Configure and build
         shell: cmd
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
           cmake -G Ninja ^
             -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ^
             -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
             -DIPC_TOOLKIT_BUILD_UNIT_TESTS=ON ^
             -B build ^
             -S .
-          cmake --build build
+          cmake --build build -j1
 
       - name: Tests
-        run: cd build; ctest --verbose
+        run: cd build; ctest --verbose -j2
