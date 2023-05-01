@@ -192,8 +192,6 @@ endif()
 # Use C++17
 target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
 
-target_compile_options(ipc_toolkit PRIVATE -Wno-write-strings)
-
 # ###############################################################################
 # CUDA
 # ###############################################################################
