@@ -10,6 +10,9 @@ endif()
 # Check required CMake version
 set(REQUIRED_CMAKE_VERSION "3.24.0")
 
+set(BROADMARK_REF_DIR "${PROJECT_SOURCE_DIR}/Broadmark/Broadmark/Algorithms")
+set(BROADMARK_DEPEDENCIES "${PROJECT_SOURCE_DIR}/Broadmark/Broadmark/Algorithms/Dependencies")
+
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   cmake_minimum_required(VERSION ${REQUIRED_CMAKE_VERSION})
 else()
@@ -135,18 +138,18 @@ if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC GMP::GMP)
 endif()
 
+include(broadmark)
+
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PRIVATE broadmark)
+
+# target_link_libraries(ipc_toolkit Broadmark)
+# target_include_directories(ipc_toolkit PRIVATE ${BROADMARK_REF_DIR} ${BROADMARK_DEPEDENCIES})
+
 # Sweep and Tiniest Queue and CCD
 if(IPC_TOOLKIT_WITH_CUDA)
   include(gpu_ccd)
-  include(bp_benchmark)
-
-  # set_target_properties(BROADPHASE_SYMBOLIC PROPERTIES CUDA_ARCHITECTURES native)
-  # set_target_properties(Symbolic_bin PROPERTIES CUDA_ARCHITECTURES native)
-  set_target_properties(Bruteforce_bin PROPERTIES CUDA_ARCHITECTURES native)
-  set_target_properties(BroadPhaseBenchmark_bin PROPERTIES CUDA_ARCHITECTURES native)
 
   ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC gpu_ccd::gpu_ccd)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC bp_benchmark)
   ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC STQ::CPU)
 else()
   set(STQ_WITH_CUDA OFF CACHE BOOL "Enable CUDA Implementation" FORCE)

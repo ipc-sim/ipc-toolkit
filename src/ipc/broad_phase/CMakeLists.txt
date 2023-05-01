@@ -13,6 +13,9 @@ set(SOURCES
   sweep_and_tiniest_queue.hpp
   voxel_size_heuristic.cpp
   voxel_size_heuristic.hpp
+  interface.hpp
+  interface.cpp
+  interface.tpp
 )
 
 ipc_toolkit_prepend_current_path(SOURCES)
