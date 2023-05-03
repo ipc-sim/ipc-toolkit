@@ -73,7 +73,8 @@ template <class T>
 void Broadmark<T>::detect_collision_candidates(
     int dim, Candidates& candidates) const
 {
-    interface.FilterOverlaps(num_vertices, edges, faces);
+    interface.FilterOverlaps(num_vertices, edges, faces, candidates);
+    // interface.m_broadPhase = candidates.size();
 }
 
 // Explicitly instantiate the template for SAP type

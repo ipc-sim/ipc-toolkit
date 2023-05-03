@@ -13,67 +13,63 @@ template <class T>
 void Interface<T>::FilterOverlaps(
     const long num_vertices,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
+    const Eigen::MatrixXi& faces,
+    Candidates& candidates) const
 {
-    // auto is_vertex = [&](int ai) { return ai < num_vertices; };
-    // auto is_edge = [&](int ai) {
-    //     return (ai >= num_vertices) && (ai < (num_vertices + edges.rows()));
-    // };
-    // auto is_face = [&](int ai) { return ai >= (num_vertices + edges.rows());
-    // }; auto is_endpoint = [&](int vi, int fi) {
-    //     return vi == faces(fi, 0) || vi == faces(fi, 1) || vi == faces(fi,
-    //     2);
-    // };
-    // auto has_common_endpoint = [&](int ei, int ej) {
-    //     return edges(ei, 0) == edges(ej, 0) || edges(ei, 0) == edges(ej, 1)
-    //         || edges(ei, 1) == edges(ej, 0) || edges(ei, 1) == edges(ej, 1);
-    // };
+    auto is_vertex = [&](int ai) { return ai < num_vertices; };
+    auto is_edge = [&](int ai) {
+        return (ai >= num_vertices) && (ai < (num_vertices + edges.rows()));
+    };
+    auto is_face = [&](int ai) { return ai >= (num_vertices + edges.rows()); };
+    auto is_endpoint = [&](int vi, int fi) {
+        return vi == faces(fi, 0) || vi == faces(fi, 1) || vi == faces(fi, 2);
+    };
+    auto has_common_endpoint = [&](int ei, int ej) {
+        return edges(ei, 0) == edges(ej, 0) || edges(ei, 0) == edges(ej, 1)
+            || edges(ei, 1) == edges(ej, 0) || edges(ei, 1) == edges(ej, 1);
+    };
 
-    // auto addCandidate = [&](int ai, int bi) {
-    //     // std::cout << "ai: " << ai << "bi: " << bi << std::endl;
-    //     auto mi = ai < bi ? ai : bi;
-    //     ai = std::min(ai, mi);
-    //     bi = std::max(bi, mi);
-    //     assert(ai < bi);
+    auto addCandidate = [&](int ai, int bi) {
+        // std::cout << "ai: " << ai << "bi: " << bi << std::endl;
+        auto mi = ai < bi ? ai : bi;
+        ai = std::min(ai, mi);
+        bi = std::max(bi, mi);
+        assert(ai < bi);
 
-    //     if (is_vertex(ai) && is_face(bi)
-    //         && !is_endpoint(ai, bi - num_vertices - edges.rows())) {
-    //         candidates.fv_candidates.emplace_back(
-    //             bi - num_vertices - edges.rows(), ai);
-    //     } else if (
-    //         is_edge(ai) && is_edge(bi)
-    //         && !has_common_endpoint(ai - num_vertices, bi - num_vertices)) {
-    //         candidates.ee_candidates.emplace_back(
-    //             ai - num_vertices, bi - num_vertices);
-    //     }
-    // };
-    // std::cout << "V: " << num_vertices
-    //           << " V+E: " << num_vertices + edges.rows()
-    //           << " V+E+F: " << num_vertices + edges.rows() + faces.rows()
-    //           << std::endl;
-    // std::cout << "m_cache: " << algo->m_cache.m_overlaps.size() << std::endl;
-    // for (size_t i = 0; i < algo->m_cache.m_overlaps.size(); i++) {
-    //     int ai = algo->m_cache.m_overlaps[i].m_a->m_id;
-    //     int bi = algo->m_cache.m_overlaps[i].m_b->m_id;
-    //     addCandidate(ai, bi);
-    // }
-    // std::cout << "finished adding" << std::endl;
-    // // remove duplicates
-    // std::sort(candidates.ee_candidates.begin(),
-    // candidates.ee_candidates.end());
-    // std::sort(candidates.fv_candidates.begin(),
-    // candidates.fv_candidates.end());
+        if (is_vertex(ai) && is_face(bi)
+            && !is_endpoint(ai, bi - num_vertices - edges.rows())) {
+            candidates.fv_candidates.emplace_back(
+                bi - num_vertices - edges.rows(), ai);
+        } else if (
+            is_edge(ai) && is_edge(bi)
+            && !has_common_endpoint(ai - num_vertices, bi - num_vertices)) {
+            candidates.ee_candidates.emplace_back(
+                ai - num_vertices, bi - num_vertices);
+        }
+    };
+    std::cout << "V: " << num_vertices
+              << " V+E: " << num_vertices + edges.rows()
+              << " V+E+F: " << num_vertices + edges.rows() + faces.rows()
+              << std::endl;
+    std::cout << "m_cache: " << algo->m_cache.m_overlaps.size() << std::endl;
+    for (size_t i = 0; i < algo->m_cache.m_overlaps.size(); i++) {
+        int ai = algo->m_cache.m_overlaps[i].m_a->m_id;
+        int bi = algo->m_cache.m_overlaps[i].m_b->m_id;
+        addCandidate(ai, bi);
+    }
+    std::cout << "finished adding" << std::endl;
+    // remove duplicates
+    std::sort(candidates.ee_candidates.begin(), candidates.ee_candidates.end());
+    std::sort(candidates.fv_candidates.begin(), candidates.fv_candidates.end());
 
-    // candidates.ee_candidates.erase(
-    //     unique(
-    //         candidates.ee_candidates.begin(),
-    //         candidates.ee_candidates.end()),
-    //     candidates.ee_candidates.end());
-    // candidates.fv_candidates.erase(
-    //     unique(
-    //         candidates.fv_candidates.begin(),
-    //         candidates.fv_candidates.end()),
-    //     candidates.fv_candidates.end());
+    candidates.ee_candidates.erase(
+        unique(
+            candidates.ee_candidates.begin(), candidates.ee_candidates.end()),
+        candidates.ee_candidates.end());
+    candidates.fv_candidates.erase(
+        unique(
+            candidates.fv_candidates.begin(), candidates.fv_candidates.end()),
+        candidates.fv_candidates.end());
 
     // m_broadPhase = candidates.size();
     // std::cout << "m_broadPhase: " << m_broadPhase << std::endl;

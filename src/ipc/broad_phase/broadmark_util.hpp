@@ -43,7 +43,8 @@ public:
     void FilterOverlaps(
         const long num_vertices,
         const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const;
+        const Eigen::MatrixXi& faces,
+        Candidates& candidates) const;
     void CalcOverlaps(
         const Eigen::MatrixXd& V0,
         const Eigen::MatrixXd& V1,
@@ -63,19 +64,22 @@ template <>
 void Interface<DBVT_F>::FilterOverlaps(
     const long num_vertices,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const;
+    const Eigen::MatrixXi& faces,
+    Candidates& candidates) const;
 
 template <>
 void Interface<DBVT_D>::FilterOverlaps(
     const long num_vertices,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const;
+    const Eigen::MatrixXi& faces,
+    Candidates& candidates) const;
 
 template <>
 void Interface<AxisSweep>::FilterOverlaps(
     const long num_vertices,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const;
+    const Eigen::MatrixXi& faces,
+    Candidates& candidates) const;
 
 void to_aabbs(
     const Eigen::MatrixXd& V0,

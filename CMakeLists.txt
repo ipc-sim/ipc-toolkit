@@ -140,7 +140,7 @@ endif()
 
 include(broadmark)
 
-ipc_toolkit_target_link_system_libraries(ipc_toolkit PRIVATE broadmark)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC broadmark)
 
 # target_link_libraries(ipc_toolkit Broadmark)
 # target_include_directories(ipc_toolkit PRIVATE ${BROADMARK_REF_DIR} ${BROADMARK_DEPEDENCIES})
