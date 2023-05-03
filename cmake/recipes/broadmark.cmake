@@ -25,6 +25,9 @@ file(GLOB BROADMARK_SOURCES
     "${broadmark_SOURCE_DIR}/Broadmark/Algorithms/Dependencies/Bullet3/Bullet3Common/*.cpp"
     "${broadmark_SOURCE_DIR}/Broadmark/Algorithms/Dependencies/Bullet3/Bullet3Collision/BroadPhaseCollision/*.cpp"
     "${broadmark_SOURCE_DIR}/Broadmark/Algorithms/Dependencies/Bullet2/*.cpp"
+    "${broadmark_SOURCE_DIR}/Broadmark/Algorithms/Dependencies/Bullet2/LinearMath/*.cpp"
+    "${broadmark_SOURCE_DIR}/Broadmark/Algorithms/Dependencies/Bullet2/BulletCollision/*.cpp"
+    "${broadmark_SOURCE_DIR}/Broadmark/Algorithms/Dependencies/Bullet2/BulletDynamics/*.cpp"
 )
 
 # Create an imported target for the Broadmark library
