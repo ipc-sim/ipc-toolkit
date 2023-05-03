@@ -17,7 +17,9 @@ enum class BroadPhaseMethod {
     HASH_GRID,
     SPATIAL_HASH,
     SWEEP_AND_TINIEST_QUEUE,
-    SWEEP_AND_TINIEST_QUEUE_GPU, // Requires CUDA
+    SWEEP_AND_TINIEST_QUEUE_GPU, // Requires CUDA,
+    BROADMARK_SAP,
+    BROADMARK_GRID,
     NUM_METHODS
 };
 

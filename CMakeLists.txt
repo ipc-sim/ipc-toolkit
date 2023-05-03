@@ -38,7 +38,7 @@ project(IPCToolkit
 option(IPC_TOOLKIT_BUILD_TESTS "Build unit-tests" ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
 option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
 option(IPC_TOOLKIT_WITH_CORRECT_CCD "Use the TightInclusion CCD" ON)
-option(IPC_TOOLKIT_WITH_SIMD "Enable SIMD" OFF)
+option(IPC_TOOLKIT_WITH_SIMD "Enable SIMD" ON)
 option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" ON)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 

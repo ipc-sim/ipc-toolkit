@@ -4,6 +4,7 @@
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
+#include <ipc/broad_phase/broadmark.hpp>
 #include <ipc/candidates/candidates.hpp>
 
 #include <ipc/config.hpp>
@@ -82,6 +83,10 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
         throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
                                  "because CUDA is disabled!");
 #endif
+    case BroadPhaseMethod::BROADMARK_SAP:
+        return std::make_unique<Broadmark<SAP>>();
+    case BroadPhaseMethod::BROADMARK_GRID:
+        return std::make_unique<Broadmark<Grid_3D>>();
     default:
         throw std::runtime_error("Invalid BroadPhaseMethod!");
     }

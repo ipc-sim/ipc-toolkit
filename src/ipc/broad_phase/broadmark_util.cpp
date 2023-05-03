@@ -1,4 +1,4 @@
-#include <ipc/broad_phase/interface.hpp>
+#include <ipc/broad_phase/broadmark_util.hpp>
 #include "Dependencies/Bullet3/Bullet3Collision/BroadPhaseCollision/b3DynamicBvhBroadphase.h"
 #include "Dependencies/Bullet2/btAxisSweep3.h"
 
@@ -15,200 +15,221 @@ void InterfaceBase::Clear()
 
 template <>
 void Interface<DBVT_F>::FilterOverlaps(
-    const Eigen::MatrixXd& V,
+    const long num_vertices,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces)
+    const Eigen::MatrixXi& faces) const
 {
-    auto b3BroadphasePairs = algo->m_broadphase->getOverlappingPairCache()
-                                 ->getOverlappingPairArray();
-    std::cout << "b3BroadphasePairs: " << b3BroadphasePairs.size() << std::endl;
+    // auto b3BroadphasePairs = algo->m_broadphase->getOverlappingPairCache()
+    //                              ->getOverlappingPairArray();
+    // std::cout << "b3BroadphasePairs: " << b3BroadphasePairs.size() <<
+    // std::endl;
 
-    auto is_vertex = [&](int ai) { return ai < V.rows(); };
-    auto is_edge = [&](int ai) {
-        return (ai >= V.rows()) && (ai < (V.rows() + edges.rows()));
-    };
-    auto is_face = [&](int ai) { return ai >= (V.rows() + edges.rows()); };
-    auto is_endpoint = [&](int vi, int fi) {
-        return vi == faces(fi, 0) || vi == faces(fi, 1) || vi == faces(fi, 2);
-    };
-    auto has_common_endpoint = [&](int ei, int ej) {
-        return edges(ei, 0) == edges(ej, 0) || edges(ei, 0) == edges(ej, 1)
-            || edges(ei, 1) == edges(ej, 0) || edges(ei, 1) == edges(ej, 1);
-    };
+    // auto is_vertex = [&](int ai) { return ai < num_vertices; };
+    // auto is_edge = [&](int ai) {
+    //     return (ai >= num_vertices) && (ai < (num_vertices + edges.rows()));
+    // };
+    // auto is_face = [&](int ai) { return ai >= (num_vertices + edges.rows());
+    // }; auto is_endpoint = [&](int vi, int fi) {
+    //     return vi == faces(fi, 0) || vi == faces(fi, 1) || vi == faces(fi,
+    //     2);
+    // };
+    // auto has_common_endpoint = [&](int ei, int ej) {
+    //     return edges(ei, 0) == edges(ej, 0) || edges(ei, 0) == edges(ej, 1)
+    //         || edges(ei, 1) == edges(ej, 0) || edges(ei, 1) == edges(ej, 1);
+    // };
 
-    auto addCandidate = [&](int ai, int bi) {
-        // std::cout << "ai: " << ai << "bi: " << bi << std::endl;
-        auto mi = ai < bi ? ai : bi;
-        ai = std::min(ai, mi);
-        bi = std::max(bi, mi);
-        assert(ai < bi);
+    // auto addCandidate = [&](int ai, int bi) {
+    //     // std::cout << "ai: " << ai << "bi: " << bi << std::endl;
+    //     auto mi = ai < bi ? ai : bi;
+    //     ai = std::min(ai, mi);
+    //     bi = std::max(bi, mi);
+    //     assert(ai < bi);
 
-        if (is_vertex(ai) && is_face(bi)
-            && !is_endpoint(ai, bi - V.rows() - edges.rows())) {
-            candidates.fv_candidates.emplace_back(
-                bi - V.rows() - edges.rows(), ai);
-        } else if (
-            is_edge(ai) && is_edge(bi)
-            && !has_common_endpoint(ai - V.rows(), bi - V.rows())) {
-            candidates.ee_candidates.emplace_back(ai - V.rows(), bi - V.rows());
-        }
-    };
+    //     if (is_vertex(ai) && is_face(bi)
+    //         && !is_endpoint(ai, bi - num_vertices - edges.rows())) {
+    //         candidates.fv_candidates.emplace_back(
+    //             bi - num_vertices - edges.rows(), ai);
+    //     } else if (
+    //         is_edge(ai) && is_edge(bi)
+    //         && !has_common_endpoint(ai - num_vertices, bi - num_vertices)) {
+    //         candidates.ee_candidates.emplace_back(
+    //             ai - num_vertices, bi - num_vertices);
+    //     }
+    // };
 
-    for (size_t i = 0; i < b3BroadphasePairs.size(); i++) {
+    // for (size_t i = 0; i < b3BroadphasePairs.size(); i++) {
 
-        // proxy increments aabb m_id+1
-        // see DBVT::Initialize in DBVT.cpp
-        int xi = b3BroadphasePairs[i].x - 1;
-        int yi = b3BroadphasePairs[i].y - 1;
-        addCandidate(xi, yi);
-    }
+    //     // proxy increments aabb m_id+1
+    //     // see DBVT::Initialize in DBVT.cpp
+    //     int xi = b3BroadphasePairs[i].x - 1;
+    //     int yi = b3BroadphasePairs[i].y - 1;
+    //     addCandidate(xi, yi);
+    // }
 
-    //  remove duplicates
+    // //  remove duplicates
 
-    std::sort(candidates.ee_candidates.begin(), candidates.ee_candidates.end());
-    std::sort(candidates.fv_candidates.begin(), candidates.fv_candidates.end());
+    // std::sort(candidates.ee_candidates.begin(),
+    // candidates.ee_candidates.end());
+    // std::sort(candidates.fv_candidates.begin(),
+    // candidates.fv_candidates.end());
 
-    candidates.ee_candidates.erase(
-        unique(
-            candidates.ee_candidates.begin(), candidates.ee_candidates.end()),
-        candidates.ee_candidates.end());
-    candidates.fv_candidates.erase(
-        unique(
-            candidates.fv_candidates.begin(), candidates.fv_candidates.end()),
-        candidates.fv_candidates.end());
+    // candidates.ee_candidates.erase(
+    //     unique(
+    //         candidates.ee_candidates.begin(),
+    //         candidates.ee_candidates.end()),
+    //     candidates.ee_candidates.end());
+    // candidates.fv_candidates.erase(
+    //     unique(
+    //         candidates.fv_candidates.begin(),
+    //         candidates.fv_candidates.end()),
+    //     candidates.fv_candidates.end());
 
-    m_broadPhase = candidates.size();
-    std::cout << "m_broadPhase: " << m_broadPhase << std::endl;
+    // m_broadPhase = candidates.size();
+    // std::cout << "m_broadPhase: " << m_broadPhase << std::endl;
 }
 
 template <>
 void Interface<DBVT_D>::FilterOverlaps(
-    const Eigen::MatrixXd& V,
+    const long num_vertices,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces)
+    const Eigen::MatrixXi& faces) const
 {
-    auto b3BroadphasePairs = algo->m_broadphase->getOverlappingPairCache()
-                                 ->getOverlappingPairArray();
-    std::cout << "b3BroadphasePairs: " << b3BroadphasePairs.size() << std::endl;
+    // auto b3BroadphasePairs = algo->m_broadphase->getOverlappingPairCache()
+    //                              ->getOverlappingPairArray();
+    // std::cout << "b3BroadphasePairs: " << b3BroadphasePairs.size() <<
+    // std::endl;
 
-    auto is_vertex = [&](int ai) { return ai < V.rows(); };
-    auto is_edge = [&](int ai) {
-        return (ai >= V.rows()) && (ai < (V.rows() + edges.rows()));
-    };
-    auto is_face = [&](int ai) { return ai >= (V.rows() + edges.rows()); };
-    auto is_endpoint = [&](int vi, int fi) {
-        return vi == faces(fi, 0) || vi == faces(fi, 1) || vi == faces(fi, 2);
-    };
-    auto has_common_endpoint = [&](int ei, int ej) {
-        return edges(ei, 0) == edges(ej, 0) || edges(ei, 0) == edges(ej, 1)
-            || edges(ei, 1) == edges(ej, 0) || edges(ei, 1) == edges(ej, 1);
-    };
+    // auto is_vertex = [&](int ai) { return ai < num_vertices; };
+    // auto is_edge = [&](int ai) {
+    //     return (ai >= num_vertices) && (ai < (num_vertices + edges.rows()));
+    // };
+    // auto is_face = [&](int ai) { return ai >= (num_vertices + edges.rows());
+    // }; auto is_endpoint = [&](int vi, int fi) {
+    //     return vi == faces(fi, 0) || vi == faces(fi, 1) || vi == faces(fi,
+    //     2);
+    // };
+    // auto has_common_endpoint = [&](int ei, int ej) {
+    //     return edges(ei, 0) == edges(ej, 0) || edges(ei, 0) == edges(ej, 1)
+    //         || edges(ei, 1) == edges(ej, 0) || edges(ei, 1) == edges(ej, 1);
+    // };
 
-    auto addCandidate = [&](int ai, int bi) {
-        // std::cout << "ai: " << ai << "bi: " << bi << std::endl;
-        auto mi = ai < bi ? ai : bi;
-        ai = std::min(ai, mi);
-        bi = std::max(bi, mi);
-        assert(ai < bi);
+    // auto addCandidate = [&](int ai, int bi) {
+    //     // std::cout << "ai: " << ai << "bi: " << bi << std::endl;
+    //     auto mi = ai < bi ? ai : bi;
+    //     ai = std::min(ai, mi);
+    //     bi = std::max(bi, mi);
+    //     assert(ai < bi);
 
-        if (is_vertex(ai) && is_face(bi)
-            && !is_endpoint(ai, bi - V.rows() - edges.rows())) {
-            candidates.fv_candidates.emplace_back(
-                bi - V.rows() - edges.rows(), ai);
-        } else if (
-            is_edge(ai) && is_edge(bi)
-            && !has_common_endpoint(ai - V.rows(), bi - V.rows())) {
-            candidates.ee_candidates.emplace_back(ai - V.rows(), bi - V.rows());
-        }
-    };
+    //     if (is_vertex(ai) && is_face(bi)
+    //         && !is_endpoint(ai, bi - num_vertices - edges.rows())) {
+    //         candidates.fv_candidates.emplace_back(
+    //             bi - num_vertices - edges.rows(), ai);
+    //     } else if (
+    //         is_edge(ai) && is_edge(bi)
+    //         && !has_common_endpoint(ai - num_vertices, bi - num_vertices)) {
+    //         candidates.ee_candidates.emplace_back(
+    //             ai - num_vertices, bi - num_vertices);
+    //     }
+    // };
 
-    for (size_t i = 0; i < b3BroadphasePairs.size(); i++) {
-        // proxy increments aabb m_id+1
-        // see DBVT::Initialize in DBVT.cpp
-        int xi = b3BroadphasePairs[i].x - 1;
-        int yi = b3BroadphasePairs[i].y - 1;
-        addCandidate(xi, yi);
-    }
+    // for (size_t i = 0; i < b3BroadphasePairs.size(); i++) {
+    //     // proxy increments aabb m_id+1
+    //     // see DBVT::Initialize in DBVT.cpp
+    //     int xi = b3BroadphasePairs[i].x - 1;
+    //     int yi = b3BroadphasePairs[i].y - 1;
+    //     addCandidate(xi, yi);
+    // }
 
-    //  remove duplicates
+    // //  remove duplicates
 
-    std::sort(candidates.ee_candidates.begin(), candidates.ee_candidates.end());
-    std::sort(candidates.fv_candidates.begin(), candidates.fv_candidates.end());
+    // std::sort(candidates.ee_candidates.begin(),
+    // candidates.ee_candidates.end());
+    // std::sort(candidates.fv_candidates.begin(),
+    // candidates.fv_candidates.end());
 
-    candidates.ee_candidates.erase(
-        unique(
-            candidates.ee_candidates.begin(), candidates.ee_candidates.end()),
-        candidates.ee_candidates.end());
-    candidates.fv_candidates.erase(
-        unique(
-            candidates.fv_candidates.begin(), candidates.fv_candidates.end()),
-        candidates.fv_candidates.end());
+    // candidates.ee_candidates.erase(
+    //     unique(
+    //         candidates.ee_candidates.begin(),
+    //         candidates.ee_candidates.end()),
+    //     candidates.ee_candidates.end());
+    // candidates.fv_candidates.erase(
+    //     unique(
+    //         candidates.fv_candidates.begin(),
+    //         candidates.fv_candidates.end()),
+    //     candidates.fv_candidates.end());
 
-    m_broadPhase = candidates.size();
-    std::cout << "m_broadPhase: " << m_broadPhase << std::endl;
+    // m_broadPhase = candidates.size();
+    // std::cout << "m_broadPhase: " << m_broadPhase << std::endl;
 }
 
 template <>
 void Interface<AxisSweep>::FilterOverlaps(
-    const Eigen::MatrixXd& V,
+    const long num_vertices,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces)
+    const Eigen::MatrixXi& faces) const
 {
-    auto btBroadphasePairs = algo->m_broadphase->getOverlappingPairCache()
-                                 ->getOverlappingPairArray();
-    std::cout << "btBroadphasePairs: " << btBroadphasePairs.size() << std::endl;
+    // auto btBroadphasePairs = algo->m_broadphase->getOverlappingPairCache()
+    //                              ->getOverlappingPairArray();
+    // std::cout << "btBroadphasePairs: " << btBroadphasePairs.size() <<
+    // std::endl;
 
-    auto is_vertex = [&](int ai) { return ai < V.rows(); };
-    auto is_edge = [&](int ai) {
-        return (ai >= V.rows()) && (ai < (V.rows() + edges.rows()));
-    };
-    auto is_face = [&](int ai) { return ai >= (V.rows() + edges.rows()); };
-    auto is_endpoint = [&](int vi, int fi) {
-        return vi == faces(fi, 0) || vi == faces(fi, 1) || vi == faces(fi, 2);
-    };
-    auto has_common_endpoint = [&](int ei, int ej) {
-        return edges(ei, 0) == edges(ej, 0) || edges(ei, 0) == edges(ej, 1)
-            || edges(ei, 1) == edges(ej, 0) || edges(ei, 1) == edges(ej, 1);
-    };
+    // auto is_vertex = [&](int ai) { return ai < num_vertices; };
+    // auto is_edge = [&](int ai) {
+    //     return (ai >= num_vertices) && (ai < (num_vertices + edges.rows()));
+    // };
+    // auto is_face = [&](int ai) { return ai >= (num_vertices + edges.rows());
+    // }; auto is_endpoint = [&](int vi, int fi) {
+    //     return vi == faces(fi, 0) || vi == faces(fi, 1) || vi == faces(fi,
+    //     2);
+    // };
+    // auto has_common_endpoint = [&](int ei, int ej) {
+    //     return edges(ei, 0) == edges(ej, 0) || edges(ei, 0) == edges(ej, 1)
+    //         || edges(ei, 1) == edges(ej, 0) || edges(ei, 1) == edges(ej, 1);
+    // };
 
-    auto addCandidate = [&](int ai, int bi) {
-        auto mi = ai < bi ? ai : bi;
-        ai = std::min(ai, mi);
-        bi = std::max(bi, mi);
+    // auto addCandidate = [&](int ai, int bi) {
+    //     auto mi = ai < bi ? ai : bi;
+    //     ai = std::min(ai, mi);
+    //     bi = std::max(bi, mi);
 
-        if (is_vertex(ai) && is_face(bi)
-            && !is_endpoint(ai, bi - V.rows() - edges.rows())) {
-            candidates.fv_candidates.emplace_back(
-                bi - V.rows() - edges.rows(), ai);
-        } else if (
-            is_edge(ai) && is_edge(bi)
-            && !has_common_endpoint(ai - V.rows(), bi - V.rows())) {
-            candidates.ee_candidates.emplace_back(ai - V.rows(), bi - V.rows());
-        }
-    };
+    //     if (is_vertex(ai) && is_face(bi)
+    //         && !is_endpoint(ai, bi - num_vertices - edges.rows())) {
+    //         candidates.fv_candidates.emplace_back(
+    //             bi - num_vertices - edges.rows(), ai);
+    //     } else if (
+    //         is_edge(ai) && is_edge(bi)
+    //         && !has_common_endpoint(ai - num_vertices, bi - num_vertices)) {
+    //         candidates.ee_candidates.emplace_back(
+    //             ai - num_vertices, bi - num_vertices);
+    //     }
+    // };
 
-    for (size_t i = 0; i < btBroadphasePairs.size(); i++) {
-        int xi = (btBroadphasePairs[i].m_pProxy0->m_uniqueId) - 1;
-        int yi = (btBroadphasePairs[i].m_pProxy0->m_uniqueId) - 1;
-        addCandidate(xi, yi);
-    }
+    // for (size_t i = 0; i < btBroadphasePairs.size(); i++) {
+    //     int xi = (btBroadphasePairs[i].m_pProxy0->m_uniqueId) - 1;
+    //     int yi = (btBroadphasePairs[i].m_pProxy0->m_uniqueId) - 1;
+    //     addCandidate(xi, yi);
+    // }
 
-    //  remove duplicates
+    // //  remove duplicates
 
-    std::sort(candidates.ee_candidates.begin(), candidates.ee_candidates.end());
-    std::sort(candidates.fv_candidates.begin(), candidates.fv_candidates.end());
+    // std::sort(candidates.ee_candidates.begin(),
+    // candidates.ee_candidates.end());
+    // std::sort(candidates.fv_candidates.begin(),
+    // candidates.fv_candidates.end());
 
-    candidates.ee_candidates.erase(
-        unique(
-            candidates.ee_candidates.begin(), candidates.ee_candidates.end()),
-        candidates.ee_candidates.end());
-    candidates.fv_candidates.erase(
-        unique(
-            candidates.fv_candidates.begin(), candidates.fv_candidates.end()),
-        candidates.fv_candidates.end());
+    // candidates.ee_candidates.erase(
+    //     unique(
+    //         candidates.ee_candidates.begin(),
+    //         candidates.ee_candidates.end()),
+    //     candidates.ee_candidates.end());
+    // candidates.fv_candidates.erase(
+    //     unique(
+    //         candidates.fv_candidates.begin(),
+    //         candidates.fv_candidates.end()),
+    //     candidates.fv_candidates.end());
 
-    m_broadPhase = candidates.size();
-    std::cout << "m_broadPhase: " << m_broadPhase << std::endl;
+    // m_broadPhase = candidates.size();
+    // std::cout << "m_broadPhase: " << m_broadPhase << std::endl;
 }
 
 /// @brief Compute a AABB for a vertex moving through time (i.e. temporal edge).

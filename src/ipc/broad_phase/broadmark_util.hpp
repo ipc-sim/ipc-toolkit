@@ -41,9 +41,9 @@ public:
     Interface();
     // virtual ~Interface() = default;
     void FilterOverlaps(
-        const Eigen::MatrixXd& V0,
+        const long num_vertices,
         const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces);
+        const Eigen::MatrixXi& faces) const;
     void CalcOverlaps(
         const Eigen::MatrixXd& V0,
         const Eigen::MatrixXd& V1,
@@ -61,21 +61,21 @@ public:
 
 template <>
 void Interface<DBVT_F>::FilterOverlaps(
-    const Eigen::MatrixXd& V,
+    const long num_vertices,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces);
+    const Eigen::MatrixXi& faces) const;
 
 template <>
 void Interface<DBVT_D>::FilterOverlaps(
-    const Eigen::MatrixXd& V,
+    const long num_vertices,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces);
+    const Eigen::MatrixXi& faces) const;
 
 template <>
 void Interface<AxisSweep>::FilterOverlaps(
-    const Eigen::MatrixXd& V,
+    const long num_vertices,
     const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces);
+    const Eigen::MatrixXi& faces) const;
 
 void to_aabbs(
     const Eigen::MatrixXd& V0,
@@ -83,11 +83,6 @@ void to_aabbs(
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     std::vector<broadmark::Aabb>& broadmark_aabbs);
-
-// void to_simplices(
-//     const Eigen::MatrixXd& V0,
-//     const Eigen::MatrixXi& E,
-//     std::vector<simplexType>& simplices);
 
 void mesh_to_aabbs(
     const Eigen::MatrixXd& V0,
@@ -98,14 +93,6 @@ void mesh_to_aabbs(
     std::vector<ipc::AABB>& face_aabbs,
     std::vector<ipc::AABB>& vertex_aabbs,
     const double inflation_radius = 0);
-
-// void toSimplexAabbs(
-//     const Eigen::MatrixXd& V0,
-//     const Eigen::MatrixXd& V1,
-//     const Eigen::MatrixXi& E,
-//     const Eigen::MatrixXi& F,
-//     SimplexAabbs & S
-// );
 
 void combine_aabbs(
     std::vector<ipc::AABB>& edge_aabbs,
@@ -119,4 +106,4 @@ void growAabbs(std::vector<broadmark::Aabb>& aabbs, const Vec3& amount);
 
 } // namespace ipc
 
-#include "interface.tpp"
+#include "broadmark_util.tpp"
