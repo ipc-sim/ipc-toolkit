@@ -81,5 +81,6 @@ void Broadmark<T>::detect_collision_candidates(
 template class Broadmark<SAP>;
 template class Broadmark<Grid_3D>;
 template class Broadmark<GPU_LBVH>;
+template class Broadmark<GPU_SAP>;
 
 } // namespace ipc
