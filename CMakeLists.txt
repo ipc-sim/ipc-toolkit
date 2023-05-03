@@ -10,9 +10,6 @@ endif()
 # Check required CMake version
 set(REQUIRED_CMAKE_VERSION "3.24.0")
 
-set(BROADMARK_REF_DIR "${PROJECT_SOURCE_DIR}/Broadmark/Broadmark/Algorithms")
-set(BROADMARK_DEPEDENCIES "${PROJECT_SOURCE_DIR}/Broadmark/Broadmark/Algorithms/Dependencies")
-
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   cmake_minimum_required(VERSION ${REQUIRED_CMAKE_VERSION})
 else()
@@ -41,6 +38,7 @@ option(IPC_TOOLKIT_WITH_CORRECT_CCD "Use the TightInclusion CCD" ON)
 option(IPC_TOOLKIT_WITH_SIMD "Enable SIMD" ON)
 option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" ON)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
+option(IPC_TOOLKIT_WITH_OPENCL "Enable OpenCL" ON)
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
@@ -139,11 +137,18 @@ if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
 endif()
 
 include(broadmark)
-
 ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC broadmark)
 
-# target_link_libraries(ipc_toolkit Broadmark)
-# target_include_directories(ipc_toolkit PRIVATE ${BROADMARK_REF_DIR} ${BROADMARK_DEPEDENCIES})
+# OpenCL
+if(IPC_TOOLKIT_WITH_OPENCL)
+  find_package(OpenCL REQUIRED)
+  include_directories(${OpenCL_INCLUDE_DIRS})
+
+  # target_link_libraries(ipc_toolkit PUBLIC ${OpenCL_LIBRARIES})
+  target_link_libraries(ipc_toolkit PUBLIC OpenCL::OpenCL)
+
+  # target_link_libraries(ipc_toolkit PUBLIC OpenCL::OpenCL)
+endif()
 
 # Sweep and Tiniest Queue and CCD
 if(IPC_TOOLKIT_WITH_CUDA)

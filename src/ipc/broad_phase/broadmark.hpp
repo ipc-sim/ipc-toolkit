@@ -3,6 +3,7 @@
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 #include "Broadphase/Algorithms/SAP/SAP.h"
 #include "Broadphase/Algorithms/Grid/Grid_ND.h"
+#include "Broadphase/Algorithms/GPU/Bullet3GPUAlgorithms.h"
 
 namespace ipc {
 
