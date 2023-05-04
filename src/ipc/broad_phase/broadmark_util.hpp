@@ -57,7 +57,8 @@ public:
         const Eigen::MatrixXd& V1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
-        std::vector<broadmark::Aabb>& broadmark_aabbs);
+        std::vector<broadmark::Aabb>& broadmark_aabbs,
+        const double inflation_radius = 0);
 };
 
 template <>
@@ -86,7 +87,8 @@ void to_aabbs(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    std::vector<broadmark::Aabb>& broadmark_aabbs);
+    std::vector<broadmark::Aabb>& broadmark_aabbs,
+    const double inflation_radius = 0);
 
 void mesh_to_aabbs(
     const Eigen::MatrixXd& V0,

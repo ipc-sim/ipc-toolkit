@@ -81,9 +81,10 @@ void Interface<T>::ConstructBoxes(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    std::vector<broadmark::Aabb>& broadmark_aabbs)
+    std::vector<broadmark::Aabb>& broadmark_aabbs,
+    const double inflation_radius)
 {
-    ipc::to_aabbs(V0, V1, edges, faces, broadmark_aabbs);
+    ipc::to_aabbs(V0, V1, edges, faces, broadmark_aabbs, inflation_radius);
 }
 
 template <class T>

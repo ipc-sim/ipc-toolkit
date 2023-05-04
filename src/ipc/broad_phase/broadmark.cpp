@@ -11,9 +11,10 @@ void Broadmark<T>::build(
 {
     CopyMeshBroadPhase::copy_mesh(edges, faces);
     num_vertices = vertices.rows();
-    interface.ConstructBoxes(vertices, vertices, edges, faces, boxes);
+    interface.ConstructBoxes(
+        vertices, vertices, edges, faces, boxes, inflation_radius);
     interface.CalcOverlaps(
-        vertices, vertices, edges, faces, boxes, /*init=*/false);
+        vertices, vertices, edges, faces, boxes, /*init=*/true);
 }
 
 template <class T>
@@ -22,13 +23,14 @@ void Broadmark<T>::build(
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     CopyMeshBroadPhase::copy_mesh(edges, faces);
     num_vertices = vertices_t0.rows();
-    interface.ConstructBoxes(vertices_t0, vertices_t1, edges, faces, boxes);
+    interface.ConstructBoxes(
+        vertices_t0, vertices_t1, edges, faces, boxes, inflation_radius);
     interface.CalcOverlaps(
-        vertices_t0, vertices_t1, edges, faces, boxes, /*init=*/false);
+        vertices_t0, vertices_t1, edges, faces, boxes, /*init=*/true);
 }
 
 template <class T> void Broadmark<T>::clear()
@@ -49,16 +51,14 @@ template <class T>
 void Broadmark<T>::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
-    // interface.FilterOverlaps(num_vertices, edges, faces);
-    // candidates = interface.candidates.ee_candidates;
+    throw std::runtime_error("Not implemented!");
 }
 
 template <class T>
 void Broadmark<T>::detect_face_vertex_candidates(
     std::vector<FaceVertexCandidate>& candidates) const
 {
-    // interface.FilterOverlaps(num_vertices, edges, faces);
-    // candidates = interface.candidates.fv_candidates;
+    throw std::runtime_error("Not implemented!");
 }
 
 template <class T>
@@ -73,6 +73,8 @@ template <class T>
 void Broadmark<T>::detect_collision_candidates(
     int dim, Candidates& candidates) const
 {
+    if (dim == 2)
+        throw std::runtime_error("Not implemented!");
     interface.FilterOverlaps(num_vertices, edges, faces, candidates);
     // interface.m_broadPhase = candidates.size();
 }

@@ -430,14 +430,16 @@ void to_aabbs(
     const Eigen::MatrixXd& V1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    std::vector<broadmark::Aabb>& broadmark_aabbs)
+    std::vector<broadmark::Aabb>& broadmark_aabbs,
+    const double inflation_radius)
 {
     std::vector<ipc::AABB> edge_aabbs;
     std::vector<ipc::AABB> face_aabbs;
     std::vector<ipc::AABB> vertex_aabbs;
     std::vector<ipc::AABB> ipc_aabbs;
     ipc::mesh_to_aabbs(
-        V0, V1, edges, faces, edge_aabbs, face_aabbs, vertex_aabbs);
+        V0, V1, edges, faces, edge_aabbs, face_aabbs, vertex_aabbs,
+        inflation_radius);
     ipc::combine_aabbs(edge_aabbs, face_aabbs, vertex_aabbs, ipc_aabbs);
     ipc::to_broadmark_aabbs(ipc_aabbs, broadmark_aabbs);
 }
