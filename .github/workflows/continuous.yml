@@ -35,17 +35,21 @@ jobs:
 
       - name: Dependencies (Linux)
         if: runner.os == 'Linux'
-        run: sudo apt-get install ccache
+        run: |
+          sudo apt-get install ccache
+          echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
 
       - name: Dependencies (macOS)
         if: runner.os == 'macOS'
-        run: brew install ccache
+        run: |
+          brew install ccache
+          echo 'CACHE_PATH=~/Library/Caches/ccache' >> "$GITHUB_ENV"
 
       - name: Cache Build
         id: cache-build
         uses: actions/cache@v3.0.11
         with:
-          path: ~/.ccache
+          path: ${{ env.CACHE_PATH }}
           key: ${{ runner.os }}-${{ matrix.config }}-cache
 
       - name: Prepare ccache

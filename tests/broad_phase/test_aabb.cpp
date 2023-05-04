@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <ipc/broad_phase/aabb.hpp>
 
@@ -38,7 +38,7 @@ using namespace ipc;
 //         aabb = AABB(min, max);
 //     }
 //     ArrayMax3d center_diff = aabb.getCenter() - actual_center;
-//     CHECK(center_diff.matrix().norm() == Approx(0.0).margin(1e-12));
+//     CHECK(center_diff.matrix().norm() == Catch::Approx(0.0).margin(1e-12));
 // }
 
 TEST_CASE("AABB overlapping", "[broad_phase][AABB]")

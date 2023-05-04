@@ -1,6 +1,8 @@
 set(SOURCES
   candidates.cpp
   candidates.hpp
+  collision_stencil.hpp
+  collision_stencil.cpp
   continuous_collision_candidate.hpp
   edge_edge.cpp
   edge_edge.hpp

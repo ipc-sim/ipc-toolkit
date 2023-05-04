@@ -35,7 +35,6 @@ FetchContent_Declare(
     ipc_toolkit
     GIT_REPOSITORY https://github.com/ipc-sim/ipc-toolkit.git
     GIT_TAG ${IPC_TOOLKIT_GIT_TAG}
-    GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(ipc_toolkit)
 ```
@@ -99,7 +98,7 @@ For more information see the [Python documentation](https://ipc-sim.github.io/ip
 
 ## Contributing
 
-This project is open to contributors! Contributions can come in the form of feature requests, bug fixes, documentation, tutorials and the like. We highly recommend filing an Issue first before submitting a Pull Request.
+This project is open to contributors! Contributions can come in the form of feature requests, bug fixes, documentation, tutorials, and the like. We highly recommend filing an Issue first before submitting a Pull Request.
 
 Simply fork this repository and make a Pull Request! We would appreciate:
 

@@ -2,7 +2,9 @@
 
 #include <ipc/collision_mesh.hpp>
 #include <ipc/broad_phase/aabb.hpp>
-#include <ipc/candidates/candidates.hpp>
+#include <ipc/candidates/edge_vertex.hpp>
+#include <ipc/candidates/edge_edge.hpp>
+#include <ipc/candidates/face_vertex.hpp>
 #include <ipc/candidates/edge_face.hpp>
 
 #include <Eigen/Core>
@@ -19,38 +21,43 @@ enum class BroadPhaseMethod {
     NUM_METHODS
 };
 
+static constexpr BroadPhaseMethod DEFAULT_BROAD_PHASE_METHOD =
+    BroadPhaseMethod::HASH_GRID;
+
+class Candidates; // Forward declaration
+
 class BroadPhase {
 public:
     virtual ~BroadPhase() { clear(); }
 
     /// @brief Construct a registered broad phase object.
-    /// @param method The broad phase method to use.
+    /// @param broad_phase_method The broad phase method to use.
     /// @return The constructed broad phase object.
     static std::unique_ptr<BroadPhase>
-    make_broad_phase(const BroadPhaseMethod method);
+    make_broad_phase(const BroadPhaseMethod broad_phase_method);
 
     /// @brief Build the broad phase for static collision detection.
-    /// @param V0 Positions of the vertices.
-    /// @param E Edges of the mesh.
-    /// @param F Faces of the mesh.
+    /// @param vertices Vertex positions
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
     virtual void build(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         double inflation_radius = 0);
 
     /// @brief Build the broad phase for continuous collision detection.
-    /// @param V0 Starting positions of the vertices.
-    /// @param V1 Ending positions of the vertices.
-    /// @param E Edges of the mesh.
-    /// @param F Faces of the mesh.
+    /// @param vertices_t0 Starting vertices of the vertices.
+    /// @param vertices_t1 Ending vertices of the vertices.
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
     virtual void build(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         double inflation_radius = 0);
 
     /// @brief Clear any built data.
@@ -84,7 +91,9 @@ public:
 
     /// @brief Function for determining if two vertices can collide.
     std::function<bool(size_t, size_t)> can_vertices_collide =
-        [](size_t, size_t) { return true; };
+        default_can_vertices_collide;
+
+    static bool default_can_vertices_collide(size_t, size_t) { return true; }
 
 protected:
     virtual bool can_edge_vertex_collide(size_t ei, size_t vi) const;
@@ -96,34 +105,5 @@ protected:
     std::vector<AABB> edge_boxes;
     std::vector<AABB> face_boxes;
 };
-
-/// @brief Construct a set of discrete collision detection candidates.
-/// @param[in] mesh The surface of the contact mesh.
-/// @param[in] V Surface Vertex positions at start as rows of a matrix.
-/// @param[out] candidates The constructed candidate set as output.
-/// @param[in] inflation_radius Amount to inflate the bounding boxes.
-/// @param[in] method Broad phase method to use.
-void construct_collision_candidates(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V,
-    Candidates& candidates,
-    double inflation_radius = 0,
-    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID);
-
-/// @brief Construct a set of continuous collision detection candidates.
-/// @note Assumes the trajectory is linear.
-/// @param[in] mesh The surface of the contact mesh.
-/// @param[in] V0 Surface vertex positions at start as rows of a matrix.
-/// @param[in] V1 Surface vertex positions at end as rows of a matrix.
-/// @param[out] candidates The constructed candidate set as output.
-/// @param[in] inflation_radius Amount to inflate the bounding boxes.
-/// @param[in] method Broad phase method to use.
-void construct_collision_candidates(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    Candidates& candidates,
-    double inflation_radius = 0,
-    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID);
 
 } // namespace ipc

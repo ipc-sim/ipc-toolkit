@@ -1,13 +1,13 @@
 #pragma once
 
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <string>
 
 #include <Eigen/Core>
 #include <nlohmann/json.hpp>
 
-#include <ipc/collisions/constraints.hpp>
+#include <ipc/collisions/collision_constraints.hpp>
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -37,7 +37,7 @@ void mmcvids_to_constraints(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Eigen::MatrixXi& mmcvids,
-    ipc::Constraints& constraints);
+    ipc::CollisionConstraints& constraints);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Rotation generator

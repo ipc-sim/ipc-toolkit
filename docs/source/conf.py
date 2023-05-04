@@ -21,7 +21,7 @@ import pathlib
 # -- Project information -----------------------------------------------------
 
 project = "IPC Toolkit"
-copyright = '2020-2022, IPC-Sim Organization; MIT License'
+copyright = '2020-2023, IPC-Sim Organization; MIT License'
 author = "Zachary Ferguson"
 version = "1.0.0"
 
@@ -29,7 +29,7 @@ version = "1.0.0"
 
 # Doxygen
 pathlib.Path("../build/doxyoutput").mkdir(parents=True, exist_ok=True)
-if(not subprocess.run(["doxygen", "Doxyfile"])):
+if (not subprocess.run(["doxygen", "Doxyfile"])):
     print("Doxygen failed! Exiting")
     exit(1)
 
@@ -37,7 +37,9 @@ if(not subprocess.run(["doxygen", "Doxyfile"])):
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
+    "autoclasstoc",
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
     "sphinx.ext.autosectionlabel",
@@ -51,7 +53,13 @@ extensions = [
     "myst_parser",
     "nbsphinx",
     "sphinx_immaterial",
-    "sphinx_immaterial.apidoc.python.apigen"
+    "sphinx_immaterial.apidoc.python.apigen",
+    "sphinx_immaterial.apidoc.format_signatures",
+    # 'sphinx_autodoc_toolbox.collapse',
+]
+
+object_description_options = [
+    ("cpp:.*", dict(clang_format_style={"BasedOnStyle": "WebKit"})),
 ]
 
 source_suffix = {
@@ -69,9 +77,22 @@ breathe_projects = {
     project: "../build/doxyoutput/xml"
 }
 breathe_default_project = project
-breathe_default_members = ("members", "undoc-members")
+breathe_default_members = (
+    "members",
+    "undoc-members",
+    "protected-members",
+    "private-members",
+)
 breathe_show_define_initializer = True
 # breathe_show_include = True
+
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "private-members": True,
+    'special-members': True,
+    'show-inheritance': True,
+}
 
 # -- GraphViz configuration ----------------------------------
 graphviz_output_format = 'svg'
@@ -148,13 +169,15 @@ html_theme_options = {
         }
     }],
 
+    "site_url": "https://ipc-sim.github.io/ipc-toolkit",
+
     # Set the repo location to get a badge with stats
-    "repo_url": "https://github.com/ipc-sim/ipc-toolkit/",
+    "repo_url": "https://github.com/ipc-sim/ipc-toolkit",
     "repo_name": "ipc-sim/ipc-toolkit",
     "repo_type": "github",
     "icon": {"repo": "fontawesome/brands/github"},
 
-    "edit_uri": "blob/main/docs/src",
+    "edit_uri": "blob/main/docs/source",
 
     "features": [
         "navigation.expand",
@@ -163,7 +186,8 @@ html_theme_options = {
         "navigation.tracking",
         "search.highlight",
         "search.share",
-        "toc.follow"
+        "toc.follow",
+        "content.tabs.link"
     ],
 
     "font": {
@@ -172,6 +196,9 @@ html_theme_options = {
     },
 
     "toc_title": "Contents",
+
+    "version_dropdown": True,
+    "version_json": "https://ipc-sim.github.io/ipc-toolkit/versions.json",
 }
 
 html_title = "IPC Toolkit"

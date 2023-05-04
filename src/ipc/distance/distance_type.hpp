@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Eigen/Core>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
@@ -47,11 +47,10 @@ enum class EdgeEdgeDistanceType {
 /// @param e0 The first vertex of the edge.
 /// @param e1 The second vertex of the edge.
 /// @return The distance type of the point-edge pair.
-template <typename DerivedP, typename DerivedE0, typename DerivedE1>
 PointEdgeDistanceType point_edge_distance_type(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedE0>& e0,
-    const Eigen::MatrixBase<DerivedE1>& e1);
+    const Eigen::Ref<const VectorMax3d>& p,
+    const Eigen::Ref<const VectorMax3d>& e0,
+    const Eigen::Ref<const VectorMax3d>& e1);
 
 /// @brief Determine the closest pair between a point and triangle.
 /// @param p The point.
@@ -59,16 +58,11 @@ PointEdgeDistanceType point_edge_distance_type(
 /// @param t1 The second vertex of the triangle.
 /// @param t2 The third vertex of the triangle.
 /// @return The distance type of the point-triangle pair.
-template <
-    typename DerivedP,
-    typename DerivedT0,
-    typename DerivedT1,
-    typename DerivedT2>
 PointTriangleDistanceType point_triangle_distance_type(
-    const Eigen::MatrixBase<DerivedP>& p,
-    const Eigen::MatrixBase<DerivedT0>& t0,
-    const Eigen::MatrixBase<DerivedT1>& t1,
-    const Eigen::MatrixBase<DerivedT2>& t2);
+    const Eigen::Ref<const Eigen::Vector3d>& p,
+    const Eigen::Ref<const Eigen::Vector3d>& t0,
+    const Eigen::Ref<const Eigen::Vector3d>& t1,
+    const Eigen::Ref<const Eigen::Vector3d>& t2);
 
 /// @brief Determine the closest pair between two edges.
 /// @param ea0 The first vertex of the first edge.
@@ -76,17 +70,10 @@ PointTriangleDistanceType point_triangle_distance_type(
 /// @param eb0 The first vertex of the second edge.
 /// @param eb1 The second vertex of the second edge.
 /// @return The distance type of the edge-edge pair.
-template <
-    typename DerivedEA0,
-    typename DerivedEA1,
-    typename DerivedEB0,
-    typename DerivedEB1>
 EdgeEdgeDistanceType edge_edge_distance_type(
-    const Eigen::MatrixBase<DerivedEA0>& ea0,
-    const Eigen::MatrixBase<DerivedEA1>& ea1,
-    const Eigen::MatrixBase<DerivedEB0>& eb0,
-    const Eigen::MatrixBase<DerivedEB1>& eb1);
+    const Eigen::Ref<const Eigen::Vector3d>& ea0,
+    const Eigen::Ref<const Eigen::Vector3d>& ea1,
+    const Eigen::Ref<const Eigen::Vector3d>& eb0,
+    const Eigen::Ref<const Eigen::Vector3d>& eb1);
 
 } // namespace ipc
-
-#include <ipc/distance/distance_type.tpp>

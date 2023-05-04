@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/candidates/continuous_collision_candidate.hpp>
 #include <ipc/distance/distance_type.hpp>
 
@@ -9,43 +10,28 @@
 
 namespace ipc {
 
-struct EdgeEdgeCandidate : ContinuousCollisionCandidate {
-    EdgeEdgeCandidate(long edge0_index, long edge1_index);
+class EdgeEdgeCandidate : virtual public CollisionStencil,
+                          public ContinuousCollisionCandidate {
+public:
+    EdgeEdgeCandidate(long edge0_id, long edge1_id);
 
-    int num_vertices() const { return 4; };
+    int num_vertices() const override { return 4; };
 
-    std::array<long, 4>
-    vertex_indices(const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const
+    std::array<long, 4> vertex_ids(
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
-        return { { E(edge0_index, 0), E(edge0_index, 1), //
-                   E(edge1_index, 0), E(edge1_index, 1) } };
+        return { { edges(edge0_id, 0), edges(edge0_id, 1), //
+                   edges(edge1_id, 0), edges(edge1_id, 1) } };
     }
-
-    double compute_distance(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
-
-    VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
-
-    MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO) const;
 
     // ------------------------------------------------------------------------
 
     /// Perform narrow-phase CCD on the candidate.
-    /// @param[in] V0 Mesh vertex positions at the start of the time step.
-    /// @param[in] V1 Mesh vertex positions at the end of the time step.
-    /// @param[in] E Mesh edges as rows of indicies into V.
-    /// @param[in] F Mesh triangular faces as rows of indicies into V.
+    /// @param[in] vertices_t0 Mesh vertices at the start of the time step.
+    /// @param[in] vertices_t1 Mesh vertices at the end of the time step.
+    /// @param[in] edges Collision mesh edges as rows of indicies into vertices.
+    /// @param[in] faces Collision mesh triangular faces as rows of indicies into vertices.
     /// @param[out] toi Computed time of impact (normalized).
     /// @param[in] tmax Maximum time (normalized) to look for collisions. Should be in [0, 1].
     /// @param[in] tolerance CCD tolerance used by Tight-Inclusion CCD.
@@ -53,11 +39,12 @@ struct EdgeEdgeCandidate : ContinuousCollisionCandidate {
     /// @param[in] conservative_rescaling Conservative rescaling value used to avoid taking steps exactly to impact.
     /// @return If the candidate had a collision over the time interval.
     bool
-    ccd(const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+    ccd(const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         double& toi,
+        const double min_distance = 0.0,
         const double tmax = 1.0,
         const double tolerance = DEFAULT_CCD_TOLERANCE,
         const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
@@ -65,10 +52,10 @@ struct EdgeEdgeCandidate : ContinuousCollisionCandidate {
             DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
 
     void print_ccd_query(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override;
 
     // ------------------------------------------------------------------------
 
@@ -80,15 +67,33 @@ struct EdgeEdgeCandidate : ContinuousCollisionCandidate {
     template <typename H>
     friend H AbslHashValue(H h, const EdgeEdgeCandidate& ee)
     {
-        long min_ei = std::min(ee.edge0_index, ee.edge1_index);
-        long max_ei = std::max(ee.edge0_index, ee.edge1_index);
+        long min_ei = std::min(ee.edge0_id, ee.edge1_id);
+        long max_ei = std::max(ee.edge0_id, ee.edge1_id);
         return H::combine(std::move(h), min_ei, max_ei);
     }
 
     // ------------------------------------------------------------------------
 
-    long edge0_index;
-    long edge1_index;
+    long edge0_id; ///< @brief ID of the first edge.
+    long edge1_id; ///< @brief ID of the second edge.
+
+    using CollisionStencil::compute_distance;
+    using CollisionStencil::compute_distance_gradient;
+    using CollisionStencil::compute_distance_hessian;
+
+protected:
+    double compute_distance(const VectorMax12d& positions) const override;
+
+    VectorMax12d
+    compute_distance_gradient(const VectorMax12d& positions) const override;
+
+    MatrixMax12d
+    compute_distance_hessian(const VectorMax12d& positions) const override;
+
+    virtual EdgeEdgeDistanceType known_dtype() const
+    {
+        return EdgeEdgeDistanceType::AUTO;
+    }
 };
 
 } // namespace ipc

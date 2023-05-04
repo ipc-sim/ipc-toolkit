@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/candidates/continuous_collision_candidate.hpp>
 #include <ipc/distance/distance_type.hpp>
 
@@ -9,47 +10,30 @@
 
 namespace ipc {
 
-struct FaceVertexCandidate : ContinuousCollisionCandidate {
-    FaceVertexCandidate(long face_index, long vertex_index);
+class FaceVertexCandidate : virtual public CollisionStencil,
+                            public ContinuousCollisionCandidate {
+public:
+    FaceVertexCandidate(long face_id, long vertex_id);
 
-    int num_vertices() const { return 4; };
+    int num_vertices() const override { return 4; };
 
-    std::array<long, 4>
-    vertex_indices(const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const
+    std::array<long, 4> vertex_ids(
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
     {
-        return { { vertex_index, //
-                   F(face_index, 0), F(face_index, 1), F(face_index, 2) } };
+        return { { vertex_id, faces(face_id, 0), faces(face_id, 1),
+                   faces(face_id, 2) } };
     }
-
-    double compute_distance(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const PointTriangleDistanceType dtype =
-            PointTriangleDistanceType::AUTO) const;
-
-    VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const PointTriangleDistanceType dtype =
-            PointTriangleDistanceType::AUTO) const;
-
-    MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
-        const PointTriangleDistanceType dtype =
-            PointTriangleDistanceType::AUTO) const;
 
     // ------------------------------------------------------------------------
 
     bool
-    ccd(const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+    ccd(const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         double& toi,
+        const double min_distance = 0.0,
         const double tmax = 1.0,
         const double tolerance = DEFAULT_CCD_TOLERANCE,
         const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
@@ -57,10 +41,10 @@ struct FaceVertexCandidate : ContinuousCollisionCandidate {
             DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
 
     void print_ccd_query(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override;
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override;
 
     // ------------------------------------------------------------------------
 
@@ -72,11 +56,29 @@ struct FaceVertexCandidate : ContinuousCollisionCandidate {
     template <typename H>
     friend H AbslHashValue(H h, const FaceVertexCandidate& fv)
     {
-        return H::combine(std::move(h), fv.face_index, fv.vertex_index);
+        return H::combine(std::move(h), fv.face_id, fv.vertex_id);
     }
 
-    long face_index;
-    long vertex_index;
+    long face_id;   ///< @brief ID of the face
+    long vertex_id; ///< @brief ID of the vertex
+
+    using CollisionStencil::compute_distance;
+    using CollisionStencil::compute_distance_gradient;
+    using CollisionStencil::compute_distance_hessian;
+
+protected:
+    double compute_distance(const VectorMax12d& positions) const override;
+
+    VectorMax12d
+    compute_distance_gradient(const VectorMax12d& positions) const override;
+
+    MatrixMax12d
+    compute_distance_hessian(const VectorMax12d& positions) const override;
+
+    virtual PointTriangleDistanceType known_dtype() const
+    {
+        return PointTriangleDistanceType::AUTO;
+    }
 };
 
 } // namespace ipc

@@ -10,6 +10,39 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 -->
 
+## 2023-03-14 ([pr-30](https://github.com/ipc-sim/ipc-toolkit/pull/30))
+
+### Changed
+
+* Default `project_hessian_to_psd` changed to `false`
+
+## 2023-03-14 ([pr-25](https://github.com/ipc-sim/ipc-toolkit/pull/25))
+
+### Added
+
+* Generic `CollisionStencil` parent class to `Candidates`, `CollisionConstraints`, and `FrictionConstraints`. They all share the same distance functions.
+
+### Changed
+
+* Large refactor to make the code more object-oriented:
+    * `construct_collision_candidates(..., candidates)` → `candidates.build(...)`
+    * `is_step_collision_free(candidates, ...)` → `candidates.is_step_collision_free(...)`
+    * `compute_collision_free_stepsize(candidates, ...)` → `candidates.compute_collision_free_stepsize(...)`
+    * `compute_barrier_potential*(..., constraints)` → `constraints.compute_potential*(...)`
+    * `compute_shape_derivative(constraints, ...)` → `constraints.compute_shape_derivative(...)`
+    * `compute_minimum_distance(constraints, ...)` → `constraints.compute_minimum_distance(...)`
+    * `construct_friction_constraint_set(..., friction_constraints)` → `friction_constraints.build(...)`
+    * `compute_friction_*(..., friction_constraints, ...)` → `friction_constraints.compute_*(...)`
+* Renamed `Constraints` to `CollisionConstraints`
+* Renamed `*_index` → `*_id`
+* `CollisionConstraints::use_convergent_formulation` and `are_shape_derivatives_enabled` must now be accessed through getter and setter functions
+* Friction potentials are now functions of velocity. Previously `V0` and `V1` were passed and `U = V1-V0` was used. This limited the integration scheme to implicit Euler. Upstream this means you need to multiply the potential by $\left(\frac{dv}{dx}\right)^{-1}$ to get the correct friction force.
+    * TODO: Update the `compute_force` and `compute_force_jacobian` to take velocity as well.
+
+## 2023-01-17 ([pr-22](https://github.com/ipc-sim/ipc-toolkit/pull/22))
+### Changed
+* Added a minimum distance optional parameter to all CCD functions (`const double min_distance = 0.0`). This is placed as the first optional argument which can break calling code if optional parameters were previously used.
+
 ## 2022-02-21 ([pr-7](https://github.com/ipc-sim/ipc-toolkit/pull/7))
 ### Added
 * CollisionMesh to wrap up face and edges into a single data structure.

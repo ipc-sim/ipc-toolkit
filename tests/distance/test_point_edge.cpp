@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <test_utils.hpp>
 
@@ -22,7 +22,7 @@ TEST_CASE("Point-edge distance", "[distance][point-edge]")
     e1.x() = 10;
 
     double distance = point_edge_distance(p, e0, e1);
-    CHECK(distance == Approx(expected_distance * expected_distance));
+    CHECK(distance == Catch::Approx(expected_distance * expected_distance));
 }
 
 TEST_CASE("Point-edge distance all types", "[distance][point-edge]")
@@ -41,7 +41,8 @@ TEST_CASE("Point-edge distance all types", "[distance][point-edge]")
         } else {
             e0 = Eigen::Vector3d::Random();
             e1 = Eigen::Vector3d::Random();
-            n = cross(e1 - e0, Eigen::Vector3d::UnitX()).normalized();
+            n = Eigen::Vector3d(e1 - e0).cross(Eigen::Vector3d::UnitX());
+            n.normalize();
         }
 
         const VectorMax3d p = ((e1 - e0) * alpha + e0) + d * n;
@@ -54,7 +55,8 @@ TEST_CASE("Point-edge distance all types", "[distance][point-edge]")
         const double distance = point_edge_distance(p, e0, e1);
         CHECK(
             distance
-            == Approx(expected_distance * expected_distance).margin(1e-15));
+            == Catch::Approx(expected_distance * expected_distance)
+                   .margin(1e-15));
     }
 }
 
@@ -69,14 +71,11 @@ TEST_CASE("Point-edge distance gradient", "[distance][point-edge][gradient]")
     VectorMax3d e1 = VectorMax3d::Zero(dim);
     e1.x() = 10;
 
-    Eigen::VectorXd grad;
-    point_edge_distance_gradient(p, e0, e1, grad);
+    const VectorMax9d grad = point_edge_distance_gradient(p, e0, e1);
 
     // Compute the gradient using finite differences
-    Eigen::VectorXd x(3 * dim);
-    x.segment(0 * dim, dim) = p;
-    x.segment(1 * dim, dim) = e0;
-    x.segment(2 * dim, dim) = e1;
+    VectorMax9d x(3 * dim);
+    x << p, e0, e1;
     auto f = [&dim](const Eigen::VectorXd& x) {
         return point_edge_distance(
             x.head(dim), x.segment(dim, dim), x.tail(dim));
@@ -98,14 +97,11 @@ TEST_CASE("Point-edge distance hessian", "[distance][point-edge][hessian]")
     VectorMax3d e1 = VectorMax3d::Zero(dim);
     e1.x() = 10;
 
-    Eigen::MatrixXd hess;
-    point_edge_distance_hessian(p, e0, e1, hess);
+    const MatrixMax9d hess = point_edge_distance_hessian(p, e0, e1);
 
     // Compute the gradient using finite differences
-    Eigen::VectorXd x(3 * dim);
-    x.segment(0 * dim, dim) = p;
-    x.segment(1 * dim, dim) = e0;
-    x.segment(2 * dim, dim) = e1;
+    VectorMax9d x(3 * dim);
+    x << p, e0, e1;
     auto f = [&dim](const Eigen::VectorXd& x) {
         return point_edge_distance(
             x.head(dim), x.segment(dim, dim), x.tail(dim));
