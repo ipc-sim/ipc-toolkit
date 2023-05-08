@@ -76,21 +76,8 @@ void Interface<T>::FilterOverlaps(
 }
 
 template <class T>
-void Interface<T>::ConstructBoxes(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    std::vector<broadmark::Aabb>& broadmark_aabbs,
-    const double inflation_radius)
-{
-    ipc::to_aabbs(V0, V1, edges, faces, broadmark_aabbs, inflation_radius);
-}
-
-template <class T>
 void Interface<T>::CalcOverlaps(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     std::vector<broadmark::Aabb>& broadmark_aabbs,
@@ -106,7 +93,7 @@ void Interface<T>::CalcOverlaps(
         InflatedSettings settings = InflatedSettings();
         settings.m_numberOfObjects = broadmark_aabbs.size();
         settings.m_worldAabb = m_worldAabb;
-        settings.m_vertices = V0.rows();
+        settings.m_vertices = vertices.rows();
         settings.m_edges = edges.rows();
         settings.m_faces = faces.rows();
         tbb::global_control control(

@@ -398,9 +398,9 @@ void mesh_to_aabbs(
 }
 
 void combine_aabbs(
-    std::vector<ipc::AABB>& edge_aabbs,
-    std::vector<ipc::AABB>& face_aabbs,
-    std::vector<ipc::AABB>& vertex_aabbs,
+    const std::vector<ipc::AABB>& edge_aabbs,
+    const std::vector<ipc::AABB>& face_aabbs,
+    const std::vector<ipc::AABB>& vertex_aabbs,
     std::vector<ipc::AABB>& aabbs)
 {
     aabbs.clear();
@@ -413,7 +413,7 @@ void combine_aabbs(
 }
 
 void to_broadmark_aabbs(
-    std::vector<ipc::AABB>& ipc_aabbs,
+    const std::vector<ipc::AABB>& ipc_aabbs,
     std::vector<broadmark::Aabb>& broadmark_aabbs)
 {
     broadmark_aabbs.clear();

@@ -10,11 +10,13 @@ void Broadmark<T>::build(
     double inflation_radius)
 {
     CopyMeshBroadPhase::copy_mesh(edges, faces);
+    BroadPhase::build(vertices, edges, faces, inflation_radius);
     num_vertices = vertices.rows();
-    interface.ConstructBoxes(
-        vertices, vertices, edges, faces, boxes, inflation_radius);
-    interface.CalcOverlaps(
-        vertices, vertices, edges, faces, boxes, /*init=*/true);
+    std::vector<ipc::AABB> ipc_aabbs;
+    ipc::combine_aabbs(edge_boxes, face_boxes, vertex_boxes, ipc_aabbs);
+    ipc::to_broadmark_aabbs(ipc_aabbs, boxes);
+    ipc_aabbs.clear();
+    interface.CalcOverlaps(vertices, edges, faces, boxes, /*init=*/true);
 }
 
 template <class T>
@@ -23,18 +25,21 @@ void Broadmark<T>::build(
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    const double inflation_radius)
+    double inflation_radius)
 {
     CopyMeshBroadPhase::copy_mesh(edges, faces);
+    BroadPhase::build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
     num_vertices = vertices_t0.rows();
-    interface.ConstructBoxes(
-        vertices_t0, vertices_t1, edges, faces, boxes, inflation_radius);
-    interface.CalcOverlaps(
-        vertices_t0, vertices_t1, edges, faces, boxes, /*init=*/true);
+    std::vector<ipc::AABB> ipc_aabbs;
+    ipc::combine_aabbs(edge_boxes, face_boxes, vertex_boxes, ipc_aabbs);
+    ipc::to_broadmark_aabbs(ipc_aabbs, boxes);
+    ipc_aabbs.clear();
+    interface.CalcOverlaps(vertices_t0, edges, faces, boxes, /*init=*/true);
 }
 
 template <class T> void Broadmark<T>::clear()
 {
+    BroadPhase::clear();
     num_vertices = 0;
     interface.Clear();
     boxes.clear();
@@ -84,5 +89,8 @@ template class Broadmark<SAP>;
 template class Broadmark<Grid_3D>;
 template class Broadmark<GPU_LBVH>;
 template class Broadmark<GPU_SAP>;
+template class Broadmark<DBVT_D>;
+template class Broadmark<KD>;
+template class Broadmark<Tracy>;
 
 } // namespace ipc

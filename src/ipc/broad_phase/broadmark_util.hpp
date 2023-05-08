@@ -46,19 +46,11 @@ public:
         const Eigen::MatrixXi& faces,
         Candidates& candidates) const;
     void CalcOverlaps(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
+        const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         std::vector<broadmark::Aabb>& broadmark_aabbs,
         bool init = false);
-    void ConstructBoxes(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        std::vector<broadmark::Aabb>& broadmark_aabbs,
-        const double inflation_radius = 0);
 };
 
 template <>
@@ -101,10 +93,14 @@ void mesh_to_aabbs(
     const double inflation_radius = 0);
 
 void combine_aabbs(
-    std::vector<ipc::AABB>& edge_aabbs,
-    std::vector<ipc::AABB>& face_aabbs,
-    std::vector<ipc::AABB>& vertex_aabbs,
+    const std::vector<ipc::AABB>& edge_aabbs,
+    const std::vector<ipc::AABB>& face_aabbs,
+    const std::vector<ipc::AABB>& vertex_aabbs,
     std::vector<ipc::AABB>& aabbs);
+
+void to_broadmark_aabbs(
+    const std::vector<ipc::AABB>& ipc_aabbs,
+    std::vector<broadmark::Aabb>& broadmark_aabbs);
 
 broadmark::Aabb buildWorldAabb(const std::vector<broadmark::Aabb>& aabbs);
 

@@ -1,9 +1,15 @@
 
 #include <ipc/broad_phase/broadmark_util.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
-#include "Broadphase/Algorithms/SAP/SAP.h"
 #include "Broadphase/Algorithms/Grid/Grid_ND.h"
 #include "Broadphase/Algorithms/GPU/Bullet3GPUAlgorithms.h"
+#include "Broadphase/Algorithms/KD/KD.h"
+#include "Broadphase/Algorithms/SAP/SAP.h"
+#include "Broadphase/Algorithms/SAP/SAP_Parallel.h"
+#include "Broadphase/Algorithms/SAP/SAP_SIMD_Parallel.h"
+#include "Broadphase/Algorithms/Tracy/Tracy.h"
+#include "Broadphase/Algorithms/Tracy/Tracy_Parallel.h"
+#include "Broadphase/Algorithms/iSAP/AxisSweep.h"
 
 namespace ipc {
 
@@ -74,6 +80,9 @@ protected:
     std::vector<std::pair<int, int>> overlaps;
     ipc::Interface<T> interface;
     long num_vertices;
+    // std::vector<ipc::AABB> vertex_boxes;
+    // std::vector<ipc::AABB> edge_boxes;
+    // std::vector<ipc::AABB> face_boxes;
 };
 
 } // namespace ipc
