@@ -19,7 +19,7 @@ enum class BroadPhaseMethod {
     SWEEP_AND_TINIEST_QUEUE,
     SWEEP_AND_TINIEST_QUEUE_GPU, // Requires CUDA,
     BROADMARK_GPU_LBVH,
-    // BROADMARK_GPU_SAP,
+    BROADMARK_KD,
     NUM_METHODS
 };
 
