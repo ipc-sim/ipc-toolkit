@@ -1,8 +1,12 @@
 
 #include <ipc/broad_phase/broadmark_util.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
-#include "Broadphase/Algorithms/Grid/Grid_ND.h"
 #include "Broadphase/Algorithms/GPU/Bullet3GPUAlgorithms.h"
+#include "Broadphase/Algorithms/BF/BF.h"
+#include "Broadphase/Algorithms/DBVT/DBVT.h"
+#include "Broadphase/Algorithms/Grid/Grid_ND.h"
+#include "Broadphase/Algorithms/Grid/Grid_ND_Parallel.h"
+#include "Broadphase/Algorithms/Grid/Grid_ND_SAP.h"
 #include "Broadphase/Algorithms/KD/KD.h"
 #include "Broadphase/Algorithms/SAP/SAP.h"
 #include "Broadphase/Algorithms/SAP/SAP_Parallel.h"
@@ -10,6 +14,7 @@
 #include "Broadphase/Algorithms/Tracy/Tracy.h"
 #include "Broadphase/Algorithms/Tracy/Tracy_Parallel.h"
 #include "Broadphase/Algorithms/iSAP/AxisSweep.h"
+// #include "Broadphase/Algorithms/CGAL/CGAL.h"
 
 namespace ipc {
 

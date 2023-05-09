@@ -40,6 +40,8 @@ option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" ON)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 option(IPC_TOOLKIT_WITH_OPENCL "Enable OpenCL" ON)
 
+# option(IPC_TOOLKIT_WITH_CGAL "Enable CGAL" ON)
+
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   set(CMAKE_CXX_STANDARD 17)
@@ -149,6 +151,11 @@ if(IPC_TOOLKIT_WITH_OPENCL)
 
   # target_link_libraries(ipc_toolkit PUBLIC OpenCL::OpenCL)
 endif()
+
+# CGAL
+# if(IPC_TOOLKIT_WITH_CGAL)
+# target_link_libraries(ipc_toolkit PUBLIC CGAL::CGAL)
+# endif()
 
 # Sweep and Tiniest Queue and CCD
 if(IPC_TOOLKIT_WITH_CUDA)

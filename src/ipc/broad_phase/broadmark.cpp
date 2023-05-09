@@ -86,11 +86,19 @@ void Broadmark<T>::detect_collision_candidates(
 
 // Explicitly instantiate the template for SAP type
 template class Broadmark<SAP>;
+template class Broadmark<SAP_Parallel>;
 template class Broadmark<Grid_3D>;
-template class Broadmark<GPU_LBVH>;
-template class Broadmark<GPU_SAP>;
+template class Broadmark<Grid_3D_Parallel>;
 template class Broadmark<DBVT_D>;
+template class Broadmark<DBVT_F>;
+template class Broadmark<AxisSweep>;
 template class Broadmark<KD>;
 template class Broadmark<Tracy>;
+template class Broadmark<Tracy_Parallel>;
+template class Broadmark<Grid_3D_SAP>;
+// template class Broadmark<CGAL_Internal>;
+template class Broadmark<GPU_Grid>;
+template class Broadmark<GPU_LBVH>;
+template class Broadmark<GPU_SAP>;
 
 } // namespace ipc

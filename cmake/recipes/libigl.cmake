@@ -17,11 +17,13 @@ message(STATUS "Third-party: creating target 'igl::core'")
 
 set(LIBIGL_PREDICATES ON CACHE BOOL "Use exact predicates" FORCE)
 
+# set(LIBIGL_COPYLEFT_CGAL ON CACHE BOOL "Use CGAL" FORCE)
 include(eigen)
 
 include(FetchContent)
 FetchContent_Declare(
     libigl
+
     # GIT_REPOSITORY https://github.com/libigl/libigl.git
     # GIT_TAG v2.4.0
     # GIT_SHALLOW TRUE
