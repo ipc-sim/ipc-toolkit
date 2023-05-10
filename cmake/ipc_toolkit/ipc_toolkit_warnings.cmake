@@ -34,7 +34,7 @@ set(IPC_TOOLKIT_FLAGS
   -Werror=return-type
   -Werror=trigraphs
   -Warray-bounds
-  # -Werror=write-strings
+  -Werror=write-strings
   -Werror=address
   -Werror=int-to-pointer-cast
   -Werror=pointer-to-int-cast
