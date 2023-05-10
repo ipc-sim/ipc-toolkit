@@ -230,6 +230,7 @@ if(IPC_TOOLKIT_WITH_CUDA)
     string(REPLACE " " ";" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
     string(REPLACE "." "" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
     set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
+    message(STATUS "Compiling for CUDA architectures: ${CUDA_ARCH_LIST}")
     set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}")
   endif()
 
