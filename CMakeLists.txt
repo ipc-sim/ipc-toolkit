@@ -147,19 +147,8 @@ else()
 endif()
 
 if (IPC_TOOLKIT_WITH_BROADMARK)
-  if(NOT IPC_TOOLKIT_WITH_CUDA)
-    message(FATAL_ERROR "Broadmark only works with CUDA")
-  elseif(NOT IPC_TOOLKIT_WITH_SIMD)
-    message(FATAL_ERROR "Broadmark only works with SIMD")
-  endif()
-
-  # OpenCL
-  find_package(OpenCL REQUIRED)
-  include_directories(${OpenCL_INCLUDE_DIRS})
-  target_link_libraries(ipc_toolkit PUBLIC OpenCL::OpenCL)
-
   include(broadmark)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC broadmark)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC broadmark::broadmark)
 endif()
 
 # CGAL

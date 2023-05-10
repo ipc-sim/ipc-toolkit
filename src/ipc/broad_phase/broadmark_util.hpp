@@ -1,51 +1,44 @@
 #pragma once
+
+#include <ipc/config.hpp>
 #ifdef IPC_TOOLKIT_WITH_BROADMARK
 
-// #include <ccdgpu/record.hpp>
-#include <string_view>
-#include <typeinfo>
-
-#include "Broadphase/Algorithms/BF/BF_Base.h"
-#include "Broadphase/Algorithms/BaseAlgorithm.h"
-#include "Broadphase/Algorithms/DBVT/DBVT.h"
-#include "Broadphase/Algorithms/iSAP/AxisSweep.h"
-#include "Broadphase/ObjectPair.h"
-#include <algorithm>
-#include <ipc/ccd/ccd.hpp>
-#include <set>
-
-#include <ipc/broad_phase/aabb.hpp>
-
-// #include <ipc/broad_phase/collision_candidate.hpp>
 #include <ipc/candidates/candidates.hpp>
+
+namespace broadmark {
+class Aabb;
+} // namespace broadmark
+class DBVT_F;
+class DBVT_D;
+class AxisSweep;
+class Vec3;
 
 namespace ipc {
 
 class InterfaceBase {
 public:
+    virtual ~InterfaceBase() = default;
+    virtual void Clear();
+
     Candidates candidates;
     int m_Objects;
     long long m_narrowPhase = 0;
     long long m_broadPhase = 0;
     long long m_truePositive = 0;
-    virtual void Clear();
-    virtual ~InterfaceBase() = default; // placeholder to create vtable
 };
 
 template <typename T> class Interface : public InterfaceBase {
-
 public:
     T* algo;
 
-    // broadphase::Overlaps overlaps;
-
     Interface();
-    // virtual ~Interface() = default;
+
     void FilterOverlaps(
         const long num_vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         Candidates& candidates) const;
+
     void CalcOverlaps(
         const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,

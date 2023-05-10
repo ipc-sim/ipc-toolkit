@@ -1,5 +1,8 @@
+#include "broadmark_util.hpp"
 #ifdef IPC_TOOLKIT_WITH_BROADMARK
-#include <ipc/broad_phase/broadmark_util.hpp>
+
+#include "Broadphase/Algorithms/DBVT/DBVT.h"
+#include "Broadphase/Algorithms/iSAP/AxisSweep.h"
 #include "Dependencies/Bullet3/Bullet3Collision/BroadPhaseCollision/b3DynamicBvhBroadphase.h"
 #include "Dependencies/Bullet2/btAxisSweep3.h"
 #include "Dependencies/Bullet3/Bullet3Common/b3AlignedAllocator.h"
@@ -24,7 +27,7 @@ void Interface<DBVT_F>::FilterOverlaps(
 {
     auto b3BroadphasePairs = algo->m_broadphase->getOverlappingPairCache()
                                  ->getOverlappingPairArray();
-    std::cout << "b3BroadphasePairs: " << b3BroadphasePairs.size() << std::endl;
+    logger().trace("b3BroadphasePairs: {}", b3BroadphasePairs.size());
 
     auto is_vertex = [&](int ai) { return ai < num_vertices; };
     auto is_edge = [&](int ai) {
@@ -94,7 +97,7 @@ void Interface<DBVT_D>::FilterOverlaps(
 {
     auto b3BroadphasePairs = algo->m_broadphase->getOverlappingPairCache()
                                  ->getOverlappingPairArray();
-    std::cout << "b3BroadphasePairs: " << b3BroadphasePairs.size() << std::endl;
+    logger().trace("b3BroadphasePairs: {}", b3BroadphasePairs.size());
 
     auto is_vertex = [&](int ai) { return ai < num_vertices; };
     auto is_edge = [&](int ai) {
@@ -163,7 +166,7 @@ void Interface<AxisSweep>::FilterOverlaps(
 {
     auto btBroadphasePairs = algo->m_broadphase->getOverlappingPairCache()
                                  ->getOverlappingPairArray();
-    std::cout << "btBroadphasePairs: " << btBroadphasePairs.size() << std::endl;
+    logger().trace("btBroadphasePairs: {}", btBroadphasePairs.size());
 
     auto is_vertex = [&](int ai) { return ai < num_vertices; };
     auto is_edge = [&](int ai) {

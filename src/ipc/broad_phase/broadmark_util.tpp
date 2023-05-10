@@ -1,10 +1,13 @@
 #pragma once
+
+#include <ipc/config.hpp>
 #ifdef IPC_TOOLKIT_WITH_BROADMARK
-#include <tbb/tbb.h>
 
-// #include <broadphase/interface.hpp>
+#include <ipc/utils/logger.hpp>
 
-// bool compare(ObjectPair a, ObjectPair b);
+#include <Core/Settings.h>
+
+#include <tbb/global_control.h>
 
 namespace ipc {
 
@@ -31,7 +34,6 @@ void Interface<T>::FilterOverlaps(
     };
 
     auto addCandidate = [&](int ai, int bi) {
-        // std::cout << "ai: " << ai << "bi: " << bi << std::endl;
         auto mi = ai < bi ? ai : bi;
         ai = std::min(ai, mi);
         bi = std::max(bi, mi);
@@ -48,17 +50,16 @@ void Interface<T>::FilterOverlaps(
                 ai - num_vertices, bi - num_vertices);
         }
     };
-    std::cout << "V: " << num_vertices
-              << " V+E: " << num_vertices + edges.rows()
-              << " V+E+F: " << num_vertices + edges.rows() + faces.rows()
-              << std::endl;
-    std::cout << "m_cache: " << algo->m_cache.m_overlaps.size() << std::endl;
+    logger().trace(
+        "|V|={} |E|={} |F|={}", num_vertices, edges.rows(), faces.rows());
+    logger().trace("m_cache: {}", algo->m_cache.m_overlaps.size());
     for (size_t i = 0; i < algo->m_cache.m_overlaps.size(); i++) {
         int ai = algo->m_cache.m_overlaps[i].m_a->m_id;
         int bi = algo->m_cache.m_overlaps[i].m_b->m_id;
         addCandidate(ai, bi);
     }
-    std::cout << "finished adding" << std::endl;
+    logger().trace("finished adding");
+
     // remove duplicates
     std::sort(candidates.ee_candidates.begin(), candidates.ee_candidates.end());
     std::sort(candidates.fv_candidates.begin(), candidates.fv_candidates.end());
@@ -73,7 +74,6 @@ void Interface<T>::FilterOverlaps(
         candidates.fv_candidates.end());
 
     // m_broadPhase = candidates.size();
-    // std::cout << "m_broadPhase: " << m_broadPhase << std::endl;
 }
 
 template <class T>
@@ -85,7 +85,7 @@ void Interface<T>::CalcOverlaps(
     bool init)
 {
     this->Clear();
-    std::cout << "# candidates: " << candidates.size() << std::endl;
+    logger().trace("# candidates: {}", candidates.size());
 
     SceneFrame sceneframe;
     sceneframe.m_aabbs = broadmark_aabbs.data();
@@ -102,9 +102,9 @@ void Interface<T>::CalcOverlaps(
 
         settings.m_numThreads = tbb::global_control::active_value(
             tbb::global_control::max_allowed_parallelism);
-        std::cout << "max threads: " << settings.m_numThreads << std::endl;
+        logger().trace("max threads: {}", settings.m_numThreads);
 
-        std::cout << "Initializing.." << std::endl;
+        logger().trace("Initializing...");
         algo->Initialize(settings, sceneframe);
     }
 
@@ -114,7 +114,7 @@ void Interface<T>::CalcOverlaps(
     algo->SearchOverlaps();
 
     m_Objects = algo->m_settings.m_numberOfObjects;
-    std::cout << "m_Objects: " << m_Objects << std::endl;
+    logger().trace("m_Object: {}", m_Objects);
 }
 
 } // namespace ipc
