@@ -158,11 +158,9 @@ add_library(ipc::toolkit::warnings ALIAS ipc_toolkit_warnings)
 
 foreach(FLAG IN ITEMS ${IPC_TOOLKIT_FLAGS})
   string(REPLACE "=" "-" FLAG_VAR "${FLAG}")
-
   if(NOT DEFINED IS_SUPPORTED_${FLAG_VAR})
     check_cxx_compiler_flag("${FLAG}" IS_SUPPORTED_${FLAG_VAR})
   endif()
-
   if(IS_SUPPORTED_${FLAG_VAR})
     target_compile_options(ipc_toolkit_warnings INTERFACE ${FLAG})
   endif()

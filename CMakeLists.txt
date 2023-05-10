@@ -1,6 +1,5 @@
 # Detects whether this is a top-level project
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)
-
 if(HAS_PARENT)
   set(IPC_TOOLKIT_TOPLEVEL_PROJECT OFF)
 else()

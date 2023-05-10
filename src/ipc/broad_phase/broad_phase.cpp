@@ -80,8 +80,7 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
 #ifdef IPC_TOOLKIT_WITH_CUDA
         return std::make_unique<SweepAndTiniestQueueGPU>();
 #else
-        throw std::runtime_error("GPU Sweep and Tiniest Queue is
-                                 disabled "
+        throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
                                  "because CUDA is disabled!");
 #endif
     case BroadPhaseMethod::BROADMARK_GPU_LBVH:
