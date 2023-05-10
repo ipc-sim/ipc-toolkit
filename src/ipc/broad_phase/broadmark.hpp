@@ -1,4 +1,4 @@
-
+#ifdef IPC_TOOLKIT_WITH_BROADMARK
 #include <ipc/broad_phase/broadmark_util.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 #include "Broadphase/Algorithms/GPU/Bullet3GPUAlgorithms.h"
@@ -91,3 +91,4 @@ protected:
 };
 
 } // namespace ipc
+#endif

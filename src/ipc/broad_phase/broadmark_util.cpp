@@ -1,3 +1,4 @@
+#ifdef IPC_TOOLKIT_WITH_BROADMARK
 #include <ipc/broad_phase/broadmark_util.hpp>
 #include "Dependencies/Bullet3/Bullet3Collision/BroadPhaseCollision/b3DynamicBvhBroadphase.h"
 #include "Dependencies/Bullet2/btAxisSweep3.h"
@@ -513,3 +514,4 @@ void growAabbs(std::vector<broadmark::Aabb>& aabbs, const Vec3& amount)
 }
 
 } // namespace ipc
+#endif

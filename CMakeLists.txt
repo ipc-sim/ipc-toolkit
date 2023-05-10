@@ -37,9 +37,7 @@ option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"      
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
-option(IPC_TOOLKIT_WITH_OPENCL                "Enable OpenCL"                                 OFF)
-
-# option(IPC_TOOLKIT_WITH_CGAL "Enable CGAL" ON)
+option(IPC_TOOLKIT_WITH_BROADMARK             "Enable OpenCL"                                 OFF)
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
@@ -137,21 +135,6 @@ if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC GMP::GMP)
 endif()
 
-include(broadmark)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC broadmark)
-
-# OpenCL
-if(IPC_TOOLKIT_WITH_OPENCL)
-  find_package(OpenCL REQUIRED)
-  include_directories(${OpenCL_INCLUDE_DIRS})
-  target_link_libraries(ipc_toolkit PUBLIC OpenCL::OpenCL)
-endif()
-
-# CGAL
-# if(IPC_TOOLKIT_WITH_CGAL)
-#   target_link_libraries(ipc_toolkit PUBLIC CGAL::CGAL)
-# endif()
-
 # Sweep and Tiniest Queue and CCD
 if(IPC_TOOLKIT_WITH_CUDA)
   include(gpu_ccd)
@@ -162,6 +145,27 @@ else()
   include(sweep_and_tiniest_queue)
   ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC STQ::CPU)
 endif()
+
+if (IPC_TOOLKIT_WITH_BROADMARK)
+  if(NOT IPC_TOOLKIT_WITH_CUDA)
+    message(FATAL_ERROR "Broadmark only works with CUDA")
+  elseif(NOT IPC_TOOLKIT_WITH_SIMD)
+    message(FATAL_ERROR "Broadmark only works with SIMD")
+  endif()
+
+  # OpenCL
+  find_package(OpenCL REQUIRED)
+  include_directories(${OpenCL_INCLUDE_DIRS})
+  target_link_libraries(ipc_toolkit PUBLIC OpenCL::OpenCL)
+
+  include(broadmark)
+  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC broadmark)
+endif()
+
+# CGAL
+# if(IPC_TOOLKIT_WITH_CGAL)
+#   target_link_libraries(ipc_toolkit PUBLIC CGAL::CGAL)
+# endif()
 
 # Faster unordered map
 include(robin_map)

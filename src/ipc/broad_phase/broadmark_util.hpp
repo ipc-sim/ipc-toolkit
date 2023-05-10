@@ -1,4 +1,5 @@
 #pragma once
+#ifdef IPC_TOOLKIT_WITH_BROADMARK
 
 // #include <ccdgpu/record.hpp>
 #include <string_view>
@@ -109,3 +110,4 @@ void growAabbs(std::vector<broadmark::Aabb>& aabbs, const Vec3& amount);
 } // namespace ipc
 
 #include "broadmark_util.tpp"
+#endif

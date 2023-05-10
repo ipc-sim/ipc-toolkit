@@ -1,3 +1,4 @@
+#ifdef IPC_TOOLKIT_WITH_BROADMARK
 #include <ipc/broad_phase/broadmark.hpp>
 
 namespace ipc {
@@ -102,3 +103,4 @@ template class Broadmark<GPU_LBVH>;
 template class Broadmark<GPU_SAP>;
 
 } // namespace ipc
+#endif

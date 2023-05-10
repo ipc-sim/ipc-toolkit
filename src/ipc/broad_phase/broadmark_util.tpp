@@ -1,4 +1,5 @@
 #pragma once
+#ifdef IPC_TOOLKIT_WITH_BROADMARK
 #include <tbb/tbb.h>
 
 // #include <broadphase/interface.hpp>
@@ -117,3 +118,4 @@ void Interface<T>::CalcOverlaps(
 }
 
 } // namespace ipc
+#endif

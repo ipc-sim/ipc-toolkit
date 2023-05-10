@@ -83,6 +83,7 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
         throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
                                  "because CUDA is disabled!");
 #endif
+#ifdef IPC_TOOLKIT_WITH_BROADMARK
     case BroadPhaseMethod::BROADMARK_GPU_LBVH:
         return std::make_unique<Broadmark<GPU_LBVH>>();
     case BroadPhaseMethod::BROADMARK_GRID:
@@ -113,6 +114,24 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
         return std::make_unique<Broadmark<GPU_Grid>>();
     case BroadPhaseMethod::BROADMARK_GPU_SAP:
         return std::make_unique<Broadmark<GPU_SAP>>();
+#else
+    case BroadPhaseMethod::BROADMARK_GPU_LBVH:
+    case BroadPhaseMethod::BROADMARK_GRID:
+    case BroadPhaseMethod::BROADMARK_GRID_PARALLEL:
+    case BroadPhaseMethod::BROADMARK_SAP:
+    case BroadPhaseMethod::BROADMARK_SAP_PARALLEL:
+    case BroadPhaseMethod::BROADMARK_DBVT_D:
+    case BroadPhaseMethod::BROADMARK_DBVT_F:
+    case BroadPhaseMethod::BROADMARK_ISAP:
+    case BroadPhaseMethod::BROADMARK_KD:
+    case BroadPhaseMethod::BROADMARK_TRACY:
+    case BroadPhaseMethod::BROADMARK_TRACY_PARALLEL:
+    case BroadPhaseMethod::BROADMARK_GRID_SAP:
+    // case BroadPhaseMethod::BROADMARK_CGAL:
+    case BroadPhaseMethod::BROADMARK_GPU_GRID:
+    case BroadPhaseMethod::BROADMARK_GPU_SAP:
+        throw std::runtime_error("Broadmark is disabled!");
+#endif
     default:
         throw std::runtime_error("Invalid BroadPhaseMethod!");
     }
