@@ -1,27 +1,27 @@
 # Detects whether this is a top-level project
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)
 if(HAS_PARENT)
-    set(IPC_TOOLKIT_TOPLEVEL_PROJECT OFF)
+  set(IPC_TOOLKIT_TOPLEVEL_PROJECT OFF)
 else()
-    set(IPC_TOOLKIT_TOPLEVEL_PROJECT ON)
+  set(IPC_TOOLKIT_TOPLEVEL_PROJECT ON)
 endif()
 
 # Check required CMake version
 set(REQUIRED_CMAKE_VERSION "3.14.0")
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-    cmake_minimum_required(VERSION ${REQUIRED_CMAKE_VERSION})
+  cmake_minimum_required(VERSION ${REQUIRED_CMAKE_VERSION})
 else()
-    # Don't use cmake_minimum_required here to avoid implicitly overriding parent policies
-    if(${CMAKE_VERSION} VERSION_LESS ${REQUIRED_CMAKE_VERSION})
-        message(FATAL_ERROR "CMake required version to build IPC Toolkit is ${REQUIRED_CMAKE_VERSION}")
-    endif()
+  # Don't use cmake_minimum_required here to avoid implicitly overriding parent policies
+  if(${CMAKE_VERSION} VERSION_LESS ${REQUIRED_CMAKE_VERSION})
+    message(FATAL_ERROR "CMake required version to build IPC Toolkit is ${REQUIRED_CMAKE_VERSION}")
+  endif()
 endif()
 
 # Include user-provided default options if available. We do that before the main
 # `project()` so that we can define the C/C++ compilers from the option file.
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake)
-    message(STATUS "Using local options file: ${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake")
-    include(${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake)
+  message(STATUS "Using local options file: ${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake")
+  include(${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake)
 endif()
 
 ################################################################################
@@ -40,9 +40,9 @@ option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle inters
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-    set(CMAKE_CXX_STANDARD 17)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-    set(CMAKE_CXX_EXTENSIONS OFF)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
 ### Configuration
