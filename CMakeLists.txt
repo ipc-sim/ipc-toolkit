@@ -1,51 +1,55 @@
 # Detects whether this is a top-level project
 get_directory_property(HAS_PARENT PARENT_DIRECTORY)
+
 if(HAS_PARENT)
-    set(IPC_TOOLKIT_TOPLEVEL_PROJECT OFF)
+  set(IPC_TOOLKIT_TOPLEVEL_PROJECT OFF)
 else()
-    set(IPC_TOOLKIT_TOPLEVEL_PROJECT ON)
+  set(IPC_TOOLKIT_TOPLEVEL_PROJECT ON)
 endif()
 
 # Check required CMake version
-set(REQUIRED_CMAKE_VERSION "3.14.0")
+set(REQUIRED_CMAKE_VERSION "3.24.0")
+
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-    cmake_minimum_required(VERSION ${REQUIRED_CMAKE_VERSION})
+  cmake_minimum_required(VERSION ${REQUIRED_CMAKE_VERSION})
 else()
-    # Don't use cmake_minimum_required here to avoid implicitly overriding parent policies
-    if(${CMAKE_VERSION} VERSION_LESS ${REQUIRED_CMAKE_VERSION})
-        message(FATAL_ERROR "CMake required version to build IPC Toolkit is ${REQUIRED_CMAKE_VERSION}")
-    endif()
+  # Don't use cmake_minimum_required here to avoid implicitly overriding parent policies
+  if(${CMAKE_VERSION} VERSION_LESS ${REQUIRED_CMAKE_VERSION})
+    message(FATAL_ERROR "CMake required version to build IPC Toolkit is ${REQUIRED_CMAKE_VERSION}")
+  endif()
 endif()
 
 # Include user-provided default options if available. We do that before the main
 # `project()` so that we can define the C/C++ compilers from the option file.
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake)
-    message(STATUS "Using local options file: ${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake")
-    include(${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake)
+  message(STATUS "Using local options file: ${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake")
+  include(${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake)
 endif()
 
-################################################################################
-
+# ###############################################################################
 project(IPCToolkit
-        DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
-        LANGUAGES CXX
-        VERSION "1.0.0")
+  DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
+  LANGUAGES CXX
+  VERSION "1.0.0")
 
-option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
-option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
-option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"                     ON)
-option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
-option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
+option(IPC_TOOLKIT_BUILD_TESTS "Build unit-tests" ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
+option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
+option(IPC_TOOLKIT_WITH_CORRECT_CCD "Use the TightInclusion CCD" ON)
+option(IPC_TOOLKIT_WITH_SIMD "Enable SIMD" ON)
+option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" ON)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
+option(IPC_TOOLKIT_WITH_OPENCL "Enable OpenCL" ON)
+
+# option(IPC_TOOLKIT_WITH_CGAL "Enable CGAL" ON)
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
-    set(CMAKE_CXX_STANDARD 17)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-    set(CMAKE_CXX_EXTENSIONS OFF)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
 
-### Configuration
+# ## Configuration
 set(IPC_TOOLKIT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src/ipc")
 set(IPC_TOOLKIT_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src")
 
@@ -64,17 +68,16 @@ include(ipc_toolkit_target_link_system_libraries)
 # Generate position independent code by default
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-################################################################################
+# ###############################################################################
 # CMake Policies
-################################################################################
-
+# ###############################################################################
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
   cmake_policy(SET CMP0135 NEW) # https://cmake.org/cmake/help/latest/policy/CMP0135.html
 endif()
 
-################################################################################
+# ###############################################################################
 # IPC Toolkit Library
-################################################################################
+# ###############################################################################
 
 # Add an empty library and fill in the list of sources in `src/CMakeLists.txt`.
 add_library(ipc_toolkit)
@@ -91,16 +94,16 @@ add_subdirectory("${IPC_TOOLKIT_SOURCE_DIR}")
 # Public include directory for IPC Toolkit
 target_include_directories(ipc_toolkit PUBLIC "${IPC_TOOLKIT_INCLUDE_DIR}")
 
-################################################################################
+# ###############################################################################
 # Optional Definitions
-################################################################################
+# ###############################################################################
 
 # For MSVC, do not use the min and max macros.
 target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
 
-################################################################################
+# ###############################################################################
 # Dependencies
-################################################################################
+# ###############################################################################
 
 # libigl
 include(eigen)
@@ -135,9 +138,29 @@ if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC GMP::GMP)
 endif()
 
+include(broadmark)
+ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC broadmark)
+
+# OpenCL
+if(IPC_TOOLKIT_WITH_OPENCL)
+  find_package(OpenCL REQUIRED)
+  include_directories(${OpenCL_INCLUDE_DIRS})
+
+  # target_link_libraries(ipc_toolkit PUBLIC ${OpenCL_LIBRARIES})
+  target_link_libraries(ipc_toolkit PUBLIC OpenCL::OpenCL)
+
+  # target_link_libraries(ipc_toolkit PUBLIC OpenCL::OpenCL)
+endif()
+
+# CGAL
+# if(IPC_TOOLKIT_WITH_CGAL)
+# target_link_libraries(ipc_toolkit PUBLIC CGAL::CGAL)
+# endif()
+
 # Sweep and Tiniest Queue and CCD
 if(IPC_TOOLKIT_WITH_CUDA)
   include(gpu_ccd)
+
   ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC gpu_ccd::gpu_ccd)
   ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC STQ::CPU)
 else()
@@ -158,21 +181,24 @@ ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC absl::hash)
 include(ipc_toolkit_warnings)
 target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
 
-################################################################################
+# ###############################################################################
 # Compiler options
-################################################################################
+# ###############################################################################
 
-## SIMD support
+# # SIMD support
 if(IPC_TOOLKIT_WITH_SIMD)
   # Figure out SSE level support
   message(STATUS "Seaching for SSE...")
   find_package(SSE)
+
   # Figure out AVX level support
   message(STATUS "Searching for AVX...")
   find_package(AVX)
+
   # Figure out FMA level support
   message(STATUS "Searching for FMA...")
   find_package(FMA)
+
   # Add SSE, AVX, and FMA flags to compiler flags
   string(REPLACE " " ";" SIMD_FLAGS "${SSE_FLAGS} ${AVX_FLAGS} ${FMA_FLAGS}")
   target_compile_options(ipc_toolkit PRIVATE ${SIMD_FLAGS})
@@ -181,13 +207,13 @@ endif()
 # Use C++17
 target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
 
-################################################################################
+# ###############################################################################
 # CUDA
-################################################################################
-
+# ###############################################################################
 if(IPC_TOOLKIT_WITH_CUDA)
   include(CheckLanguage)
   check_language(CUDA)
+
   if(CMAKE_CUDA_COMPILER)
     enable_language(CUDA)
   else()
@@ -216,17 +242,17 @@ if(IPC_TOOLKIT_WITH_CUDA)
     # We need to add the path to the driver (libcuda.dylib) as an rpath,
     # so that the static cuda runtime can find it at runtime.
     set_property(TARGET ipc_toolkit
-                 PROPERTY
-                 BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
+      PROPERTY
+      BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
   endif()
 
   find_package(CUDAToolkit)
   ipc_toolkit_target_link_system_libraries(ipc_toolkit PRIVATE CUDA::cudart)
 endif()
 
-################################################################################
+# ###############################################################################
 # Tests
-################################################################################
+# ###############################################################################
 
 # Enable unit testing at the root level
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_TESTS)
@@ -235,10 +261,9 @@ if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_TESTS)
   add_subdirectory(tests)
 endif()
 
-################################################################################
+# ###############################################################################
 # Python bindings
-################################################################################
-
+# ###############################################################################
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_PYTHON)
   add_subdirectory(python)
 endif()

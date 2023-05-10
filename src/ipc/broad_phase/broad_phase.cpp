@@ -4,6 +4,7 @@
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
+#include <ipc/broad_phase/broadmark.hpp>
 #include <ipc/candidates/candidates.hpp>
 
 #include <ipc/config.hpp>
@@ -79,9 +80,40 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
 #ifdef IPC_TOOLKIT_WITH_CUDA
         return std::make_unique<SweepAndTiniestQueueGPU>();
 #else
-        throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
+        throw std::runtime_error("GPU Sweep and Tiniest Queue is
+                                 disabled "
                                  "because CUDA is disabled!");
 #endif
+    case BroadPhaseMethod::BROADMARK_GPU_LBVH:
+        return std::make_unique<Broadmark<GPU_LBVH>>();
+    case BroadPhaseMethod::BROADMARK_GRID:
+        return std::make_unique<Broadmark<Grid_3D>>();
+    case BroadPhaseMethod::BROADMARK_GRID_PARALLEL:
+        return std::make_unique<Broadmark<Grid_3D_Parallel>>();
+    case BroadPhaseMethod::BROADMARK_SAP:
+        return std::make_unique<Broadmark<SAP>>();
+    case BroadPhaseMethod::BROADMARK_SAP_PARALLEL:
+        return std::make_unique<Broadmark<SAP_Parallel>>();
+    case BroadPhaseMethod::BROADMARK_DBVT_D:
+        return std::make_unique<Broadmark<DBVT_D>>();
+    case BroadPhaseMethod::BROADMARK_DBVT_F:
+        return std::make_unique<Broadmark<DBVT_F>>();
+    case BroadPhaseMethod::BROADMARK_ISAP:
+        return std::make_unique<Broadmark<AxisSweep>>();
+    case BroadPhaseMethod::BROADMARK_KD:
+        return std::make_unique<Broadmark<KD>>();
+    case BroadPhaseMethod::BROADMARK_TRACY:
+        return std::make_unique<Broadmark<Tracy>>();
+    case BroadPhaseMethod::BROADMARK_TRACY_PARALLEL:
+        return std::make_unique<Broadmark<Tracy_Parallel>>();
+    case BroadPhaseMethod::BROADMARK_GRID_SAP:
+        return std::make_unique<Broadmark<Grid_3D_SAP>>();
+    // case BroadPhaseMethod::BROADMARK_CGAL:
+    //     return std::make_unique<Broadmark<CGAL_Internal>>();
+    case BroadPhaseMethod::BROADMARK_GPU_GRID:
+        return std::make_unique<Broadmark<GPU_Grid>>();
+    case BroadPhaseMethod::BROADMARK_GPU_SAP:
+        return std::make_unique<Broadmark<GPU_SAP>>();
     default:
         throw std::runtime_error("Invalid BroadPhaseMethod!");
     }
