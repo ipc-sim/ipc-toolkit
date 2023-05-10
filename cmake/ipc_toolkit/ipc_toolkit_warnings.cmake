@@ -1,7 +1,7 @@
-# ###############################################################################
+################################################################################
 # See comments and discussions here:
 # http://stackoverflow.com/questions/5088460/flags-to-enable-thorough-and-verbose-g-warnings
-# ###############################################################################
+################################################################################
 
 if(TARGET ipc::toolkit::warnings)
   return()
@@ -21,11 +21,10 @@ set(IPC_TOOLKIT_FLAGS
   -Wformat=2
   -Wuninitialized
   -Wcast-qual
-
   # -Wmissing-noreturn
   -Wmissing-format-attribute
-
   # -Wredundant-decls
+
   -Werror=implicit
   -Werror=nonnull
   -Werror=init-self
@@ -35,7 +34,6 @@ set(IPC_TOOLKIT_FLAGS
   -Werror=return-type
   -Werror=trigraphs
   -Warray-bounds
-
   # -Werror=write-strings
   -Werror=address
   -Werror=int-to-pointer-cast
@@ -47,11 +45,11 @@ set(IPC_TOOLKIT_FLAGS
 
   # -Weffc++
   -Wno-old-style-cast
-
   # -Wno-sign-conversion
   # -Wsign-conversion
 
   # -Wshadow
+
   -Wstrict-null-sentinel
   -Woverloaded-virtual
   -Wsign-promo
@@ -62,20 +60,17 @@ set(IPC_TOOLKIT_FLAGS
   # Warn whenever a switch statement has an index of enumerated type and
   # lacks a case for one or more of the named codes of that enumeration.
   -Wswitch
-
   # This is annoying if all cases are already covered.
   # -Wswitch-default
   # This is annoying if there is a default that covers the rest.
   # -Wswitch-enum
   -Wswitch-unreachable
-
   # -Wcovered-switch-default # Annoying warnings from nlohmann::json
+
   -Wcast-align
   -Wdisabled-optimization
-
   # -Winline # produces warning on default implicit destructor
   -Winvalid-pch
-
   # -Wmissing-include-dirs
   -Wpacked
   -Wno-padded
@@ -84,11 +79,10 @@ set(IPC_TOOLKIT_FLAGS
 
   # -Wctor-dtor-privacy
   -Wlogical-op
-
   # -Wnoexcept
   -Woverloaded-virtual
-
   # -Wundef
+
   -Wnon-virtual-dtor
   -Wdelete-non-virtual-dtor
   -Werror=non-virtual-dtor
@@ -96,9 +90,9 @@ set(IPC_TOOLKIT_FLAGS
 
   -Wno-sign-compare
 
-  # ##########
+  ###########
   # GCC 6.1 #
-  # ##########
+  ###########
   -Wnull-dereference
   -fdelete-null-pointer-checks
   -Wduplicated-cond
@@ -106,9 +100,9 @@ set(IPC_TOOLKIT_FLAGS
 
   # -Weverything
 
-  # ##########################
+  ###########################
   # Enabled by -Weverything #
-  # ##########################
+  ###########################
 
   # -Wdocumentation
   # -Wdocumentation-unknown-command
@@ -127,9 +121,9 @@ set(IPC_TOOLKIT_FLAGS
   # -Wno-c++98-compat
   # -Wno-c++98-compat-pedantic
 
-  # ###############################################
+  ################################################
   # Need to check if those are still valid today #
-  # ###############################################
+  ################################################
 
   # -Wimplicit-atomic-properties
   # -Wmissing-declarations
