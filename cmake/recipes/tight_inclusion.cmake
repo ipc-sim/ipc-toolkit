@@ -10,7 +10,7 @@ include(FetchContent)
 FetchContent_Declare(
     tight_inclusion
     GIT_REPOSITORY https://github.com/Continuous-Collision-Detection/Tight-Inclusion.git
-    GIT_TAG v1.0.2
+    GIT_TAG v1.0.3
     GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(tight_inclusion)
