@@ -142,7 +142,7 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
     case BroadPhaseMethod::BROADMARK_TRACY:
     case BroadPhaseMethod::BROADMARK_TRACY_PARALLEL:
     case BroadPhaseMethod::BROADMARK_GRID_SAP:
-    // case BroadPhaseMethod::BROADMARK_CGAL:
+    case BroadPhaseMethod::BROADMARK_CGAL:
     case BroadPhaseMethod::BROADMARK_GPU_GRID:
     case BroadPhaseMethod::BROADMARK_GPU_SAP:
         throw std::runtime_error("Broadmark is disabled!");
