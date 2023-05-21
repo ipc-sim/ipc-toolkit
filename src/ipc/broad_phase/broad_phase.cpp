@@ -22,6 +22,7 @@
 #include "Broadphase/Algorithms/Tracy/Tracy.h"
 #include "Broadphase/Algorithms/Tracy/Tracy_Parallel.h"
 #include "Broadphase/Algorithms/iSAP/AxisSweep.h"
+#include "Broadphase/Algorithms/CGAL/CGAL.h"
 
 namespace ipc {
 
@@ -122,8 +123,8 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
         return std::make_unique<Broadmark<Tracy_Parallel>>();
     case BroadPhaseMethod::BROADMARK_GRID_SAP:
         return std::make_unique<Broadmark<Grid_3D_SAP>>();
-    // case BroadPhaseMethod::BROADMARK_CGAL:
-    //     return std::make_unique<Broadmark<CGAL_Internal>>();
+    case BroadPhaseMethod::BROADMARK_CGAL:
+        return std::make_unique<Broadmark<CGAL_Internal>>();
     case BroadPhaseMethod::BROADMARK_GPU_GRID:
         return std::make_unique<Broadmark<GPU_Grid>>();
     case BroadPhaseMethod::BROADMARK_GPU_SAP:

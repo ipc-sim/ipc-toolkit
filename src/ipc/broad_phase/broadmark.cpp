@@ -14,7 +14,7 @@
 #include <Broadphase/Algorithms/Tracy/Tracy.h>
 #include <Broadphase/Algorithms/Tracy/Tracy_Parallel.h>
 #include <Broadphase/Algorithms/iSAP/AxisSweep.h>
-// #include <Broadphase/Algorithms/CGAL/CGAL.h>
+#include <Broadphase/Algorithms/CGAL/CGAL.h>
 
 namespace ipc {
 
@@ -112,7 +112,7 @@ template class Broadmark<KD>;
 template class Broadmark<Tracy>;
 template class Broadmark<Tracy_Parallel>;
 template class Broadmark<Grid_3D_SAP>;
-// template class Broadmark<CGAL_Internal>;
+template class Broadmark<CGAL_Internal>;
 template class Broadmark<GPU_Grid>;
 template class Broadmark<GPU_LBVH>;
 template class Broadmark<GPU_SAP>;
