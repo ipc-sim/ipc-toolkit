@@ -12,6 +12,29 @@
 
 using namespace ipc;
 
+static const std::vector<std::string> BP_names = {
+    "BF",
+    "HG",
+    "SH",
+    "STQ",
+    "GPU_STQ",
+    "BROADMARK_GPU_LBVH",
+    "BROADMARK_KD",
+    "BROADMARK_GRID",
+    "BROADMARK_GRID_PARALLEL",
+    "BROADMARK_SAP",
+    "BROADMARK_SAP_PARALLEL",
+    "BROADMARK_DBVT_D",
+    "BROADMARK_DBVT_F",
+    "BROADMARK_ISAP",
+    "BROADMARK_TRACY",
+    "BROADMARK_TRACY_PARALLEL",
+    "BROADMARK_GRID_SAP",
+    "BROADMARK_CGAL",
+    "BROADMARK_GPU_GRID",
+    "BROADMARK_GPU_SAP",
+};
+
 TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
 {
     Eigen::MatrixXd V0, V1;
@@ -52,14 +75,13 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
     V0 = mesh.vertices(V0);
     V1 = mesh.vertices(V1);
 
-    std::vector<std::string> BP_names = { "BF", "HG", "SH", "STQ", "GPU_STQ" };
-
     double tolerance = 1e-6;
     int max_iterations = 1e7;
 
     double stepsize;
-    int i = 1;
-    // for (int i = 0; i < NUM_BROAD_PHASE_METHODS; i++) {
+    int i = static_cast<int>(BroadPhaseMethod::HASH_GRID);
+    // for (int i = 0; i < static_cast<int>(BroadPhaseMethod::NUM_METHODS); i++)
+    // {
     BroadPhaseMethod method = static_cast<BroadPhaseMethod>(i);
 
     // Broad phase

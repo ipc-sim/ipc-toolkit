@@ -9,6 +9,7 @@
 
 #include <ipc/config.hpp>
 
+#ifdef IPC_TOOLKIT_WITH_BROADMARK
 #include "Broadphase/Algorithms/GPU/Bullet3GPUAlgorithms.h"
 #include "Broadphase/Algorithms/BF/BF.h"
 #include "Broadphase/Algorithms/DBVT/DBVT.h"
@@ -23,6 +24,7 @@
 #include "Broadphase/Algorithms/Tracy/Tracy_Parallel.h"
 #include "Broadphase/Algorithms/iSAP/AxisSweep.h"
 #include "Broadphase/Algorithms/CGAL/CGAL.h"
+#endif
 
 namespace ipc {
 
@@ -79,6 +81,41 @@ void BroadPhase::detect_collision_candidates(
 
 ////////////////////////////////////////////////////////////////////////////////
 
+bool BroadPhase::is_enabled(const BroadPhaseMethod broad_phase_method)
+{
+    switch (broad_phase_method) {
+    case BroadPhaseMethod::BRUTE_FORCE:
+    case BroadPhaseMethod::HASH_GRID:
+    case BroadPhaseMethod::SPATIAL_HASH:
+    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
+#ifdef IPC_TOOLKIT_WITH_CUDA
+    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU:
+#endif
+#ifdef IPC_TOOLKIT_WITH_BROADMARK
+    case BroadPhaseMethod::BROADMARK_GPU_LBVH:
+    case BroadPhaseMethod::BROADMARK_GRID:
+    case BroadPhaseMethod::BROADMARK_GRID_PARALLEL:
+    case BroadPhaseMethod::BROADMARK_SAP:
+    case BroadPhaseMethod::BROADMARK_SAP_PARALLEL:
+    case BroadPhaseMethod::BROADMARK_DBVT_D:
+    case BroadPhaseMethod::BROADMARK_DBVT_F:
+    case BroadPhaseMethod::BROADMARK_ISAP:
+    case BroadPhaseMethod::BROADMARK_KD:
+    case BroadPhaseMethod::BROADMARK_TRACY:
+    case BroadPhaseMethod::BROADMARK_TRACY_PARALLEL:
+    case BroadPhaseMethod::BROADMARK_GRID_SAP:
+#ifdef IPC_TOOLKIT_WITH_CGAL
+    case BroadPhaseMethod::BROADMARK_CGAL:
+#endif
+    case BroadPhaseMethod::BROADMARK_GPU_GRID:
+    case BroadPhaseMethod::BROADMARK_GPU_SAP:
+#endif
+        return true;
+    default:
+        return false;
+    }
+}
+
 std::unique_ptr<BroadPhase>
 BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
 {
@@ -124,7 +161,11 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
     case BroadPhaseMethod::BROADMARK_GRID_SAP:
         return std::make_unique<Broadmark<Grid_3D_SAP>>();
     case BroadPhaseMethod::BROADMARK_CGAL:
+#ifdef IPC_TOOLKIT_WITH_CGAL
         return std::make_unique<Broadmark<CGAL_Internal>>();
+#else
+        throw std::runtime_error("CGAL broad phase is disabled!");
+#endif
     case BroadPhaseMethod::BROADMARK_GPU_GRID:
         return std::make_unique<Broadmark<GPU_Grid>>();
     case BroadPhaseMethod::BROADMARK_GPU_SAP:

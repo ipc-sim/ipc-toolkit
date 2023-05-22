@@ -15,6 +15,29 @@
 
 using namespace ipc;
 
+static const std::vector<std::string> BP_names = {
+    "BF",
+    "HG",
+    "SH",
+    "STQ",
+    "GPU_STQ",
+    "BROADMARK_GPU_LBVH",
+    "BROADMARK_KD",
+    "BROADMARK_GRID",
+    "BROADMARK_GRID_PARALLEL",
+    "BROADMARK_SAP",
+    "BROADMARK_SAP_PARALLEL",
+    "BROADMARK_DBVT_D",
+    "BROADMARK_DBVT_F",
+    "BROADMARK_ISAP",
+    "BROADMARK_TRACY",
+    "BROADMARK_TRACY_PARALLEL",
+    "BROADMARK_GRID_SAP",
+    "BROADMARK_CGAL",
+    "BROADMARK_GPU_GRID",
+    "BROADMARK_GPU_SAP",
+};
+
 TEST_CASE("Benchmark broad phase", "[!benchmark][broad_phase]")
 {
     Eigen::MatrixXd V0, V1;
@@ -82,9 +105,11 @@ TEST_CASE("Benchmark broad phase", "[!benchmark][broad_phase]")
     V0 = mesh.vertices(V0);
     V1 = mesh.vertices(V1);
 
-    std::vector<std::string> BP_names = { "BF", "HG", "SH", "STQ", "GPU_STQ" };
-    for (int i = 0; i < NUM_BROAD_PHASE_METHODS; i++) {
+    for (int i = 0; i < static_cast<int>(BroadPhaseMethod::NUM_METHODS); i++) {
         BroadPhaseMethod method = static_cast<BroadPhaseMethod>(i);
+        if (!BroadPhase::is_enabled(method)) {
+            continue;
+        }
         BENCHMARK(fmt::format("BP {} ({})", testcase_name, BP_names[i]))
         {
             Candidates candidates;
@@ -131,9 +156,11 @@ TEST_CASE(
     V0 = mesh.vertices(V0);
     V1 = mesh.vertices(V1);
 
-    std::vector<std::string> BP_names = { "BF", "HG", "SH", "STQ", "GPU_STQ" };
-    for (int i = 0; i < NUM_BROAD_PHASE_METHODS; i++) {
+    for (int i = 0; i < static_cast<int>(BroadPhaseMethod::NUM_METHODS); i++) {
         BroadPhaseMethod method = static_cast<BroadPhaseMethod>(i);
+        if (!BroadPhase::is_enabled(method)) {
+            continue;
+        }
         BENCHMARK(fmt::format("BP Real Data ({})", BP_names[i]))
         {
             Candidates candidates;

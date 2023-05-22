@@ -8,6 +8,28 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 
+bool BroadPhaseMethodGenerator::next()
+{
+    using namespace ipc;
+    int i = static_cast<int>(current_method);
+    while (++i < static_cast<int>(BroadPhaseMethod::NUM_METHODS)) {
+        if (BroadPhase::is_enabled(static_cast<BroadPhaseMethod>(i))) {
+            current_method = static_cast<BroadPhaseMethod>(i);
+            return true;
+        }
+    }
+    return false;
+}
+
+Catch::Generators::GeneratorWrapper<ipc::BroadPhaseMethod>
+BroadPhaseMethodGenerator::create()
+{
+    return Catch::Generators::GeneratorWrapper<ipc::BroadPhaseMethod>(
+        Catch::Detail::make_unique<BroadPhaseMethodGenerator>());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 bool load_mesh(
     const std::string& mesh_name,
     Eigen::MatrixXd& V,

@@ -129,7 +129,8 @@ TEST_CASE(
 
     CollisionMesh mesh(V_rest, E, F);
 
-    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const BroadPhaseMethod method =
+        GENERATE(BroadPhaseMethodGenerator::create());
 
     CAPTURE(method);
 
@@ -144,7 +145,19 @@ TEST_CASE("Compare BP against brute force", "[broad_phase]")
 {
     using namespace ipc;
 
-    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const BroadPhaseMethod method =
+        GENERATE(BroadPhaseMethodGenerator::create());
+
+    // if (method == BroadPhaseMethod::BROADMARK_KD
+    //     || method == BroadPhaseMethod::BROADMARK_SAP_PARALLEL
+    //     || method == BroadPhaseMethod::BROADMARK_SAP
+    //     || method == BroadPhaseMethod::BROADMARK_ISAP
+    //     || method == BroadPhaseMethod::BROADMARK_TRACY
+    //     || method == BroadPhaseMethod::BROADMARK_GRID_SAP
+    //     || method == BroadPhaseMethod::BROADMARK_GPU_GRID
+    //     || method == BroadPhaseMethod::BROADMARK_GPU_SAP) {
+    //     return;
+    // }
 
     Eigen::MatrixXd V0, U;
     Eigen::MatrixXi E, F;
@@ -218,7 +231,8 @@ TEST_CASE("Cloth-Ball", "[ccd][broad_phase][cloth-ball][.]")
 
     double inflation_radius = 0;
 
-    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const BroadPhaseMethod method =
+        GENERATE(BroadPhaseMethodGenerator::create());
 
     test_broad_phase(
         mesh, V0, V1, method, true,

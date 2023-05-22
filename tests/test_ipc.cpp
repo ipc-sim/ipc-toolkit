@@ -68,7 +68,8 @@ TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
 
 TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
 {
-    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const BroadPhaseMethod method =
+        GENERATE(BroadPhaseMethodGenerator::create());
     const bool use_convergent_formulation = GENERATE(true, false);
 
     double dhat = -1;
@@ -136,7 +137,8 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
 
 TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
 {
-    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const BroadPhaseMethod method =
+        GENERATE(BroadPhaseMethodGenerator::create());
     const bool use_convergent_formulation = GENERATE(true, false);
 
     double dhat = -1;

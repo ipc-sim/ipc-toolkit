@@ -11,7 +11,7 @@ include(FetchContent)
 FetchContent_Declare(
     gpu_ccd
     GIT_REPOSITORY https://github.com/dbelgrod/CCD-GPU.git
-    GIT_TAG a3c1a482a7e1b4daf64c2f9b58ffe2d54057cbe9
+    GIT_TAG d881a3603c3862bf7a7e4e9b1a6e8ad9e4fce714
     GIT_SHALLOW FALSE
 )
 FetchContent_MakeAvailable(gpu_ccd)

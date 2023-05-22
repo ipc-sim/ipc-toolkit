@@ -18,7 +18,7 @@ enum class BroadPhaseMethod {
     SPATIAL_HASH,
     SWEEP_AND_TINIEST_QUEUE,
     SWEEP_AND_TINIEST_QUEUE_GPU, // Requires CUDA
-    // Require Broadmark
+    // Require Broadmark and CUDA
     BROADMARK_GPU_LBVH,
     BROADMARK_KD,
     BROADMARK_GRID,
@@ -31,7 +31,7 @@ enum class BroadPhaseMethod {
     BROADMARK_TRACY,
     BROADMARK_TRACY_PARALLEL,
     BROADMARK_GRID_SAP,
-    BROADMARK_CGAL,
+    BROADMARK_CGAL, // Requires CGAL
     BROADMARK_GPU_GRID,
     BROADMARK_GPU_SAP,
     NUM_METHODS
@@ -45,6 +45,11 @@ class Candidates; // Forward declaration
 class BroadPhase {
 public:
     virtual ~BroadPhase() { clear(); }
+
+    /// @brief Check if the broad phase method is enabled.
+    /// @param broad_phase_method The broad phase method to check.
+    /// @return True if the broad phase method is enabled.
+    static bool is_enabled(const BroadPhaseMethod broad_phase_method);
 
     /// @brief Construct a registered broad phase object.
     /// @param broad_phase_method The broad phase method to use.

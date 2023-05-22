@@ -11,18 +11,6 @@
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#define NUM_BROAD_PHASE_METHODS static_cast<int>(BroadPhaseMethod::NUM_METHODS)
-#else
-#define NUM_BROAD_PHASE_METHODS                                                \
-    (static_cast<int>(BroadPhaseMethod::NUM_METHODS) - 1)
-#endif
-
-#define GENERATE_BROAD_PHASE_METHODS()                                         \
-    static_cast<BroadPhaseMethod>(GENERATE(range(0, NUM_BROAD_PHASE_METHODS)));
-
-///////////////////////////////////////////////////////////////////////////////
-
 static const std::string TEST_DATA_DIR(TEST_DATA_DIR_CSTR);
 
 bool load_mesh(
@@ -31,7 +19,7 @@ bool load_mesh(
     Eigen::MatrixXi& E,
     Eigen::MatrixXi& F);
 
-///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 
 void mmcvids_to_constraints(
     const Eigen::MatrixXi& E,
@@ -39,7 +27,22 @@ void mmcvids_to_constraints(
     const Eigen::MatrixXi& mmcvids,
     ipc::CollisionConstraints& constraints);
 
-///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
+// Broad phase method generator
+
+class BroadPhaseMethodGenerator
+    : public Catch::Generators::IGenerator<ipc::BroadPhaseMethod> {
+public:
+    const ipc::BroadPhaseMethod& get() const override { return current_method; }
+    bool next() override;
+
+    static Catch::Generators::GeneratorWrapper<ipc::BroadPhaseMethod> create();
+
+private:
+    ipc::BroadPhaseMethod current_method = ipc::BroadPhaseMethod::BRUTE_FORCE;
+};
+
+// ----------------------------------------------------------------------------
 // Rotation generator
 
 class RotationGenerator
@@ -61,7 +64,7 @@ protected:
     Eigen::Matrix3d R = Eigen::Matrix3d::Identity();
 };
 
-///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 // JSON utils
 
 template <typename T>
@@ -90,20 +93,20 @@ void from_json(const nlohmann::json& json, ipc::MatrixX<T>& mat)
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 // Matrix Market file utils
 
 Eigen::MatrixXd loadMarketXd(const std::string& f);
 Eigen::MatrixXi loadMarketXi(const std::string& f);
 
-///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 
 void print_compare_nonzero(
     const Eigen::MatrixXd& A,
     const Eigen::MatrixXd& B,
     bool print_only_different = true);
 
-///////////////////////////////////////////////////////////////////////////////
+// ----------------------------------------------------------------------------
 
 inline Eigen::Vector2d
 edge_normal(const Eigen::Vector2d& e0, const Eigen::Vector2d& e1)

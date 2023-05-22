@@ -34,14 +34,14 @@ project(IPCToolkit
   LANGUAGES CXX
   VERSION "1.0.0")
 
-option(IPC_TOOLKIT_BUILD_TESTS "Build unit-tests" ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
-option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
-option(IPC_TOOLKIT_WITH_CORRECT_CCD "Use the TightInclusion CCD" ON)
-option(IPC_TOOLKIT_WITH_SIMD "Enable SIMD" OFF)
-option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" OFF)
+option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
+option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
+option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"                     ON)
+option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
+option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
-option(IPC_TOOLKIT_WITH_BROADMARK "Enable Broadmark" OFF)
-option(IPC_TOOLKIT_WITH_CGAL "Enable CGAL" OFF)
+option(IPC_TOOLKIT_WITH_BROADMARK             "Enable Broadmark"                              OFF)
+option(IPC_TOOLKIT_WITH_CGAL                  "Enable CGAL"                                   OFF)
 
 if(IPC_TOOLKIT_WITH_CGAL)
   set(LIBIGL_COPYLEFT_CGAL ON CACHE BOOL "Use CGAL")
