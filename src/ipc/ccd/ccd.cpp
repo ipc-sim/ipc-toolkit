@@ -103,6 +103,10 @@ bool point_point_ccd(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
+    if (p0_t0 == p0_t1 && p1_t0 == p1_t1) {
+        return false; // No motion
+    }
+
     const double initial_distance = sqrt(point_point_distance(p0_t0, p1_t0));
 
     const double adjusted_tolerance = std::min(
@@ -158,6 +162,10 @@ bool point_edge_ccd_2D(
         p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi, conservative_rescaling);
 #else
     assert(0 <= tmax && tmax <= 1.0);
+
+    if (p_t0 == p_t1 && e0_t0 == e0_t1 && e1_t0 == e1_t1) {
+        return false; // No motion
+    }
 
     const Eigen::Vector3d p_t0_3D = to_3D(p_t0);
     const Eigen::Vector3d e0_t0_3D = to_3D(e0_t0);
@@ -218,6 +226,10 @@ bool point_edge_ccd_3D(
     const double conservative_rescaling)
 {
     assert(tmax >= 0 && tmax <= 1.0);
+
+    if (p_t0 == p_t1 && e0_t0 == e0_t1 && e1_t0 == e1_t1) {
+        return false; // No motion
+    }
 
     const double initial_distance =
         sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
@@ -310,6 +322,11 @@ bool edge_edge_ccd(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
+    if (ea0_t0 == ea0_t1 && ea1_t0 == ea1_t1 && eb0_t0 == eb0_t1
+        && eb1_t0 == eb1_t1) {
+        return false; // No motion
+    }
+
     const double initial_distance =
         sqrt(edge_edge_distance(ea0_t0, ea1_t0, eb0_t0, eb1_t0));
 
@@ -367,6 +384,10 @@ bool point_triangle_ccd(
     const double conservative_rescaling)
 {
     assert(tmax >= 0 && tmax <= 1.0);
+
+    if (p_t0 == p_t1 && t0_t0 == t0_t1 && t1_t0 == t1_t1 && t2_t0 == t2_t1) {
+        return false; // No motion
+    }
 
     const double initial_distance =
         sqrt(point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0));
