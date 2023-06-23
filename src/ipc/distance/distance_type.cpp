@@ -176,7 +176,7 @@ EdgeEdgeDistanceType edge_edge_parallel_distance_type(
 {
     const Eigen::Vector3d ea = ea1 - ea0;
     const double alpha = (eb0 - ea0).dot(ea) / ea.squaredNorm();
-    const double beta = (eb1 - eb0).dot(ea) / ea.squaredNorm();
+    const double beta = (eb1 - ea0).dot(ea) / ea.squaredNorm();
 
     uint8_t eac; // 0: EA0, 1: EA1, 2: EA
     uint8_t ebc; // 0: EB0, 1: EB1, 2: EB
