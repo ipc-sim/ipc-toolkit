@@ -12,8 +12,6 @@
 
 #include <Eigen/Core>
 
-#include <tbb/enumerable_thread_specific.h>
-
 #include <vector>
 
 namespace ipc {

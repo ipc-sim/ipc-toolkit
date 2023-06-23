@@ -386,30 +386,32 @@ TEST_CASE(
     "Edge-edge parallel distance type",
     "[distance][distance-type][edge-edge][parallel]")
 {
-    double alpha = GENERATE(take(10, random(0.01, 0.99)));
-    double s = GENERATE(take(10, random(-5.0, 5.0)));
+    const double alpha = GENERATE(take(10, random(0.01, 0.99)));
+    const double beta = GENERATE(take(10, random(1.01, 1.99)));
+    const double s = GENERATE(take(10, random(-5.0, 5.0)));
     const int n_random_edges = 20;
 
     for (int i = 0; i < n_random_edges; i++) {
         const Eigen::Vector3d ea0 = Eigen::Vector3d::Random();
         const Eigen::Vector3d ea1 = Eigen::Vector3d::Random();
-        const double edge_len = (ea1 - ea0).norm();
+        const Eigen::Vector3d ea = ea1 - ea0;
 
         Eigen::Vector3d n = (ea1 - ea0).cross(Eigen::Vector3d::UnitX());
         REQUIRE(n.norm() != 0);
         n.normalize();
 
-        const Eigen::Vector3d eb0 = (ea1 - ea0) * alpha + ea0 + s * n;
-        const Eigen::Vector3d eb1 = (ea1 - ea0) + eb0;
+        const Eigen::Vector3d eb0 = ea0 + alpha * ea + s * n;
+        const Eigen::Vector3d eb1 = ea0 + beta * ea + s * n;
+        const Eigen::Vector3d eb = eb1 - eb0;
+
         REQUIRE(
-            (ea1 - ea0).dot(eb1 - eb0) == Catch::Approx(edge_len * edge_len));
-        REQUIRE(
-            (ea1 - ea0).cross(eb1 - eb0).norm()
-            == Catch::Approx(0).margin(1e-14));
+            std::abs(ea.normalized().dot(eb.normalized())) == Catch::Approx(1));
+        REQUIRE(ea.cross(eb).norm() == Catch::Approx(0).margin(1e-14));
 
         const EdgeEdgeDistanceType dtype =
             edge_edge_distance_type(ea0, ea1, eb0, eb1);
 
+        CAPTURE(alpha, beta, s, dtype);
         CHECK(
             (dtype == EdgeEdgeDistanceType::EA_EB0
              || dtype == EdgeEdgeDistanceType::EA1_EB));

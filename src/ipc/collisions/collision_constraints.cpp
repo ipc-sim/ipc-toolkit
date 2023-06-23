@@ -153,11 +153,7 @@ double CollisionConstraints::compute_potential(
             }
         });
 
-    double potential = 0;
-    for (const auto& local_potential : storage) {
-        potential += local_potential;
-    }
-    return potential;
+    return storage.combine([](double a, double b) { return a + b; });
 }
 
 Eigen::VectorXd CollisionConstraints::compute_potential_gradient(
@@ -191,11 +187,8 @@ Eigen::VectorXd CollisionConstraints::compute_potential_gradient(
             }
         });
 
-    Eigen::VectorXd grad = Eigen::VectorXd::Zero(vertices.size());
-    for (const auto& local_grad : storage) {
-        grad += local_grad;
-    }
-    return grad;
+    return storage.combine([](const Eigen::VectorXd& a,
+                              const Eigen::VectorXd& b) { return a + b; });
 }
 
 Eigen::SparseMatrix<double> CollisionConstraints::compute_potential_hessian(
@@ -347,11 +340,7 @@ double CollisionConstraints::compute_minimum_distance(
             }
         });
 
-    double min_dist = std::numeric_limits<double>::infinity();
-    for (const auto& local_min_dist : storage) {
-        min_dist = std::min(min_dist, local_min_dist);
-    }
-    return min_dist;
+    return storage.combine([](double a, double b) { return std::min(a, b); });
 }
 
 // ============================================================================
