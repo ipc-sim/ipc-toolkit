@@ -32,10 +32,6 @@
 # Set deployment platform for macOS
 # set(CMAKE_OSX_DEPLOYMENT_TARGET 10.12 CACHE STRING "macOS deployment target")
 
-# Always add colored output (e.g. when using Ninja)
-# list(APPEND CMAKE_CXX_FLAGS -fdiagnostics-color=always) # GCC
-# list(APPEND CMAKE_CXX_FLAGS -fcolor-diagnostics) # Clang
-
 ################################################################################
 # IPC Toolkit Options
 ################################################################################
@@ -46,34 +42,4 @@
 # option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 # option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 # option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
-
-# Options for third-party libraries
-# option(EIGEN_WITH_MKL "Use Eigen with MKL" ON)
-# set(MKL_INTERFACE "lp64" CACHE STRING "Interface layer to use with MKL (lp64 or ilp64)")
-# set(MKL_LINKING "static" CACHE STRING "Linking strategy to use with MKL (static, dynamic or sdl)")
-# set(MKL_THREADING "tbb" CACHE STRING "Threading layer to use with MKL (sequential, tbb or openmp)")
-
-################################################################################
-# FetchContent Options
-################################################################################
-
-# option(FETCHCONTENT_FULLY_DISCONNECTED   "Disables all attempts to download or update content and assumes source dirs already exist" OFF)
-# option(FETCHCONTENT_UPDATES_DISCONNECTED "Enables UPDATE_DISCONNECTED behavior for all content population" OFF)
-# option(FETCHCONTENT_QUIET                "Enables QUIET option for all content population" ON)
-# set(FETCHCONTENT_BASE_DIR "${CMAKE_BINARY_DIR}/_deps" CACHE PATH "Directory under which to collect all populated content")
-
-# Development Locations for Third Party Libraries
-# set(FETCHCONTENT_SOURCE_DIR_ABSEIL "" CACHE PATH "When not empty, overrides where to find pre-populated content for abseil")
-# set(FETCHCONTENT_SOURCE_DIR_BROADPHASE "" CACHE PATH "When not empty, overrides where to find pre-populated content for broadphase")
-# set(FETCHCONTENT_SOURCE_DIR_CATCH2 "" CACHE PATH "When not empty, overrides where to find pre-populated content for catch2")
-# set(FETCHCONTENT_SOURCE_DIR_EIGEN "" CACHE PATH "When not empty, overrides where to find pre-populated content for eigen")
-# set(FETCHCONTENT_SOURCE_DIR_FINITE-DIFF "" CACHE PATH "When not empty, overrides where to find pre-populated content for finite-diff")
-# set(FETCHCONTENT_SOURCE_DIR_GPU_CCD "" CACHE PATH "When not empty, overrides where to find pre-populated content for gpu_ccd")
-# set(FETCHCONTENT_SOURCE_DIR_LIBIGL "" CACHE PATH "When not empty, overrides where to find pre-populated content for libigl")
-# set(FETCHCONTENT_SOURCE_DIR_NLOHMANN_JSON "" CACHE PATH "When not empty, overrides where to find pre-populated content for nlohmann_json")
-# set(FETCHCONTENT_SOURCE_DIR_PREDICATES "" CACHE PATH "When not empty, overrides where to find pre-populated content for predicates")
-# set(FETCHCONTENT_SOURCE_DIR_PYBIND11 "" CACHE PATH "When not empty, overrides where to find pre-populated content for pybind11")
-# set(FETCHCONTENT_SOURCE_DIR_ROBIN-MAP "" CACHE PATH "When not empty, overrides where to find pre-populated content for robin-map")
-# set(FETCHCONTENT_SOURCE_DIR_SPDLOG "" CACHE PATH "When not empty, overrides where to find pre-populated content for spdlog")
-# set(FETCHCONTENT_SOURCE_DIR_TBB "" CACHE PATH "When not empty, overrides where to find pre-populated content for tbb")
-# set(FETCHCONTENT_SOURCE_DIR_TIGHT_INCLUSION "" CACHE PATH "When not empty, overrides where to find pre-populated content for tight_inclusion")
+# option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)

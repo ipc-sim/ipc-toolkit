@@ -1,5 +1,5 @@
 #
-# Copyright 2020 Adobe. All rights reserved.
+# Copyright 2021 Adobe. All rights reserved.
 # This file is licensed to you under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License. You may obtain a copy
 # of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -9,15 +9,17 @@
 # OF ANY KIND, either express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
 #
-if(TARGET Catch2::Catch2)
-    return()
-endif()
-
-message(STATUS "Third-party: creating target 'Catch2::Catch2'")
-
-option(CATCH_CONFIG_CPP17_STRING_VIEW "Enable support for std::string_view" ON)
-option(CATCH_INSTALL_DOCS "Install documentation alongside library" OFF)
-option(CATCH_INSTALL_EXTRAS "Install extras alongside library" OFF)
-
-include(CPM)
-CPMAddPackage("gh:catchorg/Catch2@3.3.2")
+function(ipc_toolkit_filter_flags flags)
+  include(CheckCXXCompilerFlag)
+  set(output_flags)
+  foreach(FLAG IN ITEMS ${${flags}})
+    string(REPLACE "=" "-" FLAG_VAR "${FLAG}")
+    if(NOT DEFINED IS_SUPPORTED_${FLAG_VAR})
+      check_cxx_compiler_flag("${FLAG}" IS_SUPPORTED_${FLAG_VAR})
+    endif()
+    if(IS_SUPPORTED_${FLAG_VAR})
+      list(APPEND output_flags $<$<COMPILE_LANGUAGE:CXX>:${FLAG}>)
+    endif()
+  endforeach()
+  set(${flags} ${output_flags} PARENT_SCOPE)
+endfunction()
