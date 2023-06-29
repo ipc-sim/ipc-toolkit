@@ -111,7 +111,7 @@ bool is_edge_intersecting_triangle(
         return false;
     }
 
-#ifdef IPC_TOOLKIT_USE_RATIONAL_INTERSECTION
+#ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
     return is_edge_intersecting_triangle_rational(e0, e1, t0, t1, t2);
 #else
     Eigen::Matrix3d M;

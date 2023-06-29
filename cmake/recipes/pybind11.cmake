@@ -15,14 +15,6 @@ endif()
 
 message(STATUS "Third-party: creating target 'pybind11::pybind11'")
 
-include(FetchContent)
-FetchContent_Declare(
-    pybind11
-    GIT_REPOSITORY https://github.com/pybind/pybind11.git
-    GIT_TAG v2.10.3
-    GIT_SHALLOW TRUE
-)
-
 if (POLICY CMP0094)  # https://cmake.org/cmake/help/latest/policy/CMP0094.html
     cmake_policy(SET CMP0094 NEW)  # FindPython should return the first matching Python
 endif ()
@@ -42,4 +34,5 @@ endif ()
 find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
 set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
 
-FetchContent_MakeAvailable(pybind11)
+include(CPM)
+CPMAddPackage("gh:pybind/pybind11@2.10.3")

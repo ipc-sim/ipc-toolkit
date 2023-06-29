@@ -59,11 +59,15 @@ The following libraries are used in this project:
 * [TBB](https://github.com/wjakob/tbb): parallelization
 * [Tight-Inclusion](https://github.com/Continuous-Collision-Detection/Tight-Inclusion): correct (conservative) CCD
 * [spdlog](https://github.com/gabime/spdlog): logging information
-* [robin-map](https://github.com/Tessil/robin-map): faster hash set/map than `std::unordered_set`/`std::unordered_map`
-* [Abseil](https://abseil.io/): hashing utilities
 
 #### Optional
 
+* [robin-map](https://github.com/Tessil/robin-map): faster hash set/map than `std::unordered_set`/`std::unordered_map`
+    * Enable by using the CMake option `IPC_TOOLKIT_WITH_ROBIN_MAP`
+    * Enabled by default
+* [Abseil](https://abseil.io/): hashing utilities
+    * Enable by using the CMake option `IPC_TOOLKIT_WITH_ABSEIL`
+    * Enabled by default
 * [GMP](https://gmplib.org/): rational arithmetic used for exact intersection checks
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION`
     * GMP must be installed at a system level

@@ -7,7 +7,7 @@ else()
 endif()
 
 # Check required CMake version
-set(REQUIRED_CMAKE_VERSION "3.14.0")
+set(REQUIRED_CMAKE_VERSION "3.18.0")
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   cmake_minimum_required(VERSION ${REQUIRED_CMAKE_VERSION})
 else()
@@ -24,12 +24,43 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake)
   include(${CMAKE_CURRENT_SOURCE_DIR}/IPCToolkitOptions.cmake)
 endif()
 
+# Enable ccache if available
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+  option(IPC_TOOLKIT_WITH_CCACHE "Enable ccache when building IPC Toolkit" ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
+else()
+  option(IPC_TOOLKIT_WITH_CCACHE "Enable ccache when building IPC Toolkit" OFF)
+endif()
+if(IPC_TOOLKIT_WITH_CCACHE AND CCACHE_PROGRAM)
+  message(STATUS "Enabling Ccache support")
+  set(ccacheEnv
+    CCACHE_BASEDIR=${CMAKE_BINARY_DIR}
+    CCACHE_SLOPPINESS=clang_index_store,include_file_ctime,include_file_mtime,locale,pch_defines,time_macros
+  )
+  foreach(lang IN ITEMS C CXX)
+    set(CMAKE_${lang}_COMPILER_LAUNCHER
+      ${CMAKE_COMMAND} -E env ${ccacheEnv} ${CCACHE_PROGRAM}
+    )
+  endforeach()
+endif()
+
+
+################################################################################
+# CMake Policies
+################################################################################
+
+cmake_policy(SET CMP0054 NEW) # Only interpret if() arguments as variables or keywords when unquoted.
+cmake_policy(SET CMP0076 NEW) # target_sources() command converts relative paths to absolute.
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
+  cmake_policy(SET CMP0135 NEW) # Set the timestamps of all extracted contents to the time of the extraction.
+endif()
+
 ################################################################################
 
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
         LANGUAGES CXX
-        VERSION "1.0.0")
+        VERSION "1.0.1")
 
 option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
 option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
@@ -37,6 +68,8 @@ option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"      
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
+option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
+option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
@@ -53,24 +86,12 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/ipc_toolkit/")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/recipes/")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/find/")
 
-# Color output
+# General CMake utils
+include(ipc_toolkit_cpm_cache)
 include(ipc_toolkit_use_colors)
 
-# IPC Toolkit utils
-include(ipc_toolkit_prepend_current_path)
-include(ipc_toolkit_set_source_group)
-include(ipc_toolkit_target_link_system_libraries)
-
-# Generate position independent code by default
+# Generate position-independent code by default
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-################################################################################
-# CMake Policies
-################################################################################
-
-if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
-  cmake_policy(SET CMP0135 NEW) # https://cmake.org/cmake/help/latest/policy/CMP0135.html
-endif()
 
 ################################################################################
 # IPC Toolkit Library
@@ -105,7 +126,7 @@ target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
 # libigl
 include(eigen)
 include(libigl)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC
+target_link_libraries(ipc_toolkit PUBLIC
   Eigen3::Eigen
   igl::core
   igl::predicates
@@ -113,46 +134,50 @@ ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC
 
 # TBB
 include(onetbb)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC TBB::tbb)
+target_link_libraries(ipc_toolkit PUBLIC TBB::tbb)
 
 # CCD
 if(IPC_TOOLKIT_WITH_CORRECT_CCD)
   # Provably conservative CCD of [Wang and Ferguson et al. 2021]
   include(tight_inclusion)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
+  target_link_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
 else()
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
   include(evouga_ccd)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC evouga::ccd)
+  target_link_libraries(ipc_toolkit PUBLIC evouga::ccd)
 endif()
 
 # Logger
 include(spdlog)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
+target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   include(gmp)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC GMP::GMP)
+  target_link_libraries(ipc_toolkit PUBLIC GMP::GMP)
 endif()
 
 # Sweep and Tiniest Queue and CCD
 if(IPC_TOOLKIT_WITH_CUDA)
   include(gpu_ccd)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC gpu_ccd::gpu_ccd)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC STQ::CPU)
+  target_link_libraries(ipc_toolkit PUBLIC gpu_ccd::gpu_ccd)
+  target_link_libraries(ipc_toolkit PUBLIC STQ::CPU)
 else()
   set(STQ_WITH_CUDA OFF CACHE BOOL "Enable CUDA Implementation" FORCE)
   include(sweep_and_tiniest_queue)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC STQ::CPU)
+  target_link_libraries(ipc_toolkit PUBLIC STQ::CPU)
 endif()
 
 # Faster unordered map
-include(robin_map)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC tsl::robin_map)
+if(IPC_TOOLKIT_WITH_ROBIN_MAP)
+  include(robin_map)
+  target_link_libraries(ipc_toolkit PUBLIC tsl::robin_map)
+endif()
 
 # Hashes
-include(abseil)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC absl::hash)
+if(IPC_TOOLKIT_WITH_ABSEIL)
+  include(abseil)
+  target_link_libraries(ipc_toolkit PUBLIC absl::hash)
+endif()
 
 # Extra warnings (link last for highest priority)
 include(ipc_toolkit_warnings)
@@ -221,7 +246,7 @@ if(IPC_TOOLKIT_WITH_CUDA)
   endif()
 
   find_package(CUDAToolkit)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit PRIVATE CUDA::cudart)
+  target_link_libraries(ipc_toolkit PRIVATE CUDA::cudart)
 endif()
 
 ################################################################################

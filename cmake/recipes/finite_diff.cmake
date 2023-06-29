@@ -4,11 +4,5 @@ endif()
 
 message(STATUS "Third-party: creating target 'finitediff::finitediff'")
 
-include(FetchContent)
-FetchContent_Declare(
-    finite-diff
-    GIT_REPOSITORY https://github.com/zfergus/finite-diff.git
-    GIT_TAG v1.0.1
-    GIT_SHALLOW TRUE
-)
-FetchContent_MakeAvailable(finite-diff)
+include(CPM)
+CPMAddPackage("gh:zfergus/finite-diff@1.0.1")

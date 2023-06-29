@@ -7,7 +7,7 @@ if(TARGET ipc::toolkit::warnings)
   return()
 endif()
 
-set(IPC_TOOLKIT_FLAGS
+set(IPC_TOOLKIT_WARNING_FLAGS
   -Wall
   -Wextra
   -pedantic
@@ -149,20 +149,12 @@ set(IPC_TOOLKIT_FLAGS
 
 # Flags above don't make sense for MSVC
 if(MSVC)
-  set(IPC_TOOLKIT_FLAGS)
+  set(IPC_TOOLKIT_WARNING_FLAGS)
 endif()
-
-include(CheckCXXCompilerFlag)
 
 add_library(ipc_toolkit_warnings INTERFACE)
 add_library(ipc::toolkit::warnings ALIAS ipc_toolkit_warnings)
 
-foreach(FLAG IN ITEMS ${IPC_TOOLKIT_FLAGS})
-  string(REPLACE "=" "-" FLAG_VAR "${FLAG}")
-  if(NOT DEFINED IS_SUPPORTED_${FLAG_VAR})
-    check_cxx_compiler_flag("${FLAG}" IS_SUPPORTED_${FLAG_VAR})
-  endif()
-  if(IS_SUPPORTED_${FLAG_VAR})
-    target_compile_options(ipc_toolkit_warnings INTERFACE ${FLAG})
-  endif()
-endforeach()
+include(ipc_toolkit_filter_flags)
+ipc_toolkit_filter_flags(IPC_TOOLKIT_WARNING_FLAGS)
+target_compile_options(ipc_toolkit_warnings INTERFACE ${IPC_TOOLKIT_WARNING_FLAGS})

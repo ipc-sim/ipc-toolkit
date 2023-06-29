@@ -15,17 +15,11 @@ endif()
 
 message(STATUS "Third-party: creating target 'spdlog::spdlog'")
 
-include(FetchContent)
-FetchContent_Declare(
-    spdlog
-    GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG v1.10.0
-    GIT_SHALLOW TRUE
-)
-
 option(SPDLOG_INSTALL "Generate the install target" ON)
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME "spdlog")
-FetchContent_MakeAvailable(spdlog)
+
+include(CPM)
+CPMAddPackage("gh:gabime/spdlog@1.11.0")
 
 set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
 

@@ -9,8 +9,6 @@
 # OF ANY KIND, either express or implied. See the License for the specific language
 # governing permissions and limitations under the License.
 #
-
-# JSON MIT
 if(TARGET nlohmann_json::nlohmann_json)
     return()
 endif()
@@ -18,15 +16,14 @@ endif()
 message(STATUS "Third-party: creating target 'nlohmann_json::nlohmann_json'")
 
 # nlohmann_json is a big repo for a single header, so we just download the release archive
-set(NLOHMANNJSON_VERSION "v3.10.2")
+set(NLOHMANNJSON_VERSION "v3.11.2")
 
-include(FetchContent)
-FetchContent_Declare(
-    nlohmann_json
+include(CPM)
+CPMAddPackage(
+    NAME nlohmann_json
     URL "https://github.com/nlohmann/json/releases/download/${NLOHMANNJSON_VERSION}/include.zip"
-    URL_HASH SHA256=61e605be15e88deeac4582aaf01c09d616f8302edde7adcaba9261ddc3b4ceca
+    URL_HASH SHA256=e5c7a9f49a16814be27e4ed0ee900ecd0092bfb7dbfca65b5a421b774dccaaed
 )
-FetchContent_MakeAvailable(nlohmann_json)
 
 add_library(nlohmann_json INTERFACE)
 add_library(nlohmann_json::nlohmann_json ALIAS nlohmann_json)
