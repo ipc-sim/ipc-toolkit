@@ -14,14 +14,6 @@
 # Generates a `compile_commands.json` that can be used for autocompletion
 # set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL "Enable/Disable output of compile commands during generation.")
 
-# Use ccache to speed up compilation of repeated builds
-# find_program(CCACHE_PROGRAM ccache)
-# if(CCACHE_PROGRAM)
-#     message(STATUS "Enabling Ccache support")
-#     set(CMAKE_C_COMPILER_LAUNCHER   ${CCACHE_PROGRAM} CACHE STRING "")
-#     set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM} CACHE STRING "")
-# endif()
-
 # Use a specific C/C++ compiler, e.g. llvm-clang on macOS (so we can use clangd)
 # set(CMAKE_C_COMPILER   "/usr/local/opt/llvm/bin/clang"   CACHE STRING "C compiler")
 # set(CMAKE_CXX_COMPILER "/usr/local/opt/llvm/bin/clang++" CACHE STRING "C++ compiler")
