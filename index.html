@@ -1130,11 +1130,21 @@ We use this same process to download all external dependencies.</p>
 <li><p><a class="reference external" href="https://github.com/wjakob/tbb">TBB</a>: parallelization</p></li>
 <li><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Tight-Inclusion">Tight-Inclusion</a>: correct (conservative) CCD</p></li>
 <li><p><a class="reference external" href="https://github.com/gabime/spdlog">spdlog</a>: logging information</p></li>
-<li><p><a class="reference external" href="https://github.com/Tessil/robin-map">robin-map</a>: faster hash set/map than <code class="docutils literal notranslate"><span class="pre">std::unordered_set</span></code>/<code class="docutils literal notranslate"><span class="pre">std::unordered_map</span></code></p></li>
-<li><p><a class="reference external" href="https://abseil.io/">Abseil</a>: hashing utilities</p></li>
 </ul>
 <h4 id="optional">Optional<a class="headerlink" href="#optional" title="Permalink to this heading">¶</a></h4>
 <ul class="simple">
+<li><p><a class="reference external" href="https://github.com/Tessil/robin-map">robin-map</a>: faster hash set/map than <code class="docutils literal notranslate"><span class="pre">std::unordered_set</span></code>/<code class="docutils literal notranslate"><span class="pre">std::unordered_map</span></code></p>
+<ul>
+<li><p>Enable by using the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_ROBIN_MAP</span></code></p></li>
+<li><p>Enabled by default</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://abseil.io/">Abseil</a>: hashing utilities</p>
+<ul>
+<li><p>Enable by using the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_ABSEIL</span></code></p></li>
+<li><p>Enabled by default</p></li>
+</ul>
+</li>
 <li><p><a class="reference external" href="https://gmplib.org/">GMP</a>: rational arithmetic used for exact intersection checks</p>
 <ul>
 <li><p>Enable by using the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION</span></code></p></li>
@@ -1205,7 +1215,7 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
   <small>
     
       Last update:
-      June 23, 2023
+      June 29, 2023
     
   </small>
 </div>
