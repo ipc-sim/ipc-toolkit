@@ -63,7 +63,7 @@ jobs:
           cd build
           cmake .. \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
-            -DIPC_TOOLKIT_BUILD_UNIT_TESTS=ON \
+            -DIPC_TOOLKIT_BUILD_TESTS=ON \
             -DCMAKE_BUILD_TYPE=${{ matrix.config }}
 
       - name: Build
@@ -117,7 +117,7 @@ jobs:
           cmake -G Ninja ^
             -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ^
             -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
-            -DIPC_TOOLKIT_BUILD_UNIT_TESTS=ON ^
+            -IPC_TOOLKIT_BUILD_TESTS=ON ^
             -B build ^
             -S .
           cmake --build build -j1
