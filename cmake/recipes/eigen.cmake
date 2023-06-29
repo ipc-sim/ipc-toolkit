@@ -22,7 +22,7 @@ message(STATUS "Third-party: creating target 'Eigen3::Eigen'")
 include(CPM)
 CPMAddPackage(
     NAME eigen
-    GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+    GITLAB_REPOSITORY libeigen/eigen
     GIT_TAG 3.4.0
     DOWNLOAD_ONLY ON
 )
