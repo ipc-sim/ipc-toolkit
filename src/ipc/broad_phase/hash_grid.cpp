@@ -11,7 +11,7 @@
 
 #include <algorithm> // std::min/max
 
-#define IPC_TOOLKIT_HASH_GRID_WITH_SORT_UNIQUE // else use unordered_set
+#define IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE // else use unordered_set
 
 namespace ipc {
 
@@ -170,7 +170,7 @@ void HashGrid::detect_candidates(
     };
 
     // 2. Enumerate hash collisions
-#ifdef IPC_TOOLKIT_HASH_GRID_WITH_SORT_UNIQUE
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
     tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
 #else
     tbb::enumerable_thread_specific<unordered_set<Candidate>> storage;
@@ -210,7 +210,7 @@ void HashGrid::detect_candidates(
                     }
 
                     if (boxes0[id0].intersects(boxes1[id1])) {
-#ifdef IPC_TOOLKIT_HASH_GRID_WITH_SORT_UNIQUE
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
                         local_candidates.emplace_back(id0, id1);
 #else
                         local_candidates.emplace(id0, id1);
@@ -220,7 +220,7 @@ void HashGrid::detect_candidates(
             }
         });
 
-#ifdef IPC_TOOLKIT_HASH_GRID_WITH_SORT_UNIQUE
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
     merge_thread_local_vectors(storage, candidates);
 
     // Remove the duplicate candidates
@@ -249,7 +249,7 @@ void HashGrid::detect_candidates(
     // intersection testing. So we loop over the entire sorted set of
     // (key,value) pairs creating Candidate entries for pairs with the same key
 
-#ifdef IPC_TOOLKIT_HASH_GRID_WITH_SORT_UNIQUE
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
     tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
 #else
     tbb::enumerable_thread_specific<unordered_set<Candidate>> storage;
@@ -282,7 +282,7 @@ void HashGrid::detect_candidates(
 
                     const AABB& box1 = boxes[item1.id];
                     if (box0.intersects(box1)) {
-#ifdef IPC_TOOLKIT_HASH_GRID_WITH_SORT_UNIQUE
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
                         local_candidates.emplace_back(item0.id, item1.id);
 #else
                         local_candidates.emplace(item0.id, item1.id);
@@ -292,7 +292,7 @@ void HashGrid::detect_candidates(
             }
         });
 
-#ifdef IPC_TOOLKIT_HASH_GRID_WITH_SORT_UNIQUE
+#ifdef IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE
     merge_thread_local_vectors(storage, candidates);
 
     // Remove the duplicate candidates
