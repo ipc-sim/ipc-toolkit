@@ -15,8 +15,6 @@ endif()
 
 message(STATUS "Third-party: creating target 'pybind11::pybind11'")
 
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-
 if (POLICY CMP0094)  # https://cmake.org/cmake/help/latest/policy/CMP0094.html
     cmake_policy(SET CMP0094 NEW)  # FindPython should return the first matching Python
 endif ()
