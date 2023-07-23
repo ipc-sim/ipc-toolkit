@@ -74,7 +74,7 @@ endif()
 
 # Extra warnings (link last for highest priority)
 include(ipc_toolkit_warnings)
-target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
+target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)
 
 ################################################################################
 # Compiler options
