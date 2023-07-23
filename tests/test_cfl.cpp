@@ -1,0 +1,33 @@
+#include <catch2/catch_all.hpp>
+
+#include "test_utils.hpp"
+
+#include <ipc/ipc.hpp>
+
+#include "test_utils.hpp"
+
+using namespace ipc;
+
+TEST_CASE("Test compute_cfl_stepsize()", "[ccd][cfl]")
+{
+    Eigen::MatrixXd V0, V1;
+    Eigen::MatrixXi E, F;
+    const bool success = load_mesh("cloth_ball92.ply", V0, E, F)
+        && load_mesh("cloth_ball93.ply", V1, E, F);
+    REQUIRE(success);
+
+    const double dhat = GENERATE(1e-6, 1e-3, 1e-1);
+
+    CollisionMesh mesh(V0, E, F);
+
+    Candidates candidates;
+    candidates.build(mesh, V0, dhat / 2);
+
+    const double cfl_step_size =
+        candidates.compute_cfl_stepsize(mesh, V0, V1, dhat);
+
+    const double ccd_step_size =
+        ipc::compute_collision_free_stepsize(mesh, V0, V1);
+
+    CHECK(cfl_step_size <= ccd_step_size);
+}
