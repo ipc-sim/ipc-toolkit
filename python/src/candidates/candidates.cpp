@@ -105,6 +105,38 @@ void define_candidates(py::module_& m)
             py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
             py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS)
         .def(
+            "compute_noncandidate_conservative_stepsize",
+            &Candidates::compute_noncandidate_conservative_stepsize,
+            R"ipc_Qu8mg5v7(
+            Computes a conservative bound on the largest-feasible step size for surface primitives not in contact.
+
+            Parameters:
+                mesh: The collision mesh.
+                displacements: Surface vertex displacements (rowwise).
+                dhat: Barrier activation distance.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("displacements"), py::arg("dhat"))
+        .def(
+            "compute_cfl_stepsize", &Candidates::compute_cfl_stepsize,
+            R"ipc_Qu8mg5v7(
+            Computes a CFL-inspired CCD maximum step step size.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices_t0: Surface vertex starting positions (rowwise).
+                vertices_t1: Surface vertex ending positions (rowwise).
+                dhat: Barrier activation distance.
+                min_distance: The minimum distance allowable between any two elements.
+                tolerance: The tolerance for the CCD algorithm.
+                max_iterations: The maximum number of iterations for the CCD algorithm.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
+            py::arg("dhat"),
+            py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD,
+            py::arg("min_distance") = 0.0,
+            py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
+            py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS)
+        .def(
             "save_obj", &Candidates::save_obj, "", py::arg("filename"),
             py::arg("vertices"), py::arg("edges"), py::arg("faces"))
         .def_readwrite("ev_candidates", &Candidates::ev_candidates, "")

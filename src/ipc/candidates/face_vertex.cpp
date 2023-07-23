@@ -41,10 +41,8 @@ MatrixMax12d FaceVertexCandidate::compute_distance_hessian(
 }
 
 bool FaceVertexCandidate::ccd(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    const VectorMax12d& vertices_t0,
+    const VectorMax12d& vertices_t1,
     double& toi,
     const double min_distance,
     const double tmax,
@@ -52,17 +50,18 @@ bool FaceVertexCandidate::ccd(
     const long max_iterations,
     const double conservative_rescaling) const
 {
+    assert(vertices_t0.size() == 12 && vertices_t1.size() == 12);
     return point_triangle_ccd(
         // Point at t=0
-        vertices_t0.row(vertex_id),
+        vertices_t0.head<3>(),
         // Triangle at t=0
-        vertices_t0.row(faces(face_id, 0)), vertices_t0.row(faces(face_id, 1)),
-        vertices_t0.row(faces(face_id, 2)),
+        vertices_t0.segment<3>(3), vertices_t0.segment<3>(6),
+        vertices_t0.tail<3>(),
         // Point at t=1
-        vertices_t1.row(vertex_id),
+        vertices_t1.head<3>(),
         // Triangle at t=1
-        vertices_t1.row(faces(face_id, 0)), vertices_t1.row(faces(face_id, 1)),
-        vertices_t1.row(faces(face_id, 2)), //
+        vertices_t1.segment<3>(3), vertices_t1.segment<3>(6),
+        vertices_t1.tail<3>(), //
         toi, min_distance, tmax, tolerance, max_iterations,
         conservative_rescaling);
 }

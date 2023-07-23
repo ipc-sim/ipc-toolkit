@@ -17,6 +17,7 @@ add_executable(ipc_toolkit_tests
   ccd/benchmark_ccd.cpp
   ccd/collision_generator.cpp
   ccd/test_ccd.cpp
+  test_cfl.cpp
 
   # Test distances and dertivatives
   distance/test_distance_type.cpp

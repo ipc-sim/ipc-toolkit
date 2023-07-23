@@ -10,8 +10,7 @@
 
 namespace ipc {
 
-class FaceVertexCandidate : virtual public CollisionStencil,
-                            public ContinuousCollisionCandidate {
+class FaceVertexCandidate : public ContinuousCollisionCandidate {
 public:
     FaceVertexCandidate(long face_id, long vertex_id);
 
@@ -26,19 +25,6 @@ public:
     }
 
     // ------------------------------------------------------------------------
-
-    bool
-    ccd(const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        double& toi,
-        const double min_distance = 0.0,
-        const double tmax = 1.0,
-        const double tolerance = DEFAULT_CCD_TOLERANCE,
-        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
-        const double conservative_rescaling =
-            DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
 
     void print_ccd_query(
         const Eigen::MatrixXd& vertices_t0,
@@ -65,6 +51,7 @@ public:
     using CollisionStencil::compute_distance;
     using CollisionStencil::compute_distance_gradient;
     using CollisionStencil::compute_distance_hessian;
+    using ContinuousCollisionCandidate::ccd;
 
 protected:
     double compute_distance(const VectorMax12d& positions) const override;
@@ -74,6 +61,17 @@ protected:
 
     MatrixMax12d
     compute_distance_hessian(const VectorMax12d& positions) const override;
+
+    bool
+    ccd(const VectorMax12d& vertices_t0,
+        const VectorMax12d& vertices_t1,
+        double& toi,
+        const double min_distance = 0.0,
+        const double tmax = 1.0,
+        const double tolerance = DEFAULT_CCD_TOLERANCE,
+        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+        const double conservative_rescaling =
+            DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
 
     virtual PointTriangleDistanceType known_dtype() const
     {

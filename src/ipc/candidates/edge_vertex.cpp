@@ -44,10 +44,8 @@ MatrixMax12d EdgeVertexCandidate::compute_distance_hessian(
 }
 
 bool EdgeVertexCandidate::ccd(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    const VectorMax12d& vertices_t0,
+    const VectorMax12d& vertices_t1,
     double& toi,
     const double min_distance,
     const double tmax,
@@ -55,15 +53,18 @@ bool EdgeVertexCandidate::ccd(
     const long max_iterations,
     const double conservative_rescaling) const
 {
+    assert(vertices_t0.size() == 6 || vertices_t0.size() == 9);
+    assert(vertices_t0.size() == vertices_t1.size());
+    const int dim = vertices_t0.size() / 3;
     return point_edge_ccd(
         // Point at t=0
-        vertices_t0.row(vertex_id),
+        vertices_t0.head(dim),
         // Edge at t=0
-        vertices_t0.row(edges(edge_id, 0)), vertices_t0.row(edges(edge_id, 1)),
+        vertices_t0.segment(dim, dim), vertices_t0.tail(dim),
         // Point at t=1
-        vertices_t1.row(vertex_id),
+        vertices_t1.head(dim),
         // Edge at t=1
-        vertices_t1.row(edges(edge_id, 0)), vertices_t1.row(edges(edge_id, 1)),
+        vertices_t1.segment(dim, dim), vertices_t1.tail(dim), //
         toi, min_distance, tmax, tolerance, max_iterations,
         conservative_rescaling);
 }
