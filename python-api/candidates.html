@@ -3397,7 +3397,7 @@
 <div><p>Initialize the set of discrete collision detection candidates.</p>
 <dl class="simple">
 <dt>Parameters:</dt><dd><p>mesh: The surface of the contact mesh.
-vertices: Surface Vertex vertices at start as rows of a matrix.
+vertices: Surface vertex positions (rowwise).
 inflation_radius: Amount to inflate the bounding boxes.
 broad_phase_method: Broad phase method to use.</p>
 </dd>
@@ -3411,8 +3411,8 @@ broad_phase_method: Broad phase method to use.</p>
 <dt>Note:</dt><dd><p>Assumes the trajectory is linear.</p>
 </dd>
 <dt>Parameters:</dt><dd><p>mesh: The surface of the contact mesh.
-vertices_t0: Surface vertex vertices at start as rows of a matrix.
-vertices_t1: Surface vertex vertices at end as rows of a matrix.
+vertices_t0: Surface vertex starting positions (rowwise).
+vertices_t1: Surface vertex ending positions (rowwise).
 inflation_radius: Amount to inflate the bounding boxes.
 broad_phase_method: Broad phase method to use.</p>
 </dd>
@@ -3440,9 +3440,9 @@ broad_phase_method: Broad phase method to use.</p>
 <dd class="field-odd"><dl class="simple api-field highlight">
 <dt><span class="sig-name descname">mesh</span></dt><dd><p>The collision mesh.</p>
 </dd>
-<dt><span class="sig-name descname">vertices_t0</span></dt><dd><p>Vertex vertices at start as rows of a matrix. Assumes vertices_t0 is intersection free.</p>
+<dt><span class="sig-name descname">vertices_t0</span></dt><dd><p>Surface vertex starting positions (rowwise). Assumed to be intersection free.</p>
 </dd>
-<dt><span class="sig-name descname">vertices_t1</span></dt><dd><p>Surface vertex vertices at end as rows of a matrix.</p>
+<dt><span class="sig-name descname">vertices_t1</span></dt><dd><p>Surface vertex ending positions (rowwise).</p>
 </dd>
 <dt><span class="sig-name descname">min_distance</span></dt><dd><p>The minimum distance allowable between any two elements.</p>
 </dd>
@@ -3491,9 +3491,9 @@ broad_phase_method: Broad phase method to use.</p>
 <dd class="field-odd"><dl class="simple api-field highlight">
 <dt><span class="sig-name descname">mesh</span></dt><dd><p>The collision mesh.</p>
 </dd>
-<dt><span class="sig-name descname">vertices_t0</span></dt><dd><p>Surface vertex vertices at start as rows of a matrix.</p>
+<dt><span class="sig-name descname">vertices_t0</span></dt><dd><p>Surface vertex starting positions (rowwise).</p>
 </dd>
-<dt><span class="sig-name descname">vertices_t1</span></dt><dd><p>Surface vertex vertices at end as rows of a matrix.</p>
+<dt><span class="sig-name descname">vertices_t1</span></dt><dd><p>Surface vertex ending positions (rowwise).</p>
 </dd>
 <dt><span class="sig-name descname">min_distance</span></dt><dd><p>The minimum distance allowable between any two elements.</p>
 </dd>
