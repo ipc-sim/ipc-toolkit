@@ -83,6 +83,32 @@ public:
         const double tolerance = DEFAULT_CCD_TOLERANCE,
         const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS) const;
 
+    /// @brief Computes a conservative bound on the largest-feasible step size for surface primitives not in contact.
+    /// @param mesh The collision mesh.
+    /// @param displacements Surface vertex displacements (rowwise).
+    /// @param dhat Barrier activation distance.
+    double compute_noncandidate_conservative_stepsize(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& displacements,
+        const double dhat) const;
+
+    /// @brief Computes a CFL-inspired CCD maximum step step size.
+    /// @param mesh The collision mesh.
+    /// @param vertices_t0 Surface vertex starting positions (rowwise).
+    /// @param vertices_t1 Surface vertex ending positions (rowwise).
+    /// @param dhat Barrier activation distance.
+    /// @param min_distance The minimum distance allowable between any two elements.
+    /// @param tolerance The tolerance for the CCD algorithm.
+    /// @param max_iterations The maximum number of iterations for the CCD algorithm.
+    double compute_cfl_stepsize(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
+        const double dhat,
+        const double min_distance = 0.0,
+        const double tolerance = DEFAULT_CCD_TOLERANCE,
+        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS) const;
+
     bool save_obj(
         const std::string& filename,
         const Eigen::MatrixXd& vertices,
