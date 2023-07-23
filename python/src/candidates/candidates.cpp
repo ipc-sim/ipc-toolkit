@@ -98,7 +98,7 @@ void define_candidates(py::module_& m)
                 max_iterations: The maximum number of iterations for the CCD algorithm.
 
             Returns:
-                A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
+                A step-size $\in [0, 1]$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
             py::arg("min_distance") = 0.0,
