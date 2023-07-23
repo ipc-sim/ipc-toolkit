@@ -105,6 +105,7 @@ public:
         const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
         const double dhat,
+        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
         const double min_distance = 0.0,
         const double tolerance = DEFAULT_CCD_TOLERANCE,
         const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS) const;

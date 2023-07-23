@@ -1,5 +1,6 @@
 #include "candidates.hpp"
 
+#include <ipc/ipc.hpp>
 #include <ipc/utils/save_obj.hpp>
 
 #include <ipc/config.hpp>
@@ -166,6 +167,7 @@ double Candidates::compute_cfl_stepsize(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const double dhat,
+    const BroadPhaseMethod broad_phase_method,
     const double min_distance,
     const double tolerance,
     const long max_iterations) const
@@ -180,7 +182,12 @@ double Candidates::compute_cfl_stepsize(
     const double alpha_F = this->compute_noncandidate_conservative_stepsize(
         mesh, vertices_t1 - vertices_t0, dhat);
 
-    // TODO: If alpha_F < 0.5 * alpha_C, then we should do full CCD.
+    // If alpha_F < 0.5 * alpha_C, then we should do full CCD.
+    if (alpha_F < 0.5 * alpha_C) {
+        return ipc::compute_collision_free_stepsize(
+            mesh, vertices_t0, vertices_t1, broad_phase_method, min_distance,
+            tolerance, max_iterations);
+    }
     return std::min(alpha_C, alpha_F);
 }
 
