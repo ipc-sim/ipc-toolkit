@@ -19,7 +19,7 @@ void define_candidates(py::module_& m)
 
             Parameters:
                 mesh: The surface of the contact mesh.
-                vertices: Surface Vertex vertices at start as rows of a matrix.
+                vertices: Surface vertex positions (rowwise).
                 inflation_radius: Amount to inflate the bounding boxes.
                 broad_phase_method: Broad phase method to use.
             )ipc_Qu8mg5v7",
@@ -40,8 +40,8 @@ void define_candidates(py::module_& m)
 
             Parameters:
                 mesh: The surface of the contact mesh.
-                vertices_t0: Surface vertex vertices at start as rows of a matrix.
-                vertices_t1: Surface vertex vertices at end as rows of a matrix.
+                vertices_t0: Surface vertex starting positions (rowwise).
+                vertices_t1: Surface vertex ending positions (rowwise).
                 inflation_radius: Amount to inflate the bounding boxes.
                 broad_phase_method: Broad phase method to use.
             )ipc_Qu8mg5v7",
@@ -67,8 +67,8 @@ void define_candidates(py::module_& m)
 
             Parameters:
                 mesh: The collision mesh.
-                vertices_t0: Surface vertex vertices at start as rows of a matrix.
-                vertices_t1: Surface vertex vertices at end as rows of a matrix.
+                vertices_t0: Surface vertex starting positions (rowwise).
+                vertices_t1: Surface vertex ending positions (rowwise).
                 min_distance: The minimum distance allowable between any two elements.
                 tolerance: The tolerance for the CCD algorithm.
                 max_iterations: The maximum number of iterations for the CCD algorithm.
@@ -91,8 +91,8 @@ void define_candidates(py::module_& m)
 
             Parameters:
                 mesh: The collision mesh.
-                vertices_t0: Vertex vertices at start as rows of a matrix. Assumes vertices_t0 is intersection free.
-                vertices_t1: Surface vertex vertices at end as rows of a matrix.
+                vertices_t0: Surface vertex starting positions (rowwise). Assumed to be intersection free.
+                vertices_t1: Surface vertex ending positions (rowwise).
                 min_distance: The minimum distance allowable between any two elements.
                 tolerance: The tolerance for the CCD algorithm.
                 max_iterations: The maximum number of iterations for the CCD algorithm.
