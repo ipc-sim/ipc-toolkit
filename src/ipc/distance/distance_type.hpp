@@ -76,4 +76,16 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     const Eigen::Ref<const Eigen::Vector3d>& eb0,
     const Eigen::Ref<const Eigen::Vector3d>& eb1);
 
+/// @brief Determine the closest pair between two parallel edges.
+/// @param ea0 The first vertex of the first edge.
+/// @param ea1 The second vertex of the first edge.
+/// @param eb0 The first vertex of the second edge.
+/// @param eb1 The second vertex of the second edge.
+/// @return The distance type of the edge-edge pair.
+EdgeEdgeDistanceType edge_edge_parallel_distance_type(
+    const Eigen::Ref<const Eigen::Vector3d>& ea0,
+    const Eigen::Ref<const Eigen::Vector3d>& ea1,
+    const Eigen::Ref<const Eigen::Vector3d>& eb0,
+    const Eigen::Ref<const Eigen::Vector3d>& eb1);
+
 } // namespace ipc

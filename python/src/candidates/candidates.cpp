@@ -19,7 +19,7 @@ void define_candidates(py::module_& m)
 
             Parameters:
                 mesh: The surface of the contact mesh.
-                vertices: Surface Vertex vertices at start as rows of a matrix.
+                vertices: Surface vertex positions (rowwise).
                 inflation_radius: Amount to inflate the bounding boxes.
                 broad_phase_method: Broad phase method to use.
             )ipc_Qu8mg5v7",
@@ -40,8 +40,8 @@ void define_candidates(py::module_& m)
 
             Parameters:
                 mesh: The surface of the contact mesh.
-                vertices_t0: Surface vertex vertices at start as rows of a matrix.
-                vertices_t1: Surface vertex vertices at end as rows of a matrix.
+                vertices_t0: Surface vertex starting positions (rowwise).
+                vertices_t1: Surface vertex ending positions (rowwise).
                 inflation_radius: Amount to inflate the bounding boxes.
                 broad_phase_method: Broad phase method to use.
             )ipc_Qu8mg5v7",
@@ -67,8 +67,8 @@ void define_candidates(py::module_& m)
 
             Parameters:
                 mesh: The collision mesh.
-                vertices_t0: Surface vertex vertices at start as rows of a matrix.
-                vertices_t1: Surface vertex vertices at end as rows of a matrix.
+                vertices_t0: Surface vertex starting positions (rowwise).
+                vertices_t1: Surface vertex ending positions (rowwise).
                 min_distance: The minimum distance allowable between any two elements.
                 tolerance: The tolerance for the CCD algorithm.
                 max_iterations: The maximum number of iterations for the CCD algorithm.
@@ -91,8 +91,8 @@ void define_candidates(py::module_& m)
 
             Parameters:
                 mesh: The collision mesh.
-                vertices_t0: Vertex vertices at start as rows of a matrix. Assumes vertices_t0 is intersection free.
-                vertices_t1: Surface vertex vertices at end as rows of a matrix.
+                vertices_t0: Surface vertex starting positions (rowwise). Assumed to be intersection free.
+                vertices_t1: Surface vertex ending positions (rowwise).
                 min_distance: The minimum distance allowable between any two elements.
                 tolerance: The tolerance for the CCD algorithm.
                 max_iterations: The maximum number of iterations for the CCD algorithm.
@@ -101,6 +101,38 @@ void define_candidates(py::module_& m)
                 A step-size $\in [0, 1]$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
+            py::arg("min_distance") = 0.0,
+            py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
+            py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS)
+        .def(
+            "compute_noncandidate_conservative_stepsize",
+            &Candidates::compute_noncandidate_conservative_stepsize,
+            R"ipc_Qu8mg5v7(
+            Computes a conservative bound on the largest-feasible step size for surface primitives not in contact.
+
+            Parameters:
+                mesh: The collision mesh.
+                displacements: Surface vertex displacements (rowwise).
+                dhat: Barrier activation distance.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("displacements"), py::arg("dhat"))
+        .def(
+            "compute_cfl_stepsize", &Candidates::compute_cfl_stepsize,
+            R"ipc_Qu8mg5v7(
+            Computes a CFL-inspired CCD maximum step step size.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices_t0: Surface vertex starting positions (rowwise).
+                vertices_t1: Surface vertex ending positions (rowwise).
+                dhat: Barrier activation distance.
+                min_distance: The minimum distance allowable between any two elements.
+                tolerance: The tolerance for the CCD algorithm.
+                max_iterations: The maximum number of iterations for the CCD algorithm.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
+            py::arg("dhat"),
+            py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD,
             py::arg("min_distance") = 0.0,
             py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
             py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS)

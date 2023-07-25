@@ -1,12 +1,12 @@
 #include "candidates.hpp"
 
+#include <ipc/ipc.hpp>
 #include <ipc/utils/save_obj.hpp>
 
 #include <ipc/config.hpp>
 
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
-#include <tbb/enumerable_thread_specific.h>
 #include <shared_mutex>
 
 #include <fstream>
@@ -124,6 +124,71 @@ double Candidates::compute_collision_free_stepsize(
 
     assert(earliest_toi >= 0 && earliest_toi <= 1.0);
     return earliest_toi;
+}
+
+double Candidates::compute_noncandidate_conservative_stepsize(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& displacements,
+    const double dhat) const
+{
+    assert(displacements.rows() == mesh.num_vertices());
+
+    if (empty()) {
+        return 1; // No possible collisions, so can take full step.
+    }
+
+    const auto& E = mesh.edges();
+    const auto& F = mesh.faces();
+
+    std::vector<bool> is_vertex_a_candidates(mesh.num_vertices(), false);
+    for (size_t i = 0; i < size(); i++) {
+        for (const long vid : (*this)[i].vertex_ids(E, F)) {
+            if (vid < 0) {
+                break;
+            }
+            is_vertex_a_candidates[vid] = true;
+        }
+    }
+
+    double max_displacement = 0;
+    for (size_t i = 0; i < displacements.rows(); i++) {
+        if (!is_vertex_a_candidates[i]) {
+            continue;
+        }
+        max_displacement =
+            std::max(max_displacement, displacements.row(i).norm());
+    }
+
+    return 0.5 * dhat / max_displacement;
+}
+
+double Candidates::compute_cfl_stepsize(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
+    const double dhat,
+    const BroadPhaseMethod broad_phase_method,
+    const double min_distance,
+    const double tolerance,
+    const long max_iterations) const
+{
+    assert(vertices_t0.rows() == mesh.num_vertices());
+    assert(vertices_t1.rows() == mesh.num_vertices());
+
+    const double alpha_C = this->compute_collision_free_stepsize(
+        mesh, vertices_t0, vertices_t1, min_distance, tolerance,
+        max_iterations);
+
+    const double alpha_F = this->compute_noncandidate_conservative_stepsize(
+        mesh, vertices_t1 - vertices_t0, dhat);
+
+    // If alpha_F < 0.5 * alpha_C, then we should do full CCD.
+    if (alpha_F < 0.5 * alpha_C) {
+        return ipc::compute_collision_free_stepsize(
+            mesh, vertices_t0, vertices_t1, broad_phase_method, min_distance,
+            tolerance, max_iterations);
+    }
+    return std::min(alpha_C, alpha_F);
 }
 
 size_t Candidates::size() const

@@ -17,6 +17,7 @@ add_executable(ipc_toolkit_tests
   ccd/benchmark_ccd.cpp
   ccd/collision_generator.cpp
   ccd/test_ccd.cpp
+  test_cfl.cpp
 
   # Test distances and dertivatives
   distance/test_distance_type.cpp
@@ -58,22 +59,23 @@ target_include_directories(ipc_toolkit_tests PUBLIC ".")
 
 target_link_libraries(ipc_toolkit_tests PUBLIC ipc::toolkit)
 
-include(ipc_toolkit_warnings)
-target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)
-
 include(catch2)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC Catch2::Catch2)
+target_link_libraries(ipc_toolkit_tests PUBLIC Catch2::Catch2)
 
 include(finite_diff)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC finitediff::finitediff)
+target_link_libraries(ipc_toolkit_tests PUBLIC finitediff::finitediff)
 
 include(json)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(ipc_toolkit_tests PUBLIC nlohmann_json::nlohmann_json)
 
 if(IPC_TOOLKIT_WITH_CUDA)
   find_package(CUDAToolkit)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PRIVATE CUDA::cudart)
+  target_link_libraries(ipc_toolkit_tests PRIVATE CUDA::cudart)
 endif()
+
+# Extra warnings (link last for highest priority)
+include(ipc_toolkit_warnings)
+target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)
 
 ################################################################################
 # Compiler options

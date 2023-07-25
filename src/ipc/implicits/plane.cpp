@@ -128,10 +128,8 @@ double compute_point_plane_collision_free_stepsize(
             }
         });
 
-    double earliest_toi = 1;
-    for (const auto& local_earliest_toi : storage) {
-        earliest_toi = std::min(earliest_toi, local_earliest_toi);
-    }
+    const double earliest_toi =
+        storage.combine([](double a, double b) { return std::min(a, b); });
     assert(earliest_toi >= 0 && earliest_toi <= 1.0);
     return earliest_toi;
 }

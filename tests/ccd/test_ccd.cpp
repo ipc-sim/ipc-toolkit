@@ -8,6 +8,9 @@
 
 #include "collision_generator.hpp"
 
+#include <igl/read_triangle_mesh.h>
+#include <igl/edges.h>
+
 using namespace ipc;
 
 static const double EPSILON = std::numeric_limits<float>::epsilon();
@@ -684,4 +687,21 @@ TEST_CASE("Squash Tet", "[ccd]")
         ipc::compute_collision_free_stepsize(
             mesh, rest_vertices, deformed_vertices));
     // };
+}
+
+TEST_CASE("Degenerate tolerance", "[ccd]")
+{
+    Eigen::MatrixXi E, F;
+    Eigen::MatrixXd V;
+    bool success =
+        igl::read_triangle_mesh(TEST_DATA_DIR + "height-field.ply", V, F);
+    REQUIRE(success);
+
+    igl::edges(F, E);
+
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V, E, F);
+
+    const double t0 = ipc::compute_collision_free_stepsize(mesh, V, V);
+
+    CHECK(t0 == 1.0);
 }

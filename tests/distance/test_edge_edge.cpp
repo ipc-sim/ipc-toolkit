@@ -160,6 +160,13 @@ TEST_CASE("Edge-edge distance parallel", "[distance][edge-edge][parallel]")
 
         const double distance = edge_edge_distance(ea0, ea1, eb0, eb1);
         CHECK(distance == Catch::Approx(s * s).margin(1e-15));
+
+        for (int dtype = 0; dtype < int(EdgeEdgeDistanceType::EA_EB); dtype++) {
+            const double distance2 = edge_edge_distance(
+                ea0, ea1, eb0, eb1, EdgeEdgeDistanceType(dtype));
+            CAPTURE(dtype);
+            CHECK(distance <= Catch::Approx(distance2));
+        }
     }
 }
 

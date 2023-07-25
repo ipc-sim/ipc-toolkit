@@ -114,11 +114,7 @@ double FrictionConstraints::compute_potential(
             }
         });
 
-    double potential = 0;
-    for (const auto& local_potential : storage) {
-        potential += local_potential;
-    }
-    return potential;
+    return storage.combine([](double a, double b) { return a + b; });
 }
 
 Eigen::VectorXd FrictionConstraints::compute_potential_gradient(
@@ -157,11 +153,8 @@ Eigen::VectorXd FrictionConstraints::compute_potential_gradient(
             }
         });
 
-    Eigen::VectorXd grad = Eigen::VectorXd::Zero(ndof);
-    for (const auto& local_grad : storage) {
-        grad += local_grad;
-    }
-    return grad;
+    return storage.combine([](const Eigen::VectorXd& a,
+                              const Eigen::VectorXd& b) { return a + b; });
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -255,11 +248,8 @@ Eigen::VectorXd FrictionConstraints::compute_force(
             }
         });
 
-    Eigen::VectorXd force = Eigen::VectorXd::Zero(velocities.size());
-    for (const auto& local_force : storage) {
-        force += local_force;
-    }
-    return force;
+    return storage.combine([](const Eigen::VectorXd& a,
+                              const Eigen::VectorXd& b) { return a + b; });
 }
 
 ///////////////////////////////////////////////////////////////////////////////

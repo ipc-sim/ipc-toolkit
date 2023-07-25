@@ -1,15 +1,14 @@
 #pragma once
 
 #include <ipc/ccd/ccd.hpp>
-
-#include <Eigen/Core>
+#include <ipc/candidates/collision_stencil.hpp>
 
 #include <vector>
 
 namespace ipc {
 
 /// Virtual class for candidates that support CCD.
-class ContinuousCollisionCandidate {
+class ContinuousCollisionCandidate : virtual public CollisionStencil {
 public:
     virtual ~ContinuousCollisionCandidate() { }
 
@@ -25,7 +24,7 @@ public:
     /// @param[in] max_iterations Maximum iterations used by Tight-Inclusion CCD.
     /// @param[in] conservative_rescaling Conservative rescaling value used to avoid taking steps exactly to impact.
     /// @return If the candidate had a collision over the time interval.
-    virtual bool
+    bool
     ccd(const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
         const Eigen::MatrixXi& edges,
@@ -36,7 +35,7 @@ public:
         const double tolerance = DEFAULT_CCD_TOLERANCE,
         const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
         const double conservative_rescaling =
-            DEFAULT_CCD_CONSERVATIVE_RESCALING) const = 0;
+            DEFAULT_CCD_CONSERVATIVE_RESCALING) const;
 
     // Print the vertices of the CCD query for debugging.
     virtual void print_ccd_query(
@@ -44,6 +43,18 @@ public:
         const Eigen::MatrixXd& vertices_t1,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const = 0;
+
+protected:
+    virtual bool
+    ccd(const VectorMax12d& vertices_t0,
+        const VectorMax12d& vertices_t1,
+        double& toi,
+        const double min_distance = 0.0,
+        const double tmax = 1.0,
+        const double tolerance = DEFAULT_CCD_TOLERANCE,
+        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+        const double conservative_rescaling =
+            DEFAULT_CCD_CONSERVATIVE_RESCALING) const = 0;
 };
 
 } // namespace ipc

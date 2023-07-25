@@ -17,7 +17,7 @@ public:
 
     /// @brief Initialize the set of discrete collision detection candidates.
     /// @param mesh The surface of the contact mesh.
-    /// @param vertices Surface Vertex vertices at start as rows of a matrix.
+    /// @param vertices Surface vertex positions (rowwise).
     /// @param inflation_radius Amount to inflate the bounding boxes.
     /// @param broad_phase_method Broad phase method to use.
     void build(
@@ -29,8 +29,8 @@ public:
     /// @brief Initialize the set of continuous collision detection candidates.
     /// @note Assumes the trajectory is linear.
     /// @param mesh The surface of the contact mesh.
-    /// @param vertices_t0 Surface vertex vertices at start as rows of a matrix.
-    /// @param vertices_t1 Surface vertex vertices at end as rows of a matrix.
+    /// @param vertices_t0 Surface vertex starting positions (rowwise).
+    /// @param vertices_t1 Surface vertex ending positions (rowwise).
     /// @param inflation_radius Amount to inflate the bounding boxes.
     /// @param broad_phase_method Broad phase method to use.
     void build(
@@ -52,8 +52,8 @@ public:
     /// @brief Determine if the step is collision free from the set of candidates.
     /// @note Assumes the trajectory is linear.
     /// @param mesh The collision mesh.
-    /// @param vertices_t0 Surface vertex vertices at start as rows of a matrix.
-    /// @param vertices_t1 Surface vertex vertices at end as rows of a matrix.
+    /// @param vertices_t0 Surface vertex starting positions (rowwise).
+    /// @param vertices_t1 Surface vertex ending positions (rowwise).
     /// @param min_distance The minimum distance allowable between any two elements.
     /// @param tolerance The tolerance for the CCD algorithm.
     /// @param max_iterations The maximum number of iterations for the CCD algorithm.
@@ -69,8 +69,8 @@ public:
     /// @brief Computes a maximal step size that is collision free using the set of collision candidates.
     /// @note Assumes the trajectory is linear.
     /// @param mesh The collision mesh.
-    /// @param vertices_t0 Vertex vertices at start as rows of a matrix. Assumes vertices_t0 is intersection free.
-    /// @param vertices_t1 Surface vertex vertices at end as rows of a matrix.
+    /// @param vertices_t0 Surface vertex starting positions (rowwise). Assumed to be intersection free.
+    /// @param vertices_t1 Surface vertex ending positions (rowwise).
     /// @param min_distance The minimum distance allowable between any two elements.
     /// @param tolerance The tolerance for the CCD algorithm.
     /// @param max_iterations The maximum number of iterations for the CCD algorithm.
@@ -79,6 +79,33 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
+        const double min_distance = 0.0,
+        const double tolerance = DEFAULT_CCD_TOLERANCE,
+        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS) const;
+
+    /// @brief Computes a conservative bound on the largest-feasible step size for surface primitives not in contact.
+    /// @param mesh The collision mesh.
+    /// @param displacements Surface vertex displacements (rowwise).
+    /// @param dhat Barrier activation distance.
+    double compute_noncandidate_conservative_stepsize(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& displacements,
+        const double dhat) const;
+
+    /// @brief Computes a CFL-inspired CCD maximum step step size.
+    /// @param mesh The collision mesh.
+    /// @param vertices_t0 Surface vertex starting positions (rowwise).
+    /// @param vertices_t1 Surface vertex ending positions (rowwise).
+    /// @param dhat Barrier activation distance.
+    /// @param min_distance The minimum distance allowable between any two elements.
+    /// @param tolerance The tolerance for the CCD algorithm.
+    /// @param max_iterations The maximum number of iterations for the CCD algorithm.
+    double compute_cfl_stepsize(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
+        const double dhat,
+        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
         const double min_distance = 0.0,
         const double tolerance = DEFAULT_CCD_TOLERANCE,
         const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS) const;
