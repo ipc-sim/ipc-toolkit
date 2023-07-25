@@ -13,6 +13,7 @@ target_sources(ipc_toolkit PRIVATE ${SOURCES})
 # Subfolders
 ################################################################################
 
+add_subdirectory(adhesion)
 add_subdirectory(barrier)
 add_subdirectory(broad_phase)
 add_subdirectory(ccd)
