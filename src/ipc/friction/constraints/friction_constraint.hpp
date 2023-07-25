@@ -68,8 +68,9 @@ public:
         const bool project_hessian_to_psd) const;
 
     /// @brief Compute the friction force.
-    /// @param X Rest positions of the vertices (rowwise)
-    /// @param U Current displacements of the vertices (rowwise)
+    /// @param rest_positions Rest positions of the vertices (rowwise)
+    /// @param lagged_displacements Previous displacements of the vertices (rowwise)
+    /// @param velocities Current displacements of the vertices (rowwise)
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @param dhat Barrier activation distance
@@ -79,37 +80,9 @@ public:
     /// @param no_mu Whether to not multiply by mu
     /// @return Friction force
     VectorMax12d compute_force(
-        const Eigen::MatrixXd& X,
-        const Eigen::MatrixXd& U,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const double dhat,
-        const double barrier_stiffness,
-        const double epsv,
-        const double dmin = 0,
-        const bool no_mu = false) const //< whether to not multiply by mu
-    {
-        return compute_force(
-            X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, edges, faces, dhat,
-            barrier_stiffness, epsv, dmin, no_mu);
-    }
-
-    /// @brief Compute the friction force.
-    /// @param X Rest positions of the vertices (rowwise)
-    /// @param Ut Previous displacements of the vertices (rowwise)
-    /// @param U Current displacements of the vertices (rowwise)
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @param dhat Barrier activation distance
-    /// @param barrier_stiffness Barrier stiffness
-    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
-    /// @param dmin Minimum distance
-    /// @param no_mu Whether to not multiply by mu
-    /// @return Friction force
-    VectorMax12d compute_force(
-        const Eigen::MatrixXd& X,
-        const Eigen::MatrixXd& Ut,
-        const Eigen::MatrixXd& U,
+        const Eigen::MatrixXd& rest_positions,
+        const Eigen::MatrixXd& lagged_displacements,
+        const Eigen::MatrixXd& velocities,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat,
@@ -120,14 +93,15 @@ public:
 
     /// @brief Variable to differentiate the friction force with respect to.
     enum class DiffWRT {
-        X,  ///< Differentiate wrt rest positions.
-        Ut, ///< Differentiate wrt previous displacements.
-        U   ///< Differentiate wrt current displacements.
+        REST_POSITIONS,       ///< Differentiate w.r.t. rest positions
+        LAGGED_DISPLACEMENTS, ///< Differentiate w.r.t. lagged displacements
+        VELOCITIES            ///< Differentiate w.r.t. current velocities
     };
 
     /// @brief Compute the friction force Jacobian.
-    /// @param X Rest positions of the vertices (rowwise)
-    /// @param U Current displacements of the vertices (rowwise)
+    /// @param rest_positions Rest positions of the vertices (rowwise)
+    /// @param lagged_displacements Previous displacements of the vertices (rowwise)
+    /// @param velocities Current displacements of the vertices (rowwise)
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @param dhat Barrier activation distance
@@ -137,37 +111,9 @@ public:
     /// @param dmin Minimum distance
     /// @return Friction force Jacobian
     MatrixMax12d compute_force_jacobian(
-        const Eigen::MatrixXd& X,
-        const Eigen::MatrixXd& U,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const double dhat,
-        const double barrier_stiffness,
-        const double epsv,
-        const DiffWRT wrt,
-        const double dmin = 0) const
-    {
-        return compute_force_jacobian(
-            X, Eigen::MatrixXd::Zero(U.rows(), U.cols()), U, edges, faces, dhat,
-            barrier_stiffness, epsv, wrt, dmin);
-    }
-
-    /// @brief Compute the friction force Jacobian.
-    /// @param X Rest positions of the vertices (rowwise)
-    /// @param Ut Previous displacements of the vertices (rowwise)
-    /// @param U Current displacements of the vertices (rowwise)
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @param dhat Barrier activation distance
-    /// @param barrier_stiffness Barrier stiffness
-    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
-    /// @param wrt Variable to differentiate the friction force with respect to.
-    /// @param dmin Minimum distance
-    /// @return Friction force Jacobian
-    MatrixMax12d compute_force_jacobian(
-        const Eigen::MatrixXd& X,
-        const Eigen::MatrixXd& Ut,
-        const Eigen::MatrixXd& U,
+        const Eigen::MatrixXd& rest_positions,
+        const Eigen::MatrixXd& lagged_displacements,
+        const Eigen::MatrixXd& velocities,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
         const double dhat,

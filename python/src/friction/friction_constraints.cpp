@@ -90,20 +90,15 @@ void define_friction_constraints(py::module_& m)
             py::arg("mesh"), py::arg("velocity"), py::arg("epsv"),
             py::arg("project_hessian_to_psd") = false)
         .def(
-            "compute_force",
-            py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&, const double,
-                const double, const double, const double, const bool>(
-                &FrictionConstraints::compute_force, py::const_),
+            "compute_force", &FrictionConstraints::compute_force,
             R"ipc_Qu8mg5v7(
             Compute the friction force from the given velocity.
 
             Parameters:
                 mesh: The collision mesh.
-                X: Rest vertex positions (rowwise).
-                Ut: Previous vertex displacements (rowwise).
-                U: Current vertex displacements (rowwise).
+                rest_positions: Rest positions of the vertices (rowwise).
+                lagged_displacements: Previous displacements of the vertices (rowwise).
+                velocities: Current displacements of the vertices (rowwise).
                 dhat: Barrier activation distance.
                 barrier_stiffness: Barrier stiffness.
                 epsv: Mollifier parameter :math:`\epsilon_v`.
@@ -113,51 +108,21 @@ void define_friction_constraints(py::module_& m)
             Returns:
                 The friction force.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("X"), py::arg("Ut"), py::arg("U"),
+            py::arg("mesh"), py::arg("rest_positions"),
+            py::arg("lagged_displacements"), py::arg("velocities"),
             py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("epsv"),
             py::arg("dmin") = 0, py::arg("no_mu") = false)
         .def(
-            "compute_force",
-            py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const double, const double,
-                const double, const double, const bool>(
-                &FrictionConstraints::compute_force, py::const_),
-            R"ipc_Qu8mg5v7(
-            Compute the friction force from the given velocity.
-
-            Parameters:
-                mesh: The collision mesh.
-                X: Rest vertex positions (rowwise).
-                U: Current vertex displacements (rowwise).
-                dhat: Barrier activation distance.
-                barrier_stiffness: Barrier stiffness.
-                epsv: Mollifier parameter :math:`\epsilon_v`.
-                dmin: Minimum distance to use for the barrier.
-                no_mu: whether to not multiply by mu
-
-            Returns:
-                The friction force.
-            )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("X"), py::arg("U"), py::arg("dhat"),
-            py::arg("barrier_stiffness"), py::arg("epsv"), py::arg("dmin") = 0,
-            py::arg("no_mu") = false)
-        .def(
             "compute_force_jacobian",
-            py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&, const double,
-                const double, const double, const FrictionConstraint::DiffWRT,
-                const double>(
-                &FrictionConstraints::compute_force_jacobian, py::const_),
+            &FrictionConstraints::compute_force_jacobian,
             R"ipc_Qu8mg5v7(
             Compute the Jacobian of the friction force wrt the velocity.
 
             Parameters:
                 mesh: The collision mesh.
-                X: Rest vertex positions (rowwise).
-                Ut: Previous vertex displacements (rowwise).
-                U: Current vertex displacements (rowwise).
+                rest_positions: Rest positions of the vertices (rowwise).
+                lagged_displacements: Previous displacements of the vertices (rowwise).
+                velocities: Current displacements of the vertices (rowwise).
                 dhat: Barrier activation distance.
                 barrier_stiffness: Barrier stiffness.
                 epsv: Mollifier parameter :math:`\epsilon_v`.
@@ -167,36 +132,10 @@ void define_friction_constraints(py::module_& m)
             Returns:
                 The Jacobian of the friction force wrt the velocity.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("X"), py::arg("Ut"), py::arg("U"),
+            py::arg("mesh"), py::arg("rest_positions"),
+            py::arg("lagged_displacements"), py::arg("velocities"),
             py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("epsv"),
             py::arg("wrt"), py::arg("dmin") = 0)
-        .def(
-            "compute_force_jacobian",
-            py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const double, const double,
-                const double, const FrictionConstraint::DiffWRT, const double>(
-                &FrictionConstraints::compute_force_jacobian, py::const_),
-            R"ipc_Qu8mg5v7(
-            Compute the Jacobian of the friction force wrt the velocity.
-
-            Parameters:
-                mesh: The collision mesh.
-                X: Rest vertex positions (rowwise).
-                Ut: Previous vertex displacements (rowwise).
-                U: Current vertex displacements (rowwise).
-                dhat: Barrier activation distance.
-                barrier_stiffness: Barrier stiffness.
-                epsv: Mollifier parameter :math:`\epsilon_v`.
-                wrt: The variable to take the derivative with respect to.
-                dmin: Minimum distance to use for the barrier.
-
-            Returns:
-                The Jacobian of the friction force wrt the velocity.
-            )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("X"), py::arg("U"), py::arg("dhat"),
-            py::arg("barrier_stiffness"), py::arg("epsv"), py::arg("wrt"),
-            py::arg("dmin") = 0)
         .def(
             "__len__", &FrictionConstraints::size,
             "Get the number of friction constraints.")

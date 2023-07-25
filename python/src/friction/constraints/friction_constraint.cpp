@@ -11,9 +11,11 @@ void define_friction_constraint(py::module_& m)
         m, "FrictionConstraint");
 
     py::enum_<FrictionConstraint::DiffWRT>(friction_constraint, "DiffWRT")
-        .value("X", FrictionConstraint::DiffWRT::X)
-        .value("Ut", FrictionConstraint::DiffWRT::Ut)
-        .value("U", FrictionConstraint::DiffWRT::U)
+        .value("REST_POSITIONS", FrictionConstraint::DiffWRT::REST_POSITIONS)
+        .value(
+            "LAGGED_DISPLACEMENTS",
+            FrictionConstraint::DiffWRT::LAGGED_DISPLACEMENTS)
+        .value("VELOCITIES", FrictionConstraint::DiffWRT::VELOCITIES)
         .export_values();
 
     friction_constraint
@@ -69,18 +71,14 @@ void define_friction_constraint(py::module_& m)
             py::arg("velocities"), py::arg("edges"), py::arg("faces"),
             py::arg("epsv"), py::arg("project_hessian_to_psd"))
         .def(
-            "compute_force",
-            py::overload_cast<
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double,
-                const double, const double, const double, const bool>(
-                &FrictionConstraint::compute_force, py::const_),
+            "compute_force", &FrictionConstraint::compute_force,
             R"ipc_Qu8mg5v7(
             Compute the friction force.
 
             Parameters:
-                X: Rest positions of the vertices (rowwise)
-                U: Current displacements of the vertices (rowwise)
+                rest_positions: Rest positions of the vertices (rowwise).
+                lagged_displacements: Previous displacements of the vertices (rowwise).
+                velocities: Current displacements of the vertices (rowwise).
                 edges: Collision mesh edges
                 faces: Collision mesh faces
                 dhat: Barrier activation distance
@@ -92,52 +90,20 @@ void define_friction_constraint(py::module_& m)
             Returns:
                 Friction force
             )ipc_Qu8mg5v7",
-            py::arg("X"), py::arg("U"), py::arg("edges"), py::arg("faces"),
+            py::arg("rest_positions"), py::arg("lagged_displacements"),
+            py::arg("velocities"), py::arg("edges"), py::arg("faces"),
             py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("epsv"),
             py::arg("dmin") = 0, py::arg("no_mu") = false)
         .def(
-            "compute_force",
-            py::overload_cast<
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-                const Eigen::MatrixXi&, const double, const double,
-                const double, const double, const bool>(
-                &FrictionConstraint::compute_force, py::const_),
-            R"ipc_Qu8mg5v7(
-            Compute the friction force.
-
-            Parameters:
-                X: Rest positions of the vertices (rowwise)
-                Ut: Previous displacements of the vertices (rowwise)
-                U: Current displacements of the vertices (rowwise)
-                edges: Collision mesh edges
-                faces: Collision mesh faces
-                dhat: Barrier activation distance
-                barrier_stiffness: Barrier stiffness
-                epsv: Smooth friction mollifier parameter :math:`\epsilon_v`.
-                dmin: Minimum distance
-                no_mu: Whether to not multiply by mu
-
-            Returns:
-                Friction force
-            )ipc_Qu8mg5v7",
-            py::arg("X"), py::arg("Ut"), py::arg("U"), py::arg("edges"),
-            py::arg("faces"), py::arg("dhat"), py::arg("barrier_stiffness"),
-            py::arg("epsv"), py::arg("dmin") = 0, py::arg("no_mu") = false)
-        .def(
             "compute_force_jacobian",
-            py::overload_cast<
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double,
-                const double, const double, FrictionConstraint::DiffWRT,
-                const double>(
-                &FrictionConstraint::compute_force_jacobian, py::const_),
+            &FrictionConstraint::compute_force_jacobian,
             R"ipc_Qu8mg5v7(
             Compute the friction force Jacobian.
 
             Parameters:
-                X: Rest positions of the vertices (rowwise)
-                U: Current displacements of the vertices (rowwise)
+                rest_positions: Rest positions of the vertices (rowwise).
+                lagged_displacements: Previous displacements of the vertices (rowwise).
+                velocities: Current displacements of the vertices (rowwise).
                 edges: Collision mesh edges
                 faces: Collision mesh faces
                 dhat: Barrier activation distance
@@ -149,38 +115,10 @@ void define_friction_constraint(py::module_& m)
             Returns:
                 Friction force Jacobian
             )ipc_Qu8mg5v7",
-            py::arg("X"), py::arg("U"), py::arg("edges"), py::arg("faces"),
+            py::arg("rest_positions"), py::arg("lagged_displacements"),
+            py::arg("velocities"), py::arg("edges"), py::arg("faces"),
             py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("epsv"),
             py::arg("wrt"), py::arg("dmin") = 0)
-        .def(
-            "compute_force_jacobian",
-            py::overload_cast<
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-                const Eigen::MatrixXi&, const double, const double,
-                const double, FrictionConstraint::DiffWRT, const double>(
-                &FrictionConstraint::compute_force_jacobian, py::const_),
-            R"ipc_Qu8mg5v7(
-            Compute the friction force Jacobian.
-
-            Parameters:
-                X: Rest positions of the vertices (rowwise)
-                Ut: Previous displacements of the vertices (rowwise)
-                U: Current displacements of the vertices (rowwise)
-                edges: Collision mesh edges
-                faces: Collision mesh faces
-                dhat: Barrier activation distance
-                barrier_stiffness: Barrier stiffness
-                epsv: Smooth friction mollifier parameter :math:`\epsilon_v`.
-                wrt: Variable to differentiate the friction force with respect to.
-                dmin: Minimum distance
-
-            Returns:
-                Friction force Jacobian
-            )ipc_Qu8mg5v7",
-            py::arg("X"), py::arg("Ut"), py::arg("U"), py::arg("edges"),
-            py::arg("faces"), py::arg("dhat"), py::arg("barrier_stiffness"),
-            py::arg("epsv"), py::arg("wrt"), py::arg("dmin") = 0)
         .def_readwrite(
             "normal_force_magnitude",
             &FrictionConstraint::normal_force_magnitude,

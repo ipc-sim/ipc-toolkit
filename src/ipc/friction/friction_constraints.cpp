@@ -211,8 +211,8 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_potential_hessian(
 
 Eigen::VectorXd FrictionConstraints::compute_force(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& X,
-    const Eigen::MatrixXd& Ut,
+    const Eigen::MatrixXd& rest_positions,
+    const Eigen::MatrixXd& lagged_displacements,
     const Eigen::MatrixXd& velocities,
     const double dhat,
     const double barrier_stiffness,
@@ -238,8 +238,9 @@ Eigen::VectorXd FrictionConstraints::compute_force(
                 const auto& constraint = (*this)[i];
 
                 const VectorMax12d local_force = constraint.compute_force(
-                    X, Ut, velocities, mesh.edges(), mesh.faces(), dhat,
-                    barrier_stiffness, epsv, dmin, no_mu);
+                    rest_positions, lagged_displacements, velocities,
+                    mesh.edges(), mesh.faces(), dhat, barrier_stiffness, epsv,
+                    dmin, no_mu);
 
                 const std::array<long, 4> vis =
                     constraint.vertex_ids(mesh.edges(), mesh.faces());
@@ -256,8 +257,8 @@ Eigen::VectorXd FrictionConstraints::compute_force(
 
 Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& X,
-    const Eigen::MatrixXd& Ut,
+    const Eigen::MatrixXd& rest_positions,
+    const Eigen::MatrixXd& lagged_displacements,
     const Eigen::MatrixXd& velocities,
     const double dhat,
     const double barrier_stiffness,
@@ -288,8 +289,8 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
 
                 const MatrixMax12d local_force_jacobian =
                     constraint.compute_force_jacobian(
-                        X, Ut, velocities, edges, faces, dhat,
-                        barrier_stiffness, epsv, wrt, dmin);
+                        rest_positions, lagged_displacements, velocities, edges,
+                        faces, dhat, barrier_stiffness, epsv, wrt, dmin);
 
                 const std::array<long, 4> vis =
                     constraint.vertex_ids(mesh.edges(), mesh.faces());
@@ -309,22 +310,22 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
     }
 
     // if wrt == X then compute ∇ₓ w(x)
-    if (wrt == FrictionConstraint::DiffWRT::X) {
+    if (wrt == FrictionConstraint::DiffWRT::REST_POSITIONS) {
         for (int i = 0; i < this->size(); i++) {
             const FrictionConstraint& constraint = (*this)[i];
-            assert(constraint.weight_gradient.size() == X.size());
-            if (constraint.weight_gradient.size() != X.size()) {
+            assert(constraint.weight_gradient.size() == rest_positions.size());
+            if (constraint.weight_gradient.size() != rest_positions.size()) {
                 throw std::runtime_error(
                     "Shape derivative is not computed for friction constraint!");
             }
 
             VectorMax12d local_force = constraint.compute_force(
-                X, Ut, velocities, edges, faces, dhat, barrier_stiffness, epsv,
-                dmin);
+                rest_positions, lagged_displacements, velocities, edges, faces,
+                dhat, barrier_stiffness, epsv, dmin);
             assert(constraint.weight != 0);
             local_force /= constraint.weight;
 
-            Eigen::SparseVector<double> force(X.size());
+            Eigen::SparseVector<double> force(rest_positions.size());
             force.reserve(local_force.size());
             local_gradient_to_global_gradient(
                 local_force, constraint.vertex_ids(edges, faces), dim, force);

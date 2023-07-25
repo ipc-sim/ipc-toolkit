@@ -146,9 +146,9 @@ MatrixMax12d FrictionConstraint::compute_potential_hessian(
 }
 
 VectorMax12d FrictionConstraint::compute_force(
-    const Eigen::MatrixXd& X,
-    const Eigen::MatrixXd& Ut,
-    const Eigen::MatrixXd& U,
+    const Eigen::MatrixXd& rest_positions,
+    const Eigen::MatrixXd& lagged_displacements,
+    const Eigen::MatrixXd& velocities,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const double dhat,
@@ -158,39 +158,28 @@ VectorMax12d FrictionConstraint::compute_force(
     const bool no_mu) const
 {
     // x is the rest position
-    // uᵗ is the displacment at the begining of the timestep
-    // uᵢ is the displacment at the begginging of the lagged solve
-    // u is the displacment at the end of the timestep
-    // (uᵢ = uᵗ; uₙ = u)
+    // u is the displacment at the begginging of the lagged solve
+    // v is the current velocity
     //
-    // Static simulation:
-    // τ = T(x + uᵢ)ᵀu is the tangential displacment
-    // F(x, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
-    //
-    // Time-dependent simulation:
-    // τ = T(x + uᵢ)ᵀ(u - uᵗ) is the tangential displacment
-    // F(x, uᵗ, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
-    assert(X.size() == U.size() && Ut.size() == U.size());
+    // τ = T(x + u)ᵀv is the tangential sliding velocity
+    // F(x, u, v) = -μ N(x + u) f₁(‖τ‖)/‖τ‖ T(x + u) τ
+    assert(rest_positions.size() == lagged_displacements.size());
+    assert(lagged_displacements.size() == velocities.size());
 
-    const VectorMax12d x = dof(X, edges, faces);
-    const VectorMax12d ut = dof(Ut, edges, faces);
-    const VectorMax12d u = dof(U, edges, faces);
+    const VectorMax12d x = dof(rest_positions, edges, faces);
+    const VectorMax12d u = dof(lagged_displacements, edges, faces);
+    const VectorMax12d v = dof(velocities, edges, faces);
+    const VectorMax12d x_plus_u = x + u;
 
-    // Assume uᵢ = uᵗ
-    VectorMax12d x_plus_ui = x + ut;
-
-    // Assume uᵢ = u
-    // VectorMax12d x_plus_ui = x + u;
-
-    // Compute N(x + uᵢ)
-    double N = compute_normal_force_magnitude(
-        x_plus_ui, dhat, barrier_stiffness, dmin);
+    // Compute N(x + u)
+    const double N =
+        compute_normal_force_magnitude(x_plus_u, dhat, barrier_stiffness, dmin);
 
     // Compute P
-    const MatrixMax<double, 3, 2> P = compute_tangent_basis(x_plus_ui);
+    const MatrixMax<double, 3, 2> P = compute_tangent_basis(x_plus_u);
 
     // compute β
-    const VectorMax2d beta = compute_closest_point(x_plus_ui);
+    const VectorMax2d beta = compute_closest_point(x_plus_u);
 
     // Compute Γ
     const MatrixMax<double, 3, 12> Gamma = relative_velocity_matrix(beta);
@@ -198,8 +187,8 @@ VectorMax12d FrictionConstraint::compute_force(
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
 
-    // Compute τ = PᵀΓ(u - uᵗ)
-    const VectorMax2d tau = T.transpose() * (u - ut);
+    // Compute τ = PᵀΓv
+    const VectorMax2d tau = T.transpose() * v;
 
     // Compute f₁(‖τ‖)/‖τ‖
     const double f1_over_norm_tau = f1_SF_over_x(tau.norm(), epsv);
@@ -210,9 +199,9 @@ VectorMax12d FrictionConstraint::compute_force(
 }
 
 MatrixMax12d FrictionConstraint::compute_force_jacobian(
-    const Eigen::MatrixXd& X,
-    const Eigen::MatrixXd& Ut,
-    const Eigen::MatrixXd& U,
+    const Eigen::MatrixXd& rest_positions,
+    const Eigen::MatrixXd& lagged_displacements,
+    const Eigen::MatrixXd& velocities,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const double dhat,
@@ -222,54 +211,43 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     const double dmin) const
 {
     // x is the rest position
-    // uᵗ is the displacment at the begining of the timestep
-    // uᵢ is the displacment at the begginging of the lagged solve
-    // u is the displacment at the end of the timestep
-    // (uᵢ = uᵗ; uₙ = u)
+    // u is the displacment at the begginging of the lagged solve
+    // v is the current velocity
     //
-    // Static simulation:
-    // τ = T(x + uᵢ)ᵀu is the tangential displacment
-    // F(x, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
+    // τ = T(x + u)ᵀv is the tangential sliding velocity
+    // F(x, u, v) = -μ N(x + u) f₁(‖τ‖)/‖τ‖ T(x + u) τ
     //
-    // Time-dependent simulation:
-    // τ = T(x + uᵢ)ᵀ(u - uᵗ) is the tangential displacment
-    // F(x, uᵗ, u) = -μ N(x + uᵢ) f₁(‖τ‖)/‖τ‖ T(x + uᵢ) τ
-    //
-    // Compute F
-    assert(X.size() == U.size() && Ut.size() == U.size());
-    int dim = U.cols();
+    // Compute ∇F
+    assert(rest_positions.size() == lagged_displacements.size());
+    assert(lagged_displacements.size() == velocities.size());
+    int dim = rest_positions.cols();
     int n = dim * num_vertices();
 
-    const VectorMax12d x = dof(X, edges, faces);
-    const VectorMax12d ut = dof(Ut, edges, faces);
-    const VectorMax12d u = dof(U, edges, faces);
+    const VectorMax12d x = dof(rest_positions, edges, faces);
+    const VectorMax12d u = dof(lagged_displacements, edges, faces);
+    const VectorMax12d v = dof(velocities, edges, faces);
 
-    // Assume uᵢ = uᵗ
-    VectorMax12d x_plus_ui = x + ut;
-    bool need_jac_N_or_T = wrt != DiffWRT::U;
-
-    // Assume uᵢ = u
-    // VectorMax12d x_plus_ui = x + u;
-    // bool need_jac_N_or_T = wrt != DiffWRT::Ut;
+    const VectorMax12d x_plus_u = x + u;
+    const bool need_jac_N_or_T = wrt != DiffWRT::VELOCITIES;
 
     // Compute N
-    double N = compute_normal_force_magnitude(
-        x_plus_ui, dhat, barrier_stiffness, dmin);
+    const double N =
+        compute_normal_force_magnitude(x_plus_u, dhat, barrier_stiffness, dmin);
 
     // Compute ∇N
     VectorMax12d grad_N;
     if (need_jac_N_or_T) {
         // ∇ₓN = ∇ᵤN
         grad_N = compute_normal_force_magnitude_gradient(
-            x_plus_ui, dhat, barrier_stiffness, dmin);
+            x_plus_u, dhat, barrier_stiffness, dmin);
         assert(grad_N.array().isFinite().all());
     }
 
     // Compute P
-    const MatrixMax<double, 3, 2> P = compute_tangent_basis(x_plus_ui);
+    const MatrixMax<double, 3, 2> P = compute_tangent_basis(x_plus_u);
 
     // Compute β
-    const VectorMax2d beta = compute_closest_point(x_plus_ui);
+    const VectorMax2d beta = compute_closest_point(x_plus_u);
 
     // Compute Γ
     const MatrixMax<double, 3, 12> Gamma = relative_velocity_matrix(beta);
@@ -283,7 +261,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
         jac_T.resize(n * n, dim - 1);
         // ∇T = ∇(ΓᵀP) = ∇ΓᵀP + Γᵀ∇P
         const MatrixMax<double, 36, 2> jac_P =
-            compute_tangent_basis_jacobian(x_plus_ui);
+            compute_tangent_basis_jacobian(x_plus_u);
         for (int i = 0; i < n; i++) {
             // ∂T/∂xᵢ += Γᵀ ∂P/∂xᵢ
             jac_T.middleRows(i * n, n) =
@@ -294,7 +272,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
         if (beta.size()) {
             // ∇Γ(β) = ∇ᵦΓ∇β ∈ ℝ^{d×n×n} ≡ ℝ^{nd×n}
             const MatrixMax<double, 2, 12> jac_beta =
-                compute_closest_point_jacobian(x_plus_ui);
+                compute_closest_point_jacobian(x_plus_u);
             const MatrixMax<double, 6, 12> jac_Gamma_wrt_beta =
                 relative_velocity_matrix_jacobian(beta);
 
@@ -319,30 +297,19 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
         }
     }
 
-    // Compute τ = PᵀΓ(u - uᵗ)
-    const VectorMax12d u_minus_ut = u - ut;
-    const VectorMax2d tau = P.transpose() * Gamma * u_minus_ut;
+    // Compute τ = PᵀΓv
+    const VectorMax2d tau = P.transpose() * Gamma * v;
 
-    // Compute ∇τ = ∇T(x + uᵢ)ᵀ(u - uᵗ) + T(x + uᵢ)ᵀ∇(u - uᵗ)
+    // Compute ∇τ = ∇T(x + u)ᵀv + T(x + u)ᵀ∇v
     MatrixMax<double, 2, 12> jac_tau;
     if (need_jac_N_or_T) {
         jac_tau.resize(dim - 1, n);
-        // Compute ∇T(x + uᵢ)ᵀ(u - uᵗ)
+        // Compute ∇T(x + u)ᵀv
         for (int i = 0; i < n; i++) {
-            jac_tau.col(i) =
-                jac_T.middleRows(i * n, n).transpose() * (u_minus_ut);
+            jac_tau.col(i) = jac_T.middleRows(i * n, n).transpose() * v;
         }
     } else {
-        jac_tau.setZero(dim - 1, n);
-    }
-    switch (wrt) {
-    case DiffWRT::X:
-        break; // Tᵀ ∇ₓ(u - uᵗ) = 0
-    case DiffWRT::Ut:
-        jac_tau -= T.transpose(); // Tᵀ ∇_{uᵗ}(u - uᵗ) = -Tᵀ
-        break;
-    case DiffWRT::U:
-        jac_tau += T.transpose(); // Tᵀ ∇ᵤ(u - uᵗ) = Tᵀ
+        jac_tau = T.transpose(); // Tᵀ ∇ᵥv = Tᵀ
     }
 
     // Compute f₁(‖τ‖)/‖τ‖
@@ -365,7 +332,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     const VectorMax12d T_times_tau = T * tau;
 
     ///////////////////////////////////////////////////////////////////////////
-    // Compute F = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
+    // Compute J = ∇F = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
     MatrixMax12d J = MatrixMax12d::Zero(n, n);
 
     // = -μ f₁(‖τ‖)/‖τ‖ (T τ) [∇N]ᵀ
