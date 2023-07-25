@@ -9,13 +9,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ipctk"
-version = "1.0.1"
-authors = [
-  { name="Zachary Ferguson", email="zfergus@nyu.edu" },
-]
+version = "1.1.0"
+authors = [{ name = "Zachary Ferguson", email = "zfergus@nyu.edu" }]
 description = "A set of reusable functions to integrate Incremental Potential Contact (IPC) into a simulation."
 readme = "docs/PYPI_README.md"
-license = { file="LICENSE" }
+license = { file = "LICENSE" }
 classifiers = [
     "Programming Language :: C++",
     "Programming Language :: Python :: 3",
@@ -26,17 +24,8 @@ classifiers = [
     "Intended Audience :: Science/Research",
 ]
 requires-python = ">=3.6"
-dependencies = [
-    "numpy",
-    "scipy",
-]
-keywords = [
-    "IPC",
-    "simulation",
-    "physics",
-    "science",
-    "reserch",
-]
+dependencies = ["numpy", "scipy"]
+keywords = ["IPC", "simulation", "physics", "science", "reserch"]
 
 [project.urls]
 "Homepage" = "https://ipc-sim.github.io/ipc-toolkit/"
@@ -45,4 +34,3 @@ keywords = [
 
 [tools.cibuildwheel]
 build-frontend = "build"
-

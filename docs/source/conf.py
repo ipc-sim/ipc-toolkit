@@ -23,7 +23,7 @@ import pathlib
 project = "IPC Toolkit"
 copyright = '2020-2023, IPC-Sim Organization; MIT License'
 author = "Zachary Ferguson"
-version = "1.0.0"
+version = "1.1.0"
 
 # -- General configuration ---------------------------------------------------
 

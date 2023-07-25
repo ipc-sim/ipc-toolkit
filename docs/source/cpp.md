@@ -33,7 +33,7 @@ where `PROJECT_NAME` is the name of your library/binary.
 
 ```{eval-rst}
 .. tip::
-   If your ``IPC_TOOLKIT_GIT_TAG`` is a tag (e.g. ``v1.0.0``), then you can use the ``FetchContent_Declare`` argument ``GIT_SHALLOW TRUE`` to download only a single commit.
+   If your ``IPC_TOOLKIT_GIT_TAG`` is a tag (e.g. ``v1.1.0``), then you can use the ``FetchContent_Declare`` argument ``GIT_SHALLOW TRUE`` to download only a single commit.
    Otherwise, you should use the default ``GIT_SHALLOW FALSE``.
 ```
 
