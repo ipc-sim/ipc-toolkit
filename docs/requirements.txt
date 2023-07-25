@@ -6,4 +6,4 @@ autoclasstoc
 breathe
 nbsphinx
 pandoc
-myst_parser
+myst_parser==1.0.0
