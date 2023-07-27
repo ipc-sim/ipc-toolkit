@@ -32,7 +32,7 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.9dcb20399d0097661.min.css" />
+        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.a60204c58f5e4ff66.min.css" />
         <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
         <link rel="stylesheet" type="text/css" href="_static/autoclasstoc.css" />
         <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
@@ -65,7 +65,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#description" class="md-skip">
+        <a href="#" class="md-skip">
           Skip to content
         </a>
       
@@ -99,7 +99,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              IPC Toolkit
+              Description
             
           </span>
         </div>
@@ -940,8 +940,8 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#description" class="md-nav__link">
-    <span title="/index.md#description (reference label)" class="md-ellipsis">Description</span>
+  <a href="#" class="md-nav__link">
+    <span title="/index.md (reference label)" class="md-ellipsis">Description</span>
   </a>
   
     <nav class="md-nav" aria-label="Description">
@@ -1084,14 +1084,18 @@
 <div class="toctree-wrapper compound">
 </div>
 <!-- <img src="_static/teaser@0_3.png" style="padding: 15px 30px 0; background-color: white; width: calc(100% - 60px); max-width: 600px; margin: auto; display: block;"/> -->
-<h1 id="ipc-toolkit">IPC Toolkit<a class="headerlink" href="#ipc-toolkit" title="Permalink to this heading">¶</a></h1>
-<p><a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml"><img alt="Build" src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg" /></a>
-<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml"><img alt="Python" src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg" /></a>
-<a class="reference external" href="https://ipc-sim.github.io/ipc-toolkit/"><img alt="Docs" src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg" /></a>
-<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue" /></a></p>
-<h2 id="description">Description<a class="headerlink" href="#description" title="Permalink to this heading">¶</a></h2>
+<h1 align="center">
+<a href="https://polyfem.github.io/"><img alt="polyfem" src="docs/source/_static/logo.png" width="80%"></a>
+</h1>
+<p align="center">
+<a href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg"></a>
+<a href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg"></a>
+<a href="https://ipc-sim.github.io/ipc-toolkit/"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg"></a>
+<a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue"></a>
+</p>
+<h1 id="description">Description<a class="headerlink" href="#description" title="Permalink to this heading">¶</a></h1>
 <p>IPC Toolkit is a set of reusable functions to integrate Incremental Potential Contact (IPC) into a simulation.</p>
-<h3 id="features">Features<a class="headerlink" href="#features" title="Permalink to this heading">¶</a></h3>
+<h2 id="features">Features<a class="headerlink" href="#features" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>IPC barrier function and its derivatives and adaptive barrier stiffness algorithm</p></li>
 <li><p>Broad-phase and narrow-phase continuous collision detection (CCD)</p></li>
@@ -1099,9 +1103,9 @@
 <li><p>Distance barrier potential and its derivatives</p></li>
 <li><p>Smooth and lagged dissipative friction potential and its derivatives</p></li>
 </ul>
-<h3 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permalink to this heading">¶</a></h3>
+<h2 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permalink to this heading">¶</a></h2>
 <p>This is not a full simulation library. As such it does not include any physics or solvers. For a full simulation implementation, we recommend <a class="reference external" href="https://polyfem.github.io/">PolyFEM</a> (a finite element library) or <a class="reference external" href="https://github.com/ipc-sim/rigid-ipc">Rigid IPC</a> (rigid-body dynamics) both of which utilize the IPC Toolkit.</p>
-<h2 id="build">Build<a class="headerlink" href="#build" title="Permalink to this heading">¶</a></h2>
+<h1 id="build">Build<a class="headerlink" href="#build" title="Permalink to this heading">¶</a></h1>
 <p>The easiest way to add the toolkit to an existing CMake project is to download it through CMake.
 CMake provides functionality for doing this called <a class="reference external" href="https://cmake.org/cmake/help/latest/module/FetchContent.html">FetchContent</a> (requires CMake ≥ 3.14).
 We use this same process to download all external dependencies.</p>
@@ -1121,7 +1125,7 @@ We use this same process to download all external dependencies.</p>
 </code></pre></div>
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">PROJECT_NAME</span></code> is the name of your library/binary.</p>
-<h3 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h3>
+<h2 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h2>
 <p><strong>All required dependencies are downloaded through CMake</strong> depending on the build options.</p>
 <p>The following libraries are used in this project:</p>
 <ul class="simple">
@@ -1131,7 +1135,7 @@ We use this same process to download all external dependencies.</p>
 <li><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Tight-Inclusion">Tight-Inclusion</a>: correct (conservative) CCD</p></li>
 <li><p><a class="reference external" href="https://github.com/gabime/spdlog">spdlog</a>: logging information</p></li>
 </ul>
-<h4 id="optional">Optional<a class="headerlink" href="#optional" title="Permalink to this heading">¶</a></h4>
+<h3 id="optional">Optional<a class="headerlink" href="#optional" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/Tessil/robin-map">robin-map</a>: faster hash set/map than <code class="docutils literal notranslate"><span class="pre">std::unordered_set</span></code>/<code class="docutils literal notranslate"><span class="pre">std::unordered_map</span></code></p>
 <ul>
@@ -1159,22 +1163,22 @@ We use this same process to download all external dependencies.</p>
 </ul>
 </li>
 </ul>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h2>
+<h1 id="usage">Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h1>
 <p>The main functionality is provided in the <code class="docutils literal notranslate"><span class="pre">ipc.hpp</span></code> header. Use the prefix directory <code class="docutils literal notranslate"><span class="pre">ipc</span></code> to include all header files (e.g. <code class="docutils literal notranslate"><span class="pre">#include</span> <span class="pre">&lt;ipc/ipc.hpp&gt;</span></code>).</p>
-<h2 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Permalink to this heading">¶</a></h2>
+<h1 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Permalink to this heading">¶</a></h1>
 <p>We provide unit tests for ensuring the correctness of our algorithmic pieces.
 To enable the unit tests use the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_UNIT_TESTS</span></code>.</p>
-<h3 id="id1">Dependencies<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
+<h2 id="id1">Dependencies<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
 <p>The following are downloaded when unit tests are enabled (<code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_TESTS</span></code>)</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/catchorg/Catch2.git">Catch2</a>: testing framework</p></li>
 <li><p><a class="reference external" href="https://github.com/zfergus/finite-diff">finite-diff</a>: finite-difference comparisons</p></li>
 <li><p><a class="reference external" href="https://github.com/nlohmann/json">Nlohman’s JSON library</a>: loading test data from JSON files</p></li>
 </ul>
-<h2 id="python-bindings">Python Bindings<a class="headerlink" href="#python-bindings" title="Permalink to this heading">¶</a></h2>
+<h1 id="python-bindings">Python Bindings<a class="headerlink" href="#python-bindings" title="Permalink to this heading">¶</a></h1>
 <p>We provide Python bindings for functions in the toolkit using <a class="reference external" href="https://github.com/pybind/pybind11">pybind11</a>.</p>
 <p>For more information see the <a class="reference external" href="https://ipc-sim.github.io/ipc-toolkit/python/">Python documentation</a>.</p>
-<h2 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permalink to this heading">¶</a></h2>
+<h1 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permalink to this heading">¶</a></h1>
 <p>This project is open to contributors! Contributions can come in the form of feature requests, bug fixes, documentation, tutorials, and the like. We highly recommend filing an Issue first before submitting a Pull Request.</p>
 <p>Simply fork this repository and make a Pull Request! We would appreciate:</p>
 <ul class="simple">
@@ -1183,7 +1187,7 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
 <li><p>Documentation</p></li>
 <li><p>Testing</p></li>
 </ul>
-<h2 id="citation">Citation<a class="headerlink" href="#citation" title="Permalink to this heading">¶</a></h2>
+<h1 id="citation">Citation<a class="headerlink" href="#citation" title="Permalink to this heading">¶</a></h1>
 <p>If you use the IPC Toolkit in your project, please consider citing our work:</p>
 <div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><code><span class="nc">@software</span><span class="p">{</span><span class="nl">ipc_toolkit</span><span class="p">,</span>
 <span class="w">  </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Zachary Ferguson and others}</span><span class="p">,</span>
@@ -1206,7 +1210,7 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
 <span class="p">}</span>
 </code></pre></div>
 </div>
-<h2 id="license">License<a class="headerlink" href="#license" title="Permalink to this heading">¶</a></h2>
+<h1 id="license">License<a class="headerlink" href="#license" title="Permalink to this heading">¶</a></h1>
 <p>MIT License © 2020, the IPC-Sim organization (See <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><code>LICENSE</code></a> for details)</p>
 
 
@@ -1215,7 +1219,7 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
   <small>
     
       Last update:
-      July 25, 2023
+      July 27, 2023
     
   </small>
 </div>
