@@ -1,5 +1,5 @@
 <p align="center">
-<a href="https://polyfem.github.io/"><img alt="polyfem" src="docs/source/_static/logo.png" width="80%"></a>
+<a href="https://ipc-sim.github.io/ipc-toolkit"><img alt="IPC Toolkit" src="docs/source/_static/logo.png" width="80%"></a>
 </p>
 
 <p align="center">
