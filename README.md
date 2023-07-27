@@ -1,6 +1,6 @@
-<h1 align="center">
+<p align="center">
 <a href="https://polyfem.github.io/"><img alt="polyfem" src="docs/source/_static/logo.png" width="80%"></a>
-</h1>
+</p>
 
 <p align="center">
 <a href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg"></a>
