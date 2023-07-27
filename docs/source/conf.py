@@ -58,6 +58,10 @@ extensions = [
     # 'sphinx_autodoc_toolbox.collapse',
 ]
 
+myst_enable_extensions = [
+    "dollarmath",
+]
+
 object_description_options = [
     ("cpp:.*", dict(clang_format_style={"BasedOnStyle": "WebKit"})),
 ]
