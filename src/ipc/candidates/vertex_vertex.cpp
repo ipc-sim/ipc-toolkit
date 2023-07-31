@@ -38,7 +38,11 @@ MatrixMax12d VertexVertexCandidate::compute_distance_hessian(
 
 bool VertexVertexCandidate::operator==(const VertexVertexCandidate& other) const
 {
-    return vertex0_id == other.vertex0_id && vertex1_id == other.vertex1_id;
+    // (i, j) == (i, j) || (i, j) == (j, i)
+    return (this->vertex0_id == other.vertex0_id
+            && this->vertex1_id == other.vertex1_id)
+        || (this->vertex0_id == other.vertex1_id
+            && this->vertex1_id == other.vertex0_id);
 }
 
 bool VertexVertexCandidate::operator!=(const VertexVertexCandidate& other) const
@@ -48,10 +52,13 @@ bool VertexVertexCandidate::operator!=(const VertexVertexCandidate& other) const
 
 bool VertexVertexCandidate::operator<(const VertexVertexCandidate& other) const
 {
-    if (vertex0_id == other.vertex0_id) {
-        return vertex1_id < other.vertex1_id;
+    long this_min = std::min(this->vertex0_id, this->vertex1_id);
+    long other_min = std::min(other.vertex0_id, other.vertex1_id);
+    if (this_min == other_min) {
+        return std::max(this->vertex0_id, this->vertex1_id)
+            < std::max(other.vertex0_id, other.vertex1_id);
     }
-    return vertex0_id < other.vertex0_id;
+    return this_min < other_min;
 }
 
 } // namespace ipc
