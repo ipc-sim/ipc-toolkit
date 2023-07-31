@@ -111,20 +111,18 @@ jobs:
           key: ${{ runner.os }}-${{ matrix.config }}-cache
           
       - name: Configure
-        shell: cmd
         run: |
           mkdir build
           cd build
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
+          & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
           cmake -G Ninja .. ^
             -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ^
             -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
             -DIPC_TOOLKIT_BUILD_TESTS=ON
 
       - name: Build
-        shell: cmd
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
+          & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
           cd build; ninja; sccache --show-stats
 
       - name: Tests
