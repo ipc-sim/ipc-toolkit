@@ -95,13 +95,6 @@ jobs:
         run: |
           echo "appdata=$env:LOCALAPPDATA" >> ${env:GITHUB_ENV}
 
-      - name: Cache build
-        id: cache-build
-        uses: actions/cache@v3.3.1
-        with:
-          path: ${{ env.appdata }}\Mozilla\sccache
-          key: ${{ runner.os }}-${{ matrix.config }}-cache
-
       - name: Prepare sccache
         run: |
           iwr -useb 'https://raw.githubusercontent.com/scoopinstaller/install/master/install.ps1' -outfile 'install.ps1'
@@ -109,6 +102,13 @@ jobs:
           scoop install sccache --global
           # Scoop modifies the PATH so we make it available for the next steps of the job
           echo "${env:PATH}" >> ${env:GITHUB_PATH}
+
+      - name: Cache build
+        id: cache-build
+        uses: actions/cache@v3.3.1
+        with:
+          path: ${{ env.appdata }}\Mozilla\sccache
+          key: ${{ runner.os }}-${{ matrix.config }}-cache
           
       - name: Configure
         shell: cmd
@@ -125,8 +125,7 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
-          cd build
-          ninja
+          cd build; ninja; sccache --show-stats
 
       - name: Tests
         run: cd build; ctest --verbose -j2
