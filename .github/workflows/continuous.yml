@@ -115,9 +115,9 @@ jobs:
           mkdir build
           cd build
           & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
-          cmake -G Ninja .. ^
-            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ^
-            -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
+          cmake -G Ninja .. `
+            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache `
+            -DCMAKE_BUILD_TYPE=${{ matrix.config }} `
             -DIPC_TOOLKIT_BUILD_TESTS=ON
 
       - name: Build
