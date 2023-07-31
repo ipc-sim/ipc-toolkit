@@ -29,7 +29,7 @@ jobs:
             name: Linux
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2.5.0
+        uses: actions/checkout@v3.5.3
         with:
           fetch-depth: 10
 
@@ -47,7 +47,7 @@ jobs:
 
       - name: Cache Build
         id: cache-build
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v3.3.1
         with:
           path: ${{ env.CACHE_PATH }}
           key: ${{ runner.os }}-${{ matrix.config }}-cache
@@ -84,7 +84,7 @@ jobs:
         config: [Debug, Release]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2.5.0
+        uses: actions/checkout@v3.5.3
         with:
           fetch-depth: 10
 
@@ -97,7 +97,7 @@ jobs:
 
       - name: Cache build
         id: cache-build
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v3.3.1
         with:
           path: ${{ env.appdata }}\Mozilla\sccache
           key: ${{ runner.os }}-${{ matrix.config }}-cache
@@ -109,18 +109,22 @@ jobs:
           scoop install sccache --global
           # Scoop modifies the PATH so we make it available for the next steps of the job
           echo "${env:PATH}" >> ${env:GITHUB_PATH}
-
-      - name: Configure and build
-        shell: cmd
+          
+      - name: Configure
         run: |
+          mkdir build
+          cd build
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
-          cmake -G Ninja ^
+          cmake .. \
             -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ^
             -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
-            -DIPC_TOOLKIT_BUILD_TESTS=ON ^
-            -B build ^
-            -S .
-          cmake --build build -j1
+            -DIPC_TOOLKIT_BUILD_TESTS=ON
+
+      - name: Build
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
+          cd build
+          ninja
 
       - name: Tests
         run: cd build; ctest --verbose -j2
