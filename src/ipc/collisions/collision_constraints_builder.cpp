@@ -252,6 +252,58 @@ void CollisionConstraintsBuilder::add_face_vertex_constraints(
 
 // ============================================================================
 
+void CollisionConstraintsBuilder::add_vertex_vertex_negative_constraints(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const std::vector<VertexVertexCandidate>& candidates,
+    const std::function<bool(double)>& is_active,
+    const size_t start_i,
+    const size_t end_i)
+{
+    auto foo = [&](const size_t vi, const size_t vj, double& weight,
+                   Eigen::SparseVector<double>& weight_gradient) {
+        // ÷ 2 to handle double counting for correct integration
+        const double area_weight =
+            use_convergent_formulation() ? (mesh.vertex_area(vi) / 2) : 1;
+
+        Eigen::SparseVector<double> area_weight_gradient;
+        if (should_compute_weight_gradient()) {
+            area_weight_gradient = use_convergent_formulation()
+                ? (mesh.vertex_area_gradient(vi) / 2)
+                : Eigen::SparseVector<double>(vertices.size());
+        }
+
+        const auto& incident_vertices = mesh.vertex_vertex_adjacencies()[vj];
+        const int incident_edge_amt = incident_vertices.size()
+            - int(incident_vertices.find(vi) != incident_vertices.end());
+
+        if (incident_edge_amt > 1) {
+            weight += (1 - incident_edge_amt) * area_weight;
+            weight_gradient += (1 - incident_edge_amt) * area_weight_gradient;
+        }
+    };
+
+    for (size_t i = start_i; i < end_i; i++) {
+        const auto& [vi, vj] = candidates[i];
+        assert(vi != vj);
+
+        double weight = 0;
+        Eigen::SparseVector<double> weight_gradient;
+        if (should_compute_weight_gradient()) {
+            weight_gradient = Eigen::SparseVector<double>(vertices.size());
+        }
+
+        foo(vi, vj, weight, weight_gradient);
+        foo(vj, vi, weight, weight_gradient);
+
+        if (weight != 0) {
+            add_vertex_vertex_constraint(vi, vj, weight, weight_gradient);
+        }
+    }
+}
+
+// ============================================================================
+
 void CollisionConstraintsBuilder::add_vertex_vertex_constraint(
     const long v0i,
     const long v1i,
@@ -363,6 +415,12 @@ void CollisionConstraintsBuilder::merge(
             fv_constraints.end(), local_constraints.fv_constraints.begin(),
             local_constraints.fv_constraints.end());
     }
+
+    vv_constraints.erase(
+        std::remove_if(
+            vv_constraints.begin(), vv_constraints.end(),
+            [&](const VertexVertexConstraint& vv) { return vv.weight == 0; }),
+        vv_constraints.end());
 }
 
 } // namespace ipc

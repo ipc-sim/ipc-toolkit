@@ -1,10 +1,13 @@
 #include "collision_constraints.hpp"
 
 #include <ipc/collisions/collision_constraints_builder.hpp>
+#include <ipc/distance/point_point.hpp>
+#include <ipc/distance/point_line.hpp>
 // #include <ipc/utils/unordered_map_and_set.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
 #include <tbb/parallel_for.h>
+#include <tbb/parallel_sort.h>
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
 
@@ -74,7 +77,83 @@ void CollisionConstraints::build(
                 r.end());
         });
 
+    // -------------------------------------------------------------------------
+
+    // Convert edge-vertex to vertex-vertex
+    std::vector<VertexVertexCandidate> vv_candidates;
+    for (const auto& [ei, vi] : candidates.ev_candidates) {
+        for (int j = 0; j < 2; j++) {
+            const int vj = mesh.edges()(ei, j);
+            if (is_active(
+                    point_point_distance(vertices.row(vi), vertices.row(vj)))) {
+                vv_candidates.emplace_back(vi, vj);
+            }
+        }
+    }
+
+    // Remove duplicates
+    tbb::parallel_sort(vv_candidates.begin(), vv_candidates.end());
+    vv_candidates.erase(
+        std::unique(vv_candidates.begin(), vv_candidates.end()),
+        vv_candidates.end());
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            storage.local().add_vertex_vertex_negative_constraints(
+                mesh, vertices, vv_candidates, is_active, r.begin(), r.end());
+        });
+
+    // -------------------------------------------------------------------------
+
+    // Convert edge-vertex to vertex-vertex
+    // std::vector<VertexVertexCandidate> vv_candidates;
+    vv_candidates.clear();
+    for (const auto& [fi, vi] : candidates.fv_candidates) {
+        for (int j = 0; j < 3; j++) {
+            const int vj = mesh.faces()(fi, j);
+            if (is_active(
+                    point_point_distance(vertices.row(vi), vertices.row(vj)))) {
+                vv_candidates.emplace_back(vi, vj);
+            }
+        }
+    }
+
+    // Remove duplicates
+    tbb::parallel_sort(vv_candidates.begin(), vv_candidates.end());
+    vv_candidates.erase(
+        std::unique(vv_candidates.begin(), vv_candidates.end()),
+        vv_candidates.end());
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            storage.local().add_vertex_vertex_positive_constraints(
+                mesh, vertices, vv_candidates, is_active, r.begin(), r.end());
+        });
+
+    // -------------------------------------------------------------------------
+
     CollisionConstraintsBuilder::merge(storage, *this);
+
+    // logger().critical("---");
+    // for (const auto& vv : vv_constraints) {
+    //     logger().critical(
+    //         "vv: {} {}, w: {}, d: {}", vv.vertex0_id, vv.vertex1_id,
+    //         vv.weight, point_point_distance(
+    //             vertices.row(vv.vertex0_id), vertices.row(vv.vertex1_id)));
+    // }
+    // for (const auto& ev : ev_constraints) {
+    //     logger().critical(
+    //         "ev: {}=({}, {}) {}, w: {}, d: {}", ev.edge_id,
+    //         mesh.edges()(ev.edge_id, 0), mesh.edges()(ev.edge_id, 1),
+    //         ev.vertex_id, ev.weight,
+    //         point_line_distance(
+    //             vertices.row(ev.vertex_id),
+    //             vertices.row(mesh.edges()(ev.edge_id, 0)),
+    //             vertices.row(mesh.edges()(ev.edge_id, 1))));
+    // }
+    // logger().critical("---");
 
     for (size_t ci = 0; ci < size(); ci++) {
         CollisionConstraint& constraint = (*this)[ci];

@@ -39,6 +39,14 @@ public:
         const size_t start_i,
         const size_t end_i);
 
+    void add_vertex_vertex_negative_constraints(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const std::vector<VertexVertexCandidate>& candidates,
+        const std::function<bool(double)>& is_active,
+        const size_t start_i,
+        const size_t end_i);
+
     static void merge(
         const tbb::enumerable_thread_specific<CollisionConstraintsBuilder>&
             local_storage,
