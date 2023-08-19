@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## v1.1.1 (Aug 18, 2023)
+
+* Logo by @zfergus in [#52](https://github.com/ipc-sim/ipc-toolkit/pull/52)
+* Fix vertex-vertex `==` and `<` functions to be order independent
+    * This allows vertex-vertex constraints merge correctly
+* Update Tight Inclusion CCD
+
 ## v1.1.0 (Jul 25, 2023)
 
 Large refactoring to make the code more object-oriented rather than passing objects to functions. Other changes include the friction potential now being a function of velocity, bug fixes, and a new tutorial.
