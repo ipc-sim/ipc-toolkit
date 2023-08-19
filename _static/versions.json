@@ -3,9 +3,12 @@
     "title": "main",
     "aliases": ["latest", "head"]
 }, {
-    "version": "https://ipc-sim.github.io/ipc-toolkit/v1.1.0",
-    "title": "v1.1.0",
+    "version": "https://ipc-sim.github.io/ipc-toolkit/v1.1.1",
+    "title": "v1.1.1",
     "aliases": ["stable"]
+}, {
+    "version": "https://ipc-sim.github.io/ipc-toolkit/v1.1.0",
+    "title": "v1.1.0"
 }, {
     "version": "https://ipc-sim.github.io/ipc-toolkit/v1.0.0",
     "title": "v1.0.0"
