@@ -35,8 +35,18 @@ jobs:
           for version in $(git tag -l); do
               echo "Processing $version:"
               git checkout $version
+
+              # Fix links
+              grep -rli 'url = {https://ipc-sim.github.io/ipc-toolkit/}' ../* | xargs -i@ sed -i 's/ipc-sim.github.io\/ipc-toolkit\//github.com\/ipc-sim\/ipc-toolkit/g' @
+              grep -rli 'ipc-sim.github.io/ipc-toolkit' ../* | xargs -i@ sed -i 's/ipc-sim.github.io\/ipc-toolkit/ipctk.xyz/g' @
+
               pip install --force-reinstall -v "ipctk==$version"
-              sphinx-build source build/html/$version -D html_theme_options.version_dropdown=true
+              sphinx-build source build/html/$version \
+                -D html_theme_options.version_dropdown=true \
+                -D html_theme_options.version_json=https://ipctk.xyz/versions.json
+
+              # Discard changes
+              git reset --hard
           done
           pip uninstall -y ipctk
           git checkout $HEAD

@@ -1,11 +1,11 @@
 <p align="center">
-<a href="https://ipc-sim.github.io/ipc-toolkit"><img alt="IPC Toolkit" src="docs/source/_static/logo.png" width="80%"></a>
+<a href="https://ipctk.xyz"><img alt="IPC Toolkit" src="docs/source/_static/logo.png" width="80%"></a>
 </p>
 
 <p align="center">
 <a href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg"></a>
 <a href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg"></a>
-<a href="https://ipc-sim.github.io/ipc-toolkit/"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg"></a>
+<a href="https://ipctk.xyz"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg"></a>
 <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue"></a>
 </p>
 
@@ -102,7 +102,7 @@ The following are downloaded when unit tests are enabled (`IPC_TOOLKIT_BUILD_TES
 
 We provide Python bindings for functions in the toolkit using [pybind11](https://github.com/pybind/pybind11).
 
-For more information see the [Python documentation](https://ipc-sim.github.io/ipc-toolkit/python/).
+For more information see the [Python documentation](https://ipctk.xyz/python/).
 
 ## Contributing
 
@@ -123,7 +123,7 @@ If you use the IPC Toolkit in your project, please consider citing our work:
 @software{ipc_toolkit,
   author = {Zachary Ferguson and others},
   title = {{IPC Toolkit}},
-  url = {https://ipc-sim.github.io/ipc-toolkit/},
+  url = {https://github.com/ipc-sim/ipc-toolkit},
   year = {2020},
 }
 ```

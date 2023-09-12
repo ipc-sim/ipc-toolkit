@@ -28,7 +28,7 @@ dependencies = ["numpy", "scipy"]
 keywords = ["IPC", "simulation", "physics", "science", "reserch"]
 
 [project.urls]
-"Homepage" = "https://ipc-sim.github.io/ipc-toolkit/"
+"Homepage" = "https://ipctk.xyz"
 "Bug Tracker" = "https://github.com/ipc-sim/ipc-toolkit/issues"
 "Source Code" = "https://github.com/ipc-sim/ipc-toolkit"
 
