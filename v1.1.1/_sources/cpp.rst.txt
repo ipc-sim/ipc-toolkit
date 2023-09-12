@@ -10,7 +10,7 @@ C++
    :target: https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml
    :alt: Build
 .. image:: https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg
-   :target: https://ipc-sim.github.io/ipc-toolkit/
+   :target: https://ipctk.xyz/
    :alt: Docs
 .. image:: https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue
    :target: https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE

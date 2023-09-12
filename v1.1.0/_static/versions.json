@@ -1,9 +1,9 @@
 [{
-    "version": "https://ipc-sim.github.io/ipc-toolkit",
+    "version": "https://ipctk.xyz",
     "title": "main",
     "aliases": ["latest", "head"]
 }, {
-    "version": "https://ipc-sim.github.io/ipc-toolkit/v1.0.0",
+    "version": "https://ipctk.xyz/v1.0.0",
     "title": "v1.0.0",
     "aliases": ["stable"]
 }]
