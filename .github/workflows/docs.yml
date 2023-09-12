@@ -37,7 +37,7 @@ jobs:
               git checkout $version
 
               # Fix links
-              grep -rli 'url = {https://ipc-sim.github.io/ipc-toolkit/}' ../* | xargs -i@ sed -i 's/ipc-sim.github.io\/ipc-toolkit/github.com\/ipc-sim\/ipc-toolkit/g' @
+              grep -rli 'url = {https://ipc-sim.github.io/ipc-toolkit/}' ../* | xargs -i@ sed -i 's/ipc-sim.github.io\/ipc-toolkit\//github.com\/ipc-sim\/ipc-toolkit/g' @
               grep -rli 'ipc-sim.github.io/ipc-toolkit' ../* | xargs -i@ sed -i 's/ipc-sim.github.io\/ipc-toolkit/ipctk.xyz/g' @
 
               pip install --force-reinstall -v "ipctk==$version"
