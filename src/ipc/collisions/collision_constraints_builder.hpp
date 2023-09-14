@@ -39,11 +39,13 @@ public:
         const size_t start_i,
         const size_t end_i);
 
+    // ------------------------------------------------------------------------
+    // Duplicate removal functions
+
     void add_vertex_vertex_negative_constraints(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<VertexVertexCandidate>& candidates,
-        const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i);
 
@@ -51,7 +53,6 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<VertexVertexCandidate>& candidates,
-        const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i);
 
@@ -59,7 +60,6 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<EdgeVertexCandidate>& candidates,
-        const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i);
 
@@ -70,9 +70,10 @@ public:
             EdgeVertexCandidate,
             double,
             Eigen::SparseVector<double>>>& candidates,
-        const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i);
+
+    // ------------------------------------------------------------------------
 
     static void merge(
         const tbb::enumerable_thread_specific<CollisionConstraintsBuilder>&
@@ -117,6 +118,13 @@ protected:
             ei, vi, weight, weight_gradient, ev_to_id,
             constraints.ev_constraints);
     }
+
+    void add_edge_vertex_constraint(
+        const CollisionMesh& mesh,
+        const EdgeVertexCandidate& candidate,
+        const PointEdgeDistanceType dtype,
+        const double weight,
+        const Eigen::SparseVector<double>& weight_gradient);
 
     bool use_convergent_formulation() const
     {

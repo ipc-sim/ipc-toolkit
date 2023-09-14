@@ -211,65 +211,60 @@ void CollisionConstraints::build(
                 r.end());
         });
 
-    // -------------------------------------------------------------------------
+    if (use_convergent_formulation()) {
 
-    if (use_convergent_formulation() && candidates.ev_candidates.size() > 0) {
-        // Convert edge-vertex to vertex-vertex
-        const std::vector<VertexVertexCandidate> vv_candidates =
-            edge_vertex_to_vertex_vertex_candidates(
-                mesh, vertices, candidates.ev_candidates, is_active);
+        if (candidates.ev_candidates.size() > 0) {
+            // Convert edge-vertex to vertex-vertex
+            const std::vector<VertexVertexCandidate> vv_candidates =
+                edge_vertex_to_vertex_vertex_candidates(
+                    mesh, vertices, candidates.ev_candidates, is_active);
 
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                storage.local().add_vertex_vertex_negative_constraints(
-                    mesh, vertices, vv_candidates, is_active, r.begin(),
-                    r.end());
-            });
-    }
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
+                [&](const tbb::blocked_range<size_t>& r) {
+                    storage.local().add_vertex_vertex_negative_constraints(
+                        mesh, vertices, vv_candidates, r.begin(), r.end());
+                });
+        }
 
-    // -------------------------------------------------------------------------
+        if (candidates.ee_candidates.size() > 0) {
+            // Convert edge-edge to edge-vertex
+            const auto ev_candidates = edge_edge_to_edge_vertex_candidates(
+                mesh, vertices, candidates.ee_candidates, is_active);
 
-    if (use_convergent_formulation() && candidates.fv_candidates.size() > 0) {
-        // Convert face-vertex to edge-vertex
-        const std::vector<EdgeVertexCandidate> ev_candidates =
-            face_vertex_to_edge_vertex_candidates(
-                mesh, vertices, candidates.fv_candidates, is_active);
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
+                [&](const tbb::blocked_range<size_t>& r) {
+                    storage.local().add_edge_vertex_negative_constraints(
+                        mesh, vertices, ev_candidates, r.begin(), r.end());
+                });
+        }
 
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                storage.local().add_edge_vertex_negative_constraints(
-                    mesh, vertices, ev_candidates, is_active, r.begin(),
-                    r.end());
-            });
+        if (candidates.fv_candidates.size() > 0) {
+            // Convert face-vertex to edge-vertex
+            const std::vector<EdgeVertexCandidate> ev_candidates =
+                face_vertex_to_edge_vertex_candidates(
+                    mesh, vertices, candidates.fv_candidates, is_active);
 
-        // Convert face-vertex to vertex-vertex
-        const std::vector<VertexVertexCandidate> vv_candidates =
-            face_vertex_to_vertex_vertex_candidates(
-                mesh, vertices, candidates.fv_candidates, is_active);
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
+                [&](const tbb::blocked_range<size_t>& r) {
+                    storage.local().add_edge_vertex_negative_constraints(
+                        mesh, vertices, ev_candidates, r.begin(), r.end());
+                });
 
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                storage.local().add_vertex_vertex_positive_constraints(
-                    mesh, vertices, vv_candidates, is_active, r.begin(),
-                    r.end());
-            });
-    }
+            // Convert face-vertex to vertex-vertex
+            const std::vector<VertexVertexCandidate> vv_candidates =
+                face_vertex_to_vertex_vertex_candidates(
+                    mesh, vertices, candidates.fv_candidates, is_active);
 
-    if (use_convergent_formulation() && candidates.ee_candidates.size() > 0) {
-        // Convert edge-edge to edge-vertex
-        const auto ev_candidates = edge_edge_to_edge_vertex_candidates(
-            mesh, vertices, candidates.ee_candidates, is_active);
-
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                storage.local().add_edge_vertex_negative_constraints(
-                    mesh, vertices, ev_candidates, is_active, r.begin(),
-                    r.end());
-            });
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
+                [&](const tbb::blocked_range<size_t>& r) {
+                    storage.local().add_vertex_vertex_positive_constraints(
+                        mesh, vertices, vv_candidates, r.begin(), r.end());
+                });
+        }
     }
 
     // -------------------------------------------------------------------------
