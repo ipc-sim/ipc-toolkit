@@ -4,6 +4,8 @@
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/line_line.hpp>
+#include <ipc/distance/point_plane.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
 #include <tbb/parallel_for.h>
@@ -99,14 +101,24 @@ namespace {
         return ev_candidates;
     }
 
-    std::vector<EdgeVertexCandidate> edge_edge_to_edge_vertex_candidates(
+    std::vector<std::pair<EdgeVertexCandidate, double>>
+    edge_edge_to_edge_vertex_candidates(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<EdgeEdgeCandidate>& ee_candidates,
         const std::function<bool(double)>& is_active)
     {
-        std::vector<EdgeVertexCandidate> ev_candidates;
+        std::vector<std::pair<EdgeVertexCandidate, double>> ev_candidates;
         for (const EdgeEdgeCandidate& ee : ee_candidates) {
+            if (edge_edge_distance_type(
+                    vertices.row(mesh.edges()(ee.edge0_id, 0)),
+                    vertices.row(mesh.edges()(ee.edge0_id, 1)),
+                    vertices.row(mesh.edges()(ee.edge1_id, 0)),
+                    vertices.row(mesh.edges()(ee.edge1_id, 1)))
+                == EdgeEdgeDistanceType::EA_EB) {
+                continue;
+            }
+
             for (int i = 0; i < 2; i++) {
                 const int ei = i == 0 ? ee.edge0_id : ee.edge1_id;
                 const int ej = i == 0 ? ee.edge1_id : ee.edge0_id;
@@ -119,17 +131,12 @@ namespace {
                     if (is_active(point_edge_distance(
                             vertices.row(vj), //
                             vertices.row(ei0), vertices.row(ei1)))) {
-                        ev_candidates.emplace_back(ei, vj);
+                        ev_candidates.emplace_back(
+                            EdgeVertexCandidate(ei, vj), mesh.edge_area(ej));
                     }
                 }
             }
         }
-
-        // Remove duplicates
-        tbb::parallel_sort(ev_candidates.begin(), ev_candidates.end());
-        ev_candidates.erase(
-            std::unique(ev_candidates.begin(), ev_candidates.end()),
-            ev_candidates.end());
 
         return ev_candidates;
     }
@@ -246,14 +253,14 @@ void CollisionConstraints::build(
 
     if (use_convergent_formulation() && candidates.ee_candidates.size() > 0) {
         // Convert edge-edge to edge-vertex
-        const std::vector<EdgeVertexCandidate> ev_candidates =
-            edge_edge_to_edge_vertex_candidates(
+        const std::vector<std::pair<EdgeVertexCandidate, double>>
+            ev_candidates = edge_edge_to_edge_vertex_candidates(
                 mesh, vertices, candidates.ee_candidates, is_active);
 
         tbb::parallel_for(
             tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
             [&](const tbb::blocked_range<size_t>& r) {
-                storage.local().add_edge_vertex_negative_constraints2(
+                storage.local().add_edge_vertex_negative_constraints(
                     mesh, vertices, ev_candidates, is_active, r.begin(),
                     r.end());
             });
@@ -263,24 +270,7 @@ void CollisionConstraints::build(
 
     CollisionConstraintsBuilder::merge(storage, *this);
 
-    // logger().critical("---");
-    // for (const auto& vv : vv_constraints) {
-    //     logger().critical(
-    //         "vv: {} {}, w: {}, d: {}", vv.vertex0_id, vv.vertex1_id,
-    //         vv.weight, point_point_distance(
-    //             vertices.row(vv.vertex0_id), vertices.row(vv.vertex1_id)));
-    // }
-    // for (const auto& ev : ev_constraints) {
-    //     logger().critical(
-    //         "ev: {}=({}, {}) {}, w: {}, d: {}", ev.edge_id,
-    //         mesh.edges()(ev.edge_id, 0), mesh.edges()(ev.edge_id, 1),
-    //         ev.vertex_id, ev.weight,
-    //         point_line_distance(
-    //             vertices.row(ev.vertex_id),
-    //             vertices.row(mesh.edges()(ev.edge_id, 0)),
-    //             vertices.row(mesh.edges()(ev.edge_id, 1))));
-    // }
-    // logger().critical("---");
+    // logger().debug(to_string(mesh, vertices));
 
     for (size_t ci = 0; ci < size(); ci++) {
         CollisionConstraint& constraint = (*this)[ci];
@@ -619,6 +609,58 @@ const CollisionConstraint& CollisionConstraints::operator[](size_t idx) const
         return pv_constraints[idx];
     }
     throw std::out_of_range("Constraint index is out of range!");
+}
+
+std::string CollisionConstraints::to_string(
+    const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
+{
+    std::stringstream ss;
+    for (const auto& vv : vv_constraints) {
+        ss << "\n"
+           << fmt::format(
+                  "vv: {} {}, w: {}, d: {}", vv.vertex0_id, vv.vertex1_id,
+                  vv.weight,
+                  point_point_distance(
+                      vertices.row(vv.vertex0_id),
+                      vertices.row(vv.vertex1_id)));
+    }
+    for (const auto& ev : ev_constraints) {
+        ss << "\n"
+           << fmt::format(
+                  "ev: {}=({}, {}) {}, w: {}, d: {}", ev.edge_id,
+                  mesh.edges()(ev.edge_id, 0), mesh.edges()(ev.edge_id, 1),
+                  ev.vertex_id, ev.weight,
+                  point_line_distance(
+                      vertices.row(ev.vertex_id),
+                      vertices.row(mesh.edges()(ev.edge_id, 0)),
+                      vertices.row(mesh.edges()(ev.edge_id, 1))));
+    }
+    for (const auto& ee : ee_constraints) {
+        ss << "\n"
+           << fmt::format(
+                  "ee: {}=({}, {}) {}=({}, {}), w: {}, d: {}", ee.edge0_id,
+                  mesh.edges()(ee.edge0_id, 0), mesh.edges()(ee.edge0_id, 1),
+                  ee.edge1_id, mesh.edges()(ee.edge1_id, 0),
+                  mesh.edges()(ee.edge1_id, 1), ee.weight,
+                  line_line_distance(
+                      vertices.row(mesh.edges()(ee.edge0_id, 0)),
+                      vertices.row(mesh.edges()(ee.edge0_id, 1)),
+                      vertices.row(mesh.edges()(ee.edge1_id, 0)),
+                      vertices.row(mesh.edges()(ee.edge1_id, 1))));
+    }
+    for (const auto& fv : fv_constraints) {
+        ss << "\n"
+           << fmt::format(
+                  "fv: {}=({}, {}, {}) {}, w: {}, d: {}", fv.face_id,
+                  mesh.faces()(fv.face_id, 0), mesh.faces()(fv.face_id, 1),
+                  mesh.faces()(fv.face_id, 2), fv.vertex_id, fv.weight,
+                  point_plane_distance(
+                      vertices.row(fv.vertex_id),
+                      vertices.row(mesh.faces()(fv.face_id, 0)),
+                      vertices.row(mesh.faces()(fv.face_id, 1)),
+                      vertices.row(mesh.faces()(fv.face_id, 2))));
+    }
+    return ss.str();
 }
 
 } // namespace ipc

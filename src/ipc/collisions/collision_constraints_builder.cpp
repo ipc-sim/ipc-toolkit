@@ -379,31 +379,33 @@ void CollisionConstraintsBuilder::add_edge_vertex_negative_constraints(
     }
 }
 
-void CollisionConstraintsBuilder::add_edge_vertex_negative_constraints2(
+void CollisionConstraintsBuilder::add_edge_vertex_negative_constraints(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
-    const std::vector<EdgeVertexCandidate>& candidates,
+    const std::vector<std::pair<EdgeVertexCandidate, double>>& candidates,
     const std::function<bool(double)>& is_active,
     const size_t start_i,
     const size_t end_i)
 {
     for (size_t i = start_i; i < end_i; i++) {
-        // ÷ 4 to handle double counting and PT + EE for correct integration.
-        const auto& [ei, vi] = candidates[i];
-        assert(vi != mesh.edges()(ei, 0) && vi != mesh.edges()(ei, 1));
+        const auto& [ei, vi] = candidates[i].first;
+        const int e0i = mesh.edges()(ei, 0), e1i = mesh.edges()(ei, 1);
+        assert(vi != e0i && vi != e1i);
 
         // TODO: distinguish mollified vs non-mollified
         const auto& incident_vertices = mesh.vertex_vertex_adjacencies()[vi];
         const int incident_edge_amt = incident_vertices.size()
-            - int(incident_vertices.find(mesh.edges()(ei, 0))
+            - int(incident_vertices.find(mesh.edges()(e0i, 0))
                   != incident_vertices.end())
-            - int(incident_vertices.find(mesh.edges()(ei, 1))
+            - int(incident_vertices.find(mesh.edges()(e1i, 1))
                   != incident_vertices.end());
 
         if (incident_edge_amt > 1) {
             // ÷ 4 to handle double counting and PT + EE for correct integration
             const double weight = (1 - incident_edge_amt)
-                * (use_convergent_formulation() ? (mesh.edge_area(ei) / 4) : 1);
+                * (use_convergent_formulation()
+                       ? ((mesh.edge_area(ei) + candidates[i].second) / 4)
+                       : 1);
 
             Eigen::SparseVector<double> weight_gradient;
             if (should_compute_weight_gradient()

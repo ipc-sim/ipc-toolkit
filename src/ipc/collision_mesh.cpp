@@ -250,8 +250,14 @@ void CollisionMesh::init_areas()
                 (vertex_edge_areas.array() < 0).select(1, vertex_edge_areas),
                 vertex_face_areas);
 
-    // Select the area based on the order face, codim
-    m_edge_areas = (m_edge_areas.array() < 0).select(1, m_edge_areas);
+    for (int i = 0; i < m_edge_areas.size(); i++) {
+        if (m_edge_areas[i] < 0) {
+            // Use the edge length for codim edges
+            const VectorMax3d e0 = m_rest_positions.row(m_edges(i, 0));
+            const VectorMax3d e1 = m_rest_positions.row(m_edges(i, 1));
+            m_edge_areas[i] = (e1 - e0).norm();
+        }
+    }
 }
 
 void CollisionMesh::init_area_jacobians()

@@ -63,10 +63,10 @@ public:
         const size_t start_i,
         const size_t end_i);
 
-    void add_edge_vertex_negative_constraints2(
+    void add_edge_vertex_negative_constraints(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
-        const std::vector<EdgeVertexCandidate>& candidates,
+        const std::vector<std::pair<EdgeVertexCandidate, double>>& candidates,
         const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i);
