@@ -189,18 +189,14 @@ target_link_libraries(ipc_toolkit PRIVATE ipc::toolkit::warnings)
 
 ## SIMD support
 if(IPC_TOOLKIT_WITH_SIMD)
-  # Figure out SSE level support
-  message(STATUS "Seaching for SSE...")
-  find_package(SSE)
-  # Figure out AVX level support
-  message(STATUS "Searching for AVX...")
-  find_package(AVX)
-  # Figure out FMA level support
-  message(STATUS "Searching for FMA...")
-  find_package(FMA)
-  # Add SSE, AVX, and FMA flags to compiler flags
-  string(REPLACE " " ";" SIMD_FLAGS "${SSE_FLAGS} ${AVX_FLAGS} ${FMA_FLAGS}")
+  # Figure out SIMD support
+  message(STATUS "Testing SIMD capabilities...")
+  find_package(SIMD)
+  # Add SIMD flags to compiler flags
+  message(STATUS "Using SIMD flags: ${SIMD_FLAGS}")
   target_compile_options(ipc_toolkit PRIVATE ${SIMD_FLAGS})
+else()
+  message(STATUS "SIMD support disabled")
 endif()
 
 # Use C++17
