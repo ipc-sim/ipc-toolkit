@@ -3,7 +3,7 @@
 #include <ipc/collisions/collision_constraints_builder.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_line.hpp>
-// #include <ipc/utils/unordered_map_and_set.hpp>
+#include <ipc/distance/point_edge.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
 #include <tbb/parallel_for.h>
@@ -14,6 +14,126 @@
 #include <stdexcept> // std::out_of_range
 
 namespace ipc {
+
+namespace {
+    /// @brief Convert element-vertex candidates to vertex-vertex candidates
+    /// @param elements Elements matrix of the mesh
+    /// @param vertices Vertex positions of the mesh
+    /// @param ev_candidates Element-vertex candidates
+    /// @param is_active Function to determine if a candidate is active
+    /// @return Vertex-vertex candidates
+    template <typename Candidate>
+    std::vector<VertexVertexCandidate>
+    element_vertex_to_vertex_vertex_candidates(
+        const Eigen::MatrixXi& elements,
+        const Eigen::MatrixXd& vertices,
+        const std::vector<Candidate>& candidates,
+        const std::function<bool(double)>& is_active)
+    {
+        std::vector<VertexVertexCandidate> vv_candidates;
+        for (const auto& [ei, vi] : candidates) {
+            for (int j = 0; j < elements.cols(); j++) {
+                const int vj = elements(ei, j);
+                if (is_active(point_point_distance(
+                        vertices.row(vi), vertices.row(vj)))) {
+                    vv_candidates.emplace_back(vi, vj);
+                }
+            }
+        }
+
+        // Remove duplicates
+        tbb::parallel_sort(vv_candidates.begin(), vv_candidates.end());
+        vv_candidates.erase(
+            std::unique(vv_candidates.begin(), vv_candidates.end()),
+            vv_candidates.end());
+
+        return vv_candidates;
+    }
+
+    std::vector<VertexVertexCandidate> edge_vertex_to_vertex_vertex_candidates(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const std::vector<EdgeVertexCandidate>& ev_candidates,
+        const std::function<bool(double)>& is_active)
+    {
+        return element_vertex_to_vertex_vertex_candidates(
+            mesh.edges(), vertices, ev_candidates, is_active);
+    }
+
+    std::vector<VertexVertexCandidate> face_vertex_to_vertex_vertex_candidates(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const std::vector<FaceVertexCandidate>& fv_candidates,
+        const std::function<bool(double)>& is_active)
+    {
+        return element_vertex_to_vertex_vertex_candidates(
+            mesh.faces(), vertices, fv_candidates, is_active);
+    }
+
+    std::vector<EdgeVertexCandidate> face_vertex_to_edge_vertex_candidates(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const std::vector<FaceVertexCandidate>& fv_candidates,
+        const std::function<bool(double)>& is_active)
+    {
+        std::vector<EdgeVertexCandidate> ev_candidates;
+        for (const auto& [fi, vi] : fv_candidates) {
+            for (int j = 0; j < 3; j++) {
+                const int ei = mesh.faces_to_edges()(fi, j);
+                const int vj = mesh.edges()(ei, 0);
+                const int vk = mesh.edges()(ei, 1);
+                if (is_active(point_edge_distance(
+                        vertices.row(vi), //
+                        vertices.row(vj), vertices.row(vk)))) {
+                    ev_candidates.emplace_back(ei, vi);
+                }
+            }
+        }
+
+        // Remove duplicates
+        tbb::parallel_sort(ev_candidates.begin(), ev_candidates.end());
+        ev_candidates.erase(
+            std::unique(ev_candidates.begin(), ev_candidates.end()),
+            ev_candidates.end());
+
+        return ev_candidates;
+    }
+
+    std::vector<EdgeVertexCandidate> edge_edge_to_edge_vertex_candidates(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const std::vector<EdgeEdgeCandidate>& ee_candidates,
+        const std::function<bool(double)>& is_active)
+    {
+        std::vector<EdgeVertexCandidate> ev_candidates;
+        for (const EdgeEdgeCandidate& ee : ee_candidates) {
+            for (int i = 0; i < 2; i++) {
+                const int ei = i == 0 ? ee.edge0_id : ee.edge1_id;
+                const int ej = i == 0 ? ee.edge1_id : ee.edge0_id;
+
+                const int ei0 = mesh.edges()(ei, 0);
+                const int ei1 = mesh.edges()(ei, 1);
+
+                for (int j = 0; j < 2; j++) {
+                    const int vj = mesh.edges()(ej, j);
+                    if (is_active(point_edge_distance(
+                            vertices.row(vj), //
+                            vertices.row(ei0), vertices.row(ei1)))) {
+                        ev_candidates.emplace_back(ei, vj);
+                    }
+                }
+            }
+        }
+
+        // Remove duplicates
+        tbb::parallel_sort(ev_candidates.begin(), ev_candidates.end());
+        ev_candidates.erase(
+            std::unique(ev_candidates.begin(), ev_candidates.end()),
+            ev_candidates.end());
+
+        return ev_candidates;
+    }
+} // namespace
 
 void CollisionConstraints::build(
     const CollisionMesh& mesh,
@@ -79,58 +199,65 @@ void CollisionConstraints::build(
 
     // -------------------------------------------------------------------------
 
-    // Convert edge-vertex to vertex-vertex
-    std::vector<VertexVertexCandidate> vv_candidates;
-    for (const auto& [ei, vi] : candidates.ev_candidates) {
-        for (int j = 0; j < 2; j++) {
-            const int vj = mesh.edges()(ei, j);
-            if (is_active(
-                    point_point_distance(vertices.row(vi), vertices.row(vj)))) {
-                vv_candidates.emplace_back(vi, vj);
-            }
-        }
+    if (use_convergent_formulation() && candidates.ev_candidates.size() > 0) {
+        // Convert edge-vertex to vertex-vertex
+        const std::vector<VertexVertexCandidate> vv_candidates =
+            edge_vertex_to_vertex_vertex_candidates(
+                mesh, vertices, candidates.ev_candidates, is_active);
+
+        tbb::parallel_for(
+            tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
+            [&](const tbb::blocked_range<size_t>& r) {
+                storage.local().add_vertex_vertex_negative_constraints(
+                    mesh, vertices, vv_candidates, is_active, r.begin(),
+                    r.end());
+            });
     }
-
-    // Remove duplicates
-    tbb::parallel_sort(vv_candidates.begin(), vv_candidates.end());
-    vv_candidates.erase(
-        std::unique(vv_candidates.begin(), vv_candidates.end()),
-        vv_candidates.end());
-
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            storage.local().add_vertex_vertex_negative_constraints(
-                mesh, vertices, vv_candidates, is_active, r.begin(), r.end());
-        });
 
     // -------------------------------------------------------------------------
 
-    // Convert edge-vertex to vertex-vertex
-    // std::vector<VertexVertexCandidate> vv_candidates;
-    vv_candidates.clear();
-    for (const auto& [fi, vi] : candidates.fv_candidates) {
-        for (int j = 0; j < 3; j++) {
-            const int vj = mesh.faces()(fi, j);
-            if (is_active(
-                    point_point_distance(vertices.row(vi), vertices.row(vj)))) {
-                vv_candidates.emplace_back(vi, vj);
-            }
-        }
+    if (use_convergent_formulation() && candidates.fv_candidates.size() > 0) {
+        // Convert face-vertex to edge-vertex
+        const std::vector<EdgeVertexCandidate> ev_candidates =
+            face_vertex_to_edge_vertex_candidates(
+                mesh, vertices, candidates.fv_candidates, is_active);
+
+        tbb::parallel_for(
+            tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
+            [&](const tbb::blocked_range<size_t>& r) {
+                storage.local().add_edge_vertex_negative_constraints(
+                    mesh, vertices, ev_candidates, is_active, r.begin(),
+                    r.end());
+            });
+
+        // Convert face-vertex to vertex-vertex
+        const std::vector<VertexVertexCandidate> vv_candidates =
+            face_vertex_to_vertex_vertex_candidates(
+                mesh, vertices, candidates.fv_candidates, is_active);
+
+        tbb::parallel_for(
+            tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
+            [&](const tbb::blocked_range<size_t>& r) {
+                storage.local().add_vertex_vertex_positive_constraints(
+                    mesh, vertices, vv_candidates, is_active, r.begin(),
+                    r.end());
+            });
     }
 
-    // Remove duplicates
-    tbb::parallel_sort(vv_candidates.begin(), vv_candidates.end());
-    vv_candidates.erase(
-        std::unique(vv_candidates.begin(), vv_candidates.end()),
-        vv_candidates.end());
+    if (use_convergent_formulation() && candidates.ee_candidates.size() > 0) {
+        // Convert edge-edge to edge-vertex
+        const std::vector<EdgeVertexCandidate> ev_candidates =
+            edge_edge_to_edge_vertex_candidates(
+                mesh, vertices, candidates.ee_candidates, is_active);
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            storage.local().add_vertex_vertex_positive_constraints(
-                mesh, vertices, vv_candidates, is_active, r.begin(), r.end());
-        });
+        tbb::parallel_for(
+            tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
+            [&](const tbb::blocked_range<size_t>& r) {
+                storage.local().add_edge_vertex_negative_constraints2(
+                    mesh, vertices, ev_candidates, is_active, r.begin(),
+                    r.end());
+            });
+    }
 
     // -------------------------------------------------------------------------
 
