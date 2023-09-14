@@ -105,8 +105,8 @@ CollisionMesh::CollisionMesh(
     m_faces_to_edges = construct_faces_to_edges(m_faces, m_edges);
 
     init_areas();
+    init_adjacencies();
     // Compute these manually if needed.
-    // init_adjacencies();
     // init_area_jacobian();
 }
 

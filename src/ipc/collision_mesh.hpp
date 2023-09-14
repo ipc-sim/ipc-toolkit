@@ -169,7 +169,7 @@ public:
     {
         if (!are_adjacencies_initialized()) {
             throw std::runtime_error(
-                "Edge-vertex adjacencies not initialized. Call init_area_jacobians() first.");
+                "Edge-vertex adjacencies not initialized. Call init_adjacencies() first.");
         }
         return m_edge_vertex_adjacencies;
     }
