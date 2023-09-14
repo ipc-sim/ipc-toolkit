@@ -101,14 +101,17 @@ namespace {
         return ev_candidates;
     }
 
-    std::vector<std::pair<EdgeVertexCandidate, double>>
+    std::vector<
+        std::tuple<EdgeVertexCandidate, double, Eigen::SparseVector<double>>>
     edge_edge_to_edge_vertex_candidates(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<EdgeEdgeCandidate>& ee_candidates,
         const std::function<bool(double)>& is_active)
     {
-        std::vector<std::pair<EdgeVertexCandidate, double>> ev_candidates;
+        std::vector<std::tuple<
+            EdgeVertexCandidate, double, Eigen::SparseVector<double>>>
+            ev_candidates;
         for (const EdgeEdgeCandidate& ee : ee_candidates) {
             if (edge_edge_distance_type(
                     vertices.row(mesh.edges()(ee.edge0_id, 0)),
@@ -131,8 +134,12 @@ namespace {
                     if (is_active(point_edge_distance(
                             vertices.row(vj), //
                             vertices.row(ei0), vertices.row(ei1)))) {
+                        Eigen::SparseVector<double> weight_gradient;
+                        if (mesh.are_area_jacobians_initialized())
+                            weight_gradient = mesh.edge_area_gradient(ei);
                         ev_candidates.emplace_back(
-                            EdgeVertexCandidate(ei, vj), mesh.edge_area(ej));
+                            EdgeVertexCandidate(ei, vj), mesh.edge_area(ej),
+                            weight_gradient);
                     }
                 }
             }
@@ -253,9 +260,8 @@ void CollisionConstraints::build(
 
     if (use_convergent_formulation() && candidates.ee_candidates.size() > 0) {
         // Convert edge-edge to edge-vertex
-        const std::vector<std::pair<EdgeVertexCandidate, double>>
-            ev_candidates = edge_edge_to_edge_vertex_candidates(
-                mesh, vertices, candidates.ee_candidates, is_active);
+        const auto ev_candidates = edge_edge_to_edge_vertex_candidates(
+            mesh, vertices, candidates.ee_candidates, is_active);
 
         tbb::parallel_for(
             tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),

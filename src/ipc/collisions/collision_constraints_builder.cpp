@@ -382,13 +382,15 @@ void CollisionConstraintsBuilder::add_edge_vertex_negative_constraints(
 void CollisionConstraintsBuilder::add_edge_vertex_negative_constraints(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
-    const std::vector<std::pair<EdgeVertexCandidate, double>>& candidates,
+    const std::vector<
+        std::tuple<EdgeVertexCandidate, double, Eigen::SparseVector<double>>>&
+        candidates,
     const std::function<bool(double)>& is_active,
     const size_t start_i,
     const size_t end_i)
 {
     for (size_t i = start_i; i < end_i; i++) {
-        const auto& [ei, vi] = candidates[i].first;
+        const auto& [ei, vi] = std::get<0>(candidates[i]);
         const int e0i = mesh.edges()(ei, 0), e1i = mesh.edges()(ei, 1);
         assert(vi != e0i && vi != e1i);
 
@@ -404,14 +406,15 @@ void CollisionConstraintsBuilder::add_edge_vertex_negative_constraints(
             // ÷ 4 to handle double counting and PT + EE for correct integration
             const double weight = (1 - incident_edge_amt)
                 * (use_convergent_formulation()
-                       ? ((mesh.edge_area(ei) + candidates[i].second) / 4)
+                       ? ((mesh.edge_area(ei) + std::get<1>(candidates[i])) / 4)
                        : 1);
 
             Eigen::SparseVector<double> weight_gradient;
             if (should_compute_weight_gradient()
                 && use_convergent_formulation()) {
-                weight_gradient =
-                    (1 - incident_edge_amt) * (mesh.edge_area_gradient(vi) / 4);
+                weight_gradient = (1 - incident_edge_amt)
+                    * (mesh.edge_area_gradient(ei) + std::get<2>(candidates[i]))
+                    / 4;
             }
 
             // TODO: Add this unclassified
