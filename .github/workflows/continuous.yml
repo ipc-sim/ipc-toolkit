@@ -4,10 +4,20 @@ on:
   push:
     branches: [main]
   pull_request:
+    paths-ignore:
+      - docs/**
+      - notebooks/**
+      - python/**
+      - LICENSE
+      - MANIFEST.in
+      - pyproject.toml
+      - README.md
+      - setup.py
 
 env:
   CTEST_OUTPUT_ON_FAILURE: ON
   CTEST_PARALLEL_LEVEL: 2
+  SCCACHE_GHA_ENABLED: "true"
 
 jobs:
   ####################
@@ -91,24 +101,27 @@ jobs:
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
 
-      - name: Set env variable for sccache
-        run: |
-          echo "appdata=$env:LOCALAPPDATA" >> ${env:GITHUB_ENV}
+      # - name: Set env variable for sccache
+      #   run: |
+      #     echo "appdata=$env:LOCALAPPDATA" >> ${env:GITHUB_ENV}
 
-      - name: Cache build
-        id: cache-build
-        uses: actions/cache@v3.0.11
-        with:
-          path: ${{ env.appdata }}\Mozilla\sccache
-          key: ${{ runner.os }}-${{ matrix.config }}-cache
+      # - name: Cache build
+      #   id: cache-build
+      #   uses: actions/cache@v3.0.11
+      #   with:
+      #     path: ${{ env.appdata }}\Mozilla\sccache
+      #     key: ${{ runner.os }}-${{ matrix.config }}-cache
 
-      - name: Prepare sccache
-        run: |
-          iwr -useb 'https://raw.githubusercontent.com/scoopinstaller/install/master/install.ps1' -outfile 'install.ps1'
-          .\install.ps1 -RunAsAdmin
-          scoop install sccache --global
-          # Scoop modifies the PATH so we make it available for the next steps of the job
-          echo "${env:PATH}" >> ${env:GITHUB_PATH}
+      # - name: Prepare sccache
+      #   run: |
+      #     iwr -useb 'https://raw.githubusercontent.com/scoopinstaller/install/master/install.ps1' -outfile 'install.ps1'
+      #     .\install.ps1 -RunAsAdmin
+      #     scoop install sccache --global
+      #     # Scoop modifies the PATH so we make it available for the next steps of the job
+      #     echo "${env:PATH}" >> ${env:GITHUB_PATH}
+
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.3
 
       - name: Configure and build
         shell: cmd
