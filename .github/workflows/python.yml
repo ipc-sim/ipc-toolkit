@@ -8,6 +8,11 @@ on:
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - docs/**
+      - notebooks/**
+      - LICENSE
+      - README.md
 
 jobs:
   Build:

@@ -10,7 +10,7 @@ C++
    :target: https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml
    :alt: Build
 .. image:: https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg
-   :target: https://ipc-sim.github.io/ipc-toolkit/
+   :target: https://ipctk.xyz/
    :alt: Docs
 .. image:: https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue
    :target: https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE
@@ -45,7 +45,7 @@ where :cmake:`IPC_TOOLKIT_GIT_TAG` is set to the version of the toolkit you want
 where :cmake:`PROJECT_NAME` is the name of your library/binary.
 
 .. tip::
-   If your :cmake:`IPC_TOOLKIT_GIT_TAG` is a tag (e.g. ``v1.1.0``), then you can use the :cmake:`FetchContent_Declare` argument :cmake:`GIT_SHALLOW TRUE` to download only a single commit. Otherwise, you should use the default :cmake:`GIT_SHALLOW FALSE`.
+   If your :cmake:`IPC_TOOLKIT_GIT_TAG` is a tag (e.g. ``v1.1.1``), then you can use the :cmake:`FetchContent_Declare` argument :cmake:`GIT_SHALLOW TRUE` to download only a single commit. Otherwise, you should use the default :cmake:`GIT_SHALLOW FALSE`.
 
 Dependencies
 ------------

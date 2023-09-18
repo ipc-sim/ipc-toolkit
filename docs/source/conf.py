@@ -23,7 +23,7 @@ import pathlib
 project = "IPC Toolkit"
 copyright = '2020-2023, IPC-Sim Organization; MIT License'
 author = "Zachary Ferguson"
-version = "1.1.0"
+version = "1.1.1"
 
 # -- General configuration ---------------------------------------------------
 
@@ -148,7 +148,7 @@ html_theme = "sphinx_immaterial"
 #     "github_type": "star",
 #     "fixed_sidebar": False,
 #     "page_width": "1200px",
-#     "canonical_url": "https://ipc-sim.github.io/ipc-toolkit/",
+#     "canonical_url": "https://ipctk.xyz/",
 # }
 
 # Material theme options
@@ -173,7 +173,7 @@ html_theme_options = {
         }
     }],
 
-    "site_url": "https://ipc-sim.github.io/ipc-toolkit",
+    "site_url": "https://ipctk.xyz",
 
     # Set the repo location to get a badge with stats
     "repo_url": "https://github.com/ipc-sim/ipc-toolkit",
@@ -202,7 +202,7 @@ html_theme_options = {
     "toc_title": "Contents",
 
     "version_dropdown": True,
-    "version_json": "https://ipc-sim.github.io/ipc-toolkit/versions.json",
+    "version_json": "https://ipctk.xyz/versions.json",
 }
 
 html_title = "IPC Toolkit"
