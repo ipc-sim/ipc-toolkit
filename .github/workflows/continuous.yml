@@ -101,25 +101,6 @@ jobs:
       - name: Install Ninja
         uses: seanmiddleditch/gha-setup-ninja@master
 
-      # - name: Set env variable for sccache
-      #   run: |
-      #     echo "appdata=$env:LOCALAPPDATA" >> ${env:GITHUB_ENV}
-
-      # - name: Cache build
-      #   id: cache-build
-      #   uses: actions/cache@v3.0.11
-      #   with:
-      #     path: ${{ env.appdata }}\Mozilla\sccache
-      #     key: ${{ runner.os }}-${{ matrix.config }}-cache
-
-      # - name: Prepare sccache
-      #   run: |
-      #     iwr -useb 'https://raw.githubusercontent.com/scoopinstaller/install/master/install.ps1' -outfile 'install.ps1'
-      #     .\install.ps1 -RunAsAdmin
-      #     scoop install sccache --global
-      #     # Scoop modifies the PATH so we make it available for the next steps of the job
-      #     echo "${env:PATH}" >> ${env:GITHUB_PATH}
-
       - name: Run sccache-cache
         uses: mozilla-actions/sccache-action@v0.0.3
 
@@ -133,7 +114,7 @@ jobs:
             -DIPC_TOOLKIT_BUILD_TESTS=ON ^
             -B build ^
             -S .
-          cmake --build build -j1
+          cmake --build build -j2
 
       - name: Tests
         run: cd build; ctest --verbose -j2
