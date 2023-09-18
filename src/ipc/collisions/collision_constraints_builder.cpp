@@ -403,17 +403,32 @@ void CollisionConstraintsBuilder::add_edge_vertex_negative_constraints(
         const int e0i = mesh.edges()(ei, 0), e1i = mesh.edges()(ei, 1);
         assert(vi != e0i && vi != e1i);
 
-        // TODO: distinguish mollified vs non-mollified
-        const auto& incident_vertices = mesh.vertex_vertex_adjacencies()[vi];
-        const int incident_edge_amt = incident_vertices.size()
-            - int(incident_vertices.find(mesh.edges()(e0i, 0))
-                  != incident_vertices.end())
-            - int(incident_vertices.find(mesh.edges()(e1i, 1))
-                  != incident_vertices.end());
+        int nonmollified_incident_edge_amt = 0;
 
-        if (incident_edge_amt > 1) {
+        const auto& incident_vertices = mesh.vertex_vertex_adjacencies()[vi];
+        for (const int vj : incident_vertices) {
+            if (vj == e0i || vj == e1i) {
+                continue;
+            }
+
+            const double eps_x = edge_edge_mollifier_threshold(
+                mesh.rest_positions().row(vi), mesh.rest_positions().row(vj),
+                mesh.rest_positions().row(e0i), mesh.rest_positions().row(e1i));
+
+            const double ee_cross_norm_sqr = edge_edge_cross_squarednorm(
+                vertices.row(vi), vertices.row(vj), vertices.row(e0i),
+                vertices.row(e1i));
+
+            if (ee_cross_norm_sqr < eps_x) {
+                // TODO: add EE mollified constraint with weight of -area_weight
+            } else {
+                nonmollified_incident_edge_amt++;
+            }
+        }
+
+        if (nonmollified_incident_edge_amt > 1) {
             // ÷ 4 to handle double counting and PT + EE for correct integration
-            const double weight = (1 - incident_edge_amt)
+            const double weight = (1 - nonmollified_incident_edge_amt)
                 * (use_convergent_formulation()
                        ? ((mesh.edge_area(ei) + std::get<1>(candidates[i])) / 4)
                        : 1);
@@ -421,7 +436,7 @@ void CollisionConstraintsBuilder::add_edge_vertex_negative_constraints(
             Eigen::SparseVector<double> weight_gradient;
             if (should_compute_weight_gradient()
                 && use_convergent_formulation()) {
-                weight_gradient = (1 - incident_edge_amt)
+                weight_gradient = (1 - nonmollified_incident_edge_amt)
                     * (mesh.edge_area_gradient(ei) + std::get<2>(candidates[i]))
                     / 4;
             }

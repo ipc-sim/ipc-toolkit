@@ -113,14 +113,14 @@ namespace {
             EdgeVertexCandidate, double, Eigen::SparseVector<double>>>
             ev_candidates;
         for (const EdgeEdgeCandidate& ee : ee_candidates) {
-            if (edge_edge_distance_type(
-                    vertices.row(mesh.edges()(ee.edge0_id, 0)),
-                    vertices.row(mesh.edges()(ee.edge0_id, 1)),
-                    vertices.row(mesh.edges()(ee.edge1_id, 0)),
-                    vertices.row(mesh.edges()(ee.edge1_id, 1)))
-                == EdgeEdgeDistanceType::EA_EB) {
-                continue;
-            }
+            // if (edge_edge_distance_type(
+            //         vertices.row(mesh.edges()(ee.edge0_id, 0)),
+            //         vertices.row(mesh.edges()(ee.edge0_id, 1)),
+            //         vertices.row(mesh.edges()(ee.edge1_id, 0)),
+            //         vertices.row(mesh.edges()(ee.edge1_id, 1)))
+            //     == EdgeEdgeDistanceType::EA_EB) {
+            //     continue;
+            // }
 
             for (int i = 0; i < 2; i++) {
                 const int ei = i == 0 ? ee.edge0_id : ee.edge1_id;
@@ -212,7 +212,6 @@ void CollisionConstraints::build(
         });
 
     if (use_convergent_formulation()) {
-
         if (candidates.ev_candidates.size() > 0) {
             // Convert edge-vertex to vertex-vertex
             const std::vector<VertexVertexCandidate> vv_candidates =

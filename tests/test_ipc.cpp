@@ -370,6 +370,24 @@ TEST_CASE("Test convergent formulation", "[ipc][convergent]")
 
         CHECK(point_edge_distance(V.row(2), V.row(0), V.row(1)) < dhat * dhat);
     }
+    SECTION("3D Edge-Edge 2")
+    {
+        V.resize(5, 3);
+        //
+        V.row(0) << 0, 1e-4, -1e-4;
+        V.row(1) << 0, 1e-4, -1;
+        //
+        V.row(2) << 1e-4, 0, 0;
+        V.row(3) << -0.33, 0, 0;
+        V.row(4) << 0.5, 0, 0;
+
+        E.resize(3, 2);
+        E.row(0) << 0, 1;
+        E.row(1) << 3, 2;
+        E.row(2) << 2, 4;
+
+        CHECK(point_edge_distance(V.row(2), V.row(0), V.row(1)) < dhat * dhat);
+    }
 
     const CollisionMesh mesh(V, E, F);
 
@@ -383,7 +401,8 @@ TEST_CASE("Test convergent formulation", "[ipc][convergent]")
     const Eigen::VectorXd grad_b =
         collision_constraints.compute_potential_gradient(mesh, V, dhat);
 
-    const Eigen::MatrixXd force = -fd::unflatten(grad_b, V.cols());
+    // const Eigen::MatrixXd force = -fd::unflatten(grad_b, V.cols());
+    // std::cout << force << std::endl;
 
     if (use_convergent_formulation) {
         constexpr double eps = std::numeric_limits<double>::epsilon();
