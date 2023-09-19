@@ -65,7 +65,7 @@ jobs:
 
       - name: Cache Build
         id: cache-build
-        uses: actions/cache@v3.3.2
+        uses: actions/cache@v3.0.11
         with:
           path: ${{ env.CACHE_PATH }}
           key: ${{ runner.os }}-${{ matrix.config }}-cache
@@ -75,7 +75,7 @@ jobs:
           ccache --max-size=1.0G
           ccache -V && ccache --show-stats && ccache --zero-stats
 
-      - name: Configure
+      - name: Configure (Linux/macOS)
         if: runner.os != 'Windows'
         run: |
           mkdir -p build
@@ -84,7 +84,7 @@ jobs:
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
             -DCMAKE_BUILD_TYPE=${{ matrix.config }}
 
-      - name: Configure
+      - name: Configure (Windows)
         if: runner.os == 'Windows'
         shell: cmd
         run: |
@@ -95,11 +95,11 @@ jobs:
             -B build ^
             -S .
 
-      - name: Build
+      - name: Build (Linux/macOS)
         if: runner.os != 'Windows'
         run: cd build; make -j2; ccache --show-stats
 
-      - name: Build
+      - name: Build (Windows)
         if: runner.os == 'Windows'
         shell: cmd
         run: |
