@@ -8,11 +8,13 @@ on:
   pull_request:
     branches:
       - main
-    paths-ignore:
-      - docs/**
-      - notebooks/**
-      - LICENSE
-      - README.md
+    paths:
+      - '!.github/**'
+      - '.github/workflows/python.yml'
+      - '!docs/**'
+      - '!notebooks/**'
+      - '!LICENSE'
+      - '!README.md'
 
 jobs:
   Build:

@@ -4,15 +4,17 @@ on:
   push:
     branches: [main]
   pull_request:
-    paths-ignore:
-      - docs/**
-      - notebooks/**
-      - python/**
-      - LICENSE
-      - MANIFEST.in
-      - pyproject.toml
-      - README.md
-      - setup.py
+    paths:
+      - '!.github/**'
+      - '.github/workflows/continous.yml'
+      - '!docs/**'
+      - '!notebooks/**'
+      - '!python/**'
+      - '!LICENSE'
+      - '!MANIFEST.in'
+      - '!pyproject.toml'
+      - '!README.md'
+      - '!setup.py'
 
 env:
   CTEST_OUTPUT_ON_FAILURE: ON
