@@ -58,7 +58,7 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           choco install ccache
-          echo 'CACHE_PATH=$env:LOCALAPPDATA\ccache' >> "$GITHUB_ENV"
+          echo 'CACHE_PATH=${Env:LOCALAPPDATA}\ccache' >> "$GITHUB_ENV"
 
       # Install Ninja (only needed on Windows)
       - name: Install Ninja
