@@ -6,7 +6,7 @@ on:
   pull_request:
     paths:
       - '!.github/**'
-      - '.github/workflows/continous.yml'
+      - '.github/workflows/continuous.yml'
       - '!docs/**'
       - '!notebooks/**'
       - '!python/**'
