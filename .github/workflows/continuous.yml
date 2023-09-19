@@ -4,39 +4,38 @@ on:
   push:
     branches: [main]
   pull_request:
-    paths-ignore:
-      - docs/**
-      - notebooks/**
-      - python/**
-      - LICENSE
-      - MANIFEST.in
-      - pyproject.toml
-      - README.md
-      - setup.py
+    paths:
+      - '!.github/**'
+      - '.github/workflows/continuous.yml'
+      - '!docs/**'
+      - '!notebooks/**'
+      - '!python/**'
+      - '!LICENSE'
+      - '!MANIFEST.in'
+      - '!pyproject.toml'
+      - '!README.md'
+      - '!setup.py'
 
 env:
   CTEST_OUTPUT_ON_FAILURE: ON
   CTEST_PARALLEL_LEVEL: 2
-  SCCACHE_GHA_ENABLED: "true"
 
 jobs:
-  ####################
-  # Linux / macOS
-  ####################
-
   Unix:
     name: ${{ matrix.name }} (${{ matrix.config }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         config: [Debug, Release]
         include:
           - os: macos-latest
             name: macOS
           - os: ubuntu-latest
             name: Linux
+          - os: windows-latest
+            name: Windows
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.0.0
@@ -55,6 +54,17 @@ jobs:
           brew install ccache
           echo 'CACHE_PATH=~/Library/Caches/ccache' >> "$GITHUB_ENV"
 
+      - name: Dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install ccache
+          "CACHE_PATH=${env:LOCALAPPDATA}\ccache" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      # Install Ninja (only needed on Windows)
+      - name: Install Ninja
+        if: runner.os == 'Windows'
+        uses: seanmiddleditch/gha-setup-ninja@master
+
       - name: Cache Build
         id: cache-build
         uses: actions/cache@v3.0.11
@@ -67,53 +77,35 @@ jobs:
           ccache --max-size=1.0G
           ccache -V && ccache --show-stats && ccache --zero-stats
 
-      - name: Configure
+      - name: Configure (Linux/macOS)
+        if: runner.os != 'Windows'
         run: |
           mkdir -p build
           cd build
           cmake .. \
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
             -DCMAKE_BUILD_TYPE=${{ matrix.config }}
 
-      - name: Build
-        run: cd build; make -j2; ccache --show-stats
-
-      - name: Tests
-        run: cd build; ctest --verbose
-
-  ####################
-  # Windows
-  ####################
-
-  Windows:
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        config: [Debug, Release]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4.0.0
-        with:
-          fetch-depth: 10
-
-      - name: Install Ninja
-        uses: seanmiddleditch/gha-setup-ninja@master
-
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.3
-
-      - name: Configure and build
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
           cmake -G Ninja ^
-            -DCMAKE_CXX_COMPILER_LAUNCHER=sccache ^
-            -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
             -DIPC_TOOLKIT_BUILD_TESTS=ON ^
+            -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
             -B build ^
             -S .
+
+      - name: Build (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: cd build; make -j2; ccache --show-stats
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
           cmake --build build -j2
 
       - name: Tests
