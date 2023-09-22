@@ -101,27 +101,14 @@ namespace {
         return ev_candidates;
     }
 
-    std::vector<
-        std::tuple<EdgeVertexCandidate, double, Eigen::SparseVector<double>>>
-    edge_edge_to_edge_vertex_candidates(
+    std::vector<EdgeVertexCandidate> edge_edge_to_edge_vertex_candidates(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<EdgeEdgeCandidate>& ee_candidates,
         const std::function<bool(double)>& is_active)
     {
-        std::vector<std::tuple<
-            EdgeVertexCandidate, double, Eigen::SparseVector<double>>>
-            ev_candidates;
+        std::vector<EdgeVertexCandidate> ev_candidates;
         for (const EdgeEdgeCandidate& ee : ee_candidates) {
-            // if (edge_edge_distance_type(
-            //         vertices.row(mesh.edges()(ee.edge0_id, 0)),
-            //         vertices.row(mesh.edges()(ee.edge0_id, 1)),
-            //         vertices.row(mesh.edges()(ee.edge1_id, 0)),
-            //         vertices.row(mesh.edges()(ee.edge1_id, 1)))
-            //     == EdgeEdgeDistanceType::EA_EB) {
-            //     continue;
-            // }
-
             for (int i = 0; i < 2; i++) {
                 const int ei = i == 0 ? ee.edge0_id : ee.edge1_id;
                 const int ej = i == 0 ? ee.edge1_id : ee.edge0_id;
@@ -134,16 +121,17 @@ namespace {
                     if (is_active(point_edge_distance(
                             vertices.row(vj), //
                             vertices.row(ei0), vertices.row(ei1)))) {
-                        Eigen::SparseVector<double> weight_gradient;
-                        if (mesh.are_area_jacobians_initialized())
-                            weight_gradient = mesh.edge_area_gradient(ei);
-                        ev_candidates.emplace_back(
-                            EdgeVertexCandidate(ei, vj), mesh.edge_area(ej),
-                            weight_gradient);
+                        ev_candidates.emplace_back(ei, vj);
                     }
                 }
             }
         }
+
+        // Remove duplicates
+        tbb::parallel_sort(ev_candidates.begin(), ev_candidates.end());
+        ev_candidates.erase(
+            std::unique(ev_candidates.begin(), ev_candidates.end()),
+            ev_candidates.end());
 
         return ev_candidates;
     }
@@ -221,8 +209,9 @@ void CollisionConstraints::build(
             tbb::parallel_for(
                 tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
-                    storage.local().add_vertex_vertex_negative_constraints(
-                        mesh, vertices, vv_candidates, r.begin(), r.end());
+                    storage.local()
+                        .add_edge_vertex_negative_vertex_vertex_constraints(
+                            mesh, vertices, vv_candidates, r.begin(), r.end());
                 });
         }
 
@@ -234,8 +223,9 @@ void CollisionConstraints::build(
             tbb::parallel_for(
                 tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
-                    storage.local().add_edge_vertex_negative_constraints(
-                        mesh, vertices, ev_candidates, r.begin(), r.end());
+                    storage.local()
+                        .add_edge_edge_negative_edge_vertex_constraints(
+                            mesh, vertices, ev_candidates, r.begin(), r.end());
                 });
         }
 
@@ -248,8 +238,9 @@ void CollisionConstraints::build(
             tbb::parallel_for(
                 tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
-                    storage.local().add_edge_vertex_negative_constraints(
-                        mesh, vertices, ev_candidates, r.begin(), r.end());
+                    storage.local()
+                        .add_face_vertex_negative_edge_vertex_constraints(
+                            mesh, vertices, ev_candidates, r.begin(), r.end());
                 });
 
             // Convert face-vertex to vertex-vertex
@@ -260,8 +251,9 @@ void CollisionConstraints::build(
             tbb::parallel_for(
                 tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
-                    storage.local().add_vertex_vertex_positive_constraints(
-                        mesh, vertices, vv_candidates, r.begin(), r.end());
+                    storage.local()
+                        .add_face_vertex_positive_vertex_vertex_constraints(
+                            mesh, vertices, vv_candidates, r.begin(), r.end());
                 });
         }
     }

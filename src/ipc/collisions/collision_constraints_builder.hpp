@@ -42,34 +42,31 @@ public:
     // ------------------------------------------------------------------------
     // Duplicate removal functions
 
-    void add_vertex_vertex_negative_constraints(
+    void add_edge_vertex_negative_vertex_vertex_constraints(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<VertexVertexCandidate>& candidates,
         const size_t start_i,
         const size_t end_i);
 
-    void add_vertex_vertex_positive_constraints(
+    void add_face_vertex_positive_vertex_vertex_constraints(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<VertexVertexCandidate>& candidates,
         const size_t start_i,
         const size_t end_i);
 
-    void add_edge_vertex_negative_constraints(
+    void add_face_vertex_negative_edge_vertex_constraints(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<EdgeVertexCandidate>& candidates,
         const size_t start_i,
         const size_t end_i);
 
-    void add_edge_vertex_negative_constraints(
+    void add_edge_edge_negative_edge_vertex_constraints(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
-        const std::vector<std::tuple<
-            EdgeVertexCandidate,
-            double,
-            Eigen::SparseVector<double>>>& candidates,
+        const std::vector<EdgeVertexCandidate>& candidates,
         const size_t start_i,
         const size_t end_i);
 

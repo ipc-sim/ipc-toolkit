@@ -261,12 +261,13 @@ void CollisionConstraintsBuilder::add_face_vertex_constraints(
 
 // ============================================================================
 
-void CollisionConstraintsBuilder::add_vertex_vertex_negative_constraints(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
-    const std::vector<VertexVertexCandidate>& candidates,
-    const size_t start_i,
-    const size_t end_i)
+void CollisionConstraintsBuilder::
+    add_edge_vertex_negative_vertex_vertex_constraints(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const std::vector<VertexVertexCandidate>& candidates,
+        const size_t start_i,
+        const size_t end_i)
 {
     const auto add_weight = [&](const size_t vi, const size_t vj,
                                 double& weight,
@@ -308,12 +309,13 @@ void CollisionConstraintsBuilder::add_vertex_vertex_negative_constraints(
     }
 }
 
-void CollisionConstraintsBuilder::add_vertex_vertex_positive_constraints(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
-    const std::vector<VertexVertexCandidate>& candidates,
-    const size_t start_i,
-    const size_t end_i)
+void CollisionConstraintsBuilder::
+    add_face_vertex_positive_vertex_vertex_constraints(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const std::vector<VertexVertexCandidate>& candidates,
+        const size_t start_i,
+        const size_t end_i)
 {
     const auto add_weight = [&](const size_t vi, const size_t vj,
                                 double& weight,
@@ -351,12 +353,13 @@ void CollisionConstraintsBuilder::add_vertex_vertex_positive_constraints(
     }
 }
 
-void CollisionConstraintsBuilder::add_edge_vertex_negative_constraints(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
-    const std::vector<EdgeVertexCandidate>& candidates,
-    const size_t start_i,
-    const size_t end_i)
+void CollisionConstraintsBuilder::
+    add_face_vertex_negative_edge_vertex_constraints(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const std::vector<EdgeVertexCandidate>& candidates,
+        const size_t start_i,
+        const size_t end_i)
 {
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [ei, vi] = candidates[i];
@@ -389,17 +392,16 @@ void CollisionConstraintsBuilder::add_edge_vertex_negative_constraints(
     }
 }
 
-void CollisionConstraintsBuilder::add_edge_vertex_negative_constraints(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
-    const std::vector<
-        std::tuple<EdgeVertexCandidate, double, Eigen::SparseVector<double>>>&
-        candidates,
-    const size_t start_i,
-    const size_t end_i)
+void CollisionConstraintsBuilder::
+    add_edge_edge_negative_edge_vertex_constraints(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const std::vector<EdgeVertexCandidate>& candidates,
+        const size_t start_i,
+        const size_t end_i)
 {
     for (size_t i = start_i; i < end_i; i++) {
-        const auto& [ei, vi] = std::get<0>(candidates[i]);
+        const auto& [ei, vi] = candidates[i];
         const int e0i = mesh.edges()(ei, 0), e1i = mesh.edges()(ei, 1);
         assert(vi != e0i && vi != e1i);
 
@@ -429,20 +431,17 @@ void CollisionConstraintsBuilder::add_edge_vertex_negative_constraints(
         if (nonmollified_incident_edge_amt > 1) {
             // ÷ 4 to handle double counting and PT + EE for correct integration
             const double weight = (1 - nonmollified_incident_edge_amt)
-                * (use_convergent_formulation()
-                       ? ((mesh.edge_area(ei) + std::get<1>(candidates[i])) / 4)
-                       : 1);
+                * (use_convergent_formulation() ? (mesh.edge_area(ei) / 4) : 1);
 
             Eigen::SparseVector<double> weight_gradient;
             if (should_compute_weight_gradient()
                 && use_convergent_formulation()) {
                 weight_gradient = (1 - nonmollified_incident_edge_amt)
-                    * (mesh.edge_area_gradient(ei) + std::get<2>(candidates[i]))
-                    / 4;
+                    * mesh.edge_area_gradient(ei) / 4;
             }
 
             add_edge_vertex_constraint(
-                mesh, std::get<0>(candidates[i]),
+                mesh, candidates[i],
                 point_edge_distance_type(
                     vertices.row(vi), vertices.row(mesh.edges()(ei, 0)),
                     vertices.row(mesh.edges()(ei, 1))),
