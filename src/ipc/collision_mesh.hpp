@@ -164,6 +164,16 @@ public:
         return m_vertex_vertex_adjacencies;
     }
 
+    /// @brief Get the vertex-edge adjacency matrix.
+    const std::vector<unordered_set<int>>& vertex_edge_adjacencies() const
+    {
+        if (!are_adjacencies_initialized()) {
+            throw std::runtime_error(
+                "Vertex-edge adjacencies not initialized. Call init_adjacencies() first.");
+        }
+        return m_vertex_edge_adjacencies;
+    }
+
     /// @brief Get the edge-vertex adjacency matrix.
     const std::vector<unordered_set<int>>& edge_vertex_adjacencies() const
     {
@@ -178,6 +188,7 @@ public:
     bool are_adjacencies_initialized() const
     {
         return !m_vertex_vertex_adjacencies.empty()
+            && !m_vertex_edge_adjacencies.empty()
             && !m_edge_vertex_adjacencies.empty();
     }
 
@@ -305,7 +316,9 @@ protected:
 
     /// @brief Vertices adjacent to vertices
     std::vector<unordered_set<int>> m_vertex_vertex_adjacencies;
-    /// @brief Edges adjacent to edges
+    /// @brief Edges adjacent to vertices
+    std::vector<unordered_set<int>> m_vertex_edge_adjacencies;
+    /// @brief Vertices adjacent to edges
     std::vector<unordered_set<int>> m_edge_vertex_adjacencies;
 
     // std::vector<std::vector<int>> m_vertices_to_faces;

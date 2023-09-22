@@ -100,11 +100,11 @@ void CollisionConstraintsBuilder::add_edge_edge_constraints(
         const auto [ea0, ea1, eb0, eb1] =
             candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
 
-        EdgeEdgeDistanceType dtype =
+        const EdgeEdgeDistanceType actual_dtype =
             edge_edge_distance_type(ea0, ea1, eb0, eb1);
 
         const double distance_sqr =
-            edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
+            edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype);
 
         if (!is_active(distance_sqr))
             continue;
@@ -116,11 +116,11 @@ void CollisionConstraintsBuilder::add_edge_edge_constraints(
         const double ee_cross_norm_sqr =
             edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
 
-        if (ee_cross_norm_sqr < eps_x) {
-            // NOTE: This may not actually be the distance type, but all EE
-            // pairs requiring mollification must be mollified later.
-            dtype = EdgeEdgeDistanceType::EA_EB;
-        }
+        // NOTE: This may not actually be the distance type, but all EE
+        // pairs requiring mollification must be mollified later.
+        const EdgeEdgeDistanceType dtype = ee_cross_norm_sqr < eps_x
+            ? EdgeEdgeDistanceType::EA_EB
+            : actual_dtype;
 
         // ÷ 4 to handle double counting and PT + EE for correct integration.
         // Sum edge areas because duplicate edge candidates were removed.
@@ -170,7 +170,8 @@ void CollisionConstraintsBuilder::add_edge_edge_constraints(
             break;
 
         case EdgeEdgeDistanceType::EA_EB:
-            constraints.ee_constraints.emplace_back(eai, ebi, eps_x);
+            constraints.ee_constraints.emplace_back(
+                eai, ebi, eps_x, actual_dtype);
             constraints.ee_constraints.back().weight = weight;
             constraints.ee_constraints.back().weight_gradient = weight_gradient;
             break;
@@ -284,8 +285,8 @@ void CollisionConstraintsBuilder::
 
             if (should_compute_weight_gradient()
                 && use_convergent_formulation()) {
-                weight_gradient += (1 - incident_edge_amt)
-                    * (mesh.vertex_area_gradient(vi) / 2);
+                weight_gradient += (1 - incident_edge_amt) / 2.0
+                    * mesh.vertex_area_gradient(vi);
             }
         }
     };
@@ -376,10 +377,11 @@ void CollisionConstraintsBuilder::
                                                 : 1);
 
             Eigen::SparseVector<double> weight_gradient;
-            if (should_compute_weight_gradient()
-                && use_convergent_formulation()) {
-                weight_gradient = (1 - incident_triangle_amt)
-                    * (mesh.vertex_area_gradient(vi) / 4);
+            if (should_compute_weight_gradient()) {
+                weight_gradient = use_convergent_formulation()
+                    ? ((1 - incident_triangle_amt) / 4.0
+                       * mesh.vertex_area_gradient(vi))
+                    : Eigen::SparseVector<double>(vertices.size());
             }
 
             add_edge_vertex_constraint(
@@ -400,53 +402,95 @@ void CollisionConstraintsBuilder::
         const size_t start_i,
         const size_t end_i)
 {
+    // Notation: (ea, p) ∈ C, ea = (ea0, ea1) ∈ E, p ∈ eb = (p, q) ∈ E
+
     for (size_t i = start_i; i < end_i; i++) {
-        const auto& [ei, vi] = candidates[i];
-        const int e0i = mesh.edges()(ei, 0), e1i = mesh.edges()(ei, 1);
-        assert(vi != e0i && vi != e1i);
+        const auto& [ea, p] = candidates[i];
+        const int ea0 = mesh.edges()(ea, 0), ea1 = mesh.edges()(ea, 1);
+        assert(p != ea0 && p != ea1);
+
+        const PointEdgeDistanceType dtype = point_edge_distance_type(
+            vertices.row(p), vertices.row(ea0), vertices.row(ea1));
 
         int nonmollified_incident_edge_amt = 0;
 
-        const auto& incident_vertices = mesh.vertex_vertex_adjacencies()[vi];
-        for (const int vj : incident_vertices) {
-            if (vj == e0i || vj == e1i) {
+        const auto& incident_edges = mesh.vertex_edge_adjacencies()[p];
+        for (const int eb : incident_edges) {
+            const int eb0 = mesh.edges()(eb, 0), eb1 = mesh.edges()(eb, 1);
+            const int q = mesh.edges()(eb, int(p == eb0));
+            assert(p != q);
+            if (q == ea0 || q == eb1) {
                 continue;
             }
 
             const double eps_x = edge_edge_mollifier_threshold(
-                mesh.rest_positions().row(vi), mesh.rest_positions().row(vj),
-                mesh.rest_positions().row(e0i), mesh.rest_positions().row(e1i));
+                mesh.rest_positions().row(ea0), mesh.rest_positions().row(ea1),
+                mesh.rest_positions().row(eb0), mesh.rest_positions().row(eb1));
 
             const double ee_cross_norm_sqr = edge_edge_cross_squarednorm(
-                vertices.row(vi), vertices.row(vj), vertices.row(e0i),
-                vertices.row(e1i));
+                vertices.row(ea0), vertices.row(ea1), vertices.row(eb0),
+                vertices.row(eb1));
 
-            if (ee_cross_norm_sqr < eps_x) {
-                // TODO: add EE mollified constraint with weight of -area_weight
-            } else {
+            if (ee_cross_norm_sqr >= eps_x) {
                 nonmollified_incident_edge_amt++;
+                continue;
+            }
+
+            // Add mollified EE constraint with weight of -¼w and specified
+            // distance type
+
+            // Convert the PE distance type to an EE distance type
+            EdgeEdgeDistanceType ee_dtype;
+            switch (dtype) {
+            case PointEdgeDistanceType::P_E0:
+                ee_dtype = p == eb0 ? EdgeEdgeDistanceType::EA0_EB0
+                                    : EdgeEdgeDistanceType::EA0_EB1;
+                break;
+            case PointEdgeDistanceType::P_E1:
+                ee_dtype = p == eb0 ? EdgeEdgeDistanceType::EA1_EB0
+                                    : EdgeEdgeDistanceType::EA1_EB1;
+                break;
+            case PointEdgeDistanceType::P_E:
+                ee_dtype = p == eb0 ? EdgeEdgeDistanceType::EA_EB0
+                                    : EdgeEdgeDistanceType::EA_EB1;
+                break;
+            default:
+                assert(false);
+                break;
+            }
+
+            constraints.ee_constraints.emplace_back(ea, eb, eps_x, ee_dtype);
+            constraints.ee_constraints.back().weight =
+                use_convergent_formulation() ? (-0.25 * mesh.edge_area(ea))
+                                             : -1;
+            if (should_compute_weight_gradient()) {
+                constraints.ee_constraints.back().weight_gradient =
+                    use_convergent_formulation()
+                    ? (-0.25 * mesh.edge_area_gradient(ea))
+                    : Eigen::SparseVector<double>(vertices.size());
             }
         }
 
-        if (nonmollified_incident_edge_amt > 1) {
-            // ÷ 4 to handle double counting and PT + EE for correct integration
-            const double weight = (1 - nonmollified_incident_edge_amt)
-                * (use_convergent_formulation() ? (mesh.edge_area(ei) / 4) : 1);
-
-            Eigen::SparseVector<double> weight_gradient;
-            if (should_compute_weight_gradient()
-                && use_convergent_formulation()) {
-                weight_gradient = (1 - nonmollified_incident_edge_amt)
-                    * mesh.edge_area_gradient(ei) / 4;
-            }
-
-            add_edge_vertex_constraint(
-                mesh, candidates[i],
-                point_edge_distance_type(
-                    vertices.row(vi), vertices.row(mesh.edges()(ei, 0)),
-                    vertices.row(mesh.edges()(ei, 1))),
-                weight, weight_gradient);
+        if (nonmollified_incident_edge_amt == 1) {
+            continue; // no constraint to add because (1 - ρ(x)) = 0
         }
+        // if nonmollified_incident_edge_amt == 0, then we need to explicitly
+        // add a positive constraint.
+
+        // ÷ 4 to handle double counting and PT + EE for correct integration
+        const double weight = (1 - nonmollified_incident_edge_amt)
+            * (use_convergent_formulation() ? (mesh.edge_area(ea) / 4) : 1);
+
+        Eigen::SparseVector<double> weight_gradient;
+        if (should_compute_weight_gradient()) {
+            weight_gradient = use_convergent_formulation()
+                ? ((1 - nonmollified_incident_edge_amt) / 4.0
+                   * mesh.edge_area_gradient(ea))
+                : Eigen::SparseVector<double>(vertices.size());
+        }
+
+        add_edge_vertex_constraint(
+            mesh, candidates[i], dtype, weight, weight_gradient);
     }
 }
 

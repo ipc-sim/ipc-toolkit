@@ -152,10 +152,13 @@ Eigen::SparseMatrix<double> CollisionMesh::vertex_matrix_to_dof_matrix(
 void CollisionMesh::init_adjacencies()
 {
     m_vertex_vertex_adjacencies.resize(num_vertices());
+    m_vertex_edge_adjacencies.resize(num_vertices());
     // Edges includes the edges of the faces
     for (int i = 0; i < m_edges.rows(); i++) {
         m_vertex_vertex_adjacencies[m_edges(i, 0)].insert(m_edges(i, 1));
         m_vertex_vertex_adjacencies[m_edges(i, 1)].insert(m_edges(i, 0));
+        m_vertex_edge_adjacencies[m_edges(i, 0)].insert(i);
+        m_vertex_edge_adjacencies[m_edges(i, 1)].insert(i);
     }
 
     m_edge_vertex_adjacencies.resize(m_edges.rows());
