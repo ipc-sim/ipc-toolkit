@@ -403,8 +403,8 @@ TEST_CASE("Test convergent formulation", "[ipc][convergent]")
     const Eigen::VectorXd grad_b =
         collision_constraints.compute_potential_gradient(mesh, V, dhat);
 
-    const Eigen::MatrixXd force = -fd::unflatten(grad_b, V.cols());
-    std::cout << "force:\n" << force << std::endl;
+    // const Eigen::MatrixXd force = -fd::unflatten(grad_b, V.cols());
+    // std::cout << "force:\n" << force << std::endl;
 
     if (use_convergent_formulation) {
         constexpr double eps = std::numeric_limits<double>::epsilon();
