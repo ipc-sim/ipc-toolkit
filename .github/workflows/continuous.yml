@@ -5,16 +5,11 @@ on:
     branches: [main]
   pull_request:
     paths:
-      - '!.github/**'
       - '.github/workflows/continuous.yml'
-      - '!docs/**'
-      - '!notebooks/**'
-      - '!python/**'
-      - '!LICENSE'
-      - '!MANIFEST.in'
-      - '!pyproject.toml'
-      - '!README.md'
-      - '!setup.py'
+      - 'cmake/**'
+      - 'src/**' 
+      - 'tests/**'
+      - 'CMakeLists.txt'
 
 env:
   CTEST_OUTPUT_ON_FAILURE: ON
