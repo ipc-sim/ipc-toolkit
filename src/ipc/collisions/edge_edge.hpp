@@ -10,14 +10,22 @@ class EdgeEdgeConstraint : public EdgeEdgeCandidate,
                            public CollisionConstraint {
 public:
     EdgeEdgeConstraint(
-        long edge0_id,
-        long edge1_id,
-        double eps_x,
+        const long edge0_id,
+        const long edge1_id,
+        const double eps_x,
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
     EdgeEdgeConstraint(
         const EdgeEdgeCandidate& candidate,
-        double eps_x,
+        const double eps_x,
+        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
+
+    EdgeEdgeConstraint(
+        const long edge0_id,
+        const long edge1_id,
+        const double eps_x,
+        const double weight,
+        const Eigen::SparseVector<double>& weight_gradient,
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
     double compute_potential(
@@ -39,12 +47,20 @@ public:
         const double dhat,
         const bool project_hessian_to_psd) const override;
 
+    // ------------------------------------------------------------------------
+
+    bool operator==(const EdgeEdgeConstraint& other) const;
+    bool operator!=(const EdgeEdgeConstraint& other) const;
+    bool operator<(const EdgeEdgeConstraint& other) const;
+
     template <typename H>
     friend H AbslHashValue(H h, const EdgeEdgeConstraint& ee)
     {
-        return AbslHashValue(
-            std::move(h), static_cast<const EdgeEdgeCandidate&>(ee));
+        return H::combine(
+            std::move(h), static_cast<const EdgeEdgeCandidate&>(ee), ee.dtype);
     }
+
+    // ------------------------------------------------------------------------
 
     /// @brief Mollifier activation threshold.
     /// @see edge_edge_mollifier

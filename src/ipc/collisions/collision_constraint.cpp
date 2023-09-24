@@ -4,6 +4,13 @@
 
 namespace ipc {
 
+CollisionConstraint::CollisionConstraint(
+    const double weight, const Eigen::SparseVector<double>& weight_gradient)
+    : weight(weight)
+    , weight_gradient(weight_gradient)
+{
+}
+
 double CollisionConstraint::compute_potential(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,

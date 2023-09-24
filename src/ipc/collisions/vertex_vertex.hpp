@@ -16,6 +16,16 @@ public:
     {
     }
 
+    VertexVertexConstraint(
+        const long vertex0_id,
+        const long vertex1_id,
+        const double weight,
+        const Eigen::SparseVector<double>& weight_gradient)
+        : VertexVertexCandidate(vertex0_id, vertex1_id)
+        , CollisionConstraint(weight, weight_gradient)
+    {
+    }
+
     template <typename H>
     friend H AbslHashValue(H h, const VertexVertexConstraint& vv)
     {

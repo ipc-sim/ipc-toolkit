@@ -7,9 +7,9 @@
 namespace ipc {
 
 EdgeEdgeConstraint::EdgeEdgeConstraint(
-    long edge0_id,
-    long edge1_id,
-    double eps_x,
+    const long edge0_id,
+    const long edge1_id,
+    const double eps_x,
     const EdgeEdgeDistanceType dtype)
     : EdgeEdgeCandidate(edge0_id, edge1_id)
     , eps_x(eps_x)
@@ -19,9 +19,23 @@ EdgeEdgeConstraint::EdgeEdgeConstraint(
 
 EdgeEdgeConstraint::EdgeEdgeConstraint(
     const EdgeEdgeCandidate& candidate,
-    double eps_x,
+    const double eps_x,
     const EdgeEdgeDistanceType dtype)
     : EdgeEdgeCandidate(candidate)
+    , eps_x(eps_x)
+    , dtype(dtype)
+{
+}
+
+EdgeEdgeConstraint::EdgeEdgeConstraint(
+    const long edge0_id,
+    const long edge1_id,
+    const double eps_x,
+    const double weight,
+    const Eigen::SparseVector<double>& weight_gradient,
+    const EdgeEdgeDistanceType dtype)
+    : EdgeEdgeCandidate(edge0_id, edge1_id)
+    , CollisionConstraint(weight, weight_gradient)
     , eps_x(eps_x)
     , dtype(dtype)
 {
@@ -106,6 +120,24 @@ MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
         + grad_b_grad_m.transpose() + mollifier * barrier_hess;
 
     return project_hessian_to_psd ? project_to_psd(hess) : hess;
+}
+
+bool EdgeEdgeConstraint::operator==(const EdgeEdgeConstraint& other) const
+{
+    return EdgeEdgeCandidate::operator==(other) && dtype == other.dtype;
+}
+
+bool EdgeEdgeConstraint::operator!=(const EdgeEdgeConstraint& other) const
+{
+    return !(*this == other);
+}
+
+bool EdgeEdgeConstraint::operator<(const EdgeEdgeConstraint& other) const
+{
+    if (EdgeEdgeCandidate::operator==(other)) {
+        return dtype < other.dtype;
+    }
+    return EdgeEdgeCandidate::operator<(other);
 }
 
 } // namespace ipc

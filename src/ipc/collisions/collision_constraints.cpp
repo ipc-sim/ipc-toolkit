@@ -4,7 +4,7 @@
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_edge.hpp>
-#include <ipc/distance/line_line.hpp>
+#include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_plane.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
@@ -173,7 +173,7 @@ void CollisionConstraints::build(
     };
 
     tbb::enumerable_thread_specific<CollisionConstraintsBuilder> storage(
-        CollisionConstraintsBuilder(*this));
+        use_convergent_formulation(), are_shape_derivatives_enabled());
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), candidates.ev_candidates.size()),
@@ -610,7 +610,7 @@ std::string CollisionConstraints::to_string(
     for (const auto& vv : vv_constraints) {
         ss << "\n"
            << fmt::format(
-                  "vv: {} {}, w: {}, d: {}", vv.vertex0_id, vv.vertex1_id,
+                  "vv: {} {}, w: {:g}, d: {:g}", vv.vertex0_id, vv.vertex1_id,
                   vv.weight,
                   point_point_distance(
                       vertices.row(vv.vertex0_id),
@@ -619,7 +619,7 @@ std::string CollisionConstraints::to_string(
     for (const auto& ev : ev_constraints) {
         ss << "\n"
            << fmt::format(
-                  "ev: {}=({}, {}) {}, w: {}, d: {}", ev.edge_id,
+                  "ev: {}=({}, {}) {}, w: {:g}, d: {:g}", ev.edge_id,
                   mesh.edges()(ev.edge_id, 0), mesh.edges()(ev.edge_id, 1),
                   ev.vertex_id, ev.weight,
                   point_line_distance(
@@ -630,20 +630,21 @@ std::string CollisionConstraints::to_string(
     for (const auto& ee : ee_constraints) {
         ss << "\n"
            << fmt::format(
-                  "ee: {}=({}, {}) {}=({}, {}), w: {}, d: {}", ee.edge0_id,
-                  mesh.edges()(ee.edge0_id, 0), mesh.edges()(ee.edge0_id, 1),
-                  ee.edge1_id, mesh.edges()(ee.edge1_id, 0),
-                  mesh.edges()(ee.edge1_id, 1), ee.weight,
-                  line_line_distance(
+                  "ee: {}=({}, {}) {}=({}, {}), w: {:g}, dtype: {}, d: {:g}",
+                  ee.edge0_id, mesh.edges()(ee.edge0_id, 0),
+                  mesh.edges()(ee.edge0_id, 1), ee.edge1_id,
+                  mesh.edges()(ee.edge1_id, 0), mesh.edges()(ee.edge1_id, 1),
+                  ee.weight, int(ee.dtype),
+                  edge_edge_distance(
                       vertices.row(mesh.edges()(ee.edge0_id, 0)),
                       vertices.row(mesh.edges()(ee.edge0_id, 1)),
                       vertices.row(mesh.edges()(ee.edge1_id, 0)),
-                      vertices.row(mesh.edges()(ee.edge1_id, 1))));
+                      vertices.row(mesh.edges()(ee.edge1_id, 1)), ee.dtype));
     }
     for (const auto& fv : fv_constraints) {
         ss << "\n"
            << fmt::format(
-                  "fv: {}=({}, {}, {}) {}, w: {}, d: {}", fv.face_id,
+                  "fv: {}=({}, {}, {}) {}, w: {:g}, d: {:g}", fv.face_id,
                   mesh.faces()(fv.face_id, 0), mesh.faces()(fv.face_id, 1),
                   mesh.faces()(fv.face_id, 2), fv.vertex_id, fv.weight,
                   point_plane_distance(

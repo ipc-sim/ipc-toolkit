@@ -9,10 +9,11 @@
 namespace ipc {
 
 CollisionConstraintsBuilder::CollisionConstraintsBuilder(
-    const CollisionConstraints& empty_constraints)
+    const bool use_convergent_formulation,
+    const bool should_compute_weight_gradient)
+    : use_convergent_formulation(use_convergent_formulation)
+    , should_compute_weight_gradient(should_compute_weight_gradient)
 {
-    assert(empty_constraints.empty());
-    constraints = empty_constraints;
 }
 
 // ============================================================================
@@ -39,11 +40,11 @@ void CollisionConstraintsBuilder::add_edge_vertex_constraints(
 
         // ÷ 2 to handle double counting for correct integration
         const double weight =
-            use_convergent_formulation() ? (mesh.vertex_area(vi) / 2) : 1;
+            use_convergent_formulation ? (mesh.vertex_area(vi) / 2) : 1;
 
         Eigen::SparseVector<double> weight_gradient;
-        if (should_compute_weight_gradient()) {
-            weight_gradient = use_convergent_formulation()
+        if (should_compute_weight_gradient) {
+            weight_gradient = use_convergent_formulation
                 ? (mesh.vertex_area_gradient(vi) / 2)
                 : Eigen::SparseVector<double>(vertices.size());
         }
@@ -124,13 +125,13 @@ void CollisionConstraintsBuilder::add_edge_edge_constraints(
 
         // ÷ 4 to handle double counting and PT + EE for correct integration.
         // Sum edge areas because duplicate edge candidates were removed.
-        const double weight = use_convergent_formulation()
+        const double weight = use_convergent_formulation
             ? ((mesh.edge_area(eai) + mesh.edge_area(ebi)) / 4)
             : 1;
 
         Eigen::SparseVector<double> weight_gradient;
-        if (should_compute_weight_gradient()) {
-            weight_gradient = use_convergent_formulation()
+        if (should_compute_weight_gradient) {
+            weight_gradient = use_convergent_formulation
                 ? ((mesh.edge_area_gradient(eai) + mesh.edge_area_gradient(ebi))
                    / 4)
                 : Eigen::SparseVector<double>(vertices.size());
@@ -170,10 +171,9 @@ void CollisionConstraintsBuilder::add_edge_edge_constraints(
             break;
 
         case EdgeEdgeDistanceType::EA_EB:
-            constraints.ee_constraints.emplace_back(
-                eai, ebi, eps_x, actual_dtype);
-            constraints.ee_constraints.back().weight = weight;
-            constraints.ee_constraints.back().weight_gradient = weight_gradient;
+            ee_constraints.emplace_back(
+                eai, ebi, eps_x, weight, weight_gradient, actual_dtype);
+            ee_to_id.emplace(ee_constraints.back(), ee_constraints.size() - 1);
             break;
 
         case EdgeEdgeDistanceType::AUTO:
@@ -210,11 +210,11 @@ void CollisionConstraintsBuilder::add_face_vertex_constraints(
 
         // ÷ 4 to handle double counting and PT + EE for correct integration
         const double weight =
-            use_convergent_formulation() ? (mesh.vertex_area(vi) / 4) : 1;
+            use_convergent_formulation ? (mesh.vertex_area(vi) / 4) : 1;
 
         Eigen::SparseVector<double> weight_gradient;
-        if (should_compute_weight_gradient()) {
-            weight_gradient = use_convergent_formulation()
+        if (should_compute_weight_gradient) {
+            weight_gradient = use_convergent_formulation
                 ? (mesh.vertex_area_gradient(vi) / 4)
                 : Eigen::SparseVector<double>(vertices.size());
         }
@@ -248,9 +248,7 @@ void CollisionConstraintsBuilder::add_face_vertex_constraints(
             break;
 
         case PointTriangleDistanceType::P_T:
-            constraints.fv_constraints.emplace_back(fi, vi);
-            constraints.fv_constraints.back().weight = weight;
-            constraints.fv_constraints.back().weight_gradient = weight_gradient;
+            fv_constraints.emplace_back(fi, vi, weight, weight_gradient);
             break;
 
         case PointTriangleDistanceType::AUTO:
@@ -280,11 +278,9 @@ void CollisionConstraintsBuilder::
         if (incident_edge_amt > 1) {
             // ÷ 2 to handle double counting for correct integration
             weight += (1 - incident_edge_amt)
-                * (use_convergent_formulation() ? (mesh.vertex_area(vi) / 2)
-                                                : 1);
+                * (use_convergent_formulation ? (mesh.vertex_area(vi) / 2) : 1);
 
-            if (should_compute_weight_gradient()
-                && use_convergent_formulation()) {
+            if (should_compute_weight_gradient && use_convergent_formulation) {
                 weight_gradient += (1 - incident_edge_amt) / 2.0
                     * mesh.vertex_area_gradient(vi);
             }
@@ -297,7 +293,7 @@ void CollisionConstraintsBuilder::
 
         double weight = 0;
         Eigen::SparseVector<double> weight_gradient;
-        if (should_compute_weight_gradient()) {
+        if (should_compute_weight_gradient) {
             weight_gradient = Eigen::SparseVector<double>(vertices.size());
         }
 
@@ -328,9 +324,9 @@ void CollisionConstraintsBuilder::
         }
 
         // ÷ 4 to handle double counting and PT + EE for correct integration.
-        weight += use_convergent_formulation() ? (mesh.vertex_area(vi) / 4) : 1;
+        weight += use_convergent_formulation ? (mesh.vertex_area(vi) / 4) : 1;
 
-        if (should_compute_weight_gradient() && use_convergent_formulation()) {
+        if (should_compute_weight_gradient && use_convergent_formulation) {
             weight_gradient += mesh.vertex_area_gradient(vi) / 4;
         }
     };
@@ -341,7 +337,7 @@ void CollisionConstraintsBuilder::
 
         double weight = 0;
         Eigen::SparseVector<double> weight_gradient;
-        if (should_compute_weight_gradient()) {
+        if (should_compute_weight_gradient) {
             weight_gradient = Eigen::SparseVector<double>(vertices.size());
         }
 
@@ -373,12 +369,11 @@ void CollisionConstraintsBuilder::
         if (incident_triangle_amt > 1) {
             // ÷ 4 to handle double counting and PT + EE for correct integration
             const double weight = (1 - incident_triangle_amt)
-                * (use_convergent_formulation() ? (mesh.vertex_area(vi) / 4)
-                                                : 1);
+                * (use_convergent_formulation ? (mesh.vertex_area(vi) / 4) : 1);
 
             Eigen::SparseVector<double> weight_gradient;
-            if (should_compute_weight_gradient()) {
-                weight_gradient = use_convergent_formulation()
+            if (should_compute_weight_gradient) {
+                weight_gradient = use_convergent_formulation
                     ? ((1 - incident_triangle_amt) / 4.0
                        * mesh.vertex_area_gradient(vi))
                     : Eigen::SparseVector<double>(vertices.size());
@@ -409,6 +404,16 @@ void CollisionConstraintsBuilder::
         const int ea0 = mesh.edges()(ea, 0), ea1 = mesh.edges()(ea, 1);
         assert(p != ea0 && p != ea1);
 
+        // ÷ 4 to handle double counting and PT + EE for correct integration
+        const double weight =
+            use_convergent_formulation ? (-0.25 * mesh.edge_area(ea)) : -1;
+        Eigen::SparseVector<double> weight_gradient;
+        if (should_compute_weight_gradient) {
+            weight_gradient = use_convergent_formulation
+                ? (-0.25 * mesh.edge_area_gradient(ea))
+                : Eigen::SparseVector<double>(vertices.size());
+        }
+
         const PointEdgeDistanceType dtype = point_edge_distance_type(
             vertices.row(p), vertices.row(ea0), vertices.row(ea1));
 
@@ -419,7 +424,7 @@ void CollisionConstraintsBuilder::
             const int eb0 = mesh.edges()(eb, 0), eb1 = mesh.edges()(eb, 1);
             const int q = mesh.edges()(eb, int(p == eb0));
             assert(p != q);
-            if (q == ea0 || q == eb1) {
+            if (q == ea0 || q == ea1) {
                 continue;
             }
 
@@ -436,11 +441,9 @@ void CollisionConstraintsBuilder::
                 continue;
             }
 
-            // Add mollified EE constraint with weight of -¼w and specified
-            // distance type
-
+            // Add mollified EE constraint with specified distance type
             // Convert the PE distance type to an EE distance type
-            EdgeEdgeDistanceType ee_dtype;
+            EdgeEdgeDistanceType ee_dtype = EdgeEdgeDistanceType::AUTO;
             switch (dtype) {
             case PointEdgeDistanceType::P_E0:
                 ee_dtype = p == eb0 ? EdgeEdgeDistanceType::EA0_EB0
@@ -459,86 +462,76 @@ void CollisionConstraintsBuilder::
                 break;
             }
 
-            constraints.ee_constraints.emplace_back(ea, eb, eps_x, ee_dtype);
-            constraints.ee_constraints.back().weight =
-                use_convergent_formulation() ? (-0.25 * mesh.edge_area(ea))
-                                             : -1;
-            if (should_compute_weight_gradient()) {
-                constraints.ee_constraints.back().weight_gradient =
-                    use_convergent_formulation()
-                    ? (-0.25 * mesh.edge_area_gradient(ea))
-                    : Eigen::SparseVector<double>(vertices.size());
-            }
+            add_edge_edge_constraint(
+                ea, eb, eps_x, weight, weight_gradient, ee_dtype);
         }
 
         if (nonmollified_incident_edge_amt == 1) {
-            continue; // no constraint to add because (1 - ρ(x)) = 0
+            continue; // no constraint to add because (ρ(x) - 1) = 0
         }
         // if nonmollified_incident_edge_amt == 0, then we need to explicitly
         // add a positive constraint.
-
-        // ÷ 4 to handle double counting and PT + EE for correct integration
-        const double weight = (1 - nonmollified_incident_edge_amt)
-            * (use_convergent_formulation() ? (mesh.edge_area(ea) / 4) : 1);
-
-        Eigen::SparseVector<double> weight_gradient;
-        if (should_compute_weight_gradient()) {
-            weight_gradient = use_convergent_formulation()
-                ? ((1 - nonmollified_incident_edge_amt) / 4.0
-                   * mesh.edge_area_gradient(ea))
-                : Eigen::SparseVector<double>(vertices.size());
-        }
-
         add_edge_vertex_constraint(
-            mesh, candidates[i], dtype, weight, weight_gradient);
+            mesh, candidates[i], dtype,
+            (nonmollified_incident_edge_amt - 1) * weight,
+            (nonmollified_incident_edge_amt - 1) * weight_gradient);
     }
 }
 
 // ============================================================================
 
 void CollisionConstraintsBuilder::add_vertex_vertex_constraint(
-    const long v0i,
-    const long v1i,
-    const double weight,
-    const Eigen::SparseVector<double>& weight_gradient,
+    const VertexVertexConstraint& vv_constraint,
     unordered_map<VertexVertexConstraint, long>& vv_to_id,
     std::vector<VertexVertexConstraint>& vv_constraints)
 {
-    VertexVertexConstraint vv_constraint(v0i, v1i);
     auto found_item = vv_to_id.find(vv_constraint);
     if (found_item != vv_to_id.end()) {
         // Constraint already exists, so increase weight
-        vv_constraints[found_item->second].weight += weight;
-        vv_constraints[found_item->second].weight_gradient += weight_gradient;
+        vv_constraints[found_item->second].weight += vv_constraint.weight;
+        vv_constraints[found_item->second].weight_gradient +=
+            vv_constraint.weight_gradient;
     } else {
         // New constraint, so add it to the end of vv_constraints
         vv_to_id.emplace(vv_constraint, vv_constraints.size());
         vv_constraints.push_back(vv_constraint);
-        vv_constraints.back().weight = weight;
-        vv_constraints.back().weight_gradient = weight_gradient;
     }
 }
 
 void CollisionConstraintsBuilder::add_edge_vertex_constraint(
-    const long ei,
-    const long vi,
-    const double weight,
-    const Eigen::SparseVector<double>& weight_gradient,
+    const EdgeVertexConstraint& ev_constraint,
     unordered_map<EdgeVertexConstraint, long>& ev_to_id,
     std::vector<EdgeVertexConstraint>& ev_constraints)
 {
-    EdgeVertexConstraint ev_constraint(ei, vi);
     auto found_item = ev_to_id.find(ev_constraint);
     if (found_item != ev_to_id.end()) {
         // Constraint already exists, so increase weight
-        ev_constraints[found_item->second].weight += weight;
-        ev_constraints[found_item->second].weight_gradient += weight_gradient;
+        ev_constraints[found_item->second].weight += ev_constraint.weight;
+        ev_constraints[found_item->second].weight_gradient +=
+            ev_constraint.weight_gradient;
     } else {
         // New constraint, so add it to the end of ev_constraints
         ev_to_id.emplace(ev_constraint, ev_constraints.size());
         ev_constraints.push_back(ev_constraint);
-        ev_constraints.back().weight = weight;
-        ev_constraints.back().weight_gradient = weight_gradient;
+    }
+}
+
+void CollisionConstraintsBuilder::add_edge_edge_constraint(
+    const EdgeEdgeConstraint& ee_constraint,
+    unordered_map<EdgeEdgeConstraint, long>& ee_to_id,
+    std::vector<EdgeEdgeConstraint>& ee_constraints)
+{
+    auto found_item = ee_to_id.find(ee_constraint);
+    if (found_item != ee_to_id.end()) {
+        // Constraint already exists, so increase weight
+        assert(ee_constraint == ee_constraints[found_item->second]);
+        ee_constraints[found_item->second].weight += ee_constraint.weight;
+        ee_constraints[found_item->second].weight_gradient +=
+            ee_constraint.weight_gradient;
+    } else {
+        // New constraint, so add it to the end of ee_constraints
+        ee_to_id.emplace(ee_constraint, ee_constraints.size());
+        ee_constraints.push_back(ee_constraint);
     }
 }
 
@@ -551,6 +544,7 @@ void CollisionConstraintsBuilder::merge(
 {
     unordered_map<VertexVertexConstraint, long> vv_to_id;
     unordered_map<EdgeVertexConstraint, long> ev_to_id;
+    unordered_map<EdgeEdgeConstraint, long> ee_to_id;
     auto& vv_constraints = merged_constraints.vv_constraints;
     auto& ev_constraints = merged_constraints.ev_constraints;
     auto& ee_constraints = merged_constraints.ee_constraints;
@@ -560,10 +554,10 @@ void CollisionConstraintsBuilder::merge(
     size_t n_vv = 0, n_ev = 0, n_ee = 0, n_fv = 0;
     for (const auto& storage : local_storage) {
         // This is an conservative estimate
-        n_vv += storage.constraints.vv_constraints.size();
-        n_ev += storage.constraints.ev_constraints.size();
-        n_ee += storage.constraints.ee_constraints.size();
-        n_fv += storage.constraints.fv_constraints.size();
+        n_vv += storage.vv_constraints.size();
+        n_ev += storage.ev_constraints.size();
+        n_ee += storage.ee_constraints.size();
+        n_fv += storage.fv_constraints.size();
     }
     vv_constraints.reserve(n_vv);
     ev_constraints.reserve(n_ev);
@@ -572,40 +566,36 @@ void CollisionConstraintsBuilder::merge(
 
     // merge
     for (const auto& builder : local_storage) {
-        const auto& local_constraints = builder.constraints;
-
         if (vv_constraints.empty()) {
             vv_to_id = builder.vv_to_id;
-            vv_constraints.insert(
-                vv_constraints.end(), local_constraints.vv_constraints.begin(),
-                local_constraints.vv_constraints.end());
+            vv_constraints = builder.vv_constraints;
         } else {
-            for (const auto& vv : local_constraints.vv_constraints) {
-                add_vertex_vertex_constraint(
-                    vv.vertex0_id, vv.vertex1_id, vv.weight, vv.weight_gradient,
-                    vv_to_id, vv_constraints);
+            for (const auto& vv : builder.vv_constraints) {
+                add_vertex_vertex_constraint(vv, vv_to_id, vv_constraints);
             }
         }
 
         if (ev_constraints.empty()) {
             ev_to_id = builder.ev_to_id;
-            ev_constraints.insert(
-                ev_constraints.end(), local_constraints.ev_constraints.begin(),
-                local_constraints.ev_constraints.end());
+            ev_constraints = builder.ev_constraints;
         } else {
-            for (const auto& ev : local_constraints.ev_constraints) {
-                add_edge_vertex_constraint(
-                    ev.edge_id, ev.vertex_id, ev.weight, ev.weight_gradient,
-                    ev_to_id, ev_constraints);
+            for (const auto& ev : builder.ev_constraints) {
+                add_edge_vertex_constraint(ev, ev_to_id, ev_constraints);
             }
         }
 
-        ee_constraints.insert(
-            ee_constraints.end(), local_constraints.ee_constraints.begin(),
-            local_constraints.ee_constraints.end());
+        if (ee_constraints.empty()) {
+            ee_to_id = builder.ee_to_id;
+            ee_constraints = builder.ee_constraints;
+        } else {
+            for (const auto& ee : builder.ee_constraints) {
+                add_edge_edge_constraint(ee, ee_to_id, ee_constraints);
+            }
+        }
+
         fv_constraints.insert(
-            fv_constraints.end(), local_constraints.fv_constraints.begin(),
-            local_constraints.fv_constraints.end());
+            fv_constraints.end(), builder.fv_constraints.begin(),
+            builder.fv_constraints.end());
     }
 
     // If positive and negative vertex-vertex constraints cancel out, remove
@@ -622,6 +612,12 @@ void CollisionConstraintsBuilder::merge(
             ev_constraints.begin(), ev_constraints.end(),
             [&](const EdgeVertexConstraint& ev) { return ev.weight == 0; }),
         ev_constraints.end());
+    // Same for edge-edge constraints.
+    ee_constraints.erase(
+        std::remove_if(
+            ee_constraints.begin(), ee_constraints.end(),
+            [&](const EdgeEdgeConstraint& ee) { return ee.weight == 0; }),
+        ee_constraints.end());
 }
 
 } // namespace ipc

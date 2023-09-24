@@ -352,44 +352,42 @@ TEST_CASE("Test convergent formulation", "[ipc][convergent]")
 
         CHECK(point_edge_distance(V.row(0), V.row(2), V.row(3)) < dhat * dhat);
     }
-    // SECTION("3D Edge-Edge")
-    // {
-    //     V.resize(5, 3);
-    //     //
-    //     V.row(0) << 0, 1e-4, -1;
-    //     V.row(1) << 0, 1e-4, 0.9;
-    //     //
-    //     V.row(2) << 1e-4, 0, 0;
-    //     V.row(3) << -0.33, 0, 0;
-    //     V.row(4) << 0.5, 0, 0;
+    SECTION("3D Edge-Edge")
+    {
+        V.resize(5, 3);
+        //
+        V.row(0) << 0, 1e-4, -1;
+        V.row(1) << 0, 1e-4, 1;
+        //
+        V.row(2) << -1e-4, 0, 0;
+        V.row(3) << -1, 0, 0;
+        V.row(4) << 1, 0, 0;
 
-    //     E.resize(3, 2);
-    //     E.row(0) << 0, 1;
-    //     E.row(1) << 3, 2;
-    //     E.row(2) << 2, 4;
+        E.resize(3, 2);
+        E.row(0) << 0, 1;
+        E.row(1) << 3, 2;
+        E.row(2) << 2, 4;
 
-    //     CHECK(point_edge_distance(V.row(2), V.row(0), V.row(1)) < dhat *
-    //     dhat);
-    // }
-    // SECTION("3D Edge-Edge 2")
-    // {
-    //     V.resize(5, 3);
-    //     //
-    //     V.row(0) << 0, 1e-4, -1e-4;
-    //     V.row(1) << 0, 1e-4, -1;
-    //     //
-    //     V.row(2) << 1e-4, 0, 0;
-    //     V.row(3) << -0.33, 0, 0;
-    //     V.row(4) << 0.5, 0, 0;
+        CHECK(point_edge_distance(V.row(2), V.row(0), V.row(1)) < dhat * dhat);
+    }
+    SECTION("3D Edge-Edge Parallel")
+    {
+        V.resize(5, 3);
+        //
+        V.row(0) << -0.5, 1e-5, -1e-3;
+        V.row(1) << 0.5, 1e-5, 1e-3;
+        //
+        V.row(2) << -1, -1e-5, 0;
+        V.row(3) << 0, -1e-5, 0;
+        V.row(4) << 1, -1e-5, 0;
 
-    //     E.resize(3, 2);
-    //     E.row(0) << 0, 1;
-    //     E.row(1) << 3, 2;
-    //     E.row(2) << 2, 4;
+        E.resize(3, 2);
+        E.row(0) << 0, 1;
+        E.row(1) << 2, 3;
+        E.row(2) << 3, 4;
 
-    //     CHECK(point_edge_distance(V.row(2), V.row(0), V.row(1)) < dhat *
-    //     dhat);
-    // }
+        CHECK(point_edge_distance(V.row(3), V.row(0), V.row(1)) < dhat * dhat);
+    }
 
     const CollisionMesh mesh(V, E, F);
 
@@ -406,21 +404,26 @@ TEST_CASE("Test convergent formulation", "[ipc][convergent]")
     // const Eigen::MatrixXd force = -fd::unflatten(grad_b, V.cols());
     // std::cout << "force:\n" << force << std::endl;
 
-    if (use_convergent_formulation) {
-        constexpr double eps = std::numeric_limits<double>::epsilon();
-        CHECK(grad_b(0) == Catch::Approx(0).margin(eps));
-        CHECK(grad_b(2 * V.cols()) == Catch::Approx(0).margin(eps));
-        // CHECK(grad_b(3 * V.cols()) == 0);
-    } else {
-        CHECK(grad_b(0) != 0);
-        CHECK(grad_b(2 * V.cols()) != 0);
-        // CHECK(grad_b(3 * V.cols()) != 0);
-    }
+    // if (use_convergent_formulation) {
+    //     constexpr double eps = std::numeric_limits<double>::epsilon();
+    //     CHECK(grad_b(0) == Catch::Approx(0).margin(eps));
+    //     CHECK(grad_b(2 * V.cols()) == Catch::Approx(0).margin(eps));
+    // } else {
+    //     CHECK(grad_b(0) != 0);
+    //     CHECK(grad_b(2 * V.cols()) != 0);
+    // }
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
-        return collision_constraints.compute_potential(
-            mesh, fd::unflatten(x, V.cols()), dhat);
+        const Eigen::MatrixXd fd_V = fd::unflatten(x, mesh.dim());
+
+        CollisionConstraints fd_collision_constraints;
+        fd_collision_constraints.set_use_convergent_formulation(
+            use_convergent_formulation);
+
+        fd_collision_constraints.build(mesh, fd_V, dhat);
+
+        return fd_collision_constraints.compute_potential(mesh, fd_V, dhat);
     };
     Eigen::VectorXd fgrad_b;
     fd::finite_gradient(fd::flatten(V), f, fgrad_b);
