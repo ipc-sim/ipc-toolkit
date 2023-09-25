@@ -10,11 +10,14 @@ void define_edge_edge_constraint(py::module_& m)
     py::class_<EdgeEdgeConstraint, EdgeEdgeCandidate, CollisionConstraint>(
         m, "EdgeEdgeConstraint")
         .def(
-            py::init<long, long, double>(), "", py::arg("edge0_id"),
-            py::arg("edge1_id"), py::arg("eps_x"))
+            py::init<long, long, double, ipc::EdgeEdgeDistanceType>(), "",
+            py::arg("edge0_id"), py::arg("edge1_id"), py::arg("eps_x"),
+            py::arg("dtype") = ipc::EdgeEdgeDistanceType::AUTO)
         .def(
-            py::init<const EdgeEdgeCandidate&, double>(), "",
-            py::arg("candidate"), py::arg("eps_x"))
+            py::init<
+                const EdgeEdgeCandidate&, double, ipc::EdgeEdgeDistanceType>(),
+            "", py::arg("candidate"), py::arg("eps_x"),
+            py::arg("dtype") = ipc::EdgeEdgeDistanceType::AUTO)
         .def(
             "compute_potential", &EdgeEdgeConstraint::compute_potential, "",
             py::arg("vertices"), py::arg("edges"), py::arg("faces"),

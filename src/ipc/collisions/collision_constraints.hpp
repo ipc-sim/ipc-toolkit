@@ -148,6 +148,9 @@ public:
     void
     set_are_shape_derivatives_enabled(const bool are_shape_derivatives_enabled);
 
+    std::string
+    to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
+
 public:
     std::vector<VertexVertexConstraint> vv_constraints;
     std::vector<EdgeVertexConstraint> ev_constraints;

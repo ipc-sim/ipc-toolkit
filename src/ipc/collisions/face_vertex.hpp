@@ -15,6 +15,16 @@ public:
     {
     }
 
+    FaceVertexConstraint(
+        const long face_id,
+        const long vertex_id,
+        const double weight,
+        const Eigen::SparseVector<double>& weight_gradient)
+        : FaceVertexCandidate(face_id, vertex_id)
+        , CollisionConstraint(weight, weight_gradient)
+    {
+    }
+
     template <typename H>
     friend H AbslHashValue(H h, const FaceVertexConstraint& fv)
     {

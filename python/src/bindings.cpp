@@ -40,6 +40,7 @@ PYBIND11_MODULE(ipctk, m)
     define_point_static_plane(m);
 
     // collisions
+    define_distance_type(m); // define early because it is used next
     define_collision_constraint(m);
     define_collision_constraints(m);
     define_edge_edge_constraint(m);
@@ -49,7 +50,6 @@ PYBIND11_MODULE(ipctk, m)
     define_vertex_vertex_constraint(m);
 
     // distance
-    define_distance_type(m);
     define_edge_edge_mollifier(m);
     define_edge_edge_distance(m);
     define_line_line_distance(m);

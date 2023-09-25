@@ -11,6 +11,12 @@ namespace ipc {
 
 class CollisionConstraint : virtual public CollisionStencil {
 public:
+    CollisionConstraint() = default;
+
+    CollisionConstraint(
+        const double weight,
+        const Eigen::SparseVector<double>& weight_gradient);
+
     virtual ~CollisionConstraint() { }
 
     virtual double compute_potential(

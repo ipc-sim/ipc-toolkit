@@ -7,7 +7,7 @@ on:
     paths:
       - '.github/workflows/continuous.yml'
       - 'cmake/**'
-      - 'src/**' 
+      - 'src/**'
       - 'tests/**'
       - 'CMakeLists.txt'
 
@@ -70,7 +70,8 @@ jobs:
       - name: Prepare ccache
         run: |
           ccache --max-size=1.0G
-          ccache -V && ccache --show-stats && ccache --zero-stats
+          ccache -V && ccache --show-config
+          ccache --show-stats && ccache --zero-stats
 
       - name: Configure (Linux/macOS)
         if: runner.os != 'Windows'
