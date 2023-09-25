@@ -17,10 +17,14 @@ template <class T> struct Hash {
 
     template <typename Value> static Hash&& combine(const Hash&& h, Value value)
     {
-        std::hash<Value> hash;
-        return std::move(Hash(
-            h.hash
-            ^ (hash(value) + 0x9e3779b9 + (h.hash << 6) + (h.hash >> 2))));
+        if constexpr (std::is_default_constructible<std::hash<Value>>::value) {
+            std::hash<Value> hash;
+            return std::move(Hash(
+                h.hash
+                ^ (hash(value) + 0x9e3779b9 + (h.hash << 6) + (h.hash >> 2))));
+        } else {
+            return std::move(AbslHashValue(h, value));
+        }
     }
 
     template <class First, class... Rest>
