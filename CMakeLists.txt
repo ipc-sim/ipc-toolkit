@@ -194,6 +194,7 @@ if(IPC_TOOLKIT_WITH_SIMD)
   # Add SIMD flags to compiler flags
   message(STATUS "Using SIMD flags: ${SIMD_FLAGS}")
   target_compile_options(ipc_toolkit PRIVATE ${SIMD_FLAGS})
+  target_compile_definitions(ipc_toolkit PUBLIC EIGEN_MAX_STATIC_ALIGN_BYTES=0)
 else()
   message(STATUS "SIMD support disabled")
 endif()
