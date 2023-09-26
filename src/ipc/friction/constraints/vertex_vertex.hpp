@@ -34,7 +34,8 @@ protected:
     MatrixMax<double, 2, 12> compute_closest_point_jacobian(
         const VectorMax12d& positions) const override;
 
-    VectorMax3d relative_velocity(const VectorMax12d& velocity) const override;
+    VectorMax3d
+    relative_velocity(const VectorMax12d& velocities) const override;
 
     using FrictionConstraint::relative_velocity_matrix;
 

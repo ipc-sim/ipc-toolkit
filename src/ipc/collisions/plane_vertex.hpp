@@ -26,11 +26,20 @@ public:
     long vertex_id;
 
 protected:
+    /// @brief Compute the distance between the point and plane.
+    /// @param point Point's position.
+    /// @return Distance of the stencil.
     double compute_distance(const VectorMax12d& point) const override;
 
+    /// @brief Compute the gradient of the distance w.r.t. the point's positions.
+    /// @param point Point's position.
+    /// @return Distance gradient w.r.t. the point's positions.
     VectorMax12d
     compute_distance_gradient(const VectorMax12d& point) const override;
 
+    /// @brief Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
+    /// @param point Point's position.
+    /// @return Distance Hessian w.r.t. the point's positions.
     MatrixMax12d
     compute_distance_hessian(const VectorMax12d& point) const override;
 };

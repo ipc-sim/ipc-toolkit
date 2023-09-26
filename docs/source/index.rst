@@ -13,6 +13,7 @@
     tutorial/getting_started.rst
     tutorial/simulation.rst
     tutorial/misc.rst
+    tutorial/references.rst
 
 .. toctree::
     :caption: C++
@@ -20,9 +21,9 @@
 
     Getting Started <cpp>
     cpp-api/collision_mesh.rst
+    cpp-api/candidates.rst
     cpp-api/collision_constraints.rst
     cpp-api/friction.rst
-    cpp-api/candidates.rst
     cpp-api/broad_phase.rst
     cpp-api/ccd.rst
     cpp-api/distance.rst
@@ -35,9 +36,9 @@
 
     Getting Started <python.md>
     python-api/collision_mesh.rst
+    python-api/candidates.rst
     python-api/collision_constraints.rst
     python-api/friction.rst
-    python-api/candidates.rst
     python-api/broad_phase.rst
     python-api/ccd.rst
     python-api/distance.rst

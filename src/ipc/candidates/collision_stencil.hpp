@@ -103,21 +103,21 @@ public:
 
 protected:
     /// @brief Compute the distance of the stencil.
-    /// @param vertices Stencil's vertex positions.
+    /// @param positions Stencil's vertex positions.
     /// @return Distance of the stencil.
-    virtual double compute_distance(const VectorMax12d& vertices) const = 0;
+    virtual double compute_distance(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
-    /// @param vertices Stencil's vertex positions.
+    /// @param positions Stencil's vertex positions.
     /// @return Distance gradient of the stencil w.r.t. the stencil's vertex positions.
     virtual VectorMax12d
-    compute_distance_gradient(const VectorMax12d& vertices) const = 0;
+    compute_distance_gradient(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
-    /// @param vertices Stencil's vertex positions.
+    /// @param positions Stencil's vertex positions.
     /// @return Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
     virtual MatrixMax12d
-    compute_distance_hessian(const VectorMax12d& vertices) const = 0;
+    compute_distance_hessian(const VectorMax12d& positions) const = 0;
 };
 
 } // namespace ipc
