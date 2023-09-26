@@ -42,7 +42,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.autosectionlabel",
+    # "sphinx.ext.autosectionlabel",
     "sphinx.ext.todo",
     "sphinx.ext.mathjax",
     "sphinx.ext.ifconfig",
@@ -56,7 +56,14 @@ extensions = [
     "sphinx_immaterial.apidoc.python.apigen",
     "sphinx_immaterial.apidoc.format_signatures",
     # 'sphinx_autodoc_toolbox.collapse',
+    "sphinxcontrib.bibtex",
+    "sphinxemoji.sphinxemoji",
+    "sphinx_last_updated_by_git",
 ]
+
+bibtex_bibfiles = ['refs.bib']
+bibtex_reference_style = 'author_year'
+bibtex_default_style = 'plain'
 
 myst_enable_extensions = [
     "dollarmath",
@@ -178,7 +185,6 @@ html_theme_options = {
     # Set the repo location to get a badge with stats
     "repo_url": "https://github.com/ipc-sim/ipc-toolkit",
     "repo_name": "ipc-sim/ipc-toolkit",
-    "repo_type": "github",
     "icon": {"repo": "fontawesome/brands/github"},
 
     "edit_uri": "blob/main/docs/source",
@@ -219,4 +225,4 @@ html_static_path = ["_static"]
 # or fully qualified paths (eg. https://...)
 html_css_files = ["css/custom.css"]
 
-html_last_updated_fmt = "%B %d, %Y"
+# html_last_updated_fmt = "%B %d, %Y"

@@ -38,7 +38,7 @@ public:
         const double dhat,
         const bool project_hessian_to_psd) const;
 
-    double minimum_distance = 0;
+    double dmin = 0;
     double weight = 1;
     Eigen::SparseVector<double> weight_gradient;
 };

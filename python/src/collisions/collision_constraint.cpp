@@ -22,8 +22,7 @@ void define_collision_constraint(py::module_& m)
             &CollisionConstraint::compute_potential_hessian, "",
             py::arg("vertices"), py::arg("edges"), py::arg("faces"),
             py::arg("dhat"), py::arg("project_hessian_to_psd"))
-        .def_readwrite(
-            "minimum_distance", &CollisionConstraint::minimum_distance, "")
+        .def_readwrite("dmin", &CollisionConstraint::dmin, "")
         .def_readwrite("weight", &CollisionConstraint::weight, "")
         .def_property(
             "weight_gradient",

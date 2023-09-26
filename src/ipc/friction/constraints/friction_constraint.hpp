@@ -183,6 +183,7 @@ protected:
 
     /// @brief Compute the relative velocity of the constraint.
     /// @param velocities Constraint's vertex velocities.
+    /// @return Relative velocity of the constraint.
     virtual VectorMax3d
     relative_velocity(const VectorMax12d& velocities) const = 0;
 

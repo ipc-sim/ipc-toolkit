@@ -266,7 +266,7 @@ void CollisionConstraints::build(
 
     for (size_t ci = 0; ci < size(); ci++) {
         CollisionConstraint& constraint = (*this)[ci];
-        constraint.minimum_distance = dmin;
+        constraint.dmin = dmin;
     }
 
     if (use_convergent_formulation()) {

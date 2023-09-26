@@ -43,7 +43,7 @@ void construct_point_plane_constraint_set(
 
             if (distance_sqr - dmin_squared < 2 * dmin * dhat + dhat_squared) {
                 pv_constraints.emplace_back(plane_origin, plane_normal, vi);
-                pv_constraints.back().minimum_distance = dmin;
+                pv_constraints.back().dmin = dmin;
             }
         }
     }

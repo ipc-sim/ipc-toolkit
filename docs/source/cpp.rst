@@ -64,18 +64,25 @@ Optional
 --------
 
 * `robin-map <https://github.com/Tessil/robin-map>`__: faster hash set/map than :cpp:`std::unordered_set`/:cpp:`std::unordered_map`
-    * Enable by using the CMake option :cmake:`IPC_TOOLKIT_WITH_ROBIN_MAP`
-    * Enabled by default
+
+  * Enable by using the CMake option :cmake:`IPC_TOOLKIT_WITH_ROBIN_MAP`
+  * Enabled by default
+
 * `Abseil <https://abseil.io/>`__: hashing utilities
-    * Enable by using the CMake option :cmake:`IPC_TOOLKIT_WITH_ABSEIL`
-    * Enabled by default
+
+  * Enable by using the CMake option :cmake:`IPC_TOOLKIT_WITH_ABSEIL`
+  * Enabled by default
+
 * `GMP <https://gmplib.org/>`__: rational arithmetic used for exact intersection checks
-    * Enable by using the CMake option :cmake:`IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION`
-    * GMP must be installed at a system level
+
+  * Enable by using the CMake option :cmake:`IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION`
+  * GMP must be installed at a system level
+
 * `Etienne Vouga's Collision Detection Library <https://github.com/evouga/collisiondetection>`__: inexact CCD
-    * Included for comparison with the original IPC library
-    * Enable by disabling the CMake option :cmake:`IPC_TOOLKIT_WITH_CORRECT_CCD`
-    * Replaces the default Tight-Inclusion CCD
+
+  * Included for comparison with the original IPC library
+  * Enable by disabling the CMake option :cmake:`IPC_TOOLKIT_WITH_CORRECT_CCD`
+  * Replaces the default Tight-Inclusion CCD
 
 Usage
 -----

@@ -25,8 +25,7 @@ VertexVertexFrictionConstraint::VertexVertexFrictionConstraint(
     : VertexVertexFrictionConstraint(constraint)
 {
     FrictionConstraint::init(
-        vertices, edges, faces, dhat, barrier_stiffness,
-        constraint.minimum_distance);
+        vertices, edges, faces, dhat, barrier_stiffness, constraint.dmin);
 }
 
 // ============================================================================
