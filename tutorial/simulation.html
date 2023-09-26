@@ -466,6 +466,19 @@
     <span title="/tutorial/simulation.rst#volumetric-meshes (reference label)" class="md-ellipsis">Volumetric Meshes</span>
   </a>
   
+    <nav class="md-nav" aria-label="Volumetric Meshes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nonlinear-bases-and-curved-meshes" class="md-nav__link">
+    <span title="/tutorial/simulation.rst#nonlinear-bases-and-curved-meshes (reference label)" class="md-ellipsis">Nonlinear Bases and Curved Meshes</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -493,6 +506,21 @@
     <li class="md-nav__item">
       <a href="misc.html" class="md-nav__link">
         <span title="/tutorial/misc.rst (reference label)" class="md-ellipsis">Miscellaneous</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="references.html" class="md-nav__link">
+        <span title="/tutorial/references.rst (reference label)" class="md-ellipsis">References</span>
       </a>
     </li>
   
@@ -570,6 +598,21 @@
   
   
     <li class="md-nav__item">
+      <a href="../cpp-api/candidates.html" class="md-nav__link">
+        <span title="/cpp-api/candidates.rst (reference label)" class="md-ellipsis">Candidates</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../cpp-api/collision_constraints.html" class="md-nav__link">
         <span title="/cpp-api/collision_constraints.rst (reference label)" class="md-ellipsis">Collision Constraints</span>
       </a>
@@ -587,21 +630,6 @@
     <li class="md-nav__item">
       <a href="../cpp-api/friction.html" class="md-nav__link">
         <span title="/cpp-api/friction.rst (reference label)" class="md-ellipsis">Friction</span>
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cpp-api/candidates.html" class="md-nav__link">
-        <span title="/cpp-api/candidates.rst (reference label)" class="md-ellipsis">Candidates</span>
       </a>
     </li>
   
@@ -754,6 +782,21 @@
   
   
     <li class="md-nav__item">
+      <a href="../python-api/candidates.html" class="md-nav__link">
+        <span title="/python-api/candidates.rst (reference label)" class="md-ellipsis">Candidates</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../python-api/collision_constraints.html" class="md-nav__link">
         <span title="/python-api/collision_constraints.rst (reference label)" class="md-ellipsis">Collision Constraints</span>
       </a>
@@ -771,21 +814,6 @@
     <li class="md-nav__item">
       <a href="../python-api/friction.html" class="md-nav__link">
         <span title="/python-api/friction.rst (reference label)" class="md-ellipsis">Friction</span>
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../python-api/candidates.html" class="md-nav__link">
-        <span title="/python-api/candidates.rst (reference label)" class="md-ellipsis">Candidates</span>
       </a>
     </li>
   
@@ -983,6 +1011,19 @@
     <span title="/tutorial/simulation.rst#volumetric-meshes (reference label)" class="md-ellipsis">Volumetric Meshes</span>
   </a>
   
+    <nav class="md-nav" aria-label="Volumetric Meshes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nonlinear-bases-and-curved-meshes" class="md-nav__link">
+    <span title="/tutorial/simulation.rst#nonlinear-bases-and-curved-meshes (reference label)" class="md-ellipsis">Nonlinear Bases and Curved Meshes</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1046,13 +1087,13 @@ Python</label></div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;bunny.msh&quot;</span><span class="p">)</span>
 <span class="n">full_rest_positions</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">points</span>
-<span class="n">tets</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">cells</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+<span class="n">tets</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;tetra&quot;</span><span class="p">]</span>
 
 <span class="n">faces</span> <span class="o">=</span> <span class="n">igl</span><span class="o">.</span><span class="n">boundary_facets</span><span class="p">(</span><span class="n">tets</span><span class="p">)</span>  <span class="c1"># pip install libigl</span>
 <span class="n">edges</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">faces</span><span class="p">)</span>         <span class="c1"># same as igl.edges</span>
 
 <span class="n">collision_mesh</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">CollisionMesh</span><span class="o">.</span><span class="n">build_from_full_mesh</span><span class="p">(</span>
-    <span class="n">rest_positions</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">faces</span><span class="p">)</span>
+    <span class="n">full_rest_positions</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">faces</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -1087,17 +1128,66 @@ Python</label></div>
 </div>
 </div>
 </div>
-</div><h2 id="positive-semi-definite-projection">Positive Semi-Definite Projection<a class="headerlink" href="#positive-semi-definite-projection" title="Permalink to this heading">¶</a></h2>
-<p>As described in <a class="reference internal" href="#ipc" id="id1"><span>[IPC]</span></a> the Hessian of the potentials can be indefinite. This is problematic when using the Hessian in a Newton step <a class="reference internal" href="#ipc" id="id2"><span>[IPC]</span></a>. To remedy this, we can project the Hessian onto the positive semidefinite (PSD) cone. To do this set the optional parameter <code class="docutils literal notranslate"><span class="pre">project_hessian_to_psd</span></code> of <code class="docutils literal notranslate"><span class="pre">compute_potential_hessian</span></code> to true.</p>
-<hr class="docutils" />
-<p class="rubric">References</p>
-<div role="list" class="citation-list">
-<div class="citation" id="ipc" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>IPC<span class="fn-bracket">]</span></span>
-<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id2">2</a>)</span>
-<p>Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, Danny M. Kaufman. 2020. Incremental Potential Contact: Intersection- and Inversion-free Large Deformation Dynamics. <em>ACM Transactions on Graphics (SIGGRAPH).</em></p>
+</div><h3 id="nonlinear-bases-and-curved-meshes">Nonlinear Bases and Curved Meshes<a class="headerlink" href="#nonlinear-bases-and-curved-meshes" title="Permalink to this heading">¶</a></h3>
+<p>While IPC cannot directly handle nonlinear finite element bases and/or curved meshes, <span id="id1">Ferguson <em>et al.</em> [<a class="reference internal" href="references.html#id7" title="Zachary Ferguson, Pranav Jain, Denis Zorin, Teseo Schneider, and Daniele Panozzo. High-order incremental potential contact for elastodynamic simulation on curved meshes. In ACM SIGGRAPH 2023 Conference Proceedings, SIGGRAPH '23. New York, NY, USA, 2023. Association for Computing Machinery. https://zferg.us/research/high-order-ipc/.">2023</a>]</span> show that displacements and forces can be transfered between a finite element mesh and a collision proxy through the use of a linear map. Given this linear map as a matrix, we can use the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> class to map between the full and surface DOF.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2">
+<input checked type="radio" id="__tabbed_3_1" name="__tabbed_3"><input type="radio" id="__tabbed_3_2" name="__tabbed_3"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_3_1">
+C++</label><label class="tabbed-label" for="__tabbed_3_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// Finite element mesh</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">fe_rest_positions</span><span class="p">;</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="w"> </span><span class="n">tets</span><span class="p">;</span>
+<span class="c1">// TODO: Show how to load a volumetric mesh from a file (e.g., using MshIO)</span>
+
+<span class="c1">// Collision proxy mesh</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">proxy_rest_positions</span><span class="p">;</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="w"> </span><span class="n">proxy_edges</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_faces</span><span class="p">;</span>
+<span class="c1">// Load the proxy mesh from a file</span>
+<span class="n">igl</span><span class="o">::</span><span class="n">readOBJ</span><span class="p">(</span><span class="s">&quot;proxy.obj&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">);</span>
+<span class="n">igl</span><span class="o">::</span><span class="n">edges</span><span class="p">(</span><span class="n">faces</span><span class="p">,</span><span class="w"> </span><span class="n">edges</span><span class="p">);</span>
+<span class="c1">// Or build it from the volumetric mesh</span>
+
+<span class="c1">// Linear map from the finite element mesh to the collision proxy</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">SparseMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">displacement_map</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...;</span><span class="w"> </span><span class="c1">// build or load the displacement map</span>
+
+<span class="n">ipc</span><span class="o">::</span><span class="n">CollisionMesh</span><span class="w"> </span><span class="nf">collision_mesh</span><span class="p">(</span>
+<span class="w">    </span><span class="n">proxy_rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_edges</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_faces</span><span class="p">,</span><span class="w"> </span><span class="n">displacement_map</span><span class="p">);</span>
+</code></pre></div>
 </div>
 </div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># Finite element mesh</span>
+<span class="n">fe_mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;mesh.msh&quot;</span><span class="p">)</span>
+<span class="n">fe_rest_positions</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">points</span>
+<span class="n">tets</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;tetra&quot;</span><span class="p">]</span>
+
+<span class="c1"># Collision proxy mesh</span>
+<span class="c1"># Load the proxy mesh from a file</span>
+<span class="n">proxy_mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;proxy.msh&quot;</span><span class="p">)</span>
+<span class="n">proxy_rest_positions</span> <span class="o">=</span> <span class="n">proxy_mesh</span><span class="o">.</span><span class="n">points</span>
+<span class="n">proxy_faces</span> <span class="o">=</span> <span class="n">proxy_mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;triangles&quot;</span><span class="p">]</span>
+<span class="n">proxy_edges</span> <span class="o">=</span> <span class="n">igl</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">proxy_faces</span><span class="p">)</span>
+<span class="c1"># Or build it from the volumetric mesh</span>
+
+<span class="c1"># Linear map from the finite element mesh to the collision proxy</span>
+<span class="n">displacement_map</span> <span class="o">=</span> <span class="o">...</span> <span class="c1"># build or load the displacement map</span>
+
+<span class="n">collision_mesh</span> <span class="o">=</span> <span class="n">CollisionMesh</span><span class="p">(</span>
+    <span class="n">proxy_rest_positions</span><span class="p">,</span> <span class="n">proxy_edges</span><span class="p">,</span> <span class="n">proxy_faces</span><span class="p">,</span> <span class="n">displacement_map</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><p>We can then map the displacements using <code class="docutils literal notranslate"><span class="pre">collision_mesh.map_displacement(fe_displacements)</span></code> or directly get the displaced proxy mesh vertices using <code class="docutils literal notranslate"><span class="pre">collision_mesh.displace_vertices(fe_displacements)</span></code>. Similarly, we can map forces/gradients using <code class="docutils literal notranslate"><span class="pre">collision_mesh.to_full_dof(contact_forces)</span></code> or force jacobians/potential hessians using <code class="docutils literal notranslate"><span class="pre">collision_mesh.to_full_dof(potential_hessian)</span></code>.</p>
+<div class="warning admonition">
+<p class="admonition-title">Warning</p>
+<p>The function <code class="docutils literal notranslate"><span class="pre">CollisionMesh::vertices(full_positions)</span></code> should not be used in this case because the rest positions used to construct the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> are not the same as the finite element mesh’s rest positions. Instead, use <code class="docutils literal notranslate"><span class="pre">CollisionMesh::displace_vertices(fe_displacements)</span></code> where <code class="docutils literal notranslate"><span class="pre">fe_displacements</span></code> is already the solution of the PDE or can be computed as <code class="docutils literal notranslate"><span class="pre">fe_displacements</span> <span class="pre">=</span> <span class="pre">fe_positions</span> <span class="pre">-</span> <span class="pre">fe_rest_positions</span></code> from deformed and rest positions.</p>
+</div>
+<h2 id="positive-semi-definite-projection">Positive Semi-Definite Projection<a class="headerlink" href="#positive-semi-definite-projection" title="Permalink to this heading">¶</a></h2>
+<p>As described by <span id="id2">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>, the Hessian of the potentials can be indefinite. This is problematic when using the Hessian in a Newton step <span id="id3">[<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">Li <em>et al.</em>, 2020</a>]</span>. To remedy this, we can project the Hessian onto the positive semidefinite (PSD) cone. To do this set the optional parameter <code class="docutils literal notranslate"><span class="pre">project_hessian_to_psd</span></code> of <code class="docutils literal notranslate"><span class="pre">compute_potential_hessian</span></code> to true.</p>
 
 
   <hr>
@@ -1105,7 +1195,7 @@ Python</label></div>
   <small>
     
       Last update:
-      September 25, 2023
+      Sep 26, 2023
     
   </small>
 </div>

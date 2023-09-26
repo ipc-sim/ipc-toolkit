@@ -41,13 +41,13 @@ From the full (volumetric) mesh vertices and surface edges/faces which index int
 
             mesh = meshio.read("bunny.msh")
             full_rest_positions = mesh.points
-            tets = mesh.cells[0].data
+            tets = mesh.cells_dict["tetra"]
 
             faces = igl.boundary_facets(tets)  # pip install libigl
             edges = ipctk.edges(faces)         # same as igl.edges
 
             collision_mesh = ipctk.CollisionMesh.build_from_full_mesh(
-                rest_positions, edges, faces)
+                full_rest_positions, edges, faces)
 
 This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. However, when computing the gradient and Hessian of the potentials, the derivatives will be with respect to the surface DOF. If you want the derivatives with respect to the full mesh DOF, then we need to apply the chain rule. Fortunately, the ``CollisionMesh`` class provides a function to do this (``CollisionMesh::to_full_dof``):
 
@@ -77,13 +77,65 @@ This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. How
                 collision_mesh, vertices, dhat);
             hess_full = collision_mesh.to_full_dof(hess);
 
+Nonlinear Bases and Curved Meshes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+While IPC cannot directly handle nonlinear finite element bases and/or curved meshes, :cite:t:`Ferguson2023HighOrderIPC` show that displacements and forces can be transfered between a finite element mesh and a collision proxy through the use of a linear map. Given this linear map as a matrix, we can use the ``CollisionMesh`` class to map between the full and surface DOF.
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            // Finite element mesh
+            Eigen::MatrixXd fe_rest_positions;
+            Eigen::MatrixXi tets;
+            // TODO: Show how to load a volumetric mesh from a file (e.g., using MshIO)
+
+            // Collision proxy mesh
+            Eigen::MatrixXd proxy_rest_positions;
+            Eigen::MatrixXi proxy_edges, proxy_faces;
+            // Load the proxy mesh from a file
+            igl::readOBJ("proxy.obj", rest_positions, faces);
+            igl::edges(faces, edges);
+            // Or build it from the volumetric mesh
+
+            // Linear map from the finite element mesh to the collision proxy
+            Eigen::SparseMatrix<double> displacement_map = ...; // build or load the displacement map
+
+            ipc::CollisionMesh collision_mesh(
+                proxy_rest_positions, proxy_edges, proxy_faces, displacement_map);
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            # Finite element mesh
+            fe_mesh = meshio.read("mesh.msh")
+            fe_rest_positions = mesh.points
+            tets = mesh.cells_dict["tetra"]
+
+            # Collision proxy mesh
+            # Load the proxy mesh from a file
+            proxy_mesh = meshio.read("proxy.msh")
+            proxy_rest_positions = proxy_mesh.points
+            proxy_faces = proxy_mesh.cells_dict["triangles"]
+            proxy_edges = igl.edges(proxy_faces)
+            # Or build it from the volumetric mesh
+
+            # Linear map from the finite element mesh to the collision proxy
+            displacement_map = ... # build or load the displacement map
+
+            collision_mesh = CollisionMesh(
+                proxy_rest_positions, proxy_edges, proxy_faces, displacement_map)
+
+We can then map the displacements using ``collision_mesh.map_displacement(fe_displacements)`` or directly get the displaced proxy mesh vertices using ``collision_mesh.displace_vertices(fe_displacements)``. Similarly, we can map forces/gradients using ``collision_mesh.to_full_dof(contact_forces)`` or force jacobians/potential hessians using ``collision_mesh.to_full_dof(potential_hessian)``.
+
+.. warning::
+    The function ``CollisionMesh::vertices(full_positions)`` should not be used in this case because the rest positions used to construct the ``CollisionMesh`` are not the same as the finite element mesh's rest positions. Instead, use ``CollisionMesh::displace_vertices(fe_displacements)`` where ``fe_displacements`` is already the solution of the PDE or can be computed as ``fe_displacements = fe_positions - fe_rest_positions`` from deformed and rest positions.
+
 Positive Semi-Definite Projection
 ---------------------------------
 
-As described in [IPC]_ the Hessian of the potentials can be indefinite. This is problematic when using the Hessian in a Newton step [IPC]_. To remedy this, we can project the Hessian onto the positive semidefinite (PSD) cone. To do this set the optional parameter ``project_hessian_to_psd`` of ``compute_potential_hessian`` to true.
-
-------------
-
-.. rubric:: References
-
-.. [IPC] Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, Danny M. Kaufman. 2020. Incremental Potential Contact: Intersection- and Inversion-free Large Deformation Dynamics. *ACM Transactions on Graphics (SIGGRAPH).*
+As described by :cite:t:`Li2020IPC`, the Hessian of the potentials can be indefinite. This is problematic when using the Hessian in a Newton step :cite:p:`Li2020IPC`. To remedy this, we can project the Hessian onto the positive semidefinite (PSD) cone. To do this set the optional parameter ``project_hessian_to_psd`` of ``compute_potential_hessian`` to true.
