@@ -42,7 +42,7 @@ We will start by creating a collision mesh from a ``bunny.obj`` mesh file (you c
 
             mesh = meshio.read("bunny.obj")
             rest_positions = mesh.points
-            faces = mesh.cells_dict["triangles"]
+            faces = mesh.cells_dict["triangle"]
             edges = ipctk.edges(faces)
 
             collision_mesh = ipctk.CollisionMesh(rest_positions, edges, faces)
