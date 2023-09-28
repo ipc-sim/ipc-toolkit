@@ -1168,7 +1168,7 @@ Python</label></div>
 <span class="c1"># Load the proxy mesh from a file</span>
 <span class="n">proxy_mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;proxy.msh&quot;</span><span class="p">)</span>
 <span class="n">proxy_rest_positions</span> <span class="o">=</span> <span class="n">proxy_mesh</span><span class="o">.</span><span class="n">points</span>
-<span class="n">proxy_faces</span> <span class="o">=</span> <span class="n">proxy_mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;triangles&quot;</span><span class="p">]</span>
+<span class="n">proxy_faces</span> <span class="o">=</span> <span class="n">proxy_mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;triangle&quot;</span><span class="p">]</span>
 <span class="n">proxy_edges</span> <span class="o">=</span> <span class="n">igl</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">proxy_faces</span><span class="p">)</span>
 <span class="c1"># Or build it from the volumetric mesh</span>
 
@@ -1195,7 +1195,7 @@ Python</label></div>
   <small>
     
       Last update:
-      Sep 26, 2023
+      Sep 28, 2023
     
   </small>
 </div>

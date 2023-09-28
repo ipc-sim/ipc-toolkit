@@ -120,7 +120,7 @@ While IPC cannot directly handle nonlinear finite element bases and/or curved me
             # Load the proxy mesh from a file
             proxy_mesh = meshio.read("proxy.msh")
             proxy_rest_positions = proxy_mesh.points
-            proxy_faces = proxy_mesh.cells_dict["triangles"]
+            proxy_faces = proxy_mesh.cells_dict["triangle"]
             proxy_edges = igl.edges(proxy_faces)
             # Or build it from the volumetric mesh
 

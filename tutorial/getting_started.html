@@ -1321,7 +1321,7 @@ Python</label></div>
 
 <span class="n">mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;bunny.obj&quot;</span><span class="p">)</span>
 <span class="n">rest_positions</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">points</span>
-<span class="n">faces</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;triangles&quot;</span><span class="p">]</span>
+<span class="n">faces</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;triangle&quot;</span><span class="p">]</span>
 <span class="n">edges</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">faces</span><span class="p">)</span>
 
 <span class="n">collision_mesh</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">CollisionMesh</span><span class="p">(</span><span class="n">rest_positions</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">faces</span><span class="p">)</span>
@@ -1997,7 +1997,7 @@ Python</label></div>
   <small>
     
       Last update:
-      Sep 26, 2023
+      Sep 28, 2023
     
   </small>
 </div>
