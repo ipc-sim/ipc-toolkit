@@ -15,6 +15,23 @@ using namespace ipc;
 
 static const double EPSILON = std::numeric_limits<float>::epsilon();
 
+TEST_CASE("Point-point CCD", "[ccd]")
+{
+    const Eigen::Vector3d p0_t0(0.0, 0.0, 0.0), p0_t1(1.0, 1.0, 1.0);
+    const Eigen::Vector3d p1_t0(1.0, 1.0, 0.0), p1_t1(0.0, 0.0, 1.0);
+
+    const double min_distance = GENERATE(0, 1e-6, 1e-4, 1e-2);
+
+    double toi;
+    bool is_colliding =
+        point_point_ccd(p0_t0, p1_t0, p0_t1, p1_t1, toi, min_distance);
+
+    // Check the results
+    const double margin = min_distance * (p0_t1 - p0_t0).norm();
+    REQUIRE(is_colliding);
+    REQUIRE(toi == Catch::Approx(0.5).margin(1e-3));
+}
+
 TEST_CASE("Point-edge 2D CCD", "[ccd]")
 {
     Eigen::Vector2d p_t0, p_t1, e0_t0, e0_t1, e1_t0, e1_t1;

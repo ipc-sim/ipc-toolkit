@@ -193,17 +193,19 @@ double Candidates::compute_cfl_stepsize(
 
 size_t Candidates::size() const
 {
-    return ev_candidates.size() + ee_candidates.size() + fv_candidates.size();
+    return vv_candidates.size() + ev_candidates.size() + ee_candidates.size()
+        + fv_candidates.size();
 }
 
 bool Candidates::empty() const
 {
-    return ev_candidates.empty() && ee_candidates.empty()
-        && fv_candidates.empty();
+    return vv_candidates.empty() && ev_candidates.empty()
+        && ee_candidates.empty() && fv_candidates.empty();
 }
 
 void Candidates::clear()
 {
+    vv_candidates.clear();
     ev_candidates.clear();
     ee_candidates.clear();
     fv_candidates.clear();
@@ -211,6 +213,10 @@ void Candidates::clear()
 
 ContinuousCollisionCandidate& Candidates::operator[](size_t idx)
 {
+    if (idx < vv_candidates.size()) {
+        return vv_candidates[idx];
+    }
+    idx -= vv_candidates.size();
     if (idx < ev_candidates.size()) {
         return ev_candidates[idx];
     }
@@ -227,6 +233,10 @@ ContinuousCollisionCandidate& Candidates::operator[](size_t idx)
 
 const ContinuousCollisionCandidate& Candidates::operator[](size_t idx) const
 {
+    if (idx < vv_candidates.size()) {
+        return vv_candidates[idx];
+    }
+    idx -= vv_candidates.size();
     if (idx < ev_candidates.size()) {
         return ev_candidates[idx];
     }
@@ -252,6 +262,8 @@ bool Candidates::save_obj(
         return false;
     }
     int v_offset = 0;
+    ipc::save_obj(obj, vertices, edges, faces, vv_candidates, v_offset);
+    v_offset += vv_candidates.size() * 2;
     ipc::save_obj(obj, vertices, edges, faces, ev_candidates, v_offset);
     v_offset += ev_candidates.size() * 3;
     ipc::save_obj(obj, vertices, edges, faces, ee_candidates, v_offset);

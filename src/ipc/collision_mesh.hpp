@@ -90,6 +90,9 @@ public:
     /// @brief Get the vertices of the collision mesh at rest (#V × dim).
     const Eigen::MatrixXd& rest_positions() const { return m_rest_positions; }
 
+    /// @brief Get the indices of codimensional vertices of the collision mesh (#CV x 1).
+    const Eigen::VectorXi& codim_vertices() const { return m_codim_vertices; }
+
     /// @brief Get the edges of the collision mesh (#E × 2).
     const Eigen::MatrixXi& edges() const { return m_edges; }
 
@@ -253,9 +256,12 @@ public:
     /// @brief Construct a vector of bools indicating whether each vertex is on the surface.
     /// @param num_vertices The number of vertices in the mesh.
     /// @param edges The surface edges of the mesh (#E × 2).
+    /// @param codim_vertices The indices of codimensional vertices (#CV x 1).
     /// @return A vector of bools indicating whether each vertex is on the surface.
     static std::vector<bool> construct_is_on_surface(
-        const int num_vertices, const Eigen::MatrixXi& edges);
+        const int num_vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::VectorXi& codim_vertices = Eigen::VectorXi());
 
     /// @brief Construct a matrix that maps from the faces' edges to rows in the edges matrix.
     /// @param faces The face matrix of mesh (#F × 3).
@@ -273,6 +279,8 @@ protected:
     // -----------------------------------------------------------------------
     // Helper initialization functions
 
+    void init_codim_vertices();
+
     /// @brief Initialize the selection matrix from full vertices/DOF to collision vertices/DOF.
     void init_selection_matrices(const int dim);
 
@@ -289,6 +297,8 @@ protected:
     Eigen::MatrixXd m_full_rest_positions;
     /// @brief The vertex positions at rest (#V × dim).
     Eigen::MatrixXd m_rest_positions;
+    /// @brief The indices of codimensional vertices (#CV x 1).
+    Eigen::VectorXi m_codim_vertices;
     /// @brief Edges as rows of indicies into vertices (#E × 2).
     Eigen::MatrixXi m_edges;
     /// @brief Triangular faces as rows of indicies into vertices (#F × 3).

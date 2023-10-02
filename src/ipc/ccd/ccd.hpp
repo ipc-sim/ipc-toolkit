@@ -30,7 +30,7 @@ bool point_edge_ccd_2D(
 
 // 3D
 
-bool point_point_ccd(
+bool point_point_ccd_3D(
     const Eigen::Vector3d& p0_t0,
     const Eigen::Vector3d& p1_t0,
     const Eigen::Vector3d& p0_t1,
@@ -89,6 +89,18 @@ bool edge_edge_ccd(
     const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 // 2D or 3D
+
+bool point_point_ccd(
+    const VectorMax3d& p0_t0,
+    const VectorMax3d& p1_t0,
+    const VectorMax3d& p0_t1,
+    const VectorMax3d& p1_t1,
+    double& toi,
+    const double min_distance = 0.0,
+    const double tmax = 1.0,
+    const double tolerance = DEFAULT_CCD_TOLERANCE,
+    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 bool point_edge_ccd(
     const VectorMax3d& p_t0,

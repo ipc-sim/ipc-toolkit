@@ -20,6 +20,13 @@
 
 namespace ipc {
 
+namespace {
+    inline Eigen::Vector3d to_3D(const Eigen::Vector2d& v)
+    {
+        return Eigen::Vector3d(v.x(), v.y(), 0);
+    }
+} // namespace
+
 /// @brief Scale the distance tolerance to be at most this fraction of the initial distance.
 static constexpr double INITIAL_DISTANCE_TOLERANCE_SCALE = 0.5;
 
@@ -138,9 +145,32 @@ bool point_point_ccd(
         conservative_rescaling, toi);
 }
 
-inline Eigen::Vector3d to_3D(const Eigen::Vector2d& v)
+bool point_point_ccd(
+    const VectorMax3d& p0_t0,
+    const VectorMax3d& p1_t0,
+    const VectorMax3d& p0_t1,
+    const VectorMax3d& p1_t1,
+    double& toi,
+    const double min_distance,
+    const double tmax,
+    const double tolerance,
+    const long max_iterations,
+    const double conservative_rescaling)
 {
-    return Eigen::Vector3d(v.x(), v.y(), 0);
+    assert(p0_t0.size() == p1_t0.size());
+    assert(p0_t0.size() == p0_t1.size());
+    assert(p0_t0.size() == p1_t1.size());
+
+    const bool is_2D = p0_t0.size() == 2;
+
+    const Eigen::Vector3d p0_t0_3D = is_2D ? to_3D(p0_t0) : p0_t0.head<3>();
+    const Eigen::Vector3d p1_t0_3D = is_2D ? to_3D(p1_t0) : p1_t0.head<3>();
+    const Eigen::Vector3d p0_t1_3D = is_2D ? to_3D(p0_t1) : p0_t1.head<3>();
+    const Eigen::Vector3d p1_t1_3D = is_2D ? to_3D(p1_t1) : p1_t1.head<3>();
+
+    return point_point_ccd(
+        p0_t0_3D, p1_t0_3D, p0_t1_3D, p1_t1_3D, toi, min_distance, tmax,
+        tolerance, max_iterations, conservative_rescaling);
 }
 
 bool point_edge_ccd_2D(

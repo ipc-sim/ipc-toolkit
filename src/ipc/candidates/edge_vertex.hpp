@@ -1,6 +1,5 @@
 #pragma once
 
-#include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/candidates/continuous_collision_candidate.hpp>
 #include <ipc/distance/distance_type.hpp>
 
@@ -43,6 +42,8 @@ public:
     {
         return H::combine(std::move(h), ev.edge_id, ev.vertex_id);
     }
+
+    // ------------------------------------------------------------------------
 
     long edge_id;   ///< @brief ID of the edge
     long vertex_id; ///< @brief ID of the vertex
