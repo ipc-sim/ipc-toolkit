@@ -10,11 +10,6 @@
 #include <igl/read_triangle_mesh.h>
 #include <igl/edges.h>
 
-// #ifdef IPC_TOOLKIT_TEST_CCD_BENCHMARK
-#include <igl/Timer.h>
-#include <ccd_io/read_ccd_queries.hpp>
-// #endif
-
 using namespace ipc;
 
 TEST_CASE("Repeated CCD", "[ccd][repeat]")
