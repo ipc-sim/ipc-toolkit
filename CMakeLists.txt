@@ -72,6 +72,10 @@ option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"     
 
 include(CMakeDependentOption)
 cmake_dependent_option(IPC_TOOLKIT_TEST_CCD_BENCHMARK "Enable CCD benchmark test" OFF "IPC_TOOLKIT_BUILD_TESTS" OFF)
+if(IPC_TOOLKIT_TEST_CCD_BENCHMARK)
+  set(IPC_TOOLKIT_CCD_BENCHMARK_DIR "" CACHE PATH "Path to the CCD benchmark directory")
+  set(IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR "" CACHE PATH "Path to the new CCD benchmark directory")
+endif()
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)

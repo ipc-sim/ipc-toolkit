@@ -43,49 +43,51 @@ void run_benchmark(
 
     std::vector<fs::path> csv_dirs;
     bool is_data_split = true;
-    // SECTION("Original Benchmark")
-    // {
-    //     is_data_split = false;
+    SECTION("Original Benchmark")
+    {
+        is_data_split = false;
 
-    //     const fs::path root_path(
-    //         // CCD_IO_SAMPLE_QUERIES_DIR
-    //         "/Users/zachary/Development/research/collision-detection/dataset");
+#ifdef IPC_TOOLKIT_CCD_BENCHMARK_DIR
+        const fs::path root_path(IPC_TOOLKIT_CCD_BENCHMARK_DIR);
+#else
+        const fs::path root_path(CCD_IO_SAMPLE_QUERIES_DIR);
+#endif
 
-    //     const std::vector<std::string> folders { {
-    //         "chain",
-    //         "cow-heads",
-    //         "golf-ball",
-    //         "mat-twist",
-    //         "erleben-sliding-spike",
-    //         "erleben-spike-wedge",
-    //         "erleben-sliding-wedge",
-    //         "erleben-wedge-crack",
-    //         "erleben-spike-crack",
-    //         "erleben-wedges",
-    //         "erleben-cube-cliff-edges",
-    //         "erleben-spike-hole",
-    //         "erleben-cube-internal-edges",
-    //         "erleben-spikes",
-    //         "unit-tests",
-    //     } };
+        const std::vector<std::string> folders { {
+            "chain",
+            "cow-heads",
+            "golf-ball",
+            "mat-twist",
+            "erleben-sliding-spike",
+            "erleben-spike-wedge",
+            "erleben-sliding-wedge",
+            "erleben-wedge-crack",
+            "erleben-spike-crack",
+            "erleben-wedges",
+            "erleben-cube-cliff-edges",
+            "erleben-spike-hole",
+            "erleben-cube-internal-edges",
+            "erleben-spikes",
+            "unit-tests",
+        } };
 
-    //     const std::array<std::string, 2> subfolders = { {
-    //         "edge-edge",
-    //         "vertex-face",
-    //     } };
+        const std::array<std::string, 2> subfolders = { {
+            "edge-edge",
+            "vertex-face",
+        } };
 
-    //     for (const std::string& folder : folders) {
-    //         for (const std::string& subfolder : subfolders) {
-    //             csv_dirs.push_back(root_path / folder / subfolder);
-    //         }
-    //     }
-    // }
+        for (const std::string& folder : folders) {
+            for (const std::string& subfolder : subfolders) {
+                csv_dirs.push_back(root_path / folder / subfolder);
+            }
+        }
+    }
+#ifdef IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR
     SECTION("New Benchmark")
     {
         bool is_data_split = true;
 
-        const fs::path root_path(
-            "/Users/zachary/Documents/Papers/Time of Impact Dataset for Continuous Collision Detection and a Scalable Conservative Algorithm/data/scalable-ccd-data");
+        const fs::path root_path(IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR);
 
         const std::vector<std::string> folders { {
             "armadillo-rollers",
@@ -99,6 +101,7 @@ void run_benchmark(
             csv_dirs.push_back(root_path / folder / "queries");
         }
     }
+#endif
 
     int i = 0;
     double total_time = 0;
