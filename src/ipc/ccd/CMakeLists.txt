@@ -1,6 +1,8 @@
 set(SOURCES
   aabb.cpp
   aabb.hpp
+  additive_ccd.cpp
+  additive_ccd.hpp
   ccd.cpp
   ccd.hpp
   inexact_point_edge.cpp

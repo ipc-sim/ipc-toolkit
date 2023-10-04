@@ -15,11 +15,11 @@ CPMAddPackage(
 
 # file(GLOB EVOUGA_CCD_SOURCE_FILES "${evccd_SOURCE_DIR}/src/*.cpp")
 add_library(evouga_ccd
-    "${evccd_SOURCE_DIR}/src/CTCD.cpp"
+    "${collisiondetection_SOURCE_DIR}/src/CTCD.cpp"
 )
 add_library(evouga::ccd ALIAS evouga_ccd)
 
-target_include_directories(evouga_ccd PUBLIC "${evccd_SOURCE_DIR}/include")
+target_include_directories(evouga_ccd PUBLIC "${collisiondetection_SOURCE_DIR}/include")
 
 include(eigen)
 target_link_libraries(evouga_ccd PUBLIC Eigen3::Eigen)
