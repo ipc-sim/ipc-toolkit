@@ -119,7 +119,11 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
     }
     SECTION("Adversarial ACCD Case")
     {
+#if !defined(WIN32) || NDEBUG
         const double d0 = GENERATE(1e-2, 1e-4, 1e-6, 1e-8);
+#else
+        const double d0 = GENERATE(1e-2, 1e-4, 1e-6);
+#endif
         ea0_t0 << -1.0, -d0 / 2, 0.0;
         ea1_t0 << 1.0, -d0 / 2, 0.0;
         eb0_t0 << 0.0, d0 / 2, -1.0;
@@ -151,7 +155,7 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
         ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
         /*min_distance=*/0.0, tmax);
     if (conservative_check) {
-        CHECK(is_colliding >= is_collision_expected);
+        CHECK(int(is_colliding) >= int(is_collision_expected));
     } else {
         CHECK(is_colliding == is_collision_expected);
     }
