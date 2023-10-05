@@ -45,7 +45,7 @@ double normalized_barrier_hessian(const double d, const double dhat)
 }
 } // namespace
 
-TEST_CASE("Test barrier derivatives", "[barrier]")
+TEST_CASE("Barrier derivatives", "[barrier]")
 {
     bool use_dist_sqr = GENERATE(false, true);
     double dhat = GENERATE_COPY(range(use_dist_sqr ? -2 : -5, 0));
@@ -115,7 +115,7 @@ TEST_CASE("Test barrier derivatives", "[barrier]")
     CHECK(fd::compare_gradient(fgrad, grad));
 }
 
-TEST_CASE("Test physical barrier", "[barrier]")
+TEST_CASE("Physical barrier", "[barrier]")
 {
     const bool use_dist_sqr = GENERATE(false, true);
     const double dhat =

@@ -8,7 +8,7 @@
 
 using namespace ipc;
 
-TEST_CASE("Test compute_cfl_stepsize()", "[ccd][cfl]")
+TEST_CASE("Compute CFL stepsize", "[ccd][cfl]")
 {
     const double dhat = GENERATE(1e-6, 1e-3, 1e-1);
 
