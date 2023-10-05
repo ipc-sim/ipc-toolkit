@@ -69,6 +69,8 @@ option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                 
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
+option(IPC_TOOLKIT_CODE_COVERAGE              "Enable coverage reporting"                     OFF)
+mark_as_advanced(IPC_TOOLKIT_CODE_COVERAGE)
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
@@ -253,6 +255,24 @@ if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_TESTS)
   include(CTest)
   enable_testing()
   add_subdirectory(tests)
+endif()
+
+################################################################################
+# Code Coverage
+################################################################################
+
+if(IPC_TOOLKIT_CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  add_library(ipc_toolkit_coverage_config INTERFACE)
+
+  # Add required flags (GCC & LLVM/Clang)
+  target_compile_options(ipc_toolkit_coverage_config INTERFACE
+    -O0        # no optimization
+    -g         # generate debug info
+    --coverage # sets all required flags
+  )
+  target_link_options(ipc_toolkit_coverage_config INTERFACE --coverage)
+
+  target_link_libraries(ipc_toolkit PUBLIC ipc_toolkit_coverage_config)
 endif()
 
 ################################################################################

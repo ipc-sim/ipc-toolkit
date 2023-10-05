@@ -18,7 +18,7 @@ jobs:
         with:
           fetch-depth: 10
 
-      - name: Dependencies (Linux)
+      - name: Dependencies
         run: |
           sudo apt-get install ccache
           echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
@@ -28,7 +28,7 @@ jobs:
         uses: actions/cache@v3.0.11
         with:
           path: ${{ env.CACHE_PATH }}
-          key: ${{ runner.os }}-${{ matrix.config }}-cache
+          key: ubuntu-latest-RelWithDebInfo-cache
 
       - name: Prepare ccache
         run: |
@@ -36,16 +36,20 @@ jobs:
           ccache -V && ccache --show-config
           ccache --show-stats && ccache --zero-stats\
 
-      - name: Configure (Linux/macOS)
+      - name: Configure
         run: |
           mkdir -p build
           cd build
           cmake .. \
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
-            -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+            -DIPC_TOOLKIT_CODE_COVERAGE=ON \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
 
-      - name: Build (Linux/macOS)
+      - name: Build
         run: cd build; make -j2; ccache --show-stats
+
+      - name: Tests
+        run: cd build; ctest --verbose -j2
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
