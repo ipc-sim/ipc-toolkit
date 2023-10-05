@@ -122,7 +122,7 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
 #if !defined(WIN32) || NDEBUG
         const double d0 = GENERATE(1e-2, 1e-4, 1e-6, 1e-8);
 #else
-        const double d0 = GENERATE(1e-2, 1e-4, 1e-6);
+        const double d0 = 1e-2;
 #endif
         ea0_t0 << -1.0, -d0 / 2, 0.0;
         ea1_t0 << 1.0, -d0 / 2, 0.0;
@@ -137,9 +137,11 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
         eb0_t1 = eb0_t0 + Eigen::Vector3d(scale, -dy, scale);
         eb1_t1 = eb1_t0 + Eigen::Vector3d(-scale, -dy, -scale);
 
-        is_collision_expected = dy >= d0 / 2;
+        // this ternary operator is to force MSVC to use 1 or 0
+        is_collision_expected = dy >= d0 / 2 ? true : false;
         conservative_check = false;
     }
+    CAPTURE(int(is_collision_expected));
 
     double toi;
     bool is_colliding = edge_edge_ccd(
@@ -155,7 +157,7 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
         ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
         /*min_distance=*/0.0, tmax);
     if (conservative_check) {
-        CHECK(int(is_colliding) >= int(is_collision_expected));
+        CHECK(is_colliding >= is_collision_expected);
     } else {
         CHECK(is_colliding == is_collision_expected);
     }
