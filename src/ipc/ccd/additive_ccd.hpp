@@ -19,9 +19,6 @@ namespace ipc::additive_ccd {
 static constexpr double DEFAULT_CCD_CONSERVATIVE_RESCALING = 0.9;
 
 /// @brief Computes the time of impact between two points using continuous collision detection.
-///
-/// @warning This method of CCD is know to produce false negatives (i.e., may miss collisions due to rounding error) [Belgrod et al. 2022]. See also test_ccd.cpp.
-///
 /// @param p0_t0 The initial position of the first point.
 /// @param p1_t0 The initial position of the second point.
 /// @param p0_t1 The final position of the first point.
@@ -42,9 +39,6 @@ bool point_point_ccd(
     const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 /// @brief Computes the time of impact between a point and an edge using continuous collision detection.
-///
-/// @warning This method of CCD is know to produce false negatives (i.e., may miss collisions due to rounding error) [Belgrod et al. 2022]. See also test_ccd.cpp.
-///
 /// @param p_t0 The initial position of the point.
 /// @param e0_t0 The initial position of the first endpoint of the edge.
 /// @param e1_t0 The initial position of the second endpoint of the edge.
@@ -69,9 +63,6 @@ bool point_edge_ccd(
     const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 /// @brief Computes the time of impact between a point and a triangle using continuous collision detection.
-///
-/// @warning This method of CCD is know to produce false negatives (i.e., may miss collisions due to rounding error) [Belgrod et al. 2022]. See also test_ccd.cpp.
-///
 /// @param p_t0 The initial position of the point.
 /// @param t0_t0 The initial position of the first vertex of the triangle.
 /// @param t1_t0 The initial position of the second vertex of the triangle.
@@ -100,9 +91,6 @@ bool point_triangle_ccd(
     const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 /// @brief Computes the time of impact between two edges using continuous collision detection.
-///
-/// @warning This method of CCD is know to produce false negatives (i.e., may miss collisions due to rounding error) [Belgrod et al. 2022]. See also test_ccd.cpp.
-///
 /// @param ea0_t0 The initial position of the first endpoint of the first edge.
 /// @param ea1_t0 The initial position of the second endpoint of the first edge.
 /// @param eb0_t0 The initial position of the first endpoint of the second edge.

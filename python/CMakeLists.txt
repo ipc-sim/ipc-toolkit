@@ -27,6 +27,7 @@ pybind11_add_module(ipctk
 
   src/ccd/aabb.cpp
   src/ccd/ccd.cpp
+  src/ccd/additive_ccd.cpp
   src/ccd/inexact_point_edge.cpp
   src/ccd/point_static_plane.cpp
 

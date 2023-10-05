@@ -7,4 +7,4 @@ endif()
 message(STATUS "Third-party: creating target 'rational::rational'")
 
 include(CPM)
-CPMAddPackage("gh:zfergus/rational-cpp#1e91438315389db5987732f464c36614b31bcadf")
+CPMAddPackage("gh:zfergus/rational-cpp#687d4ea3436ada7231b8920f3cd5b02b438c21aa")
