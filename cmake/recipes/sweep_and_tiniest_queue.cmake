@@ -1,3 +1,5 @@
+# Broadphase GPU (https://github.com/dbelgrod/broadphase-gpu)
+# License: MIT
 if(TARGET STQ::CPU)
     return()
 endif()

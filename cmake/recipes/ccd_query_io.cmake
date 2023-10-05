@@ -1,3 +1,5 @@
+# CCD Query IO (https://github.com/Continuous-Collision-Detection/CCD-Query-IO)
+# License: MIT
 if(TARGET ccd_io::ccd_io)
     return()
 endif()

@@ -1,3 +1,5 @@
+# Abseil (https://github.com/abseil/abseil-cpp)
+# License: Apache 2.0
 if(TARGET absl::flat_hash_map)
     return()
 endif()

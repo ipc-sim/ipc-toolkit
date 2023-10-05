@@ -1,3 +1,5 @@
+# rational-cpp (https://github.com/zfergus/rational-cpp)
+# License: MIT
 if(TARGET rational::rational)
     return()
 endif()
