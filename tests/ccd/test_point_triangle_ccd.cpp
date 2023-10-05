@@ -1,5 +1,6 @@
 #include <catch2/catch_all.hpp>
 
+#include <ipc/config.hpp>
 #include <ipc/ccd/ccd.hpp>
 #include <ipc/ccd/additive_ccd.hpp>
 
@@ -17,8 +18,10 @@ TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle][!mayfail]")
     bool is_collision_expected;
     bool conservative_check = true;
 
+    std::string name;
     SECTION("General")
     {
+        name = "General";
         const double v0z = GENERATE(0.0, -1.0);
         const double u0y =
             -GENERATE(-1.0, 0.0, 0.5 - EPSILON, 0.5, 0.5 + EPSILON, 1.0, 2.0);
@@ -43,6 +46,7 @@ TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle][!mayfail]")
 #ifndef WIN32
     SECTION("Zhongshi's test case")
     {
+        name = "Zhongshi's test case";
         const double qy = GENERATE(-EPSILON, 0, EPSILON);
         CAPTURE(qy);
 
@@ -60,6 +64,7 @@ TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle][!mayfail]")
 #endif
     SECTION("Bolun's test case")
     {
+        name = "Bolun's test case";
         p_t0 << 0.1, 0.1, 0.1;
         t0_t0 << 0, 0, 1;
         t1_t0 << 1, 0, 1;
@@ -73,7 +78,7 @@ TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle][!mayfail]")
 #endif
     SECTION("No Zero ToI CCD")
     {
-        Eigen::Vector3d p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1;
+        name = "No Zero ToI CCD";
         p_t0 << 0.0133653, 0.100651, -0.0215935;
         t0_t0 << 0.0100485, 0.0950896, -0.0171013;
         t1_t0 << 0.0130388, 0.100666, -0.0218112;
@@ -85,6 +90,7 @@ TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle][!mayfail]")
         is_collision_expected = false;
         conservative_check = false;
     }
+    INFO(name);
 
     double toi;
     bool is_colliding = point_triangle_ccd(

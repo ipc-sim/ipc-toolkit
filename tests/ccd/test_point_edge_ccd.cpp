@@ -1,5 +1,6 @@
 #include <catch2/catch_all.hpp>
 
+#include <ipc/config.hpp>
 #include <ipc/ccd/ccd.hpp>
 #include <ipc/ccd/additive_ccd.hpp>
 
