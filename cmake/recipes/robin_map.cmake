@@ -1,3 +1,5 @@
+# robin-map (https://github.com/Tessil/robin-map)
+# License: MIT
 if(TARGET tsl::robin_map)
     return()
 endif()

@@ -72,6 +72,13 @@ option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"     
 option(IPC_TOOLKIT_CODE_COVERAGE              "Enable coverage reporting"                     OFF)
 mark_as_advanced(IPC_TOOLKIT_CODE_COVERAGE)
 
+include(CMakeDependentOption)
+cmake_dependent_option(IPC_TOOLKIT_TEST_CCD_BENCHMARK "Enable CCD benchmark test" OFF "IPC_TOOLKIT_BUILD_TESTS" OFF)
+if(IPC_TOOLKIT_TEST_CCD_BENCHMARK)
+  set(IPC_TOOLKIT_CCD_BENCHMARK_DIR "" CACHE PATH "Path to the CCD benchmark directory")
+  set(IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR "" CACHE PATH "Path to the new CCD benchmark directory")
+endif()
+
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
   set(CMAKE_CXX_STANDARD 17)
@@ -152,9 +159,10 @@ endif()
 include(spdlog)
 target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 
+# rational-cpp (requires GMP)
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
-  include(gmp)
-  target_link_libraries(ipc_toolkit PUBLIC GMP::GMP)
+  include(rational_cpp)
+  target_link_libraries(ipc_toolkit PUBLIC rational::rational)
 endif()
 
 # Sweep and Tiniest Queue and CCD

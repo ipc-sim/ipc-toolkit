@@ -16,7 +16,7 @@ env:
   CTEST_PARALLEL_LEVEL: 2
 
 jobs:
-  Unix:
+  Build:
     name: ${{ matrix.name }} (${{ matrix.config }})
     runs-on: ${{ matrix.os }}
     strategy:

@@ -86,9 +86,9 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase][2D]")
 }
 
 #if defined(NDEBUG) || !(defined(WIN32) || defined(_WIN32) || defined(__WIN32))
-TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D]")
+TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D]")
 #else
-TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D][.]")
+TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D][.]")
 #endif
 {
     Eigen::MatrixXd tmp;
@@ -116,7 +116,7 @@ TEST_CASE("Entire 2D Mesh", "[ccd][broad_phase][2D][.]")
 }
 
 TEST_CASE(
-    "Test constraint_set.build() with codimensional points",
+    "Build constraint set with codimensional points",
     "[broad_phase][constraints]")
 {
     const double dhat = 1e-3;

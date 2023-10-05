@@ -17,6 +17,11 @@ add_executable(ipc_toolkit_tests
   ccd/benchmark_ccd.cpp
   ccd/collision_generator.cpp
   ccd/test_ccd.cpp
+  ccd/test_ccd_benchmark.cpp
+  ccd/test_point_edge_ccd.cpp
+  ccd/test_point_triangle_ccd.cpp
+  ccd/test_edge_edge_ccd.cpp
+  ccd/test_ccd.cpp
   test_cfl.cpp
 
   # Test distances and dertivatives
@@ -67,6 +72,20 @@ target_link_libraries(ipc_toolkit_tests PUBLIC finitediff::finitediff)
 
 include(json)
 target_link_libraries(ipc_toolkit_tests PUBLIC nlohmann_json::nlohmann_json)
+
+if (IPC_TOOLKIT_TEST_CCD_BENCHMARK)
+  include(ccd_query_io)
+  target_link_libraries(ipc_toolkit_tests PUBLIC ccd_io::ccd_io)
+  target_compile_definitions(ipc_toolkit_tests PRIVATE IPC_TOOLKIT_TEST_CCD_BENCHMARK)
+  if(NOT (IPC_TOOLKIT_CCD_BENCHMARK_DIR STREQUAL ""))
+    message(STATUS "Using CCD benchmark directory: ${IPC_TOOLKIT_CCD_BENCHMARK_DIR}")
+    target_compile_definitions(ipc_toolkit_tests PRIVATE IPC_TOOLKIT_CCD_BENCHMARK_DIR="${IPC_TOOLKIT_CCD_BENCHMARK_DIR}")
+  endif()
+  if(NOT (IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR STREQUAL ""))
+    message(STATUS "Using new CCD benchmark directory: ${IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR}")
+    target_compile_definitions(ipc_toolkit_tests PRIVATE IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR="${IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR}")
+  endif()
+endif()
 
 if(IPC_TOOLKIT_WITH_CUDA)
   find_package(CUDAToolkit)

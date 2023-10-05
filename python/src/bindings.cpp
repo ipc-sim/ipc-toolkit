@@ -36,6 +36,7 @@ PYBIND11_MODULE(ipctk, m)
     // ccd
     define_ccd_aabb(m);
     define_ccd(m);
+    define_additive_ccd(m);
     define_inexact_point_edge(m);
     define_point_static_plane(m);
 
