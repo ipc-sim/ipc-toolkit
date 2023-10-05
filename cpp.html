@@ -1133,27 +1133,29 @@ We use this same process to download all external dependencies.</p>
 <li><p><a class="reference external" href="https://github.com/gabime/spdlog">spdlog</a>: logging information</p></li>
 </ul>
 <h2 id="optional">Optional<a class="headerlink" href="#optional" title="Permalink to this heading">¶</a></h2>
-<ul class="simple">
-<li><p><a class="reference external" href="https://github.com/Tessil/robin-map">robin-map</a>: faster hash set/map than <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span></code>/<code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span></code></p>
 <ul>
+<li><p><a class="reference external" href="https://github.com/Tessil/robin-map">robin-map</a>: faster hash set/map than <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span></code>/<code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span></code></p>
+<ul class="simple">
 <li><p>Enable by using the CMake option <code class="code highlight cmake docutils literal highlight-cmake">IPC_TOOLKIT_WITH_ROBIN_MAP</code></p></li>
 <li><p>Enabled by default</p></li>
 </ul>
 </li>
 <li><p><a class="reference external" href="https://abseil.io/">Abseil</a>: hashing utilities</p>
-<ul>
+<ul class="simple">
 <li><p>Enable by using the CMake option <code class="code highlight cmake docutils literal highlight-cmake">IPC_TOOLKIT_WITH_ABSEIL</code></p></li>
 <li><p>Enabled by default</p></li>
 </ul>
 </li>
-<li><p><a class="reference external" href="https://gmplib.org/">GMP</a>: rational arithmetic used for exact intersection checks</p>
-<ul>
+<li><p><a class="reference external" href="https://github.io/zfergus/rational-cpp">rational-cpp</a>: rational arithmetic used for exact intersection checks</p>
+<blockquote>
+<div><ul class="simple">
 <li><p>Enable by using the CMake option <code class="code highlight cmake docutils literal highlight-cmake">IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION</code></p></li>
-<li><p>GMP must be installed at a system level</p></li>
+<li><p>Requires <a class="reference external" href="https://gmplib.org/">GMP</a> to be installed at a system level</p></li>
 </ul>
+</div></blockquote>
 </li>
 <li><p><a class="reference external" href="https://github.com/evouga/collisiondetection">Etienne Vouga’s Collision Detection Library</a>: inexact CCD</p>
-<ul>
+<ul class="simple">
 <li><p>Included for comparison with the original IPC library</p></li>
 <li><p>Enable by disabling the CMake option <code class="code highlight cmake docutils literal highlight-cmake">IPC_TOOLKIT_WITH_CORRECT_CCD</code></p></li>
 <li><p>Replaces the default Tight-Inclusion CCD</p></li>
@@ -1178,7 +1180,7 @@ We use this same process to download all external dependencies.</p>
   <small>
     
       Last update:
-      Sep 28, 2023
+      Oct 05, 2023
     
   </small>
 </div>

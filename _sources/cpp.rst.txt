@@ -73,10 +73,10 @@ Optional
   * Enable by using the CMake option :cmake:`IPC_TOOLKIT_WITH_ABSEIL`
   * Enabled by default
 
-* `GMP <https://gmplib.org/>`__: rational arithmetic used for exact intersection checks
+* `rational-cpp <https://github.io/zfergus/rational-cpp>`__: rational arithmetic used for exact intersection checks
 
-  * Enable by using the CMake option :cmake:`IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION`
-  * GMP must be installed at a system level
+    * Enable by using the CMake option :cmake:`IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION`
+    * Requires `GMP <https://gmplib.org/>`__ to be installed at a system level
 
 * `Etienne Vouga's Collision Detection Library <https://github.com/evouga/collisiondetection>`__: inexact CCD
 
