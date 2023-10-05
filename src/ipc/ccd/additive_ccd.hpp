@@ -1,8 +1,11 @@
 //
-// WARNING: These methods are provided for reference comparison with
-// [Li et al. 2021]. This CCD method is not provably conservative and so can
-// produce false negatives (miss collisions) due to floating-point rounding
-// error [Belgrod et al. 2023].
+// NOTE: These methods are provided for reference comparison with [Li et al.
+// 2021] and is not utilized by the high-level functionality. In compairson to
+// Tight Inclusion CCD, this CCD method is not provably conservative and so can
+// potentially produce false negatives (i.e., miss collisions) due to
+// floating-point rounding error. However, it is much faster than Tight
+// Inclusion CCD (>100×) and very robust due to the gaps and conservative
+// rescaling used.
 //
 
 #pragma once

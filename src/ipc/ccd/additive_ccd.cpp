@@ -2,14 +2,21 @@
 // Source modified from https://github.com/ipc-sim/Codim-IPC
 // under Appache-2.0 License.
 //
-// Changes: changed namespace to ipc::additive_ccd, removed broadphase
-// functions, removed templating, renamed toc to toi, added subtract_mean
-// function.
+// Modifications:
+//  • remove broad phase functions
+//  • refactor code to use a single implementation of the additive_ccd algorithm
+//  • utilize our distance function rather than porting the Codim-IPC versions
+//  • return true if the initial distance is less than the minimum distance
+//  • add an explicit tmax parameter rather than relying on the initial value of
+//    toi
 //
-// WARNING: These methods are provided for reference comparison with
-// [Li et al. 2021]. This CCD method is not provably conservative and so can
-// produce false negatives (miss collisions) due to floating-point rounding
-// error [Belgrod et al. 2023].
+// NOTE: These methods are provided for reference comparison with [Li et al.
+// 2021] and is not utilized by the high-level functionality. In compairson to
+// Tight Inclusion CCD, this CCD method is not provably conservative and so can
+// potentially produce false negatives (i.e., miss collisions) due to
+// floating-point rounding error. However, it is much faster than Tight
+// Inclusion CCD (>100×) and very robust due to the gaps and conservative
+// rescaling used.
 //
 
 #include "additive_ccd.hpp"
@@ -42,6 +49,7 @@ namespace {
     }
 
     VectorMax12d stack(const VectorMax3d& x) { return x; }
+
     template <typename... Args>
     VectorMax12d stack(const VectorMax3d& x0, const Args&... args)
     {
@@ -57,10 +65,10 @@ bool additive_ccd(
     const VectorMax12d& dx,
     const std::function<double(const VectorMax12d&)>& distance_squared,
     const double max_disp_mag,
+    double& toi,
     const double min_distance,
     const double tmax,
-    const double conservative_rescaling,
-    double& toi)
+    const double conservative_rescaling)
 {
     assert(conservative_rescaling > 0 && conservative_rescaling < 1);
 
@@ -139,8 +147,8 @@ bool point_point_ccd(
     const VectorMax12d dx = stack(dp0, dp1);
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, min_distance, tmax,
-        conservative_rescaling, toi);
+        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
+        conservative_rescaling);
 }
 
 bool point_edge_ccd(
@@ -188,8 +196,8 @@ bool point_edge_ccd(
     };
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, min_distance, tmax,
-        conservative_rescaling, toi);
+        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
+        conservative_rescaling);
 }
 
 bool point_triangle_ccd(
@@ -238,8 +246,8 @@ bool point_triangle_ccd(
     };
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, min_distance, tmax,
-        conservative_rescaling, toi);
+        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
+        conservative_rescaling);
 }
 
 bool edge_edge_ccd(
@@ -301,8 +309,8 @@ bool edge_edge_ccd(
     };
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, min_distance, tmax,
-        conservative_rescaling, toi);
+        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
+        conservative_rescaling);
 }
 
 } // namespace ipc::additive_ccd
