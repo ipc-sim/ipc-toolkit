@@ -23,6 +23,7 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
     long max_iter = DEFAULT_CCD_MAX_ITERATIONS;
     double tmax = 1;
 
+#if !defined(WIN32) || NDEBUG
     SECTION("General")
     {
         double uy = GENERATE(-1.0, 0.0, 1 - EPSILON, 1.0, 1 + EPSILON, 2.0);
@@ -84,6 +85,7 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
 
         bool is_collision_expected = true;
     }
+#endif
     SECTION("Slow Case 1")
     {
         ea0_t0 << 1, 0.50803125, 2.10835646075301e-18;
@@ -119,11 +121,11 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
     }
     SECTION("Adversarial ACCD Case")
     {
-#if !defined(WIN32) || NDEBUG
+        // #if !defined(WIN32) || NDEBUG
         const double d0 = GENERATE(1e-2, 1e-4, 1e-6, 1e-8);
-#else
-        const double d0 = 1e-2;
-#endif
+        // #else
+        //         const double d0 = 1e-2;
+        // #endif
         ea0_t0 << -1.0, -d0 / 2, 0.0;
         ea1_t0 << 1.0, -d0 / 2, 0.0;
         eb0_t0 << 0.0, d0 / 2, -1.0;
