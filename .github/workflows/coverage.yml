@@ -28,7 +28,7 @@ jobs:
         uses: actions/cache@v3.0.11
         with:
           path: ${{ env.CACHE_PATH }}
-          key: ubuntu-latest-RelWithDebInfo-cache
+          key: ubuntu-latest-Release-cache
 
       - name: Prepare ccache
         run: |
@@ -43,13 +43,17 @@ jobs:
           cmake .. \
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
             -DIPC_TOOLKIT_CODE_COVERAGE=ON \
-            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_BUILD_TYPE=Release \
 
       - name: Build
         run: cd build; make -j2; ccache --show-stats
 
-      - name: Tests
-        run: cd build; ctest --verbose -j2
+      - name: Run Coverage
+        run: |
+          cd build
+          ctest --verbose --output-on-failure -j2
+          lcov --directory . --capture --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' "${HOME}"'/.cache/*' '*tests/*.cpp' --output-file coverage.info
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
