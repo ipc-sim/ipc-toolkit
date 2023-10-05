@@ -172,13 +172,13 @@ void run_benchmark(
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
 TEST_CASE(
     "Run CCD Benchmark on TI CCD",
-    "[ccd][benchmark][3D][point-triangle][edge-edge]")
+    "[ccd][benchmark][3D][point-triangle][edge-edge][.]")
 {
     fmt::print("Tight Inclusion CCD:\n");
 #else
 TEST_CASE(
     "Run CCD Benchmark on FP CCD",
-    "[ccd][benchmark][3D][point-triangle][edge-edge][!mayfail]")
+    "[ccd][benchmark][3D][point-triangle][edge-edge][!mayfail][.]")
 {
     fmt::print("Floating-Point CCD:\n");
 #endif
@@ -205,7 +205,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Run CCD Benchmark on ACCD",
-    "[ccd][benchmark][3D][point-triangle][edge-edge][!mayfail]")
+    "[ccd][benchmark][3D][point-triangle][edge-edge][.]")
 {
     fmt::print("Additive CCD:\n");
 

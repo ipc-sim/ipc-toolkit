@@ -116,7 +116,7 @@ TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D][.]")
 }
 
 TEST_CASE(
-    "Test constraint_set.build() with codimensional points",
+    "Build constraint set with codimensional points",
     "[broad_phase][constraints]")
 {
     const double dhat = 1e-3;
