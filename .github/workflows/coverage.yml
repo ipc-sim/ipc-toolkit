@@ -20,7 +20,7 @@ jobs:
 
       - name: Dependencies
         run: |
-          sudo apt-get install ccache
+          sudo apt-get install ccache lcov
           echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
 
       - name: Cache Build
