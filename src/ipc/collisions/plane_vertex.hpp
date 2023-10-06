@@ -21,6 +21,10 @@ public:
         return { { vertex_id, -1, -1, -1 } };
     }
 
+    using CollisionConstraint::compute_distance;
+    using CollisionConstraint::compute_distance_gradient;
+    using CollisionConstraint::compute_distance_hessian;
+
     VectorMax3d plane_origin;
     VectorMax3d plane_normal;
     long vertex_id;

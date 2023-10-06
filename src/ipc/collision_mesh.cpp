@@ -17,7 +17,8 @@ CollisionMesh::CollisionMesh(
         std::vector<bool>(rest_positions.rows(), true),
         rest_positions,
         edges,
-        faces)
+        faces,
+        displacement_map)
 {
 }
 

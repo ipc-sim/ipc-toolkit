@@ -8,6 +8,9 @@ add_executable(ipc_toolkit_tests
   # Test barrier and dertivatives
   barrier/test_barrier.cpp
 
+  # Test candidates
+  candidates/test_candidates.cpp
+
   # Test CCD
   broad_phase/benchmark_broad_phase.cpp
   broad_phase/brute_force_comparison.cpp
@@ -34,6 +37,9 @@ add_executable(ipc_toolkit_tests
   distance/test_point_point.cpp
   distance/test_point_triangle.cpp
 
+  # Test constraints
+  constraints/test_constraints.cpp
+
   # Test friction
   friction/friction_data_generator.cpp
   friction/test_closest_point.cpp
@@ -46,6 +52,7 @@ add_executable(ipc_toolkit_tests
 
   # Test general interface
   test_ipc.cpp
+  test_collision_mesh.cpp
 
   # Test intersection checks
   test_has_intersections.cpp
