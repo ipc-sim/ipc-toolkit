@@ -6,7 +6,9 @@
 
 using namespace ipc;
 
-TEST_CASE("Point-plane distance", "[distance][point-plane]")
+TEST_CASE(
+    "Point-plane distance and derivatives (dynamic plane)",
+    "[distance][point-plane][gradient][hessian]")
 {
     double x = GENERATE(take(10, random(-100.0, 100.0)));
     double y = GENERATE(take(10, random(-100.0, 100.0)));
@@ -16,63 +18,65 @@ TEST_CASE("Point-plane distance", "[distance][point-plane]")
     double y_plane = GENERATE(take(10, random(-100.0, 100.0)));
     Eigen::Vector3d t0(-1, y_plane, 0), t1(1, y_plane, -1), t2(1, y_plane, 0);
 
-    double distance = point_plane_distance(p, t0, t1, t2);
-    double expected_distance = std::abs(y - y_plane);
-    CHECK(distance == Catch::Approx(expected_distance * expected_distance));
+    {
+        double distance = point_plane_distance(p, t0, t1, t2);
+        double expected_distance = std::abs(y - y_plane);
+        CHECK(distance == Catch::Approx(expected_distance * expected_distance));
+    }
+
+    {
+        const Vector12d grad = point_plane_distance_gradient(p, t0, t1, t2);
+
+        Vector12d x_vec;
+        x_vec << p, t0, t1, t2;
+        Eigen::VectorXd expected_grad;
+        expected_grad.resize(grad.size());
+        fd::finite_gradient(
+            x_vec,
+            [](const Eigen::VectorXd& x) {
+                return point_plane_distance(
+                    x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
+            },
+            expected_grad);
+
+        CAPTURE((grad - expected_grad).norm());
+        CHECK(fd::compare_gradient(grad, expected_grad));
+    }
+
+    {
+        const Matrix12d hess = point_plane_distance_hessian(p, t0, t1, t2);
+
+        Vector12d x_vec;
+        x_vec << p, t0, t1, t2;
+        Eigen::MatrixXd expected_hess;
+        expected_hess.resize(hess.rows(), hess.cols());
+        fd::finite_hessian(
+            x_vec,
+            [](const Eigen::VectorXd& x) {
+                return point_plane_distance(
+                    x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
+            },
+            expected_hess);
+
+        CAPTURE((hess - expected_hess).norm());
+        CHECK(fd::compare_hessian(hess, expected_hess, 5e-2));
+    }
 }
 
-TEST_CASE("Point-plane distance gradient", "[distance][point-plane][gradient]")
+TEST_CASE(
+    "Point-plane distance and derivatives (static plane)",
+    "[distance][point-plane][implicit]")
 {
-    double x = GENERATE(take(10, random(-10.0, 10.0)));
-    double y = GENERATE(take(10, random(-10.0, 10.0)));
-    double z = GENERATE(take(10, random(-10.0, 10.0)));
-    Eigen::Vector3d p(x, y, z);
+    const Eigen::Vector3d p(0, 2, 0);
+    const Eigen::Vector3d origin(0, 0, 0);
+    const Eigen::Vector3d normal(0, 1, 0);
 
-    double y_plane = GENERATE(take(10, random(-10.0, 10.0)));
-    Eigen::Vector3d t0(-1, y_plane, 0), t1(1, y_plane, -1), t2(1, y_plane, 0);
-
-    const Vector12d grad = point_plane_distance_gradient(p, t0, t1, t2);
-
-    Vector12d x_vec;
-    x_vec << p, t0, t1, t2;
-    Eigen::VectorXd expected_grad;
-    expected_grad.resize(grad.size());
-    fd::finite_gradient(
-        x_vec,
-        [](const Eigen::VectorXd& x) {
-            return point_plane_distance(
-                x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
-        },
-        expected_grad);
-
-    CAPTURE((grad - expected_grad).norm());
-    CHECK(fd::compare_gradient(grad, expected_grad));
-}
-
-TEST_CASE("Point-plane distance hessian", "[distance][point-plane][hessian]")
-{
-    double x = GENERATE(take(10, random(-10.0, 10.0)));
-    double y = GENERATE(take(10, random(-10.0, 10.0)));
-    double z = GENERATE(take(10, random(-10.0, 10.0)));
-    Eigen::Vector3d p(x, y, z);
-
-    double y_plane = GENERATE(take(10, random(-10.0, 10.0)));
-    Eigen::Vector3d t0(-1, y_plane, 0), t1(1, y_plane, -1), t2(1, y_plane, 0);
-
-    const Matrix12d hess = point_plane_distance_hessian(p, t0, t1, t2);
-
-    Vector12d x_vec;
-    x_vec << p, t0, t1, t2;
-    Eigen::MatrixXd expected_hess;
-    expected_hess.resize(hess.rows(), hess.cols());
-    fd::finite_hessian(
-        x_vec,
-        [](const Eigen::VectorXd& x) {
-            return point_plane_distance(
-                x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
-        },
-        expected_hess);
-
-    CAPTURE((hess - expected_hess).norm());
-    CHECK(fd::compare_hessian(hess, expected_hess, 5e-2));
+    CHECK(point_plane_distance(p, origin, normal) == p.y() * p.y());
+    CHECK(point_plane_distance_gradient(p, origin, normal) == 2 * p);
+    {
+        Eigen::Matrix3d Ha = point_plane_distance_hessian(p, origin, normal);
+        Eigen::Matrix3d He = Eigen::Matrix3d::Zero();
+        He(1, 1) = 2;
+        CHECK(Ha == He);
+    }
 }
