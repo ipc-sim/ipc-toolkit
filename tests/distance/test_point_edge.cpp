@@ -111,7 +111,7 @@ TEST_CASE(
 
         // Hessian (will not match FD for alpha ≈ 0 or 1 because distance is
         // only C1 there)
-        if (abs(alpha) < 2e-5 && abs(abs(alpha) - 1.0) < 2e-5) {
+        if (abs(alpha) < 1e-3 && abs(alpha - 1.0) < 1e-3) {
             const MatrixMax9d hess = point_edge_distance_hessian(p, e0, e1);
 
             // Compute the gradient using finite differences
