@@ -36,8 +36,8 @@ TEST_CASE("Project to PSD", "[utils][project_to_psd]")
     CHECK(A_psd.isZero());
 
     A.resize(2, 2);
-    A.row(0) << 2, 0;
-    A.row(1) << 2, 2;
+    A.row(0) << 2, 1;
+    A.row(1) << 1, 2;
     A_psd = ipc::project_to_psd(A);
     CHECK(A_psd.isApprox(A));
 }
@@ -55,8 +55,8 @@ TEST_CASE("Project to PD", "[utils][project_to_pd]")
     CHECK(A_pd.isApprox(1e-8 * Eigen::MatrixXd::Identity(3, 3)));
 
     A.resize(2, 2);
-    A.row(0) << 2.1, 0;
-    A.row(1) << 2, 2.1;
+    A.row(0) << 2, 1;
+    A.row(1) << 1, 2;
     A_pd = ipc::project_to_pd(A);
     CHECK(A_pd.isApprox(A));
 }
