@@ -12,6 +12,8 @@ C++
 .. image:: https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg
    :target: https://ipctk.xyz/
    :alt: Docs
+.. image:: https://codecov.io/github/ipc-sim/ipc-toolkit/graph/badge.svg?token=9BR6GPKRY8
+   :target: https://codecov.io/github/ipc-sim/ipc-toolkit
 .. image:: https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue
    :target: https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE
    :alt: License
