@@ -46,6 +46,7 @@ add_executable(ipc_toolkit_tests
 
   # Test general interface
   test_ipc.cpp
+  test_collision_mesh.cpp
 
   # Test intersection checks
   test_has_intersections.cpp
