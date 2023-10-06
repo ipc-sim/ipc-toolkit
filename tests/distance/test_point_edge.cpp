@@ -111,20 +111,18 @@ TEST_CASE(
 
         // Hessian (will not match FD for alpha ≈ 0 or 1 because distance is
         // only C1 there)
-        if (abs(alpha) < 1e-3 && abs(alpha - 1.0) < 1e-3) {
-            const MatrixMax9d hess = point_edge_distance_hessian(p, e0, e1);
-
-            // Compute the gradient using finite differences
-            VectorMax9d x(3 * dim);
-            x << p, e0, e1;
-            auto f = [&dim](const Eigen::VectorXd& x) {
-                return point_edge_distance(
-                    x.head(dim), x.segment(dim, dim), x.tail(dim));
-            };
-            Eigen::MatrixXd fhess;
-            fd::finite_hessian(x, f, fhess);
-
-            CHECK(fd::compare_hessian(hess, fhess, 1e-2));
-        }
+        // if (abs(alpha) < 1e-3 && abs(alpha - 1.0) < 1e-3) {
+        //     const MatrixMax9d hess = point_edge_distance_hessian(p, e0, e1);
+        //     // Compute the gradient using finite differences
+        //     VectorMax9d x(3 * dim);
+        //     x << p, e0, e1;
+        //     auto f = [&dim](const Eigen::VectorXd& x) {
+        //         return point_edge_distance(
+        //             x.head(dim), x.segment(dim, dim), x.tail(dim));
+        //     };
+        //     Eigen::MatrixXd fhess;
+        //     fd::finite_hessian(x, f, fhess);
+        //     CHECK(fd::compare_hessian(hess, fhess, 1e-2));
+        // }
     }
 }
