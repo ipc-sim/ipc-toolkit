@@ -72,7 +72,7 @@ TEST_CASE("Vertex-Vertex Candidate", "[candidates][vertex-vertex]")
     CHECK(VertexVertexCandidate(0, 1) < VertexVertexCandidate(2, 0));
 }
 
-TEST_CASE("Edge-Vertex Candidate", "[candidates][vertex-vertex]")
+TEST_CASE("Edge-Vertex Candidate", "[candidates][edge-vertex]")
 {
     CHECK(EdgeVertexCandidate(0, 1) == EdgeVertexCandidate(0, 1));
     CHECK(EdgeVertexCandidate(0, 1) != EdgeVertexCandidate(1, 0));

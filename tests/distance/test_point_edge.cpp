@@ -140,19 +140,8 @@ TEST_CASE(
     VectorMax3d e1 = VectorMax3d::Zero(dim);
     e1.x() = 10;
 
-    VectorMax3d n;
-    if (dim == 2) {
-        e0 = Eigen::Vector2d::Random();
-        e1 = Eigen::Vector2d::Random();
-        n = edge_normal(e0, e1);
-    } else {
-        e0 = Eigen::Vector3d::Random();
-        e1 = Eigen::Vector3d::Random();
-        n = Eigen::Vector3d(e1 - e0).cross(Eigen::Vector3d::UnitX());
-        n.normalize();
-    }
-
-    const VectorMax3d p = ((e1 - e0) * alpha + e0) + d * n;
+    const VectorMax3d p =
+        ((e1 - e0) * alpha + e0) + d * Eigen::Vector3d::UnitY().head(dim);
 
     CAPTURE(alpha, d);
 

@@ -37,6 +37,9 @@ add_executable(ipc_toolkit_tests
   distance/test_point_point.cpp
   distance/test_point_triangle.cpp
 
+  # Test constraints
+  constraints/test_constraints.cpp
+
   # Test friction
   friction/friction_data_generator.cpp
   friction/test_closest_point.cpp
