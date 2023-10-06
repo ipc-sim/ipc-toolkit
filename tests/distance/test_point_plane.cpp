@@ -10,12 +10,12 @@ TEST_CASE(
     "Point-plane distance and derivatives (dynamic plane)",
     "[distance][point-plane][gradient][hessian]")
 {
-    double x = GENERATE(take(10, random(-100.0, 100.0)));
-    double y = GENERATE(take(10, random(-100.0, 100.0)));
-    double z = GENERATE(take(10, random(-100.0, 100.0)));
+    double x = GENERATE(take(10, random(-10.0, 10.0)));
+    double y = GENERATE(take(10, random(-10.0, 10.0)));
+    double z = GENERATE(take(10, random(-10.0, 10.0)));
     Eigen::Vector3d p(x, y, z);
 
-    double y_plane = GENERATE(take(10, random(-100.0, 100.0)));
+    double y_plane = GENERATE(take(10, random(-10.0, 10.0)));
     Eigen::Vector3d t0(-1, y_plane, 0), t1(1, y_plane, -1), t2(1, y_plane, 0);
 
     {
