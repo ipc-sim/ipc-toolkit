@@ -69,14 +69,19 @@ option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                 
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
-option(IPC_TOOLKIT_CODE_COVERAGE              "Enable coverage reporting"                     OFF)
-mark_as_advanced(IPC_TOOLKIT_CODE_COVERAGE)
+option(IPC_TOOLKIT_WITH_CODE_COVERAGE              "Enable coverage reporting"                     OFF)
+mark_as_advanced(IPC_TOOLKIT_WITH_CODE_COVERAGE)
 
 include(CMakeDependentOption)
 cmake_dependent_option(IPC_TOOLKIT_TEST_CCD_BENCHMARK "Enable CCD benchmark test" OFF "IPC_TOOLKIT_BUILD_TESTS" OFF)
 if(IPC_TOOLKIT_TEST_CCD_BENCHMARK)
+  mark_as_advanced(CLEAR IPC_TOOLKIT_CCD_BENCHMARK_DIR)
+  mark_as_advanced(CLEAR IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR)
   set(IPC_TOOLKIT_CCD_BENCHMARK_DIR "" CACHE PATH "Path to the CCD benchmark directory")
   set(IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR "" CACHE PATH "Path to the new CCD benchmark directory")
+else()
+  mark_as_advanced(FORCE IPC_TOOLKIT_CCD_BENCHMARK_DIR)
+  mark_as_advanced(FORCE IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR)
 endif()
 
 # Set default minimum C++ standard
@@ -269,17 +274,13 @@ endif()
 # Code Coverage
 ################################################################################
 
-if(IPC_TOOLKIT_CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-  add_library(ipc_toolkit_coverage_config INTERFACE)
-
+if(IPC_TOOLKIT_WITH_CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   # Add required flags (GCC & LLVM/Clang)
-  target_compile_options(ipc_toolkit_coverage_config INTERFACE
+  target_compile_options(ipc_toolkit INTERFACE
     -g         # generate debug info
     --coverage # sets all required flags
   )
-  target_link_options(ipc_toolkit_coverage_config INTERFACE --coverage)
-
-  target_link_libraries(ipc_toolkit PUBLIC ipc_toolkit_coverage_config)
+  target_link_options(ipc_toolkit INTERFACE --coverage)
 endif()
 
 ################################################################################

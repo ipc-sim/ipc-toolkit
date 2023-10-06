@@ -42,7 +42,7 @@ jobs:
           cd build
           cmake .. \
             -DIPC_TOOLKIT_BUILD_TESTS=ON \
-            -DIPC_TOOLKIT_CODE_COVERAGE=ON \
+            -DIPC_TOOLKIT_WITH_CODE_COVERAGE=ON \
             -DCMAKE_BUILD_TYPE=Release \
 
       - name: Build
