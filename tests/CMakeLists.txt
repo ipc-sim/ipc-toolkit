@@ -8,6 +8,9 @@ add_executable(ipc_toolkit_tests
   # Test barrier and dertivatives
   barrier/test_barrier.cpp
 
+  # Test candidates
+  candidates/test_candidates.cpp
+
   # Test CCD
   broad_phase/benchmark_broad_phase.cpp
   broad_phase/brute_force_comparison.cpp

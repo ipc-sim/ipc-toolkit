@@ -1,7 +1,5 @@
 #include <catch2/catch_all.hpp>
 
-#include <utils.hpp>
-
 #include <ipc/collision_mesh.hpp>
 
 using namespace ipc;
