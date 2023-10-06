@@ -10,7 +10,7 @@ namespace ipc {
 
 template <>
 void save_obj(
-    std::ofstream& out,
+    std::ostream& out,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -30,7 +30,7 @@ void save_obj(
 
 template <>
 void save_obj(
-    std::ofstream& out,
+    std::ostream& out,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -52,7 +52,7 @@ void save_obj(
 
 template <>
 void save_obj(
-    std::ofstream& out,
+    std::ostream& out,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
@@ -73,7 +73,7 @@ void save_obj(
 
 template <>
 void save_obj(
-    std::ofstream& out,
+    std::ostream& out,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,

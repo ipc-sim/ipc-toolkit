@@ -50,8 +50,11 @@ add_executable(ipc_toolkit_tests
   # Test intersection checks
   test_has_intersections.cpp
 
-  # Utilities for tests
+  # Tes utility functions
   test_utils.cpp
+
+  # Utilities for tests
+  utils.cpp
 
   benchmark_eigen.cpp
 )

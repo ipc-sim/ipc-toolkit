@@ -10,7 +10,7 @@
 #include <ipc/utils/logger.hpp>
 
 #include "friction_data_generator.hpp"
-#include "../test_utils.hpp"
+#include "../utils.hpp"
 
 using namespace ipc;
 

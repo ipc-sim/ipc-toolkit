@@ -8,7 +8,7 @@
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/utils/logger.hpp>
 
-#include "test_utils.hpp"
+#include <utils.hpp>
 
 using namespace ipc;
 

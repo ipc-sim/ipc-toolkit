@@ -1,10 +1,8 @@
 #include <catch2/catch_all.hpp>
 
-#include "test_utils.hpp"
+#include <utils.hpp>
 
 #include <ipc/ipc.hpp>
-
-#include "test_utils.hpp"
 
 using namespace ipc;
 

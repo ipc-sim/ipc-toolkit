@@ -5,7 +5,7 @@
 #include <ipc/ccd/additive_ccd.hpp>
 #include <ipc/ccd/point_static_plane.hpp>
 
-#include <test_utils.hpp>
+#include <utils.hpp>
 
 #include <igl/read_triangle_mesh.h>
 #include <igl/edges.h>

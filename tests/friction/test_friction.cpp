@@ -12,7 +12,7 @@
 #include <ipc/config.hpp>
 
 #include "friction_data_generator.hpp"
-#include "../test_utils.hpp"
+#include "../utils.hpp"
 
 #include <unsupported/Eigen/SparseExtra>
 

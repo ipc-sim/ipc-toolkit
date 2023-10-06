@@ -10,7 +10,7 @@
 #include <ipc/ccd/ccd.hpp>
 
 #include "brute_force_comparison.hpp"
-#include "test_utils.hpp"
+#include <utils.hpp>
 
 using namespace ipc;
 

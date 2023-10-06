@@ -6,7 +6,7 @@
 #include <ipc/candidates/edge_face.hpp>
 #include <ipc/utils/intersection.hpp>
 
-#include "test_utils.hpp"
+#include <utils.hpp>
 
 #include <tbb/parallel_sort.h>
 
