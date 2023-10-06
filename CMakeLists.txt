@@ -276,11 +276,11 @@ endif()
 
 if(IPC_TOOLKIT_WITH_CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   # Add required flags (GCC & LLVM/Clang)
-  target_compile_options(ipc_toolkit INTERFACE
+  target_compile_options(ipc_toolkit PUBLIC
     -g         # generate debug info
     --coverage # sets all required flags
   )
-  target_link_options(ipc_toolkit INTERFACE --coverage)
+  target_link_options(ipc_toolkit PUBLIC --coverage)
 endif()
 
 ################################################################################
