@@ -12,6 +12,8 @@ C++
 .. image:: https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg
    :target: https://ipctk.xyz/
    :alt: Docs
+.. image:: https://codecov.io/github/ipc-sim/ipc-toolkit/graph/badge.svg?token=9BR6GPKRY8
+   :target: https://codecov.io/github/ipc-sim/ipc-toolkit
 .. image:: https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue
    :target: https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE
    :alt: License
@@ -73,10 +75,10 @@ Optional
   * Enable by using the CMake option :cmake:`IPC_TOOLKIT_WITH_ABSEIL`
   * Enabled by default
 
-* `GMP <https://gmplib.org/>`__: rational arithmetic used for exact intersection checks
+* `rational-cpp <https://github.io/zfergus/rational-cpp>`__: rational arithmetic used for exact intersection checks
 
-  * Enable by using the CMake option :cmake:`IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION`
-  * GMP must be installed at a system level
+    * Enable by using the CMake option :cmake:`IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION`
+    * Requires `GMP <https://gmplib.org/>`__ to be installed at a system level
 
 * `Etienne Vouga's Collision Detection Library <https://github.com/evouga/collisiondetection>`__: inexact CCD
 

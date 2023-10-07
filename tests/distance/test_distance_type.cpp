@@ -1,6 +1,6 @@
 #include <catch2/catch_all.hpp>
 
-#include <test_utils.hpp>
+#include <utils.hpp>
 
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_triangle.hpp>

@@ -1,3 +1,5 @@
+# libigl (https://github.com/libigl/libigl)
+# License: MPL-2.0
 if(TARGET igl::core)
     return()
 endif()
@@ -9,4 +11,4 @@ set(LIBIGL_PREDICATES ON CACHE BOOL "Use exact predicates" FORCE)
 include(eigen)
 
 include(CPM)
-CPMAddPackage("gh:libigl/libigl@2.4.0")
+CPMAddPackage("gh:libigl/libigl@2.5.0")

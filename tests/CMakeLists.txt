@@ -8,6 +8,9 @@ add_executable(ipc_toolkit_tests
   # Test barrier and dertivatives
   barrier/test_barrier.cpp
 
+  # Test candidates
+  candidates/test_candidates.cpp
+
   # Test CCD
   broad_phase/benchmark_broad_phase.cpp
   broad_phase/brute_force_comparison.cpp
@@ -16,6 +19,11 @@ add_executable(ipc_toolkit_tests
   broad_phase/test_spatial_hash.cpp
   ccd/benchmark_ccd.cpp
   ccd/collision_generator.cpp
+  ccd/test_ccd.cpp
+  ccd/test_ccd_benchmark.cpp
+  ccd/test_point_edge_ccd.cpp
+  ccd/test_point_triangle_ccd.cpp
+  ccd/test_edge_edge_ccd.cpp
   ccd/test_ccd.cpp
   test_cfl.cpp
 
@@ -29,6 +37,9 @@ add_executable(ipc_toolkit_tests
   distance/test_point_point.cpp
   distance/test_point_triangle.cpp
 
+  # Test constraints
+  constraints/test_constraints.cpp
+
   # Test friction
   friction/friction_data_generator.cpp
   friction/test_closest_point.cpp
@@ -41,12 +52,16 @@ add_executable(ipc_toolkit_tests
 
   # Test general interface
   test_ipc.cpp
+  test_collision_mesh.cpp
 
   # Test intersection checks
   test_has_intersections.cpp
 
-  # Utilities for tests
+  # Tes utility functions
   test_utils.cpp
+
+  # Utilities for tests
+  utils.cpp
 
   benchmark_eigen.cpp
 )
@@ -67,6 +82,20 @@ target_link_libraries(ipc_toolkit_tests PUBLIC finitediff::finitediff)
 
 include(json)
 target_link_libraries(ipc_toolkit_tests PUBLIC nlohmann_json::nlohmann_json)
+
+if (IPC_TOOLKIT_TEST_CCD_BENCHMARK)
+  include(ccd_query_io)
+  target_link_libraries(ipc_toolkit_tests PUBLIC ccd_io::ccd_io)
+  target_compile_definitions(ipc_toolkit_tests PRIVATE IPC_TOOLKIT_TEST_CCD_BENCHMARK)
+  if(NOT (IPC_TOOLKIT_CCD_BENCHMARK_DIR STREQUAL ""))
+    message(STATUS "Using CCD benchmark directory: ${IPC_TOOLKIT_CCD_BENCHMARK_DIR}")
+    target_compile_definitions(ipc_toolkit_tests PRIVATE IPC_TOOLKIT_CCD_BENCHMARK_DIR="${IPC_TOOLKIT_CCD_BENCHMARK_DIR}")
+  endif()
+  if(NOT (IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR STREQUAL ""))
+    message(STATUS "Using new CCD benchmark directory: ${IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR}")
+    target_compile_definitions(ipc_toolkit_tests PRIVATE IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR="${IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR}")
+  endif()
+endif()
 
 if(IPC_TOOLKIT_WITH_CUDA)
   find_package(CUDAToolkit)

@@ -243,6 +243,7 @@ core*
 docs/source/doxyoutput
 docs/source/api
 !docs/Makefile
+tests/data/ccd-queries
 tests/data/slow-broadphase-ccd
 tests/data/ccd-failure
 tests/data/friction/chain

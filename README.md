@@ -6,6 +6,7 @@
 <a href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg"></a>
 <a href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg"></a>
 <a href="https://ipctk.xyz"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg"></a>
+<a href="https://codecov.io/github/ipc-sim/ipc-toolkit"><img src="https://codecov.io/github/ipc-sim/ipc-toolkit/graph/badge.svg?token=9BR6GPKRY8"/></a>
 <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue"></a>
 </p>
 
@@ -72,9 +73,9 @@ The following libraries are used in this project:
 * [Abseil](https://abseil.io/): hashing utilities
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_ABSEIL`
     * Enabled by default
-* [GMP](https://gmplib.org/): rational arithmetic used for exact intersection checks
+* [rational-cpp](https://github.io/zfergus/rational-cpp): rational arithmetic used for exact intersection checks
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION`
-    * GMP must be installed at a system level
+    * Requires [GMP](https://gmplib.org/) to be installed at a system level
 * [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection): inexact CCD
     * Included for comparison with the original IPC library
     * Enable by disabling the CMake option `IPC_TOOLKIT_WITH_CORRECT_CCD`
@@ -145,4 +146,4 @@ Additionally, you can cite the original IPC paper:
 
 ## License
 
-MIT License © 2020, the IPC-Sim organization (See <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><code>LICENSE</code></a> for details)
+MIT License © 2020, the IPC-Sim organization (See <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><code>LICENSE</code></a> for details).

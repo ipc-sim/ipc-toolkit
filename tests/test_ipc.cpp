@@ -1,6 +1,6 @@
 #include <catch2/catch_all.hpp>
 
-#include "test_utils.hpp"
+#include <utils.hpp>
 
 #include <ipc/ipc.hpp>
 #include <ipc/config.hpp>
@@ -66,7 +66,7 @@ TEST_CASE("Dummy test for IPC compilation", "[!benchmark][ipc]")
     };
 }
 
-TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
+TEST_CASE("IPC full gradient", "[ipc][gradient]")
 {
     const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
     const bool use_convergent_formulation = GENERATE(true, false);
@@ -134,7 +134,7 @@ TEST_CASE("Test IPC full gradient", "[ipc][gradient]")
     CHECK(fd::compare_gradient(grad_b, fgrad_b));
 }
 
-TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
+TEST_CASE("IPC full hessian", "[ipc][hessian]")
 {
     const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
     const bool use_convergent_formulation = GENERATE(true, false);
@@ -202,7 +202,7 @@ TEST_CASE("Test IPC full hessian", "[ipc][hessian]")
     CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
 }
 
-TEST_CASE("Test IPC shape derivative", "[ipc][shape_opt]")
+TEST_CASE("IPC shape derivative", "[ipc][shape_opt]")
 {
     nlohmann::json data;
     {
@@ -312,7 +312,7 @@ TEST_CASE("Benchmark IPC shape derivative", "[ipc][shape_opt][!benchmark]")
     };
 }
 
-TEST_CASE("Test convergent formulation", "[ipc][convergent]")
+TEST_CASE("Convergent formulation", "[ipc][convergent]")
 {
     const bool use_convergent_formulation = GENERATE(false, true);
     const double dhat = 1e-3;
@@ -429,4 +429,17 @@ TEST_CASE("Test convergent formulation", "[ipc][convergent]")
     fd::finite_gradient(fd::flatten(V), f, fgrad_b);
 
     CHECK(fd::compare_gradient(grad_b, fgrad_b));
+}
+
+TEST_CASE("Is step collision free", "[is_step_collision_free]")
+{
+    Eigen::MatrixXd V0, V1;
+    Eigen::MatrixXi E, F;
+    REQUIRE(load_mesh("two-cubes-close.obj", V0, E, F));
+    REQUIRE(load_mesh("two-cubes-intersecting.obj", V1, E, F));
+
+    CollisionMesh mesh(V0, E, F);
+
+    CHECK(is_step_collision_free(mesh, V0, V0));
+    CHECK(!is_step_collision_free(mesh, V0, V1));
 }

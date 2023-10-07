@@ -1,3 +1,5 @@
+# finite-diff (https://github.com/zfergus/finite-diff)
+# License: MIT
 if(TARGET finitediff::finitediff)
     return()
 endif()

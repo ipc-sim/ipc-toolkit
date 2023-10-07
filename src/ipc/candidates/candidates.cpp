@@ -228,7 +228,7 @@ ContinuousCollisionCandidate& Candidates::operator[](size_t idx)
     if (idx < fv_candidates.size()) {
         return fv_candidates[idx];
     }
-    throw std::out_of_range("Constraint index is out of range!");
+    throw std::out_of_range("Candidate index is out of range!");
 }
 
 const ContinuousCollisionCandidate& Candidates::operator[](size_t idx) const
@@ -248,7 +248,7 @@ const ContinuousCollisionCandidate& Candidates::operator[](size_t idx) const
     if (idx < fv_candidates.size()) {
         return fv_candidates[idx];
     }
-    throw std::out_of_range("Constraint index is out of range!");
+    throw std::out_of_range("Candidate index is out of range!");
 }
 
 bool Candidates::save_obj(

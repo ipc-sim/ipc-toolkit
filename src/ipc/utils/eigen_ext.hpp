@@ -121,7 +121,9 @@ using ArrayMax3d = ArrayMax3<double>;
 /// @brief A dynamic size array with a fixed maximum size of 3×1
 using ArrayMax3i = ArrayMax3<int>;
 
-/// Matrix Projection onto Positive Definite Cone
+/// @brief Matrix projection onto positive definite cone
+/// @param A Symmetric matrix to project
+/// @return Projected matrix
 template <
     typename _Scalar,
     int _Rows,
@@ -133,7 +135,10 @@ Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
 project_to_pd(
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A,
     double eps = 1e-8);
-/// Matrix Projection onto Positive Semi-Definite Cone
+
+/// @brief Matrix projection onto positive semi-definite cone
+/// @param A Symmetric matrix to project
+/// @return Projected matrix
 template <
     typename _Scalar,
     int _Rows,

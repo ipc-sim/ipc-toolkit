@@ -10,7 +10,7 @@
 #include <ipc/utils/logger.hpp>
 
 #include "friction_data_generator.hpp"
-#include "../test_utils.hpp"
+#include "../utils.hpp"
 
 using namespace ipc;
 
@@ -206,7 +206,7 @@ void check_friction_force_jacobian(
     CHECK(fd::compare_jacobian(-jac_force, hess_D));
 }
 
-TEST_CASE("Test friction force jacobian", "[friction][force-jacobian][thisone]")
+TEST_CASE("Friction force jacobian", "[friction][force-jacobian]")
 {
     const int x_case = GENERATE(0, 1);
     FrictionData data = friction_data_generator();
@@ -236,7 +236,7 @@ TEST_CASE("Test friction force jacobian", "[friction][force-jacobian][thisone]")
 }
 
 TEST_CASE(
-    "Test friction force jacobian on real data",
+    "Friction force jacobian on real data",
     "[friction][force-jacobian][real-data]")
 {
     bool use_convergent_formulation = GENERATE(true, false);

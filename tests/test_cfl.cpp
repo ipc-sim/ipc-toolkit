@@ -1,14 +1,12 @@
 #include <catch2/catch_all.hpp>
 
-#include "test_utils.hpp"
+#include <utils.hpp>
 
 #include <ipc/ipc.hpp>
 
-#include "test_utils.hpp"
-
 using namespace ipc;
 
-TEST_CASE("Test compute_cfl_stepsize()", "[ccd][cfl]")
+TEST_CASE("Compute CFL stepsize", "[ccd][cfl]")
 {
     const double dhat = GENERATE(1e-6, 1e-3, 1e-1);
 
