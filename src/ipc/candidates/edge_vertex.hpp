@@ -24,7 +24,8 @@ public:
 
     // ------------------------------------------------------------------------
 
-    void print_ccd_query(
+    std::ostream& write_ccd_query(
+        std::ostream& out,
         const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
         const Eigen::MatrixXi& edges,

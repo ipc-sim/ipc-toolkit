@@ -4,6 +4,7 @@
 #include <ipc/candidates/collision_stencil.hpp>
 
 #include <vector>
+#include <ostream>
 
 namespace ipc {
 
@@ -37,8 +38,15 @@ public:
         const double conservative_rescaling =
             DEFAULT_CCD_CONSERVATIVE_RESCALING) const;
 
-    // Print the vertices of the CCD query for debugging.
-    virtual void print_ccd_query(
+    /// @brief Write the CCD query to a stream.
+    /// @param out Stream to write to.
+    /// @param vertices_t0 Mesh vertices at the start of the time step.
+    /// @param vertices_t1 Mesh vertices at the end of the time step.
+    /// @param edges Collision mesh edges as rows of indicies into vertices.
+    /// @param faces Collision mesh triangular faces as rows of indicies into vertices.
+    /// @return The stream.
+    virtual std::ostream& write_ccd_query(
+        std::ostream& out,
         const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
         const Eigen::MatrixXi& edges,

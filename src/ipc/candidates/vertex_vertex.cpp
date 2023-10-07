@@ -57,17 +57,17 @@ bool VertexVertexCandidate::ccd(
         max_iterations, conservative_rescaling);
 }
 
-void VertexVertexCandidate::print_ccd_query(
+std::ostream& VertexVertexCandidate::write_ccd_query(
+    std::ostream& out,
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces) const
 {
-    std::cout << vertices_t0.row(vertex0_id).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t0.row(vertex1_id).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(vertex0_id).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(vertex1_id).format(OBJ_VERTEX_FORMAT);
-    std::cout << std::flush;
+    return out << vertices_t0.row(vertex0_id).format(OBJ_VERTEX_FORMAT)
+               << vertices_t0.row(vertex1_id).format(OBJ_VERTEX_FORMAT)
+               << vertices_t1.row(vertex0_id).format(OBJ_VERTEX_FORMAT)
+               << vertices_t1.row(vertex1_id).format(OBJ_VERTEX_FORMAT);
 }
 
 bool VertexVertexCandidate::operator==(const VertexVertexCandidate& other) const
