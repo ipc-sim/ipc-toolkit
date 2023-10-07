@@ -44,6 +44,8 @@ public:
         return H::combine(std::move(h), fv.face_id, fv.vertex_id);
     }
 
+    // ------------------------------------------------------------------------
+
     long face_id;   ///< @brief ID of the face
     long vertex_id; ///< @brief ID of the vertex
 

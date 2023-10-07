@@ -4,13 +4,15 @@
 
 using namespace ipc;
 
-TEST_CASE("Candidates", "[m]")
+TEST_CASE("Candidates", "[candidates]")
 {
     Candidates candidates;
     candidates.vv_candidates = { { 0, 1 }, { 2, 3 } };
     candidates.ev_candidates = { { 3, 4 }, { 5, 6 } };
     candidates.ee_candidates = { { 6, 7 }, { 8, 9 } };
     candidates.fv_candidates = { { 10, 11 }, { 12, 13 } };
+
+    CHECK(candidates.size() == 8);
 
     CHECK(
         dynamic_cast<VertexVertexCandidate&>(candidates[0])
@@ -31,7 +33,7 @@ TEST_CASE("Candidates", "[m]")
     CHECK(&(candidates[6]) == &(candidates.fv_candidates[0]));
 
     try {
-        candidates[6];
+        candidates[candidates.size()];
         FAIL("Should have thrown an exception");
     } catch (const std::out_of_range& e) {
         SUCCEED("Exception thrown");
