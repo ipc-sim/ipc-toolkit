@@ -21,6 +21,7 @@ add_executable(ipc_toolkit_tests
   ccd/collision_generator.cpp
   ccd/test_ccd.cpp
   ccd/test_ccd_benchmark.cpp
+  ccd/test_point_point_ccd.cpp
   ccd/test_point_edge_ccd.cpp
   ccd/test_point_triangle_ccd.cpp
   ccd/test_edge_edge_ccd.cpp

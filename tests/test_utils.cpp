@@ -6,6 +6,7 @@
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <ipc/utils/save_obj.hpp>
+#include <ipc/candidates/vertex_vertex.hpp>
 #include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/edge_edge.hpp>
 #include <ipc/candidates/face_vertex.hpp>
@@ -73,6 +74,13 @@ TEST_CASE("Save OBJ of candidates", "[utils][save_obj]")
     E.row(1) << 0, 3;
     Eigen::MatrixXi F(1, 3);
     F.row(0) << 1, 2, 3;
+    SECTION("VertexVertexCandidate")
+    {
+        std::stringstream ss;
+        ipc::save_obj<ipc::VertexVertexCandidate>(
+            ss, V, E, F, { { ipc::VertexVertexCandidate(0, 1) } });
+        CHECK(ss.str() == "o VV\nv 0 0 0\nv 1 0 0\n");
+    }
     SECTION("EdgeVertexCandidate")
     {
         std::stringstream ss;

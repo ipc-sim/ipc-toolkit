@@ -7,8 +7,6 @@ set(SOURCES
   brute_force.hpp
   hash_grid.cpp
   hash_grid.hpp
-  point_point_spatial_hash.cpp
-  point_point_spatial_hash.hpp
   spatial_hash.cpp
   spatial_hash.hpp
   sweep_and_tiniest_queue.cpp
