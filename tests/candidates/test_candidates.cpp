@@ -62,7 +62,7 @@ TEST_CASE("Candidates", "[candidates]")
     CHECK(&(const_candidates[6]) == &(candidates.fv_candidates[0]));
 
     try {
-        const_candidates[6];
+        const_candidates[candidates.size()];
         FAIL("Should have thrown an exception");
     } catch (const std::out_of_range& e) {
         SUCCEED("Exception thrown");
