@@ -41,7 +41,7 @@ void test_broad_phase(
     }
 }
 
-void test_broad_phase(
+Candidates test_broad_phase(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
     BroadPhaseMethod method,
@@ -58,6 +58,8 @@ void test_broad_phase(
         brute_force_comparison(
             mesh, V, V, candidates, inflation_radius, cached_bf_candidates);
     }
+
+    return candidates;
 }
 
 TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase][2D]")
@@ -128,15 +130,16 @@ TEST_CASE(
     igl::readDMAT(TEST_DATA_DIR + "codim-points/F.dmat", F);
 
     CollisionMesh mesh(V_rest, E, F);
+    CHECK(mesh.num_codim_vertices() > 0);
 
     BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 
     CAPTURE(method);
 
-    test_broad_phase(mesh, V, method, dhat);
+    const Candidates candidates = test_broad_phase(mesh, V, method, dhat);
 
     CollisionConstraints constraint_set;
-    constraint_set.build(mesh, V, dhat, /*dmin=*/0, method);
+    constraint_set.build(candidates, mesh, V, dhat);
     CHECK(constraint_set.size() != 0);
 }
 

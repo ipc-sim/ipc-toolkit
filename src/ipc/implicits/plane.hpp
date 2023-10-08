@@ -32,7 +32,7 @@ void construct_point_plane_constraint_set(
     const std::function<bool(size_t, size_t)>& can_collide =
         default_can_point_plane_collide);
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 // Collision detection
 
 /// @brief Determine if the step is collision free.

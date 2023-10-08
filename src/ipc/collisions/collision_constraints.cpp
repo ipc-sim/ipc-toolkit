@@ -176,6 +176,14 @@ void CollisionConstraints::build(
         use_convergent_formulation(), are_shape_derivatives_enabled());
 
     tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), candidates.vv_candidates.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            storage.local().add_vertex_vertex_constraints(
+                mesh, vertices, candidates.vv_candidates, is_active, r.begin(),
+                r.end());
+        });
+
+    tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), candidates.ev_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_edge_vertex_constraints(

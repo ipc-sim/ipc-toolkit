@@ -56,7 +56,7 @@ CollisionMesh::CollisionMesh(
             dynamic_vertex_to_full_vertex.size());
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    // ========================================================================
 
     const int dim = full_rest_positions.cols();
 
@@ -78,7 +78,7 @@ CollisionMesh::CollisionMesh(
         m_displacement_dof_map.makeCompressed();
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    // ========================================================================
 
     // Set vertices at rest using full → reduced map
     m_rest_positions = m_select_vertices * full_rest_positions;

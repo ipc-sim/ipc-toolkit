@@ -309,6 +309,13 @@ void HashGrid::detect_candidates(
 #endif
 }
 
+void HashGrid::detect_vertex_vertex_candidates(
+    std::vector<VertexVertexCandidate>& candidates) const
+{
+    detect_candidates(
+        vertex_items, vertex_boxes, can_vertices_collide, candidates);
+}
+
 void HashGrid::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {

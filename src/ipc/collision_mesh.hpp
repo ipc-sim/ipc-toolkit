@@ -69,6 +69,9 @@ public:
     /// @brief Get the number of vertices in the collision mesh.
     size_t num_vertices() const { return m_vertex_to_full_vertex.size(); }
 
+    /// @brief Get the number of codimensional vertices in the collision mesh.
+    size_t num_codim_vertices() const { return codim_vertices().size(); }
+
     /// @brief Get the number of edges in the collision mesh.
     size_t num_edges() const { return edges().rows(); }
 

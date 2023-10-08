@@ -28,7 +28,26 @@ void Candidates::build(
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this);
-    broad_phase->clear();
+
+    if (mesh.num_codim_vertices()) {
+        if (broad_phase_method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
+            || broad_phase_method
+                == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+            logger().warn(
+                "STQ broad phase does not support codimen. point-point, skipping.");
+            return;
+        }
+
+        broad_phase->clear();
+        broad_phase->build(
+            vertices(mesh.codim_vertices(), Eigen::all), //
+            Eigen::MatrixXi(), Eigen::MatrixXi(), inflation_radius);
+        broad_phase->detect_vertex_vertex_candidates(vv_candidates);
+        for (auto& [vi, vj] : vv_candidates) {
+            vi = mesh.codim_vertices()[vi];
+            vj = mesh.codim_vertices()[vj];
+        }
+    }
 }
 
 void Candidates::build(
@@ -49,6 +68,19 @@ void Candidates::build(
         vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this);
     broad_phase->clear();
+
+    if (mesh.num_codim_vertices()) {
+        broad_phase->clear();
+        broad_phase->build(
+            vertices_t0(mesh.codim_vertices(), Eigen::all),
+            vertices_t1(mesh.codim_vertices(), Eigen::all), //
+            Eigen::MatrixXi(), Eigen::MatrixXi(), inflation_radius);
+        broad_phase->detect_vertex_vertex_candidates(vv_candidates);
+        for (auto& [vi, vj] : vv_candidates) {
+            vi = mesh.codim_vertices()[vi];
+            vj = mesh.codim_vertices()[vj];
+        }
+    }
 }
 
 bool Candidates::is_step_collision_free(

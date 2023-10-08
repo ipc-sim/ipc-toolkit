@@ -49,7 +49,7 @@ void construct_point_plane_constraint_set(
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 bool is_step_point_plane_collision_free(
     const Eigen::MatrixXd& points_t0,
@@ -85,7 +85,7 @@ bool is_step_point_plane_collision_free(
     return true;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 double compute_point_plane_collision_free_stepsize(
     const Eigen::MatrixXd& points_t0,

@@ -157,7 +157,7 @@ Eigen::VectorXd FrictionConstraints::compute_potential_gradient(
                               const Eigen::VectorXd& b) { return a + b; });
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 Eigen::SparseMatrix<double> FrictionConstraints::compute_potential_hessian(
     const CollisionMesh& mesh,
@@ -207,7 +207,7 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_potential_hessian(
     return hess;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 Eigen::VectorXd FrictionConstraints::compute_force(
     const CollisionMesh& mesh,
@@ -253,7 +253,7 @@ Eigen::VectorXd FrictionConstraints::compute_force(
                               const Eigen::VectorXd& b) { return a + b; });
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
     const CollisionMesh& mesh,
@@ -337,7 +337,7 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_force_jacobian(
     return jacobian;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 size_t FrictionConstraints::size() const
 {

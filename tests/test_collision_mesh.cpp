@@ -107,3 +107,15 @@ TEST_CASE("Faces to edges", "[collision_mesh][faces_to_edges]")
         }
     }
 }
+
+TEST_CASE("Codim points collision mesh", "[collision_mesh]")
+{
+    Eigen::MatrixXd V(4, 2);
+    V << 0, 0, 1, 0, 0, 1, 1, 1;
+
+    CollisionMesh mesh(V, Eigen::MatrixXi(), Eigen::MatrixXi());
+
+    Eigen::VectorXi expected_codim_vertices(4);
+    expected_codim_vertices << 0, 1, 2, 3;
+    CHECK(mesh.codim_vertices() == expected_codim_vertices);
+}
