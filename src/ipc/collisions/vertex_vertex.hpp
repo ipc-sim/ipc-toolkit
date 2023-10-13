@@ -6,7 +6,9 @@
 
 namespace ipc {
 
-struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
+class VertexVertexConstraint : public VertexVertexCandidate,
+                               public CollisionConstraint {
+public:
     using VertexVertexCandidate::VertexVertexCandidate;
 
     VertexVertexConstraint(const VertexVertexCandidate& candidate)
@@ -14,39 +16,14 @@ struct VertexVertexConstraint : VertexVertexCandidate, CollisionConstraint {
     {
     }
 
-    int num_vertices() const override
+    VertexVertexConstraint(
+        const long vertex0_id,
+        const long vertex1_id,
+        const double weight,
+        const Eigen::SparseVector<double>& weight_gradient)
+        : VertexVertexCandidate(vertex0_id, vertex1_id)
+        , CollisionConstraint(weight, weight_gradient)
     {
-        return VertexVertexCandidate::num_vertices();
-    }
-
-    std::array<long, 4> vertex_indices(
-        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
-    {
-        return VertexVertexCandidate::vertex_indices(E, F);
-    }
-
-    double compute_distance(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
-    {
-        return VertexVertexCandidate::compute_distance(V, E, F);
-    }
-
-    VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
-    {
-        return VertexVertexCandidate::compute_distance_gradient(V, E, F);
-    }
-
-    MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
-    {
-        return VertexVertexCandidate::compute_distance_hessian(V, E, F);
     }
 
     template <typename H>

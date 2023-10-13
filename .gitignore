@@ -243,6 +243,7 @@ core*
 docs/source/doxyoutput
 docs/source/api
 !docs/Makefile
+tests/data/ccd-queries
 tests/data/slow-broadphase-ccd
 tests/data/ccd-failure
 tests/data/friction/chain
@@ -251,6 +252,7 @@ ipctk
 
 # Python bindings
 !python/src/bindings*
+!python/src/**/bindings*
 python/bunny.obj
 
 IPCToolkitOptions.cmake
@@ -258,3 +260,5 @@ IPCToolkitOptions.cmake
 src/ipc/config.hpp
 
 docs/_doxygen
+
+notebooks/*.[ch]pp

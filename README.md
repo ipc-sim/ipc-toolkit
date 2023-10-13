@@ -1,9 +1,14 @@
-# IPC Toolkit
+<p align="center">
+<a href="https://ipctk.xyz"><img alt="IPC Toolkit" src="docs/source/_static/logo.png" width="80%"></a>
+</p>
 
-[![Build](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg)](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml)
-[![Python](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg)](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml)
-[![Docs](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg)](https://ipc-sim.github.io/ipc-toolkit/)
-[![License](https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue)](https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE)
+<p align="center">
+<a href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg"></a>
+<a href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg"></a>
+<a href="https://ipctk.xyz"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg"></a>
+<a href="https://codecov.io/github/ipc-sim/ipc-toolkit"><img src="https://codecov.io/github/ipc-sim/ipc-toolkit/graph/badge.svg?token=9BR6GPKRY8"/></a>
+<a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue"></a>
+</p>
 
 ## Description
 
@@ -35,7 +40,6 @@ FetchContent_Declare(
     ipc_toolkit
     GIT_REPOSITORY https://github.com/ipc-sim/ipc-toolkit.git
     GIT_TAG ${IPC_TOOLKIT_GIT_TAG}
-    GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(ipc_toolkit)
 ```
@@ -60,14 +64,18 @@ The following libraries are used in this project:
 * [TBB](https://github.com/wjakob/tbb): parallelization
 * [Tight-Inclusion](https://github.com/Continuous-Collision-Detection/Tight-Inclusion): correct (conservative) CCD
 * [spdlog](https://github.com/gabime/spdlog): logging information
-* [robin-map](https://github.com/Tessil/robin-map): faster hash set/map than `std::unordered_set`/`std::unordered_map`
-* [Abseil](https://abseil.io/): hashing utilities
 
 #### Optional
 
-* [GMP](https://gmplib.org/): rational arithmetic used for exact intersection checks
+* [robin-map](https://github.com/Tessil/robin-map): faster hash set/map than `std::unordered_set`/`std::unordered_map`
+    * Enable by using the CMake option `IPC_TOOLKIT_WITH_ROBIN_MAP`
+    * Enabled by default
+* [Abseil](https://abseil.io/): hashing utilities
+    * Enable by using the CMake option `IPC_TOOLKIT_WITH_ABSEIL`
+    * Enabled by default
+* [rational-cpp](https://github.io/zfergus/rational-cpp): rational arithmetic used for exact intersection checks
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION`
-    * GMP must be installed at a system level
+    * Requires [GMP](https://gmplib.org/) to be installed at a system level
 * [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection): inexact CCD
     * Included for comparison with the original IPC library
     * Enable by disabling the CMake option `IPC_TOOLKIT_WITH_CORRECT_CCD`
@@ -95,11 +103,11 @@ The following are downloaded when unit tests are enabled (`IPC_TOOLKIT_BUILD_TES
 
 We provide Python bindings for functions in the toolkit using [pybind11](https://github.com/pybind/pybind11).
 
-For more information see the [Python documentation](https://ipc-sim.github.io/ipc-toolkit/python/).
+For more information see the [Python documentation](https://ipctk.xyz/python/).
 
 ## Contributing
 
-This project is open to contributors! Contributions can come in the form of feature requests, bug fixes, documentation, tutorials and the like. We highly recommend filing an Issue first before submitting a Pull Request.
+This project is open to contributors! Contributions can come in the form of feature requests, bug fixes, documentation, tutorials, and the like. We highly recommend filing an Issue first before submitting a Pull Request.
 
 Simply fork this repository and make a Pull Request! We would appreciate:
 
@@ -116,7 +124,7 @@ If you use the IPC Toolkit in your project, please consider citing our work:
 @software{ipc_toolkit,
   author = {Zachary Ferguson and others},
   title = {{IPC Toolkit}},
-  url = {https://ipc-sim.github.io/ipc-toolkit/},
+  url = {https://github.com/ipc-sim/ipc-toolkit},
   year = {2020},
 }
 ```
@@ -138,4 +146,4 @@ Additionally, you can cite the original IPC paper:
 
 ## License
 
-MIT License © 2020, the IPC-Sim organization (See <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><code>LICENSE</code></a> for details)
+MIT License © 2020, the IPC-Sim organization (See <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><code>LICENSE</code></a> for details).

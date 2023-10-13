@@ -3,6 +3,34 @@
 #include <cmath>
 
 namespace ipc {
+
+VectorMax6d edge_length_gradient(
+    const Eigen::Ref<const VectorMax3d>& e0,
+    const Eigen::Ref<const VectorMax3d>& e1)
+{
+    assert(e0.size() == 2 || e0.size() == 3);
+    assert(e1.size() == 2 || e1.size() == 3);
+    assert((e1 - e0).norm() != 0);
+
+    // ∇ ‖e₁ - e₀‖
+    VectorMax6d grad(e0.size() + e1.size());
+    grad.head(e0.size()) = (e0 - e1) / (e1 - e0).norm();
+    grad.tail(e1.size()) = -grad.head(e0.size());
+    return grad;
+}
+
+Vector9d triangle_area_gradient(
+    const Eigen::Ref<const Eigen::Vector3d>& t0,
+    const Eigen::Ref<const Eigen::Vector3d>& t1,
+    const Eigen::Ref<const Eigen::Vector3d>& t2)
+{
+    Vector9d grad;
+    autogen::triangle_area_gradient(
+        t0[0], t0[1], t0[2], t1[0], t1[1], t1[2], t2[0], t2[1], t2[2],
+        grad.data());
+    return grad;
+}
+
 namespace autogen {
 
     // dA is (9×1) flattened in column-major order

@@ -17,6 +17,7 @@ pybind11_add_module(ipctk
   src/broad_phase/voxel_size_heuristic.cpp
 
   src/candidates/candidates.cpp
+  src/candidates/collision_stencil.cpp
   src/candidates/continuous_collision_candidate.cpp
   src/candidates/edge_edge.cpp
   src/candidates/edge_face.cpp
@@ -26,8 +27,17 @@ pybind11_add_module(ipctk
 
   src/ccd/aabb.cpp
   src/ccd/ccd.cpp
+  src/ccd/additive_ccd.cpp
   src/ccd/inexact_point_edge.cpp
   src/ccd/point_static_plane.cpp
+
+  src/collisions/collision_constraint.cpp
+  src/collisions/collision_constraints.cpp
+  src/collisions/edge_edge.cpp
+  src/collisions/edge_vertex.cpp
+  src/collisions/face_vertex.cpp
+  src/collisions/plane_vertex.cpp
+  src/collisions/vertex_vertex.cpp
 
   src/distance/distance_type.cpp
   src/distance/edge_edge.cpp
@@ -40,25 +50,34 @@ pybind11_add_module(ipctk
   src/distance/point_triangle.cpp
 
   src/friction/closest_point.cpp
-  src/friction/friction_constraint.cpp
-  src/friction/friction.cpp
+  src/friction/friction_constraints.cpp
   src/friction/normal_force_magnitude.cpp
-  src/friction/relative_displacement.cpp
+  src/friction/relative_velocity.cpp
   src/friction/smooth_friction_mollifier.cpp
   src/friction/tangent_basis.cpp
 
+  src/friction/constraints/edge_edge.cpp
+  src/friction/constraints/edge_vertex.cpp
+  src/friction/constraints/face_vertex.cpp
+  src/friction/constraints/friction_constraint.cpp
+  src/friction/constraints/vertex_vertex.cpp
+
+  src/implicits/plane.cpp
+
+  src/utils/area_gradient.cpp
   src/utils/eigen_ext.cpp
   src/utils/intersection.cpp
   src/utils/logger.cpp
   src/utils/thread_limiter.cpp
+  src/utils/vertex_to_min_edge.cpp
   src/utils/world_bbox_diagonal_length.cpp
 
-  src/collision_constraint.cpp
   src/collision_mesh.cpp
   src/ipc.cpp
 )
 
 target_link_libraries(ipctk PRIVATE ipc::toolkit)
+target_include_directories(ipctk PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # Extra warnings
 # target_link_libraries(ipctk PRIVATE IPCToolkit::warnings)

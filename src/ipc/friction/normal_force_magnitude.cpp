@@ -9,8 +9,7 @@ double compute_normal_force_magnitude(
 {
     double grad_b = barrier_gradient(
         distance_squared - dmin * dmin, 2 * dmin * dhat + dhat * dhat);
-    return -barrier_stiffness * grad_b * 2
-        * sqrt(distance_squared); // / (h * h) eliminated here
+    return -barrier_stiffness * grad_b * 2 * sqrt(distance_squared);
 }
 
 VectorMax12d compute_normal_force_magnitude_gradient(

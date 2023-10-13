@@ -26,6 +26,7 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 
 # Checklist:
 
+- [ ] I have followed the project [style guide](https://ipctk.xyz/style_guide.html)
 - [ ] My code follows the clang-format style guidelines of this project
 - [ ] I have performed a self-review of my code
 - [ ] I have commented my code, particularly in hard-to-understand areas

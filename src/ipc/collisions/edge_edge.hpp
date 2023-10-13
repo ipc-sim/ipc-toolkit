@@ -6,72 +6,72 @@
 
 namespace ipc {
 
-struct EdgeEdgeConstraint : EdgeEdgeCandidate, CollisionConstraint {
-    EdgeEdgeConstraint(long edge0_index, long edge1_index, double eps_x);
-    EdgeEdgeConstraint(const EdgeEdgeCandidate& candidate, double eps_x);
+class EdgeEdgeConstraint : public EdgeEdgeCandidate,
+                           public CollisionConstraint {
+public:
+    EdgeEdgeConstraint(
+        const long edge0_id,
+        const long edge1_id,
+        const double eps_x,
+        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
-    int num_vertices() const override
-    {
-        return EdgeEdgeCandidate::num_vertices();
-    }
+    EdgeEdgeConstraint(
+        const EdgeEdgeCandidate& candidate,
+        const double eps_x,
+        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
-    std::array<long, 4> vertex_indices(
-        const Eigen::MatrixXi& E, const Eigen::MatrixXi& F) const override
-    {
-        return EdgeEdgeCandidate::vertex_indices(E, F);
-    }
-
-    double compute_distance(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
-    {
-        return EdgeEdgeCandidate::compute_distance(V, E, F);
-    }
-
-    VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
-    {
-        return EdgeEdgeCandidate::compute_distance_gradient(V, E, F);
-    }
-
-    MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F) const override
-    {
-        return EdgeEdgeCandidate::compute_distance_hessian(V, E, F);
-    }
+    EdgeEdgeConstraint(
+        const long edge0_id,
+        const long edge1_id,
+        const double eps_x,
+        const double weight,
+        const Eigen::SparseVector<double>& weight_gradient,
+        const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
     double compute_potential(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double dhat) const override;
 
     VectorMax12d compute_potential_gradient(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double dhat) const override;
 
     MatrixMax12d compute_potential_hessian(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double dhat,
         const bool project_hessian_to_psd) const override;
+
+    // ------------------------------------------------------------------------
+
+    bool operator==(const EdgeEdgeConstraint& other) const;
+    bool operator!=(const EdgeEdgeConstraint& other) const;
+    bool operator<(const EdgeEdgeConstraint& other) const;
 
     template <typename H>
     friend H AbslHashValue(H h, const EdgeEdgeConstraint& ee)
     {
-        return AbslHashValue(
-            std::move(h), static_cast<const EdgeEdgeCandidate&>(ee));
+        return H::combine(
+            std::move(h), static_cast<const EdgeEdgeCandidate&>(ee), ee.dtype);
     }
 
+    // ------------------------------------------------------------------------
+
+    /// @brief Mollifier activation threshold.
+    /// @see edge_edge_mollifier
     double eps_x;
+
+    /// @brief Cached distance type.
+    /// Some EE constraints are mollified EV or VV constraints.
+    EdgeEdgeDistanceType dtype;
+
+protected:
+    virtual EdgeEdgeDistanceType known_dtype() const override { return dtype; }
 };
 
 } // namespace ipc

@@ -7,133 +7,137 @@
 namespace ipc {
 
 EdgeEdgeConstraint::EdgeEdgeConstraint(
-    long edge0_index, long edge1_index, double eps_x)
-    : EdgeEdgeCandidate(edge0_index, edge1_index)
+    const long edge0_id,
+    const long edge1_id,
+    const double eps_x,
+    const EdgeEdgeDistanceType dtype)
+    : EdgeEdgeCandidate(edge0_id, edge1_id)
     , eps_x(eps_x)
+    , dtype(dtype)
 {
 }
 
 EdgeEdgeConstraint::EdgeEdgeConstraint(
-    const EdgeEdgeCandidate& candidate, double eps_x)
+    const EdgeEdgeCandidate& candidate,
+    const double eps_x,
+    const EdgeEdgeDistanceType dtype)
     : EdgeEdgeCandidate(candidate)
     , eps_x(eps_x)
+    , dtype(dtype)
+{
+}
+
+EdgeEdgeConstraint::EdgeEdgeConstraint(
+    const long edge0_id,
+    const long edge1_id,
+    const double eps_x,
+    const double weight,
+    const Eigen::SparseVector<double>& weight_gradient,
+    const EdgeEdgeDistanceType dtype)
+    : EdgeEdgeCandidate(edge0_id, edge1_id)
+    , CollisionConstraint(weight, weight_gradient)
+    , eps_x(eps_x)
+    , dtype(dtype)
 {
 }
 
 double EdgeEdgeConstraint::compute_potential(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     const double dhat) const
 {
     return edge_edge_mollifier(
-               V.row(E(edge0_index, 0)), V.row(E(edge0_index, 1)),
-               V.row(E(edge1_index, 0)), V.row(E(edge1_index, 1)), eps_x)
-        * CollisionConstraint::compute_potential(V, E, F, dhat);
+               vertices.row(edges(edge0_id, 0)),
+               vertices.row(edges(edge0_id, 1)),
+               vertices.row(edges(edge1_id, 0)),
+               vertices.row(edges(edge1_id, 1)), eps_x)
+        * CollisionConstraint::compute_potential(vertices, edges, faces, dhat);
 }
 
 VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     const double dhat) const
 {
-    const double dhat_squared = dhat * dhat;
+    const auto& [ea0, ea1, eb0, eb1] = this->vertices(vertices, edges, faces);
 
-    // ∇[m(x) * b(d(x))] = (∇m(x)) * b(d(x)) + m(x) * b'(d(x)) * ∇d(x)
-    const auto& ea0 = V.row(E(edge0_index, 0));
-    const auto& ea1 = V.row(E(edge0_index, 1));
-    const auto& eb0 = V.row(E(edge1_index, 0));
-    const auto& eb1 = V.row(E(edge1_index, 1));
-
-    // The distance type is unknown because of mollified PP and PE
-    // constraints where also added as EE constraints.
-    const EdgeEdgeDistanceType dtype =
-        edge_edge_distance_type(ea0, ea1, eb0, eb1);
-    const double distance = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
-    VectorMax12d distance_grad;
-    edge_edge_distance_gradient(ea0, ea1, eb0, eb1, distance_grad, dtype);
+    // b(d(x))
+    const double barrier =
+        CollisionConstraint::compute_potential(vertices, edges, faces, dhat);
+    // ∇ b(d(x))
+    const VectorMax12d barrier_grad =
+        CollisionConstraint::compute_potential_gradient(
+            vertices, edges, faces, dhat);
 
     // m(x)
     const double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
-    // ∇m(x)
-    VectorMax12d mollifier_grad;
-    edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x, mollifier_grad);
+    // ∇ m(x)
+    const Vector12d mollifier_grad =
+        edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x);
 
-    // b(d(x))
-    const double b = barrier(
-        distance - minimum_distance * minimum_distance,
-        2 * minimum_distance * dhat + dhat_squared);
-    // b'(d(x))
-    const double grad_b = barrier_gradient(
-        distance - minimum_distance * minimum_distance,
-        2 * minimum_distance * dhat + dhat_squared);
-
-    return weight * (mollifier_grad * b + mollifier * grad_b * distance_grad);
+    // ∇[m(x) * b(d(x))] = ∇m(x)) * b(d(x)) + m(x) * ∇ b(d(x))
+    return mollifier_grad * barrier + mollifier * barrier_grad;
 }
 
 MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     const double dhat,
     const bool project_hessian_to_psd) const
 {
-    const double dhat_squared = dhat * dhat;
-    const double min_dist_squrared = minimum_distance * minimum_distance;
+    const auto& [ea0, ea1, eb0, eb1] = this->vertices(vertices, edges, faces);
 
-    // ∇²[m(x) * b(d(x))] = ∇[∇m(x) * b(d(x)) + m(x) * b'(d(x)) * ∇d(x)]
-    //                    = ∇²m(x) * b(d(x)) + b'(d(x)) * ∇d(x) * ∇m(x)ᵀ
-    //                      + ∇m(x) * b'(d(x)) * ∇d(x))ᵀ
-    //                      + m(x) * b"(d(x)) * ∇d(x) * ∇d(x)ᵀ
-    //                      + m(x) * b'(d(x)) * ∇²d(x)
-    const auto& ea0 = V.row(E(edge0_index, 0));
-    const auto& ea1 = V.row(E(edge0_index, 1));
-    const auto& eb0 = V.row(E(edge1_index, 0));
-    const auto& eb1 = V.row(E(edge1_index, 1));
+    // b(d(x))
+    const double barrier =
+        CollisionConstraint::compute_potential(vertices, edges, faces, dhat);
+    // ∇ b(d(x))
+    const Vector12d barrier_grad =
+        CollisionConstraint::compute_potential_gradient(
+            vertices, edges, faces, dhat);
+    // ∇² b(d(x))
+    const Matrix12d barrier_hess =
+        CollisionConstraint::compute_potential_hessian(
+            vertices, edges, faces, dhat, /*project_hessian_to_psd=*/false);
 
-    // Compute distance derivatives
-    // The distance type is unknown because of mollified PP and PE
-    // constraints where also added as EE constraints.
-    const EdgeEdgeDistanceType dtype =
-        edge_edge_distance_type(ea0, ea1, eb0, eb1);
-    const double distance = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
-    VectorMax12d distance_grad;
-    edge_edge_distance_gradient(ea0, ea1, eb0, eb1, distance_grad, dtype);
-    MatrixMax12d distance_hess;
-    edge_edge_distance_hessian(ea0, ea1, eb0, eb1, distance_hess, dtype);
-
-    // Compute mollifier derivatives
+    // m(x)
     const double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
-    VectorMax12d mollifier_grad;
-    edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x, mollifier_grad);
-    MatrixMax12d mollifier_hess;
-    edge_edge_mollifier_hessian(ea0, ea1, eb0, eb1, eps_x, mollifier_hess);
+    // ∇ m(x)
+    const Vector12d mollifier_grad =
+        edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x);
+    // ∇² m(x)
+    const Matrix12d mollifier_hess =
+        edge_edge_mollifier_hessian(ea0, ea1, eb0, eb1, eps_x);
 
-    // Compute barrier derivatives
-    const double b = barrier(
-        distance - min_dist_squrared,
-        2 * minimum_distance * dhat + dhat_squared);
-    const double grad_b = barrier_gradient(
-        distance - min_dist_squrared,
-        2 * minimum_distance * dhat + dhat_squared);
-    const double hess_b = barrier_hessian(
-        distance - min_dist_squrared,
-        2 * minimum_distance * dhat + dhat_squared);
+    // ∇²[m(x) * b(d(x))] = ∇[∇m(x) * b(d(x)) + m(x) * ∇b(d(x))]
+    //                    = ∇²m(x) * b(d(x)) + ∇b(d(x)) * ∇m(x)ᵀ
+    //                      + ∇m(x) * ∇b(d(x))ᵀ + m(x) * ∇²b(d(x))
+    const Matrix12d grad_b_grad_m = barrier_grad * mollifier_grad.transpose();
 
-    MatrixMax12d hess = mollifier_hess * b
-        + grad_b
-            * (distance_grad * mollifier_grad.transpose()
-               + mollifier_grad * distance_grad.transpose())
-        + mollifier
-            * (hess_b * distance_grad * distance_grad.transpose()
-               + grad_b * distance_hess);
+    const Matrix12d hess = mollifier_hess * barrier + grad_b_grad_m
+        + grad_b_grad_m.transpose() + mollifier * barrier_hess;
 
-    if (project_hessian_to_psd) {
-        hess = project_to_psd(hess);
+    return project_hessian_to_psd ? project_to_psd(hess) : hess;
+}
+
+bool EdgeEdgeConstraint::operator==(const EdgeEdgeConstraint& other) const
+{
+    return EdgeEdgeCandidate::operator==(other) && dtype == other.dtype;
+}
+
+bool EdgeEdgeConstraint::operator!=(const EdgeEdgeConstraint& other) const
+{
+    return !(*this == other);
+}
+
+bool EdgeEdgeConstraint::operator<(const EdgeEdgeConstraint& other) const
+{
+    if (EdgeEdgeCandidate::operator==(other)) {
+        return dtype < other.dtype;
     }
-
-    return weight * hess;
+    return EdgeEdgeCandidate::operator<(other);
 }
 
 } // namespace ipc

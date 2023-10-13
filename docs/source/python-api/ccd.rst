@@ -1,34 +1,15 @@
-CCD
-===
+Continuous Collision Detection
+==============================
 
-Broad Phase
------------
+.. autofunction:: ipctk.is_step_collision_free
 
-.. autoclass:: ipctk.BroadPhaseMethod
+.. autofunction:: ipctk.compute_collision_free_stepsize
 
-Candidates
-^^^^^^^^^^
+.. .. autovariable:: ipctk.DEFAULT_CCD_TOLERANCE
+.. .. autovariable:: ipctk.DEFAULT_CCD_MAX_ITERATIONS
+.. .. autovariable:: ipctk.DEFAULT_CCD_CONSERVATIVE_RESCALING
 
-.. autoclass:: ipctk.ContinuousCollisionCandidate
-    :members:
-
-.. autoclass:: ipctk.VertexVertexCandidate
-    :members:
-
-.. autoclass:: ipctk.EdgeVertexCandidate
-    :members:
-
-.. autoclass:: ipctk.EdgeEdgeCandidate
-    :members:
-
-.. autoclass:: ipctk.EdgeFaceCandidate
-    :members:
-
-.. autoclass:: ipctk.FaceVertexCandidate
-    :members:
-
-.. autoclass:: ipctk.Candidates
-    :members:
-
-Narrow Phase
-------------
+.. autofunction:: ipctk.point_point_ccd
+.. autofunction:: ipctk.point_edge_ccd
+.. autofunction:: ipctk.edge_edge_ccd
+.. autofunction:: ipctk.point_triangle_ccd

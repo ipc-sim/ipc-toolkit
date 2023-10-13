@@ -7,94 +7,85 @@
 
 namespace ipc {
 
-FaceVertexCandidate::FaceVertexCandidate(long face_index, long vertex_index)
-    : face_index(face_index)
-    , vertex_index(vertex_index)
+FaceVertexCandidate::FaceVertexCandidate(long face_id, long vertex_id)
+    : face_id(face_id)
+    , vertex_id(vertex_id)
 {
 }
 
-double FaceVertexCandidate::compute_distance(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const PointTriangleDistanceType dtype) const
+double
+FaceVertexCandidate::compute_distance(const VectorMax12d& positions) const
 {
+    assert(positions.size() == 12);
     return point_triangle_distance(
-        V.row(vertex_index), V.row(F(face_index, 0)), V.row(F(face_index, 1)),
-        V.row(F(face_index, 2)), dtype);
+        positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
+        positions.tail<3>(), known_dtype());
 }
 
 VectorMax12d FaceVertexCandidate::compute_distance_gradient(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const PointTriangleDistanceType dtype) const
+    const VectorMax12d& positions) const
 {
-    VectorMax12d distance_grad;
-    point_triangle_distance_gradient(
-        V.row(vertex_index), V.row(F(face_index, 0)), V.row(F(face_index, 1)),
-        V.row(F(face_index, 2)), distance_grad, dtype);
-    return distance_grad;
+    assert(positions.size() == 12);
+    return point_triangle_distance_gradient(
+        positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
+        positions.tail<3>(), known_dtype());
 }
 
 MatrixMax12d FaceVertexCandidate::compute_distance_hessian(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
-    const PointTriangleDistanceType dtype) const
+    const VectorMax12d& positions) const
 {
-    MatrixMax12d distance_hess;
-    point_triangle_distance_hessian(
-        V.row(vertex_index), V.row(F(face_index, 0)), V.row(F(face_index, 1)),
-        V.row(F(face_index, 2)), distance_hess, dtype);
-    return distance_hess;
+    assert(positions.size() == 12);
+    return point_triangle_distance_hessian(
+        positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
+        positions.tail<3>(), known_dtype());
 }
 
 bool FaceVertexCandidate::ccd(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const VectorMax12d& vertices_t0,
+    const VectorMax12d& vertices_t1,
     double& toi,
+    const double min_distance,
     const double tmax,
     const double tolerance,
     const long max_iterations,
     const double conservative_rescaling) const
 {
+    assert(vertices_t0.size() == 12 && vertices_t1.size() == 12);
     return point_triangle_ccd(
         // Point at t=0
-        V0.row(vertex_index),
+        vertices_t0.head<3>(),
         // Triangle at t=0
-        V0.row(F(face_index, 0)), V0.row(F(face_index, 1)),
-        V0.row(F(face_index, 2)),
+        vertices_t0.segment<3>(3), vertices_t0.segment<3>(6),
+        vertices_t0.tail<3>(),
         // Point at t=1
-        V1.row(vertex_index),
+        vertices_t1.head<3>(),
         // Triangle at t=1
-        V1.row(F(face_index, 0)), V1.row(F(face_index, 1)),
-        V1.row(F(face_index, 2)), //
-        toi, tmax, tolerance, max_iterations, conservative_rescaling);
+        vertices_t1.segment<3>(3), vertices_t1.segment<3>(6),
+        vertices_t1.tail<3>(), //
+        toi, min_distance, tmax, tolerance, max_iterations,
+        conservative_rescaling);
 }
 
 void FaceVertexCandidate::print_ccd_query(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces) const
 {
-    std::cout << V0.row(F(face_index, 0)).format(OBJ_VERTEX_FORMAT);
-    std::cout << V0.row(F(face_index, 1)).format(OBJ_VERTEX_FORMAT);
-    std::cout << V0.row(F(face_index, 2)).format(OBJ_VERTEX_FORMAT);
-    std::cout << V0.row(vertex_index).format(OBJ_VERTEX_FORMAT);
-    std::cout << V1.row(F(face_index, 0)).format(OBJ_VERTEX_FORMAT);
-    std::cout << V1.row(F(face_index, 1)).format(OBJ_VERTEX_FORMAT);
-    std::cout << V1.row(F(face_index, 2)).format(OBJ_VERTEX_FORMAT);
-    std::cout << V1.row(vertex_index).format(OBJ_VERTEX_FORMAT);
+    std::cout << vertices_t0.row(faces(face_id, 0)).format(OBJ_VERTEX_FORMAT);
+    std::cout << vertices_t0.row(faces(face_id, 1)).format(OBJ_VERTEX_FORMAT);
+    std::cout << vertices_t0.row(faces(face_id, 2)).format(OBJ_VERTEX_FORMAT);
+    std::cout << vertices_t0.row(vertex_id).format(OBJ_VERTEX_FORMAT);
+    std::cout << vertices_t1.row(faces(face_id, 0)).format(OBJ_VERTEX_FORMAT);
+    std::cout << vertices_t1.row(faces(face_id, 1)).format(OBJ_VERTEX_FORMAT);
+    std::cout << vertices_t1.row(faces(face_id, 2)).format(OBJ_VERTEX_FORMAT);
+    std::cout << vertices_t1.row(vertex_id).format(OBJ_VERTEX_FORMAT);
     std::cout << std::flush;
 }
 
 bool FaceVertexCandidate::operator==(const FaceVertexCandidate& other) const
 {
-    return face_index == other.face_index && vertex_index == other.vertex_index;
+    return face_id == other.face_id && vertex_id == other.vertex_id;
 }
 
 bool FaceVertexCandidate::operator!=(const FaceVertexCandidate& other) const
@@ -104,10 +95,10 @@ bool FaceVertexCandidate::operator!=(const FaceVertexCandidate& other) const
 
 bool FaceVertexCandidate::operator<(const FaceVertexCandidate& other) const
 {
-    if (face_index == other.face_index) {
-        return vertex_index < other.vertex_index;
+    if (face_id == other.face_id) {
+        return vertex_id < other.vertex_id;
     }
-    return face_index < other.face_index;
+    return face_id < other.face_id;
 }
 
 } // namespace ipc

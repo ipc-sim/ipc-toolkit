@@ -8,6 +8,9 @@ add_executable(ipc_toolkit_tests
   # Test barrier and dertivatives
   barrier/test_barrier.cpp
 
+  # Test candidates
+  candidates/test_candidates.cpp
+
   # Test CCD
   broad_phase/benchmark_broad_phase.cpp
   broad_phase/brute_force_comparison.cpp
@@ -17,6 +20,12 @@ add_executable(ipc_toolkit_tests
   ccd/benchmark_ccd.cpp
   ccd/collision_generator.cpp
   ccd/test_ccd.cpp
+  ccd/test_ccd_benchmark.cpp
+  ccd/test_point_edge_ccd.cpp
+  ccd/test_point_triangle_ccd.cpp
+  ccd/test_edge_edge_ccd.cpp
+  ccd/test_ccd.cpp
+  test_cfl.cpp
 
   # Test distances and dertivatives
   distance/test_distance_type.cpp
@@ -28,26 +37,33 @@ add_executable(ipc_toolkit_tests
   distance/test_point_point.cpp
   distance/test_point_triangle.cpp
 
+  # Test constraints
+  constraints/test_constraints.cpp
+
   # Test friction
   friction/friction_data_generator.cpp
   friction/test_closest_point.cpp
   friction/test_force_jacobian.cpp
   friction/test_friction.cpp
   friction/test_normal_force_magnitude.cpp
-  friction/test_relative_displacement.cpp
+  friction/test_relative_velocity.cpp
   friction/test_smooth_friction_mollifier.cpp
   friction/test_tangent_basis.cpp
 
   # Test general interface
   test_ipc.cpp
+  test_collision_mesh.cpp
 
   # Test intersection checks
   test_has_intersections.cpp
 
-  # Utilities for tests
+  # Tes utility functions
   test_utils.cpp
 
-  static_vs_dynamic.cpp
+  # Utilities for tests
+  utils.cpp
+
+  benchmark_eigen.cpp
 )
 
 target_include_directories(ipc_toolkit_tests PUBLIC ".")
@@ -58,22 +74,37 @@ target_include_directories(ipc_toolkit_tests PUBLIC ".")
 
 target_link_libraries(ipc_toolkit_tests PUBLIC ipc::toolkit)
 
-include(ipc_toolkit_warnings)
-target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)
-
 include(catch2)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC Catch2::Catch2)
+target_link_libraries(ipc_toolkit_tests PUBLIC Catch2::Catch2)
 
 include(finite_diff)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC finitediff::finitediff)
+target_link_libraries(ipc_toolkit_tests PUBLIC finitediff::finitediff)
 
 include(json)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(ipc_toolkit_tests PUBLIC nlohmann_json::nlohmann_json)
+
+if (IPC_TOOLKIT_TEST_CCD_BENCHMARK)
+  include(ccd_query_io)
+  target_link_libraries(ipc_toolkit_tests PUBLIC ccd_io::ccd_io)
+  target_compile_definitions(ipc_toolkit_tests PRIVATE IPC_TOOLKIT_TEST_CCD_BENCHMARK)
+  if(NOT (IPC_TOOLKIT_CCD_BENCHMARK_DIR STREQUAL ""))
+    message(STATUS "Using CCD benchmark directory: ${IPC_TOOLKIT_CCD_BENCHMARK_DIR}")
+    target_compile_definitions(ipc_toolkit_tests PRIVATE IPC_TOOLKIT_CCD_BENCHMARK_DIR="${IPC_TOOLKIT_CCD_BENCHMARK_DIR}")
+  endif()
+  if(NOT (IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR STREQUAL ""))
+    message(STATUS "Using new CCD benchmark directory: ${IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR}")
+    target_compile_definitions(ipc_toolkit_tests PRIVATE IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR="${IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR}")
+  endif()
+endif()
 
 if(IPC_TOOLKIT_WITH_CUDA)
   find_package(CUDAToolkit)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit_tests PRIVATE CUDA::cudart)
+  target_link_libraries(ipc_toolkit_tests PRIVATE CUDA::cudart)
 endif()
+
+# Extra warnings (link last for highest priority)
+include(ipc_toolkit_warnings)
+target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)
 
 ################################################################################
 # Compiler options
@@ -92,10 +123,10 @@ endif()
 # Register tests
 ################################################################################
 
-set(PARSE_CATCH_TESTS_ADD_TO_CONFIGURE_DEPENDS ON)
-
-# Include Catch2 and provide function `catch_discover_tests` to register tests.
 FetchContent_GetProperties(catch2)
-include("${catch2_SOURCE_DIR}/contrib/Catch.cmake")
+list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+include(Catch)
 
+# Register tests
+set(PARSE_CATCH_TESTS_ADD_TO_CONFIGURE_DEPENDS ON)
 catch_discover_tests(ipc_toolkit_tests)

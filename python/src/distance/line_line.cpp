@@ -1,4 +1,4 @@
-#include "../common.hpp"
+#include <common.hpp>
 
 #include <ipc/distance/line_line.hpp>
 
@@ -8,11 +8,7 @@ using namespace ipc;
 void define_line_line_distance(py::module_& m)
 {
     m.def(
-        "line_line_distance",
-        [](const Eigen::Vector3d& ea0, const Eigen::Vector3d& ea1,
-           const Eigen::Vector3d& eb0, const Eigen::Vector3d& eb1) {
-            return line_line_distance(ea0, ea1, eb0, eb1);
-        },
+        "line_line_distance", &line_line_distance,
         R"ipc_Qu8mg5v7(
         Compute the distance between a two infinite lines in 3D.
 
@@ -34,13 +30,7 @@ void define_line_line_distance(py::module_& m)
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
 
     m.def(
-        "line_line_distance_gradient",
-        [](const Eigen::Vector3d& ea0, const Eigen::Vector3d& ea1,
-           const Eigen::Vector3d& eb0, const Eigen::Vector3d& eb1) {
-            Vector<double, 12> grad;
-            line_line_distance_gradient(ea0, ea1, eb0, eb1, grad);
-            return grad;
-        },
+        "line_line_distance_gradient", &line_line_distance_gradient,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a two lines in 3D.
 
@@ -62,13 +52,7 @@ void define_line_line_distance(py::module_& m)
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
 
     m.def(
-        "line_line_distance_hessian",
-        [](const Eigen::Vector3d& ea0, const Eigen::Vector3d& ea1,
-           const Eigen::Vector3d& eb0, const Eigen::Vector3d& eb1) {
-            Eigen::Matrix<double, 12, 12> hess;
-            line_line_distance_hessian(ea0, ea1, eb0, eb1, hess);
-            return hess;
-        },
+        "line_line_distance_hessian", &line_line_distance_hessian,
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a two lines in 3D.
 

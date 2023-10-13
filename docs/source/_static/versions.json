@@ -1,0 +1,15 @@
+[{
+    "version": "https://ipctk.xyz",
+    "title": "main",
+    "aliases": ["latest", "head"]
+}, {
+    "version": "https://ipctk.xyz/v1.1.1",
+    "title": "v1.1.1",
+    "aliases": ["stable"]
+}, {
+    "version": "https://ipctk.xyz/v1.1.0",
+    "title": "v1.1.0"
+}, {
+    "version": "https://ipctk.xyz/v1.0.0",
+    "title": "v1.0.0"
+}]

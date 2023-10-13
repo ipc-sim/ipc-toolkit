@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.0.0
         with:
           fetch-depth: 10
 
@@ -27,6 +27,32 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r docs/requirements.txt
 
+      - name: Build release docs
+        run: |
+          HEAD=$(git rev-parse HEAD)
+          git fetch --all --tags
+          cd docs
+          for version in $(git tag -l); do
+              echo "Processing $version:"
+              git checkout $version
+
+              # Fix links
+              grep -rli 'url = {https://ipc-sim.github.io/ipc-toolkit/}' ../* | xargs -i@ sed -i 's/ipc-sim.github.io\/ipc-toolkit\//github.com\/ipc-sim\/ipc-toolkit/g' @
+              grep -rli 'ipc-sim.github.io/ipc-toolkit' ../* | xargs -i@ sed -i 's/ipc-sim.github.io\/ipc-toolkit/ipctk.xyz/g' @
+
+              pip install --force-reinstall -v "ipctk==$version"
+              sphinx-build source build/html/$version \
+                -D html_theme_options.version_dropdown=true \
+                -D html_theme_options.version_json=https://ipctk.xyz/versions.json
+
+              # Discard changes
+              git reset --hard
+          done
+          pip uninstall -y ipctk
+          git checkout $HEAD
+          cp source/_static/versions.json build/html/
+          cd ..
+
       - name: Build ipctk
         run: pip install --verbose .
 
@@ -40,6 +66,5 @@ jobs:
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: docs/build/html # The folder the action should deploy.
+          branch: gh-pages # The branch the action should deploy to.
+          folder: docs/build/html # The folder the action should deploy.

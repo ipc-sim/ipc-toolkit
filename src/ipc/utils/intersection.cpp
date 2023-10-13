@@ -2,13 +2,14 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/config.hpp>
-#ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
-#include <ipc/utils/rational.hpp>
-#endif
 
 #include <igl/predicates/predicates.h>
 
 #include <Eigen/Geometry>
+
+#ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
+#include <rational/rational.hpp>
+#endif
 
 namespace ipc {
 
@@ -20,7 +21,12 @@ bool is_edge_intersecting_triangle_rational(
     const Eigen::Vector3d& t1_float,
     const Eigen::Vector3d& t2_float)
 {
-    Vector3<Rational> e0, e1, t0, t1, t2;
+    using namespace rational;
+
+    typedef Eigen::Matrix<Rational, 3, 1, Eigen::ColMajor | Eigen::DontAlign>
+        Vector3r;
+
+    Vector3r e0, e1, t0, t1, t2;
 
     for (int d = 0; d < 3; ++d) {
         e0[d] = e0_float[d];
@@ -44,7 +50,7 @@ bool is_edge_intersecting_triangle_rational(
         - e1[1] * t1[2] * t2[0] - e1[2] * t0[0] * t1[1] + e1[2] * t0[0] * t2[1]
         + e1[2] * t0[1] * t1[0] - e1[2] * t0[1] * t2[0] - e1[2] * t1[0] * t2[1]
         + e1[2] * t1[1] * t2[0];
-    if (d.get_sign() == 0) {
+    if (d.sign() == 0) {
         return true;
     }
 
@@ -111,7 +117,7 @@ bool is_edge_intersecting_triangle(
         return false;
     }
 
-#ifdef IPC_TOOLKIT_USE_RATIONAL_INTERSECTION
+#ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
     return is_edge_intersecting_triangle_rational(e0, e1, t0, t1, t2);
 #else
     Eigen::Matrix3d M;

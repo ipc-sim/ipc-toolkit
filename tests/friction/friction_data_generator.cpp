@@ -23,6 +23,8 @@ FrictionData friction_data_generator()
     auto& [V0, V1, E, F, constraints, mu, epsv_times_h, dhat, barrier_stiffness] =
         data;
 
+    constraints.set_are_shape_derivatives_enabled(true);
+
     mu = GENERATE(range(0.0, 1.0, 0.2));
 #ifdef NDEBUG
     epsv_times_h = pow(10, GENERATE(range(-6, 0)));
@@ -138,7 +140,6 @@ FrictionData friction_data_generator()
         constraints.vv_constraints.emplace_back(0, 1);
         constraints.vv_constraints.back().weight_gradient.resize(V0.size());
     }
-    constraints.compute_shape_derivatives = true;
 
     return data;
 }

@@ -28,6 +28,13 @@ template <typename T>
 using MatrixX = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
 using Vector1d = Vector1<double>;
+using Vector6d = Vector<double, 6>;
+using Vector9d = Vector<double, 9>;
+using Vector12d = Vector<double, 12>;
+using Matrix6d = Eigen::Matrix<double, 6, 6>;
+using Matrix9d = Eigen::Matrix<double, 9, 9>;
+using Matrix12d = Eigen::Matrix<double, 12, 12>;
+
 /// @brief A dynamic size matrix with a fixed maximum size of 3×1
 template <typename T> using VectorMax2 = Vector<T, Eigen::Dynamic, 2>;
 /// @brief A dynamic size matrix with a fixed maximum size of 3×1
@@ -114,7 +121,9 @@ using ArrayMax3d = ArrayMax3<double>;
 /// @brief A dynamic size array with a fixed maximum size of 3×1
 using ArrayMax3i = ArrayMax3<int>;
 
-/// Matrix Projection onto Positive Definite Cone
+/// @brief Matrix projection onto positive definite cone
+/// @param A Symmetric matrix to project
+/// @return Projected matrix
 template <
     typename _Scalar,
     int _Rows,
@@ -126,7 +135,10 @@ Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
 project_to_pd(
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A,
     double eps = 1e-8);
-/// Matrix Projection onto Positive Semi-Definite Cone
+
+/// @brief Matrix projection onto positive semi-definite cone
+/// @param A Symmetric matrix to project
+/// @return Projected matrix
 template <
     typename _Scalar,
     int _Rows,
@@ -138,17 +150,6 @@ Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
 project_to_psd(
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&
         A);
-
-/// Cross product for dynamically sized matrices.
-template <
-    typename DerivedA,
-    typename DerivedB,
-    typename Result = Eigen::Matrix<
-        typename DerivedA::Scalar,
-        DerivedA::RowsAtCompileTime,
-        DerivedA::ColsAtCompileTime>>
-Result cross(
-    const Eigen::MatrixBase<DerivedA>& a, const Eigen::MatrixBase<DerivedB>& b);
 
 /// Eigen IO Format to format vectors like vertex rows in an OBJ file.
 static const Eigen::IOFormat OBJ_VERTEX_FORMAT = Eigen::IOFormat(

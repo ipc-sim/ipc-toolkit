@@ -1,31 +1,26 @@
-# Etienne Vouga's CCD Library
-
+# Etienne Vouga's CCD Library (https://github.com/evouga/collisiondetection.git)
+# License: ???
 if(TARGET evouga::ccd)
     return()
 endif()
 
 message(STATUS "Third-party: creating target 'evouga::ccd'")
 
-include(FetchContent)
-FetchContent_Declare(
+include(CPM)
+CPMAddPackage(
     evccd
     GIT_REPOSITORY https://github.com/evouga/collisiondetection.git
     GIT_TAG e5fe5c9767207df5047e375fb20180a665ae186f
-    GIT_SHALLOW FALSE
+    DOWNLOAD_ONLY ON
 )
-
-FetchContent_GetProperties(evccd)
-if(NOT evccd_POPULATED)
-    FetchContent_Populate(evccd)
-endif()
 
 # file(GLOB EVOUGA_CCD_SOURCE_FILES "${evccd_SOURCE_DIR}/src/*.cpp")
 add_library(evouga_ccd
-    "${evccd_SOURCE_DIR}/src/CTCD.cpp"
+    "${collisiondetection_SOURCE_DIR}/src/CTCD.cpp"
 )
 add_library(evouga::ccd ALIAS evouga_ccd)
 
-target_include_directories(evouga_ccd PUBLIC "${evccd_SOURCE_DIR}/include")
+target_include_directories(evouga_ccd PUBLIC "${collisiondetection_SOURCE_DIR}/include")
 
 include(eigen)
 target_link_libraries(evouga_ccd PUBLIC Eigen3::Eigen)

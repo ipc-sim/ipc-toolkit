@@ -4,47 +4,45 @@
 
 namespace ipc {
 
-VertexVertexCandidate::VertexVertexCandidate(
-    long vertex0_index, long vertex1_index)
-    : vertex0_index(vertex0_index)
-    , vertex1_index(vertex1_index)
+VertexVertexCandidate::VertexVertexCandidate(long vertex0_id, long vertex1_id)
+    : vertex0_id(vertex0_id)
+    , vertex1_id(vertex1_id)
 {
 }
 
-double VertexVertexCandidate::compute_distance(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+double
+VertexVertexCandidate::compute_distance(const VectorMax12d& positions) const
 {
-    return point_point_distance(V.row(vertex0_index), V.row(vertex1_index));
+    assert(positions.size() == 4 || positions.size() == 6);
+    const int dim = positions.size() / 2;
+    return point_point_distance(positions.head(dim), positions.tail(dim));
 }
 
-VectorMax6d VertexVertexCandidate::compute_distance_gradient(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+VectorMax12d VertexVertexCandidate::compute_distance_gradient(
+    const VectorMax12d& positions) const
 {
-    VectorMax6d distance_grad;
-    point_point_distance_gradient(
-        V.row(vertex0_index), V.row(vertex1_index), distance_grad);
-    return distance_grad;
+    assert(positions.size() == 4 || positions.size() == 6);
+    const int dim = positions.size() / 2;
+    return point_point_distance_gradient(
+        positions.head(dim), positions.tail(dim));
 }
 
-MatrixMax6d VertexVertexCandidate::compute_distance_hessian(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F) const
+MatrixMax12d VertexVertexCandidate::compute_distance_hessian(
+    const VectorMax12d& positions) const
 {
-    MatrixMax6d distance_hess;
-    point_point_distance_hessian(
-        V.row(vertex0_index), V.row(vertex1_index), distance_hess);
-    return distance_hess;
+    assert(positions.size() == 4 || positions.size() == 6);
+    const int dim = positions.size() / 2;
+    return point_point_distance_hessian(
+        positions.head(dim), positions.tail(dim));
 }
 
 bool VertexVertexCandidate::operator==(const VertexVertexCandidate& other) const
 {
-    return vertex0_index == other.vertex0_index
-        && vertex1_index == other.vertex1_index;
+    // (i, j) == (i, j) || (i, j) == (j, i)
+    return (this->vertex0_id == other.vertex0_id
+            && this->vertex1_id == other.vertex1_id)
+        || (this->vertex0_id == other.vertex1_id
+            && this->vertex1_id == other.vertex0_id);
 }
 
 bool VertexVertexCandidate::operator!=(const VertexVertexCandidate& other) const
@@ -54,10 +52,13 @@ bool VertexVertexCandidate::operator!=(const VertexVertexCandidate& other) const
 
 bool VertexVertexCandidate::operator<(const VertexVertexCandidate& other) const
 {
-    if (vertex0_index == other.vertex0_index) {
-        return vertex1_index < other.vertex1_index;
+    long this_min = std::min(this->vertex0_id, this->vertex1_id);
+    long other_min = std::min(other.vertex0_id, other.vertex1_id);
+    if (this_min == other_min) {
+        return std::max(this->vertex0_id, this->vertex1_id)
+            < std::max(other.vertex0_id, other.vertex1_id);
     }
-    return vertex0_index < other.vertex0_index;
+    return this_min < other_min;
 }
 
 } // namespace ipc

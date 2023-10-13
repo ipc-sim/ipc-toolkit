@@ -19,7 +19,7 @@ namespace ipc {
 /// @param d The distance.
 /// @param dhat Activation distance of the barrier.
 /// @return The value of the barrier function at d.
-template <typename T> T barrier(const T& d, const double dhat);
+double barrier(const double d, const double dhat);
 
 /// @brief Derivative of the barrier function.
 ///
@@ -46,5 +46,3 @@ double barrier_gradient(const double d, const double dhat);
 double barrier_hessian(const double d, const double dhat);
 
 } // namespace ipc
-
-#include "barrier.tpp"

@@ -1,4 +1,4 @@
-#include "../common.hpp"
+#include <common.hpp>
 
 #include <ipc/barrier/barrier.hpp>
 
@@ -8,7 +8,7 @@ using namespace ipc;
 void define_barrier(py::module_& m)
 {
     m.def(
-        "barrier", &barrier<double>,
+        "barrier", &barrier,
         R"ipc_Qu8mg5v7(
         Function that grows to infinity as d approaches 0 from the right.
 

@@ -4,63 +4,65 @@
 
 namespace ipc {
 
+CollisionConstraint::CollisionConstraint(
+    const double weight, const Eigen::SparseVector<double>& weight_gradient)
+    : weight(weight)
+    , weight_gradient(weight_gradient)
+{
+}
+
 double CollisionConstraint::compute_potential(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     const double dhat) const
 {
-    const double distance = compute_distance(V, E, F); // Squared distance
-    return weight
-        * barrier(
-               distance - minimum_distance * minimum_distance,
-               2 * minimum_distance * dhat + dhat * dhat);
+    // Squared distance
+    const double d = compute_distance(vertices, edges, faces);
+    return weight * barrier(d - dmin * dmin, 2 * dmin * dhat + dhat * dhat);
 }
 
 VectorMax12d CollisionConstraint::compute_potential_gradient(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     const double dhat) const
 {
     // ∇b(d(x)) = b'(d(x)) * ∇d(x)
-    const double distance = compute_distance(V, E, F);
-    const VectorMax12d distance_grad = compute_distance_gradient(V, E, F);
+    const VectorMax12d positions = dof(vertices, edges, faces);
+    const double d = compute_distance(positions);
+    const VectorMax12d grad_d = compute_distance_gradient(positions);
 
-    const double grad_b = barrier_gradient(
-        distance - minimum_distance * minimum_distance,
-        2 * minimum_distance * dhat + dhat * dhat);
-    return weight * grad_b * distance_grad;
+    const double grad_b =
+        barrier_gradient(d - dmin * dmin, 2 * dmin * dhat + dhat * dhat);
+    return weight * grad_b * grad_d;
 }
 
 MatrixMax12d CollisionConstraint::compute_potential_hessian(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     const double dhat,
     const bool project_hessian_to_psd) const
 {
-    const double dhat_squared = dhat * dhat;
-    const double min_dist_squrared = minimum_distance * minimum_distance;
+    const double adjusted_dhat = 2 * dmin * dhat + dhat * dhat;
+    const double dmin_sq = dmin * dmin;
 
     // ∇²[b(d(x))] = ∇(b'(d(x)) * ∇d(x))
     //             = b"(d(x)) * ∇d(x) * ∇d(x)ᵀ + b'(d(x)) * ∇²d(x)
 
-    const double distance = compute_distance(V, E, F);
-    const VectorMax12d distance_grad = compute_distance_gradient(V, E, F);
-    const MatrixMax12d distance_hess = compute_distance_hessian(V, E, F);
+    const VectorMax12d positions = dof(vertices, edges, faces);
+    const double d = compute_distance(positions);
+    const VectorMax12d grad_d = compute_distance_gradient(positions);
+    const MatrixMax12d hess_d = compute_distance_hessian(positions);
 
-    const double grad_b = barrier_gradient(
-        distance - min_dist_squrared,
-        2 * minimum_distance * dhat + dhat_squared);
-    const double hess_b = barrier_hessian(
-        distance - min_dist_squrared,
-        2 * minimum_distance * dhat + dhat_squared);
+    const double grad_b = barrier_gradient(d - dmin_sq, adjusted_dhat);
+    const double hess_b = barrier_hessian(d - dmin_sq, adjusted_dhat);
 
     // b"(x) ≥ 0 ⟹ b"(x) * ∇d(x) * ∇d(x)ᵀ is PSD
     assert(hess_b >= 0);
-    MatrixMax12d term1 = hess_b * distance_grad * distance_grad.transpose();
-    MatrixMax12d term2 = grad_b * distance_hess;
+    MatrixMax12d term1 = hess_b * grad_d * grad_d.transpose();
+    MatrixMax12d term2 = grad_b * hess_d;
     if (project_hessian_to_psd) {
         term2 = project_to_psd(term2);
     }

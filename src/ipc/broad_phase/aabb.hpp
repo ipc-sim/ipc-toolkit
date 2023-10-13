@@ -26,16 +26,14 @@ public:
     }
 
     /// @brief Compute a AABB for a static point.
-    static AABB from_point(const VectorMax3d& p, double inflation_radius = 0)
-    {
-        return AABB(p.array() - inflation_radius, p.array() + inflation_radius);
-    }
+    static AABB
+    from_point(const VectorMax3d& p, const double inflation_radius = 0);
 
     /// @brief Compute a AABB for a moving point (i.e. temporal edge).
     static AABB from_point(
         const VectorMax3d& p_t0,
         const VectorMax3d& p_t1,
-        double inflation_radius = 0)
+        const double inflation_radius = 0)
     {
         return AABB(
             from_point(p_t0, inflation_radius),
@@ -44,32 +42,35 @@ public:
 
     bool intersects(const AABB& other) const;
 
+    /// @brief Compute a conservative inflation of the AABB.
+    static void conservative_inflation(
+        ArrayMax3d& min, ArrayMax3d& max, const double inflation_radius);
+
+public:
     ArrayMax3d min;
     ArrayMax3d max;
     std::array<long, 3> vertex_ids;
-    // ArrayMax3d half_extent;
-    // ArrayMax3d center;
 };
 
 void build_vertex_boxes(
-    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXd& vertices,
     std::vector<AABB>& vertex_boxes,
-    double inflation_radius = 0);
+    const double inflation_radius = 0);
 
 void build_vertex_boxes(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
     std::vector<AABB>& vertex_boxes,
-    double inflation_radius = 0);
+    const double inflation_radius = 0);
 
 void build_edge_boxes(
     const std::vector<AABB>& vertex_boxes,
-    const Eigen::MatrixXi& E,
+    const Eigen::MatrixXi& edges,
     std::vector<AABB>& edge_boxes);
 
 void build_face_boxes(
     const std::vector<AABB>& vertex_boxes,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXi& faces,
     std::vector<AABB>& face_boxes);
 
 } // namespace ipc

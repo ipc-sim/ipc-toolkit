@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <ipc/ipc.hpp>
 #include <ipc/broad_phase/brute_force.hpp>
@@ -6,7 +6,7 @@
 #include <ipc/candidates/edge_face.hpp>
 #include <ipc/utils/intersection.hpp>
 
-#include "test_utils.hpp"
+#include <utils.hpp>
 
 #include <tbb/parallel_sort.h>
 
@@ -80,7 +80,7 @@ bool combine_meshes(
     return true;
 }
 
-// TEST_CASE("Test HashGrid EF vs brute-force", "[intersection][brute_force]")
+// TEST_CASE("HashGrid EF vs brute-force", "[intersection][brute_force]")
 // {
 // #ifdef NDEBUG
 //     std::string mesh1_name = GENERATE("cube.obj", "bunny.obj");
@@ -127,8 +127,8 @@ bool combine_meshes(
 //         for (int bf_ci = 0; bf_ci < bf_ee_candidates.size(); bf_ci++) {
 //             if (hg_ee_candidates.size() <= hg_ci
 //                 || bf_ee_candidates[bf_ci] != hg_ee_candidates[hg_ci]) {
-//                 long eai = bf_ee_candidates[bf_ci].edge0_index;
-//                 long ebi = bf_ee_candidates[bf_ci].edge1_index;
+//                 long eai = bf_ee_candidates[bf_ci].edge0_id;
+//                 long ebi = bf_ee_candidates[bf_ci].edge1_id;
 //                 bool intersects = igl::predicates::segment_segment_intersect(
 //                     V.row(E(eai, 0)).head<2>(), V.row(E(eai, 1)).head<2>(),
 //                     V.row(E(ebi, 0)).head<2>(), V.row(E(ebi, 1)).head<2>());
@@ -160,8 +160,8 @@ bool combine_meshes(
 //         for (int bf_ci = 0; bf_ci < bf_ef_candidates.size(); bf_ci++) {
 //             if (hg_ef_candidates.size() <= hg_ci
 //                 || bf_ef_candidates[bf_ci] != hg_ef_candidates[hg_ci]) {
-//                 long ei = bf_ef_candidates[bf_ci].edge_index;
-//                 long fi = bf_ef_candidates[bf_ci].face_index;
+//                 long ei = bf_ef_candidates[bf_ci].edge_id;
+//                 long fi = bf_ef_candidates[bf_ci].face_id;
 //                 bool intersects = is_edge_intersecting_triangle(
 //                     V.row(E(ei, 0)), V.row(E(ei, 1)), V.row(F(fi, 0)),
 //                     V.row(F(fi, 1)), V.row(F(fi, 2)));
@@ -177,7 +177,7 @@ bool combine_meshes(
 //     CAPTURE(mesh1_name, mesh2_name, R1, R2);
 // }
 
-TEST_CASE("Test has_intersections()", "[intersection][thisone]")
+TEST_CASE("Has intersections", "[intersection]")
 {
     std::string mesh1_name = GENERATE("cube.obj", "bunny.obj");
     std::string mesh2_name = GENERATE("cube.obj", "bunny.obj");

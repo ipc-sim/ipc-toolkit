@@ -1,4 +1,4 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
 
 #include <Eigen/Core>
 
@@ -8,11 +8,11 @@
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/utils/logger.hpp>
 
-#include "test_utils.hpp"
+#include <utils.hpp>
 
 using namespace ipc;
 
-TEST_CASE("Test build SpatialHash", "[spatial_hash][build]")
+TEST_CASE("Build SpatialHash", "[spatial_hash][build]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
