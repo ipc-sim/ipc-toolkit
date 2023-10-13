@@ -136,7 +136,7 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
         eb1_t1 = eb1_t0 + Eigen::Vector3d(-scale, -dy, -scale);
 
         // this ternary operator is to force MSVC to use 1 or 0
-        is_collision_expected = dy >= d0 / 2 ? true : false;
+        is_collision_expected = dy >= d0 / 2;
         conservative_check = false;
     }
     CAPTURE(int(is_collision_expected));
@@ -146,7 +146,7 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
         ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
         /*min_distance=*/0.0, tmax, tol, max_iter);
     if (conservative_check) {
-        CHECK(is_colliding >= is_collision_expected);
+        CHECK((is_colliding || !is_collision_expected));
     } else {
         CHECK(is_colliding == is_collision_expected);
     }
@@ -155,7 +155,7 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
         ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
         /*min_distance=*/0.0, tmax);
     if (conservative_check) {
-        CHECK(is_colliding >= is_collision_expected);
+        CHECK((is_colliding || !is_collision_expected));
     } else {
         CHECK(is_colliding == is_collision_expected);
     }
