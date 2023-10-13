@@ -97,7 +97,7 @@ TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle][!mayfail]")
         p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, toi);
 
     if (conservative_check) {
-        CHECK(is_colliding || !is_collision_expected);
+        CHECK((is_colliding || !is_collision_expected));
     } else {
         CHECK(is_colliding == is_collision_expected);
     }
@@ -105,7 +105,7 @@ TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle][!mayfail]")
     is_colliding = additive_ccd::point_triangle_ccd(
         p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, toi);
     if (conservative_check) {
-        CHECK(is_colliding || !is_collision_expected);
+        CHECK((is_colliding || !is_collision_expected));
     } else {
         CHECK(is_colliding == is_collision_expected);
     }

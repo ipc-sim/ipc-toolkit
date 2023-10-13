@@ -158,7 +158,7 @@ void run_benchmark(
                 if (result < expected_result) {
                     fmt::print("\n");
                 }
-                CHECK(result || !expected_result); // false positive is ok
+                CHECK((result || !expected_result)); // false positive is ok
             }
         }
     }
