@@ -158,7 +158,7 @@ void run_benchmark(
                 if (result < expected_result) {
                     fmt::print("\n");
                 }
-                CHECK(result >= expected_result); // false positive is ok
+                CHECK(result || !expected_result); // false positive is ok
             }
         }
     }
@@ -256,7 +256,7 @@ TEST_CASE(
 //                 V.row(0), V.row(1), V.row(2), V.row(3), V.row(4), V.row(5),
 //                 V.row(6), V.row(7), toi);
 //             // }
-//             CHECK(result >= expected_result); // false positive is ok
+//             CHECK(result || !expected_result); // false positive is ok
 //         }
 //     }
 // }
