@@ -23,6 +23,7 @@ TEST_CASE("Codim. Vertex-Vertex Constraints", "[constraints][codim]")
     V.rowwise() -= V.colwise().mean();
 
     CollisionMesh mesh(V, Eigen::MatrixXi(), Eigen::MatrixXi());
+    mesh.init_area_jacobians();
 
     CHECK(mesh.num_vertices() == 8);
     CHECK(mesh.num_codim_vertices() == 8);
@@ -38,7 +39,7 @@ TEST_CASE("Codim. Vertex-Vertex Constraints", "[constraints][codim]")
         return;
     }
 
-    // Candidates
+    SECTION("Candidates")
     {
         Eigen::MatrixXd V1 = V;
         V1.col(1) *= 0.5;
@@ -65,9 +66,16 @@ TEST_CASE("Codim. Vertex-Vertex Constraints", "[constraints][codim]")
             == Catch::Approx(expected_toi));
     }
 
-    // Constraints
+    SECTION("Constraints")
     {
+        const bool use_convergent_formulation = GENERATE(false, true);
+        const bool are_shape_derivatives_enabled = GENERATE(false, true);
+
         CollisionConstraints constraints;
+        constraints.set_use_convergent_formulation(use_convergent_formulation);
+        constraints.set_are_shape_derivatives_enabled(
+            are_shape_derivatives_enabled);
+
         constraints.build(mesh, V, 0.25, min_distance, method);
 
         CHECK(constraints.size() == 12);
