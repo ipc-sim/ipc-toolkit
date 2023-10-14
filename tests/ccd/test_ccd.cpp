@@ -12,7 +12,11 @@
 
 using namespace ipc;
 
+#ifdef NDEBUG
 TEST_CASE("Repeated CCD", "[ccd][repeat]")
+#else
+TEST_CASE("Repeated CCD", "[ccd][repeat][.]")
+#endif
 {
     const double FIRST_TOL = 1e-6, SECOND_TOL = 1e-7;
     const double FIRST_MAX_ITER = 1e6, SECOND_MAX_ITER = 1e6;
