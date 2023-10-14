@@ -62,9 +62,7 @@ void BruteForce::detect_vertex_vertex_candidates(
     std::vector<VertexVertexCandidate>& candidates) const
 {
     detect_candidates<VertexVertexCandidate, true>(
-        vertex_boxes, vertex_boxes,
-        [&](size_t vi, size_t vj) { return can_vertices_collide(vi, vj); },
-        candidates);
+        vertex_boxes, vertex_boxes, can_vertices_collide, candidates);
 }
 
 void BruteForce::detect_edge_vertex_candidates(

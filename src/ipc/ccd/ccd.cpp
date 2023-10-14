@@ -21,9 +21,10 @@
 namespace ipc {
 
 namespace {
-    inline Eigen::Vector3d to_3D(const Eigen::Vector2d& v)
+    inline Eigen::Vector3d to_3D(const VectorMax3d& v)
     {
-        return Eigen::Vector3d(v.x(), v.y(), 0);
+        assert(v.size() == 2 || v.size() == 3);
+        return v.size() == 2 ? Eigen::Vector3d(v.x(), v.y(), 0) : v.head<3>();
     }
 } // namespace
 
@@ -96,7 +97,7 @@ bool ccd_strategy(
     return is_impacting;
 }
 
-bool point_point_ccd(
+bool point_point_ccd_3D(
     const Eigen::Vector3d& p0_t0,
     const Eigen::Vector3d& p1_t0,
     const Eigen::Vector3d& p0_t1,
@@ -160,85 +161,9 @@ bool point_point_ccd(
     assert(p0_t0.size() == p1_t0.size());
     assert(p0_t0.size() == p0_t1.size());
     assert(p0_t0.size() == p1_t1.size());
-
-    const bool is_2D = p0_t0.size() == 2;
-
-    const Eigen::Vector3d p0_t0_3D = is_2D ? to_3D(p0_t0) : p0_t0.head<3>();
-    const Eigen::Vector3d p1_t0_3D = is_2D ? to_3D(p1_t0) : p1_t0.head<3>();
-    const Eigen::Vector3d p0_t1_3D = is_2D ? to_3D(p0_t1) : p0_t1.head<3>();
-    const Eigen::Vector3d p1_t1_3D = is_2D ? to_3D(p1_t1) : p1_t1.head<3>();
-
-    return point_point_ccd(
-        p0_t0_3D, p1_t0_3D, p0_t1_3D, p1_t1_3D, toi, min_distance, tmax,
-        tolerance, max_iterations, conservative_rescaling);
-}
-
-bool point_edge_ccd_2D(
-    const Eigen::Vector2d& p_t0,
-    const Eigen::Vector2d& e0_t0,
-    const Eigen::Vector2d& e1_t0,
-    const Eigen::Vector2d& p_t1,
-    const Eigen::Vector2d& e0_t1,
-    const Eigen::Vector2d& e1_t1,
-    double& toi,
-    const double min_distance,
-    const double tmax,
-    const double tolerance,
-    const long max_iterations,
-    const double conservative_rescaling)
-{
-#ifndef IPC_TOOLKIT_WITH_CORRECT_CCD
-    return inexact_point_edge_ccd_2D(
-        p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi, conservative_rescaling);
-#else
-    assert(0 <= tmax && tmax <= 1.0);
-
-    if (p_t0 == p_t1 && e0_t0 == e0_t1 && e1_t0 == e1_t1) {
-        return false; // No motion
-    }
-
-    const Eigen::Vector3d p_t0_3D = to_3D(p_t0);
-    const Eigen::Vector3d e0_t0_3D = to_3D(e0_t0);
-    const Eigen::Vector3d e1_t0_3D = to_3D(e1_t0);
-    const Eigen::Vector3d p_t1_3D = to_3D(p_t1);
-    const Eigen::Vector3d e0_t1_3D = to_3D(e0_t1);
-    const Eigen::Vector3d e1_t1_3D = to_3D(e1_t1);
-
-    const double initial_distance =
-        sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
-
-    const double adjusted_tolerance = std::min(
-        INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
-
-    const auto ccd = [&](long max_iterations, double min_distance,
-                         bool no_zero_toi, double& toi) -> bool {
-        double output_tolerance;
-        // NOTE: Use degenerate edge-edge
-        bool is_impacting = ticcd::edgeEdgeCCD(
-            p_t0_3D, p_t0_3D, e0_t0_3D, e1_t0_3D, //
-            p_t1_3D, p_t1_3D, e0_t1_3D, e1_t1_3D,
-            Eigen::Array3d::Constant(-1), // rounding error (auto)
-            min_distance,                 // minimum separation distance
-            toi,                          // time of impact
-            adjusted_tolerance,           // delta
-            tmax,                         // maximum time to check
-            max_iterations,               // maximum number of iterations
-            output_tolerance,             // delta_actual
-            no_zero_toi);
-        if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
-            logger().trace(
-                "ticcd::edgeEdgeCCD exceeded iteration limit (min_dist={:g} "
-                "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
-                min_distance, max_iterations, adjusted_tolerance,
-                output_tolerance, toi);
-        }
-        return is_impacting;
-    };
-
-    return ccd_strategy(
-        ccd, max_iterations, min_distance, initial_distance,
-        conservative_rescaling, toi);
-#endif
+    return point_point_ccd_3D(
+        to_3D(p0_t0), to_3D(p1_t0), to_3D(p0_t1), to_3D(p1_t1), toi,
+        min_distance, tmax, tolerance, max_iterations, conservative_rescaling);
 }
 
 bool point_edge_ccd_3D(
@@ -316,22 +241,22 @@ bool point_edge_ccd(
     const double conservative_rescaling)
 {
     int dim = p_t0.size();
-    assert(e0_t0.size() == dim);
-    assert(e1_t0.size() == dim);
     assert(p_t1.size() == dim);
-    assert(e0_t1.size() == dim);
-    assert(e1_t1.size() == dim);
+    assert(e0_t0.size() == dim && e1_t0.size() == dim);
+    assert(e0_t1.size() == dim && e1_t1.size() == dim);
+
+#ifndef IPC_TOOLKIT_WITH_CORRECT_CCD
     if (dim == 2) {
-        return point_edge_ccd_2D(
-            p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, //
-            toi, min_distance, tmax, tolerance, max_iterations,
-            conservative_rescaling);
-    } else {
-        return point_edge_ccd_3D(
-            p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, //
-            toi, min_distance, tmax, tolerance, max_iterations,
+        return inexact_point_edge_ccd_2D(
+            p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi,
             conservative_rescaling);
     }
+#endif
+
+    return point_edge_ccd_3D(
+        to_3D(p_t0), to_3D(e0_t0), to_3D(e1_t0), to_3D(p_t1), to_3D(e0_t1),
+        to_3D(e1_t1), toi, min_distance, tmax, tolerance, max_iterations,
+        conservative_rescaling);
 }
 
 bool edge_edge_ccd(

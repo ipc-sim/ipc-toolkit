@@ -13,6 +13,12 @@
 
 namespace ipc {
 
+bool implements_vertex_vertex(const BroadPhaseMethod method)
+{
+    return method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
+        && method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU;
+}
+
 void Candidates::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
@@ -30,11 +36,9 @@ void Candidates::build(
     broad_phase->detect_collision_candidates(dim, *this);
 
     if (mesh.num_codim_vertices()) {
-        if (broad_phase_method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
-            || broad_phase_method
-                == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+        if (!implements_vertex_vertex(broad_phase_method)) {
             logger().warn(
-                "STQ broad phase does not support codimen. point-point, skipping.");
+                "STQ broad phase does not support codim. point-point, skipping.");
             return;
         }
 
@@ -67,9 +71,14 @@ void Candidates::build(
     broad_phase->build(
         vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this);
-    broad_phase->clear();
 
     if (mesh.num_codim_vertices()) {
+        if (!implements_vertex_vertex(broad_phase_method)) {
+            logger().warn(
+                "STQ broad phase does not support codim. point-point, skipping.");
+            return;
+        }
+
         broad_phase->clear();
         broad_phase->build(
             vertices_t0(mesh.codim_vertices(), Eigen::all),

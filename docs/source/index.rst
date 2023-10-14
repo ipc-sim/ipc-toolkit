@@ -53,8 +53,6 @@
     style_guide
     Code of Conduct <code_of_conduct.md>
 
-.. <img src="_static/teaser@0_3.png" style="padding: 15px 30px 0; background-color: white; width: calc(100% - 60px); max-width: 600px; margin: auto; display: block;"/>
-
 Home
 ====
 

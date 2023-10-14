@@ -21,13 +21,13 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
     const std::string dir = TEST_DATA_DIR;
     SECTION("Data 0")
     {
-        mesh_path_t0 = dir + "slow-broadphase-ccd/0.obj";
-        mesh_path_t1 = dir + "slow-broadphase-ccd/1.obj";
+        mesh_path_t0 = dir + "private/slow-broadphase-ccd/0.obj";
+        mesh_path_t1 = dir + "private/slow-broadphase-ccd/1.obj";
     }
     SECTION("Data 1")
     {
-        mesh_path_t0 = dir + "slow-broadphase-ccd/s0.obj";
-        mesh_path_t1 = dir + "slow-broadphase-ccd/s1.obj";
+        mesh_path_t0 = dir + "private/slow-broadphase-ccd/s0.obj";
+        mesh_path_t1 = dir + "private/slow-broadphase-ccd/s1.obj";
     }
     SECTION("Cloth-ball")
     {

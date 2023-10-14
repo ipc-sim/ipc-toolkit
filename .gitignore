@@ -243,9 +243,11 @@ core*
 docs/source/doxyoutput
 docs/source/api
 !docs/Makefile
+# Private data
+tests/data/private
+# Git repo of sample CCD queries
 tests/data/ccd-queries
-tests/data/slow-broadphase-ccd
-tests/data/ccd-failure
+# Too large to store in git
 tests/data/friction/chain
 logo
 ipctk
