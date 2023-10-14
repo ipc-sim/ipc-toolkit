@@ -1,8 +1,87 @@
 #include <catch2/catch_all.hpp>
 
+#include <utils.hpp>
+
 #include <ipc/collisions/collision_constraints.hpp>
 
 using namespace ipc;
+
+TEST_CASE("Codim. Vertex-Vertex Constraints", "[constraints][codim]")
+{
+    constexpr double thickness = 0.4;
+    constexpr double min_distance = 2 * thickness;
+
+    Eigen::MatrixXd V(8, 3);
+    V << 0, 0, 0, //
+        0, 0, 1,  //
+        0, 1, 0,  //
+        0, 1, 1,  //
+        1, 0, 0,  //
+        1, 0, 1,  //
+        1, 1, 0,  //
+        1, 1, 1;
+    V.rowwise() -= V.colwise().mean();
+
+    CollisionMesh mesh(V, Eigen::MatrixXi(), Eigen::MatrixXi());
+
+    CHECK(mesh.num_vertices() == 8);
+    CHECK(mesh.num_codim_vertices() == 8);
+    CHECK(mesh.num_edges() == 0);
+    CHECK(mesh.num_faces() == 0);
+
+    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    CAPTURE(method);
+
+    // These methods do not support vertex-vertex candidates
+    if (method == ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
+        || method == ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+        return;
+    }
+
+    // Candidates
+    {
+        Eigen::MatrixXd V1 = V;
+        V1.col(1) *= 0.5;
+
+        Candidates candidates;
+        candidates.build(mesh, V, V1, thickness, method);
+
+        CHECK(candidates.size() > 0);
+        CHECK(candidates.vv_candidates.size() == candidates.size());
+
+        CHECK(!candidates.is_step_collision_free(mesh, V, V1, min_distance));
+
+        // Account for conservative rescaling
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+        constexpr double conservative_min_dist = 1e-4;
+#else
+        constexpr double conservative_min_dist = 0.2 * (1 - min_distance);
+#endif
+        constexpr double expected_toi =
+            (1 - (min_distance + conservative_min_dist)) / 2.0 / 0.25;
+        CHECK(
+            candidates.compute_collision_free_stepsize(
+                mesh, V, V1, min_distance)
+            == Catch::Approx(expected_toi));
+    }
+
+    // Constraints
+    {
+        CollisionConstraints constraints;
+        constraints.build(mesh, V, 0.25, min_distance, method);
+
+        CHECK(constraints.size() == 12);
+        CHECK(constraints.vv_constraints.size() == 12);
+
+        CHECK(constraints.compute_potential(mesh, V, 0.25) > 0.0);
+        const Eigen::VectorXd grad =
+            constraints.compute_potential_gradient(mesh, V, 0.25);
+        for (int i = 0; i < V.rows(); i++) {
+            const Eigen::Vector3d f = -grad.segment<3>(3 * i);
+            CHECK(f.normalized().isApprox(V.row(i).normalized().transpose()));
+        }
+    }
+}
 
 TEST_CASE("Vertex-Vertex Constraint", "[constraint][vertex-vertex]")
 {

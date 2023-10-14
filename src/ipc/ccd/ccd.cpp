@@ -58,7 +58,7 @@ bool ccd_strategy(
     }
 
     double min_effective_distance =
-        (1.0 - conservative_rescaling) * initial_distance;
+        (1.0 - conservative_rescaling) * (initial_distance - min_distance);
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
     // Tight Inclusion performs better when the minimum separation is small
     min_effective_distance = std::min(min_effective_distance, 1e-4);
