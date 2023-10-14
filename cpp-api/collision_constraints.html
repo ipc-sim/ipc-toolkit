@@ -4319,37 +4319,41 @@
 <span class="target" id="classipc_1_1_vertex_vertex_constraint"></span><span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">VertexVertexConstraint</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="candidates.html#_CPPv4N3ipc21VertexVertexCandidateE" title="ipc::VertexVertexCandidate (C++ class) — Subclassed by ipc::VertexVertexConstraint, ipc::VertexVertexFrictionConstraint"><span class="n">VertexVertexCandidate</span></a><span class="p">,</span><span class="w"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N3ipc19CollisionConstraintE" title="ipc::CollisionConstraint (C++ class) — Inheritence diagram for ipc::CollisionConstraint:"><span class="n">CollisionConstraint</span></a><a class="headerlink" href="#_CPPv4N3ipc22VertexVertexConstraintE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inheritence diagram for ipc::VertexVertexConstraint:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-9a16e2f69c6ae23eb762261f8eb2a2132ec4e0ed.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-44b0432e415c73b9af9dc269968685ec18f4e347.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
-    &quot;3&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
-    &quot;4&quot; [label=&quot;ipc::CollisionConstraint&quot; tooltip=&quot;ipc::CollisionConstraint&quot;]
+    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
+    &quot;4&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
+    &quot;5&quot; [label=&quot;ipc::CollisionConstraint&quot; tooltip=&quot;ipc::CollisionConstraint&quot;]
     &quot;2&quot; [label=&quot;ipc::VertexVertexCandidate&quot; tooltip=&quot;ipc::VertexVertexCandidate&quot;]
     &quot;1&quot; [label=&quot;ipc::VertexVertexConstraint&quot; tooltip=&quot;ipc::VertexVertexConstraint&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;4&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;5&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-    &quot;1&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;1&quot; -&gt; &quot;5&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
 </figure>
 <p>Collaboration diagram for ipc::VertexVertexConstraint:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-9a16e2f69c6ae23eb762261f8eb2a2132ec4e0ed.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-44b0432e415c73b9af9dc269968685ec18f4e347.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
-    &quot;3&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
-    &quot;4&quot; [label=&quot;ipc::CollisionConstraint&quot; tooltip=&quot;ipc::CollisionConstraint&quot;]
+    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
+    &quot;4&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
+    &quot;5&quot; [label=&quot;ipc::CollisionConstraint&quot; tooltip=&quot;ipc::CollisionConstraint&quot;]
     &quot;2&quot; [label=&quot;ipc::VertexVertexCandidate&quot; tooltip=&quot;ipc::VertexVertexCandidate&quot;]
     &quot;1&quot; [label=&quot;ipc::VertexVertexConstraint&quot; tooltip=&quot;ipc::VertexVertexConstraint&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;4&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;5&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-    &quot;1&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;1&quot; -&gt; &quot;5&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
 </figure>
@@ -4822,7 +4826,7 @@
   <small>
     
       Last update:
-      Oct 13, 2023
+      Oct 14, 2023
     
   </small>
 </div>
