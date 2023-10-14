@@ -43,14 +43,18 @@ void SweepAndTiniestQueue::clear()
     overlaps.clear();
 }
 
-/// @brief Find the candidate edge-vertex collisisons.
+void SweepAndTiniestQueue::detect_vertex_vertex_candidates(
+    std::vector<VertexVertexCandidate>& candidates) const
+{
+    throw std::runtime_error("Not implemented!");
+}
+
 void SweepAndTiniestQueue::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
     throw std::runtime_error("Not implemented!");
 }
 
-/// @brief Find the candidate edge-edge collisions.
 void SweepAndTiniestQueue::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
@@ -62,7 +66,6 @@ void SweepAndTiniestQueue::detect_edge_edge_candidates(
     }
 }
 
-/// @brief Find the candidate face-vertex collisions.
 void SweepAndTiniestQueue::detect_face_vertex_candidates(
     std::vector<FaceVertexCandidate>& candidates) const
 {
@@ -78,7 +81,6 @@ void SweepAndTiniestQueue::detect_face_vertex_candidates(
     }
 }
 
-/// @brief Find the candidate edge-face intersections.
 void SweepAndTiniestQueue::detect_edge_face_candidates(
     std::vector<EdgeFaceCandidate>& candidates) const
 {
@@ -115,7 +117,7 @@ bool SweepAndTiniestQueue::is_face(long id) const
         && id < num_vertices + this->edges.rows() + this->faces.rows();
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
 void SweepAndTiniestQueueGPU::build(
@@ -149,7 +151,12 @@ void SweepAndTiniestQueueGPU::clear()
     boxes.clear();
 }
 
-// Find the candidate edge-vertex collisisons.
+void SweepAndTiniestQueueGPU::detect_vertex_vertex_candidates(
+    std::vector<VertexVertexCandidate>& candidates) const
+{
+    throw std::runtime_error("Not implemented!");
+}
+
 void SweepAndTiniestQueueGPU::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
@@ -170,7 +177,6 @@ void SweepAndTiniestQueueGPU::detect_edge_vertex_candidates(
     // }
 }
 
-// Find the candidate edge-edge collisions.
 void SweepAndTiniestQueueGPU::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
@@ -185,7 +191,6 @@ void SweepAndTiniestQueueGPU::detect_edge_edge_candidates(
     }
 }
 
-// Find the candidate face-vertex collisions.
 void SweepAndTiniestQueueGPU::detect_face_vertex_candidates(
     std::vector<FaceVertexCandidate>& candidates) const
 {
@@ -204,7 +209,6 @@ void SweepAndTiniestQueueGPU::detect_face_vertex_candidates(
     }
 }
 
-// Find the candidate edge-face intersections.
 void SweepAndTiniestQueueGPU::detect_edge_face_candidates(
     std::vector<EdgeFaceCandidate>& candidates) const
 {
@@ -212,7 +216,7 @@ void SweepAndTiniestQueueGPU::detect_edge_face_candidates(
 }
 #endif
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 void CopyMeshBroadPhase::copy_mesh(
     const Eigen::MatrixXi& p_edges, const Eigen::MatrixXi& p_faces)

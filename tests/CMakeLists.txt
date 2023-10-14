@@ -17,10 +17,12 @@ add_executable(ipc_toolkit_tests
   broad_phase/test_aabb.cpp
   broad_phase/test_broad_phase.cpp
   broad_phase/test_spatial_hash.cpp
+  broad_phase/test_voxel_size_heuristic.cpp
   ccd/benchmark_ccd.cpp
   ccd/collision_generator.cpp
   ccd/test_ccd.cpp
   ccd/test_ccd_benchmark.cpp
+  ccd/test_point_point_ccd.cpp
   ccd/test_point_edge_ccd.cpp
   ccd/test_point_triangle_ccd.cpp
   ccd/test_edge_edge_ccd.cpp
@@ -37,8 +39,8 @@ add_executable(ipc_toolkit_tests
   distance/test_point_point.cpp
   distance/test_point_triangle.cpp
 
-  # Test constraints
-  constraints/test_constraints.cpp
+  # Test collision constraints
+  collisions/test_constraints.cpp
 
   # Test friction
   friction/friction_data_generator.cpp

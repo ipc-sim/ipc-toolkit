@@ -68,7 +68,6 @@ double suggest_good_voxel_size(
     return voxel_size;
 }
 
-/// @brief Compute the mean edge length of a mesh.
 double mean_edge_length(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
@@ -88,6 +87,7 @@ double mean_edge_length(
     }
     const double mean = sum / (2 * edges.rows());
 
+    std_deviation = 0;
     for (int i = 0; i < edges.rows(); i++) {
         const size_t e0i = edges(i, 0), e1i = edges(i, 1);
         std_deviation += std::pow(

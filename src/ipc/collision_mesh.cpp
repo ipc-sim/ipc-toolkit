@@ -56,7 +56,7 @@ CollisionMesh::CollisionMesh(
             dynamic_vertex_to_full_vertex.size());
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    // ========================================================================
 
     const int dim = full_rest_positions.cols();
 
@@ -78,7 +78,7 @@ CollisionMesh::CollisionMesh(
         m_displacement_dof_map.makeCompressed();
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    // ========================================================================
 
     // Set vertices at rest using full → reduced map
     m_rest_positions = m_select_vertices * full_rest_positions;
@@ -105,13 +105,36 @@ CollisionMesh::CollisionMesh(
 
     m_faces_to_edges = construct_faces_to_edges(m_faces, m_edges);
 
+    init_codim_vertices();
     init_areas();
     init_adjacencies();
     // Compute these manually if needed.
     // init_area_jacobian();
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
+
+void CollisionMesh::init_codim_vertices()
+{
+    std::vector<bool> is_codim_vertex(num_vertices(), true);
+    for (int i : m_edges.reshaped()) {
+        is_codim_vertex[i] = false;
+    }
+
+    m_codim_vertices.resize(
+        std::count(is_codim_vertex.begin(), is_codim_vertex.end(), true));
+
+    int j = 0;
+    for (int i = 0; i < num_vertices(); i++) {
+        if (is_codim_vertex[i]) {
+            assert(j < m_codim_vertices.size());
+            m_codim_vertices[j++] = i;
+        }
+    }
+    assert(j == m_codim_vertices.size());
+}
+
+// ============================================================================
 
 void CollisionMesh::init_selection_matrices(const int dim)
 {
@@ -148,7 +171,7 @@ Eigen::SparseMatrix<double> CollisionMesh::vertex_matrix_to_dof_matrix(
     return M_dof;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 void CollisionMesh::init_adjacencies()
 {
@@ -329,7 +352,7 @@ void CollisionMesh::init_area_jacobians()
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================/
 
 Eigen::MatrixXd
 CollisionMesh::vertices(const Eigen::MatrixXd& full_positions) const
@@ -355,7 +378,7 @@ Eigen::MatrixXd CollisionMesh::map_displacements(
     return m_displacement_map * full_displacements;
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================/
 
 Eigen::VectorXd CollisionMesh::to_full_dof(const Eigen::VectorXd& x) const
 {
@@ -373,12 +396,18 @@ CollisionMesh::to_full_dof(const Eigen::SparseMatrix<double>& X) const
     return m_displacement_dof_map.transpose() * X * m_displacement_dof_map;
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================/
 
 std::vector<bool> CollisionMesh::construct_is_on_surface(
-    const int num_vertices, const Eigen::MatrixXi& edges)
+    const int num_vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::VectorXi& codim_vertices)
 {
     std::vector<bool> is_on_surface(num_vertices, false);
+    for (int i = 0; i < codim_vertices.size(); i++) {
+        assert(codim_vertices[i] < num_vertices);
+        is_on_surface[codim_vertices[i]] = true;
+    }
     // Column first because colmajor
     for (size_t ej = 0; ej < edges.cols(); ej++) {
         for (size_t ei = 0; ei < edges.rows(); ei++) {
@@ -389,7 +418,7 @@ std::vector<bool> CollisionMesh::construct_is_on_surface(
     return is_on_surface;
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================/
 
 Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
     const Eigen::MatrixXi& faces, const Eigen::MatrixXi& edges)

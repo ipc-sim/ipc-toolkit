@@ -58,6 +58,13 @@ void BruteForce::detect_candidates(
     merge_thread_local_vectors(storage, candidates);
 }
 
+void BruteForce::detect_vertex_vertex_candidates(
+    std::vector<VertexVertexCandidate>& candidates) const
+{
+    detect_candidates<VertexVertexCandidate, true>(
+        vertex_boxes, vertex_boxes, can_vertices_collide, candidates);
+}
+
 void BruteForce::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {

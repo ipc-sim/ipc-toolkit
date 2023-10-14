@@ -12,7 +12,11 @@
 
 using namespace ipc;
 
+#ifdef NDEBUG
 TEST_CASE("Repeated CCD", "[ccd][repeat]")
+#else
+TEST_CASE("Repeated CCD", "[ccd][repeat][.]")
+#endif
 {
     const double FIRST_TOL = 1e-6, SECOND_TOL = 1e-7;
     const double FIRST_MAX_ITER = 1e6, SECOND_MAX_ITER = 1e6;
@@ -27,33 +31,38 @@ TEST_CASE("Repeated CCD", "[ccd][repeat]")
     std::string t0_filename, t1_filename;
     SECTION("tooth")
     {
-        t0_filename = "ccd-failure/repeated_toi_tooth_0.obj";
-        t1_filename = "ccd-failure/repeated_toi_tooth_1.obj";
+        t0_filename = "private/ccd-failure/repeated_toi_tooth_0.obj";
+        t1_filename = "private/ccd-failure/repeated_toi_tooth_1.obj";
     }
     SECTION("hip")
     {
-        t0_filename = "ccd-failure/repeated_toi_hip_0.obj";
-        t1_filename = "ccd-failure/repeated_toi_hip_1.obj";
+        t0_filename = "private/ccd-failure/repeated_toi_hip_0.obj";
+        t1_filename = "private/ccd-failure/repeated_toi_hip_1.obj";
     }
     SECTION("hip small repeated toi")
     {
-        t0_filename = "ccd-failure/small_repeated_toi_hip_0.obj";
-        t1_filename = "ccd-failure/small_repeated_toi_hip_1.obj";
+        t0_filename = "private/ccd-failure/small_repeated_toi_hip_0.obj";
+        t1_filename = "private/ccd-failure/small_repeated_toi_hip_1.obj";
     }
     SECTION("hip inf-repeat 0")
     {
-        t0_filename = "ccd-failure/inf_repeated_toi_hip_0.obj";
-        t1_filename = "ccd-failure/inf_repeated_toi_hip_1.obj";
+        t0_filename = "private/ccd-failure/inf_repeated_toi_hip_0.obj";
+        t1_filename = "private/ccd-failure/inf_repeated_toi_hip_1.obj";
     }
     SECTION("hip inf-repeat 1")
     {
-        t0_filename = "ccd-failure/s0121.obj";
-        t1_filename = "ccd-failure/s1121.obj";
+        t0_filename = "private/ccd-failure/s0121.obj";
+        t1_filename = "private/ccd-failure/s1121.obj";
     }
     SECTION("hip inf-repeat 2")
     {
-        t0_filename = "ccd-failure/s0110.obj";
-        t1_filename = "ccd-failure/s1110.obj";
+        t0_filename = "private/ccd-failure/s0110.obj";
+        t1_filename = "private/ccd-failure/s1110.obj";
+    }
+    SECTION("cloth-ball")
+    {
+        t0_filename = "cloth_ball92.ply";
+        t1_filename = "cloth_ball93.ply";
     }
 
     Eigen::MatrixXd V0, V1;

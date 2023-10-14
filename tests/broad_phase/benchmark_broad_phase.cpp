@@ -103,18 +103,18 @@ TEST_CASE(
     std::string mesh_path_t0, mesh_path_t1;
     SECTION("Data 0")
     {
-        mesh_path_t0 = TEST_DATA_DIR + "slow-broadphase-ccd/0.obj";
-        mesh_path_t1 = TEST_DATA_DIR + "slow-broadphase-ccd/1.obj";
+        mesh_path_t0 = TEST_DATA_DIR + "private/slow-broadphase-ccd/0.obj";
+        mesh_path_t1 = TEST_DATA_DIR + "private/slow-broadphase-ccd/1.obj";
+    }
+    SECTION("Data 1")
+    {
+        mesh_path_t0 = TEST_DATA_DIR + "private/slow-broadphase-ccd/s0.obj";
+        mesh_path_t1 = TEST_DATA_DIR + "private/slow-broadphase-ccd/s1.obj";
     }
     SECTION("Cloth-Ball")
     {
         mesh_path_t0 = TEST_DATA_DIR + "cloth_ball92.ply";
         mesh_path_t1 = TEST_DATA_DIR + "cloth_ball93.ply";
-    }
-    SECTION("Data 1")
-    {
-        mesh_path_t0 = TEST_DATA_DIR + "slow-broadphase-ccd/s0.obj";
-        mesh_path_t1 = TEST_DATA_DIR + "slow-broadphase-ccd/s1.obj";
     }
 
     if (!igl::read_triangle_mesh(mesh_path_t0, V0, F)

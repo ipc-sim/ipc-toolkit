@@ -1,5 +1,6 @@
 #include "save_obj.hpp"
 
+#include <ipc/candidates/vertex_vertex.hpp>
 #include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/edge_edge.hpp>
 #include <ipc/candidates/face_vertex.hpp>
@@ -7,6 +8,22 @@
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
+
+template <>
+void save_obj(
+    std::ostream& out,
+    const Eigen::MatrixXd& V,
+    const Eigen::MatrixXi&,
+    const Eigen::MatrixXi&,
+    const std::vector<VertexVertexCandidate>& vv_candidates,
+    const int)
+{
+    out << "o VV\n";
+    for (const auto& vv_candidate : vv_candidates) {
+        out << V.row(vv_candidate.vertex0_id).format(OBJ_VERTEX_FORMAT);
+        out << V.row(vv_candidate.vertex1_id).format(OBJ_VERTEX_FORMAT);
+    }
+}
 
 template <>
 void save_obj(

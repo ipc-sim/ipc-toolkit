@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/broad_phase/broad_phase.hpp>
+#include <ipc/candidates/vertex_vertex.hpp>
 #include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/edge_edge.hpp>
 #include <ipc/candidates/face_vertex.hpp>
@@ -117,6 +118,7 @@ public:
         const Eigen::MatrixXi& faces) const;
 
 public:
+    std::vector<VertexVertexCandidate> vv_candidates;
     std::vector<EdgeVertexCandidate> ev_candidates;
     std::vector<EdgeEdgeCandidate> ee_candidates;
     std::vector<FaceVertexCandidate> fv_candidates;
