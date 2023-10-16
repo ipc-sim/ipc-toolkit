@@ -49,5 +49,7 @@ jobs:
       - name: Build and Install
         run: pip install --verbose .
 
-      - name: Import Test
-        run: python -c "import ipctk"
+      - name: Tests
+        run: |
+          pip install nose2
+          nose2 -v --pretty-assert -s python/tests
