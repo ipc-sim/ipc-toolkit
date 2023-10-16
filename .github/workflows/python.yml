@@ -83,5 +83,5 @@ jobs:
 
       - name: Tests
         run: |
-          pip install nose2 meshio
+          pip install -r python/tests/requirements.txt
           nose2 -v --pretty-assert -s python/tests
