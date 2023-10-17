@@ -79,7 +79,9 @@ jobs:
           ccache --show-stats && ccache --zero-stats
 
       - name: Build and Install
-        run: pip install --verbose .
+        run: |
+          pip install --verbose .
+          ccache --show-stats
 
       - name: Tests
         run: |
