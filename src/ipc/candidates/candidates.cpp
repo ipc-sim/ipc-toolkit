@@ -38,18 +38,33 @@ void Candidates::build(
     if (mesh.num_codim_vertices()) {
         if (!implements_vertex_vertex(broad_phase_method)) {
             logger().warn(
-                "STQ broad phase does not support codim. point-point, skipping.");
+                "STQ broad phase does not support codim. point-point nor point-edge, skipping.");
             return;
         }
 
+        const Eigen::MatrixXd CV = vertices(mesh.codim_vertices(), Eigen::all);
+
+        Eigen::MatrixXi CE;
+        // TODO: This will now work because CE refers to indices of V not CV.
+        // if (mesh.dim() == 3 && mesh.num_codim_edges()) {
+        //     CE = mesh.edges()(mesh.codim_edges(), Eigen::all);
+        // }
+
         broad_phase->clear();
-        broad_phase->build(
-            vertices(mesh.codim_vertices(), Eigen::all), //
-            Eigen::MatrixXi(), Eigen::MatrixXi(), inflation_radius);
+        broad_phase->build(CV, CE, Eigen::MatrixXi(), inflation_radius);
+
         broad_phase->detect_vertex_vertex_candidates(vv_candidates);
         for (auto& [vi, vj] : vv_candidates) {
             vi = mesh.codim_vertices()[vi];
             vj = mesh.codim_vertices()[vj];
+        }
+
+        if (CE.size() > 0) {
+            broad_phase->detect_edge_vertex_candidates(ev_candidates);
+            for (auto& [ei, vi] : ev_candidates) {
+                ei = mesh.codim_edges()[ei];
+                vi = mesh.codim_vertices()[vi];
+            }
         }
     }
 }
