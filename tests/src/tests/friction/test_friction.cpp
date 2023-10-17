@@ -217,8 +217,9 @@ TEST_CASE(
     CAPTURE(scene_folder, file_number);
 
     bool success = read_ipc_friction_data(
-        tests::DATA_DIR / scene_folder
-            / fmt::format("friction_data_{:d}.json", file_number),
+        (tests::DATA_DIR / scene_folder
+         / fmt::format("friction_data_{:d}.json", file_number))
+            .string(),
         V_start, V_lagged, V_end, E, F, collision_constraints,
         expected_friction_constraints, dhat, barrier_stiffness, epsv_times_h,
         mu, expected_potential, expected_grad, expected_hess);

@@ -90,14 +90,14 @@ TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D][.]")
 #endif
 {
     Eigen::MatrixXd tmp;
-    REQUIRE(igl::readCSV(tests::DATA_DIR / "mesh-2D/V_t0.csv", tmp));
+    REQUIRE(igl::readCSV((tests::DATA_DIR / "mesh-2D/V_t0.csv").string(), tmp));
     const Eigen::MatrixXd V0_full = tmp.leftCols(2);
 
-    REQUIRE(igl::readCSV(tests::DATA_DIR / "mesh-2D/V_t1.csv", tmp));
+    REQUIRE(igl::readCSV((tests::DATA_DIR / "mesh-2D/V_t1.csv").string(), tmp));
     const Eigen::MatrixXd V1_full = tmp.leftCols(2);
 
     Eigen::MatrixXi E;
-    REQUIRE(igl::readCSV(tests::DATA_DIR / "mesh-2D/E.csv", E));
+    REQUIRE(igl::readCSV((tests::DATA_DIR / "mesh-2D/E.csv").string(), E));
     E.array() -= 1; // NOTE: Convert from OBJ format to index
 
     CollisionMesh mesh = CollisionMesh::build_from_full_mesh(
@@ -119,11 +119,12 @@ TEST_CASE(
 {
     const double dhat = 1e-3;
     Eigen::MatrixXd V_rest, V;
-    igl::readDMAT(tests::DATA_DIR / "codim-points/V_rest.dmat", V_rest);
-    igl::readDMAT(tests::DATA_DIR / "codim-points/V.dmat", V);
+    igl::readDMAT(
+        (tests::DATA_DIR / "codim-points/V_rest.dmat").string(), V_rest);
+    igl::readDMAT((tests::DATA_DIR / "codim-points/V.dmat").string(), V);
     Eigen::MatrixXi E, F;
-    igl::readDMAT(tests::DATA_DIR / "codim-points/E.dmat", E);
-    igl::readDMAT(tests::DATA_DIR / "codim-points/F.dmat", F);
+    igl::readDMAT((tests::DATA_DIR / "codim-points/E.dmat").string(), E);
+    igl::readDMAT((tests::DATA_DIR / "codim-points/F.dmat").string(), F);
 
     CollisionMesh mesh(V_rest, E, F);
     CHECK(mesh.num_codim_vertices() > 0);
@@ -214,5 +215,5 @@ TEST_CASE("Cloth-Ball", "[ccd][broad_phase][cloth-ball][.]")
 
     test_broad_phase(
         mesh, V0, V1, method, true,
-        tests::DATA_DIR / "cloth_ball_bf_ccd_candidated.json");
+        (tests::DATA_DIR / "cloth_ball_bf_ccd_candidated.json").string());
 }

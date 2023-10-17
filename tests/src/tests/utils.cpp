@@ -17,7 +17,8 @@ bool load_mesh(
     Eigen::MatrixXi& E,
     Eigen::MatrixXi& F)
 {
-    bool success = igl::read_triangle_mesh(tests::DATA_DIR / mesh_name, V, F);
+    const bool success =
+        igl::read_triangle_mesh((tests::DATA_DIR / mesh_name).string(), V, F);
     if (F.size()) {
         igl::edges(F, E);
     }

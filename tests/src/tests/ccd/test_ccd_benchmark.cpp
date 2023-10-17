@@ -10,6 +10,7 @@
 #include <igl/Timer.h>
 #include <ccd_io/read_ccd_queries.hpp>
 
+#include <locale>
 #include <iostream>
 
 using namespace ipc;
@@ -36,6 +37,8 @@ void run_benchmark(
         const Eigen::Vector3d&,
         double&)>& point_triangle_ccd)
 {
+    std::locale::global(std::locale("en_US.UTF-8"));
+
     logger().set_level(spdlog::level::err);
 
     namespace fs = std::filesystem;
@@ -45,6 +48,8 @@ void run_benchmark(
     bool is_data_split = true;
     SECTION("Original Benchmark")
     {
+        fmt::print("Dataset of [Wang et al. 2021]:\n\n");
+
         is_data_split = false;
 
         fs::path root_path;
@@ -54,23 +59,34 @@ void run_benchmark(
             root_path = fs::path(CCD_IO_SAMPLE_QUERIES_DIR);
         }
 
-        const std::vector<std::string> folders { {
-            "chain",
-            "cow-heads",
-            "golf-ball",
-            "mat-twist",
-            "erleben-sliding-spike",
-            "erleben-spike-wedge",
-            "erleben-sliding-wedge",
-            "erleben-wedge-crack",
-            "erleben-spike-crack",
-            "erleben-wedges",
-            "erleben-cube-cliff-edges",
-            "erleben-spike-hole",
-            "erleben-cube-internal-edges",
-            "erleben-spikes",
-            "unit-tests",
-        } };
+        std::vector<std::string> folders;
+        SECTION("Simulation Dataset")
+        {
+            fmt::print("Simulation dataset:\n");
+            folders = std::vector<std::string> { {
+                "chain",
+                "cow-heads",
+                "golf-ball",
+                "mat-twist",
+            } };
+        }
+        SECTION("Handcrafted Dataset")
+        {
+            fmt::print("Handcrafted dataset:\n");
+            folders = std::vector<std::string> { {
+                "erleben-sliding-spike",
+                "erleben-spike-wedge",
+                "erleben-sliding-wedge",
+                "erleben-wedge-crack",
+                "erleben-spike-crack",
+                "erleben-wedges",
+                "erleben-cube-cliff-edges",
+                "erleben-spike-hole",
+                "erleben-cube-internal-edges",
+                "erleben-spikes",
+                "unit-tests",
+            } };
+        }
 
         const std::array<std::string, 2> subfolders = { {
             "edge-edge",
@@ -83,26 +99,28 @@ void run_benchmark(
             }
         }
     }
-#ifdef IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR
-    SECTION("New Benchmark")
-    {
-        bool is_data_split = true;
+    if (fs::exists(tests::NEW_CCD_BENCHMARK_DIR)) {
+        SECTION("New Benchmark")
+        {
+            fmt::print("Dataset of [Belgrod et al. 2023]:\n");
 
-        const fs::path root_path(IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR);
+            bool is_data_split = true;
 
-        const std::vector<std::string> folders { {
-            "armadillo-rollers",
-            "cloth-ball",
-            "cloth-funnel",
-            "n-body-simulation",
-            "rod-twist",
-        } };
+            const fs::path root_path = tests::NEW_CCD_BENCHMARK_DIR;
 
-        for (const std::string& folder : folders) {
-            csv_dirs.push_back(root_path / folder / "queries");
+            const std::vector<std::string> folders { {
+                "armadillo-rollers",
+                "cloth-ball",
+                "cloth-funnel",
+                "n-body-simulation",
+                "rod-twist",
+            } };
+
+            for (const std::string& folder : folders) {
+                csv_dirs.push_back(root_path / folder / "queries");
+            }
         }
     }
-#endif
 
     int i = 0;
     double total_time = 0;
@@ -127,8 +145,11 @@ void run_benchmark(
 
             for (int qi = 0; qi < queries.size(); qi++) {
                 INFO(fmt::format("{}(Q{})", csv.path().string(), qi));
-                std::cout << "\r                      "
-                          << "\rTesting query: " << ++i << std::flush;
+                if (++i % 10000 == 0 || qi == queries.size() - 1) {
+                    std::cout << "\r                         \r"
+                              << fmt::format("Testing query: {:L}", i)
+                              << std::flush;
+                }
 
                 Eigen::Map<const Matrix8x3> V(&queries[qi].vertices[0][0]);
                 const bool expected_result = queries[qi].ground_truth;
@@ -156,18 +177,19 @@ void run_benchmark(
                     }
                 }
 
-                if (result < expected_result) {
+                if (!result && expected_result) {
                     fmt::print("\n");
                 }
                 CHECK((result || !expected_result)); // false positive is ok
             }
         }
     }
-    fmt::print("\n");
-    fmt::print("Total time: {}s\n", total_time / 1e6);
-    fmt::print("Average time: {}μs\n", total_time / i);
-    fmt::print("False positives: {}\n", num_fp);
-    fmt::print("False negatives: {}\n", num_fn);
+    std::cout << "\r                         \r" << std::flush;
+    fmt::print("# of queries: {:L}\n", i);
+    fmt::print("Total time: {:g} s\n", total_time / 1e6);
+    fmt::print("Average time: {:g} μs\n", total_time / i);
+    fmt::print("False positives: {:L}\n", num_fp);
+    fmt::print("False negatives: {:L}\n\n", num_fn);
 }
 
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
@@ -175,13 +197,13 @@ TEST_CASE(
     "Run CCD Benchmark on TI CCD",
     "[ccd][benchmark][3D][point-triangle][edge-edge][.]")
 {
-    fmt::print("Tight Inclusion CCD:\n");
+    fmt::print("Tight Inclusion CCD:\n\n");
 #else
 TEST_CASE(
     "Run CCD Benchmark on FP CCD",
     "[ccd][benchmark][3D][point-triangle][edge-edge][!mayfail][.]")
 {
-    fmt::print("Floating-Point CCD:\n");
+    fmt::print("Floating-Point CCD:\n\n");
 #endif
 
     run_benchmark(
@@ -208,7 +230,7 @@ TEST_CASE(
     "Run CCD Benchmark on ACCD",
     "[ccd][benchmark][3D][point-triangle][edge-edge][.]")
 {
-    fmt::print("Additive CCD:\n");
+    fmt::print("Additive CCD:\n\n");
 
     run_benchmark(
         [](const Eigen::Vector3d& ea0_t0, const Eigen::Vector3d& ea1_t0,

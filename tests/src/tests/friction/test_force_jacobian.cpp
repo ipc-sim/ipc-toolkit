@@ -282,15 +282,15 @@ TEST_CASE(
     Eigen::MatrixXi E, F;
     {
         const auto dir = tests::DATA_DIR / "friction-force-jacobian" / scene;
-        X = tests::loadMarketXd(dir / "X.mtx");
-        Ut = tests::loadMarketXd(dir / "Ut.mtx");
+        X = tests::loadMarketXd((dir / "X.mtx").string());
+        Ut = tests::loadMarketXd((dir / "Ut.mtx").string());
         Ut = fd::unflatten(Ut, X.cols());
-        U = tests::loadMarketXd(dir / "U.mtx");
+        U = tests::loadMarketXd((dir / "U.mtx").string());
         U = fd::unflatten(U, X.cols());
         if (is_2D) {
-            E = tests::loadMarketXi(dir / "F.mtx");
+            E = tests::loadMarketXi((dir / "F.mtx").string());
         } else {
-            F = tests::loadMarketXi(dir / "F.mtx");
+            F = tests::loadMarketXi((dir / "F.mtx").string());
             igl::edges(F, E);
         }
     }
