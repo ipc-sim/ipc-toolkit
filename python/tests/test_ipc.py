@@ -1,7 +1,5 @@
 import numpy as np
-
 from utils import *
-
 import ipctk
 
 
@@ -41,4 +39,4 @@ def test_ipc():
             yield check_ipc_derivatives, method, use_convergent_formulation, "cube.obj", np.sqrt(2.0), True
             yield check_ipc_derivatives, method, use_convergent_formulation, "two-cubes-far.obj", 1e-1, False
             yield check_ipc_derivatives, method, use_convergent_formulation, "two-cubes-close.obj", 1e-1, False
-            yield check_ipc_derivatives, method, use_convergent_formulation, "bunny.obj", 1e-2, True
+            yield check_ipc_derivatives, method, use_convergent_formulation, "bunny.obj", 5e-3, True
