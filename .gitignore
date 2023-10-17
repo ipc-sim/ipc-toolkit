@@ -260,6 +260,7 @@ python/bunny.obj
 IPCToolkitOptions.cmake
 
 src/ipc/config.hpp
+tests/src/tests/config.hpp
 
 docs/_doxygen
 

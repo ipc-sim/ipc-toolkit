@@ -41,19 +41,31 @@ Matrix12d edge_edge_cross_squarednorm_hessian(
 
 double edge_edge_mollifier(const double x, const double eps_x)
 {
-    const double x_div_eps_x = x / eps_x;
-    return (-x_div_eps_x + 2.0) * x_div_eps_x;
+    if (x < eps_x) {
+        const double x_div_eps_x = x / eps_x;
+        return (-x_div_eps_x + 2.0) * x_div_eps_x;
+    } else {
+        return 1.0;
+    }
 }
 
 double edge_edge_mollifier_gradient(const double x, const double eps_x)
 {
-    const double one_div_eps_x = 1.0 / eps_x;
-    return 2.0 * one_div_eps_x * (-one_div_eps_x * x + 1.0);
+    if (x < eps_x) {
+        const double one_div_eps_x = 1.0 / eps_x;
+        return 2.0 * one_div_eps_x * (-one_div_eps_x * x + 1.0);
+    } else {
+        return 0.0;
+    }
 }
 
 double edge_edge_mollifier_hessian(const double x, const double eps_x)
 {
-    return -2.0 / (eps_x * eps_x);
+    if (x < eps_x) {
+        return -2.0 / (eps_x * eps_x);
+    } else {
+        return 0.0;
+    }
 }
 
 double edge_edge_mollifier(
