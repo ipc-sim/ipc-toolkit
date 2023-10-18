@@ -1,3 +1,10 @@
+//
+// NOTE: This method is provided for reference comparison and is not utilized by
+// the high-level functionality. In compairson to Tight Inclusion CCD, this CCD
+// method is not provably conservative and so can potentially produce false
+// negatives (i.e., miss collisions) due to floating-point rounding error.
+//
+
 #include "inexact_point_edge.hpp"
 
 #include <ipc/distance/distance_type.hpp>
