@@ -2,6 +2,7 @@
 
 #include <ipc/collision_mesh.hpp>
 #include <ipc/broad_phase/aabb.hpp>
+#include <ipc/candidates/vertex_vertex.hpp>
 #include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/edge_edge.hpp>
 #include <ipc/candidates/face_vertex.hpp>
@@ -63,6 +64,11 @@ public:
     /// @brief Clear any built data.
     virtual void clear();
 
+    /// @brief Find the candidate vertex-vertex collisions.
+    /// @param[out] candidates The candidate vertex-vertex collisisons.
+    virtual void detect_vertex_vertex_candidates(
+        std::vector<VertexVertexCandidate>& candidates) const = 0;
+
     /// @brief Find the candidate edge-vertex collisisons.
     /// @param[out] candidates The candidate edge-vertex collisisons.
     virtual void detect_edge_vertex_candidates(
@@ -93,13 +99,13 @@ public:
     std::function<bool(size_t, size_t)> can_vertices_collide =
         default_can_vertices_collide;
 
-    static bool default_can_vertices_collide(size_t, size_t) { return true; }
-
 protected:
     virtual bool can_edge_vertex_collide(size_t ei, size_t vi) const;
     virtual bool can_edges_collide(size_t eai, size_t ebi) const;
     virtual bool can_face_vertex_collide(size_t fi, size_t vi) const;
     virtual bool can_edge_face_collide(size_t ei, size_t fi) const;
+
+    static bool default_can_vertices_collide(size_t, size_t) { return true; }
 
     std::vector<AABB> vertex_boxes;
     std::vector<AABB> edge_boxes;

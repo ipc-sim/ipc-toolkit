@@ -70,9 +70,15 @@ void define_edge_vertex_candidate(py::module_& m)
             py::arg("conservative_rescaling") =
                 DEFAULT_CCD_CONSERVATIVE_RESCALING)
         .def(
-            "print_ccd_query", &EdgeVertexCandidate::print_ccd_query, "",
-            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
-            py::arg("faces"))
+            "print_ccd_query",
+            [](EdgeVertexCandidate& self, const Eigen::MatrixXd& vertices_t0,
+               const Eigen::MatrixXd& vertices_t1, const Eigen::MatrixXi& edges,
+               const Eigen::MatrixXi& faces) -> void {
+                self.write_ccd_query(
+                    std::cout, vertices_t0, vertices_t1, edges, faces);
+            },
+            "", py::arg("vertices_t0"), py::arg("vertices_t1"),
+            py::arg("edges"), py::arg("faces"))
         .def("__eq__", &EdgeVertexCandidate::operator==, "", py::arg("other"))
         .def("__ne__", &EdgeVertexCandidate::operator!=, "", py::arg("other"))
         .def(

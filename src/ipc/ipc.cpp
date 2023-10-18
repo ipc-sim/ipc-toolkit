@@ -37,7 +37,7 @@ bool is_step_collision_free(
         max_iterations);
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
@@ -79,7 +79,7 @@ double compute_collision_free_stepsize(
         max_iterations);
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 bool has_intersections(
     const CollisionMesh& mesh,

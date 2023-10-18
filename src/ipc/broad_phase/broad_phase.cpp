@@ -61,7 +61,7 @@ void BroadPhase::detect_collision_candidates(
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 std::unique_ptr<BroadPhase>
 BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
@@ -87,7 +87,7 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 bool BroadPhase::can_edge_vertex_collide(size_t ei, size_t vi) const
 {

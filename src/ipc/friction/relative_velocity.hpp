@@ -4,7 +4,7 @@
 
 namespace ipc {
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 // Point - Point
 
 /// @brief Compute the relative velocity of two points
@@ -26,7 +26,7 @@ MatrixMax<double, 3, 6> point_point_relative_velocity_matrix(const int dim);
 MatrixMax<double, 3, 6>
 point_point_relative_velocity_matrix_jacobian(const int dim);
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 // Point - Edge
 
 /// @brief Compute the relative velocity of a point and an edge
@@ -47,7 +47,7 @@ point_edge_relative_velocity_matrix(const int dim, const double alpha);
 MatrixMax<double, 3, 9>
 point_edge_relative_velocity_matrix_jacobian(const int dim, const double alpha);
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 // Edge - Edge
 
 /// @brief Compute the relative velocity of the edges.
@@ -70,7 +70,7 @@ MatrixMax<double, 3, 12> edge_edge_relative_velocity_matrix(
 MatrixMax<double, 6, 12> edge_edge_relative_velocity_matrix_jacobian(
     const int dim, const Eigen::Ref<const Eigen::Vector2d>& coords);
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 // Point - Triangle
 
 /// @brief Compute the relative velocity of the point to the triangle.

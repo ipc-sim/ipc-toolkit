@@ -2,71 +2,42 @@
 # Tests
 ################################################################################
 
-add_executable(ipc_toolkit_tests
-  main.cpp
+include(CMakeDependentOption)
+cmake_dependent_option(IPC_TOOLKIT_TESTS_CCD_BENCHMARK "Enable CCD benchmark test" OFF "IPC_TOOLKIT_BUILD_TESTS" OFF)
+if(IPC_TOOLKIT_TESTS_CCD_BENCHMARK)
+  mark_as_advanced(CLEAR IPC_TOOLKIT_TESTS_CCD_BENCHMARK_DIR)
+  mark_as_advanced(CLEAR IPC_TOOLKIT_TESTS_NEW_CCD_BENCHMARK_DIR)
+  set(IPC_TOOLKIT_TESTS_CCD_BENCHMARK_DIR "" CACHE PATH "Path to the CCD benchmark directory")
+  set(IPC_TOOLKIT_TESTS_NEW_CCD_BENCHMARK_DIR "" CACHE PATH "Path to the new CCD benchmark directory")
+else()
+  mark_as_advanced(FORCE IPC_TOOLKIT_TESTS_CCD_BENCHMARK_DIR)
+  mark_as_advanced(FORCE IPC_TOOLKIT_TESTS_NEW_CCD_BENCHMARK_DIR)
+endif()
 
-  # Test barrier and dertivatives
-  barrier/test_barrier.cpp
+### Configuration
+set(IPC_TOOLKIT_TESTS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/tests")
+set(IPC_TOOLKIT_TESTS_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-  # Test candidates
-  candidates/test_candidates.cpp
+### Data directory
+cmake_path(APPEND IPC_TOOLKIT_TESTS_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}" "data")
 
-  # Test CCD
-  broad_phase/benchmark_broad_phase.cpp
-  broad_phase/brute_force_comparison.cpp
-  broad_phase/test_aabb.cpp
-  broad_phase/test_broad_phase.cpp
-  broad_phase/test_spatial_hash.cpp
-  ccd/benchmark_ccd.cpp
-  ccd/collision_generator.cpp
-  ccd/test_ccd.cpp
-  ccd/test_ccd_benchmark.cpp
-  ccd/test_point_edge_ccd.cpp
-  ccd/test_point_triangle_ccd.cpp
-  ccd/test_edge_edge_ccd.cpp
-  ccd/test_ccd.cpp
-  test_cfl.cpp
+################################################################################
+# IPC Toolkit Tests Executable
+################################################################################
 
-  # Test distances and dertivatives
-  distance/test_distance_type.cpp
-  distance/test_edge_edge.cpp
-  distance/test_line_line.cpp
-  distance/test_point_edge.cpp
-  distance/test_point_line.cpp
-  distance/test_point_plane.cpp
-  distance/test_point_point.cpp
-  distance/test_point_triangle.cpp
+# Add an empty library and fill in the list of sources in `src/tests/CMakeLists.txt`.
+add_executable(ipc_toolkit_tests)
 
-  # Test constraints
-  constraints/test_constraints.cpp
+# Fill in configuration options
+configure_file(
+  "${IPC_TOOLKIT_TESTS_SOURCE_DIR}/config.hpp.in"
+  "${IPC_TOOLKIT_TESTS_SOURCE_DIR}/config.hpp")
 
-  # Test friction
-  friction/friction_data_generator.cpp
-  friction/test_closest_point.cpp
-  friction/test_force_jacobian.cpp
-  friction/test_friction.cpp
-  friction/test_normal_force_magnitude.cpp
-  friction/test_relative_velocity.cpp
-  friction/test_smooth_friction_mollifier.cpp
-  friction/test_tangent_basis.cpp
+# Add source and header files to ipc_toolkit_tests
+add_subdirectory("${IPC_TOOLKIT_TESTS_SOURCE_DIR}")
 
-  # Test general interface
-  test_ipc.cpp
-  test_collision_mesh.cpp
-
-  # Test intersection checks
-  test_has_intersections.cpp
-
-  # Tes utility functions
-  test_utils.cpp
-
-  # Utilities for tests
-  utils.cpp
-
-  benchmark_eigen.cpp
-)
-
-target_include_directories(ipc_toolkit_tests PUBLIC ".")
+# Public include directory for IPC Toolkit tests
+target_include_directories(ipc_toolkit_tests PUBLIC "${IPC_TOOLKIT_TESTS_INCLUDE_DIR}")
 
 ################################################################################
 # Required Libraries
@@ -83,17 +54,14 @@ target_link_libraries(ipc_toolkit_tests PUBLIC finitediff::finitediff)
 include(json)
 target_link_libraries(ipc_toolkit_tests PUBLIC nlohmann_json::nlohmann_json)
 
-if (IPC_TOOLKIT_TEST_CCD_BENCHMARK)
+if (IPC_TOOLKIT_TESTS_CCD_BENCHMARK)
   include(ccd_query_io)
   target_link_libraries(ipc_toolkit_tests PUBLIC ccd_io::ccd_io)
-  target_compile_definitions(ipc_toolkit_tests PRIVATE IPC_TOOLKIT_TEST_CCD_BENCHMARK)
   if(NOT (IPC_TOOLKIT_CCD_BENCHMARK_DIR STREQUAL ""))
     message(STATUS "Using CCD benchmark directory: ${IPC_TOOLKIT_CCD_BENCHMARK_DIR}")
-    target_compile_definitions(ipc_toolkit_tests PRIVATE IPC_TOOLKIT_CCD_BENCHMARK_DIR="${IPC_TOOLKIT_CCD_BENCHMARK_DIR}")
   endif()
   if(NOT (IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR STREQUAL ""))
     message(STATUS "Using new CCD benchmark directory: ${IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR}")
-    target_compile_definitions(ipc_toolkit_tests PRIVATE IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR="${IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR}")
   endif()
 endif()
 
@@ -111,13 +79,6 @@ target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)
 ################################################################################
 
 target_compile_definitions(ipc_toolkit_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
-
-# Test data directory definition
-if(WIN32)
-  target_compile_definitions(ipc_toolkit_tests PUBLIC TEST_DATA_DIR_CSTR="${CMAKE_CURRENT_SOURCE_DIR}\\\\data\\\\")
-else()
-  target_compile_definitions(ipc_toolkit_tests PUBLIC TEST_DATA_DIR_CSTR="${CMAKE_CURRENT_SOURCE_DIR}/data/")
-endif()
 
 ################################################################################
 # Register tests

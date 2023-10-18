@@ -273,7 +273,8 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 A vector of bools indicating whether each vertex is on the surface.
             )ipc_Qu8mg5v7",
-            py::arg("num_vertices"), py::arg("edges"))
+            py::arg("num_vertices"), py::arg("edges"),
+            py::arg("codim_vertices") = Eigen::VectorXi())
         .def_static(
             "construct_faces_to_edges",
             &CollisionMesh::construct_faces_to_edges,

@@ -57,6 +57,10 @@ public:
         face_items.clear();
     }
 
+    /// @brief Find the candidate vertex-vertex collisions.
+    void detect_vertex_vertex_candidates(
+        std::vector<VertexVertexCandidate>& candidates) const override;
+
     /// @brief Find the candidate edge-vertex collisisons.
     /// @param[out] candidates The candidate edge-vertex collisisons.
     void detect_edge_vertex_candidates(

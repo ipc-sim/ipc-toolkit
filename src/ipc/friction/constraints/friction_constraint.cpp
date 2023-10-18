@@ -280,7 +280,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
                 for (int b = 0; b < beta.size(); b++) {
                     jac_T.middleRows(k * n, n) +=
                         jac_Gamma_wrt_beta.transpose().middleCols(b * dim, dim)
-                            * (jac_beta(b, k) * P);
+                        * (jac_beta(b, k) * P);
                 }
             }
         }
@@ -320,7 +320,7 @@ MatrixMax12d FrictionConstraint::compute_force_jacobian(
     // Premultiplied values
     const VectorMax12d T_times_tau = T * tau;
 
-    ///////////////////////////////////////////////////////////////////////////
+    // ------------------------------------------------------------------------
     // Compute J = ∇F = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
     MatrixMax12d J = MatrixMax12d::Zero(n, n);
 
