@@ -256,30 +256,37 @@ TEST_CASE(
 // TEST_CASE("Failing Benchmark Cases", "[ccd]")
 // {
 //     using Matrix8x3 = Eigen::Matrix<double, 8, 3, Eigen::RowMajor>;
-
-//     const static std::vector<std::string> paths;
-//     const static std::vector<std::vector<int>> qids;
-
+//
+//     const static std::vector<std::filesystem::path> paths = { {
+//         tests::NEW_CCD_BENCHMARK_DIR / "n-body-simulation/queries/42ee.csv",
+//     } };
+//     const static std::vector<std::vector<int>> qids { {
+//         2647,
+//         2648,
+//     } };
+//
 //     for (int i = 0; i < paths.size(); i++) {
 //         const std::vector<ccd_io::CCDQuery> queries =
 //         ccd_io::read_ccd_queries(
-//             std::string(CCD_IO_SAMPLE_QUERIES_DIR) + paths[i]);
+//             paths[i].string(),
+//             paths[i].parent_path().parent_path() / "mma_bool"
+//                 / (paths[i].stem().string() + "_mma_bool.json"));
 //         for (const auto& qi : qids[i]) {
 //             Eigen::Map<const Matrix8x3> V(&queries[qi].vertices[0][0]);
 //             const bool expected_result = queries[qi].ground_truth;
-
+//
 //             bool result;
 //             double toi;
-//             // if (subfolder == "edge-edge") {
-//             //     result = edge_edge_ccd(
-//             //         V.row(0), V.row(1), V.row(2), V.row(3), V.row(4),
-//             //         V.row(5), V.row(6), V.row(7), toi);
-//             // } else {
-//             result = additive_ccd::point_triangle_ccd(
-//                 V.row(0), V.row(1), V.row(2), V.row(3), V.row(4), V.row(5),
-//                 V.row(6), V.row(7), toi);
-//             // }
-//             CHECK(result || !expected_result); // false positive is ok
+//             if (paths[i].stem().string().find("ee") != std::string::npos) {
+//                 result = edge_edge_ccd(
+//                     V.row(0), V.row(1), V.row(2), V.row(3), V.row(4),
+//                     V.row(5), V.row(6), V.row(7), toi);
+//             } else {
+//                 result = point_triangle_ccd(
+//                     V.row(0), V.row(1), V.row(2), V.row(3), V.row(4),
+//                     V.row(5), V.row(6), V.row(7), toi);
+//             }
+//             CHECK((result || !expected_result)); // false positive is ok
 //         }
 //     }
 // }

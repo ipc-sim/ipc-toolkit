@@ -26,6 +26,22 @@ namespace {
         assert(v.size() == 2 || v.size() == 3);
         return v.size() == 2 ? Eigen::Vector3d(v.x(), v.y(), 0) : v.head<3>();
     }
+
+    inline bool check_initial_distance(
+        const double initial_distance, const double min_distance, double& toi)
+    {
+        if (initial_distance > min_distance) {
+            return false;
+        }
+
+        logger().warn(
+            "Initial distance {} ≤ d_min={}, returning toi=0!",
+            initial_distance, min_distance);
+
+        toi = 0; // Initially touching
+
+        return true;
+    }
 } // namespace
 
 /// @brief Scale the distance tolerance to be at most this fraction of the initial distance.
@@ -49,11 +65,7 @@ bool ccd_strategy(
     const double conservative_rescaling,
     double& toi)
 {
-    if (initial_distance <= min_distance) {
-        logger().warn(
-            "Initial distance {} ≤ d_min={}, returning toi=0!",
-            initial_distance, min_distance);
-        toi = 0;
+    if (check_initial_distance(initial_distance, min_distance, toi)) {
         return true;
     }
 
@@ -111,11 +123,11 @@ bool point_point_ccd_3D(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
-    if (p0_t0 == p0_t1 && p1_t0 == p1_t1) {
-        return false; // No motion
-    }
-
     const double initial_distance = sqrt(point_point_distance(p0_t0, p1_t0));
+
+    if (p0_t0 == p0_t1 && p1_t0 == p1_t1) { // No motion
+        return check_initial_distance(initial_distance, min_distance, toi);
+    }
 
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
@@ -182,12 +194,12 @@ bool point_edge_ccd_3D(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
-    if (p_t0 == p_t1 && e0_t0 == e0_t1 && e1_t0 == e1_t1) {
-        return false; // No motion
-    }
-
     const double initial_distance =
         sqrt(point_edge_distance(p_t0, e0_t0, e1_t0));
+
+    if (p_t0 == p_t1 && e0_t0 == e0_t1 && e1_t0 == e1_t1) { // No motion
+        return check_initial_distance(initial_distance, min_distance, toi);
+    }
 
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
@@ -244,15 +256,6 @@ bool point_edge_ccd(
     assert(p_t1.size() == dim);
     assert(e0_t0.size() == dim && e1_t0.size() == dim);
     assert(e0_t1.size() == dim && e1_t1.size() == dim);
-
-#ifndef IPC_TOOLKIT_WITH_CORRECT_CCD
-    if (dim == 2) {
-        return inexact_point_edge_ccd_2D(
-            p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi,
-            conservative_rescaling);
-    }
-#endif
-
     return point_edge_ccd_3D(
         to_3D(p_t0), to_3D(e0_t0), to_3D(e1_t0), to_3D(p_t1), to_3D(e0_t1),
         to_3D(e1_t1), toi, min_distance, tmax, tolerance, max_iterations,
@@ -277,13 +280,13 @@ bool edge_edge_ccd(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
-    if (ea0_t0 == ea0_t1 && ea1_t0 == ea1_t1 && eb0_t0 == eb0_t1
-        && eb1_t0 == eb1_t1) {
-        return false; // No motion
-    }
-
     const double initial_distance =
         sqrt(edge_edge_distance(ea0_t0, ea1_t0, eb0_t0, eb1_t0));
+
+    if (ea0_t0 == ea0_t1 && ea1_t0 == ea1_t1 && eb0_t0 == eb0_t1
+        && eb1_t0 == eb1_t1) { // No motion
+        return check_initial_distance(initial_distance, min_distance, toi);
+    }
 
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
@@ -340,12 +343,13 @@ bool point_triangle_ccd(
 {
     assert(tmax >= 0 && tmax <= 1.0);
 
-    if (p_t0 == p_t1 && t0_t0 == t0_t1 && t1_t0 == t1_t1 && t2_t0 == t2_t1) {
-        return false; // No motion
-    }
-
     const double initial_distance =
         sqrt(point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0));
+
+    if (p_t0 == p_t1 && t0_t0 == t0_t1 && t1_t0 == t1_t1 && t2_t0 == t2_t1) {
+        // No motion
+        return check_initial_distance(initial_distance, min_distance, toi);
+    }
 
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
