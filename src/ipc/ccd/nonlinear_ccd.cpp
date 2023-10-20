@@ -1,16 +1,188 @@
-#pragma once
+#include "nonlinear_ccd.hpp"
 
-#include <ipc/ccd/ccd.hpp>
+#include <ipc/distance/point_point.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/point_triangle.hpp>
 
-#include <functional>
+#include <tight_inclusion/ccd.hpp>
+
+#include <stack>
+
+// #define USE_FIXED_PIECES
 
 namespace ipc {
 
-bool edge_edge_nonlinear_ccd(
-    const std::function<Vector3I(const Interval&)>& ea0, // ea0([t0, t1])
-    const std::function<Vector3I(const Interval&)>& ea1, // ea1([t0, t1])
-    const std::function<Vector3I(const Interval&)>& eb0, // eb0([t0, t1])
-    const std::function<Vector3I(const Interval&)>& eb1, // eb1([t0, t1])
+namespace {
+    inline Eigen::Vector3d to_3D(const VectorMax3d& v)
+    {
+        assert(v.size() == 2 || v.size() == 3);
+        return v.size() == 2 ? Eigen::Vector3d(v.x(), v.y(), 0) : v.head<3>();
+    }
+
+    inline bool check_initial_distance(
+        const double initial_distance, const double min_distance, double& toi)
+    {
+        if (initial_distance > min_distance) {
+            return false;
+        }
+
+        logger().warn(
+            "Initial distance {} ≤ d_min={}, returning toi=0!",
+            initial_distance, min_distance);
+
+        toi = 0; // Initially touching
+
+        return true;
+    }
+} // namespace
+
+// ============================================================================
+
+#ifdef USE_FIXED_PIECES
+static constexpr size_t FIXED_NUM_PIECES = 100;
+#else
+static constexpr size_t MAX_NUM_SUBDIVISIONS = 1'000l;
+#endif
+
+// Tolerance for small time of impact which triggers further refinement
+static constexpr double SMALL_TOI = 1e-6;
+
+// ============================================================================
+
+double
+NonlinearTrajectory::max_distance_from_linear(const filib::Interval& t) const
+{
+    // Estimate max t ∈ [0, 1] ‖ p((t1 - t0) * t + t0) - lerp(p(t0), p(t1), t) ‖
+    const VectorMax3I p_t0 = (*this)(t.INF).cast<filib::Interval>();
+    const VectorMax3I p_t1 = (*this)(t.SUP).cast<filib::Interval>();
+
+    double max_d = 0;
+
+    constexpr double n = 100.0;
+    double ti0 = t.INF;
+    for (int i = 1; i <= n; i++) {
+        const double ti1 = i / n * (t.SUP - t.INF) + t.INF;
+
+        const VectorMax3I p = (*this)(filib::Interval(ti0, ti1));
+        const filib::Interval d = norm(
+            p - ((p_t1 - p_t0) * filib::Interval(i / n, (i + 1) / n) + p_t0));
+
+        max_d = std::max(max_d, d.SUP);
+        ti0 = ti1;
+    }
+
+    return max_d;
+}
+
+// ============================================================================
+
+bool conservative_piecewise_linear_ccd(
+    const std::function<double(double)>& distance,
+    const std::function<double(const filib::Interval&)>&
+        max_distance_from_linear,
+    const std::function<bool(
+        const double /*ti0*/,
+        const double /*ti1*/,
+        const double /*min_distance*/,
+        const bool /*no_zero_toi*/,
+        double& /*toi*/)>& linear_ccd,
+    double& toi,
+    const double tmax,
+    const double min_sep_distance,
+    const double conservative_rescaling)
+{
+    const filib::Interval t(0, tmax);
+
+    const double distance_t0 = distance(0);
+    if (check_initial_distance(distance_t0, min_sep_distance, toi)) {
+        return true;
+    }
+    assert(distance_t0 > min_sep_distance);
+
+    double ti0 = 0;
+    std::stack<double> ts;
+
+// Initialize the stack of ts
+#ifdef USE_FIXED_PIECES
+    for (int i = FIXED_NUM_PIECES; i > 0; i--) {
+        ts.push(i / double(FIXED_NUM_PIECES) * tmax);
+    }
+    int num_subdivisions = FIXED_NUM_PIECES;
+#else
+    ts.push(tmax);
+    int num_subdivisions = 1;
+#endif
+
+    while (!ts.empty()) {
+        const double ti1 = ts.top();
+        const filib::Interval ti(ti0, ti1);
+
+        const double distance_ti0 = distance(ti0);
+
+        // If distance has decreased by a factor and the toi is not near zero,
+        // then we can call this a collision.
+        if (distance_ti0 < (1 - conservative_rescaling) * distance_t0
+            && ti0 >= SMALL_TOI) {
+            logger().trace(
+                "Distance small enough distance_ti0={:g}; toi={:g}",
+                distance_ti0, toi);
+            toi = ti0;
+            return true;
+        }
+
+        double min_distance = max_distance_from_linear(ti);
+
+#ifndef USE_FIXED_PIECES
+        // Check if the minimum distance is too large and we need to subdivide
+        // (Large distances cause the slow CCD)
+        if ((min_distance
+             >= std::min((1 - conservative_rescaling) * distance_ti0, 0.01))
+            && (num_subdivisions < MAX_NUM_SUBDIVISIONS || ti0 == 0)) {
+            logger().trace(
+                "Subdividing at ti=[{:g}, {:g}] min_distance={:g} distance_ti0={:g}",
+                ti0, ti1, min_distance, distance_ti0);
+            ts.push((ti1 + ti0) / 2);
+            num_subdivisions++;
+            continue;
+        }
+#endif
+
+        min_distance += min_sep_distance;
+
+        double output_tolerance;
+        const bool is_impacting =
+            linear_ccd(ti0, ti1, min_distance, /*no_zero_toi=*/ti0 == 0, toi);
+
+        logger().trace(
+            "Evaluated at ti=[{:g}, {:g}] min_distance={:g} distance_ti0={:g}; result={}{}",
+            ti0, ti1, min_distance, distance_ti0, is_impacting,
+            is_impacting ? fmt::format(" toi={:g}", (ti1 - ti0) * toi + ti0)
+                         : "");
+
+        if (is_impacting) {
+            toi = (ti1 - ti0) * toi + ti0;
+            if (toi == 0) {
+                // This is impossible because distance_t0 > min_sep_distance
+                ts.push((ti1 + ti0) / 2);
+                num_subdivisions++;
+                continue;
+            }
+            return true;
+        }
+
+        ts.pop();
+        ti0 = ti1;
+    }
+
+    return false;
+}
+
+// ============================================================================
+
+bool point_point_nonlinear_ccd(
+    const NonlinearTrajectory& p0,
+    const NonlinearTrajectory& p1,
     double& toi,
     const double tmax,
     const double min_distance,
@@ -18,183 +190,151 @@ bool edge_edge_nonlinear_ccd(
     const long max_iterations,
     const double conservative_rescaling)
 {
-    int dim = 3; // TODO
-    assert(dim == 3);
-    assert(min_distance >= 0);
+    return conservative_piecewise_linear_ccd(
+        [&](const double t) {
+            return sqrt(point_point_distance(p0(t), p1(t)));
+        },
+        [&](const filib::Interval& t) {
+            return std::max(
+                p0.max_distance_from_linear(t), p1.max_distance_from_linear(t));
+        },
+        [&](const double ti0, const double ti1, const double min_distance,
+            const bool no_zero_toi, double& toi) {
+            double output_tolerance;
+            return ticcd::edgeEdgeCCD(
+                to_3D(p0(ti0)), to_3D(p0(ti0)), to_3D(p1(ti0)), to_3D(p1(ti0)),
+                to_3D(p0(ti1)), to_3D(p0(ti1)), to_3D(p1(ti1)), to_3D(p1(ti1)),
+                Eigen::Array3d::Constant(-1), // rounding error (auto)
+                min_distance,                 // minimum separation distance
+                toi,                          // time of impact
+                tolerance,                    // delta
+                1.0,                          // maximum time to check
+                max_iterations,               // maximum number of iterations
+                output_tolerance,             // delta_actual
+                no_zero_toi);                 // no zero toi
+        },
+        toi, tmax, min_distance, conservative_rescaling);
+}
 
-    const long ea0i = bodyA.edges(edgeA_id, 0);
-    const long ea1i = bodyA.edges(edgeA_id, 1);
-    const long eb0i = bodyB.edges(edgeB_id, 0);
-    const long eb1i = bodyB.edges(edgeB_id, 1);
+bool point_edge_nonlinear_ccd(
+    const NonlinearTrajectory& p,
+    const NonlinearTrajectory& e0,
+    const NonlinearTrajectory& e1,
+    double& toi,
+    const double tmax,
+    const double min_distance,
+    const double tolerance,
+    const long max_iterations,
+    const double conservative_rescaling)
+{
+    return conservative_piecewise_linear_ccd(
+        [&](const double t) {
+            return sqrt(point_edge_distance(p(t), e0(t), e1(t)));
+        },
+        [&](const filib::Interval& t) {
+            return p.max_distance_from_linear(t)
+                + std::max(
+                       e0.max_distance_from_linear(t),
+                       e1.max_distance_from_linear(t));
+        },
+        [&](const double ti0, const double ti1, const double min_distance,
+            const bool no_zero_toi, double& toi) {
+            double output_tolerance;
+            return ticcd::edgeEdgeCCD(
+                to_3D(p(ti0)), to_3D(p(ti0)), to_3D(e0(ti0)), to_3D(e1(ti0)),
+                to_3D(p(ti1)), to_3D(p(ti1)), to_3D(e0(ti1)), to_3D(e1(ti1)),
+                Eigen::Array3d::Constant(-1), // rounding error (auto)
+                min_distance,                 // minimum separation distance
+                toi,                          // time of impact
+                tolerance,                    // delta
+                1.0,                          // maximum time to check
+                max_iterations,               // maximum number of iterations
+                output_tolerance,             // delta_actual
+                no_zero_toi);                 // no zero toi
+        },
+        toi, tmax, min_distance, conservative_rescaling);
+}
 
-    const interval t0 = _interval(0);
-    const interval t1 = _interval(tmax);
-    const interval t = _interval(0, tmax);
+bool edge_edge_nonlinear_ccd(
+    const NonlinearTrajectory& ea0,
+    const NonlinearTrajectory& ea1,
+    const NonlinearTrajectory& eb0,
+    const NonlinearTrajectory& eb1,
+    double& toi,
+    const double tmax,
+    const double min_sep_distance,
+    const double tolerance,
+    const long max_iterations,
+    const double conservative_rescaling)
+{
+    return conservative_piecewise_linear_ccd(
+        [&](const double t) {
+            return sqrt(edge_edge_distance(ea0(t), ea1(t), eb0(t), eb1(t)));
+        },
+        [&](const filib::Interval& t) {
+            return std::max(
+                       ea0.max_distance_from_linear(t),
+                       ea1.max_distance_from_linear(t))
+                + std::max(
+                       eb0.max_distance_from_linear(t),
+                       eb1.max_distance_from_linear(t));
+        },
+        [&](const double ti0, const double ti1, const double min_distance,
+            const bool no_zero_toi, double& toi) {
+            double output_tolerance;
+            return ticcd::edgeEdgeCCD(
+                ea0(ti0), ea1(ti0), eb0(ti0), eb1(ti0), //
+                ea0(ti1), ea1(ti1), eb0(ti1), eb1(ti1),
+                Eigen::Array3d::Constant(-1), // rounding error (auto)
+                min_distance,                 // minimum separation distance
+                toi,                          // time of impact
+                tolerance,                    // delta
+                1.0,                          // maximum time to check
+                max_iterations,               // maximum number of iterations
+                output_tolerance,             // delta_actual
+                no_zero_toi);                 // no zero toi
+        },
+        toi, tmax, min_sep_distance, conservative_rescaling);
+}
 
-    double distance_t0 =
-        sqrt(edge_edge_distance(ea0(t0), ea1(t0), eb0(t0), eb1(t0)));
-    if (distance_t0 <= minimum_separation_distance) {
-        spdlog::warn(
-            "initial distance in edge-edge CCD is less than MS={:g}!",
-            minimum_separation_distance);
-        toi = 0;
-        return true;
-    }
-    assert(distance_t0 > minimum_separation_distance);
-
-#ifdef TIME_CCD_QUERIES
-    igl::Timer timer;
-    timer.start();
-#endif
-
-    bool is_impacting = false;
-    PoseD poseA_ti0 = poseA_t0, poseB_ti0 = poseB_t0;
-    double ti0 = 0;
-    std::stack<double> ts;
-
-    // Initialize the stack of ts
-#ifdef USE_FIXED_PIECES
-    for (int i = FIXED_NUM_PIECES; i > 0; i--) {
-        ts.push(i / double(FIXED_NUM_PIECES) * earliest_toi);
-    }
-    int num_subdivisions = FIXED_NUM_PIECES;
-#else
-    ts.push(earliest_toi);
-    int num_subdivisions = 1;
-#endif
-
-    while (!ts.empty()) {
-        double ti1 = ts.top();
-
-        PoseD poseA_ti1 = PoseD::interpolate(poseA_t0, poseA_t1, ti1);
-        PoseD poseB_ti1 = PoseD::interpolate(poseB_t0, poseB_t1, ti1);
-
-        double distance_ti0 = sqrt(edge_edge_distance(
-            bodyA.world_vertex(poseA_ti0, bodyA.edges(edgeA_id, 0)),
-            bodyA.world_vertex(poseA_ti0, bodyA.edges(edgeA_id, 1)),
-            bodyB.world_vertex(poseB_ti0, bodyB.edges(edgeB_id, 0)),
-            bodyB.world_vertex(poseB_ti0, bodyB.edges(edgeB_id, 1))));
-
-#ifdef USE_DECREASING_DISTANCE_CHECK
-        if (distance_ti0 < DECREASING_DISTANCE_FACTOR * distance_t0
-            && ti0 >= DECREASING_DISTANCE_MIN_TIME) {
-            toi = ti0;
-            is_impacting = true;
-            break;
-        }
-#endif
-
-        double min_distance = 0;
-#ifndef USE_FIXED_PIECES
-        Interval ti(0, 1);
-
-        PoseI poseIA_ti0 = poseA_ti0.cast<Interval>();
-        PoseI poseIA_ti1 = poseA_ti1.cast<Interval>();
-        PoseI poseIB_ti0 = poseB_ti0.cast<Interval>();
-        PoseI poseIB_ti1 = poseB_ti1.cast<Interval>();
-
-        PoseI poseIA = PoseI::interpolate(poseIA_ti0, poseIA_ti1, ti);
-        PoseI poseIB = PoseI::interpolate(poseIB_ti0, poseIB_ti1, ti);
-
-        MatrixMax3I RA = poseIA.construct_rotation_matrix();
-        MatrixMax3I RB = poseIB.construct_rotation_matrix();
-
-        double min_ea_distance = 0;
-        Vector3I ea0_ti0 = bodyA.world_vertex(poseA_ti0, ea0i).cast<Interval>();
-        Vector3I ea0_ti1 = bodyA.world_vertex(poseA_ti1, ea0i).cast<Interval>();
-        Vector3I ea0 = bodyA.world_vertex(RA, poseIA.position, ea0i);
-        Interval d = (ea0 - ((ea0_ti1 - ea0_ti0) * ti + ea0_ti0)).norm();
-        assert(abs(d.lower()) < 1e-12); // The endpoints are part of both curves
-        min_ea_distance = std::max(min_ea_distance, d.upper());
-
-        Vector3I ea1_ti0 = bodyA.world_vertex(poseA_ti0, ea1i).cast<Interval>();
-        Vector3I ea1_ti1 = bodyA.world_vertex(poseA_ti1, ea1i).cast<Interval>();
-        Vector3I ea1 = bodyA.world_vertex(RA, poseIA.position, ea1i);
-        d = (ea1 - ((ea1_ti1 - ea1_ti0) * ti + ea1_ti0)).norm();
-        assert(abs(d.lower()) < 1e-12); // The endpoints are part of both curves
-        min_ea_distance = std::max(min_ea_distance, d.upper());
-
-        double min_eb_distance = 0;
-        Vector3I eb0_ti0 = bodyB.world_vertex(poseB_ti0, eb0i).cast<Interval>();
-        Vector3I eb0_ti1 = bodyB.world_vertex(poseB_ti1, eb0i).cast<Interval>();
-        Vector3I eb0 = bodyB.world_vertex(RB, poseIB.position, eb0i);
-        d = (eb0 - ((eb0_ti1 - eb0_ti0) * ti + eb0_ti0)).norm();
-        assert(abs(d.lower()) < 1e-12); // The endpoints are part of both curves
-        min_eb_distance = std::max(min_eb_distance, d.upper());
-
-        Vector3I eb1_ti0 = bodyB.world_vertex(poseB_ti0, eb1i).cast<Interval>();
-        Vector3I eb1_ti1 = bodyB.world_vertex(poseB_ti1, eb1i).cast<Interval>();
-        Vector3I eb1 = bodyB.world_vertex(RB, poseIB.position, eb1i);
-        d = (eb1 - ((eb1_ti1 - eb1_ti0) * ti + eb1_ti0)).norm();
-        assert(abs(d.lower()) < 1e-12); // The endpoints are part of both curves
-        min_eb_distance = std::max(min_eb_distance, d.upper());
-
-        min_distance = min_ea_distance + min_eb_distance;
-
-        if (min_distance >= TRAJECTORY_DISTANCE_FACTOR * distance_ti0
-            && (num_subdivisions < MAX_NUM_SUBDIVISIONS || ti0 == 0)) {
-            ts.push((ti1 + ti0) / 2);
-            num_subdivisions++;
-            continue;
-        }
-#endif
-        min_distance += minimum_separation_distance;
-        // spdlog::critical("min_distance={:g}", min_distance);
-
-        double output_tolerance;
-        // 0: normal ccd method which only checks t = [0,1]
-        // 1: ccd with max_itr and t=[0, t_max]
-        const int CCD_TYPE = 1;
-        is_impacting = inclusion_ccd::edgeEdgeCCD_double(
-            bodyA.world_vertex(poseA_ti0, bodyA.edges(edgeA_id, 0)),
-            bodyA.world_vertex(poseA_ti0, bodyA.edges(edgeA_id, 1)),
-            bodyB.world_vertex(poseB_ti0, bodyB.edges(edgeB_id, 0)),
-            bodyB.world_vertex(poseB_ti0, bodyB.edges(edgeB_id, 1)),
-            bodyA.world_vertex(poseA_ti1, bodyA.edges(edgeA_id, 0)),
-            bodyA.world_vertex(poseA_ti1, bodyA.edges(edgeA_id, 1)),
-            bodyB.world_vertex(poseB_ti1, bodyB.edges(edgeB_id, 0)),
-            bodyB.world_vertex(poseB_ti1, bodyB.edges(edgeB_id, 1)),
-            { { -1, -1, -1 } },        // rounding error
-            min_distance,              // minimum separation distance
-            toi,                       // time of impact
-            LINEAR_CCD_TOL,            // delta
-            1.0,                       // Maximum time to check
-            LINEAR_CCD_MAX_ITERATIONS, // Maximum number of iterations
-            output_tolerance,          // delta_actual
-            TIGHT_INCLUSION_CCD_TYPE,  //
-            TIGHT_INCLUSION_NO_ZERO_TOI);
-
-        if (is_impacting) {
-            toi = (ti1 - ti0) * toi + ti0;
-            if (toi == 0) {
-                // This is impossible because distance_t0 > MS_DIST
-                ts.push((ti1 + ti0) / 2);
-                num_subdivisions++;
-                // spdlog::warn(
-                //     "failure=\"Edge-edge MSCCD says toi=0, but "
-                //     "distance_t0={0:g}\" failsafe=\"spliting [{1:g}, "
-                //     "{2:g}] into ([{1:g}, {3:g}], [{3:g}, {2:g}])\"",
-                //     distance_t0, ti0, ti1, ts.top());
-                continue;
-            }
-            break;
-        }
-
-        ts.pop();
-        ti0 = ti1;
-        poseA_ti0 = poseA_ti1;
-        poseB_ti0 = poseB_ti1;
-    }
-    // spdlog::trace("ee_ccd_num_subdivision={:d}", num_subdivisions);
-
-#ifdef TIME_CCD_QUERIES
-    timer.stop();
-    fmt::print("EE {:.16g}\n", timer.getElapsedTime());
-#endif
-
-    // This time of impact is very dangerous for convergence
-    assert(!is_impacting || toi > 0);
-    return is_impacting;
+bool point_triangle_nonlinear_ccd(
+    const NonlinearTrajectory& p,
+    const NonlinearTrajectory& t0,
+    const NonlinearTrajectory& t1,
+    const NonlinearTrajectory& t2,
+    double& toi,
+    const double tmax,
+    const double min_distance,
+    const double tolerance,
+    const long max_iterations,
+    const double conservative_rescaling)
+{
+    return conservative_piecewise_linear_ccd(
+        [&](const double t) {
+            return sqrt(point_triangle_distance(p(t), t0(t), t1(t), t2(t)));
+        },
+        [&](const filib::Interval& t) {
+            return p.max_distance_from_linear(t)
+                + std::max({ t0.max_distance_from_linear(t),
+                             t1.max_distance_from_linear(t),
+                             t2.max_distance_from_linear(t) });
+        },
+        [&](const double ti0, const double ti1, const double min_distance,
+            const bool no_zero_toi, double& toi) {
+            double output_tolerance;
+            return ticcd::vertexFaceCCD(
+                p(ti0), t0(ti0), t1(ti0), t2(ti0), //
+                p(ti1), t0(ti1), t1(ti1), t2(ti1),
+                Eigen::Array3d::Constant(-1), // rounding error (auto)
+                min_distance,                 // minimum separation distance
+                toi,                          // time of impact
+                tolerance,                    // delta
+                1.0,                          // maximum time to check
+                max_iterations,               // maximum number of iterations
+                output_tolerance,             // delta_actual
+                no_zero_toi);                 // no zero toi
+        },
+        toi, tmax, min_distance, conservative_rescaling);
 }
 
 } // namespace ipc

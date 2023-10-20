@@ -9,7 +9,6 @@
 
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
 #include <tight_inclusion/ccd.hpp>
-#include <tight_inclusion/interval_root_finder.hpp>
 #else
 #include <ipc/ccd/inexact_point_edge.hpp>
 #include <CTCD.h>

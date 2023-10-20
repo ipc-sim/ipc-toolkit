@@ -3,6 +3,7 @@ set(SOURCES
   test_ccd.cpp
   test_ccd_benchmark.cpp
   test_edge_edge_ccd.cpp
+  test_nonlinear_ccd.cpp
   test_point_edge_ccd.cpp
   test_point_point_ccd.cpp
   test_point_triangle_ccd.cpp

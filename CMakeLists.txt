@@ -183,7 +183,7 @@ endif()
 
 # Intervals
 include(filib)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC filib::filib)
+target_link_libraries(ipc_toolkit PUBLIC filib::filib)
 
 # Extra warnings (link last for highest priority)
 include(ipc_toolkit_warnings)

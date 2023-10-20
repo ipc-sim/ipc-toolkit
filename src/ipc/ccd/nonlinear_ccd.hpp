@@ -1,33 +1,41 @@
 #pragma once
 
 #include <ipc/ccd/ccd.hpp>
-
-#include <filib/interval.hpp>
+#include <ipc/utils/interval.hpp>
 
 #include <functional>
 
 namespace ipc {
 
-/// Find time-of-impact between two rigid bodies
-// bool compute_piecewise_linear_edge_vertex_time_of_impact(
-//     const RigidBody& bodyA,
-//     const PoseD& poseA_t0, // Pose of bodyA at t=0
-//     const PoseD& poseA_t1, // Pose of bodyA at t=1
-//     size_t vertex_id,      // In bodyA
-//     const RigidBody& bodyB,
-//     const PoseD& poseB_t0, // Pose of bodyB at t=0
-//     const PoseD& poseB_t1, // Pose of bodyB at t=1
-//     size_t edge_id,        // In bodyB
-//     double& toi,
-//     double earliest_toi = 1, // Only search for collision in [0,
-//     earliest_toi], double minimum_separation_distance = 0, double
-//     toi_tolerance = Constants::RIGID_CCD_TOI_TOL);
+/// @brief A nonlinear trajectory is a function that maps time to a point in space.
+class NonlinearTrajectory {
+public:
+    virtual ~NonlinearTrajectory() = default;
 
-bool edge_edge_nonlinear_ccd(
-    const std::function<interval(const interval&)>& ea0, // ea0([t0, t1])
-    const std::function<interval(const interval&)>& ea1, // ea1([t0, t1])
-    const std::function<interval(const interval&)>& eb0, // eb0([t0, t1])
-    const std::function<interval(const interval&)>& eb1, // eb1([t0, t1])
+    /// @brief Compute the point's position at time t
+    virtual VectorMax3d operator()(const double t) const = 0;
+
+    /// @brief Compute the point's position over a time interval t
+    virtual VectorMax3I operator()(const filib::Interval& t) const = 0;
+
+    /// @brief Compute the maximum distance from the nonlinear trajectory to a linearized trajectory
+    /// @note This uses interval arithmetic to compute the maximum distance. If you know a tighter bound on the maximum distance, it is recommended to override this function.
+    virtual double max_distance_from_linear(const filib::Interval& t) const;
+};
+
+/// @brief Perform nonlinear CCD between two points moving along nonlinear trajectories.
+/// @param[in] p0 First point's trajectory
+/// @param[in] p1 Second point's trajectory
+/// @param[out] toi Output time of impact
+/// @param[in] tmax Maximum time to check for collision
+/// @param[in] min_distance Minimum separation distance between the two points
+/// @param[in] tolerance Tolerance for the linear CCD algorithm
+/// @param[in] max_iterations Maximum number of iterations for the linear CCD algorithm
+/// @param[in] conservative_rescaling  Conservative rescaling of the time of impact
+/// @return True if the two points collide, false otherwise.
+bool point_point_nonlinear_ccd(
+    const NonlinearTrajectory& p0,
+    const NonlinearTrajectory& p1,
     double& toi,
     const double tmax = 1.0,
     const double min_distance = 0,
@@ -35,19 +43,74 @@ bool edge_edge_nonlinear_ccd(
     const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
     const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
-/// Find time-of-impact between two rigid bodies
-// bool compute_piecewise_linear_face_vertex_time_of_impact(
-//     const RigidBody& bodyA,
-//     const PoseD& poseA_t0, // Pose of bodyA at t=0
-//     const PoseD& poseA_t1, // Pose of bodyA at t=1
-//     size_t vertex_id,      // In bodyA
-//     const RigidBody& bodyB,
-//     const PoseD& poseB_t0, // Pose of bodyB at t=0
-//     const PoseD& poseB_t1, // Pose of bodyB at t=1
-//     size_t face_id,        // In bodyB
-//     double& toi,
-//     double earliest_toi = 1, // Only search for collision in [0,
-//     earliest_toi], double minimum_separation_distance = 0, double
-//     toi_tolerance = Constants::RIGID_CCD_TOI_TOL);
+/// @brief Perform nonlinear CCD between a point and a linear edge moving along nonlinear trajectories.
+/// @param[in] p Point's trajectory
+/// @param[in] e0 Edge's first endpoint's trajectory
+/// @param[in] e1 Edge's second endpoint's trajectory
+/// @param[out] toi Output time of impact
+/// @param[in] tmax Maximum time to check for collision
+/// @param[in] min_distance Minimum separation distance between the point and the edge
+/// @param[in] tolerance Tolerance for the linear CCD algorithm
+/// @param[in] max_iterations Maximum number of iterations for the linear CCD algorithm
+/// @param[in] conservative_rescaling Conservative rescaling of the time of impact
+/// @return True if the point and edge collide, false otherwise.
+bool point_edge_nonlinear_ccd(
+    const NonlinearTrajectory& p,
+    const NonlinearTrajectory& e0,
+    const NonlinearTrajectory& e1,
+    double& toi,
+    const double tmax = 1.0,
+    const double min_distance = 0,
+    const double tolerance = DEFAULT_CCD_TOLERANCE,
+    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+
+/// @brief Perform nonlinear CCD between two linear edges moving along nonlinear trajectories.
+/// @param[in] ea0 First edge's first endpoint's trajectory
+/// @param[in] ea1 First edge's second endpoint's trajectory
+/// @param[in] eb0 Second edge's first endpoint's trajectory
+/// @param[in] eb1 Second edge's second endpoint's trajectory
+/// @param[out] toi Output time of impact
+/// @param[in] tmax Maximum time to check for collision
+/// @param[in] min_distance Minimum separation distance between the two edges
+/// @param[in] tolerance Tolerance for the linear CCD algorithm
+/// @param[in] max_iterations Maximum number of iterations for the linear CCD algorithm
+/// @param[in] conservative_rescaling Conservative rescaling of the time of impact
+/// @return True if the two edges collide, false otherwise.
+bool edge_edge_nonlinear_ccd(
+    const NonlinearTrajectory& ea0,
+    const NonlinearTrajectory& ea1,
+    const NonlinearTrajectory& eb0,
+    const NonlinearTrajectory& eb1,
+    double& toi,
+    const double tmax = 1.0,
+    const double min_distance = 0,
+    const double tolerance = DEFAULT_CCD_TOLERANCE,
+    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+
+/// @brief Perform nonlinear CCD between a point and a linear triangle moving along nonlinear trajectories.
+/// @param[in] p Point's trajectory
+/// @param[in] t0 Triangle's first vertex's trajectory
+/// @param[in] t1 Triangle's second vertex's trajectory
+/// @param[in] t2 Triangle's third vertex's trajectory
+/// @param[out] toi Output time of impact
+/// @param[in] tmax Maximum time to check for collision
+/// @param[in] min_distance Minimum separation distance between the two edges
+/// @param[in] tolerance Tolerance for the linear CCD algorithm
+/// @param[in] max_iterations Maximum number of iterations for the linear CCD algorithm
+/// @param[in] conservative_rescaling Conservative rescaling of the time of impact
+/// @return True if the point and triangle collide, false otherwise.
+bool point_triangle_nonlinear_ccd(
+    const NonlinearTrajectory& p,
+    const NonlinearTrajectory& t0,
+    const NonlinearTrajectory& t1,
+    const NonlinearTrajectory& t2,
+    double& toi,
+    const double tmax = 1.0,
+    const double min_distance = 0,
+    const double tolerance = DEFAULT_CCD_TOLERANCE,
+    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 } // namespace ipc
