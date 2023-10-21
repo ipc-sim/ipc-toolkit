@@ -151,6 +151,12 @@ project_to_psd(
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&
         A);
 
+inline Eigen::Vector3d to_3D(const VectorMax3d& v)
+{
+    assert(v.size() == 2 || v.size() == 3);
+    return v.size() == 2 ? Eigen::Vector3d(v.x(), v.y(), 0) : v.head<3>();
+}
+
 /// Eigen IO Format to format vectors like vertex rows in an OBJ file.
 static const Eigen::IOFormat OBJ_VERTEX_FORMAT = Eigen::IOFormat(
     Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "", "");

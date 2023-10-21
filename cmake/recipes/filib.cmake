@@ -1,7 +1,7 @@
 # filib (https://github.com/zfergus/filib.git)
 # License: LGPL
 if(TARGET filib::filib)
-    return()
+  return()
 endif()
 
 message(STATUS "Third-party: creating target 'filib::filib'")

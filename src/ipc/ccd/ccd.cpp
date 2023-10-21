@@ -19,38 +19,13 @@
 
 namespace ipc {
 
-namespace {
-    inline Eigen::Vector3d to_3D(const VectorMax3d& v)
-    {
-        assert(v.size() == 2 || v.size() == 3);
-        return v.size() == 2 ? Eigen::Vector3d(v.x(), v.y(), 0) : v.head<3>();
-    }
-
-    inline bool check_initial_distance(
-        const double initial_distance, const double min_distance, double& toi)
-    {
-        if (initial_distance > min_distance) {
-            return false;
-        }
-
-        logger().warn(
-            "Initial distance {} ≤ d_min={}, returning toi=0!",
-            initial_distance, min_distance);
-
-        toi = 0; // Initially touching
-
-        return true;
-    }
-} // namespace
-
-/// @brief Scale the distance tolerance to be at most this fraction of the initial distance.
+/// Scale the distance tolerance to be at most this fraction of the initial
+/// distance.
 static constexpr double INITIAL_DISTANCE_TOLERANCE_SCALE = 0.5;
 
-/// @brief Special value for max_iterations to run tight inclusion without a maximum number of iterations.
+/// Special value for max_iterations to run tight inclusion without a maximum
+/// number of iterations.
 static constexpr long TIGHT_INCLUSION_UNLIMITED_ITERATIONS = -1;
-
-/// @brief Tolerance for small time of impact which triggers rerunning CCD without a minimum separation.
-static constexpr double SMALL_TOI = 1e-6;
 
 bool ccd_strategy(
     const std::function<bool(
@@ -86,7 +61,7 @@ bool ccd_strategy(
     // #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
     //     // Tight inclusion will have higher accuracy and better performance
     //     // if we shrink the minimum distance. The value 1e-10 is arbitrary.
-    //     while (is_impacting && toi < SMALL_TOI && min_distance > 1e-10) {
+    //     while (is_impacting && toi < CCD_SMALL_TOI && min_distance > 1e-10) {
     //         min_distance /= 10;
     //         is_impacting =
     //             ccd(max_iterations, min_distance, /*no_zero_toi=*/false,
@@ -94,7 +69,7 @@ bool ccd_strategy(
     //     }
     // #endif
 
-    if (is_impacting && toi < SMALL_TOI) {
+    if (is_impacting && toi < CCD_SMALL_TOI) {
         is_impacting = ccd(
             /*max_iterations=*/TIGHT_INCLUSION_UNLIMITED_ITERATIONS,
             /*min_distance=*/min_distance, /*no_zero_toi=*/true, toi);
@@ -218,7 +193,7 @@ bool point_edge_ccd_3D(
             max_iterations,               // maximum number of iterations
             output_tolerance,             // delta_actual
             no_zero_toi);
-        if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
+        if (adjusted_tolerance < output_tolerance && toi < CCD_SMALL_TOI) {
             logger().trace(
                 "ticcd::edgeEdgeCCD exceeded iteration limit (min_dist={:g} "
                 "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
@@ -304,7 +279,7 @@ bool edge_edge_ccd(
             max_iterations,               // maximum number of iterations
             output_tolerance,             // delta_actual
             no_zero_toi);
-        if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
+        if (adjusted_tolerance < output_tolerance && toi < CCD_SMALL_TOI) {
             logger().trace(
                 "ticcd::edgeEdgeCCD exceeded iteration limit (min_dist={:g} "
                 "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
@@ -367,7 +342,7 @@ bool point_triangle_ccd(
             max_iterations,               // maximum number of iterations
             output_tolerance,             // delta_actual
             no_zero_toi);
-        if (adjusted_tolerance < output_tolerance && toi < SMALL_TOI) {
+        if (adjusted_tolerance < output_tolerance && toi < CCD_SMALL_TOI) {
             logger().trace(
                 "ticcd::vertexFaceCCD exceeded iteration limit (min_dist={:g} "
                 "max_iterations={:d} input_tol={:g} output_tol={:g} toi={:g})",
@@ -385,6 +360,24 @@ bool point_triangle_ccd(
     return ccd_strategy(
         ccd, max_iterations, min_distance, initial_distance,
         conservative_rescaling, toi);
+}
+
+// -----------------------------------------------------------------------------
+
+bool check_initial_distance(
+    const double initial_distance, const double min_distance, double& toi)
+{
+    if (initial_distance > min_distance) {
+        return false;
+    }
+
+    logger().warn(
+        "Initial distance {} ≤ d_min={}, returning toi=0!", initial_distance,
+        min_distance);
+
+    toi = 0; // Initially touching
+
+    return true;
 }
 
 } // namespace ipc

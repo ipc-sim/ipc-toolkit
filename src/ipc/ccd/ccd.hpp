@@ -11,6 +11,9 @@ static constexpr long DEFAULT_CCD_MAX_ITERATIONS = 10'000'000l;
 /// The default conservative rescaling value used to avoid taking steps exactly
 /// to impact.
 static constexpr double DEFAULT_CCD_CONSERVATIVE_RESCALING = 0.8;
+/// Tolerance for small time of impact which triggers rerunning CCD without a
+/// minimum separation.
+static constexpr double CCD_SMALL_TOI = 1e-6;
 
 /// @brief Computes the time of impact between two points in 3D using continuous collision detection.
 /// @param[in] p0_t0 The initial position of the first point.
@@ -179,5 +182,13 @@ bool point_triangle_ccd(
     const double tolerance = DEFAULT_CCD_TOLERANCE,
     const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
     const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+
+/// @brief Helper function to check if the initial distance is less than the minimum distance.
+/// @param[in] initial_distance The initial distance between the objects.
+/// @param[in] min_distance The minimum distance between the objects.
+/// @param[out] toi Set to 0 if the initial distance is less than the minimum distance.
+/// @return True if the initial distance is less than the minimum distance, false otherwise.
+bool check_initial_distance(
+    const double initial_distance, const double min_distance, double& toi);
 
 } // namespace ipc

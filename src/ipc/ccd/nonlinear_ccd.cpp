@@ -13,40 +13,11 @@
 
 namespace ipc {
 
-namespace {
-    inline Eigen::Vector3d to_3D(const VectorMax3d& v)
-    {
-        assert(v.size() == 2 || v.size() == 3);
-        return v.size() == 2 ? Eigen::Vector3d(v.x(), v.y(), 0) : v.head<3>();
-    }
-
-    inline bool check_initial_distance(
-        const double initial_distance, const double min_distance, double& toi)
-    {
-        if (initial_distance > min_distance) {
-            return false;
-        }
-
-        logger().warn(
-            "Initial distance {} ≤ d_min={}, returning toi=0!",
-            initial_distance, min_distance);
-
-        toi = 0; // Initially touching
-
-        return true;
-    }
-} // namespace
-
-// ============================================================================
-
 #ifdef USE_FIXED_PIECES
-static constexpr size_t FIXED_NUM_PIECES = 100;
+static constexpr size_t FIXED_NUM_PIECES = 100l;
 #else
-static constexpr size_t MAX_NUM_SUBDIVISIONS = 1'000l;
+static constexpr size_t MAX_NUM_SUBDIVISIONS = 1000l;
 #endif
-
-// Tolerance for small time of impact which triggers further refinement
-static constexpr double SMALL_TOI = 1e-6;
 
 // ============================================================================
 
@@ -123,7 +94,7 @@ bool conservative_piecewise_linear_ccd(
         // If distance has decreased by a factor and the toi is not near zero,
         // then we can call this a collision.
         if (distance_ti0 < (1 - conservative_rescaling) * distance_t0
-            && ti0 >= SMALL_TOI) {
+            && ti0 >= CCD_SMALL_TOI) {
             logger().trace(
                 "Distance small enough distance_ti0={:g}; toi={:g}",
                 distance_ti0, toi);
