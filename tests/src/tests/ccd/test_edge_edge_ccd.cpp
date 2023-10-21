@@ -84,7 +84,7 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
         ea0_t1 = (ea0_t1 - ea0_t0) * t + ea0_t0;
         ea1_t1 = (ea1_t1 - ea1_t0) * t + ea1_t0;
 
-        bool is_collision_expected = true;
+        is_collision_expected = true;
     }
 #endif
     SECTION("Slow Case 1")

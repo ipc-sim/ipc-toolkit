@@ -68,8 +68,6 @@ void CollisionConstraintsBuilder::add_edge_vertex_constraints(
 {
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [ei, vi] = candidates[i];
-        const long e0i = mesh.edges()(ei, 0), e1i = mesh.edges()(ei, 1);
-
         const auto [v, e0, e1, _] =
             candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
         const PointEdgeDistanceType dtype = point_edge_distance_type(v, e0, e1);

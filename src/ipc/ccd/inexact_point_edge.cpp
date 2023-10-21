@@ -93,7 +93,6 @@ bool inexact_point_edge_ccd_2D(
     for (int i = 0; i < rootAmt; ++i) {
         if (roots[i] > 0 && roots[i] <= 1) {
             // check overlap
-            double ratio;
             if (point_edge_distance_type(
                     Eigen::Vector2d(p_t0 + roots[i] * d0),
                     Eigen::Vector2d(e0_t0 + roots[i] * d1),

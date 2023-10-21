@@ -18,10 +18,9 @@ bool point_static_plane_ccd(
 {
     static constexpr double SMALL_TOI = 1e-6;
 
-    int dim = p_t0.size();
-    assert(p_t1.size() == dim);
-    assert(plane_origin.size() == dim);
-    assert(plane_normal.size() == dim);
+    assert(p_t1.size() == p_t0.size());
+    assert(plane_origin.size() == p_t0.size());
+    assert(plane_normal.size() == p_t0.size());
 
     double initial_distance =
         sqrt(point_plane_distance(p_t0, plane_origin, plane_normal));

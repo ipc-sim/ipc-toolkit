@@ -226,10 +226,9 @@ bool point_edge_ccd(
     const long max_iterations,
     const double conservative_rescaling)
 {
-    int dim = p_t0.size();
-    assert(p_t1.size() == dim);
-    assert(e0_t0.size() == dim && e1_t0.size() == dim);
-    assert(e0_t1.size() == dim && e1_t1.size() == dim);
+    assert(p_t1.size() == p_t0.size());
+    assert(e0_t0.size() == p_t0.size() && e1_t0.size() == p_t0.size());
+    assert(e0_t1.size() == p_t0.size() && e1_t1.size() == p_t0.size());
     return point_edge_ccd_3D(
         to_3D(p_t0), to_3D(e0_t0), to_3D(e1_t0), to_3D(p_t1), to_3D(e0_t1),
         to_3D(e1_t1), toi, min_distance, tmax, tolerance, max_iterations,

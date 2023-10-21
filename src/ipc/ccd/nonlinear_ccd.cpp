@@ -63,8 +63,6 @@ bool conservative_piecewise_linear_ccd(
     const double min_sep_distance,
     const double conservative_rescaling)
 {
-    const filib::Interval t(0, tmax);
-
     const double distance_t0 = distance(0);
     if (check_initial_distance(distance_t0, min_sep_distance, toi)) {
         return true;
@@ -121,7 +119,6 @@ bool conservative_piecewise_linear_ccd(
 
         min_distance += min_sep_distance;
 
-        double output_tolerance;
         const bool is_impacting =
             linear_ccd(ti0, ti1, min_distance, /*no_zero_toi=*/ti0 == 0, toi);
 

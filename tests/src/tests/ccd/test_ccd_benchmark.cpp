@@ -45,7 +45,7 @@ void run_benchmark(
     using Matrix8x3 = Eigen::Matrix<double, 8, 3, Eigen::RowMajor>;
 
     std::vector<fs::path> csv_dirs;
-    bool is_data_split = true;
+    bool is_data_split;
     SECTION("Original Benchmark")
     {
         fmt::print("Dataset of [Wang et al. 2021]:\n\n");
@@ -104,7 +104,7 @@ void run_benchmark(
         {
             fmt::print("Dataset of [Belgrod et al. 2023]:\n");
 
-            bool is_data_split = true;
+            is_data_split = true;
 
             const fs::path root_path = tests::NEW_CCD_BENCHMARK_DIR;
 
