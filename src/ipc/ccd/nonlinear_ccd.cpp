@@ -21,19 +21,19 @@ static constexpr size_t MAX_NUM_SUBDIVISIONS = 1000l;
 
 // ============================================================================
 
-double
-NonlinearTrajectory::max_distance_from_linear(const filib::Interval& t) const
+double NonlinearTrajectory::max_distance_from_linear(
+    const double t0, const double t1) const
 {
     // Estimate max t ∈ [0, 1] ‖ p((t1 - t0) * t + t0) - lerp(p(t0), p(t1), t) ‖
-    const VectorMax3I p_t0 = (*this)(t.INF).cast<filib::Interval>();
-    const VectorMax3I p_t1 = (*this)(t.SUP).cast<filib::Interval>();
+    const VectorMax3I p_t0 = (*this)(t0).cast<filib::Interval>();
+    const VectorMax3I p_t1 = (*this)(t1).cast<filib::Interval>();
 
     double max_d = 0;
 
     constexpr double n = 100.0;
-    double ti0 = t.INF;
+    double ti0 = t0;
     for (int i = 1; i <= n; i++) {
-        const double ti1 = i / n * (t.SUP - t.INF) + t.INF;
+        const double ti1 = i / n * (t1 - t0) + t0;
 
         const VectorMax3I p = (*this)(filib::Interval(ti0, ti1));
         const filib::Interval d = norm(
@@ -49,8 +49,8 @@ NonlinearTrajectory::max_distance_from_linear(const filib::Interval& t) const
 // ============================================================================
 
 bool conservative_piecewise_linear_ccd(
-    const std::function<double(double)>& distance,
-    const std::function<double(const filib::Interval&)>&
+    const std::function<double(const double)>& distance,
+    const std::function<double(const double, const double)>&
         max_distance_from_linear,
     const std::function<bool(
         const double /*ti0*/,
@@ -85,7 +85,6 @@ bool conservative_piecewise_linear_ccd(
 
     while (!ts.empty()) {
         const double ti1 = ts.top();
-        const filib::Interval ti(ti0, ti1);
 
         const double distance_ti0 = distance(ti0);
 
@@ -100,7 +99,7 @@ bool conservative_piecewise_linear_ccd(
             return true;
         }
 
-        double min_distance = max_distance_from_linear(ti);
+        double min_distance = max_distance_from_linear(ti0, ti1);
 
 #ifndef USE_FIXED_PIECES
         // Check if the minimum distance is too large and we need to subdivide
@@ -162,9 +161,10 @@ bool point_point_nonlinear_ccd(
         [&](const double t) {
             return sqrt(point_point_distance(p0(t), p1(t)));
         },
-        [&](const filib::Interval& t) {
+        [&](const double t0, const double t1) {
             return std::max(
-                p0.max_distance_from_linear(t), p1.max_distance_from_linear(t));
+                p0.max_distance_from_linear(t0, t1),
+                p1.max_distance_from_linear(t0, t1));
         },
         [&](const double ti0, const double ti1, const double min_distance,
             const bool no_zero_toi, double& toi) {
@@ -199,11 +199,11 @@ bool point_edge_nonlinear_ccd(
         [&](const double t) {
             return sqrt(point_edge_distance(p(t), e0(t), e1(t)));
         },
-        [&](const filib::Interval& t) {
-            return p.max_distance_from_linear(t)
+        [&](const double t0, const double t1) {
+            return p.max_distance_from_linear(t0, t1)
                 + std::max(
-                       e0.max_distance_from_linear(t),
-                       e1.max_distance_from_linear(t));
+                       e0.max_distance_from_linear(t0, t1),
+                       e1.max_distance_from_linear(t0, t1));
         },
         [&](const double ti0, const double ti1, const double min_distance,
             const bool no_zero_toi, double& toi) {
@@ -239,13 +239,13 @@ bool edge_edge_nonlinear_ccd(
         [&](const double t) {
             return sqrt(edge_edge_distance(ea0(t), ea1(t), eb0(t), eb1(t)));
         },
-        [&](const filib::Interval& t) {
+        [&](const double t0, const double t1) {
             return std::max(
-                       ea0.max_distance_from_linear(t),
-                       ea1.max_distance_from_linear(t))
+                       ea0.max_distance_from_linear(t0, t1),
+                       ea1.max_distance_from_linear(t0, t1))
                 + std::max(
-                       eb0.max_distance_from_linear(t),
-                       eb1.max_distance_from_linear(t));
+                       eb0.max_distance_from_linear(t0, t1),
+                       eb1.max_distance_from_linear(t0, t1));
         },
         [&](const double ti0, const double ti1, const double min_distance,
             const bool no_zero_toi, double& toi) {
@@ -281,11 +281,11 @@ bool point_triangle_nonlinear_ccd(
         [&](const double t) {
             return sqrt(point_triangle_distance(p(t), t0(t), t1(t), t2(t)));
         },
-        [&](const filib::Interval& t) {
-            return p.max_distance_from_linear(t)
-                + std::max({ t0.max_distance_from_linear(t),
-                             t1.max_distance_from_linear(t),
-                             t2.max_distance_from_linear(t) });
+        [&](const double ti0, const double ti1) {
+            return p.max_distance_from_linear(ti0, ti1)
+                + std::max({ t0.max_distance_from_linear(ti0, ti1),
+                             t1.max_distance_from_linear(ti0, ti1),
+                             t2.max_distance_from_linear(ti0, ti1) });
         },
         [&](const double ti0, const double ti1, const double min_distance,
             const bool no_zero_toi, double& toi) {

@@ -31,16 +31,17 @@ public:
         return position(t);
     }
 
-    double max_distance_from_linear(const filib::Interval& t) const override
+    double
+    max_distance_from_linear(const double t0, const double t1) const override
     {
-        if (z_angular_velocity * diam(t) >= 2 * igl::PI) {
+        if (z_angular_velocity * (t1 - t0) >= 2 * igl::PI) {
             // This is the most conservative estimate
             return 2 * (point - center).norm(); // 2 * radius
         }
 
-        const VectorMax3d p_t0 = (*this)(t.INF);
-        const VectorMax3d p_t1 = (*this)(t.SUP);
-        return ((*this)(mid(t)) - ((p_t1 - p_t0) * 0.5 + p_t0)).norm();
+        const VectorMax3d p_t0 = (*this)(t0);
+        const VectorMax3d p_t1 = (*this)(t1);
+        return ((*this)((t0 + t1) / 2) - ((p_t1 - p_t0) * 0.5 + p_t0)).norm();
     }
 
 protected:
@@ -76,7 +77,8 @@ public:
         return point.cast<filib::Interval>();
     }
 
-    double max_distance_from_linear(const filib::Interval& t) const override
+    double
+    max_distance_from_linear(const double t0, const double t1) const override
     {
         return 0;
     }

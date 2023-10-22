@@ -34,9 +34,6 @@ public:
     //     return out << "[" << i.INF << ", " << i.SUP << "]";
     // }
 };
-
-inline bool empty(const interval& i) { return i.INF > i.SUP; }
-
 } // namespace filib
 
 template <> struct fmt::formatter<filib::Interval> : ostream_formatter { };
@@ -51,7 +48,7 @@ typedef RowVector2<filib::Interval> RowVector2I;
 typedef RowVector3<filib::Interval> RowVector3I;
 typedef RowVectorMax3<filib::Interval> RowVectorMax3I;
 typedef RowVectorX<filib::Interval> RowVectorXI;
-typedef Matrix3<filib::Interval> Matrix2I;
+typedef Matrix2<filib::Interval> Matrix2I;
 typedef Matrix3<filib::Interval> Matrix3I;
 typedef MatrixMax3<filib::Interval> MatrixMax3I;
 typedef MatrixX<filib::Interval> MatrixXI;

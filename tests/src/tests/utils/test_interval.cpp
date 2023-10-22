@@ -16,15 +16,15 @@ TEST_CASE("Simple interval arithmetic", "[interval]")
 
     filib::Interval result;
     result = i + j;
-    CHECK(!filib::empty(result));
+    CHECK(!empty(result));
     result = i - j;
-    CHECK(!filib::empty(result));
+    CHECK(!empty(result));
     result = i * j;
-    CHECK(!filib::empty(result));
+    CHECK(!empty(result));
     result = 1.0 / j;
-    CHECK(!filib::empty(result));
+    CHECK(!empty(result));
     result = i / j;
-    CHECK(!filib::empty(result));
+    CHECK(!empty(result));
 
     result = i + 10.0;
     CHECK(result.INF == Catch::Approx(i.INF + 10).margin(1e-12));
@@ -106,14 +106,13 @@ TEST_CASE("Interval rotation rounding", "[interval][matrix]")
     R.row(0) << cos(theta), -sin(theta);
     R.row(1) << sin(theta), cos(theta);
     for (const auto& i : R.reshaped()) {
-        CHECK(!filib::empty(i));
+        CHECK(!empty(i));
     }
 
-    MatrixMax3<filib::Interval> RT = R.transpose();
-    Eigen::Matrix<filib::Interval, 4, 2> RV = V * RT;
+    Eigen::Matrix<filib::Interval, 4, 2> RV = V * R.transpose();
     RV.rowwise() += RowVector2I(x, y);
     for (const auto& i : R.reshaped()) {
-        CHECK(!filib::empty(i));
+        CHECK(!empty(i));
         CHECK(std::isfinite(i.INF));
         CHECK(std::isfinite(i.SUP));
     }
