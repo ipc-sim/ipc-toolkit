@@ -53,10 +53,10 @@ double compute_collision_free_stepsize(
 
     if (broad_phase_method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
 #ifdef IPC_TOOLKIT_WITH_CUDA
-        double min_distance = 0; // TODO
+        // TODO: Use correct min_distance
         const double step_size = ccd::gpu::compute_toi_strategy(
             vertices_t0, vertices_t1, mesh.edges(), mesh.faces(),
-            max_iterations, min_distance, tolerance);
+            max_iterations, /*min_distance=*/0, tolerance);
         if (step_size < 1.0) {
             return 0.8 * step_size;
         }

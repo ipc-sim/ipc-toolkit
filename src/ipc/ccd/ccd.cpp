@@ -106,19 +106,19 @@ bool point_point_ccd_3D(
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
-    const auto ccd = [&](long max_iterations, double min_distance,
-                         bool no_zero_toi, double& toi) -> bool {
+    const auto ccd = [&](long _max_iterations, double _min_distance,
+                         bool no_zero_toi, double& _toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         double output_tolerance;
         // NOTE: Use degenerate edge-edge
         return ticcd::edgeEdgeCCD(
             p0_t0, p0_t0, p1_t0, p1_t0, p0_t1, p0_t1, p1_t1, p1_t1,
             Eigen::Array3d::Constant(-1), // rounding error (auto)
-            min_distance,                 // minimum separation distance
-            toi,                          // time of impact
+            _min_distance,                // minimum separation distance
+            _toi,                         // time of impact
             adjusted_tolerance,           // delta
             tmax,                         // maximum time to check
-            max_iterations,               // maximum number of iterations
+            _max_iterations,              // maximum number of iterations
             output_tolerance,             // delta_actual
             no_zero_toi);
 #else
@@ -178,19 +178,19 @@ bool point_edge_ccd_3D(
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
-    const auto ccd = [&](long max_iterations, double min_distance,
-                         bool no_zero_toi, double& toi) -> bool {
+    const auto ccd = [&](long _max_iterations, double _min_distance,
+                         bool no_zero_toi, double& _toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         double output_tolerance = tolerance;
         // NOTE: Use degenerate edge-edge
         bool is_impacting = ticcd::edgeEdgeCCD(
             p_t0, p_t0, e0_t0, e1_t0, p_t1, p_t1, e0_t1, e1_t1,
             Eigen::Array3d::Constant(-1), // rounding error (auto)
-            min_distance,                 // minimum separation distance
-            toi,                          // time of impact
+            _min_distance,                // minimum separation distance
+            _toi,                         // time of impact
             adjusted_tolerance,           // delta
             tmax,                         // maximum time to check
-            max_iterations,               // maximum number of iterations
+            _max_iterations,              // maximum number of iterations
             output_tolerance,             // delta_actual
             no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < CCD_SMALL_TOI) {
@@ -264,18 +264,18 @@ bool edge_edge_ccd(
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
-    const auto ccd = [&](long max_iterations, double min_distance,
-                         bool no_zero_toi, double& toi) -> bool {
+    const auto ccd = [&](long _max_iterations, double _min_distance,
+                         bool no_zero_toi, double& _toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         double output_tolerance;
         bool is_impacting = ticcd::edgeEdgeCCD(
             ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
             Eigen::Array3d::Constant(-1), // rounding error (auto)
-            min_distance,                 // minimum separation distance
-            toi,                          // time of impact
+            _min_distance,                // minimum separation distance
+            _toi,                         // time of impact
             adjusted_tolerance,           // delta
             tmax,                         // maximum time to check
-            max_iterations,               // maximum number of iterations
+            _max_iterations,              // maximum number of iterations
             output_tolerance,             // delta_actual
             no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < CCD_SMALL_TOI) {
@@ -327,18 +327,18 @@ bool point_triangle_ccd(
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
 
-    const auto ccd = [&](long max_iterations, double min_distance,
-                         bool no_zero_toi, double& toi) -> bool {
+    const auto ccd = [&](long _max_iterations, double _min_distance,
+                         bool no_zero_toi, double& _toi) -> bool {
 #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
         double output_tolerance;
         bool is_impacting = ticcd::vertexFaceCCD(
             p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
             Eigen::Array3d::Constant(-1), // rounding error (auto)
-            min_distance,                 // minimum separation distance
-            toi,                          // time of impact
+            _min_distance,                // minimum separation distance
+            _toi,                         // time of impact
             adjusted_tolerance,           // delta
             tmax,                         // maximum time to check
-            max_iterations,               // maximum number of iterations
+            _max_iterations,              // maximum number of iterations
             output_tolerance,             // delta_actual
             no_zero_toi);
         if (adjusted_tolerance < output_tolerance && toi < CCD_SMALL_TOI) {

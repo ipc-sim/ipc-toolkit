@@ -83,18 +83,18 @@ VectorMax3d EdgeEdgeFrictionConstraint::relative_velocity(
 }
 
 MatrixMax<double, 3, 12> EdgeEdgeFrictionConstraint::relative_velocity_matrix(
-    const VectorMax2d& closest_point) const
+    const VectorMax2d& _closest_point) const
 {
-    assert(closest_point.size() == 2);
-    return edge_edge_relative_velocity_matrix(dim(), closest_point);
+    assert(_closest_point.size() == 2);
+    return edge_edge_relative_velocity_matrix(dim(), _closest_point);
 }
 
 MatrixMax<double, 6, 12>
 EdgeEdgeFrictionConstraint::relative_velocity_matrix_jacobian(
-    const VectorMax2d& closest_point) const
+    const VectorMax2d& _closest_point) const
 {
-    assert(closest_point.size() == 2);
-    return edge_edge_relative_velocity_matrix_jacobian(dim(), closest_point);
+    assert(_closest_point.size() == 2);
+    return edge_edge_relative_velocity_matrix_jacobian(dim(), _closest_point);
 }
 
 } // namespace ipc

@@ -1,4 +1,4 @@
-#include <ipc/utils/eigen_ext.hpp>
+#include "point_point.hpp"
 
 namespace ipc {
 

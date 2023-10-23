@@ -2,8 +2,8 @@
 
 #include <cstdlib> /* rand */
 
-TestImpactGenerator::TestImpactGenerator(size_t value, bool rigid)
-    : rigid(rigid)
+TestImpactGenerator::TestImpactGenerator(size_t value, bool _rigid)
+    : rigid(_rigid)
     , current_i(0)
     , max_i(value)
 {

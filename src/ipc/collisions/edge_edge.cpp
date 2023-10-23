@@ -7,37 +7,37 @@
 namespace ipc {
 
 EdgeEdgeConstraint::EdgeEdgeConstraint(
-    const long edge0_id,
-    const long edge1_id,
-    const double eps_x,
-    const EdgeEdgeDistanceType dtype)
-    : EdgeEdgeCandidate(edge0_id, edge1_id)
-    , eps_x(eps_x)
-    , dtype(dtype)
+    const long _edge0_id,
+    const long _edge1_id,
+    const double _eps_x,
+    const EdgeEdgeDistanceType _dtype)
+    : EdgeEdgeCandidate(_edge0_id, _edge1_id)
+    , eps_x(_eps_x)
+    , dtype(_dtype)
 {
 }
 
 EdgeEdgeConstraint::EdgeEdgeConstraint(
     const EdgeEdgeCandidate& candidate,
-    const double eps_x,
-    const EdgeEdgeDistanceType dtype)
+    const double _eps_x,
+    const EdgeEdgeDistanceType _dtype)
     : EdgeEdgeCandidate(candidate)
-    , eps_x(eps_x)
-    , dtype(dtype)
+    , eps_x(_eps_x)
+    , dtype(_dtype)
 {
 }
 
 EdgeEdgeConstraint::EdgeEdgeConstraint(
-    const long edge0_id,
-    const long edge1_id,
-    const double eps_x,
-    const double weight,
-    const Eigen::SparseVector<double>& weight_gradient,
-    const EdgeEdgeDistanceType dtype)
-    : EdgeEdgeCandidate(edge0_id, edge1_id)
-    , CollisionConstraint(weight, weight_gradient)
-    , eps_x(eps_x)
-    , dtype(dtype)
+    const long _edge0_id,
+    const long _edge1_id,
+    const double _eps_x,
+    const double _weight,
+    const Eigen::SparseVector<double>& _weight_gradient,
+    const EdgeEdgeDistanceType _dtype)
+    : EdgeEdgeCandidate(_edge0_id, _edge1_id)
+    , CollisionConstraint(_weight, _weight_gradient)
+    , eps_x(_eps_x)
+    , dtype(_dtype)
 {
 }
 

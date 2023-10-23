@@ -12,12 +12,12 @@ using namespace ipc;
 class RotationalTrajectory : virtual public NonlinearTrajectory {
 public:
     RotationalTrajectory(
-        const VectorMax3d& point,
-        const VectorMax3d& center,
-        const double z_angular_velocity)
-        : center(center)
-        , point(point)
-        , z_angular_velocity(z_angular_velocity)
+        const VectorMax3d& _point,
+        const VectorMax3d& _center,
+        const double _z_angular_velocity)
+        : center(_center)
+        , point(_point)
+        , z_angular_velocity(_z_angular_velocity)
     {
         assert(point.size() == point.size());
     }
@@ -70,17 +70,14 @@ class IntervalRotationalTrajectory : public RotationalTrajectory,
                                      public IntervalNonlinearTrajectory {
 public:
     IntervalRotationalTrajectory(
-        const VectorMax3d& point,
-        const VectorMax3d& center,
-        const double z_angular_velocity)
-        : RotationalTrajectory(point, center, z_angular_velocity)
+        const VectorMax3d& _point,
+        const VectorMax3d& _center,
+        const double _z_angular_velocity)
+        : RotationalTrajectory(_point, _center, _z_angular_velocity)
     {
     }
 
-    VectorMax3d operator()(const double t) const override
-    {
-        return position(center, point, z_angular_velocity, t);
-    }
+    using RotationalTrajectory::operator();
 
     VectorMax3I operator()(const filib::Interval& t) const override
     {
@@ -96,7 +93,7 @@ public:
 
 class StaticTrajectory : public NonlinearTrajectory {
 public:
-    StaticTrajectory(const VectorMax3d& point) : point(point) { }
+    StaticTrajectory(const VectorMax3d& _point) : point(_point) { }
 
     VectorMax3d operator()(const double t) const override { return point; }
 

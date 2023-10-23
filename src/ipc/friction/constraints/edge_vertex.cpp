@@ -55,11 +55,11 @@ VectorMax2d EdgeVertexFrictionConstraint::compute_closest_point(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == ndof());
-    VectorMax2d closest_point(1);
-    closest_point[0] = point_edge_closest_point(
+    VectorMax2d alpha(1);
+    alpha[0] = point_edge_closest_point(
         positions.head(dim()), positions.segment(dim(), dim()),
         positions.tail(dim()));
-    return closest_point;
+    return alpha;
 }
 
 MatrixMax<double, 2, 12>
@@ -85,19 +85,19 @@ VectorMax3d EdgeVertexFrictionConstraint::relative_velocity(
 }
 
 MatrixMax<double, 3, 12> EdgeVertexFrictionConstraint::relative_velocity_matrix(
-    const VectorMax2d& closest_point) const
+    const VectorMax2d& _closest_point) const
 {
-    assert(closest_point.size() == 1);
-    return point_edge_relative_velocity_matrix(dim(), closest_point[0]);
+    assert(_closest_point.size() == 1);
+    return point_edge_relative_velocity_matrix(dim(), _closest_point[0]);
 }
 
 MatrixMax<double, 6, 12>
 EdgeVertexFrictionConstraint::relative_velocity_matrix_jacobian(
-    const VectorMax2d& closest_point) const
+    const VectorMax2d& _closest_point) const
 {
-    assert(closest_point.size() == 1);
+    assert(_closest_point.size() == 1);
     return point_edge_relative_velocity_matrix_jacobian(
-        dim(), closest_point[0]);
+        dim(), _closest_point[0]);
 }
 
 } // namespace ipc

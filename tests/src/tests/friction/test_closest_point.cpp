@@ -35,10 +35,10 @@ TEST_CASE(
     Eigen::MatrixXd J_FD;
     fd::finite_jacobian(
         x,
-        [&](const Eigen::VectorXd& x) {
+        [](const Eigen::VectorXd& _x) {
             return point_triangle_closest_point(
-                x.segment<3>(0), x.segment<3>(3), x.segment<3>(6),
-                x.segment<3>(9));
+                _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6),
+                _x.segment<3>(9));
         },
         J_FD);
 
@@ -65,10 +65,10 @@ TEST_CASE("Edge-edge closest point", "[friction][edge-edge][closest_point]")
     Eigen::MatrixXd J_FD;
     fd::finite_jacobian(
         x,
-        [&](const Eigen::VectorXd& x) {
+        [](const Eigen::VectorXd& _x) {
             return edge_edge_closest_point(
-                x.segment<3>(0), x.segment<3>(3), x.segment<3>(6),
-                x.segment<3>(9));
+                _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6),
+                _x.segment<3>(9));
         },
         J_FD);
 
@@ -91,9 +91,9 @@ TEST_CASE("Point-edge closest point", "[friction][point-edge][closest_point]")
     Eigen::VectorXd J_FD;
     fd::finite_gradient(
         x,
-        [&](const Eigen::VectorXd& x) {
+        [](const Eigen::VectorXd& _x) {
             return point_edge_closest_point(
-                x.segment<3>(0), x.segment<3>(3), x.segment<3>(6));
+                _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6));
         },
         J_FD);
 
@@ -118,9 +118,9 @@ TEST_CASE(
     Eigen::VectorXd J_FD;
     fd::finite_gradient(
         x,
-        [&](const Eigen::VectorXd& x) {
+        [](const Eigen::VectorXd& _x) {
             return point_edge_closest_point(
-                x.segment<2>(0), x.segment<2>(2), x.segment<2>(4));
+                _x.segment<2>(0), _x.segment<2>(2), _x.segment<2>(4));
         },
         J_FD);
 

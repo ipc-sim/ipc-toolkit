@@ -10,7 +10,7 @@ struct HashItem {
     long id;  /// @brief The value of the item.
 
     /// @brief Construct a hash item as a (key, value) pair.
-    HashItem(int key, int id) : key(key), id(id) { }
+    HashItem(int _key, int _id) : key(_key), id(_id) { }
 
     /// @brief Compare HashItems by their keys for sorting.
     bool operator<(const HashItem& other) const

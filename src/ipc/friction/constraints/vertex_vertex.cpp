@@ -74,17 +74,17 @@ VectorMax3d VertexVertexFrictionConstraint::relative_velocity(
 
 MatrixMax<double, 3, 12>
 VertexVertexFrictionConstraint::relative_velocity_matrix(
-    const VectorMax2d& closest_point) const
+    const VectorMax2d& _closest_point) const
 {
-    assert(closest_point.size() == 0);
+    assert(_closest_point.size() == 0);
     return point_point_relative_velocity_matrix(dim());
 }
 
 MatrixMax<double, 6, 12>
 VertexVertexFrictionConstraint::relative_velocity_matrix_jacobian(
-    const VectorMax2d& closest_point) const
+    const VectorMax2d& _closest_point) const
 {
-    assert(closest_point.size() == 0);
+    assert(_closest_point.size() == 0);
     return point_point_relative_velocity_matrix_jacobian(dim());
 }
 

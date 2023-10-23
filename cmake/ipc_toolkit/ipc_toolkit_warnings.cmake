@@ -45,7 +45,7 @@ set(IPC_TOOLKIT_WARNING_FLAGS
   -Wunused-but-set-variable
   -Wno-unused-parameter
 
-  -Weffc++
+  # -Weffc++
   -Wold-style-cast
 
   -Wshadow
@@ -124,7 +124,7 @@ set(IPC_TOOLKIT_WARNING_FLAGS
   ################################################
 
   #-Wimplicit-atomic-properties
-  -Wmissing-declarations
+  #-Wmissing-declarations
   #-Wmissing-prototypes
   #-Wstrict-selector-match
   #-Wundeclared-selector

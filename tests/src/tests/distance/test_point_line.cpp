@@ -1,6 +1,7 @@
 #include <tests/utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 #include <catch2/generators/catch_generators_adapters.hpp>
 #include <catch2/generators/catch_generators_random.hpp>
@@ -11,6 +12,15 @@
 #include <finitediff.hpp>
 
 using namespace ipc;
+
+namespace {
+template <int dim> double point_line_distance_stacked(const Eigen::VectorXd& x)
+{
+    assert(x.size() == 3 * dim);
+    return point_line_distance(
+        x.head<dim>(), x.segment<dim>(dim), x.tail<dim>());
+}
+} // namespace
 
 TEST_CASE("Point-line distance", "[distance][point-line]")
 {
@@ -65,11 +75,12 @@ TEST_CASE("Point-line distance 2", "[distance][point-line]")
     }
 }
 
-TEST_CASE("Point-line distance gradient", "[distance][point-line][gradient]")
+TEMPLATE_TEST_CASE_SIG(
+    "Point-line distance gradient",
+    "[distance][point-line][gradient]",
+    ((int dim), dim),
+    2)
 {
-    // int dim = GENERATE(2, 3);
-    int dim = 2;
-
     double y_point = GENERATE(take(10, random(-10.0, 10.0)));
     VectorMax3d p = VectorMax3d::Zero(dim);
     p.y() = y_point;
@@ -87,21 +98,20 @@ TEST_CASE("Point-line distance gradient", "[distance][point-line][gradient]")
     // Compute the gradient using finite differences
     VectorMax9d x(3 * dim);
     x << p, e0, e1;
-    auto f = [&dim](const Eigen::VectorXd& x) {
-        return point_line_distance(
-            x.head(dim), x.segment(dim, dim), x.tail(dim));
-    };
     Eigen::VectorXd fgrad;
-    fd::finite_gradient(x, f, fgrad);
+    fd::finite_gradient(x, point_line_distance_stacked<dim>, fgrad);
 
     CAPTURE(dim, y_point, y_line);
     CHECK(fd::compare_gradient(grad, fgrad));
 }
 
-TEST_CASE("Point-line distance hessian", "[distance][point-line][hessian]")
+TEMPLATE_TEST_CASE_SIG(
+    "Point-line distance hessian",
+    "[distance][point-line][hessian]",
+    ((int dim), dim),
+    2,
+    3)
 {
-    int dim = GENERATE(2, 3);
-
     double y_point = GENERATE(take(10, random(-10.0, 10.0)));
     VectorMax3d p = VectorMax3d::Zero(dim);
     p.y() = y_point;
@@ -119,20 +129,19 @@ TEST_CASE("Point-line distance hessian", "[distance][point-line][hessian]")
     // Compute the gradient using finite differences
     VectorMax9d x(3 * dim);
     x << p, e0, e1;
-    auto f = [&dim](const Eigen::VectorXd& x) {
-        return point_line_distance(
-            x.head(dim), x.segment(dim, dim), x.tail(dim));
-    };
     Eigen::MatrixXd fhess;
-    fd::finite_hessian(x, f, fhess);
+    fd::finite_hessian(x, point_line_distance_stacked<dim>, fhess);
 
     CAPTURE(dim, y_point, y_line);
     CHECK(fd::compare_hessian(hess, fhess, 1e-2));
 }
 
-TEST_CASE(
+TEMPLATE_TEST_CASE_SIG(
     "Point-line distance hessian case 1",
-    "[distance][point-line][hessian][case1]")
+    "[distance][point-line][hessian][case1]",
+    ((int dim), dim),
+    2,
+    3)
 {
     Eigen::Vector3d p(-10.8386, 10, -3.91955);
     Eigen::Vector3d e0(0, 0, -1);
@@ -143,11 +152,8 @@ TEST_CASE(
     // Compute the gradient using finite differences
     Vector9d x;
     x << p, e0, e1;
-    auto f = [](const Eigen::VectorXd& x) {
-        return point_line_distance(x.head(3), x.segment(3, 3), x.tail(3));
-    };
     Eigen::MatrixXd fhess;
-    fd::finite_hessian(x, f, fhess);
+    fd::finite_hessian(x, point_line_distance_stacked<dim>, fhess);
 
     CHECK(fd::compare_hessian(hess, fhess, 1e-2));
 }

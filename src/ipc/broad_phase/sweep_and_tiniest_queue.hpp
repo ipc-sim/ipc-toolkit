@@ -60,12 +60,14 @@ public:
     /// @brief Find the candidate vertex-vertex collisions.
     /// @param[out] candidates The candidate vertex-vertex collisisons.
     void detect_vertex_vertex_candidates(
-        std::vector<VertexVertexCandidate>& candidates) const override;
+        std::vector<VertexVertexCandidate>& candidates) const override
+        [[noreturn]];
 
     /// @brief Find the candidate edge-vertex collisisons.
     /// @param[out] candidates The candidate edge-vertex collisisons.
     void detect_edge_vertex_candidates(
-        std::vector<EdgeVertexCandidate>& candidates) const override;
+        std::vector<EdgeVertexCandidate>& candidates) const override
+        [[noreturn]];
 
     /// @brief Find the candidate edge-edge collisions.
     /// @param[out] candidates The candidate edge-edge collisisons.
@@ -80,7 +82,7 @@ public:
     /// @brief Find the candidate edge-face intersections.
     /// @param[out] candidates The candidate edge-face intersections.
     void detect_edge_face_candidates(
-        std::vector<EdgeFaceCandidate>& candidates) const override;
+        std::vector<EdgeFaceCandidate>& candidates) const override [[noreturn]];
 
 protected:
     long to_edge_id(long id) const;
@@ -128,12 +130,14 @@ public:
     /// @brief Find the candidate vertex-vertex collisions.
     /// @param[out] candidates The candidate vertex-vertex collisisons.
     void detect_vertex_vertex_candidates(
-        std::vector<VertexVertexCandidate>& candidates) const override;
+        std::vector<VertexVertexCandidate>& candidates) const override
+        [[noreturn]];
 
     /// @brief Find the candidate edge-vertex collisisons.
     /// @param[out] candidates The candidate edge-vertex collisisons.
     void detect_edge_vertex_candidates(
-        std::vector<EdgeVertexCandidate>& candidates) const override;
+        std::vector<EdgeVertexCandidate>& candidates) const override
+        [[noreturn]];
 
     /// @brief Find the candidate edge-edge collisions.
     /// @param[out] candidates The candidate edge-edge collisisons.
@@ -148,7 +152,7 @@ public:
     /// @brief Find the candidate edge-face intersections.
     /// @param[out] candidates The candidate edge-face intersections.
     void detect_edge_face_candidates(
-        std::vector<EdgeFaceCandidate>& candidates) const override;
+        std::vector<EdgeFaceCandidate>& candidates) const override [[noreturn]];
 
 private:
     std::vector<stq::gpu::Aabb> boxes;

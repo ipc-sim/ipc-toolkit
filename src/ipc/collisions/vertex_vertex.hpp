@@ -17,12 +17,12 @@ public:
     }
 
     VertexVertexConstraint(
-        const long vertex0_id,
-        const long vertex1_id,
-        const double weight,
-        const Eigen::SparseVector<double>& weight_gradient)
-        : VertexVertexCandidate(vertex0_id, vertex1_id)
-        , CollisionConstraint(weight, weight_gradient)
+        const long _vertex0_id,
+        const long _vertex1_id,
+        const double _weight,
+        const Eigen::SparseVector<double>& _weight_gradient)
+        : VertexVertexCandidate(_vertex0_id, _vertex1_id)
+        , CollisionConstraint(_weight, _weight_gradient)
     {
     }
 

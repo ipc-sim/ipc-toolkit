@@ -13,6 +13,15 @@
 
 using namespace ipc;
 
+namespace {
+double edge_edge_distance_stacked(const Eigen::VectorXd& x)
+{
+    assert(x.size() == 12);
+    return edge_edge_distance(
+        x.segment<3>(0), x.segment<3>(3), x.segment<3>(6), x.segment<3>(9));
+};
+} // namespace
+
 TEST_CASE("Edge-edge distance", "[distance][edge-edge]")
 {
     double e0y = GENERATE(-10, -1, -1e-4, 0, 1e-4, 1, 10);
@@ -254,15 +263,12 @@ TEST_CASE("Edge-edge distance gradient", "[distance][edge-edge][gradient]")
 
     const Vector12d grad = edge_edge_distance_gradient(e00, e01, e10, e11);
 
-    // Compute the gradient using finite differences
     Vector12d x;
     x << e00, e01, e10, e11;
-    auto f = [](const Eigen::VectorXd& x) {
-        return edge_edge_distance(
-            x.segment<3>(0), x.segment<3>(3), x.segment<3>(6), x.segment<3>(9));
-    };
+
+    // Compute the gradient using finite differences
     Eigen::VectorXd fgrad;
-    fd::finite_gradient(x, f, fgrad);
+    fd::finite_gradient(x, edge_edge_distance_stacked, fgrad);
 
     CAPTURE(e0x, e0y, e0z, edge_edge_distance_type(e00, e01, e10, e11));
     CHECK(fd::compare_gradient(grad, fgrad));
@@ -287,15 +293,12 @@ TEST_CASE(
     double distance = edge_edge_distance(e00, e01, e10, e11);
     const Vector12d grad = edge_edge_distance_gradient(e00, e01, e10, e11);
 
-    // Compute the gradient using finite differences
     Vector12d x;
     x << e00, e01, e10, e11;
-    auto f = [](const Eigen::VectorXd& x) {
-        return edge_edge_distance(
-            x.segment<3>(0), x.segment<3>(3), x.segment<3>(6), x.segment<3>(9));
-    };
+
+    // Compute the gradient using finite differences
     Eigen::VectorXd fgrad;
-    fd::finite_gradient(x, f, fgrad);
+    fd::finite_gradient(x, edge_edge_distance_stacked, fgrad);
 
     CAPTURE(angle, (grad - fgrad).squaredNorm());
     CHECK(distance == Catch::Approx(1.0));

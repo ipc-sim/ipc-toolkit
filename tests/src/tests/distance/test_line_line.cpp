@@ -10,6 +10,15 @@
 
 using namespace ipc;
 
+namespace {
+double line_line_distance_stacked(const Eigen::VectorXd& x)
+{
+    assert(x.size() == 12);
+    return line_line_distance(
+        x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
+}
+} // namespace
+
 TEST_CASE("Line-line distance", "[distance][line-line]")
 {
     double ya = GENERATE(take(10, random(-100.0, 100.0)));
@@ -37,13 +46,7 @@ TEST_CASE("Line-line distance gradient", "[distance][line-line][gradient]")
     x << ea0, ea1, eb0, eb1;
     Eigen::VectorXd expected_grad;
     expected_grad.resize(grad.size());
-    fd::finite_gradient(
-        x,
-        [](const Eigen::VectorXd& x) {
-            return line_line_distance(
-                x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
-        },
-        expected_grad);
+    fd::finite_gradient(x, line_line_distance_stacked, expected_grad);
 
     CAPTURE(ya, yb, (grad - expected_grad).norm());
     bool is_grad_correct = fd::compare_gradient(grad, expected_grad);
@@ -64,13 +67,7 @@ TEST_CASE("Line-line distance hessian", "[distance][line-line][hessian]")
     x << ea0, ea1, eb0, eb1;
     Eigen::MatrixXd expected_hess;
     expected_hess.resize(hess.rows(), hess.cols());
-    fd::finite_hessian(
-        x,
-        [](const Eigen::VectorXd& x) {
-            return line_line_distance(
-                x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
-        },
-        expected_hess);
+    fd::finite_hessian(x, line_line_distance_stacked, expected_hess);
 
     CAPTURE(ya, yb, (hess - expected_hess).norm());
     CHECK(fd::compare_hessian(hess, expected_hess, 1e-2));
