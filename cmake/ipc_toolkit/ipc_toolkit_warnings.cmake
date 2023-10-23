@@ -10,20 +10,22 @@ endif()
 set(IPC_TOOLKIT_WARNING_FLAGS
   -Wall
   -Wextra
-  -pedantic
+  -Wpedantic
+  # -Werror
 
   # -Wconversion
+  # -Wsign-conversion
   # -Wunsafe-loop-optimizations # broken with C++11 loops
   -Wunused
 
-  -Wno-long-long
+  -Wno-long-long # disable warnings about using long long
   -Wpointer-arith
   -Wformat=2
   -Wuninitialized
   -Wcast-qual
-  # -Wmissing-noreturn
+  -Wmissing-noreturn
   -Wmissing-format-attribute
-  # -Wredundant-decls
+  -Wredundant-decls
 
   -Werror=implicit
   -Werror=nonnull
@@ -43,11 +45,10 @@ set(IPC_TOOLKIT_WARNING_FLAGS
   -Wunused-but-set-variable
   -Wno-unused-parameter
 
-  #-Weffc++
+  -Weffc++
   -Wold-style-cast
-  # -Wsign-conversion
 
-  # -Wshadow
+  -Wshadow
 
   -Wstrict-null-sentinel
   -Woverloaded-virtual
@@ -60,7 +61,7 @@ set(IPC_TOOLKIT_WARNING_FLAGS
   # lacks a case for one or more of the named codes of that enumeration.
   -Wswitch
   # This is annoying if all cases are already covered.
-  # -Wswitch-default
+  -Wswitch-default
   # This is annoying if there is a default that covers the rest.
   # -Wswitch-enum
   -Wswitch-unreachable
@@ -70,20 +71,17 @@ set(IPC_TOOLKIT_WARNING_FLAGS
   -Wdisabled-optimization
   # -Winline # produces warning on default implicit destructor
   -Winvalid-pch
-  # -Wmissing-include-dirs
+  -Wmissing-include-dirs
   -Wpacked
   -Wno-padded
   -Wstrict-overflow
   -Wstrict-overflow=2
 
-  # -Wctor-dtor-privacy
+  -Wctor-dtor-privacy
   -Wlogical-op
-  # -Wnoexcept
   -Woverloaded-virtual
   # -Wundef
 
-  -Wnon-virtual-dtor
-  -Wdelete-non-virtual-dtor
   -Werror=non-virtual-dtor
   -Werror=delete-non-virtual-dtor
 
@@ -126,7 +124,7 @@ set(IPC_TOOLKIT_WARNING_FLAGS
   ################################################
 
   #-Wimplicit-atomic-properties
-  #-Wmissing-declarations
+  -Wmissing-declarations
   #-Wmissing-prototypes
   #-Wstrict-selector-match
   #-Wundeclared-selector
@@ -140,8 +138,6 @@ set(IPC_TOOLKIT_WARNING_FLAGS
   # Gives meaningful stack traces
   -fno-omit-frame-pointer
   -fno-optimize-sibling-calls
-
-  -Wno-pedantic
 
   -Wno-redundant-decls
 )
