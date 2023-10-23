@@ -209,8 +209,6 @@ TEST_CASE("Cloth-Ball", "[ccd][broad_phase][cloth-ball][.]")
 
     CollisionMesh mesh(V0, E, F);
 
-    double inflation_radius = 0;
-
     BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 
     test_broad_phase(

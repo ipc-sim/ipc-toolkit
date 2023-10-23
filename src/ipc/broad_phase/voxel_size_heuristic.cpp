@@ -6,6 +6,11 @@
 
 namespace ipc {
 
+namespace {
+    // Avoid unused variable warnings
+    inline void check_success(bool success) { assert(success); }
+} // namespace
+
 double suggest_good_voxel_size(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
@@ -129,16 +134,14 @@ double median_edge_length(
     }
 
     double median = -1;
-    const bool success = igl::median(lengths, median);
-    assert(success);
+    check_success(igl::median(lengths, median));
     return median;
 }
 
 double median_displacement_length(const Eigen::MatrixXd& displacements)
 {
     double median = -1;
-    const bool success = igl::median(displacements.rowwise().norm(), median);
-    assert(success);
+    check_success(igl::median(displacements.rowwise().norm(), median));
     return median;
 }
 

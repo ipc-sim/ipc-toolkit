@@ -7,7 +7,6 @@ set(SOURCES
   test_collision_mesh.cpp
   test_has_intersections.cpp
   test_ipc.cpp
-  test_utils.cpp
 
   # Benchmarks
   benchmark_eigen.cpp
@@ -31,3 +30,4 @@ add_subdirectory(ccd)
 add_subdirectory(collisions)
 add_subdirectory(distance)
 add_subdirectory(friction)
+add_subdirectory(utils)

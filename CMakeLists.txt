@@ -63,12 +63,13 @@ project(IPCToolkit
 
 option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
 option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
-option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"                     ON)
+option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use Tight Inclusion CCD"                        ON)
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
+option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic"              ON)
 option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
 mark_as_advanced(IPC_TOOLKIT_WITH_CODE_COVERAGE)
 
@@ -179,6 +180,12 @@ endif()
 if(IPC_TOOLKIT_WITH_ABSEIL)
   include(abseil)
   target_link_libraries(ipc_toolkit PUBLIC absl::hash)
+endif()
+
+# Intervals
+if(IPC_TOOLKIT_WITH_FILIB)
+  include(filib)
+  target_link_libraries(ipc_toolkit PUBLIC filib::filib)
 endif()
 
 # Extra warnings (link last for highest priority)

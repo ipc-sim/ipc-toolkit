@@ -5,6 +5,8 @@ set(SOURCES
   eigen_ext.tpp
   intersection.cpp
   intersection.hpp
+  interval.cpp
+  interval.hpp
   local_to_global.hpp
   logger.cpp
   logger.hpp

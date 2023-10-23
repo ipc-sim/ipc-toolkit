@@ -13,3 +13,4 @@
 #cmakedefine IPC_TOOLKIT_WITH_CUDA
 #cmakedefine IPC_TOOLKIT_WITH_ROBIN_MAP
 #cmakedefine IPC_TOOLKIT_WITH_ABSEIL
+#cmakedefine IPC_TOOLKIT_WITH_FILIB

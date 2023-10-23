@@ -13,7 +13,7 @@ set(IPC_TOOLKIT_WARNING_FLAGS
   -pedantic
 
   # -Wconversion
-  #-Wunsafe-loop-optimizations # broken with C++11 loops
+  # -Wunsafe-loop-optimizations # broken with C++11 loops
   -Wunused
 
   -Wno-long-long
@@ -39,14 +39,13 @@ set(IPC_TOOLKIT_WARNING_FLAGS
   -Werror=int-to-pointer-cast
   -Werror=pointer-to-int-cast
 
-  -Wno-unused-variable
+  -Wunused-variable
   -Wunused-but-set-variable
   -Wno-unused-parameter
 
   #-Weffc++
-  -Wno-old-style-cast
-  # -Wno-sign-conversion
-  #-Wsign-conversion
+  -Wold-style-cast
+  # -Wsign-conversion
 
   # -Wshadow
 
@@ -69,7 +68,7 @@ set(IPC_TOOLKIT_WARNING_FLAGS
 
   -Wcast-align
   -Wdisabled-optimization
-  #-Winline # produces warning on default implicit destructor
+  # -Winline # produces warning on default implicit destructor
   -Winvalid-pch
   # -Wmissing-include-dirs
   -Wpacked
