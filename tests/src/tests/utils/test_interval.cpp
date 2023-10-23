@@ -1,6 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
+#include <ipc/config.hpp>
+
+#ifdef IPC_TOOLKIT_WITH_FILIB
+
 #include <ipc/utils/interval.hpp>
 #include <ipc/utils/logger.hpp>
 
@@ -134,3 +138,5 @@ TEST_CASE("Interval norm", "[interval][matrix]")
     CHECK(n.INF == 0);
     CHECK(n.SUP == Catch::Approx(1));
 }
+
+#endif

@@ -26,11 +26,6 @@ public:
         return position(t);
     }
 
-    VectorMax3I operator()(const filib::Interval& t) const override
-    {
-        return position(t);
-    }
-
     double
     max_distance_from_linear(const double t0, const double t1) const override
     {
@@ -71,11 +66,6 @@ public:
     StaticTrajectory(const VectorMax3d& point) : point(point) { }
 
     VectorMax3d operator()(const double t) const override { return point; }
-
-    VectorMax3I operator()(const filib::Interval& t) const override
-    {
-        return point.cast<filib::Interval>();
-    }
 
     double
     max_distance_from_linear(const double t0, const double t1) const override

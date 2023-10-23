@@ -21,7 +21,8 @@ static constexpr size_t MAX_NUM_SUBDIVISIONS = 1000l;
 
 // ============================================================================
 
-double NonlinearTrajectory::max_distance_from_linear(
+#ifdef IPC_TOOLKIT_WITH_FILIB
+double IntervalNonlinearTrajectory::max_distance_from_linear(
     const double t0, const double t1) const
 {
     // Estimate max t ∈ [0, 1] ‖ p((t1 - t0) * t + t0) - lerp(p(t0), p(t1), t) ‖
@@ -45,6 +46,7 @@ double NonlinearTrajectory::max_distance_from_linear(
 
     return max_d;
 }
+#endif
 
 // ============================================================================
 

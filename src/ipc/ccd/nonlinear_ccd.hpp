@@ -1,7 +1,11 @@
 #pragma once
 
+#include <ipc/config.hpp>
+
 #include <ipc/ccd/ccd.hpp>
+#ifdef IPC_TOOLKIT_WITH_FILIB
 #include <ipc/utils/interval.hpp>
+#endif
 
 #include <functional>
 
@@ -15,6 +19,20 @@ public:
     /// @brief Compute the point's position at time t
     virtual VectorMax3d operator()(const double t) const = 0;
 
+    /// @brief Compute the maximum distance from the nonlinear trajectory to a linearized trajectory
+    /// @note This uses interval arithmetic to compute the maximum distance. If you know a tighter bound on the maximum distance, it is recommended to override this function.
+    /// @param[in] t0 Start time of the trajectory
+    /// @param[in] t1 End time of the trajectory
+    virtual double
+    max_distance_from_linear(const double t0, const double t1) const = 0;
+};
+
+#ifdef IPC_TOOLKIT_WITH_FILIB
+/// @brief A nonlinear trajectory with an implementation of the max_distance_from_linear function using interval arithmetic.
+class IntervalNonlinearTrajectory : public NonlinearTrajectory {
+public:
+    virtual ~IntervalNonlinearTrajectory() = default;
+
     /// @brief Compute the point's position over a time interval t
     virtual VectorMax3I operator()(const filib::Interval& t) const = 0;
 
@@ -25,6 +43,7 @@ public:
     virtual double
     max_distance_from_linear(const double t0, const double t1) const;
 };
+#endif
 
 /// @brief Perform nonlinear CCD between two points moving along nonlinear trajectories.
 /// @param[in] p0 First point's trajectory

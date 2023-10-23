@@ -1,5 +1,7 @@
 #include "interval.hpp"
 
+#ifdef IPC_TOOLKIT_WITH_FILIB
+
 namespace ipc {
 
 filib::Interval squared_norm(const Eigen::Ref<const VectorMax3I>& x)
@@ -17,3 +19,4 @@ filib::Interval norm(const Eigen::Ref<const VectorMax3I>& x)
 }
 
 } // namespace ipc
+#endif

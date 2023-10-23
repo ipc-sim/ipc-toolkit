@@ -1,5 +1,9 @@
 #pragma once
 
+#include <ipc/config.hpp>
+
+#ifdef IPC_TOOLKIT_WITH_FILIB
+
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <filib/interval.hpp>
@@ -77,3 +81,5 @@ struct ScalarBinaryOpTraits<double, filib::Interval, BinOp> {
     typedef filib::Interval ReturnType;
 };
 } // namespace Eigen
+
+#endif
