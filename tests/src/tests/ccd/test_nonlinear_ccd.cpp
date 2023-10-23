@@ -1,5 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
 #include <ipc/ccd/nonlinear_ccd.hpp>
 #include <ipc/distance/point_line.hpp>
@@ -77,6 +78,22 @@ protected:
     VectorMax3d point;
 };
 
+TEST_CASE("Nonlinear Point-Point CCD", "[ccd][nonlinear][point-point]")
+{
+    const StaticTrajectory p0(Eigen::Vector2d(0, 1));
+    const RotationalTrajectory p1(
+        Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), igl::PI);
+
+    double toi;
+    bool collision = point_point_nonlinear_ccd(
+        p0, p1, toi, /*tmax=*/1.0, /*min_distance=*/0, DEFAULT_CCD_TOLERANCE,
+        DEFAULT_CCD_MAX_ITERATIONS, /*conservative_rescaling=*/0.9);
+
+    CHECK(collision);
+    CHECK(toi <= 0.5);
+    CHECK(toi == Catch::Approx(0.5).margin(1e-2));
+}
+
 TEST_CASE("Nonlinear Point-Edge CCD", "[ccd][nonlinear][point-edge]")
 {
     const StaticTrajectory p(Eigen::Vector2d(0, 0.5));
@@ -110,4 +127,27 @@ TEST_CASE("Nonlinear Edge-Edge CCD", "[ccd][nonlinear][edge-edge]")
     CHECK(collision);
     CHECK(toi <= 30 / 360.0);
     CHECK(toi == Catch::Approx(30 / 360.0).margin(1e-2));
+}
+
+TEST_CASE("Nonlinear Point-Triangle CCD", "[ccd][nonlinear][point-triangle]")
+{
+    const double x = GENERATE(-0.1, 0, 0.1);
+
+    const RotationalTrajectory t0(
+        Eigen::Vector3d(1, 0, 0), Eigen::Vector3d::Zero(), igl::PI);
+    const RotationalTrajectory t1(
+        Eigen::Vector3d(x, 0, 1), Eigen::Vector3d::Zero(), igl::PI);
+    const RotationalTrajectory t2(
+        Eigen::Vector3d(x, 0, -1), Eigen::Vector3d::Zero(), igl::PI);
+    const StaticTrajectory p(Eigen::Vector3d(0, 0.5, 0));
+
+    double toi;
+    bool collision = point_triangle_nonlinear_ccd(
+        p, t0, t1, t2, toi, /*tmax=*/1.0, /*min_distance=*/0,
+        DEFAULT_CCD_TOLERANCE, DEFAULT_CCD_MAX_ITERATIONS,
+        /*conservative_rescaling=*/0.9);
+
+    CHECK(collision);
+    CHECK(toi <= 0.5);
+    CHECK(toi == Catch::Approx(0.5).margin(1e-2));
 }

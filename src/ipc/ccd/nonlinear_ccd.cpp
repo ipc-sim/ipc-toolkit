@@ -94,10 +94,10 @@ bool conservative_piecewise_linear_ccd(
         // then we can call this a collision.
         if (distance_ti0 < (1 - conservative_rescaling) * distance_t0
             && ti0 >= CCD_SMALL_TOI) {
+            toi = ti0;
             logger().trace(
                 "Distance small enough distance_ti0={:g}; toi={:g}",
                 distance_ti0, toi);
-            toi = ti0;
             return true;
         }
 
