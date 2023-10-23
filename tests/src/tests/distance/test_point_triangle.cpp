@@ -13,11 +13,14 @@
 using namespace ipc;
 
 namespace {
-double point_triangle_distance_stacked(const Eigen::VectorXd& x)
+double point_triangle_distance_stacked(
+    const Eigen::VectorXd& x,
+    const PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO)
 {
     assert(x.size() == 12);
     return point_triangle_distance(
-        x.segment<3>(0), x.segment<3>(3), x.segment<3>(6), x.segment<3>(9));
+        x.segment<3>(0), x.segment<3>(3), x.segment<3>(6), x.segment<3>(9),
+        dtype);
 }
 } // namespace
 
@@ -167,7 +170,12 @@ TEST_CASE(
 
     // Compute the gradient using finite differences
     Eigen::VectorXd fgrad;
-    fd::finite_gradient(x, point_triangle_distance_stacked, fgrad);
+    fd::finite_gradient(
+        x,
+        [](const Eigen::VectorXd& _x) {
+            return point_triangle_distance_stacked(_x);
+        },
+        fgrad);
 
     CHECK(fd::compare_gradient(grad, fgrad));
 }
@@ -246,7 +254,12 @@ TEST_CASE("Point-triangle distance hessian", "[distance][point-triangle][hess]")
 
     // Compute the gradient using finite differences
     Eigen::MatrixXd fhess;
-    fd::finite_hessian(x, point_triangle_distance_stacked, fhess);
+    fd::finite_hessian(
+        x,
+        [dtype](const Eigen::VectorXd& _x) {
+            return point_triangle_distance_stacked(_x, dtype);
+        },
+        fhess);
 
     CAPTURE(dtype);
     CHECK(fd::compare_hessian(hess, fhess, 1e-2));

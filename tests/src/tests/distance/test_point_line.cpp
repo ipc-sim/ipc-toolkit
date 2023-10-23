@@ -136,12 +136,9 @@ TEMPLATE_TEST_CASE_SIG(
     CHECK(fd::compare_hessian(hess, fhess, 1e-2));
 }
 
-TEMPLATE_TEST_CASE_SIG(
+TEST_CASE(
     "Point-line distance hessian case 1",
-    "[distance][point-line][hessian][case1]",
-    ((int dim), dim),
-    2,
-    3)
+    "[distance][point-line][hessian][case1]")
 {
     Eigen::Vector3d p(-10.8386, 10, -3.91955);
     Eigen::Vector3d e0(0, 0, -1);
@@ -153,7 +150,7 @@ TEMPLATE_TEST_CASE_SIG(
     Vector9d x;
     x << p, e0, e1;
     Eigen::MatrixXd fhess;
-    fd::finite_hessian(x, point_line_distance_stacked<dim>, fhess);
+    fd::finite_hessian(x, point_line_distance_stacked<3>, fhess);
 
     CHECK(fd::compare_hessian(hess, fhess, 1e-2));
 }
