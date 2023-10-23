@@ -9,7 +9,7 @@
 
 using namespace ipc;
 
-class RotationalTrajectory : public NonlinearTrajectory {
+class RotationalTrajectory : virtual public NonlinearTrajectory {
 public:
     RotationalTrajectory(
         const VectorMax3d& point,
@@ -24,7 +24,7 @@ public:
 
     VectorMax3d operator()(const double t) const override
     {
-        return position(t);
+        return position(center, point, z_angular_velocity, t);
     }
 
     double
@@ -44,8 +44,12 @@ protected:
     VectorMax3d center, point;
     double z_angular_velocity;
 
-private:
-    template <typename T> VectorMax3<T> position(const T& t) const
+    template <typename T>
+    static VectorMax3<T> position(
+        const VectorMax3d& center,
+        const VectorMax3d& point,
+        const double z_angular_velocity,
+        const T& t)
     {
         MatrixMax3<T> R(point.size(), point.size());
 
@@ -59,6 +63,34 @@ private:
         }
 
         return R * (point - center) + center;
+    }
+};
+
+class IntervalRotationalTrajectory : public RotationalTrajectory,
+                                     public IntervalNonlinearTrajectory {
+public:
+    IntervalRotationalTrajectory(
+        const VectorMax3d& point,
+        const VectorMax3d& center,
+        const double z_angular_velocity)
+        : RotationalTrajectory(point, center, z_angular_velocity)
+    {
+    }
+
+    VectorMax3d operator()(const double t) const override
+    {
+        return position(center, point, z_angular_velocity, t);
+    }
+
+    VectorMax3I operator()(const filib::Interval& t) const override
+    {
+        return position(center, point, z_angular_velocity, t);
+    }
+
+    double
+    max_distance_from_linear(const double t0, const double t1) const override
+    {
+        return IntervalNonlinearTrajectory::max_distance_from_linear(t0, t1);
     }
 };
 
@@ -81,12 +113,22 @@ protected:
 TEST_CASE("Nonlinear Point-Point CCD", "[ccd][nonlinear][point-point]")
 {
     const StaticTrajectory p0(Eigen::Vector2d(0, 1));
-    const RotationalTrajectory p1(
-        Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), igl::PI);
+
+    std::unique_ptr<RotationalTrajectory> p1;
+    SECTION("Analytic max")
+    {
+        p1 = std::make_unique<RotationalTrajectory>(
+            Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), igl::PI);
+    }
+    SECTION("Interval max")
+    {
+        p1 = std::make_unique<IntervalRotationalTrajectory>(
+            Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), igl::PI);
+    }
 
     double toi;
     bool collision = point_point_nonlinear_ccd(
-        p0, p1, toi, /*tmax=*/1.0, /*min_distance=*/0, DEFAULT_CCD_TOLERANCE,
+        p0, *p1, toi, /*tmax=*/1.0, /*min_distance=*/0, DEFAULT_CCD_TOLERANCE,
         DEFAULT_CCD_MAX_ITERATIONS, /*conservative_rescaling=*/0.9);
 
     CHECK(collision);
