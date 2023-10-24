@@ -5,9 +5,9 @@
 namespace ipc {
 
 CollisionConstraint::CollisionConstraint(
-    const double weight, const Eigen::SparseVector<double>& weight_gradient)
-    : weight(weight)
-    , weight_gradient(weight_gradient)
+    const double _weight, const Eigen::SparseVector<double>& _weight_gradient)
+    : weight(_weight)
+    , weight_gradient(_weight_gradient)
 {
 }
 

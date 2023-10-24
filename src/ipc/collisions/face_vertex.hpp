@@ -16,12 +16,12 @@ public:
     }
 
     FaceVertexConstraint(
-        const long face_id,
-        const long vertex_id,
-        const double weight,
-        const Eigen::SparseVector<double>& weight_gradient)
-        : FaceVertexCandidate(face_id, vertex_id)
-        , CollisionConstraint(weight, weight_gradient)
+        const long _face_id,
+        const long _vertex_id,
+        const double _weight,
+        const Eigen::SparseVector<double>& _weight_gradient)
+        : FaceVertexCandidate(_face_id, _vertex_id)
+        , CollisionConstraint(_weight, _weight_gradient)
     {
     }
 

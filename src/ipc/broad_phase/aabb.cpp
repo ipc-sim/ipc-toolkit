@@ -7,7 +7,9 @@
 
 namespace ipc {
 
-AABB::AABB(const ArrayMax3d& min, const ArrayMax3d& max) : min(min), max(max)
+AABB::AABB(const ArrayMax3d& _min, const ArrayMax3d& _max)
+    : min(_min)
+    , max(_max)
 {
     assert(min.size() == max.size());
     assert((min <= max).all());

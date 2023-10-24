@@ -31,8 +31,8 @@ TEST_CASE("Smooth friction gradient", "[friction][mollifier]")
     Eigen::VectorXd fd_f1_over_x(1);
     fd::finite_gradient(
         X,
-        [&](const Eigen::VectorXd& X) {
-            return ipc::f0_SF(X[0], epsv_times_h);
+        [&](const Eigen::VectorXd& _X) {
+            return ipc::f0_SF(_X[0], epsv_times_h);
         },
         fd_f1_over_x);
     // fd_f1_over_x /= x;
@@ -50,8 +50,8 @@ TEST_CASE("Smooth friction gradient", "[friction][mollifier]")
     Eigen::VectorXd fd_f2(1);
     fd::finite_gradient(
         X,
-        [&](const Eigen::VectorXd& X) {
-            return ipc::f1_SF_over_x(X[0], epsv_times_h);
+        [&](const Eigen::VectorXd& _X) {
+            return ipc::f1_SF_over_x(_X[0], epsv_times_h);
         },
         fd_f2);
     // fd_f2 /= x;

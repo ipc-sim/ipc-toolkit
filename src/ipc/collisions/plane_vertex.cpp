@@ -5,12 +5,12 @@
 namespace ipc {
 
 PlaneVertexConstraint::PlaneVertexConstraint(
-    const VectorMax3d& plane_origin,
-    const VectorMax3d& plane_normal,
-    const long vertex_id)
-    : plane_origin(plane_origin)
-    , plane_normal(plane_normal)
-    , vertex_id(vertex_id)
+    const VectorMax3d& _plane_origin,
+    const VectorMax3d& _plane_normal,
+    const long _vertex_id)
+    : plane_origin(_plane_origin)
+    , plane_normal(_plane_normal)
+    , vertex_id(_vertex_id)
 {
 }
 

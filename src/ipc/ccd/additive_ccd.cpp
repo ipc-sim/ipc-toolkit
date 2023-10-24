@@ -143,7 +143,7 @@ bool point_point_ccd(
         return point_point_distance(x.head(dim), x.tail(dim));
     };
 
-    VectorMax12d x = stack(p0_t0, p1_t0);
+    const VectorMax12d x = stack(p0_t0, p1_t0);
     const VectorMax12d dx = stack(dp0, dp1);
 
     return additive_ccd(
@@ -187,13 +187,13 @@ bool point_edge_ccd(
         return false;
     }
 
-    VectorMax12d x = stack(p_t0, e0_t0, e1_t0);
-    const VectorMax12d dx = stack(dp, de0, de1);
-
     auto distance_squared = [dim](const VectorMax12d& x) {
         return point_edge_distance(
             x.head(dim), x.segment(dim, dim), x.tail(dim));
     };
+
+    const VectorMax12d x = stack(p_t0, e0_t0, e1_t0);
+    const VectorMax12d dx = stack(dp, de0, de1);
 
     return additive_ccd(
         x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
@@ -230,9 +230,6 @@ bool point_triangle_ccd(
     Eigen::Vector3d dt2 = t2_t1 - t2_t0;
     subtract_mean(dp, dt0, dt1, dt2);
 
-    VectorMax12d x = stack(p_t0, t0_t0, t1_t0, t2_t0);
-    const VectorMax12d dx = stack(dp, dt0, dt1, dt2);
-
     const double max_disp_mag = dp.norm()
         + std::sqrt(std::max(
             { dt0.squaredNorm(), dt1.squaredNorm(), dt2.squaredNorm() }));
@@ -244,6 +241,9 @@ bool point_triangle_ccd(
         return point_triangle_distance(
             x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
     };
+
+    const VectorMax12d x = stack(p_t0, t0_t0, t1_t0, t2_t0);
+    const VectorMax12d dx = stack(dp, dt0, dt1, dt2);
 
     return additive_ccd(
         x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
@@ -287,9 +287,6 @@ bool edge_edge_ccd(
         return false;
     }
 
-    VectorMax12d x = stack(ea0_t0, ea1_t0, eb0_t0, eb1_t0);
-    const VectorMax12d dx = stack(dea0, dea1, deb0, deb1);
-
     const double min_distance_sq = min_distance * min_distance;
     auto distance_squared = [min_distance_sq](const VectorMax12d& x) {
         const auto& ea0 = x.head<3>();
@@ -307,6 +304,9 @@ bool edge_edge_ccd(
         }
         return d_sq;
     };
+
+    const VectorMax12d x = stack(ea0_t0, ea1_t0, eb0_t0, eb1_t0);
+    const VectorMax12d dx = stack(dea0, dea1, deb0, deb1);
 
     return additive_ccd(
         x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,

@@ -77,14 +77,14 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     }
     SECTION("Barrier with physical units")
     {
-        barrier = [dhat](double d, double p_dhat) {
-            return dhat * normalized_barrier(d, p_dhat);
+        barrier = [dhat](double _d, double p_dhat) {
+            return dhat * normalized_barrier(_d, p_dhat);
         };
-        barrier_gradient = [dhat](double d, double p_dhat) {
-            return dhat * normalized_barrier_gradient(d, p_dhat);
+        barrier_gradient = [dhat](double _d, double p_dhat) {
+            return dhat * normalized_barrier_gradient(_d, p_dhat);
         };
-        barrier_hessian = [dhat](double d, double p_dhat) {
-            return dhat * normalized_barrier_hessian(d, p_dhat);
+        barrier_hessian = [dhat](double _d, double p_dhat) {
+            return dhat * normalized_barrier_hessian(_d, p_dhat);
         };
     }
 
@@ -96,7 +96,7 @@ TEST_CASE("Barrier derivatives", "[barrier]")
 
     Eigen::VectorXd fgrad(1);
     fd::finite_gradient(
-        d_vec, [&](const Eigen::VectorXd& d) { return barrier(d[0], dhat); },
+        d_vec, [&](const Eigen::VectorXd& _d) { return barrier(_d[0], dhat); },
         fgrad);
 
     Eigen::VectorXd grad(1);
@@ -109,7 +109,9 @@ TEST_CASE("Barrier derivatives", "[barrier]")
 
     fd::finite_gradient(
         d_vec,
-        [&](const Eigen::VectorXd& d) { return barrier_gradient(d[0], dhat); },
+        [&](const Eigen::VectorXd& _d) {
+            return barrier_gradient(_d[0], dhat);
+        },
         fgrad);
 
     grad << barrier_hessian(d, dhat);

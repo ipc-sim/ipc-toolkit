@@ -183,6 +183,26 @@ bool point_triangle_ccd(
     const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
     const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
+/// @brief Perform the CCD strategy outlined by Li et al. [2020].
+/// @param[in] ccd The continuous collision detection function.
+/// @param[in] max_iterations The maximum number of iterations to perform.
+/// @param[in] min_distance The minimum distance between the objects.
+/// @param[in] initial_distance The initial distance between the objects.
+/// @param[in] conservative_rescaling The conservative rescaling of the time of impact.
+/// @param[out] toi Output time of impact.
+/// @return True if a collision was detected, false otherwise.
+bool ccd_strategy(
+    const std::function<bool(
+        long /*max_iterations*/,
+        double /*min_distance*/,
+        bool /*no_zero_toi*/,
+        double& /*toi*/)>& ccd,
+    const long max_iterations,
+    const double min_distance,
+    const double initial_distance,
+    const double conservative_rescaling,
+    double& toi);
+
 /// @brief Helper function to check if the initial distance is less than the minimum distance.
 /// @param[in] initial_distance The initial distance between the objects.
 /// @param[in] min_distance The minimum distance between the objects.

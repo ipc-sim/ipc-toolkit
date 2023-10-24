@@ -168,15 +168,15 @@ bool point_point_nonlinear_ccd(
                 p0.max_distance_from_linear(t0, t1),
                 p1.max_distance_from_linear(t0, t1));
         },
-        [&](const double ti0, const double ti1, const double min_distance,
-            const bool no_zero_toi, double& toi) {
+        [&](const double ti0, const double ti1, const double _min_distance,
+            const bool no_zero_toi, double& _toi) {
             double output_tolerance;
             return ticcd::edgeEdgeCCD(
                 to_3D(p0(ti0)), to_3D(p0(ti0)), to_3D(p1(ti0)), to_3D(p1(ti0)),
                 to_3D(p0(ti1)), to_3D(p0(ti1)), to_3D(p1(ti1)), to_3D(p1(ti1)),
                 Eigen::Array3d::Constant(-1), // rounding error (auto)
-                min_distance,                 // minimum separation distance
-                toi,                          // time of impact
+                _min_distance,                // minimum separation distance
+                _toi,                         // time of impact
                 tolerance,                    // delta
                 1.0,                          // maximum time to check
                 max_iterations,               // maximum number of iterations
@@ -207,15 +207,15 @@ bool point_edge_nonlinear_ccd(
                        e0.max_distance_from_linear(t0, t1),
                        e1.max_distance_from_linear(t0, t1));
         },
-        [&](const double ti0, const double ti1, const double min_distance,
-            const bool no_zero_toi, double& toi) {
+        [&](const double ti0, const double ti1, const double _min_distance,
+            const bool no_zero_toi, double& _toi) {
             double output_tolerance;
             return ticcd::edgeEdgeCCD(
                 to_3D(p(ti0)), to_3D(p(ti0)), to_3D(e0(ti0)), to_3D(e1(ti0)),
                 to_3D(p(ti1)), to_3D(p(ti1)), to_3D(e0(ti1)), to_3D(e1(ti1)),
                 Eigen::Array3d::Constant(-1), // rounding error (auto)
-                min_distance,                 // minimum separation distance
-                toi,                          // time of impact
+                _min_distance,                // minimum separation distance
+                _toi,                         // time of impact
                 tolerance,                    // delta
                 1.0,                          // maximum time to check
                 max_iterations,               // maximum number of iterations
@@ -249,20 +249,20 @@ bool edge_edge_nonlinear_ccd(
                        eb0.max_distance_from_linear(t0, t1),
                        eb1.max_distance_from_linear(t0, t1));
         },
-        [&](const double ti0, const double ti1, const double min_distance,
-            const bool no_zero_toi, double& toi) {
+        [&](const double ti0, const double ti1, const double _min_distance,
+            const bool no_zero_toi, double& _toi) {
             double output_tolerance;
             return ticcd::edgeEdgeCCD(
                 ea0(ti0), ea1(ti0), eb0(ti0), eb1(ti0), //
                 ea0(ti1), ea1(ti1), eb0(ti1), eb1(ti1),
-                Eigen::Array3d::Constant(-1), // rounding error (auto)
-                min_distance,                 // minimum separation distance
-                toi,                          // time of impact
-                tolerance,                    // delta
-                1.0,                          // maximum time to check
-                max_iterations,               // maximum number of iterations
-                output_tolerance,             // delta_actual
-                no_zero_toi);                 // no zero toi
+                Eigen::Array3d::Constant(-1),           // rounding error (auto)
+                _min_distance,    // minimum separation distance
+                _toi,             // time of impact
+                tolerance,        // delta
+                1.0,              // maximum time to check
+                max_iterations,   // maximum number of iterations
+                output_tolerance, // delta_actual
+                no_zero_toi);     // no zero toi
         },
         toi, tmax, min_sep_distance, conservative_rescaling);
 }
@@ -289,20 +289,20 @@ bool point_triangle_nonlinear_ccd(
                              t1.max_distance_from_linear(ti0, ti1),
                              t2.max_distance_from_linear(ti0, ti1) });
         },
-        [&](const double ti0, const double ti1, const double min_distance,
-            const bool no_zero_toi, double& toi) {
+        [&](const double ti0, const double ti1, const double _min_distance,
+            const bool no_zero_toi, double& _toi) {
             double output_tolerance;
             return ticcd::vertexFaceCCD(
                 p(ti0), t0(ti0), t1(ti0), t2(ti0), //
                 p(ti1), t0(ti1), t1(ti1), t2(ti1),
-                Eigen::Array3d::Constant(-1), // rounding error (auto)
-                min_distance,                 // minimum separation distance
-                toi,                          // time of impact
-                tolerance,                    // delta
-                1.0,                          // maximum time to check
-                max_iterations,               // maximum number of iterations
-                output_tolerance,             // delta_actual
-                no_zero_toi);                 // no zero toi
+                Eigen::Array3d::Constant(-1),      // rounding error (auto)
+                _min_distance,    // minimum separation distance
+                _toi,             // time of impact
+                tolerance,        // delta
+                1.0,              // maximum time to check
+                max_iterations,   // maximum number of iterations
+                output_tolerance, // delta_actual
+                no_zero_toi);     // no zero toi
         },
         toi, tmax, min_distance, conservative_rescaling);
 }

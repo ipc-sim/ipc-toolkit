@@ -25,10 +25,9 @@ TEST_CASE(
         distance, distance_grad, dhat, barrier_stiffness);
 
     auto N = [dhat, barrier_stiffness](const Eigen::VectorXd& x) {
-        const double distance = point_triangle_distance(
+        const double d = point_triangle_distance(
             x.segment<3>(0), x.segment<3>(3), x.segment<3>(6), x.segment<3>(9));
-        return compute_normal_force_magnitude(
-            distance, dhat, barrier_stiffness);
+        return compute_normal_force_magnitude(d, dhat, barrier_stiffness);
     };
 
     Vector12d x;
@@ -55,10 +54,9 @@ TEST_CASE(
         distance, distance_grad, dhat, barrier_stiffness);
 
     auto N = [dhat, barrier_stiffness](const Eigen::VectorXd& x) {
-        const double distance = edge_edge_distance(
+        const double d = edge_edge_distance(
             x.segment<3>(0), x.segment<3>(3), x.segment<3>(6), x.segment<3>(9));
-        return compute_normal_force_magnitude(
-            distance, dhat, barrier_stiffness);
+        return compute_normal_force_magnitude(d, dhat, barrier_stiffness);
     };
 
     Vector12d x;
@@ -83,10 +81,9 @@ TEST_CASE(
         distance, distance_grad, dhat, barrier_stiffness);
 
     auto N = [dhat, barrier_stiffness](const Eigen::VectorXd& x) {
-        const double distance = point_edge_distance(
+        const double d = point_edge_distance(
             x.segment<3>(0), x.segment<3>(3), x.segment<3>(6));
-        return compute_normal_force_magnitude(
-            distance, dhat, barrier_stiffness);
+        return compute_normal_force_magnitude(d, dhat, barrier_stiffness);
     };
 
     Vector9d x;
@@ -111,9 +108,8 @@ TEST_CASE(
         distance, distance_grad, dhat, barrier_stiffness);
 
     auto N = [dhat, barrier_stiffness](const Eigen::VectorXd& x) {
-        const double distance = point_point_distance(x.head<3>(), x.tail<3>());
-        return compute_normal_force_magnitude(
-            distance, dhat, barrier_stiffness);
+        const double d = point_point_distance(x.head<3>(), x.tail<3>());
+        return compute_normal_force_magnitude(d, dhat, barrier_stiffness);
     };
 
     Vector6d x;
@@ -137,10 +133,9 @@ TEST_CASE(
         distance, distance_grad, dhat, barrier_stiffness);
 
     auto N = [dhat, barrier_stiffness](const Eigen::VectorXd& x) {
-        const double distance = point_edge_distance(
+        const double d = point_edge_distance(
             x.segment<2>(0), x.segment<2>(2), x.segment<2>(4));
-        return compute_normal_force_magnitude(
-            distance, dhat, barrier_stiffness);
+        return compute_normal_force_magnitude(d, dhat, barrier_stiffness);
     };
 
     Vector6d x;
@@ -164,9 +159,8 @@ TEST_CASE(
         distance, distance_grad, dhat, barrier_stiffness);
 
     auto N = [dhat, barrier_stiffness](const Eigen::VectorXd& x) {
-        const double distance = point_point_distance(x.head<2>(), x.tail<2>());
-        return compute_normal_force_magnitude(
-            distance, dhat, barrier_stiffness);
+        const double d = point_point_distance(x.head<2>(), x.tail<2>());
+        return compute_normal_force_magnitude(d, dhat, barrier_stiffness);
     };
 
     Eigen::Vector4d x;

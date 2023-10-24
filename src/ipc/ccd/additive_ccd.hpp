@@ -128,7 +128,7 @@ bool edge_edge_ccd(
 bool additive_ccd(
     VectorMax12d x,
     const VectorMax12d& dx,
-    const std::function<double()>& distance_squared,
+    const std::function<double(const VectorMax12d&)>& distance_squared,
     const double max_disp_mag,
     double& toi,
     const double min_distance = 0.0,

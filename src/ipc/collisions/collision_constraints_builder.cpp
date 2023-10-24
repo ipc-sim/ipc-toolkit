@@ -10,10 +10,10 @@
 namespace ipc {
 
 CollisionConstraintsBuilder::CollisionConstraintsBuilder(
-    const bool use_convergent_formulation,
-    const bool should_compute_weight_gradient)
-    : use_convergent_formulation(use_convergent_formulation)
-    , should_compute_weight_gradient(should_compute_weight_gradient)
+    const bool _use_convergent_formulation,
+    const bool _should_compute_weight_gradient)
+    : use_convergent_formulation(_use_convergent_formulation)
+    , should_compute_weight_gradient(_should_compute_weight_gradient)
 {
 }
 
@@ -117,6 +117,7 @@ void CollisionConstraintsBuilder::add_edge_vertex_constraint(
         break;
 
     case PointEdgeDistanceType::AUTO:
+    default:
         assert(false);
         break;
     }
@@ -215,6 +216,7 @@ void CollisionConstraintsBuilder::add_edge_edge_constraints(
             break;
 
         case EdgeEdgeDistanceType::AUTO:
+        default:
             assert(false);
             break;
         }
@@ -290,6 +292,7 @@ void CollisionConstraintsBuilder::add_face_vertex_constraints(
             break;
 
         case PointTriangleDistanceType::AUTO:
+        default:
             assert(false);
             break;
         }

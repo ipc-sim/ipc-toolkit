@@ -13,11 +13,13 @@
 
 namespace ipc {
 
-bool implements_vertex_vertex(const BroadPhaseMethod method)
-{
-    return method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
-        && method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU;
-}
+namespace {
+    bool implements_vertex_vertex(const BroadPhaseMethod method)
+    {
+        return method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
+            && method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU;
+    }
+} // namespace
 
 void Candidates::build(
     const CollisionMesh& mesh,

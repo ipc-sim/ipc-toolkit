@@ -6,9 +6,9 @@
 
 namespace ipc {
 
-VertexVertexCandidate::VertexVertexCandidate(long vertex0_id, long vertex1_id)
-    : vertex0_id(vertex0_id)
-    , vertex1_id(vertex1_id)
+VertexVertexCandidate::VertexVertexCandidate(long _vertex0_id, long _vertex1_id)
+    : vertex0_id(_vertex0_id)
+    , vertex1_id(_vertex1_id)
 {
 }
 

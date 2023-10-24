@@ -29,9 +29,11 @@ public:
 
 #ifdef IPC_TOOLKIT_WITH_FILIB
 /// @brief A nonlinear trajectory with an implementation of the max_distance_from_linear function using interval arithmetic.
-class IntervalNonlinearTrajectory : public NonlinearTrajectory {
+class IntervalNonlinearTrajectory : virtual public NonlinearTrajectory {
 public:
     virtual ~IntervalNonlinearTrajectory() = default;
+
+    using NonlinearTrajectory::operator();
 
     /// @brief Compute the point's position over a time interval t
     virtual VectorMax3I operator()(const filib::Interval& t) const = 0;
@@ -133,6 +135,30 @@ bool point_triangle_nonlinear_ccd(
     const double min_distance = 0,
     const double tolerance = DEFAULT_CCD_TOLERANCE,
     const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+
+/// @brief Perform conservative piecewise linear CCD of a nonlinear trajectories.
+/// @param[in] distance Return the distance for a given time in [0, 1].
+/// @param[in] max_distance_from_linear Return the maximum distance from the linearized trajectory for a given time interval.
+/// @param[in] linear_ccd Perform linear CCD on a given time interval.
+/// @param[out] toi Output time of impact.
+/// @param[in] tmax Maximum time to check for collision.
+/// @param[in] min_distance Minimum separation distance between the objects.
+/// @param[in] conservative_rescaling Conservative rescaling of the time of impact.
+/// @return
+bool conservative_piecewise_linear_ccd(
+    const std::function<double(const double)>& distance,
+    const std::function<double(const double, const double)>&
+        max_distance_from_linear,
+    const std::function<bool(
+        const double /*ti0*/,
+        const double /*ti1*/,
+        const double /*min_distance*/,
+        const bool /*no_zero_toi*/,
+        double& /*toi*/)>& linear_ccd,
+    double& toi,
+    const double tmax = 1.0,
+    const double min_distance = 0,
     const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 
 } // namespace ipc

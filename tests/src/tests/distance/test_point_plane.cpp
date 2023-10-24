@@ -9,6 +9,15 @@
 
 using namespace ipc;
 
+namespace {
+double point_plane_distance_stacked(const Eigen::VectorXd& x)
+{
+    assert(x.size() == 12);
+    return point_plane_distance(
+        x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
+};
+} // namespace
+
 TEST_CASE(
     "Point-plane distance and derivatives (dynamic plane)",
     "[distance][point-plane][gradient][hessian]")
@@ -34,13 +43,7 @@ TEST_CASE(
         x_vec << p, t0, t1, t2;
         Eigen::VectorXd expected_grad;
         expected_grad.resize(grad.size());
-        fd::finite_gradient(
-            x_vec,
-            [](const Eigen::VectorXd& x) {
-                return point_plane_distance(
-                    x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
-            },
-            expected_grad);
+        fd::finite_gradient(x_vec, point_plane_distance_stacked, expected_grad);
 
         CAPTURE((grad - expected_grad).norm());
         CHECK(fd::compare_gradient(grad, expected_grad));
@@ -53,13 +56,7 @@ TEST_CASE(
         x_vec << p, t0, t1, t2;
         Eigen::MatrixXd expected_hess;
         expected_hess.resize(hess.rows(), hess.cols());
-        fd::finite_hessian(
-            x_vec,
-            [](const Eigen::VectorXd& x) {
-                return point_plane_distance(
-                    x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
-            },
-            expected_hess);
+        fd::finite_hessian(x_vec, point_plane_distance_stacked, expected_hess);
 
         CAPTURE((hess - expected_hess).norm());
         CHECK(fd::compare_hessian(hess, expected_hess, 5e-2));

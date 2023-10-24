@@ -9,7 +9,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 
-#include <algorithm> // std::min/max
+#include <algorithm>                          // std::min/max
 
 #define IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE // else use unordered_set
 
@@ -149,19 +149,21 @@ void HashGrid::detect_candidates(
     size_t num_items = items0.size() + items1.size();
     std::vector<long> merged_item_indices;
     merged_item_indices.reserve(num_items);
-    long i = 0, j = 0;
-    while (i < items0.size() && j < items1.size()) {
-        if (items0[i] < items1[j]) {
+    {
+        long i = 0, j = 0;
+        while (i < items0.size() && j < items1.size()) {
+            if (items0[i] < items1[j]) {
+                merged_item_indices.push_back(-(i++) - 1);
+            } else {
+                merged_item_indices.push_back(j++);
+            }
+        }
+        while (i < items0.size()) {
             merged_item_indices.push_back(-(i++) - 1);
-        } else {
+        }
+        while (j < items1.size()) {
             merged_item_indices.push_back(j++);
         }
-    }
-    while (i < items0.size()) {
-        merged_item_indices.push_back(-(i++) - 1);
-    }
-    while (j < items1.size()) {
-        merged_item_indices.push_back(j++);
     }
     assert(merged_item_indices.size() == num_items);
 
