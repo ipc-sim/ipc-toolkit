@@ -93,8 +93,10 @@ void define_ipc(py::module_& m)
         },
         R"ipc_Qu8mg5v7(
         Constructs a list of unique edges represented in a given mesh F
+
         Parameters:
             F: #F by 3 list of mesh faces (must be triangles)
+
         Returns:
             #E by 2 list of edges in no particular order
         )ipc_Qu8mg5v7",
