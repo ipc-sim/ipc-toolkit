@@ -5,8 +5,12 @@
 
 #include <ipc/ccd/ccd.hpp>
 #include <ipc/ccd/additive_ccd.hpp>
-#include <fmt/format.h>
 
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+#include <tight_inclusion/ccd.hpp>
+#endif
+
+#include <fmt/format.h>
 #include <igl/Timer.h>
 #include <ccd_io/read_ccd_queries.hpp>
 
@@ -198,13 +202,6 @@ TEST_CASE(
     "[ccd][benchmark][3D][point-triangle][edge-edge][.]")
 {
     fmt::print("Tight Inclusion CCD:\n\n");
-#else
-TEST_CASE(
-    "Run CCD Benchmark on FP CCD",
-    "[ccd][benchmark][3D][point-triangle][edge-edge][!mayfail][.]")
-{
-    fmt::print("Floating-Point CCD:\n\n");
-#endif
 
     run_benchmark(
         [](const Eigen::Vector3d& ea0_t0, const Eigen::Vector3d& ea1_t0,
@@ -212,19 +209,32 @@ TEST_CASE(
            const Eigen::Vector3d& ea0_t1, const Eigen::Vector3d& ea1_t1,
            const Eigen::Vector3d& eb0_t1, const Eigen::Vector3d& eb1_t1,
            double& toi) -> bool {
-            return edge_edge_ccd(
+            // return edge_edge_ccd(
+            //     ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1,
+            //     eb1_t1, toi);
+            double output_tolerance;
+            return ticcd::edgeEdgeCCD(
                 ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
-                toi);
+                /*err=*/Eigen::Array3d::Constant(-1), /*ms=*/0, toi,
+                /*tolerance=*/1e-6, /*t_max=*/1.0, /*max_itr=*/long(1e7),
+                output_tolerance, /*no_zero_toi=*/false);
         },
         [](const Eigen::Vector3d& p_t0, const Eigen::Vector3d& t0_t0,
            const Eigen::Vector3d& t1_t0, const Eigen::Vector3d& t2_t0,
            const Eigen::Vector3d& p_t1, const Eigen::Vector3d& t0_t1,
            const Eigen::Vector3d& t1_t1, const Eigen::Vector3d& t2_t1,
            double& toi) -> bool {
-            return point_triangle_ccd(
-                p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, toi);
+            // return point_triangle_ccd(
+            //     p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, toi);
+            double output_tolerance;
+            return ticcd::vertexFaceCCD(
+                p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
+                /*err=*/Eigen::Array3d::Constant(-1), /*ms=*/0, toi,
+                /*tolerance=*/1e-6, /*t_max=*/1.0, /*max_itr=*/long(1e7),
+                output_tolerance, /*no_zero_toi=*/false);
         });
 }
+#endif
 
 TEST_CASE(
     "Run CCD Benchmark on ACCD",
