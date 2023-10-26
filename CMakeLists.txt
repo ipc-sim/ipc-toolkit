@@ -149,6 +149,10 @@ else()
   target_link_libraries(ipc_toolkit PUBLIC evouga::ccd)
 endif()
 
+# SimpleBVH
+include(simple_bvh)
+target_link_libraries(ipc_toolkit PUBLIC simple_bvh::simple_bvh)
+
 # Logger
 include(spdlog)
 target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
@@ -187,10 +191,6 @@ if(IPC_TOOLKIT_WITH_FILIB)
   include(filib)
   target_link_libraries(ipc_toolkit PUBLIC filib::filib)
 endif()
-
-# SimpleBVH
-include(simple_bvh)
-target_link_libraries(ipc_toolkit PUBLIC simple_bvh::simple_bvh)
 
 # Extra warnings (link last for highest priority)
 include(ipc_toolkit_warnings)
