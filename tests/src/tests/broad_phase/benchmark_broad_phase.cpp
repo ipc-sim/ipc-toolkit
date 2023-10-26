@@ -75,7 +75,9 @@ TEST_CASE("Benchmark broad phase", "[!benchmark][broad_phase]")
     V0 = mesh.vertices(V0);
     V1 = mesh.vertices(V1);
 
-    std::vector<std::string> BP_names = { "BF", "HG", "SH", "STQ", "GPU_STQ" };
+    const static std::vector<std::string> BP_names = {
+        "BF", "HG", "SH", "BVH", "STQ", "GPU_STQ",
+    };
     for (int i = 0; i < NUM_BROAD_PHASE_METHODS; i++) {
         BroadPhaseMethod method = static_cast<BroadPhaseMethod>(i);
         BENCHMARK(fmt::format("BP {} ({})", testcase_name, BP_names[i]))
@@ -122,8 +124,12 @@ TEST_CASE(
     V0 = mesh.vertices(V0);
     V1 = mesh.vertices(V1);
 
-    std::vector<std::string> BP_names = { "BF", "HG", "SH", "STQ", "GPU_STQ" };
+    const static std::vector<std::string> BP_names = {
+        "BF", "HG", "SH", "BVH", "STQ", "GPU_STQ",
+    };
     for (int i = 0; i < NUM_BROAD_PHASE_METHODS; i++) {
+        // if (i < 3)
+        //     continue; // Skip HG, SH, BF
         BroadPhaseMethod method = static_cast<BroadPhaseMethod>(i);
         BENCHMARK(fmt::format("BP Real Data ({})", BP_names[i]))
         {

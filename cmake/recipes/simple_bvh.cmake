@@ -1,18 +1,11 @@
 # BVH
 # License: MIT
 
-if(TARGET BVH_lib)
+if(TARGET simple_bvh::simple_bvh)
     return()
 endif()
 
-message(STATUS "Third-party: creating target 'BVH_lib'")
+message(STATUS "Third-party: creating target 'simple_bvh::simple_bvh'")
 
-
-include(FetchContent)
-FetchContent_Declare(
-    BVH_lib
-    GIT_REPOSITORY https://github.com/geometryprocessing/SimpleBVH.git
-    GIT_TAG 15574502f6cb8039b0bfa4a85ccad04e09deaf05
-    GIT_SHALLOW FALSE
-)
-FetchContent_MakeAvailable(BVH_lib)
+include(CPM)
+CPMAddPackage("gh:ipc-sim/SimpleBVH#2117898eb366647d6aacdb82860b9315fb42d6ad")

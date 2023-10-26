@@ -190,8 +190,7 @@ endif()
 
 # SimpleBVH
 include(simple_bvh)
-ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC BVH_lib)
-
+target_link_libraries(ipc_toolkit PUBLIC simple_bvh::simple_bvh)
 
 # Extra warnings (link last for highest priority)
 include(ipc_toolkit_warnings)

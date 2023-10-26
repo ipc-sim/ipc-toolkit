@@ -67,7 +67,7 @@ void BroadPhase::detect_collision_candidates(
 std::shared_ptr<BroadPhase>
 BroadPhase::make_broad_phase(const BroadPhaseMethod method)
 {
-    switch (broad_phase_method) {
+    switch (method) {
     case BroadPhaseMethod::BRUTE_FORCE:
         return std::make_shared<BruteForce>();
     case BroadPhaseMethod::HASH_GRID:

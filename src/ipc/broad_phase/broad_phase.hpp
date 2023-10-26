@@ -17,9 +17,9 @@ enum class BroadPhaseMethod {
     BRUTE_FORCE = 0,
     HASH_GRID,
     SPATIAL_HASH,
+    BVH,
     SWEEP_AND_TINIEST_QUEUE,
     SWEEP_AND_TINIEST_QUEUE_GPU, // Requires CUDA
-    BVH,
     NUM_METHODS
 };
 
@@ -66,22 +66,22 @@ public:
     virtual void clear();
 
     /// @brief Find the candidate vertex-vertex collisions.
-    /// @param[out] candidates The candidate vertex-vertex collisisons.
+    /// @param[out] candidates The candidate vertex-vertex collisions.
     virtual void detect_vertex_vertex_candidates(
         std::vector<VertexVertexCandidate>& candidates) const = 0;
 
-    /// @brief Find the candidate edge-vertex collisisons.
-    /// @param[out] candidates The candidate edge-vertex collisisons.
+    /// @brief Find the candidate edge-vertex collisions.
+    /// @param[out] candidates The candidate edge-vertex collisions.
     virtual void detect_edge_vertex_candidates(
         std::vector<EdgeVertexCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate edge-edge collisions.
-    /// @param[out] candidates The candidate edge-edge collisisons.
+    /// @param[out] candidates The candidate edge-edge collisions.
     virtual void detect_edge_edge_candidates(
         std::vector<EdgeEdgeCandidate>& candidates) const = 0;
 
     /// @brief Find the candidate face-vertex collisions.
-    /// @param[out] candidates The candidate face-vertex collisisons.
+    /// @param[out] candidates The candidate face-vertex collisions.
     virtual void detect_face_vertex_candidates(
         std::vector<FaceVertexCandidate>& candidates) const = 0;
 

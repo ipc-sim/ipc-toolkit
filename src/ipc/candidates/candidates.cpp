@@ -31,7 +31,7 @@ void Candidates::build(
 
     clear();
 
-    std::unique_ptr<BroadPhase> broad_phase =
+    std::shared_ptr<BroadPhase> broad_phase =
         BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
@@ -67,7 +67,7 @@ void Candidates::build(
 
     clear();
 
-    std::unique_ptr<BroadPhase> broad_phase =
+    std::shared_ptr<BroadPhase> broad_phase =
         BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(

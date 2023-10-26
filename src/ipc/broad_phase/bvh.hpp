@@ -2,7 +2,7 @@
 
 #include <ipc/broad_phase/broad_phase.hpp>
 
-#include <BVH.hpp>
+#include <SimpleBVH/BVH.hpp>
 
 namespace ipc {
 
@@ -35,18 +35,23 @@ public:
     /// @brief Clear any built data.
     void clear() override;
 
-    /// @brief Find the candidate edge-vertex collisisons.
-    /// @param[out] candidates The candidate edge-vertex collisisons.
+    /// @brief Find the candidate vertex-vertex collisions.
+    /// @param[out] candidates The candidate vertex-vertex collisions.
+    void detect_vertex_vertex_candidates(
+        std::vector<VertexVertexCandidate>& candidates) const override;
+
+    /// @brief Find the candidate edge-vertex collisions.
+    /// @param[out] candidates The candidate edge-vertex collisions.
     void detect_edge_vertex_candidates(
         std::vector<EdgeVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-edge collisions.
-    /// @param[out] candidates The candidate edge-edge collisisons.
+    /// @param[out] candidates The candidate edge-edge collisions.
     void detect_edge_edge_candidates(
         std::vector<EdgeEdgeCandidate>& candidates) const override;
 
     /// @brief Find the candidate face-vertex collisions.
-    /// @param[out] candidates The candidate face-vertex collisisons.
+    /// @param[out] candidates The candidate face-vertex collisions.
     void detect_face_vertex_candidates(
         std::vector<FaceVertexCandidate>& candidates) const override;
 
@@ -56,12 +61,18 @@ public:
         std::vector<EdgeFaceCandidate>& candidates) const override;
 
 protected:
-    static void
-    init_bvh(const std::vector<AABB>& boxes, const int dim, ::BVH::BVH& bvh);
+    static void init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh);
 
-    ::BVH::BVH vertex_bvh;
-    ::BVH::BVH edge_bvh;
-    ::BVH::BVH face_bvh;
+    template <typename Candidate, bool swap_order, bool triangular = false>
+    static void detect_candidates(
+        const std::vector<AABB>& boxes,
+        const SimpleBVH::BVH& bvh,
+        const std::function<bool(size_t, size_t)>& can_collide,
+        std::vector<Candidate>& candidates);
+
+    SimpleBVH::BVH vertex_bvh;
+    SimpleBVH::BVH edge_bvh;
+    SimpleBVH::BVH face_bvh;
 };
 
 } // namespace ipc

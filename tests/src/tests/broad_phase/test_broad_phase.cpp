@@ -78,7 +78,7 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase][2D]")
 
     BroadPhaseMethod method = GENERATE(
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-        BroadPhaseMethod::SPATIAL_HASH);
+        BroadPhaseMethod::SPATIAL_HASH, BroadPhaseMethod::BVH);
 
     test_broad_phase(mesh, V0, V1, method);
 }
@@ -108,7 +108,7 @@ TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D][.]")
 
     BroadPhaseMethod method = GENERATE(
         BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-        BroadPhaseMethod::SPATIAL_HASH);
+        BroadPhaseMethod::SPATIAL_HASH, BroadPhaseMethod::BVH);
 
     test_broad_phase(mesh, V0, V1, method);
 }

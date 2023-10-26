@@ -93,7 +93,7 @@ bool has_intersections(
 
     // TODO: Expose the broad-phase method
     std::shared_ptr<BroadPhase> broad_phase =
-        BroadPhase::make_broad_phase(method);
+        BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
 
     broad_phase->build(
