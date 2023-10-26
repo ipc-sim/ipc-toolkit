@@ -91,7 +91,6 @@ bool has_intersections(
     const double conservative_inflation_radius =
         1e-6 * world_bbox_diagonal_length(vertices);
 
-    // TODO: Expose the broad-phase method
     std::shared_ptr<BroadPhase> broad_phase =
         BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
