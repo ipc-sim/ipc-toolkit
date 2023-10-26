@@ -63,6 +63,7 @@ The following libraries are used in this project:
 * [libigl](https://github.com/libigl/libigl): basic geometry functions and predicates
 * [TBB](https://github.com/wjakob/tbb): parallelization
 * [Tight-Inclusion](https://github.com/Continuous-Collision-Detection/Tight-Inclusion): correct (conservative) CCD
+* [SimpleBVH](https://github.com/ipc-sim/SimpleBVH): a simple bounding volume hierarchy data structure
 * [spdlog](https://github.com/gabime/spdlog): logging information
 
 #### Optional

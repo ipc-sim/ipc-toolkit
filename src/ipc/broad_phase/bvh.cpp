@@ -69,7 +69,7 @@ void BVH::detect_candidates(
             for (size_t i = r.begin(); i < r.end(); i++) {
 
                 std::vector<unsigned int> js;
-                bvh.intersect_box(to_3D(boxes[i].min), to_3D(boxes[i].max), js);
+                bvh.intersect_box(boxes[i].min, boxes[i].max, js);
 
                 for (const unsigned int j : js) {
                     int ai = i, bi = j;
