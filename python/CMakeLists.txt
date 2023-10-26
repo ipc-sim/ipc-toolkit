@@ -11,6 +11,7 @@ pybind11_add_module(ipctk
   src/broad_phase/aabb.cpp
   src/broad_phase/broad_phase.cpp
   src/broad_phase/brute_force.cpp
+  src/broad_phase/bvh.cpp
   src/broad_phase/hash_grid.cpp
   src/broad_phase/spatial_hash.cpp
   src/broad_phase/sweep_and_tiniest_queue.cpp

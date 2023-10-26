@@ -7,6 +7,7 @@ namespace py = pybind11;
 void define_aabb(py::module_& m);
 void define_broad_phase(py::module_& m);
 void define_brute_force(py::module_& m);
+void define_bvh(py::module_& m);
 void define_hash_grid(py::module_& m);
 void define_spatial_hash(py::module_& m);
 void define_sweep(py::module_& m);
