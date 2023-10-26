@@ -35,6 +35,13 @@ Spatial Hash
 
     .. autoclasstoc::
 
+BVH
+---
+
+.. autoclass:: ipctk.BVH
+
+    .. autoclasstoc::
+
 Sweep and Tiniest Queue
 -----------------------
 
