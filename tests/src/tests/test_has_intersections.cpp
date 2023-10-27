@@ -86,11 +86,18 @@ TEST_CASE("Has intersections", "[intersection]")
     Eigen::Matrix3d R2 = GENERATE(take(2, tests::RotationGenerator::create()));
 #endif
 
+    const BroadPhaseMethod broad_phase_method = GENERATE_BROAD_PHASE_METHODS();
+    if (broad_phase_method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
+        || broad_phase_method
+            == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+        return;
+    }
+
     Eigen::MatrixXd V;
     Eigen::MatrixXi E, F;
     bool success = combine_meshes(mesh1_name, mesh2_name, R1, R2, dim, V, E, F);
     REQUIRE(success);
 
-    CAPTURE(mesh1_name, mesh2_name, R1, R2);
-    CHECK(has_intersections(CollisionMesh(V, E, F), V));
+    CAPTURE(broad_phase_method);
+    CHECK(has_intersections(CollisionMesh(V, E, F), V, broad_phase_method));
 }
