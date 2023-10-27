@@ -63,7 +63,10 @@ public:
 protected:
     static void init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh);
 
-    template <typename Candidate, bool swap_order, bool triangular = false>
+    template <
+        typename Candidate,
+        bool swap_order = false,
+        bool triangular = false>
     static void detect_candidates(
         const std::vector<AABB>& boxes,
         const SimpleBVH::BVH& bvh,

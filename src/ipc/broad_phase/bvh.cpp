@@ -59,6 +59,10 @@ void BVH::detect_candidates(
     const std::function<bool(size_t, size_t)>& can_collide,
     std::vector<Candidate>& candidates)
 {
+    // O(n^2) or O(n^3) to build
+    // O(klog(n)) to do a single look up
+    // O(knlog(n)) to do all look ups
+
     tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
 
     tbb::parallel_for(
@@ -102,37 +106,23 @@ void BVH::detect_vertex_vertex_candidates(
         return;
     }
 
-    detect_candidates<
-        VertexVertexCandidate, /*swap_order=*/false, /*triangular=*/true>(
+    detect_candidates(
         vertex_boxes, vertex_bvh, can_vertices_collide, candidates);
 }
 
 void BVH::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
-    // O(n^2) or O(n^3) to build
-    // O(klog(n)) to do a single look up
-    // O(knlog(n)) to do all look ups
-
     if (edge_boxes.size() == 0 || vertex_boxes.size() == 0) {
         return;
     }
 
-    if (edge_boxes.size() > vertex_boxes.size()) {
-        detect_candidates<EdgeVertexCandidate, true>(
-            vertex_boxes, edge_bvh,
-            [&](size_t ei, size_t vi) {
-                return can_edge_vertex_collide(ei, vi);
-            },
-            candidates);
-    } else {
-        detect_candidates<EdgeVertexCandidate, false>(
-            edge_boxes, vertex_bvh,
-            [&](size_t ei, size_t vi) {
-                return can_edge_vertex_collide(ei, vi);
-            },
-            candidates);
-    }
+    // In 2D and for codimensional edge-vertex collisions, there are more
+    // vertices than edges, so we want to iterate over the edges.
+    detect_candidates(
+        edge_boxes, vertex_bvh,
+        [&](size_t ei, size_t vi) { return can_edge_vertex_collide(ei, vi); },
+        candidates);
 }
 
 void BVH::detect_edge_edge_candidates(
@@ -156,21 +146,11 @@ void BVH::detect_face_vertex_candidates(
         return;
     }
 
-    if (face_boxes.size() > vertex_boxes.size()) {
-        detect_candidates<FaceVertexCandidate, true>(
-            vertex_boxes, face_bvh,
-            [&](size_t fi, size_t vi) {
-                return can_face_vertex_collide(fi, vi);
-            },
-            candidates);
-    } else {
-        detect_candidates<FaceVertexCandidate, false>(
-            face_boxes, vertex_bvh,
-            [&](size_t fi, size_t vi) {
-                return can_face_vertex_collide(fi, vi);
-            },
-            candidates);
-    }
+    // The ratio V:F is 1:2, so we want to iterate over the vertices.
+    detect_candidates<FaceVertexCandidate, /*swap_order=*/true>(
+        vertex_boxes, face_bvh,
+        [&](size_t fi, size_t vi) { return can_face_vertex_collide(fi, vi); },
+        candidates);
 }
 
 void BVH::detect_edge_face_candidates(
@@ -180,16 +160,10 @@ void BVH::detect_edge_face_candidates(
         return;
     }
 
-    if (edge_boxes.size() > face_boxes.size()) {
-        detect_candidates<EdgeFaceCandidate, true>(
-            face_boxes, edge_bvh,
-            [&](size_t ei, size_t fi) { return can_edge_face_collide(ei, fi); },
-            candidates);
-    } else {
-        detect_candidates<EdgeFaceCandidate, false>(
-            edge_boxes, face_bvh,
-            [&](size_t ei, size_t fi) { return can_edge_face_collide(ei, fi); },
-            candidates);
-    }
+    // The ratio E:F is 3:2, so we want to iterate over the faces.
+    detect_candidates<EdgeFaceCandidate, /*swap_order=*/true>(
+        face_boxes, edge_bvh,
+        [&](size_t ei, size_t fi) { return can_edge_face_collide(ei, fi); },
+        candidates);
 }
 } // namespace ipc
