@@ -106,7 +106,8 @@ void BVH::detect_vertex_vertex_candidates(
         return;
     }
 
-    detect_candidates(
+    detect_candidates<
+        VertexVertexCandidate, /*swap_order=*/false, /*triangular=*/true>(
         vertex_boxes, vertex_bvh, can_vertices_collide, candidates);
 }
 
