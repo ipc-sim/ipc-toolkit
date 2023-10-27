@@ -25,6 +25,11 @@ Spatial Hash
 
 .. doxygenclass:: ipc::SpatialHash
 
+BVH
+---
+
+.. doxygenclass:: ipc::BVH
+
 Sweep and Tiniest Queue
 -----------------------
 
