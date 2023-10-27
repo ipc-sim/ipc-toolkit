@@ -149,6 +149,10 @@ else()
   target_link_libraries(ipc_toolkit PUBLIC evouga::ccd)
 endif()
 
+# SimpleBVH
+include(simple_bvh)
+target_link_libraries(ipc_toolkit PUBLIC simple_bvh::simple_bvh)
+
 # Logger
 include(spdlog)
 target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)

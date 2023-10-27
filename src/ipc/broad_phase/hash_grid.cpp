@@ -9,7 +9,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 
-#include <algorithm>                          // std::min/max
+#include <algorithm> // std::min/max
 
 #define IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE // else use unordered_set
 
@@ -19,7 +19,7 @@ void HashGrid::build(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     BroadPhase::build(vertices, edges, faces, inflation_radius);
     // BroadPhase::build also calls clear()
@@ -41,7 +41,7 @@ void HashGrid::build(
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     BroadPhase::build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
     // BroadPhase::build also calls clear()

@@ -24,7 +24,9 @@ void brute_force_comparison(
         || !load_candidates(cached_bf_candidates, bf_candidates)) {
         bf_candidates.build(
             mesh, V0, V1, inflation_radius, BroadPhaseMethod::BRUTE_FORCE);
-        // save_candidates("bf_candidates.json", bf_candidates);
+        if (!cached_bf_candidates.empty()) {
+            save_candidates(cached_bf_candidates, bf_candidates);
+        };
     }
 
     CAPTURE(candidates.size(), bf_candidates.size());
