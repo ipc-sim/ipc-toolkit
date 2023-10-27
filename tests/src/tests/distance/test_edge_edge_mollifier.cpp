@@ -31,7 +31,7 @@ std::array<Eigen::Vector3d, 4> get_edges()
             edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1)
             == Catch::Approx(0).margin(1e-9));
     }
-    return { ea0, ea1, eb0, eb1 };
+    return { { ea0, ea1, eb0, eb1 } };
 }
 
 TEST_CASE("Edge-Edge Cross Squarednorm", "[distance][edge-edge][mollifier]")
