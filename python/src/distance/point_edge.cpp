@@ -13,6 +13,9 @@ void define_point_edge_distance(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the distance between a point and edge in 2D or 3D.
 
+        Note:
+            The distance is actually squared distance.
+
         Parameters:
             p: The point.
             e0: The first vertex of the edge.
@@ -21,9 +24,6 @@ void define_point_edge_distance(py::module_& m)
 
         Returns:
             The distance between the point and edge.
-
-        Note:
-            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"),
         py::arg("dtype") = PointEdgeDistanceType::AUTO);
@@ -33,6 +33,9 @@ void define_point_edge_distance(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a point and edge.
 
+        Note:
+            The distance is actually squared distance.
+
         Parameters:
             p: The point.
             e0: The first vertex of the edge.
@@ -41,9 +44,6 @@ void define_point_edge_distance(py::module_& m)
 
         Returns:
             grad The gradient of the distance wrt p, e0, and e1.
-
-        Note:
-            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"),
         py::arg("dtype") = PointEdgeDistanceType::AUTO);
@@ -53,6 +53,9 @@ void define_point_edge_distance(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a point and edge.
 
+        Note:
+            The distance is actually squared distance.
+
         Parameters:
             p: The point.
             e0: The first vertex of the edge.
@@ -61,9 +64,6 @@ void define_point_edge_distance(py::module_& m)
 
         Returns:
             hess The hessian of the distance wrt p, e0, and e1.
-
-        Note:
-            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"),
         py::arg("dtype") = PointEdgeDistanceType::AUTO);

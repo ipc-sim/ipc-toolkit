@@ -12,6 +12,12 @@ void define_line_line_distance(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the distance between a two infinite lines in 3D.
 
+        Note:
+            The distance is actually squared distance.
+
+        Warning:
+            If the lines are parallel this function returns a distance of zero.
+
         Parameters:
             ea0: The first vertex of the edge defining the first line.
             ea1: The second vertex of the edge defining the first line.
@@ -20,12 +26,6 @@ void define_line_line_distance(py::module_& m)
 
         Returns:
             The distance between the two lines.
-
-        Note:
-            The distance is actually squared distance.
-
-        Warning:
-            If the lines are parallel this function returns a distance of zero.
         )ipc_Qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
 
@@ -33,6 +33,12 @@ void define_line_line_distance(py::module_& m)
         "line_line_distance_gradient", &line_line_distance_gradient,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a two lines in 3D.
+
+        Note:
+            The distance is actually squared distance.
+
+        Warning:
+            If the lines are parallel this function returns a distance of zero.
 
         Parameters:
             ea0: The first vertex of the edge defining the first line.
@@ -42,12 +48,6 @@ void define_line_line_distance(py::module_& m)
 
         Returns:
             The gradient of the distance wrt ea0, ea1, eb0, and eb1.
-
-        Note:
-            The distance is actually squared distance.
-
-        Warning:
-            If the lines are parallel this function returns a distance of zero.
         )ipc_Qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
 
@@ -55,6 +55,12 @@ void define_line_line_distance(py::module_& m)
         "line_line_distance_hessian", &line_line_distance_hessian,
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a two lines in 3D.
+
+        Note:
+            The distance is actually squared distance.
+
+        Warning:
+            If the lines are parallel this function returns a distance of zero.
 
         Parameters:
             ea0: The first vertex of the edge defining the first line.
@@ -64,12 +70,6 @@ void define_line_line_distance(py::module_& m)
 
         Returns:
             The hessian of the distance wrt ea0, ea1, eb0, and eb1.
-
-        Note:
-            The distance is actually squared distance.
-
-        Warning:
-            If the lines are parallel this function returns a distance of zero.
         )ipc_Qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
 }

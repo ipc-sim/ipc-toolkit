@@ -99,6 +99,21 @@ void define_edge_edge_mollifier(py::module_& m)
         py::arg("x"), py::arg("eps_x"));
 
     m.def(
+        "edge_edge_mollifier_derivative_wrt_eps_x",
+        &edge_edge_mollifier_derivative_wrt_eps_x,
+        R"ipc_Qu8mg5v7(
+        The derivative of the mollifier function for edge-edge distance wrt eps_x.
+
+        Parameters:
+            x: Squared norm of the edge-edge cross product.
+            eps_x: Mollifier activation threshold.
+
+        Returns:
+            The derivative of the mollifier function for edge-edge distance wrt eps_x.
+        )ipc_Qu8mg5v7",
+        py::arg("x"), py::arg("eps_x"));
+
+    m.def(
         "edge_edge_mollifier_hessian",
         py::overload_cast<const double, const double>(
             &edge_edge_mollifier_hessian),
@@ -111,6 +126,21 @@ void define_edge_edge_mollifier(py::module_& m)
 
         Returns:
             The hessian of the mollifier function for edge-edge distance wrt x.
+        )ipc_Qu8mg5v7",
+        py::arg("x"), py::arg("eps_x"));
+
+    m.def(
+        "edge_edge_mollifier_gradient_derivative_wrt_eps_x",
+        &edge_edge_mollifier_gradient_derivative_wrt_eps_x,
+        R"ipc_Qu8mg5v7(
+        The derivative of the gradient of the mollifier function for edge-edge distance wrt eps_x.
+
+        Parameters:
+            x: Squared norm of the edge-edge cross product.
+            eps_x: Mollifier activation threshold.
+
+        Returns:
+            The derivative of the gradient of the mollifier function for edge-edge distance wrt eps_x.
         )ipc_Qu8mg5v7",
         py::arg("x"), py::arg("eps_x"));
 
@@ -189,6 +219,55 @@ void define_edge_edge_mollifier(py::module_& m)
         py::arg("eps_x"));
 
     m.def(
+        "edge_edge_mollifier_gradient_wrt_x",
+        &edge_edge_mollifier_gradient_wrt_x,
+        R"ipc_Qu8mg5v7(
+        Compute the gradient of the mollifier for the edge-edge distance wrt rest positions.
+
+        Parameters:
+            ea0_rest: The rest position of the first vertex of the first edge.
+            ea1_rest: The rest position of the second vertex of the first edge.
+            eb0_rest: The rest position of the first vertex of the second edge.
+            eb1_rest: The rest position of the second vertex of the second edge.
+            ea0: The first vertex of the first edge.
+            ea1: The second vertex of the first edge.
+            eb0: The first vertex of the second edge.
+            eb1: The second vertex of the second edge.
+
+        Returns:
+            The derivative of the mollifier wrt rest positions.
+        )ipc_Qu8mg5v7",
+        py::arg("ea0_rest"), py::arg("ea1_rest"), py::arg("eb0_rest"),
+        py::arg("eb1_rest"), py::arg("ea0"), py::arg("ea1"), py::arg("eb0"),
+        py::arg("eb1"));
+
+    m.def(
+        "edge_edge_mollifier_gradient_jacobian_wrt_x",
+        &edge_edge_mollifier_gradient_jacobian_wrt_x,
+        R"ipc_Qu8mg5v7(
+        Compute the jacobian of the edge-edge distance mollifier's gradient wrt rest positions.
+
+        Note:
+            This is not the hessian of the mollifier wrt rest positions, but the jacobian wrt rest positions of the mollifier's gradient wrt positions.
+
+        Parameters:
+            ea0_rest: The rest position of the first vertex of the first edge.
+            ea1_rest: The rest position of the second vertex of the first edge.
+            eb0_rest: The rest position of the first vertex of the second edge.
+            eb1_rest: The rest position of the second vertex of the second edge.
+            ea0: The first vertex of the first edge.
+            ea1: The second vertex of the first edge.
+            eb0: The first vertex of the second edge.
+            eb1: The second vertex of the second edge.
+
+        Returns:
+            The jacobian of the mollifier's gradient wrt rest positions.
+        )ipc_Qu8mg5v7",
+        py::arg("ea0_rest"), py::arg("ea1_rest"), py::arg("eb0_rest"),
+        py::arg("eb1_rest"), py::arg("ea0"), py::arg("ea1"), py::arg("eb0"),
+        py::arg("eb1"));
+
+    m.def(
         "edge_edge_mollifier_threshold", &edge_edge_mollifier_threshold,
         R"ipc_Qu8mg5v7(
         Compute the threshold of the mollifier edge-edge distance.
@@ -203,6 +282,26 @@ void define_edge_edge_mollifier(py::module_& m)
 
         Returns:
             Threshold for edge-edge mollification.
+        )ipc_Qu8mg5v7",
+        py::arg("ea0_rest"), py::arg("ea1_rest"), py::arg("eb0_rest"),
+        py::arg("eb1_rest"));
+
+    m.def(
+        "edge_edge_mollifier_threshold_gradient",
+        &edge_edge_mollifier_threshold_gradient,
+        R"ipc_Qu8mg5v7(
+        Compute the gradient of the threshold of the mollifier edge-edge distance.
+
+        This values is computed based on the edges at rest length.
+
+        Parameters:
+            ea0_rest: The rest position of the first vertex of the first edge.
+            ea1_rest: The rest position of the second vertex of the first edge.
+            eb0_rest: The rest position of the first vertex of the second edge.
+            eb1_rest: The rest position of the second vertex of the second edge.
+
+        Returns:
+            Gradient of the threshold for edge-edge mollification.
         )ipc_Qu8mg5v7",
         py::arg("ea0_rest"), py::arg("ea1_rest"), py::arg("eb0_rest"),
         py::arg("eb1_rest"));

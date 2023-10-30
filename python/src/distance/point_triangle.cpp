@@ -13,6 +13,9 @@ void define_point_triangle_distance(py::module_& m)
         R"ipc_Qu8mg5v7(
         Compute the distance between a points and a triangle.
 
+        Note:
+            The distance is actually squared distance.
+
         Parameters:
             p: The point.
             t0: The first vertex of the triangle.
@@ -22,9 +25,6 @@ void define_point_triangle_distance(py::module_& m)
 
         Returns:
             The distance between the point and triangle.
-
-        Note:
-            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"),
         py::arg("dtype") = PointTriangleDistanceType::AUTO);
@@ -33,6 +33,9 @@ void define_point_triangle_distance(py::module_& m)
         "point_triangle_distance_gradient", &point_triangle_distance_gradient,
         R"ipc_Qu8mg5v7(
         Compute the gradient of the distance between a points and a triangle.
+
+        Note:
+            The distance is actually squared distance.
 
         Parameters:
             p: The point.
@@ -43,9 +46,6 @@ void define_point_triangle_distance(py::module_& m)
 
         Returns:
             The gradient of the distance wrt p, t0, t1, and t2.
-
-        Note:
-            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"),
         py::arg("dtype") = PointTriangleDistanceType::AUTO);
@@ -54,6 +54,9 @@ void define_point_triangle_distance(py::module_& m)
         "point_triangle_distance_hessian", &point_triangle_distance_hessian,
         R"ipc_Qu8mg5v7(
         Compute the hessian of the distance between a points and a triangle.
+
+        Note:
+            The distance is actually squared distance.
 
         Parameters:
             p: The point.
@@ -64,9 +67,6 @@ void define_point_triangle_distance(py::module_& m)
 
         Returns:
             The hessian of the distance wrt p, t0, t1, and t2.
-
-        Note:
-            The distance is actually squared distance.
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"),
         py::arg("dtype") = PointTriangleDistanceType::AUTO);
