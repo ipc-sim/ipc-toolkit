@@ -147,6 +147,69 @@ void define_collision_constraints(py::module_& m)
                 A reference to the constraint.
             )ipc_Qu8mg5v7",
             py::arg("idx"))
+        .def(
+            "is_vertex_vertex", &CollisionConstraints::is_vertex_vertex,
+            R"ipc_Qu8mg5v7(
+            Get if the constraint at idx is a vertex-vertex constraint.
+
+            Parameters:
+                idx: The index of the constraint.
+
+            Returns:
+                If the constraint at idx is a vertex-vertex constraint.
+            )ipc_Qu8mg5v7",
+            py::arg("idx"))
+        .def(
+            "is_edge_vertex", &CollisionConstraints::is_edge_vertex,
+            R"ipc_Qu8mg5v7(
+            Get if the constraint at idx is an edge-vertex constraint.
+
+            Parameters:
+                idx: The index of the constraint.
+
+            Returns:
+                If the constraint at idx is an edge-vertex constraint.
+            )ipc_Qu8mg5v7",
+            py::arg("idx"))
+        .def(
+            "is_edge_edge", &CollisionConstraints::is_edge_edge,
+            R"ipc_Qu8mg5v7(
+            Get if the constraint at idx is an edge-edge constraint.
+
+            Parameters:
+                idx: The index of the constraint.
+
+            Returns:
+                If the constraint at idx is an edge-edge constraint.
+            )ipc_Qu8mg5v7",
+            py::arg("idx"))
+        .def(
+            "is_face_vertex", &CollisionConstraints::is_face_vertex,
+            R"ipc_Qu8mg5v7(
+            Get if the constraint at idx is an face-vertex constraint.
+
+            Parameters:
+                idx: The index of the constraint.
+
+            Returns:
+                If the constraint at idx is an face-vertex constraint.
+            )ipc_Qu8mg5v7",
+            py::arg("idx"))
+        .def(
+            "is_plane_vertex", &CollisionConstraints::is_plane_vertex,
+            R"ipc_Qu8mg5v7(
+            Get if the constraint at idx is an plane-vertex constraint.
+
+            Parameters:
+                idx: The index of the constraint.
+
+            Returns:
+                If the constraint at idx is an plane-vertex constraint.
+            )ipc_Qu8mg5v7",
+            py::arg("idx"))
+        .def(
+            "to_string", &CollisionConstraints::to_string, "", py::arg("mesh"),
+            py::arg("vertices"))
         .def_property(
             "use_convergent_formulation",
             &CollisionConstraints::use_convergent_formulation,

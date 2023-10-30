@@ -7,7 +7,7 @@ import subprocess
 from utils import jacobian
 
 
-def generate_code(expr, out_var_name="J"):
+def generate_code(expr, out_var_name=None):
     CSE_results = sympy.cse(
         expr, sympy.numbered_symbols("t"), optimizations='basic')
     lines = []

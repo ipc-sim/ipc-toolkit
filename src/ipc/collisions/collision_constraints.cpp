@@ -439,13 +439,11 @@ Eigen::SparseMatrix<double> CollisionConstraints::compute_shape_derivative(
     const Eigen::MatrixXd& vertices,
     const double dhat) const
 {
-    Eigen::SparseMatrix<double> shape_derivative =
-        compute_potential_hessian(mesh, vertices, dhat, false);
+    assert(vertices.rows() == mesh.num_vertices());
 
-    const Eigen::MatrixXi& edges = mesh.edges();
-    const Eigen::MatrixXi& faces = mesh.faces();
-
-    const int dim = vertices.cols();
+    if (empty()) {
+        return Eigen::SparseMatrix<double>(vertices.size(), vertices.size());
+    }
 
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
         storage;
@@ -455,42 +453,15 @@ Eigen::SparseMatrix<double> CollisionConstraints::compute_shape_derivative(
         [&](const tbb::blocked_range<size_t>& r) {
             auto& local_triplets = storage.local();
 
-            // for (size_t ci = 0; ci < constraint_set.size(); ci++) {
-            for (size_t ci = r.begin(); ci < r.end(); ci++) {
-
-                const CollisionConstraint& constraint = (*this)[ci];
-                const Eigen::SparseVector<double>& weight_gradient =
-                    constraint.weight_gradient;
-                if (weight_gradient.size() != vertices.size()) {
-                    throw std::runtime_error(
-                        "Shape derivative is not computed for contact constraint!");
-                }
-
-                VectorMax12d local_barrier_grad =
-                    constraint.compute_potential_gradient(
-                        vertices, edges, faces, dhat);
-                assert(constraint.weight != 0);
-                local_barrier_grad.array() /= constraint.weight;
-
-                const std::array<long, 4> ids =
-                    constraint.vertex_ids(edges, faces);
-                assert(local_barrier_grad.size() % dim == 0);
-                const int n_verts = local_barrier_grad.size() / dim;
-                assert(ids.size() >= n_verts); // Can be extra ids
-
-                for (int i = 0; i < n_verts; i++) {
-                    for (int d = 0; d < dim; d++) {
-                        using Itr = Eigen::SparseVector<double>::InnerIterator;
-                        for (Itr j(weight_gradient); j; ++j) {
-                            local_triplets.emplace_back(
-                                ids[i] * dim + d, j.index(),
-                                local_barrier_grad[dim * i + d] * j.value());
-                        }
-                    }
-                }
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                (*this)[i].compute_shape_derivative(
+                    mesh.rest_positions(), vertices, mesh.edges(), mesh.faces(),
+                    dhat, local_triplets);
             }
         });
 
+    Eigen::SparseMatrix<double> shape_derivative(
+        vertices.size(), vertices.size());
     for (const auto& local_triplets : storage) {
         Eigen::SparseMatrix<double> local_shape_derivative(
             vertices.size(), vertices.size());
@@ -498,7 +469,6 @@ Eigen::SparseMatrix<double> CollisionConstraints::compute_shape_derivative(
             local_triplets.begin(), local_triplets.end());
         shape_derivative += local_shape_derivative;
     }
-
     return shape_derivative;
 }
 
@@ -609,6 +579,41 @@ const CollisionConstraint& CollisionConstraints::operator[](size_t idx) const
         return pv_constraints[idx];
     }
     throw std::out_of_range("Constraint index is out of range!");
+}
+
+bool CollisionConstraints::is_vertex_vertex(size_t idx) const
+{
+    return idx < vv_constraints.size();
+}
+
+bool CollisionConstraints::is_edge_vertex(size_t idx) const
+{
+    return idx >= vv_constraints.size()
+        && idx < vv_constraints.size() + ev_constraints.size();
+}
+
+bool CollisionConstraints::is_edge_edge(size_t idx) const
+{
+    return idx >= vv_constraints.size() + ev_constraints.size()
+        && idx
+        < vv_constraints.size() + ev_constraints.size() + ee_constraints.size();
+}
+
+bool CollisionConstraints::is_face_vertex(size_t idx) const
+{
+    return idx
+        >= vv_constraints.size() + ev_constraints.size() + ee_constraints.size()
+        && idx < vv_constraints.size() + ev_constraints.size()
+            + ee_constraints.size() + fv_constraints.size();
+}
+
+bool CollisionConstraints::is_plane_vertex(size_t idx) const
+{
+    return idx >= vv_constraints.size() + ev_constraints.size()
+            + ee_constraints.size() + fv_constraints.size()
+        && idx < vv_constraints.size() + ev_constraints.size()
+            + ee_constraints.size() + fv_constraints.size()
+            + pv_constraints.size();
 }
 
 std::string CollisionConstraints::to_string(
