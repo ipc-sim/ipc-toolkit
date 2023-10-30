@@ -581,6 +581,41 @@ const CollisionConstraint& CollisionConstraints::operator[](size_t idx) const
     throw std::out_of_range("Constraint index is out of range!");
 }
 
+bool CollisionConstraints::is_vertex_vertex(size_t idx) const
+{
+    return idx < vv_constraints.size();
+}
+
+bool CollisionConstraints::is_edge_vertex(size_t idx) const
+{
+    return idx >= vv_constraints.size()
+        && idx < vv_constraints.size() + ev_constraints.size();
+}
+
+bool CollisionConstraints::is_edge_edge(size_t idx) const
+{
+    return idx >= vv_constraints.size() + ev_constraints.size()
+        && idx
+        < vv_constraints.size() + ev_constraints.size() + ee_constraints.size();
+}
+
+bool CollisionConstraints::is_face_vertex(size_t idx) const
+{
+    return idx
+        >= vv_constraints.size() + ev_constraints.size() + ee_constraints.size()
+        && idx < vv_constraints.size() + ev_constraints.size()
+            + ee_constraints.size() + fv_constraints.size();
+}
+
+bool CollisionConstraints::is_plane_vertex(size_t idx) const
+{
+    return idx >= vv_constraints.size() + ev_constraints.size()
+            + ee_constraints.size() + fv_constraints.size()
+        && idx < vv_constraints.size() + ev_constraints.size()
+            + ee_constraints.size() + fv_constraints.size()
+            + pv_constraints.size();
+}
+
 std::string CollisionConstraints::to_string(
     const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
 {

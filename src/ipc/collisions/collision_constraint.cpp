@@ -101,6 +101,10 @@ void CollisionConstraint::compute_shape_derivative_first_term(
             "Shape derivative is not computed for contact constraint!");
     }
 
+    if (weight_gradient.nonZeros() == 0) {
+        return;
+    }
+
     const int dim = vertices.cols();
 
     VectorMax12d grad_b =

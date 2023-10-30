@@ -121,6 +121,31 @@ public:
     /// @return A const reference to the constraint.
     const CollisionConstraint& operator[](size_t idx) const;
 
+    /// @brief Get if the constraint at idx is a vertex-vertex constraint.
+    /// @param idx The index of the constraint.
+    /// @return If the constraint at idx is a vertex-vertex constraint.
+    bool is_vertex_vertex(size_t idx) const;
+
+    /// @brief Get if the constraint at idx is an edge-vertex constraint.
+    /// @param idx The index of the constraint.
+    /// @return If the constraint at idx is an edge-vertex constraint.
+    bool is_edge_vertex(size_t idx) const;
+
+    /// @brief Get if the constraint at idx is an edge-edge constraint.
+    /// @param idx The index of the constraint.
+    /// @return If the constraint at idx is an edge-edge constraint.
+    bool is_edge_edge(size_t idx) const;
+
+    /// @brief Get if the constraint at idx is an face-vertex constraint.
+    /// @param idx The index of the constraint.
+    /// @return If the constraint at idx is an face-vertex constraint.
+    bool is_face_vertex(size_t idx) const;
+
+    /// @brief Get if the constraint at idx is an plane-vertex constraint.
+    /// @param idx The index of the constraint.
+    /// @return If the constraint at idx is an plane-vertex constraint.
+    bool is_plane_vertex(size_t idx) const;
+
     /// @brief Get if the collision constraints should use the convergent formulation.
     /// @note If not empty, this is the current value not necessarily the value used to build the constraints.
     /// @return If the collision constraints should use the convergent formulation.
