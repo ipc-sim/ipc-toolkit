@@ -305,3 +305,22 @@ TEST_CASE("Plane-Vertex Constraint", "[constraint][plane-vertex]")
         c.compute_distance_hessian(Eigen::RowVector3d(0, 2, 0), E, F)
         == 2 * n * n.transpose());
 }
+
+TEST_CASE("is_*", "[constraints]")
+{
+    CollisionConstraints constraints;
+    constraints.vv_constraints.emplace_back(0, 1);
+    constraints.ev_constraints.emplace_back(0, 1);
+    constraints.ee_constraints.emplace_back(0, 1, 0.0);
+    constraints.fv_constraints.emplace_back(0, 1);
+    constraints.pv_constraints.emplace_back(
+        Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 1, 0), 0);
+
+    for (int i = 0; i < constraints.size(); i++) {
+        CHECK(constraints.is_vertex_vertex(i) == (i == 0));
+        CHECK(constraints.is_edge_vertex(i) == (i == 1));
+        CHECK(constraints.is_edge_edge(i) == (i == 2));
+        CHECK(constraints.is_face_vertex(i) == (i == 3));
+        CHECK(constraints.is_plane_vertex(i) == (i == 4));
+    }
+}
