@@ -14,13 +14,13 @@ void define_point_edge_distance(py::module_& m)
         Compute the distance between a point and edge in 2D or 3D.
 
         Parameters:
-            p: point
-            e0: first vertex of the edge
-            e1: second vertex of the edge
-            dtype: (optional) point edge distance type to compute
+            p: The point.
+            e0: The first vertex of the edge.
+            e1: The second vertex of the edge.
+            dtype: The point edge distance type to compute.
 
         Returns:
-            The distance between the point and edge
+            The distance between the point and edge.
 
         Note:
             The distance is actually squared distance.
@@ -34,13 +34,13 @@ void define_point_edge_distance(py::module_& m)
         Compute the gradient of the distance between a point and edge.
 
         Parameters:
-            p: point
-            e0: first vertex of the edge
-            e1: second vertex of the edge
-            dtype: (optional) point edge distance type to compute
+            p: The point.
+            e0: The first vertex of the edge.
+            e1: The second vertex of the edge.
+            dtype: The point edge distance type to compute.
 
         Returns:
-            The gradient of the distance wrt p, e0, and e1.
+            grad The gradient of the distance wrt p, e0, and e1.
 
         Note:
             The distance is actually squared distance.
@@ -54,13 +54,13 @@ void define_point_edge_distance(py::module_& m)
         Compute the hessian of the distance between a point and edge.
 
         Parameters:
-            p: point
-            e0: first vertex of the edge
-            e1: second vertex of the edge
-            dtype: (optional) point edge distance type to compute
+            p: The point.
+            e0: The first vertex of the edge.
+            e1: The second vertex of the edge.
+            dtype: The point edge distance type to compute.
 
         Returns:
-            The hessian of the distance wrt p, e0, and e1.
+            hess The hessian of the distance wrt p, e0, and e1.
 
         Note:
             The distance is actually squared distance.

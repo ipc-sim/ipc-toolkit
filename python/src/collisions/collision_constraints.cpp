@@ -8,7 +8,7 @@ using namespace ipc;
 void define_collision_constraints(py::module_& m)
 {
     py::class_<CollisionConstraints>(m, "CollisionConstraints")
-        .def(py::init(), "")
+        .def(py::init())
         .def(
             "build",
             py::overload_cast<
@@ -27,7 +27,7 @@ void define_collision_constraints(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"), py::arg("dhat"),
             py::arg("dmin") = 0,
-            py::arg("broad_phase_method") = BroadPhaseMethod::HASH_GRID)
+            py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD)
         .def(
             "build",
             py::overload_cast<
@@ -157,6 +157,9 @@ void define_collision_constraints(py::module_& m)
             &CollisionConstraints::are_shape_derivatives_enabled,
             &CollisionConstraints::set_are_shape_derivatives_enabled,
             "If the collision constraints are using the convergent formulation.")
+        .def(
+            "to_string", &CollisionConstraints::to_string, py::arg("mesh"),
+            py::arg("vertices"))
         .def_readwrite("vv_constraints", &CollisionConstraints::vv_constraints)
         .def_readwrite("ev_constraints", &CollisionConstraints::ev_constraints)
         .def_readwrite("ee_constraints", &CollisionConstraints::ee_constraints)

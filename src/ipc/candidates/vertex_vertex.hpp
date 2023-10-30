@@ -52,8 +52,10 @@ public:
 
     // ------------------------------------------------------------------------
 
-    long vertex0_id; ///< @brief ID of the first vertex
-    long vertex1_id; ///< @brief ID of the second vertex
+    /// @brief ID of the first vertex
+    long vertex0_id;
+    /// @brief ID of the second vertex
+    long vertex1_id;
 
     using CollisionStencil::compute_distance;
     using CollisionStencil::compute_distance_gradient;

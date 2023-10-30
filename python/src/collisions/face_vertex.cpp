@@ -12,5 +12,11 @@ void define_face_vertex_constraint(py::module_& m)
         .def(
             py::init<long, long>(), "", py::arg("face_id"),
             py::arg("vertex_id"))
-        .def(py::init<FaceVertexCandidate>(), "", py::arg("fv_candidate"));
+        .def(py::init<const FaceVertexCandidate&>(), py::arg("candidate"));
+    // .def(
+    //     py::init<
+    //         const long, const long, const double,
+    //         const Eigen::SparseVector<double>&>(),
+    //     py::arg("face_id"), py::arg("vertex_id"), py::arg("weight"),
+    //     py::arg("weight_gradient"));
 }

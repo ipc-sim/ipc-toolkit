@@ -6,8 +6,10 @@ namespace ipc {
 
 /// @brief An entry into the hash grid as a (key, value) pair.
 struct HashItem {
-    long key; /// @brief The key of the item.
-    long id;  /// @brief The value of the item.
+    /// @brief The key of the item.
+    long key;
+    /// @brief The value of the item.
+    long id;
 
     /// @brief Construct a hash item as a (key, value) pair.
     HashItem(int _key, int _id) : key(_key), id(_id) { }

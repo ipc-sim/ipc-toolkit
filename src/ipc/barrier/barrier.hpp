@@ -10,7 +10,7 @@ namespace ipc {
 // Barrier functions from [Li et al. 2020]
 // ============================================================================
 
-/// @brief Function that grows to infinity as x approaches 0 from the right.
+/// @brief Function that grows to infinity as d approaches 0 from the right.
 ///
 /// \f\[
 ///     b(d) = -(d-\hat{d})^2\ln\left(\frac{d}{\hat{d}}\right)

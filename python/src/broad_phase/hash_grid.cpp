@@ -29,7 +29,7 @@ void define_hash_grid(py::module_& m)
             Build the broad phase for static collision detection.
 
             Parameters:
-                vertices_t0: Vertex positions
+                vertices: Vertex positions
                 edges: Collision mesh edges
                 faces: Collision mesh faces
                 inflation_radius: Radius of inflation around all elements.
@@ -56,6 +56,14 @@ void define_hash_grid(py::module_& m)
             py::arg("faces"), py::arg("inflation_radius") = 0)
         .def("clear", &HashGrid::clear, "Clear the hash grid.")
         .def(
+            "detect_vertex_vertex_candidates",
+            [](HashGrid& self) {
+                std::vector<VertexVertexCandidate> candidates;
+                self.detect_vertex_vertex_candidates(candidates);
+                return candidates;
+            },
+            "Find the candidate vertex-vertex collisions.")
+        .def(
             "detect_edge_vertex_candidates",
             [](HashGrid& self) {
                 std::vector<EdgeVertexCandidate> candidates;
@@ -63,10 +71,10 @@ void define_hash_grid(py::module_& m)
                 return candidates;
             },
             R"ipc_Qu8mg5v7(
-            Find the candidate edge-vertex collisisons.
+            Find the candidate edge-vertex collisions.
 
             Returns:
-                The candidate edge-vertex collisisons.
+                The candidate edge-vertex collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_edge_edge_candidates",
@@ -79,7 +87,7 @@ void define_hash_grid(py::module_& m)
             Find the candidate edge-edge collisions.
 
             Returns:
-                The candidate edge-edge collisisons.
+                The candidate edge-edge collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_face_vertex_candidates",
@@ -92,7 +100,7 @@ void define_hash_grid(py::module_& m)
             Find the candidate face-vertex collisions.
 
             Returns:
-                The candidate face-vertex collisisons.
+                The candidate face-vertex collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_edge_face_candidates",
@@ -107,8 +115,13 @@ void define_hash_grid(py::module_& m)
             Returns:
                 The candidate edge-face intersections.
             )ipc_Qu8mg5v7")
-        .def("cellSize", &HashGrid::cellSize, "")
-        .def("gridSize", &HashGrid::gridSize, "")
-        .def("domainMin", &HashGrid::domainMin, "")
-        .def("domainMax", &HashGrid::domainMax, "");
+        .def("cellSize", &HashGrid::cellSize)
+        .def(
+            "gridSize", &HashGrid::gridSize, py::return_value_policy::reference)
+        .def(
+            "domainMin", &HashGrid::domainMin,
+            py::return_value_policy::reference)
+        .def(
+            "domainMax", &HashGrid::domainMax,
+            py::return_value_policy::reference);
 }

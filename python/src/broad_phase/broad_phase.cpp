@@ -34,12 +34,12 @@ void define_broad_phase(py::module_& m)
             Returns:
                 The constructed broad phase object.
             )ipc_Qu8mg5v7",
-            py::arg("broad_phase_method"))
+            py::arg("method"))
         .def(
             "build",
             py::overload_cast<
                 const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-                const Eigen::MatrixXi&, double>(&BroadPhase::build),
+                const Eigen::MatrixXi&, const double>(&BroadPhase::build),
             R"ipc_Qu8mg5v7(
             Build the broad phase for static collision detection.
 
@@ -55,7 +55,7 @@ void define_broad_phase(py::module_& m)
             "build",
             py::overload_cast<
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXi&, const Eigen::MatrixXi&, double>(
+                const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double>(
                 &BroadPhase::build),
             R"ipc_Qu8mg5v7(
             Build the broad phase for continuous collision detection.
@@ -71,6 +71,19 @@ void define_broad_phase(py::module_& m)
             py::arg("faces"), py::arg("inflation_radius") = 0)
         .def("clear", &BroadPhase::clear, "Clear any built data.")
         .def(
+            "detect_vertex_vertex_candidates",
+            [](BroadPhase& self) {
+                std::vector<VertexVertexCandidate> candidates;
+                self.detect_vertex_vertex_candidates(candidates);
+                return candidates;
+            },
+            R"ipc_Qu8mg5v7(
+            Find the candidate vertex-vertex collisions.
+
+            Returns:
+                The candidate vertex-vertex collisions.
+            )ipc_Qu8mg5v7")
+        .def(
             "detect_edge_vertex_candidates",
             [](BroadPhase& self) {
                 std::vector<EdgeVertexCandidate> candidates;
@@ -78,10 +91,10 @@ void define_broad_phase(py::module_& m)
                 return candidates;
             },
             R"ipc_Qu8mg5v7(
-            Find the candidate edge-vertex collisisons.
+            Find the candidate edge-vertex collisions.
 
             Returns:
-                The candidate edge-vertex collisisons.
+                The candidate edge-vertex collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_edge_edge_candidates",
@@ -94,7 +107,7 @@ void define_broad_phase(py::module_& m)
             Find the candidate edge-edge collisions.
 
             Returns:
-                The candidate edge-edge collisisons.
+                The candidate edge-edge collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_face_vertex_candidates",
@@ -107,7 +120,7 @@ void define_broad_phase(py::module_& m)
             Find the candidate face-vertex collisions.
 
             Returns:
-                The candidate face-vertex collisisons.
+                The candidate face-vertex collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_edge_face_candidates",
@@ -134,6 +147,7 @@ void define_broad_phase(py::module_& m)
 
             Parameters:
                 dim: The dimension of the simulation (i.e., 2 or 3).
+                candidates: The detected collision candidates.
             )ipc_Qu8mg5v7",
             py::arg("dim"))
         .def_readwrite(

@@ -8,22 +8,22 @@ using namespace ipc;
 void define_aabb(py::module_& m)
 {
     py::class_<AABB>(m, "AABB")
-        .def(py::init(), "")
+        .def(py::init())
         .def(
-            py::init<const ArrayMax3d&, const ArrayMax3d&>(), "",
-            py::arg("min"), py::arg("max"))
+            py::init<const ArrayMax3d&, const ArrayMax3d&>(), py::arg("min"),
+            py::arg("max"))
         .def(
-            py::init<const AABB&, const AABB&>(), "", py::arg("aabb1"),
+            py::init<const AABB&, const AABB&>(), py::arg("aabb1"),
             py::arg("aabb2"))
         .def(
-            py::init<const AABB&, const AABB&, const AABB&>(), "",
-            py::arg("aabb1"), py::arg("aabb2"), py::arg("aabb3"))
+            py::init<const AABB&, const AABB&, const AABB&>(), py::arg("aabb1"),
+            py::arg("aabb2"), py::arg("aabb3"))
         .def_static(
             "from_point",
             py::overload_cast<const VectorMax3d&, const double>(
                 &AABB::from_point),
             R"ipc_Qu8mg5v7(
-            Compute a AABB for a static point.
+            Construct a AABB for a static point.
 
             Parameters:
                 p: The point's position.
@@ -39,7 +39,7 @@ void define_aabb(py::module_& m)
                 const VectorMax3d&, const VectorMax3d&, const double>(
                 &AABB::from_point),
             R"ipc_Qu8mg5v7(
-            Compute a AABB for a moving point (i.e. temporal edge).
+            Construct a AABB for a moving point (i.e. temporal edge).
 
             Parameters:
                 p_t0: The point's position at time t=0.
@@ -83,8 +83,17 @@ void define_aabb(py::module_& m)
             build_vertex_boxes(vertices, vertex_boxes, inflation_radius);
             return vertex_boxes;
         },
-        "Build one AABB per vertex position (row of V).", py::arg("vertices"),
-        py::arg("inflation_radius") = 0);
+        R"ipc_Qu8mg5v7(
+        Build one AABB per vertex position (row of V).
+
+        Parameters:
+            vertices: Vertex positions (rowwise).
+            inflation_radius: Radius of a sphere around the points which the AABBs enclose.
+
+        Returns:
+            Vertex AABBs.
+        )ipc_Qu8mg5v7",
+        py::arg("vertices"), py::arg("inflation_radius") = 0);
 
     m.def(
         "build_vertex_boxes",
@@ -96,7 +105,7 @@ void define_aabb(py::module_& m)
                 vertices_t0, vertices_t1, vertex_boxes, inflation_radius);
             return vertex_boxes;
         },
-        "", py::arg("vertices_t0"), py::arg("vertices_t1"),
+        py::arg("vertices_t0"), py::arg("vertices_t1"),
         py::arg("inflation_radius") = 0);
 
     m.def(
@@ -107,7 +116,7 @@ void define_aabb(py::module_& m)
             build_edge_boxes(vertex_boxes, edges, edge_boxes);
             return edge_boxes;
         },
-        "", py::arg("vertex_boxes"), py::arg("edges"));
+        py::arg("vertex_boxes"), py::arg("edges"));
 
     m.def(
         "build_face_boxes",
@@ -117,5 +126,5 @@ void define_aabb(py::module_& m)
             build_face_boxes(vertex_boxes, faces, face_boxes);
             return face_boxes;
         },
-        "", py::arg("vertex_boxes"), py::arg("faces"));
+        py::arg("vertex_boxes"), py::arg("faces"));
 }

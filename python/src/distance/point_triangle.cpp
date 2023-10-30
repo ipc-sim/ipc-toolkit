@@ -11,14 +11,14 @@ void define_point_triangle_distance(py::module_& m)
     m.def(
         "point_triangle_distance", &point_triangle_distance,
         R"ipc_Qu8mg5v7(
-        Compute the distance between a two lines segments in 3D.
+        Compute the distance between a points and a triangle.
 
         Parameters:
-            p : point.
-            t0: first vertex of the triangle.
-            t1: second vertex of the triangle.
-            t2: third vertex of the triangle.
-            dtype: (Optional) point-triangle distance type to compute
+            p: The point.
+            t0: The first vertex of the triangle.
+            t1: The second vertex of the triangle.
+            t2: The third vertex of the triangle.
+            dtype: The point-triangle distance type to compute.
 
         Returns:
             The distance between the point and triangle.
@@ -32,17 +32,17 @@ void define_point_triangle_distance(py::module_& m)
     m.def(
         "point_triangle_distance_gradient", &point_triangle_distance_gradient,
         R"ipc_Qu8mg5v7(
-        Compute the gradient of the distance between a two lines segments.
+        Compute the gradient of the distance between a points and a triangle.
 
         Parameters:
-            p : point
-            t0: first vertex of the triangle
-            t1: second vertex of the triangle
-            t2: third vertex of the triangle
-            dtype: (optional) point-triangle distance type to compute
+            p: The point.
+            t0: The first vertex of the triangle.
+            t1: The second vertex of the triangle.
+            t2: The third vertex of the triangle.
+            dtype: The point-triangle distance type to compute.
 
         Returns:
-            The gradient of the distance wrt ea0, ea1, eb0, and eb1.
+            The gradient of the distance wrt p, t0, t1, and t2.
 
         Note:
             The distance is actually squared distance.
@@ -53,17 +53,17 @@ void define_point_triangle_distance(py::module_& m)
     m.def(
         "point_triangle_distance_hessian", &point_triangle_distance_hessian,
         R"ipc_Qu8mg5v7(
-        Compute the hessian of the distance between a two lines segments.
+        Compute the hessian of the distance between a points and a triangle.
 
         Parameters:
-            p : point
-            t0: first vertex of the triangle
-            t1: second vertex of the triangle
-            t2: third vertex of the triangle
-            dtype: (optional) point-triangle distance type to compute
+            p: The point.
+            t0: The first vertex of the triangle.
+            t1: The second vertex of the triangle.
+            t2: The third vertex of the triangle.
+            dtype: The point-triangle distance type to compute.
 
         Returns:
-            The hessian of the distance wrt ea0, ea1, eb0, and eb1.
+            The hessian of the distance wrt p, t0, t1, and t2.
 
         Note:
             The distance is actually squared distance.

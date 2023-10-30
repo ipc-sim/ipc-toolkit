@@ -30,7 +30,7 @@ void define_ccd(py::module_& m)
             p1_t0: The initial position of the second point.
             p0_t1: The final position of the first point.
             p1_t1: The final position of the second point.
-            min_distance: The minimum distance between the objects.
+            min_distance: The minimum distance between the points.
             tmax: The maximum time to check for collisions.
             tolerance: The error tolerance for the time of impact.
             max_iterations: The maximum number of iterations to perform.
@@ -109,7 +109,7 @@ void define_ccd(py::module_& m)
             return std::make_tuple(r, toi);
         },
         R"ipc_Qu8mg5v7(
-        Computes the time of impact between two edges using continuous collision detection.
+        Computes the time of impact between two edges in 3D using continuous collision detection.
 
         Parameters:
             ea0_t0: The initial position of the first endpoint of the first edge.
@@ -157,7 +157,7 @@ void define_ccd(py::module_& m)
             return std::make_tuple(r, toi);
         },
         R"ipc_Qu8mg5v7(
-        Computes the time of impact between a point and a triangle using continuous collision detection.
+        Computes the time of impact between a point and a triangle in 3D using continuous collision detection.
 
         Parameters:
             p_t0: The initial position of the point.
@@ -185,4 +185,55 @@ void define_ccd(py::module_& m)
         py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
         py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
         py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+
+    m.def(
+        "ccd_strategy",
+        [](const std::function<bool(long, double, bool, double&)>& ccd,
+           const long max_iterations, const double min_distance,
+           const double initial_distance, const double conservative_rescaling) {
+            double toi;
+            bool r = ccd_strategy(
+                ccd, max_iterations, min_distance, initial_distance,
+                conservative_rescaling, toi);
+            return std::make_tuple(r, toi);
+        },
+        R"ipc_Qu8mg5v7(
+        Perform the CCD strategy outlined by Li et al. [2020].
+
+        Parameters:
+            ccd: The continuous collision detection function.
+            max_iterations: The maximum number of iterations to perform.
+            min_distance: The minimum distance between the objects.
+            initial_distance: The initial distance between the objects.
+            conservative_rescaling: The conservative rescaling of the time of impact.
+
+        Returns:
+            Tuple of:
+            True if a collision was detected, false otherwise.
+            Output time of impact.
+        )ipc_Qu8mg5v7",
+        py::arg("ccd"), py::arg("max_iterations"), py::arg("min_distance"),
+        py::arg("initial_distance"), py::arg("conservative_rescaling"));
+
+    m.def(
+        "check_initial_distance",
+        [](const double initial_distance, const double min_distance) {
+            double toi;
+            bool r =
+                check_initial_distance(initial_distance, min_distance, toi);
+            return std::make_tuple(r, toi);
+        },
+        R"ipc_Qu8mg5v7(
+        Helper function to check if the initial distance is less than the minimum distance.
+
+        Parameters:
+            initial_distance: The initial distance between the objects.
+            min_distance: The minimum distance between the objects.
+
+        Returns:
+            Tuple of:
+            True if the initial distance is less than the minimum distance, false otherwise.
+            Set to 0 if the initial distance is less than the minimum distance.
+        )ipc_Qu8mg5v7",
+        py::arg("initial_distance"), py::arg("min_distance"));
 }

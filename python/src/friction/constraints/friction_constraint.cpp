@@ -76,9 +76,9 @@ void define_friction_constraint(py::module_& m)
             Compute the friction force.
 
             Parameters:
-                rest_positions: Rest positions of the vertices (rowwise).
-                lagged_displacements: Previous displacements of the vertices (rowwise).
-                velocities: Current displacements of the vertices (rowwise).
+                rest_positions: Rest positions of the vertices (rowwise)
+                lagged_displacements: Previous displacements of the vertices (rowwise)
+                velocities: Current displacements of the vertices (rowwise)
                 edges: Collision mesh edges
                 faces: Collision mesh faces
                 dhat: Barrier activation distance
@@ -101,9 +101,9 @@ void define_friction_constraint(py::module_& m)
             Compute the friction force Jacobian.
 
             Parameters:
-                rest_positions: Rest positions of the vertices (rowwise).
-                lagged_displacements: Previous displacements of the vertices (rowwise).
-                velocities: Current displacements of the vertices (rowwise).
+                rest_positions: Rest positions of the vertices (rowwise)
+                lagged_displacements: Previous displacements of the vertices (rowwise)
+                velocities: Current displacements of the vertices (rowwise)
                 edges: Collision mesh edges
                 faces: Collision mesh faces
                 dhat: Barrier activation distance

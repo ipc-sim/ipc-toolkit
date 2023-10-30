@@ -7,10 +7,11 @@ using namespace ipc;
 
 void define_vertex_vertex_candidate(py::module_& m)
 {
-    py::class_<VertexVertexCandidate, CollisionStencil>(
+    py::class_<
+        VertexVertexCandidate, CollisionStencil, ContinuousCollisionCandidate>(
         m, "VertexVertexCandidate")
         .def(
-            py::init<long, long>(), "", py::arg("vertex0_id"),
+            py::init<long, long>(), py::arg("vertex0_id"),
             py::arg("vertex1_id"))
         .def(
             "__str__",
@@ -25,7 +26,7 @@ void define_vertex_vertex_candidate(py::module_& m)
                     "VertexVertexCandidate({:d}, {:d})", ev.vertex0_id,
                     ev.vertex1_id);
             })
-        .def("num_vertices", &VertexVertexCandidate::num_vertices, "")
+        .def("num_vertices", &VertexVertexCandidate::num_vertices)
         .def(
             "vertex_ids", &VertexVertexCandidate::vertex_ids,
             R"ipc_Qu8mg5v7(
@@ -39,8 +40,18 @@ void define_vertex_vertex_candidate(py::module_& m)
                 List of vertex indices
             )ipc_Qu8mg5v7",
             py::arg("edges"), py::arg("faces"))
-        .def("__eq__", &VertexVertexCandidate::operator==, "", py::arg("other"))
-        .def("__ne__", &VertexVertexCandidate::operator!=, "", py::arg("other"))
+        .def(
+            "print_ccd_query",
+            [](VertexVertexCandidate& self, const Eigen::MatrixXd& vertices_t0,
+               const Eigen::MatrixXd& vertices_t1, const Eigen::MatrixXi& edges,
+               const Eigen::MatrixXi& faces) {
+                self.write_ccd_query(
+                    std::cout, vertices_t0, vertices_t1, edges, faces);
+            },
+            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
+            py::arg("faces"))
+        .def("__eq__", &VertexVertexCandidate::operator==, py::arg("other"))
+        .def("__ne__", &VertexVertexCandidate::operator!=, py::arg("other"))
         .def(
             "__lt__", &VertexVertexCandidate::operator<,
             "Compare EdgeVertexCandidates for sorting.", py::arg("other"))

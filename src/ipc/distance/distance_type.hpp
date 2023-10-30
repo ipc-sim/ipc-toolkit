@@ -14,22 +14,26 @@ enum class PointEdgeDistanceType {
 
 /// @brief Closest pair between a point and triangle.
 enum class PointTriangleDistanceType {
-    P_T0, ///< The point is closest to triangle vertex zero.
-    P_T1, ///< The point is closest to triangle vertex one.
-    P_T2, ///< The point is closest to triangle vertex two.
-    P_E0, ///< The point is closest to triangle edge zero (vertex zero to one).
-    P_E1, ///< The point is closest to triangle edge one (vertex one to two).
-    P_E2, ///< The point is closest to triangle edge two (vertex two to zero).
-    P_T,  ///< The point is closest to the interior of the triangle.
-    AUTO  ///< Automatically determine the closest pair.
+    P_T0, /// The point is closest to triangle vertex zero.
+    P_T1, /// The point is closest to triangle vertex one.
+    P_T2, /// The point is closest to triangle vertex two.
+    P_E0, /// The point is closest to triangle edge zero (vertex zero to one).
+    P_E1, /// The point is closest to triangle edge one (vertex one to two).
+    P_E2, /// The point is closest to triangle edge two (vertex two to zero).
+    P_T,  /// The point is closest to the interior of the triangle.
+    AUTO  /// Automatically determine the closest pair.
 };
 
 /// @brief Closest pair between two edges.
 enum class EdgeEdgeDistanceType {
-    EA0_EB0, ///< The edges are closest at vertex 0 of edge A and 0 of edge B.
-    EA0_EB1, ///< The edges are closest at vertex 0 of edge A and 1 of edge B.
-    EA1_EB0, ///< The edges are closest at vertex 1 of edge A and 0 of edge B.
-    EA1_EB1, ///< The edges are closest at vertex 1 of edge A and 1 of edge B.
+    /// The edges are closest at vertex 0 of edge A and 0 of edge B.
+    EA0_EB0,
+    /// The edges are closest at vertex 0 of edge A and 1 of edge B.
+    EA0_EB1,
+    /// The edges are closest at vertex 1 of edge A and 0 of edge B.
+    EA1_EB0,
+    /// The edges are closest at vertex 1 of edge A and 1 of edge B.
+    EA1_EB1,
     /// The edges are closest at the interior of edge A and vertex 0 of edge B.
     EA_EB0,
     /// The edges are closest at the interior of edge A and vertex 1 of edge B.
@@ -38,8 +42,10 @@ enum class EdgeEdgeDistanceType {
     EA0_EB,
     /// The edges are closest at vertex 1 of edge A and the interior of edge B.
     EA1_EB,
-    EA_EB, ///< The edges are closest at an interior point of edge A and B.
-    AUTO   ///< Automatically determine the closest pair.
+    /// The edges are closest at an interior point of edge A and B.
+    EA_EB,
+    /// Automatically determine the closest pair.
+    AUTO
 };
 
 /// @brief Determine the closest pair between a point and edge.

@@ -10,17 +10,16 @@ void define_voxel_size_heuristic(py::module_& m)
     m.def(
         "suggest_good_voxel_size",
         py::overload_cast<
-            const Eigen::MatrixXd&, const Eigen::MatrixXi&, double>(
+            const Eigen::MatrixXd&, const Eigen::MatrixXi&, const double>(
             &suggest_good_voxel_size),
-        "", py::arg("vertices"), py::arg("edges"),
-        py::arg("inflation_radius") = 0);
+        py::arg("vertices"), py::arg("edges"), py::arg("inflation_radius") = 0);
 
     m.def(
         "suggest_good_voxel_size",
         py::overload_cast<
             const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-            const Eigen::MatrixXi&, double>(&suggest_good_voxel_size),
-        "", py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
+            const Eigen::MatrixXi&, const double>(&suggest_good_voxel_size),
+        py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
         py::arg("inflation_radius") = 0);
 
     m.def(

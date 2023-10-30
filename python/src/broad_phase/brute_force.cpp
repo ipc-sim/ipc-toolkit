@@ -8,7 +8,14 @@ using namespace ipc;
 void define_brute_force(py::module_& m)
 {
     py::class_<BruteForce, BroadPhase>(m, "BruteForce")
-        .def(py::init())
+        .def(
+            "detect_vertex_vertex_candidates",
+            [](BruteForce& self) {
+                std::vector<VertexVertexCandidate> candidates;
+                self.detect_vertex_vertex_candidates(candidates);
+                return candidates;
+            },
+            "Find the candidate vertex-vertex collisions.")
         .def(
             "detect_edge_vertex_candidates",
             [](BruteForce& self) {
@@ -16,7 +23,7 @@ void define_brute_force(py::module_& m)
                 self.detect_edge_vertex_candidates(candidates);
                 return candidates;
             },
-            "Find the candidate edge-vertex collisisons.")
+            "Find the candidate edge-vertex collisions.")
         .def(
             "detect_edge_edge_candidates",
             [](BruteForce& self) {

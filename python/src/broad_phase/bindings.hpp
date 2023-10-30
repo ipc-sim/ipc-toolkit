@@ -10,5 +10,5 @@ void define_brute_force(py::module_& m);
 void define_bvh(py::module_& m);
 void define_hash_grid(py::module_& m);
 void define_spatial_hash(py::module_& m);
-void define_sweep(py::module_& m);
+void define_sweep_and_tiniest_queue(py::module_& m);
 void define_voxel_size_heuristic(py::module_& m);

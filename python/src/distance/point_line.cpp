@@ -13,9 +13,9 @@ void define_point_line_distance(py::module_& m)
         Compute the distance between a point and line in 2D or 3D.
 
         Parameters:
-            p: point
-            e0: first vertex of the edge defining the line
-            e1: second vertex of the edge defining the line
+            p: The point.
+            e0: The first vertex of the edge defining the line.
+            e1: The second vertex of the edge defining the line.
 
         Returns:
             The distance between the point and line.
@@ -31,9 +31,9 @@ void define_point_line_distance(py::module_& m)
         Compute the gradient of the distance between a point and line.
 
         Parameters:
-            p: point
-            e0: first vertex of the edge defining the line.
-            e1: second vertex of the edge defining the line.
+            p: The point.
+            e0: The first vertex of the edge defining the line.
+            e1: The second vertex of the edge defining the line.
 
         Returns:
             The gradient of the distance wrt p, e0, and e1.
@@ -49,9 +49,9 @@ void define_point_line_distance(py::module_& m)
         Compute the hessian of the distance between a point and line.
 
         Parameters:
-            p: point
-            e0: first vertex of the edge defining the line
-            e1: second vertex of the edge defining the line
+            p: The point.
+            e0: The first vertex of the edge defining the line.
+            e1: The second vertex of the edge defining the line.
 
         Returns:
             The hessian of the distance wrt p, e0, and e1.

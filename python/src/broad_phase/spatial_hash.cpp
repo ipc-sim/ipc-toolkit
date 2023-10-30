@@ -13,22 +13,22 @@ void define_spatial_hash(py::module_& m)
             py::init<
                 const Eigen::MatrixXd&, const Eigen::MatrixXi&,
                 const Eigen::MatrixXi&, double, double>(),
-            "", py::arg("vertices"), py::arg("edges"), py::arg("faces"),
+            py::arg("vertices"), py::arg("edges"), py::arg("faces"),
             py::arg("inflation_radius") = 0, py::arg("voxel_size") = -1)
         .def(
             py::init<
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&,
                 const Eigen::MatrixXi&, const Eigen::MatrixXi&, double,
                 double>(),
-            "", py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("edges"), py::arg("faces"), py::arg("inflation_radius") = 0,
+            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
+            py::arg("faces"), py::arg("inflation_radius") = 0,
             py::arg("voxel_size") = -1)
         .def(
             "build",
             py::overload_cast<
                 const Eigen::MatrixXd&, const Eigen::MatrixXi&,
                 const Eigen::MatrixXi&, double, double>(&SpatialHash::build),
-            "", py::arg("vertices"), py::arg("edges"), py::arg("faces"),
+            py::arg("vertices"), py::arg("edges"), py::arg("faces"),
             py::arg("inflation_radius") = 0, py::arg("voxel_size") = -1)
         .def(
             "build",
@@ -36,10 +36,33 @@ void define_spatial_hash(py::module_& m)
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&,
                 const Eigen::MatrixXi&, const Eigen::MatrixXi&, double, double>(
                 &SpatialHash::build),
-            "", py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("edges"), py::arg("faces"), py::arg("inflation_radius") = 0,
+            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
+            py::arg("faces"), py::arg("inflation_radius") = 0,
             py::arg("voxel_size") = -1)
         .def("clear", &SpatialHash::clear)
+        .def(
+            "is_vertex_index", &SpatialHash::is_vertex_index,
+            "Check if primitive index refers to a vertex.", py::arg("idx"))
+        .def(
+            "is_edge_index", &SpatialHash::is_edge_index,
+            "Check if primitive index refers to an edge.", py::arg("idx"))
+        .def(
+            "is_triangle_index", &SpatialHash::is_triangle_index,
+            "Check if primitive index refers to a triangle.", py::arg("idx"))
+        .def(
+            "to_edge_index", &SpatialHash::to_edge_index,
+            "Convert a primitive index to an edge index.", py::arg("idx"))
+        .def(
+            "to_triangle_index", &SpatialHash::to_triangle_index,
+            "Convert a primitive index to a triangle index.", py::arg("idx"))
+        .def(
+            "detect_vertex_vertex_candidates",
+            [](SpatialHash& self) {
+                std::vector<VertexVertexCandidate> candidates;
+                self.detect_vertex_vertex_candidates(candidates);
+                return candidates;
+            },
+            "Find the candidate vertex-vertex collisions.")
         .def(
             "detect_edge_vertex_candidates",
             [](SpatialHash& self) {
@@ -47,7 +70,7 @@ void define_spatial_hash(py::module_& m)
                 self.detect_edge_vertex_candidates(candidates);
                 return candidates;
             },
-            "Find the candidate edge-vertex collisisons.")
+            "Find the candidate edge-vertex collisions.")
         .def(
             "detect_edge_edge_candidates",
             [](SpatialHash& self) {

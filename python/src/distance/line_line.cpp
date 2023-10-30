@@ -13,10 +13,10 @@ void define_line_line_distance(py::module_& m)
         Compute the distance between a two infinite lines in 3D.
 
         Parameters:
-            ea0: first vertex of the edge defining the first line
-            ea1: second vertex of the edge defining the first line
-            eb0: first vertex of the edge defining the second line
-            eb1: second vertex of the edge defining the second line
+            ea0: The first vertex of the edge defining the first line.
+            ea1: The second vertex of the edge defining the first line.
+            ea0: The first vertex of the edge defining the second line.
+            ea1: The second vertex of the edge defining the second line.
 
         Returns:
             The distance between the two lines.
@@ -35,10 +35,10 @@ void define_line_line_distance(py::module_& m)
         Compute the gradient of the distance between a two lines in 3D.
 
         Parameters:
-            ea0: first vertex of the edge defining the first line
-            ea1: second vertex of the edge defining the first line
-            eb0: first vertex of the edge defining the second line
-            eb1: second vertex of the edge defining the second line
+            ea0: The first vertex of the edge defining the first line.
+            ea1: The second vertex of the edge defining the first line.
+            ea0: The first vertex of the edge defining the second line.
+            ea1: The second vertex of the edge defining the second line.
 
         Returns:
             The gradient of the distance wrt ea0, ea1, eb0, and eb1.
@@ -57,10 +57,10 @@ void define_line_line_distance(py::module_& m)
         Compute the hessian of the distance between a two lines in 3D.
 
         Parameters:
-            ea0: first vertex of the edge defining the first line
-            ea1: second vertex of the edge defining the first line
-            eb0: first vertex of the edge defining the second line
-            eb1: second vertex of the edge defining the second line
+            ea0: The first vertex of the edge defining the first line.
+            ea1: The second vertex of the edge defining the first line.
+            ea0: The first vertex of the edge defining the second line.
+            ea1: The second vertex of the edge defining the second line.
 
         Returns:
             The hessian of the distance wrt ea0, ea1, eb0, and eb1.

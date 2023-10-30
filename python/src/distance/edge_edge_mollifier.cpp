@@ -13,10 +13,10 @@ void define_edge_edge_mollifier(py::module_& m)
         Compute the squared norm of the edge-edge cross product.
 
         Parameters:
-            ea0: first vertex of the first edge
-            ea1: second vertex of the first edge
-            eb0: first vertex of the second edge
-            eb1: second vertex of the second edge
+            ea0: The first vertex of the first edge.
+            ea1: The second vertex of the first edge.
+            eb0: The first vertex of the second edge.
+            eb1: The second vertex of the second edge.
 
         Returns:
             The squared norm of the edge-edge cross product.
@@ -35,10 +35,10 @@ void define_edge_edge_mollifier(py::module_& m)
         Compute the gradient of the squared norm of the edge cross product.
 
         Parameters:
-            ea0: first vertex of the first edge
-            ea1: second vertex of the first edge
-            eb0: first vertex of the second edge
-            eb1: second vertex of the second edge
+            ea0: The first vertex of the first edge.
+            ea1: The second vertex of the first edge.
+            eb0: The first vertex of the second edge.
+            eb1: The second vertex of the second edge.
 
         Returns:
             The gradient of the squared norm of the edge cross product wrt ea0, ea1, eb0, and eb1.
@@ -57,10 +57,10 @@ void define_edge_edge_mollifier(py::module_& m)
         Compute the hessian of the squared norm of the edge cross product.
 
         Parameters:
-            ea0: first vertex of the first edge
-            ea1: second vertex of the first edge
-            eb0: first vertex of the second edge
-            eb1: second vertex of the second edge
+            ea0: The first vertex of the first edge.
+            ea1: The second vertex of the first edge.
+            eb0: The first vertex of the second edge.
+            eb1: The second vertex of the second edge.
 
         Returns:
             The hessian of the squared norm of the edge cross product wrt ea0, ea1, eb0, and eb1.
@@ -74,8 +74,8 @@ void define_edge_edge_mollifier(py::module_& m)
         Mollifier function for edge-edge distance.
 
         Parameters:
-            x: squared norm of the edge-edge cross product
-            eps_x: mollifier activation threshold
+            x: Squared norm of the edge-edge cross product.
+            eps_x: Mollifier activation threshold.
 
         Returns:
             The mollifier coefficient to premultiply the edge-edge distance.
@@ -90,8 +90,8 @@ void define_edge_edge_mollifier(py::module_& m)
         The gradient of the mollifier function for edge-edge distance.
 
         Parameters:
-            x: squared norm of the edge-edge cross product
-            eps_x: mollifier activation threshold
+            x: Squared norm of the edge-edge cross product.
+            eps_x: Mollifier activation threshold.
 
         Returns:
             The gradient of the mollifier function for edge-edge distance wrt x.
@@ -106,8 +106,8 @@ void define_edge_edge_mollifier(py::module_& m)
         The hessian of the mollifier function for edge-edge distance.
 
         Parameters:
-            x: squared norm of the edge-edge cross product
-            eps_x: mollifier activation threshold
+            x: Squared norm of the edge-edge cross product.
+            eps_x: Mollifier activation threshold.
 
         Returns:
             The hessian of the mollifier function for edge-edge distance wrt x.
@@ -128,11 +128,11 @@ void define_edge_edge_mollifier(py::module_& m)
         This helps smooth the non-smoothness at close to parallel edges.
 
         Parameters:
-            ea0: first vertex of the first edge
-            ea1: second vertex of the first edge
-            eb0: first vertex of the second edge
-            eb1: second vertex of the second edge
-            eps_x: mollifier activation threshold
+            ea0: The first vertex of the first edge.
+            ea1: The second vertex of the first edge.
+            eb0: The first vertex of the second edge.
+            eb1: The second vertex of the second edge.
+            eps_x: Mollifier activation threshold.
 
         Returns:
             The mollifier coefficient to premultiply the edge-edge distance.
@@ -152,11 +152,11 @@ void define_edge_edge_mollifier(py::module_& m)
         Compute the gradient of the mollifier for the edge-edge distance.
 
         Parameters:
-            ea0: first vertex of the first edge
-            ea1: second vertex of the first edge
-            eb0: first vertex of the second edge
-            eb1: second vertex of the second edge
-            eps_x: mollifier activation threshold
+            ea0: The first vertex of the first edge.
+            ea1: The second vertex of the first edge.
+            eb0: The first vertex of the second edge.
+            eb1: The second vertex of the second edge.
+            eps_x: Mollifier activation threshold.
 
         Returns:
             The gradient of the mollifier.
@@ -176,11 +176,11 @@ void define_edge_edge_mollifier(py::module_& m)
         Compute the hessian of the mollifier for the edge-edge distance.
 
         Parameters:
-            ea0: first vertex of the first edge
-            ea1: second vertex of the first edge
-            eb0: first vertex of the second edge
-            eb1: second vertex of the second edge
-            eps_x: mollifier activation threshold
+            ea0: The first vertex of the first edge.
+            ea1: The second vertex of the first edge.
+            eb0: The first vertex of the second edge.
+            eb1: The second vertex of the second edge.
+            eps_x: Mollifier activation threshold.
 
         Returns:
             The hessian of the mollifier.
@@ -196,10 +196,10 @@ void define_edge_edge_mollifier(py::module_& m)
         This values is computed based on the edges at rest length.
 
         Parameters:
-            ea0_rest: rest position of the first vertex of the first edge
-            ea1_rest: rest position of the second vertex of the first edge
-            eb0_rest: rest position of the first vertex of the second edge
-            eb1_rest: rest position of the second vertex of the second edge
+            ea0_rest: The rest position of the first vertex of the first edge.
+            ea1_rest: The rest position of the second vertex of the first edge.
+            eb0_rest: The rest position of the first vertex of the second edge.
+            eb1_rest: The rest position of the second vertex of the second edge.
 
         Returns:
             Threshold for edge-edge mollification.

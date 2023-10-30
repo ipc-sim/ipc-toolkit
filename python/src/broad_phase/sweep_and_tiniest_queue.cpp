@@ -5,7 +5,7 @@
 namespace py = pybind11;
 using namespace ipc;
 
-void define_sweep(py::module_& m)
+void define_sweep_and_tiniest_queue(py::module_& m)
 {
     py::class_<CopyMeshBroadPhase, BroadPhase>(m, "CopyMeshBroadPhase");
 
@@ -48,6 +48,19 @@ void define_sweep(py::module_& m)
             py::arg("faces"), py::arg("inflation_radius") = 0)
         .def("clear", &SweepAndTiniestQueue::clear, "Clear any built data.")
         .def(
+            "detect_vertex_vertex_candidates",
+            [](SweepAndTiniestQueue& self) {
+                std::vector<VertexVertexCandidate> candidates;
+                self.detect_vertex_vertex_candidates(candidates);
+                return candidates;
+            },
+            R"ipc_Qu8mg5v7(
+            Find the candidate vertex-vertex collisions.
+
+            Returns:
+                The candidate vertex-vertex collisions.
+            )ipc_Qu8mg5v7")
+        .def(
             "detect_edge_vertex_candidates",
             [](SweepAndTiniestQueue& self) {
                 std::vector<EdgeVertexCandidate> candidates;
@@ -55,10 +68,10 @@ void define_sweep(py::module_& m)
                 return candidates;
             },
             R"ipc_Qu8mg5v7(
-            Find the candidate edge-vertex collisisons.
+            Find the candidate edge-vertex collisions.
 
             Returns:
-                The candidate edge-vertex collisisons.
+                The candidate edge-vertex collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_edge_edge_candidates",
@@ -71,7 +84,7 @@ void define_sweep(py::module_& m)
             Find the candidate edge-edge collisions.
 
             Returns:
-                The candidate edge-edge collisisons.
+                The candidate edge-edge collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_face_vertex_candidates",
@@ -84,7 +97,7 @@ void define_sweep(py::module_& m)
             Find the candidate face-vertex collisions.
 
             Returns:
-                The candidate face-vertex collisisons.
+                The candidate face-vertex collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_edge_face_candidates",
@@ -141,6 +154,19 @@ void define_sweep(py::module_& m)
             py::arg("faces"), py::arg("inflation_radius") = 0)
         .def("clear", &SweepAndTiniestQueueGPU::clear, "Clear any built data.")
         .def(
+            "detect_vertex_vertex_candidates",
+            [](SweepAndTiniestQueueGPU& self) {
+                std::vector<VertexVertexCandidate> candidates;
+                self.detect_vertex_vertex_candidates(candidates);
+                return candidates;
+            },
+            R"ipc_Qu8mg5v7(
+            Find the candidate vertex-vertex collisions.
+
+            Returns:
+                The candidate vertex-vertex collisions.
+            )ipc_Qu8mg5v7")
+        .def(
             "detect_edge_vertex_candidates",
             [](SweepAndTiniestQueueGPU& self) {
                 std::vector<EdgeVertexCandidate> candidates;
@@ -148,10 +174,10 @@ void define_sweep(py::module_& m)
                 return candidates;
             },
             R"ipc_Qu8mg5v7(
-            Find the candidate edge-vertex collisisons.
+            Find the candidate edge-vertex collisions.
 
             Returns:
-                The candidate edge-vertex collisisons.
+                The candidate edge-vertex collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_edge_edge_candidates",
@@ -164,7 +190,7 @@ void define_sweep(py::module_& m)
             Find the candidate edge-edge collisions.
 
             Returns:
-                The candidate edge-edge collisisons.
+                The candidate edge-edge collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_face_vertex_candidates",
@@ -177,7 +203,7 @@ void define_sweep(py::module_& m)
             Find the candidate face-vertex collisions.
 
             Returns:
-                The candidate face-vertex collisisons.
+                The candidate face-vertex collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_edge_face_candidates",
