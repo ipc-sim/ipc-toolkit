@@ -1,6 +1,7 @@
 set(SOURCES
   # Tests
   test_distance_type.cpp
+  test_edge_edge_mollifier.cpp
   test_edge_edge.cpp
   test_line_line.cpp
   test_point_edge.cpp

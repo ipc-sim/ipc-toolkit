@@ -4,8 +4,143 @@
 #include <catch2/catch_approx.hpp>
 
 #include <ipc/collisions/collision_constraints.hpp>
+#include <ipc/distance/edge_edge_mollifier.hpp>
+#include <ipc/utils/local_to_global.hpp>
+
+#include <finitediff.hpp>
 
 using namespace ipc;
+
+TEST_CASE("Constraint Shape Derivative", "[constraint][shape_derivative]")
+{
+    Eigen::MatrixXd V;
+    Eigen::MatrixXi E, F;
+    tests::load_mesh("cube.obj", V, E, F);
+
+    const bool use_convergent_formulation = GENERATE(false);
+    const double dhat = 1e-1;
+
+    // Stack cube on top of itself
+    E.conservativeResize(E.rows() * 2, E.cols());
+    E.bottomRows(E.rows() / 2) = E.topRows(E.rows() / 2).array() + V.rows();
+
+    F.conservativeResize(F.rows() * 2, F.cols());
+    F.bottomRows(F.rows() / 2) = F.topRows(F.rows() / 2).array() + V.rows();
+
+    V.conservativeResize(V.rows() * 2, V.cols());
+    V.bottomRows(V.rows() / 2) = V.topRows(V.rows() / 2);
+    V.bottomRows(V.rows() / 2).col(1).array() += 1 + 0.1 * dhat;
+
+    // Rest positions
+    Eigen::MatrixXd X = V;
+    X.bottomRows(V.rows() / 2).col(1).array() += 1.0;
+
+    // Displacements
+    const Eigen::MatrixXd U = V - X;
+
+    const int ndof = V.size();
+
+    // ------------------------------------------------------------------------
+
+    CollisionMesh mesh(X, E, F);
+    mesh.init_area_jacobians();
+
+    Candidates candidates;
+    candidates.build(mesh, V, dhat);
+
+    CollisionConstraints constraints;
+    constraints.set_use_convergent_formulation(use_convergent_formulation);
+    constraints.set_are_shape_derivatives_enabled(true);
+    constraints.build(candidates, mesh, V, dhat);
+
+    REQUIRE(constraints.ee_constraints.size() > 0);
+
+    for (int i = 0; i < constraints.size(); i++) {
+        if (use_convergent_formulation)
+            break;
+
+        std::vector<Eigen::Triplet<double>> triplets;
+        constraints[i].compute_shape_derivative(X, V, E, F, dhat, triplets);
+        Eigen::SparseMatrix<double> JF_wrt_X_sparse(ndof, ndof);
+        JF_wrt_X_sparse.setFromTriplets(triplets.begin(), triplets.end());
+        const Eigen::MatrixXd JF_wrt_X = Eigen::MatrixXd(JF_wrt_X_sparse);
+
+        auto F_X = [&](const Eigen::VectorXd& x) -> Eigen::VectorXd {
+            // TODO: Recompute weight based on x
+            assert(use_convergent_formulation == false);
+            // Recompute eps_x based on x
+            double prev_eps_x;
+            if (constraints.is_edge_edge(i)) {
+                EdgeEdgeConstraint& c =
+                    dynamic_cast<EdgeEdgeConstraint&>(constraints[i]);
+                prev_eps_x = c.eps_x;
+                c.eps_x = edge_edge_mollifier_threshold(
+                    x.segment<3>(3 * E(c.edge0_id, 0)),
+                    x.segment<3>(3 * E(c.edge0_id, 1)),
+                    x.segment<3>(3 * E(c.edge1_id, 0)),
+                    x.segment<3>(3 * E(c.edge1_id, 1)));
+            }
+
+            Eigen::VectorXd grad = Eigen::VectorXd::Zero(ndof);
+            local_gradient_to_global_gradient(
+                constraints[i].compute_potential_gradient(
+                    fd::unflatten(x, X.cols()) + U, E, F, dhat),
+                constraints[i].vertex_ids(E, F), V.cols(), grad);
+
+            // Restore eps_x
+            if (constraints.is_edge_edge(i)) {
+                dynamic_cast<EdgeEdgeConstraint&>(constraints[i]).eps_x =
+                    prev_eps_x;
+            }
+
+            return grad;
+        };
+
+        Eigen::MatrixXd fd_JF_wrt_X;
+        fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
+        CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
+        if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
+            tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    const Eigen::MatrixXd JF_wrt_X =
+        constraints.compute_shape_derivative(mesh, V, dhat);
+
+    Eigen::MatrixXd sum = Eigen::MatrixXd::Zero(ndof, ndof);
+    for (int i = 0; i < constraints.size(); i++) {
+        std::vector<Eigen::Triplet<double>> triplets;
+        constraints[i].compute_shape_derivative(X, V, E, F, dhat, triplets);
+        Eigen::SparseMatrix<double> JF_wrt_X_sparse(ndof, ndof);
+        JF_wrt_X_sparse.setFromTriplets(triplets.begin(), triplets.end());
+        sum += Eigen::MatrixXd(JF_wrt_X_sparse);
+    }
+    CHECK(fd::compare_jacobian(JF_wrt_X, sum));
+
+    auto F_X = [&](const Eigen::VectorXd& x) {
+        const Eigen::MatrixXd fd_X = fd::unflatten(x, X.cols());
+        const Eigen::MatrixXd fd_V = fd_X + U;
+
+        CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
+
+        // WARNING: This breaks the tests because EE distances are C0 when edges
+        // are parallel
+        // CollisionConstraints fd_constraints;
+        // fd_constraints.set_use_convergent_formulation(
+        //     constraints.use_convergent_formulation());
+        // fd_constraints.build(fd_mesh, fd_V, dhat);
+
+        return constraints.compute_potential_gradient(fd_mesh, fd_V, dhat);
+    };
+    Eigen::MatrixXd fd_JF_wrt_X;
+    fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
+    CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
+    if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
+        tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
+    }
+}
 
 TEST_CASE("Codim. Vertex-Vertex Constraints", "[constraints][codim]")
 {
@@ -169,4 +304,23 @@ TEST_CASE("Plane-Vertex Constraint", "[constraint][plane-vertex]")
     CHECK(
         c.compute_distance_hessian(Eigen::RowVector3d(0, 2, 0), E, F)
         == 2 * n * n.transpose());
+}
+
+TEST_CASE("is_*", "[constraints]")
+{
+    CollisionConstraints constraints;
+    constraints.vv_constraints.emplace_back(0, 1);
+    constraints.ev_constraints.emplace_back(0, 1);
+    constraints.ee_constraints.emplace_back(0, 1, 0.0);
+    constraints.fv_constraints.emplace_back(0, 1);
+    constraints.pv_constraints.emplace_back(
+        Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 1, 0), 0);
+
+    for (int i = 0; i < constraints.size(); i++) {
+        CHECK(constraints.is_vertex_vertex(i) == (i == 0));
+        CHECK(constraints.is_edge_vertex(i) == (i == 1));
+        CHECK(constraints.is_edge_edge(i) == (i == 2));
+        CHECK(constraints.is_face_vertex(i) == (i == 3));
+        CHECK(constraints.is_plane_vertex(i) == (i == 4));
+    }
 }
