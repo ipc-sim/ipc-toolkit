@@ -27,7 +27,8 @@ void define_collision_constraint(py::module_& m)
             py::arg("dhat"), py::arg("project_hessian_to_psd"))
         .def(
             "compute_shape_derivative",
-            [](CollisionConstraint& self, const Eigen::MatrixXd& rest_positions,
+            [](const CollisionConstraint& self,
+               const Eigen::MatrixXd& rest_positions,
                const Eigen::MatrixXd& vertices, const Eigen::MatrixXi& edges,
                const Eigen::MatrixXi& faces, const double dhat) {
                 std::vector<Eigen::Triplet<double>> triplets;

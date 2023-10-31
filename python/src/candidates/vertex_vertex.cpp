@@ -26,30 +26,6 @@ void define_vertex_vertex_candidate(py::module_& m)
                     "VertexVertexCandidate({:d}, {:d})", ev.vertex0_id,
                     ev.vertex1_id);
             })
-        .def("num_vertices", &VertexVertexCandidate::num_vertices)
-        .def(
-            "vertex_ids", &VertexVertexCandidate::vertex_ids,
-            R"ipc_Qu8mg5v7(
-            Get the indices of the vertices
-
-            Parameters:
-                edges: edge matrix of mesh
-                faces: face matrix of mesh
-
-            Returns:
-                List of vertex indices
-            )ipc_Qu8mg5v7",
-            py::arg("edges"), py::arg("faces"))
-        .def(
-            "print_ccd_query",
-            [](VertexVertexCandidate& self, const Eigen::MatrixXd& vertices_t0,
-               const Eigen::MatrixXd& vertices_t1, const Eigen::MatrixXi& edges,
-               const Eigen::MatrixXi& faces) {
-                self.write_ccd_query(
-                    std::cout, vertices_t0, vertices_t1, edges, faces);
-            },
-            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
-            py::arg("faces"))
         .def("__eq__", &VertexVertexCandidate::operator==, py::arg("other"))
         .def("__ne__", &VertexVertexCandidate::operator!=, py::arg("other"))
         .def(

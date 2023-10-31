@@ -22,10 +22,6 @@ void define_edge_edge_candidate(py::module_& m)
                 return fmt::format(
                     "EdgeEdgeCandidate({:d}, {:d})", ev.edge0_id, ev.edge1_id);
             })
-        .def("num_vertices", &EdgeEdgeCandidate::num_vertices)
-        .def(
-            "vertex_ids", &EdgeEdgeCandidate::vertex_ids, py::arg("edges"),
-            py::arg("faces"))
         .def("__eq__", &EdgeEdgeCandidate::operator==, py::arg("other"))
         .def("__ne__", &EdgeEdgeCandidate::operator!=, py::arg("other"))
         .def(

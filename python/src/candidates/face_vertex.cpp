@@ -23,20 +23,6 @@ void define_face_vertex_candidate(py::module_& m)
                     "FaceVertexCandidate({:d}, {:d})", ev.face_id,
                     ev.vertex_id);
             })
-        .def("num_vertices", &FaceVertexCandidate::num_vertices)
-        .def(
-            "vertex_ids", &FaceVertexCandidate::vertex_ids, py::arg("edges"),
-            py::arg("faces"))
-        .def(
-            "print_ccd_query",
-            [](FaceVertexCandidate& self, const Eigen::MatrixXd& vertices_t0,
-               const Eigen::MatrixXd& vertices_t1, const Eigen::MatrixXi& edges,
-               const Eigen::MatrixXi& faces) -> void {
-                self.write_ccd_query(
-                    std::cout, vertices_t0, vertices_t1, edges, faces);
-            },
-            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
-            py::arg("faces"))
         .def("__eq__", &FaceVertexCandidate::operator==, py::arg("other"))
         .def("__ne__", &FaceVertexCandidate::operator!=, py::arg("other"))
         .def(
