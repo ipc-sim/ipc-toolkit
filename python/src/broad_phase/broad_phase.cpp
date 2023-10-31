@@ -72,7 +72,7 @@ void define_broad_phase(py::module_& m)
         .def("clear", &BroadPhase::clear, "Clear any built data.")
         .def(
             "detect_vertex_vertex_candidates",
-            [](BroadPhase& self) {
+            [](const BroadPhase& self) {
                 std::vector<VertexVertexCandidate> candidates;
                 self.detect_vertex_vertex_candidates(candidates);
                 return candidates;
@@ -85,7 +85,7 @@ void define_broad_phase(py::module_& m)
             )ipc_Qu8mg5v7")
         .def(
             "detect_edge_vertex_candidates",
-            [](BroadPhase& self) {
+            [](const BroadPhase& self) {
                 std::vector<EdgeVertexCandidate> candidates;
                 self.detect_edge_vertex_candidates(candidates);
                 return candidates;
@@ -98,7 +98,7 @@ void define_broad_phase(py::module_& m)
             )ipc_Qu8mg5v7")
         .def(
             "detect_edge_edge_candidates",
-            [](BroadPhase& self) {
+            [](const BroadPhase& self) {
                 std::vector<EdgeEdgeCandidate> candidates;
                 self.detect_edge_edge_candidates(candidates);
                 return candidates;
@@ -111,7 +111,7 @@ void define_broad_phase(py::module_& m)
             )ipc_Qu8mg5v7")
         .def(
             "detect_face_vertex_candidates",
-            [](BroadPhase& self) {
+            [](const BroadPhase& self) {
                 std::vector<FaceVertexCandidate> candidates;
                 self.detect_face_vertex_candidates(candidates);
                 return candidates;
@@ -124,7 +124,7 @@ void define_broad_phase(py::module_& m)
             )ipc_Qu8mg5v7")
         .def(
             "detect_edge_face_candidates",
-            [](BroadPhase& self) {
+            [](const BroadPhase& self) {
                 std::vector<EdgeFaceCandidate> candidates;
                 self.detect_edge_face_candidates(candidates);
                 return candidates;
@@ -137,7 +137,7 @@ void define_broad_phase(py::module_& m)
             )ipc_Qu8mg5v7")
         .def(
             "detect_collision_candidates",
-            [](BroadPhase& self, int dim) {
+            [](const BroadPhase& self, int dim) {
                 Candidates candidates;
                 self.detect_collision_candidates(dim, candidates);
                 return candidates;

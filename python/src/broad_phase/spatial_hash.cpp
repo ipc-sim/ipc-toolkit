@@ -55,46 +55,6 @@ void define_spatial_hash(py::module_& m)
         .def(
             "to_triangle_index", &SpatialHash::to_triangle_index,
             "Convert a primitive index to a triangle index.", py::arg("idx"))
-        .def(
-            "detect_vertex_vertex_candidates",
-            [](SpatialHash& self) {
-                std::vector<VertexVertexCandidate> candidates;
-                self.detect_vertex_vertex_candidates(candidates);
-                return candidates;
-            },
-            "Find the candidate vertex-vertex collisions.")
-        .def(
-            "detect_edge_vertex_candidates",
-            [](SpatialHash& self) {
-                std::vector<EdgeVertexCandidate> candidates;
-                self.detect_edge_vertex_candidates(candidates);
-                return candidates;
-            },
-            "Find the candidate edge-vertex collisions.")
-        .def(
-            "detect_edge_edge_candidates",
-            [](SpatialHash& self) {
-                std::vector<EdgeEdgeCandidate> candidates;
-                self.detect_edge_edge_candidates(candidates);
-                return candidates;
-            },
-            "Find the candidate edge-edge collisions.")
-        .def(
-            "detect_face_vertex_candidates",
-            [](SpatialHash& self) {
-                std::vector<FaceVertexCandidate> candidates;
-                self.detect_face_vertex_candidates(candidates);
-                return candidates;
-            },
-            "Find the candidate face-vertex collisions.")
-        .def(
-            "detect_edge_face_candidates",
-            [](SpatialHash& self) {
-                std::vector<EdgeFaceCandidate> candidates;
-                self.detect_edge_face_candidates(candidates);
-                return candidates;
-            },
-            "Find the candidate edge-face intersections.")
         .def_readwrite("left_bottom_corner", &SpatialHash::left_bottom_corner)
         .def_readwrite("right_top_corner", &SpatialHash::right_top_corner)
         .def_readwrite("voxel_count", &SpatialHash::voxel_count)
