@@ -14,14 +14,14 @@ enum class PointEdgeDistanceType {
 
 /// @brief Closest pair between a point and triangle.
 enum class PointTriangleDistanceType {
-    P_T0, /// The point is closest to triangle vertex zero.
-    P_T1, /// The point is closest to triangle vertex one.
-    P_T2, /// The point is closest to triangle vertex two.
-    P_E0, /// The point is closest to triangle edge zero (vertex zero to one).
-    P_E1, /// The point is closest to triangle edge one (vertex one to two).
-    P_E2, /// The point is closest to triangle edge two (vertex two to zero).
-    P_T,  /// The point is closest to the interior of the triangle.
-    AUTO  /// Automatically determine the closest pair.
+    P_T0, ///< The point is closest to triangle vertex zero.
+    P_T1, ///< The point is closest to triangle vertex one.
+    P_T2, ///< The point is closest to triangle vertex two.
+    P_E0, ///< The point is closest to triangle edge zero (vertex zero to one).
+    P_E1, ///< The point is closest to triangle edge one (vertex one to two).
+    P_E2, ///< The point is closest to triangle edge two (vertex two to zero).
+    P_T,  ///< The point is closest to the interior of the triangle.
+    AUTO  ///< Automatically determine the closest pair.
 };
 
 /// @brief Closest pair between two edges.

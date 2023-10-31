@@ -23,7 +23,7 @@ void define_aabb(py::module_& m)
             py::overload_cast<const VectorMax3d&, const double>(
                 &AABB::from_point),
             R"ipc_Qu8mg5v7(
-            Construct a AABB for a static point.
+            Construct an AABB for a static point.
 
             Parameters:
                 p: The point's position.
@@ -39,7 +39,7 @@ void define_aabb(py::module_& m)
                 const VectorMax3d&, const VectorMax3d&, const double>(
                 &AABB::from_point),
             R"ipc_Qu8mg5v7(
-            Construct a AABB for a moving point (i.e. temporal edge).
+            Construct an AABB for a moving point (i.e. temporal edge).
 
             Parameters:
                 p_t0: The point's position at time t=0.

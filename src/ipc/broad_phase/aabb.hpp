@@ -25,14 +25,14 @@ public:
     {
     }
 
-    /// @brief Construct a AABB for a static point.
+    /// @brief Construct an AABB for a static point.
     /// @param p The point's position.
     /// @param inflation_radius Radius of a sphere around the point which the AABB encloses.
     /// @return The constructed AABB.
     static AABB
     from_point(const VectorMax3d& p, const double inflation_radius = 0);
 
-    /// @brief Construct a AABB for a moving point (i.e. temporal edge).
+    /// @brief Construct an AABB for a moving point (i.e. temporal edge).
     /// @param p_t0 The point's position at time t=0.
     /// @param p_t1 The point's position at time t=1.
     /// @param inflation_radius Radius of a capsule around the temporal edge which the AABB encloses.
