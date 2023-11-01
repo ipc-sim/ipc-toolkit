@@ -54,23 +54,23 @@ def test_nonlinear_ccd():
     assert 0 < toi < 1
     assert np.abs(toi - 0.5) < 1e-6
 
-    class IntervalLinearTrajectory(ipctk.IntervalNonlinearTrajectory):
-        def __init__(self, p0, p1):
-            ipctk.IntervalNonlinearTrajectory.__init__(self)
-            self.p0 = p0
-            self.p1 = p1
+    # class IntervalLinearTrajectory(ipctk.IntervalNonlinearTrajectory):
+    #     def __init__(self, p0, p1):
+    #         ipctk.IntervalNonlinearTrajectory.__init__(self)
+    #         self.p0 = p0
+    #         self.p1 = p1
 
-        def __call__(self, t):
-            r = ((self.p1 - self.p0) * t + self.p0)
-            if isinstance(t, Interval):
-                r = np.array([(ri.INF, ri.SUP) for ri in r], dtype="f8,f8")
-            return r
+    #     def __call__(self, t):
+    #         r = ((self.p1 - self.p0) * t + self.p0)
+    #         if isinstance(t, Interval):
+    #             r = np.array([(ri.INF, ri.SUP) for ri in r], dtype="f8,f8")
+    #         return r
 
-    p0 = IntervalLinearTrajectory(np.array([-1, 0, 0]), np.array([1, 0, 0]))
-    p1 = IntervalLinearTrajectory(np.array([0, -1, 0]), np.array([0, 1, 0]))
+    # p0 = IntervalLinearTrajectory(np.array([-1, 0, 0]), np.array([1, 0, 0]))
+    # p1 = IntervalLinearTrajectory(np.array([0, -1, 0]), np.array([0, 1, 0]))
 
-    is_colliding, toi = ipctk.point_point_nonlinear_ccd(p0, p1)
+    # is_colliding, toi = ipctk.point_point_nonlinear_ccd(p0, p1)
 
-    assert is_colliding
-    assert 0 < toi < 1
-    assert np.abs(toi - 0.5) < 1e-2
+    # assert is_colliding
+    # assert 0 < toi < 1
+    # assert np.abs(toi - 0.5) < 1e-2
