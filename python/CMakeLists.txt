@@ -30,6 +30,7 @@ pybind11_add_module(ipctk
   src/ccd/ccd.cpp
   src/ccd/additive_ccd.cpp
   src/ccd/inexact_point_edge.cpp
+  src/ccd/nonlinear_ccd.cpp
   src/ccd/point_static_plane.cpp
 
   src/collisions/collision_constraint.cpp
@@ -67,6 +68,7 @@ pybind11_add_module(ipctk
 
   src/utils/area_gradient.cpp
   src/utils/eigen_ext.cpp
+  src/utils/interval.cpp
   src/utils/intersection.cpp
   src/utils/logger.cpp
   src/utils/thread_limiter.cpp

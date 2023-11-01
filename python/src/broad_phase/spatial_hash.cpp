@@ -13,22 +13,22 @@ void define_spatial_hash(py::module_& m)
             py::init<
                 const Eigen::MatrixXd&, const Eigen::MatrixXi&,
                 const Eigen::MatrixXi&, double, double>(),
-            "", py::arg("vertices"), py::arg("edges"), py::arg("faces"),
+            py::arg("vertices"), py::arg("edges"), py::arg("faces"),
             py::arg("inflation_radius") = 0, py::arg("voxel_size") = -1)
         .def(
             py::init<
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&,
                 const Eigen::MatrixXi&, const Eigen::MatrixXi&, double,
                 double>(),
-            "", py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("edges"), py::arg("faces"), py::arg("inflation_radius") = 0,
+            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
+            py::arg("faces"), py::arg("inflation_radius") = 0,
             py::arg("voxel_size") = -1)
         .def(
             "build",
             py::overload_cast<
                 const Eigen::MatrixXd&, const Eigen::MatrixXi&,
                 const Eigen::MatrixXi&, double, double>(&SpatialHash::build),
-            "", py::arg("vertices"), py::arg("edges"), py::arg("faces"),
+            py::arg("vertices"), py::arg("edges"), py::arg("faces"),
             py::arg("inflation_radius") = 0, py::arg("voxel_size") = -1)
         .def(
             "build",
@@ -36,42 +36,25 @@ void define_spatial_hash(py::module_& m)
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&,
                 const Eigen::MatrixXi&, const Eigen::MatrixXi&, double, double>(
                 &SpatialHash::build),
-            "", py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("edges"), py::arg("faces"), py::arg("inflation_radius") = 0,
+            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
+            py::arg("faces"), py::arg("inflation_radius") = 0,
             py::arg("voxel_size") = -1)
         .def("clear", &SpatialHash::clear)
         .def(
-            "detect_edge_vertex_candidates",
-            [](SpatialHash& self) {
-                std::vector<EdgeVertexCandidate> candidates;
-                self.detect_edge_vertex_candidates(candidates);
-                return candidates;
-            },
-            "Find the candidate edge-vertex collisisons.")
+            "is_vertex_index", &SpatialHash::is_vertex_index,
+            "Check if primitive index refers to a vertex.", py::arg("idx"))
         .def(
-            "detect_edge_edge_candidates",
-            [](SpatialHash& self) {
-                std::vector<EdgeEdgeCandidate> candidates;
-                self.detect_edge_edge_candidates(candidates);
-                return candidates;
-            },
-            "Find the candidate edge-edge collisions.")
+            "is_edge_index", &SpatialHash::is_edge_index,
+            "Check if primitive index refers to an edge.", py::arg("idx"))
         .def(
-            "detect_face_vertex_candidates",
-            [](SpatialHash& self) {
-                std::vector<FaceVertexCandidate> candidates;
-                self.detect_face_vertex_candidates(candidates);
-                return candidates;
-            },
-            "Find the candidate face-vertex collisions.")
+            "is_triangle_index", &SpatialHash::is_triangle_index,
+            "Check if primitive index refers to a triangle.", py::arg("idx"))
         .def(
-            "detect_edge_face_candidates",
-            [](SpatialHash& self) {
-                std::vector<EdgeFaceCandidate> candidates;
-                self.detect_edge_face_candidates(candidates);
-                return candidates;
-            },
-            "Find the candidate edge-face intersections.")
+            "to_edge_index", &SpatialHash::to_edge_index,
+            "Convert a primitive index to an edge index.", py::arg("idx"))
+        .def(
+            "to_triangle_index", &SpatialHash::to_triangle_index,
+            "Convert a primitive index to a triangle index.", py::arg("idx"))
         .def_readwrite("left_bottom_corner", &SpatialHash::left_bottom_corner)
         .def_readwrite("right_top_corner", &SpatialHash::right_top_corner)
         .def_readwrite("voxel_count", &SpatialHash::voxel_count)

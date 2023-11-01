@@ -8,7 +8,7 @@ using namespace ipc;
 void define_candidates(py::module_& m)
 {
     py::class_<Candidates>(m, "Candidates")
-        .def(py::init(), "")
+        .def(py::init())
         .def(
             "build",
             py::overload_cast<
@@ -48,9 +48,9 @@ void define_candidates(py::module_& m)
             py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
             py::arg("inflation_radius") = 0,
             py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD)
-        .def("__len__", &Candidates::size, "")
-        .def("empty", &Candidates::empty, "")
-        .def("clear", &Candidates::clear, "")
+        .def("__len__", &Candidates::size)
+        .def("empty", &Candidates::empty)
+        .def("clear", &Candidates::clear)
         .def(
             "__getitem__",
             [](Candidates& self, size_t idx) -> ContinuousCollisionCandidate& {
@@ -98,7 +98,7 @@ void define_candidates(py::module_& m)
                 max_iterations: The maximum number of iterations for the CCD algorithm.
 
             Returns:
-                A step-size $\in [0, 1]$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
+                A step-size :math:`\in [0, 1]` that is collision free. A value of 1.0 if a full step and 0.0 is no step.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
             py::arg("min_distance") = 0.0,
@@ -137,9 +137,10 @@ void define_candidates(py::module_& m)
             py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
             py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS)
         .def(
-            "save_obj", &Candidates::save_obj, "", py::arg("filename"),
+            "save_obj", &Candidates::save_obj, py::arg("filename"),
             py::arg("vertices"), py::arg("edges"), py::arg("faces"))
-        .def_readwrite("ev_candidates", &Candidates::ev_candidates, "")
-        .def_readwrite("ee_candidates", &Candidates::ee_candidates, "")
-        .def_readwrite("fv_candidates", &Candidates::fv_candidates, "");
+        .def_readwrite("vv_candidates", &Candidates::vv_candidates)
+        .def_readwrite("ev_candidates", &Candidates::ev_candidates)
+        .def_readwrite("ee_candidates", &Candidates::ee_candidates)
+        .def_readwrite("fv_candidates", &Candidates::fv_candidates);
 }

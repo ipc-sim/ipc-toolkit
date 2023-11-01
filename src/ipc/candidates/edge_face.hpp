@@ -26,8 +26,10 @@ public:
         return H::combine(std::move(h), fv.edge_id, fv.face_id);
     }
 
-    long edge_id; ///< @brief ID of the edge
-    long face_id; ///< @brief ID of the face
+    /// @brief ID of the edge
+    long edge_id;
+    /// @brief ID of the face
+    long face_id;
 };
 
 } // namespace ipc

@@ -20,7 +20,6 @@ public:
     virtual VectorMax3d operator()(const double t) const = 0;
 
     /// @brief Compute the maximum distance from the nonlinear trajectory to a linearized trajectory
-    /// @note This uses interval arithmetic to compute the maximum distance. If you know a tighter bound on the maximum distance, it is recommended to override this function.
     /// @param[in] t0 Start time of the trajectory
     /// @param[in] t1 End time of the trajectory
     virtual double

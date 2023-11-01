@@ -36,12 +36,14 @@ void define_smooth_friction_mollifier(py::module_& m)
         Compute the derivative of f0_SF divided by s (:math:`\frac{f_0'(s)}{s}`).
 
         .. math::
+
             f_1(s) = f_0'(s) = \begin{cases}
             -\frac{s^2}{\epsilon_v^2}+\frac{2 s}{\epsilon_v}, & |s| < \epsilon_v
             \newline 1, & |s| \geq \epsilon_v
             \end{cases}
 
         .. math::
+
             \frac{f_1(s)}{s} = \begin{cases}
             -\frac{s}{\epsilon_v^2}+\frac{2}{\epsilon_v}, & |s| < \epsilon_v
             \newline \frac{1}{s}, & |s| \geq \epsilon_v

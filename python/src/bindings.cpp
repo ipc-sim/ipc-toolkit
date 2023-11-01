@@ -21,7 +21,7 @@ PYBIND11_MODULE(ipctk, m)
     define_bvh(m);
     define_hash_grid(m);
     define_spatial_hash(m);
-    define_sweep(m);
+    define_sweep_and_tiniest_queue(m);
     define_voxel_size_heuristic(m);
 
     // candidates
@@ -39,6 +39,7 @@ PYBIND11_MODULE(ipctk, m)
     define_ccd(m);
     define_additive_ccd(m);
     define_inexact_point_edge(m);
+    define_nonlinear_ccd(m);
     define_point_static_plane(m);
 
     // collisions
@@ -83,6 +84,7 @@ PYBIND11_MODULE(ipctk, m)
     // utils
     define_area_gradient(m);
     define_eigen_ext(m);
+    define_interval(m);
     define_intersection(m);
     define_logger(m);
     define_thread_limiter(m);
