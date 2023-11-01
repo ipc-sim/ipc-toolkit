@@ -84,6 +84,7 @@ PYBIND11_MODULE(ipctk, m)
     // utils
     define_area_gradient(m);
     define_eigen_ext(m);
+    define_interval(m);
     define_intersection(m);
     define_logger(m);
     define_thread_limiter(m);

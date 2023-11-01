@@ -60,12 +60,12 @@ typedef MatrixX<filib::Interval> MatrixXI;
 /// @brief Compute the L2 norm of a 3-dimensional interval
 /// @param v The 3-dimensional interval
 /// @return The L2 norm of the interval
-filib::Interval squared_norm(const Eigen::Ref<const VectorMax3I>& v); // L2 norm
+filib::Interval squared_norm(const Eigen::Ref<const VectorXI>& v); // L2 norm
 
 /// @brief Compute the L2 norm of a 3-dimensional interval
 /// @param v The 3-dimensional interval
 /// @return The L2 norm of the interval
-filib::Interval norm(const Eigen::Ref<const VectorMax3I>& v); // L2 norm
+filib::Interval norm(const Eigen::Ref<const VectorXI>& v); // L2 norm
 
 } // namespace ipc
 

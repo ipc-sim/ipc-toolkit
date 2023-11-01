@@ -255,14 +255,14 @@ bool edge_edge_nonlinear_ccd(
             return ticcd::edgeEdgeCCD(
                 ea0(ti0), ea1(ti0), eb0(ti0), eb1(ti0), //
                 ea0(ti1), ea1(ti1), eb0(ti1), eb1(ti1),
-                Eigen::Array3d::Constant(-1),           // rounding error (auto)
-                _min_distance,    // minimum separation distance
-                _toi,             // time of impact
-                tolerance,        // delta
-                1.0,              // maximum time to check
-                max_iterations,   // maximum number of iterations
-                output_tolerance, // delta_actual
-                no_zero_toi);     // no zero toi
+                Eigen::Array3d::Constant(-1), // rounding error (auto)
+                _min_distance,                // minimum separation distance
+                _toi,                         // time of impact
+                tolerance,                    // delta
+                1.0,                          // maximum time to check
+                max_iterations,               // maximum number of iterations
+                output_tolerance,             // delta_actual
+                no_zero_toi);                 // no zero toi
         },
         toi, tmax, min_sep_distance, conservative_rescaling);
 }
@@ -295,14 +295,14 @@ bool point_triangle_nonlinear_ccd(
             return ticcd::vertexFaceCCD(
                 p(ti0), t0(ti0), t1(ti0), t2(ti0), //
                 p(ti1), t0(ti1), t1(ti1), t2(ti1),
-                Eigen::Array3d::Constant(-1),      // rounding error (auto)
-                _min_distance,    // minimum separation distance
-                _toi,             // time of impact
-                tolerance,        // delta
-                1.0,              // maximum time to check
-                max_iterations,   // maximum number of iterations
-                output_tolerance, // delta_actual
-                no_zero_toi);     // no zero toi
+                Eigen::Array3d::Constant(-1), // rounding error (auto)
+                _min_distance,                // minimum separation distance
+                _toi,                         // time of impact
+                tolerance,                    // delta
+                1.0,                          // maximum time to check
+                max_iterations,               // maximum number of iterations
+                output_tolerance,             // delta_actual
+                no_zero_toi);                 // no zero toi
         },
         toi, tmax, min_distance, conservative_rescaling);
 }

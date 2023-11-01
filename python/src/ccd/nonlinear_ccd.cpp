@@ -5,9 +5,32 @@
 namespace py = pybind11;
 using namespace ipc;
 
+class PyNonlinearTrajectory : public NonlinearTrajectory {
+public:
+    // clang-format off
+    using NonlinearTrajectory::NonlinearTrajectory; // Inherit constructors
+    VectorMax3d operator()(const double t) const override { PYBIND11_OVERRIDE_PURE_NAME(VectorMax3d, NonlinearTrajectory, "__call__", operator(), t); }
+    double max_distance_from_linear(const double t0, const double t1) const override { PYBIND11_OVERRIDE_PURE(double, NonlinearTrajectory, max_distance_from_linear, t0, t1); }
+    // clang-format on
+};
+
+#ifdef IPC_TOOLKIT_WITH_FILIB
+class PyIntervalNonlinearTrajectory : public IntervalNonlinearTrajectory {
+public:
+    // clang-format off
+    using IntervalNonlinearTrajectory::IntervalNonlinearTrajectory; // Inherit constructors
+    VectorMax3d operator()(const double t) const override { PYBIND11_OVERRIDE_PURE_NAME(VectorMax3d, IntervalNonlinearTrajectory, "__call__", operator(), t); }
+    VectorMax3I operator()(const filib::Interval& t) const override { PYBIND11_OVERRIDE_PURE_NAME(VectorMax3I, IntervalNonlinearTrajectory, "__call__", operator(), t); }
+    double max_distance_from_linear(const double t0, const double t1) const override { PYBIND11_OVERRIDE(double, IntervalNonlinearTrajectory, max_distance_from_linear, t0, t1); }
+    // clang-format on
+};
+#endif
+
 void define_nonlinear_ccd(py::module_& m)
 {
-    py::class_<NonlinearTrajectory>(m, "NonlinearTrajectory")
+    py::class_<NonlinearTrajectory, PyNonlinearTrajectory>(
+        m, "NonlinearTrajectory")
+        .def(py::init<>())
         .def(
             "__call__", &NonlinearTrajectory::operator(),
             "Compute the point's position at time t", py::arg("t"))
@@ -17,9 +40,6 @@ void define_nonlinear_ccd(py::module_& m)
             R"ipc_Qu8mg5v7(
             Compute the maximum distance from the nonlinear trajectory to a linearized trajectory
 
-            Note:
-                This uses interval arithmetic to compute the maximum distance. If you know a tighter bound on the maximum distance, it is recommended to override this function.
-
             Parameters:
                 t0: Start time of the trajectory
                 t1: End time of the trajectory
@@ -27,13 +47,20 @@ void define_nonlinear_ccd(py::module_& m)
             py::arg("t0"), py::arg("t1"));
 
 #ifdef IPC_TOOLKIT_WITH_FILIB
-    py::class_<IntervalNonlinearTrajectory, NonlinearTrajectory>(
-        m, "IntervalNonlinearTrajectory")
+    py::class_<
+        IntervalNonlinearTrajectory, NonlinearTrajectory,
+        PyIntervalNonlinearTrajectory>(m, "IntervalNonlinearTrajectory")
+        .def(py::init<>())
         .def(
             "__call__",
             [](const IntervalNonlinearTrajectory& self, const double t) {
                 return self(t);
             },
+            "Compute the point's position at time t", py::arg("t"))
+        .def(
+            "__call__",
+            py::overload_cast<const filib::Interval&>(
+                &IntervalNonlinearTrajectory::operator(), py::const_),
             "Compute the point's position over a time interval t", py::arg("t"))
         .def(
             "max_distance_from_linear",

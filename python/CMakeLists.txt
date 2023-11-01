@@ -68,6 +68,7 @@ pybind11_add_module(ipctk
 
   src/utils/area_gradient.cpp
   src/utils/eigen_ext.cpp
+  src/utils/interval.cpp
   src/utils/intersection.cpp
   src/utils/logger.cpp
   src/utils/thread_limiter.cpp
