@@ -1145,7 +1145,7 @@ We use this same process to download all external dependencies.</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://eigen.tuxfamily.org/">Eigen</a>: linear algebra</p></li>
 <li><p><a class="reference external" href="https://github.com/libigl/libigl">libigl</a>: basic geometry functions and predicates</p></li>
-<li><p><a class="reference external" href="https://github.com/wjakob/tbb">TBB</a>: parallelization</p></li>
+<li><p><a class="reference external" href="https://github.com/oneapi-src/oneTBB">oneTBB</a>: parallelism</p></li>
 <li><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Tight-Inclusion">Tight-Inclusion</a>: correct (conservative) CCD</p></li>
 <li><p><a class="reference external" href="https://github.com/ipc-sim/SimpleBVH">SimpleBVH</a>: a simple bounding volume hierarchy data structure</p></li>
 <li><p><a class="reference external" href="https://github.com/gabime/spdlog">spdlog</a>: logging information</p></li>
@@ -1161,6 +1161,12 @@ We use this same process to download all external dependencies.</p>
 <li><p><a class="reference external" href="https://abseil.io/">Abseil</a>: hashing utilities</p>
 <ul>
 <li><p>Enable by using the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_ABSEIL</span></code></p></li>
+<li><p>Enabled by default</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://github.com/zfergus/filib">filib</a>: interval arithmetic for nonlinear trajectories/CCD</p>
+<ul>
+<li><p>Enable by using the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_FILIB</span></code></p></li>
 <li><p>Enabled by default</p></li>
 </ul>
 </li>
@@ -1181,7 +1187,7 @@ We use this same process to download all external dependencies.</p>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h2>
 <p>The main functionality is provided in the <code class="docutils literal notranslate"><span class="pre">ipc.hpp</span></code> header. Use the prefix directory <code class="docutils literal notranslate"><span class="pre">ipc</span></code> to include all header files (e.g. <code class="docutils literal notranslate"><span class="pre">#include</span> <span class="pre">&lt;ipc/ipc.hpp&gt;</span></code>).</p>
 <h2 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Permalink to this heading">¶</a></h2>
-<p>We provide unit tests for ensuring the correctness of our algorithmic pieces.
+<p>We provide unit tests to ensure the correctness of our algorithmic pieces.
 To enable the unit tests use the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_UNIT_TESTS</span></code>.</p>
 <h3 id="id1">Dependencies<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
 <p>The following are downloaded when unit tests are enabled (<code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_TESTS</span></code>)</p>
@@ -1234,7 +1240,7 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
   <small>
     
       Last update:
-      Oct 30, 2023
+      Nov 01, 2023
     
   </small>
 </div>
