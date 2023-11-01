@@ -61,7 +61,7 @@ The following libraries are used in this project:
 
 * [Eigen](https://eigen.tuxfamily.org/): linear algebra
 * [libigl](https://github.com/libigl/libigl): basic geometry functions and predicates
-* [TBB](https://github.com/wjakob/tbb): parallelization
+* [oneTBB](https://github.com/oneapi-src/oneTBB): parallelism
 * [Tight-Inclusion](https://github.com/Continuous-Collision-Detection/Tight-Inclusion): correct (conservative) CCD
 * [SimpleBVH](https://github.com/ipc-sim/SimpleBVH): a simple bounding volume hierarchy data structure
 * [spdlog](https://github.com/gabime/spdlog): logging information
@@ -74,6 +74,9 @@ The following libraries are used in this project:
 * [Abseil](https://abseil.io/): hashing utilities
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_ABSEIL`
     * Enabled by default
+* [filib](https://github.com/zfergus/filib): interval arithmetic for nonlinear trajectories/CCD
+    * Enable by using the CMake option `IPC_TOOLKIT_WITH_FILIB`
+    * Enabled by default 
 * [rational-cpp](https://github.io/zfergus/rational-cpp): rational arithmetic used for exact intersection checks
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION`
     * Requires [GMP](https://gmplib.org/) to be installed at a system level
@@ -89,7 +92,7 @@ The main functionality is provided in the `ipc.hpp` header. Use the prefix direc
 
 ## Unit Tests
 
-We provide unit tests for ensuring the correctness of our algorithmic pieces.
+We provide unit tests to ensure the correctness of our algorithmic pieces.
 To enable the unit tests use the CMake option `IPC_TOOLKIT_BUILD_UNIT_TESTS`.
 
 ### Dependencies
