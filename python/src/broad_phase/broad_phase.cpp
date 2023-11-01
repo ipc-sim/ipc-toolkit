@@ -11,15 +11,20 @@ void define_broad_phase(py::module_& m)
     py::enum_<BroadPhaseMethod>(
         m, "BroadPhaseMethod",
         "Enumeration of implemented broad phase methods.")
-        .value("BRUTE_FORCE", BroadPhaseMethod::BRUTE_FORCE, "")
-        .value("HASH_GRID", BroadPhaseMethod::HASH_GRID, "")
-        .value("SPATIAL_HASH", BroadPhaseMethod::SPATIAL_HASH, "")
+        .value("BRUTE_FORCE", BroadPhaseMethod::BRUTE_FORCE, "Brute force.")
+        .value("HASH_GRID", BroadPhaseMethod::HASH_GRID, "Hash grid.")
+        .value("SPATIAL_HASH", BroadPhaseMethod::SPATIAL_HASH, "Spatial hash.")
+        .value(
+            "BOUNDING_VOLUME_HIERARCHY", BroadPhaseMethod::BVH,
+            "Bounding volume hierarchy.")
         .value(
             "SWEEP_AND_TINIEST_QUEUE",
-            BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE, "")
+            BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE,
+            "Sweep and tiniest queue.")
         .value(
             "SWEEP_AND_TINIEST_QUEUE_GPU",
-            BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU, "")
+            BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU,
+            "Sweep and tiniest queue (GPU).")
         .export_values();
 
     py::class_<BroadPhase>(m, "BroadPhase")
