@@ -358,9 +358,9 @@ To enable the convergent formulation, we need to set ``use_convergent_formulatio
 Technical Details
 '''''''''''''''''
 
-*We breifly summarize the convergent formulation here for convenience.*
+*We briefly summarize the convergent formulation here for convenience.*
 
-In order to derive a convergent formulation, we first define a continous form of our barrier potential :math:`P`. For a surface :math:`\mathcal{S}` embeded in 3D space, we parameterize the surfaces by common (possibly discontinuous) coordinates :math:`u \in \tilde{M} \subset \mathbb{R}^2`, so that :math:`\mathcal{S}(u)` traverses the material points across all surfaces contiguously. The total contact potential is then
+In order to derive a convergent formulation, we first define a continuous form of our barrier potential :math:`P`. For a surface :math:`\mathcal{S}` embedded in 3D space, we parameterize the surfaces by common (possibly discontinuous) coordinates :math:`u \in \tilde{M} \subset \mathbb{R}^2`, so that :math:`\mathcal{S}(u)` traverses the material points across all surfaces contiguously. The total contact potential is then
 
 .. math::
    P(\mathcal{S})=\frac{1}{2} \int_{u \in \tilde{M}} \max _{v \in \tilde{M} \setminus{ }_r u} b(d(\mathcal{S}(u), \mathcal{S}(v)), \hat{d})~\mathrm{d} u,
@@ -372,7 +372,7 @@ where we define the operator :math:`\setminus_r: \mathcal{P}(\mathbb{R}^2) \time
 
 with :math:`r \rightarrow 0`.
 
-We then define our surface discretization with a triangulated boundary mesh geometry. As in the smooth case we can parameterize the domain across all polylines with :math:`u \in \tilde{M}` so that :math:`p(u): \tilde{M} \mapsto \mathbb{R}^3` traverses all material points, across all triangles :math:`t ∈ T` in the triangle mesh contiguously. The corresponding surface contact potential is then
+We then define our surface discretization with a triangulated boundary mesh geometry. As in the smooth case, we can parameterize the domain across all polylines with :math:`u \in \tilde{M}` so that :math:`p(u): \tilde{M} \mapsto \mathbb{R}^3` traverses all material points, across all triangles :math:`t ∈ T` in the triangle mesh contiguously. The corresponding surface contact potential is then
 
 .. math::
     \frac{1}{2} \int_{u \in \tilde{M}} \max_{t \in T \backslash p(u)} b(d(p(u), t), \hat{d})~\mathrm{d} u,
@@ -384,9 +384,9 @@ Applying mesh vertices as nodes (and quadrature points), we numerically integrat
 .. math::
     \frac{1}{2} \sum_{\bar{x} \in \bar{V}} w_{\bar{x}} \max _{t \in T \backslash x(\bar{x})} b(d(x(\bar{x}), t), \hat{d}),
 
-where :math:`w_{\bar{x}}` are the quadrature weights, each given by one third of the sum of the areas (in material space) of the boundary triangles incident to :math:`\bar{x}`.
+where :math:`w_{\bar{x}}` are the quadrature weights, each given by one-third of the sum of the areas (in material space) of the boundary triangles incident to :math:`\bar{x}`.
 
-We next need to smoothly approximate the max operator in the contact potentials. However, common approaches such as an :math:`L^p`-norm or LogSumExp would decrease sparsity in subsequent numerical solves by increasing stencil-size per contact evaluation. We instead leverage the locality of our barrier function to approximate the max operator by removing duplicate distance pairs. Our resulting approximators for a trianglated surfaces is
+We next need to smoothly approximate the max operator in the contact potentials. However, common approaches such as an :math:`L^p`-norm or LogSumExp would decrease sparsity in subsequent numerical solves by increasing the stencil size per contact evaluation. We instead leverage the locality of our barrier function to approximate the max operator by removing duplicate distance pairs. Our resulting approximators for a triangulated surface is
 
 .. math::
     \begin{aligned}
@@ -394,7 +394,7 @@ We next need to smoothly approximate the max operator in the contact potentials.
     & \approx \max _{t \in T \backslash x} b(d(x, t), \hat{d}),
     \end{aligned}
 
-where :math:`V_{\text{int}} \subseteq V` is the subset of internal surface nodes and :math:`E_{\text{int}} \subseteq E` is the subset of internal surface edges (i.e., edges incident to two triangles). For locally convex regions this estimator is tight while remaining smooth. In turn, for nonconvex regions it improves over direct summation.
+where :math:`V_{\text{int}} \subseteq V` is the subset of internal surface nodes and :math:`E_{\text{int}} \subseteq E` is the subset of internal surface edges (i.e., edges incident to two triangles). For locally convex regions this estimator is tight while remaining smooth. In turn, for nonconvex regions, it improves over direct summation.
 
 The corresponding discrete barrier potential is then simply
 
@@ -408,7 +408,7 @@ The key difference between the original and the convergent formulations is that 
 Physical Barrier
 ''''''''''''''''
 
-We want our barrier potential to have the same units of as our elastic potential (e.g., :math:`\text{J}`). Together with the area weighting (discussed above) this means the barrier should has units of pressure times distance (e.g., :math:`\text{Pa} \cdot \text{m}`). That is,
+We want our barrier potential to have the same units as our elastic potential (e.g., :math:`\text{J}`). Together with the area weighting (discussed above), this means the barrier should have units of pressure times distance (e.g., :math:`\text{Pa} \cdot \text{m}`). That is,
 
 .. math::
     \text{Pa} \cdot \text{m} \cdot \text{m}^2 = \frac{\text{N}}{\text{m}^2} \cdot \text{m} \cdot \text{m}^2 = \text{N} \cdot \text{m} = \text{J}.
@@ -433,7 +433,7 @@ The intention is to treat the barrier as a thin elastic region around the mesh, 
 Modeling Thickness
 ^^^^^^^^^^^^^^^^^^
 
-We implement the thickness model of :cite:t:`Li2021CIPC` to apply an offset (refered to as :math:`\xi` in :cite:p:`Li2021CIPC` or :math:`d_\min` here) to the collision constraints. This is useful for modeling the thickness of a shell or cloth.
+We implement the thickness model of :cite:t:`Li2021CIPC` to apply an offset (referred to as :math:`\xi` in :cite:p:`Li2021CIPC` or :math:`d_\min` here) to the collision constraints. This is useful for modeling the thickness of a shell or cloth.
 
 To add a constraint offset, we need to set the ``dmin`` variable. For example, we can set the constraint offset :math:`d_\min=10^{-3}` and :math:`\hat{d}=10^{-4}`:
 
@@ -464,7 +464,7 @@ This will then set the ``dmin`` field in all of the ``CollisionConstraint`` obje
 .. note::
     Currently, only a single thickness value is supported for the entire mesh.
 
-It is also important to set use the same :math:`d_\min` when performing CCD (see :ref:`Minimum Separation CCD <minimum-separation-ccd>`).
+It is also important to use the same :math:`d_\min` when performing CCD (see :ref:`Minimum Separation CCD <minimum-separation-ccd>`).
 
 Friction
 --------
@@ -572,7 +572,7 @@ The choice of formulation is dependent on how the fixed set of ``contact_constra
 Continuous Collision Detection
 ------------------------------
 
-The last high-level component of the IPC Toolkit library is continuous collision detection (CCD). This is a method for determining if and at what time two objects will collide. This can be incorporated in a simulation nonlinear solver's line-search to determine the maximum step size allowable before a collision occurs.
+The last high-level component of the IPC Toolkit library is continuous collision detection (CCD). This is a method for determining if and at what time two objects will collide. This can be incorporated in a simulation nonlinear solver's line search to determine the maximum step size allowable before a collision occurs.
 
 There are two main functions for doing this: ``is_step_collision_free`` and ``compute_collision_free_stepsize``. The former returns a boolean value indicating if the step is collision-free, and the latter returns the maximum step size that is collision-free. Both functions take the same arguments, but ``compute_collision_free_stepsize`` is the more convenient function to use as it returns the maximum step size.
 
@@ -615,9 +615,9 @@ CCD is comprised of two parts (phases): broad-phase and narrow-phase.
 Broad-Phase
 ^^^^^^^^^^^
 
-The broad-phase takes all possible pairings (quadratic in size) and eliminates (culls) pairs whose bounding boxes do not overlap. This is done using a spatial data structure (e.g., a hash grid or spatial hash).
+The broad phase takes all possible pairings (quadratic in size) and eliminates (culls) pairs whose bounding boxes do not overlap. This is done using a spatial data structure (e.g., a hash grid or spatial hash).
 
-The ``Candidates`` class represents the culled set of candidate pairs and is built by using a broad-phase method. The following example shows how to use the broad-phase to determine the candidate pairs between the rest_positions and the squashed bunny.
+The ``Candidates`` class represents the culled set of candidate pairs and is built by using a broad-phase method. The following example shows how to use the broad phase to determine the candidate pairs between the rest_positions and the squashed bunny.
 
 .. md-tab-set::
 
@@ -647,9 +647,9 @@ Possible values for ``broad_phase_method`` are: ``BRUTE_FORCE`` (parallel brute 
 Narrow-Phase
 ^^^^^^^^^^^^
 
-The narrow-phase computes the time of impact between two primitives (e.g., a point and a triangle or two edges in 3D). To do this we utilize the Tight Inclusion CCD method of :cite:t:`Wang2021TightInclusion` for the narrow-phase as it is provably conservative (i.e., never misses collisions), accurate (i.e., rarely reports false positives), and efficient.
+The narrow-phase computes the time of impact between two primitives (e.g., a point and a triangle or two edges in 3D). To do this we utilize the Tight Inclusion CCD method of :cite:t:`Wang2021TightInclusion` for the narrow phase as it is provably conservative (i.e., never misses collisions), accurate (i.e., rarely reports false positives), and efficient.
 
-The following example shows how to use the narrow-phase to determine if a point is colliding with a triangle (static in this case).
+The following example shows how to use the narrow phase to determine if a point is colliding with a triangle (static in this case).
 
 .. md-tab-set::
 
@@ -705,7 +705,7 @@ The following example shows how to use the narrow-phase to determine if a point 
             assert(is_colliding)
             assert(abs(toi - 0.5) < 1e-8)
 
-Alternatively, the ``FaceVertexCandidate`` class contains a ``ccd`` function that can be used to determine if the face-vertex pairing are colliding:
+Alternatively, the ``FaceVertexCandidate`` class contains a ``ccd`` function that can be used to determine if the face-vertex pairing is colliding:
 
 .. md-tab-set::
 
