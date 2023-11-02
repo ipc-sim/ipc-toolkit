@@ -372,12 +372,12 @@ where we define the operator :math:`\setminus_r: \mathcal{P}(\mathbb{R}^2) \time
 
 with :math:`r \rightarrow 0`.
 
-We then define our surface discretization with a triangulated boundary mesh geometry. As in the smooth case, we can parameterize the domain across all polylines with :math:`u \in \tilde{M}` so that :math:`p(u): \tilde{M} \mapsto \mathbb{R}^3` traverses all material points, across all triangles :math:`t ∈ T` in the triangle mesh contiguously. The corresponding surface contact potential is then
+We then define our surface discretization with a triangulated boundary mesh geometry. As in the smooth case, we can parameterize the domain across all triangles with :math:`u \in \tilde{M}` so that :math:`p(u): \tilde{M} \mapsto \mathbb{R}^3` traverses all material points, across all triangles :math:`t ∈ T` in the triangle mesh contiguously. The corresponding surface contact potential is then
 
 .. math::
     \frac{1}{2} \int_{u \in \tilde{M}} \max_{t \in T \backslash p(u)} b(d(p(u), t), \hat{d})~\mathrm{d} u,
 
-where :math:`T \setminus p` is the set of boundary faces that do not contain the point p.
+where :math:`T \setminus p` is the set of boundary faces that do not contain the point :math:`p`.
 
 Applying mesh vertices as nodes (and quadrature points), we numerically integrate the surface contact potential. For each nodal position :math:`x \in V` we then have a corresponding material space coordinate :math:`\bar{x} \in \bar{V}`. Piecewise linear integration of the surface barrier is then
 
@@ -399,7 +399,9 @@ where :math:`V_{\text{int}} \subseteq V` is the subset of internal surface nodes
 The corresponding discrete barrier potential is then simply
 
 .. math::
-    P_s(V)= \frac{1}{2} \sum_{x \in V} w_x \Psi_s(x).
+    P_s(V)= \frac{1}{2} \sum_{x \in V} w_x \Psi_s(x),
+
+where we simplify with :math:`w_x = w_{\bar{x}}` defined appropriately, per domain, as covered above.
 
 Please, see the `paper <https://arxiv.org/abs/2307.15908>`_ for more details (including the formulation for 2D curves and edge-edge contact) and evaluation.
 
@@ -642,12 +644,13 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
                 mesh, vertices_t0, vertices_t1,
                 broad_phase_method=ipctk.BroadPhaseMethod.HASH_GRID)
 
-Possible values for ``broad_phase_method`` are: ``BRUTE_FORCE`` (parallel brute force culling), ``HASH_GRID`` (default), ``SPATIAL_HASH`` (implementation from the original IPC codebase), ``SWEEP_AND_TINIEST_QUEUE`` (method of :cite:t:`Belgrod2023Time`), or ``SWEEP_AND_TINIEST_QUEUE_GPU`` (requires CUDA).
+Possible values for ``broad_phase_method`` are: ``BRUTE_FORCE`` (parallel brute force culling), ``HASH_GRID`` (default), ``SPATIAL_HASH`` (implementation from the original IPC codebase),
+``BVH`` (`SimpleBVH <https://github.com/geometryprocessing/SimpleBVH>`_), ``SWEEP_AND_TINIEST_QUEUE`` (method of :cite:t:`Belgrod2023Time`), or ``SWEEP_AND_TINIEST_QUEUE_GPU`` (requires CUDA).
 
 Narrow-Phase
 ^^^^^^^^^^^^
 
-The narrow-phase computes the time of impact between two primitives (e.g., a point and a triangle or two edges in 3D). To do this we utilize the Tight Inclusion CCD method of :cite:t:`Wang2021TightInclusion` for the narrow phase as it is provably conservative (i.e., never misses collisions), accurate (i.e., rarely reports false positives), and efficient.
+The narrow phase computes the time of impact between two primitives (e.g., a point and a triangle or two edges in 3D). To do this we utilize the Tight Inclusion CCD method of :cite:t:`Wang2021TightInclusion` for the narrow phase as it is provably conservative (i.e., never misses collisions), accurate (i.e., rarely reports false positives), and efficient.
 
 The following example shows how to use the narrow phase to determine if a point is colliding with a triangle (static in this case).
 

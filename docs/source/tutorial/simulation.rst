@@ -130,7 +130,7 @@ While IPC cannot directly handle nonlinear finite element bases and/or curved me
             collision_mesh = CollisionMesh(
                 proxy_rest_positions, proxy_edges, proxy_faces, displacement_map)
 
-We can then map the displacements using ``collision_mesh.map_displacement(fe_displacements)`` or directly get the displaced proxy mesh vertices using ``collision_mesh.displace_vertices(fe_displacements)``. Similarly, we can map forces/gradients using ``collision_mesh.to_full_dof(contact_forces)`` or force jacobians/potential hessians using ``collision_mesh.to_full_dof(potential_hessian)``.
+We can then map the displacements using ``collision_mesh.map_displacement(fe_displacements)`` or directly get the displaced proxy mesh vertices using ``collision_mesh.displace_vertices(fe_displacements)``. Similarly, we can map forces/gradients using ``collision_mesh.to_full_dof(contact_forces)`` or force Jacobians/potential Hessians using ``collision_mesh.to_full_dof(potential_hessian)``.
 
 .. warning::
     The function ``CollisionMesh::vertices(full_positions)`` should not be used in this case because the rest positions used to construct the ``CollisionMesh`` are not the same as the finite element mesh's rest positions. Instead, use ``CollisionMesh::displace_vertices(fe_displacements)`` where ``fe_displacements`` is already the solution of the PDE or can be computed as ``fe_displacements = fe_positions - fe_rest_positions`` from deformed and rest positions.
