@@ -4,7 +4,7 @@ Miscellaneous
 Static Intersection Checks
 --------------------------
 
-Static intersection checks are not a core part of the IPC algorithm, but they are useful for debugging and verifying your input is intersection free. The IPC Toolkit provides a function for checking if a mesh is intersection free:
+Static intersection checks are not a core part of the IPC algorithm, but they are useful for debugging and verifying your input is intersection-free. The IPC Toolkit provides a function for checking if a mesh is intersection-free:
 
 .. md-tab-set::
 

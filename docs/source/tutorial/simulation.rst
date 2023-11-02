@@ -8,7 +8,7 @@ We provide several helper functions to make your job easier. The following examp
 Volumetric Meshes
 -----------------
 
-The IPC Toolkit only handles surface meshes (through the ``CollisionMesh``). However, the finite element method often relies on volumetric discretizations. In this case the computed gradients and Hessians need to be mapped back to the full volumetric mesh. The ``CollisionMesh`` class provides this functionality.
+The IPC Toolkit only handles surface meshes (through the ``CollisionMesh``). However, the finite element method often relies on volumetric discretizations. In this case, the computed gradients and Hessians need to be mapped back to the full volumetric mesh. The ``CollisionMesh`` class provides this functionality.
 
 From the full (volumetric) mesh vertices and surface edges/faces which index into the full mesh vertices, you can build a ``CollisionMesh`` using the function ``CollisionMesh::build_from_full_mesh``. This will internally build and store a selection matrix that goes from the full to surface vertices as well as map the edge/faces entries accordingly.
 
@@ -80,7 +80,7 @@ This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. How
 Nonlinear Bases and Curved Meshes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-While IPC cannot directly handle nonlinear finite element bases and/or curved meshes, :cite:t:`Ferguson2023HighOrderIPC` show that displacements and forces can be transfered between a finite element mesh and a collision proxy through the use of a linear map. Given this linear map as a matrix, we can use the ``CollisionMesh`` class to map between the full and surface DOF.
+While IPC cannot directly handle nonlinear finite element bases and/or curved meshes, :cite:t:`Ferguson2023HighOrderIPC` show that displacements and forces can be transferred between a finite element mesh and a collision proxy through the use of a linear map. Given this linear map as a matrix, we can use the ``CollisionMesh`` class to map between the full and surface DOF.
 
 .. md-tab-set::
 
