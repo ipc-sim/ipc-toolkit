@@ -66,7 +66,7 @@ You can also set the log level:
 Multi-threading
 ---------------
 
-The IPC Toolkit utilizes `TBB <https://oneapi-src.github.io/oneTBB>`_ to enable multi-threading functionality. This is enabled by default, and significantly improves performance.
+The IPC Toolkit utilizes `oneTBB <https://oneapi-src.github.io/oneTBB>`_ to enable multi-threading functionality. This is enabled by default, and significantly improves performance.
 However, with multi-threading enabled, it is expected that the results can be non-deterministic because of rounding differences when adding numbers in different orders. To make the results deterministic you can limit TBB's maximum number of threads to one. The following code shows how to do this:
 
 .. md-tab-set::
