@@ -136,7 +136,7 @@ public:
     double
     max_distance_from_linear(const double t0, const double t1) const override
     {
-        if (delta_rotation * (t1 - t0) >= 2 * M_PI) {
+        if (delta_rotation * (t1 - t0) >= 2 * igl::PI) {
             // This is the most conservative estimate
             return 2 * position.norm(); // 2 * radius
         }
