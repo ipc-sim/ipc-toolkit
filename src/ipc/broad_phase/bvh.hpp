@@ -9,27 +9,27 @@ namespace ipc {
 class BVH : public BroadPhase {
 public:
     /// @brief Build the broad phase for static collision detection.
-    /// @param V0 Positions of the vertices.
-    /// @param E Edges of the mesh.
-    /// @param F Faces of the mesh.
+    /// @param vertices Vertex positions
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
     void build(
-        const Eigen::MatrixXd& V,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double inflation_radius = 0) override;
 
     /// @brief Build the broad phase for continuous collision detection.
-    /// @param V0 Starting positions of the vertices.
-    /// @param V1 Ending positions of the vertices.
-    /// @param E Edges of the mesh.
-    /// @param F Faces of the mesh.
+    /// @param vertices_t0 Starting vertices of the vertices.
+    /// @param vertices_t1 Ending vertices of the vertices.
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
     void build(
-        const Eigen::MatrixXd& V0,
-        const Eigen::MatrixXd& V1,
-        const Eigen::MatrixXi& E,
-        const Eigen::MatrixXi& F,
+        const Eigen::MatrixXd& vertices_t0,
+        const Eigen::MatrixXd& vertices_t1,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
         const double inflation_radius = 0) override;
 
     /// @brief Clear any built data.

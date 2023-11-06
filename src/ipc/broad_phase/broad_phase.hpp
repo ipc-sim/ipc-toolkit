@@ -33,7 +33,7 @@ public:
     virtual ~BroadPhase() { clear(); }
 
     /// @brief Construct a registered broad phase object.
-    /// @param broad_phase_method The broad phase method to use.
+    /// @param method The broad phase method to use.
     /// @return The constructed broad phase object.
     static std::shared_ptr<BroadPhase>
     make_broad_phase(const BroadPhaseMethod method);

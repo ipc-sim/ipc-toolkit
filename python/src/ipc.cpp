@@ -1,6 +1,7 @@
 #include <common.hpp>
 
 #include <ipc/ipc.hpp>
+#include <ipc/config.hpp>
 #include <igl/edges.h>
 
 namespace py = pybind11;
@@ -8,6 +9,8 @@ using namespace ipc;
 
 void define_ipc(py::module_& m)
 {
+    m.attr("__version__") = IPC_TOOLKIT_VER;
+
     m.def(
         "is_step_collision_free", &is_step_collision_free,
         R"ipc_Qu8mg5v7(
