@@ -437,6 +437,21 @@
   
   
     <li class="md-nav__item">
+      <a href="tutorial/nonlinear_ccd.html" class="md-nav__link">
+        <span title="/tutorial/nonlinear_ccd.rst (reference label)" class="md-ellipsis">Nonlinear CCD</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="tutorial/simulation.html" class="md-nav__link">
         <span title="/tutorial/simulation.rst (reference label)" class="md-ellipsis">Physical Simulation</span>
       </a>
@@ -1149,6 +1164,7 @@
 </ul>
 <h3 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permalink to this heading">¶</a></h3>
 <p>This is not a full simulation library. As such it does not include any physics or solvers. For a full simulation implementation, we recommend <a class="reference external" href="https://polyfem.github.io/">PolyFEM</a> (a finite element library) or <a class="reference external" href="https://github.com/ipc-sim/rigid-ipc">Rigid IPC</a> (rigid-body dynamics) both of which utilize the IPC Toolkit.</p>
+<!--- BEGIN C++ README 1 --->
 <h2 id="build">Build<a class="headerlink" href="#build" title="Permalink to this heading">¶</a></h2>
 <p>The easiest way to add the toolkit to an existing CMake project is to download it through CMake.
 CMake provides functionality for doing this called <a class="reference external" href="https://cmake.org/cmake/help/latest/module/FetchContent.html">FetchContent</a> (requires CMake ≥ 3.14).
@@ -1169,6 +1185,7 @@ We use this same process to download all external dependencies.</p>
 </code></pre></div>
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">PROJECT_NAME</span></code> is the name of your library/binary.</p>
+<!--- BEGIN C++ README 2 --->
 <h3 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h3>
 <p><strong>All required dependencies are downloaded through CMake</strong> depending on the build options.</p>
 <p>The following libraries are used in this project:</p>
@@ -1215,7 +1232,7 @@ We use this same process to download all external dependencies.</p>
 </li>
 </ul>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h2>
-<p>The main functionality is provided in the <code class="docutils literal notranslate"><span class="pre">ipc.hpp</span></code> header. Use the prefix directory <code class="docutils literal notranslate"><span class="pre">ipc</span></code> to include all header files (e.g. <code class="docutils literal notranslate"><span class="pre">#include</span> <span class="pre">&lt;ipc/ipc.hpp&gt;</span></code>).</p>
+<p>See the <a class="reference external" href="https://ipctk.xyz/tutorial/getting_started.html">tutorial</a> for a quick introduction to the toolkit, or the <a class="reference external" href="https://ipctk.xyz/cpp.html">documentation</a> for a full reference.</p>
 <h2 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Permalink to this heading">¶</a></h2>
 <p>We provide unit tests to ensure the correctness of our algorithmic pieces.
 To enable the unit tests use the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_UNIT_TESTS</span></code>.</p>
@@ -1226,9 +1243,10 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
 <li><p><a class="reference external" href="https://github.com/zfergus/finite-diff">finite-diff</a>: finite-difference comparisons</p></li>
 <li><p><a class="reference external" href="https://github.com/nlohmann/json">Nlohman’s JSON library</a>: loading test data from JSON files</p></li>
 </ul>
+<!--- END C++ README --->
 <h2 id="python-bindings">Python Bindings<a class="headerlink" href="#python-bindings" title="Permalink to this heading">¶</a></h2>
 <p>We provide Python bindings for functions in the toolkit using <a class="reference external" href="https://github.com/pybind/pybind11">pybind11</a>.</p>
-<p>For more information see the <a class="reference external" href="https://ipctk.xyz/python/">Python documentation</a>.</p>
+<p>For more information see the <a class="reference external" href="https://ipctk.xyz/python.html">Python documentation</a>.</p>
 <h2 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permalink to this heading">¶</a></h2>
 <p>This project is open to contributors! Contributions can come in the form of feature requests, bug fixes, documentation, tutorials, and the like. We highly recommend filing an Issue first before submitting a Pull Request.</p>
 <p>Simply fork this repository and make a Pull Request! We would appreciate:</p>
@@ -1270,7 +1288,7 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
   <small>
     
       Last update:
-      Nov 02, 2023
+      Nov 06, 2023
     
   </small>
 </div>
