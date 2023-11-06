@@ -105,7 +105,7 @@ bool BroadPhase::can_edges_collide(size_t eai, size_t ebi) const
     const auto& [ea0i, ea1i, _] = edge_boxes[eai].vertex_ids;
     const auto& [eb0i, eb1i, __] = edge_boxes[ebi].vertex_ids;
 
-    bool share_endpoint =
+    const bool share_endpoint =
         ea0i == eb0i || ea0i == eb1i || ea1i == eb0i || ea1i == eb1i;
 
     return !share_endpoint
@@ -128,8 +128,8 @@ bool BroadPhase::can_edge_face_collide(size_t ei, size_t fi) const
     const auto& [e0i, e1i, _] = edge_boxes[ei].vertex_ids;
     const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
 
-    bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i || e1i == f0i
-        || e1i == f1i || e1i == f2i;
+    const bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i
+        || e1i == f0i || e1i == f1i || e1i == f2i;
 
     return !share_endpoint
         && (can_vertices_collide(e0i, f0i) || can_vertices_collide(e0i, f1i)

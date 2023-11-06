@@ -8,25 +8,25 @@
 
 namespace ipc {
 void BVH::build(
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     const double inflation_radius)
 {
-    BroadPhase::build(V, E, F, inflation_radius);
+    BroadPhase::build(vertices, edges, faces, inflation_radius);
     init_bvh(vertex_boxes, vertex_bvh);
     init_bvh(edge_boxes, edge_bvh);
     init_bvh(face_boxes, face_bvh);
 }
 
 void BVH::build(
-    const Eigen::MatrixXd& V0,
-    const Eigen::MatrixXd& V1,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    const Eigen::MatrixXd& vertices_t0,
+    const Eigen::MatrixXd& vertices_t1,
+    const Eigen::MatrixXi& edges,
+    const Eigen::MatrixXi& faces,
     const double inflation_radius)
 {
-    BroadPhase::build(V0, V1, E, F, inflation_radius);
+    BroadPhase::build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
     init_bvh(vertex_boxes, vertex_bvh);
     init_bvh(edge_boxes, edge_bvh);
     init_bvh(face_boxes, face_bvh);
@@ -147,7 +147,7 @@ void BVH::detect_face_vertex_candidates(
         return;
     }
 
-    // The ratio V:F is 1:2, so we want to iterate over the vertices.
+    // The ratio vertices:faces is 1:2, so we want to iterate over the vertices.
     detect_candidates<FaceVertexCandidate, /*swap_order=*/true>(
         vertex_boxes, face_bvh,
         [&](size_t fi, size_t vi) { return can_face_vertex_collide(fi, vi); },
@@ -161,7 +161,7 @@ void BVH::detect_edge_face_candidates(
         return;
     }
 
-    // The ratio E:F is 3:2, so we want to iterate over the faces.
+    // The ratio edges:faces is 3:2, so we want to iterate over the faces.
     detect_candidates<EdgeFaceCandidate, /*swap_order=*/true>(
         face_boxes, edge_bvh,
         [&](size_t ei, size_t fi) { return can_edge_face_collide(ei, fi); },

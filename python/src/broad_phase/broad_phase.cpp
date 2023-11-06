@@ -34,7 +34,7 @@ void define_broad_phase(py::module_& m)
             Construct a registered broad phase object.
 
             Parameters:
-                broad_phase_method: The broad phase method to use.
+                method: The broad phase method to use.
 
             Returns:
                 The constructed broad phase object.

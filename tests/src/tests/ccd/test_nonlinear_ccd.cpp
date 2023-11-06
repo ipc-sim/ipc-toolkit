@@ -107,6 +107,54 @@ protected:
     VectorMax3d point;
 };
 
+// BEGIN_RIGID_2D_TRAJECTORY
+class Rigid2DTrajectory : virtual public ipc::NonlinearTrajectory {
+public:
+    Rigid2DTrajectory(
+        const Eigen::Vector2d& position,
+        const Eigen::Vector2d& translation,
+        const Eigen::Vector2d& delta_translation,
+        const double rotation,
+        const double delta_rotation)
+        : position(position)
+        , translation(translation)
+        , delta_translation(delta_translation)
+        , rotation(rotation)
+        , delta_rotation(delta_rotation)
+    {
+    }
+
+    VectorMax3d operator()(const double t) const override
+    {
+        const Eigen::Matrix2d R =
+            Eigen::Rotation2D<double>(rotation + t * delta_rotation)
+                .toRotationMatrix();
+
+        return R * position + translation + t * delta_translation;
+    }
+
+    double
+    max_distance_from_linear(const double t0, const double t1) const override
+    {
+        if (delta_rotation * (t1 - t0) >= 2 * M_PI) {
+            // This is the most conservative estimate
+            return 2 * position.norm(); // 2 * radius
+        }
+
+        const VectorMax3d p_t0 = (*this)(t0);
+        const VectorMax3d p_t1 = (*this)(t1);
+        return ((*this)((t0 + t1) / 2) - ((p_t1 - p_t0) * 0.5 + p_t0)).norm();
+    }
+
+protected:
+    Eigen::Vector2d position;
+    Eigen::Vector2d translation;
+    Eigen::Vector2d delta_translation;
+    double rotation;
+    double delta_rotation;
+};
+// END_RIGID_2D_TRAJECTORY
+
 TEST_CASE("Nonlinear Point-Point CCD", "[ccd][nonlinear][point-point]")
 {
     const StaticTrajectory p0(Eigen::Vector2d(0, 1));
@@ -149,6 +197,34 @@ TEST_CASE("Nonlinear Point-Edge CCD", "[ccd][nonlinear][point-edge]")
     CHECK(collision);
     CHECK(toi <= 0.25);
     CHECK(toi == Catch::Approx(0.25).margin(1e-2));
+}
+
+TEST_CASE("Rigid 2D Trajectory", "[ccd][nonlinear][point-edge]")
+{
+    // BEGIN_TEST_RIGID_2D_TRAJECTORY
+    // Static point
+    const Rigid2DTrajectory p(
+        Eigen::Vector2d(0, 0.5), Eigen::Vector2d::Zero(),
+        Eigen::Vector2d::Zero(), 0, 0);
+    // Rotating edge
+    const Rigid2DTrajectory e0(
+        Eigen::Vector2d(-1, 0), Eigen::Vector2d::Zero(),
+        Eigen::Vector2d::Zero(), 0, igl::PI);
+    const Rigid2DTrajectory e1(
+        Eigen::Vector2d(+1, 0), Eigen::Vector2d::Zero(),
+        Eigen::Vector2d::Zero(), 0, igl::PI);
+
+    double toi;
+    bool collision = ipc::point_edge_nonlinear_ccd(
+        p, e0, e1, toi, /*tmax=*/1.0, /*min_distance=*/0, DEFAULT_CCD_TOLERANCE,
+        DEFAULT_CCD_MAX_ITERATIONS,
+        // increase the conservative_rescaling from 0.8 to 0.9 to get a more
+        // accurate estimate
+        /*conservative_rescaling=*/0.9);
+
+    CHECK(collision);
+    CHECK((0.49 <= toi && toi <= 0.5)); // conservative estimate
+    // END_TEST_RIGID_2D_TRAJECTORY
 }
 
 TEST_CASE("Nonlinear Edge-Edge CCD", "[ccd][nonlinear][edge-edge]")
