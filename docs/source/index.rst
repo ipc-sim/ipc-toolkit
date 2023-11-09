@@ -11,6 +11,7 @@
     :hidden:
 
     tutorial/getting_started.rst
+    tutorial/convergent.rst
     tutorial/nonlinear_ccd.rst
     tutorial/simulation.rst
     tutorial/misc.rst
