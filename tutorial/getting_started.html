@@ -483,33 +483,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#convergent-formulation" class="md-nav__link">
-    <span title="/tutorial/getting_started.rst#convergent-formulation (reference label)" class="md-ellipsis">Convergent Formulation</span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Convergent Formulation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#technical-details" class="md-nav__link">
-    <span title="/tutorial/getting_started.rst#technical-details (reference label)" class="md-ellipsis">Technical Details</span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#physical-barrier" class="md-nav__link">
-    <span title="/tutorial/getting_started.rst#physical-barrier (reference label)" class="md-ellipsis">Physical Barrier</span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#modeling-thickness" class="md-nav__link">
     <span title="modeling-thickness (reference label)" class="md-ellipsis">Modeling Thickness</span>
   </a>
@@ -539,13 +512,6 @@
           <li class="md-nav__item">
   <a href="#derivatives" class="md-nav__link">
     <span title="/tutorial/getting_started.rst#derivatives (reference label)" class="md-ellipsis">Derivatives</span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#convergent-friction-formulation" class="md-nav__link">
-    <span title="convergent-friction-formulation (reference label)" class="md-ellipsis">Convergent Formulation</span>
   </a>
   
 </li>
@@ -593,6 +559,21 @@
   
 </nav>
       
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="convergent.html" class="md-nav__link">
+        <span title="/tutorial/convergent.rst (reference label)" class="md-ellipsis">Convergent Formulation</span>
+      </a>
     </li>
   
 
@@ -1204,33 +1185,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#convergent-formulation" class="md-nav__link">
-    <span title="/tutorial/getting_started.rst#convergent-formulation (reference label)" class="md-ellipsis">Convergent Formulation</span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Convergent Formulation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#technical-details" class="md-nav__link">
-    <span title="/tutorial/getting_started.rst#technical-details (reference label)" class="md-ellipsis">Technical Details</span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#physical-barrier" class="md-nav__link">
-    <span title="/tutorial/getting_started.rst#physical-barrier (reference label)" class="md-ellipsis">Physical Barrier</span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#modeling-thickness" class="md-nav__link">
     <span title="modeling-thickness (reference label)" class="md-ellipsis">Modeling Thickness</span>
   </a>
@@ -1260,13 +1214,6 @@
           <li class="md-nav__item">
   <a href="#derivatives" class="md-nav__link">
     <span title="/tutorial/getting_started.rst#derivatives (reference label)" class="md-ellipsis">Derivatives</span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#convergent-friction-formulation" class="md-nav__link">
-    <span title="convergent-friction-formulation (reference label)" class="md-ellipsis">Convergent Formulation</span>
   </a>
   
 </li>
@@ -1644,86 +1591,13 @@ Python</label></div>
 </div>
 </div>
 </div>
-</div><h3 id="convergent-formulation"><span id="convergent-contact-formulation"></span>Convergent Formulation<a class="headerlink" href="#convergent-formulation" title="Permalink to this heading">¶</a></h3>
-<p>In addition to the original implementation of <span id="id1">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>, we also implement the convergent formulation of <span id="id2">Li <em>et al.</em> [<a class="reference internal" href="references.html#id4" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Convergent incremental potential contact. 2023. arXiv:2307.15908.">2023</a>]</span>.</p>
-<p>To enable the convergent formulation, we need to set <code class="docutils literal notranslate"><span class="pre">use_convergent_formulation</span></code>:</p>
+</div><h3 id="modeling-thickness"><span id="id1"></span>Modeling Thickness<a class="headerlink" href="#modeling-thickness" title="Permalink to this heading">¶</a></h3>
+<p>We implement the thickness model of <span id="id2">Li <em>et al.</em> [<a class="reference internal" href="references.html#id3" title="Minchen Li, Danny M. Kaufman, and Chenfanfu Jiang. Codimensional incremental potential contact. ACM Transactions on Graphics (SIGGRAPH), 2021. https://ipc-sim.github.io/C-IPC.">2021</a>]</span> to apply an offset (referred to as <span class="math notranslate nohighlight">\(\xi\)</span> in <span id="id3">[<a class="reference internal" href="references.html#id3" title="Minchen Li, Danny M. Kaufman, and Chenfanfu Jiang. Codimensional incremental potential contact. ACM Transactions on Graphics (SIGGRAPH), 2021. https://ipc-sim.github.io/C-IPC.">Li <em>et al.</em>, 2021</a>]</span> or <span class="math notranslate nohighlight">\(d_\min\)</span> here) to the collision constraints. This is useful for modeling the thickness of a shell or cloth.</p>
+<p>To add a constraint offset, we need to set the <code class="docutils literal notranslate"><span class="pre">dmin</span></code> variable. For example, we can set the constraint offset <span class="math notranslate nohighlight">\(d_\min=10^{-3}\)</span> and <span class="math notranslate nohighlight">\(\hat{d}=10^{-4}\)</span>:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="7:2">
 <input checked type="radio" id="__tabbed_7_1" name="__tabbed_7"><input type="radio" id="__tabbed_7_2" name="__tabbed_7"><div class="tabbed-labels docutils">
 <label class="tabbed-label" for="__tabbed_7_1">
 C++</label><label class="tabbed-label" for="__tabbed_7_2">
-Python</label></div>
-<div class="tabbed-content docutils">
-<div class="tabbed-block docutils">
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">collision_constraints</span><span class="p">.</span><span class="n">set_use_convergent_formulation</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
-<span class="n">collision_constraints</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">);</span>
-</code></pre></div>
-</div>
-</div>
-<div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">collision_constraints</span><span class="o">.</span><span class="n">use_convergent_formulation</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">collision_constraints</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">dhat</span><span class="p">)</span>
-</code></pre></div>
-</div>
-</div>
-</div>
-</div><div class="important admonition">
-<p class="admonition-title">Important</p>
-<p>The variable <code class="docutils literal notranslate"><span class="pre">use_convergent_formulation</span></code> should be set before calling <code class="docutils literal notranslate"><span class="pre">CollisionConstraints::build</span></code> for it to take effect. By default, it is <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
-</div>
-<h4 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Permalink to this heading">¶</a></h4>
-<p><em>We briefly summarize the convergent formulation here for convenience.</em></p>
-<p>In order to derive a convergent formulation, we first define a continuous form of our barrier potential <span class="math notranslate nohighlight">\(P\)</span>. For a surface <span class="math notranslate nohighlight">\(\mathcal{S}\)</span> embedded in 3D space, we parameterize the surfaces by common (possibly discontinuous) coordinates <span class="math notranslate nohighlight">\(u \in \tilde{M} \subset \mathbb{R}^2\)</span>, so that <span class="math notranslate nohighlight">\(\mathcal{S}(u)\)</span> traverses the material points across all surfaces contiguously. The total contact potential is then</p>
-<div class="math notranslate nohighlight">
-\[P(\mathcal{S})=\frac{1}{2} \int_{u \in \tilde{M}} \max _{v \in \tilde{M} \setminus{ }_r u} b(d(\mathcal{S}(u), \mathcal{S}(v)), \hat{d})~\mathrm{d} u,\]</div>
-<p>where we define the operator <span class="math notranslate nohighlight">\(\setminus_r: \mathcal{P}(\mathbb{R}^2) \times \mathbb{R} \times \mathbb{R}^2 \mapsto \mathcal{P}(\mathbb{R}^2)\)</span> to be</p>
-<div class="math notranslate nohighlight">
-\[\tilde{M} \setminus_r u:=\left\{v \in \tilde{M} \mid\|u-v\|_2&gt;r\right\}\]</div>
-<p>with <span class="math notranslate nohighlight">\(r \rightarrow 0\)</span>.</p>
-<p>We then define our surface discretization with a triangulated boundary mesh geometry. As in the smooth case, we can parameterize the domain across all triangles with <span class="math notranslate nohighlight">\(u \in \tilde{M}\)</span> so that <span class="math notranslate nohighlight">\(p(u): \tilde{M} \mapsto \mathbb{R}^3\)</span> traverses all material points, across all triangles <span class="math notranslate nohighlight">\(t ∈ T\)</span> in the triangle mesh contiguously. The corresponding surface contact potential is then</p>
-<div class="math notranslate nohighlight">
-\[\frac{1}{2} \int_{u \in \tilde{M}} \max_{t \in T \backslash p(u)} b(d(p(u), t), \hat{d})~\mathrm{d} u,\]</div>
-<p>where <span class="math notranslate nohighlight">\(T \setminus p\)</span> is the set of boundary faces that do not contain the point <span class="math notranslate nohighlight">\(p\)</span>.</p>
-<p>Applying mesh vertices as nodes (and quadrature points), we numerically integrate the surface contact potential. For each nodal position <span class="math notranslate nohighlight">\(x \in V\)</span> we then have a corresponding material space coordinate <span class="math notranslate nohighlight">\(\bar{x} \in \bar{V}\)</span>. Piecewise linear integration of the surface barrier is then</p>
-<div class="math notranslate nohighlight">
-\[\frac{1}{2} \sum_{\bar{x} \in \bar{V}} w_{\bar{x}} \max _{t \in T \backslash x(\bar{x})} b(d(x(\bar{x}), t), \hat{d}),\]</div>
-<p>where <span class="math notranslate nohighlight">\(w_{\bar{x}}\)</span> are the quadrature weights, each given by one-third of the sum of the areas (in material space) of the boundary triangles incident to <span class="math notranslate nohighlight">\(\bar{x}\)</span>.</p>
-<p>We next need to smoothly approximate the max operator in the contact potentials. However, common approaches such as an <span class="math notranslate nohighlight">\(L^p\)</span>-norm or LogSumExp would decrease sparsity in subsequent numerical solves by increasing the stencil size per contact evaluation. We instead leverage the locality of our barrier function to approximate the max operator by removing duplicate distance pairs. Our resulting approximators for a triangulated surface is</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\begin{aligned}
-\Psi_s(x) &amp; =\sum_{t \in T \backslash x} b(d(x, t), \hat{d})-\sum_{e \in E_{\text {int }} \backslash x} b(d(x, e), \hat{d})+\sum_{x_2 \in V_{i n t} \backslash x} b\left(d\left(x, x_2\right), \hat{d}\right) \\
-&amp; \approx \max _{t \in T \backslash x} b(d(x, t), \hat{d}),
-\end{aligned}\end{split}\]</div>
-<p>where <span class="math notranslate nohighlight">\(V_{\text{int}} \subseteq V\)</span> is the subset of internal surface nodes and <span class="math notranslate nohighlight">\(E_{\text{int}} \subseteq E\)</span> is the subset of internal surface edges (i.e., edges incident to two triangles). For locally convex regions this estimator is tight while remaining smooth. In turn, for nonconvex regions, it improves over direct summation.</p>
-<p>The corresponding discrete barrier potential is then simply</p>
-<div class="math notranslate nohighlight">
-\[P_s(V)= \frac{1}{2} \sum_{x \in V} w_x \Psi_s(x),\]</div>
-<p>where we simplify with <span class="math notranslate nohighlight">\(w_x = w_{\bar{x}}\)</span> defined appropriately, per domain, as covered above.</p>
-<p>Please, see the <a class="reference external" href="https://arxiv.org/abs/2307.15908">paper</a> for more details (including the formulation for 2D curves and edge-edge contact) and evaluation.</p>
-<p>The key difference between the original and the convergent formulations is that we (1) include area weights in the barrier potential and (2) include additional (negative) terms to cancel out the duplicate distance pairs. While this requires minor algorithmic changes, it produces considerably better results.</p>
-<h4 id="physical-barrier">Physical Barrier<a class="headerlink" href="#physical-barrier" title="Permalink to this heading">¶</a></h4>
-<p>We want our barrier potential to have the same units as our elastic potential (e.g., <span class="math notranslate nohighlight">\(\text{J}\)</span>). Together with the area weighting (discussed above), this means the barrier should have units of pressure times distance (e.g., <span class="math notranslate nohighlight">\(\text{Pa} \cdot \text{m}\)</span>). That is,</p>
-<div class="math notranslate nohighlight">
-\[\text{Pa} \cdot \text{m} \cdot \text{m}^2 = \frac{\text{N}}{\text{m}^2} \cdot \text{m} \cdot \text{m}^2 = \text{N} \cdot \text{m} = \text{J}.\]</div>
-<p>To achieve this, (when using the convergent formulation) we modify the barrier function to have units of distance:</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}b(d, \hat{d})=\left\{\begin{array}{lr}
--\hat{d}\left(\frac{d}{\hat{d}}-1\right)^2 \ln \left(\frac{d}{\hat{d}}\right), &amp; 0&lt;d&lt;\hat{d} \\
-0 &amp; d \geq \hat{d}
-\end{array}\right.\end{split}\]</div>
-<div class="note admonition">
-<p class="admonition-title">Note</p>
-<p>This is equivalent to the original barrier function of <span id="id3">[<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">Li <em>et al.</em>, 2020</a>]</span> times <span class="math notranslate nohighlight">\(1/\hat{d}^3\)</span> when using squared distances. Therefore, to simplify the implementation we only implement the original barrier function and multiply all constraints by <span class="math notranslate nohighlight">\(1/\hat{d}^3\)</span>.</p>
-</div>
-<p>The barrier stiffness (<span class="math notranslate nohighlight">\(\kappa\)</span>) then has units of pressure (e.g., <span class="math notranslate nohighlight">\(\text{Pa}\)</span>), the same as Young’s modulus (<span class="math notranslate nohighlight">\(E\)</span>) in elasticity.
-This implies we can get good solver convergence even when using a fixed <span class="math notranslate nohighlight">\(\kappa\)</span> by setting it relative to the material’s Young’s modulus (<span class="math notranslate nohighlight">\(\kappa = 0.1 E\)</span> works well in many examples).
-The intention is to treat the barrier as a thin elastic region around the mesh, and having consistent units makes it easier to pick the stiffness for this “material”.</p>
-<h3 id="modeling-thickness"><span id="id4"></span>Modeling Thickness<a class="headerlink" href="#modeling-thickness" title="Permalink to this heading">¶</a></h3>
-<p>We implement the thickness model of <span id="id5">Li <em>et al.</em> [<a class="reference internal" href="references.html#id3" title="Minchen Li, Danny M. Kaufman, and Chenfanfu Jiang. Codimensional incremental potential contact. ACM Transactions on Graphics (SIGGRAPH), 2021. https://ipc-sim.github.io/C-IPC.">2021</a>]</span> to apply an offset (referred to as <span class="math notranslate nohighlight">\(\xi\)</span> in <span id="id6">[<a class="reference internal" href="references.html#id3" title="Minchen Li, Danny M. Kaufman, and Chenfanfu Jiang. Codimensional incremental potential contact. ACM Transactions on Graphics (SIGGRAPH), 2021. https://ipc-sim.github.io/C-IPC.">Li <em>et al.</em>, 2021</a>]</span> or <span class="math notranslate nohighlight">\(d_\min\)</span> here) to the collision constraints. This is useful for modeling the thickness of a shell or cloth.</p>
-<p>To add a constraint offset, we need to set the <code class="docutils literal notranslate"><span class="pre">dmin</span></code> variable. For example, we can set the constraint offset <span class="math notranslate nohighlight">\(d_\min=10^{-3}\)</span> and <span class="math notranslate nohighlight">\(\hat{d}=10^{-4}\)</span>:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="8:2">
-<input checked type="radio" id="__tabbed_8_1" name="__tabbed_8"><input type="radio" id="__tabbed_8_2" name="__tabbed_8"><div class="tabbed-labels docutils">
-<label class="tabbed-label" for="__tabbed_8_1">
-C++</label><label class="tabbed-label" for="__tabbed_8_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -1753,10 +1627,10 @@ Python</label></div>
 <p>It is also important to use the same <span class="math notranslate nohighlight">\(d_\min\)</span> when performing CCD (see <a class="reference internal" href="#minimum-separation-ccd"><span class="std std-ref">Minimum Separation CCD</span></a>).</p>
 <h2 id="friction">Friction<a class="headerlink" href="#friction" title="Permalink to this heading">¶</a></h2>
 <p>Computing the friction dissipative potential is similar to the contact potential, but because it is a lagged model, we need to build it from a fixed set of constraints.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="9:2">
-<input checked type="radio" id="__tabbed_9_1" name="__tabbed_9"><input type="radio" id="__tabbed_9_2" name="__tabbed_9"><div class="tabbed-labels docutils">
-<label class="tabbed-label" for="__tabbed_9_1">
-C++</label><label class="tabbed-label" for="__tabbed_9_2">
+<div class="tabbed-set tabbed-alternate" data-tabs="8:2">
+<input checked type="radio" id="__tabbed_8_1" name="__tabbed_8"><input type="radio" id="__tabbed_8_2" name="__tabbed_8"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_8_1">
+C++</label><label class="tabbed-label" for="__tabbed_8_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -1777,10 +1651,10 @@ Python</label></div>
 </div><p>Here <code class="docutils literal notranslate"><span class="pre">mu</span></code> (<span class="math notranslate nohighlight">\(\mu\)</span>) is the (global) coefficient of friction, and <code class="docutils literal notranslate"><span class="pre">barrier_stiffness</span></code> (<span class="math notranslate nohighlight">\(\kappa\)</span>) is the barrier stiffness.</p>
 <h3 id="friction-dissipative-potential">Friction Dissipative Potential<a class="headerlink" href="#friction-dissipative-potential" title="Permalink to this heading">¶</a></h3>
 <p>Now we can compute the friction dissipative potential using the <code class="docutils literal notranslate"><span class="pre">FrictionConstraints</span></code>.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="10:2">
-<input checked type="radio" id="__tabbed_10_1" name="__tabbed_10"><input type="radio" id="__tabbed_10_2" name="__tabbed_10"><div class="tabbed-labels docutils">
-<label class="tabbed-label" for="__tabbed_10_1">
-C++</label><label class="tabbed-label" for="__tabbed_10_2">
+<div class="tabbed-set tabbed-alternate" data-tabs="9:2">
+<input checked type="radio" id="__tabbed_9_1" name="__tabbed_9"><input type="radio" id="__tabbed_9_2" name="__tabbed_9"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_9_1">
+C++</label><label class="tabbed-label" for="__tabbed_9_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -1811,10 +1685,10 @@ Python</label></div>
 <p>where <span class="math notranslate nohighlight">\(C\)</span> is the lagged collision constraints, <span class="math notranslate nohighlight">\(\lambda_k^n\)</span> is the normal force magnitude for the <span class="math notranslate nohighlight">\(k\)</span>-th contact, <span class="math notranslate nohighlight">\(T_k\)</span> is the tangential basis for the <span class="math notranslate nohighlight">\(k\)</span>-th contact, and <span class="math notranslate nohighlight">\(f_0\)</span> is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.</p>
 <h3 id="derivatives">Derivatives<a class="headerlink" href="#derivatives" title="Permalink to this heading">¶</a></h3>
 <p>We can also compute the first and second derivatives of the friction dissipative potential with respect to the velocities.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="11:2">
-<input checked type="radio" id="__tabbed_11_1" name="__tabbed_11"><input type="radio" id="__tabbed_11_2" name="__tabbed_11"><div class="tabbed-labels docutils">
-<label class="tabbed-label" for="__tabbed_11_1">
-C++</label><label class="tabbed-label" for="__tabbed_11_2">
+<div class="tabbed-set tabbed-alternate" data-tabs="10:2">
+<input checked type="radio" id="__tabbed_10_1" name="__tabbed_10"><input type="radio" id="__tabbed_10_2" name="__tabbed_10"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_10_1">
+C++</label><label class="tabbed-label" for="__tabbed_10_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -1838,17 +1712,14 @@ Python</label></div>
 </div>
 </div>
 </div>
-</div><h3 id="convergent-friction-formulation"><span id="id7"></span>Convergent Formulation<a class="headerlink" href="#convergent-friction-formulation" title="Permalink to this heading">¶</a></h3>
-<p>Just as with the <a class="reference internal" href="#convergent-contact-formulation"><span class="std std-ref">collision constraints</span></a>, we implement both the original friction formulation of <span id="id8">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span> and the convergent formulation of <span id="id9">Li <em>et al.</em> [<a class="reference internal" href="references.html#id4" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Convergent incremental potential contact. 2023. arXiv:2307.15908.">2023</a>]</span>.</p>
-<p>The choice of formulation is dependent on how the fixed set of <code class="docutils literal notranslate"><span class="pre">contact_constraints</span></code> given to <code class="docutils literal notranslate"><span class="pre">FrictionConstraints::build</span></code> was built. If the <code class="docutils literal notranslate"><span class="pre">contact_constraints</span></code> were built using the convergent formulation, then the friction constraints will also use the convergent formulation. Otherwise, the original formulation will be used.</p>
-<h2 id="continuous-collision-detection">Continuous Collision Detection<a class="headerlink" href="#continuous-collision-detection" title="Permalink to this heading">¶</a></h2>
+</div><h2 id="continuous-collision-detection">Continuous Collision Detection<a class="headerlink" href="#continuous-collision-detection" title="Permalink to this heading">¶</a></h2>
 <p>The last high-level component of the IPC Toolkit library is continuous collision detection (CCD). This is a method for determining if and at what time two objects will collide. This can be incorporated in a simulation nonlinear solver’s line search to determine the maximum step size allowable before a collision occurs.</p>
 <p>There are two main functions for doing this: <code class="docutils literal notranslate"><span class="pre">is_step_collision_free</span></code> and <code class="docutils literal notranslate"><span class="pre">compute_collision_free_stepsize</span></code>. The former returns a boolean value indicating if the step is collision-free, and the latter returns the maximum step size that is collision-free. Both functions take the same arguments, but <code class="docutils literal notranslate"><span class="pre">compute_collision_free_stepsize</span></code> is the more convenient function to use as it returns the maximum step size.</p>
 <p>The following example determines the maximum step size allowable between the rest_positions and the squashed bunny.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="12:2">
-<input checked type="radio" id="__tabbed_12_1" name="__tabbed_12"><input type="radio" id="__tabbed_12_2" name="__tabbed_12"><div class="tabbed-labels docutils">
-<label class="tabbed-label" for="__tabbed_12_1">
-C++</label><label class="tabbed-label" for="__tabbed_12_2">
+<div class="tabbed-set tabbed-alternate" data-tabs="11:2">
+<input checked type="radio" id="__tabbed_11_1" name="__tabbed_11"><input type="radio" id="__tabbed_11_2" name="__tabbed_11"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_11_1">
+C++</label><label class="tabbed-label" for="__tabbed_11_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -1884,10 +1755,10 @@ Python</label></div>
 <h3 id="broad-phase">Broad-Phase<a class="headerlink" href="#broad-phase" title="Permalink to this heading">¶</a></h3>
 <p>The broad phase takes all possible pairings (quadratic in size) and eliminates (culls) pairs whose bounding boxes do not overlap. This is done using a spatial data structure (e.g., a hash grid or spatial hash).</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">Candidates</span></code> class represents the culled set of candidate pairs and is built by using a broad-phase method. The following example shows how to use the broad phase to determine the candidate pairs between the rest_positions and the squashed bunny.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="13:2">
-<input checked type="radio" id="__tabbed_13_1" name="__tabbed_13"><input type="radio" id="__tabbed_13_2" name="__tabbed_13"><div class="tabbed-labels docutils">
-<label class="tabbed-label" for="__tabbed_13_1">
-C++</label><label class="tabbed-label" for="__tabbed_13_2">
+<div class="tabbed-set tabbed-alternate" data-tabs="12:2">
+<input checked type="radio" id="__tabbed_12_1" name="__tabbed_12"><input type="radio" id="__tabbed_12_2" name="__tabbed_12"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_12_1">
+C++</label><label class="tabbed-label" for="__tabbed_12_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -1911,14 +1782,14 @@ Python</label></div>
 </div>
 </div>
 </div><p>Possible values for <code class="docutils literal notranslate"><span class="pre">broad_phase_method</span></code> are: <code class="docutils literal notranslate"><span class="pre">BRUTE_FORCE</span></code> (parallel brute force culling), <code class="docutils literal notranslate"><span class="pre">HASH_GRID</span></code> (default), <code class="docutils literal notranslate"><span class="pre">SPATIAL_HASH</span></code> (implementation from the original IPC codebase),
-<code class="docutils literal notranslate"><span class="pre">BVH</span></code> (<a class="reference external" href="https://github.com/geometryprocessing/SimpleBVH">SimpleBVH</a>), <code class="docutils literal notranslate"><span class="pre">SWEEP_AND_TINIEST_QUEUE</span></code> (method of <span id="id10">Belgrod <em>et al.</em> [<a class="reference internal" href="references.html#id6" title="David Belgrod, Bolun Wang, Zachary Ferguson, Xin Zhao, Marco Attene, Daniele Panozzo, and Teseo Schneider. Time of impact dataset for continuous collision detection and a scalable conservative algorithm. 2023. arXiv:2112.06300.">2023</a>]</span>), or <code class="docutils literal notranslate"><span class="pre">SWEEP_AND_TINIEST_QUEUE_GPU</span></code> (requires CUDA).</p>
+<code class="docutils literal notranslate"><span class="pre">BVH</span></code> (<a class="reference external" href="https://github.com/geometryprocessing/SimpleBVH">SimpleBVH</a>), <code class="docutils literal notranslate"><span class="pre">SWEEP_AND_TINIEST_QUEUE</span></code> (method of <span id="id4">Belgrod <em>et al.</em> [<a class="reference internal" href="references.html#id6" title="David Belgrod, Bolun Wang, Zachary Ferguson, Xin Zhao, Marco Attene, Daniele Panozzo, and Teseo Schneider. Time of impact dataset for continuous collision detection and a scalable conservative algorithm. 2023. arXiv:2112.06300.">2023</a>]</span>), or <code class="docutils literal notranslate"><span class="pre">SWEEP_AND_TINIEST_QUEUE_GPU</span></code> (requires CUDA).</p>
 <h3 id="narrow-phase">Narrow-Phase<a class="headerlink" href="#narrow-phase" title="Permalink to this heading">¶</a></h3>
-<p>The narrow phase computes the time of impact between two primitives (e.g., a point and a triangle or two edges in 3D). To do this we utilize the Tight Inclusion CCD method of <span id="id11">Wang <em>et al.</em> [<a class="reference internal" href="references.html#id5" title="Bolun Wang, Zachary Ferguson, Teseo Schneider, Xin Jiang, Marco Attene, and Daniele Panozzo. A large scale benchmark and an inclusion-based algorithm for continuous collision detection. ACM Transactions on Graphics, October 2021. https://continuous-collision-detection.github.io/tight_inclusion/.">2021</a>]</span> for the narrow phase as it is provably conservative (i.e., never misses collisions), accurate (i.e., rarely reports false positives), and efficient.</p>
+<p>The narrow phase computes the time of impact between two primitives (e.g., a point and a triangle or two edges in 3D). To do this we utilize the Tight Inclusion CCD method of <span id="id5">Wang <em>et al.</em> [<a class="reference internal" href="references.html#id5" title="Bolun Wang, Zachary Ferguson, Teseo Schneider, Xin Jiang, Marco Attene, and Daniele Panozzo. A large scale benchmark and an inclusion-based algorithm for continuous collision detection. ACM Transactions on Graphics, October 2021. https://continuous-collision-detection.github.io/tight_inclusion/.">2021</a>]</span> for the narrow phase as it is provably conservative (i.e., never misses collisions), accurate (i.e., rarely reports false positives), and efficient.</p>
 <p>The following example shows how to use the narrow phase to determine if a point is colliding with a triangle (static in this case).</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="14:2">
-<input checked type="radio" id="__tabbed_14_1" name="__tabbed_14"><input type="radio" id="__tabbed_14_2" name="__tabbed_14"><div class="tabbed-labels docutils">
-<label class="tabbed-label" for="__tabbed_14_1">
-C++</label><label class="tabbed-label" for="__tabbed_14_2">
+<div class="tabbed-set tabbed-alternate" data-tabs="13:2">
+<input checked type="radio" id="__tabbed_13_1" name="__tabbed_13"><input type="radio" id="__tabbed_13_2" name="__tabbed_13"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_13_1">
+C++</label><label class="tabbed-label" for="__tabbed_13_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -1973,10 +1844,10 @@ Python</label></div>
 </div>
 </div>
 </div><p>Alternatively, the <code class="docutils literal notranslate"><span class="pre">FaceVertexCandidate</span></code> class contains a <code class="docutils literal notranslate"><span class="pre">ccd</span></code> function that can be used to determine if the face-vertex pairing is colliding:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="15:2">
-<input checked type="radio" id="__tabbed_15_1" name="__tabbed_15"><input type="radio" id="__tabbed_15_2" name="__tabbed_15"><div class="tabbed-labels docutils">
-<label class="tabbed-label" for="__tabbed_15_1">
-C++</label><label class="tabbed-label" for="__tabbed_15_2">
+<div class="tabbed-set tabbed-alternate" data-tabs="14:2">
+<input checked type="radio" id="__tabbed_14_1" name="__tabbed_14"><input type="radio" id="__tabbed_14_2" name="__tabbed_14"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_14_1">
+C++</label><label class="tabbed-label" for="__tabbed_14_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -2003,10 +1874,10 @@ Python</label></div>
 <h3 id="minimum-separation"><span id="minimum-separation-ccd"></span>Minimum Separation<a class="headerlink" href="#minimum-separation" title="Permalink to this heading">¶</a></h3>
 <p>We can also perform CCD with a minimum separation distance. This is useful when modeling thickness (see, e.g., <a class="reference internal" href="#modeling-thickness"><span class="std std-ref">Modeling Thickness</span></a>).</p>
 <p>To do this, we need to set the <code class="docutils literal notranslate"><span class="pre">min_distance</span></code> parameter when calling <code class="docutils literal notranslate"><span class="pre">is_step_collision_free</span></code> and <code class="docutils literal notranslate"><span class="pre">compute_collision_free_stepsize</span></code>. For example, we can set the minimum separation distance to <span class="math notranslate nohighlight">\(d_\min=10^{-4}\)</span>:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="16:2">
-<input checked type="radio" id="__tabbed_16_1" name="__tabbed_16"><input type="radio" id="__tabbed_16_2" name="__tabbed_16"><div class="tabbed-labels docutils">
-<label class="tabbed-label" for="__tabbed_16_1">
-C++</label><label class="tabbed-label" for="__tabbed_16_2">
+<div class="tabbed-set tabbed-alternate" data-tabs="15:2">
+<input checked type="radio" id="__tabbed_15_1" name="__tabbed_15"><input type="radio" id="__tabbed_15_2" name="__tabbed_15"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_15_1">
+C++</label><label class="tabbed-label" for="__tabbed_15_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -2044,7 +1915,7 @@ Python</label></div>
   <small>
     
       Last update:
-      Nov 06, 2023
+      Nov 09, 2023
     
   </small>
 </div>
@@ -2091,13 +1962,13 @@ Python</label></div>
       
       
         
-        <a href="nonlinear_ccd.html" class="md-footer__link md-footer__link--next" aria-label="Next: Nonlinear CCD" rel="next">
+        <a href="convergent.html" class="md-footer__link md-footer__link--next" aria-label="Next: Convergent Formulation" rel="next">
           <div class="md-footer__title">
             <div class="md-ellipsis">
               <span class="md-footer__direction">
                 Next
               </span>
-              Nonlinear CCD
+              Convergent Formulation
             </div>
           </div>
           <div class="md-footer__button md-icon">
