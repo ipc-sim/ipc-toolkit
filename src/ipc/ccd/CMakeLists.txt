@@ -7,6 +7,8 @@ set(SOURCES
   ccd.hpp
   inexact_point_edge.cpp
   inexact_point_edge.hpp
+  nonlinear_ccd.cpp
+  nonlinear_ccd.hpp
   point_static_plane.cpp
   point_static_plane.hpp
 )

@@ -7,9 +7,9 @@
 
 namespace ipc {
 
-FaceVertexCandidate::FaceVertexCandidate(long face_id, long vertex_id)
-    : face_id(face_id)
-    , vertex_id(vertex_id)
+FaceVertexCandidate::FaceVertexCandidate(long _face_id, long _vertex_id)
+    : face_id(_face_id)
+    , vertex_id(_vertex_id)
 {
 }
 

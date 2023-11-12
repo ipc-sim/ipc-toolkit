@@ -8,7 +8,7 @@ using namespace ipc;
 void define_collision_constraints(py::module_& m)
 {
     py::class_<CollisionConstraints>(m, "CollisionConstraints")
-        .def(py::init(), "")
+        .def(py::init())
         .def(
             "build",
             py::overload_cast<
@@ -27,7 +27,7 @@ void define_collision_constraints(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"), py::arg("dhat"),
             py::arg("dmin") = 0,
-            py::arg("broad_phase_method") = BroadPhaseMethod::HASH_GRID)
+            py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD)
         .def(
             "build",
             py::overload_cast<
@@ -147,6 +147,69 @@ void define_collision_constraints(py::module_& m)
                 A reference to the constraint.
             )ipc_Qu8mg5v7",
             py::arg("idx"))
+        .def(
+            "is_vertex_vertex", &CollisionConstraints::is_vertex_vertex,
+            R"ipc_Qu8mg5v7(
+            Get if the constraint at idx is a vertex-vertex constraint.
+
+            Parameters:
+                idx: The index of the constraint.
+
+            Returns:
+                If the constraint at idx is a vertex-vertex constraint.
+            )ipc_Qu8mg5v7",
+            py::arg("idx"))
+        .def(
+            "is_edge_vertex", &CollisionConstraints::is_edge_vertex,
+            R"ipc_Qu8mg5v7(
+            Get if the constraint at idx is an edge-vertex constraint.
+
+            Parameters:
+                idx: The index of the constraint.
+
+            Returns:
+                If the constraint at idx is an edge-vertex constraint.
+            )ipc_Qu8mg5v7",
+            py::arg("idx"))
+        .def(
+            "is_edge_edge", &CollisionConstraints::is_edge_edge,
+            R"ipc_Qu8mg5v7(
+            Get if the constraint at idx is an edge-edge constraint.
+
+            Parameters:
+                idx: The index of the constraint.
+
+            Returns:
+                If the constraint at idx is an edge-edge constraint.
+            )ipc_Qu8mg5v7",
+            py::arg("idx"))
+        .def(
+            "is_face_vertex", &CollisionConstraints::is_face_vertex,
+            R"ipc_Qu8mg5v7(
+            Get if the constraint at idx is an face-vertex constraint.
+
+            Parameters:
+                idx: The index of the constraint.
+
+            Returns:
+                If the constraint at idx is an face-vertex constraint.
+            )ipc_Qu8mg5v7",
+            py::arg("idx"))
+        .def(
+            "is_plane_vertex", &CollisionConstraints::is_plane_vertex,
+            R"ipc_Qu8mg5v7(
+            Get if the constraint at idx is an plane-vertex constraint.
+
+            Parameters:
+                idx: The index of the constraint.
+
+            Returns:
+                If the constraint at idx is an plane-vertex constraint.
+            )ipc_Qu8mg5v7",
+            py::arg("idx"))
+        .def(
+            "to_string", &CollisionConstraints::to_string, "", py::arg("mesh"),
+            py::arg("vertices"))
         .def_property(
             "use_convergent_formulation",
             &CollisionConstraints::use_convergent_formulation,
@@ -157,6 +220,9 @@ void define_collision_constraints(py::module_& m)
             &CollisionConstraints::are_shape_derivatives_enabled,
             &CollisionConstraints::set_are_shape_derivatives_enabled,
             "If the collision constraints are using the convergent formulation.")
+        .def(
+            "to_string", &CollisionConstraints::to_string, py::arg("mesh"),
+            py::arg("vertices"))
         .def_readwrite("vv_constraints", &CollisionConstraints::vv_constraints)
         .def_readwrite("ev_constraints", &CollisionConstraints::ev_constraints)
         .def_readwrite("ee_constraints", &CollisionConstraints::ee_constraints)

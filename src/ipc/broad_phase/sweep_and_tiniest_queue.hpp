@@ -58,28 +58,28 @@ public:
     void clear() override;
 
     /// @brief Find the candidate vertex-vertex collisions.
-    /// @param[out] candidates The candidate vertex-vertex collisisons.
-    void detect_vertex_vertex_candidates(
+    /// @param[out] candidates The candidate vertex-vertex collisions.
+    [[noreturn]] void detect_vertex_vertex_candidates(
         std::vector<VertexVertexCandidate>& candidates) const override;
 
-    /// @brief Find the candidate edge-vertex collisisons.
-    /// @param[out] candidates The candidate edge-vertex collisisons.
-    void detect_edge_vertex_candidates(
+    /// @brief Find the candidate edge-vertex collisions.
+    /// @param[out] candidates The candidate edge-vertex collisions.
+    [[noreturn]] void detect_edge_vertex_candidates(
         std::vector<EdgeVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-edge collisions.
-    /// @param[out] candidates The candidate edge-edge collisisons.
+    /// @param[out] candidates The candidate edge-edge collisions.
     void detect_edge_edge_candidates(
         std::vector<EdgeEdgeCandidate>& candidates) const override;
 
     /// @brief Find the candidate face-vertex collisions.
-    /// @param[out] candidates The candidate face-vertex collisisons.
+    /// @param[out] candidates The candidate face-vertex collisions.
     void detect_face_vertex_candidates(
         std::vector<FaceVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-face intersections.
     /// @param[out] candidates The candidate edge-face intersections.
-    void detect_edge_face_candidates(
+    [[noreturn]] void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const override;
 
 protected:
@@ -126,28 +126,28 @@ public:
     void clear() override;
 
     /// @brief Find the candidate vertex-vertex collisions.
-    /// @param[out] candidates The candidate vertex-vertex collisisons.
-    void detect_vertex_vertex_candidates(
+    /// @param[out] candidates The candidate vertex-vertex collisions.
+    [[noreturn]] void detect_vertex_vertex_candidates(
         std::vector<VertexVertexCandidate>& candidates) const override;
 
-    /// @brief Find the candidate edge-vertex collisisons.
-    /// @param[out] candidates The candidate edge-vertex collisisons.
-    void detect_edge_vertex_candidates(
+    /// @brief Find the candidate edge-vertex collisions.
+    /// @param[out] candidates The candidate edge-vertex collisions.
+    [[noreturn]] void detect_edge_vertex_candidates(
         std::vector<EdgeVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-edge collisions.
-    /// @param[out] candidates The candidate edge-edge collisisons.
+    /// @param[out] candidates The candidate edge-edge collisions.
     void detect_edge_edge_candidates(
         std::vector<EdgeEdgeCandidate>& candidates) const override;
 
     /// @brief Find the candidate face-vertex collisions.
-    /// @param[out] candidates The candidate face-vertex collisisons.
+    /// @param[out] candidates The candidate face-vertex collisions.
     void detect_face_vertex_candidates(
         std::vector<FaceVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-face intersections.
     /// @param[out] candidates The candidate edge-face intersections.
-    void detect_edge_face_candidates(
+    [[noreturn]] void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const override;
 
 private:

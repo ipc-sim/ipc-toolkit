@@ -12,21 +12,21 @@ namespace ipc {
 
 void SweepAndTiniestQueue::build(
     const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const Eigen::MatrixXi& _edges,
+    const Eigen::MatrixXi& _faces,
+    const double inflation_radius)
 {
-    build(vertices, vertices, edges, faces, inflation_radius);
+    build(vertices, vertices, _edges, _faces, inflation_radius);
 }
 
 void SweepAndTiniestQueue::build(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const Eigen::MatrixXi& _edges,
+    const Eigen::MatrixXi& _faces,
+    const double inflation_radius)
 {
-    CopyMeshBroadPhase::copy_mesh(edges, faces);
+    CopyMeshBroadPhase::copy_mesh(_edges, _faces);
     num_vertices = vertices_t0.rows();
     stq::cpu::constructBoxes(
         vertices_t0, vertices_t1, edges, faces, boxes, inflation_radius);
@@ -122,11 +122,11 @@ bool SweepAndTiniestQueue::is_face(long id) const
 #ifdef IPC_TOOLKIT_WITH_CUDA
 void SweepAndTiniestQueueGPU::build(
     const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const Eigen::MatrixXi& _edges,
+    const Eigen::MatrixXi& _faces,
+    const double inflation_radius)
 {
-    CopyMeshBroadPhase::copy_mesh(edges, faces);
+    CopyMeshBroadPhase::copy_mesh(_edges, _faces);
     ccd::gpu::construct_static_collision_candidates(
         vertices, edges, faces, overlaps, boxes, inflation_radius);
 }
@@ -134,11 +134,11 @@ void SweepAndTiniestQueueGPU::build(
 void SweepAndTiniestQueueGPU::build(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const Eigen::MatrixXi& _edges,
+    const Eigen::MatrixXi& _faces,
+    const double inflation_radius)
 {
-    CopyMeshBroadPhase::copy_mesh(edges, faces);
+    CopyMeshBroadPhase::copy_mesh(_edges, _faces);
     ccd::gpu::construct_continuous_collision_candidates(
         vertices_t0, vertices_t1, edges, faces, overlaps, boxes,
         inflation_radius);

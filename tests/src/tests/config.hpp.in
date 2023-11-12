@@ -1,0 +1,22 @@
+#pragma once
+
+// WARNING: Do not modify config.hpp directly. Instead, modify config.hpp.in.
+
+#include <ipc/config.hpp>
+
+#include <filesystem>
+
+#cmakedefine IPC_TOOLKIT_TESTS_CCD_BENCHMARK
+
+namespace ipc::tests {
+
+#ifdef IPC_TOOLKIT_TESTS_CCD_BENCHMARK
+static const std::filesystem::path
+    CCD_BENCHMARK_DIR("@IPC_TOOLKIT_TESTS_CCD_BENCHMARK_DIR@");
+static const std::filesystem::path
+    NEW_CCD_BENCHMARK_DIR("@IPC_TOOLKIT_TESTS_NEW_CCD_BENCHMARK_DIR@");
+#endif
+
+static const std::filesystem::path DATA_DIR("@IPC_TOOLKIT_TESTS_DATA_DIR@");
+
+} // namespace ipc::tests

@@ -5,9 +5,9 @@
 
 namespace ipc {
 
-EdgeEdgeCandidate::EdgeEdgeCandidate(long edge0_id, long edge1_id)
-    : edge0_id(edge0_id)
-    , edge1_id(edge1_id)
+EdgeEdgeCandidate::EdgeEdgeCandidate(long _edge0_id, long _edge1_id)
+    : edge0_id(_edge0_id)
+    , edge1_id(_edge1_id)
 {
 }
 

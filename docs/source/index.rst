@@ -11,6 +11,8 @@
     :hidden:
 
     tutorial/getting_started.rst
+    tutorial/convergent.rst
+    tutorial/nonlinear_ccd.rst
     tutorial/simulation.rst
     tutorial/misc.rst
     tutorial/references.rst
@@ -28,6 +30,7 @@
     cpp-api/ccd.rst
     cpp-api/distance.rst
     cpp-api/barrier.rst
+    cpp-api/intersections.rst
     cpp-api/utils.rst
 
 .. toctree::
@@ -43,6 +46,7 @@
     python-api/ccd.rst
     python-api/distance.rst
     python-api/barrier.rst
+    python-api/intersections.rst
     python-api/utils.rst
 
 .. toctree::

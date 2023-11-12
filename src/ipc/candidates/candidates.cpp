@@ -13,11 +13,13 @@
 
 namespace ipc {
 
-bool implements_vertex_vertex(const BroadPhaseMethod method)
-{
-    return method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
-        && method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU;
-}
+namespace {
+    bool implements_vertex_vertex(const BroadPhaseMethod method)
+    {
+        return method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
+            && method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU;
+    }
+} // namespace
 
 void Candidates::build(
     const CollisionMesh& mesh,
@@ -29,7 +31,7 @@ void Candidates::build(
 
     clear();
 
-    std::unique_ptr<BroadPhase> broad_phase =
+    std::shared_ptr<BroadPhase> broad_phase =
         BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
@@ -80,7 +82,7 @@ void Candidates::build(
 
     clear();
 
-    std::unique_ptr<BroadPhase> broad_phase =
+    std::shared_ptr<BroadPhase> broad_phase =
         BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(

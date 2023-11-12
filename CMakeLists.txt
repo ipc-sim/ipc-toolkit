@@ -59,30 +59,19 @@ endif()
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
         LANGUAGES CXX
-        VERSION "1.1.1")
+        VERSION "1.2.0")
 
 option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
 option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
-option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use the TightInclusion CCD"                     ON)
+option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use Tight Inclusion CCD"                        ON)
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
-option(IPC_TOOLKIT_WITH_CODE_COVERAGE              "Enable coverage reporting"                     OFF)
+option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic"              ON)
+option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
 mark_as_advanced(IPC_TOOLKIT_WITH_CODE_COVERAGE)
-
-include(CMakeDependentOption)
-cmake_dependent_option(IPC_TOOLKIT_TEST_CCD_BENCHMARK "Enable CCD benchmark test" OFF "IPC_TOOLKIT_BUILD_TESTS" OFF)
-if(IPC_TOOLKIT_TEST_CCD_BENCHMARK)
-  mark_as_advanced(CLEAR IPC_TOOLKIT_CCD_BENCHMARK_DIR)
-  mark_as_advanced(CLEAR IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR)
-  set(IPC_TOOLKIT_CCD_BENCHMARK_DIR "" CACHE PATH "Path to the CCD benchmark directory")
-  set(IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR "" CACHE PATH "Path to the new CCD benchmark directory")
-else()
-  mark_as_advanced(FORCE IPC_TOOLKIT_CCD_BENCHMARK_DIR)
-  mark_as_advanced(FORCE IPC_TOOLKIT_CCD_NEW_BENCHMARK_DIR)
-endif()
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
@@ -110,7 +99,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # IPC Toolkit Library
 ################################################################################
 
-# Add an empty library and fill in the list of sources in `src/CMakeLists.txt`.
+# Add an empty library and fill in the list of sources in `src/ipc/CMakeLists.txt`.
 add_library(ipc_toolkit)
 add_library(ipc::toolkit ALIAS ipc_toolkit)
 
@@ -160,6 +149,10 @@ else()
   target_link_libraries(ipc_toolkit PUBLIC evouga::ccd)
 endif()
 
+# SimpleBVH
+include(simple_bvh)
+target_link_libraries(ipc_toolkit PUBLIC simple_bvh::simple_bvh)
+
 # Logger
 include(spdlog)
 target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
@@ -191,6 +184,12 @@ endif()
 if(IPC_TOOLKIT_WITH_ABSEIL)
   include(abseil)
   target_link_libraries(ipc_toolkit PUBLIC absl::hash)
+endif()
+
+# Intervals
+if(IPC_TOOLKIT_WITH_FILIB)
+  include(filib)
+  target_link_libraries(ipc_toolkit PUBLIC filib::filib)
 endif()
 
 # Extra warnings (link last for highest priority)

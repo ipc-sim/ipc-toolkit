@@ -8,7 +8,7 @@ We provide several helper functions to make your job easier. The following examp
 Volumetric Meshes
 -----------------
 
-The IPC Toolkit only handles surface meshes (through the ``CollisionMesh``). However, the finite element method often relies on volumetric discretizations. In this case the computed gradients and Hessians need to be mapped back to the full volumetric mesh. The ``CollisionMesh`` class provides this functionality.
+The IPC Toolkit only handles surface meshes (through the ``CollisionMesh``). However, the finite element method often relies on volumetric discretizations. In this case, the computed gradients and Hessians need to be mapped back to the full volumetric mesh. The ``CollisionMesh`` class provides this functionality.
 
 From the full (volumetric) mesh vertices and surface edges/faces which index into the full mesh vertices, you can build a ``CollisionMesh`` using the function ``CollisionMesh::build_from_full_mesh``. This will internally build and store a selection matrix that goes from the full to surface vertices as well as map the edge/faces entries accordingly.
 
@@ -80,7 +80,7 @@ This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. How
 Nonlinear Bases and Curved Meshes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-While IPC cannot directly handle nonlinear finite element bases and/or curved meshes, :cite:t:`Ferguson2023HighOrderIPC` show that displacements and forces can be transfered between a finite element mesh and a collision proxy through the use of a linear map. Given this linear map as a matrix, we can use the ``CollisionMesh`` class to map between the full and surface DOF.
+While IPC cannot directly handle nonlinear finite element bases and/or curved meshes, :cite:t:`Ferguson2023HighOrderIPC` show that displacements and forces can be transferred between a finite element mesh and a collision proxy through the use of a linear map. Given this linear map as a matrix, we can use the ``CollisionMesh`` class to map between the full and surface DOF.
 
 .. md-tab-set::
 
@@ -130,7 +130,7 @@ While IPC cannot directly handle nonlinear finite element bases and/or curved me
             collision_mesh = CollisionMesh(
                 proxy_rest_positions, proxy_edges, proxy_faces, displacement_map)
 
-We can then map the displacements using ``collision_mesh.map_displacement(fe_displacements)`` or directly get the displaced proxy mesh vertices using ``collision_mesh.displace_vertices(fe_displacements)``. Similarly, we can map forces/gradients using ``collision_mesh.to_full_dof(contact_forces)`` or force jacobians/potential hessians using ``collision_mesh.to_full_dof(potential_hessian)``.
+We can then map the displacements using ``collision_mesh.map_displacement(fe_displacements)`` or directly get the displaced proxy mesh vertices using ``collision_mesh.displace_vertices(fe_displacements)``. Similarly, we can map forces/gradients using ``collision_mesh.to_full_dof(contact_forces)`` or force Jacobians/potential Hessians using ``collision_mesh.to_full_dof(potential_hessian)``.
 
 .. warning::
     The function ``CollisionMesh::vertices(full_positions)`` should not be used in this case because the rest positions used to construct the ``CollisionMesh`` are not the same as the finite element mesh's rest positions. Instead, use ``CollisionMesh::displace_vertices(fe_displacements)`` where ``fe_displacements`` is already the solution of the PDE or can be computed as ``fe_displacements = fe_positions - fe_rest_positions`` from deformed and rest positions.

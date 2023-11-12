@@ -47,8 +47,10 @@ public:
 
     // ------------------------------------------------------------------------
 
-    long face_id;   ///< @brief ID of the face
-    long vertex_id; ///< @brief ID of the vertex
+    /// @brief ID of the face
+    long face_id;
+    /// @brief ID of the vertex
+    long vertex_id;
 
     using CollisionStencil::compute_distance;
     using CollisionStencil::compute_distance_gradient;

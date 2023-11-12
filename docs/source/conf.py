@@ -20,10 +20,12 @@ import pathlib
 
 # -- Project information -----------------------------------------------------
 
+import ipctk
+
 project = "IPC Toolkit"
 copyright = '2020-2023, IPC-Sim Organization; MIT License'
 author = "Zachary Ferguson"
-version = "1.1.1"
+version = ipctk.__version__
 
 # -- General configuration ---------------------------------------------------
 

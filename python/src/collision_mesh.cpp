@@ -76,7 +76,8 @@ void define_collision_mesh(py::module_& m)
         .def_property_readonly(
             "num_faces", &CollisionMesh::num_faces,
             "Get the number of faces in the collision mesh.")
-        .def("dim", &CollisionMesh::dim, "Get the dimension of the mesh.")
+        .def_property_readonly(
+            "dim", &CollisionMesh::dim, "Get the dimension of the mesh.")
         .def_property_readonly(
             "ndof", &CollisionMesh::ndof,
             "Get the number of degrees of freedom in the collision mesh.")
@@ -308,8 +309,8 @@ void define_collision_mesh(py::module_& m)
         .def_readwrite(
             "can_collide", &CollisionMesh::can_collide,
             R"ipc_Qu8mg5v7(
-            A function that takes two vertex IDs and returns true if the vertices
-(and faces or edges containing the vertices) can collide. By default all
-primitives can collide with all other primitives.
+            A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide.
+
+            By default all primitives can collide with all other primitives.
             )ipc_Qu8mg5v7");
 }

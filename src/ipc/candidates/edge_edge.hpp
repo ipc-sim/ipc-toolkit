@@ -49,8 +49,10 @@ public:
 
     // ------------------------------------------------------------------------
 
-    long edge0_id; ///< @brief ID of the first edge.
-    long edge1_id; ///< @brief ID of the second edge.
+    /// @brief ID of the first edge.
+    long edge0_id;
+    /// @brief ID of the second edge.
+    long edge1_id;
 
     using CollisionStencil::compute_distance;
     using CollisionStencil::compute_distance_gradient;

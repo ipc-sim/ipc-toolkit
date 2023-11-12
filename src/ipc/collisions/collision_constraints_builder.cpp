@@ -10,10 +10,10 @@
 namespace ipc {
 
 CollisionConstraintsBuilder::CollisionConstraintsBuilder(
-    const bool use_convergent_formulation,
-    const bool should_compute_weight_gradient)
-    : use_convergent_formulation(use_convergent_formulation)
-    , should_compute_weight_gradient(should_compute_weight_gradient)
+    const bool _use_convergent_formulation,
+    const bool _should_compute_weight_gradient)
+    : use_convergent_formulation(_use_convergent_formulation)
+    , should_compute_weight_gradient(_should_compute_weight_gradient)
 {
 }
 
@@ -68,8 +68,6 @@ void CollisionConstraintsBuilder::add_edge_vertex_constraints(
 {
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [ei, vi] = candidates[i];
-        const long e0i = mesh.edges()(ei, 0), e1i = mesh.edges()(ei, 1);
-
         const auto [v, e0, e1, _] =
             candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
         const PointEdgeDistanceType dtype = point_edge_distance_type(v, e0, e1);
@@ -119,6 +117,7 @@ void CollisionConstraintsBuilder::add_edge_vertex_constraint(
         break;
 
     case PointEdgeDistanceType::AUTO:
+    default:
         assert(false);
         break;
     }
@@ -217,6 +216,7 @@ void CollisionConstraintsBuilder::add_edge_edge_constraints(
             break;
 
         case EdgeEdgeDistanceType::AUTO:
+        default:
             assert(false);
             break;
         }
@@ -292,6 +292,7 @@ void CollisionConstraintsBuilder::add_face_vertex_constraints(
             break;
 
         case PointTriangleDistanceType::AUTO:
+        default:
             assert(false);
             break;
         }

@@ -67,12 +67,11 @@ void define_relative_velocity(py::module_& m)
 
     m.def(
         "point_edge_relative_velocity_matrix",
-        &point_edge_relative_velocity_matrix, "", py::arg("dim"),
-        py::arg("alpha"));
+        &point_edge_relative_velocity_matrix, py::arg("dim"), py::arg("alpha"));
 
     m.def(
         "point_edge_relative_velocity_matrix_jacobian",
-        &point_edge_relative_velocity_matrix_jacobian, "", py::arg("dim"),
+        &point_edge_relative_velocity_matrix_jacobian, py::arg("dim"),
         py::arg("alpha"));
 
     m.def(
@@ -95,12 +94,11 @@ void define_relative_velocity(py::module_& m)
 
     m.def(
         "edge_edge_relative_velocity_matrix",
-        &edge_edge_relative_velocity_matrix, "", py::arg("dim"),
-        py::arg("coords"));
+        &edge_edge_relative_velocity_matrix, py::arg("dim"), py::arg("coords"));
 
     m.def(
         "edge_edge_relative_velocity_matrix_jacobian",
-        &edge_edge_relative_velocity_matrix_jacobian, "", py::arg("dim"),
+        &edge_edge_relative_velocity_matrix_jacobian, py::arg("dim"),
         py::arg("coords"));
 
     m.def(
@@ -123,11 +121,11 @@ void define_relative_velocity(py::module_& m)
 
     m.def(
         "point_triangle_relative_velocity_matrix",
-        &point_triangle_relative_velocity_matrix, "", py::arg("dim"),
+        &point_triangle_relative_velocity_matrix, py::arg("dim"),
         py::arg("coords"));
 
     m.def(
         "point_triangle_relative_velocity_matrix_jacobian",
-        &point_triangle_relative_velocity_matrix_jacobian, "", py::arg("dim"),
+        &point_triangle_relative_velocity_matrix_jacobian, py::arg("dim"),
         py::arg("coords"));
 }

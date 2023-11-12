@@ -20,9 +20,9 @@ void define_point_plane_distance(py::module_& m)
             The distance is actually squared distance.
 
         Parameters:
-            p: point
-            origin: origin of the plane
-            normal: normal of the plane
+            p: The point.
+            origin: The origin of the plane.
+            normal: The normal of the plane.
 
         Returns:
             The distance between the point and plane.
@@ -43,10 +43,10 @@ void define_point_plane_distance(py::module_& m)
             The distance is actually squared distance.
 
         Parameters:
-            p: point
-            t0: first vertex of the triangle
-            t1: second vertex of the triangle
-            t2: third vertex of the triangle
+            p: The point.
+            t0: The first vertex of the triangle.
+            t1: The second vertex of the triangle.
+            t2: The third vertex of the triangle.
 
         Returns:
             The distance between the point and plane.
@@ -67,9 +67,9 @@ void define_point_plane_distance(py::module_& m)
             The distance is actually squared distance.
 
         Parameters:
-            p: point
-            origin: origin of the plane
-            normal: normal of the plane
+            p: The point.
+            origin: The origin of the plane.
+            normal: The normal of the plane.
 
         Returns:
             The gradient of the distance wrt p.
@@ -91,10 +91,10 @@ void define_point_plane_distance(py::module_& m)
             The distance is actually squared distance.
 
         Parameters:
-            p: point
-            t0: first vertex of the triangle
-            t1: second vertex of the triangle
-            t2: third vertex of the triangle
+            p: The point.
+            t0: The first vertex of the triangle.
+            t1: The second vertex of the triangle.
+            t2: The third vertex of the triangle.
 
         Returns:
             The gradient of the distance wrt p, t0, t1, and t2.
@@ -115,9 +115,9 @@ void define_point_plane_distance(py::module_& m)
             The distance is actually squared distance.
 
         Parameters:
-            p: point
-            origin: origin of the plane
-            normal: normal of the plane
+            p: The point.
+            origin: The origin of the plane.
+            normal: The normal of the plane.
 
         Returns:
             The hessian of the distance wrt p.
@@ -139,10 +139,10 @@ void define_point_plane_distance(py::module_& m)
             The distance is actually squared distance.
 
         Parameters:
-            p: point
-            t0: first vertex of the triangle
-            t1: second vertex of the triangle
-            t2: third vertex of the triangle
+            p: The point.
+            t0: The first vertex of the triangle.
+            t1: The second vertex of the triangle.
+            t2: The third vertex of the triangle.
 
         Returns:
             The hessian of the distance wrt p, t0, t1, and t2.

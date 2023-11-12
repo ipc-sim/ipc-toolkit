@@ -26,6 +26,8 @@ IPC Toolkit is a set of reusable functions to integrate Incremental Potential Co
 
 This is not a full simulation library. As such it does not include any physics or solvers. For a full simulation implementation, we recommend [PolyFEM](https://polyfem.github.io/) (a finite element library) or [Rigid IPC](https://github.com/ipc-sim/rigid-ipc) (rigid-body dynamics) both of which utilize the IPC Toolkit.
 
+<!--- BEGIN C++ README 1 --->
+
 ## Build
 
 The easiest way to add the toolkit to an existing CMake project is to download it through CMake.
@@ -53,6 +55,8 @@ target_link_libraries(${PROJECT_NAME} PUBLIC ipc::toolkit)
 
 where `PROJECT_NAME` is the name of your library/binary.
 
+<!--- BEGIN C++ README 2 --->
+
 ### Dependencies
 
 **All required dependencies are downloaded through CMake** depending on the build options.
@@ -61,8 +65,9 @@ The following libraries are used in this project:
 
 * [Eigen](https://eigen.tuxfamily.org/): linear algebra
 * [libigl](https://github.com/libigl/libigl): basic geometry functions and predicates
-* [TBB](https://github.com/wjakob/tbb): parallelization
+* [oneTBB](https://github.com/oneapi-src/oneTBB): parallelism
 * [Tight-Inclusion](https://github.com/Continuous-Collision-Detection/Tight-Inclusion): correct (conservative) CCD
+* [SimpleBVH](https://github.com/ipc-sim/SimpleBVH): a simple bounding volume hierarchy data structure
 * [spdlog](https://github.com/gabime/spdlog): logging information
 
 #### Optional
@@ -72,6 +77,9 @@ The following libraries are used in this project:
     * Enabled by default
 * [Abseil](https://abseil.io/): hashing utilities
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_ABSEIL`
+    * Enabled by default
+* [filib](https://github.com/zfergus/filib): interval arithmetic for nonlinear trajectories/CCD
+    * Enable by using the CMake option `IPC_TOOLKIT_WITH_FILIB`
     * Enabled by default
 * [rational-cpp](https://github.io/zfergus/rational-cpp): rational arithmetic used for exact intersection checks
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION`
@@ -83,12 +91,11 @@ The following libraries are used in this project:
 
 ## Usage
 
-The main functionality is provided in the `ipc.hpp` header. Use the prefix directory `ipc` to include all header files (e.g. `#include <ipc/ipc.hpp>`).
-
+See the [tutorial](https://ipctk.xyz/tutorial/getting_started.html) for a quick introduction to the toolkit, or the [documentation](https://ipctk.xyz/cpp.html) for a full reference.
 
 ## Unit Tests
 
-We provide unit tests for ensuring the correctness of our algorithmic pieces.
+We provide unit tests to ensure the correctness of our algorithmic pieces.
 To enable the unit tests use the CMake option `IPC_TOOLKIT_BUILD_UNIT_TESTS`.
 
 ### Dependencies
@@ -99,11 +106,13 @@ The following are downloaded when unit tests are enabled (`IPC_TOOLKIT_BUILD_TES
 * [finite-diff](https://github.com/zfergus/finite-diff): finite-difference comparisons
 * [Nlohman's JSON library](https://github.com/nlohmann/json): loading test data from JSON files
 
+<!--- END C++ README --->
+
 ## Python Bindings
 
 We provide Python bindings for functions in the toolkit using [pybind11](https://github.com/pybind/pybind11).
 
-For more information see the [Python documentation](https://ipctk.xyz/python/).
+For more information see the [Python documentation](https://ipctk.xyz/python.html).
 
 ## Contributing
 

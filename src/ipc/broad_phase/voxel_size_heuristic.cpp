@@ -6,10 +6,15 @@
 
 namespace ipc {
 
+namespace {
+    // Avoid unused variable warnings
+    inline void check_success(bool success) { assert(success); }
+} // namespace
+
 double suggest_good_voxel_size(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
-    double inflation_radius)
+    const double inflation_radius)
 {
     // double edge_len_std_deviation;
     // double edge_len =
@@ -35,7 +40,7 @@ double suggest_good_voxel_size(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
-    double inflation_radius)
+    const double inflation_radius)
 {
     // double edge_len_std_deviation;
     // double edge_len = mean_edge_length(
@@ -81,7 +86,7 @@ double mean_edge_length(
 
     double sum = 0;
     for (int i = 0; i < edges.rows(); i++) {
-        const size_t e0i = edges(i, 0), e1i = edges(i, 1);
+        const int e0i = edges(i, 0), e1i = edges(i, 1);
         sum += (vertices_t0.row(e0i) - vertices_t0.row(e1i)).norm();
         sum += (vertices_t1.row(e0i) - vertices_t1.row(e1i)).norm();
     }
@@ -89,7 +94,7 @@ double mean_edge_length(
 
     std_deviation = 0;
     for (int i = 0; i < edges.rows(); i++) {
-        const size_t e0i = edges(i, 0), e1i = edges(i, 1);
+        const int e0i = edges(i, 0), e1i = edges(i, 1);
         std_deviation += std::pow(
             (vertices_t0.row(e0i) - vertices_t0.row(e1i)).norm() - mean, 2);
         std_deviation += std::pow(
@@ -129,16 +134,14 @@ double median_edge_length(
     }
 
     double median = -1;
-    const bool success = igl::median(lengths, median);
-    assert(success);
+    check_success(igl::median(lengths, median));
     return median;
 }
 
 double median_displacement_length(const Eigen::MatrixXd& displacements)
 {
     double median = -1;
-    const bool success = igl::median(displacements.rowwise().norm(), median);
-    assert(success);
+    check_success(igl::median(displacements.rowwise().norm(), median));
     return median;
 }
 

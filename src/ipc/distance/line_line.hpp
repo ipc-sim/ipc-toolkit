@@ -25,7 +25,7 @@ double line_line_distance(
 /// @param ea1 The second vertex of the edge defining the first line.
 /// @param ea0 The first vertex of the edge defining the second line.
 /// @param ea1 The second vertex of the edge defining the second line.
-/// @return grad The gradient of the distance wrt ea0, ea1, eb0, and eb1.
+/// @return The gradient of the distance wrt ea0, ea1, eb0, and eb1.
 Vector12d line_line_distance_gradient(
     const Eigen::Ref<const Eigen::Vector3d>& ea0,
     const Eigen::Ref<const Eigen::Vector3d>& ea1,
@@ -39,7 +39,7 @@ Vector12d line_line_distance_gradient(
 /// @param ea1 The second vertex of the edge defining the first line.
 /// @param ea0 The first vertex of the edge defining the second line.
 /// @param ea1 The second vertex of the edge defining the second line.
-/// @return hess The hessian of the distance wrt ea0, ea1, eb0, and eb1.
+/// @return The hessian of the distance wrt ea0, ea1, eb0, and eb1.
 Matrix12d line_line_distance_hessian(
     const Eigen::Ref<const Eigen::Vector3d>& ea0,
     const Eigen::Ref<const Eigen::Vector3d>& ea1,
