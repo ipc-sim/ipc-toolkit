@@ -185,7 +185,7 @@ void define_collision_mesh(py::module_& m)
                 Matrix quantity on the full mesh with size equal to full_ndof() × full_ndof().
             )ipc_Qu8mg5v7",
             py::arg("X"))
-        .def(
+        .def_property_readonly(
             "vertex_vertex_adjacencies",
             &CollisionMesh::vertex_vertex_adjacencies,
             "Get the vertex-vertex adjacency matrix.")
