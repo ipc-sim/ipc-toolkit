@@ -23,9 +23,24 @@ jobs:
       - name: Requirements
         run: |
           sudo apt-get update
-          sudo apt-get install doxygen python3-sphinx graphviz
+          sudo apt-get install doxygen python3-sphinx graphviz ccache
+          echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
           python -m pip install --upgrade pip
           pip install -r docs/requirements.txt
+
+      - name: Cache Build
+        id: cache-build
+        uses: actions/cache@v3.0.11
+        with:
+          path: ${{ env.CACHE_PATH }}
+          key: docs-cache
+          restore-keys: Linux-Python-cache
+
+      - name: Prepare Ccache
+        run: |
+          ccache --max-size=1.0G
+          ccache -V && ccache --show-config
+          ccache --show-stats && ccache --zero-stats
 
       - name: Build release docs
         run: |
@@ -54,7 +69,9 @@ jobs:
           cd ..
 
       - name: Build ipctk
-        run: pip install --verbose .
+        run: |
+          pip install --verbose .
+          ccache --show-stats
 
       - name: Build docs
         run: |
@@ -66,6 +83,5 @@ jobs:
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: docs/build/html # The folder the action should deploy.
+          branch: gh-pages # The branch the action should deploy to.
+          folder: docs/build/html # The folder the action should deploy.

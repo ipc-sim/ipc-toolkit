@@ -7,13 +7,13 @@ namespace ipc {
 double suggest_good_voxel_size(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
-    double inflation_radius = 0);
+    const double inflation_radius = 0);
 
 double suggest_good_voxel_size(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
-    double inflation_radius = 0);
+    const double inflation_radius = 0);
 
 /// @brief Compute the average edge length of a mesh.
 double mean_edge_length(

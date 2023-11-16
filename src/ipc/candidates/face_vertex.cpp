@@ -7,9 +7,9 @@
 
 namespace ipc {
 
-FaceVertexCandidate::FaceVertexCandidate(long face_id, long vertex_id)
-    : face_id(face_id)
-    , vertex_id(vertex_id)
+FaceVertexCandidate::FaceVertexCandidate(long _face_id, long _vertex_id)
+    : face_id(_face_id)
+    , vertex_id(_vertex_id)
 {
 }
 
@@ -66,21 +66,21 @@ bool FaceVertexCandidate::ccd(
         conservative_rescaling);
 }
 
-void FaceVertexCandidate::print_ccd_query(
+std::ostream& FaceVertexCandidate::write_ccd_query(
+    std::ostream& out,
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces) const
 {
-    std::cout << vertices_t0.row(faces(face_id, 0)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t0.row(faces(face_id, 1)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t0.row(faces(face_id, 2)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t0.row(vertex_id).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(faces(face_id, 0)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(faces(face_id, 1)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(faces(face_id, 2)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(vertex_id).format(OBJ_VERTEX_FORMAT);
-    std::cout << std::flush;
+    return out << vertices_t0.row(faces(face_id, 0)).format(OBJ_VERTEX_FORMAT)
+               << vertices_t0.row(faces(face_id, 1)).format(OBJ_VERTEX_FORMAT)
+               << vertices_t0.row(faces(face_id, 2)).format(OBJ_VERTEX_FORMAT)
+               << vertices_t0.row(vertex_id).format(OBJ_VERTEX_FORMAT)
+               << vertices_t1.row(faces(face_id, 0)).format(OBJ_VERTEX_FORMAT)
+               << vertices_t1.row(faces(face_id, 1)).format(OBJ_VERTEX_FORMAT)
+               << vertices_t1.row(faces(face_id, 2)).format(OBJ_VERTEX_FORMAT)
+               << vertices_t1.row(vertex_id).format(OBJ_VERTEX_FORMAT);
 }
 
 bool FaceVertexCandidate::operator==(const FaceVertexCandidate& other) const

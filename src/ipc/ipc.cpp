@@ -37,7 +37,7 @@ bool is_step_collision_free(
         max_iterations);
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
@@ -53,10 +53,10 @@ double compute_collision_free_stepsize(
 
     if (broad_phase_method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
 #ifdef IPC_TOOLKIT_WITH_CUDA
-        double min_distance = 0; // TODO
+        // TODO: Use correct min_distance
         const double step_size = ccd::gpu::compute_toi_strategy(
             vertices_t0, vertices_t1, mesh.edges(), mesh.faces(),
-            max_iterations, min_distance, tolerance);
+            max_iterations, /*min_distance=*/0, tolerance);
         if (step_size < 1.0) {
             return 0.8 * step_size;
         }
@@ -79,7 +79,7 @@ double compute_collision_free_stepsize(
         max_iterations);
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 bool has_intersections(
     const CollisionMesh& mesh,
@@ -91,7 +91,7 @@ bool has_intersections(
     const double conservative_inflation_radius =
         1e-6 * world_bbox_diagonal_length(vertices);
 
-    std::unique_ptr<BroadPhase> broad_phase =
+    std::shared_ptr<BroadPhase> broad_phase =
         BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
 

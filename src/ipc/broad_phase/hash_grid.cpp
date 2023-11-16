@@ -19,7 +19,7 @@ void HashGrid::build(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     BroadPhase::build(vertices, edges, faces, inflation_radius);
     // BroadPhase::build also calls clear()
@@ -41,7 +41,7 @@ void HashGrid::build(
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     BroadPhase::build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
     // BroadPhase::build also calls clear()
@@ -149,19 +149,21 @@ void HashGrid::detect_candidates(
     size_t num_items = items0.size() + items1.size();
     std::vector<long> merged_item_indices;
     merged_item_indices.reserve(num_items);
-    long i = 0, j = 0;
-    while (i < items0.size() && j < items1.size()) {
-        if (items0[i] < items1[j]) {
+    {
+        long i = 0, j = 0;
+        while (i < items0.size() && j < items1.size()) {
+            if (items0[i] < items1[j]) {
+                merged_item_indices.push_back(-(i++) - 1);
+            } else {
+                merged_item_indices.push_back(j++);
+            }
+        }
+        while (i < items0.size()) {
             merged_item_indices.push_back(-(i++) - 1);
-        } else {
+        }
+        while (j < items1.size()) {
             merged_item_indices.push_back(j++);
         }
-    }
-    while (i < items0.size()) {
-        merged_item_indices.push_back(-(i++) - 1);
-    }
-    while (j < items1.size()) {
-        merged_item_indices.push_back(j++);
     }
     assert(merged_item_indices.size() == num_items);
 
@@ -307,6 +309,13 @@ void HashGrid::detect_candidates(
     candidates.insert(
         candidates.end(), candidates_set.begin(), candidates_set.end());
 #endif
+}
+
+void HashGrid::detect_vertex_vertex_candidates(
+    std::vector<VertexVertexCandidate>& candidates) const
+{
+    detect_candidates(
+        vertex_items, vertex_boxes, can_vertices_collide, candidates);
 }
 
 void HashGrid::detect_edge_vertex_candidates(

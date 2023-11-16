@@ -8,14 +8,14 @@ using namespace ipc;
 void define_friction_constraints(py::module_& m)
 {
     py::class_<FrictionConstraints>(m, "FrictionConstraints")
-        .def(py::init(), "")
+        .def(py::init())
         .def(
             "build",
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&,
                 const CollisionConstraints&, double, double, double>(
                 &FrictionConstraints::build),
-            "", py::arg("mesh"), py::arg("vertices"),
+            py::arg("mesh"), py::arg("vertices"),
             py::arg("contact_constraints"), py::arg("dhat"),
             py::arg("barrier_stiffness"), py::arg("mu"))
         .def(
@@ -40,7 +40,7 @@ void define_friction_constraints(py::module_& m)
                 const Eigen::VectorXd&,
                 const std::function<double(double, double)>&>(
                 &FrictionConstraints::build),
-            "", py::arg("mesh"), py::arg("vertices"),
+            py::arg("mesh"), py::arg("vertices"),
             py::arg("contact_constraints"), py::arg("dhat"),
             py::arg("barrier_stiffness"), py::arg("mus"), py::arg("blend_mu"))
         .def(
@@ -96,9 +96,9 @@ void define_friction_constraints(py::module_& m)
 
             Parameters:
                 mesh: The collision mesh.
-                rest_positions: Rest positions of the vertices (rowwise).
-                lagged_displacements: Previous displacements of the vertices (rowwise).
-                velocities: Current displacements of the vertices (rowwise).
+                rest_positions: Rest positions of the vertices (rowwise)
+                lagged_displacements: Previous displacements of the vertices (rowwise)
+                velocities: Current displacements of the vertices (rowwise)
                 dhat: Barrier activation distance.
                 barrier_stiffness: Barrier stiffness.
                 epsv: Mollifier parameter :math:`\epsilon_v`.
@@ -120,9 +120,9 @@ void define_friction_constraints(py::module_& m)
 
             Parameters:
                 mesh: The collision mesh.
-                rest_positions: Rest positions of the vertices (rowwise).
-                lagged_displacements: Previous displacements of the vertices (rowwise).
-                velocities: Current displacements of the vertices (rowwise).
+                rest_positions: Rest positions of the vertices (rowwise)
+                lagged_displacements: Previous displacements of the vertices (rowwise)
+                velocities: Current displacements of the vertices (rowwise)
                 dhat: Barrier activation distance.
                 barrier_stiffness: Barrier stiffness.
                 epsv: Mollifier parameter :math:`\epsilon_v`.
@@ -162,14 +162,10 @@ void define_friction_constraints(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("idx"))
         .def_static(
-            "default_blend_mu", &FrictionConstraints::default_blend_mu, "",
+            "default_blend_mu", &FrictionConstraints::default_blend_mu,
             py::arg("mu0"), py::arg("mu1"))
-        .def_readwrite(
-            "vv_constraints", &FrictionConstraints::vv_constraints, "")
-        .def_readwrite(
-            "ev_constraints", &FrictionConstraints::ev_constraints, "")
-        .def_readwrite(
-            "ee_constraints", &FrictionConstraints::ee_constraints, "")
-        .def_readwrite(
-            "fv_constraints", &FrictionConstraints::fv_constraints, "");
+        .def_readwrite("vv_constraints", &FrictionConstraints::vv_constraints)
+        .def_readwrite("ev_constraints", &FrictionConstraints::ev_constraints)
+        .def_readwrite("ee_constraints", &FrictionConstraints::ee_constraints)
+        .def_readwrite("fv_constraints", &FrictionConstraints::fv_constraints);
 }

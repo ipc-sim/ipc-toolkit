@@ -11,15 +11,20 @@ void define_broad_phase(py::module_& m)
     py::enum_<BroadPhaseMethod>(
         m, "BroadPhaseMethod",
         "Enumeration of implemented broad phase methods.")
-        .value("BRUTE_FORCE", BroadPhaseMethod::BRUTE_FORCE, "")
-        .value("HASH_GRID", BroadPhaseMethod::HASH_GRID, "")
-        .value("SPATIAL_HASH", BroadPhaseMethod::SPATIAL_HASH, "")
+        .value("BRUTE_FORCE", BroadPhaseMethod::BRUTE_FORCE, "Brute force.")
+        .value("HASH_GRID", BroadPhaseMethod::HASH_GRID, "Hash grid.")
+        .value("SPATIAL_HASH", BroadPhaseMethod::SPATIAL_HASH, "Spatial hash.")
+        .value(
+            "BOUNDING_VOLUME_HIERARCHY", BroadPhaseMethod::BVH,
+            "Bounding volume hierarchy.")
         .value(
             "SWEEP_AND_TINIEST_QUEUE",
-            BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE, "")
+            BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE,
+            "Sweep and tiniest queue.")
         .value(
             "SWEEP_AND_TINIEST_QUEUE_GPU",
-            BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU, "")
+            BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU,
+            "Sweep and tiniest queue (GPU).")
         .export_values();
 
     py::class_<BroadPhase>(m, "BroadPhase")
@@ -29,17 +34,17 @@ void define_broad_phase(py::module_& m)
             Construct a registered broad phase object.
 
             Parameters:
-                broad_phase_method: The broad phase method to use.
+                method: The broad phase method to use.
 
             Returns:
                 The constructed broad phase object.
             )ipc_Qu8mg5v7",
-            py::arg("broad_phase_method"))
+            py::arg("method"))
         .def(
             "build",
             py::overload_cast<
                 const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-                const Eigen::MatrixXi&, double>(&BroadPhase::build),
+                const Eigen::MatrixXi&, const double>(&BroadPhase::build),
             R"ipc_Qu8mg5v7(
             Build the broad phase for static collision detection.
 
@@ -55,7 +60,7 @@ void define_broad_phase(py::module_& m)
             "build",
             py::overload_cast<
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXi&, const Eigen::MatrixXi&, double>(
+                const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double>(
                 &BroadPhase::build),
             R"ipc_Qu8mg5v7(
             Build the broad phase for continuous collision detection.
@@ -71,21 +76,34 @@ void define_broad_phase(py::module_& m)
             py::arg("faces"), py::arg("inflation_radius") = 0)
         .def("clear", &BroadPhase::clear, "Clear any built data.")
         .def(
+            "detect_vertex_vertex_candidates",
+            [](const BroadPhase& self) {
+                std::vector<VertexVertexCandidate> candidates;
+                self.detect_vertex_vertex_candidates(candidates);
+                return candidates;
+            },
+            R"ipc_Qu8mg5v7(
+            Find the candidate vertex-vertex collisions.
+
+            Returns:
+                The candidate vertex-vertex collisions.
+            )ipc_Qu8mg5v7")
+        .def(
             "detect_edge_vertex_candidates",
-            [](BroadPhase& self) {
+            [](const BroadPhase& self) {
                 std::vector<EdgeVertexCandidate> candidates;
                 self.detect_edge_vertex_candidates(candidates);
                 return candidates;
             },
             R"ipc_Qu8mg5v7(
-            Find the candidate edge-vertex collisisons.
+            Find the candidate edge-vertex collisions.
 
             Returns:
-                The candidate edge-vertex collisisons.
+                The candidate edge-vertex collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_edge_edge_candidates",
-            [](BroadPhase& self) {
+            [](const BroadPhase& self) {
                 std::vector<EdgeEdgeCandidate> candidates;
                 self.detect_edge_edge_candidates(candidates);
                 return candidates;
@@ -94,11 +112,11 @@ void define_broad_phase(py::module_& m)
             Find the candidate edge-edge collisions.
 
             Returns:
-                The candidate edge-edge collisisons.
+                The candidate edge-edge collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_face_vertex_candidates",
-            [](BroadPhase& self) {
+            [](const BroadPhase& self) {
                 std::vector<FaceVertexCandidate> candidates;
                 self.detect_face_vertex_candidates(candidates);
                 return candidates;
@@ -107,11 +125,11 @@ void define_broad_phase(py::module_& m)
             Find the candidate face-vertex collisions.
 
             Returns:
-                The candidate face-vertex collisisons.
+                The candidate face-vertex collisions.
             )ipc_Qu8mg5v7")
         .def(
             "detect_edge_face_candidates",
-            [](BroadPhase& self) {
+            [](const BroadPhase& self) {
                 std::vector<EdgeFaceCandidate> candidates;
                 self.detect_edge_face_candidates(candidates);
                 return candidates;
@@ -124,7 +142,7 @@ void define_broad_phase(py::module_& m)
             )ipc_Qu8mg5v7")
         .def(
             "detect_collision_candidates",
-            [](BroadPhase& self, int dim) {
+            [](const BroadPhase& self, int dim) {
                 Candidates candidates;
                 self.detect_collision_candidates(dim, candidates);
                 return candidates;
@@ -134,6 +152,7 @@ void define_broad_phase(py::module_& m)
 
             Parameters:
                 dim: The dimension of the simulation (i.e., 2 or 3).
+                candidates: The detected collision candidates.
             )ipc_Qu8mg5v7",
             py::arg("dim"))
         .def_readwrite(

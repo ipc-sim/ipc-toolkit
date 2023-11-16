@@ -19,7 +19,7 @@ void define_point_static_plane(py::module_& m)
                 conservative_rescaling);
             return std::make_tuple(r, toi);
         },
-        "", py::arg("p_t0"), py::arg("p_t1"), py::arg("plane_origin"),
+        py::arg("p_t0"), py::arg("p_t1"), py::arg("plane_origin"),
         py::arg("plane_normal"),
         py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
 }

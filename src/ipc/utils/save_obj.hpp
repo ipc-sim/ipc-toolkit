@@ -3,13 +3,14 @@
 #include <Eigen/Core>
 
 #include <vector>
+#include <ostream>
 #include <fstream>
 
 namespace ipc {
 
 template <typename Candidate>
 void save_obj(
-    std::ofstream& out,
+    std::ostream& out,
     const Eigen::MatrixXd& V,
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,

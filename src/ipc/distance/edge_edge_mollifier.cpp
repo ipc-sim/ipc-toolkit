@@ -41,19 +41,43 @@ Matrix12d edge_edge_cross_squarednorm_hessian(
 
 double edge_edge_mollifier(const double x, const double eps_x)
 {
-    const double x_div_eps_x = x / eps_x;
-    return (-x_div_eps_x + 2.0) * x_div_eps_x;
+    if (x < eps_x) {
+        const double x_div_eps_x = x / eps_x;
+        return (-x_div_eps_x + 2) * x_div_eps_x;
+    } else {
+        return 1;
+    }
 }
 
 double edge_edge_mollifier_gradient(const double x, const double eps_x)
 {
-    const double one_div_eps_x = 1.0 / eps_x;
-    return 2.0 * one_div_eps_x * (-one_div_eps_x * x + 1.0);
+    if (x < eps_x) {
+        const double one_div_eps_x = 1 / eps_x;
+        return 2 * one_div_eps_x * (-one_div_eps_x * x + 1);
+    } else {
+        return 0;
+    }
 }
 
 double edge_edge_mollifier_hessian(const double x, const double eps_x)
 {
-    return -2.0 / (eps_x * eps_x);
+    if (x < eps_x) {
+        return -2 / (eps_x * eps_x);
+    } else {
+        return 0;
+    }
+}
+
+double
+edge_edge_mollifier_derivative_wrt_eps_x(const double x, const double eps_x)
+{
+    return x < eps_x ? (2 * x * (-eps_x + x) / (eps_x * eps_x * eps_x)) : 0.0;
+}
+
+double edge_edge_mollifier_gradient_derivative_wrt_eps_x(
+    const double x, const double eps_x)
+{
+    return x < eps_x ? (2 * (-eps_x + 2 * x) / (eps_x * eps_x * eps_x)) : 0.0;
 }
 
 double edge_edge_mollifier(
@@ -68,7 +92,7 @@ double edge_edge_mollifier(
     if (ee_cross_norm_sqr < eps_x) {
         return edge_edge_mollifier(ee_cross_norm_sqr, eps_x);
     } else {
-        return 1.0;
+        return 1;
     }
 }
 
@@ -111,6 +135,59 @@ Matrix12d edge_edge_mollifier_hessian(
     }
 }
 
+Vector12d edge_edge_mollifier_gradient_wrt_x(
+    const Eigen::Ref<const Eigen::Vector3d>& ea0_rest,
+    const Eigen::Ref<const Eigen::Vector3d>& ea1_rest,
+    const Eigen::Ref<const Eigen::Vector3d>& eb0_rest,
+    const Eigen::Ref<const Eigen::Vector3d>& eb1_rest,
+    const Eigen::Ref<const Eigen::Vector3d>& ea0,
+    const Eigen::Ref<const Eigen::Vector3d>& ea1,
+    const Eigen::Ref<const Eigen::Vector3d>& eb0,
+    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+{
+    const double eps_x =
+        edge_edge_mollifier_threshold(ea0_rest, ea1_rest, eb0_rest, eb1_rest);
+    const double ee_cross_norm_sqr =
+        edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
+    if (ee_cross_norm_sqr < eps_x) {
+        // ∇ₓ m = ∂m/∂ε ∇ₓε
+        return edge_edge_mollifier_derivative_wrt_eps_x(
+                   ee_cross_norm_sqr, eps_x)
+            * edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x);
+    } else {
+        return Vector12d::Zero();
+    }
+}
+
+Matrix12d edge_edge_mollifier_gradient_jacobian_wrt_x(
+    const Eigen::Ref<const Eigen::Vector3d>& ea0_rest,
+    const Eigen::Ref<const Eigen::Vector3d>& ea1_rest,
+    const Eigen::Ref<const Eigen::Vector3d>& eb0_rest,
+    const Eigen::Ref<const Eigen::Vector3d>& eb1_rest,
+    const Eigen::Ref<const Eigen::Vector3d>& ea0,
+    const Eigen::Ref<const Eigen::Vector3d>& ea1,
+    const Eigen::Ref<const Eigen::Vector3d>& eb0,
+    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+{
+    const double eps_x =
+        edge_edge_mollifier_threshold(ea0_rest, ea1_rest, eb0_rest, eb1_rest);
+    const double ee_cross_norm_sqr =
+        edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1);
+    if (ee_cross_norm_sqr < eps_x) {
+        // ∂²m/∂ε∂s (∇ₓε)(∇ᵤs(x+u))ᵀ + ∂m/∂s ∇ᵤ²s(x+u)
+        return edge_edge_mollifier_gradient_derivative_wrt_eps_x(
+                   ee_cross_norm_sqr, eps_x)
+            * edge_edge_mollifier_threshold_gradient(
+                   ea0_rest, ea1_rest, eb0_rest, eb1_rest)
+            * edge_edge_cross_squarednorm_gradient(ea0, ea1, eb0, eb1)
+                  .transpose()
+            + edge_edge_mollifier_gradient(ee_cross_norm_sqr, eps_x)
+            * edge_edge_cross_squarednorm_hessian(ea0, ea1, eb0, eb1);
+    } else {
+        return Matrix12d::Zero();
+    }
+}
+
 double edge_edge_mollifier_threshold(
     const Eigen::Ref<const Eigen::Vector3d>& ea0_rest,
     const Eigen::Ref<const Eigen::Vector3d>& ea1_rest,
@@ -119,6 +196,20 @@ double edge_edge_mollifier_threshold(
 {
     return 1e-3 * (ea0_rest - ea1_rest).squaredNorm()
         * (eb0_rest - eb1_rest).squaredNorm();
+}
+
+Vector12d edge_edge_mollifier_threshold_gradient(
+    const Eigen::Ref<const Eigen::Vector3d>& ea0_rest,
+    const Eigen::Ref<const Eigen::Vector3d>& ea1_rest,
+    const Eigen::Ref<const Eigen::Vector3d>& eb0_rest,
+    const Eigen::Ref<const Eigen::Vector3d>& eb1_rest)
+{
+    Vector12d grad;
+    autogen::edge_edge_mollifier_threshold_gradient(
+        ea0_rest[0], ea0_rest[1], ea0_rest[2], ea1_rest[0], ea1_rest[1],
+        ea1_rest[2], eb0_rest[0], eb0_rest[1], eb0_rest[2], eb1_rest[0],
+        eb1_rest[1], eb1_rest[2], grad.data(), /*scale=*/1e-3);
+    return grad;
 }
 
 namespace autogen {
@@ -413,6 +504,51 @@ namespace autogen {
         H[141] = -t33;
         H[142] = -t34;
         H[143] = t74;
+    }
+
+    void edge_edge_mollifier_threshold_gradient(
+        double ea0x,
+        double ea0y,
+        double ea0z,
+        double ea1x,
+        double ea1y,
+        double ea1z,
+        double eb0x,
+        double eb0y,
+        double eb0z,
+        double eb1x,
+        double eb1y,
+        double eb1z,
+        double grad[12],
+        double scale)
+    {
+        const auto t0 = ea0x - ea1x;
+        const auto t1 = eb0x - eb1x;
+        const auto t2 = eb0y - eb1y;
+        const auto t3 = eb0z - eb1z;
+        const auto t4 = 2 * scale;
+        const auto t5 = t4 * ((t1 * t1) + (t2 * t2) + (t3 * t3));
+        const auto t6 = t0 * t5;
+        const auto t7 = ea0y - ea1y;
+        const auto t8 = t5 * t7;
+        const auto t9 = ea0z - ea1z;
+        const auto t10 = t5 * t9;
+        const auto t11 = t4 * ((t0 * t0) + (t7 * t7) + (t9 * t9));
+        const auto t12 = t1 * t11;
+        const auto t13 = t11 * t2;
+        const auto t14 = t11 * t3;
+        grad[0] = t6;
+        grad[1] = t8;
+        grad[2] = t10;
+        grad[3] = -t6;
+        grad[4] = -t8;
+        grad[5] = -t10;
+        grad[6] = t12;
+        grad[7] = t13;
+        grad[8] = t14;
+        grad[9] = -t12;
+        grad[10] = -t13;
+        grad[11] = -t14;
     }
 
 } // namespace autogen

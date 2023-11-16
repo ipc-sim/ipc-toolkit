@@ -1,6 +1,7 @@
 #include "collision_constraints_builder.hpp"
 
 #include <ipc/distance/distance_type.hpp>
+#include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
@@ -9,14 +10,53 @@
 namespace ipc {
 
 CollisionConstraintsBuilder::CollisionConstraintsBuilder(
-    const bool use_convergent_formulation,
-    const bool should_compute_weight_gradient)
-    : use_convergent_formulation(use_convergent_formulation)
-    , should_compute_weight_gradient(should_compute_weight_gradient)
+    const bool _use_convergent_formulation,
+    const bool _should_compute_weight_gradient)
+    : use_convergent_formulation(_use_convergent_formulation)
+    , should_compute_weight_gradient(_should_compute_weight_gradient)
 {
 }
 
 // ============================================================================
+
+void CollisionConstraintsBuilder::add_vertex_vertex_constraints(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const std::vector<VertexVertexCandidate>& candidates,
+    const std::function<bool(double)>& is_active,
+    const size_t start_i,
+    const size_t end_i)
+{
+    for (size_t i = start_i; i < end_i; i++) {
+        const auto& [vi, vj] = candidates[i];
+
+        const double distance =
+            point_point_distance(vertices.row(vi), vertices.row(vj));
+        point_point_distance(vertices.row(vi), vertices.row(vj));
+        if (!is_active(distance)) {
+            continue;
+        }
+
+        // ÷ 2 to handle double counting. Sum vertex areas because duplicate
+        // vertex-vertex candidates were removed.
+        const double weight = use_convergent_formulation
+            ? ((mesh.vertex_area(vi) + mesh.vertex_area(vj)) / 2)
+            : 1;
+
+        Eigen::SparseVector<double> weight_gradient;
+        if (should_compute_weight_gradient) {
+            weight_gradient = use_convergent_formulation
+                ? ((mesh.vertex_area_gradient(vi)
+                    + mesh.vertex_area_gradient(vj))
+                   / 2)
+                : Eigen::SparseVector<double>(vertices.size());
+        }
+
+        VertexVertexConstraint vv_constraint(vi, vj, weight, weight_gradient);
+        vv_to_id.emplace(vv_constraint, vv_constraints.size());
+        vv_constraints.push_back(vv_constraint);
+    }
+}
 
 void CollisionConstraintsBuilder::add_edge_vertex_constraints(
     const CollisionMesh& mesh,
@@ -28,8 +68,6 @@ void CollisionConstraintsBuilder::add_edge_vertex_constraints(
 {
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [ei, vi] = candidates[i];
-        const long e0i = mesh.edges()(ei, 0), e1i = mesh.edges()(ei, 1);
-
         const auto [v, e0, e1, _] =
             candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
         const PointEdgeDistanceType dtype = point_edge_distance_type(v, e0, e1);
@@ -79,6 +117,7 @@ void CollisionConstraintsBuilder::add_edge_vertex_constraint(
         break;
 
     case PointEdgeDistanceType::AUTO:
+    default:
         assert(false);
         break;
     }
@@ -177,6 +216,7 @@ void CollisionConstraintsBuilder::add_edge_edge_constraints(
             break;
 
         case EdgeEdgeDistanceType::AUTO:
+        default:
             assert(false);
             break;
         }
@@ -252,6 +292,7 @@ void CollisionConstraintsBuilder::add_face_vertex_constraints(
             break;
 
         case PointTriangleDistanceType::AUTO:
+        default:
             assert(false);
             break;
         }

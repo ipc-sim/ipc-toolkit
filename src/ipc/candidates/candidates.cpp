@@ -13,6 +13,14 @@
 
 namespace ipc {
 
+namespace {
+    bool implements_vertex_vertex(const BroadPhaseMethod method)
+    {
+        return method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
+            && method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU;
+    }
+} // namespace
+
 void Candidates::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
@@ -23,12 +31,29 @@ void Candidates::build(
 
     clear();
 
-    std::unique_ptr<BroadPhase> broad_phase =
+    std::shared_ptr<BroadPhase> broad_phase =
         BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this);
-    broad_phase->clear();
+
+    if (mesh.num_codim_vertices()) {
+        if (!implements_vertex_vertex(broad_phase_method)) {
+            logger().warn(
+                "STQ broad phase does not support codim. point-point, skipping.");
+            return;
+        }
+
+        broad_phase->clear();
+        broad_phase->build(
+            vertices(mesh.codim_vertices(), Eigen::all), //
+            Eigen::MatrixXi(), Eigen::MatrixXi(), inflation_radius);
+        broad_phase->detect_vertex_vertex_candidates(vv_candidates);
+        for (auto& [vi, vj] : vv_candidates) {
+            vi = mesh.codim_vertices()[vi];
+            vj = mesh.codim_vertices()[vj];
+        }
+    }
 }
 
 void Candidates::build(
@@ -42,13 +67,31 @@ void Candidates::build(
 
     clear();
 
-    std::unique_ptr<BroadPhase> broad_phase =
+    std::shared_ptr<BroadPhase> broad_phase =
         BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(
         vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this);
-    broad_phase->clear();
+
+    if (mesh.num_codim_vertices()) {
+        if (!implements_vertex_vertex(broad_phase_method)) {
+            logger().warn(
+                "STQ broad phase does not support codim. point-point, skipping.");
+            return;
+        }
+
+        broad_phase->clear();
+        broad_phase->build(
+            vertices_t0(mesh.codim_vertices(), Eigen::all),
+            vertices_t1(mesh.codim_vertices(), Eigen::all), //
+            Eigen::MatrixXi(), Eigen::MatrixXi(), inflation_radius);
+        broad_phase->detect_vertex_vertex_candidates(vv_candidates);
+        for (auto& [vi, vj] : vv_candidates) {
+            vi = mesh.codim_vertices()[vi];
+            vj = mesh.codim_vertices()[vj];
+        }
+    }
 }
 
 bool Candidates::is_step_collision_free(
@@ -193,17 +236,19 @@ double Candidates::compute_cfl_stepsize(
 
 size_t Candidates::size() const
 {
-    return ev_candidates.size() + ee_candidates.size() + fv_candidates.size();
+    return vv_candidates.size() + ev_candidates.size() + ee_candidates.size()
+        + fv_candidates.size();
 }
 
 bool Candidates::empty() const
 {
-    return ev_candidates.empty() && ee_candidates.empty()
-        && fv_candidates.empty();
+    return vv_candidates.empty() && ev_candidates.empty()
+        && ee_candidates.empty() && fv_candidates.empty();
 }
 
 void Candidates::clear()
 {
+    vv_candidates.clear();
     ev_candidates.clear();
     ee_candidates.clear();
     fv_candidates.clear();
@@ -211,6 +256,10 @@ void Candidates::clear()
 
 ContinuousCollisionCandidate& Candidates::operator[](size_t idx)
 {
+    if (idx < vv_candidates.size()) {
+        return vv_candidates[idx];
+    }
+    idx -= vv_candidates.size();
     if (idx < ev_candidates.size()) {
         return ev_candidates[idx];
     }
@@ -222,11 +271,15 @@ ContinuousCollisionCandidate& Candidates::operator[](size_t idx)
     if (idx < fv_candidates.size()) {
         return fv_candidates[idx];
     }
-    throw std::out_of_range("Constraint index is out of range!");
+    throw std::out_of_range("Candidate index is out of range!");
 }
 
 const ContinuousCollisionCandidate& Candidates::operator[](size_t idx) const
 {
+    if (idx < vv_candidates.size()) {
+        return vv_candidates[idx];
+    }
+    idx -= vv_candidates.size();
     if (idx < ev_candidates.size()) {
         return ev_candidates[idx];
     }
@@ -238,7 +291,7 @@ const ContinuousCollisionCandidate& Candidates::operator[](size_t idx) const
     if (idx < fv_candidates.size()) {
         return fv_candidates[idx];
     }
-    throw std::out_of_range("Constraint index is out of range!");
+    throw std::out_of_range("Candidate index is out of range!");
 }
 
 bool Candidates::save_obj(
@@ -252,6 +305,8 @@ bool Candidates::save_obj(
         return false;
     }
     int v_offset = 0;
+    ipc::save_obj(obj, vertices, edges, faces, vv_candidates, v_offset);
+    v_offset += vv_candidates.size() * 2;
     ipc::save_obj(obj, vertices, edges, faces, ev_candidates, v_offset);
     v_offset += ev_candidates.size() * 3;
     ipc::save_obj(obj, vertices, edges, faces, ee_candidates, v_offset);

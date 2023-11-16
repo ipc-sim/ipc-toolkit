@@ -51,7 +51,23 @@ void define_continuous_collision_candidate(py::module_& m)
             py::arg("conservative_rescaling") =
                 DEFAULT_CCD_CONSERVATIVE_RESCALING)
         .def(
-            "print_ccd_query", &ContinuousCollisionCandidate::print_ccd_query,
-            "", py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("edges"), py::arg("faces"));
+            "print_ccd_query",
+            [](ContinuousCollisionCandidate& self,
+               const Eigen::MatrixXd& vertices_t0,
+               const Eigen::MatrixXd& vertices_t1, const Eigen::MatrixXi& edges,
+               const Eigen::MatrixXi& faces) -> void {
+                self.write_ccd_query(
+                    std::cout, vertices_t0, vertices_t1, edges, faces);
+            },
+            R"ipc_Qu8mg5v7(
+            Print the CCD query to cout.
+
+            Parameters:
+                vertices_t0: Mesh vertices at the start of the time step.
+                vertices_t1: Mesh vertices at the end of the time step.
+                edges: Collision mesh edges as rows of indicies into vertices.
+                faces: Collision mesh triangular faces as rows of indicies into vertices.
+            )ipc_Qu8mg5v7",
+            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
+            py::arg("faces"));
 }

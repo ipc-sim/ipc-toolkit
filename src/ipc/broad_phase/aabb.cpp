@@ -7,7 +7,9 @@
 
 namespace ipc {
 
-AABB::AABB(const ArrayMax3d& min, const ArrayMax3d& max) : min(min), max(max)
+AABB::AABB(const ArrayMax3d& _min, const ArrayMax3d& _max)
+    : min(_min)
+    , max(_max)
 {
     assert(min.size() == max.size());
     assert((min <= max).all());
@@ -59,7 +61,7 @@ void AABB::conservative_inflation(
 void build_vertex_boxes(
     const Eigen::MatrixXd& vertices,
     std::vector<AABB>& vertex_boxes,
-    double inflation_radius)
+    const double inflation_radius)
 {
     vertex_boxes.resize(vertices.rows());
 
@@ -78,7 +80,7 @@ void build_vertex_boxes(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     std::vector<AABB>& vertex_boxes,
-    double inflation_radius)
+    const double inflation_radius)
 {
     vertex_boxes.resize(vertices_t0.rows());
 

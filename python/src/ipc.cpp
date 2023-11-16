@@ -1,6 +1,7 @@
 #include <common.hpp>
 
 #include <ipc/ipc.hpp>
+#include <ipc/config.hpp>
 #include <igl/edges.h>
 
 namespace py = pybind11;
@@ -8,12 +9,10 @@ using namespace ipc;
 
 void define_ipc(py::module_& m)
 {
+    m.attr("__version__") = IPC_TOOLKIT_VER;
+
     m.def(
-        "is_step_collision_free",
-        py::overload_cast<
-            const CollisionMesh&, const Eigen::MatrixXd&,
-            const Eigen::MatrixXd&, const BroadPhaseMethod, const double,
-            const double, const long>(&is_step_collision_free),
+        "is_step_collision_free", &is_step_collision_free,
         R"ipc_Qu8mg5v7(
         Determine if the step is collision free.
 
@@ -39,11 +38,7 @@ void define_ipc(py::module_& m)
         py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS);
 
     m.def(
-        "compute_collision_free_stepsize",
-        py::overload_cast<
-            const CollisionMesh&, const Eigen::MatrixXd&,
-            const Eigen::MatrixXd&, const BroadPhaseMethod, const double,
-            const double, const long>(&compute_collision_free_stepsize),
+        "compute_collision_free_stepsize", &compute_collision_free_stepsize,
         R"ipc_Qu8mg5v7(
         Computes a maximal step size that is collision free.
 
@@ -60,7 +55,7 @@ void define_ipc(py::module_& m)
             max_iterations: The maximum number of iterations for the CCD algorithm.
 
         Returns:
-            A step-size $\in [0, 1]$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
+            A step-size :math:`\in [0, 1]` that is collision free. A value of 1.0 if a full step and 0.0 is no step.
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
         py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD,
@@ -93,8 +88,10 @@ void define_ipc(py::module_& m)
         },
         R"ipc_Qu8mg5v7(
         Constructs a list of unique edges represented in a given mesh F
+
         Parameters:
             F: #F by 3 list of mesh faces (must be triangles)
+
         Returns:
             #E by 2 list of edges in no particular order
         )ipc_Qu8mg5v7",

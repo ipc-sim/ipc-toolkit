@@ -11,6 +11,7 @@ pybind11_add_module(ipctk
   src/broad_phase/aabb.cpp
   src/broad_phase/broad_phase.cpp
   src/broad_phase/brute_force.cpp
+  src/broad_phase/bvh.cpp
   src/broad_phase/hash_grid.cpp
   src/broad_phase/spatial_hash.cpp
   src/broad_phase/sweep_and_tiniest_queue.cpp
@@ -27,7 +28,9 @@ pybind11_add_module(ipctk
 
   src/ccd/aabb.cpp
   src/ccd/ccd.cpp
+  src/ccd/additive_ccd.cpp
   src/ccd/inexact_point_edge.cpp
+  src/ccd/nonlinear_ccd.cpp
   src/ccd/point_static_plane.cpp
 
   src/collisions/collision_constraint.cpp
@@ -65,6 +68,7 @@ pybind11_add_module(ipctk
 
   src/utils/area_gradient.cpp
   src/utils/eigen_ext.cpp
+  src/utils/interval.cpp
   src/utils/intersection.cpp
   src/utils/logger.cpp
   src/utils/thread_limiter.cpp

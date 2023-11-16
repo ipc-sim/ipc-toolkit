@@ -6,11 +6,13 @@ namespace ipc {
 
 /// @brief An entry into the hash grid as a (key, value) pair.
 struct HashItem {
-    long key; /// @brief The key of the item.
-    long id;  /// @brief The value of the item.
+    /// @brief The key of the item.
+    long key;
+    /// @brief The value of the item.
+    long id;
 
     /// @brief Construct a hash item as a (key, value) pair.
-    HashItem(int key, int id) : key(key), id(id) { }
+    HashItem(int _key, int _id) : key(_key), id(_id) { }
 
     /// @brief Compare HashItems by their keys for sorting.
     bool operator<(const HashItem& other) const
@@ -57,18 +59,22 @@ public:
         face_items.clear();
     }
 
-    /// @brief Find the candidate edge-vertex collisisons.
-    /// @param[out] candidates The candidate edge-vertex collisisons.
+    /// @brief Find the candidate vertex-vertex collisions.
+    void detect_vertex_vertex_candidates(
+        std::vector<VertexVertexCandidate>& candidates) const override;
+
+    /// @brief Find the candidate edge-vertex collisions.
+    /// @param[out] candidates The candidate edge-vertex collisions.
     void detect_edge_vertex_candidates(
         std::vector<EdgeVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-edge collisions.
-    /// @param[out] candidates The candidate edge-edge collisisons.
+    /// @param[out] candidates The candidate edge-edge collisions.
     void detect_edge_edge_candidates(
         std::vector<EdgeEdgeCandidate>& candidates) const override;
 
     /// @brief Find the candidate face-vertex collisions.
-    /// @param[out] candidates The candidate face-vertex collisisons.
+    /// @param[out] candidates The candidate face-vertex collisions.
     void detect_face_vertex_candidates(
         std::vector<FaceVertexCandidate>& candidates) const override;
 

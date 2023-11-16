@@ -1,6 +1,7 @@
 #include "broad_phase.hpp"
 
 #include <ipc/broad_phase/brute_force.hpp>
+#include <ipc/broad_phase/bvh.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
@@ -14,7 +15,7 @@ void BroadPhase::build(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     assert(edges.size() == 0 || edges.cols() == 2);
     assert(faces.size() == 0 || faces.cols() == 3);
@@ -29,7 +30,7 @@ void BroadPhase::build(
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     assert(edges.size() == 0 || edges.cols() == 2);
     assert(faces.size() == 0 || faces.cols() == 3);
@@ -61,33 +62,35 @@ void BroadPhase::detect_collision_candidates(
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
-std::unique_ptr<BroadPhase>
-BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
+std::shared_ptr<BroadPhase>
+BroadPhase::make_broad_phase(const BroadPhaseMethod method)
 {
-    switch (broad_phase_method) {
+    switch (method) {
     case BroadPhaseMethod::BRUTE_FORCE:
-        return std::make_unique<BruteForce>();
+        return std::make_shared<BruteForce>();
     case BroadPhaseMethod::HASH_GRID:
-        return std::make_unique<HashGrid>();
+        return std::make_shared<HashGrid>();
     case BroadPhaseMethod::SPATIAL_HASH:
-        return std::make_unique<SpatialHash>();
+        return std::make_shared<SpatialHash>();
     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
-        return std::make_unique<SweepAndTiniestQueue>();
+        return std::make_shared<SweepAndTiniestQueue>();
     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU:
 #ifdef IPC_TOOLKIT_WITH_CUDA
-        return std::make_unique<SweepAndTiniestQueueGPU>();
+        return std::make_shared<SweepAndTiniestQueueGPU>();
 #else
         throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
                                  "because CUDA is disabled!");
 #endif
+    case BroadPhaseMethod::BVH:
+        return std::make_shared<BVH>();
     default:
         throw std::runtime_error("Invalid BroadPhaseMethod!");
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 bool BroadPhase::can_edge_vertex_collide(size_t ei, size_t vi) const
 {
@@ -102,7 +105,7 @@ bool BroadPhase::can_edges_collide(size_t eai, size_t ebi) const
     const auto& [ea0i, ea1i, _] = edge_boxes[eai].vertex_ids;
     const auto& [eb0i, eb1i, __] = edge_boxes[ebi].vertex_ids;
 
-    bool share_endpoint =
+    const bool share_endpoint =
         ea0i == eb0i || ea0i == eb1i || ea1i == eb0i || ea1i == eb1i;
 
     return !share_endpoint
@@ -125,8 +128,8 @@ bool BroadPhase::can_edge_face_collide(size_t ei, size_t fi) const
     const auto& [e0i, e1i, _] = edge_boxes[ei].vertex_ids;
     const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
 
-    bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i || e1i == f0i
-        || e1i == f1i || e1i == f2i;
+    const bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i
+        || e1i == f0i || e1i == f1i || e1i == f2i;
 
     return !share_endpoint
         && (can_vertices_collide(e0i, f0i) || can_vertices_collide(e0i, f1i)

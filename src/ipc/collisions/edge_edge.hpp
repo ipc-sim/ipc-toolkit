@@ -72,6 +72,13 @@ public:
 
 protected:
     virtual EdgeEdgeDistanceType known_dtype() const override { return dtype; }
+
+    MatrixMax12d compute_shape_derivative_second_term(
+        const Eigen::MatrixXd& rest_positions,
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces,
+        const double dhat) const override;
 };
 
 } // namespace ipc

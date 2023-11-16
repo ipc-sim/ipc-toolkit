@@ -47,7 +47,7 @@ void define_collision_mesh(py::module_& m)
             Helper function that automatically builds include_vertex using construct_is_on_surface.
 
             Parameters:
-                full_rest_positions: The full vertices at rest (#V × dim).
+                full_rest_positions: The full vertices at rest (#FV × dim).
                 edges: The edge matrix of mesh (#E × 2).
                 faces: The face matrix of mesh (#F × 3).
 
@@ -65,12 +65,16 @@ void define_collision_mesh(py::module_& m)
             "num_vertices", &CollisionMesh::num_vertices,
             "Get the number of vertices in the collision mesh.")
         .def_property_readonly(
+            "num_codim_vertices", &CollisionMesh::num_codim_vertices,
+            "Get the number of codimensional vertices in the collision mesh.")
+        .def_property_readonly(
             "num_edges", &CollisionMesh::num_edges,
             "Get the number of edges in the collision mesh.")
         .def_property_readonly(
             "num_faces", &CollisionMesh::num_faces,
             "Get the number of faces in the collision mesh.")
-        .def("dim", &CollisionMesh::dim, "Get the dimension of the mesh.")
+        .def_property_readonly(
+            "dim", &CollisionMesh::dim, "Get the dimension of the mesh.")
         .def_property_readonly(
             "ndof", &CollisionMesh::ndof,
             "Get the number of degrees of freedom in the collision mesh.")
@@ -84,8 +88,11 @@ void define_collision_mesh(py::module_& m)
             "rest_positions", &CollisionMesh::rest_positions,
             "Get the vertices of the collision mesh at rest (#V × dim).")
         .def_property_readonly(
+            "codim_vertices", &CollisionMesh::codim_vertices,
+            "Get the indices of codimensional vertices of the collision mesh (#CV x 1).")
+        .def_property_readonly(
             "edges", &CollisionMesh::edges,
-            "Get the edges of the collision mesh  (#E × 2).")
+            "Get the edges of the collision mesh (#E × 2).")
         .def_property_readonly(
             "faces", &CollisionMesh::faces,
             "Get the faces of the collision mesh (#F × 3).")
@@ -107,13 +114,13 @@ void define_collision_mesh(py::module_& m)
         .def(
             "displace_vertices", &CollisionMesh::displace_vertices,
             R"ipc_Qu8mg5v7(
-            Compute the vertex positions from vertex displacements on the full mesh (#FV × dim).
+            Compute the vertex positions from vertex displacements on the full mesh.
 
             Parameters:
-                full_displacements: The vertex displacements on the full mesh (#V × dim).
+                full_displacements: The vertex displacements on the full mesh (#FV × dim).
 
             Returns:
-                The vertex positions of the collision mesh.
+                The vertex positions of the collision mesh (#V × dim).
             )ipc_Qu8mg5v7",
             py::arg("full_displacements"))
         .def(
@@ -122,10 +129,10 @@ void define_collision_mesh(py::module_& m)
             Map vertex displacements on the full mesh to vertex displacements on the collision mesh.
 
             Parameters:
-                full_displacements: The vertex displacements on the full mesh.
+                full_displacements: The vertex displacements on the full mesh (#FV × dim).
 
             Returns:
-                The vertex displacements on the collision mesh.
+                The vertex displacements on the collision mesh (#V × dim).
             )ipc_Qu8mg5v7",
             py::arg("full_displacements"))
         .def(
@@ -177,6 +184,9 @@ void define_collision_mesh(py::module_& m)
             &CollisionMesh::vertex_vertex_adjacencies,
             "Get the vertex-vertex adjacency matrix.")
         .def_property_readonly(
+            "vertex_edge_adjacencies", &CollisionMesh::vertex_edge_adjacencies,
+            "Get the vertex-edge adjacency matrix.")
+        .def_property_readonly(
             "edge_vertex_adjacencies", &CollisionMesh::edge_vertex_adjacencies,
             "Get the edge-vertex adjacency matrix.")
         .def(
@@ -217,13 +227,13 @@ void define_collision_mesh(py::module_& m)
                 return self.vertex_area_gradient(vi);
             },
             R"ipc_Qu8mg5v7(
-            Get the gradient of the barycentric area of a vertex wrt the rest
-            positions of all points.
+            Get the gradient of the barycentric area of a vertex wrt the rest positions of all points.
+
             Parameters:
                 vi: Vertex ID.
+
             Returns:
-                Gradient of the barycentric area of vertex vi wrt the rest
-                positions of all points.
+                Gradient of the barycentric area of vertex vi wrt the rest positions of all points.
             )ipc_Qu8mg5v7",
             py::arg("vi"))
         .def(
@@ -248,13 +258,13 @@ void define_collision_mesh(py::module_& m)
                 return self.edge_area_gradient(ei);
             },
             R"ipc_Qu8mg5v7(
-            Get the gradient of the barycentric area of an edge wrt the rest
-            positions of all points.
+            Get the gradient of the barycentric area of an edge wrt the rest positions of all points.
+
             Parameters:
                 ei: Edge ID.
+
             Returns:
-                Gradient of the barycentric area of edge ei wrt the rest
-                positions of all points.
+                Gradient of the barycentric area of edge ei wrt the rest positions of all points.
             )ipc_Qu8mg5v7",
             py::arg("ei"))
         .def(
@@ -269,11 +279,13 @@ void define_collision_mesh(py::module_& m)
             Parameters:
                 num_vertices: The number of vertices in the mesh.
                 edges: The surface edges of the mesh (#E × 2).
+                codim_vertices: The indices of codimensional vertices (#CV x 1).
 
             Returns:
                 A vector of bools indicating whether each vertex is on the surface.
             )ipc_Qu8mg5v7",
-            py::arg("num_vertices"), py::arg("edges"))
+            py::arg("num_vertices"), py::arg("edges"),
+            py::arg("codim_vertices") = Eigen::VectorXi())
         .def_static(
             "construct_faces_to_edges",
             &CollisionMesh::construct_faces_to_edges,
@@ -292,7 +304,7 @@ void define_collision_mesh(py::module_& m)
             "can_collide", &CollisionMesh::can_collide,
             R"ipc_Qu8mg5v7(
             A function that takes two vertex IDs and returns true if the vertices
-            (and faces or edges containing the vertices) can collide. By default all
-            primitives can collide with all other primitives.
+(and faces or edges containing the vertices) can collide. By default all
+primitives can collide with all other primitives.
             )ipc_Qu8mg5v7");
 }

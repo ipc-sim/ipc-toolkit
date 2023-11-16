@@ -1,6 +1,5 @@
 #pragma once
 
-#include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/candidates/continuous_collision_candidate.hpp>
 #include <ipc/distance/distance_type.hpp>
 
@@ -26,7 +25,8 @@ public:
 
     // ------------------------------------------------------------------------
 
-    void print_ccd_query(
+    std::ostream& write_ccd_query(
+        std::ostream& out,
         const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
         const Eigen::MatrixXi& edges,
@@ -45,8 +45,12 @@ public:
         return H::combine(std::move(h), fv.face_id, fv.vertex_id);
     }
 
-    long face_id;   ///< @brief ID of the face
-    long vertex_id; ///< @brief ID of the vertex
+    // ------------------------------------------------------------------------
+
+    /// @brief ID of the face
+    long face_id;
+    /// @brief ID of the vertex
+    long vertex_id;
 
     using CollisionStencil::compute_distance;
     using CollisionStencil::compute_distance_gradient;

@@ -243,8 +243,11 @@ core*
 docs/source/doxyoutput
 docs/source/api
 !docs/Makefile
-tests/data/slow-broadphase-ccd
-tests/data/ccd-failure
+# Private data
+tests/data/private
+# Git repo of sample CCD queries
+tests/data/ccd-queries
+# Too large to store in git
 tests/data/friction/chain
 logo
 ipctk
@@ -257,7 +260,10 @@ python/bunny.obj
 IPCToolkitOptions.cmake
 
 src/ipc/config.hpp
+tests/src/tests/config.hpp
 
 docs/_doxygen
 
 notebooks/*.[ch]pp
+tests/data/cloth_ball_bf_ccd_candidated.json
+python/update_bindings.py

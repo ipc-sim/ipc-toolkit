@@ -11,6 +11,8 @@
     :hidden:
 
     tutorial/getting_started.rst
+    tutorial/convergent.rst
+    tutorial/nonlinear_ccd.rst
     tutorial/simulation.rst
     tutorial/misc.rst
     tutorial/references.rst
@@ -28,6 +30,7 @@
     cpp-api/ccd.rst
     cpp-api/distance.rst
     cpp-api/barrier.rst
+    cpp-api/intersections.rst
     cpp-api/utils.rst
 
 .. toctree::
@@ -43,6 +46,7 @@
     python-api/ccd.rst
     python-api/distance.rst
     python-api/barrier.rst
+    python-api/intersections.rst
     python-api/utils.rst
 
 .. toctree::
@@ -52,8 +56,6 @@
     contributing
     style_guide
     Code of Conduct <code_of_conduct.md>
-
-.. <img src="_static/teaser@0_3.png" style="padding: 15px 30px 0; background-color: white; width: calc(100% - 60px); max-width: 600px; margin: auto; display: block;"/>
 
 Home
 ====

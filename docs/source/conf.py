@@ -20,10 +20,12 @@ import pathlib
 
 # -- Project information -----------------------------------------------------
 
+import ipctk
+
 project = "IPC Toolkit"
 copyright = '2020-2023, IPC-Sim Organization; MIT License'
 author = "Zachary Ferguson"
-version = "1.1.1"
+version = ipctk.__version__
 
 # -- General configuration ---------------------------------------------------
 
@@ -139,24 +141,6 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 html_theme = "sphinx_immaterial"
-
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-# html_theme_options = {
-#     "description": ("A set of reusable functions to integrate IPC into an "
-#                     "existing simulation."),
-#     "logo": "teaser@0_3.png",
-#     "logo_name": True,
-#     "github_banner": False,
-#     "github_button": True,
-#     "github_repo": "ipc-toolkit",
-#     "github_user": "ipc-sim",
-#     "github_type": "star",
-#     "fixed_sidebar": False,
-#     "page_width": "1200px",
-#     "canonical_url": "https://ipctk.xyz/",
-# }
 
 # Material theme options
 html_theme_options = {

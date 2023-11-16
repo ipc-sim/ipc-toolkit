@@ -19,7 +19,6 @@ void define_inexact_point_edge(py::module_& m)
                 conservative_rescaling);
             return std::make_tuple(r, toi);
         },
-        "", py::arg("p_t0"), py::arg("e0_t0"), py::arg("e1_t0"),
-        py::arg("p_t1"), py::arg("e0_t1"), py::arg("e1_t1"),
-        py::arg("conservative_rescaling"));
+        py::arg("p_t0"), py::arg("e0_t0"), py::arg("e1_t0"), py::arg("p_t1"),
+        py::arg("e0_t1"), py::arg("e1_t1"), py::arg("conservative_rescaling"));
 }

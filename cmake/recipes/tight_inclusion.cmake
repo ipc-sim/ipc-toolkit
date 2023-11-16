@@ -1,3 +1,5 @@
+# Tight Inclusion (https://github.com/Continuous-Collision-Detection/Tight-Inclusion)
+# License: MIT
 if(TARGET tight_inclusion::tight_inclusion)
     return()
 endif()

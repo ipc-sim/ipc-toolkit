@@ -1,3 +1,5 @@
+# CCD-GPU (https://github.com/dbelgrod/CCD-GPU)
+# License: MIT
 if(TARGET gpu_ccd::gpu_ccd)
     return()
 endif()

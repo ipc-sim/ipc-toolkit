@@ -3,13 +3,11 @@
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/utils/save_obj.hpp>
 
-#include <iostream>
-
 namespace ipc {
 
-EdgeEdgeCandidate::EdgeEdgeCandidate(long edge0_id, long edge1_id)
-    : edge0_id(edge0_id)
-    , edge1_id(edge1_id)
+EdgeEdgeCandidate::EdgeEdgeCandidate(long _edge0_id, long _edge1_id)
+    : edge0_id(_edge0_id)
+    , edge1_id(_edge1_id)
 {
 }
 
@@ -63,21 +61,21 @@ bool EdgeEdgeCandidate::ccd(
         conservative_rescaling);
 }
 
-void EdgeEdgeCandidate::print_ccd_query(
+std::ostream& EdgeEdgeCandidate::write_ccd_query(
+    std::ostream& out,
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces) const
 {
-    std::cout << vertices_t0.row(edges(edge0_id, 0)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t0.row(edges(edge0_id, 1)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t0.row(edges(edge1_id, 0)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t0.row(edges(edge1_id, 1)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(edges(edge0_id, 0)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(edges(edge0_id, 1)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(edges(edge1_id, 0)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(edges(edge1_id, 1)).format(OBJ_VERTEX_FORMAT);
-    std::cout << std::flush;
+    return out << vertices_t0.row(edges(edge0_id, 0)).format(OBJ_VERTEX_FORMAT)
+               << vertices_t0.row(edges(edge0_id, 1)).format(OBJ_VERTEX_FORMAT)
+               << vertices_t0.row(edges(edge1_id, 0)).format(OBJ_VERTEX_FORMAT)
+               << vertices_t0.row(edges(edge1_id, 1)).format(OBJ_VERTEX_FORMAT)
+               << vertices_t1.row(edges(edge0_id, 0)).format(OBJ_VERTEX_FORMAT)
+               << vertices_t1.row(edges(edge0_id, 1)).format(OBJ_VERTEX_FORMAT)
+               << vertices_t1.row(edges(edge1_id, 0)).format(OBJ_VERTEX_FORMAT)
+               << vertices_t1.row(edges(edge1_id, 1)).format(OBJ_VERTEX_FORMAT);
 }
 
 bool EdgeEdgeCandidate::operator==(const EdgeEdgeCandidate& other) const

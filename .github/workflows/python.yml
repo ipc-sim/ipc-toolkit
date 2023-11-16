@@ -2,12 +2,8 @@ name: Python
 
 on:
   push:
-    branches:
-      - main
-      - python
+    branches: [main]
   pull_request:
-    branches:
-      - main
     paths:
       - '.github/workflows/python.yml'
       - 'cmake/**'
@@ -46,8 +42,44 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Build and Install
-        run: pip install --verbose .
+      - name: Install Ccache (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get install ccache
+          echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
 
-      - name: Import Test
-        run: python -c "import ipctk"
+      - name: Install Ccache (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install ccache
+          echo 'CACHE_PATH=~/Library/Caches/ccache' >> "$GITHUB_ENV"
+
+      - name: Install Ccache (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          choco install ccache
+          "CACHE_PATH=${env:LOCALAPPDATA}\ccache" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Cache Build
+        id: cache-build
+        uses: actions/cache@v3.0.11
+        with:
+          path: ${{ env.CACHE_PATH }}
+          key: ${{ runner.os }}-Python-cache
+          restore-keys: ${{ runner.os }}-Release-cache
+
+      - name: Prepare Ccache
+        run: |
+          ccache --max-size=1.0G
+          ccache -V && ccache --show-config
+          ccache --show-stats && ccache --zero-stats
+
+      - name: Build and Install
+        run: |
+          pip install --verbose .
+          ccache --show-stats
+
+      - name: Tests
+        run: |
+          pip install -r python/tests/requirements.txt
+          nose2 -v --pretty-assert -s python/tests

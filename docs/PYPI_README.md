@@ -3,6 +3,7 @@
 ![PyPI](https://img.shields.io/pypi/v/ipctk?color=brightgreen&label=PyPI&logo=python&logoColor=white)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/ipctk?label=PyPI%20Downloads&logo=python&logoColor=white)
 ![GitHub Repo stars](https://img.shields.io/github/stars/ipc-sim/ipc-toolkit?label=Stars&logo=github)
+[![codecov](https://codecov.io/github/ipc-sim/ipc-toolkit/graph/badge.svg?token=9BR6GPKRY8)](https://codecov.io/github/ipc-sim/ipc-toolkit)
 [![License](https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue&label=License)](https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE)
 
 ## Description
