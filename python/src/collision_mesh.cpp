@@ -68,6 +68,9 @@ void define_collision_mesh(py::module_& m)
             "num_codim_vertices", &CollisionMesh::num_codim_vertices,
             "Get the number of codimensional vertices in the collision mesh.")
         .def_property_readonly(
+            "num_codim_edges", &CollisionMesh::num_codim_edges,
+            "Get the number of codimensional edges in the collision mesh.")
+        .def_property_readonly(
             "num_edges", &CollisionMesh::num_edges,
             "Get the number of edges in the collision mesh.")
         .def_property_readonly(
@@ -90,6 +93,9 @@ void define_collision_mesh(py::module_& m)
         .def_property_readonly(
             "codim_vertices", &CollisionMesh::codim_vertices,
             "Get the indices of codimensional vertices of the collision mesh (#CV x 1).")
+        .def_property_readonly(
+            "codim_edges", &CollisionMesh::codim_edges,
+            "Get the indices of codimensional edges of the collision mesh (#CE x 1).")
         .def_property_readonly(
             "edges", &CollisionMesh::edges,
             "Get the edges of the collision mesh (#E × 2).")
@@ -303,8 +309,8 @@ void define_collision_mesh(py::module_& m)
         .def_readwrite(
             "can_collide", &CollisionMesh::can_collide,
             R"ipc_Qu8mg5v7(
-            A function that takes two vertex IDs and returns true if the vertices
-(and faces or edges containing the vertices) can collide. By default all
-primitives can collide with all other primitives.
+            A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide.
+
+            By default all primitives can collide with all other primitives.
             )ipc_Qu8mg5v7");
 }

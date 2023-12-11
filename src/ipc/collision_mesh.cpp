@@ -106,6 +106,7 @@ CollisionMesh::CollisionMesh(
     m_faces_to_edges = construct_faces_to_edges(m_faces, m_edges);
 
     init_codim_vertices();
+    init_codim_edges();
     init_areas();
     init_adjacencies();
     // Compute these manually if needed.
@@ -132,6 +133,26 @@ void CollisionMesh::init_codim_vertices()
         }
     }
     assert(j == m_codim_vertices.size());
+}
+
+void CollisionMesh::init_codim_edges()
+{
+    std::vector<bool> is_codim_edge(num_edges(), true);
+    for (int i : m_faces_to_edges.reshaped()) {
+        is_codim_edge[i] = false;
+    }
+
+    m_codim_edges.resize(
+        std::count(is_codim_edge.begin(), is_codim_edge.end(), true));
+
+    int j = 0;
+    for (int i = 0; i < num_edges(); i++) {
+        if (is_codim_edge[i]) {
+            assert(j < m_codim_edges.size());
+            m_codim_edges[j++] = i;
+        }
+    }
+    assert(j == m_codim_edges.size());
 }
 
 // ============================================================================

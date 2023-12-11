@@ -227,6 +227,102 @@ TEST_CASE("Codim. Vertex-Vertex Constraints", "[constraints][codim]")
     }
 }
 
+TEST_CASE("Codim. Edge-Vertex Constraints", "[constraints][codim]")
+{
+    constexpr double thickness = 1e-3;
+    constexpr double min_distance = 2 * thickness;
+
+    Eigen::MatrixXd V(8, 3);
+    V << 0, 0, 0, //
+        1, 0, 0,  //
+        0, 0, -1, //
+        -1, 0, 0, //
+        0, 0, 1,  //
+        0, 1, 0,  //
+        0, 2, 0,  //
+        0, 3, 0;
+    Eigen::MatrixXi E(4, 2);
+    E << 0, 1, //
+        0, 2,  //
+        0, 3,  //
+        0, 4;
+
+    CollisionMesh mesh(V, E, Eigen::MatrixXi());
+    mesh.init_area_jacobians();
+
+    CHECK(mesh.num_vertices() == 8);
+    CHECK(mesh.num_codim_vertices() == 3);
+    CHECK(mesh.num_codim_edges() == 4);
+    CHECK(mesh.num_edges() == 4);
+    CHECK(mesh.num_faces() == 0);
+
+    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    CAPTURE(method);
+
+    // These methods do not support vertex-vertex candidates
+    if (method == ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
+        || method == ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+        return;
+    }
+
+    SECTION("Candidates")
+    {
+        Eigen::MatrixXd V1 = V;
+        V1.bottomRows(3).col(1).array() -= 4; // Translate the codim vertices
+
+        Candidates candidates;
+        candidates.build(mesh, V, V1, thickness, method);
+
+        CHECK(candidates.size() == 15);
+        CHECK(candidates.vv_candidates.size() == 3);
+        CHECK(candidates.ev_candidates.size() == 12);
+        CHECK(candidates.ee_candidates.size() == 0);
+        CHECK(candidates.fv_candidates.size() == 0);
+
+        CHECK(!candidates.is_step_collision_free(mesh, V, V1, min_distance));
+
+        // Account for conservative rescaling
+#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+        constexpr double conservative_min_dist = 1e-4;
+#else
+        constexpr double conservative_min_dist = 0.2 * (1 - min_distance);
+#endif
+        constexpr double expected_toi =
+            (1 - (min_distance + conservative_min_dist)) / 4;
+        CHECK(
+            candidates.compute_collision_free_stepsize(
+                mesh, V, V1, min_distance)
+            == Catch::Approx(expected_toi));
+    }
+
+    SECTION("Constraints")
+    {
+        const bool use_convergent_formulation = GENERATE(false, true);
+        const bool are_shape_derivatives_enabled = GENERATE(false, true);
+
+        CollisionConstraints constraints;
+        constraints.set_use_convergent_formulation(use_convergent_formulation);
+        constraints.set_are_shape_derivatives_enabled(
+            are_shape_derivatives_enabled);
+
+        const double dhat = 0.25;
+        constraints.build(mesh, V, dhat, /*min_distance=*/0.8, method);
+
+        const int expected_num_constraints =
+            6 + int(use_convergent_formulation);
+        const int expected_num_vv_constraints =
+            2 + int(use_convergent_formulation);
+
+        CHECK(constraints.size() == expected_num_constraints);
+        CHECK(constraints.vv_constraints.size() == expected_num_vv_constraints);
+        CHECK(constraints.ev_constraints.size() == 4);
+        CHECK(constraints.ee_constraints.size() == 0);
+        CHECK(constraints.fv_constraints.size() == 0);
+
+        CHECK(constraints.compute_potential(mesh, V, dhat) > 0.0);
+    }
+}
+
 TEST_CASE("Vertex-Vertex Constraint", "[constraint][vertex-vertex]")
 {
     CHECK(VertexVertexConstraint(0, 1) == VertexVertexConstraint(0, 1));

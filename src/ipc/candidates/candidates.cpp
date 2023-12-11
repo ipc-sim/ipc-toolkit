@@ -5,6 +5,7 @@
 
 #include <ipc/config.hpp>
 
+#include <igl/remove_unreferenced.h>
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <shared_mutex>
@@ -18,6 +19,21 @@ namespace {
     {
         return method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
             && method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU;
+    }
+
+    // Pad codim_edges because remove_unreferenced requires a N×3 matrix.
+    Eigen::MatrixXi pad_edges(const Eigen::MatrixXi& E)
+    {
+        assert(E.cols() == 2);
+        Eigen::MatrixXi E_padded(E.rows(), 3);
+        E_padded.leftCols(2) = E;
+        E_padded.col(2) = E.col(1);
+        return E_padded;
+    }
+
+    Eigen::MatrixXi unpad_edges(const Eigen::MatrixXi& E_padded)
+    {
+        return E_padded.leftCols(2);
     }
 } // namespace
 
@@ -37,21 +53,65 @@ void Candidates::build(
     broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this);
 
-    if (mesh.num_codim_vertices()) {
-        if (!implements_vertex_vertex(broad_phase_method)) {
-            logger().warn(
-                "STQ broad phase does not support codim. point-point, skipping.");
-            return;
-        }
+    if (mesh.num_codim_vertices()
+        && !implements_vertex_vertex(broad_phase_method)) {
+        // TODO: Assumes this is the same as implements_edge_vertex
+        logger().warn(
+            "STQ broad phase does not support codim. point-point nor point-edge, skipping.");
+        return;
+    }
 
+    // Codim. vertices to codim. vertices:
+    if (mesh.num_codim_vertices()) {
         broad_phase->clear();
         broad_phase->build(
             vertices(mesh.codim_vertices(), Eigen::all), //
             Eigen::MatrixXi(), Eigen::MatrixXi(), inflation_radius);
+
         broad_phase->detect_vertex_vertex_candidates(vv_candidates);
         for (auto& [vi, vj] : vv_candidates) {
             vi = mesh.codim_vertices()[vi];
             vj = mesh.codim_vertices()[vj];
+        }
+    }
+
+    // Codim. edges to codim. vertices:
+    // Only need this in 3D because in 2D, the codim. edges are the same as the
+    // edges of the boundary. Only need codim. edge to codim. vertex because
+    // codim. edge to non-codim. vertex is the same as edge-edge or face-vertex.
+    if (dim == 3 && mesh.num_codim_vertices() && mesh.num_codim_edges()) {
+        // Extract the vertices of the codim. edges
+        Eigen::MatrixXd CE_V; // vertices of codim. edges
+        Eigen::MatrixXi CE;   // codim. edges (indices into CEV)
+        {
+            Eigen::VectorXi _I, _J; // unused mappings
+            igl::remove_unreferenced(
+                vertices,
+                pad_edges(mesh.edges()(mesh.codim_edges(), Eigen::all)), CE_V,
+                CE, _I, _J);
+            CE = unpad_edges(CE);
+        }
+
+        const size_t nCV = mesh.num_codim_vertices();
+        Eigen::MatrixXd V(nCV + CE_V.rows(), dim);
+        V.topRows(nCV) = vertices(mesh.codim_vertices(), Eigen::all);
+        V.bottomRows(CE_V.rows()) = CE_V;
+
+        CE.array() += nCV; // Offset indices to account for codim. vertices
+
+        // TODO: Can we reuse the broad phase from above?
+        broad_phase->clear();
+        broad_phase->can_vertices_collide = [&](size_t vi, size_t vj) {
+            // Ignore c-edge to c-edge and c-vertex to c-vertex
+            return ((vi < nCV) ^ (vj < nCV)) && mesh.can_collide(vi, vj);
+        };
+        broad_phase->build(V, CE, Eigen::MatrixXi(), inflation_radius);
+
+        broad_phase->detect_edge_vertex_candidates(ev_candidates);
+        for (auto& [ei, vi] : ev_candidates) {
+            assert(vi < mesh.codim_vertices().size());
+            ei = mesh.codim_edges()[ei];    // Map back to mesh.edges
+            vi = mesh.codim_vertices()[vi]; // Map back to vertices
         }
     }
 }
@@ -74,22 +134,72 @@ void Candidates::build(
         vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this);
 
-    if (mesh.num_codim_vertices()) {
-        if (!implements_vertex_vertex(broad_phase_method)) {
-            logger().warn(
-                "STQ broad phase does not support codim. point-point, skipping.");
-            return;
-        }
+    if (mesh.num_codim_vertices()
+        && !implements_vertex_vertex(broad_phase_method)) {
+        // TODO: Assumes this is the same as implements_edge_vertex
+        logger().warn(
+            "STQ broad phase does not support codim. point-point nor point-edge, skipping.");
+        return;
+    }
 
+    // Codim. vertices to codim. vertices:
+    if (mesh.num_codim_vertices()) {
         broad_phase->clear();
         broad_phase->build(
             vertices_t0(mesh.codim_vertices(), Eigen::all),
             vertices_t1(mesh.codim_vertices(), Eigen::all), //
             Eigen::MatrixXi(), Eigen::MatrixXi(), inflation_radius);
+
         broad_phase->detect_vertex_vertex_candidates(vv_candidates);
         for (auto& [vi, vj] : vv_candidates) {
             vi = mesh.codim_vertices()[vi];
             vj = mesh.codim_vertices()[vj];
+        }
+    }
+
+    // Codim. edges to codim. vertices:
+    // Only need this in 3D because in 2D, the codim. edges are the same as the
+    // edges of the boundary. Only need codim. edge to codim. vertex because
+    // codim. edge to non-codim. vertex is the same as edge-edge or face-vertex.
+    if (dim == 3 && mesh.num_codim_vertices() && mesh.num_codim_edges()) {
+        // Extract the vertices of the codim. edges
+        Eigen::MatrixXd CE_V_t0, CE_V_t1; // vertices of codim. edges
+        Eigen::MatrixXi CE;               // codim. edges (indices into CEV)
+        {
+            Eigen::VectorXi _I, J;
+            igl::remove_unreferenced(
+                vertices_t0,
+                pad_edges(mesh.edges()(mesh.codim_edges(), Eigen::all)),
+                CE_V_t0, CE, _I, J);
+            CE_V_t1 = vertices_t1(J, Eigen::all);
+            CE = unpad_edges(CE);
+        }
+
+        const size_t nCV = mesh.num_codim_vertices();
+
+        Eigen::MatrixXd V_t0(nCV + CE_V_t0.rows(), dim);
+        V_t0.topRows(nCV) = vertices_t0(mesh.codim_vertices(), Eigen::all);
+        V_t0.bottomRows(CE_V_t0.rows()) = CE_V_t0;
+
+        Eigen::MatrixXd V_t1(nCV + CE_V_t1.rows(), dim);
+        V_t1.topRows(nCV) = vertices_t1(mesh.codim_vertices(), Eigen::all);
+        V_t1.bottomRows(CE_V_t1.rows()) = CE_V_t1;
+
+        CE.array() += nCV; // Offset indices to account for codim. vertices
+
+        // TODO: Can we reuse the broad phase from above?
+        broad_phase->clear();
+        broad_phase->can_vertices_collide = [&](size_t vi, size_t vj) {
+            // Ignore c-edge to c-edge and c-vertex to c-vertex
+            return ((vi < nCV) ^ (vj < nCV)) && mesh.can_collide(vi, vj);
+        };
+        broad_phase->build(V_t0, V_t1, CE, Eigen::MatrixXi(), inflation_radius);
+
+        broad_phase->detect_edge_vertex_candidates(ev_candidates);
+        for (auto& [ei, vi] : ev_candidates) {
+            assert(vi < mesh.codim_vertices().size());
+            ei = mesh.codim_edges()[ei];    // Map back to mesh.edges
+            vi = mesh.codim_vertices()[vi]; // Map back to vertices
         }
     }
 }
@@ -110,8 +220,7 @@ bool Candidates::is_step_collision_free(
         double toi;
         bool is_collision = (*this)[i].ccd(
             vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), toi,
-            min_distance,
-            /*tmax=*/1.0, tolerance, max_iterations);
+            min_distance, /*tmax=*/1.0, tolerance, max_iterations);
 
         if (is_collision) {
             return false;
