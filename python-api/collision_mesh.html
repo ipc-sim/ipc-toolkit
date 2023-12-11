@@ -883,7 +883,14 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.CollisionMesh.can_collide" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.can_collide (Python property) — A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide. By default all primitives can collide with all other primitives." class="md-ellipsis">can_<wbr>collide</span>
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.can_collide (Python property) — A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide." class="md-ellipsis">can_<wbr>collide</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.codim_edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.codim_edges (Python property) — Get the indices of codimensional edges of the collision mesh (#CE x 1)." class="md-ellipsis">codim_<wbr>edges</span>
   </a>
   
 </li>
@@ -1269,6 +1276,13 @@
           <li class="md-nav__item">
   <a href="#ipctk.CollisionMesh.ndof" class="md-nav__link">
     <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.ndof (Python property) — Get the number of degrees of freedom in the collision mesh." class="md-ellipsis">ndof</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.num_codim_edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.num_codim_edges (Python property) — Get the number of codimensional edges in the collision mesh." class="md-ellipsis">num_<wbr>codim_<wbr>edges</span>
   </a>
   
 </li>
@@ -1855,7 +1869,14 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.CollisionMesh.can_collide" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.can_collide (Python property) — A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide. By default all primitives can collide with all other primitives." class="md-ellipsis">can_<wbr>collide</span>
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.can_collide (Python property) — A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide." class="md-ellipsis">can_<wbr>collide</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.codim_edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.codim_edges (Python property) — Get the indices of codimensional edges of the collision mesh (#CE x 1)." class="md-ellipsis">codim_<wbr>edges</span>
   </a>
   
 </li>
@@ -2246,6 +2267,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.num_codim_edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.num_codim_edges (Python property) — Get the number of codimensional edges in the collision mesh." class="md-ellipsis">num_<wbr>codim_<wbr>edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ipctk.CollisionMesh.num_codim_vertices" class="md-nav__link">
     <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.num_codim_vertices (Python property) — Get the number of codimensional vertices in the collision mesh." class="md-ellipsis">num_<wbr>codim_<wbr>vertices</span>
   </a>
@@ -2507,29 +2535,35 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.num_codim_vertices" title="ipctk.CollisionMesh.num_codim_vertices (Python property) — Get the number of codimensional vertices in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_codim_vertices</span></code></a></p></td>
 <td><p>Get the number of codimensional vertices in the collision mesh.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.num_edges" title="ipctk.CollisionMesh.num_edges (Python property) — Get the number of edges in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_edges</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.num_codim_edges" title="ipctk.CollisionMesh.num_codim_edges (Python property) — Get the number of codimensional edges in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_codim_edges</span></code></a></p></td>
+<td><p>Get the number of codimensional edges in the collision mesh.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.num_edges" title="ipctk.CollisionMesh.num_edges (Python property) — Get the number of edges in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_edges</span></code></a></p></td>
 <td><p>Get the number of edges in the collision mesh.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.num_faces" title="ipctk.CollisionMesh.num_faces (Python property) — Get the number of faces in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_faces</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.num_faces" title="ipctk.CollisionMesh.num_faces (Python property) — Get the number of faces in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_faces</span></code></a></p></td>
 <td><p>Get the number of faces in the collision mesh.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.dim" title="ipctk.CollisionMesh.dim (Python property) — Get the dimension of the mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">dim</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.dim" title="ipctk.CollisionMesh.dim (Python property) — Get the dimension of the mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">dim</span></code></a></p></td>
 <td><p>Get the dimension of the mesh.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.ndof" title="ipctk.CollisionMesh.ndof (Python property) — Get the number of degrees of freedom in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndof</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.ndof" title="ipctk.CollisionMesh.ndof (Python property) — Get the number of degrees of freedom in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndof</span></code></a></p></td>
 <td><p>Get the number of degrees of freedom in the collision mesh.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.full_num_vertices" title="ipctk.CollisionMesh.full_num_vertices (Python property) — Get the number of vertices in the full mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">full_num_vertices</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.full_num_vertices" title="ipctk.CollisionMesh.full_num_vertices (Python property) — Get the number of vertices in the full mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">full_num_vertices</span></code></a></p></td>
 <td><p>Get the number of vertices in the full mesh.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.full_ndof" title="ipctk.CollisionMesh.full_ndof (Python property) — Get the number of degrees of freedom in the full mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">full_ndof</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.full_ndof" title="ipctk.CollisionMesh.full_ndof (Python property) — Get the number of degrees of freedom in the full mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">full_ndof</span></code></a></p></td>
 <td><p>Get the number of degrees of freedom in the full mesh.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.rest_positions" title="ipctk.CollisionMesh.rest_positions (Python property) — Get the vertices of the collision mesh at rest (#V × dim)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">rest_positions</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.rest_positions" title="ipctk.CollisionMesh.rest_positions (Python property) — Get the vertices of the collision mesh at rest (#V × dim)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">rest_positions</span></code></a></p></td>
 <td><p>Get the vertices of the collision mesh at rest (#V × dim).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.codim_vertices" title="ipctk.CollisionMesh.codim_vertices (Python property) — Get the indices of codimensional vertices of the collision mesh (#CV x 1)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">codim_vertices</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.codim_vertices" title="ipctk.CollisionMesh.codim_vertices (Python property) — Get the indices of codimensional vertices of the collision mesh (#CV x 1)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">codim_vertices</span></code></a></p></td>
 <td><p>Get the indices of codimensional vertices of the collision mesh (#CV x 1).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.codim_edges" title="ipctk.CollisionMesh.codim_edges (Python property) — Get the indices of codimensional edges of the collision mesh (#CE x 1)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">codim_edges</span></code></a></p></td>
+<td><p>Get the indices of codimensional edges of the collision mesh (#CE x 1).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.edges" title="ipctk.CollisionMesh.edges (Python property) — Get the edges of the collision mesh (#E × 2)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">edges</span></code></a></p></td>
 <td><p>Get the edges of the collision mesh (#E × 2).</p></td>
@@ -2552,7 +2586,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.vertex_areas" title="ipctk.CollisionMesh.vertex_areas (Python property) — Get the barycentric area of the vertices."><code class="xref py py-obj docutils literal notranslate"><span class="pre">vertex_areas</span></code></a></p></td>
 <td><p>Get the barycentric area of the vertices.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.can_collide" title="ipctk.CollisionMesh.can_collide (Python property) — A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide. By default all primitives can collide with all other primitives."><code class="xref py py-obj docutils literal notranslate"><span class="pre">can_collide</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.can_collide" title="ipctk.CollisionMesh.can_collide (Python property) — A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide."><code class="xref py py-obj docutils literal notranslate"><span class="pre">can_collide</span></code></a></p></td>
 <td><p>A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide.</p></td>
 </tr>
 </tbody>
@@ -2712,9 +2746,14 @@ displacement_map: The displacement mapping from displacements on the full mesh t
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.can_collide">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">can_collide</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.can_collide" title="Permalink to this definition">¶</a></dt>
-<dd><p>A function that takes two vertex IDs and returns true if the vertices
-(and faces or edges containing the vertices) can collide. By default all
-primitives can collide with all other primitives.</p>
+<dd><p>A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide.</p>
+<p>By default all primitives can collide with all other primitives.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.codim_edges">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">codim_edges</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.codim_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the indices of codimensional edges of the collision mesh (#CE x 1).</p>
 </dd></dl>
 
 <dl class="py property objdesc">
@@ -2915,6 +2954,12 @@ primitives can collide with all other primitives.</p>
 </dd></dl>
 
 <dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.num_codim_edges">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_codim_edges</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.num_codim_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of codimensional edges in the collision mesh.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.num_codim_vertices">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_codim_vertices</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.num_codim_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the number of codimensional vertices in the collision mesh.</p>
@@ -3071,7 +3116,7 @@ primitives can collide with all other primitives.</p>
   <small>
     
       Last update:
-      Nov 12, 2023
+      Dec 11, 2023
     
   </small>
 </div>
