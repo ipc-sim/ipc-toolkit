@@ -25,5 +25,6 @@ namespace ipc {
         const Eigen::Ref<const VectorMax3d>& e0,
         const Eigen::Ref<const VectorMax3d>& e1,
         const double &dhat,
-        const double &alpha);
+        const double &alpha,
+        const int &N);
 }

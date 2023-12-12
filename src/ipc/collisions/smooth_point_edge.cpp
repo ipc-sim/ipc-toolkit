@@ -4,7 +4,6 @@
 #include <ipc/utils/math.hpp>
 
 const static int edge_quadrature_order = 1;
-const static int n_edge_quadrature_points = 1000;
 
 namespace ipc {
     double smooth_point_edge_potential_pointwise(
@@ -37,10 +36,11 @@ namespace ipc {
         const Eigen::Ref<const VectorMax3d>& e0,
         const Eigen::Ref<const VectorMax3d>& e1,
         const double &dhat,
-        const double &alpha)
+        const double &alpha,
+        const int &N)
     {
         Eigen::VectorXd pts, weights;
-        ipc::line_quadrature(edge_quadrature_order, n_edge_quadrature_points, pts, weights);
+        ipc::line_quadrature(edge_quadrature_order, N, pts, weights);
 
         double val = 0;
         for (int i = 0; i < pts.size(); i++)

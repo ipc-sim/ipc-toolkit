@@ -28,12 +28,12 @@ void define_smooth_point_edge(py::module_& m)
         Compute the new potential between a point and an edge.
 
         Parameters:
-            p, e0, e1, dhat, alpha
+            p, e0, e1, dhat, alpha, N
 
         Returns:
             potential
 
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"),
-        py::arg("dhat"), py::arg("alpha"));
+        py::arg("dhat"), py::arg("alpha"), py::arg("N"));
 }
