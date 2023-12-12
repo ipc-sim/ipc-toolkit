@@ -1,0 +1,3219 @@
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../_static/favicon.ico">
+    
+    
+      
+        <title>Collision Mesh - IPC Toolkit</title>
+      
+    
+    
+      
+        
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.af531f03affe68837.min.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ipctk.CollisionMesh" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="IPC Toolkit" class="md-header__button md-logo" aria-label="IPC Toolkit" data-md-component="logo">
+      <img src="../_static/hammer-wrench.svg" alt="logo">
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IPC Toolkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Collision Mesh
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7 0-.24-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91 1.61 0 2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08Z"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ipc-sim/ipc-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ipc-sim/ipc-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../index.html" class="md-tabs__link">
+      <span class="md-ellipsis">General</span>
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../tutorial/getting_started.html" class="md-tabs__link">
+      <span class="md-ellipsis">Tutorial</span>
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../cpp.html" class="md-tabs__link">
+      <span class="md-ellipsis">C++</span>
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../python.html" class="md-tabs__link md-tabs__link--active">
+      <span class="md-ellipsis">Python</span>
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../contributing.html" class="md-tabs__link">
+      <span class="md-ellipsis">Developers</span>
+    </a>
+  </li>
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="IPC Toolkit" class="md-nav__button md-logo" aria-label="IPC Toolkit" data-md-component="logo">
+      <img src="../_static/hammer-wrench.svg" alt="logo">
+    </a>
+    IPC Toolkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ipc-sim/ipc-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ipc-sim/ipc-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          <span class="md-ellipsis">General</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="General" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">General</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        <span title="/index.rst (reference label)" class="md-ellipsis">Home</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog.html" class="md-nav__link">
+        <span title="/changelog.rst (reference label)" class="md-ellipsis">Changelog</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../license.html" class="md-nav__link">
+        <span title="/license.rst (reference label)" class="md-ellipsis">License</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          <span class="md-ellipsis">Tutorial</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tutorial" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Tutorial</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/getting_started.html" class="md-nav__link">
+        <span title="/tutorial/getting_started.rst (reference label)" class="md-ellipsis">Getting Started</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/convergent.html" class="md-nav__link">
+        <span title="/tutorial/convergent.rst (reference label)" class="md-ellipsis">Convergent Formulation</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/nonlinear_ccd.html" class="md-nav__link">
+        <span title="/tutorial/nonlinear_ccd.rst (reference label)" class="md-ellipsis">Nonlinear CCD</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/simulation.html" class="md-nav__link">
+        <span title="/tutorial/simulation.rst (reference label)" class="md-ellipsis">Physical Simulation</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/misc.html" class="md-nav__link">
+        <span title="/tutorial/misc.rst (reference label)" class="md-ellipsis">Miscellaneous</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/references.html" class="md-nav__link">
+        <span title="/tutorial/references.rst (reference label)" class="md-ellipsis">References</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          <span class="md-ellipsis">C++</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="C++" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">C++</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp.html" class="md-nav__link">
+        <span title="/cpp.rst (reference label)" class="md-ellipsis">Getting Started</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/collision_mesh.html" class="md-nav__link">
+        <span title="/cpp-api/collision_mesh.rst (reference label)" class="md-ellipsis">Collision Mesh</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/candidates.html" class="md-nav__link">
+        <span title="/cpp-api/candidates.rst (reference label)" class="md-ellipsis">Candidates</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/collision_constraints.html" class="md-nav__link">
+        <span title="/cpp-api/collision_constraints.rst (reference label)" class="md-ellipsis">Collision Constraints</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/friction.html" class="md-nav__link">
+        <span title="/cpp-api/friction.rst (reference label)" class="md-ellipsis">Friction</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/broad_phase.html" class="md-nav__link">
+        <span title="/cpp-api/broad_phase.rst (reference label)" class="md-ellipsis">Broad Phase</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/ccd.html" class="md-nav__link">
+        <span title="/cpp-api/ccd.rst (reference label)" class="md-ellipsis">Continuous Collision Detection</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/distance.html" class="md-nav__link">
+        <span title="/cpp-api/distance.rst (reference label)" class="md-ellipsis">Distance</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/barrier.html" class="md-nav__link">
+        <span title="/cpp-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/intersections.html" class="md-nav__link">
+        <span title="/cpp-api/intersections.rst (reference label)" class="md-ellipsis">Intersections</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/utils.html" class="md-nav__link">
+        <span title="/cpp-api/utils.rst (reference label)" class="md-ellipsis">Utils</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          <span class="md-ellipsis">Python</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Python" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Python</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python.html" class="md-nav__link">
+        <span title="/python.rst (reference label)" class="md-ellipsis">Getting Started</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          <span title="/python-api/collision_mesh.rst (reference label)" class="md-ellipsis">Collision Mesh</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
+        <span title="/python-api/collision_mesh.rst (reference label)" class="md-ellipsis">Collision Mesh</span>
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.CollisionMesh (Python class) — Bases: pybind11_object" class="md-ellipsis">ipctk.<wbr>Collision<wbr>Mesh</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipctk.CollisionMesh">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.__annotations__" class="md-nav__link">
+    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.CollisionMesh.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.__init__" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.__init__ (Python method) — Overloaded function." class="md-ellipsis">__<wbr>init__<wbr></span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.__module__" class="md-nav__link">
+    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.CollisionMesh.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.are_adjacencies_initialized" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.are_adjacencies_initialized (Python method) — Determine if the adjacencies have been initialized by calling init_adjacencies()." class="md-ellipsis">are_<wbr>adjacencies_<wbr>initialized</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.are_area_jacobians_initialized" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.are_area_jacobians_initialized (Python method) — Determine if the area Jacobians have been initialized by calling init_area_jacobians()." class="md-ellipsis">are_<wbr>area_<wbr>jacobians_<wbr>initialized</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.build_from_full_mesh" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.build_from_full_mesh (Python method) — Helper function that automatically builds include_vertex using construct_is_on_surface." class="md-ellipsis">build_<wbr>from_<wbr>full_<wbr>mesh</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="build_from_full_mesh">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.build_from_full_mesh-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.build_from_full_mesh.full_rest_positions" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.build_from_full_mesh.full_rest_positions (Python parameter) — The full vertices at rest (#FV × dim)." class="md-ellipsis">full_<wbr>rest_<wbr>positions</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.build_from_full_mesh.edges" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.build_from_full_mesh.edges (Python parameter) — The edge matrix of mesh (#E × 2)." class="md-ellipsis">edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.build_from_full_mesh.faces" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.build_from_full_mesh.faces (Python parameter) — The face matrix of mesh (#F × 3)." class="md-ellipsis">faces</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.build_from_full_mesh-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.can_collide" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.can_collide (Python property) — A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide." class="md-ellipsis">can_<wbr>collide</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.codim_edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.codim_edges (Python property) — Get the indices of codimensional edges of the collision mesh (#CE x 1)." class="md-ellipsis">codim_<wbr>edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.codim_vertices" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.codim_vertices (Python property) — Get the indices of codimensional vertices of the collision mesh (#CV x 1)." class="md-ellipsis">codim_<wbr>vertices</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_faces_to_edges" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.construct_faces_to_edges (Python method) — Construct a matrix that maps from the faces&#39; edges to rows in the edges matrix." class="md-ellipsis">construct_<wbr>faces_<wbr>to_<wbr>edges</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="construct_faces_to_edges">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_faces_to_edges-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_faces_to_edges.faces" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.construct_faces_to_edges.faces (Python parameter) — The face matrix of mesh (#F × 3)." class="md-ellipsis">faces</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_faces_to_edges.edges" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.construct_faces_to_edges.edges (Python parameter) — The edge matrix of mesh (#E × 2)." class="md-ellipsis">edges</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_faces_to_edges-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_is_on_surface" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.construct_is_on_surface (Python method) — Construct a vector of bools indicating whether each vertex is on the surface." class="md-ellipsis">construct_<wbr>is_<wbr>on_<wbr>surface</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="construct_is_on_surface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_is_on_surface-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_is_on_surface.num_vertices" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.construct_is_on_surface.num_vertices (Python parameter) — The number of vertices in the mesh." class="md-ellipsis">num_<wbr>vertices</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_is_on_surface.edges" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.construct_is_on_surface.edges (Python parameter) — The surface edges of the mesh (#E × 2)." class="md-ellipsis">edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_is_on_surface.codim_vertices" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.construct_is_on_surface.codim_vertices (Python parameter) — The indices of codimensional vertices (#CV x 1)." class="md-ellipsis">codim_<wbr>vertices</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_is_on_surface-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.dim" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.dim (Python property) — Get the dimension of the mesh." class="md-ellipsis">dim</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.displace_vertices" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.displace_vertices (Python method) — Compute the vertex positions from vertex displacements on the full mesh." class="md-ellipsis">displace_<wbr>vertices</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="displace_vertices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.displace_vertices-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.displace_vertices.full_displacements" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.displace_vertices.full_displacements (Python parameter) — The vertex displacements on the full mesh (#FV × dim)." class="md-ellipsis">full_<wbr>displacements</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.displace_vertices-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.edge_area (Python method) — Get the barycentric area of an edge." class="md-ellipsis">edge_<wbr>area</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="edge_area">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area.ei" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.edge_area.ei (Python parameter) — Edge ID." class="md-ellipsis">ei</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area_gradient" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.edge_area_gradient (Python method) — Get the gradient of the barycentric area of an edge wrt the rest positions of all points." class="md-ellipsis">edge_<wbr>area_<wbr>gradient</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="edge_area_gradient">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area_gradient-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area_gradient.ei" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.edge_area_gradient.ei (Python parameter) — Edge ID." class="md-ellipsis">ei</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area_gradient-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_areas" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.edge_areas (Python method) — Get the barycentric area of the edges." class="md-ellipsis">edge_<wbr>areas</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_vertex_adjacencies" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.edge_vertex_adjacencies (Python property) — Get the edge-vertex adjacency matrix." class="md-ellipsis">edge_<wbr>vertex_<wbr>adjacencies</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.edges (Python property) — Get the edges of the collision mesh (#E × 2)." class="md-ellipsis">edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.faces" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.faces (Python property) — Get the faces of the collision mesh (#F × 3)." class="md-ellipsis">faces</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.faces_to_edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.faces_to_edges (Python property) — Get the mapping from faces to edges of the collision mesh (#F × 3)." class="md-ellipsis">faces_<wbr>to_<wbr>edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.full_ndof" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.full_ndof (Python property) — Get the number of degrees of freedom in the full mesh." class="md-ellipsis">full_<wbr>ndof</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.full_num_vertices" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.full_num_vertices (Python property) — Get the number of vertices in the full mesh." class="md-ellipsis">full_<wbr>num_<wbr>vertices</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.init_adjacencies" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.init_adjacencies (Python method) — Initialize vertex-vertex and edge-vertex adjacencies." class="md-ellipsis">init_<wbr>adjacencies</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.init_area_jacobians" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.init_area_jacobians (Python method) — Initialize vertex and edge areas." class="md-ellipsis">init_<wbr>area_<wbr>jacobians</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.is_vertex_on_boundary" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.is_vertex_on_boundary (Python method) — Is a vertex on the boundary of the collision mesh?" class="md-ellipsis">is_<wbr>vertex_<wbr>on_<wbr>boundary</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="is_vertex_on_boundary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.is_vertex_on_boundary-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.is_vertex_on_boundary.vi" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.is_vertex_on_boundary.vi (Python parameter) — Vertex ID." class="md-ellipsis">vi</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.is_vertex_on_boundary-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.map_displacements" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.map_displacements (Python method) — Map vertex displacements on the full mesh to vertex displacements on the collision mesh." class="md-ellipsis">map_<wbr>displacements</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="map_displacements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.map_displacements-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.map_displacements.full_displacements" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.map_displacements.full_displacements (Python parameter) — The vertex displacements on the full mesh (#FV × dim)." class="md-ellipsis">full_<wbr>displacements</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.map_displacements-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.ndof" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.ndof (Python property) — Get the number of degrees of freedom in the collision mesh." class="md-ellipsis">ndof</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.num_codim_edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.num_codim_edges (Python property) — Get the number of codimensional edges in the collision mesh." class="md-ellipsis">num_<wbr>codim_<wbr>edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.num_codim_vertices" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.num_codim_vertices (Python property) — Get the number of codimensional vertices in the collision mesh." class="md-ellipsis">num_<wbr>codim_<wbr>vertices</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.num_edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.num_edges (Python property) — Get the number of edges in the collision mesh." class="md-ellipsis">num_<wbr>edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.num_faces" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.num_faces (Python property) — Get the number of faces in the collision mesh." class="md-ellipsis">num_<wbr>faces</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.num_vertices" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.num_vertices (Python property) — Get the number of vertices in the collision mesh." class="md-ellipsis">num_<wbr>vertices</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.rest_positions" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.rest_positions (Python property) — Get the vertices of the collision mesh at rest (#V × dim)." class="md-ellipsis">rest_<wbr>positions</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.to_full_dof" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.to_full_dof (Python method) — Overloaded function." class="md-ellipsis">to_<wbr>full_<wbr>dof</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.to_full_vertex_id" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.to_full_vertex_id (Python method) — Map a vertex ID to the corresponding vertex ID in the full mesh." class="md-ellipsis">to_<wbr>full_<wbr>vertex_<wbr>id</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="to_full_vertex_id">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.to_full_vertex_id-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.to_full_vertex_id.id" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.to_full_vertex_id.id (Python parameter) — Vertex ID in the collision mesh." class="md-ellipsis">id</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.to_full_vertex_id-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.vertex_area (Python method) — Get the barycentric area of a vertex." class="md-ellipsis">vertex_<wbr>area</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vertex_area">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area.vi" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.vertex_area.vi (Python parameter) — Vertex ID." class="md-ellipsis">vi</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area_gradient" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.vertex_area_gradient (Python method) — Get the gradient of the barycentric area of a vertex wrt the rest positions of all points." class="md-ellipsis">vertex_<wbr>area_<wbr>gradient</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vertex_area_gradient">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area_gradient-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area_gradient.vi" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.vertex_area_gradient.vi (Python parameter) — Vertex ID." class="md-ellipsis">vi</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area_gradient-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_areas" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.vertex_areas (Python property) — Get the barycentric area of the vertices." class="md-ellipsis">vertex_<wbr>areas</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_edge_adjacencies" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.vertex_edge_adjacencies (Python property) — Get the vertex-edge adjacency matrix." class="md-ellipsis">vertex_<wbr>edge_<wbr>adjacencies</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_vertex_adjacencies" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.vertex_vertex_adjacencies (Python property) — Get the vertex-vertex adjacency matrix." class="md-ellipsis">vertex_<wbr>vertex_<wbr>adjacencies</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertices" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.vertices (Python method) — Compute the vertex positions from the positions of the full mesh." class="md-ellipsis">vertices</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vertices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertices-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertices.full_positions" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.vertices.full_positions (Python parameter) — The vertex positions of the full mesh (#FV × dim)." class="md-ellipsis">full_<wbr>positions</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertices-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="candidates.html" class="md-nav__link">
+        <span title="/python-api/candidates.rst (reference label)" class="md-ellipsis">Candidates</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="collision_constraints.html" class="md-nav__link">
+        <span title="/python-api/collision_constraints.rst (reference label)" class="md-ellipsis">Collision Constraints</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="friction.html" class="md-nav__link">
+        <span title="/python-api/friction.rst (reference label)" class="md-ellipsis">Friction</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="broad_phase.html" class="md-nav__link">
+        <span title="/python-api/broad_phase.rst (reference label)" class="md-ellipsis">Broad Phase</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ccd.html" class="md-nav__link">
+        <span title="/python-api/ccd.rst (reference label)" class="md-ellipsis">Continuous Collision Detection</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="distance.html" class="md-nav__link">
+        <span title="/python-api/distance.rst (reference label)" class="md-ellipsis">Distance</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="barrier.html" class="md-nav__link">
+        <span title="/python-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="intersections.html" class="md-nav__link">
+        <span title="/python-api/intersections.rst (reference label)" class="md-ellipsis">Intersections</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="utils.html" class="md-nav__link">
+        <span title="/python-api/utils.rst (reference label)" class="md-ellipsis">Utils</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          <span class="md-ellipsis">Developers</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Developers" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Developers</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing.html" class="md-nav__link">
+        <span title="/contributing.rst (reference label)" class="md-ellipsis">Contributing</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../style_guide.html" class="md-nav__link">
+        <span title="/style_guide.rst (reference label)" class="md-ellipsis">Style Guide</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code_of_conduct.html" class="md-nav__link">
+        <span title="/code_of_conduct.rst (reference label)" class="md-ellipsis">Code of Conduct</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh" class="md-nav__link">
+    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.CollisionMesh (Python class) — Bases: pybind11_object" class="md-ellipsis">ipctk.<wbr>Collision<wbr>Mesh</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipctk.CollisionMesh">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.__annotations__" class="md-nav__link">
+    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.CollisionMesh.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.__init__" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.__init__ (Python method) — Overloaded function." class="md-ellipsis">__<wbr>init__<wbr></span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.__module__" class="md-nav__link">
+    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.CollisionMesh.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.are_adjacencies_initialized" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.are_adjacencies_initialized (Python method) — Determine if the adjacencies have been initialized by calling init_adjacencies()." class="md-ellipsis">are_<wbr>adjacencies_<wbr>initialized</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.are_area_jacobians_initialized" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.are_area_jacobians_initialized (Python method) — Determine if the area Jacobians have been initialized by calling init_area_jacobians()." class="md-ellipsis">are_<wbr>area_<wbr>jacobians_<wbr>initialized</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.build_from_full_mesh" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.build_from_full_mesh (Python method) — Helper function that automatically builds include_vertex using construct_is_on_surface." class="md-ellipsis">build_<wbr>from_<wbr>full_<wbr>mesh</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="build_from_full_mesh">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.build_from_full_mesh-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.build_from_full_mesh.full_rest_positions" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.build_from_full_mesh.full_rest_positions (Python parameter) — The full vertices at rest (#FV × dim)." class="md-ellipsis">full_<wbr>rest_<wbr>positions</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.build_from_full_mesh.edges" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.build_from_full_mesh.edges (Python parameter) — The edge matrix of mesh (#E × 2)." class="md-ellipsis">edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.build_from_full_mesh.faces" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.build_from_full_mesh.faces (Python parameter) — The face matrix of mesh (#F × 3)." class="md-ellipsis">faces</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.build_from_full_mesh-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.can_collide" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.can_collide (Python property) — A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide." class="md-ellipsis">can_<wbr>collide</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.codim_edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.codim_edges (Python property) — Get the indices of codimensional edges of the collision mesh (#CE x 1)." class="md-ellipsis">codim_<wbr>edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.codim_vertices" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.codim_vertices (Python property) — Get the indices of codimensional vertices of the collision mesh (#CV x 1)." class="md-ellipsis">codim_<wbr>vertices</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_faces_to_edges" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.construct_faces_to_edges (Python method) — Construct a matrix that maps from the faces&#39; edges to rows in the edges matrix." class="md-ellipsis">construct_<wbr>faces_<wbr>to_<wbr>edges</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="construct_faces_to_edges">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_faces_to_edges-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_faces_to_edges.faces" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.construct_faces_to_edges.faces (Python parameter) — The face matrix of mesh (#F × 3)." class="md-ellipsis">faces</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_faces_to_edges.edges" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.construct_faces_to_edges.edges (Python parameter) — The edge matrix of mesh (#E × 2)." class="md-ellipsis">edges</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_faces_to_edges-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_is_on_surface" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.construct_is_on_surface (Python method) — Construct a vector of bools indicating whether each vertex is on the surface." class="md-ellipsis">construct_<wbr>is_<wbr>on_<wbr>surface</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="construct_is_on_surface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_is_on_surface-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_is_on_surface.num_vertices" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.construct_is_on_surface.num_vertices (Python parameter) — The number of vertices in the mesh." class="md-ellipsis">num_<wbr>vertices</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_is_on_surface.edges" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.construct_is_on_surface.edges (Python parameter) — The surface edges of the mesh (#E × 2)." class="md-ellipsis">edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_is_on_surface.codim_vertices" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.construct_is_on_surface.codim_vertices (Python parameter) — The indices of codimensional vertices (#CV x 1)." class="md-ellipsis">codim_<wbr>vertices</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.construct_is_on_surface-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.dim" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.dim (Python property) — Get the dimension of the mesh." class="md-ellipsis">dim</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.displace_vertices" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.displace_vertices (Python method) — Compute the vertex positions from vertex displacements on the full mesh." class="md-ellipsis">displace_<wbr>vertices</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="displace_vertices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.displace_vertices-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.displace_vertices.full_displacements" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.displace_vertices.full_displacements (Python parameter) — The vertex displacements on the full mesh (#FV × dim)." class="md-ellipsis">full_<wbr>displacements</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.displace_vertices-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.edge_area (Python method) — Get the barycentric area of an edge." class="md-ellipsis">edge_<wbr>area</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="edge_area">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area.ei" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.edge_area.ei (Python parameter) — Edge ID." class="md-ellipsis">ei</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area_gradient" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.edge_area_gradient (Python method) — Get the gradient of the barycentric area of an edge wrt the rest positions of all points." class="md-ellipsis">edge_<wbr>area_<wbr>gradient</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="edge_area_gradient">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area_gradient-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area_gradient.ei" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.edge_area_gradient.ei (Python parameter) — Edge ID." class="md-ellipsis">ei</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_area_gradient-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_areas" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.edge_areas (Python method) — Get the barycentric area of the edges." class="md-ellipsis">edge_<wbr>areas</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edge_vertex_adjacencies" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.edge_vertex_adjacencies (Python property) — Get the edge-vertex adjacency matrix." class="md-ellipsis">edge_<wbr>vertex_<wbr>adjacencies</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.edges (Python property) — Get the edges of the collision mesh (#E × 2)." class="md-ellipsis">edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.faces" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.faces (Python property) — Get the faces of the collision mesh (#F × 3)." class="md-ellipsis">faces</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.faces_to_edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.faces_to_edges (Python property) — Get the mapping from faces to edges of the collision mesh (#F × 3)." class="md-ellipsis">faces_<wbr>to_<wbr>edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.full_ndof" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.full_ndof (Python property) — Get the number of degrees of freedom in the full mesh." class="md-ellipsis">full_<wbr>ndof</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.full_num_vertices" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.full_num_vertices (Python property) — Get the number of vertices in the full mesh." class="md-ellipsis">full_<wbr>num_<wbr>vertices</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.init_adjacencies" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.init_adjacencies (Python method) — Initialize vertex-vertex and edge-vertex adjacencies." class="md-ellipsis">init_<wbr>adjacencies</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.init_area_jacobians" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.init_area_jacobians (Python method) — Initialize vertex and edge areas." class="md-ellipsis">init_<wbr>area_<wbr>jacobians</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.is_vertex_on_boundary" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.is_vertex_on_boundary (Python method) — Is a vertex on the boundary of the collision mesh?" class="md-ellipsis">is_<wbr>vertex_<wbr>on_<wbr>boundary</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="is_vertex_on_boundary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.is_vertex_on_boundary-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.is_vertex_on_boundary.vi" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.is_vertex_on_boundary.vi (Python parameter) — Vertex ID." class="md-ellipsis">vi</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.is_vertex_on_boundary-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.map_displacements" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.map_displacements (Python method) — Map vertex displacements on the full mesh to vertex displacements on the collision mesh." class="md-ellipsis">map_<wbr>displacements</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="map_displacements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.map_displacements-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.map_displacements.full_displacements" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.map_displacements.full_displacements (Python parameter) — The vertex displacements on the full mesh (#FV × dim)." class="md-ellipsis">full_<wbr>displacements</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.map_displacements-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.ndof" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.ndof (Python property) — Get the number of degrees of freedom in the collision mesh." class="md-ellipsis">ndof</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.num_codim_edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.num_codim_edges (Python property) — Get the number of codimensional edges in the collision mesh." class="md-ellipsis">num_<wbr>codim_<wbr>edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.num_codim_vertices" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.num_codim_vertices (Python property) — Get the number of codimensional vertices in the collision mesh." class="md-ellipsis">num_<wbr>codim_<wbr>vertices</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.num_edges" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.num_edges (Python property) — Get the number of edges in the collision mesh." class="md-ellipsis">num_<wbr>edges</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.num_faces" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.num_faces (Python property) — Get the number of faces in the collision mesh." class="md-ellipsis">num_<wbr>faces</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.num_vertices" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.num_vertices (Python property) — Get the number of vertices in the collision mesh." class="md-ellipsis">num_<wbr>vertices</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.rest_positions" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.rest_positions (Python property) — Get the vertices of the collision mesh at rest (#V × dim)." class="md-ellipsis">rest_<wbr>positions</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.to_full_dof" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.to_full_dof (Python method) — Overloaded function." class="md-ellipsis">to_<wbr>full_<wbr>dof</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.to_full_vertex_id" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.to_full_vertex_id (Python method) — Map a vertex ID to the corresponding vertex ID in the full mesh." class="md-ellipsis">to_<wbr>full_<wbr>vertex_<wbr>id</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="to_full_vertex_id">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.to_full_vertex_id-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.to_full_vertex_id.id" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.to_full_vertex_id.id (Python parameter) — Vertex ID in the collision mesh." class="md-ellipsis">id</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.to_full_vertex_id-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.vertex_area (Python method) — Get the barycentric area of a vertex." class="md-ellipsis">vertex_<wbr>area</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vertex_area">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area.vi" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.vertex_area.vi (Python parameter) — Vertex ID." class="md-ellipsis">vi</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area_gradient" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.vertex_area_gradient (Python method) — Get the gradient of the barycentric area of a vertex wrt the rest positions of all points." class="md-ellipsis">vertex_<wbr>area_<wbr>gradient</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vertex_area_gradient">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area_gradient-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area_gradient.vi" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.vertex_area_gradient.vi (Python parameter) — Vertex ID." class="md-ellipsis">vi</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_area_gradient-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_areas" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.vertex_areas (Python property) — Get the barycentric area of the vertices." class="md-ellipsis">vertex_<wbr>areas</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_edge_adjacencies" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.vertex_edge_adjacencies (Python property) — Get the vertex-edge adjacency matrix." class="md-ellipsis">vertex_<wbr>edge_<wbr>adjacencies</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertex_vertex_adjacencies" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.CollisionMesh.vertex_vertex_adjacencies (Python property) — Get the vertex-vertex adjacency matrix." class="md-ellipsis">vertex_<wbr>vertex_<wbr>adjacencies</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertices" class="md-nav__link">
+    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.CollisionMesh.vertices (Python method) — Compute the vertex positions from the positions of the full mesh." class="md-ellipsis">vertices</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="vertices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertices-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertices.full_positions" class="md-nav__link">
+    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.CollisionMesh.vertices.full_positions (Python parameter) — The vertex positions of the full mesh (#FV × dim)." class="md-ellipsis">full_<wbr>positions</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ipctk.CollisionMesh.vertices-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset" role="main">
+                  
+
+
+  <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/docs/source/python-api/collision_mesh.rst" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+<h1 id="collision-mesh">Collision Mesh<a class="headerlink" href="#collision-mesh" title="Permalink to this heading">¶</a></h1>
+<dl class="py class objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">CollisionMesh</span></span><a class="headerlink" href="#ipctk.CollisionMesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></p>
+<div class="autoclasstoc docutils container">
+<p class="rubric">Public Data Attributes:</p>
+<table class="autosummary longtable docutils data align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.num_vertices" title="ipctk.CollisionMesh.num_vertices (Python property) — Get the number of vertices in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_vertices</span></code></a></p></td>
+<td><p>Get the number of vertices in the collision mesh.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.num_codim_vertices" title="ipctk.CollisionMesh.num_codim_vertices (Python property) — Get the number of codimensional vertices in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_codim_vertices</span></code></a></p></td>
+<td><p>Get the number of codimensional vertices in the collision mesh.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.num_codim_edges" title="ipctk.CollisionMesh.num_codim_edges (Python property) — Get the number of codimensional edges in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_codim_edges</span></code></a></p></td>
+<td><p>Get the number of codimensional edges in the collision mesh.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.num_edges" title="ipctk.CollisionMesh.num_edges (Python property) — Get the number of edges in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_edges</span></code></a></p></td>
+<td><p>Get the number of edges in the collision mesh.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.num_faces" title="ipctk.CollisionMesh.num_faces (Python property) — Get the number of faces in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">num_faces</span></code></a></p></td>
+<td><p>Get the number of faces in the collision mesh.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.dim" title="ipctk.CollisionMesh.dim (Python property) — Get the dimension of the mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">dim</span></code></a></p></td>
+<td><p>Get the dimension of the mesh.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.ndof" title="ipctk.CollisionMesh.ndof (Python property) — Get the number of degrees of freedom in the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndof</span></code></a></p></td>
+<td><p>Get the number of degrees of freedom in the collision mesh.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.full_num_vertices" title="ipctk.CollisionMesh.full_num_vertices (Python property) — Get the number of vertices in the full mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">full_num_vertices</span></code></a></p></td>
+<td><p>Get the number of vertices in the full mesh.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.full_ndof" title="ipctk.CollisionMesh.full_ndof (Python property) — Get the number of degrees of freedom in the full mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">full_ndof</span></code></a></p></td>
+<td><p>Get the number of degrees of freedom in the full mesh.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.rest_positions" title="ipctk.CollisionMesh.rest_positions (Python property) — Get the vertices of the collision mesh at rest (#V × dim)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">rest_positions</span></code></a></p></td>
+<td><p>Get the vertices of the collision mesh at rest (#V × dim).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.codim_vertices" title="ipctk.CollisionMesh.codim_vertices (Python property) — Get the indices of codimensional vertices of the collision mesh (#CV x 1)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">codim_vertices</span></code></a></p></td>
+<td><p>Get the indices of codimensional vertices of the collision mesh (#CV x 1).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.codim_edges" title="ipctk.CollisionMesh.codim_edges (Python property) — Get the indices of codimensional edges of the collision mesh (#CE x 1)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">codim_edges</span></code></a></p></td>
+<td><p>Get the indices of codimensional edges of the collision mesh (#CE x 1).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.edges" title="ipctk.CollisionMesh.edges (Python property) — Get the edges of the collision mesh (#E × 2)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">edges</span></code></a></p></td>
+<td><p>Get the edges of the collision mesh (#E × 2).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.faces" title="ipctk.CollisionMesh.faces (Python property) — Get the faces of the collision mesh (#F × 3)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">faces</span></code></a></p></td>
+<td><p>Get the faces of the collision mesh (#F × 3).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.faces_to_edges" title="ipctk.CollisionMesh.faces_to_edges (Python property) — Get the mapping from faces to edges of the collision mesh (#F × 3)."><code class="xref py py-obj docutils literal notranslate"><span class="pre">faces_to_edges</span></code></a></p></td>
+<td><p>Get the mapping from faces to edges of the collision mesh (#F × 3).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.vertex_vertex_adjacencies" title="ipctk.CollisionMesh.vertex_vertex_adjacencies (Python property) — Get the vertex-vertex adjacency matrix."><code class="xref py py-obj docutils literal notranslate"><span class="pre">vertex_vertex_adjacencies</span></code></a></p></td>
+<td><p>Get the vertex-vertex adjacency matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.vertex_edge_adjacencies" title="ipctk.CollisionMesh.vertex_edge_adjacencies (Python property) — Get the vertex-edge adjacency matrix."><code class="xref py py-obj docutils literal notranslate"><span class="pre">vertex_edge_adjacencies</span></code></a></p></td>
+<td><p>Get the vertex-edge adjacency matrix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.edge_vertex_adjacencies" title="ipctk.CollisionMesh.edge_vertex_adjacencies (Python property) — Get the edge-vertex adjacency matrix."><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_vertex_adjacencies</span></code></a></p></td>
+<td><p>Get the edge-vertex adjacency matrix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.vertex_areas" title="ipctk.CollisionMesh.vertex_areas (Python property) — Get the barycentric area of the vertices."><code class="xref py py-obj docutils literal notranslate"><span class="pre">vertex_areas</span></code></a></p></td>
+<td><p>Get the barycentric area of the vertices.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.can_collide" title="ipctk.CollisionMesh.can_collide (Python property) — A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide."><code class="xref py py-obj docutils literal notranslate"><span class="pre">can_collide</span></code></a></p></td>
+<td><p>A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="autoclasstoc docutils container">
+<p class="rubric">Public Methods:</p>
+<table class="autosummary longtable docutils data align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.__init__" title="ipctk.CollisionMesh.__init__ (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Overloaded function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.build_from_full_mesh" title="ipctk.CollisionMesh.build_from_full_mesh (Python method) — Helper function that automatically builds include_vertex using construct_is_on_surface."><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_from_full_mesh</span></code></a>(full_rest_positions, ...)</p></td>
+<td><p>Helper function that automatically builds include_vertex using construct_is_on_surface.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.init_adjacencies" title="ipctk.CollisionMesh.init_adjacencies (Python method) — Initialize vertex-vertex and edge-vertex adjacencies."><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_adjacencies</span></code></a>(self)</p></td>
+<td><p>Initialize vertex-vertex and edge-vertex adjacencies.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.init_area_jacobians" title="ipctk.CollisionMesh.init_area_jacobians (Python method) — Initialize vertex and edge areas."><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_area_jacobians</span></code></a>(self)</p></td>
+<td><p>Initialize vertex and edge areas.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.vertices" title="ipctk.CollisionMesh.vertices (Python method) — Compute the vertex positions from the positions of the full mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">vertices</span></code></a>(self, full_positions)</p></td>
+<td><p>Compute the vertex positions from the positions of the full mesh.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.displace_vertices" title="ipctk.CollisionMesh.displace_vertices (Python method) — Compute the vertex positions from vertex displacements on the full mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">displace_vertices</span></code></a>(self, full_displacements)</p></td>
+<td><p>Compute the vertex positions from vertex displacements on the full mesh.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.map_displacements" title="ipctk.CollisionMesh.map_displacements (Python method) — Map vertex displacements on the full mesh to vertex displacements on the collision mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">map_displacements</span></code></a>(self, full_displacements)</p></td>
+<td><p>Map vertex displacements on the full mesh to vertex displacements on the collision mesh.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.to_full_vertex_id" title="ipctk.CollisionMesh.to_full_vertex_id (Python method) — Map a vertex ID to the corresponding vertex ID in the full mesh."><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_full_vertex_id</span></code></a>(self, id)</p></td>
+<td><p>Map a vertex ID to the corresponding vertex ID in the full mesh.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.to_full_dof" title="ipctk.CollisionMesh.to_full_dof (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_full_dof</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Overloaded function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.are_adjacencies_initialized" title="ipctk.CollisionMesh.are_adjacencies_initialized (Python method) — Determine if the adjacencies have been initialized by calling init_adjacencies()."><code class="xref py py-obj docutils literal notranslate"><span class="pre">are_adjacencies_initialized</span></code></a>(self)</p></td>
+<td><p>Determine if the adjacencies have been initialized by calling init_adjacencies().</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.is_vertex_on_boundary" title="ipctk.CollisionMesh.is_vertex_on_boundary (Python method) — Is a vertex on the boundary of the collision mesh?"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_vertex_on_boundary</span></code></a>(self, vi)</p></td>
+<td><p>Is a vertex on the boundary of the collision mesh?</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.vertex_area" title="ipctk.CollisionMesh.vertex_area (Python method) — Get the barycentric area of a vertex."><code class="xref py py-obj docutils literal notranslate"><span class="pre">vertex_area</span></code></a>(self, vi)</p></td>
+<td><p>Get the barycentric area of a vertex.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.vertex_area_gradient" title="ipctk.CollisionMesh.vertex_area_gradient (Python method) — Get the gradient of the barycentric area of a vertex wrt the rest positions of all points."><code class="xref py py-obj docutils literal notranslate"><span class="pre">vertex_area_gradient</span></code></a>(self, vi)</p></td>
+<td><p>Get the gradient of the barycentric area of a vertex wrt the rest positions of all points.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.edge_area" title="ipctk.CollisionMesh.edge_area (Python method) — Get the barycentric area of an edge."><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_area</span></code></a>(self, ei)</p></td>
+<td><p>Get the barycentric area of an edge.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.edge_areas" title="ipctk.CollisionMesh.edge_areas (Python method) — Get the barycentric area of the edges."><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_areas</span></code></a>(self)</p></td>
+<td><p>Get the barycentric area of the edges.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.edge_area_gradient" title="ipctk.CollisionMesh.edge_area_gradient (Python method) — Get the gradient of the barycentric area of an edge wrt the rest positions of all points."><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_area_gradient</span></code></a>(self, ei)</p></td>
+<td><p>Get the gradient of the barycentric area of an edge wrt the rest positions of all points.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.are_area_jacobians_initialized" title="ipctk.CollisionMesh.are_area_jacobians_initialized (Python method) — Determine if the area Jacobians have been initialized by calling init_area_jacobians()."><code class="xref py py-obj docutils literal notranslate"><span class="pre">are_area_jacobians_initialized</span></code></a>(self)</p></td>
+<td><p>Determine if the area Jacobians have been initialized by calling init_area_jacobians().</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.construct_is_on_surface" title="ipctk.CollisionMesh.construct_is_on_surface (Python method) — Construct a vector of bools indicating whether each vertex is on the surface."><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct_is_on_surface</span></code></a>(num_vertices, edges)</p></td>
+<td><p>Construct a vector of bools indicating whether each vertex is on the surface.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.CollisionMesh.construct_faces_to_edges" title="ipctk.CollisionMesh.construct_faces_to_edges (Python method) — Construct a matrix that maps from the faces' edges to rows in the edges matrix."><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct_faces_to_edges</span></code></a>(faces, edges)</p></td>
+<td><p>Construct a matrix that maps from the faces' edges to rows in the edges matrix.</p></td>
+</tr>
+</tbody>
+</table>
+<details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
+<tbody>
+</tbody>
+</table>
+</details></div>
+<hr class="docutils" />
+<dl class="py attribute objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.__annotations__">
+<span class="sig-name descname"><span class="pre">__annotations__</span></span><span class="p"> <span class="pre">=</span> </span><code class="code python docutils literal highlight highlight-python"><span class="p">{}</span></code><a class="headerlink" href="#ipctk.CollisionMesh.__annotations__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.CollisionMesh.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic">
+<li><dl>
+<dt>__init__(self: ipctk.CollisionMesh, rest_positions: numpy.ndarray[numpy.float64[m, n]], edges: numpy.ndarray[numpy.int32[m, n]], faces: numpy.ndarray[numpy.int32[m, n]], displacement_map: scipy.sparse.csc_matrix[numpy.float64] = &lt;0x0 sparse matrix of type ‘&lt;class ‘numpy.float64’&gt;’</dt><dd><p>with 0 stored elements in Compressed Sparse Column format&gt;) -&gt; None</p>
+<blockquote>
+<div><p>Construct a new Collision Mesh object directly from the collision mesh vertices.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>rest_positions: The vertices of the collision mesh at rest (#V × dim).
+edges: The edges of the collision mesh (#E × 2).
+faces: The faces of the collision mesh (#F × 3).
+displacement_map: The displacement mapping from displacements on the full mesh to the collision mesh.</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt>__init__(self: ipctk.CollisionMesh, include_vertex: List[bool], full_rest_positions: numpy.ndarray[numpy.float64[m, n]], edges: numpy.ndarray[numpy.int32[m, n]], faces: numpy.ndarray[numpy.int32[m, n]], displacement_map: scipy.sparse.csc_matrix[numpy.float64] = &lt;0x0 sparse matrix of type ‘&lt;class ‘numpy.float64’&gt;’</dt><dd><p>with 0 stored elements in Compressed Sparse Column format&gt;) -&gt; None</p>
+<blockquote>
+<div><p>Construct a new Collision Mesh object from a full mesh vertices.</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>include_vertex: Vector of bools indicating whether each vertex should be included in the collision mesh.
+full_rest_positions: The vertices of the full mesh at rest (#V × dim).
+edges: The edges of the collision mesh indexed into the full mesh vertices (#E × 2).
+faces: The faces of the collision mesh indexed into the full mesh vertices (#F × 3).
+displacement_map: The displacement mapping from displacements on the full mesh to the collision mesh.</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+</li>
+</ol>
+</dd></dl>
+
+<dl class="py attribute objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.__module__">
+<span class="sig-name descname"><span class="pre">__module__</span></span><span class="p"> <span class="pre">=</span> </span><code class="code python docutils literal highlight highlight-python"><span class="s1">&#39;ipctk&#39;</span></code><a class="headerlink" href="#ipctk.CollisionMesh.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.are_adjacencies_initialized">
+<span class="sig-name descname"><span class="pre">are_adjacencies_initialized</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.are_adjacencies_initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if the adjacencies have been initialized by calling init_adjacencies().</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.are_area_jacobians_initialized">
+<span class="sig-name descname"><span class="pre">are_area_jacobians_initialized</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.are_area_jacobians_initialized" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if the area Jacobians have been initialized by calling init_area_jacobians().</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.build_from_full_mesh">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build_from_full_mesh</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.build_from_full_mesh.full_rest_positions" title="ipctk.CollisionMesh.build_from_full_mesh.full_rest_positions (Python parameter) — The full vertices at rest (#FV × dim)."><span class="n"><span class="pre">full_rest_positions</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.build_from_full_mesh.edges" title="ipctk.CollisionMesh.build_from_full_mesh.edges (Python parameter) — The edge matrix of mesh (#E × 2)."><span class="n"><span class="pre">edges</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.build_from_full_mesh.faces" title="ipctk.CollisionMesh.build_from_full_mesh.faces (Python parameter) — The face matrix of mesh (#F × 3)."><span class="n"><span class="pre">faces</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><a class="reference internal" href="#ipctk.CollisionMesh" title="ipctk.CollisionMesh (Python class) — Bases: pybind11_object"><span class="pre">ipctk.CollisionMesh</span></a></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.build_from_full_mesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper function that automatically builds include_vertex using construct_is_on_surface.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.CollisionMesh.build_from_full_mesh-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.build_from_full_mesh-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.CollisionMesh.build_from_full_mesh.full_rest_positions"><span class="n sig-name">full_rest_positions</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.float64<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.build_from_full_mesh.full_rest_positions" title="Permalink to this definition">¶</a></dt><dd><p>The full vertices at rest (#FV × dim).</p>
+</dd>
+<dt id="ipctk.CollisionMesh.build_from_full_mesh.edges"><span class="n sig-name">edges</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.int32<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.build_from_full_mesh.edges" title="Permalink to this definition">¶</a></dt><dd><p>The edge matrix of mesh (#E × 2).</p>
+</dd>
+<dt id="ipctk.CollisionMesh.build_from_full_mesh.faces"><span class="n sig-name">faces</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.int32<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.build_from_full_mesh.faces" title="Permalink to this definition">¶</a></dt><dd><p>The face matrix of mesh (#F × 3).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.CollisionMesh.build_from_full_mesh-returns">Returns<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.build_from_full_mesh-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>Constructed CollisionMesh.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.can_collide">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">can_collide</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">collections.abc.Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.can_collide" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide.</p>
+<p>By default all primitives can collide with all other primitives.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.codim_edges">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">codim_edges</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.codim_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the indices of codimensional edges of the collision mesh (#CE x 1).</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.codim_vertices">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">codim_vertices</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.codim_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the indices of codimensional vertices of the collision mesh (#CV x 1).</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.construct_faces_to_edges">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">construct_faces_to_edges</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.construct_faces_to_edges.faces" title="ipctk.CollisionMesh.construct_faces_to_edges.faces (Python parameter) — The face matrix of mesh (#F × 3)."><span class="n"><span class="pre">faces</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.construct_faces_to_edges.edges" title="ipctk.CollisionMesh.construct_faces_to_edges.edges (Python parameter) — The edge matrix of mesh (#E × 2)."><span class="n"><span class="pre">edges</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.construct_faces_to_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a matrix that maps from the faces’ edges to rows in the edges matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.CollisionMesh.construct_faces_to_edges-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.construct_faces_to_edges-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.CollisionMesh.construct_faces_to_edges.faces"><span class="n sig-name">faces</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.int32<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.construct_faces_to_edges.faces" title="Permalink to this definition">¶</a></dt><dd><p>The face matrix of mesh (#F × 3).</p>
+</dd>
+<dt id="ipctk.CollisionMesh.construct_faces_to_edges.edges"><span class="n sig-name">edges</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.int32<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.construct_faces_to_edges.edges" title="Permalink to this definition">¶</a></dt><dd><p>The edge matrix of mesh (#E × 2).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.CollisionMesh.construct_faces_to_edges-returns">Returns<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.construct_faces_to_edges-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>Matrix that maps from the faces’ edges to rows in the edges matrix.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.construct_is_on_surface">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">construct_is_on_surface</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.construct_is_on_surface.num_vertices" title="ipctk.CollisionMesh.construct_is_on_surface.num_vertices (Python parameter) — The number of vertices in the mesh."><span class="n"><span class="pre">num_vertices</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.construct_is_on_surface.edges" title="ipctk.CollisionMesh.construct_is_on_surface.edges (Python parameter) — The surface edges of the mesh (#E × 2)."><span class="n"><span class="pre">edges</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.construct_is_on_surface.codim_vertices" title="ipctk.CollisionMesh.construct_is_on_surface.codim_vertices (Python parameter) — The indices of codimensional vertices (#CV x 1)."><span class="n"><span class="pre">codim_vertices</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><code class="code python default_value docutils literal highlight highlight-python"><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int32</span><span class="p">)</span></code></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.construct_is_on_surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a vector of bools indicating whether each vertex is on the surface.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.CollisionMesh.construct_is_on_surface-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.construct_is_on_surface-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.CollisionMesh.construct_is_on_surface.num_vertices"><span class="n sig-name">num_vertices</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.construct_is_on_surface.num_vertices" title="Permalink to this definition">¶</a></dt><dd><p>The number of vertices in the mesh.</p>
+</dd>
+<dt id="ipctk.CollisionMesh.construct_is_on_surface.edges"><span class="n sig-name">edges</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.int32<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.construct_is_on_surface.edges" title="Permalink to this definition">¶</a></dt><dd><p>The surface edges of the mesh (#E × 2).</p>
+</dd>
+<dt id="ipctk.CollisionMesh.construct_is_on_surface.codim_vertices"><span class="n sig-name">codim_vertices</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.int32<span class="p">[</span>m<span class="p">,</span><span class="w">   </span><span class="m">1</span><span class="p">]</span><span class="p">]</span></span></span><span class="w">   </span><span class="o">=</span><span class="w">   </span><code class="code python default_value docutils literal highlight highlight-python"><span class="n">array</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int32</span><span class="p">)</span></code><a class="headerlink" href="#ipctk.CollisionMesh.construct_is_on_surface.codim_vertices" title="Permalink to this definition">¶</a></dt><dd><p>The indices of codimensional vertices (#CV x 1).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.CollisionMesh.construct_is_on_surface-returns">Returns<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.construct_is_on_surface-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>A vector of bools indicating whether each vertex is on the surface.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.dim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dim</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the dimension of the mesh.</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.displace_vertices">
+<span class="sig-name descname"><span class="pre">displace_vertices</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.displace_vertices.full_displacements" title="ipctk.CollisionMesh.displace_vertices.full_displacements (Python parameter) — The vertex displacements on the full mesh (#FV × dim)."><span class="n"><span class="pre">full_displacements</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.displace_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the vertex positions from vertex displacements on the full mesh.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.CollisionMesh.displace_vertices-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.displace_vertices-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.CollisionMesh.displace_vertices.full_displacements"><span class="n sig-name">full_displacements</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.float64<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.displace_vertices.full_displacements" title="Permalink to this definition">¶</a></dt><dd><p>The vertex displacements on the full mesh (#FV × dim).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.CollisionMesh.displace_vertices-returns">Returns<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.displace_vertices-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>The vertex positions of the collision mesh (#V × dim).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.edge_area">
+<span class="sig-name descname"><span class="pre">edge_area</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.edge_area.ei" title="ipctk.CollisionMesh.edge_area.ei (Python parameter) — Edge ID."><span class="n"><span class="pre">ei</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.edge_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the barycentric area of an edge.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.CollisionMesh.edge_area-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.edge_area-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.CollisionMesh.edge_area.ei"><span class="n sig-name">ei</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.edge_area.ei" title="Permalink to this definition">¶</a></dt><dd><p>Edge ID.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.CollisionMesh.edge_area-returns">Returns<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.edge_area-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>Barycentric area of edge ei.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.edge_area_gradient">
+<span class="sig-name descname"><span class="pre">edge_area_gradient</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.edge_area_gradient.ei" title="ipctk.CollisionMesh.edge_area_gradient.ei (Python parameter) — Edge ID."><span class="n"><span class="pre">ei</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">scipy.sparse.csc_matrix</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.edge_area_gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the gradient of the barycentric area of an edge wrt the rest positions of all points.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.CollisionMesh.edge_area_gradient-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.edge_area_gradient-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.CollisionMesh.edge_area_gradient.ei"><span class="n sig-name">ei</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.edge_area_gradient.ei" title="Permalink to this definition">¶</a></dt><dd><p>Edge ID.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.CollisionMesh.edge_area_gradient-returns">Returns<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.edge_area_gradient-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>Gradient of the barycentric area of edge ei wrt the rest positions of all points.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.edge_areas">
+<span class="sig-name descname"><span class="pre">edge_areas</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.edge_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the barycentric area of the edges.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.edge_vertex_adjacencies">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge_vertex_adjacencies</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">List[tsl::robin_set&lt;int,</span> <span class="pre">absl::lts_20230125::hash_internal::Hash&lt;int&gt;,</span> <span class="pre">std::equal_to&lt;int&gt;,</span> <span class="pre">std::allocator&lt;int&gt;,</span> <span class="pre">false,</span> <span class="pre">tsl::rh::power_of_two_growth_policy&lt;2ul&gt;</span> <span class="pre">&gt;]</span></span><a class="headerlink" href="#ipctk.CollisionMesh.edge_vertex_adjacencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the edge-vertex adjacency matrix.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.edges">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edges</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the edges of the collision mesh (#E × 2).</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.faces">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">faces</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.faces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the faces of the collision mesh (#F × 3).</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.faces_to_edges">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">faces_to_edges</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.int32</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.faces_to_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the mapping from faces to edges of the collision mesh (#F × 3).</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.full_ndof">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">full_ndof</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.full_ndof" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of degrees of freedom in the full mesh.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.full_num_vertices">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">full_num_vertices</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.full_num_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of vertices in the full mesh.</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.init_adjacencies">
+<span class="sig-name descname"><span class="pre">init_adjacencies</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.init_adjacencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize vertex-vertex and edge-vertex adjacencies.</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.init_area_jacobians">
+<span class="sig-name descname"><span class="pre">init_area_jacobians</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.init_area_jacobians" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize vertex and edge areas.</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.is_vertex_on_boundary">
+<span class="sig-name descname"><span class="pre">is_vertex_on_boundary</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.is_vertex_on_boundary.vi" title="ipctk.CollisionMesh.is_vertex_on_boundary.vi (Python parameter) — Vertex ID."><span class="n"><span class="pre">vi</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.is_vertex_on_boundary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is a vertex on the boundary of the collision mesh?</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.CollisionMesh.is_vertex_on_boundary-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.is_vertex_on_boundary-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.CollisionMesh.is_vertex_on_boundary.vi"><span class="n sig-name">vi</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.is_vertex_on_boundary.vi" title="Permalink to this definition">¶</a></dt><dd><p>Vertex ID.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.CollisionMesh.is_vertex_on_boundary-returns">Returns<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.is_vertex_on_boundary-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>True if the vertex is on the boundary of the collision mesh.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.map_displacements">
+<span class="sig-name descname"><span class="pre">map_displacements</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.map_displacements.full_displacements" title="ipctk.CollisionMesh.map_displacements.full_displacements (Python parameter) — The vertex displacements on the full mesh (#FV × dim)."><span class="n"><span class="pre">full_displacements</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.map_displacements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map vertex displacements on the full mesh to vertex displacements on the collision mesh.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.CollisionMesh.map_displacements-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.map_displacements-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.CollisionMesh.map_displacements.full_displacements"><span class="n sig-name">full_displacements</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.float64<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.map_displacements.full_displacements" title="Permalink to this definition">¶</a></dt><dd><p>The vertex displacements on the full mesh (#FV × dim).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.CollisionMesh.map_displacements-returns">Returns<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.map_displacements-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>The vertex displacements on the collision mesh (#V × dim).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.ndof">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ndof</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.ndof" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of degrees of freedom in the collision mesh.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.num_codim_edges">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_codim_edges</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.num_codim_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of codimensional edges in the collision mesh.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.num_codim_vertices">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_codim_vertices</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.num_codim_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of codimensional vertices in the collision mesh.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.num_edges">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_edges</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.num_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of edges in the collision mesh.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.num_faces">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_faces</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.num_faces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of faces in the collision mesh.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.num_vertices">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_vertices</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.num_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of vertices in the collision mesh.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.rest_positions">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rest_positions</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.rest_positions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the vertices of the collision mesh at rest (#V × dim).</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.to_full_dof">
+<span class="sig-name descname"><span class="pre">to_full_dof</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.CollisionMesh.to_full_dof" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic">
+<li><p>to_full_dof(self: ipctk.CollisionMesh, x: numpy.ndarray[numpy.float64[m, 1]]) -&gt; numpy.ndarray[numpy.float64[m, 1]]</p>
+<blockquote>
+<div><p>Map a vector quantity on the collision mesh to the full mesh.</p>
+<p>This is useful for mapping gradients from the collision mesh to the full mesh (i.e., applies the chain-rule).</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>x: Vector quantity on the collision mesh with size equal to ndof().</p>
+</dd>
+<dt>Returns:</dt><dd><p>Vector quantity on the full mesh with size equal to full_ndof().</p>
+</dd>
+</dl>
+</div></blockquote>
+</li>
+<li><p>to_full_dof(self: ipctk.CollisionMesh, X: scipy.sparse.csc_matrix[numpy.float64]) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
+<blockquote>
+<div><p>Map a matrix quantity on the collision mesh to the full mesh.</p>
+<p>This is useful for mapping Hessians from the collision mesh to the full mesh (i.e., applies the chain-rule).</p>
+<dl class="simple">
+<dt>Parameters:</dt><dd><p>X: Matrix quantity on the collision mesh with size equal to ndof() × ndof().</p>
+</dd>
+<dt>Returns:</dt><dd><p>Matrix quantity on the full mesh with size equal to full_ndof() × full_ndof().</p>
+</dd>
+</dl>
+</div></blockquote>
+</li>
+</ol>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.to_full_vertex_id">
+<span class="sig-name descname"><span class="pre">to_full_vertex_id</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.to_full_vertex_id.id" title="ipctk.CollisionMesh.to_full_vertex_id.id (Python parameter) — Vertex ID in the collision mesh."><span class="n"><span class="pre">id</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">int</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.to_full_vertex_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map a vertex ID to the corresponding vertex ID in the full mesh.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.CollisionMesh.to_full_vertex_id-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.to_full_vertex_id-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.CollisionMesh.to_full_vertex_id.id"><span class="n sig-name">id</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.to_full_vertex_id.id" title="Permalink to this definition">¶</a></dt><dd><p>Vertex ID in the collision mesh.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.CollisionMesh.to_full_vertex_id-returns">Returns<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.to_full_vertex_id-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>Vertex ID in the full mesh.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.vertex_area">
+<span class="sig-name descname"><span class="pre">vertex_area</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.vertex_area.vi" title="ipctk.CollisionMesh.vertex_area.vi (Python parameter) — Vertex ID."><span class="n"><span class="pre">vi</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the barycentric area of a vertex.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.CollisionMesh.vertex_area-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_area-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.CollisionMesh.vertex_area.vi"><span class="n sig-name">vi</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_area.vi" title="Permalink to this definition">¶</a></dt><dd><p>Vertex ID.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.CollisionMesh.vertex_area-returns">Returns<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_area-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>Barycentric area of vertex vi.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.vertex_area_gradient">
+<span class="sig-name descname"><span class="pre">vertex_area_gradient</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.vertex_area_gradient.vi" title="ipctk.CollisionMesh.vertex_area_gradient.vi (Python parameter) — Vertex ID."><span class="n"><span class="pre">vi</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">scipy.sparse.csc_matrix</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">]</span></span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_area_gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the gradient of the barycentric area of a vertex wrt the rest positions of all points.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.CollisionMesh.vertex_area_gradient-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_area_gradient-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.CollisionMesh.vertex_area_gradient.vi"><span class="n sig-name">vi</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">int</span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_area_gradient.vi" title="Permalink to this definition">¶</a></dt><dd><p>Vertex ID.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.CollisionMesh.vertex_area_gradient-returns">Returns<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_area_gradient-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>Gradient of the barycentric area of vertex vi wrt the rest positions of all points.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.CollisionMesh.vertex_areas">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex_areas</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the barycentric area of the vertices.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.vertex_edge_adjacencies">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex_edge_adjacencies</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">List[tsl::robin_set&lt;int,</span> <span class="pre">absl::lts_20230125::hash_internal::Hash&lt;int&gt;,</span> <span class="pre">std::equal_to&lt;int&gt;,</span> <span class="pre">std::allocator&lt;int&gt;,</span> <span class="pre">false,</span> <span class="pre">tsl::rh::power_of_two_growth_policy&lt;2ul&gt;</span> <span class="pre">&gt;]</span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_edge_adjacencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the vertex-edge adjacency matrix.</p>
+</dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.vertex_vertex_adjacencies">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex_vertex_adjacencies</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">List[tsl::robin_set&lt;int,</span> <span class="pre">absl::lts_20230125::hash_internal::Hash&lt;int&gt;,</span> <span class="pre">std::equal_to&lt;int&gt;,</span> <span class="pre">std::allocator&lt;int&gt;,</span> <span class="pre">false,</span> <span class="pre">tsl::rh::power_of_two_growth_policy&lt;2ul&gt;</span> <span class="pre">&gt;]</span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_vertex_adjacencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the vertex-vertex adjacency matrix.</p>
+</dd></dl>
+
+<dl class="py method objdesc">
+<dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.vertices">
+<span class="sig-name descname"><span class="pre">vertices</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.CollisionMesh.vertices.full_positions" title="ipctk.CollisionMesh.vertices.full_positions (Python parameter) — The vertex positions of the full mesh (#FV × dim)."><span class="n"><span class="pre">full_positions</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the vertex positions from the positions of the full mesh.</p>
+<dl class="field-list simple">
+<dt class="field-odd" id="ipctk.CollisionMesh.vertices-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.vertices-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="ipctk.CollisionMesh.vertices.full_positions"><span class="n sig-name">full_positions</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.float64<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertices.full_positions" title="Permalink to this definition">¶</a></dt><dd><p>The vertex positions of the full mesh (#FV × dim).</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="ipctk.CollisionMesh.vertices-returns">Returns<span class="colon">:</span><a class="headerlink" href="#ipctk.CollisionMesh.vertices-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>The vertex positions of the collision mesh (#V × dim).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      Dec 12, 2023
+    
+  </small>
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="../python.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Python" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Python
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="candidates.html" class="md-footer__link md-footer__link--next" aria-label="Next: Candidates" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Candidates
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  
+  
+  <div class="md-footer-meta md-typeset">
+    
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-footer-copyright__highlight">
+        &#169; Copyright 2020-2023, IPC-Sim Organization; MIT License.
+        
+    </div>
+  
+    Created using
+    <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
+    6.2.1.
+     and
+    <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
+  
+</div>
+      
+    </div>
+    
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow", "content.tabs.link"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
+    
+      
+        <script src="../_static/sphinx_immaterial_theme.1b5b7a2d5891aec19.min.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+  </body>
+</html>
