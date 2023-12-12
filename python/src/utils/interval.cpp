@@ -45,14 +45,16 @@ void define_interval(py::module_& m)
         .def(
             "__str__",
             [](const Interval& self) {
-                return (std::stringstream() << self).str();
+                std::stringstream ss;
+                ss << self;
+                return ss.str();
             })
         .def(
             "__repr__",
             [](const Interval& self) {
-                return (std::stringstream()
-                        << "Interval(" << self.INF << ", " << self.SUP << ")")
-                    .str();
+                std::stringstream ss;
+                ss << "Interval(" << self.INF << ", " << self.SUP << ")";
+                return ss.str();
             })
         .DEF_BIN_OP("add", a + b)
         .DEF_UN_OP("pos", +i)
