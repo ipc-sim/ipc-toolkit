@@ -6,6 +6,84 @@ Changelog
 .. role:: cmake(code)
    :language: cmake
 
+v1.2.0 (Dec 11, 2023)
+---------------------
+
+Various new features |:rocket:| and some bug fixes |:bug:|.
+
+-  Implement the improved max approximator as described in `[Li et al. 2023] <https://arxiv.org/abs/2307.15908>`__
+-  Add a port of the Additive CCD method from `[Li et al. 2021] <https://ipc-sim.github.io/C-IPC/>`__
+-  Add a generic implementation of the nonlinear CCD (of linear geometry) algorithm from `[Ferguson et al. 2021] <https://ipc-sim.github.io/rigid-ipc/>`__
+-  Add missing codimensional collision support (point-point and point-edge)
+
+.. _details-3:
+
+Details
+~~~~~~~
+
+* Update website URL to `ipctk.xyz <https://ipctk.xyz>`__ in `#54 <https://github.com/ipc-sim/ipc-toolkit/pull/54>`__
+* Simplify tangential basis Jacobian calculation thanks to `@halehOssadat <https://github.com/halehOssadat>`__ and `@jpanetta <https://github.com/jpanetta>`__ in `#56 <https://github.com/ipc-sim/ipc-toolkit/pull/56>`__
+* Update ``FindSIMD.cmake`` to now add support for Neon (Arm/Apple Silicon SIMD instruction set) in `#58 <https://github.com/ipc-sim/ipc-toolkit/pull/58>`__
+
+  * Credit: ``FindSIMD.cmake`` from `Project CHRONO <https://github.com/projectchrono/chrono>`__ under `BSD 3-Clause “New” or “Revised” License <https://github.com/projectchrono/chrono/blob/main/LICENSE>`__.
+
+* Improve the max approximator used (i.e., sum over constraints) as described in `[Li et al. 2023] <https://arxiv.org/abs/2307.15908>`__ in `#55 <https://github.com/ipc-sim/ipc-toolkit/pull/55>`__
+
+  * Add a ``dtype`` to EE collisions to keep track of the distance type for mollified constraints
+  * Initialize mesh adjacencies by default
+  * Use edge length as the area weighting for codimensional edges
+
+* Improve documentation and tutorials in `#61 <https://github.com/ipc-sim/ipc-toolkit/pull/61>`__
+
+  * Add documentation describing the convergent formulation
+  * Add documentation describing the constraint offset/minimum distance
+  * Add documentation for broad- and narrow-phase CCD
+  * Add documentation for High-Order IPC
+  * Also, renames ``CollisionConstraint::minimum_distance`` to ``CollisionConstraint::dmin``
+
+* Add a port of the Additive CCD method from `[Li et al. 2021] <https://ipc-sim.github.io/C-IPC/>`__ in `#62 <https://github.com/ipc-sim/ipc-toolkit/pull/62>`__
+
+  * This is a modified version of the `original open-source implementation <https://github.com/ipc-sim/Codim-IPC>`__ which is under the `Appache-2.0 License <https://github.com/ipc-sim/Codim-IPC/blob/main/LICENSE>`__.
+  * Modifications: remove broad phase functions, refactor code to use a single implementation of the ``additive_ccd`` algorithm, utilize our distance function rather than porting the Codim-IPC versions, return ``true`` if the initial distance is less than the minimum distance, and add an explicit ``tmax`` parameter rather than relying on the initial value of ``toi``.
+  * This is mostly for reference comparison and it is not integrated into the full code. This also includes the ability to pull the sample CCD queries and run them in a unit-test (requires GMP).
+  * This adds missing feature mentioned in `#63 <https://github.com/ipc-sim/ipc-toolkit/discussions/63>`__
+
+* Add Codecov to get a report of unit test code coverage in `#64 <https://github.com/ipc-sim/ipc-toolkit/pull/64>`__
+
+  * Add more tests to improve code coverage and fix small bugs in `#65 <https://github.com/ipc-sim/ipc-toolkit/pull/65>`__
+
+* Fix the symmetric matrix assertion in ``project_to_psd`` and ``project_to_pd`` in `#67 <https://github.com/ipc-sim/ipc-toolkit/pull/67>`__
+* Handle codim. point-point collisions in `#66 <https://github.com/ipc-sim/ipc-toolkit/pull/66>`__
+
+  * This adds missing feature as discussed in `#63 <https://github.com/ipc-sim/ipc-toolkit/discussions/63>`__
+
+* Add tests of Python bindings using `nose2 <https://docs.nose2.io/en/latest/>`__ in `#69 <https://github.com/ipc-sim/ipc-toolkit/pull/69>`__
+* In CCD, check the initial distance when no motion occurs in `#71 <https://github.com/ipc-sim/ipc-toolkit/pull/71>`__
+* Add a generic implementation of the nonlinear CCD (of linear geometry) algorithm from `[Ferguson et al. 2021] <https://ipc-sim.github.io/rigid-ipc/>`__ in `#72 <https://github.com/ipc-sim/ipc-toolkit/pull/72>`__
+
+  * Generic nonlinear trajectories are specified through a ``NonlinearTrajectory`` virtual class. By default the maximum distance between the trajectory and a linearized version is computed using interval arithmetic. That is
+
+    .. math::
+
+      \max_{t \in [0, 1]} \Vert p(\mathrm{lerp}(t_0, t_1, t)) - \mathrm{lerp}(p(t_0), p(t_1), t) \Vert_2 \\
+      \leq \sup(\Vert p([t_0, t_1]) - \mathrm{lerp}(p(t_0), p(t_1), [0, 1]) \Vert_2)
+
+    where :math:`p` is the point's position over time, :math:`\mathrm{lerp}(a, b, t) := (b - a) t + a` and :math:`\sup([a,b]):=b`. Because this can be an overly conservative approximation, users can override the ``NonlinearTrajectory::max_distance_from_linear`` function to compute the max directly in closed form, if known.
+  * We perform interval arithmetic using `filib <https://github.com/zfergus/filib>`__ which has been shown to be “the only library that is correct, consistent, portable, and efficient” `[Tang et al. 2022] <https://cims.nyu.edu/gcl/papers/2022-Intervals.pdf>`__.
+  * Add a nonlinear CCD tutorial to the docs in `#78 <https://github.com/ipc-sim/ipc-toolkit/pull/78>`__
+
+* Add additional compiler warnings and resolve them to be warning-free in `#73 <https://github.com/ipc-sim/ipc-toolkit/pull/73>`__
+* Add Python bindings for ``igl::predicate::segment_segment_intersect`` in `#74 <https://github.com/ipc-sim/ipc-toolkit/pull/74>`__
+* Integrate `SimpleBVH <https://github.com/ipc-sim/SimpleBVH>`__ as a broad-phase method in `#75 <https://github.com/ipc-sim/ipc-toolkit/pull/75>`__
+* Fix the shape derivative of mollified edge-edge contact in `#76 <https://github.com/ipc-sim/ipc-toolkit/pull/76>`__
+
+  * Additionally, this makes the shape derivative computation object-oriented.
+
+* Update Python bindings with recent changes and unified comments in `#77 <https://github.com/ipc-sim/ipc-toolkit/pull/77>`__
+* Add support for collision between codimensional edges and points in 3D in `#79 <https://github.com/ipc-sim/ipc-toolkit/pull/79>`__
+
+  * Implements missing features discussed in `#63 <https://github.com/ipc-sim/ipc-toolkit/discussions/63>`__.
+
 v1.1.1 (Aug 18, 2023)
 ---------------------
 
@@ -20,6 +98,8 @@ v1.1.0 (Jul 25, 2023)
 ---------------------
 
 Large refactoring to make the code more object-oriented rather than passing objects to functions. Other changes include the friction potential now being a function of velocity, bug fixes, and a new tutorial.
+
+.. _details-2:
 
 Details
 ~~~~~~~
