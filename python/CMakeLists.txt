@@ -40,6 +40,7 @@ pybind11_add_module(ipctk
   src/collisions/face_vertex.cpp
   src/collisions/plane_vertex.cpp
   src/collisions/vertex_vertex.cpp
+  src/collisions/smooth_point_edge.cpp
 
   src/distance/distance_type.cpp
   src/distance/edge_edge.cpp

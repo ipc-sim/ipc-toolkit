@@ -18,6 +18,12 @@ set(SOURCES
   vertex_to_min_edge.cpp
   vertex_to_min_edge.hpp
   world_bbox_diagonal_length.hpp
+  quadrature.cpp
+  quadrature.hpp
+  tangents.cpp
+  tangents.hpp
+  math.cpp
+  math.hpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})

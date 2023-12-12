@@ -51,6 +51,7 @@ PYBIND11_MODULE(ipctk, m)
     define_face_vertex_constraint(m);
     define_plane_vertex_constraint(m);
     define_vertex_vertex_constraint(m);
+    define_smooth_point_edge(m);
 
     // distance
     define_edge_edge_mollifier(m);
