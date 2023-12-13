@@ -47,6 +47,24 @@ public:
         const double dhat,
         std::vector<Eigen::Triplet<double>>& triplets) const;
 
+    /// @brief Does the distance potentially have to be mollified?
+    virtual bool is_mollified() const { return false; }
+
+    virtual double mollifier(const VectorMax12d& positions) const
+    {
+        return 1.0;
+    }
+
+    virtual VectorMax12d mollifier_gradient(const VectorMax12d& positions) const
+    {
+        return VectorMax12d::Zero(positions.size());
+    }
+
+    virtual MatrixMax12d mollifier_hessian(const VectorMax12d& positions) const
+    {
+        return MatrixMax12d::Zero(positions.size(), positions.size());
+    }
+
     double dmin = 0;
     double weight = 1;
     Eigen::SparseVector<double> weight_gradient;

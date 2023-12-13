@@ -47,6 +47,14 @@ public:
         const double dhat,
         const bool project_hessian_to_psd) const override;
 
+    // All EE constraints are potentially mollified.
+    bool is_mollified() const override { return true; }
+    double mollifier(const VectorMax12d& positions) const override;
+    VectorMax12d
+    mollifier_gradient(const VectorMax12d& positions) const override;
+    MatrixMax12d
+    mollifier_hessian(const VectorMax12d& positions) const override;
+
     // ------------------------------------------------------------------------
 
     bool operator==(const EdgeEdgeConstraint& other) const;

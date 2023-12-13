@@ -60,15 +60,11 @@ MatrixMax12d CollisionConstraint::compute_potential_hessian(
     const double grad_b = barrier_gradient(d - dmin_sq, adjusted_dhat);
     const double hess_b = barrier_hessian(d - dmin_sq, adjusted_dhat);
 
-    // b"(x) ≥ 0 ⟹ b"(x) * ∇d(x) * ∇d(x)ᵀ is PSD
-    assert(hess_b >= 0);
-    MatrixMax12d term1 = hess_b * grad_d * grad_d.transpose();
-    MatrixMax12d term2 = grad_b * hess_d;
-    if (project_hessian_to_psd) {
-        term2 = project_to_psd(term2);
-    }
+    const MatrixMax12d hess = (weight * hess_b) * grad_d * grad_d.transpose()
+        + (weight * grad_b) * hess_d;
 
-    return weight * (term1 + term2);
+    // Need to project entire hessian because w can be negative
+    return project_hessian_to_psd ? project_to_psd(hess) : hess;
 }
 
 void CollisionConstraint::compute_shape_derivative(

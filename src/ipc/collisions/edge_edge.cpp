@@ -169,6 +169,32 @@ MatrixMax12d EdgeEdgeConstraint::compute_shape_derivative_second_term(
         + barrier_grad * mollifier_gradu.transpose() + mollifier * barrier_hess;
 }
 
+double EdgeEdgeConstraint::mollifier(const VectorMax12d& positions) const
+{
+    assert(positions.size() == 12);
+    return edge_edge_mollifier(
+        positions.segment<3>(0), positions.segment<3>(3),
+        positions.segment<3>(6), positions.segment<3>(9), eps_x);
+}
+
+VectorMax12d
+EdgeEdgeConstraint::mollifier_gradient(const VectorMax12d& positions) const
+{
+    assert(positions.size() == 12);
+    return edge_edge_mollifier_gradient(
+        positions.segment<3>(0), positions.segment<3>(3),
+        positions.segment<3>(6), positions.segment<3>(9), eps_x);
+}
+
+MatrixMax12d
+EdgeEdgeConstraint::mollifier_hessian(const VectorMax12d& positions) const
+{
+    assert(positions.size() == 12);
+    return edge_edge_mollifier_hessian(
+        positions.segment<3>(0), positions.segment<3>(3),
+        positions.segment<3>(6), positions.segment<3>(9), eps_x);
+}
+
 bool EdgeEdgeConstraint::operator==(const EdgeEdgeConstraint& other) const
 {
     return EdgeEdgeCandidate::operator==(other) && dtype == other.dtype;
