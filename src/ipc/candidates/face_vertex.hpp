@@ -57,7 +57,6 @@ public:
     using CollisionStencil::compute_distance_hessian;
     using ContinuousCollisionCandidate::ccd;
 
-protected:
     double compute_distance(const VectorMax12d& positions) const override;
 
     VectorMax12d
@@ -66,6 +65,7 @@ protected:
     MatrixMax12d
     compute_distance_hessian(const VectorMax12d& positions) const override;
 
+protected:
     bool
     ccd(const VectorMax12d& vertices_t0,
         const VectorMax12d& vertices_t1,

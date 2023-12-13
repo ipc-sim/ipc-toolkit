@@ -101,7 +101,6 @@ public:
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const;
 
-protected:
     /// @brief Compute the distance of the stencil.
     /// @param positions Stencil's vertex positions.
     /// @return Distance of the stencil.
