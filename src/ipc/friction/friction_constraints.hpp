@@ -17,6 +17,9 @@ namespace ipc {
 
 class FrictionConstraints {
 public:
+    using value_type = FrictionConstraint;
+
+public:
     FrictionConstraints() { }
 
     void build(

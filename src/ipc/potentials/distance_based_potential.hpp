@@ -1,77 +1,46 @@
 #pragma once
 
-#include <ipc/collision_mesh.hpp>
+#include <ipc/potentials/potential.hpp>
 #include <ipc/collisions/collision_constraints.hpp>
 
 namespace ipc {
 
-using Contacts = CollisionConstraints;
-using Contact = CollisionConstraint;
+class DistanceBasedPotential : public Potential<CollisionConstraints> {
+    using Super = Potential<CollisionConstraints>;
+    using Contacts = CollisionConstraints;
+    using Contact = Super::Contact;
 
-class DistanceBasedPotential {
 public:
     DistanceBasedPotential() { }
     virtual ~DistanceBasedPotential() { }
 
-    /// @brief Compute the barrier potential for a set of contacts.
-    /// @param mesh The collision mesh.
-    /// @param vertices Vertices of the collision mesh.
-    /// @param contacts The set of contacts.
-    /// @param dhat The activation distance of the barrier.
-    /// @returns The sum of all barrier potentials (not scaled by the barrier stiffness).
-    double operator()(
-        const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
-        const Contacts& contacts) const;
-
-    /// @brief Compute the gradient of the barrier potential.
-    /// @param mesh The collision mesh.
-    /// @param vertices Vertices of the collision mesh.
-    /// @param contacts The set of contacts.
-    /// @param dhat The activation distance of the barrier.
-    /// @returns The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|.
-    Eigen::VectorXd gradient(
-        const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
-        const Contacts& contacts) const;
-
-    /// @brief Compute the hessian of the barrier potential.
-    /// @param mesh The collision mesh.
-    /// @param vertices Vertices of the collision mesh.
-    /// @param contacts The set of contacts.
-    /// @param dhat The activation distance of the barrier.
-    /// @param project_hessian_to_psd Make sure the hessian is positive semi-definite.
-    /// @returns The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|x|vertices|.
-    Eigen::SparseMatrix<double> hessian(
-        const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
-        const Contacts& contacts,
-        const bool project_hessian_to_psd = false) const;
-
-    /// @todo Add shape_derivative() (i.e., the derivative of -gradient() wrt the shape).
+    using Super::operator();
+    using Super::gradient;
+    using Super::hessian;
 
 protected:
     /// @brief Compute the potential for a single contact.
     /// @param contact The contact.
     /// @param x The vector of degrees of freedom.
     /// @return The potential.
-    double potential(const Contact& contact, const VectorMax12d& x) const;
+    double
+    operator()(const Contact& contact, const VectorMax12d& x) const override;
 
     /// @brief Compute the gradient of the potential for a single contact.
     /// @param contact The contact.
     /// @param x The vector of degrees of freedom.
     /// @return The gradient of the potential.
     VectorMax12d
-    potential_gradient(const Contact& contact, const VectorMax12d& x) const;
+    gradient(const Contact& contact, const VectorMax12d& x) const override;
 
     /// @brief Compute the hessian of the potential for a single contact.
     /// @param contact The contact.
     /// @param x The vector of degrees of freedom.
     /// @return The hessian of the potential.
-    MatrixMax12d potential_hessian(
+    MatrixMax12d hessian(
         const Contact& contact,
         const VectorMax12d& x,
-        const bool project_hessian_to_psd = true) const;
+        const bool project_hessian_to_psd = true) const override;
 
     // ------------------------------------------------------------------------
     // Child classes must implement these functions

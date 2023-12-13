@@ -18,6 +18,9 @@ namespace ipc {
 
 class CollisionConstraints {
 public:
+    using value_type = CollisionConstraint;
+
+public:
     CollisionConstraints() { }
 
     /// @brief Initialize the set of constraints used to compute the barrier potential.

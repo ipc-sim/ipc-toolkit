@@ -122,7 +122,6 @@ public:
         const DiffWRT wrt,
         const double dmin = 0) const;
 
-protected:
     /// @brief Get the dimension of the constraint.
     int dim() const { return tangent_basis.rows(); }
 
