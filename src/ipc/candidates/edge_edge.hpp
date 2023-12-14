@@ -13,6 +13,9 @@ class EdgeEdgeCandidate : public ContinuousCollisionCandidate {
 public:
     EdgeEdgeCandidate(long edge0_id, long edge1_id);
 
+    // ------------------------------------------------------------------------
+    // CollisionStencil
+
     int num_vertices() const override { return 4; };
 
     std::array<long, 4> vertex_ids(
@@ -23,16 +26,34 @@ public:
                    edges(edge1_id, 0), edges(edge1_id, 1) } };
     }
 
+    double compute_distance(const VectorMax12d& positions) const override;
+
+    VectorMax12d
+    compute_distance_gradient(const VectorMax12d& positions) const override;
+
+    MatrixMax12d
+    compute_distance_hessian(const VectorMax12d& positions) const override;
+
+    // ------------------------------------------------------------------------
+    // ContinuousCollisionCandidate
+
+    bool
+    ccd(const VectorMax12d& vertices_t0,
+        const VectorMax12d& vertices_t1,
+        double& toi,
+        const double min_distance = 0.0,
+        const double tmax = 1.0,
+        const double tolerance = DEFAULT_CCD_TOLERANCE,
+        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
+        const double conservative_rescaling =
+            DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
+
     // ------------------------------------------------------------------------
 
-    std::ostream& write_ccd_query(
-        std::ostream& out,
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override;
-
-    // ------------------------------------------------------------------------
+    virtual EdgeEdgeDistanceType known_dtype() const
+    {
+        return EdgeEdgeDistanceType::AUTO;
+    }
 
     bool operator==(const EdgeEdgeCandidate& other) const;
     bool operator!=(const EdgeEdgeCandidate& other) const;
@@ -47,42 +68,10 @@ public:
         return H::combine(std::move(h), min_ei, max_ei);
     }
 
-    // ------------------------------------------------------------------------
-
     /// @brief ID of the first edge.
     long edge0_id;
     /// @brief ID of the second edge.
     long edge1_id;
-
-    using CollisionStencil::compute_distance;
-    using CollisionStencil::compute_distance_gradient;
-    using CollisionStencil::compute_distance_hessian;
-    using ContinuousCollisionCandidate::ccd;
-
-    double compute_distance(const VectorMax12d& positions) const override;
-
-    VectorMax12d
-    compute_distance_gradient(const VectorMax12d& positions) const override;
-
-    MatrixMax12d
-    compute_distance_hessian(const VectorMax12d& positions) const override;
-
-protected:
-    bool
-    ccd(const VectorMax12d& vertices_t0,
-        const VectorMax12d& vertices_t1,
-        double& toi,
-        const double min_distance = 0.0,
-        const double tmax = 1.0,
-        const double tolerance = DEFAULT_CCD_TOLERANCE,
-        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
-        const double conservative_rescaling =
-            DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
-
-    virtual EdgeEdgeDistanceType known_dtype() const
-    {
-        return EdgeEdgeDistanceType::AUTO;
-    }
 };
 
 } // namespace ipc

@@ -217,10 +217,13 @@ bool Candidates::is_step_collision_free(
 
     // Narrow phase
     for (size_t i = 0; i < size(); i++) {
+        const ContinuousCollisionCandidate& candidate = (*this)[i];
+
         double toi;
-        bool is_collision = (*this)[i].ccd(
-            vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), toi,
-            min_distance, /*tmax=*/1.0, tolerance, max_iterations);
+        bool is_collision = candidate.ccd(
+            candidate.dof(vertices_t0, mesh.edges(), mesh.faces()),
+            candidate.dof(vertices_t1, mesh.edges(), mesh.faces()), //
+            toi, min_distance, /*tmax=*/1.0, tolerance, max_iterations);
 
         if (is_collision) {
             return false;
@@ -260,10 +263,13 @@ double Candidates::compute_collision_free_stepsize(
                     tmax = earliest_toi;
                 }
 
+                const ContinuousCollisionCandidate& candidate = (*this)[i];
+
                 double toi = std::numeric_limits<double>::infinity(); // output
-                const bool are_colliding = (*this)[i].ccd(
-                    vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), toi,
-                    min_distance, tmax, tolerance, max_iterations);
+                const bool are_colliding = candidate.ccd(
+                    candidate.dof(vertices_t0, mesh.edges(), mesh.faces()),
+                    candidate.dof(vertices_t1, mesh.edges(), mesh.faces()), //
+                    toi, min_distance, tmax, tolerance, max_iterations);
 
                 if (are_colliding) {
                     std::unique_lock lock(earliest_toi_mutex);

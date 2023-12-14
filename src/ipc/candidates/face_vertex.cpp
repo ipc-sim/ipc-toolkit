@@ -66,23 +66,6 @@ bool FaceVertexCandidate::ccd(
         conservative_rescaling);
 }
 
-std::ostream& FaceVertexCandidate::write_ccd_query(
-    std::ostream& out,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
-{
-    return out << vertices_t0.row(faces(face_id, 0)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t0.row(faces(face_id, 1)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t0.row(faces(face_id, 2)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t0.row(vertex_id).format(OBJ_VERTEX_FORMAT)
-               << vertices_t1.row(faces(face_id, 0)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t1.row(faces(face_id, 1)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t1.row(faces(face_id, 2)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t1.row(vertex_id).format(OBJ_VERTEX_FORMAT);
-}
-
 bool FaceVertexCandidate::operator==(const FaceVertexCandidate& other) const
 {
     return face_id == other.face_id && vertex_id == other.vertex_id;
