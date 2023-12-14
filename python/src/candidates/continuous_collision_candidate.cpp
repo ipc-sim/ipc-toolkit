@@ -7,8 +7,7 @@ using namespace ipc;
 
 void define_continuous_collision_candidate(py::module_& m)
 {
-    py::class_<ContinuousCollisionCandidate, CollisionStencil>(
-        m, "ContinuousCollisionCandidate")
+    py::class_<ContinuousCollisionCandidate>(m, "ContinuousCollisionCandidate")
         .def(
             "ccd",
             [](const ContinuousCollisionCandidate& self,
