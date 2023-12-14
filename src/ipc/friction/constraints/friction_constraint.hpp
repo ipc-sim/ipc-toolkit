@@ -29,44 +29,6 @@ protected:
 public:
     virtual ~FrictionConstraint() { }
 
-    /// @brief Compute the friction dissapative potential.
-    /// @param velocities Velocities of the vertices (rowwise)
-    /// @param edges Edges of the mesh
-    /// @param faces Faces of the mesh
-    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
-    /// @return The friction dissapative potential.
-    double compute_potential(
-        const Eigen::MatrixXd& velocities,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const double epsv) const;
-
-    /// @brief Compute the friction dissapative potential gradient wrt velocities.
-    /// @param velocities Velocities of the vertices (rowwise)
-    /// @param edges Edges of the mesh
-    /// @param faces Faces of the mesh
-    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
-    /// @return Gradient of the friction dissapative potential wrt velocities
-    VectorMax12d compute_potential_gradient(
-        const Eigen::MatrixXd& velocities,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const double epsv) const;
-
-    /// @brief Compute the friction dissapative potential hessian wrt velocities.
-    /// @param velocities Velocities of the vertices (rowwise)
-    /// @param edges Edges of the mesh
-    /// @param faces Faces of the mesh
-    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
-    /// @param project_hessian_to_psd Project the hessian to PSD
-    /// @return Hessian of the friction dissapative potential wrt velocities
-    MatrixMax12d compute_potential_hessian(
-        const Eigen::MatrixXd& velocities,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const double epsv,
-        const bool project_hessian_to_psd) const;
-
     /// @brief Compute the friction force.
     /// @param rest_positions Rest positions of the vertices (rowwise)
     /// @param lagged_displacements Previous displacements of the vertices (rowwise)

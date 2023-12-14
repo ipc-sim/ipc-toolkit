@@ -73,6 +73,53 @@ void define_friction_potential(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"), py::arg("contacts"),
             py::arg("project_hessian_to_psd") = false)
+        .def(
+            "__call__",
+            py::overload_cast<const FrictionConstraint&, const VectorMax12d&>(
+                &FrictionPotential::operator(), py::const_),
+            R"ipc_Qu8mg5v7(
+            Compute the potential for a single contact.
+
+            Parameters:
+                contact: The contact.
+                x: The contact stencil's degrees of freedom.
+
+            Returns:
+                The potential.
+            )ipc_Qu8mg5v7",
+            py::arg("contact"), py::arg("x"))
+        .def(
+            "gradient",
+            py::overload_cast<const FrictionConstraint&, const VectorMax12d&>(
+                &FrictionPotential::gradient, py::const_),
+            R"ipc_Qu8mg5v7(
+            Compute the gradient of the potential for a single contact.
+
+            Parameters:
+                contact: The contact.
+                x: The contact stencil's degrees of freedom.
+
+            Returns:
+                The gradient of the potential.
+            )ipc_Qu8mg5v7",
+            py::arg("contact"), py::arg("x"))
+        .def(
+            "hessian",
+            py::overload_cast<
+                const FrictionConstraint&, const VectorMax12d&, const bool>(
+                &FrictionPotential::hessian, py::const_),
+            R"ipc_Qu8mg5v7(
+            Compute the hessian of the potential for a single contact.
+
+            Parameters:
+                contact: The contact.
+                x: The contact stencil's degrees of freedom.
+
+            Returns:
+                The hessian of the potential.
+            )ipc_Qu8mg5v7",
+            py::arg("contact"), py::arg("x"),
+            py::arg("project_hessian_to_psd") = false)
         .def_property(
             "epsv", [](const FrictionPotential& self) { return self.epsv(); },
             [](FrictionPotential& self, const double epsv) {

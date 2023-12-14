@@ -23,29 +23,5 @@ TEST_CASE("Friction Potential Refactor", "[potential][friction_potential]")
     contacts.build(
         mesh, vertices_t0, collision_constraints, dhat, barrier_stiffness, mu);
 
-    FrictionPotential D(epsv_times_h);
-
-    const double expected_potential =
-        contacts.compute_potential(mesh, velocities, epsv_times_h);
-    const double actual_potential = D(mesh, velocities, contacts);
-    CHECK(actual_potential == Catch::Approx(expected_potential));
-
-    const Eigen::VectorXd expected_gradient =
-        contacts.compute_potential_gradient(mesh, velocities, epsv_times_h);
-    const Eigen::VectorXd actual_gradient =
-        D.gradient(mesh, velocities, contacts);
-    CHECK(actual_gradient.isApprox(expected_gradient));
-
-    Eigen::SparseMatrix<double> expected_hessian, actual_hessian;
-    expected_hessian = contacts.compute_potential_hessian(
-        mesh, velocities, epsv_times_h, false);
-    actual_hessian = D.hessian(mesh, velocities, contacts, false);
-    CHECK(actual_hessian.isApprox(expected_hessian));
-
-    // Projected hessian
-    expected_hessian = contacts.compute_potential_hessian(
-        mesh, velocities, epsv_times_h, true);
-    actual_hessian = D.hessian(mesh, velocities, contacts, true);
-    INFO("project_hessian_to_psd = true");
-    CHECK(actual_hessian.isApprox(expected_hessian));
+    const FrictionPotential D(epsv_times_h);
 }

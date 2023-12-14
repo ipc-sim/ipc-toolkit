@@ -29,7 +29,7 @@ double Potential<Contacts>::operator()(
         [&](const tbb::blocked_range<size_t>& r) {
             auto& local_potential = storage.local();
             for (size_t i = r.begin(); i < r.end(); i++) {
-                // Quadrature weight is premultiplied by compute_potential
+                // Quadrature weight is premultiplied by local potential
                 local_potential += (*this)(
                     contacts[i],
                     contacts[i].dof(X, mesh.edges(), mesh.faces()));

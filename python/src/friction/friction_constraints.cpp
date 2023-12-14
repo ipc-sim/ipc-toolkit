@@ -44,52 +44,6 @@ void define_friction_constraints(py::module_& m)
             py::arg("contact_constraints"), py::arg("dhat"),
             py::arg("barrier_stiffness"), py::arg("mus"), py::arg("blend_mu"))
         .def(
-            "compute_potential", &FrictionConstraints::compute_potential,
-            R"ipc_Qu8mg5v7(
-            Compute the friction dissapative potential from the given velocity.
-
-            Parameters:
-                mesh: The collision mesh.
-                velocity: Current vertex velocity (rowwise).
-                epsv: Mollifier parameter :math:`\epsilon_v`.
-
-            Returns:
-                The friction dissapative potential.
-            )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("velocity"), py::arg("epsv"))
-        .def(
-            "compute_potential_gradient",
-            &FrictionConstraints::compute_potential_gradient,
-            R"ipc_Qu8mg5v7(
-            Compute the gradient of the friction dissapative potential wrt the velocity.
-
-            Parameters:
-                mesh: The collision mesh.
-                velocity: Current vertex velocity (rowwise).
-                epsv: Mollifier parameter :math:`\epsilon_v`.
-
-            Returns:
-                The gradient of the friction dissapative potential wrt the velocity.
-            )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("velocity"), py::arg("epsv"))
-        .def(
-            "compute_potential_hessian",
-            &FrictionConstraints::compute_potential_hessian,
-            R"ipc_Qu8mg5v7(
-            Compute the Hessian of the friction dissapative potential wrt the velocity.
-
-            Parameters:
-                mesh: The collision mesh.
-                velocity: Current vertex velocity (rowwise).
-                epsv: Mollifier parameter :math:`\epsilon_v`.
-                project_hessian_to_psd: If true, project the Hessian to be positive semi-definite.
-
-            Returns:
-                The Hessian of the friction dissapative potential wrt the velocity.
-            )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("velocity"), py::arg("epsv"),
-            py::arg("project_hessian_to_psd") = false)
-        .def(
             "compute_force", &FrictionConstraints::compute_force,
             R"ipc_Qu8mg5v7(
             Compute the friction force from the given velocity.

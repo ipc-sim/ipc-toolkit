@@ -56,7 +56,7 @@ public:
     MatrixMax12d hessian(
         const Contact& contact,
         const VectorMax12d& positions,
-        const bool project_hessian_to_psd = true) const override;
+        const bool project_hessian_to_psd = false) const override;
 
     /// @brief Compute the shape derivative of the potential for a single contact.
     /// @param[in] contact The contact.

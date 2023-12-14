@@ -70,7 +70,7 @@ public:
     virtual MatrixMax12d hessian(
         const Contact& contact,
         const VectorMax12d& x,
-        const bool project_hessian_to_psd = true) const = 0;
+        const bool project_hessian_to_psd = false) const = 0;
 };
 
 } // namespace ipc

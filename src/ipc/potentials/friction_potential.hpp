@@ -57,7 +57,7 @@ public:
     MatrixMax12d hessian(
         const Contact& contact,
         const VectorMax12d& velocities,
-        const bool project_hessian_to_psd = true) const override;
+        const bool project_hessian_to_psd = false) const override;
 
 protected:
     /// @brief The smooth friction mollifier parameter \f$\epsilon_v\f$.

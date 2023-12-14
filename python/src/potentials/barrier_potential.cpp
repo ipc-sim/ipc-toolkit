@@ -93,6 +93,80 @@ void define_barrier_potential(py::module_& m)
                 The derivative of the force with respect to X, the rest vertices.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"), py::arg("contacts"))
+        .def(
+            "__call__",
+            py::overload_cast<const CollisionConstraint&, const VectorMax12d&>(
+                &BarrierPotential::operator(), py::const_),
+            R"ipc_Qu8mg5v7(
+            Compute the potential for a single contact.
+
+            Parameters:
+                contact: The contact.
+                x: The contact stencil's degrees of freedom.
+
+            Returns:
+                The potential.
+            )ipc_Qu8mg5v7",
+            py::arg("contact"), py::arg("x"))
+        .def(
+            "gradient",
+            py::overload_cast<const CollisionConstraint&, const VectorMax12d&>(
+                &BarrierPotential::gradient, py::const_),
+            R"ipc_Qu8mg5v7(
+            Compute the gradient of the potential for a single contact.
+
+            Parameters:
+                contact: The contact.
+                x: The contact stencil's degrees of freedom.
+
+            Returns:
+                The gradient of the potential.
+            )ipc_Qu8mg5v7",
+            py::arg("contact"), py::arg("x"))
+        .def(
+            "hessian",
+            py::overload_cast<
+                const CollisionConstraint&, const VectorMax12d&, const bool>(
+                &BarrierPotential::hessian, py::const_),
+            R"ipc_Qu8mg5v7(
+            Compute the hessian of the potential for a single contact.
+
+            Parameters:
+                contact: The contact.
+                x: The contact stencil's degrees of freedom.
+
+            Returns:
+                The hessian of the potential.
+            )ipc_Qu8mg5v7",
+            py::arg("contact"), py::arg("x"),
+            py::arg("project_hessian_to_psd") = false)
+        .def(
+            "shape_derivative",
+            [](const DistanceBasedPotential& self,
+               const CollisionConstraint& contact,
+               const std::array<long, 4>& vertex_ids,
+               const VectorMax12d& rest_positions,
+               const VectorMax12d& positions) {
+                std::vector<Eigen::Triplet<double>> out;
+                self.shape_derivative(
+                    contact, vertex_ids, rest_positions, positions, out);
+                Eigen::SparseMatrix<double> out_mat(
+                    rest_positions.size(), rest_positions.size());
+                out_mat.setFromTriplets(out.begin(), out.end());
+                return out_mat;
+            },
+            R"ipc_Qu8mg5v7(
+            Compute the shape derivative of the potential for a single contact.
+
+            Parameters:
+                contact: The contact.
+                vertex_ids: The contact stencil's vertex ids.
+                rest_positions: The contact stencil's rest positions.
+                positions: The contact stencil's positions.
+                ,out]: out Store the triplets of the shape derivative here.
+            )ipc_Qu8mg5v7",
+            py::arg("contact"), py::arg("vertex_ids"),
+            py::arg("rest_positions"), py::arg("positions"))
         .def_property(
             "dhat", [](const BarrierPotential& self) { return self.dhat(); },
             [](BarrierPotential& self, const double dhat) {

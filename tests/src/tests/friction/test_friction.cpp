@@ -5,8 +5,9 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
-#include <ipc/ipc.hpp>
+// #include <ipc/ipc.hpp>
 #include <ipc/friction/friction_constraints.hpp>
+#include <ipc/potentials/friction_potential.hpp>
 #include <ipc/utils/logger.hpp>
 
 #include <finitediff.hpp>
@@ -28,21 +29,20 @@ TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
     friction_constraints.build(
         mesh, V0, collision_constraints, dhat, barrier_stiffness, mu);
 
-    const Eigen::VectorXd grad =
-        friction_constraints.compute_potential_gradient(mesh, U, epsv_times_h);
+    const FrictionPotential D(epsv_times_h);
+
+    const Eigen::VectorXd grad = D.gradient(mesh, U, friction_constraints);
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
         const Eigen::MatrixXd fd_U = fd::unflatten(x, data.V1.cols()) - data.V0;
-        return friction_constraints.compute_potential(
-            mesh, fd_U, data.epsv_times_h);
+        return D(mesh, fd_U, friction_constraints);
     };
     Eigen::VectorXd fgrad;
     fd::finite_gradient(fd::flatten(V1), f, fgrad);
     CHECK(fd::compare_gradient(grad, fgrad));
 
-    const Eigen::MatrixXd hess =
-        friction_constraints.compute_potential_hessian(mesh, U, epsv_times_h);
+    const Eigen::MatrixXd hess = D.hessian(mesh, U, friction_constraints);
     Eigen::MatrixXd fhess;
     fd::finite_hessian(fd::flatten(V1), f, fhess);
     CHECK(fd::compare_hessian(hess, fhess, 1e-3));
@@ -234,10 +234,11 @@ TEST_CASE(
     FrictionConstraints friction_constraints;
     friction_constraints.build(
         mesh, V_lagged, collision_constraints, dhat, barrier_stiffness, mu);
-
     REQUIRE(friction_constraints.size() == collision_constraints.size());
     REQUIRE(
         friction_constraints.size() == expected_friction_constraints.size());
+
+    const FrictionPotential D(epsv_times_h);
 
     REQUIRE(V_start.size() == V_lagged.size());
     REQUIRE(V_start.size() == V_end.size());
@@ -270,19 +271,16 @@ TEST_CASE(
 
     const Eigen::MatrixXd velocity = V_end - V_start;
 
-    double potential =
-        friction_constraints.compute_potential(mesh, velocity, epsv_times_h);
+    double potential = D(mesh, velocity, friction_constraints);
 
     CHECK(potential == Catch::Approx(expected_potential));
 
-    Eigen::VectorXd grad = friction_constraints.compute_potential_gradient(
-        mesh, velocity, epsv_times_h);
+    Eigen::VectorXd grad = D.gradient(mesh, velocity, friction_constraints);
 
     CHECK(grad.isApprox(expected_grad));
 
     Eigen::SparseMatrix<double> hess =
-        friction_constraints.compute_potential_hessian(
-            mesh, velocity, epsv_times_h);
+        D.hessian(mesh, velocity, friction_constraints);
 
     CHECK(hess.isApprox(expected_hess));
 }

@@ -6,6 +6,7 @@
 
 #include <ipc/ipc.hpp>
 #include <ipc/friction/friction_constraints.hpp>
+#include <ipc/potentials/friction_potential.hpp>
 
 #include <finitediff.hpp>
 #include <igl/edges.h>
@@ -44,6 +45,8 @@ void check_friction_force_jacobian(
     friction_constraints.build(
         mesh, X + Ut, constraints, dhat, barrier_stiffness, mu);
     CHECK(friction_constraints.size());
+
+    const FrictionPotential D(epsv_times_h);
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -173,12 +176,11 @@ void check_friction_force_jacobian(
     ///////////////////////////////////////////////////////////////////////////
 
     const Eigen::MatrixXd hess_D =
-        friction_constraints.compute_potential_hessian(
-            mesh, velocities, epsv_times_h);
+        D.hessian(mesh, velocities, friction_constraints);
 
     auto grad = [&](const Eigen::VectorXd& v) {
-        return friction_constraints.compute_potential_gradient(
-            mesh, fd::unflatten(v, velocities.cols()), epsv_times_h);
+        return D.gradient(
+            mesh, fd::unflatten(v, velocities.cols()), friction_constraints);
     };
     Eigen::MatrixXd fd_hessian;
     fd::finite_jacobian(fd::flatten(velocities), grad, fd_hessian);
@@ -192,8 +194,7 @@ void check_friction_force_jacobian(
     const Eigen::VectorXd force = friction_constraints.compute_force(
         mesh, X, Ut, velocities, dhat, barrier_stiffness, epsv_times_h);
     const Eigen::VectorXd grad_D =
-        friction_constraints.compute_potential_gradient(
-            mesh, velocities, epsv_times_h);
+        D.gradient(mesh, velocities, friction_constraints);
     CHECK(fd::compare_gradient(-force, grad_D));
 
     ///////////////////////////////////////////////////////////////////////////

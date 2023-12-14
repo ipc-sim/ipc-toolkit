@@ -20,57 +20,6 @@ void define_friction_constraint(py::module_& m)
 
     friction_constraint
         .def(
-            "compute_potential", &FrictionConstraint::compute_potential,
-            R"ipc_Qu8mg5v7(
-            Compute the friction dissapative potential.
-
-            Parameters:
-                velocities: Velocities of the vertices (rowwise)
-                edges: Edges of the mesh
-                faces: Faces of the mesh
-                epsv: Smooth friction mollifier parameter :math:`\epsilon_v`.
-
-            Returns:
-                The friction dissapative potential.
-            )ipc_Qu8mg5v7",
-            py::arg("velocities"), py::arg("edges"), py::arg("faces"),
-            py::arg("epsv"))
-        .def(
-            "compute_potential_gradient",
-            &FrictionConstraint::compute_potential_gradient,
-            R"ipc_Qu8mg5v7(
-            Compute the friction dissapative potential gradient wrt velocities.
-
-            Parameters:
-                velocities: Velocities of the vertices (rowwise)
-                edges: Edges of the mesh
-                faces: Faces of the mesh
-                epsv: Smooth friction mollifier parameter :math:`\epsilon_v`.
-
-            Returns:
-                Gradient of the friction dissapative potential wrt velocities
-            )ipc_Qu8mg5v7",
-            py::arg("velocities"), py::arg("edges"), py::arg("faces"),
-            py::arg("epsv"))
-        .def(
-            "compute_potential_hessian",
-            &FrictionConstraint::compute_potential_hessian,
-            R"ipc_Qu8mg5v7(
-            Compute the friction dissapative potential hessian wrt velocities.
-
-            Parameters:
-                velocities: Velocities of the vertices (rowwise)
-                edges: Edges of the mesh
-                faces: Faces of the mesh
-                epsv: Smooth friction mollifier parameter :math:`\epsilon_v`.
-                project_hessian_to_psd: Project the hessian to PSD
-
-            Returns:
-                Hessian of the friction dissapative potential wrt velocities
-            )ipc_Qu8mg5v7",
-            py::arg("velocities"), py::arg("edges"), py::arg("faces"),
-            py::arg("epsv"), py::arg("project_hessian_to_psd"))
-        .def(
             "compute_force", &FrictionConstraint::compute_force,
             R"ipc_Qu8mg5v7(
             Compute the friction force.

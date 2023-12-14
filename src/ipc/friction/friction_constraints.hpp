@@ -47,40 +47,6 @@ public:
 
     // ------------------------------------------------------------------------
 
-    /// @brief Compute the friction dissapative potential from the given velocities.
-    /// @param mesh The collision mesh.
-    /// @param velocities Current vertex velocity (rowwise).
-    /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
-    /// @return The friction dissapative potential.
-    double compute_potential(
-        const CollisionMesh& mesh,
-        const Eigen::MatrixXd& velocities,
-        const double epsv) const;
-
-    /// @brief Compute the gradient of the friction dissapative potential wrt the velocities.
-    /// @param mesh The collision mesh.
-    /// @param velocities Current vertex velocity (rowwise).
-    /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
-    /// @return The gradient of the friction dissapative potential wrt the velocities.
-    Eigen::VectorXd compute_potential_gradient(
-        const CollisionMesh& mesh,
-        const Eigen::MatrixXd& velocities,
-        const double epsv) const;
-
-    /// @brief Compute the Hessian of the friction dissapative potential wrt the velocities.
-    /// @param mesh The collision mesh.
-    /// @param velocities Current vertex velocity (rowwise).
-    /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
-    /// @param project_hessian_to_psd If true, project the Hessian to be positive semi-definite.
-    /// @return The Hessian of the friction dissapative potential wrt the velocities.
-    Eigen::SparseMatrix<double> compute_potential_hessian(
-        const CollisionMesh& mesh,
-        const Eigen::MatrixXd& velocities,
-        const double epsv,
-        const bool project_hessian_to_psd = false) const;
-
-    // ------------------------------------------------------------------------
-
     /// @brief Compute the friction force from the given velocities.
     /// @param mesh The collision mesh.
     /// @param rest_positions Rest positions of the vertices (rowwise)
