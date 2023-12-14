@@ -40,6 +40,7 @@ set(IPC_TOOLKIT_WARNING_FLAGS
   -Werror=address
   -Werror=int-to-pointer-cast
   -Werror=pointer-to-int-cast
+  -Werror=inconsistent-missing-override
 
   -Wunused-variable
   -Wunused-but-set-variable

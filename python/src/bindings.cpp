@@ -81,6 +81,10 @@ PYBIND11_MODULE(ipctk, m)
     // implicits
     define_plane_implicit(m);
 
+    // potentials
+    define_barrier_potential(m);
+    define_friction_potential(m);
+
     // utils
     define_area_gradient(m);
     define_eigen_ext(m);

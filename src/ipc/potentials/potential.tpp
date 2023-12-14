@@ -13,10 +13,10 @@ namespace ipc {
 template <class Contacts>
 double Potential<Contacts>::operator()(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXd& X,
     const Contacts& contacts) const
 {
-    assert(vertices.rows() == mesh.num_vertices());
+    assert(X.rows() == mesh.num_vertices());
 
     if (contacts.empty()) {
         return 0;
@@ -32,7 +32,7 @@ double Potential<Contacts>::operator()(
                 // Quadrature weight is premultiplied by compute_potential
                 local_potential += (*this)(
                     contacts[i],
-                    contacts[i].dof(vertices, mesh.edges(), mesh.faces()));
+                    contacts[i].dof(X, mesh.edges(), mesh.faces()));
             }
         });
 
@@ -42,19 +42,19 @@ double Potential<Contacts>::operator()(
 template <class Contacts>
 Eigen::VectorXd Potential<Contacts>::gradient(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXd& X,
     const Contacts& contacts) const
 {
-    assert(vertices.rows() == mesh.num_vertices());
+    assert(X.rows() == mesh.num_vertices());
 
     if (contacts.empty()) {
-        return Eigen::VectorXd::Zero(vertices.size());
+        return Eigen::VectorXd::Zero(X.size());
     }
 
-    const int dim = vertices.cols();
+    const int dim = X.cols();
 
     tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
-        Eigen::VectorXd::Zero(vertices.size()));
+        Eigen::VectorXd::Zero(X.size()));
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), contacts.size()),
@@ -65,7 +65,7 @@ Eigen::VectorXd Potential<Contacts>::gradient(
                 const Contact& contact = contacts[i];
 
                 const VectorMax12d local_grad = this->gradient(
-                    contact, contact.dof(vertices, mesh.edges(), mesh.faces()));
+                    contact, contact.dof(X, mesh.edges(), mesh.faces()));
 
                 const std::array<long, 4> vids =
                     contact.vertex_ids(mesh.edges(), mesh.faces());
@@ -82,21 +82,21 @@ Eigen::VectorXd Potential<Contacts>::gradient(
 template <class Contacts>
 Eigen::SparseMatrix<double> Potential<Contacts>::hessian(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    const Eigen::MatrixXd& X,
     const Contacts& contacts,
     const bool project_hessian_to_psd) const
 {
-    assert(vertices.rows() == mesh.num_vertices());
+    assert(X.rows() == mesh.num_vertices());
 
     if (contacts.empty()) {
-        return Eigen::SparseMatrix<double>(vertices.size(), vertices.size());
+        return Eigen::SparseMatrix<double>(X.size(), X.size());
     }
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
 
-    const int dim = vertices.cols();
-    const int ndof = vertices.size();
+    const int dim = X.cols();
+    const int ndof = X.size();
 
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
         storage;
@@ -110,7 +110,7 @@ Eigen::SparseMatrix<double> Potential<Contacts>::hessian(
                 const Contact& contact = contacts[i];
 
                 const MatrixMax12d local_hess = this->hessian(
-                    contacts[i], contacts[i].dof(vertices, edges, faces),
+                    contacts[i], contacts[i].dof(X, edges, faces),
                     project_hessian_to_psd);
 
                 const std::array<long, 4> vids =

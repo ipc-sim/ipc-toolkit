@@ -66,6 +66,9 @@ pybind11_add_module(ipctk
 
   src/implicits/plane.cpp
 
+  src/potentials/barrier_potential.cpp
+  src/potentials/friction_potential.cpp
+
   src/utils/area_gradient.cpp
   src/utils/eigen_ext.cpp
   src/utils/interval.cpp

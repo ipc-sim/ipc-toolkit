@@ -1,7 +1,10 @@
 import numpy as np
-from utils import *
+
+import find_ipctk
 import ipctk
 from ipctk.filib import Interval
+
+from utils import load_mesh
 
 
 def test_ccd():

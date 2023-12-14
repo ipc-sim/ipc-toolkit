@@ -1,13 +1,467 @@
+#include <tests/config.hpp>
 #include <tests/utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 
 #include <ipc/potentials/barrier_potential.hpp>
+#include <ipc/distance/edge_edge_mollifier.hpp>
+#include <ipc/distance/point_point.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/utils/local_to_global.hpp>
+
+#include <finitediff.hpp>
+#include <igl/edges.h>
 
 using namespace ipc;
 
-TEST_CASE("Barrier Potential Refactor", "[potential][barrier_potential]")
+TEST_CASE(
+    "Barrier potential full gradient and hessian",
+    "[potential][barrier_potential][gradient][hessian]")
+{
+    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const bool use_convergent_formulation = GENERATE(true, false);
+
+    double dhat = -1;
+    std::string mesh_name = "";
+    bool all_vertices_on_surface = true;
+    SECTION("cube")
+    {
+        dhat = sqrt(2.0);
+        mesh_name = "cube.obj";
+    }
+    SECTION("two cubes far")
+    {
+        dhat = 1e-1;
+        mesh_name = "two-cubes-far.obj";
+        all_vertices_on_surface = false;
+    }
+    SECTION("two cubes close")
+    {
+        dhat = 1e-1;
+        mesh_name = "two-cubes-close.obj";
+        all_vertices_on_surface = false;
+    }
+    // WARNING: The bunny takes too long in debug.
+    // SECTION("bunny")
+    // {
+    //     dhat = 1e-2;
+    //     mesh_name = "bunny.obj";
+    // }
+
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXi edges, faces;
+    bool success = tests::load_mesh(mesh_name, vertices, edges, faces);
+    CAPTURE(mesh_name);
+    REQUIRE(success);
+
+    CollisionMesh mesh;
+
+    CollisionConstraints collision_constraints;
+    collision_constraints.set_use_convergent_formulation(
+        use_convergent_formulation);
+    if (all_vertices_on_surface) {
+        mesh = CollisionMesh(vertices, edges, faces);
+    } else {
+        mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
+        vertices = mesh.vertices(vertices);
+    }
+    collision_constraints.build(mesh, vertices, dhat, /*dmin=*/0, method);
+    CAPTURE(dhat, method, all_vertices_on_surface);
+    CHECK(collision_constraints.size() > 0);
+
+    BarrierPotential barrier_potential(dhat);
+
+    // -------------------------------------------------------------------------
+    // Gradient
+    // -------------------------------------------------------------------------
+
+    const Eigen::VectorXd grad_b =
+        barrier_potential.gradient(mesh, vertices, collision_constraints);
+
+    // Compute the gradient using finite differences
+    Eigen::VectorXd fgrad_b;
+    {
+        auto f = [&](const Eigen::VectorXd& x) {
+            return barrier_potential(
+                mesh, fd::unflatten(x, vertices.cols()), collision_constraints);
+        };
+        fd::finite_gradient(fd::flatten(vertices), f, fgrad_b);
+    }
+
+    REQUIRE(grad_b.squaredNorm() > 1e-8);
+    CHECK(fd::compare_gradient(grad_b, fgrad_b));
+
+    // -------------------------------------------------------------------------
+    // Hessian
+    // -------------------------------------------------------------------------
+
+    Eigen::MatrixXd hess_b =
+        barrier_potential.hessian(mesh, vertices, collision_constraints);
+
+    // Compute the gradient using finite differences
+    Eigen::MatrixXd fhess_b;
+    {
+        auto f = [&](const Eigen::VectorXd& x) {
+            return barrier_potential.gradient(
+                mesh, fd::unflatten(x, vertices.cols()), collision_constraints);
+        };
+        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b);
+    }
+
+    REQUIRE(hess_b.squaredNorm() > 1e-3);
+    CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
+}
+
+TEST_CASE(
+    "Barrier potential convergent formulation",
+    "[potential][barrier_potential][convergent]")
+{
+    const bool use_convergent_formulation = GENERATE(false, true);
+    const double dhat = 1e-3;
+
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXi edges, faces;
+    SECTION("2D Edge-Vertex")
+    {
+        //        .
+        // .-------.-------.
+        vertices.resize(4, 2);
+        vertices.row(0) << 0, 1e-4;
+        vertices.row(1) << -1, 0;
+        vertices.row(2) << 1e-4, 0;
+        vertices.row(3) << 1, 0;
+
+        edges.resize(2, 2);
+        edges.row(0) << 1, 2;
+        edges.row(1) << 2, 3;
+
+        CHECK(
+            point_point_distance(vertices.row(0), vertices.row(2))
+            < dhat * dhat);
+    }
+    SECTION("3D Face-Vertex")
+    {
+        vertices.resize(5, 3);
+        vertices.row(0) << 0, 1e-4, 0;
+        vertices.row(1) << -1, 0, 0;
+        vertices.row(2) << 1e-4, 0, -1;
+        vertices.row(3) << 1e-4, 0, 1;
+        vertices.row(4) << 1, 0, 0;
+
+        faces.resize(2, 3);
+        faces.row(0) << 1, 2, 3;
+        faces.row(1) << 2, 3, 4;
+
+        igl::edges(faces, edges);
+
+        CHECK(
+            point_edge_distance(
+                vertices.row(0), vertices.row(2), vertices.row(3))
+            < dhat * dhat);
+    }
+    SECTION("3D Edge-Edge")
+    {
+        vertices.resize(5, 3);
+        //
+        vertices.row(0) << 0, 1e-4, -1;
+        vertices.row(1) << 0, 1e-4, 1;
+        //
+        vertices.row(2) << -1e-4, 0, 0;
+        vertices.row(3) << -1, 0, 0;
+        vertices.row(4) << 1, 0, 0;
+
+        edges.resize(3, 2);
+        edges.row(0) << 0, 1;
+        edges.row(1) << 3, 2;
+        edges.row(2) << 2, 4;
+
+        CHECK(
+            point_edge_distance(
+                vertices.row(2), vertices.row(0), vertices.row(1))
+            < dhat * dhat);
+    }
+    SECTION("3D Edge-Edge Parallel")
+    {
+        vertices.resize(5, 3);
+        //
+        vertices.row(0) << -0.5, 1e-5, -1e-3;
+        vertices.row(1) << 0.5, 1e-5, 1e-3;
+        //
+        vertices.row(2) << -1, -1e-5, 0;
+        vertices.row(3) << 0, -1e-5, 0;
+        vertices.row(4) << 1, -1e-5, 0;
+
+        edges.resize(3, 2);
+        edges.row(0) << 0, 1;
+        edges.row(1) << 2, 3;
+        edges.row(2) << 3, 4;
+
+        CHECK(
+            point_edge_distance(
+                vertices.row(3), vertices.row(0), vertices.row(1))
+            < dhat * dhat);
+    }
+
+    const CollisionMesh mesh(vertices, edges, faces);
+
+    CollisionConstraints collision_constraints;
+    collision_constraints.set_use_convergent_formulation(
+        use_convergent_formulation);
+
+    collision_constraints.build(mesh, vertices, dhat);
+    CHECK(collision_constraints.size() > 0);
+
+    BarrierPotential barrier_potential(dhat);
+
+    const Eigen::VectorXd grad_b =
+        barrier_potential.gradient(mesh, vertices, collision_constraints);
+
+    // const Eigen::MatrixXd force = -fd::unflatten(grad_b, vertices.cols());
+    // std::cout << "force:\n" << force << std::endl;
+
+    // if (use_convergent_formulation) {
+    //     constexpr double eps = std::numeric_limits<double>::epsilon();
+    //     CHECK(grad_b(0) == Catch::Approx(0).margin(eps));
+    //     CHECK(grad_b(2 * vertices.cols()) == Catch::Approx(0).margin(eps));
+    // } else {
+    //     CHECK(grad_b(0) != 0);
+    //     CHECK(grad_b(2 * vertices.cols()) != 0);
+    // }
+
+    // Compute the gradient using finite differences
+    auto f = [&](const Eigen::VectorXd& x) {
+        const Eigen::MatrixXd fd_V = fd::unflatten(x, mesh.dim());
+
+        CollisionConstraints fd_collision_constraints;
+        fd_collision_constraints.set_use_convergent_formulation(
+            use_convergent_formulation);
+
+        fd_collision_constraints.build(mesh, fd_V, dhat);
+
+        return barrier_potential(mesh, fd_V, collision_constraints);
+    };
+    Eigen::VectorXd fgrad_b;
+    fd::finite_gradient(fd::flatten(vertices), f, fgrad_b);
+
+    CHECK(fd::compare_gradient(grad_b, fgrad_b));
+}
+
+TEST_CASE(
+    "Barrier potential shape derivative",
+    "[potential][barrier_potential][shape_derivative]")
+{
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXi edges, faces;
+    tests::load_mesh("cube.obj", vertices, edges, faces);
+
+    const bool use_convergent_formulation = GENERATE(false);
+    const double dhat = 1e-1;
+
+    // Stack cube on top of itself
+    edges.conservativeResize(edges.rows() * 2, edges.cols());
+    edges.bottomRows(edges.rows() / 2) =
+        edges.topRows(edges.rows() / 2).array() + vertices.rows();
+
+    faces.conservativeResize(faces.rows() * 2, faces.cols());
+    faces.bottomRows(faces.rows() / 2) =
+        faces.topRows(faces.rows() / 2).array() + vertices.rows();
+
+    vertices.conservativeResize(vertices.rows() * 2, vertices.cols());
+    vertices.bottomRows(vertices.rows() / 2) =
+        vertices.topRows(vertices.rows() / 2);
+    vertices.bottomRows(vertices.rows() / 2).col(1).array() += 1 + 0.1 * dhat;
+
+    // Rest positions
+    Eigen::MatrixXd rest_positions = vertices;
+    rest_positions.bottomRows(vertices.rows() / 2).col(1).array() += 1.0;
+
+    // Displacements
+    const Eigen::MatrixXd displacements = vertices - rest_positions;
+
+    const int ndof = vertices.size();
+
+    // ------------------------------------------------------------------------
+
+    CollisionMesh mesh(rest_positions, edges, faces);
+    mesh.init_area_jacobians();
+
+    Candidates candidates;
+    candidates.build(mesh, vertices, dhat);
+
+    CollisionConstraints constraints;
+    constraints.set_use_convergent_formulation(use_convergent_formulation);
+    constraints.set_are_shape_derivatives_enabled(true);
+    constraints.build(candidates, mesh, vertices, dhat);
+    REQUIRE(constraints.ee_constraints.size() > 0);
+
+    BarrierPotential barrier_potential(dhat);
+
+    for (int i = 0; i < constraints.size(); i++) {
+        if (use_convergent_formulation)
+            break;
+
+        std::vector<Eigen::Triplet<double>> triplets;
+        barrier_potential.shape_derivative(
+            constraints[i], constraints[i].vertex_ids(edges, faces),
+            constraints[i].dof(rest_positions, edges, faces),
+            constraints[i].dof(vertices, edges, faces), triplets);
+        Eigen::SparseMatrix<double> JF_wrt_X_sparse(ndof, ndof);
+        JF_wrt_X_sparse.setFromTriplets(triplets.begin(), triplets.end());
+        const Eigen::MatrixXd JF_wrt_X = Eigen::MatrixXd(JF_wrt_X_sparse);
+
+        auto F_X = [&](const Eigen::VectorXd& x) -> Eigen::VectorXd {
+            // TODO: Recompute weight based on x
+            assert(use_convergent_formulation == false);
+            // Recompute eps_x based on x
+            double prev_eps_x;
+            if (constraints.is_edge_edge(i)) {
+                EdgeEdgeConstraint& c =
+                    dynamic_cast<EdgeEdgeConstraint&>(constraints[i]);
+                prev_eps_x = c.eps_x;
+                c.eps_x = edge_edge_mollifier_threshold(
+                    x.segment<3>(3 * edges(c.edge0_id, 0)),
+                    x.segment<3>(3 * edges(c.edge0_id, 1)),
+                    x.segment<3>(3 * edges(c.edge1_id, 0)),
+                    x.segment<3>(3 * edges(c.edge1_id, 1)));
+            }
+
+            const Eigen::MatrixXd positions =
+                fd::unflatten(x, rest_positions.cols()) + displacements;
+            const VectorMax12d dof =
+                constraints[i].dof(positions, edges, faces);
+
+            Eigen::VectorXd grad = Eigen::VectorXd::Zero(ndof);
+            local_gradient_to_global_gradient(
+                barrier_potential.gradient(constraints[i], dof),
+                constraints[i].vertex_ids(edges, faces), vertices.cols(), grad);
+
+            // Restore eps_x
+            if (constraints.is_edge_edge(i)) {
+                dynamic_cast<EdgeEdgeConstraint&>(constraints[i]).eps_x =
+                    prev_eps_x;
+            }
+
+            return grad;
+        };
+
+        Eigen::MatrixXd fd_JF_wrt_X;
+        fd::finite_jacobian(fd::flatten(rest_positions), F_X, fd_JF_wrt_X);
+        CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
+        if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
+            tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
+        }
+    }
+
+    // ------------------------------------------------------------------------
+
+    const Eigen::MatrixXd JF_wrt_X =
+        barrier_potential.shape_derivative(mesh, vertices, constraints);
+
+    Eigen::MatrixXd sum = Eigen::MatrixXd::Zero(ndof, ndof);
+    for (int i = 0; i < constraints.size(); i++) {
+        std::vector<Eigen::Triplet<double>> triplets;
+        barrier_potential.shape_derivative(
+            constraints[i], constraints[i].vertex_ids(edges, faces),
+            constraints[i].dof(rest_positions, edges, faces),
+            constraints[i].dof(vertices, edges, faces), triplets);
+        Eigen::SparseMatrix<double> JF_wrt_X_sparse(ndof, ndof);
+        JF_wrt_X_sparse.setFromTriplets(triplets.begin(), triplets.end());
+        sum += Eigen::MatrixXd(JF_wrt_X_sparse);
+    }
+    CHECK(fd::compare_jacobian(JF_wrt_X, sum));
+
+    auto F_X = [&](const Eigen::VectorXd& x) {
+        const Eigen::MatrixXd fd_X = fd::unflatten(x, rest_positions.cols());
+        const Eigen::MatrixXd fd_V = fd_X + displacements;
+
+        CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
+
+        // WARNING: This breaks the tests because EE distances are C0 when edges
+        // are parallel
+        // CollisionConstraints fd_constraints;
+        // fd_constraints.set_use_convergent_formulation(
+        //     constraints.use_convergent_formulation());
+        // fd_constraints.build(fd_mesh, fd_V, dhat);
+
+        return barrier_potential.gradient(fd_mesh, fd_V, constraints);
+    };
+    Eigen::MatrixXd fd_JF_wrt_X;
+    fd::finite_jacobian(fd::flatten(rest_positions), F_X, fd_JF_wrt_X);
+    CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
+    if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
+        tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
+    }
+}
+
+TEST_CASE(
+    "Barrier potential shape derivative (sim data)",
+    "[potential][barrier_potential][shape_derivative]")
+{
+    nlohmann::json data;
+    {
+        std::ifstream input(tests::DATA_DIR / "shape_derivative_data.json");
+        REQUIRE(input.good());
+
+        data = nlohmann::json::parse(input, nullptr, false);
+        REQUIRE(!data.is_discarded());
+    }
+
+    // Parameters
+    double dhat = data["dhat"];
+
+    // Mesh
+    const Eigen::MatrixXi edges = data["boundary_edges"];
+    Eigen::MatrixXd X = data["boundary_nodes_pos"];
+    Eigen::MatrixXd vertices = data["displaced"];
+
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(
+        X, edges, /*faces=*/Eigen::MatrixXi());
+    mesh.init_area_jacobians();
+    REQUIRE(mesh.are_area_jacobians_initialized());
+
+    X = mesh.vertices(X);
+    vertices = mesh.vertices(vertices);
+    const Eigen::MatrixXd U = vertices - X;
+
+    CollisionConstraints collision_constraints;
+    const bool use_convergent_formulation = GENERATE(true, false);
+    collision_constraints.set_use_convergent_formulation(
+        use_convergent_formulation);
+    collision_constraints.set_are_shape_derivatives_enabled(true);
+    collision_constraints.build(mesh, vertices, dhat);
+
+    BarrierPotential barrier_potential(dhat);
+
+    const Eigen::MatrixXd JF_wrt_X = barrier_potential.shape_derivative(
+        mesh, vertices, collision_constraints);
+
+    auto F_X = [&](const Eigen::VectorXd& x) {
+        const Eigen::MatrixXd fd_X = fd::unflatten(x, X.cols());
+        const Eigen::MatrixXd fd_V = fd_X + U;
+
+        CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
+
+        CollisionConstraints fd_constraint_set;
+        fd_constraint_set.set_use_convergent_formulation(
+            collision_constraints.use_convergent_formulation());
+        fd_constraint_set.build(fd_mesh, fd_V, dhat);
+
+        return barrier_potential.gradient(fd_mesh, fd_V, fd_constraint_set);
+    };
+    Eigen::MatrixXd fd_JF_wrt_X;
+    fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
+    CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
+    if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
+        tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
+    }
+}
+
+// -- Benchmarking ------------------------------------------------------------
+
+TEST_CASE(
+    "Benchmark barrier potential", "[!benchmark][potential][barrier_potential]")
 {
     const bool use_convergent_formulation = GENERATE(true, false);
 
@@ -31,36 +485,83 @@ TEST_CASE("Barrier Potential Refactor", "[potential][barrier_potential]")
 
     const CollisionMesh mesh(vertices, edges, faces);
 
-    CollisionConstraints contacts;
-    contacts.set_use_convergent_formulation(use_convergent_formulation);
-    contacts.build(mesh, vertices, dhat);
-
-    BarrierPotential B(dhat);
-
+    CollisionConstraints collision_constraints;
+    collision_constraints.set_use_convergent_formulation(
+        use_convergent_formulation);
+    collision_constraints.build(mesh, vertices, dhat);
     CAPTURE(mesh_name, dhat);
-    CHECK(contacts.size() > 0);
+    CHECK(collision_constraints.size() > 0);
 
-    const double expected_potential =
-        contacts.compute_potential(mesh, vertices, dhat);
-    const double actual_potential = B(mesh, vertices, contacts);
-    CHECK(actual_potential == Catch::Approx(expected_potential));
+    BarrierPotential barrier_potential(dhat);
 
-    const Eigen::VectorXd expected_gradient =
-        contacts.compute_potential_gradient(mesh, vertices, dhat);
-    const Eigen::VectorXd actual_gradient =
-        B.gradient(mesh, vertices, contacts);
-    CHECK(actual_gradient.isApprox(expected_gradient));
+    BENCHMARK("Compute barrier potential")
+    {
+        return barrier_potential(mesh, vertices, collision_constraints);
+    };
+    BENCHMARK("Compute barrier potential gradient")
+    {
+        return barrier_potential.gradient(
+            mesh, vertices, collision_constraints);
+    };
+    BENCHMARK("Compute barrier potential hessian")
+    {
+        return barrier_potential.hessian(mesh, vertices, collision_constraints);
+    };
+    BENCHMARK("Compute barrier potential hessian with PSD projection")
+    {
+        return barrier_potential.hessian(
+            mesh, vertices, collision_constraints, true);
+    };
+    BENCHMARK("Compute compute_minimum_distance")
+    {
+        return collision_constraints.compute_minimum_distance(mesh, vertices);
+    };
+}
 
-    Eigen::SparseMatrix<double> expected_hessian, actual_hessian;
-    expected_hessian =
-        contacts.compute_potential_hessian(mesh, vertices, dhat, false);
-    actual_hessian = B.hessian(mesh, vertices, contacts, false);
-    CHECK(actual_hessian.isApprox(expected_hessian));
+TEST_CASE(
+    "Benchmark barrier potential shape derivative",
+    "[!benchmark][potential][barrier_potential][shape_derivative]")
+{
+    nlohmann::json data;
+    {
+        std::ifstream input(tests::DATA_DIR / "shape_derivative_data.json");
+        REQUIRE(input.good());
 
-    // Projected hessian
-    expected_hessian =
-        contacts.compute_potential_hessian(mesh, vertices, dhat, true);
-    actual_hessian = B.hessian(mesh, vertices, contacts, true);
-    INFO("project_hessian_to_psd = true");
-    CHECK(actual_hessian.isApprox(expected_hessian));
+        data = nlohmann::json::parse(input, nullptr, false);
+        REQUIRE(!data.is_discarded());
+    }
+
+    // Parameters
+    double dhat = data["dhat"];
+
+    // Mesh
+    const Eigen::MatrixXi edges = data["boundary_edges"];
+    Eigen::MatrixXd X = data["boundary_nodes_pos"];
+    Eigen::MatrixXd vertices = data["displaced"];
+
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(
+        X, edges, /*faces=*/Eigen::MatrixXi());
+    mesh.init_area_jacobians();
+    REQUIRE(mesh.are_area_jacobians_initialized());
+
+    X = mesh.vertices(X);
+    vertices = mesh.vertices(vertices);
+    const Eigen::MatrixXd U = vertices - X;
+
+    CollisionConstraints collision_constraints;
+    const bool use_convergent_formulation = GENERATE(true, false);
+    collision_constraints.set_use_convergent_formulation(
+        use_convergent_formulation);
+    collision_constraints.set_are_shape_derivatives_enabled(true);
+    collision_constraints.build(mesh, vertices, dhat);
+
+    BarrierPotential barrier_potential(dhat);
+
+    Eigen::SparseMatrix<double> JF_wrt_X;
+
+    BENCHMARK("Shape Derivative")
+    {
+        JF_wrt_X = barrier_potential.shape_derivative(
+            mesh, vertices, collision_constraints);
+    };
 }

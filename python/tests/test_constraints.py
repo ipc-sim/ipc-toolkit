@@ -1,4 +1,4 @@
-from utils import *
+import find_ipctk
 import ipctk
 
 

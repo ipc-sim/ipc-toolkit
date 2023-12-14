@@ -8,27 +8,27 @@ FrictionPotential::FrictionPotential(const double epsv) : Super()
 }
 
 double FrictionPotential::operator()(
-    const Contact& contact, const VectorMax12d& v) const
+    const Contact& contact, const VectorMax12d& velocities) const
 {
     // μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
 
     // Compute u = PᵀΓv
-    const VectorMax2d u =
-        contact.tangent_basis.transpose() * contact.relative_velocity(v);
+    const VectorMax2d u = contact.tangent_basis.transpose()
+        * contact.relative_velocity(velocities);
 
     return contact.weight * contact.mu * contact.normal_force_magnitude
         * f0_SF(u.norm(), epsv());
 }
 
-VectorMax12d
-FrictionPotential::gradient(const Contact& contact, const VectorMax12d& v) const
+VectorMax12d FrictionPotential::gradient(
+    const Contact& contact, const VectorMax12d& velocities) const
 {
     // ∇ₓ μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
     //  = μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u
 
     // Compute u = PᵀΓv
-    const VectorMax2d u =
-        contact.tangent_basis.transpose() * contact.relative_velocity(v);
+    const VectorMax2d u = contact.tangent_basis.transpose()
+        * contact.relative_velocity(velocities);
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T =
@@ -47,7 +47,7 @@ FrictionPotential::gradient(const Contact& contact, const VectorMax12d& v) const
 
 MatrixMax12d FrictionPotential::hessian(
     const Contact& contact,
-    const VectorMax12d& v,
+    const VectorMax12d& velocities,
     const bool project_hessian_to_psd) const
 {
     // ∇ₓ μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u (where u = T(xᵗ)ᵀ v)
@@ -55,8 +55,8 @@ MatrixMax12d FrictionPotential::hessian(
     //  = μ N T [f₂(‖u‖) uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
 
     // Compute u = PᵀΓv
-    const VectorMax2d u =
-        contact.tangent_basis.transpose() * contact.relative_velocity(v);
+    const VectorMax2d u = contact.tangent_basis.transpose()
+        * contact.relative_velocity(velocities);
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T =

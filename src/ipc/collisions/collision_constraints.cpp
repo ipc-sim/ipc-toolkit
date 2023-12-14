@@ -324,156 +324,6 @@ void CollisionConstraints::set_are_shape_derivatives_enabled(
 
 // ============================================================================
 
-double CollisionConstraints::compute_potential(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
-    const double dhat) const
-{
-    assert(vertices.rows() == mesh.num_vertices());
-    assert(dhat > 0);
-
-    if (empty()) {
-        return 0;
-    }
-
-    tbb::enumerable_thread_specific<double> storage(0);
-
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& local_potential = storage.local();
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                // Quadrature weight is premultiplied by compute_potential
-                local_potential += (*this)[i].compute_potential(
-                    vertices, mesh.edges(), mesh.faces(), dhat);
-            }
-        });
-
-    return storage.combine([](double a, double b) { return a + b; });
-}
-
-Eigen::VectorXd CollisionConstraints::compute_potential_gradient(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
-    const double dhat) const
-{
-    assert(vertices.rows() == mesh.num_vertices());
-
-    if (empty()) {
-        return Eigen::VectorXd::Zero(vertices.size());
-    }
-
-    const Eigen::MatrixXi& edges = mesh.edges();
-    const Eigen::MatrixXi& faces = mesh.faces();
-
-    int dim = vertices.cols();
-
-    tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
-        Eigen::VectorXd::Zero(vertices.size()));
-
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& local_grad = storage.local();
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                local_gradient_to_global_gradient(
-                    (*this)[i].compute_potential_gradient(
-                        vertices, edges, faces, dhat),
-                    (*this)[i].vertex_ids(edges, faces), dim, local_grad);
-            }
-        });
-
-    return storage.combine([](const Eigen::VectorXd& a,
-                              const Eigen::VectorXd& b) { return a + b; });
-}
-
-Eigen::SparseMatrix<double> CollisionConstraints::compute_potential_hessian(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
-    const double dhat,
-    const bool project_hessian_to_psd) const
-{
-    assert(vertices.rows() == mesh.num_vertices());
-
-    if (empty()) {
-        return Eigen::SparseMatrix<double>(vertices.size(), vertices.size());
-    }
-
-    const Eigen::MatrixXi& edges = mesh.edges();
-    const Eigen::MatrixXi& faces = mesh.faces();
-
-    const int dim = vertices.cols();
-
-    tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
-        storage;
-
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& local_hess_triplets = storage.local();
-
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                local_hessian_to_global_triplets(
-                    (*this)[i].compute_potential_hessian(
-                        vertices, edges, faces, dhat, project_hessian_to_psd),
-                    (*this)[i].vertex_ids(edges, faces), dim,
-                    local_hess_triplets);
-            }
-        });
-
-    Eigen::SparseMatrix<double> hess(vertices.size(), vertices.size());
-    for (const auto& local_hess_triplets : storage) {
-        Eigen::SparseMatrix<double> local_hess(
-            vertices.size(), vertices.size());
-        local_hess.setFromTriplets(
-            local_hess_triplets.begin(), local_hess_triplets.end());
-        hess += local_hess;
-    }
-    return hess;
-}
-
-// ============================================================================
-
-Eigen::SparseMatrix<double> CollisionConstraints::compute_shape_derivative(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
-    const double dhat) const
-{
-    assert(vertices.rows() == mesh.num_vertices());
-
-    if (empty()) {
-        return Eigen::SparseMatrix<double>(vertices.size(), vertices.size());
-    }
-
-    tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
-        storage;
-
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& local_triplets = storage.local();
-
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                (*this)[i].compute_shape_derivative(
-                    mesh.rest_positions(), vertices, mesh.edges(), mesh.faces(),
-                    dhat, local_triplets);
-            }
-        });
-
-    Eigen::SparseMatrix<double> shape_derivative(
-        vertices.size(), vertices.size());
-    for (const auto& local_triplets : storage) {
-        Eigen::SparseMatrix<double> local_shape_derivative(
-            vertices.size(), vertices.size());
-        local_shape_derivative.setFromTriplets(
-            local_triplets.begin(), local_triplets.end());
-        shape_derivative += local_shape_derivative;
-    }
-    return shape_derivative;
-}
-
-// ============================================================================
-
 // NOTE: Actually distance squared
 double CollisionConstraints::compute_minimum_distance(
     const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
@@ -625,9 +475,8 @@ std::string CollisionConstraints::to_string(
            << fmt::format(
                   "vv: {} {}, w: {:g}, d: {:g}", vv.vertex0_id, vv.vertex1_id,
                   vv.weight,
-                  point_point_distance(
-                      vertices.row(vv.vertex0_id),
-                      vertices.row(vv.vertex1_id)));
+                  vv.compute_distance(
+                      vv.dof(vertices, mesh.edges(), mesh.faces())));
     }
     for (const auto& ev : ev_constraints) {
         ss << "\n"
@@ -635,10 +484,8 @@ std::string CollisionConstraints::to_string(
                   "ev: {}=({}, {}) {}, w: {:g}, d: {:g}", ev.edge_id,
                   mesh.edges()(ev.edge_id, 0), mesh.edges()(ev.edge_id, 1),
                   ev.vertex_id, ev.weight,
-                  point_line_distance(
-                      vertices.row(ev.vertex_id),
-                      vertices.row(mesh.edges()(ev.edge_id, 0)),
-                      vertices.row(mesh.edges()(ev.edge_id, 1))));
+                  ev.compute_distance(
+                      ev.dof(vertices, mesh.edges(), mesh.faces())));
     }
     for (const auto& ee : ee_constraints) {
         ss << "\n"
@@ -648,11 +495,8 @@ std::string CollisionConstraints::to_string(
                   mesh.edges()(ee.edge0_id, 1), ee.edge1_id,
                   mesh.edges()(ee.edge1_id, 0), mesh.edges()(ee.edge1_id, 1),
                   ee.weight, int(ee.dtype),
-                  edge_edge_distance(
-                      vertices.row(mesh.edges()(ee.edge0_id, 0)),
-                      vertices.row(mesh.edges()(ee.edge0_id, 1)),
-                      vertices.row(mesh.edges()(ee.edge1_id, 0)),
-                      vertices.row(mesh.edges()(ee.edge1_id, 1)), ee.dtype));
+                  ee.compute_distance(
+                      ee.dof(vertices, mesh.edges(), mesh.faces())));
     }
     for (const auto& fv : fv_constraints) {
         ss << "\n"
@@ -660,11 +504,8 @@ std::string CollisionConstraints::to_string(
                   "fv: {}=({}, {}, {}) {}, w: {:g}, d: {:g}", fv.face_id,
                   mesh.faces()(fv.face_id, 0), mesh.faces()(fv.face_id, 1),
                   mesh.faces()(fv.face_id, 2), fv.vertex_id, fv.weight,
-                  point_plane_distance(
-                      vertices.row(fv.vertex_id),
-                      vertices.row(mesh.faces()(fv.face_id, 0)),
-                      vertices.row(mesh.faces()(fv.face_id, 1)),
-                      vertices.row(mesh.faces()(fv.face_id, 2))));
+                  fv.compute_distance(
+                      fv.dof(vertices, mesh.edges(), mesh.faces())));
     }
     return ss.str();
 }

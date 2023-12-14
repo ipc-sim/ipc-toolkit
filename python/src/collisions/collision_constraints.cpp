@@ -46,69 +46,6 @@ void define_collision_constraints(py::module_& m)
             py::arg("candidates"), py::arg("mesh"), py::arg("vertices"),
             py::arg("dhat"), py::arg("dmin") = 0)
         .def(
-            "compute_potential", &CollisionConstraints::compute_potential,
-            R"ipc_Qu8mg5v7(
-            Compute the barrier potential for a given constraint set.
-
-            Parameters:
-                mesh: The collision mesh.
-                vertices: Vertices of the collision mesh.
-                dhat: The activation distance of the barrier.
-
-            Returns:
-                The sum of all barrier potentials (not scaled by the barrier stiffness).
-            )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"), py::arg("dhat"))
-        .def(
-            "compute_potential_gradient",
-            &CollisionConstraints::compute_potential_gradient,
-            R"ipc_Qu8mg5v7(
-            Compute the gradient of the barrier potential.
-
-            Parameters:
-                mesh: The collision mesh.
-                vertices: Vertices of the collision mesh.
-                dhat: The activation distance of the barrier.
-
-            Returns:
-                The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|.
-            )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"), py::arg("dhat"))
-        .def(
-            "compute_potential_hessian",
-            &CollisionConstraints::compute_potential_hessian,
-            R"ipc_Qu8mg5v7(
-            Compute the hessian of the barrier potential.
-
-            Parameters:
-                mesh: The collision mesh.
-                vertices: Vertices of the collision mesh.
-                dhat: The activation distance of the barrier.
-                project_hessian_to_psd: Make sure the hessian is positive semi-definite.
-
-            Returns:
-                The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|x|vertices|.
-            )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"), py::arg("dhat"),
-            py::arg("project_hessian_to_psd") = false)
-        .def(
-            "compute_shape_derivative",
-            &CollisionConstraints::compute_shape_derivative,
-            R"ipc_Qu8mg5v7(
-            Compute the barrier shape derivative.
-
-            std::runtime_error If the collision constraints were not built with shape derivatives enabled.
-
-            Parameters:
-                mesh: The collision mesh.
-                vertices: Vertices of the collision mesh.
-                dhat: The activation distance of the barrier.
-
-            Returns:
-                The derivative of the force with respect to X, the rest vertices.
-            )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"), py::arg("dhat"))
-        .def(
             "compute_minimum_distance",
             &CollisionConstraints::compute_minimum_distance,
             R"ipc_Qu8mg5v7(
