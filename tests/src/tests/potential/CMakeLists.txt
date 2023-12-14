@@ -1,6 +1,7 @@
 set(SOURCES
   # Tests
   test_barrier_potential.cpp
+  test_friction_potential.cpp
 
   # Benchmarks
 

@@ -91,10 +91,10 @@ void FrictionConstraints::build(
 
 double FrictionConstraints::compute_potential(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& velocity,
+    const Eigen::MatrixXd& velocities,
     const double epsv) const
 {
-    assert(velocity.rows() == mesh.num_vertices());
+    assert(velocities.rows() == mesh.num_vertices());
     assert(epsv > 0);
 
     if (empty()) {
@@ -110,7 +110,7 @@ double FrictionConstraints::compute_potential(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 // Quadrature weight is premultiplied by compute_potential
                 local_potential += (*this)[i].compute_potential(
-                    velocity, mesh.edges(), mesh.faces(), epsv);
+                    velocities, mesh.edges(), mesh.faces(), epsv);
             }
         });
 
@@ -119,11 +119,11 @@ double FrictionConstraints::compute_potential(
 
 Eigen::VectorXd FrictionConstraints::compute_potential_gradient(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& velocity,
+    const Eigen::MatrixXd& velocities,
     const double epsv) const
 {
-    const int dim = velocity.cols();
-    const int ndof = velocity.size();
+    const int dim = velocities.cols();
+    const int ndof = velocities.size();
 
     if (empty()) {
         return Eigen::VectorXd::Zero(ndof);
@@ -143,7 +143,7 @@ Eigen::VectorXd FrictionConstraints::compute_potential_gradient(
 
                 const VectorMax12d local_grad =
                     constraint.compute_potential_gradient(
-                        velocity, mesh.edges(), mesh.faces(), epsv);
+                        velocities, mesh.edges(), mesh.faces(), epsv);
 
                 const std::array<long, 4> vis =
                     constraint.vertex_ids(mesh.edges(), mesh.faces());
@@ -161,12 +161,12 @@ Eigen::VectorXd FrictionConstraints::compute_potential_gradient(
 
 Eigen::SparseMatrix<double> FrictionConstraints::compute_potential_hessian(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& velocity,
+    const Eigen::MatrixXd& velocities,
     const double epsv,
     const bool project_hessian_to_psd) const
 {
-    const int dim = velocity.cols();
-    const int ndof = velocity.size();
+    const int dim = velocities.cols();
+    const int ndof = velocities.size();
 
     if (empty()) {
         return Eigen::SparseMatrix<double>(ndof, ndof);
@@ -186,7 +186,7 @@ Eigen::SparseMatrix<double> FrictionConstraints::compute_potential_hessian(
 
                 const MatrixMax12d local_hess =
                     constraint.compute_potential_hessian(
-                        velocity, mesh.edges(), mesh.faces(), epsv,
+                        velocities, mesh.edges(), mesh.faces(), epsv,
                         project_hessian_to_psd);
 
                 const std::array<long, 4> vis =

@@ -65,11 +65,11 @@ VertexVertexFrictionConstraint::compute_closest_point_jacobian(
 // ============================================================================
 
 VectorMax3d VertexVertexFrictionConstraint::relative_velocity(
-    const VectorMax12d& velocity) const
+    const VectorMax12d& velocities) const
 {
-    assert(velocity.size() == ndof());
+    assert(velocities.size() == ndof());
     return point_point_relative_velocity(
-        velocity.head(dim()), velocity.tail(dim()));
+        velocities.head(dim()), velocities.tail(dim()));
 }
 
 MatrixMax<double, 3, 12>

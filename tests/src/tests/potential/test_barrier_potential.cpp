@@ -34,7 +34,6 @@ TEST_CASE("Barrier Potential Refactor", "[potential][barrier_potential]")
     CollisionConstraints contacts;
     contacts.set_use_convergent_formulation(use_convergent_formulation);
     contacts.build(mesh, vertices, dhat);
-    // contacts.ee_constraints.clear(); // Remove mollified collisions
 
     BarrierPotential B(dhat);
 

@@ -33,25 +33,25 @@ public:
 protected:
     /// @brief Compute the potential for a single contact.
     /// @param contact The contact.
-    /// @param x The vector of degrees of freedom.
+    /// @param v The vector of local velocities.
     /// @return The potential.
     double
-    operator()(const Contact& contact, const VectorMax12d& x) const override;
+    operator()(const Contact& contact, const VectorMax12d& v) const override;
 
     /// @brief Compute the gradient of the potential for a single contact.
     /// @param contact The contact.
-    /// @param x The vector of degrees of freedom.
+    /// @param v The vector of local velocities.
     /// @return The gradient of the potential.
     VectorMax12d
-    gradient(const Contact& contact, const VectorMax12d& x) const override;
+    gradient(const Contact& contact, const VectorMax12d& v) const override;
 
     /// @brief Compute the hessian of the potential for a single contact.
     /// @param contact The contact.
-    /// @param x The vector of degrees of freedom.
+    /// @param v The vector of local velocities.
     /// @return The hessian of the potential.
     MatrixMax12d hessian(
         const Contact& contact,
-        const VectorMax12d& x,
+        const VectorMax12d& v,
         const bool project_hessian_to_psd = true) const override;
 
     /// @brief The smooth friction mollifier parameter \f$\epsilon_v\f$.
