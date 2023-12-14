@@ -44,53 +44,6 @@ void define_friction_constraints(py::module_& m)
             py::arg("contact_constraints"), py::arg("dhat"),
             py::arg("barrier_stiffness"), py::arg("mus"), py::arg("blend_mu"))
         .def(
-            "compute_force", &FrictionConstraints::compute_force,
-            R"ipc_Qu8mg5v7(
-            Compute the friction force from the given velocity.
-
-            Parameters:
-                mesh: The collision mesh.
-                rest_positions: Rest positions of the vertices (rowwise)
-                lagged_displacements: Previous displacements of the vertices (rowwise)
-                velocities: Current displacements of the vertices (rowwise)
-                dhat: Barrier activation distance.
-                barrier_stiffness: Barrier stiffness.
-                epsv: Mollifier parameter :math:`\epsilon_v`.
-                dmin: Minimum distance to use for the barrier.
-                no_mu: whether to not multiply by mu
-
-            Returns:
-                The friction force.
-            )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("rest_positions"),
-            py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("epsv"),
-            py::arg("dmin") = 0, py::arg("no_mu") = false)
-        .def(
-            "compute_force_jacobian",
-            &FrictionConstraints::compute_force_jacobian,
-            R"ipc_Qu8mg5v7(
-            Compute the Jacobian of the friction force wrt the velocity.
-
-            Parameters:
-                mesh: The collision mesh.
-                rest_positions: Rest positions of the vertices (rowwise)
-                lagged_displacements: Previous displacements of the vertices (rowwise)
-                velocities: Current displacements of the vertices (rowwise)
-                dhat: Barrier activation distance.
-                barrier_stiffness: Barrier stiffness.
-                epsv: Mollifier parameter :math:`\epsilon_v`.
-                wrt: The variable to take the derivative with respect to.
-                dmin: Minimum distance to use for the barrier.
-
-            Returns:
-                The Jacobian of the friction force wrt the velocity.
-            )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("rest_positions"),
-            py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("epsv"),
-            py::arg("wrt"), py::arg("dmin") = 0)
-        .def(
             "__len__", &FrictionConstraints::size,
             "Get the number of friction constraints.")
         .def(

@@ -29,61 +29,6 @@ protected:
 public:
     virtual ~FrictionConstraint() { }
 
-    /// @brief Compute the friction force.
-    /// @param rest_positions Rest positions of the vertices (rowwise)
-    /// @param lagged_displacements Previous displacements of the vertices (rowwise)
-    /// @param velocities Current displacements of the vertices (rowwise)
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @param dhat Barrier activation distance
-    /// @param barrier_stiffness Barrier stiffness
-    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
-    /// @param dmin Minimum distance
-    /// @param no_mu Whether to not multiply by mu
-    /// @return Friction force
-    VectorMax12d compute_force(
-        const Eigen::MatrixXd& rest_positions,
-        const Eigen::MatrixXd& lagged_displacements,
-        const Eigen::MatrixXd& velocities,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const double dhat,
-        const double barrier_stiffness,
-        const double epsv,
-        const double dmin = 0,
-        const bool no_mu = false) const; //< whether to not multiply by mu
-
-    /// @brief Variable to differentiate the friction force with respect to.
-    enum class DiffWRT {
-        REST_POSITIONS,       ///< Differentiate w.r.t. rest positions
-        LAGGED_DISPLACEMENTS, ///< Differentiate w.r.t. lagged displacements
-        VELOCITIES            ///< Differentiate w.r.t. current velocities
-    };
-
-    /// @brief Compute the friction force Jacobian.
-    /// @param rest_positions Rest positions of the vertices (rowwise)
-    /// @param lagged_displacements Previous displacements of the vertices (rowwise)
-    /// @param velocities Current displacements of the vertices (rowwise)
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @param dhat Barrier activation distance
-    /// @param barrier_stiffness Barrier stiffness
-    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
-    /// @param wrt Variable to differentiate the friction force with respect to.
-    /// @param dmin Minimum distance
-    /// @return Friction force Jacobian
-    MatrixMax12d compute_force_jacobian(
-        const Eigen::MatrixXd& rest_positions,
-        const Eigen::MatrixXd& lagged_displacements,
-        const Eigen::MatrixXd& velocities,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const double dhat,
-        const double barrier_stiffness,
-        const double epsv,
-        const DiffWRT wrt,
-        const double dmin = 0) const;
-
     /// @brief Get the dimension of the constraint.
     int dim() const { return tangent_basis.rows(); }
 

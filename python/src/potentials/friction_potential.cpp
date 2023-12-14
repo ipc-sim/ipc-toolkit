@@ -7,7 +7,17 @@ using namespace ipc;
 
 void define_friction_potential(py::module_& m)
 {
-    py::class_<FrictionPotential>(m, "FrictionPotential")
+    py::class_<FrictionPotential> friction_potential(m, "FrictionPotential");
+
+    py::enum_<FrictionPotential::DiffWRT>(friction_potential, "DiffWRT")
+        .value("REST_POSITIONS", FrictionPotential::DiffWRT::REST_POSITIONS)
+        .value(
+            "LAGGED_DISPLACEMENTS",
+            FrictionPotential::DiffWRT::LAGGED_DISPLACEMENTS)
+        .value("VELOCITIES", FrictionPotential::DiffWRT::VELOCITIES)
+        .export_values();
+
+    friction_potential
         .def(
             py::init<const double>(),
             R"ipc_Qu8mg5v7(

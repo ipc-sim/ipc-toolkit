@@ -64,7 +64,7 @@ Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
     const FrictionConstraints& contacts,
     const double dhat,
     const double barrier_stiffness,
-    const FrictionConstraint::DiffWRT wrt,
+    const DiffWRT wrt,
     const double dmin) const
 {
     if (contacts.empty()) {
@@ -92,11 +92,6 @@ Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
                     contact.dof(lagged_displacements, edges, faces),
                     contact.dof(velocities, edges, faces), //
                     dhat, barrier_stiffness, wrt, dmin);
-                // const MatrixMax12d local_force_jacobian =
-                //     contact.compute_force_jacobian(
-                //         rest_positions, lagged_displacements, velocities,
-                //         edges, faces, dhat, barrier_stiffness, epsv(), wrt,
-                //         dmin);
 
                 const std::array<long, 4> vis =
                     contact.vertex_ids(mesh.edges(), mesh.faces());
@@ -116,7 +111,7 @@ Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
     }
 
     // if wrt == X then compute ∇ₓ w(x)
-    if (wrt == FrictionConstraint::DiffWRT::REST_POSITIONS) {
+    if (wrt == DiffWRT::REST_POSITIONS) {
         for (int i = 0; i < contacts.size(); i++) {
             const FrictionConstraint& contact = contacts[i];
             assert(contact.weight_gradient.size() == rest_positions.size());
@@ -320,7 +315,7 @@ MatrixMax12d FrictionPotential::force_jacobian(
     const VectorMax12d& velocities,           // = v
     const double dhat,
     const double barrier_stiffness,
-    const FrictionConstraint::DiffWRT wrt,
+    const DiffWRT wrt,
     const double dmin) const
 {
     // x is the rest position
@@ -343,7 +338,7 @@ MatrixMax12d FrictionPotential::force_jacobian(
 
     const VectorMax12d lagged_positions =
         rest_positions + lagged_displacements; // = x + u
-    const bool need_jac_N_or_T = wrt != FrictionConstraint::DiffWRT::VELOCITIES;
+    const bool need_jac_N_or_T = wrt != DiffWRT::VELOCITIES;
 
     // Compute N
     const double N = contact.compute_normal_force_magnitude(

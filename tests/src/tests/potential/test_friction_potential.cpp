@@ -37,27 +37,4 @@ TEST_CASE("Friction Potential Refactor", "[potential][friction_potential]")
         mesh, vertices_t0, collision_constraints, dhat, barrier_stiffness, mu);
 
     const FrictionPotential D(epsv_times_h);
-
-    const Eigen::VectorXd expected_force = contacts.compute_force(
-        mesh, rest_positions, lagged_displacements, velocities, dhat,
-        barrier_stiffness, epsv_times_h);
-    const Eigen::VectorXd actual_force = D.force(
-        mesh, rest_positions, lagged_displacements, velocities, contacts, dhat,
-        barrier_stiffness);
-    CHECK(actual_force.isApprox(expected_force));
-
-    for (int i = 0; i < 3; i++) {
-        const FrictionConstraint::DiffWRT diff_wrt =
-            static_cast<FrictionConstraint::DiffWRT>(i);
-        CAPTURE(diff_wrt);
-
-        Eigen::SparseMatrix<double> expected_hessian =
-            contacts.compute_force_jacobian(
-                mesh, rest_positions, lagged_displacements, velocities, dhat,
-                barrier_stiffness, epsv_times_h, diff_wrt);
-        Eigen::SparseMatrix<double> actual_hessian = D.force_jacobian(
-            mesh, rest_positions, lagged_displacements, velocities, contacts,
-            dhat, barrier_stiffness, diff_wrt);
-        CHECK(actual_hessian.isApprox(expected_hessian));
-    }
 }

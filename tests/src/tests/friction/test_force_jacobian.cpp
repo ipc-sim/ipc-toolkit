@@ -86,9 +86,9 @@ void check_friction_force_jacobian(
 
     ///////////////////////////////////////////////////////////////////////////
 
-    Eigen::MatrixXd JF_wrt_X = friction_constraints.compute_force_jacobian(
-        mesh, X, Ut, velocities, dhat, barrier_stiffness, epsv_times_h,
-        FrictionConstraint::DiffWRT::REST_POSITIONS);
+    Eigen::MatrixXd JF_wrt_X = D.force_jacobian(
+        mesh, X, Ut, velocities, friction_constraints, dhat, barrier_stiffness,
+        FrictionPotential::DiffWRT::REST_POSITIONS);
 
     auto F_X = [&](const Eigen::VectorXd& x) {
         Eigen::MatrixXd fd_X = fd::unflatten(x, X.cols());
@@ -111,9 +111,9 @@ void check_friction_force_jacobian(
             fd_friction_constraints = friction_constraints;
         }
 
-        return fd_friction_constraints.compute_force(
-            fd_mesh, fd_X, Ut, velocities, dhat, barrier_stiffness,
-            epsv_times_h);
+        return D.force(
+            fd_mesh, fd_X, Ut, velocities, fd_friction_constraints, dhat,
+            barrier_stiffness);
     };
     Eigen::MatrixXd fd_JF_wrt_X;
     fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
@@ -124,9 +124,9 @@ void check_friction_force_jacobian(
 
     ///////////////////////////////////////////////////////////////////////////
 
-    Eigen::MatrixXd JF_wrt_Ut = friction_constraints.compute_force_jacobian(
-        mesh, X, Ut, velocities, dhat, barrier_stiffness, epsv_times_h,
-        FrictionConstraint::DiffWRT::LAGGED_DISPLACEMENTS);
+    Eigen::MatrixXd JF_wrt_Ut = D.force_jacobian(
+        mesh, X, Ut, velocities, friction_constraints, dhat, barrier_stiffness,
+        FrictionPotential::DiffWRT::LAGGED_DISPLACEMENTS);
 
     auto F_Ut = [&](const Eigen::VectorXd& ut) {
         Eigen::MatrixXd fd_Ut = fd::unflatten(ut, Ut.cols());
@@ -145,8 +145,9 @@ void check_friction_force_jacobian(
             fd_friction_constraints = friction_constraints;
         }
 
-        return friction_constraints.compute_force(
-            mesh, X, fd_Ut, velocities, dhat, barrier_stiffness, epsv_times_h);
+        return D.force(
+            mesh, X, fd_Ut, velocities, friction_constraints, dhat,
+            barrier_stiffness);
     };
     Eigen::MatrixXd fd_JF_wrt_Ut;
     fd::finite_jacobian(fd::flatten(Ut), F_Ut, fd_JF_wrt_Ut);
@@ -157,14 +158,14 @@ void check_friction_force_jacobian(
 
     ///////////////////////////////////////////////////////////////////////////
 
-    Eigen::MatrixXd JF_wrt_V = friction_constraints.compute_force_jacobian(
-        mesh, X, Ut, velocities, dhat, barrier_stiffness, epsv_times_h,
-        FrictionConstraint::DiffWRT::VELOCITIES);
+    Eigen::MatrixXd JF_wrt_V = D.force_jacobian(
+        mesh, X, Ut, velocities, friction_constraints, dhat, barrier_stiffness,
+        FrictionPotential::DiffWRT::VELOCITIES);
 
     auto F_V = [&](const Eigen::VectorXd& v) {
-        return friction_constraints.compute_force(
-            mesh, X, Ut, fd::unflatten(v, velocities.cols()), dhat,
-            barrier_stiffness, epsv_times_h);
+        return D.force(
+            mesh, X, Ut, fd::unflatten(v, velocities.cols()),
+            friction_constraints, dhat, barrier_stiffness);
     };
     Eigen::MatrixXd fd_JF_wrt_V;
     fd::finite_jacobian(fd::flatten(velocities), F_V, fd_JF_wrt_V);
@@ -191,17 +192,17 @@ void check_friction_force_jacobian(
 
     ///////////////////////////////////////////////////////////////////////////
 
-    const Eigen::VectorXd force = friction_constraints.compute_force(
-        mesh, X, Ut, velocities, dhat, barrier_stiffness, epsv_times_h);
+    const Eigen::VectorXd force = D.force(
+        mesh, X, Ut, velocities, friction_constraints, dhat, barrier_stiffness);
     const Eigen::VectorXd grad_D =
         D.gradient(mesh, velocities, friction_constraints);
     CHECK(fd::compare_gradient(-force, grad_D));
 
     ///////////////////////////////////////////////////////////////////////////
 
-    Eigen::MatrixXd jac_force = friction_constraints.compute_force_jacobian(
-        mesh, X, Ut, velocities, dhat, barrier_stiffness, epsv_times_h,
-        FrictionConstraint::DiffWRT::VELOCITIES);
+    Eigen::MatrixXd jac_force = D.force_jacobian(
+        mesh, X, Ut, velocities, friction_constraints, dhat, barrier_stiffness,
+        FrictionPotential::DiffWRT::VELOCITIES);
     CHECK(fd::compare_jacobian(-jac_force, hess_D));
 }
 

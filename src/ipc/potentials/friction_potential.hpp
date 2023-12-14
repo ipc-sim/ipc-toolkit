@@ -80,7 +80,7 @@ public:
         const FrictionConstraints& contacts,
         const double dhat,
         const double barrier_stiffness,
-        const FrictionConstraint::DiffWRT wrt,
+        const DiffWRT wrt,
         const double dmin = 0) const;
 
     // -- Single contact methods -----------------------------------------------
@@ -151,7 +151,7 @@ public:
         const VectorMax12d& velocities,
         const double dhat,
         const double barrier_stiffness,
-        const FrictionConstraint::DiffWRT wrt,
+        const DiffWRT wrt,
         const double dmin = 0) const;
 
 protected:
