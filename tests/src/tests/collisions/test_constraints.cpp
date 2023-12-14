@@ -392,13 +392,13 @@ TEST_CASE("Plane-Vertex Constraint", "[constraint][plane-vertex]")
     CHECK(c.plane_normal == n);
     CHECK(c.vertex_id == 0);
 
-    CHECK(c.compute_distance(Eigen::RowVector3d(0, -2, 0), E, F) == 4.0);
-    CHECK(c.compute_distance(Eigen::RowVector3d(0, 2, 0), E, F) == 4.0);
+    CHECK(c.compute_distance(Eigen::Vector3d(0, -2, 0)) == 4.0);
+    CHECK(c.compute_distance(Eigen::Vector3d(0, 2, 0)) == 4.0);
     CHECK(
-        c.compute_distance_gradient(Eigen::RowVector3d(0, 2, 0), E, F)
+        c.compute_distance_gradient(Eigen::Vector3d(0, 2, 0))
         == Eigen::Vector3d(0, 4, 0));
     CHECK(
-        c.compute_distance_hessian(Eigen::RowVector3d(0, 2, 0), E, F)
+        c.compute_distance_hessian(Eigen::Vector3d(0, 2, 0))
         == 2 * n * n.transpose());
 }
 

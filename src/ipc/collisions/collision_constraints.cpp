@@ -497,8 +497,8 @@ double CollisionConstraints::compute_minimum_distance(
             double& local_min_dist = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-                const double dist =
-                    (*this)[i].compute_distance(vertices, edges, faces);
+                const double dist = (*this)[i].compute_distance(
+                    (*this)[i].dof(vertices, edges, faces));
 
                 if (dist < local_min_dist) {
                     local_min_dist = dist;

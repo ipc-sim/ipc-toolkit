@@ -29,7 +29,6 @@ public:
     VectorMax3d plane_normal;
     long vertex_id;
 
-protected:
     /// @brief Compute the distance between the point and plane.
     /// @param point Point's position.
     /// @return Distance of the stencil.

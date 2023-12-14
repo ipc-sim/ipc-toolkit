@@ -19,7 +19,7 @@ double CollisionConstraint::compute_potential(
     const double dhat) const
 {
     // Squared distance
-    const double d = compute_distance(vertices, edges, faces);
+    const double d = compute_distance(dof(vertices, edges, faces));
     return weight * barrier(d - dmin * dmin, 2 * dmin * dhat + dhat * dhat);
 }
 
