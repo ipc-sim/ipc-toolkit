@@ -32,7 +32,7 @@ void define_friction_potential(py::module_& m)
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&,
                 const FrictionConstraints&>(
-                &FrictionPotential::operator(), py::const_),
+                &FrictionPotential::Potential::operator(), py::const_),
             R"ipc_Qu8mg5v7(
             Compute the barrier potential for a set of contacts.
 
@@ -50,7 +50,7 @@ void define_friction_potential(py::module_& m)
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&,
                 const FrictionConstraints&>(
-                &FrictionPotential::gradient, py::const_),
+                &FrictionPotential::Potential::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the barrier potential.
 
@@ -68,7 +68,7 @@ void define_friction_potential(py::module_& m)
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&,
                 const FrictionConstraints&, const bool>(
-                &FrictionPotential::hessian, py::const_),
+                &FrictionPotential::Potential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the barrier potential.
 

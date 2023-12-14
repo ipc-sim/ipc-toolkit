@@ -22,7 +22,7 @@ void define_barrier_potential(py::module_& m)
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&,
                 const CollisionConstraints&>(
-                &BarrierPotential::operator(), py::const_),
+                &BarrierPotential::Potential::operator(), py::const_),
             R"ipc_Qu8mg5v7(
             Compute the barrier potential for a set of contacts.
 
@@ -40,7 +40,7 @@ void define_barrier_potential(py::module_& m)
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&,
                 const CollisionConstraints&>(
-                &BarrierPotential::gradient, py::const_),
+                &BarrierPotential::Potential::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the barrier potential.
 
@@ -58,7 +58,7 @@ void define_barrier_potential(py::module_& m)
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&,
                 const CollisionConstraints&, const bool>(
-                &BarrierPotential::hessian, py::const_),
+                &BarrierPotential::Potential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the barrier potential.
 
