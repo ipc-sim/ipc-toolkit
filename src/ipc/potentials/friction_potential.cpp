@@ -15,7 +15,7 @@ Eigen::VectorXd FrictionPotential::force(
     const Eigen::MatrixXd& rest_positions,
     const Eigen::MatrixXd& lagged_displacements,
     const Eigen::MatrixXd& velocities,
-    const double dhat,
+    const BarrierPotential& barrier_potential,
     const double barrier_stiffness,
     const double dmin,
     const bool no_mu) const
@@ -42,7 +42,7 @@ Eigen::VectorXd FrictionPotential::force(
                     collision, collision.dof(rest_positions, edges, faces),
                     collision.dof(lagged_displacements, edges, faces),
                     collision.dof(velocities, edges, faces), //
-                    dhat, barrier_stiffness, dmin, no_mu);
+                    barrier_potential, barrier_stiffness, dmin, no_mu);
 
                 const std::array<long, 4> vis =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
@@ -62,7 +62,7 @@ Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
     const Eigen::MatrixXd& rest_positions,
     const Eigen::MatrixXd& lagged_displacements,
     const Eigen::MatrixXd& velocities,
-    const double dhat,
+    const BarrierPotential& barrier_potential,
     const double barrier_stiffness,
     const DiffWRT wrt,
     const double dmin) const
@@ -91,7 +91,7 @@ Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
                     collision, collision.dof(rest_positions, edges, faces),
                     collision.dof(lagged_displacements, edges, faces),
                     collision.dof(velocities, edges, faces), //
-                    dhat, barrier_stiffness, wrt, dmin);
+                    barrier_potential, barrier_stiffness, wrt, dmin);
 
                 const std::array<long, 4> vis =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
@@ -124,7 +124,7 @@ Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
                 collision, collision.dof(rest_positions, edges, faces),
                 collision.dof(lagged_displacements, edges, faces),
                 collision.dof(velocities, edges, faces), //
-                dhat, barrier_stiffness, dmin);
+                barrier_potential, barrier_stiffness, dmin);
             assert(collision.weight != 0);
             local_force /= collision.weight;
 
@@ -260,7 +260,7 @@ VectorMax12d FrictionPotential::force(
     const VectorMax12d& rest_positions,       // = x
     const VectorMax12d& lagged_displacements, // = u
     const VectorMax12d& velocities,           // = v
-    const double dhat,
+    const BarrierPotential& barrier_potential,
     const double barrier_stiffness,
     const double dmin,
     const bool no_mu) const
@@ -282,7 +282,7 @@ VectorMax12d FrictionPotential::force(
 
     // Compute N(x + u)
     const double N = collision.compute_normal_force_magnitude(
-        lagged_positions, dhat, barrier_stiffness, dmin);
+        lagged_positions, barrier_potential, barrier_stiffness, dmin);
 
     // Compute P
     const MatrixMax<double, 3, 2> P =
@@ -315,7 +315,7 @@ MatrixMax12d FrictionPotential::force_jacobian(
     const VectorMax12d& rest_positions,       // = x
     const VectorMax12d& lagged_displacements, // = u
     const VectorMax12d& velocities,           // = v
-    const double dhat,
+    const BarrierPotential& barrier_potential,
     const double barrier_stiffness,
     const DiffWRT wrt,
     const double dmin) const
@@ -344,14 +344,14 @@ MatrixMax12d FrictionPotential::force_jacobian(
 
     // Compute N
     const double N = collision.compute_normal_force_magnitude(
-        lagged_positions, dhat, barrier_stiffness, dmin);
+        lagged_positions, barrier_potential, barrier_stiffness, dmin);
 
     // Compute ∇N
     VectorMax12d grad_N;
     if (need_jac_N_or_T) {
         // ∇ₓN = ∇ᵤN
         grad_N = collision.compute_normal_force_magnitude_gradient(
-            lagged_positions, dhat, barrier_stiffness, dmin);
+            lagged_positions, barrier_potential, barrier_stiffness, dmin);
         assert(grad_N.array().isFinite().all());
     }
 

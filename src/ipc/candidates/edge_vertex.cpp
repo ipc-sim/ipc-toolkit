@@ -17,7 +17,7 @@ double
 EdgeVertexCandidate::compute_distance(const VectorMax12d& positions) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
-    const int dim = positions.size() / 3;
+    const int dim = this->dim(positions.size());
     return point_edge_distance(
         positions.head(dim), positions.segment(dim, dim), positions.tail(dim),
         known_dtype());
@@ -27,7 +27,7 @@ VectorMax12d EdgeVertexCandidate::compute_distance_gradient(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
-    const int dim = positions.size() / 3;
+    const int dim = this->dim(positions.size());
     return point_edge_distance_gradient(
         positions.head(dim), positions.segment(dim, dim), positions.tail(dim),
         known_dtype());
@@ -37,7 +37,7 @@ MatrixMax12d EdgeVertexCandidate::compute_distance_hessian(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
-    const int dim = positions.size() / 3;
+    const int dim = this->dim(positions.size());
     return point_edge_distance_hessian(
         positions.head(dim), positions.segment(dim, dim), positions.tail(dim),
         known_dtype());

@@ -27,12 +27,12 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const Collisions& collisions,
-        double dhat,
+        const BarrierPotential& barrier_potential,
         double barrier_stiffness,
         double mu)
     {
         this->build(
-            mesh, vertices, collisions, dhat, barrier_stiffness,
+            mesh, vertices, collisions, barrier_potential, barrier_stiffness,
             Eigen::VectorXd::Constant(vertices.rows(), mu));
     }
 
@@ -40,7 +40,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const Collisions& collisions,
-        const double dhat,
+        const BarrierPotential& barrier_potential,
         const double barrier_stiffness,
         const Eigen::VectorXd& mus,
         const std::function<double(double, double)>& blend_mu =

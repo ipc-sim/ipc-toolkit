@@ -23,7 +23,7 @@ double normalized_barrier(const double d, const double dhat)
     return -std::pow(1 - t0, 2) * std::log(t0);
 }
 
-double normalized_barrier_gradient(const double d, const double dhat)
+double normalized_barrier_first_derivative(const double d, const double dhat)
 {
     if (d <= 0.0 || d >= dhat) {
         return 0.0;
@@ -34,7 +34,7 @@ double normalized_barrier_gradient(const double d, const double dhat)
     return t2 * (2 * t0 * std::log(t1) - t2 / d);
 }
 
-double normalized_barrier_hessian(const double d, const double dhat)
+double normalized_barrier_second_derivative(const double d, const double dhat)
 {
     if (d <= 0.0 || d >= dhat) {
         return 0.0;
@@ -59,32 +59,33 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     Eigen::Matrix<double, 1, 1> d_vec;
     d_vec << d;
 
-    // Check gradient
+    // Check derivatives
 
-    std::function<double(double, double)> barrier, barrier_gradient,
-        barrier_hessian;
+    std::function<double(double, double)> barrier;
+    std::function<double(double, double)> barrier_first_derivative;
+    std::function<double(double, double)> barrier_second_derivative;
     SECTION("Original IPC barrier")
     {
         barrier = ipc::barrier;
-        barrier_gradient = ipc::barrier_gradient;
-        barrier_hessian = ipc::barrier_hessian;
+        barrier_first_derivative = ipc::barrier_first_derivative;
+        barrier_second_derivative = ipc::barrier_second_derivative;
     }
     SECTION("Normalized barrier")
     {
         barrier = normalized_barrier;
-        barrier_gradient = normalized_barrier_gradient;
-        barrier_hessian = normalized_barrier_hessian;
+        barrier_first_derivative = normalized_barrier_first_derivative;
+        barrier_second_derivative = normalized_barrier_second_derivative;
     }
     SECTION("Barrier with physical units")
     {
         barrier = [dhat](double _d, double p_dhat) {
             return dhat * normalized_barrier(_d, p_dhat);
         };
-        barrier_gradient = [dhat](double _d, double p_dhat) {
-            return dhat * normalized_barrier_gradient(_d, p_dhat);
+        barrier_first_derivative = [dhat](double _d, double p_dhat) {
+            return dhat * normalized_barrier_first_derivative(_d, p_dhat);
         };
-        barrier_hessian = [dhat](double _d, double p_dhat) {
-            return dhat * normalized_barrier_hessian(_d, p_dhat);
+        barrier_second_derivative = [dhat](double _d, double p_dhat) {
+            return dhat * normalized_barrier_second_derivative(_d, p_dhat);
         };
     }
 
@@ -100,21 +101,21 @@ TEST_CASE("Barrier derivatives", "[barrier]")
         fgrad);
 
     Eigen::VectorXd grad(1);
-    grad << barrier_gradient(d, dhat);
+    grad << barrier_first_derivative(d, dhat);
 
     CAPTURE(dhat, d, fgrad(0), grad(0), use_dist_sqr);
     CHECK(fd::compare_gradient(fgrad, grad));
 
-    // Check hessian
+    // Check second_derivative
 
     fd::finite_gradient(
         d_vec,
         [&](const Eigen::VectorXd& _d) {
-            return barrier_gradient(_d[0], dhat);
+            return barrier_first_derivative(_d[0], dhat);
         },
         fgrad);
 
-    grad << barrier_hessian(d, dhat);
+    grad << barrier_second_derivative(d, dhat);
 
     CAPTURE(dhat, d, fgrad(0), grad(0), use_dist_sqr);
     CHECK(fd::compare_gradient(fgrad, grad));
@@ -139,16 +140,18 @@ TEST_CASE("Physical barrier", "[barrier]")
 
     CHECK(b_original == Catch::Approx(b_new));
 
-    const double b_original_gradient =
-        ipc::barrier_gradient(p_d, p_dhat) / divisor;
-    const double b_new_gradient =
-        dhat * normalized_barrier_gradient(p_d, p_dhat);
+    const double b_original_first_derivative =
+        ipc::barrier_first_derivative(p_d, p_dhat) / divisor;
+    const double b_new_first_derivative =
+        dhat * normalized_barrier_first_derivative(p_d, p_dhat);
 
-    CHECK(b_original_gradient == Catch::Approx(b_new_gradient));
+    CHECK(b_original_first_derivative == Catch::Approx(b_new_first_derivative));
 
-    const double b_original_hessian =
-        ipc::barrier_hessian(p_d, p_dhat) / divisor;
-    const double b_new_hessian = dhat * normalized_barrier_hessian(p_d, p_dhat);
+    const double b_original_second_derivative =
+        ipc::barrier_second_derivative(p_d, p_dhat) / divisor;
+    const double b_new_second_derivative =
+        dhat * normalized_barrier_second_derivative(p_d, p_dhat);
 
-    CHECK(b_original_hessian == Catch::Approx(b_new_hessian));
+    CHECK(
+        b_original_second_derivative == Catch::Approx(b_new_second_derivative));
 }

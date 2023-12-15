@@ -1,5 +1,6 @@
 set(SOURCES
   # Tests
+  test_adaptive_stiffness.cpp
   test_barrier.cpp
 
   # Benchmarks

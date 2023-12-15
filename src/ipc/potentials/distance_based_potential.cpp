@@ -147,7 +147,7 @@ void DistanceBasedPotential::shape_derivative(
 {
     assert(rest_positions.size() == positions.size());
 
-    const int dim = positions.size() / collision.num_vertices();
+    const int dim = collision.dim(positions.size());
     assert(positions.size() % collision.num_vertices() == 0);
 
     // Compute:

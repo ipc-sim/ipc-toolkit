@@ -1,9 +1,10 @@
 #pragma once
 
-#include <ipc/collisions/collisions.hpp>
+#include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/friction/relative_velocity.hpp>
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/barrier/barrier.hpp>
 
 #include <ipc/config.hpp>
 
@@ -12,19 +13,15 @@ namespace ipc {
 class FrictionCollision : virtual public CollisionStencil {
 protected:
     /// @brief Initialize the collision.
-    /// @param positions Vertex positions(rowwise)
-    /// @param edges Edges of the mesh
-    /// @param faces Faces of the mesh
-    /// @param dhat Barrier activation distance
-    /// @param barrier_stiffness Barrier stiffness
-    /// @param dmin Minimum distance
+    /// @param collision Collision stencil.
+    /// @param positions Collision stencil's vertex positions.
+    /// @param barrier_potential Barrier potential used for normal force.
+    /// @param barrier_stiffness Barrier potential stiffness.
     void init(
-        const Eigen::MatrixXd& positions,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const double dhat,
-        const double barrier_stiffness,
-        const double dmin);
+        const Collision& collision,
+        const VectorMax12d& positions,
+        const BarrierPotential& barrier_potential,
+        const double barrier_stiffness);
 
 public:
     virtual ~FrictionCollision() { }
@@ -45,7 +42,7 @@ public:
     /// @return Normal force magnitude.
     double compute_normal_force_magnitude(
         const VectorMax12d& positions,
-        const double dhat,
+        const BarrierPotential& barrier_potential,
         const double barrier_stiffness,
         const double dmin = 0) const;
 
@@ -57,7 +54,7 @@ public:
     /// @return Gradient of the normal force magnitude wrt positions.
     VectorMax12d compute_normal_force_magnitude_gradient(
         const VectorMax12d& positions,
-        const double dhat,
+        const BarrierPotential& barrier_potential,
         const double barrier_stiffness,
         const double dmin = 0) const;
 

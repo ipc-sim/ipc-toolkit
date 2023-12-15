@@ -15,6 +15,15 @@ public:
     /// @brief Get the number of vertices in the collision stencil.
     virtual int num_vertices() const = 0;
 
+    /// @brief Get the dimension of the collision stencil.
+    /// @param ndof Number of degrees of freedom in the stencil.
+    /// @return The dimension of the collision stencil.
+    int dim(const int ndof) const
+    {
+        assert(ndof % num_vertices() == 0);
+        return ndof / num_vertices();
+    }
+
     /// @brief Get the vertex IDs of the collision stencil.
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
