@@ -35,9 +35,7 @@ public:
     /// @brief Get the number of degrees of freedom for the collision.
     int ndof() const { return dim() * num_vertices(); };
 
-    // -------------------------------------------------------------------------
-    // Abstract methods
-    // -------------------------------------------------------------------------
+    // -- Abstract methods -----------------------------------------------------
 
     /// @brief Compute the normal force magnitude.
     /// @param positions Collision stencil's vertex positions.

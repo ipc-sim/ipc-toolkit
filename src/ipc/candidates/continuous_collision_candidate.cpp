@@ -19,7 +19,7 @@ std::ostream& ContinuousCollisionCandidate::write_ccd_query(
     }
 
     for (int i = 0; i < num_vertices(); i++) {
-        out << vertices_t0.segment(dim * i, dim)
+        out << vertices_t1.segment(dim * i, dim)
                    .transpose()
                    .format(OBJ_VERTEX_FORMAT);
     }

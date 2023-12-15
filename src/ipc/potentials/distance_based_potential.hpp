@@ -7,8 +7,6 @@ namespace ipc {
 
 class DistanceBasedPotential : public Potential<Collisions> {
     using Super = Potential<Collisions>;
-    using Collisions = Collisions;
-    using Collision = Super::Collision;
 
 public:
     DistanceBasedPotential() { }

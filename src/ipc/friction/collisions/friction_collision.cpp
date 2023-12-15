@@ -1,12 +1,6 @@
 #include "friction_collision.hpp"
 
-#include <ipc/friction/closest_point.hpp>
-#include <ipc/friction/tangent_basis.hpp>
 #include <ipc/friction/normal_force_magnitude.hpp>
-#include <ipc/distance/point_point.hpp>
-#include <ipc/distance/point_edge.hpp>
-#include <ipc/distance/edge_edge.hpp>
-#include <ipc/distance/point_triangle.hpp>
 
 #include <ipc/config.hpp>
 
