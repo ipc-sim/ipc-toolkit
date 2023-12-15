@@ -1,13 +1,13 @@
 #pragma once
 
-#include <ipc/collisions/collision_constraint.hpp>
+#include <ipc/collisions/collision.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
-class PlaneVertexConstraint : public CollisionConstraint {
+class PlaneVertexCollision : public Collision {
 public:
-    PlaneVertexConstraint(
+    PlaneVertexCollision(
         const VectorMax3d& plane_origin,
         const VectorMax3d& plane_normal,
         const long vertex_id);
@@ -21,15 +21,6 @@ public:
         return { { vertex_id, -1, -1, -1 } };
     }
 
-    using CollisionConstraint::compute_distance;
-    using CollisionConstraint::compute_distance_gradient;
-    using CollisionConstraint::compute_distance_hessian;
-
-    VectorMax3d plane_origin;
-    VectorMax3d plane_normal;
-    long vertex_id;
-
-protected:
     /// @brief Compute the distance between the point and plane.
     /// @param point Point's position.
     /// @return Distance of the stencil.
@@ -46,6 +37,15 @@ protected:
     /// @return Distance Hessian w.r.t. the point's positions.
     MatrixMax12d
     compute_distance_hessian(const VectorMax12d& point) const override;
+
+    /// @brief The plane's origin.
+    VectorMax3d plane_origin;
+
+    /// @brief The plane's normal.
+    VectorMax3d plane_normal;
+
+    /// @brief The vertex's id.
+    long vertex_id;
 };
 
 } // namespace ipc

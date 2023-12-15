@@ -1,5 +1,6 @@
 #include "ipc.hpp"
 
+#include <ipc/candidates/candidates.hpp>
 #include <ipc/utils/intersection.hpp>
 #include <ipc/utils/world_bbox_diagonal_length.hpp>
 

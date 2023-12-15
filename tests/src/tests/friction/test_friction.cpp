@@ -1,105 +1,67 @@
 #include <tests/config.hpp>
-#include <tests/friction/friction_data_generator.hpp>
 #include <tests/utils.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
-#include <ipc/ipc.hpp>
-#include <ipc/friction/friction_constraints.hpp>
+#include <ipc/friction/friction_collisions.hpp>
+#include <ipc/potentials/friction_potential.hpp>
 #include <ipc/utils/logger.hpp>
 
-#include <finitediff.hpp>
 #include <igl/edges.h>
 
 using namespace ipc;
 
-TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
-{
-    FrictionData data = friction_data_generator();
-    const auto& [V0, V1, E, F, collision_constraints, mu, epsv_times_h, dhat, barrier_stiffness] =
-        data;
-
-    const Eigen::MatrixXd U = V1 - V0;
-
-    const CollisionMesh mesh(V0, E, F);
-
-    FrictionConstraints friction_constraints;
-    friction_constraints.build(
-        mesh, V0, collision_constraints, dhat, barrier_stiffness, mu);
-
-    const Eigen::VectorXd grad =
-        friction_constraints.compute_potential_gradient(mesh, U, epsv_times_h);
-
-    // Compute the gradient using finite differences
-    auto f = [&](const Eigen::VectorXd& x) {
-        const Eigen::MatrixXd fd_U = fd::unflatten(x, data.V1.cols()) - data.V0;
-        return friction_constraints.compute_potential(
-            mesh, fd_U, data.epsv_times_h);
-    };
-    Eigen::VectorXd fgrad;
-    fd::finite_gradient(fd::flatten(V1), f, fgrad);
-    CHECK(fd::compare_gradient(grad, fgrad));
-
-    const Eigen::MatrixXd hess =
-        friction_constraints.compute_potential_hessian(mesh, U, epsv_times_h);
-    Eigen::MatrixXd fhess;
-    fd::finite_hessian(fd::flatten(V1), f, fhess);
-    CHECK(fd::compare_hessian(hess, fhess, 1e-3));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void mmcvids_to_friction_constraints(
+void mmcvids_to_friction_collisions(
     Eigen::MatrixXi& E,
     Eigen::MatrixXi& F,
     const Eigen::MatrixXi& mmcvids,
     Eigen::VectorXd normal_force_magnitudes,
     const Eigen::MatrixXd& closest_points,
     const Eigen::MatrixXd& tangent_bases,
-    FrictionConstraints& constraints)
+    FrictionCollisions& collisions)
 {
     std::vector<Eigen::Vector2i> edges;
     std::vector<Eigen::Vector3i> faces;
     for (int i = 0; i < mmcvids.rows(); i++) {
         const auto mmcvid = mmcvids.row(i);
-        FrictionConstraint* constraint;
+        FrictionCollision* collision;
 
         if (mmcvid[0] >= 0) { // Is EE?
             edges.emplace_back(mmcvid[0], mmcvid[1]);
             edges.emplace_back(mmcvid[2], mmcvid[3]);
-            constraints.ee_constraints.emplace_back(
+            collisions.ee_collisions.emplace_back(
                 edges.size() - 2, edges.size() - 1);
-            constraint = &(constraints.ee_constraints.back());
+            collision = &(collisions.ee_collisions.back());
         } else {
             if (mmcvid[2] < 0) { // Is VV?
-                constraints.vv_constraints.emplace_back(
+                collisions.vv_collisions.emplace_back(
                     -mmcvid[0] - 1, mmcvid[1]);
                 CHECK(-mmcvid[3] >= 1);
-                constraints.vv_constraints.back().weight = -mmcvid[3];
+                collisions.vv_collisions.back().weight = -mmcvid[3];
                 normal_force_magnitudes[i] /= -mmcvid[3];
-                constraint = &(constraints.vv_constraints.back());
+                collision = &(collisions.vv_collisions.back());
 
             } else if (mmcvid[3] < 0) { // Is EV?
                 edges.emplace_back(mmcvid[1], mmcvid[2]);
-                constraints.ev_constraints.emplace_back(
+                collisions.ev_collisions.emplace_back(
                     edges.size() - 1, -mmcvid[0] - 1);
                 CHECK(-mmcvid[3] >= 1);
-                constraints.ev_constraints.back().weight = -mmcvid[3];
+                collisions.ev_collisions.back().weight = -mmcvid[3];
                 normal_force_magnitudes[i] /= -mmcvid[3];
-                constraint = &(constraints.ev_constraints.back());
+                collision = &(collisions.ev_collisions.back());
 
             } else { // Is FV.
                 faces.emplace_back(mmcvid[1], mmcvid[2], mmcvid[3]);
-                constraints.fv_constraints.emplace_back(
+                collisions.fv_collisions.emplace_back(
                     faces.size() - 1, -mmcvid[0] - 1);
-                constraint = &(constraints.fv_constraints.back());
+                collision = &(collisions.fv_collisions.back());
             }
         }
 
-        constraint->closest_point = closest_points.row(i);
-        constraint->tangent_basis = tangent_bases.middleRows(3 * i, 3);
-        constraint->normal_force_magnitude = normal_force_magnitudes[i];
+        collision->closest_point = closest_points.row(i);
+        collision->tangent_basis = tangent_bases.middleRows(3 * i, 3);
+        collision->normal_force_magnitude = normal_force_magnitudes[i];
     }
 
     E.resize(edges.size(), 2);
@@ -119,8 +81,8 @@ bool read_ipc_friction_data(
     Eigen::MatrixXd& V_end,
     Eigen::MatrixXi& E,
     Eigen::MatrixXi& F,
-    CollisionConstraints& collision_constraints,
-    FrictionConstraints& friction_constraints,
+    Collisions& collisions,
+    FrictionCollisions& friction_collisions,
     double& dhat,
     double& barrier_stiffness,
     double& epsv_times_h,
@@ -180,11 +142,11 @@ bool read_ipc_friction_data(
 
     const Eigen::MatrixXd bases = data["tangent_bases"];
 
-    mmcvids_to_friction_constraints(
-        E, F, mmcvids, lambda, coords, bases, friction_constraints);
-    tests::mmcvids_to_constraints(E, F, mmcvids, collision_constraints);
-    for (int i = 0; i < friction_constraints.size(); i++) {
-        friction_constraints[i].mu = mu;
+    mmcvids_to_friction_collisions(
+        E, F, mmcvids, lambda, coords, bases, friction_collisions);
+    tests::mmcvids_to_collisions(E, F, mmcvids, collisions);
+    for (int i = 0; i < friction_collisions.size(); i++) {
+        friction_collisions[i].mu = mu;
     }
 
     return true;
@@ -195,8 +157,8 @@ TEST_CASE(
 {
     Eigen::MatrixXd V_start, V_lagged, V_end;
     Eigen::MatrixXi E, F;
-    CollisionConstraints collision_constraints;
-    FrictionConstraints expected_friction_constraints;
+    Collisions collisions;
+    FrictionCollisions expected_friction_collisions;
     double dhat, barrier_stiffness, epsv_times_h, mu;
     double expected_potential;
     Eigen::VectorXd expected_grad;
@@ -220,9 +182,9 @@ TEST_CASE(
         (tests::DATA_DIR / scene_folder
          / fmt::format("friction_data_{:d}.json", file_number))
             .string(),
-        V_start, V_lagged, V_end, E, F, collision_constraints,
-        expected_friction_constraints, dhat, barrier_stiffness, epsv_times_h,
-        mu, expected_potential, expected_grad, expected_hess);
+        V_start, V_lagged, V_end, E, F, collisions,
+        expected_friction_collisions, dhat, barrier_stiffness, epsv_times_h, mu,
+        expected_potential, expected_grad, expected_hess);
     REQUIRE(success);
 
     Eigen::MatrixXi face_edges;
@@ -231,58 +193,54 @@ TEST_CASE(
     E.bottomRows(face_edges.rows()) = face_edges;
     CollisionMesh mesh(V_start, E, F);
 
-    FrictionConstraints friction_constraints;
-    friction_constraints.build(
-        mesh, V_lagged, collision_constraints, dhat, barrier_stiffness, mu);
+    FrictionCollisions friction_collisions;
+    friction_collisions.build(
+        mesh, V_lagged, collisions, dhat, barrier_stiffness, mu);
+    REQUIRE(friction_collisions.size() == collisions.size());
+    REQUIRE(friction_collisions.size() == expected_friction_collisions.size());
 
-    REQUIRE(friction_constraints.size() == collision_constraints.size());
-    REQUIRE(
-        friction_constraints.size() == expected_friction_constraints.size());
+    const FrictionPotential D(epsv_times_h);
 
     REQUIRE(V_start.size() == V_lagged.size());
     REQUIRE(V_start.size() == V_end.size());
     REQUIRE(V_start.size() == expected_grad.size());
 
-    for (int i = 0; i < friction_constraints.size(); i++) {
+    for (int i = 0; i < friction_collisions.size(); i++) {
         CAPTURE(i);
-        const FrictionConstraint& constraint = friction_constraints[i];
-        const FrictionConstraint& expected_constraint =
-            expected_friction_constraints[i];
-        if (constraint.closest_point.size() == 1) {
+        const FrictionCollision& collision = friction_collisions[i];
+        const FrictionCollision& expected_collision =
+            expected_friction_collisions[i];
+        if (collision.closest_point.size() == 1) {
             CHECK(
-                constraint.closest_point[0]
-                == Catch::Approx(expected_constraint.closest_point[0]));
+                collision.closest_point[0]
+                == Catch::Approx(expected_collision.closest_point[0]));
         } else {
-            CHECK(constraint.closest_point.isApprox(
-                expected_constraint.closest_point, 1e-12));
+            CHECK(collision.closest_point.isApprox(
+                expected_collision.closest_point, 1e-12));
         }
-        CHECK(constraint.tangent_basis.isApprox(
-            expected_constraint.tangent_basis, 1e-12));
+        CHECK(collision.tangent_basis.isApprox(
+            expected_collision.tangent_basis, 1e-12));
         CHECK(
-            constraint.normal_force_magnitude
-            == Catch::Approx(expected_constraint.normal_force_magnitude));
-        CHECK(constraint.mu == Catch::Approx(expected_constraint.mu));
+            collision.normal_force_magnitude
+            == Catch::Approx(expected_collision.normal_force_magnitude));
+        CHECK(collision.mu == Catch::Approx(expected_collision.mu));
 
         CHECK(
-            constraint.vertex_ids(E, F)
-            == expected_constraint.vertex_ids(E, F));
+            collision.vertex_ids(E, F) == expected_collision.vertex_ids(E, F));
     }
 
     const Eigen::MatrixXd velocity = V_end - V_start;
 
-    double potential =
-        friction_constraints.compute_potential(mesh, velocity, epsv_times_h);
+    double potential = D(friction_collisions, mesh, velocity);
 
     CHECK(potential == Catch::Approx(expected_potential));
 
-    Eigen::VectorXd grad = friction_constraints.compute_potential_gradient(
-        mesh, velocity, epsv_times_h);
+    Eigen::VectorXd grad = D.gradient(friction_collisions, mesh, velocity);
 
     CHECK(grad.isApprox(expected_grad));
 
     Eigen::SparseMatrix<double> hess =
-        friction_constraints.compute_potential_hessian(
-            mesh, velocity, epsv_times_h);
+        D.hessian(friction_collisions, mesh, velocity);
 
     CHECK(hess.isApprox(expected_hess));
 }

@@ -114,8 +114,7 @@ TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D][.]")
 }
 
 TEST_CASE(
-    "Build constraint set with codimensional points",
-    "[broad_phase][constraints]")
+    "Build collisions with codimensional points", "[broad_phase][collisions]")
 {
     const double dhat = 1e-3;
     Eigen::MatrixXd V_rest, V;
@@ -135,9 +134,9 @@ TEST_CASE(
 
     const Candidates candidates = test_broad_phase(mesh, V, method, dhat);
 
-    CollisionConstraints constraint_set;
-    constraint_set.build(candidates, mesh, V, dhat);
-    CHECK(constraint_set.size() != 0);
+    Collisions collisions;
+    collisions.build(candidates, mesh, V, dhat);
+    CHECK(collisions.size() != 0);
 }
 
 TEST_CASE("Compare BP against brute force", "[broad_phase]")

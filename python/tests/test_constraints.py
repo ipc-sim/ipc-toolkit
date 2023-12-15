@@ -1,9 +1,9 @@
-from utils import *
+import find_ipctk
 import ipctk
 
 
-def test_constraints():
-    c = ipctk.VertexVertexConstraint(0, 1)
+def test_collisions():
+    c = ipctk.VertexVertexCollision(0, 1)
     c.weight = 10
     assert c.weight == 10
 

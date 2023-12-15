@@ -12,22 +12,22 @@ class CollisionStencil {
 public:
     virtual ~CollisionStencil() = default;
 
-    /// @brief Get the number of vertices in the contact stencil.
+    /// @brief Get the number of vertices in the collision stencil.
     virtual int num_vertices() const = 0;
 
-    /// @brief Get the vertex IDs of the contact stencil.
+    /// @brief Get the vertex IDs of the collision stencil.
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
-    /// @return The vertex IDs of the contact stencil. Size is always 4, but elements i > num_vertices() are -1.
+    /// @return The vertex IDs of the collision stencil. Size is always 4, but elements i > num_vertices() are -1.
     virtual std::array<long, 4> vertex_ids(
         const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const = 0;
 
-    /// @brief Get the vertex attributes of the contact stencil.
+    /// @brief Get the vertex attributes of the collision stencil.
     /// @tparam T Type of the attributes
     /// @param vertices Vertex attributes
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
-    /// @return The vertex positions of the contact stencil. Size is always 4, but elements i > num_vertices() are NaN.
+    /// @return The vertex positions of the collision stencil. Size is always 4, but elements i > num_vertices() are NaN.
     template <typename T>
     std::array<VectorMax3<T>, 4> vertices(
         const MatrixX<T>& vertices,
@@ -55,7 +55,7 @@ public:
     /// @param X Full matrix of DOF (rowwise).
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
-    /// @return This constraint's DOF.
+    /// @return This stencil's DOF.
     template <typename T>
     VectorMax12<T>
     dof(const MatrixX<T>& X,
@@ -71,50 +71,26 @@ public:
         return x;
     }
 
-    /// @brief Compute the distance of the stencil.
-    /// @param vertices Collision mesh vertex positions.
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @return Distance of the stencil.
-    double compute_distance(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const;
+    // ----------------------------------------------------------------------
+    // NOTE: The following functions take stencil vertices as output by dof()
+    // ----------------------------------------------------------------------
 
-    /// @brief Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
-    /// @param vertices Collision mesh vertex positions.
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @return Distance gradient of the stencil w.r.t. the stencil's vertex positions.
-    VectorMax12d compute_distance_gradient(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const;
-
-    /// @brief Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
-    /// @param vertices Collision mesh vertex positions.
-    /// @param edges Collision mesh edges
-    /// @param faces Collision mesh faces
-    /// @return Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
-    MatrixMax12d compute_distance_hessian(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const;
-
-protected:
     /// @brief Compute the distance of the stencil.
     /// @param positions Stencil's vertex positions.
+    /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance of the stencil.
     virtual double compute_distance(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
     /// @param positions Stencil's vertex positions.
+    /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance gradient of the stencil w.r.t. the stencil's vertex positions.
     virtual VectorMax12d
     compute_distance_gradient(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
     /// @param positions Stencil's vertex positions.
+    /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
     virtual MatrixMax12d
     compute_distance_hessian(const VectorMax12d& positions) const = 0;

@@ -11,6 +11,7 @@ void define_face_vertex_candidate(py::module_& m)
         FaceVertexCandidate, CollisionStencil, ContinuousCollisionCandidate>(
         m, "FaceVertexCandidate")
         .def(py::init<long, long>(), py::arg("face_id"), py::arg("vertex_id"))
+        .def("known_dtype", &FaceVertexCandidate::known_dtype)
         .def(
             "__str__",
             [](const FaceVertexCandidate& ev) {

@@ -69,21 +69,6 @@ bool EdgeVertexCandidate::ccd(
         conservative_rescaling);
 }
 
-std::ostream& EdgeVertexCandidate::write_ccd_query(
-    std::ostream& out,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
-{
-    return out << vertices_t0.row(edges(edge_id, 0)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t0.row(edges(edge_id, 1)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t0.row(vertex_id).format(OBJ_VERTEX_FORMAT)
-               << vertices_t1.row(edges(edge_id, 0)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t1.row(edges(edge_id, 1)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t1.row(vertex_id).format(OBJ_VERTEX_FORMAT);
-}
-
 bool EdgeVertexCandidate::operator==(const EdgeVertexCandidate& other) const
 {
     return edge_id == other.edge_id && vertex_id == other.vertex_id;

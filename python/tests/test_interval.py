@@ -1,6 +1,7 @@
 import math
 import numpy as np
-from utils import *
+
+import find_ipctk
 from ipctk import filib
 from ipctk.filib import Interval
 

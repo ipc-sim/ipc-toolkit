@@ -2,13 +2,8 @@ import pathlib
 import numpy as np
 import meshio
 
-try:
-    import ipctk
-except ImportError:
-    import sys
-    sys.path.append(
-        str(pathlib.Path(__file__).parents[2] / "build" / "release" / "python"))
-    import ipctk
+import find_ipctk
+import ipctk
 
 TEST_DATA_DIR = pathlib.Path(__file__).parents[2] / 'tests' / 'data'
 

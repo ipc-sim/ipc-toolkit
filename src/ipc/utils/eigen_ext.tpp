@@ -1,3 +1,5 @@
+#pragma once
+
 #include "eigen_ext.hpp"
 
 #include <ipc/utils/logger.hpp>

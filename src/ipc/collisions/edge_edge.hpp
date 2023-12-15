@@ -1,26 +1,25 @@
 #pragma once
 
 #include <ipc/candidates/edge_edge.hpp>
-#include <ipc/collisions/collision_constraint.hpp>
+#include <ipc/collisions/collision.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
-class EdgeEdgeConstraint : public EdgeEdgeCandidate,
-                           public CollisionConstraint {
+class EdgeEdgeCollision : public EdgeEdgeCandidate, public Collision {
 public:
-    EdgeEdgeConstraint(
+    EdgeEdgeCollision(
         const long edge0_id,
         const long edge1_id,
         const double eps_x,
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
-    EdgeEdgeConstraint(
+    EdgeEdgeCollision(
         const EdgeEdgeCandidate& candidate,
         const double eps_x,
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
-    EdgeEdgeConstraint(
+    EdgeEdgeCollision(
         const long edge0_id,
         const long edge1_id,
         const double eps_x,
@@ -28,33 +27,81 @@ public:
         const Eigen::SparseVector<double>& weight_gradient,
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
-    double compute_potential(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const double dhat) const override;
+    /// @brief Does the distance potentially have to be mollified?
+    bool is_mollified() const override { return true; }
 
-    VectorMax12d compute_potential_gradient(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const double dhat) const override;
+    /// @brief Compute the mollifier threshold for the distance.
+    /// @param rest_positions The stencil's rest vertex positions.
+    /// @return The mollifier threshold.
+    double
+    mollifier_threshold(const VectorMax12d& rest_positions) const override;
 
-    MatrixMax12d compute_potential_hessian(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const double dhat,
-        const bool project_hessian_to_psd) const override;
+    /// @brief Compute the mollifier for the distance.
+    /// @param positions The stencil's vertex positions.
+    /// @return The mollifier value.
+    double mollifier(const VectorMax12d& positions) const override;
+
+    /// @brief Compute the mollifier for the distance.
+    /// @param positions The stencil's vertex positions.
+    /// @param eps_x The mollifier's tolerance.
+    /// @return The mollifier value.
+    double
+    mollifier(const VectorMax12d& positions, double eps_x) const override;
+
+    /// @brief Compute the gradient of the mollifier for the distance w.r.t. positions.
+    /// @param positions The stencil's vertex positions.
+    /// @return The mollifier gradient.
+    VectorMax12d
+    mollifier_gradient(const VectorMax12d& positions) const override;
+
+    /// @brief Compute the gradient of the mollifier for the distance wrt the positions.
+    /// @param positions The stencil's vertex positions.
+    /// @param eps_x The mollifier's tolerance.
+    /// @return The mollifier gradient.
+    virtual VectorMax12d mollifier_gradient(
+        const VectorMax12d& positions, double eps_x) const override;
+
+    /// @brief Compute the Hessian of the mollifier for the distance w.r.t. positions.
+    /// @param positions The stencil's vertex positions.
+    /// @return The mollifier Hessian.
+    MatrixMax12d
+    mollifier_hessian(const VectorMax12d& positions) const override;
+
+    /// @brief Compute the Hessian of the mollifier for the distance wrt the positions.
+    /// @param positions The stencil's vertex positions.
+    /// @param eps_x The mollifier's tolerance.
+    /// @return The mollifier Hessian.
+    virtual MatrixMax12d mollifier_hessian(
+        const VectorMax12d& positions, double eps_x) const override;
+
+    /// @brief Compute the gradient of the mollifier for the distance w.r.t. rest positions.
+    /// @param rest_positions The stencil's rest vertex positions.
+    /// @param positions The stencil's vertex positions.
+    /// @return The mollifier gradient w.r.t. rest positions.
+    Vector12d mollifier_gradient_wrt_x(
+        const VectorMax12d& rest_positions,
+        const VectorMax12d& positions) const override;
+
+    /// @brief Compute the jacobian of the distance mollifier's gradient w.r.t. rest positions.
+    /// @param rest_positions The stencil's rest vertex positions.
+    /// @param positions The stencil's vertex positions.
+    /// @return The jacobian of the mollifier's gradient w.r.t. rest positions.
+    Matrix12d mollifier_gradient_jacobian_wrt_x(
+        const VectorMax12d& rest_positions,
+        const VectorMax12d& positions) const override;
 
     // ------------------------------------------------------------------------
 
-    bool operator==(const EdgeEdgeConstraint& other) const;
-    bool operator!=(const EdgeEdgeConstraint& other) const;
-    bool operator<(const EdgeEdgeConstraint& other) const;
+    virtual EdgeEdgeDistanceType known_dtype() const override { return dtype; }
+
+    // ------------------------------------------------------------------------
+
+    bool operator==(const EdgeEdgeCollision& other) const;
+    bool operator!=(const EdgeEdgeCollision& other) const;
+    bool operator<(const EdgeEdgeCollision& other) const;
 
     template <typename H>
-    friend H AbslHashValue(H h, const EdgeEdgeConstraint& ee)
+    friend H AbslHashValue(H h, const EdgeEdgeCollision& ee)
     {
         return H::combine(
             std::move(h), static_cast<const EdgeEdgeCandidate&>(ee), ee.dtype);
@@ -67,18 +114,8 @@ public:
     double eps_x;
 
     /// @brief Cached distance type.
-    /// Some EE constraints are mollified EV or VV constraints.
+    /// Some EE collisions are mollified EV or VV collisions.
     EdgeEdgeDistanceType dtype;
-
-protected:
-    virtual EdgeEdgeDistanceType known_dtype() const override { return dtype; }
-
-    MatrixMax12d compute_shape_derivative_second_term(
-        const Eigen::MatrixXd& rest_positions,
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const double dhat) const override;
 };
 
 } // namespace ipc
