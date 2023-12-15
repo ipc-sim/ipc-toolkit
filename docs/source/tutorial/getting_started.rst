@@ -57,10 +57,10 @@ The sizes of ``edges`` and ``faces`` are ``#E x 2`` and ``#F x 3`` respectively 
 .. note::
    In 2D only the ``edges`` matrix is required. In 3D both ``edges`` and ``faces`` are required.
 
-Collision Constraints
----------------------
+Collisions
+----------
 
-Now that we have a collision mesh, we can compute the contact potential. To do this we first need to build the set of active collision constraints (``CollisionConstraints``).
+Now that we have a collision mesh, we can compute the collision barrier potential. To do this we first need to build the set of active collisions (``Collisions``).
 
 To start we need the current positions of the ``vertices``. For this tutorial, let us use squash the bunny has to 1% of its original height.
 
@@ -80,7 +80,7 @@ To start we need the current positions of the ``vertices``. For this tutorial, l
             vertices = collision_mesh.rest_positions()
             vertices[:, 1] *= 0.01  # Squash the bunny in the y-direction
 
-Using these deformed positions, we can build the set of active collision constraints.
+Using these deformed positions, we can build the set of active collisions.
 For this, we need to specify :math:`\hat{d}` (``dhat``), the IPC barrier activation distance.
 We will use a value of :math:`\hat{d} = 10^{-3}`.
 
@@ -92,8 +92,8 @@ We will use a value of :math:`\hat{d} = 10^{-3}`.
 
             const double dhat = 1e-3;
 
-            ipc::CollisionConstraints collision_constraints;
-            collision_constraints.build(collision_mesh, vertices, dhat);
+            ipc::Collisions collisions;
+            collisions.build(collision_mesh, vertices, dhat);
 
     .. md-tab-item:: Python
 
@@ -101,15 +101,15 @@ We will use a value of :math:`\hat{d} = 10^{-3}`.
 
             dhat = 1e-3
 
-            collision_constraints = ipctk.CollisionConstraints()
-            collision_constraints.build(collision_mesh, vertices, dhat)
+            collisions = ipctk.Collisions()
+            collisions.build(collision_mesh, vertices, dhat)
 
-This will automatically use a spatial data structure to perform a broad-phase culling and then perform a narrow-phase culling by computing distances (discarding any constraint with a distance :math:`> \hat{d}`).
+This will automatically use a spatial data structure to perform a broad-phase culling and then perform a narrow-phase culling by computing distances (discarding any collision candidates with a distance :math:`> \hat{d}`).
 
-Contact Potential
+Barrier Potential
 ^^^^^^^^^^^^^^^^^
 
-Now we can compute the contact potential using the ``CollisionConstraints``.
+Now we can compute the barrier potential using the ``BarrierPotential`` class.
 
 .. md-tab-set::
 
@@ -117,32 +117,32 @@ Now we can compute the contact potential using the ``CollisionConstraints``.
 
         .. code-block:: c++
 
-            double contact_potential = collision_constraints.compute_potential(
-                collision_mesh, vertices, dhat);
+            const ipc::BarrierPotential B(dhat);
+            double barrier_potential = B(collisions, collision_mesh, vertices);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            contact_potential = collision_constraints.compute_potential(
-                collision_mesh, vertices, dhat)
+            B = ipctk.BarrierPotential(dhat)
+            barrier_potential = B(collisions, collision_mesh, vertices)
 
-This returns a scalar value ``contact_potential`` which is the sum of the contact potentials for each active constraint.
+This returns a scalar value ``barrier_potential`` which is the sum of the barrier potentials for each active collision.
 
 Mathematically this is defined as
 
 .. math::
    B(x) = \sum_{k \in C} b(d_k(x), \hat{d}),
 
-where :math:`x` is our deformed vertex positions, :math:`C` is the active collision constraints, :math:`d_k` is the distance (squared) of the :math:`k`-th active constraint, and :math:`b` is IPC's C2-clamped log-barrier function.
+where :math:`x` is our deformed vertex positions, :math:`C` is the active collisions, :math:`d_k` is the distance (squared) of the :math:`k`-th active collision, and :math:`b` is IPC's C2-clamped log-barrier function.
 
 .. note::
    This is **not** premultiplied by the barrier stiffness :math:`\kappa`.
 
-Contact Potential Derivatives
+Barrier Potential Derivatives
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We can also compute the first and second derivatives of the contact potential with respect to the vertex positions.
+We can also compute the first and second derivatives of the barrier potential with respect to the vertex positions.
 
 .. md-tab-set::
 
@@ -150,25 +150,21 @@ We can also compute the first and second derivatives of the contact potential wi
 
         .. code-block:: c++
 
-            Eigen::VectorXd contact_potential_grad =
-                collision_constraints.compute_potential_gradient(
-                    collision_mesh, vertices, dhat);
+            Eigen::VectorXd barrier_potential_grad =
+                B.gradient(collisions, collision_mesh, vertices);
 
-            Eigen::SparseMatrix<double> contact_potential_hess =
-                collision_constraints.compute_potential_hessian(
-                    collision_mesh, vertices, dhat);
+            Eigen::SparseMatrix<double> barrier_potential_hess =
+                B.hessian(collisions, collision_mesh, vertices);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            contact_potential_grad = collision_constraints.compute_potential_gradient(
-                collision_mesh, vertices, dhat)
+            barrier_potential_grad = B.gradient(collisions, collision_mesh, vertices)
 
-            contact_potential_hess = collision_constraints.compute_potential_hessian(
-                collision_mesh, vertices, dhat)
+            barrier_potential_hess = B.hessian(collisions, collision_mesh, vertices)
 
-These return the gradient and hessian of the contact potential as a dense vector and sparse matrix respectively.
+These return the gradient and Hessian of the barrier potential as a dense vector and sparse matrix, respectively.
 
 The derivatives are taken with respect to the row-wise flattened vertices. That is, for ``vertices``
 
@@ -182,7 +178,7 @@ The derivatives are taken with respect to the row-wise flattened vertices. That 
 you will get the gradient of size :math:`|V|d \times 1` with the order
 
 .. math::
-    \begin{bmatrix}
+    \nabla B = \begin{bmatrix}
     \frac{\partial B}{\partial x_1} &
     \frac{\partial B}{\partial y_1} &
     \frac{\partial B}{\partial z_1} &
@@ -195,7 +191,7 @@ you will get the gradient of size :math:`|V|d \times 1` with the order
 and the Hessian of size :math:`|V|d \times |V|d` with the order
 
 .. math::
-    \begin{bmatrix}
+    \nabla^2 B = \begin{bmatrix}
     \frac{\partial^2 B}{\partial x_1^2} &
     \frac{\partial^2 B}{\partial x_1 \partial y_1} &
     \frac{\partial^2 B}{\partial x_1 \partial z_1} &
@@ -251,9 +247,9 @@ and the Hessian of size :math:`|V|d \times |V|d` with the order
 Adaptive Barrier Stiffness
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The last piece of the contact potential is the barrier stiffness. This is a weight that is multiplied by the barrier potential to better scale it relative to the energy potential. This can be a fixed value or adaptive.
+The last piece of the barrier potential is the barrier stiffness. This is a weight that is multiplied by the barrier potential to better scale it relative to the energy potential. This can be a fixed value or adaptive.
 
-To compute the adaptive barrier stiffness, we can use two functions: ``initial_barrier_stiffness`` and ``update_barrier_stiffness``. The function ``initial_barrier_stiffness``computes the initial value from the current energy and contact potential gradients. This function also provides a minimum and maximum value for the barrier stiffness. The function ``update_barrier_stiffness`` updates the barrier stiffness if the minimum distance has become too small.
+To compute the adaptive barrier stiffness, we can use two functions: ``initial_barrier_stiffness`` and ``update_barrier_stiffness``. The function ``initial_barrier_stiffness``computes the initial value from the current energy and barrier potential gradients. This function also provides a minimum and maximum value for the barrier stiffness. The function ``update_barrier_stiffness`` updates the barrier stiffness if the minimum distance has become too small.
 
 .. md-tab-set::
 
@@ -264,26 +260,24 @@ To compute the adaptive barrier stiffness, we can use two functions: ``initial_b
             // (beginning of nonlinear solve)
 
             Eigen::VectorXd grad_energy = ...; // gradient of elastic energy potential
-            Eigen::VectorXd grad_contact = collision_constraints.compute_potential_gradient(
-                collision_mesh, vertices, dhat);
+            Eigen::VectorXd grad_barrier = B.gradient(collisions, collision_mesh, vertices);
 
             double bbox_diagonal = ipc::world_bbox_diagonal_length(vertices);
 
             double max_barrier_stiffness; // output of initial_barrier_stiffness
             double barrier_stiffness = ipc::initial_barrier_stiffness(
-                bbox_diagonal, dhat, avg_mass, grad_energy, grad_contact,
+                bbox_diagonal, dhat, avg_mass, grad_energy, grad_barrier,
                 max_barrier_stiffness);
 
-            double prev_distance =
-                collision_constraints.compute_minimum_distance(
-                    collision_mesh, vertices);
+            double prev_distance = collisions.compute_minimum_distance(
+                collision_mesh, vertices);
 
             // ...
 
             // (end of nonlinear iteration)
 
             double curr_distance =
-                collision_constraints.compute_minimum_distance(collision_mesh, vertices);
+                collisions.compute_minimum_distance(collision_mesh, vertices);
 
             barrier_stiffness = ipc::update_barrier_stiffness(
                 prev_distance, curr_distance, max_barrier_stiffness, barrier_stiffness,
@@ -300,24 +294,21 @@ To compute the adaptive barrier stiffness, we can use two functions: ``initial_b
             # (beginning of nonlinear solve)
 
             grad_energy = ...  # gradient of elastic energy potential
-            grad_contact = collision_constraints.compute_potential_gradient(
-                collision_mesh, vertices, dhat)
+            grad_barrier = B.gradient(collisions, collision_mesh, vertices)
 
             bbox_diagonal = ipctk.world_bbox_diagonal_length(vertices)
 
             barrier_stiffness, max_barrier_stiffness = ipctk.initial_barrier_stiffness(
-                bbox_diagonal, dhat, avg_mass, grad_energy, grad_contact,
+                bbox_diagonal, dhat, avg_mass, grad_energy, grad_barrier,
                 max_barrier_stiffness)
 
-            prev_distance = collision_constraints.compute_minimum_distance(
-                collision_mesh, vertices)
+            prev_distance = collisions.compute_minimum_distance(collision_mesh, vertices)
 
             # ...
 
             # (end of nonlinear iteration)
 
-            curr_distance = collision_constraints.compute_minimum_distance(
-                collision_mesh, vertices)
+            curr_distance = collisions.compute_minimum_distance(collision_mesh, vertices)
 
             barrier_stiffness = ipctk.update_barrier_stiffness(
                 prev_distance, curr_distance, max_barrier_stiffness, barrier_stiffness,
@@ -332,9 +323,9 @@ To compute the adaptive barrier stiffness, we can use two functions: ``initial_b
 Modeling Thickness
 ^^^^^^^^^^^^^^^^^^
 
-We implement the thickness model of :cite:t:`Li2021CIPC` to apply an offset (referred to as :math:`\xi` in :cite:p:`Li2021CIPC` or :math:`d_\min` here) to the collision constraints. This is useful for modeling the thickness of a shell or cloth.
+We implement the thickness model of :cite:t:`Li2021CIPC` to apply an offset (referred to as :math:`\xi` in :cite:p:`Li2021CIPC` or :math:`d_\min` here) to the collisions. This is useful for modeling the thickness of a shell or cloth.
 
-To add a constraint offset, we need to set the ``dmin`` variable. For example, we can set the constraint offset :math:`d_\min=10^{-3}` and :math:`\hat{d}=10^{-4}`:
+To add a collision offset, we need to set the ``dmin`` variable. For example, we can set the collision offset :math:`d_\min=10^{-3}` and :math:`\hat{d}=10^{-4}`:
 
 .. md-tab-set::
 
@@ -345,8 +336,8 @@ To add a constraint offset, we need to set the ``dmin`` variable. For example, w
             const double dhat = 1e-4;
             const double dmin = 1e-3;
 
-            ipc::CollisionConstraints collision_constraints;
-            collision_constraints.build(collision_mesh, vertices, dhat, dmin);
+            ipc::Collisions collisions;
+            collisions.build(collision_mesh, vertices, dhat, dmin);
 
     .. md-tab-item:: Python
 
@@ -355,10 +346,10 @@ To add a constraint offset, we need to set the ``dmin`` variable. For example, w
             dhat = 1e-4
             dmin = 1e-3
 
-            collision_constraints = ipctk.CollisionConstraints()
-            collision_constraints.build(collision_mesh, vertices, dhat, dmin)
+            collisions = ipctk.Collisions()
+            collisions.build(collision_mesh, vertices, dhat, dmin)
 
-This will then set the ``dmin`` field in all of the ``CollisionConstraint`` objects stored in the ``collision_constraints``.
+This will then set the ``dmin`` field in all of the ``Collision`` objects stored in the ``collisions``.
 
 .. note::
     Currently, only a single thickness value is supported for the entire mesh.
@@ -368,7 +359,7 @@ It is also important to use the same :math:`d_\min` when performing CCD (see :re
 Friction
 --------
 
-Computing the friction dissipative potential is similar to the contact potential, but because it is a lagged model, we need to build it from a fixed set of constraints.
+Computing the friction dissipative potential is similar to the barrier potential, but because it is a lagged model, we need to build it from a fixed set of collisions.
 
 .. md-tab-set::
 
@@ -376,24 +367,24 @@ Computing the friction dissipative potential is similar to the contact potential
 
         .. code-block:: c++
 
-            ipc::FrictionConstraints friction_constraints;
-            friction_constraints.build(
-                collision_mesh, vertices, contact_constraints, dhat, barrier_stiffness, mu);
+            ipc::FrictionCollisions friction_collisions;
+            friction_collisions.build(
+                collision_mesh, vertices, collisions, dhat, barrier_stiffness, mu);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            friction_constraints = ipctk.FrictionConstraints()
-            friction_constraints.build(
-                collision_mesh, vertices, contact_constraints, dhat, barrier_stiffness, mu)
+            friction_collisions = ipctk.FrictionCollisions()
+            friction_collisions.build(
+                collision_mesh, vertices, collisions, dhat, barrier_stiffness, mu)
 
 Here ``mu`` (:math:`\mu`) is the (global) coefficient of friction, and ``barrier_stiffness`` (:math:`\kappa`) is the barrier stiffness.
 
 Friction Dissipative Potential
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Now we can compute the friction dissipative potential using the ``FrictionConstraints``.
+Now we can compute the friction dissipative potential using the ``FrictionPotential`` class.
 
 .. md-tab-set::
 
@@ -401,15 +392,15 @@ Now we can compute the friction dissipative potential using the ``FrictionConstr
 
         .. code-block:: c++
 
-            double friction_potential = friction_constraints.compute_potential(
-                collision_mesh, velocity, epsv);
+            const FrictionPotential D(epsv);
+            double friction_potential = D(friction_collisions, collision_mesh, velocity);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            friction_potential = friction_constraints.compute_potential(
-                collision_mesh, velocity, epsv)
+            D = FrictionPotential(epsv)
+            friction_potential = D(friction_collisions, collision_mesh, velocity)
 
 Here ``epsv`` (:math:`\epsilon_v`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
 
@@ -428,7 +419,7 @@ Mathematically this is defined as
 .. math::
    D(x) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|T_k^Tv\|, \epsilon_v\right),
 
-where :math:`C` is the lagged collision constraints, :math:`\lambda_k^n` is the normal force magnitude for the :math:`k`-th contact, :math:`T_k` is the tangential basis for the :math:`k`-th contact, and :math:`f_0` is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.
+where :math:`C` is the lagged collisions, :math:`\lambda_k^n` is the normal force magnitude for the :math:`k`-th collision, :math:`T_k` is the tangential basis for the :math:`k`-th collision, and :math:`f_0` is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.
 
 Derivatives
 ^^^^^^^^^^^
@@ -442,22 +433,20 @@ We can also compute the first and second derivatives of the friction dissipative
         .. code-block:: c++
 
             Eigen::VectorXd friction_potential_grad =
-                friction_constraints.compute_potential_gradient(
-                    collision_mesh, velocity, epsv);
+                D.gradient(friction_collisions, collision_mesh, velocity);
 
             Eigen::SparseMatrix<double> friction_potential_hess =
-                friction_constraints.compute_potential_hessian(
-                    collision_mesh, velocity, epsv);
+                D.hessian(friction_collisions, collision_mesh, velocity);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            friction_potential_grad = friction_constraints.compute_potential_gradient(
-                collision_mesh, velocity, epsv)
+            friction_potential_grad = D.gradient(
+                friction_collisions, collision_mesh, velocity)
 
-            friction_potential_hess = friction_constraints.compute_potential_hessian(
-                collision_mesh, velocity, epsv)
+            friction_potential_hess = D.hessian(
+                friction_collisions, collision_mesh, velocity)
 
 Continuous Collision Detection
 ------------------------------
