@@ -15,7 +15,7 @@ void FrictionCollision::init(
     const double barrier_stiffness)
 {
     // do this to initialize dim()
-    const int dim = positions.size() / collision.num_vertices();
+    const int dim = collision.dim(positions.size());
     assert(positions.size() % collision.num_vertices() == 0);
     tangent_basis.resize(dim, dim - 1);
 
