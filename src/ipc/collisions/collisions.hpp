@@ -70,40 +70,40 @@ public:
     /// @brief Clear the collision set.
     void clear();
 
-    /// @brief Get a reference to constriant idx.
-    /// @param idx The index of the collision.
+    /// @brief Get a reference to collision at index i.
+    /// @param i The index of the collision.
     /// @return A reference to the collision.
-    Collision& operator[](size_t idx);
+    Collision& operator[](size_t i);
 
-    /// @brief Get a const reference to constriant idx.
-    /// @param idx The index of the collision.
+    /// @brief Get a const reference to collision at index i.
+    /// @param i The index of the collision.
     /// @return A const reference to the collision.
-    const Collision& operator[](size_t idx) const;
+    const Collision& operator[](size_t i) const;
 
-    /// @brief Get if the collision at idx is a vertex-vertex collision.
-    /// @param idx The index of the collision.
-    /// @return If the collision at idx is a vertex-vertex collision.
-    bool is_vertex_vertex(size_t idx) const;
+    /// @brief Get if the collision at i is a vertex-vertex collision.
+    /// @param i The index of the collision.
+    /// @return If the collision at i is a vertex-vertex collision.
+    bool is_vertex_vertex(size_t i) const;
 
-    /// @brief Get if the collision at idx is an edge-vertex collision.
-    /// @param idx The index of the collision.
-    /// @return If the collision at idx is an edge-vertex collision.
-    bool is_edge_vertex(size_t idx) const;
+    /// @brief Get if the collision at i is an edge-vertex collision.
+    /// @param i The index of the collision.
+    /// @return If the collision at i is an edge-vertex collision.
+    bool is_edge_vertex(size_t i) const;
 
-    /// @brief Get if the collision at idx is an edge-edge collision.
-    /// @param idx The index of the collision.
-    /// @return If the collision at idx is an edge-edge collision.
-    bool is_edge_edge(size_t idx) const;
+    /// @brief Get if the collision at i is an edge-edge collision.
+    /// @param i The index of the collision.
+    /// @return If the collision at i is an edge-edge collision.
+    bool is_edge_edge(size_t i) const;
 
-    /// @brief Get if the collision at idx is an face-vertex collision.
-    /// @param idx The index of the collision.
-    /// @return If the collision at idx is an face-vertex collision.
-    bool is_face_vertex(size_t idx) const;
+    /// @brief Get if the collision at i is an face-vertex collision.
+    /// @param i The index of the collision.
+    /// @return If the collision at i is an face-vertex collision.
+    bool is_face_vertex(size_t i) const;
 
-    /// @brief Get if the collision at idx is an plane-vertex collision.
-    /// @param idx The index of the collision.
-    /// @return If the collision at idx is an plane-vertex collision.
-    bool is_plane_vertex(size_t idx) const;
+    /// @brief Get if the collision at i is an plane-vertex collision.
+    /// @param i The index of the collision.
+    /// @return If the collision at i is an plane-vertex collision.
+    bool is_plane_vertex(size_t i) const;
 
     /// @brief Get if the collision set should use the convergent formulation.
     /// @note If not empty, this is the current value not necessarily the value used to build the collisions.

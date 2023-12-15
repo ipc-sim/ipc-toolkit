@@ -62,80 +62,78 @@ void define_collisions(py::module_& m)
         .def("clear", &Collisions::clear, "Clear the collision set.")
         .def(
             "__getitem__",
-            [](Collisions& self, size_t idx) -> Collision& {
-                return self[idx];
-            },
+            [](Collisions& self, size_t i) -> Collision& { return self[i]; },
             py::return_value_policy::reference,
             R"ipc_Qu8mg5v7(
-            Get a reference to constriant idx.
+            Get a reference to collision at index i.
 
             Parameters:
-                idx: The index of the collision.
+                i: The index of the collision.
 
             Returns:
                 A reference to the collision.
             )ipc_Qu8mg5v7",
-            py::arg("idx"))
+            py::arg("i"))
         .def(
             "is_vertex_vertex", &Collisions::is_vertex_vertex,
             R"ipc_Qu8mg5v7(
-            Get if the collision at idx is a vertex-vertex collision.
+            Get if the collision at i is a vertex-vertex collision.
 
             Parameters:
-                idx: The index of the collision.
+                i: The index of the collision.
 
             Returns:
-                If the collision at idx is a vertex-vertex collision.
+                If the collision at i is a vertex-vertex collision.
             )ipc_Qu8mg5v7",
-            py::arg("idx"))
+            py::arg("i"))
         .def(
             "is_edge_vertex", &Collisions::is_edge_vertex,
             R"ipc_Qu8mg5v7(
-            Get if the collision at idx is an edge-vertex collision.
+            Get if the collision at i is an edge-vertex collision.
 
             Parameters:
-                idx: The index of the collision.
+                i: The index of the collision.
 
             Returns:
-                If the collision at idx is an edge-vertex collision.
+                If the collision at i is an edge-vertex collision.
             )ipc_Qu8mg5v7",
-            py::arg("idx"))
+            py::arg("i"))
         .def(
             "is_edge_edge", &Collisions::is_edge_edge,
             R"ipc_Qu8mg5v7(
-            Get if the collision at idx is an edge-edge collision.
+            Get if the collision at i is an edge-edge collision.
 
             Parameters:
-                idx: The index of the collision.nose
+                i: The index of the collision.nose
 
             Returns:
-                If the collision at idx is an edge-edge collision.
+                If the collision at i is an edge-edge collision.
             )ipc_Qu8mg5v7",
-            py::arg("idx"))
+            py::arg("i"))
         .def(
             "is_face_vertex", &Collisions::is_face_vertex,
             R"ipc_Qu8mg5v7(
-            Get if the collision at idx is an face-vertex collision.
+            Get if the collision at i is an face-vertex collision.
 
             Parameters:
-                idx: The index of the collision.
+                i: The index of the collision.
 
             Returns:
-                If the collision at idx is an face-vertex collision.
+                If the collision at i is an face-vertex collision.
             )ipc_Qu8mg5v7",
-            py::arg("idx"))
+            py::arg("i"))
         .def(
             "is_plane_vertex", &Collisions::is_plane_vertex,
             R"ipc_Qu8mg5v7(
-            Get if the collision at idx is an plane-vertex collision.
+            Get if the collision at i is an plane-vertex collision.
 
             Parameters:
-                idx: The index of the collision.
+                i: The index of the collision.
 
             Returns:
-                If the collision at idx is an plane-vertex collision.
+                If the collision at i is an plane-vertex collision.
             )ipc_Qu8mg5v7",
-            py::arg("idx"))
+            py::arg("i"))
         .def(
             "to_string", &Collisions::to_string, "", py::arg("mesh"),
             py::arg("vertices"))

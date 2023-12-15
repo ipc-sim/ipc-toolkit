@@ -48,20 +48,20 @@ void define_friction_collisions(py::module_& m)
             "Clear the friction collisions.")
         .def(
             "__getitem__",
-            [](FrictionCollisions& self, size_t idx) -> FrictionCollision& {
-                return self[idx];
+            [](FrictionCollisions& self, size_t i) -> FrictionCollision& {
+                return self[i];
             },
             py::return_value_policy::reference,
             R"ipc_Qu8mg5v7(
-            Get a reference to constriant idx.
+            Get a reference to collision at index i.
 
             Parameters:
-                idx: The index of the collision.
+                i: The index of the collision.
 
             Returns:
                 A reference to the collision.
             )ipc_Qu8mg5v7",
-            py::arg("idx"))
+            py::arg("i"))
         .def_static(
             "default_blend_mu", &FrictionCollisions::default_blend_mu,
             py::arg("mu0"), py::arg("mu1"))

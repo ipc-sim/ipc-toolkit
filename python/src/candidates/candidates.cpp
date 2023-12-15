@@ -53,8 +53,8 @@ void define_candidates(py::module_& m)
         .def("clear", &Candidates::clear)
         .def(
             "__getitem__",
-            [](Candidates& self, size_t idx) -> ContinuousCollisionCandidate& {
-                return self[idx];
+            [](Candidates& self, size_t i) -> ContinuousCollisionCandidate& {
+                return self[i];
             },
             py::return_value_policy::reference)
         .def(

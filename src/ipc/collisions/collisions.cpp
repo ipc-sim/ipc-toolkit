@@ -382,85 +382,85 @@ void Collisions::clear()
     pv_collisions.clear();
 }
 
-Collision& Collisions::operator[](size_t idx)
+Collision& Collisions::operator[](size_t i)
 {
-    if (idx < vv_collisions.size()) {
-        return vv_collisions[idx];
+    if (i < vv_collisions.size()) {
+        return vv_collisions[i];
     }
-    idx -= vv_collisions.size();
-    if (idx < ev_collisions.size()) {
-        return ev_collisions[idx];
+    i -= vv_collisions.size();
+    if (i < ev_collisions.size()) {
+        return ev_collisions[i];
     }
-    idx -= ev_collisions.size();
-    if (idx < ee_collisions.size()) {
-        return ee_collisions[idx];
+    i -= ev_collisions.size();
+    if (i < ee_collisions.size()) {
+        return ee_collisions[i];
     }
-    idx -= ee_collisions.size();
-    if (idx < fv_collisions.size()) {
-        return fv_collisions[idx];
+    i -= ee_collisions.size();
+    if (i < fv_collisions.size()) {
+        return fv_collisions[i];
     }
-    idx -= fv_collisions.size();
-    if (idx < pv_collisions.size()) {
-        return pv_collisions[idx];
+    i -= fv_collisions.size();
+    if (i < pv_collisions.size()) {
+        return pv_collisions[i];
     }
     throw std::out_of_range("Collision index is out of range!");
 }
 
-const Collision& Collisions::operator[](size_t idx) const
+const Collision& Collisions::operator[](size_t i) const
 {
-    if (idx < vv_collisions.size()) {
-        return vv_collisions[idx];
+    if (i < vv_collisions.size()) {
+        return vv_collisions[i];
     }
-    idx -= vv_collisions.size();
-    if (idx < ev_collisions.size()) {
-        return ev_collisions[idx];
+    i -= vv_collisions.size();
+    if (i < ev_collisions.size()) {
+        return ev_collisions[i];
     }
-    idx -= ev_collisions.size();
-    if (idx < ee_collisions.size()) {
-        return ee_collisions[idx];
+    i -= ev_collisions.size();
+    if (i < ee_collisions.size()) {
+        return ee_collisions[i];
     }
-    idx -= ee_collisions.size();
-    if (idx < fv_collisions.size()) {
-        return fv_collisions[idx];
+    i -= ee_collisions.size();
+    if (i < fv_collisions.size()) {
+        return fv_collisions[i];
     }
-    idx -= fv_collisions.size();
-    if (idx < pv_collisions.size()) {
-        return pv_collisions[idx];
+    i -= fv_collisions.size();
+    if (i < pv_collisions.size()) {
+        return pv_collisions[i];
     }
     throw std::out_of_range("Collision index is out of range!");
 }
 
-bool Collisions::is_vertex_vertex(size_t idx) const
+bool Collisions::is_vertex_vertex(size_t i) const
 {
-    return idx < vv_collisions.size();
+    return i < vv_collisions.size();
 }
 
-bool Collisions::is_edge_vertex(size_t idx) const
+bool Collisions::is_edge_vertex(size_t i) const
 {
-    return idx >= vv_collisions.size()
-        && idx < vv_collisions.size() + ev_collisions.size();
+    return i >= vv_collisions.size()
+        && i < vv_collisions.size() + ev_collisions.size();
 }
 
-bool Collisions::is_edge_edge(size_t idx) const
+bool Collisions::is_edge_edge(size_t i) const
 {
-    return idx >= vv_collisions.size() + ev_collisions.size()
-        && idx
+    return i >= vv_collisions.size() + ev_collisions.size()
+        && i
         < vv_collisions.size() + ev_collisions.size() + ee_collisions.size();
 }
 
-bool Collisions::is_face_vertex(size_t idx) const
+bool Collisions::is_face_vertex(size_t i) const
 {
-    return idx
+    return i
         >= vv_collisions.size() + ev_collisions.size() + ee_collisions.size()
-        && idx < vv_collisions.size() + ev_collisions.size()
+        && i < vv_collisions.size() + ev_collisions.size()
             + ee_collisions.size() + fv_collisions.size();
 }
 
-bool Collisions::is_plane_vertex(size_t idx) const
+bool Collisions::is_plane_vertex(size_t i) const
 {
-    return idx >= vv_collisions.size() + ev_collisions.size()
+    return i >= vv_collisions.size() + ev_collisions.size()
             + ee_collisions.size() + fv_collisions.size()
-        && idx < vv_collisions.size() + ev_collisions.size()
+        && i < vv_collisions.size() + ev_collisions.size()
             + ee_collisions.size() + fv_collisions.size()
             + pv_collisions.size();
 }

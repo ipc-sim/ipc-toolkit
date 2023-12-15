@@ -57,15 +57,15 @@ public:
     /// @brief Clear the friction collisions.
     void clear();
 
-    /// @brief Get a reference to constriant idx.
-    /// @param idx The index of the collision.
+    /// @brief Get a reference to collision at index i.
+    /// @param i The index of the collision.
     /// @return A reference to the collision.
-    FrictionCollision& operator[](const size_t idx);
+    FrictionCollision& operator[](const size_t i);
 
-    /// @brief Get a const reference to constriant idx.
-    /// @param idx The index of the collision.
+    /// @brief Get a const reference to collision at index i.
+    /// @param i The index of the collision.
     /// @return A const reference to the collision.
-    const FrictionCollision& operator[](const size_t idx) const;
+    const FrictionCollision& operator[](const size_t i) const;
 
     static double default_blend_mu(double mu0, double mu1)
     {

@@ -369,42 +369,42 @@ void Candidates::clear()
     fv_candidates.clear();
 }
 
-ContinuousCollisionCandidate& Candidates::operator[](size_t idx)
+ContinuousCollisionCandidate& Candidates::operator[](size_t i)
 {
-    if (idx < vv_candidates.size()) {
-        return vv_candidates[idx];
+    if (i < vv_candidates.size()) {
+        return vv_candidates[i];
     }
-    idx -= vv_candidates.size();
-    if (idx < ev_candidates.size()) {
-        return ev_candidates[idx];
+    i -= vv_candidates.size();
+    if (i < ev_candidates.size()) {
+        return ev_candidates[i];
     }
-    idx -= ev_candidates.size();
-    if (idx < ee_candidates.size()) {
-        return ee_candidates[idx];
+    i -= ev_candidates.size();
+    if (i < ee_candidates.size()) {
+        return ee_candidates[i];
     }
-    idx -= ee_candidates.size();
-    if (idx < fv_candidates.size()) {
-        return fv_candidates[idx];
+    i -= ee_candidates.size();
+    if (i < fv_candidates.size()) {
+        return fv_candidates[i];
     }
     throw std::out_of_range("Candidate index is out of range!");
 }
 
-const ContinuousCollisionCandidate& Candidates::operator[](size_t idx) const
+const ContinuousCollisionCandidate& Candidates::operator[](size_t i) const
 {
-    if (idx < vv_candidates.size()) {
-        return vv_candidates[idx];
+    if (i < vv_candidates.size()) {
+        return vv_candidates[i];
     }
-    idx -= vv_candidates.size();
-    if (idx < ev_candidates.size()) {
-        return ev_candidates[idx];
+    i -= vv_candidates.size();
+    if (i < ev_candidates.size()) {
+        return ev_candidates[i];
     }
-    idx -= ev_candidates.size();
-    if (idx < ee_candidates.size()) {
-        return ee_candidates[idx];
+    i -= ev_candidates.size();
+    if (i < ee_candidates.size()) {
+        return ee_candidates[i];
     }
-    idx -= ee_candidates.size();
-    if (idx < fv_candidates.size()) {
-        return fv_candidates[idx];
+    i -= ee_candidates.size();
+    if (i < fv_candidates.size()) {
+        return fv_candidates[i];
     }
     throw std::out_of_range("Candidate index is out of range!");
 }

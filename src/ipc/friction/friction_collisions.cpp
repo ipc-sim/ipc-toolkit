@@ -111,42 +111,42 @@ void FrictionCollisions::clear()
     fv_collisions.clear();
 }
 
-FrictionCollision& FrictionCollisions::operator[](size_t idx)
+FrictionCollision& FrictionCollisions::operator[](size_t i)
 {
-    if (idx < vv_collisions.size()) {
-        return vv_collisions[idx];
+    if (i < vv_collisions.size()) {
+        return vv_collisions[i];
     }
-    idx -= vv_collisions.size();
-    if (idx < ev_collisions.size()) {
-        return ev_collisions[idx];
+    i -= vv_collisions.size();
+    if (i < ev_collisions.size()) {
+        return ev_collisions[i];
     }
-    idx -= ev_collisions.size();
-    if (idx < ee_collisions.size()) {
-        return ee_collisions[idx];
+    i -= ev_collisions.size();
+    if (i < ee_collisions.size()) {
+        return ee_collisions[i];
     }
-    idx -= ee_collisions.size();
-    if (idx < fv_collisions.size()) {
-        return fv_collisions[idx];
+    i -= ee_collisions.size();
+    if (i < fv_collisions.size()) {
+        return fv_collisions[i];
     }
     throw std::out_of_range("Friction collision index is out of range!");
 }
 
-const FrictionCollision& FrictionCollisions::operator[](size_t idx) const
+const FrictionCollision& FrictionCollisions::operator[](size_t i) const
 {
-    if (idx < vv_collisions.size()) {
-        return vv_collisions[idx];
+    if (i < vv_collisions.size()) {
+        return vv_collisions[i];
     }
-    idx -= vv_collisions.size();
-    if (idx < ev_collisions.size()) {
-        return ev_collisions[idx];
+    i -= vv_collisions.size();
+    if (i < ev_collisions.size()) {
+        return ev_collisions[i];
     }
-    idx -= ev_collisions.size();
-    if (idx < ee_collisions.size()) {
-        return ee_collisions[idx];
+    i -= ev_collisions.size();
+    if (i < ee_collisions.size()) {
+        return ee_collisions[i];
     }
-    idx -= ee_collisions.size();
-    if (idx < fv_collisions.size()) {
-        return fv_collisions[idx];
+    i -= ee_collisions.size();
+    if (i < fv_collisions.size()) {
+        return fv_collisions[i];
     }
     throw std::out_of_range("Friction collision index is out of range!");
 }
