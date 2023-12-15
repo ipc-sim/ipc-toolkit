@@ -13,30 +13,34 @@ void define_friction_collisions(py::module_& m)
             "build",
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&, const Collisions&,
-                double, double, double>(&FrictionCollisions::build),
+                const BarrierPotential&, double, double>(
+                &FrictionCollisions::build),
             py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
-            py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("mu"))
+            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("mu"))
         .def(
             "build",
             [](FrictionCollisions& self, const CollisionMesh& mesh,
                const Eigen::MatrixXd& vertices, const Collisions& collisions,
-               const double dhat, const double barrier_stiffness,
-               const Eigen::VectorXd& mus) {
+               const BarrierPotential& barrier_potential,
+               const double barrier_stiffness, const Eigen::VectorXd& mus) {
                 self.build(
-                    mesh, vertices, collisions, dhat, barrier_stiffness, mus);
+                    mesh, vertices, collisions, barrier_potential,
+                    barrier_stiffness, mus);
             },
-            "", py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
-            py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("mus"))
+            py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
+            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("mus"))
         .def(
             "build",
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&, const Collisions&,
-                const double, const double, const Eigen::VectorXd&,
+                const BarrierPotential&, const double, const Eigen::VectorXd&,
                 const std::function<double(double, double)>&>(
                 &FrictionCollisions::build),
             py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
-            py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("mus"),
-            py::arg("blend_mu"))
+            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("mus"), py::arg("blend_mu"))
         .def(
             "__len__", &FrictionCollisions::size,
             "Get the number of friction collisions.")

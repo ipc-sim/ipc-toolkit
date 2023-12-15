@@ -5,8 +5,8 @@
 namespace ipc {
 
 double compute_normal_force_magnitude(
-    const Barrier& barrier,
     const double distance_squared,
+    const Barrier& barrier,
     const double dhat,
     const double barrier_stiffness,
     const double dmin)
@@ -17,9 +17,9 @@ double compute_normal_force_magnitude(
 }
 
 VectorMax12d compute_normal_force_magnitude_gradient(
-    const Barrier& barrier,
     const double distance_squared,
     const Eigen::VectorXd& distance_squared_gradient,
+    const Barrier& barrier,
     const double dhat,
     const double barrier_stiffness,
     const double dmin)

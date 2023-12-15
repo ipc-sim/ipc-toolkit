@@ -9,8 +9,8 @@
 namespace ipc {
 
 double initial_barrier_stiffness(
-    const Barrier& barrier,
     const double bbox_diagonal,
+    const Barrier& barrier,
     const double dhat,
     const double average_mass,
     const Eigen::VectorXd& grad_energy,

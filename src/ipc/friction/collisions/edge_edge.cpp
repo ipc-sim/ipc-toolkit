@@ -17,17 +17,13 @@ EdgeEdgeFrictionCollision::EdgeEdgeFrictionCollision(
 
 EdgeEdgeFrictionCollision::EdgeEdgeFrictionCollision(
     const EdgeEdgeCollision& collision,
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    const Barrier& barrier,
-    const double dhat,
+    const VectorMax12d& positions,
+    const BarrierPotential& barrier_potential,
     const double barrier_stiffness)
     : EdgeEdgeFrictionCollision(collision)
 {
     FrictionCollision::init(
-        vertices, edges, faces, barrier, dhat, barrier_stiffness,
-        collision.dmin);
+        collision, positions, barrier_potential, barrier_stiffness);
 }
 
 // ============================================================================

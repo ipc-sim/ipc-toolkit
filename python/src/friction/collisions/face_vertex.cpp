@@ -13,9 +13,8 @@ void define_face_vertex_friction_collision(py::module_& m)
         .def(py::init<const FaceVertexCollision&>(), py::arg("collision"))
         .def(
             py::init<
-                const FaceVertexCollision&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double,
-                const double>(),
-            py::arg("collision"), py::arg("vertices"), py::arg("edges"),
-            py::arg("faces"), py::arg("dhat"), py::arg("barrier_stiffness"));
+                const FaceVertexCollision&, const VectorMax12d&,
+                const BarrierPotential&, const double>(),
+            py::arg("collision"), py::arg("positions"),
+            py::arg("barrier_potential"), py::arg("barrier_stiffness"));
 }

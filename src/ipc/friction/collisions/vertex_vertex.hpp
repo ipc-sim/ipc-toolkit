@@ -15,11 +15,8 @@ public:
 
     VertexVertexFrictionCollision(
         const VertexVertexCollision& collision,
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
-        const Barrier& barrier,
-        const double dhat,
+        const VectorMax12d& positions,
+        const BarrierPotential& barrier_potential,
         const double barrier_stiffness);
 
 protected:

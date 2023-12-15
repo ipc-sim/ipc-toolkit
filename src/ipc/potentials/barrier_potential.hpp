@@ -3,6 +3,8 @@
 #include <ipc/potentials/distance_based_potential.hpp>
 #include <ipc/barrier/barrier.hpp>
 
+#include <memory>
+
 namespace ipc {
 
 /// @brief The barrier collision potential.
@@ -23,7 +25,8 @@ public:
         m_dhat = dhat;
     }
 
-    std::shared_ptr<Barrier> barrier = std::make_shared<IPCBarrier>();
+    /// @brief The barrier function used to compute the potential.
+    std::shared_ptr<Barrier> barrier = std::make_shared<ClampedLogBarrier>();
 
 protected:
     /// @brief Compute the barrier potential for a collision.
