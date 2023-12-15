@@ -23,16 +23,16 @@ def check_ipc_derivatives(broad_phase_method, use_convergent_formulation, mesh_n
 
     B = ipctk.BarrierPotential(dhat)
 
-    grad_b = B.gradient(mesh, vertices, collisions)
+    grad_b = B.gradient(collisions, mesh, vertices)
     fgrad_b = utils.finite_gradient(
-        vertices.flatten(), lambda x: B(mesh, x.reshape(vertices.shape), collisions))
+        vertices.flatten(), lambda x: B(collisions, mesh, x.reshape(vertices.shape)))
 
     assert np.linalg.norm(grad_b) > 1e-8
     assert np.allclose(grad_b, fgrad_b)
 
-    hess_b = B.hessian(mesh, vertices, collisions).A
+    hess_b = B.hessian(collisions, mesh, vertices).A
     fhess_b = utils.finite_jacobian(
-        vertices.flatten(), lambda x: B.gradient(mesh, x.reshape(vertices.shape), collisions))
+        vertices.flatten(), lambda x: B.gradient(collisions, mesh, x.reshape(vertices.shape)))
 
     assert np.linalg.norm(hess_b) > 1e-8
     assert np.allclose(hess_b, fhess_b, atol=1e-5)

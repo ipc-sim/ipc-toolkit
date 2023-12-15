@@ -2,12 +2,12 @@
 
 namespace ipc {
 
-// -- Cumulative methods ---------------------------------------------------
+// -- Cumulative methods -------------------------------------------------------
 
 Eigen::SparseMatrix<double> DistanceBasedPotential::shape_derivative(
+    const Collisions& collisions,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
-    const Collisions& collisions) const
+    const Eigen::MatrixXd& vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());
 
@@ -47,7 +47,7 @@ Eigen::SparseMatrix<double> DistanceBasedPotential::shape_derivative(
     return shape_derivative;
 }
 
-// -- Single collision methods -----------------------------------------------
+// -- Single collision methods -------------------------------------------------
 
 double DistanceBasedPotential::operator()(
     const Collision& collision, const VectorMax12d& positions) const

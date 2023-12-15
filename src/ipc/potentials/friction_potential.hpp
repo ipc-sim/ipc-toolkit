@@ -5,6 +5,7 @@
 
 namespace ipc {
 
+/// @brief The friction dissipative potential.
 class FrictionPotential : public Potential<FrictionCollisions> {
     using Super = Potential;
 
@@ -40,54 +41,53 @@ public:
     };
 
     /// @brief Compute the friction force from the given velocities.
+    /// @param collisions The set of collisions.
     /// @param mesh The collision mesh.
     /// @param rest_positions Rest positions of the vertices (rowwise)
     /// @param lagged_displacements Previous displacements of the vertices (rowwise)
     /// @param velocities Current displacements of the vertices (rowwise)
     /// @param dhat Barrier activation distance.
     /// @param barrier_stiffness Barrier stiffness.
-    /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
     /// @param dmin Minimum distance to use for the barrier.
     /// @param no_mu whether to not multiply by mu
     /// @return The friction force.
     Eigen::VectorXd force(
+        const FrictionCollisions& collisions,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& rest_positions,
         const Eigen::MatrixXd& lagged_displacements,
         const Eigen::MatrixXd& velocities,
-        const FrictionCollisions& collisions,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0,
         const bool no_mu = false) const;
 
     /// @brief Compute the Jacobian of the friction force wrt the velocities.
+    /// @param collisions The set of collisions.
     /// @param mesh The collision mesh.
     /// @param rest_positions Rest positions of the vertices (rowwise)
     /// @param lagged_displacements Previous displacements of the vertices (rowwise)
     /// @param velocities Current displacements of the vertices (rowwise)
     /// @param dhat Barrier activation distance.
     /// @param barrier_stiffness Barrier stiffness.
-    /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
     /// @param wrt The variable to take the derivative with respect to.
     /// @param dmin Minimum distance to use for the barrier.
     /// @return The Jacobian of the friction force wrt the velocities.
     Eigen::SparseMatrix<double> force_jacobian(
+        const FrictionCollisions& collisions,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& rest_positions,
         const Eigen::MatrixXd& lagged_displacements,
         const Eigen::MatrixXd& velocities,
-        const FrictionCollisions& collisions,
         const double dhat,
         const double barrier_stiffness,
         const DiffWRT wrt,
         const double dmin = 0) const;
 
-    // -- Single collision methods
-    // -----------------------------------------------
+    // -- Single collision methods ---------------------------------------------
 
     /// @brief Compute the potential for a single collision.
-    /// @param collision The collision.
+    /// @param collision The collision
     /// @param velocities The collision stencil's velocities.
     /// @return The potential.
     double operator()(
@@ -95,7 +95,7 @@ public:
         const VectorMax12d& velocities) const override;
 
     /// @brief Compute the gradient of the potential for a single collision.
-    /// @param collision The collision.
+    /// @param collision The collision
     /// @param velocities The collision stencil's velocities.
     /// @return The gradient of the potential.
     VectorMax12d gradient(
@@ -103,7 +103,7 @@ public:
         const VectorMax12d& velocities) const override;
 
     /// @brief Compute the hessian of the potential for a single collision.
-    /// @param collision The collision.
+    /// @param collision The collision
     /// @param velocities The collision stencil's velocities.
     /// @return The hessian of the potential.
     MatrixMax12d hessian(
@@ -112,6 +112,7 @@ public:
         const bool project_hessian_to_psd = false) const override;
 
     /// @brief Compute the friction force.
+    /// @param collision The collision
     /// @param rest_positions Rest positions of the vertices (rowwise)
     /// @param lagged_displacements Previous displacements of the vertices (rowwise)
     /// @param velocities Current displacements of the vertices (rowwise)
@@ -119,7 +120,6 @@ public:
     /// @param faces Collision mesh faces
     /// @param dhat Barrier activation distance
     /// @param barrier_stiffness Barrier stiffness
-    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
     /// @param dmin Minimum distance
     /// @param no_mu Whether to not multiply by mu
     /// @return Friction force
@@ -134,6 +134,7 @@ public:
         const bool no_mu = false) const; //< whether to not multiply by mu
 
     /// @brief Compute the friction force Jacobian.
+    /// @param collision The collision
     /// @param rest_positions Rest positions of the vertices (rowwise)
     /// @param lagged_displacements Previous displacements of the vertices (rowwise)
     /// @param velocities Current displacements of the vertices (rowwise)
@@ -141,7 +142,6 @@ public:
     /// @param faces Collision mesh faces
     /// @param dhat Barrier activation distance
     /// @param barrier_stiffness Barrier stiffness
-    /// @param epsv Smooth friction mollifier parameter \f$\epsilon_v\f$.
     /// @param wrt Variable to differentiate the friction force with respect to.
     /// @param dmin Minimum distance
     /// @return Friction force Jacobian

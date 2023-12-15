@@ -10,11 +10,11 @@ FrictionPotential::FrictionPotential(const double epsv) : Super()
 // -- Cumulative methods -------------------------------------------------------
 
 Eigen::VectorXd FrictionPotential::force(
+    const FrictionCollisions& collisions,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& rest_positions,
     const Eigen::MatrixXd& lagged_displacements,
     const Eigen::MatrixXd& velocities,
-    const FrictionCollisions& collisions,
     const double dhat,
     const double barrier_stiffness,
     const double dmin,
@@ -57,11 +57,11 @@ Eigen::VectorXd FrictionPotential::force(
 }
 
 Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
+    const FrictionCollisions& collisions,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& rest_positions,
     const Eigen::MatrixXd& lagged_displacements,
     const Eigen::MatrixXd& velocities,
-    const FrictionCollisions& collisions,
     const double dhat,
     const double barrier_stiffness,
     const DiffWRT wrt,
@@ -139,11 +139,10 @@ Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
 
     return jacobian;
 }
-// -- Single collision methods
-// ---------------------------------------------------
+// -- Single collision methods -------------------------------------------------
 
 double FrictionPotential::operator()(
-    const Collision& collision, const VectorMax12d& velocities) const
+    const FrictionCollision& collision, const VectorMax12d& velocities) const
 {
     // μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
 
@@ -156,7 +155,7 @@ double FrictionPotential::operator()(
 }
 
 VectorMax12d FrictionPotential::gradient(
-    const Collision& collision, const VectorMax12d& velocities) const
+    const FrictionCollision& collision, const VectorMax12d& velocities) const
 {
     // ∇ₓ μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
     //  = μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u
@@ -182,7 +181,7 @@ VectorMax12d FrictionPotential::gradient(
 }
 
 MatrixMax12d FrictionPotential::hessian(
-    const Collision& collision,
+    const FrictionCollision& collision,
     const VectorMax12d& velocities,
     const bool project_hessian_to_psd) const
 {

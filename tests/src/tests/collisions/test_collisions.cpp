@@ -87,9 +87,9 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
 
         BarrierPotential barrier_potential(dhat);
 
-        CHECK(barrier_potential(mesh, vertices, collisions) > 0.0);
+        CHECK(barrier_potential(collisions, mesh, vertices) > 0.0);
         const Eigen::VectorXd grad =
-            barrier_potential.gradient(mesh, vertices, collisions);
+            barrier_potential.gradient(collisions, mesh, vertices);
         for (int i = 0; i < vertices.rows(); i++) {
             const Eigen::Vector3d f = -grad.segment<3>(3 * i);
             CHECK(f.normalized().isApprox(
@@ -190,7 +190,7 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
         CHECK(collisions.ee_collisions.size() == 0);
         CHECK(collisions.fv_collisions.size() == 0);
 
-        CHECK(BarrierPotential(dhat)(mesh, vertices, collisions) > 0.0);
+        CHECK(BarrierPotential(dhat)(collisions, mesh, vertices) > 0.0);
     }
 }
 

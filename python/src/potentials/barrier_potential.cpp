@@ -20,63 +20,63 @@ void define_barrier_potential(py::module_& m)
         .def(
             "__call__",
             py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&,
-                const Collisions&>(
+                const Collisions&, const CollisionMesh&,
+                const Eigen::MatrixXd&>(
                 &BarrierPotential::Potential::operator(), py::const_),
             R"ipc_Qu8mg5v7(
             Compute the barrier potential for a set of collisions.
 
             Parameters:
+                collisions: The set of collisions.
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
-                collisions: The set of collisions.
 
             Returns:
                 The sum of all barrier potentials (not scaled by the barrier stiffness).
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"), py::arg("collisions"))
+            py::arg("collisions"), py::arg("mesh"), py::arg("vertices"))
         .def(
             "gradient",
             py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&,
-                const Collisions&>(
+                const Collisions&, const CollisionMesh&,
+                const Eigen::MatrixXd&>(
                 &BarrierPotential::Potential::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the barrier potential.
 
             Parameters:
+                collisions: The set of collisions.
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
-                collisions: The set of collisions.
 
             Returns:
                 The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"), py::arg("collisions"))
+            py::arg("collisions"), py::arg("mesh"), py::arg("vertices"))
         .def(
             "hessian",
             py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&, const Collisions&,
+                const Collisions&, const CollisionMesh&, const Eigen::MatrixXd&,
                 const bool>(&BarrierPotential::Potential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the barrier potential.
 
             Parameters:
+                collisions: The set of collisions.
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
-                collisions: The set of collisions.
                 project_hessian_to_psd: Make sure the hessian is positive semi-definite.
 
             Returns:
                 The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|x|vertices|.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
+            py::arg("collisions"), py::arg("mesh"), py::arg("vertices"),
             py::arg("project_hessian_to_psd") = false)
         .def(
             "shape_derivative",
             py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&,
-                const Collisions&>(
+                const Collisions&, const CollisionMesh&,
+                const Eigen::MatrixXd&>(
                 &BarrierPotential::shape_derivative, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the shape derivative of the potential.
@@ -84,14 +84,14 @@ void define_barrier_potential(py::module_& m)
             std::runtime_error If the collision collisions were not built with shape derivatives enabled.
 
             Parameters:
+                collisions: The set of collisions.
                 mesh: The collision mesh.
                 vertices: Vertices of the collision mesh.
-                collisions: The set of collisions.
 
             Returns:
                 The derivative of the force with respect to X, the rest vertices.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"), py::arg("collisions"))
+            py::arg("collisions"), py::arg("mesh"), py::arg("vertices"))
         .def(
             "__call__",
             py::overload_cast<const Collision&, const VectorMax12d&>(

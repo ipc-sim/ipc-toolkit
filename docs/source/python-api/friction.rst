@@ -1,45 +1,45 @@
 Friction
 ========
 
-Friction Constraints
---------------------
+Friction Collisions
+-------------------
 
-.. autoclass:: ipctk.FrictionConstraints
-
-    .. autoclasstoc::
-
-Friction Constraint
-^^^^^^^^^^^^^^^^^^^
-
-.. autoclass:: ipctk.FrictionConstraint
+.. autoclass:: ipctk.FrictionCollisions
 
     .. autoclasstoc::
 
-Vertex-Vertex Friction Constraint
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Friction Collision
+^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ipctk.VertexVertexFrictionConstraint
-
-    .. autoclasstoc::
-
-Edge-Vertex Friction Constraint
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autoclass:: ipctk.EdgeVertexFrictionConstraint
+.. autoclass:: ipctk.FrictionCollision
 
     .. autoclasstoc::
 
-Edge-Edge Friction Constraint
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Vertex-Vertex Friction Collision
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ipctk.EdgeEdgeFrictionConstraint
+.. autoclass:: ipctk.VertexVertexFrictionCollision
 
     .. autoclasstoc::
 
-Triangle-Vertex Friction Constraint
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Edge-Vertex Friction Collision
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ipctk.FaceVertexFrictionConstraint
+.. autoclass:: ipctk.EdgeVertexFrictionCollision
+
+    .. autoclasstoc::
+
+Edge-Edge Friction Collision
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: ipctk.EdgeEdgeFrictionCollision
+
+    .. autoclasstoc::
+
+Triangle-Vertex Friction Collision
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: ipctk.FaceVertexFrictionCollision
 
     .. autoclasstoc::
 

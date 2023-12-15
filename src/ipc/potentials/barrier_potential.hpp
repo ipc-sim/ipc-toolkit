@@ -4,6 +4,7 @@
 
 namespace ipc {
 
+/// @brief The barrier collision potential.
 class BarrierPotential : public DistanceBasedPotential {
 public:
     /// @brief Construct a barrier potential.

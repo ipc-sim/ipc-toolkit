@@ -17,6 +17,7 @@ namespace ipc {
 
 class FrictionCollisions {
 public:
+    /// @brief The type of the collisions.
     using value_type = FrictionCollision;
 
 public:

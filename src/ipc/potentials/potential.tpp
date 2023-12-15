@@ -10,11 +10,11 @@
 
 namespace ipc {
 
-template <class Collisions>
-double Potential<Collisions>::operator()(
+template <class TCollisions>
+double Potential<TCollisions>::operator()(
+    const TCollisions& collisions,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& X,
-    const Collisions& collisions) const
+    const Eigen::MatrixXd& X) const
 {
     assert(X.rows() == mesh.num_vertices());
 
@@ -39,11 +39,11 @@ double Potential<Collisions>::operator()(
     return storage.combine([](double a, double b) { return a + b; });
 }
 
-template <class Collisions>
-Eigen::VectorXd Potential<Collisions>::gradient(
+template <class TCollisions>
+Eigen::VectorXd Potential<TCollisions>::gradient(
+    const TCollisions& collisions,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& X,
-    const Collisions& collisions) const
+    const Eigen::MatrixXd& X) const
 {
     assert(X.rows() == mesh.num_vertices());
 
@@ -62,7 +62,7 @@ Eigen::VectorXd Potential<Collisions>::gradient(
             auto& global_grad = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-                const Collision& collision = collisions[i];
+                const TCollision& collision = collisions[i];
 
                 const VectorMax12d local_grad = this->gradient(
                     collision, collision.dof(X, mesh.edges(), mesh.faces()));
@@ -79,11 +79,11 @@ Eigen::VectorXd Potential<Collisions>::gradient(
                               const Eigen::VectorXd& b) { return a + b; });
 }
 
-template <class Collisions>
-Eigen::SparseMatrix<double> Potential<Collisions>::hessian(
+template <class TCollisions>
+Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
+    const TCollisions& collisions,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& X,
-    const Collisions& collisions,
     const bool project_hessian_to_psd) const
 {
     assert(X.rows() == mesh.num_vertices());
@@ -107,7 +107,7 @@ Eigen::SparseMatrix<double> Potential<Collisions>::hessian(
             auto& hess_triplets = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-                const Collision& collision = collisions[i];
+                const TCollision& collision = collisions[i];
 
                 const MatrixMax12d local_hess = this->hessian(
                     collisions[i], collisions[i].dof(X, edges, faces),

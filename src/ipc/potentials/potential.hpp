@@ -5,9 +5,11 @@
 
 namespace ipc {
 
-template <class Collisions> class Potential {
+/// @brief Base class for potentials.
+/// @tparam TCollisions The type of the collisions.
+template <class TCollisions> class Potential {
 protected:
-    using Collision = typename Collisions::value_type;
+    using TCollision = typename TCollisions::value_type;
 
 public:
     Potential() { }
@@ -15,61 +17,60 @@ public:
 
     // -- Cumulative methods ---------------------------------------------------
 
-    /// @brief Compute the barrier potential for a set of collisions.
+    /// @brief Compute the potential for a set of collisions.
+    /// @param collisions The set of collisions.
     /// @param mesh The collision mesh.
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
-    /// @param collisions The set of collisions.
-    /// @returns The sum of all barrier potentials (not scaled by the barrier stiffness).
+    /// @returns The potential for a set of collisions.
     double operator()(
+        const TCollisions& collisions,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& X,
-        const Collisions& collisions) const;
+        const Eigen::MatrixXd& X) const;
 
-    /// @brief Compute the gradient of the barrier potential.
+    /// @brief Compute the gradient of the potential.
+    /// @param collisions The set of collisions.
     /// @param mesh The collision mesh.
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
-    /// @param collisions The set of collisions.
-    /// @returns The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|.
+    /// @returns The gradient of the potential w.r.t. X. This will have a size of |X|.
     Eigen::VectorXd gradient(
+        const TCollisions& collisions,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& X,
-        const Collisions& collisions) const;
+        const Eigen::MatrixXd& X) const;
 
-    /// @brief Compute the hessian of the barrier potential.
+    /// @brief Compute the hessian of the potential.
+    /// @param collisions The set of collisions.
     /// @param mesh The collision mesh.
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
-    /// @param collisions The set of collisions.
     /// @param project_hessian_to_psd Make sure the hessian is positive semi-definite.
-    /// @returns The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|x|vertices|.
+    /// @returns The Hessian of the potential w.r.t. X. This will have a size of |X|×|X|.
     Eigen::SparseMatrix<double> hessian(
+        const TCollisions& collisions,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
-        const Collisions& collisions,
         const bool project_hessian_to_psd = false) const;
 
-    // -- Single collision methods
-    // -----------------------------------------------
+    // -- Single collision methods ---------------------------------------------
 
     /// @brief Compute the potential for a single collision.
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
     /// @return The potential.
     virtual double
-    operator()(const Collision& collision, const VectorMax12d& x) const = 0;
+    operator()(const TCollision& collision, const VectorMax12d& x) const = 0;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
     /// @return The gradient of the potential.
     virtual VectorMax12d
-    gradient(const Collision& collision, const VectorMax12d& x) const = 0;
+    gradient(const TCollision& collision, const VectorMax12d& x) const = 0;
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
     /// @return The hessian of the potential.
     virtual MatrixMax12d hessian(
-        const Collision& collision,
+        const TCollision& collision,
         const VectorMax12d& x,
         const bool project_hessian_to_psd = false) const = 0;
 };

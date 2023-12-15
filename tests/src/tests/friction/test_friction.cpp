@@ -31,18 +31,18 @@ TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
 
     const FrictionPotential D(epsv_times_h);
 
-    const Eigen::VectorXd grad = D.gradient(mesh, U, friction_collisions);
+    const Eigen::VectorXd grad = D.gradient(friction_collisions, mesh, U);
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
         const Eigen::MatrixXd fd_U = fd::unflatten(x, data.V1.cols()) - data.V0;
-        return D(mesh, fd_U, friction_collisions);
+        return D(friction_collisions, mesh, fd_U);
     };
     Eigen::VectorXd fgrad;
     fd::finite_gradient(fd::flatten(V1), f, fgrad);
     CHECK(fd::compare_gradient(grad, fgrad));
 
-    const Eigen::MatrixXd hess = D.hessian(mesh, U, friction_collisions);
+    const Eigen::MatrixXd hess = D.hessian(friction_collisions, mesh, U);
     Eigen::MatrixXd fhess;
     fd::finite_hessian(fd::flatten(V1), f, fhess);
     CHECK(fd::compare_hessian(hess, fhess, 1e-3));
@@ -269,16 +269,16 @@ TEST_CASE(
 
     const Eigen::MatrixXd velocity = V_end - V_start;
 
-    double potential = D(mesh, velocity, friction_collisions);
+    double potential = D(friction_collisions, mesh, velocity);
 
     CHECK(potential == Catch::Approx(expected_potential));
 
-    Eigen::VectorXd grad = D.gradient(mesh, velocity, friction_collisions);
+    Eigen::VectorXd grad = D.gradient(friction_collisions, mesh, velocity);
 
     CHECK(grad.isApprox(expected_grad));
 
     Eigen::SparseMatrix<double> hess =
-        D.hessian(mesh, velocity, friction_collisions);
+        D.hessian(friction_collisions, mesh, velocity);
 
     CHECK(hess.isApprox(expected_hess));
 }

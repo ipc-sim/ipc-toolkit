@@ -77,14 +77,14 @@ TEST_CASE(
     // -------------------------------------------------------------------------
 
     const Eigen::VectorXd grad_b =
-        barrier_potential.gradient(mesh, vertices, collisions);
+        barrier_potential.gradient(collisions, mesh, vertices);
 
     // Compute the gradient using finite differences
     Eigen::VectorXd fgrad_b;
     {
         auto f = [&](const Eigen::VectorXd& x) {
             return barrier_potential(
-                mesh, fd::unflatten(x, vertices.cols()), collisions);
+                collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
         fd::finite_gradient(fd::flatten(vertices), f, fgrad_b);
     }
@@ -97,14 +97,14 @@ TEST_CASE(
     // -------------------------------------------------------------------------
 
     Eigen::MatrixXd hess_b =
-        barrier_potential.hessian(mesh, vertices, collisions);
+        barrier_potential.hessian(collisions, mesh, vertices);
 
     // Compute the gradient using finite differences
     Eigen::MatrixXd fhess_b;
     {
         auto f = [&](const Eigen::VectorXd& x) {
             return barrier_potential.gradient(
-                mesh, fd::unflatten(x, vertices.cols()), collisions);
+                collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
         fd::finite_jacobian(fd::flatten(vertices), f, fhess_b);
     }
@@ -214,7 +214,7 @@ TEST_CASE(
     BarrierPotential barrier_potential(dhat);
 
     const Eigen::VectorXd grad_b =
-        barrier_potential.gradient(mesh, vertices, collisions);
+        barrier_potential.gradient(collisions, mesh, vertices);
 
     // const Eigen::MatrixXd force = -fd::unflatten(grad_b, vertices.cols());
     // std::cout << "force:\n" << force << std::endl;
@@ -238,7 +238,7 @@ TEST_CASE(
 
         fd_collisions.build(mesh, fd_V, dhat);
 
-        return barrier_potential(mesh, fd_V, collisions);
+        return barrier_potential(collisions, mesh, fd_V);
     };
     Eigen::VectorXd fgrad_b;
     fd::finite_gradient(fd::flatten(vertices), f, fgrad_b);
@@ -354,7 +354,7 @@ TEST_CASE(
     // ------------------------------------------------------------------------
 
     const Eigen::MatrixXd JF_wrt_X =
-        barrier_potential.shape_derivative(mesh, vertices, collisions);
+        barrier_potential.shape_derivative(collisions, mesh, vertices);
 
     Eigen::MatrixXd sum = Eigen::MatrixXd::Zero(ndof, ndof);
     for (int i = 0; i < collisions.size(); i++) {
@@ -382,7 +382,7 @@ TEST_CASE(
         //     collisions.use_convergent_formulation());
         // fd_collisions.build(fd_mesh, fd_V, dhat);
 
-        return barrier_potential.gradient(fd_mesh, fd_V, collisions);
+        return barrier_potential.gradient(collisions, fd_mesh, fd_V);
     };
     Eigen::MatrixXd fd_JF_wrt_X;
     fd::finite_jacobian(fd::flatten(rest_positions), F_X, fd_JF_wrt_X);
@@ -431,7 +431,7 @@ TEST_CASE(
     BarrierPotential barrier_potential(dhat);
 
     const Eigen::MatrixXd JF_wrt_X =
-        barrier_potential.shape_derivative(mesh, vertices, collisions);
+        barrier_potential.shape_derivative(collisions, mesh, vertices);
 
     auto F_X = [&](const Eigen::VectorXd& x) {
         const Eigen::MatrixXd fd_X = fd::unflatten(x, X.cols());
@@ -444,7 +444,7 @@ TEST_CASE(
             collisions.use_convergent_formulation());
         fd_collision_set.build(fd_mesh, fd_V, dhat);
 
-        return barrier_potential.gradient(fd_mesh, fd_V, fd_collision_set);
+        return barrier_potential.gradient(fd_collision_set, fd_mesh, fd_V);
     };
     Eigen::MatrixXd fd_JF_wrt_X;
     fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
@@ -491,19 +491,19 @@ TEST_CASE(
 
     BENCHMARK("Compute barrier potential")
     {
-        return barrier_potential(mesh, vertices, collisions);
+        return barrier_potential(collisions, mesh, vertices);
     };
     BENCHMARK("Compute barrier potential gradient")
     {
-        return barrier_potential.gradient(mesh, vertices, collisions);
+        return barrier_potential.gradient(collisions, mesh, vertices);
     };
     BENCHMARK("Compute barrier potential hessian")
     {
-        return barrier_potential.hessian(mesh, vertices, collisions);
+        return barrier_potential.hessian(collisions, mesh, vertices);
     };
     BENCHMARK("Compute barrier potential hessian with PSD projection")
     {
-        return barrier_potential.hessian(mesh, vertices, collisions, true);
+        return barrier_potential.hessian(collisions, mesh, vertices, true);
     };
     BENCHMARK("Compute compute_minimum_distance")
     {
@@ -554,6 +554,6 @@ TEST_CASE(
     BENCHMARK("Shape Derivative")
     {
         JF_wrt_X =
-            barrier_potential.shape_derivative(mesh, vertices, collisions);
+            barrier_potential.shape_derivative(collisions, mesh, vertices);
     };
 }

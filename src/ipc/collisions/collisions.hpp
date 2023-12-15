@@ -18,6 +18,7 @@ namespace ipc {
 
 class Collisions {
 public:
+    /// @brief The type of the collisions.
     using value_type = Collision;
 
 public:
