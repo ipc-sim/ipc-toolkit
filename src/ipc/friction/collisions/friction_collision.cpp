@@ -16,7 +16,6 @@ void FrictionCollision::init(
 {
     // do this to initialize dim()
     const int dim = collision.dim(positions.size());
-    assert(positions.size() % collision.num_vertices() == 0);
     tangent_basis.resize(dim, dim - 1);
 
     closest_point = compute_closest_point(positions);
