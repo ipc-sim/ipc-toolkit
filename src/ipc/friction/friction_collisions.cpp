@@ -15,6 +15,7 @@ void FrictionCollisions::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const Collisions& collisions,
+    const Barrier& barrier,
     const double dhat,
     const double barrier_stiffness,
     const Eigen::VectorXd& mus,

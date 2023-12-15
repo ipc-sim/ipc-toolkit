@@ -25,9 +25,9 @@ VertexVertexFrictionCollision::VertexVertexFrictionCollision(
     const double barrier_stiffness)
     : VertexVertexFrictionCollision(collision)
 {
-    FrictionConstraint::init(
+    FrictionCollision::init(
         vertices, edges, faces, barrier, dhat, barrier_stiffness,
-        constraint.dmin);
+        collision.dmin);
 }
 
 // ============================================================================

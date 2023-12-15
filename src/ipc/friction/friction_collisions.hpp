@@ -33,7 +33,7 @@ public:
         double mu)
     {
         this->build(
-            mesh, vertices, collisions, dhat, barrier_stiffness,
+            mesh, vertices, collisions, barrier, dhat, barrier_stiffness,
             Eigen::VectorXd::Constant(vertices.rows(), mu));
     }
 

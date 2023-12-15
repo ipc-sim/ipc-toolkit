@@ -25,9 +25,9 @@ EdgeEdgeFrictionCollision::EdgeEdgeFrictionCollision(
     const double barrier_stiffness)
     : EdgeEdgeFrictionCollision(collision)
 {
-    FrictionConstraint::init(
+    FrictionCollision::init(
         vertices, edges, faces, barrier, dhat, barrier_stiffness,
-        constraint.dmin);
+        collision.dmin);
 }
 
 // ============================================================================

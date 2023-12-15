@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/potentials/distance_based_potential.hpp>
+#include <ipc/barrier/barrier.hpp>
 
 namespace ipc {
 
@@ -22,7 +23,7 @@ public:
         m_dhat = dhat;
     }
 
-    std::shared_pointer<Barrier> barrier = std::make_shared<IPCBarrier>();
+    std::shared_ptr<Barrier> barrier = std::make_shared<IPCBarrier>();
 
 protected:
     /// @brief Compute the barrier potential for a collision.

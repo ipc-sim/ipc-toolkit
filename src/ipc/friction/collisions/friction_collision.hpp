@@ -4,6 +4,7 @@
 #include <ipc/friction/relative_velocity.hpp>
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/barrier/barrier.hpp>
 
 #include <ipc/config.hpp>
 
@@ -113,6 +114,15 @@ public:
     /// @return Jacobian of the relative velocity premultiplier wrt the closest points.
     virtual MatrixMax<double, 6, 12> relative_velocity_matrix_jacobian(
         const VectorMax2d& closest_point) const = 0;
+
+    void build(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const Collisions& collisions,
+        const double dhat,
+        const double barrier_stiffness,
+        const Eigen::VectorXd& mus,
+        const std::function<double(double, double)>& blend_mu);
 
 public:
     /// @brief Collision force magnitude
