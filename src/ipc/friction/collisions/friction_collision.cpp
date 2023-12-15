@@ -16,7 +16,7 @@ void FrictionCollision::init(
 {
     // do this to initialize dim()
     const int dim = positions.size() / collision.num_vertices();
-    assert(postions.size() % collision.num_vertices() == 0);
+    assert(positions.size() % collision.num_vertices() == 0);
     tangent_basis.resize(dim, dim - 1);
 
     closest_point = compute_closest_point(positions);
@@ -32,7 +32,7 @@ double FrictionCollision::compute_normal_force_magnitude(
     const double dmin) const
 {
     return ipc::compute_normal_force_magnitude(
-        compute_distance(positions), *barrier_potential.barrier,
+        compute_distance(positions), barrier_potential.barrier(),
         barrier_potential.dhat(), barrier_stiffness, dmin);
 }
 
@@ -44,8 +44,8 @@ VectorMax12d FrictionCollision::compute_normal_force_magnitude_gradient(
 {
     return ipc::compute_normal_force_magnitude_gradient(
         compute_distance(positions), compute_distance_gradient(positions),
-        *barrier_potential.barrier, barrier_potential.dhat(), barrier_stiffness,
-        dmin);
+        barrier_potential.barrier(), barrier_potential.dhat(),
+        barrier_stiffness, dmin);
 }
 
 } // namespace ipc

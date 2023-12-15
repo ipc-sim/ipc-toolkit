@@ -249,9 +249,6 @@ void define_friction_potential(py::module_& m)
             py::arg("barrier_potential"), py::arg("barrier_stiffness"),
             py::arg("wrt"), py::arg("dmin") = 0)
         .def_property(
-            "epsv", [](const FrictionPotential& self) { return self.epsv(); },
-            [](FrictionPotential& self, const double epsv) {
-                self.set_epsv(epsv);
-            },
+            "epsv", &FrictionPotential::epsv, &FrictionPotential::set_epsv,
             "The smooth friction mollifier parameter :math:`\\epsilon_{v}`.");
 }

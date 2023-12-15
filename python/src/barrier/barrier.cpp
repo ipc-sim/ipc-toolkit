@@ -17,7 +17,7 @@ public:
 
 void define_barrier(py::module_& m)
 {
-    py::class_<Barrier, PyBarrier>(m, "Barrier")
+    py::class_<Barrier, PyBarrier, std::shared_ptr<Barrier>>(m, "Barrier")
         .def(py::init<>())
         .def("__call__", &Barrier::operator(), py::arg("d"), py::arg("dhat"))
         .def(
@@ -27,7 +27,8 @@ void define_barrier(py::module_& m)
             "second_derivative", &Barrier::second_derivative, py::arg("d"),
             py::arg("dhat"));
 
-    py::class_<ClampedLogBarrier, Barrier>(m, "ClampedLogBarrier")
+    py::class_<ClampedLogBarrier, Barrier, std::shared_ptr<ClampedLogBarrier>>(
+        m, "ClampedLogBarrier")
         .def(py::init());
 
     m.def(
