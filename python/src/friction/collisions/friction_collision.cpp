@@ -29,8 +29,8 @@ void define_friction_collision(py::module_& m)
             Returns:
                 Normal force magnitude.
             )ipc_Qu8mg5v7",
-            py::arg("positions"), py::arg("dhat"), py::arg("barrier_stiffness"),
-            py::arg("dmin") = 0)
+            py::arg("positions"), py::arg("barrier_potential"),
+            py::arg("barrier_stiffness"), py::arg("dmin") = 0)
         .def(
             "compute_normal_force_magnitude_gradient",
             &FrictionCollision::compute_normal_force_magnitude_gradient,
@@ -46,8 +46,8 @@ void define_friction_collision(py::module_& m)
             Returns:
                 Gradient of the normal force magnitude wrt positions.
             )ipc_Qu8mg5v7",
-            py::arg("positions"), py::arg("dhat"), py::arg("barrier_stiffness"),
-            py::arg("dmin") = 0)
+            py::arg("positions"), py::arg("barrier_potential"),
+            py::arg("barrier_stiffness"), py::arg("dmin") = 0)
         .def(
             "compute_tangent_basis", &FrictionCollision::compute_tangent_basis,
             R"ipc_Qu8mg5v7(

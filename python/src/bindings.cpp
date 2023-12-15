@@ -11,8 +11,8 @@ PYBIND11_MODULE(ipctk, m)
     m.doc() = "IPC Toolkit";
 
     // barrier
-    define_adaptive_stiffness(m);
     define_barrier(m);
+    define_adaptive_stiffness(m);
 
     // broad_phase
     define_aabb(m);
@@ -62,6 +62,9 @@ PYBIND11_MODULE(ipctk, m)
     define_point_plane_distance(m);
     define_point_triangle_distance(m);
 
+    // potentials
+    define_barrier_potential(m);
+
     // friction
     define_closest_point(m);
     define_friction_collisions(m);
@@ -78,12 +81,11 @@ PYBIND11_MODULE(ipctk, m)
     define_face_vertex_friction_collision(m);
     define_vertex_vertex_friction_collision(m);
 
+    // potentials
+    define_friction_potential(m);
+
     // implicits
     define_plane_implicit(m);
-
-    // potentials
-    define_barrier_potential(m);
-    define_friction_potential(m);
 
     // utils
     define_area_gradient(m);

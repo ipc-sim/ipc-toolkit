@@ -166,9 +166,11 @@ void define_barrier_potential(py::module_& m)
             py::arg("collision"), py::arg("vertex_ids"),
             py::arg("rest_positions"), py::arg("positions"))
         .def_property(
-            "dhat", [](const BarrierPotential& self) { return self.dhat(); },
-            [](BarrierPotential& self, const double dhat) {
-                self.set_dhat(dhat);
-            },
-            "Barrier activation distance.");
+            "dhat", &BarrierPotential::dhat, &BarrierPotential::set_dhat,
+            "Barrier activation distance.")
+        .def_property(
+            "barrier",
+            py::cpp_function(
+                &BarrierPotential::barrier, py::return_value_policy::reference),
+            &BarrierPotential::set_barrier, "Barrier activation distance.");
 }

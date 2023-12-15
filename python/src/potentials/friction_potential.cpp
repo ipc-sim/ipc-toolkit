@@ -93,7 +93,7 @@ void define_friction_potential(py::module_& m)
             py::overload_cast<
                 const FrictionCollisions&, const CollisionMesh&,
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const double, const double,
+                const Eigen::MatrixXd&, const BarrierPotential&, const double,
                 const double, const bool>(
                 &FrictionPotential::force, py::const_),
             R"ipc_Qu8mg5v7(
@@ -102,12 +102,12 @@ void define_friction_potential(py::module_& m)
             Parameters:
                 collisions: The set of collisions.
                 mesh: The collision mesh.
-                rest_positions: Rest positions of the vertices (rowwise)
-                lagged_displacements: Previous displacements of the vertices (rowwise)
-                velocities: Current displacements of the vertices (rowwise)
-                dhat: Barrier activation distance.
-                barrier_stiffness: Barrier stiffness.
-                dmin: Minimum distance to use for the barrier.
+                rest_positions: Rest positions of the vertices (rowwise).
+                lagged_displacements: Previous displacements of the vertices (rowwise).
+                velocities: Current displacements of the vertices (rowwise).
+                barrier_potential: Barrier potential (used for normal force magnitude).
+                barrier_stiffness: Barrier stiffness (used for normal force magnitude).
+                dmin: Minimum distance (used for normal force magnitude).
                 no_mu: whether to not multiply by mu
 
             Returns:
@@ -115,14 +115,14 @@ void define_friction_potential(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("collisions"), py::arg("mesh"), py::arg("rest_positions"),
             py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("dmin") = 0,
-            py::arg("no_mu") = false)
+            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("dmin") = 0, py::arg("no_mu") = false)
         .def(
             "force_jacobian",
             py::overload_cast<
                 const FrictionCollisions&, const CollisionMesh&,
                 const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const double, const double,
+                const Eigen::MatrixXd&, const BarrierPotential&, const double,
                 const FrictionPotential::DiffWRT, const double>(
                 &FrictionPotential::force_jacobian, py::const_),
             R"ipc_Qu8mg5v7(
@@ -131,21 +131,21 @@ void define_friction_potential(py::module_& m)
             Parameters:
                 collisions: The set of collisions.
                 mesh: The collision mesh.
-                rest_positions: Rest positions of the vertices (rowwise)
-                lagged_displacements: Previous displacements of the vertices (rowwise)
-                velocities: Current displacements of the vertices (rowwise)
-                dhat: Barrier activation distance.
-                barrier_stiffness: Barrier stiffness.
+                rest_positions: Rest positions of the vertices (rowwise).
+                lagged_displacements: Previous displacements of the vertices (rowwise).
+                velocities: Current displacements of the vertices (rowwise).
+                barrier_potential: Barrier potential (used for normal force magnitude).
+                barrier_stiffness: Barrier stiffness (used for normal force magnitude).
                 wrt: The variable to take the derivative with respect to.
-                dmin: Minimum distance to use for the barrier.
+                dmin: Minimum distance (used for normal force magnitude).
 
             Returns:
                 The Jacobian of the friction force wrt the velocities.
             )ipc_Qu8mg5v7",
             py::arg("collisions"), py::arg("mesh"), py::arg("rest_positions"),
             py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("wrt"),
-            py::arg("dmin") = 0)
+            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("wrt"), py::arg("dmin") = 0)
         .def(
             "__call__",
             py::overload_cast<const FrictionCollision&, const VectorMax12d&>(
@@ -197,22 +197,20 @@ void define_friction_potential(py::module_& m)
             "force",
             py::overload_cast<
                 const FrictionCollision&, const VectorMax12d&,
-                const VectorMax12d&, const VectorMax12d&, const double,
-                const double, const double, const bool>(
-                &FrictionPotential::force, py::const_),
+                const VectorMax12d&, const VectorMax12d&,
+                const BarrierPotential&, const double, const double,
+                const bool>(&FrictionPotential::force, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the friction force for a single collision.
 
             Parameters:
                 collision: The collision
-                rest_positions: Rest positions of the vertices (rowwise)
-                lagged_displacements: Previous displacements of the vertices (rowwise)
-                velocities: Current displacements of the vertices (rowwise)
-                edges: Collision mesh edges
-                faces: Collision mesh faces
-                dhat: Barrier activation distance
-                barrier_stiffness: Barrier stiffness
-                dmin: Minimum distance
+                rest_positions: Rest positions of the vertices (rowwise).
+                lagged_displacements: Previous displacements of the vertices (rowwise).
+                velocities: Current displacements of the vertices (rowwise).
+                barrier_potential: Barrier potential (used for normal force magnitude).
+                barrier_stiffness: Barrier stiffness (used for normal force magnitude).
+                dmin: Minimum distance (used for normal force magnitude).
                 no_mu: Whether to not multiply by mu
 
             Returns:
@@ -220,41 +218,37 @@ void define_friction_potential(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("collision"), py::arg("rest_positions"),
             py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("dmin") = 0,
-            py::arg("no_mu") = false)
+            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("dmin") = 0, py::arg("no_mu") = false)
         .def(
             "force_jacobian",
             py::overload_cast<
                 const FrictionCollision&, const VectorMax12d&,
-                const VectorMax12d&, const VectorMax12d&, const double,
-                const double, const FrictionPotential::DiffWRT, const double>(
+                const VectorMax12d&, const VectorMax12d&,
+                const BarrierPotential&, const double,
+                const FrictionPotential::DiffWRT, const double>(
                 &FrictionPotential::force_jacobian, py::const_),
             R"ipc_Qu8mg5v7(
-            Compute the friction force Jacobian for a single collision.
+            Compute the friction force Jacobian.
 
             Parameters:
                 collision: The collision
-                rest_positions: Rest positions of the vertices (rowwise)
-                lagged_displacements: Previous displacements of the vertices (rowwise)
-                velocities: Current displacements of the vertices (rowwise)
-                edges: Collision mesh edges
-                faces: Collision mesh faces
-                dhat: Barrier activation distance
-                barrier_stiffness: Barrier stiffness
+                rest_positions: Rest positions of the vertices (rowwise).
+                lagged_displacements: Previous displacements of the vertices (rowwise).
+                velocities: Current displacements of the vertices (rowwise).
+                barrier_potential: Barrier potential (used for normal force magnitude).
+                barrier_stiffness: Barrier stiffness (used for normal force magnitude).
                 wrt: Variable to differentiate the friction force with respect to.
-                dmin: Minimum distance
+                dmin: Minimum distance (used for normal force magnitude).
 
             Returns:
                 Friction force Jacobian
             )ipc_Qu8mg5v7",
             py::arg("collision"), py::arg("rest_positions"),
             py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("dhat"), py::arg("barrier_stiffness"), py::arg("wrt"),
-            py::arg("dmin") = 0)
+            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("wrt"), py::arg("dmin") = 0)
         .def_property(
-            "epsv", [](const FrictionPotential& self) { return self.epsv(); },
-            [](FrictionPotential& self, const double epsv) {
-                self.set_epsv(epsv);
-            },
+            "epsv", &FrictionPotential::epsv, &FrictionPotential::set_epsv,
             "The smooth friction mollifier parameter :math:`\\epsilon_{v}`.");
 }

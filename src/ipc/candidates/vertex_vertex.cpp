@@ -16,7 +16,7 @@ double
 VertexVertexCandidate::compute_distance(const VectorMax12d& positions) const
 {
     assert(positions.size() == 4 || positions.size() == 6);
-    const int dim = positions.size() / 2;
+    const int dim = this->dim(positions.size());
     return point_point_distance(positions.head(dim), positions.tail(dim));
 }
 
@@ -24,7 +24,7 @@ VectorMax12d VertexVertexCandidate::compute_distance_gradient(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == 4 || positions.size() == 6);
-    const int dim = positions.size() / 2;
+    const int dim = this->dim(positions.size());
     return point_point_distance_gradient(
         positions.head(dim), positions.tail(dim));
 }
@@ -33,7 +33,7 @@ MatrixMax12d VertexVertexCandidate::compute_distance_hessian(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == 4 || positions.size() == 6);
-    const int dim = positions.size() / 2;
+    const int dim = this->dim(positions.size());
     return point_point_distance_hessian(
         positions.head(dim), positions.tail(dim));
 }
