@@ -22,21 +22,21 @@ public:
     }
 
 protected:
-    /// @brief Compute the barrier potential for a contact.
+    /// @brief Compute the barrier potential for a collision.
     /// @param distance_sqr The distance (squared) between the two objects.
     /// @param dmin The minimum distance (unsquared) between the two objects.
     /// @return The barrier potential.
     double distance_based_potential(
         const double distance_sqr, const double dmin = 0) const override;
 
-    /// @brief Compute the gradient of the barrier potential for a contact.
+    /// @brief Compute the gradient of the barrier potential for a collision.
     /// @param distance_sqr The distance (squared) between the two objects.
     /// @param dmin The minimum distance (unsquared) between the two objects.
     /// @return The gradient of the barrier potential.
     double distance_based_potential_gradient(
         const double distance_sqr, const double dmin = 0) const override;
 
-    /// @brief Compute the hessian of the barrier potential for a contact.
+    /// @brief Compute the hessian of the barrier potential for a collision.
     /// @param distance_sqr The distance (squared) between the two objects.
     /// @param dmin The minimum distance (unsquared) between the two objects.
     /// @return The hessian of the barrier potential.

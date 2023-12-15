@@ -10,24 +10,24 @@ void define_collision_stencil(py::module_& m)
     py::class_<CollisionStencil>(m, "CollisionStencil")
         .def(
             "num_vertices", &CollisionStencil::num_vertices,
-            "Get the number of vertices in the contact stencil.")
+            "Get the number of vertices in the collision stencil.")
         .def(
             "vertex_ids", &CollisionStencil::vertex_ids,
             R"ipc_Qu8mg5v7(
-            Get the vertex IDs of the contact stencil.
+            Get the vertex IDs of the collision stencil.
 
             Parameters:
                 edges: Collision mesh edges
                 faces: Collision mesh faces
 
             Returns:
-                The vertex IDs of the contact stencil. Size is always 4, but elements i > num_vertices() are -1.
+                The vertex IDs of the collision stencil. Size is always 4, but elements i > num_vertices() are -1.
             )ipc_Qu8mg5v7",
             py::arg("edges"), py::arg("faces"))
         .def(
             "vertices", &CollisionStencil::vertices<double>,
             R"ipc_Qu8mg5v7(
-            Get the vertex attributes of the contact stencil.
+            Get the vertex attributes of the collision stencil.
 
             T Type of the attributes
 
@@ -37,7 +37,7 @@ void define_collision_stencil(py::module_& m)
                 faces: Collision mesh faces
 
             Returns:
-                The vertex positions of the contact stencil. Size is always 4, but elements i > num_vertices() are NaN.
+                The vertex positions of the collision stencil. Size is always 4, but elements i > num_vertices() are NaN.
             )ipc_Qu8mg5v7",
             py::arg("vertices"), py::arg("edges"), py::arg("faces"))
         .def(
@@ -53,7 +53,7 @@ void define_collision_stencil(py::module_& m)
                 faces: Collision mesh faces
 
             Returns:
-                This constraint's DOF.
+                This stencil's DOF.
             )ipc_Qu8mg5v7",
             py::arg("X"), py::arg("edges"), py::arg("faces"))
         .def(

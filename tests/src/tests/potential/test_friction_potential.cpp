@@ -5,7 +5,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include <ipc/friction/friction_constraints.hpp>
+#include <ipc/friction/friction_collisions.hpp>
 #include <ipc/potentials/friction_potential.hpp>
 
 using namespace ipc;
@@ -13,7 +13,7 @@ using namespace ipc;
 TEST_CASE("Friction Potential Refactor", "[potential][friction_potential]")
 {
     FrictionData data = friction_data_generator();
-    const auto& [vertices_t0, vertices_t1, edges, faces, collision_constraints, mu, epsv_times_h, dhat, barrier_stiffness] =
+    const auto& [vertices_t0, vertices_t1, edges, faces, collisions, mu, epsv_times_h, dhat, barrier_stiffness] =
         data;
 
     const Eigen::MatrixXd rest_positions =
@@ -23,18 +23,15 @@ TEST_CASE("Friction Potential Refactor", "[potential][friction_potential]")
 
     const CollisionMesh mesh(rest_positions, edges, faces);
 
-    if (collision_constraints.compute_minimum_distance(mesh, rest_positions)
-            == 0
-        || collision_constraints.compute_minimum_distance(mesh, vertices_t0)
-            == 0
-        || collision_constraints.compute_minimum_distance(mesh, vertices_t1)
-            == 0) {
+    if (collisions.compute_minimum_distance(mesh, rest_positions) == 0
+        || collisions.compute_minimum_distance(mesh, vertices_t0) == 0
+        || collisions.compute_minimum_distance(mesh, vertices_t1) == 0) {
         return;
     }
 
-    FrictionConstraints contacts;
-    contacts.build(
-        mesh, vertices_t0, collision_constraints, dhat, barrier_stiffness, mu);
+    FrictionCollisions friction_collisions;
+    friction_collisions.build(
+        mesh, vertices_t0, collisions, dhat, barrier_stiffness, mu);
 
     const FrictionPotential D(epsv_times_h);
 }

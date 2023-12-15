@@ -1,9 +1,5 @@
 #pragma once
 
-// NOTE: Include this so the user can just include ipc.hpp
-#include <ipc/collisions/collision_constraints.hpp>
-#include <ipc/friction/friction_constraints.hpp>
-
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/collision_mesh.hpp>
 

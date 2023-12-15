@@ -7,30 +7,30 @@
 
 namespace ipc {
 
-FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
-    const FaceVertexConstraint& constraint)
-    : FaceVertexCandidate(constraint.face_id, constraint.vertex_id)
+FaceVertexFrictionCollision::FaceVertexFrictionCollision(
+    const FaceVertexCollision& collision)
+    : FaceVertexCandidate(collision.face_id, collision.vertex_id)
 {
-    this->weight = constraint.weight;
-    this->weight_gradient = constraint.weight_gradient;
+    this->weight = collision.weight;
+    this->weight_gradient = collision.weight_gradient;
 }
 
-FaceVertexFrictionConstraint::FaceVertexFrictionConstraint(
-    const FaceVertexConstraint& constraint,
+FaceVertexFrictionCollision::FaceVertexFrictionCollision(
+    const FaceVertexCollision& collision,
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
     const double dhat,
     const double barrier_stiffness)
-    : FaceVertexFrictionConstraint(constraint)
+    : FaceVertexFrictionCollision(collision)
 {
-    FrictionConstraint::init(
-        vertices, edges, faces, dhat, barrier_stiffness, constraint.dmin);
+    FrictionCollision::init(
+        vertices, edges, faces, dhat, barrier_stiffness, collision.dmin);
 }
 
 // ============================================================================
 
-MatrixMax<double, 3, 2> FaceVertexFrictionConstraint::compute_tangent_basis(
+MatrixMax<double, 3, 2> FaceVertexFrictionCollision::compute_tangent_basis(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == ndof());
@@ -40,7 +40,7 @@ MatrixMax<double, 3, 2> FaceVertexFrictionConstraint::compute_tangent_basis(
 }
 
 MatrixMax<double, 36, 2>
-FaceVertexFrictionConstraint::compute_tangent_basis_jacobian(
+FaceVertexFrictionCollision::compute_tangent_basis_jacobian(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == ndof());
@@ -51,7 +51,7 @@ FaceVertexFrictionConstraint::compute_tangent_basis_jacobian(
 
 // ============================================================================
 
-VectorMax2d FaceVertexFrictionConstraint::compute_closest_point(
+VectorMax2d FaceVertexFrictionCollision::compute_closest_point(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == ndof());
@@ -61,7 +61,7 @@ VectorMax2d FaceVertexFrictionConstraint::compute_closest_point(
 }
 
 MatrixMax<double, 2, 12>
-FaceVertexFrictionConstraint::compute_closest_point_jacobian(
+FaceVertexFrictionCollision::compute_closest_point_jacobian(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == ndof());
@@ -72,7 +72,7 @@ FaceVertexFrictionConstraint::compute_closest_point_jacobian(
 
 // ============================================================================
 
-VectorMax3d FaceVertexFrictionConstraint::relative_velocity(
+VectorMax3d FaceVertexFrictionCollision::relative_velocity(
     const VectorMax12d& velocities) const
 {
     assert(velocities.size() == 12);
@@ -81,7 +81,7 @@ VectorMax3d FaceVertexFrictionConstraint::relative_velocity(
         velocities.segment<3>(2 * dim()), velocities.tail<3>(), closest_point);
 }
 
-MatrixMax<double, 3, 12> FaceVertexFrictionConstraint::relative_velocity_matrix(
+MatrixMax<double, 3, 12> FaceVertexFrictionCollision::relative_velocity_matrix(
     const VectorMax2d& _closest_point) const
 {
     assert(_closest_point.size() == 2);
@@ -89,7 +89,7 @@ MatrixMax<double, 3, 12> FaceVertexFrictionConstraint::relative_velocity_matrix(
 }
 
 MatrixMax<double, 6, 12>
-FaceVertexFrictionConstraint::relative_velocity_matrix_jacobian(
+FaceVertexFrictionCollision::relative_velocity_matrix_jacobian(
     const VectorMax2d& _closest_point) const
 {
     assert(_closest_point.size() == 2);

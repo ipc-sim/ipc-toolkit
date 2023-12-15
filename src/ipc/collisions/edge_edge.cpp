@@ -6,7 +6,7 @@
 
 namespace ipc {
 
-EdgeEdgeConstraint::EdgeEdgeConstraint(
+EdgeEdgeCollision::EdgeEdgeCollision(
     const long _edge0_id,
     const long _edge1_id,
     const double _eps_x,
@@ -17,7 +17,7 @@ EdgeEdgeConstraint::EdgeEdgeConstraint(
 {
 }
 
-EdgeEdgeConstraint::EdgeEdgeConstraint(
+EdgeEdgeCollision::EdgeEdgeCollision(
     const EdgeEdgeCandidate& candidate,
     const double _eps_x,
     const EdgeEdgeDistanceType _dtype)
@@ -27,7 +27,7 @@ EdgeEdgeConstraint::EdgeEdgeConstraint(
 {
 }
 
-EdgeEdgeConstraint::EdgeEdgeConstraint(
+EdgeEdgeCollision::EdgeEdgeCollision(
     const long _edge0_id,
     const long _edge1_id,
     const double _eps_x,
@@ -35,26 +35,26 @@ EdgeEdgeConstraint::EdgeEdgeConstraint(
     const Eigen::SparseVector<double>& _weight_gradient,
     const EdgeEdgeDistanceType _dtype)
     : EdgeEdgeCandidate(_edge0_id, _edge1_id)
-    , CollisionConstraint(_weight, _weight_gradient)
+    , Collision(_weight, _weight_gradient)
     , eps_x(_eps_x)
     , dtype(_dtype)
 {
 }
 
-double EdgeEdgeConstraint::mollifier_threshold(
-    const VectorMax12d& rest_positions) const
+double
+EdgeEdgeCollision::mollifier_threshold(const VectorMax12d& rest_positions) const
 {
     return edge_edge_mollifier_threshold(
         rest_positions.segment<3>(0), rest_positions.segment<3>(3),
         rest_positions.segment<3>(6), rest_positions.segment<3>(9));
 }
 
-double EdgeEdgeConstraint::mollifier(const VectorMax12d& positions) const
+double EdgeEdgeCollision::mollifier(const VectorMax12d& positions) const
 {
     return mollifier(positions, eps_x);
 }
 
-double EdgeEdgeConstraint::mollifier(
+double EdgeEdgeCollision::mollifier(
     const VectorMax12d& positions, const double _eps_x) const
 {
     assert(positions.size() == 12);
@@ -64,12 +64,12 @@ double EdgeEdgeConstraint::mollifier(
 }
 
 VectorMax12d
-EdgeEdgeConstraint::mollifier_gradient(const VectorMax12d& positions) const
+EdgeEdgeCollision::mollifier_gradient(const VectorMax12d& positions) const
 {
     return mollifier_gradient(positions, eps_x);
 }
 
-VectorMax12d EdgeEdgeConstraint::mollifier_gradient(
+VectorMax12d EdgeEdgeCollision::mollifier_gradient(
     const VectorMax12d& positions, const double _eps_x) const
 {
     assert(positions.size() == 12);
@@ -79,12 +79,12 @@ VectorMax12d EdgeEdgeConstraint::mollifier_gradient(
 }
 
 MatrixMax12d
-EdgeEdgeConstraint::mollifier_hessian(const VectorMax12d& positions) const
+EdgeEdgeCollision::mollifier_hessian(const VectorMax12d& positions) const
 {
     return mollifier_hessian(positions, eps_x);
 }
 
-MatrixMax12d EdgeEdgeConstraint::mollifier_hessian(
+MatrixMax12d EdgeEdgeCollision::mollifier_hessian(
     const VectorMax12d& positions, const double _eps_x) const
 {
     assert(positions.size() == 12);
@@ -93,7 +93,7 @@ MatrixMax12d EdgeEdgeConstraint::mollifier_hessian(
         positions.segment<3>(6), positions.segment<3>(9), _eps_x);
 }
 
-Vector12d EdgeEdgeConstraint::mollifier_gradient_wrt_x(
+Vector12d EdgeEdgeCollision::mollifier_gradient_wrt_x(
     const VectorMax12d& rest_positions, const VectorMax12d& positions) const
 {
     assert(rest_positions.size() == 12);
@@ -105,7 +105,7 @@ Vector12d EdgeEdgeConstraint::mollifier_gradient_wrt_x(
         positions.segment<3>(6), positions.segment<3>(9));
 }
 
-Matrix12d EdgeEdgeConstraint::mollifier_gradient_jacobian_wrt_x(
+Matrix12d EdgeEdgeCollision::mollifier_gradient_jacobian_wrt_x(
     const VectorMax12d& rest_positions, const VectorMax12d& positions) const
 {
     assert(rest_positions.size() == 12);
@@ -117,17 +117,17 @@ Matrix12d EdgeEdgeConstraint::mollifier_gradient_jacobian_wrt_x(
         positions.segment<3>(6), positions.segment<3>(9));
 }
 
-bool EdgeEdgeConstraint::operator==(const EdgeEdgeConstraint& other) const
+bool EdgeEdgeCollision::operator==(const EdgeEdgeCollision& other) const
 {
     return EdgeEdgeCandidate::operator==(other) && dtype == other.dtype;
 }
 
-bool EdgeEdgeConstraint::operator!=(const EdgeEdgeConstraint& other) const
+bool EdgeEdgeCollision::operator!=(const EdgeEdgeCollision& other) const
 {
     return !(*this == other);
 }
 
-bool EdgeEdgeConstraint::operator<(const EdgeEdgeConstraint& other) const
+bool EdgeEdgeCollision::operator<(const EdgeEdgeCollision& other) const
 {
     if (EdgeEdgeCandidate::operator==(other)) {
         return dtype < other.dtype;

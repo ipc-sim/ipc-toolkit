@@ -10,44 +10,44 @@
 
 namespace ipc {
 
-template <class Contacts>
-double Potential<Contacts>::operator()(
+template <class Collisions>
+double Potential<Collisions>::operator()(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& X,
-    const Contacts& contacts) const
+    const Collisions& collisions) const
 {
     assert(X.rows() == mesh.num_vertices());
 
-    if (contacts.empty()) {
+    if (collisions.empty()) {
         return 0;
     }
 
     tbb::enumerable_thread_specific<double> storage(0);
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), contacts.size()),
+        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             auto& local_potential = storage.local();
             for (size_t i = r.begin(); i < r.end(); i++) {
                 // Quadrature weight is premultiplied by local potential
                 local_potential += (*this)(
-                    contacts[i],
-                    contacts[i].dof(X, mesh.edges(), mesh.faces()));
+                    collisions[i],
+                    collisions[i].dof(X, mesh.edges(), mesh.faces()));
             }
         });
 
     return storage.combine([](double a, double b) { return a + b; });
 }
 
-template <class Contacts>
-Eigen::VectorXd Potential<Contacts>::gradient(
+template <class Collisions>
+Eigen::VectorXd Potential<Collisions>::gradient(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& X,
-    const Contacts& contacts) const
+    const Collisions& collisions) const
 {
     assert(X.rows() == mesh.num_vertices());
 
-    if (contacts.empty()) {
+    if (collisions.empty()) {
         return Eigen::VectorXd::Zero(X.size());
     }
 
@@ -57,18 +57,18 @@ Eigen::VectorXd Potential<Contacts>::gradient(
         Eigen::VectorXd::Zero(X.size()));
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), contacts.size()),
+        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             auto& global_grad = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-                const Contact& contact = contacts[i];
+                const Collision& collision = collisions[i];
 
                 const VectorMax12d local_grad = this->gradient(
-                    contact, contact.dof(X, mesh.edges(), mesh.faces()));
+                    collision, collision.dof(X, mesh.edges(), mesh.faces()));
 
                 const std::array<long, 4> vids =
-                    contact.vertex_ids(mesh.edges(), mesh.faces());
+                    collision.vertex_ids(mesh.edges(), mesh.faces());
 
                 local_gradient_to_global_gradient(
                     local_grad, vids, dim, global_grad);
@@ -79,16 +79,16 @@ Eigen::VectorXd Potential<Contacts>::gradient(
                               const Eigen::VectorXd& b) { return a + b; });
 }
 
-template <class Contacts>
-Eigen::SparseMatrix<double> Potential<Contacts>::hessian(
+template <class Collisions>
+Eigen::SparseMatrix<double> Potential<Collisions>::hessian(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& X,
-    const Contacts& contacts,
+    const Collisions& collisions,
     const bool project_hessian_to_psd) const
 {
     assert(X.rows() == mesh.num_vertices());
 
-    if (contacts.empty()) {
+    if (collisions.empty()) {
         return Eigen::SparseMatrix<double>(X.size(), X.size());
     }
 
@@ -102,19 +102,19 @@ Eigen::SparseMatrix<double> Potential<Contacts>::hessian(
         storage;
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), contacts.size()),
+        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             auto& hess_triplets = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-                const Contact& contact = contacts[i];
+                const Collision& collision = collisions[i];
 
                 const MatrixMax12d local_hess = this->hessian(
-                    contacts[i], contacts[i].dof(X, edges, faces),
+                    collisions[i], collisions[i].dof(X, edges, faces),
                     project_hessian_to_psd);
 
                 const std::array<long, 4> vids =
-                    contact.vertex_ids(edges, faces);
+                    collision.vertex_ids(edges, faces);
 
                 local_hessian_to_global_triplets(
                     local_hess, vids, dim, hess_triplets);

@@ -12,22 +12,22 @@ class CollisionStencil {
 public:
     virtual ~CollisionStencil() = default;
 
-    /// @brief Get the number of vertices in the contact stencil.
+    /// @brief Get the number of vertices in the collision stencil.
     virtual int num_vertices() const = 0;
 
-    /// @brief Get the vertex IDs of the contact stencil.
+    /// @brief Get the vertex IDs of the collision stencil.
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
-    /// @return The vertex IDs of the contact stencil. Size is always 4, but elements i > num_vertices() are -1.
+    /// @return The vertex IDs of the collision stencil. Size is always 4, but elements i > num_vertices() are -1.
     virtual std::array<long, 4> vertex_ids(
         const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const = 0;
 
-    /// @brief Get the vertex attributes of the contact stencil.
+    /// @brief Get the vertex attributes of the collision stencil.
     /// @tparam T Type of the attributes
     /// @param vertices Vertex attributes
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
-    /// @return The vertex positions of the contact stencil. Size is always 4, but elements i > num_vertices() are NaN.
+    /// @return The vertex positions of the collision stencil. Size is always 4, but elements i > num_vertices() are NaN.
     template <typename T>
     std::array<VectorMax3<T>, 4> vertices(
         const MatrixX<T>& vertices,
@@ -55,7 +55,7 @@ public:
     /// @param X Full matrix of DOF (rowwise).
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
-    /// @return This constraint's DOF.
+    /// @return This stencil's DOF.
     template <typename T>
     VectorMax12<T>
     dof(const MatrixX<T>& X,

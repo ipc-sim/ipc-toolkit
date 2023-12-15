@@ -1,13 +1,13 @@
 #pragma once
 
-#include <ipc/collisions/collision_constraint.hpp>
+#include <ipc/collisions/collision.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
-class PlaneVertexConstraint : public CollisionConstraint {
+class PlaneVertexCollision : public Collision {
 public:
-    PlaneVertexConstraint(
+    PlaneVertexCollision(
         const VectorMax3d& plane_origin,
         const VectorMax3d& plane_normal,
         const long vertex_id);

@@ -14,13 +14,13 @@ Eigen::VectorXd FrictionPotential::force(
     const Eigen::MatrixXd& rest_positions,
     const Eigen::MatrixXd& lagged_displacements,
     const Eigen::MatrixXd& velocities,
-    const FrictionConstraints& contacts,
+    const FrictionCollisions& collisions,
     const double dhat,
     const double barrier_stiffness,
     const double dmin,
     const bool no_mu) const
 {
-    if (contacts.empty()) {
+    if (collisions.empty()) {
         return Eigen::VectorXd::Zero(velocities.size());
     }
 
@@ -32,20 +32,20 @@ Eigen::VectorXd FrictionPotential::force(
         Eigen::VectorXd::Zero(velocities.size()));
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), contacts.size()),
+        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             Eigen::VectorXd& global_force = storage.local();
             for (size_t i = r.begin(); i < r.end(); i++) {
-                const auto& contact = contacts[i];
+                const auto& collision = collisions[i];
 
                 const VectorMax12d local_force = force(
-                    contact, contact.dof(rest_positions, edges, faces),
-                    contact.dof(lagged_displacements, edges, faces),
-                    contact.dof(velocities, edges, faces), //
+                    collision, collision.dof(rest_positions, edges, faces),
+                    collision.dof(lagged_displacements, edges, faces),
+                    collision.dof(velocities, edges, faces), //
                     dhat, barrier_stiffness, dmin, no_mu);
 
                 const std::array<long, 4> vis =
-                    contact.vertex_ids(mesh.edges(), mesh.faces());
+                    collision.vertex_ids(mesh.edges(), mesh.faces());
 
                 local_gradient_to_global_gradient(
                     local_force, vis, dim, global_force);
@@ -61,13 +61,13 @@ Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
     const Eigen::MatrixXd& rest_positions,
     const Eigen::MatrixXd& lagged_displacements,
     const Eigen::MatrixXd& velocities,
-    const FrictionConstraints& contacts,
+    const FrictionCollisions& collisions,
     const double dhat,
     const double barrier_stiffness,
     const DiffWRT wrt,
     const double dmin) const
 {
-    if (contacts.empty()) {
+    if (collisions.empty()) {
         return Eigen::SparseMatrix<double>(
             velocities.size(), velocities.size());
     }
@@ -80,21 +80,21 @@ Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
         storage;
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), contacts.size()),
+        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             auto& jac_triplets = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-                const FrictionConstraint& contact = contacts[i];
+                const FrictionCollision& collision = collisions[i];
 
                 const MatrixMax12d local_force_jacobian = force_jacobian(
-                    contact, contact.dof(rest_positions, edges, faces),
-                    contact.dof(lagged_displacements, edges, faces),
-                    contact.dof(velocities, edges, faces), //
+                    collision, collision.dof(rest_positions, edges, faces),
+                    collision.dof(lagged_displacements, edges, faces),
+                    collision.dof(velocities, edges, faces), //
                     dhat, barrier_stiffness, wrt, dmin);
 
                 const std::array<long, 4> vis =
-                    contact.vertex_ids(mesh.edges(), mesh.faces());
+                    collision.vertex_ids(mesh.edges(), mesh.faces());
 
                 local_hessian_to_global_triplets(
                     local_force_jacobian, vis, dim, jac_triplets);
@@ -112,61 +112,63 @@ Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
 
     // if wrt == X then compute ∇ₓ w(x)
     if (wrt == DiffWRT::REST_POSITIONS) {
-        for (int i = 0; i < contacts.size(); i++) {
-            const FrictionConstraint& contact = contacts[i];
-            assert(contact.weight_gradient.size() == rest_positions.size());
-            if (contact.weight_gradient.size() != rest_positions.size()) {
+        for (int i = 0; i < collisions.size(); i++) {
+            const FrictionCollision& collision = collisions[i];
+            assert(collision.weight_gradient.size() == rest_positions.size());
+            if (collision.weight_gradient.size() != rest_positions.size()) {
                 throw std::runtime_error(
-                    "Shape derivative is not computed for friction contact!");
+                    "Shape derivative is not computed for friction collision!");
             }
 
             VectorMax12d local_force = force(
-                contact, contact.dof(rest_positions, edges, faces),
-                contact.dof(lagged_displacements, edges, faces),
-                contact.dof(velocities, edges, faces), //
+                collision, collision.dof(rest_positions, edges, faces),
+                collision.dof(lagged_displacements, edges, faces),
+                collision.dof(velocities, edges, faces), //
                 dhat, barrier_stiffness, dmin);
-            assert(contact.weight != 0);
-            local_force /= contact.weight;
+            assert(collision.weight != 0);
+            local_force /= collision.weight;
 
             Eigen::SparseVector<double> force(rest_positions.size());
             force.reserve(local_force.size());
             local_gradient_to_global_gradient(
-                local_force, contact.vertex_ids(edges, faces), dim, force);
+                local_force, collision.vertex_ids(edges, faces), dim, force);
 
-            jacobian += force * contact.weight_gradient.transpose();
+            jacobian += force * collision.weight_gradient.transpose();
         }
     }
 
     return jacobian;
 }
-// -- Single contact methods ---------------------------------------------------
+// -- Single collision methods
+// ---------------------------------------------------
 
 double FrictionPotential::operator()(
-    const Contact& contact, const VectorMax12d& velocities) const
+    const Collision& collision, const VectorMax12d& velocities) const
 {
     // μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
 
     // Compute u = PᵀΓv
-    const VectorMax2d u = contact.tangent_basis.transpose()
-        * contact.relative_velocity(velocities);
+    const VectorMax2d u = collision.tangent_basis.transpose()
+        * collision.relative_velocity(velocities);
 
-    return contact.weight * contact.mu * contact.normal_force_magnitude
+    return collision.weight * collision.mu * collision.normal_force_magnitude
         * f0_SF(u.norm(), epsv());
 }
 
 VectorMax12d FrictionPotential::gradient(
-    const Contact& contact, const VectorMax12d& velocities) const
+    const Collision& collision, const VectorMax12d& velocities) const
 {
     // ∇ₓ μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
     //  = μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u
 
     // Compute u = PᵀΓv
-    const VectorMax2d u = contact.tangent_basis.transpose()
-        * contact.relative_velocity(velocities);
+    const VectorMax2d u = collision.tangent_basis.transpose()
+        * collision.relative_velocity(velocities);
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T =
-        contact.relative_velocity_matrix().transpose() * contact.tangent_basis;
+        collision.relative_velocity_matrix().transpose()
+        * collision.tangent_basis;
 
     // Compute f₁(‖u‖)/‖u‖
     const double f1_over_norm_u = f1_SF_over_x(u.norm(), epsv());
@@ -174,13 +176,13 @@ VectorMax12d FrictionPotential::gradient(
     // μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u ∈ ℝⁿ
     // (n×2)(2×1) = (n×1)
     return T
-        * ((contact.weight * contact.mu * contact.normal_force_magnitude
+        * ((collision.weight * collision.mu * collision.normal_force_magnitude
             * f1_over_norm_u)
            * u);
 }
 
 MatrixMax12d FrictionPotential::hessian(
-    const Contact& contact,
+    const Collision& collision,
     const VectorMax12d& velocities,
     const bool project_hessian_to_psd) const
 {
@@ -189,12 +191,13 @@ MatrixMax12d FrictionPotential::hessian(
     //  = μ N T [f₂(‖u‖) uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
 
     // Compute u = PᵀΓv
-    const VectorMax2d u = contact.tangent_basis.transpose()
-        * contact.relative_velocity(velocities);
+    const VectorMax2d u = collision.tangent_basis.transpose()
+        * collision.relative_velocity(velocities);
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T =
-        contact.relative_velocity_matrix().transpose() * contact.tangent_basis;
+        collision.relative_velocity_matrix().transpose()
+        * collision.tangent_basis;
 
     // Compute ‖u‖
     const double norm_u = u.norm();
@@ -204,7 +207,7 @@ MatrixMax12d FrictionPotential::hessian(
 
     // Compute μ N(xᵗ)
     const double scale =
-        contact.weight * contact.mu * contact.normal_force_magnitude;
+        collision.weight * collision.mu * collision.normal_force_magnitude;
 
     MatrixMax12d hess;
     if (norm_u >= epsv()) {
@@ -214,12 +217,12 @@ MatrixMax12d FrictionPotential::hessian(
         //            = μ N T [f₁(‖u‖)/‖u‖ (I - uuᵀ/‖u‖²)] Tᵀ
         //  ⟹ no PSD projection needed because f₁(‖u‖)/‖u‖ ≥ 0
         if (project_hessian_to_psd && scale <= 0) {
-            hess.setZero(contact.ndof(), contact.ndof()); // -PSD = NSD ⟹ 0
-        } else if (contact.dim() == 2) {
+            hess.setZero(collision.ndof(), collision.ndof()); // -PSD = NSD ⟹ 0
+        } else if (collision.dim() == 2) {
             // I - uuᵀ/‖u‖² = 1 - u²/u² = 0 ⟹ ∇²D(v) = 0
-            hess.setZero(contact.ndof(), contact.ndof());
+            hess.setZero(collision.ndof(), collision.ndof());
         } else {
-            assert(contact.dim() == 3);
+            assert(collision.dim() == 3);
             // I - uuᵀ/‖u‖² = ūūᵀ / ‖u‖² (where ū⋅u = 0)
             const Eigen::Vector2d u_perp(-u[1], u[0]);
             hess = // grouped to reduce number of operations
@@ -231,7 +234,7 @@ MatrixMax12d FrictionPotential::hessian(
         // lim_{‖u‖→0} ∇²D = μ N T [f₁(‖u‖)/‖u‖ I] Tᵀ
         // no PSD projection needed because μ N f₁(‖ū‖)/‖ū‖ ≥ 0
         if (project_hessian_to_psd && scale <= 0) {
-            hess.setZero(contact.ndof(), contact.ndof()); // -PSD = NSD ⟹ 0
+            hess.setZero(collision.ndof(), collision.ndof()); // -PSD = NSD ⟹ 0
         } else {
             hess = scale * f1_over_norm_u * T * T.transpose();
         }
@@ -254,7 +257,7 @@ MatrixMax12d FrictionPotential::hessian(
 }
 
 VectorMax12d FrictionPotential::force(
-    const FrictionConstraint& contact,
+    const FrictionCollision& collision,
     const VectorMax12d& rest_positions,       // = x
     const VectorMax12d& lagged_displacements, // = u
     const VectorMax12d& velocities,           // = v
@@ -279,19 +282,19 @@ VectorMax12d FrictionPotential::force(
         rest_positions + lagged_displacements; // = x
 
     // Compute N(x + u)
-    const double N = contact.compute_normal_force_magnitude(
+    const double N = collision.compute_normal_force_magnitude(
         lagged_positions, dhat, barrier_stiffness, dmin);
 
     // Compute P
     const MatrixMax<double, 3, 2> P =
-        contact.compute_tangent_basis(lagged_positions);
+        collision.compute_tangent_basis(lagged_positions);
 
     // compute β
-    const VectorMax2d beta = contact.compute_closest_point(lagged_positions);
+    const VectorMax2d beta = collision.compute_closest_point(lagged_positions);
 
     // Compute Γ
     const MatrixMax<double, 3, 12> Gamma =
-        contact.relative_velocity_matrix(beta);
+        collision.relative_velocity_matrix(beta);
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
@@ -304,12 +307,12 @@ VectorMax12d FrictionPotential::force(
 
     // F = -μ N f₁(‖τ‖)/‖τ‖ T τ
     // NOTE: no_mu -> leave mu out of this function (i.e., assuming mu = 1)
-    return -contact.weight * (no_mu ? 1.0 : contact.mu) * N * f1_over_norm_tau
-        * T * tau;
+    return -collision.weight * (no_mu ? 1.0 : collision.mu) * N
+        * f1_over_norm_tau * T * tau;
 }
 
 MatrixMax12d FrictionPotential::force_jacobian(
-    const FrictionConstraint& contact,
+    const FrictionCollision& collision,
     const VectorMax12d& rest_positions,       // = x
     const VectorMax12d& lagged_displacements, // = u
     const VectorMax12d& velocities,           // = v
@@ -329,8 +332,8 @@ MatrixMax12d FrictionPotential::force_jacobian(
     assert(rest_positions.size() == lagged_displacements.size());
     assert(lagged_displacements.size() == velocities.size());
     const int n = rest_positions.size();
-    const int dim = n / contact.num_vertices();
-    assert(n % contact.num_vertices() == 0);
+    const int dim = n / collision.num_vertices();
+    assert(n % collision.num_vertices() == 0);
 
     // const VectorMax12d x = dof(rest_positions, edges, faces);
     // const VectorMax12d u = dof(lagged_displacements, edges, faces);
@@ -341,28 +344,28 @@ MatrixMax12d FrictionPotential::force_jacobian(
     const bool need_jac_N_or_T = wrt != DiffWRT::VELOCITIES;
 
     // Compute N
-    const double N = contact.compute_normal_force_magnitude(
+    const double N = collision.compute_normal_force_magnitude(
         lagged_positions, dhat, barrier_stiffness, dmin);
 
     // Compute ∇N
     VectorMax12d grad_N;
     if (need_jac_N_or_T) {
         // ∇ₓN = ∇ᵤN
-        grad_N = contact.compute_normal_force_magnitude_gradient(
+        grad_N = collision.compute_normal_force_magnitude_gradient(
             lagged_positions, dhat, barrier_stiffness, dmin);
         assert(grad_N.array().isFinite().all());
     }
 
     // Compute P
     const MatrixMax<double, 3, 2> P =
-        contact.compute_tangent_basis(lagged_positions);
+        collision.compute_tangent_basis(lagged_positions);
 
     // Compute β
-    const VectorMax2d beta = contact.compute_closest_point(lagged_positions);
+    const VectorMax2d beta = collision.compute_closest_point(lagged_positions);
 
     // Compute Γ
     const MatrixMax<double, 3, 12> Gamma =
-        contact.relative_velocity_matrix(beta);
+        collision.relative_velocity_matrix(beta);
 
     // Compute T = ΓᵀP
     const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
@@ -373,7 +376,7 @@ MatrixMax12d FrictionPotential::force_jacobian(
         jac_T.resize(n * n, dim - 1);
         // ∇T = ∇(ΓᵀP) = ∇ΓᵀP + Γᵀ∇P
         const MatrixMax<double, 36, 2> jac_P =
-            contact.compute_tangent_basis_jacobian(lagged_positions);
+            collision.compute_tangent_basis_jacobian(lagged_positions);
         for (int i = 0; i < n; i++) {
             // ∂T/∂xᵢ += Γᵀ ∂P/∂xᵢ
             jac_T.middleRows(i * n, n) =
@@ -384,9 +387,9 @@ MatrixMax12d FrictionPotential::force_jacobian(
         if (beta.size()) {
             // ∇Γ(β) = ∇ᵦΓ∇β ∈ ℝ^{d×n×n} ≡ ℝ^{nd×n}
             const MatrixMax<double, 2, 12> jac_beta =
-                contact.compute_closest_point_jacobian(lagged_positions);
+                collision.compute_closest_point_jacobian(lagged_positions);
             const MatrixMax<double, 6, 12> jac_Gamma_wrt_beta =
-                contact.relative_velocity_matrix_jacobian(beta);
+                collision.relative_velocity_matrix_jacobian(beta);
 
             for (int k = 0; k < n; k++) {
                 for (int b = 0; b < beta.size(); b++) {
@@ -457,12 +460,12 @@ MatrixMax12d FrictionPotential::force_jacobian(
     // + -μ N f₁(‖τ‖)/‖τ‖ T [∇τ]
     J += N * f1_over_norm_tau * T * jac_tau;
 
-    // NOTE: ∇ₓw(x) is not local to the contact pair (i.e., it involves more
-    // than the 4 contacting vertices), so we do not have enough information
+    // NOTE: ∇ₓw(x) is not local to the collision pair (i.e., it involves more
+    // than the 4 collisioning vertices), so we do not have enough information
     // here to compute the gradient. Instead this should be handled outside of
     // the function. For a simple multiplicitive model (∑ᵢ wᵢ Fᵢ) this can be
     // done easily.
-    J *= -contact.weight * contact.mu;
+    J *= -collision.weight * collision.mu;
 
     return J;
 }

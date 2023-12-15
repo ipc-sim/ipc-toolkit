@@ -9,15 +9,17 @@
 
 namespace ipc {
 
-class CollisionConstraint : virtual public CollisionStencil {
+class Collision : virtual public CollisionStencil {
 public:
-    CollisionConstraint() = default;
+    Collision() = default;
 
-    CollisionConstraint(
+    Collision(
         const double weight,
         const Eigen::SparseVector<double>& weight_gradient);
 
-    virtual ~CollisionConstraint() { }
+    virtual ~Collision() { }
+
+    // -- Distance mollifier ---------------------------------------------------
 
     /// @brief Does the distance potentially have to be mollified?
     virtual bool is_mollified() const { return false; }
@@ -82,10 +84,12 @@ public:
         const VectorMax12d& rest_positions,
         const VectorMax12d& positions) const;
 
+    // -------------------------------------------------------------------------
+
     /// @brief The minimum separation distance.
     double dmin = 0;
 
-    /// @brief The term's weight (e.g., contact area)
+    /// @brief The term's weight (e.g., collision area)
     double weight = 1;
 
     /// @brief The gradient of the term's weight wrt the rest positions.

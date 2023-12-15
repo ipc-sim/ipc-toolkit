@@ -5,9 +5,9 @@
 
 namespace ipc {
 
-template <class Contacts> class Potential {
+template <class Collisions> class Potential {
 protected:
-    using Contact = typename Contacts::value_type;
+    using Collision = typename Collisions::value_type;
 
 public:
     Potential() { }
@@ -15,60 +15,61 @@ public:
 
     // -- Cumulative methods ---------------------------------------------------
 
-    /// @brief Compute the barrier potential for a set of contacts.
+    /// @brief Compute the barrier potential for a set of collisions.
     /// @param mesh The collision mesh.
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
-    /// @param contacts The set of contacts.
+    /// @param collisions The set of collisions.
     /// @returns The sum of all barrier potentials (not scaled by the barrier stiffness).
     double operator()(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
-        const Contacts& contacts) const;
+        const Collisions& collisions) const;
 
     /// @brief Compute the gradient of the barrier potential.
     /// @param mesh The collision mesh.
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
-    /// @param contacts The set of contacts.
+    /// @param collisions The set of collisions.
     /// @returns The gradient of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|.
     Eigen::VectorXd gradient(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
-        const Contacts& contacts) const;
+        const Collisions& collisions) const;
 
     /// @brief Compute the hessian of the barrier potential.
     /// @param mesh The collision mesh.
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
-    /// @param contacts The set of contacts.
+    /// @param collisions The set of collisions.
     /// @param project_hessian_to_psd Make sure the hessian is positive semi-definite.
     /// @returns The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|x|vertices|.
     Eigen::SparseMatrix<double> hessian(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
-        const Contacts& contacts,
+        const Collisions& collisions,
         const bool project_hessian_to_psd = false) const;
 
-    // -- Single contact methods -----------------------------------------------
+    // -- Single collision methods
+    // -----------------------------------------------
 
-    /// @brief Compute the potential for a single contact.
-    /// @param contact The contact.
-    /// @param x The contact stencil's degrees of freedom.
+    /// @brief Compute the potential for a single collision.
+    /// @param collision The collision.
+    /// @param x The collision stencil's degrees of freedom.
     /// @return The potential.
     virtual double
-    operator()(const Contact& contact, const VectorMax12d& x) const = 0;
+    operator()(const Collision& collision, const VectorMax12d& x) const = 0;
 
-    /// @brief Compute the gradient of the potential for a single contact.
-    /// @param contact The contact.
-    /// @param x The contact stencil's degrees of freedom.
+    /// @brief Compute the gradient of the potential for a single collision.
+    /// @param collision The collision.
+    /// @param x The collision stencil's degrees of freedom.
     /// @return The gradient of the potential.
     virtual VectorMax12d
-    gradient(const Contact& contact, const VectorMax12d& x) const = 0;
+    gradient(const Collision& collision, const VectorMax12d& x) const = 0;
 
-    /// @brief Compute the hessian of the potential for a single contact.
-    /// @param contact The contact.
-    /// @param x The contact stencil's degrees of freedom.
+    /// @brief Compute the hessian of the potential for a single collision.
+    /// @param collision The collision.
+    /// @param x The collision stencil's degrees of freedom.
     /// @return The hessian of the potential.
     virtual MatrixMax12d hessian(
-        const Contact& contact,
+        const Collision& collision,
         const VectorMax12d& x,
         const bool project_hessian_to_psd = false) const = 0;
 };

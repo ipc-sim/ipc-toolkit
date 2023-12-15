@@ -5,8 +5,8 @@ set(SOURCES
   edge_vertex.hpp
   face_vertex.cpp
   face_vertex.hpp
-  friction_constraint.cpp
-  friction_constraint.hpp
+  friction_collision.cpp
+  friction_collision.hpp
   vertex_vertex.cpp
   vertex_vertex.hpp
 )

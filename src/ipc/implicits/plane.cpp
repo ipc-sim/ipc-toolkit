@@ -9,16 +9,16 @@
 
 namespace ipc {
 
-void construct_point_plane_constraint_set(
+void construct_point_plane_collisions(
     const Eigen::MatrixXd& points,
     const Eigen::MatrixXd& plane_origins,
     const Eigen::MatrixXd& plane_normals,
     const double dhat,
-    std::vector<PlaneVertexConstraint>& pv_constraints,
+    std::vector<PlaneVertexCollision>& pv_collisions,
     const double dmin,
     const std::function<bool(size_t, size_t)>& can_collide)
 {
-    pv_constraints.clear();
+    pv_collisions.clear();
 
     double dhat_squared = dhat * dhat;
     double dmin_squared = dmin * dmin;
@@ -42,8 +42,8 @@ void construct_point_plane_constraint_set(
                 points.row(vi), plane_origin, plane_normal);
 
             if (distance_sqr - dmin_squared < 2 * dmin * dhat + dhat_squared) {
-                pv_constraints.emplace_back(plane_origin, plane_normal, vi);
-                pv_constraints.back().dmin = dmin;
+                pv_collisions.emplace_back(plane_origin, plane_normal, vi);
+                pv_collisions.back().dmin = dmin;
             }
         }
     }

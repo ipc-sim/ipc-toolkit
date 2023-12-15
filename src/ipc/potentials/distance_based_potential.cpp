@@ -7,11 +7,11 @@ namespace ipc {
 Eigen::SparseMatrix<double> DistanceBasedPotential::shape_derivative(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
-    const Contacts& contacts) const
+    const Collisions& collisions) const
 {
     assert(vertices.rows() == mesh.num_vertices());
 
-    if (contacts.empty()) {
+    if (collisions.empty()) {
         return Eigen::SparseMatrix<double>(vertices.size(), vertices.size());
     }
 
@@ -25,15 +25,15 @@ Eigen::SparseMatrix<double> DistanceBasedPotential::shape_derivative(
         storage;
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), contacts.size()),
+        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             auto& local_triplets = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
                 this->shape_derivative(
-                    contacts[i], contacts[i].vertex_ids(edges, faces),
-                    contacts[i].dof(rest_positions, edges, faces),
-                    contacts[i].dof(vertices, edges, faces), local_triplets);
+                    collisions[i], collisions[i].vertex_ids(edges, faces),
+                    collisions[i].dof(rest_positions, edges, faces),
+                    collisions[i].dof(vertices, edges, faces), local_triplets);
             }
         });
 
@@ -47,87 +47,88 @@ Eigen::SparseMatrix<double> DistanceBasedPotential::shape_derivative(
     return shape_derivative;
 }
 
-// -- Single contact methods -----------------------------------------------
+// -- Single collision methods -----------------------------------------------
 
 double DistanceBasedPotential::operator()(
-    const Contact& contact, const VectorMax12d& positions) const
+    const Collision& collision, const VectorMax12d& positions) const
 {
     // w * m(x) * f(d(x))
-    // NOTE: can save a multiplication by checking if !contact.is_mollified()
-    const double d = contact.compute_distance(positions);
-    return contact.weight * contact.mollifier(positions)
-        * distance_based_potential(d, contact.dmin);
+    // NOTE: can save a multiplication by checking if !collision.is_mollified()
+    const double d = collision.compute_distance(positions);
+    return collision.weight * collision.mollifier(positions)
+        * distance_based_potential(d, collision.dmin);
 }
 
 VectorMax12d DistanceBasedPotential::gradient(
-    const Contact& contact, const VectorMax12d& positions) const
+    const Collision& collision, const VectorMax12d& positions) const
 {
     // d(x)
-    const double d = contact.compute_distance(positions);
+    const double d = collision.compute_distance(positions);
     // ∇d(x)
-    const VectorMax12d grad_d = contact.compute_distance_gradient(positions);
+    const VectorMax12d grad_d = collision.compute_distance_gradient(positions);
 
     // f(d(x))
-    const double f = distance_based_potential(d, contact.dmin);
+    const double f = distance_based_potential(d, collision.dmin);
     // f'(d(x))
-    const double grad_f = distance_based_potential_gradient(d, contact.dmin);
+    const double grad_f = distance_based_potential_gradient(d, collision.dmin);
 
-    if (!contact.is_mollified()) {
+    if (!collision.is_mollified()) {
         // ∇[f(d(x))] = f'(d(x)) * ∇d(x)
-        return (contact.weight * grad_f) * grad_d;
+        return (collision.weight * grad_f) * grad_d;
     }
 
-    const double m = contact.mollifier(positions);                     // m(x)
-    const VectorMax12d grad_m = contact.mollifier_gradient(positions); // ∇m(x)
+    const double m = collision.mollifier(positions); // m(x)
+    const VectorMax12d grad_m =
+        collision.mollifier_gradient(positions); // ∇m(x)
 
     // ∇[m(x) * f(d(x))] = f(d(x)) * ∇m(x) + m(x) * ∇ f(d(x))
-    return (contact.weight * f) * grad_m
-        + (contact.weight * m * grad_f) * grad_d;
+    return (collision.weight * f) * grad_m
+        + (collision.weight * m * grad_f) * grad_d;
 }
 
 MatrixMax12d DistanceBasedPotential::hessian(
-    const Contact& contact,
+    const Collision& collision,
     const VectorMax12d& positions,
     const bool project_hessian_to_psd) const
 {
     // d(x)
-    const double d = contact.compute_distance(positions);
+    const double d = collision.compute_distance(positions);
     // ∇d(x)
-    const VectorMax12d grad_d = contact.compute_distance_gradient(positions);
+    const VectorMax12d grad_d = collision.compute_distance_gradient(positions);
     // ∇²d(x)
-    const MatrixMax12d hess_d = contact.compute_distance_hessian(positions);
+    const MatrixMax12d hess_d = collision.compute_distance_hessian(positions);
 
     // f'(d(x))
-    const double grad_f = distance_based_potential_gradient(d, contact.dmin);
+    const double grad_f = distance_based_potential_gradient(d, collision.dmin);
     // f"(d(x))
-    const double hess_f = distance_based_potential_hessian(d, contact.dmin);
+    const double hess_f = distance_based_potential_hessian(d, collision.dmin);
 
     MatrixMax12d hess;
-    if (!contact.is_mollified()) {
+    if (!collision.is_mollified()) {
         // ∇²[f(d(x))] = ∇(f'(d(x)) * ∇d(x))
         //             = f"(d(x)) * ∇d(x) * ∇d(x)ᵀ + f'(d(x)) * ∇²d(x)
-        hess = (contact.weight * hess_f) * grad_d * grad_d.transpose()
-            + (contact.weight * grad_f) * hess_d;
+        hess = (collision.weight * hess_f) * grad_d * grad_d.transpose()
+            + (collision.weight * grad_f) * hess_d;
     } else {
-        const double f = distance_based_potential(d, contact.dmin); // f(d(x))
+        const double f = distance_based_potential(d, collision.dmin); // f(d(x))
 
         // m(x)
-        const double m = contact.mollifier(positions);
+        const double m = collision.mollifier(positions);
         // ∇ m(x)
-        const VectorMax12d grad_m = contact.mollifier_gradient(positions);
+        const VectorMax12d grad_m = collision.mollifier_gradient(positions);
         // ∇² m(x)
-        const MatrixMax12d hess_m = contact.mollifier_hessian(positions);
+        const MatrixMax12d hess_m = collision.mollifier_hessian(positions);
 
-        const double weighted_m = contact.weight * m;
+        const double weighted_m = collision.weight * m;
 
         // ∇f(d(x)) * ∇m(x)ᵀ
         const MatrixMax12d grad_f_grad_m =
-            (contact.weight * grad_f) * grad_d * grad_m.transpose();
+            (collision.weight * grad_f) * grad_d * grad_m.transpose();
 
         // ∇²[m(x) * f(d(x))] = ∇[∇m(x) * f(d(x)) + m(x) * ∇f(d(x))]
         //                    = ∇²m(x) * f(d(x)) + ∇f(d(x)) * ∇m(x)ᵀ
         //                      + ∇m(x) * ∇f(d(x))ᵀ + m(x) * ∇²f(d(x))
-        hess = (contact.weight * f) * hess_m + grad_f_grad_m
+        hess = (collision.weight * f) * hess_m + grad_f_grad_m
             + grad_f_grad_m.transpose()
             + (weighted_m * hess_f) * grad_d * grad_d.transpose()
             + (weighted_m * grad_f) * hess_d;
@@ -138,7 +139,7 @@ MatrixMax12d DistanceBasedPotential::hessian(
 }
 
 void DistanceBasedPotential::shape_derivative(
-    const Contact& contact,
+    const Collision& collision,
     const std::array<long, 4>& vertex_ids,
     const VectorMax12d& rest_positions, // = x̄
     const VectorMax12d& positions,      // = x̄ + u
@@ -146,28 +147,28 @@ void DistanceBasedPotential::shape_derivative(
 {
     assert(rest_positions.size() == positions.size());
 
-    const int dim = positions.size() / contact.num_vertices();
-    assert(positions.size() % contact.num_vertices() == 0);
+    const int dim = positions.size() / collision.num_vertices();
+    assert(positions.size() % collision.num_vertices() == 0);
 
     // Compute:
     // ∇ₓ (w ∇ᵤf(d(x̄+u))) = (∇ₓw)(∇ᵤf(d(x̄+u)))ᵀ + w ∇ₓ∇ᵤf(d(x̄+u))
     //                         (first term)        (second term)
 
     // First term:
-    if (contact.weight_gradient.size() <= 0) {
+    if (collision.weight_gradient.size() <= 0) {
         throw std::runtime_error(
-            "Shape derivative is not computed for contact constraint!");
+            "Shape derivative is not computed for collisions!");
     }
 
-    if (contact.weight_gradient.nonZeros()) {
-        VectorMax12d grad_b = gradient(contact, positions);
-        assert(contact.weight != 0);
-        grad_b.array() /= contact.weight; // remove weight
+    if (collision.weight_gradient.nonZeros()) {
+        VectorMax12d grad_b = gradient(collision, positions);
+        assert(collision.weight != 0);
+        grad_b.array() /= collision.weight; // remove weight
 
-        for (int i = 0; i < contact.num_vertices(); i++) {
+        for (int i = 0; i < collision.num_vertices(); i++) {
             for (int d = 0; d < dim; d++) {
                 using Itr = Eigen::SparseVector<double>::InnerIterator;
-                for (Itr j(contact.weight_gradient); j; ++j) {
+                for (Itr j(collision.weight_gradient); j; ++j) {
                     out.emplace_back(
                         vertex_ids[i] * dim + d, j.index(),
                         grad_b[dim * i + d] * j.value());
@@ -178,47 +179,50 @@ void DistanceBasedPotential::shape_derivative(
 
     // Second term:
     MatrixMax12d local_hess;
-    if (!contact.is_mollified()) {
+    if (!collision.is_mollified()) {
         // w ∇ₓ∇ᵤf = w ∇ᵤ²f
         local_hess =
-            hessian(contact, positions, /*project_hessian_to_psd=*/false);
+            hessian(collision, positions, /*project_hessian_to_psd=*/false);
     } else {
         // d(x̄+u)
-        const double d = contact.compute_distance(positions);
+        const double d = collision.compute_distance(positions);
         // ∇d(x̄+u)
         const VectorMax12d grad_d =
-            contact.compute_distance_gradient(positions);
+            collision.compute_distance_gradient(positions);
         // ∇²d(x̄+u)
-        const MatrixMax12d hess_d = contact.compute_distance_hessian(positions);
+        const MatrixMax12d hess_d =
+            collision.compute_distance_hessian(positions);
 
         // f(d(x̄+u))
         const double f =
-            contact.weight * distance_based_potential(d, contact.dmin);
+            collision.weight * distance_based_potential(d, collision.dmin);
         // ∇ᵤ f(d(x̄+u))
         const Vector12d gradu_f =
-            (contact.weight
-             * distance_based_potential_gradient(d, contact.dmin))
+            (collision.weight
+             * distance_based_potential_gradient(d, collision.dmin))
             * grad_d;
         // ∇ᵤ² f(d(x̄+u))
         const Matrix12d hessu_f =
-            (contact.weight * distance_based_potential_hessian(d, contact.dmin))
+            (collision.weight
+             * distance_based_potential_hessian(d, collision.dmin))
                 * grad_d * grad_d.transpose()
-            + (contact.weight
-               * distance_based_potential_gradient(d, contact.dmin))
+            + (collision.weight
+               * distance_based_potential_gradient(d, collision.dmin))
                 * hess_d;
 
         // ε(x̄)
-        const double eps_x = contact.mollifier_threshold(rest_positions);
+        const double eps_x = collision.mollifier_threshold(rest_positions);
 
         // m(x̄,u)
-        const double m = contact.mollifier(positions, eps_x);
+        const double m = collision.mollifier(positions, eps_x);
         // ∇ᵤ m(x̄,u)
-        const Vector12d gradu_m = contact.mollifier_gradient(positions, eps_x);
+        const Vector12d gradu_m =
+            collision.mollifier_gradient(positions, eps_x);
         // ∇ₓ m(x̄,u)
         const Vector12d gradx_m =
-            contact.mollifier_gradient_wrt_x(rest_positions, positions);
+            collision.mollifier_gradient_wrt_x(rest_positions, positions);
         // ∇ₓ∇ᵤ m(x̄,u)
-        const Matrix12d jac_m = contact.mollifier_gradient_jacobian_wrt_x(
+        const Matrix12d jac_m = collision.mollifier_gradient_jacobian_wrt_x(
             rest_positions, positions);
 
         // Only compute the second term of the shape derivative

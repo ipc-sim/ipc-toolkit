@@ -1,4 +1,4 @@
-#include "friction_constraint.hpp"
+#include "friction_collision.hpp"
 
 #include <ipc/friction/closest_point.hpp>
 #include <ipc/friction/tangent_basis.hpp>
@@ -14,7 +14,7 @@
 
 namespace ipc {
 
-void FrictionConstraint::init(
+void FrictionCollision::init(
     const Eigen::MatrixXd& positions,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
@@ -33,7 +33,7 @@ void FrictionConstraint::init(
         compute_normal_force_magnitude(pos, dhat, barrier_stiffness, dmin);
 }
 
-double FrictionConstraint::compute_normal_force_magnitude(
+double FrictionCollision::compute_normal_force_magnitude(
     const VectorMax12d& positions,
     const double dhat,
     const double barrier_stiffness,
@@ -43,7 +43,7 @@ double FrictionConstraint::compute_normal_force_magnitude(
         compute_distance(positions), dhat, barrier_stiffness, dmin);
 }
 
-VectorMax12d FrictionConstraint::compute_normal_force_magnitude_gradient(
+VectorMax12d FrictionCollision::compute_normal_force_magnitude_gradient(
     const VectorMax12d& positions,
     const double dhat,
     const double barrier_stiffness,

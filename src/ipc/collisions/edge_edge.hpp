@@ -1,26 +1,25 @@
 #pragma once
 
 #include <ipc/candidates/edge_edge.hpp>
-#include <ipc/collisions/collision_constraint.hpp>
+#include <ipc/collisions/collision.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
-class EdgeEdgeConstraint : public EdgeEdgeCandidate,
-                           public CollisionConstraint {
+class EdgeEdgeCollision : public EdgeEdgeCandidate, public Collision {
 public:
-    EdgeEdgeConstraint(
+    EdgeEdgeCollision(
         const long edge0_id,
         const long edge1_id,
         const double eps_x,
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
-    EdgeEdgeConstraint(
+    EdgeEdgeCollision(
         const EdgeEdgeCandidate& candidate,
         const double eps_x,
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
-    EdgeEdgeConstraint(
+    EdgeEdgeCollision(
         const long edge0_id,
         const long edge1_id,
         const double eps_x,
@@ -97,12 +96,12 @@ public:
 
     // ------------------------------------------------------------------------
 
-    bool operator==(const EdgeEdgeConstraint& other) const;
-    bool operator!=(const EdgeEdgeConstraint& other) const;
-    bool operator<(const EdgeEdgeConstraint& other) const;
+    bool operator==(const EdgeEdgeCollision& other) const;
+    bool operator!=(const EdgeEdgeCollision& other) const;
+    bool operator<(const EdgeEdgeCollision& other) const;
 
     template <typename H>
-    friend H AbslHashValue(H h, const EdgeEdgeConstraint& ee)
+    friend H AbslHashValue(H h, const EdgeEdgeCollision& ee)
     {
         return H::combine(
             std::move(h), static_cast<const EdgeEdgeCandidate&>(ee), ee.dtype);
@@ -115,7 +114,7 @@ public:
     double eps_x;
 
     /// @brief Cached distance type.
-    /// Some EE constraints are mollified EV or VV constraints.
+    /// Some EE collisions are mollified EV or VV collisions.
     EdgeEdgeDistanceType dtype;
 };
 

@@ -1,6 +1,6 @@
-#include "collision_constraints.hpp"
+#include "collisions.hpp"
 
-#include <ipc/collisions/collision_constraints_builder.hpp>
+#include <ipc/collisions/collisions_builder.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_edge.hpp>
@@ -137,7 +137,7 @@ namespace {
     }
 } // namespace
 
-void CollisionConstraints::build(
+void Collisions::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const double dhat,
@@ -154,7 +154,7 @@ void CollisionConstraints::build(
     this->build(candidates, mesh, vertices, dhat, dmin);
 }
 
-void CollisionConstraints::build(
+void Collisions::build(
     const Candidates& candidates,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
@@ -172,13 +172,13 @@ void CollisionConstraints::build(
         return distance_sqr < offset_sqr;
     };
 
-    tbb::enumerable_thread_specific<CollisionConstraintsBuilder> storage(
+    tbb::enumerable_thread_specific<CollisionsBuilder> storage(
         use_convergent_formulation(), are_shape_derivatives_enabled());
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), candidates.vv_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
-            storage.local().add_vertex_vertex_constraints(
+            storage.local().add_vertex_vertex_collisions(
                 mesh, vertices, candidates.vv_candidates, is_active, r.begin(),
                 r.end());
         });
@@ -186,7 +186,7 @@ void CollisionConstraints::build(
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), candidates.ev_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
-            storage.local().add_edge_vertex_constraints(
+            storage.local().add_edge_vertex_collisions(
                 mesh, vertices, candidates.ev_candidates, is_active, r.begin(),
                 r.end());
         });
@@ -194,7 +194,7 @@ void CollisionConstraints::build(
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), candidates.ee_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
-            storage.local().add_edge_edge_constraints(
+            storage.local().add_edge_edge_collisions(
                 mesh, vertices, candidates.ee_candidates, is_active, r.begin(),
                 r.end());
         });
@@ -202,7 +202,7 @@ void CollisionConstraints::build(
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), candidates.fv_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
-            storage.local().add_face_vertex_constraints(
+            storage.local().add_face_vertex_collisions(
                 mesh, vertices, candidates.fv_candidates, is_active, r.begin(),
                 r.end());
         });
@@ -218,7 +218,7 @@ void CollisionConstraints::build(
                 tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local()
-                        .add_edge_vertex_negative_vertex_vertex_constraints(
+                        .add_edge_vertex_negative_vertex_vertex_collisions(
                             mesh, vertices, vv_candidates, r.begin(), r.end());
                 });
         }
@@ -232,7 +232,7 @@ void CollisionConstraints::build(
                 tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local()
-                        .add_edge_edge_negative_edge_vertex_constraints(
+                        .add_edge_edge_negative_edge_vertex_collisions(
                             mesh, vertices, ev_candidates, r.begin(), r.end());
                 });
         }
@@ -247,7 +247,7 @@ void CollisionConstraints::build(
                 tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local()
-                        .add_face_vertex_negative_edge_vertex_constraints(
+                        .add_face_vertex_negative_edge_vertex_collisions(
                             mesh, vertices, ev_candidates, r.begin(), r.end());
                 });
 
@@ -260,7 +260,7 @@ void CollisionConstraints::build(
                 tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local()
-                        .add_face_vertex_positive_vertex_vertex_constraints(
+                        .add_face_vertex_positive_vertex_vertex_collisions(
                             mesh, vertices, vv_candidates, r.begin(), r.end());
                 });
         }
@@ -268,13 +268,13 @@ void CollisionConstraints::build(
 
     // -------------------------------------------------------------------------
 
-    CollisionConstraintsBuilder::merge(storage, *this);
+    CollisionsBuilder::merge(storage, *this);
 
     // logger().debug(to_string(mesh, vertices));
 
     for (size_t ci = 0; ci < size(); ci++) {
-        CollisionConstraint& constraint = (*this)[ci];
-        constraint.dmin = dmin;
+        Collision& collision = (*this)[ci];
+        collision.dmin = dmin;
     }
 
     if (use_convergent_formulation()) {
@@ -286,37 +286,37 @@ void CollisionConstraints::build(
             dhat * std::pow(dhat + 2 * dmin, 2);
 
         for (size_t ci = 0; ci < size(); ci++) {
-            CollisionConstraint& constraint = (*this)[ci];
-            constraint.weight /= barrier_to_physical_barrier_divisor;
+            Collision& collision = (*this)[ci];
+            collision.weight /= barrier_to_physical_barrier_divisor;
             if (are_shape_derivatives_enabled()) {
-                constraint.weight_gradient /=
+                collision.weight_gradient /=
                     barrier_to_physical_barrier_divisor;
             }
         }
     }
 }
 
-void CollisionConstraints::set_use_convergent_formulation(
+void Collisions::set_use_convergent_formulation(
     const bool use_convergent_formulation)
 {
     if (!empty()
         && use_convergent_formulation != m_use_convergent_formulation) {
         logger().warn(
-            "Setting use_convergent_formulation after building constraints. "
-            "Re-build constraints for this to have an effect.");
+            "Setting use_convergent_formulation after building collisions. "
+            "Re-build collisions for this to have an effect.");
     }
 
     m_use_convergent_formulation = use_convergent_formulation;
 }
 
-void CollisionConstraints::set_are_shape_derivatives_enabled(
+void Collisions::set_are_shape_derivatives_enabled(
     const bool are_shape_derivatives_enabled)
 {
     if (!empty()
         && are_shape_derivatives_enabled != m_are_shape_derivatives_enabled) {
         logger().warn(
-            "Setting enable_shape_derivatives after building constraints. "
-            "Re-build constraints for this to have an effect.");
+            "Setting enable_shape_derivatives after building collisions. "
+            "Re-build collisions for this to have an effect.");
     }
 
     m_are_shape_derivatives_enabled = are_shape_derivatives_enabled;
@@ -325,7 +325,7 @@ void CollisionConstraints::set_are_shape_derivatives_enabled(
 // ============================================================================
 
 // NOTE: Actually distance squared
-double CollisionConstraints::compute_minimum_distance(
+double Collisions::compute_minimum_distance(
     const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());
@@ -340,7 +340,6 @@ double CollisionConstraints::compute_minimum_distance(
     tbb::enumerable_thread_specific<double> storage(
         std::numeric_limits<double>::infinity());
 
-    // Do a single block range over all constraint vectors
     tbb::parallel_for(
         tbb::blocked_range<size_t>(0, size()),
         [&](tbb::blocked_range<size_t> r) {
@@ -361,116 +360,116 @@ double CollisionConstraints::compute_minimum_distance(
 
 // ============================================================================
 
-size_t CollisionConstraints::size() const
+size_t Collisions::size() const
 {
-    return vv_constraints.size() + ev_constraints.size() + ee_constraints.size()
-        + fv_constraints.size() + pv_constraints.size();
+    return vv_collisions.size() + ev_collisions.size() + ee_collisions.size()
+        + fv_collisions.size() + pv_collisions.size();
 }
 
-bool CollisionConstraints::empty() const
+bool Collisions::empty() const
 {
-    return vv_constraints.empty() && ev_constraints.empty()
-        && ee_constraints.empty() && fv_constraints.empty()
-        && pv_constraints.empty();
+    return vv_collisions.empty() && ev_collisions.empty()
+        && ee_collisions.empty() && fv_collisions.empty()
+        && pv_collisions.empty();
 }
 
-void CollisionConstraints::clear()
+void Collisions::clear()
 {
-    vv_constraints.clear();
-    ev_constraints.clear();
-    ee_constraints.clear();
-    fv_constraints.clear();
-    pv_constraints.clear();
+    vv_collisions.clear();
+    ev_collisions.clear();
+    ee_collisions.clear();
+    fv_collisions.clear();
+    pv_collisions.clear();
 }
 
-CollisionConstraint& CollisionConstraints::operator[](size_t idx)
+Collision& Collisions::operator[](size_t idx)
 {
-    if (idx < vv_constraints.size()) {
-        return vv_constraints[idx];
+    if (idx < vv_collisions.size()) {
+        return vv_collisions[idx];
     }
-    idx -= vv_constraints.size();
-    if (idx < ev_constraints.size()) {
-        return ev_constraints[idx];
+    idx -= vv_collisions.size();
+    if (idx < ev_collisions.size()) {
+        return ev_collisions[idx];
     }
-    idx -= ev_constraints.size();
-    if (idx < ee_constraints.size()) {
-        return ee_constraints[idx];
+    idx -= ev_collisions.size();
+    if (idx < ee_collisions.size()) {
+        return ee_collisions[idx];
     }
-    idx -= ee_constraints.size();
-    if (idx < fv_constraints.size()) {
-        return fv_constraints[idx];
+    idx -= ee_collisions.size();
+    if (idx < fv_collisions.size()) {
+        return fv_collisions[idx];
     }
-    idx -= fv_constraints.size();
-    if (idx < pv_constraints.size()) {
-        return pv_constraints[idx];
+    idx -= fv_collisions.size();
+    if (idx < pv_collisions.size()) {
+        return pv_collisions[idx];
     }
-    throw std::out_of_range("Constraint index is out of range!");
+    throw std::out_of_range("Collision index is out of range!");
 }
 
-const CollisionConstraint& CollisionConstraints::operator[](size_t idx) const
+const Collision& Collisions::operator[](size_t idx) const
 {
-    if (idx < vv_constraints.size()) {
-        return vv_constraints[idx];
+    if (idx < vv_collisions.size()) {
+        return vv_collisions[idx];
     }
-    idx -= vv_constraints.size();
-    if (idx < ev_constraints.size()) {
-        return ev_constraints[idx];
+    idx -= vv_collisions.size();
+    if (idx < ev_collisions.size()) {
+        return ev_collisions[idx];
     }
-    idx -= ev_constraints.size();
-    if (idx < ee_constraints.size()) {
-        return ee_constraints[idx];
+    idx -= ev_collisions.size();
+    if (idx < ee_collisions.size()) {
+        return ee_collisions[idx];
     }
-    idx -= ee_constraints.size();
-    if (idx < fv_constraints.size()) {
-        return fv_constraints[idx];
+    idx -= ee_collisions.size();
+    if (idx < fv_collisions.size()) {
+        return fv_collisions[idx];
     }
-    idx -= fv_constraints.size();
-    if (idx < pv_constraints.size()) {
-        return pv_constraints[idx];
+    idx -= fv_collisions.size();
+    if (idx < pv_collisions.size()) {
+        return pv_collisions[idx];
     }
-    throw std::out_of_range("Constraint index is out of range!");
+    throw std::out_of_range("Collision index is out of range!");
 }
 
-bool CollisionConstraints::is_vertex_vertex(size_t idx) const
+bool Collisions::is_vertex_vertex(size_t idx) const
 {
-    return idx < vv_constraints.size();
+    return idx < vv_collisions.size();
 }
 
-bool CollisionConstraints::is_edge_vertex(size_t idx) const
+bool Collisions::is_edge_vertex(size_t idx) const
 {
-    return idx >= vv_constraints.size()
-        && idx < vv_constraints.size() + ev_constraints.size();
+    return idx >= vv_collisions.size()
+        && idx < vv_collisions.size() + ev_collisions.size();
 }
 
-bool CollisionConstraints::is_edge_edge(size_t idx) const
+bool Collisions::is_edge_edge(size_t idx) const
 {
-    return idx >= vv_constraints.size() + ev_constraints.size()
+    return idx >= vv_collisions.size() + ev_collisions.size()
         && idx
-        < vv_constraints.size() + ev_constraints.size() + ee_constraints.size();
+        < vv_collisions.size() + ev_collisions.size() + ee_collisions.size();
 }
 
-bool CollisionConstraints::is_face_vertex(size_t idx) const
+bool Collisions::is_face_vertex(size_t idx) const
 {
     return idx
-        >= vv_constraints.size() + ev_constraints.size() + ee_constraints.size()
-        && idx < vv_constraints.size() + ev_constraints.size()
-            + ee_constraints.size() + fv_constraints.size();
+        >= vv_collisions.size() + ev_collisions.size() + ee_collisions.size()
+        && idx < vv_collisions.size() + ev_collisions.size()
+            + ee_collisions.size() + fv_collisions.size();
 }
 
-bool CollisionConstraints::is_plane_vertex(size_t idx) const
+bool Collisions::is_plane_vertex(size_t idx) const
 {
-    return idx >= vv_constraints.size() + ev_constraints.size()
-            + ee_constraints.size() + fv_constraints.size()
-        && idx < vv_constraints.size() + ev_constraints.size()
-            + ee_constraints.size() + fv_constraints.size()
-            + pv_constraints.size();
+    return idx >= vv_collisions.size() + ev_collisions.size()
+            + ee_collisions.size() + fv_collisions.size()
+        && idx < vv_collisions.size() + ev_collisions.size()
+            + ee_collisions.size() + fv_collisions.size()
+            + pv_collisions.size();
 }
 
-std::string CollisionConstraints::to_string(
+std::string Collisions::to_string(
     const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
 {
     std::stringstream ss;
-    for (const auto& vv : vv_constraints) {
+    for (const auto& vv : vv_collisions) {
         ss << "\n"
            << fmt::format(
                   "vv: {} {}, w: {:g}, d: {:g}", vv.vertex0_id, vv.vertex1_id,
@@ -478,7 +477,7 @@ std::string CollisionConstraints::to_string(
                   vv.compute_distance(
                       vv.dof(vertices, mesh.edges(), mesh.faces())));
     }
-    for (const auto& ev : ev_constraints) {
+    for (const auto& ev : ev_collisions) {
         ss << "\n"
            << fmt::format(
                   "ev: {}=({}, {}) {}, w: {:g}, d: {:g}", ev.edge_id,
@@ -487,7 +486,7 @@ std::string CollisionConstraints::to_string(
                   ev.compute_distance(
                       ev.dof(vertices, mesh.edges(), mesh.faces())));
     }
-    for (const auto& ee : ee_constraints) {
+    for (const auto& ee : ee_collisions) {
         ss << "\n"
            << fmt::format(
                   "ee: {}=({}, {}) {}=({}, {}), w: {:g}, dtype: {}, d: {:g}",
@@ -498,7 +497,7 @@ std::string CollisionConstraints::to_string(
                   ee.compute_distance(
                       ee.dof(vertices, mesh.edges(), mesh.faces())));
     }
-    for (const auto& fv : fv_constraints) {
+    for (const auto& fv : fv_collisions) {
         ss << "\n"
            << fmt::format(
                   "fv: {}=({}, {}, {}) {}, w: {:g}, d: {:g}", fv.face_id,

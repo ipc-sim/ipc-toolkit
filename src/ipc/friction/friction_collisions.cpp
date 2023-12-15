@@ -1,4 +1,4 @@
-#include "friction_constraints.hpp"
+#include "friction_collisions.hpp"
 
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/utils/local_to_global.hpp>
@@ -11,10 +11,10 @@
 
 namespace ipc {
 
-void FrictionConstraints::build(
+void FrictionCollisions::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
-    const CollisionConstraints& contact_constraint_set,
+    const Collisions& collisions,
     const double dhat,
     const double barrier_stiffness,
     const Eigen::VectorXd& mus,
@@ -27,10 +27,10 @@ void FrictionConstraints::build(
 
     clear();
 
-    const auto& C_vv = contact_constraint_set.vv_constraints;
-    const auto& C_ev = contact_constraint_set.ev_constraints;
-    const auto& C_ee = contact_constraint_set.ee_constraints;
-    const auto& C_fv = contact_constraint_set.fv_constraints;
+    const auto& C_vv = collisions.vv_collisions;
+    const auto& C_ev = collisions.ev_collisions;
+    const auto& C_ee = collisions.ee_collisions;
+    const auto& C_fv = collisions.fv_collisions;
     auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
 
     FC_vv.reserve(C_vv.size());
@@ -61,7 +61,7 @@ void FrictionConstraints::build(
         const Eigen::Vector3d eb0 = vertices.row(eb0i);
         const Eigen::Vector3d eb1 = vertices.row(eb1i);
 
-        // Skip EE constraints that are close to parallel
+        // Skip EE collisions that are close to parallel
         if (edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1) < c_ee.eps_x) {
             continue;
         }
@@ -91,64 +91,64 @@ void FrictionConstraints::build(
 
 // ============================================================================
 
-size_t FrictionConstraints::size() const
+size_t FrictionCollisions::size() const
 {
-    return vv_constraints.size() + ev_constraints.size() + ee_constraints.size()
-        + fv_constraints.size();
+    return vv_collisions.size() + ev_collisions.size() + ee_collisions.size()
+        + fv_collisions.size();
 }
 
-bool FrictionConstraints::empty() const
+bool FrictionCollisions::empty() const
 {
-    return vv_constraints.empty() && ev_constraints.empty()
-        && ee_constraints.empty() && fv_constraints.empty();
+    return vv_collisions.empty() && ev_collisions.empty()
+        && ee_collisions.empty() && fv_collisions.empty();
 }
 
-void FrictionConstraints::clear()
+void FrictionCollisions::clear()
 {
-    vv_constraints.clear();
-    ev_constraints.clear();
-    ee_constraints.clear();
-    fv_constraints.clear();
+    vv_collisions.clear();
+    ev_collisions.clear();
+    ee_collisions.clear();
+    fv_collisions.clear();
 }
 
-FrictionConstraint& FrictionConstraints::operator[](size_t idx)
+FrictionCollision& FrictionCollisions::operator[](size_t idx)
 {
-    if (idx < vv_constraints.size()) {
-        return vv_constraints[idx];
+    if (idx < vv_collisions.size()) {
+        return vv_collisions[idx];
     }
-    idx -= vv_constraints.size();
-    if (idx < ev_constraints.size()) {
-        return ev_constraints[idx];
+    idx -= vv_collisions.size();
+    if (idx < ev_collisions.size()) {
+        return ev_collisions[idx];
     }
-    idx -= ev_constraints.size();
-    if (idx < ee_constraints.size()) {
-        return ee_constraints[idx];
+    idx -= ev_collisions.size();
+    if (idx < ee_collisions.size()) {
+        return ee_collisions[idx];
     }
-    idx -= ee_constraints.size();
-    if (idx < fv_constraints.size()) {
-        return fv_constraints[idx];
+    idx -= ee_collisions.size();
+    if (idx < fv_collisions.size()) {
+        return fv_collisions[idx];
     }
-    throw std::out_of_range("Friction constraint index is out of range!");
+    throw std::out_of_range("Friction collision index is out of range!");
 }
 
-const FrictionConstraint& FrictionConstraints::operator[](size_t idx) const
+const FrictionCollision& FrictionCollisions::operator[](size_t idx) const
 {
-    if (idx < vv_constraints.size()) {
-        return vv_constraints[idx];
+    if (idx < vv_collisions.size()) {
+        return vv_collisions[idx];
     }
-    idx -= vv_constraints.size();
-    if (idx < ev_constraints.size()) {
-        return ev_constraints[idx];
+    idx -= vv_collisions.size();
+    if (idx < ev_collisions.size()) {
+        return ev_collisions[idx];
     }
-    idx -= ev_constraints.size();
-    if (idx < ee_constraints.size()) {
-        return ee_constraints[idx];
+    idx -= ev_collisions.size();
+    if (idx < ee_collisions.size()) {
+        return ee_collisions[idx];
     }
-    idx -= ee_constraints.size();
-    if (idx < fv_constraints.size()) {
-        return fv_constraints[idx];
+    idx -= ee_collisions.size();
+    if (idx < fv_collisions.size()) {
+        return fv_collisions[idx];
     }
-    throw std::out_of_range("Friction constraint index is out of range!");
+    throw std::out_of_range("Friction collision index is out of range!");
 }
 
 } // namespace ipc

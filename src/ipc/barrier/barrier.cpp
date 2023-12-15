@@ -1,6 +1,6 @@
 // Barrier functions that grow to infinity as x -> 0+. Includes gradient and
 // hessian functions, too. These barrier functions can be used to impose
-// inequlity constraints on a function.
+// inequality constraints on a function.
 #include "barrier.hpp"
 
 #include <cmath>

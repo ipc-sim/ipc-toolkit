@@ -3,12 +3,12 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
-#include <ipc/collisions/collision_constraints.hpp>
+#include <ipc/collisions/collisions.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
 
 using namespace ipc;
 
-TEST_CASE("Codim. vertex-vertex constraints", "[constraints][codim]")
+TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
 {
     constexpr double thickness = 0.4;
     constexpr double min_distance = 2 * thickness;
@@ -69,27 +69,27 @@ TEST_CASE("Codim. vertex-vertex constraints", "[constraints][codim]")
             == Catch::Approx(expected_toi));
     }
 
-    SECTION("Constraints")
+    SECTION("Collisions")
     {
         const bool use_convergent_formulation = GENERATE(false, true);
         const bool are_shape_derivatives_enabled = GENERATE(false, true);
         const double dhat = 0.25;
 
-        CollisionConstraints constraints;
-        constraints.set_use_convergent_formulation(use_convergent_formulation);
-        constraints.set_are_shape_derivatives_enabled(
+        Collisions collisions;
+        collisions.set_use_convergent_formulation(use_convergent_formulation);
+        collisions.set_are_shape_derivatives_enabled(
             are_shape_derivatives_enabled);
 
-        constraints.build(mesh, vertices, dhat, min_distance, method);
+        collisions.build(mesh, vertices, dhat, min_distance, method);
 
-        CHECK(constraints.size() == 12);
-        CHECK(constraints.vv_constraints.size() == 12);
+        CHECK(collisions.size() == 12);
+        CHECK(collisions.vv_collisions.size() == 12);
 
         BarrierPotential barrier_potential(dhat);
 
-        CHECK(barrier_potential(mesh, vertices, constraints) > 0.0);
+        CHECK(barrier_potential(mesh, vertices, collisions) > 0.0);
         const Eigen::VectorXd grad =
-            barrier_potential.gradient(mesh, vertices, constraints);
+            barrier_potential.gradient(mesh, vertices, collisions);
         for (int i = 0; i < vertices.rows(); i++) {
             const Eigen::Vector3d f = -grad.segment<3>(3 * i);
             CHECK(f.normalized().isApprox(
@@ -98,7 +98,7 @@ TEST_CASE("Codim. vertex-vertex constraints", "[constraints][codim]")
     }
 }
 
-TEST_CASE("Codim. edge-vertex constraints", "[constraints][codim]")
+TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
 {
     constexpr double thickness = 1e-3;
     constexpr double min_distance = 2 * thickness;
@@ -167,97 +167,96 @@ TEST_CASE("Codim. edge-vertex constraints", "[constraints][codim]")
             == Catch::Approx(expected_toi));
     }
 
-    SECTION("Constraints")
+    SECTION("Collisions")
     {
         const bool use_convergent_formulation = GENERATE(false, true);
         const bool are_shape_derivatives_enabled = GENERATE(false, true);
 
-        CollisionConstraints constraints;
-        constraints.set_use_convergent_formulation(use_convergent_formulation);
-        constraints.set_are_shape_derivatives_enabled(
+        Collisions collisions;
+        collisions.set_use_convergent_formulation(use_convergent_formulation);
+        collisions.set_are_shape_derivatives_enabled(
             are_shape_derivatives_enabled);
 
         const double dhat = 0.25;
-        constraints.build(mesh, vertices, dhat, /*min_distance=*/0.8, method);
+        collisions.build(mesh, vertices, dhat, /*min_distance=*/0.8, method);
 
-        const int expected_num_constraints =
-            6 + int(use_convergent_formulation);
-        const int expected_num_vv_constraints =
+        const int expected_num_collisions = 6 + int(use_convergent_formulation);
+        const int expected_num_vv_collisions =
             2 + int(use_convergent_formulation);
 
-        CHECK(constraints.size() == expected_num_constraints);
-        CHECK(constraints.vv_constraints.size() == expected_num_vv_constraints);
-        CHECK(constraints.ev_constraints.size() == 4);
-        CHECK(constraints.ee_constraints.size() == 0);
-        CHECK(constraints.fv_constraints.size() == 0);
+        CHECK(collisions.size() == expected_num_collisions);
+        CHECK(collisions.vv_collisions.size() == expected_num_vv_collisions);
+        CHECK(collisions.ev_collisions.size() == 4);
+        CHECK(collisions.ee_collisions.size() == 0);
+        CHECK(collisions.fv_collisions.size() == 0);
 
-        CHECK(BarrierPotential(dhat)(mesh, vertices, constraints) > 0.0);
+        CHECK(BarrierPotential(dhat)(mesh, vertices, collisions) > 0.0);
     }
 }
 
-TEST_CASE("Vertex-Vertex Constraint", "[constraint][vertex-vertex]")
+TEST_CASE("Vertex-Vertex Collision", "[collision][vertex-vertex]")
 {
-    CHECK(VertexVertexConstraint(0, 1) == VertexVertexConstraint(0, 1));
-    CHECK(VertexVertexConstraint(0, 1) == VertexVertexConstraint(1, 0));
-    CHECK(VertexVertexConstraint(0, 1) != VertexVertexConstraint(0, 2));
-    CHECK(VertexVertexConstraint(0, 1) != VertexVertexConstraint(2, 0));
-    CHECK(VertexVertexConstraint(0, 1) < VertexVertexConstraint(0, 2));
-    CHECK(VertexVertexConstraint(0, 1) < VertexVertexConstraint(2, 0));
+    CHECK(VertexVertexCollision(0, 1) == VertexVertexCollision(0, 1));
+    CHECK(VertexVertexCollision(0, 1) == VertexVertexCollision(1, 0));
+    CHECK(VertexVertexCollision(0, 1) != VertexVertexCollision(0, 2));
+    CHECK(VertexVertexCollision(0, 1) != VertexVertexCollision(2, 0));
+    CHECK(VertexVertexCollision(0, 1) < VertexVertexCollision(0, 2));
+    CHECK(VertexVertexCollision(0, 1) < VertexVertexCollision(2, 0));
 
     CHECK(
-        VertexVertexConstraint(VertexVertexCandidate(0, 1))
-        == VertexVertexConstraint(0, 1));
+        VertexVertexCollision(VertexVertexCandidate(0, 1))
+        == VertexVertexCollision(0, 1));
 }
 
-TEST_CASE("Edge-Vertex Constraint", "[constraint][edge-vertex]")
+TEST_CASE("Edge-Vertex Collision", "[collision][edge-vertex]")
 {
-    CHECK(EdgeVertexConstraint(0, 1) == EdgeVertexConstraint(0, 1));
-    CHECK(EdgeVertexConstraint(0, 1) != EdgeVertexConstraint(1, 0));
-    CHECK(EdgeVertexConstraint(0, 1) != EdgeVertexConstraint(0, 2));
-    CHECK(EdgeVertexConstraint(0, 1) != EdgeVertexConstraint(2, 0));
-    CHECK(EdgeVertexConstraint(0, 1) < EdgeVertexConstraint(0, 2));
-    CHECK(!(EdgeVertexConstraint(1, 1) < EdgeVertexConstraint(0, 2)));
-    CHECK(EdgeVertexConstraint(0, 1) < EdgeVertexConstraint(2, 0));
+    CHECK(EdgeVertexCollision(0, 1) == EdgeVertexCollision(0, 1));
+    CHECK(EdgeVertexCollision(0, 1) != EdgeVertexCollision(1, 0));
+    CHECK(EdgeVertexCollision(0, 1) != EdgeVertexCollision(0, 2));
+    CHECK(EdgeVertexCollision(0, 1) != EdgeVertexCollision(2, 0));
+    CHECK(EdgeVertexCollision(0, 1) < EdgeVertexCollision(0, 2));
+    CHECK(!(EdgeVertexCollision(1, 1) < EdgeVertexCollision(0, 2)));
+    CHECK(EdgeVertexCollision(0, 1) < EdgeVertexCollision(2, 0));
 
     CHECK(
-        EdgeVertexConstraint(EdgeVertexCandidate(0, 1))
-        == EdgeVertexConstraint(0, 1));
+        EdgeVertexCollision(EdgeVertexCandidate(0, 1))
+        == EdgeVertexCollision(0, 1));
 }
 
-TEST_CASE("Edge-Edge Constraint", "[constraint][edge-edge]")
+TEST_CASE("Edge-Edge Collision", "[collision][edge-edge]")
 {
-    CHECK(EdgeEdgeConstraint(0, 1, 0.0) == EdgeEdgeConstraint(0, 1, 1.0));
-    CHECK(EdgeEdgeConstraint(0, 1, 0.0) == EdgeEdgeConstraint(1, 0, 1.0));
-    CHECK(EdgeEdgeConstraint(0, 1, 0.0) != EdgeEdgeConstraint(0, 2, 1.0));
-    CHECK(EdgeEdgeConstraint(0, 1, 0.0) != EdgeEdgeConstraint(2, 0, 1.0));
-    CHECK(EdgeEdgeConstraint(0, 1, 0.0) < EdgeEdgeConstraint(0, 2, 1.0));
-    CHECK(EdgeEdgeConstraint(0, 1, 0.0) < EdgeEdgeConstraint(2, 0, 1.0));
+    CHECK(EdgeEdgeCollision(0, 1, 0.0) == EdgeEdgeCollision(0, 1, 1.0));
+    CHECK(EdgeEdgeCollision(0, 1, 0.0) == EdgeEdgeCollision(1, 0, 1.0));
+    CHECK(EdgeEdgeCollision(0, 1, 0.0) != EdgeEdgeCollision(0, 2, 1.0));
+    CHECK(EdgeEdgeCollision(0, 1, 0.0) != EdgeEdgeCollision(2, 0, 1.0));
+    CHECK(EdgeEdgeCollision(0, 1, 0.0) < EdgeEdgeCollision(0, 2, 1.0));
+    CHECK(EdgeEdgeCollision(0, 1, 0.0) < EdgeEdgeCollision(2, 0, 1.0));
 
     CHECK(
-        EdgeEdgeConstraint(EdgeEdgeCandidate(0, 1), 0.0)
-        == EdgeEdgeConstraint(0, 1, 0.0));
+        EdgeEdgeCollision(EdgeEdgeCandidate(0, 1), 0.0)
+        == EdgeEdgeCollision(0, 1, 0.0));
 }
 
-TEST_CASE("Face-Vertex Constraint", "[constraint][face-vertex]")
+TEST_CASE("Face-Vertex Collision", "[collision][face-vertex]")
 {
-    CHECK(FaceVertexConstraint(0, 1) == FaceVertexConstraint(0, 1));
-    CHECK(FaceVertexConstraint(0, 1) != FaceVertexConstraint(1, 0));
-    CHECK(FaceVertexConstraint(0, 1) != FaceVertexConstraint(0, 2));
-    CHECK(FaceVertexConstraint(0, 1) != FaceVertexConstraint(2, 0));
-    CHECK(FaceVertexConstraint(0, 1) < FaceVertexConstraint(0, 2));
-    CHECK(!(FaceVertexConstraint(1, 1) < FaceVertexConstraint(0, 2)));
-    CHECK(FaceVertexConstraint(0, 1) < FaceVertexConstraint(2, 0));
+    CHECK(FaceVertexCollision(0, 1) == FaceVertexCollision(0, 1));
+    CHECK(FaceVertexCollision(0, 1) != FaceVertexCollision(1, 0));
+    CHECK(FaceVertexCollision(0, 1) != FaceVertexCollision(0, 2));
+    CHECK(FaceVertexCollision(0, 1) != FaceVertexCollision(2, 0));
+    CHECK(FaceVertexCollision(0, 1) < FaceVertexCollision(0, 2));
+    CHECK(!(FaceVertexCollision(1, 1) < FaceVertexCollision(0, 2)));
+    CHECK(FaceVertexCollision(0, 1) < FaceVertexCollision(2, 0));
 
     CHECK(
-        FaceVertexConstraint(FaceVertexCandidate(0, 1))
-        == FaceVertexConstraint(0, 1));
+        FaceVertexCollision(FaceVertexCandidate(0, 1))
+        == FaceVertexCollision(0, 1));
 }
 
-TEST_CASE("Plane-Vertex Constraint", "[constraint][plane-vertex]")
+TEST_CASE("Plane-Vertex Collision", "[collision][plane-vertex]")
 {
     Eigen::MatrixXi edges, faces;
     const Eigen::Vector3d n(0, 1, 0), o(0, 0, 0);
-    const PlaneVertexConstraint c(o, n, 0);
+    const PlaneVertexCollision c(o, n, 0);
     CHECK(c.num_vertices() == 1);
     CHECK(
         c.vertex_ids(edges, faces)
@@ -276,21 +275,21 @@ TEST_CASE("Plane-Vertex Constraint", "[constraint][plane-vertex]")
         == 2 * n * n.transpose());
 }
 
-TEST_CASE("is_*", "[constraints]")
+TEST_CASE("Collisions::is_*", "[collisions]")
 {
-    CollisionConstraints constraints;
-    constraints.vv_constraints.emplace_back(0, 1);
-    constraints.ev_constraints.emplace_back(0, 1);
-    constraints.ee_constraints.emplace_back(0, 1, 0.0);
-    constraints.fv_constraints.emplace_back(0, 1);
-    constraints.pv_constraints.emplace_back(
+    Collisions collisions;
+    collisions.vv_collisions.emplace_back(0, 1);
+    collisions.ev_collisions.emplace_back(0, 1);
+    collisions.ee_collisions.emplace_back(0, 1, 0.0);
+    collisions.fv_collisions.emplace_back(0, 1);
+    collisions.pv_collisions.emplace_back(
         Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0, 1, 0), 0);
 
-    for (int i = 0; i < constraints.size(); i++) {
-        CHECK(constraints.is_vertex_vertex(i) == (i == 0));
-        CHECK(constraints.is_edge_vertex(i) == (i == 1));
-        CHECK(constraints.is_edge_edge(i) == (i == 2));
-        CHECK(constraints.is_face_vertex(i) == (i == 3));
-        CHECK(constraints.is_plane_vertex(i) == (i == 4));
+    for (int i = 0; i < collisions.size(); i++) {
+        CHECK(collisions.is_vertex_vertex(i) == (i == 0));
+        CHECK(collisions.is_edge_vertex(i) == (i == 1));
+        CHECK(collisions.is_edge_edge(i) == (i == 2));
+        CHECK(collisions.is_face_vertex(i) == (i == 3));
+        CHECK(collisions.is_plane_vertex(i) == (i == 4));
     }
 }

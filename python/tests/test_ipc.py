@@ -15,23 +15,24 @@ def check_ipc_derivatives(broad_phase_method, use_convergent_formulation, mesh_n
         mesh = ipctk.CollisionMesh.build_from_full_mesh(vertices, edges, faces)
         vertices = mesh.vertices(vertices)
 
-    contacts = ipctk.CollisionConstraints()
-    contacts.use_convergent_formulation = use_convergent_formulation
-    contacts.build(mesh, vertices, dhat, broad_phase_method=broad_phase_method)
-    assert len(contacts) > 0
+    collisions = ipctk.Collisions()
+    collisions.use_convergent_formulation = use_convergent_formulation
+    collisions.build(mesh, vertices, dhat,
+                     broad_phase_method=broad_phase_method)
+    assert len(collisions) > 0
 
     B = ipctk.BarrierPotential(dhat)
 
-    grad_b = B.gradient(mesh, vertices, contacts)
+    grad_b = B.gradient(mesh, vertices, collisions)
     fgrad_b = utils.finite_gradient(
-        vertices.flatten(), lambda x: B(mesh, x.reshape(vertices.shape), contacts))
+        vertices.flatten(), lambda x: B(mesh, x.reshape(vertices.shape), collisions))
 
     assert np.linalg.norm(grad_b) > 1e-8
     assert np.allclose(grad_b, fgrad_b)
 
-    hess_b = B.hessian(mesh, vertices, contacts).A
+    hess_b = B.hessian(mesh, vertices, collisions).A
     fhess_b = utils.finite_jacobian(
-        vertices.flatten(), lambda x: B.gradient(mesh, x.reshape(vertices.shape), contacts))
+        vertices.flatten(), lambda x: B.gradient(mesh, x.reshape(vertices.shape), collisions))
 
     assert np.linalg.norm(hess_b) > 1e-8
     assert np.allclose(hess_b, fhess_b, atol=1e-5)

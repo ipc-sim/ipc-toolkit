@@ -1,20 +1,20 @@
 #pragma once
 
-#include <ipc/friction/constraints/friction_constraint.hpp>
-#include <ipc/candidates/edge_edge.hpp>
+#include <ipc/friction/collisions/friction_collision.hpp>
+#include <ipc/candidates/face_vertex.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
-class EdgeEdgeFrictionConstraint : public EdgeEdgeCandidate,
-                                   public FrictionConstraint {
+class FaceVertexFrictionCollision : public FaceVertexCandidate,
+                                    public FrictionCollision {
 public:
-    using EdgeEdgeCandidate::EdgeEdgeCandidate;
+    using FaceVertexCandidate::FaceVertexCandidate;
 
-    EdgeEdgeFrictionConstraint(const EdgeEdgeConstraint& constraint);
+    FaceVertexFrictionCollision(const FaceVertexCollision& collision);
 
-    EdgeEdgeFrictionConstraint(
-        const EdgeEdgeConstraint& constraint,
+    FaceVertexFrictionCollision(
+        const FaceVertexCollision& collision,
         const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
@@ -22,12 +22,6 @@ public:
         const double barrier_stiffness);
 
 protected:
-    EdgeEdgeDistanceType known_dtype() const override
-    {
-        // The distance type is known because mollified PP and PE were skipped.
-        return EdgeEdgeDistanceType::EA_EB;
-    }
-
     MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& positions) const override;
 
@@ -43,7 +37,7 @@ protected:
     VectorMax3d
     relative_velocity(const VectorMax12d& velocities) const override;
 
-    using FrictionConstraint::relative_velocity_matrix;
+    using FrictionCollision::relative_velocity_matrix;
 
     MatrixMax<double, 3, 12>
     relative_velocity_matrix(const VectorMax2d& closest_point) const override;

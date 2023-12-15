@@ -25,11 +25,11 @@ bool load_mesh(
     return success && V.size() && F.size() && E.size();
 }
 
-void mmcvids_to_constraints(
+void mmcvids_to_collisions(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Eigen::MatrixXi& mmcvids,
-    ipc::CollisionConstraints& constraints)
+    ipc::Collisions& collisions)
 {
     for (int mmcvid_i = 0; mmcvid_i < mmcvids.rows(); mmcvid_i++) {
         const auto mmcvid = mmcvids.row(mmcvid_i);
@@ -49,13 +49,13 @@ void mmcvids_to_constraints(
                 }
             }
             assert(ei < E.rows() && ej < E.rows());
-            constraints.ee_constraints.emplace_back(ei, ej, 0.0);
+            collisions.ee_collisions.emplace_back(ei, ej, 0.0);
         } else {
             if (mmcvid[2] < 0) { // Is VV?
-                constraints.vv_constraints.emplace_back(
+                collisions.vv_collisions.emplace_back(
                     -mmcvid[0] - 1, mmcvid[1]);
                 assert(-mmcvid[3] >= 1);
-                constraints.vv_constraints.back().weight = -mmcvid[3];
+                collisions.vv_collisions.back().weight = -mmcvid[3];
 
             } else if (mmcvid[3] < 0) { // Is EV?
                 int ei;
@@ -65,8 +65,8 @@ void mmcvids_to_constraints(
                     }
                 }
                 assert(ei < E.rows());
-                constraints.ev_constraints.emplace_back(ei, -mmcvid[0] - 1);
-                constraints.ev_constraints.back().weight = -mmcvid[3];
+                collisions.ev_collisions.emplace_back(ei, -mmcvid[0] - 1);
+                collisions.ev_collisions.back().weight = -mmcvid[3];
 
             } else { // Is FV.
                 int fi;
@@ -77,7 +77,7 @@ void mmcvids_to_constraints(
                     }
                 }
                 assert(fi < F.rows());
-                constraints.fv_constraints.emplace_back(fi, -mmcvid[0] - 1);
+                collisions.fv_collisions.emplace_back(fi, -mmcvid[0] - 1);
             }
         }
     }

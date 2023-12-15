@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/collisions/collision_constraints.hpp>
+#include <ipc/collisions/collisions.hpp>
 #include <ipc/friction/relative_velocity.hpp>
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 #include <ipc/utils/eigen_ext.hpp>
@@ -9,9 +9,9 @@
 
 namespace ipc {
 
-class FrictionConstraint : virtual public CollisionStencil {
+class FrictionCollision : virtual public CollisionStencil {
 protected:
-    /// @brief Initialize the constraint.
+    /// @brief Initialize the collision.
     /// @param positions Vertex positions(rowwise)
     /// @param edges Edges of the mesh
     /// @param faces Faces of the mesh
@@ -27,12 +27,12 @@ protected:
         const double dmin);
 
 public:
-    virtual ~FrictionConstraint() { }
+    virtual ~FrictionCollision() { }
 
-    /// @brief Get the dimension of the constraint.
+    /// @brief Get the dimension of the collision.
     int dim() const { return tangent_basis.rows(); }
 
-    /// @brief Get the number of degrees of freedom for the constraint.
+    /// @brief Get the number of degrees of freedom for the collision.
     int ndof() const { return dim() * num_vertices(); };
 
     // -------------------------------------------------------------------------
@@ -40,8 +40,8 @@ public:
     // -------------------------------------------------------------------------
 
     /// @brief Compute the normal force magnitude.
-    /// @param positions Constraint's vertex positions.
-    /// @param dhat Barrier activiation distance.
+    /// @param positions Collision stencil's vertex positions.
+    /// @param dhat Barrier activation distance.
     /// @param barrier_stiffness Barrier stiffness.
     /// @param dmin Minimum distance.
     /// @return Normal force magnitude.
@@ -52,8 +52,8 @@ public:
         const double dmin = 0) const;
 
     /// @brief Compute the gradient of the normal force magnitude.
-    /// @param positions Constraint's vertex positions.
-    /// @param dhat Barrier activiation distance.
+    /// @param positions Collision stencil's vertex positions.
+    /// @param dhat Barrier activation distance.
     /// @param barrier_stiffness Barrier stiffness.
     /// @param dmin Minimum distance.
     /// @return Gradient of the normal force magnitude wrt positions.
@@ -63,33 +63,33 @@ public:
         const double barrier_stiffness,
         const double dmin = 0) const;
 
-    /// @brief Compute the tangent basis of the constraint.
-    /// @param positions Constraint's vertex positions.
-    /// @return Tangent basis of the constraint.
+    /// @brief Compute the tangent basis of the collision.
+    /// @param positions Collision stencil's vertex positions.
+    /// @return Tangent basis of the collision.
     virtual MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& positions) const = 0;
 
-    /// @brief Compute the Jacobian of the tangent basis of the constraint.
-    /// @param positions Constraint's vertex positions.
-    /// @return Jacobian of the tangent basis of the constraint.
+    /// @brief Compute the Jacobian of the tangent basis of the collision.
+    /// @param positions Collision stencil's vertex positions.
+    /// @return Jacobian of the tangent basis of the collision.
     virtual MatrixMax<double, 36, 2>
     compute_tangent_basis_jacobian(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the barycentric coordinates of the closest point.
-    /// @param positions Constraint's vertex positions.
+    /// @param positions Collision stencil's vertex positions.
     /// @return Barycentric coordinates of the closest point.
     virtual VectorMax2d
     compute_closest_point(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the Jacobian of the barycentric coordinates of the closest point.
-    /// @param positions Constraint's vertex positions.
+    /// @param positions Collision stencil's vertex positions.
     /// @return Jacobian of the barycentric coordinates of the closest point.
     virtual MatrixMax<double, 2, 12>
     compute_closest_point_jacobian(const VectorMax12d& positions) const = 0;
 
-    /// @brief Compute the relative velocity of the constraint.
-    /// @param velocities Constraint's vertex velocities.
-    /// @return Relative velocity of the constraint.
+    /// @brief Compute the relative velocity of the collision.
+    /// @param positions Collision stencil's vertex velocities.
+    /// @return Relative velocity of the collision.
     virtual VectorMax3d
     relative_velocity(const VectorMax12d& velocities) const = 0;
 
@@ -114,7 +114,7 @@ public:
         const VectorMax2d& closest_point) const = 0;
 
 public:
-    /// @brief Contact force magnitude
+    /// @brief Collision force magnitude
     double normal_force_magnitude;
 
     /// @brief Coefficient of friction
@@ -129,7 +129,7 @@ public:
     /// @brief Barycentric coordinates of the closest point(s)
     VectorMax2d closest_point;
 
-    /// @brief Tangent basis of the contact (max size 3×2)
+    /// @brief Tangent basis of the collision (max size 3×2)
     MatrixMax<double, 3, 2> tangent_basis;
 };
 

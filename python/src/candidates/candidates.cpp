@@ -18,7 +18,7 @@ void define_candidates(py::module_& m)
             Initialize the set of discrete collision detection candidates.
 
             Parameters:
-                mesh: The surface of the contact mesh.
+                mesh: The surface of the collision mesh.
                 vertices: Surface vertex positions (rowwise).
                 inflation_radius: Amount to inflate the bounding boxes.
                 broad_phase_method: Broad phase method to use.
@@ -39,7 +39,7 @@ void define_candidates(py::module_& m)
                 Assumes the trajectory is linear.
 
             Parameters:
-                mesh: The surface of the contact mesh.
+                mesh: The surface of the collision mesh.
                 vertices_t0: Surface vertex starting positions (rowwise).
                 vertices_t1: Surface vertex ending positions (rowwise).
                 inflation_radius: Amount to inflate the bounding boxes.
@@ -108,7 +108,7 @@ void define_candidates(py::module_& m)
             "compute_noncandidate_conservative_stepsize",
             &Candidates::compute_noncandidate_conservative_stepsize,
             R"ipc_Qu8mg5v7(
-            Computes a conservative bound on the largest-feasible step size for surface primitives not in contact.
+            Computes a conservative bound on the largest-feasible step size for surface primitives not in collision.
 
             Parameters:
                 mesh: The collision mesh.

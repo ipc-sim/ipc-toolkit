@@ -1,20 +1,20 @@
 #pragma once
 
-#include <ipc/friction/constraints/friction_constraint.hpp>
-#include <ipc/candidates/edge_vertex.hpp>
+#include <ipc/friction/collisions/friction_collision.hpp>
+#include <ipc/candidates/vertex_vertex.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
-class EdgeVertexFrictionConstraint : public EdgeVertexCandidate,
-                                     public FrictionConstraint {
+class VertexVertexFrictionCollision : public VertexVertexCandidate,
+                                      public FrictionCollision {
 public:
-    using EdgeVertexCandidate::EdgeVertexCandidate;
+    using VertexVertexCandidate::VertexVertexCandidate;
 
-    EdgeVertexFrictionConstraint(const EdgeVertexConstraint& constraint);
+    VertexVertexFrictionCollision(const VertexVertexCollision& collision);
 
-    EdgeVertexFrictionConstraint(
-        const EdgeVertexConstraint& constraint,
+    VertexVertexFrictionCollision(
+        const VertexVertexCollision& collision,
         const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces,
@@ -37,7 +37,7 @@ protected:
     VectorMax3d
     relative_velocity(const VectorMax12d& velocities) const override;
 
-    using FrictionConstraint::relative_velocity_matrix;
+    using FrictionCollision::relative_velocity_matrix;
 
     MatrixMax<double, 3, 12>
     relative_velocity_matrix(const VectorMax2d& closest_point) const override;

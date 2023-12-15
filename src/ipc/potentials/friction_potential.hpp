@@ -1,11 +1,11 @@
 #pragma once
 
 #include <ipc/potentials/potential.hpp>
-#include <ipc/friction/friction_constraints.hpp>
+#include <ipc/friction/friction_collisions.hpp>
 
 namespace ipc {
 
-class FrictionPotential : public Potential<FrictionConstraints> {
+class FrictionPotential : public Potential<FrictionCollisions> {
     using Super = Potential;
 
 public:
@@ -55,7 +55,7 @@ public:
         const Eigen::MatrixXd& rest_positions,
         const Eigen::MatrixXd& lagged_displacements,
         const Eigen::MatrixXd& velocities,
-        const FrictionConstraints& contacts,
+        const FrictionCollisions& collisions,
         const double dhat,
         const double barrier_stiffness,
         const double dmin = 0,
@@ -77,36 +77,37 @@ public:
         const Eigen::MatrixXd& rest_positions,
         const Eigen::MatrixXd& lagged_displacements,
         const Eigen::MatrixXd& velocities,
-        const FrictionConstraints& contacts,
+        const FrictionCollisions& collisions,
         const double dhat,
         const double barrier_stiffness,
         const DiffWRT wrt,
         const double dmin = 0) const;
 
-    // -- Single contact methods -----------------------------------------------
+    // -- Single collision methods
+    // -----------------------------------------------
 
-    /// @brief Compute the potential for a single contact.
-    /// @param contact The contact.
-    /// @param velocities The contact stencil's velocities.
+    /// @brief Compute the potential for a single collision.
+    /// @param collision The collision.
+    /// @param velocities The collision stencil's velocities.
     /// @return The potential.
     double operator()(
-        const FrictionConstraint& contact,
+        const FrictionCollision& collision,
         const VectorMax12d& velocities) const override;
 
-    /// @brief Compute the gradient of the potential for a single contact.
-    /// @param contact The contact.
-    /// @param velocities The contact stencil's velocities.
+    /// @brief Compute the gradient of the potential for a single collision.
+    /// @param collision The collision.
+    /// @param velocities The collision stencil's velocities.
     /// @return The gradient of the potential.
     VectorMax12d gradient(
-        const FrictionConstraint& contact,
+        const FrictionCollision& collision,
         const VectorMax12d& velocities) const override;
 
-    /// @brief Compute the hessian of the potential for a single contact.
-    /// @param contact The contact.
-    /// @param velocities The contact stencil's velocities.
+    /// @brief Compute the hessian of the potential for a single collision.
+    /// @param collision The collision.
+    /// @param velocities The collision stencil's velocities.
     /// @return The hessian of the potential.
     MatrixMax12d hessian(
-        const FrictionConstraint& contact,
+        const FrictionCollision& collision,
         const VectorMax12d& velocities,
         const bool project_hessian_to_psd = false) const override;
 
@@ -123,7 +124,7 @@ public:
     /// @param no_mu Whether to not multiply by mu
     /// @return Friction force
     VectorMax12d force(
-        const FrictionConstraint& contact,
+        const FrictionCollision& collision,
         const VectorMax12d& rest_positions,
         const VectorMax12d& lagged_displacements,
         const VectorMax12d& velocities,
@@ -145,7 +146,7 @@ public:
     /// @param dmin Minimum distance
     /// @return Friction force Jacobian
     MatrixMax12d force_jacobian(
-        const FrictionConstraint& contact,
+        const FrictionCollision& collision,
         const VectorMax12d& rest_positions,
         const VectorMax12d& lagged_displacements,
         const VectorMax12d& velocities,

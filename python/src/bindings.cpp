@@ -44,13 +44,13 @@ PYBIND11_MODULE(ipctk, m)
 
     // collisions
     define_distance_type(m); // define early because it is used next
-    define_collision_constraint(m);
-    define_collision_constraints(m);
-    define_edge_edge_constraint(m);
-    define_edge_vertex_constraint(m);
-    define_face_vertex_constraint(m);
-    define_plane_vertex_constraint(m);
-    define_vertex_vertex_constraint(m);
+    define_collision(m);
+    define_collisions(m);
+    define_edge_edge_collision(m);
+    define_edge_vertex_collision(m);
+    define_face_vertex_collision(m);
+    define_plane_vertex_collision(m);
+    define_vertex_vertex_collision(m);
 
     // distance
     define_edge_edge_mollifier(m);
@@ -64,19 +64,19 @@ PYBIND11_MODULE(ipctk, m)
 
     // friction
     define_closest_point(m);
-    define_friction_constraints(m);
+    define_friction_collisions(m);
     define_normal_force_magnitude(m);
     define_relative_velocity(m);
     define_smooth_friction_mollifier(m);
     define_tangent_basis(m);
 
-    // friction/constraints
-    // NOTE: this has to be defined before the other friction constraints
-    define_friction_constraint(m);
-    define_edge_edge_friction_constraint(m);
-    define_edge_vertex_friction_constraint(m);
-    define_face_vertex_friction_constraint(m);
-    define_vertex_vertex_friction_constraint(m);
+    // friction/collisions
+    // NOTE: this has to be defined before the other friction collisions
+    define_friction_collision(m);
+    define_edge_edge_friction_collision(m);
+    define_edge_vertex_friction_collision(m);
+    define_face_vertex_friction_collision(m);
+    define_vertex_vertex_friction_collision(m);
 
     // implicits
     define_plane_implicit(m);
