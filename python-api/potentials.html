@@ -870,6 +870,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ipctk.BarrierPotential.barrier" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.BarrierPotential.barrier (Python property) — Barrier activation distance." class="md-ellipsis">barrier</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ipctk.BarrierPotential.dhat" class="md-nav__link">
     <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.BarrierPotential.dhat (Python property) — Barrier activation distance." class="md-ellipsis">dhat</span>
   </a>
@@ -1523,6 +1530,13 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ipctk.BarrierPotential.barrier" class="md-nav__link">
+    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.BarrierPotential.barrier (Python property) — Barrier activation distance." class="md-ellipsis">barrier</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ipctk.BarrierPotential.dhat" class="md-nav__link">
     <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.BarrierPotential.dhat (Python property) — Barrier activation distance." class="md-ellipsis">dhat</span>
   </a>
@@ -1867,6 +1881,9 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ipctk.BarrierPotential.dhat" title="ipctk.BarrierPotential.dhat (Python property) — Barrier activation distance."><code class="xref py py-obj docutils literal notranslate"><span class="pre">dhat</span></code></a></p></td>
 <td><p>Barrier activation distance.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ipctk.BarrierPotential.barrier" title="ipctk.BarrierPotential.barrier (Python property) — Barrier activation distance."><code class="xref py py-obj docutils literal notranslate"><span class="pre">barrier</span></code></a></p></td>
+<td><p>Barrier activation distance.</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1953,6 +1970,12 @@ x: The collision stencil’s degrees of freedom.</p>
 <dt class="sig sig-object highlight py" id="ipctk.BarrierPotential.__module__">
 <span class="sig-name descname"><span class="pre">__module__</span></span><span class="p"> <span class="pre">=</span> </span><code class="code python docutils literal highlight highlight-python"><span class="s1">&#39;ipctk&#39;</span></code><a class="headerlink" href="#ipctk.BarrierPotential.__module__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py property objdesc">
+<dt class="sig sig-object highlight py" id="ipctk.BarrierPotential.barrier">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">barrier</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">ipctk.Barrier</span></span><a class="headerlink" href="#ipctk.BarrierPotential.barrier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Barrier activation distance.</p>
+</dd></dl>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.BarrierPotential.dhat">
@@ -2302,18 +2325,18 @@ x: The collision stencil’s degrees of freedom.</p>
 <span class="sig-name descname"><span class="pre">force</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.FrictionPotential.force" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>force(self: ipctk.FrictionPotential, collisions: ipctk.FrictionCollisions, mesh: ipc::CollisionMesh, rest_positions: numpy.ndarray[numpy.float64[m, n]], lagged_displacements: numpy.ndarray[numpy.float64[m, n]], velocities: numpy.ndarray[numpy.float64[m, n]], dhat: float, barrier_stiffness: float, dmin: float = 0, no_mu: bool = False) -&gt; numpy.ndarray[numpy.float64[m, 1]]</p>
+<li><p>force(self: ipctk.FrictionPotential, collisions: ipctk.FrictionCollisions, mesh: ipc::CollisionMesh, rest_positions: numpy.ndarray[numpy.float64[m, n]], lagged_displacements: numpy.ndarray[numpy.float64[m, n]], velocities: numpy.ndarray[numpy.float64[m, n]], barrier_potential: ipctk.BarrierPotential, barrier_stiffness: float, dmin: float = 0, no_mu: bool = False) -&gt; numpy.ndarray[numpy.float64[m, 1]]</p>
 <blockquote>
 <div><p>Compute the friction force for all collisions.</p>
 <dl class="simple">
 <dt>Parameters:</dt><dd><p>collisions: The set of collisions.
 mesh: The collision mesh.
-rest_positions: Rest positions of the vertices (rowwise)
-lagged_displacements: Previous displacements of the vertices (rowwise)
-velocities: Current displacements of the vertices (rowwise)
-dhat: Barrier activation distance.
-barrier_stiffness: Barrier stiffness.
-dmin: Minimum distance to use for the barrier.
+rest_positions: Rest positions of the vertices (rowwise).
+lagged_displacements: Previous displacements of the vertices (rowwise).
+velocities: Current displacements of the vertices (rowwise).
+barrier_potential: Barrier potential (used for normal force magnitude).
+barrier_stiffness: Barrier stiffness (used for normal force magnitude).
+dmin: Minimum distance (used for normal force magnitude).
 no_mu: whether to not multiply by mu</p>
 </dd>
 <dt>Returns:</dt><dd><p>The friction force.</p>
@@ -2321,19 +2344,17 @@ no_mu: whether to not multiply by mu</p>
 </dl>
 </div></blockquote>
 </li>
-<li><p>force(self: ipctk.FrictionPotential, collision: ipctk.FrictionCollision, rest_positions: numpy.ndarray[numpy.float64[m, 1]], lagged_displacements: numpy.ndarray[numpy.float64[m, 1]], velocities: numpy.ndarray[numpy.float64[m, 1]], dhat: float, barrier_stiffness: float, dmin: float = 0, no_mu: bool = False) -&gt; numpy.ndarray[numpy.float64[m, 1]]</p>
+<li><p>force(self: ipctk.FrictionPotential, collision: ipctk.FrictionCollision, rest_positions: numpy.ndarray[numpy.float64[m, 1]], lagged_displacements: numpy.ndarray[numpy.float64[m, 1]], velocities: numpy.ndarray[numpy.float64[m, 1]], barrier_potential: ipctk.BarrierPotential, barrier_stiffness: float, dmin: float = 0, no_mu: bool = False) -&gt; numpy.ndarray[numpy.float64[m, 1]]</p>
 <blockquote>
 <div><p>Compute the friction force for a single collision.</p>
 <dl class="simple">
 <dt>Parameters:</dt><dd><p>collision: The collision
-rest_positions: Rest positions of the vertices (rowwise)
-lagged_displacements: Previous displacements of the vertices (rowwise)
-velocities: Current displacements of the vertices (rowwise)
-edges: Collision mesh edges
-faces: Collision mesh faces
-dhat: Barrier activation distance
-barrier_stiffness: Barrier stiffness
-dmin: Minimum distance
+rest_positions: Rest positions of the vertices (rowwise).
+lagged_displacements: Previous displacements of the vertices (rowwise).
+velocities: Current displacements of the vertices (rowwise).
+barrier_potential: Barrier potential (used for normal force magnitude).
+barrier_stiffness: Barrier stiffness (used for normal force magnitude).
+dmin: Minimum distance (used for normal force magnitude).
 no_mu: Whether to not multiply by mu</p>
 </dd>
 <dt>Returns:</dt><dd><p>Friction force</p>
@@ -2349,39 +2370,37 @@ no_mu: Whether to not multiply by mu</p>
 <span class="sig-name descname"><span class="pre">force_jacobian</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.FrictionPotential.force_jacobian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>force_jacobian(self: ipctk.FrictionPotential, collisions: ipctk.FrictionCollisions, mesh: ipc::CollisionMesh, rest_positions: numpy.ndarray[numpy.float64[m, n]], lagged_displacements: numpy.ndarray[numpy.float64[m, n]], velocities: numpy.ndarray[numpy.float64[m, n]], dhat: float, barrier_stiffness: float, wrt: ipctk.FrictionPotential.DiffWRT, dmin: float = 0) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
+<li><p>force_jacobian(self: ipctk.FrictionPotential, collisions: ipctk.FrictionCollisions, mesh: ipc::CollisionMesh, rest_positions: numpy.ndarray[numpy.float64[m, n]], lagged_displacements: numpy.ndarray[numpy.float64[m, n]], velocities: numpy.ndarray[numpy.float64[m, n]], barrier_potential: ipctk.BarrierPotential, barrier_stiffness: float, wrt: ipctk.FrictionPotential.DiffWRT, dmin: float = 0) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
 <blockquote>
 <div><p>Compute the Jacobian of the friction force for all collisions.</p>
 <dl class="simple">
 <dt>Parameters:</dt><dd><p>collisions: The set of collisions.
 mesh: The collision mesh.
-rest_positions: Rest positions of the vertices (rowwise)
-lagged_displacements: Previous displacements of the vertices (rowwise)
-velocities: Current displacements of the vertices (rowwise)
-dhat: Barrier activation distance.
-barrier_stiffness: Barrier stiffness.
+rest_positions: Rest positions of the vertices (rowwise).
+lagged_displacements: Previous displacements of the vertices (rowwise).
+velocities: Current displacements of the vertices (rowwise).
+barrier_potential: Barrier potential (used for normal force magnitude).
+barrier_stiffness: Barrier stiffness (used for normal force magnitude).
 wrt: The variable to take the derivative with respect to.
-dmin: Minimum distance to use for the barrier.</p>
+dmin: Minimum distance (used for normal force magnitude).</p>
 </dd>
 <dt>Returns:</dt><dd><p>The Jacobian of the friction force wrt the velocities.</p>
 </dd>
 </dl>
 </div></blockquote>
 </li>
-<li><p>force_jacobian(self: ipctk.FrictionPotential, collision: ipctk.FrictionCollision, rest_positions: numpy.ndarray[numpy.float64[m, 1]], lagged_displacements: numpy.ndarray[numpy.float64[m, 1]], velocities: numpy.ndarray[numpy.float64[m, 1]], dhat: float, barrier_stiffness: float, wrt: ipctk.FrictionPotential.DiffWRT, dmin: float = 0) -&gt; numpy.ndarray[numpy.float64[m, n]]</p>
+<li><p>force_jacobian(self: ipctk.FrictionPotential, collision: ipctk.FrictionCollision, rest_positions: numpy.ndarray[numpy.float64[m, 1]], lagged_displacements: numpy.ndarray[numpy.float64[m, 1]], velocities: numpy.ndarray[numpy.float64[m, 1]], barrier_potential: ipctk.BarrierPotential, barrier_stiffness: float, wrt: ipctk.FrictionPotential.DiffWRT, dmin: float = 0) -&gt; numpy.ndarray[numpy.float64[m, n]]</p>
 <blockquote>
-<div><p>Compute the friction force Jacobian for a single collision.</p>
+<div><p>Compute the friction force Jacobian.</p>
 <dl class="simple">
 <dt>Parameters:</dt><dd><p>collision: The collision
-rest_positions: Rest positions of the vertices (rowwise)
-lagged_displacements: Previous displacements of the vertices (rowwise)
-velocities: Current displacements of the vertices (rowwise)
-edges: Collision mesh edges
-faces: Collision mesh faces
-dhat: Barrier activation distance
-barrier_stiffness: Barrier stiffness
+rest_positions: Rest positions of the vertices (rowwise).
+lagged_displacements: Previous displacements of the vertices (rowwise).
+velocities: Current displacements of the vertices (rowwise).
+barrier_potential: Barrier potential (used for normal force magnitude).
+barrier_stiffness: Barrier stiffness (used for normal force magnitude).
 wrt: Variable to differentiate the friction force with respect to.
-dmin: Minimum distance</p>
+dmin: Minimum distance (used for normal force magnitude).</p>
 </dd>
 <dt>Returns:</dt><dd><p>Friction force Jacobian</p>
 </dd>
