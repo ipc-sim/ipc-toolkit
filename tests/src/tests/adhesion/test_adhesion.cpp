@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
-#include <catch2/generators/catch_generators_random.hpp>
 #include <catch2/generators/catch_generators_adapters.hpp>
+#include <catch2/catch_approx.hpp>
 
 #include <finitediff.hpp>
 
@@ -20,15 +20,23 @@ TEST_CASE("Test normal adhesion derivatives", "[adhesion]")
 
     double a2 = Y * eps_c / (2 * (dhat_p - dhat_a));
 
-    double d = GENERATE_COPY(take(10, random(0.0, dhat_a))); // ∈ [0, d̂]
+    const double log_min_d = use_dist_sqr ? -4 : -6;
+    double d = GENERATE_COPY(range(log_min_d, log10(2 * dhat_a), 0.5));
+    d = pow(10, d);
+    REQUIRE(d >= 1e-8); // finite difference step size
     Eigen::Matrix<double, 1, 1> d_vec;
     d_vec << d;
+
+    if (d == Catch::Approx(dhat_p)) {
+        return;
+    }
 
     // Check gradient
 
     if (use_dist_sqr) {
         d_vec *= d;
         d *= d;
+        REQUIRE(d >= 1e-8); // finite difference step size
         dhat_p *= dhat_p;
         dhat_a *= dhat_a;
         a2 /= 2 * dhat_p * (dhat_p + dhat_a);
@@ -38,6 +46,7 @@ TEST_CASE("Test normal adhesion derivatives", "[adhesion]")
     fd::finite_gradient(
         d_vec,
         [&](const Eigen::VectorXd& d) {
+            REQUIRE(d[0] >= 0);
             return normal_adhesion_potential(d[0], dhat_p, dhat_a, a2);
         },
         fgrad);
@@ -50,9 +59,14 @@ TEST_CASE("Test normal adhesion derivatives", "[adhesion]")
 
     // Check hessian
 
+    if (std::abs(d - dhat_p) < 1e-8 || std::abs(d - dhat_a) < 1e-8) {
+        return; // Adhesion is only C1
+    }
+
     fd::finite_gradient(
         d_vec,
         [&](const Eigen::VectorXd& d) {
+            REQUIRE(d[0] >= 0);
             return normal_adhesion_potential_gradient(d[0], dhat_p, dhat_a, a2);
         },
         fgrad);
