@@ -1,15 +1,12 @@
+// Adhesion model of Fang and Li et al. [2023].
+
 #include "adhesion.hpp"
 
 #include <cassert>
 
 namespace ipc {
 
-// RCC: Pₙₖ(d) = ½Cₙ βₖ² dₖ²
-// return 0.5 * adhession_stiffness * adhession_intensity *
-// adhession_intensity
-//     * distance_sqr;
-
-// Fang and Li et al. [2023]:
+// -- Normal Adhesion ----------------------------------------------------------
 
 double normal_adhesion_potential(
     const double d, const double dhat_p, const double dhat_a, const double a2)
@@ -64,15 +61,57 @@ double normal_adhesion_potential_hessian(
     }
 }
 
-// RCC: Pₜₖ(‖uₖ‖) = ½Cₜ βₖ² ‖uₖ‖²
-// return 0.5 * adhession_stiffness * adhession_intensity * adhession_intensity
-//     * relative_sliding_displacement * relative_sliding_displacement;
+// -- Tangential Adhesion ------------------------------------------------------
 
-// Fang and Li et al. [2023]:
-// double tangential_adhesion_potential(
-//     const double relative_sliding_displacement,
-//     const double adhession_stiffness,
-//     const double adhession_intensity)
-// {
-// }
+double f0_t(const double y, const double eps_a)
+{
+    assert(eps_a > 0);
+    if (y <= 0) {
+        return 0;
+    } else if (y >= 2 * eps_a) {
+        return 4 * eps_a / 3;
+    }
+    return y * y / eps_a * (1 + y / (3 * eps_a)); // -y³/(3ϵ²) + y²/ϵ
+}
+
+double f1_t(const double y, const double eps_a)
+{
+    assert(eps_a > 0);
+    if (y >= 2 * eps_a || y <= 0) {
+        return 0;
+    }
+
+    return y / eps_a * (2 - y / eps_a); // -y²/ϵ² + 2y/ϵ
+}
+
+double df1_t(const double y, const double eps_a)
+{
+    assert(eps_a > 0);
+    if (y >= 2 * eps_a || y <= 0) {
+        return 0;
+    }
+
+    return (-y / eps_a + 1) * 2 / eps_a; // -2y/ϵ² + 2/ϵ
+}
+
+double f1_t_over_x(const double y, const double eps_a)
+{
+    assert(eps_a > 0);
+    if (y >= 2 * eps_a || y <= 0) {
+        return 0;
+    }
+
+    return (2 - y / eps_a) / eps_a; // -y/ϵ² + 2/ϵ
+}
+
+double df1_t_x_minus_f1_t_over_x3(const double y, const double eps_a)
+{
+    assert(eps_a > 0);
+    assert(y >= 0);
+    if (y >= 2 * eps_a) {
+        return 0;
+    }
+    return -1 / (y * eps_a * eps_a);
+}
+
 } // namespace ipc

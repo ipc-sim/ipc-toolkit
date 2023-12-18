@@ -51,6 +51,6 @@ double f1_SF_over_x(const double s, const double epsv);
 /// @param s The tangential relative speed.
 /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
 /// @return The derivative of f1 times s minus f1 all divided by s cubed.
-double df1_x_minus_f1_over_x3(const double s, const double epsv);
+double df1_SF_x_minus_f1_SF_over_x3(const double s, const double epsv);
 
 } // namespace ipc

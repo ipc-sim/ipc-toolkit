@@ -59,7 +59,7 @@ void define_smooth_friction_mollifier(py::module_& m)
         py::arg("s"), py::arg("epsv"));
 
     m.def(
-        "df1_x_minus_f1_over_x3", &df1_x_minus_f1_over_x3,
+        "df1_SF_x_minus_f1_SF_over_x3", &df1_SF_x_minus_f1_SF_over_x3,
         R"ipc_Qu8mg5v7(
         The derivative of f1 times s minus f1 all divided by s cubed.
 
