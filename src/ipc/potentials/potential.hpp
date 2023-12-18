@@ -12,7 +12,6 @@ protected:
     using TCollision = typename TCollisions::value_type;
 
 public:
-    Potential() { }
     virtual ~Potential() { }
 
     // -- Cumulative methods ---------------------------------------------------
