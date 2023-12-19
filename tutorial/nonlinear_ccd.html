@@ -1169,16 +1169,16 @@ Python</label></div>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Rigid2DTrajectory</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">virtual</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">ipc</span><span class="o">::</span><span class="n">NonlinearTrajectory</span><span class="w"> </span><span class="p">{</span>
 <span class="k">public</span><span class="o">:</span>
 <span class="w">    </span><span class="n">Rigid2DTrajectory</span><span class="p">(</span>
-<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">position</span><span class="p">,</span>
-<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">translation</span><span class="p">,</span>
-<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">delta_translation</span><span class="p">,</span>
-<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">rotation</span><span class="p">,</span>
-<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">delta_rotation</span><span class="p">)</span>
-<span class="w">        </span><span class="o">:</span><span class="w"> </span><span class="n">position</span><span class="p">(</span><span class="n">position</span><span class="p">)</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">translation</span><span class="p">(</span><span class="n">translation</span><span class="p">)</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">delta_translation</span><span class="p">(</span><span class="n">delta_translation</span><span class="p">)</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">rotation</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span>
-<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">delta_rotation</span><span class="p">(</span><span class="n">delta_rotation</span><span class="p">)</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">_position</span><span class="p">,</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">_translation</span><span class="p">,</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">_delta_translation</span><span class="p">,</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">_rotation</span><span class="p">,</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">_delta_rotation</span><span class="p">)</span>
+<span class="w">        </span><span class="o">:</span><span class="w"> </span><span class="n">position</span><span class="p">(</span><span class="n">_position</span><span class="p">)</span>
+<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">translation</span><span class="p">(</span><span class="n">_translation</span><span class="p">)</span>
+<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">delta_translation</span><span class="p">(</span><span class="n">_delta_translation</span><span class="p">)</span>
+<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">rotation</span><span class="p">(</span><span class="n">_rotation</span><span class="p">)</span>
+<span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="n">delta_rotation</span><span class="p">(</span><span class="n">_delta_rotation</span><span class="p">)</span>
 <span class="w">    </span><span class="p">{</span>
 <span class="w">    </span><span class="p">}</span>
 
@@ -1382,7 +1382,7 @@ Python</label></div>
   <small>
     
       Last update:
-      Dec 18, 2023
+      Dec 19, 2023
     
   </small>
 </div>
