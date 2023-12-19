@@ -14,7 +14,11 @@ set(IPC_TOOLKIT_WARNING_FLAGS
   # -Werror
 
   # -Wconversion
-  # -Wsign-conversion
+  -Werror=enum-conversion
+  -Wfloat-conversion
+  # Disable these errors for now, because they are too noisy
+  # -Wno-sign-conversion
+  # -Wno-shorten-64-to-32
   # -Wunsafe-loop-optimizations # broken with C++11 loops
   -Wunused
 

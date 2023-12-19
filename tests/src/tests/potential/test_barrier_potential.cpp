@@ -313,7 +313,7 @@ TEST_CASE(
             // TODO: Recompute weight based on x
             assert(use_convergent_formulation == false);
             // Recompute eps_x based on x
-            double prev_eps_x;
+            double prev_eps_x = -1;
             if (collisions.is_edge_edge(i)) {
                 EdgeEdgeCollision& c =
                     dynamic_cast<EdgeEdgeCollision&>(collisions[i]);
@@ -336,6 +336,7 @@ TEST_CASE(
 
             // Restore eps_x
             if (collisions.is_edge_edge(i)) {
+                REQUIRE(prev_eps_x >= 0);
                 dynamic_cast<EdgeEdgeCollision&>(collisions[i]).eps_x =
                     prev_eps_x;
             }
