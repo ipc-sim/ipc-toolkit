@@ -420,7 +420,7 @@ CollisionMesh::to_full_dof(const Eigen::SparseMatrix<double>& X) const
 // ============================================================================/
 
 std::vector<bool> CollisionMesh::construct_is_on_surface(
-    const int num_vertices,
+    const long num_vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::VectorXi& codim_vertices)
 {

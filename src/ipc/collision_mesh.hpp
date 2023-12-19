@@ -268,7 +268,7 @@ public:
     /// @param codim_vertices The indices of codimensional vertices (#CV x 1).
     /// @return A vector of bools indicating whether each vertex is on the surface.
     static std::vector<bool> construct_is_on_surface(
-        const int num_vertices,
+        const long num_vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::VectorXi& codim_vertices = Eigen::VectorXi());
 
