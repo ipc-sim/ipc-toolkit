@@ -111,16 +111,16 @@ protected:
 class Rigid2DTrajectory : virtual public ipc::NonlinearTrajectory {
 public:
     Rigid2DTrajectory(
-        const Eigen::Vector2d& position,
-        const Eigen::Vector2d& translation,
-        const Eigen::Vector2d& delta_translation,
-        const double rotation,
-        const double delta_rotation)
-        : position(position)
-        , translation(translation)
-        , delta_translation(delta_translation)
-        , rotation(rotation)
-        , delta_rotation(delta_rotation)
+        const Eigen::Vector2d& _position,
+        const Eigen::Vector2d& _translation,
+        const Eigen::Vector2d& _delta_translation,
+        const double _rotation,
+        const double _delta_rotation)
+        : position(_position)
+        , translation(_translation)
+        , delta_translation(_delta_translation)
+        , rotation(_rotation)
+        , delta_rotation(_delta_rotation)
     {
     }
 
