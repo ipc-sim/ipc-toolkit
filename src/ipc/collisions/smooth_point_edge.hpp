@@ -16,7 +16,7 @@ namespace ipc {
         const Eigen::Ref<const VectorMax3<scalar>>& p,
         const Eigen::Ref<const VectorMax3<scalar>>& e0,
         const Eigen::Ref<const VectorMax3<scalar>>& e1,
-        const scalar &uv,
+        const double &uv,
         const double &dhat,
         const double &alpha);
 
@@ -24,6 +24,16 @@ namespace ipc {
     template <typename scalar>
     scalar smooth_point_edge_potential(
         const Eigen::Ref<const VectorMax3<scalar>>& p,
+        const Eigen::Ref<const VectorMax3<scalar>>& e0,
+        const Eigen::Ref<const VectorMax3<scalar>>& e1,
+        const double &dhat,
+        const double &alpha,
+        const int &N);
+
+    /// @brief Compute potential for a list of points and an edge [e0, e1], integrated over the edge
+    template <typename scalar>
+    Vector<scalar, -1, -1> smooth_point_edge_potentials(
+        const Eigen::Ref<Eigen::Matrix<scalar, -1, -1, Eigen::RowMajor, -1, 3>>& points,
         const Eigen::Ref<const VectorMax3<scalar>>& e0,
         const Eigen::Ref<const VectorMax3<scalar>>& e1,
         const double &dhat,
