@@ -1,6 +1,5 @@
 #include <ipc/utils/quadrature.hpp>
 #include <ipc/distance/point_point.hpp>
-#include <ipc/barrier/barrier.hpp>
 #include <ipc/utils/math.hpp>
 
 const static int edge_quadrature_order = 1;
@@ -14,21 +13,13 @@ namespace ipc {
         const double &dhat,
         const double &alpha)
     {
-        VectorMax3d tangent = (e1 - e0).normalized() / 1.0;
+        VectorMax3d tangent = (e1 - e0).normalized();
         VectorMax3d sample = e0 + (e1 - e0) * uv;
-        VectorMax6d grad = point_point_distance_gradient(p, sample); // grad of dist^2 actually
 
-        const double dist = sqrt(point_point_distance(p, sample));
-        const double deriv = tangent.dot(grad.head(tangent.size())) / (2 * dist);
-        const double dist_barrier = barrier(dist, dhat);
-        
-        double val = 0;
-        for (double sign : {-1, 1})
-        {
-            val += dist_barrier * smooth_heaviside(deriv * sign + alpha);
-        }
+        const double dist = (p - sample).norm();
+        const double Phi_sqrt = tangent.dot((p - sample).normalized());
 
-        return val;
+        return inv_barrier(dist, dhat, 2) * cubic_spline(Phi_sqrt * 2. / alpha);
     }
 
     double smooth_point_edge_potential(
