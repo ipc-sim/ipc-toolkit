@@ -11,19 +11,21 @@ namespace ipc {
     /// @param uv Barycentric coordinate
     /// @param dhat The effective distance of barrier
     /// @param alpha The effective angle of barrier
-    double smooth_point_edge_potential_pointwise(
-        const Eigen::Ref<const VectorMax3d>& p,
-        const Eigen::Ref<const VectorMax3d>& e0,
-        const Eigen::Ref<const VectorMax3d>& e1,
-        const double &uv,
+    template <typename scalar>
+    scalar smooth_point_edge_potential_pointwise(
+        const Eigen::Ref<const VectorMax3<scalar>>& p,
+        const Eigen::Ref<const VectorMax3<scalar>>& e0,
+        const Eigen::Ref<const VectorMax3<scalar>>& e1,
+        const scalar &uv,
         const double &dhat,
         const double &alpha);
 
     /// @brief Compute potential for a point p and an edge [e0, e1], integrated over the edge
-    double smooth_point_edge_potential(
-        const Eigen::Ref<const VectorMax3d>& p,
-        const Eigen::Ref<const VectorMax3d>& e0,
-        const Eigen::Ref<const VectorMax3d>& e1,
+    template <typename scalar>
+    scalar smooth_point_edge_potential(
+        const Eigen::Ref<const VectorMax3<scalar>>& p,
+        const Eigen::Ref<const VectorMax3<scalar>>& e0,
+        const Eigen::Ref<const VectorMax3<scalar>>& e1,
         const double &dhat,
         const double &alpha,
         const int &N);

@@ -8,7 +8,7 @@ using namespace ipc;
 void define_smooth_point_edge(py::module_& m)
 {
     m.def(
-        "smooth_point_edge_potential_pointwise", &smooth_point_edge_potential_pointwise,
+        "smooth_point_edge_potential_pointwise", &smooth_point_edge_potential_pointwise<double>,
         R"ipc_Qu8mg5v7(
         Compute the new potential between a point and a point on an edge.
 
@@ -23,7 +23,7 @@ void define_smooth_point_edge(py::module_& m)
         py::arg("dhat"), py::arg("alpha"));
 
     m.def(
-        "smooth_point_edge_potential", &smooth_point_edge_potential,
+        "smooth_point_edge_potential", &smooth_point_edge_potential<double>,
         R"ipc_Qu8mg5v7(
         Compute the new potential between a point and an edge.
 
