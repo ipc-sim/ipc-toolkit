@@ -2,6 +2,12 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 
+def soft_min(x):
+    return (torch.dot(torch.exp(-x), x) / torch.sum(torch.exp(-x))).item()
+
+def soft_max(x):
+    return (torch.dot(torch.exp(x), x) / torch.sum(torch.exp(x))).item()
+
 # x: torch tensor
 def spline3(x):
     branches = (lambda x: 0 * x, lambda x: (x+2)**3 / 6, lambda x: 2 / 3 - x**2 * (1 - torch.abs(x) / 2), lambda x: -(x-2)**3 / 6, lambda x: 0 * x)
@@ -17,6 +23,16 @@ def spline3(x):
 # r: float, > 1
 def inv_barrier(x, eps, r):
     return spline3(x * (2 / eps)) / torch.abs(x)**r
+
+def L_smooth(x):
+    branches = (lambda x: x*x, lambda x: (x-1)**2)
+    y = torch.zeros_like(x)
+    mask = x < 0
+    y[mask] = branches[0](x[mask])
+
+    mask = x > 1
+    y[mask] = branches[1](x[mask])
+    return y
 
 # x: torch tensor
 # dhat: float, size of support
