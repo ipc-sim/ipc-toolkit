@@ -39,6 +39,11 @@ def L_ns(x):
 def log_barrier(x, dhat):
     return -torch.log(x / dhat) * (x - dhat)**2
 
+def percentile(L, ratio=0.999):
+    X = np.sort(L.flatten())
+    id = int(len(X)*ratio)
+    return X[id]
+
 if __name__ == "__main__":
 
     #######################################
