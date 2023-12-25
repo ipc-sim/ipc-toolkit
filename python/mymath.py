@@ -24,8 +24,8 @@ def spline3(x):
 def inv_barrier(x, eps, r):
     return spline3(x * (2 / eps)) / torch.abs(x)**r
 
-def L_smooth(x):
-    branches = (lambda x: x*x, lambda x: (x-1)**2)
+def L_ns(x):
+    branches = (lambda x: x, lambda x: x-1)
     y = torch.zeros_like(x)
     mask = x < 0
     y[mask] = branches[0](x[mask])
