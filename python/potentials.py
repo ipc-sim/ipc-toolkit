@@ -6,13 +6,25 @@ import torch.nn.functional as F
 # alpha > 0, the smaller the less smooth
 # eps > 0, the smaller the less smooth
 # r >= 1, the larger the less smooth
-def point_edge_potential_exact_pointwise(p, e0, e1, eps, r, alpha, uv):
+def point_edge_potential_exact_pointwise(points, e0, e1, eps, r, alpha, uv):
+    n_pts = points.shape[0]
+    n_samples = uv.shape[0]
+    dim = points.shape[1]
+
     tangent = F.normalize(e1 - e0, p=2, dim=None)
-    diff = (e0 - p).view(-1, 1) + torch.outer(e1 - e0, uv)
-    dists = torch.norm(diff, dim=0)
-    barrier_val = inv_barrier(dists, eps, r)
-    Phi_val = spline3((tangent.view(1, 2) @ diff) / dists * (2 / alpha))
-    return barrier_val * Phi_val.view(-1)
+    diff = (e0.view(1, -1) - points).view(-1, 2, 1) + torch.outer(e1 - e0, uv).view(1, 2, -1)
+    dists = torch.norm(diff, dim=1)
+    barrier_val = inv_barrier(dists, eps, r).view(n_pts, n_samples)
+    Phi_val = spline3(torch.tensordot(tangent, diff, dims=[[0],[1]]).view(n_pts, n_samples) / dists * (2 / alpha))
+    return barrier_val * Phi_val
+
+def point_edge_potential_exact(points, e0, e1, eps, r, alpha, n_samples):
+    uv = torch.linspace(0, 1, n_samples)
+    integrand = point_edge_potential_exact_pointwise(points, e0, e1, eps, r, alpha, uv)
+    weights = torch.ones((uv.shape[0])) * torch.norm(e1 - e0) / (n_samples - 1)
+    weights[0] /= 2
+    weights[-1] /= 2
+    return torch.tensordot(integrand, weights, dims=[[1],[0]]).view(-1)
 
 # discrete version of point edge potential Psi(x) using the smoothed closest point
 # points: N x d
