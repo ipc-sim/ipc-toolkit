@@ -18,6 +18,7 @@ def point_edge_potential_exact_pointwise(points, e0, e1, eps, r, alpha, uv):
     Phi_val = spline3(torch.tensordot(tangent, diff, dims=[[0],[1]]).view(n_pts, n_samples) / dists * (2 / alpha))
     return barrier_val * Phi_val
 
+# compute integral of point_edge_potential_exact_pointwise() using composite trapezoidal quadrature rule
 def point_edge_potential_exact(points, e0, e1, eps, r, alpha, n_samples):
     uv = torch.linspace(0, 1, n_samples)
     integrand = point_edge_potential_exact_pointwise(points, e0, e1, eps, r, alpha, uv)
@@ -47,3 +48,25 @@ def point_edge_potential_discrete(points, e0, e1, eps, r, alpha, smooth_factor):
     dist_sqr = ((points - e0) @ normal.view(-1,1)).view(-1) **2 + length**2 * L**2
     
     return torch.norm(e1 - e0) * spline3(Phi * (2 / alpha)) * inv_barrier(dist_sqr, eps, r)
+
+# compute the convergent IPC potential wrt. a closed curve prescribed by vertices on some spatial points
+# points: N x d
+# vertices: M x d
+def convergent_ipc_potential(points, vertices, dhat):
+    n_edges = vertices.shape[0] - 1
+    values = torch.zeros((points.shape[0]))
+    for e in range(n_edges):
+        tangent = vertices[e+1] - vertices[e]
+        length = torch.norm(tangent)
+
+        s = ((points - vertices[e].view(1, -1)) @ (tangent / length**2)).view(-1)
+        y = vertices[e] + torch.outer((s - L_ns(s)).view(-1), tangent)
+
+        dist = torch.norm(points - y.view(-1, points.shape[1]), dim=1).view(-1)
+        values += log_barrier(dist, dhat)
+    
+    for v in range(n_edges+1):
+        dist = torch.norm(points - vertices[v, :], dim=1).view(-1)
+        values -= log_barrier(dist, dhat) * (0.5 if v in [0, n_edges] else 1)
+
+    return values

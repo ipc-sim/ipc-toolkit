@@ -37,7 +37,11 @@ def L_ns(x):
 # x: torch tensor
 # dhat: float, size of support
 def log_barrier(x, dhat):
-    return -torch.log(x / dhat) * (x - dhat)**2
+    y = torch.zeros_like(x)
+    mask = x < dhat
+    x_scaled = x[mask] / dhat
+    y[mask] = -torch.log(x_scaled) * (x_scaled - 1)**2
+    return y
 
 def percentile(L, ratio=0.999):
     X = np.sort(L.flatten())
@@ -66,3 +70,20 @@ if __name__ == "__main__":
 
     plt.legend()
     plt.savefig("tmp.png")
+
+    # # Visualization of cubic spline
+
+    # x = torch.linspace(-2.5, 2.5, 500, requires_grad=True)
+    # y = spline3(x)
+    # E = torch.sum(y)
+    # deriv1 = torch.autograd.grad(E, x, create_graph=True)[0]
+    # E = torch.sum(deriv1)
+    # deriv2 = torch.autograd.grad(E, x, create_graph=True)[0]
+
+    # fig = go.Figure(data=[
+    #     go.Scatter(x=x.detach().numpy(), y=y.detach().numpy(), name="y(x)"),
+    #     go.Scatter(x=x.detach().numpy(), y=deriv1.detach().numpy(), name="y'(x)"),
+    #     go.Scatter(x=x.detach().numpy(), y=deriv2.detach().numpy(), name="y''(x)")
+    #     ], layout=go.Layout(width=400, height=400))
+    # fig.update_yaxes(exponentformat = 'E')
+    # fig.show()
