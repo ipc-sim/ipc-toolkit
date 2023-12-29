@@ -2,7 +2,6 @@
 
 namespace ipc {
     void line_quadrature(
-        const int order, 
         const int N, 
         Eigen::VectorXd &pts, 
         Eigen::VectorXd &weights)

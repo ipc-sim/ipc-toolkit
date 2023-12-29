@@ -15,8 +15,6 @@ set(SOURCES
   plane_vertex.hpp
   # vertex_vertex.cpp
   vertex_vertex.hpp
-  smooth_point_edge.cpp
-  smooth_point_edge.hpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})

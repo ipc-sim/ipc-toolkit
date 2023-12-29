@@ -5,23 +5,27 @@
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
-    // template <typename scalar>
-    // scalar smooth_heaviside(const scalar &x);
-
-    // template <typename scalar>
-    // scalar heaviside(const scalar &x);
-
-    // template <typename scalar>
-    // scalar smooth_max(const scalar &x, const scalar &y);
-
-    // template <typename scalar>
-    // scalar smooth_min(const scalar &x, const scalar &y);
+    template <typename scalar>
+    scalar cubic_spline(const scalar &x)
+    {
+        if (x <= -2)
+            return scalar(0.);
+        if (x <= -1)
+            return (x + 2)*(x + 2)*(x + 2) / 6;
+        if (x <= 0)
+            return 2. / 3 - x * x * (1 + x / 2);
+        if (x <= 1)
+            return 2. / 3 - x * x * (1 - x / 2);
+        if (x < 2)
+            return -(x - 2)*(x - 2)*(x - 2) / 6;
+        return scalar(0.);
+    }
 
     template <typename scalar>
-    scalar cubic_spline(const scalar &x);
-
-    template <typename scalar>
-    scalar inv_barrier(const scalar &x, const double eps, const double r);
+    scalar inv_barrier(const scalar &x, const double eps, const double r)
+    {
+        return cubic_spline(2 * x / eps) / pow(sqrt(x*x), r);
+    }
 
     template <typename scalar>
     scalar L_ns(const scalar &x)

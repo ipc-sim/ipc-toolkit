@@ -5,14 +5,10 @@
 
 namespace ipc
 {
-
-	typedef DScalar1<double, Eigen::Matrix<double, Eigen::Dynamic, 1, 0, 3, 1>> AutodiffScalarGrad;
-	typedef DScalar2<double, Eigen::Matrix<double, Eigen::Dynamic, 1, 0, 3, 1>, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, 0, 3, 3>> AutodiffScalarHessian;
-
-	typedef Eigen::Matrix<AutodiffScalarGrad, Eigen::Dynamic, 1, 0, 3, 1> AutodiffGradPt;
-	typedef Eigen::Matrix<AutodiffScalarHessian, Eigen::Dynamic, 1, 0, 3, 1> AutodiffHessianPt;
-
-	// typedef DScalar1<double, Eigen::Matrix<double, Eigen::Dynamic, 1, 0, 3, 1>> 					AutodiffPt;
+	template <int max_dim>
+	using AutodiffScalarGrad = DScalar1<double, Eigen::Matrix<double, Eigen::Dynamic, 1, 0, max_dim, 1>>;
+	template <int max_dim>
+	using AutodiffScalarHessian = DScalar2<double, Eigen::Matrix<double, Eigen::Dynamic, 1, 0, max_dim, 1>, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, 0, max_dim, max_dim>>;
 
 	template <class T>
 	class AutoDiffAllocator
