@@ -53,4 +53,20 @@ namespace ipc {
         
         return out;
     }
+
+    template <typename scalar>
+    scalar cross2(const Eigen::Ref<const VectorMax3<scalar>> &a, const Eigen::Ref<const VectorMax3<scalar>> &b)
+    {
+        assert(a.size() == 3 || a.size() == 2);
+        assert(b.size() == 3 || b.size() == 2);
+        if (a.size() == 2)
+            return a[0] * b[1] - a[1] * b[0];
+        else if (a.size() == 3)
+        {
+            const Eigen::Ref<const Vector3<scalar>> a_(a), b_(b);
+            return a_.cross(b_).norm();
+        }
+        else
+            return scalar(0);
+    }
 }

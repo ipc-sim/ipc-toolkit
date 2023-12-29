@@ -1,6 +1,8 @@
 set(SOURCES
   smooth_point_edge.cpp
   smooth_point_edge.hpp
+  smooth_contact_potential.cpp
+  smooth_contact_potential.hpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})

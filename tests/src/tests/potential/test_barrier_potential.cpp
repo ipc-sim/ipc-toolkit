@@ -11,6 +11,8 @@
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
+#include <ipc/smooth_contact/smooth_contact_potential.hpp>
+
 #include <finitediff.hpp>
 #include <igl/edges.h>
 
@@ -453,6 +455,111 @@ TEST_CASE(
     if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
         tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
     }
+}
+
+
+TEST_CASE(
+    "Smooth barrier potential full gradient and hessian",
+    "[potential][barrier_potential][gradient][hessian]")
+{
+    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+
+    double dhat = -1;
+    std::string mesh_name = "";
+    bool all_vertices_on_surface = true;
+    SECTION("cube")
+    {
+        dhat = sqrt(2.0);
+        mesh_name = "cube.obj";
+    }
+    SECTION("two cubes far")
+    {
+        dhat = 1e-1;
+        mesh_name = "two-cubes-far.obj";
+        all_vertices_on_surface = false;
+    }
+    SECTION("two cubes close")
+    {
+        dhat = 1e-1;
+        mesh_name = "two-cubes-close.obj";
+        all_vertices_on_surface = false;
+    }
+    // WARNING: The bunny takes too long in debug.
+    // SECTION("bunny")
+    // {
+    //     dhat = 1e-2;
+    //     mesh_name = "bunny.obj";
+    // }
+
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXi edges, faces;
+    bool success = tests::load_mesh(mesh_name, vertices, edges, faces);
+    CAPTURE(mesh_name);
+    REQUIRE(success);
+
+    CollisionMesh mesh;
+
+    Collisions collisions;
+    if (all_vertices_on_surface) {
+        mesh = CollisionMesh(vertices, edges, faces);
+    } else {
+        mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
+        vertices = mesh.vertices(vertices);
+    }
+    collisions.build(mesh, vertices, 10, /*dmin=*/0, method);
+    CAPTURE(dhat, method, all_vertices_on_surface);
+    CHECK(collisions.size() > 0);
+
+    ParameterType param;
+    param.alpha = 2;
+    param.eps = dhat;
+    param.r = 2;
+
+    SmoothContactPotential potential(param);
+
+    // -------------------------------------------------------------------------
+    // Gradient
+    // -------------------------------------------------------------------------
+
+    const Eigen::VectorXd grad_b =
+        potential.gradient(collisions, mesh, vertices);
+
+    // Compute the gradient using finite differences
+    Eigen::VectorXd fgrad_b;
+    {
+        auto f = [&](const Eigen::VectorXd& x) {
+            return potential(
+                collisions, mesh, fd::unflatten(x, vertices.cols()));
+        };
+        fd::finite_gradient(fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-5);
+    }
+
+    REQUIRE(grad_b.squaredNorm() > 1e-8);
+    std::cout << "grad relative error " << (grad_b - fgrad_b).norm() / grad_b.norm() << "\n";
+    // std::cout << std::setprecision(15) << grad_b.transpose() << "\n";
+    // std::cout << fgrad_b.transpose() << "\n";
+    CHECK(fd::compare_gradient(grad_b, fgrad_b));
+
+    // -------------------------------------------------------------------------
+    // Hessian
+    // -------------------------------------------------------------------------
+
+    Eigen::MatrixXd hess_b =
+        potential.hessian(collisions, mesh, vertices);
+
+    // Compute the gradient using finite differences
+    Eigen::MatrixXd fhess_b;
+    {
+        auto f = [&](const Eigen::VectorXd& x) {
+            return potential.gradient(
+                collisions, mesh, fd::unflatten(x, vertices.cols()));
+        };
+        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-5);
+    }
+
+    REQUIRE(hess_b.squaredNorm() > 1e-3);
+    std::cout << "hess relative error " << (hess_b - fhess_b).norm() / hess_b.norm() << "\n";
+    CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
 }
 
 // -- Benchmarking ------------------------------------------------------------

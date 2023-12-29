@@ -9,6 +9,13 @@
 
 namespace ipc {
 
+struct ParameterType
+{
+    double eps;
+    double alpha;
+    double r;
+};
+
 class Collision : virtual public CollisionStencil {
 public:
     Collision() = default;
@@ -18,6 +25,21 @@ public:
         const Eigen::SparseVector<double>& weight_gradient);
 
     virtual ~Collision() { }
+
+    // -- non distance type potential ----
+
+    virtual double operator()(
+        const VectorMax12d& positions, 
+        const ParameterType &params) const { return 0.; }
+
+    virtual VectorMax12d gradient(
+        const VectorMax12d& positions, 
+        const ParameterType &params) const { return VectorMax12d::Zero(positions.size()); }
+
+    virtual MatrixMax12d hessian(
+        const VectorMax12d& positions, 
+        const ParameterType &params,
+        const bool project_hessian_to_psd = false) const { return MatrixMax12d::Zero(positions.size(), positions.size()); }
 
     // -- Distance mollifier ---------------------------------------------------
 
