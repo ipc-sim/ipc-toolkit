@@ -1,35 +1,35 @@
 Friction
 ========
 
-Friction Constraints
---------------------
+Friction Collisions
+-------------------
 
-.. doxygenclass:: ipc::FrictionConstraints
+.. doxygenclass:: ipc::FrictionCollisions
 
-Friction Constraint
-^^^^^^^^^^^^^^^^^^^
+Friction Collision
+^^^^^^^^^^^^^^^^^^
 
-.. doxygenclass:: ipc::FrictionConstraint
+.. doxygenclass:: ipc::FrictionCollision
 
-Vertex-Vertex Friction Constraint
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Vertex-Vertex Friction Collision
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. doxygenclass:: ipc::VertexVertexFrictionConstraint
+.. doxygenclass:: ipc::VertexVertexFrictionCollision
 
-Edge-Vertex Friction Constraint
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Edge-Vertex Friction Collision
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. doxygenclass:: ipc::EdgeVertexFrictionConstraint
+.. doxygenclass:: ipc::EdgeVertexFrictionCollision
 
-Edge-Edge Friction Constraint
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Edge-Edge Friction Collision
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. doxygenclass:: ipc::EdgeEdgeFrictionConstraint
+.. doxygenclass:: ipc::EdgeEdgeFrictionCollision
 
-Triangle-Vertex Friction Constraint
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Triangle-Vertex Friction Collision
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. doxygenclass:: ipc::FaceVertexFrictionConstraint
+.. doxygenclass:: ipc::FaceVertexFrictionCollision
 
 Smooth Mollifier
 ----------------

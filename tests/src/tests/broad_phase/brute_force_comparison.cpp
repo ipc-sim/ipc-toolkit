@@ -121,9 +121,10 @@ void brute_force_comparison(
             // Perform CCD to make sure the candidate is not a collision
             double toi;
             bool hit = bf_candidates[bf_ci].ccd(
-                V0, V1, mesh.edges(), mesh.faces(), toi, /*min_distance=*/0,
-                /*tmax=*/1.0, /*tolerance=*/ipc::DEFAULT_CCD_TOLERANCE,
-                /*max_iterations=*/ipc::DEFAULT_CCD_MAX_ITERATIONS,
+                bf_candidates[bf_ci].dof(V0, mesh.edges(), mesh.faces()),
+                bf_candidates[bf_ci].dof(V1, mesh.edges(), mesh.faces()), //
+                toi, /*min_distance=*/0, /*tmax=*/1.0,
+                ipc::DEFAULT_CCD_TOLERANCE, ipc::DEFAULT_CCD_MAX_ITERATIONS,
                 /*conservative_rescaling=*/1.0);
             CHECK(!hit); // Check for FN
         } else {

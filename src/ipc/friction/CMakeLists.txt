@@ -1,8 +1,8 @@
 set(SOURCES
   closest_point.cpp
   closest_point.hpp
-  friction_constraints.cpp
-  friction_constraints.hpp
+  friction_collisions.cpp
+  friction_collisions.hpp
   normal_force_magnitude.cpp
   normal_force_magnitude.hpp
   relative_velocity.cpp
@@ -20,4 +20,4 @@ target_sources(ipc_toolkit PRIVATE ${SOURCES})
 # Subfolders
 ################################################################################
 
-add_subdirectory(constraints)
+add_subdirectory(collisions)

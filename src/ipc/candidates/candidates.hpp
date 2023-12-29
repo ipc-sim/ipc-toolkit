@@ -17,7 +17,7 @@ public:
     Candidates() { }
 
     /// @brief Initialize the set of discrete collision detection candidates.
-    /// @param mesh The surface of the contact mesh.
+    /// @param mesh The surface of the collision mesh.
     /// @param vertices Surface vertex positions (rowwise).
     /// @param inflation_radius Amount to inflate the bounding boxes.
     /// @param broad_phase_method Broad phase method to use.
@@ -29,7 +29,7 @@ public:
 
     /// @brief Initialize the set of continuous collision detection candidates.
     /// @note Assumes the trajectory is linear.
-    /// @param mesh The surface of the contact mesh.
+    /// @param mesh The surface of the collision mesh.
     /// @param vertices_t0 Surface vertex starting positions (rowwise).
     /// @param vertices_t1 Surface vertex ending positions (rowwise).
     /// @param inflation_radius Amount to inflate the bounding boxes.
@@ -47,8 +47,8 @@ public:
 
     void clear();
 
-    ContinuousCollisionCandidate& operator[](size_t idx);
-    const ContinuousCollisionCandidate& operator[](size_t idx) const;
+    ContinuousCollisionCandidate& operator[](size_t i);
+    const ContinuousCollisionCandidate& operator[](size_t i) const;
 
     /// @brief Determine if the step is collision free from the set of candidates.
     /// @note Assumes the trajectory is linear.
@@ -84,7 +84,7 @@ public:
         const double tolerance = DEFAULT_CCD_TOLERANCE,
         const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS) const;
 
-    /// @brief Computes a conservative bound on the largest-feasible step size for surface primitives not in contact.
+    /// @brief Computes a conservative bound on the largest-feasible step size for surface primitives not in collision.
     /// @param mesh The collision mesh.
     /// @param displacements Surface vertex displacements (rowwise).
     /// @param dhat Barrier activation distance.

@@ -11,6 +11,7 @@ void define_edge_edge_candidate(py::module_& m)
         EdgeEdgeCandidate, CollisionStencil, ContinuousCollisionCandidate>(
         m, "EdgeEdgeCandidate")
         .def(py::init<long, long>(), py::arg("edge0_id"), py::arg("edge1_id"))
+        .def("known_dtype", &EdgeEdgeCandidate::known_dtype)
         .def(
             "__str__",
             [](const EdgeEdgeCandidate& ev) {

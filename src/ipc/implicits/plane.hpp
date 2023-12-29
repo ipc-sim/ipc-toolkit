@@ -10,24 +10,24 @@ namespace ipc {
 
 inline bool default_can_point_plane_collide(size_t, size_t) { return true; }
 
-/// @brief Construct a set of point-plane distance constraints used to compute
+/// @brief Construct a set of point-plane distance collisions used to compute
 /// the barrier potential.
 ///
-/// @note The given pv_constraints will be cleared.
+/// @note The given pv_collisions will be cleared.
 ///
 /// @param[in] points Points as rows of a matrix.
 /// @param[in] plane_origins  Plane origins as rows of a matrix.
 /// @param[in] plane_normals  Plane normals as rows of a matrix.
 /// @param[in] dhat  The activation distance of the barrier.
-/// @param[out] pv_constraints  The constructed set of constraints.
+/// @param[out] pv_collisions  The constructed set of collisions.
 /// @param[in] dmin  Minimum distance.
 /// @param[in] can_collide A function that takes a vertex ID (row numbers in points) and a plane ID (row number in plane_origins) then returns true if the vertex can collide with the plane. By default all points can collide with all planes.
-void construct_point_plane_constraint_set(
+void construct_point_plane_collisions(
     const Eigen::MatrixXd& points,
     const Eigen::MatrixXd& plane_origins,
     const Eigen::MatrixXd& plane_normals,
     const double dhat,
-    std::vector<PlaneVertexConstraint>& pv_constraints,
+    std::vector<PlaneVertexCollision>& pv_collisions,
     const double dmin = 0,
     const std::function<bool(size_t, size_t)>& can_collide =
         default_can_point_plane_collide);

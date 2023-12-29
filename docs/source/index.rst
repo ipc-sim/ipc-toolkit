@@ -22,9 +22,10 @@
     :hidden:
 
     Getting Started <cpp>
+    cpp-api/potentials.rst
     cpp-api/collision_mesh.rst
     cpp-api/candidates.rst
-    cpp-api/collision_constraints.rst
+    cpp-api/collisions.rst
     cpp-api/friction.rst
     cpp-api/broad_phase.rst
     cpp-api/ccd.rst
@@ -38,9 +39,10 @@
     :hidden:
 
     Getting Started <python.md>
+    python-api/potentials.rst
     python-api/collision_mesh.rst
     python-api/candidates.rst
-    python-api/collision_constraints.rst
+    python-api/collisions.rst
     python-api/friction.rst
     python-api/broad_phase.rst
     python-api/ccd.rst

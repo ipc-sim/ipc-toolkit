@@ -17,7 +17,7 @@ double
 EdgeVertexCandidate::compute_distance(const VectorMax12d& positions) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
-    const int dim = positions.size() / 3;
+    const int dim = this->dim(positions.size());
     return point_edge_distance(
         positions.head(dim), positions.segment(dim, dim), positions.tail(dim),
         known_dtype());
@@ -27,7 +27,7 @@ VectorMax12d EdgeVertexCandidate::compute_distance_gradient(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
-    const int dim = positions.size() / 3;
+    const int dim = this->dim(positions.size());
     return point_edge_distance_gradient(
         positions.head(dim), positions.segment(dim, dim), positions.tail(dim),
         known_dtype());
@@ -37,7 +37,7 @@ MatrixMax12d EdgeVertexCandidate::compute_distance_hessian(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
-    const int dim = positions.size() / 3;
+    const int dim = this->dim(positions.size());
     return point_edge_distance_hessian(
         positions.head(dim), positions.segment(dim, dim), positions.tail(dim),
         known_dtype());
@@ -67,21 +67,6 @@ bool EdgeVertexCandidate::ccd(
         vertices_t1.segment(dim, dim), vertices_t1.tail(dim), //
         toi, min_distance, tmax, tolerance, max_iterations,
         conservative_rescaling);
-}
-
-std::ostream& EdgeVertexCandidate::write_ccd_query(
-    std::ostream& out,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
-{
-    return out << vertices_t0.row(edges(edge_id, 0)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t0.row(edges(edge_id, 1)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t0.row(vertex_id).format(OBJ_VERTEX_FORMAT)
-               << vertices_t1.row(edges(edge_id, 0)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t1.row(edges(edge_id, 1)).format(OBJ_VERTEX_FORMAT)
-               << vertices_t1.row(vertex_id).format(OBJ_VERTEX_FORMAT);
 }
 
 bool EdgeVertexCandidate::operator==(const EdgeVertexCandidate& other) const

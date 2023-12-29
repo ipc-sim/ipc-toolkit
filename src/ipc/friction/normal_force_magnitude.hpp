@@ -1,20 +1,23 @@
 #pragma once
 
+#include <ipc/barrier/barrier.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
 double compute_normal_force_magnitude(
-    double distance_squared,
-    double dhat,
-    double barrier_stiffness,
-    double dmin = 0);
+    const double distance_squared,
+    const Barrier& barrier,
+    const double dhat,
+    const double barrier_stiffness,
+    const double dmin = 0);
 
 VectorMax12d compute_normal_force_magnitude_gradient(
-    double distance_squared,
+    const double distance_squared,
     const Eigen::VectorXd& distance_squared_gradient,
-    double dhat,
-    double barrier_stiffness,
-    double dmin = 0);
+    const Barrier& barrier,
+    const double dhat,
+    const double barrier_stiffness,
+    const double dmin = 0);
 
 } // namespace ipc

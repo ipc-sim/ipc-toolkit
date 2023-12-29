@@ -5,11 +5,10 @@
 namespace py = pybind11;
 using namespace ipc;
 
-void define_vertex_vertex_constraint(py::module_& m)
+void define_vertex_vertex_collision(py::module_& m)
 {
-    py::class_<
-        VertexVertexConstraint, VertexVertexCandidate, CollisionConstraint>(
-        m, "VertexVertexConstraint")
+    py::class_<VertexVertexCollision, VertexVertexCandidate, Collision>(
+        m, "VertexVertexCollision")
         .def(
             py::init<long, long>(), "", py::arg("vertex0_id"),
             py::arg("vertex1_id"))

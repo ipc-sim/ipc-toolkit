@@ -16,7 +16,7 @@ double
 VertexVertexCandidate::compute_distance(const VectorMax12d& positions) const
 {
     assert(positions.size() == 4 || positions.size() == 6);
-    const int dim = positions.size() / 2;
+    const int dim = this->dim(positions.size());
     return point_point_distance(positions.head(dim), positions.tail(dim));
 }
 
@@ -24,7 +24,7 @@ VectorMax12d VertexVertexCandidate::compute_distance_gradient(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == 4 || positions.size() == 6);
-    const int dim = positions.size() / 2;
+    const int dim = this->dim(positions.size());
     return point_point_distance_gradient(
         positions.head(dim), positions.tail(dim));
 }
@@ -33,7 +33,7 @@ MatrixMax12d VertexVertexCandidate::compute_distance_hessian(
     const VectorMax12d& positions) const
 {
     assert(positions.size() == 4 || positions.size() == 6);
-    const int dim = positions.size() / 2;
+    const int dim = this->dim(positions.size());
     return point_point_distance_hessian(
         positions.head(dim), positions.tail(dim));
 }
@@ -55,19 +55,6 @@ bool VertexVertexCandidate::ccd(
         vertices_t0.head(dim), vertices_t0.tail(dim), vertices_t1.head(dim),
         vertices_t1.tail(dim), toi, min_distance, tmax, tolerance,
         max_iterations, conservative_rescaling);
-}
-
-std::ostream& VertexVertexCandidate::write_ccd_query(
-    std::ostream& out,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
-{
-    return out << vertices_t0.row(vertex0_id).format(OBJ_VERTEX_FORMAT)
-               << vertices_t0.row(vertex1_id).format(OBJ_VERTEX_FORMAT)
-               << vertices_t1.row(vertex0_id).format(OBJ_VERTEX_FORMAT)
-               << vertices_t1.row(vertex1_id).format(OBJ_VERTEX_FORMAT);
 }
 
 bool VertexVertexCandidate::operator==(const VertexVertexCandidate& other) const

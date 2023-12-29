@@ -33,8 +33,8 @@ pybind11_add_module(ipctk
   src/ccd/nonlinear_ccd.cpp
   src/ccd/point_static_plane.cpp
 
-  src/collisions/collision_constraint.cpp
-  src/collisions/collision_constraints.cpp
+  src/collisions/collision.cpp
+  src/collisions/collisions.cpp
   src/collisions/edge_edge.cpp
   src/collisions/edge_vertex.cpp
   src/collisions/face_vertex.cpp
@@ -53,19 +53,22 @@ pybind11_add_module(ipctk
   src/distance/point_triangle.cpp
 
   src/friction/closest_point.cpp
-  src/friction/friction_constraints.cpp
+  src/friction/friction_collisions.cpp
   src/friction/normal_force_magnitude.cpp
   src/friction/relative_velocity.cpp
   src/friction/smooth_friction_mollifier.cpp
   src/friction/tangent_basis.cpp
 
-  src/friction/constraints/edge_edge.cpp
-  src/friction/constraints/edge_vertex.cpp
-  src/friction/constraints/face_vertex.cpp
-  src/friction/constraints/friction_constraint.cpp
-  src/friction/constraints/vertex_vertex.cpp
+  src/friction/collisions/edge_edge.cpp
+  src/friction/collisions/edge_vertex.cpp
+  src/friction/collisions/face_vertex.cpp
+  src/friction/collisions/friction_collision.cpp
+  src/friction/collisions/vertex_vertex.cpp
 
   src/implicits/plane.cpp
+
+  src/potentials/barrier_potential.cpp
+  src/potentials/friction_potential.cpp
 
   src/utils/area_gradient.cpp
   src/utils/eigen_ext.cpp

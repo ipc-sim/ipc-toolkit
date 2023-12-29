@@ -1,4 +1,6 @@
 import numpy as np
+
+import find_ipctk
 import ipctk
 
 

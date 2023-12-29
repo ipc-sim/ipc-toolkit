@@ -35,6 +35,8 @@ Specific
 * element vertices: we use a numeral suffix (e.g., ``e0`` and ``e1`` for the end-points of an edge)
 * edge-edge pairings: suffix of ``a`` and ``b``
 * continuous collision detection pairs: suffix of ``_t0`` for starting values and ``_t1`` for end values
+* favor the term "collision" over "contact" (but this is not a hard rule)
+* we prefer the term "potential" over "constraint" when referring to the collisions and friction
 
 Documentation
 -------------
