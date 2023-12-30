@@ -15,8 +15,8 @@ namespace ipc {
             for (int d = 0; d < dim; d++)
             {
                 p(d) = T(d, positions(d));
-                e0(d) = T(3 + d, positions(3 + d));
-                e1(d) = T(6 + d, positions(6 + d));
+                e0(d) = T(3 + d, positions(dim + d));
+                e1(d) = T(6 + d, positions(2*dim + d));
             }
 
             return std::make_tuple(p, e0, e1);
