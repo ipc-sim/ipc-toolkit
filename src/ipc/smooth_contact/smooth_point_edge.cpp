@@ -129,7 +129,7 @@ namespace ipc {
         const scalar s = pos.dot(tangent) / len;
         const scalar L = (params.a > 0) ? L_s(s, params.a) : L_ns(s);
         const VectorMax3<scalar> sample = e0 + (s - L) * len * tangent;
-        const scalar Phi = intpow((sample - p).dot(tangent), 2);
+        const scalar Phi = intpow((sample - p).normalized().dot(tangent), 2);
         const scalar dist_sqr = intpow(cross2<scalar>(pos, tangent), 2) + intpow(len * L, 2);
 
         if (Phi > params.alpha)

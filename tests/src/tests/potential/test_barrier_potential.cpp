@@ -567,6 +567,93 @@ TEST_CASE(
     CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
 }
 
+TEST_CASE(
+    "Smooth barrier potential real sim",
+    "[potential][barrier_potential][gradient][hessian]")
+{
+    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
+
+    double dhat = -1;
+    std::string mesh_name = "";
+    SECTION("debug")
+    {
+        mesh_name = (tests::DATA_DIR / "nonlinear_solve_iter020.obj").string();
+        dhat = 5e-2;
+    }
+
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXi edges, faces;
+    bool success = igl::readCSV(mesh_name + "-v.csv", vertices);
+    success = success && igl::readCSV(mesh_name + "-e.csv", edges);
+    CAPTURE(mesh_name);
+    REQUIRE(success);
+
+    // std::cout << "\n" <<  vertices << "\n" << edges << "\n";
+
+    CollisionMesh mesh;
+
+    SmoothCollisions collisions;
+    mesh = CollisionMesh(vertices, edges, faces);
+    collisions.build(mesh, vertices, sqrt(dhat), /*dmin=*/0, method);
+    CAPTURE(dhat, method);
+    CHECK(collisions.size() > 0);
+
+    CHECK(!has_intersections(mesh, vertices));
+
+    ParameterType param;
+    param.alpha = 5;
+    param.eps = dhat * dhat;
+    param.r = 1;
+    param.a = 0.1;
+
+    SmoothContactPotential<SmoothCollisions> potential(param);
+    std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
+
+    // -------------------------------------------------------------------------
+    // Gradient
+    // -------------------------------------------------------------------------
+
+    const Eigen::VectorXd grad_b =
+        potential.gradient(collisions, mesh, vertices);
+
+    // Compute the gradient using finite differences
+    Eigen::VectorXd fgrad_b;
+    {
+        auto f = [&](const Eigen::VectorXd& x) {
+            return potential(
+                collisions, mesh, fd::unflatten(x, vertices.cols()));
+        };
+        fd::finite_gradient(fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-7);
+    }
+
+    REQUIRE(grad_b.squaredNorm() > 1e-8);
+    std::cout << "grad relative error " << (grad_b - fgrad_b).norm() / grad_b.norm() << "\n";
+    CHECK((grad_b - fgrad_b).norm() < 1e-7 * grad_b.norm());
+    // CHECK(fd::compare_gradient(grad_b, fgrad_b));
+
+    // -------------------------------------------------------------------------
+    // Hessian
+    // -------------------------------------------------------------------------
+
+    Eigen::MatrixXd hess_b =
+        potential.hessian(collisions, mesh, vertices);
+
+    // Compute the gradient using finite differences
+    Eigen::MatrixXd fhess_b;
+    {
+        auto f = [&](const Eigen::VectorXd& x) {
+            return potential.gradient(
+                collisions, mesh, fd::unflatten(x, vertices.cols()));
+        };
+        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-7);
+    }
+
+    REQUIRE(hess_b.squaredNorm() > 1e-3);
+    std::cout << "hess relative error " << (hess_b - fhess_b).norm() / hess_b.norm() << "\n";
+    CHECK((hess_b - fhess_b).norm() < 1e-7 * hess_b.norm());
+    // CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
+}
+
 // -- Benchmarking ------------------------------------------------------------
 
 TEST_CASE(
