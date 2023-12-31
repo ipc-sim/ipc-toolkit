@@ -536,7 +536,7 @@ TEST_CASE(
             return potential(
                 collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
-        fd::finite_gradient(fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-5);
+        fd::finite_gradient(fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-6);
     }
 
     REQUIRE(grad_b.squaredNorm() > 1e-8);
@@ -559,7 +559,7 @@ TEST_CASE(
             return potential.gradient(
                 collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
-        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-5);
+        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-6);
     }
 
     REQUIRE(hess_b.squaredNorm() > 1e-3);
