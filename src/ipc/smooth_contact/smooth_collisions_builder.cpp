@@ -105,10 +105,9 @@ void SmoothCollisionsBuilder::add_edge_edge_collisions(
         add_edge_vertex_collision(ebi, ea0i, weight, weight_gradient);
         add_edge_vertex_collision(ebi, ea1i, weight, weight_gradient);
 
-        ee_collisions.emplace_back(
-            eai, ebi, eps_x, weight, weight_gradient, actual_dtype);
-        ee_to_id.emplace(ee_collisions.back(), ee_collisions.size() - 1);
-        break;
+        add_edge_edge_collision(SmoothEdgeEdgeCollision(
+                            eai, ebi, eps_x, weight, weight_gradient, actual_dtype),
+                            ee_to_id, ee_collisions);
     }
 }
 

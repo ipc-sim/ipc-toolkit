@@ -19,6 +19,8 @@ public:
         const VectorMax12d& positions, 
         const ParameterType &params,
         const bool project_hessian_to_psd = false) const override;
+
+    bool is_mollified() const override { return false; }
 };
 
 }

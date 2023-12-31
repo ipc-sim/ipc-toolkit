@@ -31,7 +31,7 @@ namespace ipc {
     {
         const int dim = positions.size() / num_vertices();
         assert(dim * num_vertices() == positions.size());
-        return val = smooth_point_edge_potential_single_point<double>(positions.segment(0, dim), positions.segment(dim, dim), positions.segment(dim * 2, dim), params);
+        return smooth_point_edge_potential_single_point<double>(positions.segment(0, dim), positions.segment(dim, dim), positions.segment(dim * 2, dim), params);
     }
 
     VectorMax12d SmoothEdgeVertexCollision::gradient(
