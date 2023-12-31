@@ -27,8 +27,9 @@ void SmoothCollisionsBuilder::add_edge_vertex_collisions(
         if (!is_active(distance_sqr))
             continue;
 
-        const double weight = 1;
+        const double weight = mesh.vertex_area(vi) / 2;
         Eigen::SparseVector<double> weight_gradient;
+        assert(!should_compute_weight_gradient);
 
         add_edge_vertex_collision(
             mesh, candidates[i], dtype, weight, weight_gradient);
