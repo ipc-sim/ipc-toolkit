@@ -475,4 +475,17 @@ Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
     return faces_to_edges;
 }
 
+double CollisionMesh::edge_length(const int &edge_id) const
+{
+    return (m_rest_positions.row(m_edges(edge_id, 0)) - m_rest_positions.row(m_edges(edge_id, 1))).norm();
+}
+
+double CollisionMesh::max_edge_length() const
+{
+    double val = 0;
+    for (int i = 0; i < m_edges.rows(); i++)
+        val = std::max(edge_length(i), val);
+    return val;
+}
+
 } // namespace ipc

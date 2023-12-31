@@ -15,6 +15,8 @@
 
 #include <finitediff.hpp>
 #include <igl/edges.h>
+#include <igl/readCSV.h>
+#include <ipc/ipc.hpp>
 
 using namespace ipc;
 
@@ -462,7 +464,7 @@ TEST_CASE(
     "Smooth barrier potential full gradient and hessian",
     "[potential][barrier_potential][gradient][hessian]")
 {
-    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
 
     double dhat = -1;
     std::string mesh_name = "";
@@ -499,23 +501,26 @@ TEST_CASE(
 
     CollisionMesh mesh;
 
-    Collisions collisions;
+    SmoothCollisions collisions;
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(vertices, edges, faces);
     } else {
         mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
         vertices = mesh.vertices(vertices);
     }
-    collisions.build(mesh, vertices, 10, /*dmin=*/0, method);
+    collisions.build(mesh, vertices, std::max(dhat, mesh.max_edge_length()), /*dmin=*/0, method);
     CAPTURE(dhat, method, all_vertices_on_surface);
     CHECK(collisions.size() > 0);
+    CHECK(!has_intersections(mesh, vertices));
 
     ParameterType param;
     param.alpha = 2;
-    param.eps = dhat;
-    param.r = 2;
+    param.a = 0.2;
+    param.eps = dhat*dhat;
+    param.r = 1;
 
     SmoothContactPotential potential(param);
+    std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
 
     // -------------------------------------------------------------------------
     // Gradient

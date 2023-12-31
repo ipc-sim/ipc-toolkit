@@ -6,25 +6,39 @@
 
 namespace ipc {
     template <typename scalar>
+    scalar intpow(const scalar &x, int p)
+    {
+        assert(p >= 0);
+        if (p == 0)
+            return scalar(1.);
+        
+        scalar out = x;
+        while (p-- > 1)
+            out = out * x;
+        
+        return out;
+    }
+    
+    template <typename scalar>
     scalar cubic_spline(const scalar &x)
     {
         if (x <= -2)
             return scalar(0.);
         if (x <= -1)
-            return (x + 2)*(x + 2)*(x + 2) / 6;
+            return intpow(x + 2, 3) / 6;
         if (x <= 0)
-            return 2. / 3 - x * x * (1 + x / 2);
+            return 2. / 3 - intpow(x, 2) * (1 + x / 2);
         if (x <= 1)
-            return 2. / 3 - x * x * (1 - x / 2);
+            return 2. / 3 - intpow(x, 2) * (1 - x / 2);
         if (x < 2)
-            return -(x - 2)*(x - 2)*(x - 2) / 6;
+            return -intpow(x - 2, 3) / 6;
         return scalar(0.);
     }
 
     template <typename scalar>
-    scalar inv_barrier(const scalar &x, const double eps, const double r)
+    scalar inv_barrier(const scalar &x, const double &eps, const double &r)
     {
-        return cubic_spline(2 * x / eps) / pow(sqrt(x*x), r);
+        return cubic_spline((2 / eps) * x) / pow(x, r / 2.);
     }
 
     template <typename scalar>
@@ -38,20 +52,19 @@ namespace ipc {
     }
 
     template <typename scalar>
-    scalar L_s(const scalar &x, int power)
+    scalar L_s(const scalar &x, const double &a)
     {
-        return pow(L_ns(x), power);
-    }
-
-    template <typename scalar>
-    scalar pow(const scalar &x, int p)
-    {
-        assert(p >= 1);
-        scalar out = x;
-        while (p-- > 1)
-            out = out * x;
+        if (x < -a)
+            return x;
+        if (x < 0)
+            return -intpow(x / a, 2) * (2 * a + x);
+        if (x < 1)
+            return scalar(0.);
         
-        return out;
+        const scalar z = x - 1;
+        if (z < a)
+            return intpow(z / a, 2) * (2 * a - z);
+        return z;
     }
 
     template <typename scalar>

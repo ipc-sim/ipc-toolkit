@@ -111,6 +111,9 @@ public:
     /// @brief Get the mapping from faces to edges of the collision mesh (#F × 3).
     const Eigen::MatrixXi& faces_to_edges() const { return m_faces_to_edges; }
 
+    double edge_length(const int &edge_id) const;
+    double max_edge_length() const;
+
     // const std::vector<std::vector<int>>& vertices_to_edges() const
     // {
     //     return m_vertices_to_edges;

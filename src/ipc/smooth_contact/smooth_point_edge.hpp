@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/distance/distance_type.hpp>
+#include <ipc/collisions/collision.hpp>
 
 namespace ipc {
 
@@ -17,8 +18,7 @@ namespace ipc {
         const Eigen::Ref<const VectorMax3<scalar>>& e0,
         const Eigen::Ref<const VectorMax3<scalar>>& e1,
         const double &uv,
-        const double &dhat,
-        const double &alpha);
+        const ParameterType &params);
 
     /// @brief Compute potential for a point p and an edge [e0, e1], integrated over the edge with high order quadrature
     template <typename scalar>
@@ -26,8 +26,7 @@ namespace ipc {
         const Eigen::Ref<const VectorMax3<scalar>>& p,
         const Eigen::Ref<const VectorMax3<scalar>>& e0,
         const Eigen::Ref<const VectorMax3<scalar>>& e1,
-        const double &dhat,
-        const double &alpha,
+        const ParameterType &params,
         const int &N);
 
     /// @brief Compute potential for a list of points and an edge [e0, e1], integrated over the edge with high order quadrature
@@ -36,8 +35,7 @@ namespace ipc {
         const Eigen::Ref<Eigen::Matrix<scalar, -1, -1, Eigen::RowMajor, -1, 3>>& points,
         const Eigen::Ref<const VectorMax3<scalar>>& e0,
         const Eigen::Ref<const VectorMax3<scalar>>& e1,
-        const double &dhat,
-        const double &alpha,
+        const ParameterType &params,
         const int &N);
 
     /// @brief Compute potential for a point p and an edge [e0, e1], using the smooth closest point
@@ -46,7 +44,5 @@ namespace ipc {
         const Eigen::Ref<const VectorMax3<scalar>>& p,
         const Eigen::Ref<const VectorMax3<scalar>>& e0,
         const Eigen::Ref<const VectorMax3<scalar>>& e1,
-        const double &dhat,
-        const double &alpha,
-        const double &r);
+        const ParameterType &params);
 }

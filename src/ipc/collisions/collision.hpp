@@ -13,6 +13,7 @@ struct ParameterType
 {
     double eps;
     double alpha;
+    double a;
     double r;
 };
 

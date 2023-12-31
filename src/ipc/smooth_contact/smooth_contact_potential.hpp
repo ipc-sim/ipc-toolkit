@@ -1,12 +1,12 @@
 #pragma once
 
 #include <ipc/potentials/potential.hpp>
-#include <ipc/collisions/collisions.hpp>
+#include <ipc/smooth_contact/smooth_collisions.hpp>
 
 namespace ipc {
 
-class SmoothContactPotential : public Potential<Collisions> {
-    using Super = Potential<Collisions>;
+class SmoothContactPotential : public Potential<SmoothCollisions> {
+    using Super = Potential<SmoothCollisions>;
 
 public:
     SmoothContactPotential(ParameterType &_params) : params(_params) { }

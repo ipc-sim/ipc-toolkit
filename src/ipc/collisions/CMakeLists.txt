@@ -7,7 +7,7 @@ set(SOURCES
   collisions.hpp
   edge_edge.cpp
   edge_edge.hpp
-  edge_vertex.cpp
+  # edge_vertex.cpp
   edge_vertex.hpp
   # face_vertex.cpp
   face_vertex.hpp

@@ -7,13 +7,13 @@ namespace ipc {
 double SmoothContactPotential::operator()(
     const Collision& collision, const VectorMax12d& positions) const
 {
-    return collision(positions, params);
+    return collision.weight * collision(positions, params);
 }
 
 VectorMax12d SmoothContactPotential::gradient(
     const Collision& collision, const VectorMax12d& positions) const
 {
-    return collision.gradient(positions, params);
+    return collision.weight * collision.gradient(positions, params);
 }
 
 MatrixMax12d SmoothContactPotential::hessian(
@@ -21,7 +21,7 @@ MatrixMax12d SmoothContactPotential::hessian(
     const VectorMax12d& positions,
     const bool project_hessian_to_psd) const
 {
-    return collision.hessian(positions, params, project_hessian_to_psd);
+    return collision.weight * collision.hessian(positions, params, project_hessian_to_psd);
 }
 
 } // namespace ipc
