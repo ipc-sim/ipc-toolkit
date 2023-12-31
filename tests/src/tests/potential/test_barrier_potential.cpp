@@ -513,11 +513,7 @@ TEST_CASE(
     CHECK(collisions.size() > 0);
     CHECK(!has_intersections(mesh, vertices));
 
-    ParameterType param;
-    param.alpha = 2;
-    param.a = 0.2;
-    param.eps = dhat*dhat;
-    param.r = 1;
+    ParameterType param(dhat*dhat, 2, 0.2, 1);
 
     SmoothContactPotential<SmoothCollisions> potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
@@ -600,11 +596,7 @@ TEST_CASE(
 
     CHECK(!has_intersections(mesh, vertices));
 
-    ParameterType param;
-    param.alpha = 5;
-    param.eps = dhat * dhat;
-    param.r = 1;
-    param.a = 0.1;
+    ParameterType param(dhat*dhat, 5, 0.1, 1);
 
     SmoothContactPotential<SmoothCollisions> potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";

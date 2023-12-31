@@ -11,6 +11,15 @@ namespace ipc {
 
 struct ParameterType
 {
+    ParameterType(const double &_eps, const double &_alpha, const double &_a, const double &_r) : eps(_eps), alpha(_alpha), a(_a), r(_r) 
+    {
+        assert(r > 0);
+        assert(a >= 0);
+        assert(eps > 0);
+        assert(alpha > 0);
+    }
+    ParameterType() = delete;
+
     double eps;
     double alpha;
     double a;
