@@ -519,7 +519,7 @@ TEST_CASE(
     param.eps = dhat*dhat;
     param.r = 1;
 
-    SmoothContactPotential potential(param);
+    SmoothContactPotential<SmoothCollisions> potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
 
     // -------------------------------------------------------------------------

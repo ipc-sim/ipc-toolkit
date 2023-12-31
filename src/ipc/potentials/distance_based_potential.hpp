@@ -6,8 +6,8 @@
 namespace ipc {
 
 /// @brief Base class for distance-based potentials.
-class DistanceBasedPotential : public Potential<Collisions> {
-    using Super = Potential<Collisions>;
+class DistanceBasedPotential : public Potential<VirtualCollisions> {
+    using Super = Potential<VirtualCollisions>;
 
 public:
     DistanceBasedPotential() { }
@@ -28,7 +28,7 @@ public:
     /// @throws std::runtime_error If the collision collisions were not built with shape derivatives enabled.
     /// @returns The derivative of the force with respect to X, the rest vertices.
     Eigen::SparseMatrix<double> shape_derivative(
-        const Collisions& collisions,
+        const VirtualCollisions& collisions,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices) const;
 

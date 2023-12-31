@@ -5,12 +5,12 @@
 
 namespace ipc {
 
-class SmoothContactPotential : public Potential<SmoothCollisions> {
-    using Super = Potential<SmoothCollisions>;
+template <class TCollisions>
+class SmoothContactPotential : public Potential<TCollisions> {
+    using Super = Potential<TCollisions>;
 
 public:
     SmoothContactPotential(ParameterType &_params) : params(_params) { }
-    virtual ~SmoothContactPotential() { }
 
     // -- Cumulative methods ---------------------------------------------------
 

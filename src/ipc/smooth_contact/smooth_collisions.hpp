@@ -1,27 +1,18 @@
 #pragma once
 
-#include <ipc/collision_mesh.hpp>
-#include <ipc/collisions/collision.hpp>
+#include <ipc/collisions/collisions.hpp>
 #include "edge_vertex.hpp"
 #include "edge_edge.hpp"
-// #include <ipc/collisions/face_vertex.hpp>
-// #include <ipc/collisions/plane_vertex.hpp>
-#include <ipc/broad_phase/broad_phase.hpp>
-#include <ipc/candidates/candidates.hpp>
-
-#include <Eigen/Core>
-
-#include <vector>
 
 namespace ipc {
 
-class SmoothCollisions {
+class SmoothCollisions : public VirtualCollisions {
 public:
     /// @brief The type of the collisions.
     using value_type = Collision;
 
 public:
-    SmoothCollisions() { }
+    SmoothCollisions() = default;
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param mesh The collision mesh.
@@ -34,7 +25,7 @@ public:
         const Eigen::MatrixXd& vertices,
         const double dhat,
         const double dmin = 0,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
+        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD) override;
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param candidates Distance candidates from which the collision set is built.
@@ -47,7 +38,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const double dhat,
-        const double dmin = 0);
+        const double dmin = 0) override;
 
     // ------------------------------------------------------------------------
 
@@ -56,28 +47,28 @@ public:
     /// @param vertices Vertices of the collision mesh.
     /// @returns The minimum distance between any non-adjacent elements.
     double compute_minimum_distance(
-        const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
+        const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const override;
 
     // ------------------------------------------------------------------------
 
     /// @brief Get the number of collisions.
-    size_t size() const;
+    size_t size() const override;
 
     /// @brief Get if the collision set are empty.
-    bool empty() const;
+    bool empty() const override;
 
     /// @brief Clear the collision set.
-    void clear();
+    void clear() override;
 
     /// @brief Get a reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A reference to the collision.
-    Collision& operator[](size_t i);
+    Collision& operator[](size_t i) override;
 
     /// @brief Get a const reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A const reference to the collision.
-    const Collision& operator[](size_t i) const;
+    const Collision& operator[](size_t i) const override;
 
     /// @brief Get if the collision at i is a vertex-vertex collision.
     /// @param i The index of the collision.
@@ -106,6 +97,17 @@ public:
 
     std::string
     to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
+
+    void set_use_convergent_formulation(
+        const bool use_convergent_formulation) override
+    {
+        logger().error("Smooth contact formulation doesn't have convergent version!");
+    }
+
+    void set_are_shape_derivatives_enabled(const bool are_shape_derivatives_enabled) override
+    {
+        logger().error("Smooth contact formulation doesn't have shape derivatives implemented!");
+    }
 
 public:
     // std::vector<SmoothVertexVertexCollision> vv_collisions;

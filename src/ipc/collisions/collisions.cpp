@@ -296,32 +296,6 @@ void Collisions::build(
     }
 }
 
-void Collisions::set_use_convergent_formulation(
-    const bool use_convergent_formulation)
-{
-    if (!empty()
-        && use_convergent_formulation != m_use_convergent_formulation) {
-        logger().warn(
-            "Setting use_convergent_formulation after building collisions. "
-            "Re-build collisions for this to have an effect.");
-    }
-
-    m_use_convergent_formulation = use_convergent_formulation;
-}
-
-void Collisions::set_are_shape_derivatives_enabled(
-    const bool are_shape_derivatives_enabled)
-{
-    if (!empty()
-        && are_shape_derivatives_enabled != m_are_shape_derivatives_enabled) {
-        logger().warn(
-            "Setting enable_shape_derivatives after building collisions. "
-            "Re-build collisions for this to have an effect.");
-    }
-
-    m_are_shape_derivatives_enabled = are_shape_derivatives_enabled;
-}
-
 // ============================================================================
 
 // NOTE: Actually distance squared
