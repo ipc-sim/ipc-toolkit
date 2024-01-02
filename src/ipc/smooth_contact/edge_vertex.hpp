@@ -7,6 +7,11 @@ class SmoothEdgeVertexCollision : public EdgeVertexCollision {
 public:
     using EdgeVertexCollision::EdgeVertexCollision;
 
+    PointEdgeDistanceType known_dtype() const override
+    {
+        return PointEdgeDistanceType::AUTO;
+    }
+
     double operator()(const VectorMax12d& positions, 
         const ParameterType &params) const override;
 
