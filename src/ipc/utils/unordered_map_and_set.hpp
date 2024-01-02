@@ -15,20 +15,21 @@ template <class T> struct Hash {
     Hash() = default;
     Hash(size_t h) : hash(h) {};
 
-    template <typename Value> static Hash&& combine(const Hash&& h, Value value)
+    template <typename Value>
+    static Hash combine(const Hash& h, const Value value)
     {
         if constexpr (std::is_default_constructible<std::hash<Value>>::value) {
             std::hash<Value> hash;
-            return std::move(Hash(
+            return Hash(
                 h.hash
-                ^ (hash(value) + 0x9e3779b9 + (h.hash << 6) + (h.hash >> 2))));
+                ^ (hash(value) + 0x9e3779b9 + (h.hash << 6) + (h.hash >> 2)));
         } else {
-            return std::move(AbslHashValue(h, value));
+            return AbslHashValue(h, value);
         }
     }
 
     template <class First, class... Rest>
-    static Hash&& combine(const Hash&& h, First first, Rest... rest)
+    static Hash combine(const Hash& h, const First first, const Rest... rest)
     {
         if constexpr (sizeof...(Rest) == 0) {
             return Hash::combine<First>(std::move(h), first);
