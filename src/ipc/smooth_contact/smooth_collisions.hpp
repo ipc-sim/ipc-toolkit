@@ -42,15 +42,6 @@ public:
 
     // ------------------------------------------------------------------------
 
-    /// @brief Computes the minimum distance between any non-adjacent elements.
-    /// @param mesh The collision mesh.
-    /// @param vertices Vertices of the collision mesh.
-    /// @returns The minimum distance between any non-adjacent elements.
-    double compute_minimum_distance(
-        const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const override;
-
-    // ------------------------------------------------------------------------
-
     /// @brief Get the number of collisions.
     size_t size() const override;
 

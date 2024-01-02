@@ -299,7 +299,7 @@ void Collisions::build(
 // ============================================================================
 
 // NOTE: Actually distance squared
-double Collisions::compute_minimum_distance(
+double VirtualCollisions::compute_minimum_distance(
     const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());

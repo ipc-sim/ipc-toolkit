@@ -83,42 +83,6 @@ void SmoothCollisions::build(
 
 // ============================================================================
 
-// NOTE: Actually distance squared
-double SmoothCollisions::compute_minimum_distance(
-    const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
-{
-    assert(vertices.rows() == mesh.num_vertices());
-
-    if (empty()) {
-        return std::numeric_limits<double>::infinity();
-    }
-
-    const Eigen::MatrixXi& edges = mesh.edges();
-    const Eigen::MatrixXi& faces = mesh.faces();
-
-    tbb::enumerable_thread_specific<double> storage(
-        std::numeric_limits<double>::infinity());
-
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, size()),
-        [&](tbb::blocked_range<size_t> r) {
-            double& local_min_dist = storage.local();
-
-            for (size_t i = r.begin(); i < r.end(); i++) {
-                const double dist = (*this)[i].compute_distance(
-                    (*this)[i].dof(vertices, edges, faces));
-
-                if (dist < local_min_dist) {
-                    local_min_dist = dist;
-                }
-            }
-        });
-
-    return storage.combine([](double a, double b) { return std::min(a, b); });
-}
-
-// ============================================================================
-
 size_t SmoothCollisions::size() const
 {
     return ev_collisions.size();
