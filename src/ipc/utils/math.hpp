@@ -38,7 +38,7 @@ namespace ipc {
     template <typename scalar>
     scalar inv_barrier(const scalar &x, const double &eps, const double &r)
     {
-        return cubic_spline((2 / eps) * x) / pow(x*x, r / 2);
+        return cubic_spline((2 / eps) * x) / pow(intpow(x/eps, 2), r / 2);
     }
 
     template <typename scalar>
