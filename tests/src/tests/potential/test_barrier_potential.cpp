@@ -513,7 +513,7 @@ TEST_CASE(
     CHECK(collisions.size() > 0);
     CHECK(!has_intersections(mesh, vertices));
 
-    ParameterType param(dhat*dhat, 2, 0.2, 1);
+    ParameterType param(dhat*dhat, 2, 0.2, 1, 5);
 
     SmoothContactPotential<SmoothCollisions> potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
@@ -569,12 +569,14 @@ TEST_CASE(
 {
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
 
+    const auto quad_type = GENERATE(SurfaceQuadratureType::UniformSampling, SurfaceQuadratureType::SinglePoint);
+
     double dhat = -1;
     std::string mesh_name = "";
     SECTION("debug")
     {
         mesh_name = (tests::DATA_DIR / "nonlinear_solve_iter020.obj").string();
-        dhat = 5e-2;
+        dhat = 2e-2;
     }
 
     Eigen::MatrixXd vertices;
@@ -589,14 +591,23 @@ TEST_CASE(
     CollisionMesh mesh;
 
     SmoothCollisions collisions;
+    collisions.set_edge_quadrature_type(quad_type);
     mesh = CollisionMesh(vertices, edges, faces);
-    collisions.build(mesh, vertices, sqrt(dhat), /*dmin=*/0, method);
+    collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
     CAPTURE(dhat, method);
     CHECK(collisions.size() > 0);
+    std::cout << "smooth collision candidate size " << collisions.size() << "\n";
 
     CHECK(!has_intersections(mesh, vertices));
 
-    ParameterType param(dhat*dhat, 5, 0.1, 1);
+    {
+        Collisions collisions_tmp;
+        collisions_tmp.set_use_convergent_formulation(true);
+        collisions_tmp.build(mesh, vertices, dhat, /*dmin=*/0, method);
+        std::cout << "convergent ipc candidate size " << collisions_tmp.size() << "\n";
+    }
+
+    ParameterType param(dhat*dhat, 5, 0.1, 1, 5);
 
     SmoothContactPotential<SmoothCollisions> potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";

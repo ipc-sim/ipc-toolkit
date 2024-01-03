@@ -1,7 +1,7 @@
 
 
 #include "edge_edge.hpp"
-
+#include "point_edge.hpp"
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/line_line.hpp>
@@ -9,6 +9,19 @@
 #include <stdexcept> // std::invalid_argument
 
 namespace ipc {
+
+double edge_edge_distance_2d(
+    const Eigen::Ref<const Eigen::Vector2d>& ea0,
+    const Eigen::Ref<const Eigen::Vector2d>& ea1,
+    const Eigen::Ref<const Eigen::Vector2d>& eb0,
+    const Eigen::Ref<const Eigen::Vector2d>& eb1,
+    EdgeEdgeDistanceType dtype)
+{
+    return std::min({point_edge_distance(ea0, eb0, eb1),
+                     point_edge_distance(ea0, eb0, eb1),
+                     point_edge_distance(eb0, ea0, ea1),
+                     point_edge_distance(eb1, ea0, ea1)});
+}
 
 double edge_edge_distance(
     const Eigen::Ref<const Eigen::Vector3d>& ea0,

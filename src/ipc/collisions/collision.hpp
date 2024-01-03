@@ -11,12 +11,14 @@ namespace ipc {
 
 struct ParameterType
 {
-    ParameterType(const double &_eps, const double &_alpha, const double &_a, const double &_r) : eps(_eps), alpha(_alpha), a(_a), r(_r) 
+    ParameterType(const double &_eps, const double &_alpha, const double &_a, const double &_r, const int &_n_quadrature) : 
+    eps(_eps), alpha(_alpha), a(_a), r(_r), n_quadrature(_n_quadrature) 
     {
         assert(r > 0);
         assert(a >= 0);
         assert(eps > 0);
         assert(alpha > 0);
+        assert(n_quadrature > 0);
     }
     ParameterType() = delete;
 
@@ -24,6 +26,13 @@ struct ParameterType
     double alpha;
     double a;
     double r;
+    int n_quadrature;
+};
+
+enum class SurfaceQuadratureType
+{
+    SinglePoint,
+    UniformSampling
 };
 
 class Collision : virtual public CollisionStencil {

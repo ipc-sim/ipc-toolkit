@@ -1,5 +1,3 @@
-#include <igl/Timer.h>
-
 #include "edge_vertex.hpp"
 #include "smooth_point_edge.hpp"
 #include <ipc/utils/AutodiffTypes.hpp>
@@ -8,7 +6,7 @@ DECLARE_DIFFSCALAR_BASE();
 namespace ipc {
     namespace {
         template <class T>
-        std::tuple<VectorMax3<T>, VectorMax3<T>, VectorMax3<T>> slice_positions(const VectorMax12d &positions, const int &dim)
+        std::array<VectorMax3<T>, 3> slice_positions(const VectorMax12d &positions, const int &dim)
         {
             VectorMax3<T> p, e0, e1;
             p.setZero(dim);
@@ -21,7 +19,7 @@ namespace ipc {
                 e1(d) = T(2*dim + d, positions(2*dim + d));
             }
 
-            return std::make_tuple(p, e0, e1);
+            return {{p, e0, e1}};
         }
     }
 

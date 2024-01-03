@@ -48,17 +48,43 @@ void BroadPhase::clear()
     face_boxes.clear();
 }
 
+void BroadPhase::detect_collision_candidates(Candidates& candidates, const CandidateType &candidate_type) const
+{
+    switch (candidate_type)
+    {
+    case CandidateType::EdgeVertex:
+        detect_edge_vertex_candidates(candidates.ev_candidates);
+        break;
+    case CandidateType::EdgeEdge:
+        detect_edge_edge_candidates(candidates.ee_candidates);
+        break;
+    case CandidateType::FaceVertex:
+        detect_face_vertex_candidates(candidates.fv_candidates);
+        break;
+    default:
+        assert(false);
+    }
+}
+
 void BroadPhase::detect_collision_candidates(
-    int dim, Candidates& candidates) const
+    int dim, Candidates& candidates, const std::vector<CandidateType> &candidate_types) const
 {
     candidates.clear();
-    if (dim == 2) {
-        // This is not needed for 3D
-        detect_edge_vertex_candidates(candidates.ev_candidates);
-    } else {
-        // These are not needed for 2D
-        detect_edge_edge_candidates(candidates.ee_candidates);
-        detect_face_vertex_candidates(candidates.fv_candidates);
+    if (candidate_types.empty())
+    {
+        if (dim == 2) {
+            // This is not needed for 3D
+            detect_edge_vertex_candidates(candidates.ev_candidates);
+        } else {
+            // These are not needed for 2D
+            detect_edge_edge_candidates(candidates.ee_candidates);
+            detect_face_vertex_candidates(candidates.fv_candidates);
+        }
+    }
+    else
+    {
+        for (const auto &type : candidate_types)
+            detect_collision_candidates(candidates, type);
     }
 }
 

@@ -14,7 +14,7 @@ namespace ipc {
 
 class Candidates {
 public:
-    Candidates() { }
+    Candidates(const std::vector<CandidateType> &_candidate_types = {}) : candidate_types(_candidate_types) { }
 
     /// @brief Initialize the set of discrete collision detection candidates.
     /// @param mesh The surface of the collision mesh.
@@ -122,6 +122,9 @@ public:
     std::vector<EdgeVertexCandidate> ev_candidates;
     std::vector<EdgeEdgeCandidate> ee_candidates;
     std::vector<FaceVertexCandidate> fv_candidates;
+
+private:
+    const std::vector<CandidateType> candidate_types;
 };
 
 } // namespace ipc

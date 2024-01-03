@@ -12,6 +12,12 @@
 
 namespace ipc {
 
+enum class CandidateType {
+    EdgeVertex,
+    EdgeEdge,
+    FaceVertex
+};
+
 /// Enumeration of implemented broad phase methods.
 enum class BroadPhaseMethod {
     BRUTE_FORCE = 0,
@@ -89,12 +95,14 @@ public:
     /// @param[out] candidates The candidate edge-face intersections.
     virtual void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const = 0;
+    
+    void detect_collision_candidates(Candidates& candidates, const CandidateType &candidate_type) const;
 
     /// @brief Detect all collision candidates needed for a given dimensional simulation.
     /// @param dim The dimension of the simulation (i.e., 2 or 3).
     /// @param candidates The detected collision candidates.
     virtual void
-    detect_collision_candidates(int dim, Candidates& candidates) const;
+    detect_collision_candidates(int dim, Candidates& candidates, const std::vector<CandidateType> &candidate_types) const;
 
     /// @brief Function for determining if two vertices can collide.
     std::function<bool(size_t, size_t)> can_vertices_collide =

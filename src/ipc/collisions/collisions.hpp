@@ -111,9 +111,13 @@ public:
         m_are_shape_derivatives_enabled = are_shape_derivatives_enabled;
     }
 
+    void set_edge_quadrature_type(const SurfaceQuadratureType type) { quad_type = type; }
+    SurfaceQuadratureType get_edge_quadrature_type() const { return quad_type; }
+
 protected:
     bool m_use_convergent_formulation = false;
     bool m_are_shape_derivatives_enabled = false;
+    SurfaceQuadratureType quad_type = SurfaceQuadratureType::SinglePoint;
 };
 
 class Collisions : public VirtualCollisions {

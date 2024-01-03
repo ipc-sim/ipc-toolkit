@@ -29,7 +29,6 @@ void SmoothCollisionsBuilder::add_edge_vertex_collisions(
 
         const double weight = mesh.vertex_area(vi) / 2;
         Eigen::SparseVector<double> weight_gradient;
-        assert(!should_compute_weight_gradient);
 
         add_edge_vertex_collision(
             mesh, candidates[i], dtype, weight, weight_gradient);
@@ -73,7 +72,8 @@ void SmoothCollisionsBuilder::add_edge_edge_collisions(
     const std::vector<EdgeEdgeCandidate>& candidates,
     const std::function<bool(double)>& is_active,
     const size_t start_i,
-    const size_t end_i)
+    const size_t end_i,
+    const SurfaceQuadratureType quad_type)
 {
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [eai, ebi] = candidates[i];
@@ -84,31 +84,31 @@ void SmoothCollisionsBuilder::add_edge_edge_collisions(
         const auto [ea0, ea1, eb0, eb1] =
             candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
 
-        const EdgeEdgeDistanceType actual_dtype =
-            edge_edge_distance_type(ea0, ea1, eb0, eb1);
-
         const double distance_sqr =
-            edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype);
+            mesh.dim() == 2 ? edge_edge_distance_2d(ea0, ea1, eb0, eb1) : edge_edge_distance(ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::AUTO);
 
         if (!is_active(distance_sqr))
             continue;
 
-        const double eps_x = edge_edge_mollifier_threshold(
+        const double eps_x = mesh.dim() == 2 ? 0 : edge_edge_mollifier_threshold(
             mesh.rest_positions().row(ea0i), mesh.rest_positions().row(ea1i),
             mesh.rest_positions().row(eb0i), mesh.rest_positions().row(eb1i));
 
         const double weight = 1;
         Eigen::SparseVector<double> weight_gradient;
 
-        add_edge_vertex_collision(eai, eb0i, weight, weight_gradient);
-        add_edge_vertex_collision(eai, eb1i, weight, weight_gradient);
+        if (mesh.dim() == 2 && quad_type == SurfaceQuadratureType::SinglePoint)
+        {
+            add_edge_vertex_collision(eai, eb0i, mesh.vertex_area(eb0i) / 2, weight_gradient);
+            add_edge_vertex_collision(eai, eb1i, mesh.vertex_area(eb1i) / 2, weight_gradient);
 
-        add_edge_vertex_collision(ebi, ea0i, weight, weight_gradient);
-        add_edge_vertex_collision(ebi, ea1i, weight, weight_gradient);
-
-        add_edge_edge_collision(SmoothEdgeEdgeCollision(
-                            eai, ebi, eps_x, weight, weight_gradient, actual_dtype),
-                            ee_to_id, ee_collisions);
+            add_edge_vertex_collision(ebi, ea0i, mesh.vertex_area(ea0i) / 2, weight_gradient);
+            add_edge_vertex_collision(ebi, ea1i, mesh.vertex_area(ea1i) / 2, weight_gradient);
+        }
+        else
+            add_edge_edge_collision(SmoothEdgeEdgeCollision(
+                                eai, ebi, eps_x, weight, weight_gradient, EdgeEdgeDistanceType::AUTO),
+                                ee_to_id, ee_collisions);
     }
 }
 

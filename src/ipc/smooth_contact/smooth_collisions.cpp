@@ -27,7 +27,26 @@ void SmoothCollisions::build(
 
     double inflation_radius = (dhat + dmin) / 2;
 
-    Candidates candidates;
+    std::vector<CandidateType> types;
+    if (mesh.dim() == 2)
+    {
+        if (quad_type == SurfaceQuadratureType::SinglePoint)
+            types = {CandidateType::EdgeVertex};
+        else
+            types = {CandidateType::EdgeEdge};
+    }
+    else
+    {
+        if (quad_type == SurfaceQuadratureType::SinglePoint)
+            types = {CandidateType::FaceVertex, CandidateType::EdgeEdge};
+        else
+        {
+            logger().error("3D surface quadrature type is not implemented!");
+            types = {CandidateType::FaceVertex, CandidateType::EdgeEdge};
+        }
+    }
+
+    Candidates candidates(types);
     candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
 
     this->build(candidates, mesh, vertices, dhat, dmin);
@@ -66,7 +85,7 @@ void SmoothCollisions::build(
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_edge_edge_collisions(
                 mesh, vertices, candidates.ee_candidates, is_active, r.begin(),
-                r.end());
+                r.end(), quad_type);
         });
 
     // -------------------------------------------------------------------------
@@ -85,17 +104,18 @@ void SmoothCollisions::build(
 
 size_t SmoothCollisions::size() const
 {
-    return ev_collisions.size();
+    return ev_collisions.size() + ee_collisions.size();
 }
 
 bool SmoothCollisions::empty() const
 {
-    return ev_collisions.empty();
+    return ev_collisions.empty() && ee_collisions.empty();
 }
 
 void SmoothCollisions::clear()
 {
     ev_collisions.clear();
+    ee_collisions.clear();
 }
 
 Collision& SmoothCollisions::operator[](size_t i)
@@ -104,6 +124,10 @@ Collision& SmoothCollisions::operator[](size_t i)
         return ev_collisions[i];
     }
     i -= ev_collisions.size();
+    if (i < ee_collisions.size()) {
+        return ee_collisions[i];
+    }
+    i -= ee_collisions.size();
     throw std::out_of_range("Collision index is out of range!");
 }
 
@@ -113,6 +137,10 @@ const Collision& SmoothCollisions::operator[](size_t i) const
         return ev_collisions[i];
     }
     i -= ev_collisions.size();
+    if (i < ee_collisions.size()) {
+        return ee_collisions[i];
+    }
+    i -= ee_collisions.size();
     throw std::out_of_range("Collision index is out of range!");
 }
 
@@ -128,7 +156,9 @@ bool SmoothCollisions::is_edge_vertex(size_t i) const
 
 bool SmoothCollisions::is_edge_edge(size_t i) const
 {
-    return false;
+    return i >= ev_collisions.size()
+        && i
+        < ev_collisions.size() + ee_collisions.size();
 }
 
 bool SmoothCollisions::is_face_vertex(size_t i) const
@@ -153,6 +183,17 @@ std::string SmoothCollisions::to_string(
                   ev.vertex_id, ev.weight,
                   ev.compute_distance(
                       ev.dof(vertices, mesh.edges(), mesh.faces())));
+    }
+    for (const auto& ee : ee_collisions) {
+        ss << "\n"
+           << fmt::format(
+                  "ee: {}=({}, {}) {}=({}, {}), w: {:g}, dtype: {}, d: {:g}",
+                  ee.edge0_id, mesh.edges()(ee.edge0_id, 0),
+                  mesh.edges()(ee.edge0_id, 1), ee.edge1_id,
+                  mesh.edges()(ee.edge1_id, 0), mesh.edges()(ee.edge1_id, 1),
+                  ee.weight, int(ee.dtype),
+                  ee.compute_distance(
+                      ee.dof(vertices, mesh.edges(), mesh.faces())));
     }
     return ss.str();
 }

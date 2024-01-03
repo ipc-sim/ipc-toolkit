@@ -26,18 +26,18 @@ public:
                    edges(edge1_id, 0), edges(edge1_id, 1) } };
     }
 
-    double compute_distance(const VectorMax12d& positions) const override;
+    virtual double compute_distance(const VectorMax12d& positions) const override;
 
-    VectorMax12d
+    virtual VectorMax12d
     compute_distance_gradient(const VectorMax12d& positions) const override;
 
-    MatrixMax12d
+    virtual MatrixMax12d
     compute_distance_hessian(const VectorMax12d& positions) const override;
 
     // ------------------------------------------------------------------------
     // ContinuousCollisionCandidate
 
-    bool
+    virtual bool
     ccd(const VectorMax12d& vertices_t0,
         const VectorMax12d& vertices_t1,
         double& toi,
