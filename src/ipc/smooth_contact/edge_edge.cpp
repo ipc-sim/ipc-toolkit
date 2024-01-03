@@ -9,7 +9,7 @@
 namespace ipc {
     namespace {
         template <class T>
-        std::tuple<VectorMax3<T>, VectorMax3<T>, VectorMax3<T>, VectorMax3<T>> slice_positions(const VectorMax12d &positions, const int &_dim)
+        std::array<VectorMax3<T>, 4> slice_positions(const VectorMax12d &positions, const int &_dim)
         {
             VectorMax3<T> e00, e01, e10, e11;
             e00.setZero(_dim);
@@ -24,7 +24,7 @@ namespace ipc {
                 e11(d) = T(3*_dim + d, positions(3*_dim + d));
             }
 
-            return std::make_tuple(e00, e01, e10, e11);
+            return {{e00, e01, e10, e11}};
         }
     }
 
@@ -78,12 +78,13 @@ namespace ipc {
         Eigen::VectorXd uv, w;
         line_quadrature(params.n_quadrature, uv, w);
         VectorMax3d p;
+        VectorMax3d edge0 = positions.segment(_dim, _dim) - positions.segment(0, _dim);
         for (int i = 0; i < uv.size(); ++i)
         {
-            p = positions.segment(0, _dim) + (positions.segment(_dim, _dim) - positions.segment(0, _dim)) * uv(i);
+            p = positions.segment(0, _dim) + edge0 * uv(i);
             val += w(i) * smooth_point_edge_potential_single_point<double>(p, positions.segment(2*_dim, _dim), positions.segment(3*_dim, _dim), params);
         }
-        return val;
+        return val * edge0.norm();
 
         // tbb::enumerable_thread_specific<VectorMax3d> storage;
         // tbb::enumerable_thread_specific<double> out(std::numeric_limits<double>::infinity());
@@ -117,10 +118,11 @@ namespace ipc {
         Eigen::VectorXd uv, w;
         line_quadrature(params.n_quadrature, uv, w);
         VectorMax3<Diff> p;
+        VectorMax3<Diff> edge0 = e01 - e00;
         for (int i = 0; i < uv.size(); ++i)
         {
-            p = e00 + static_cast<Diff>(uv(i)) * (e01 - e00);
-            const auto val = smooth_point_edge_potential_single_point<Diff>(p, e10, e11, params);
+            p = e00 + static_cast<Diff>(uv(i)) * edge0;
+            const auto val = edge0.norm() * smooth_point_edge_potential_single_point<Diff>(p, e10, e11, params);
             grad += w(i) * val.getGradient().head(4*_dim);
         }
         return grad;
@@ -141,10 +143,11 @@ namespace ipc {
         Eigen::VectorXd uv, w;
         line_quadrature(params.n_quadrature, uv, w);
         VectorMax3<Diff> p;
+        VectorMax3<Diff> edge0 = e01 - e00;
         for (int i = 0; i < uv.size(); ++i)
         {
-            p = e00 + static_cast<Diff>(uv(i)) * (e01 - e00);
-            const auto val = smooth_point_edge_potential_single_point<Diff>(p, e10, e11, params);
+            p = e00 + static_cast<Diff>(uv(i)) * edge0;
+            const auto val = edge0.norm() * smooth_point_edge_potential_single_point<Diff>(p, e10, e11, params);
             hess += w(i) * val.getHessian().topLeftCorner(4*_dim, 4*_dim);
         }
 
