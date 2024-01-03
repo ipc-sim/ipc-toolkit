@@ -17,10 +17,12 @@ double edge_edge_distance_2d(
     const Eigen::Ref<const Eigen::Vector2d>& eb1,
     EdgeEdgeDistanceType dtype)
 {
-    return std::min({point_edge_distance(ea0, eb0, eb1),
-                     point_edge_distance(ea0, eb0, eb1),
-                     point_edge_distance(eb0, ea0, ea1),
-                     point_edge_distance(eb1, ea0, ea1)});
+    Eigen::Vector3d ea0_, ea1_, eb0_, eb1_;
+    ea0_.setZero(); ea0_.head<2>() = ea0;
+    ea1_.setZero(); ea1_.head<2>() = ea1;
+    eb0_.setZero(); eb0_.head<2>() = eb0;
+    eb1_.setZero(); eb1_.head<2>() = eb1;
+    return edge_edge_distance(ea0_, ea1_, eb0_, eb1_, dtype);
 }
 
 double edge_edge_distance(
