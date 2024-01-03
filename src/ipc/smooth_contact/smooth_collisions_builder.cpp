@@ -119,11 +119,11 @@ void SmoothCollisionsBuilder::add_edge_edge_collision(
 {
     auto found_item = ee_to_id_.find(ee_collision);
     if (found_item != ee_to_id_.end()) {
-        // collision already exists, so increase weight
-        assert(ee_collision == ee_collisions_[found_item->second]);
-        ee_collisions_[found_item->second].weight += ee_collision.weight;
-        ee_collisions_[found_item->second].weight_gradient +=
-            ee_collision.weight_gradient;
+        // edge-edge collision shouldn't be counted multiple times
+        // assert(ee_collision == ee_collisions_[found_item->second]);
+        // ee_collisions_[found_item->second].weight += ee_collision.weight;
+        // ee_collisions_[found_item->second].weight_gradient +=
+        //     ee_collision.weight_gradient;
     } else {
         // New collision, so add it to the end of ee_collisions
         ee_to_id_.emplace(ee_collision, ee_collisions_.size());

@@ -11,20 +11,17 @@ namespace ipc {
         template <class T>
         std::array<VectorMax3<T>, 4> slice_positions(const VectorMax12d &positions, const int &_dim)
         {
-            VectorMax3<T> e00, e01, e10, e11;
-            e00.setZero(_dim);
-            e01.setZero(_dim);
-            e10.setZero(_dim);
-            e11.setZero(_dim);
-            for (int d = 0; d < _dim; d++)
-            {
-                e00(d) = T(d, positions(d));
-                e01(d) = T(_dim + d, positions(_dim + d));
-                e10(d) = T(2*_dim + d, positions(2*_dim + d));
-                e11(d) = T(3*_dim + d, positions(3*_dim + d));
-            }
+            std::array<VectorMax3<T>, 4> points;
+            points.fill(VectorMax3<T>::Zero(_dim));
+            
+            for (int i = 0, id = 0; i < 4; i++)
+                for (int d = 0; d < _dim; d++, id++)
+                    if constexpr (std::is_same<T, double>::value)
+                        points[i](d) = positions(id);
+                    else
+                        points[i](d) = T(id, positions(id));
 
-            return {{e00, e01, e10, e11}};
+            return points;
         }
     }
 
@@ -74,17 +71,24 @@ namespace ipc {
         const ParameterType &params) const
     {
         const int _dim = positions.size() / num_vertices();
+        auto [e00, e01, e10, e11] = slice_positions<double>(positions, _dim);
+
         double val = 0;
         Eigen::VectorXd uv, w;
         line_quadrature(params.n_quadrature, uv, w);
         VectorMax3d p;
-        VectorMax3d edge0 = positions.segment(_dim, _dim) - positions.segment(0, _dim);
+        const VectorMax3d edge0 = e01 - e00;
+        const VectorMax3d edge1 = e11 - e10;
+        const double len0 = edge0.norm(), len1 = edge1.norm();
         for (int i = 0; i < uv.size(); ++i)
         {
-            p = positions.segment(0, _dim) + edge0 * uv(i);
-            val += w(i) * smooth_point_edge_potential_single_point<double>(p, positions.segment(2*_dim, _dim), positions.segment(3*_dim, _dim), params);
+            p = e00 + edge0 * uv(i);
+            val += len0 * w(i) * smooth_point_edge_potential_single_point<double>(p, e10, e11, params);
+
+            p = e10 + edge1 * uv(i);
+            val += len1 * w(i) * smooth_point_edge_potential_single_point<double>(p, e00, e01, params);
         }
-        return val * edge0.norm();
+        return val;
 
         // tbb::enumerable_thread_specific<VectorMax3d> storage;
         // tbb::enumerable_thread_specific<double> out(std::numeric_limits<double>::infinity());
@@ -118,11 +122,17 @@ namespace ipc {
         Eigen::VectorXd uv, w;
         line_quadrature(params.n_quadrature, uv, w);
         VectorMax3<Diff> p;
-        VectorMax3<Diff> edge0 = e01 - e00;
+        const VectorMax3<Diff> edge0 = e01 - e00;
+        const VectorMax3<Diff> edge1 = e11 - e10;
+        const Diff len0 = edge0.norm(), len1 = edge1.norm();
         for (int i = 0; i < uv.size(); ++i)
         {
-            p = e00 + static_cast<Diff>(uv(i)) * edge0;
-            const auto val = edge0.norm() * smooth_point_edge_potential_single_point<Diff>(p, e10, e11, params);
+            p = e00 + Diff(uv(i)) * edge0;
+            auto val = len0 * smooth_point_edge_potential_single_point<Diff>(p, e10, e11, params);
+            grad += w(i) * val.getGradient().head(4*_dim);
+
+            p = e10 + Diff(uv(i)) * edge1;
+            val = len1 * smooth_point_edge_potential_single_point<Diff>(p, e00, e01, params);
             grad += w(i) * val.getGradient().head(4*_dim);
         }
         return grad;
@@ -143,11 +153,17 @@ namespace ipc {
         Eigen::VectorXd uv, w;
         line_quadrature(params.n_quadrature, uv, w);
         VectorMax3<Diff> p;
-        VectorMax3<Diff> edge0 = e01 - e00;
+        const VectorMax3<Diff> edge0 = e01 - e00;
+        const VectorMax3<Diff> edge1 = e11 - e10;
+        const Diff len0 = edge0.norm(), len1 = edge1.norm();
         for (int i = 0; i < uv.size(); ++i)
         {
-            p = e00 + static_cast<Diff>(uv(i)) * edge0;
-            const auto val = edge0.norm() * smooth_point_edge_potential_single_point<Diff>(p, e10, e11, params);
+            p = e00 + Diff(uv(i)) * edge0;
+            auto val = len0 * smooth_point_edge_potential_single_point<Diff>(p, e10, e11, params);
+            hess += w(i) * val.getHessian().topLeftCorner(4*_dim, 4*_dim);
+
+            p = e10 + Diff(uv(i)) * edge1;
+            val = len1 * smooth_point_edge_potential_single_point<Diff>(p, e00, e01, params);
             hess += w(i) * val.getHessian().topLeftCorner(4*_dim, 4*_dim);
         }
 
