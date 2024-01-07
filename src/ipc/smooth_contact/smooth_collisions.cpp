@@ -23,33 +23,28 @@ void SmoothCollisions::build(
     const double dmin,
     const BroadPhaseMethod broad_phase_method)
 {
-    assert(vertices.rows() == mesh.num_vertices());
+    VirtualCollisions::build(mesh, vertices, dhat, dmin, broad_phase_method);
+}
 
-    double inflation_radius = (dhat + dmin) / 2;
-
-    std::vector<CandidateType> types;
-    if (mesh.dim() == 2)
+std::vector<CandidateType> SmoothCollisions::get_candidate_types(const int &dim) const
+{
+    if (dim == 2)
     {
         if (quad_type == SurfaceQuadratureType::SinglePoint)
-            types = {CandidateType::EdgeVertex};
+            return {CandidateType::EdgeVertex};
         else
-            types = {CandidateType::EdgeEdge};
+            return {CandidateType::EdgeEdge};
     }
     else
     {
         if (quad_type == SurfaceQuadratureType::SinglePoint)
-            types = {CandidateType::FaceVertex, CandidateType::EdgeEdge};
+            return {CandidateType::FaceVertex, CandidateType::EdgeEdge};
         else
         {
             logger().error("3D surface quadrature type is not implemented!");
-            types = {CandidateType::FaceVertex, CandidateType::EdgeEdge};
+            return {CandidateType::FaceVertex, CandidateType::EdgeEdge};
         }
     }
-
-    Candidates candidates(types);
-    candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
-
-    this->build(candidates, mesh, vertices, dhat, dmin);
 }
 
 void SmoothCollisions::build(

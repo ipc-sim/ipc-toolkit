@@ -100,6 +100,8 @@ public:
         logger().error("Smooth contact formulation doesn't have shape derivatives implemented!");
     }
 
+    std::vector<CandidateType> get_candidate_types(const int &dim) const override;
+
 public:
     // std::vector<SmoothVertexVertexCollision> vv_collisions;
     std::vector<SmoothEdgeVertexCollision> ev_collisions;

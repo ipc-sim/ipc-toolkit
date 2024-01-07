@@ -26,8 +26,7 @@ namespace ipc {
         const Eigen::Ref<const VectorMax3<scalar>>& p,
         const Eigen::Ref<const VectorMax3<scalar>>& e0,
         const Eigen::Ref<const VectorMax3<scalar>>& e1,
-        const ParameterType &params,
-        const int &N);
+        const ParameterType &params);
 
     /// @brief Compute potential for a list of points and an edge [e0, e1], integrated over the edge with high order quadrature
     template <typename scalar>
@@ -35,13 +34,19 @@ namespace ipc {
         const Eigen::Ref<Eigen::Matrix<scalar, -1, -1, Eigen::RowMajor, -1, 3>>& points,
         const Eigen::Ref<const VectorMax3<scalar>>& e0,
         const Eigen::Ref<const VectorMax3<scalar>>& e1,
-        const ParameterType &params,
-        const int &N);
+        const ParameterType &params);
 
     /// @brief Compute potential for a point p and an edge [e0, e1], using the smooth closest point
     template <typename scalar>
     scalar smooth_point_edge_potential_single_point(
         const Eigen::Ref<const VectorMax3<scalar>>& p,
+        const Eigen::Ref<const VectorMax3<scalar>>& e0,
+        const Eigen::Ref<const VectorMax3<scalar>>& e1,
+        const ParameterType &params);
+
+    template <typename scalar>
+    scalar smooth_points_edge_potential_single_point(
+        const Eigen::Ref<const Eigen::Matrix<scalar, -1, -1, 0, -1, 3>>& p,
         const Eigen::Ref<const VectorMax3<scalar>>& e0,
         const Eigen::Ref<const VectorMax3<scalar>>& e1,
         const ParameterType &params);

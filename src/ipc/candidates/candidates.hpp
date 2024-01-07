@@ -16,6 +16,8 @@ class Candidates {
 public:
     Candidates(const std::vector<CandidateType> &_candidate_types = {}) : candidate_types(_candidate_types) { }
 
+    void set_candidate_types(const std::vector<CandidateType> &_candidate_types) { candidate_types = _candidate_types; }
+
     /// @brief Initialize the set of discrete collision detection candidates.
     /// @param mesh The surface of the collision mesh.
     /// @param vertices Surface vertex positions (rowwise).
@@ -124,7 +126,7 @@ public:
     std::vector<FaceVertexCandidate> fv_candidates;
 
 private:
-    const std::vector<CandidateType> candidate_types;
+    std::vector<CandidateType> candidate_types;
 };
 
 } // namespace ipc

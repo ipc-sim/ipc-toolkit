@@ -29,7 +29,7 @@ public:
         const Eigen::MatrixXd& vertices,
         const double dhat,
         const double dmin = 0,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD) = 0;
+        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
 
     virtual void build(
         const Candidates& candidates,
@@ -113,6 +113,8 @@ public:
 
     void set_edge_quadrature_type(const SurfaceQuadratureType type) { quad_type = type; }
     SurfaceQuadratureType get_edge_quadrature_type() const { return quad_type; }
+
+    virtual std::vector<CandidateType> get_candidate_types(const int &dim) const = 0;
 
 protected:
     bool m_use_convergent_formulation = false;
@@ -202,6 +204,8 @@ public:
 
     std::string
     to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
+
+    std::vector<CandidateType> get_candidate_types(const int &dim) const override;
 
     std::vector<VertexVertexCollision> vv_collisions;
     std::vector<EdgeVertexCollision> ev_collisions;

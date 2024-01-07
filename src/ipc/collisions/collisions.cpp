@@ -139,7 +139,16 @@ namespace {
     }
 } // namespace
 
-void Collisions::build(
+std::vector<CandidateType> Collisions::get_candidate_types(const int &dim) const
+{
+    if (dim == 2) {
+        return {CandidateType::EdgeVertex};
+    } else {
+        return {CandidateType::EdgeEdge, CandidateType::FaceVertex};
+    }
+}
+
+void VirtualCollisions::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const double dhat,
@@ -150,10 +159,20 @@ void Collisions::build(
 
     double inflation_radius = (dhat + dmin) / 2;
 
-    Candidates candidates;
+    Candidates candidates(get_candidate_types(mesh.dim()));
     candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
 
     this->build(candidates, mesh, vertices, dhat, dmin);
+}
+
+void Collisions::build(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const double dhat,
+    const double dmin,
+    const BroadPhaseMethod broad_phase_method)
+{
+    VirtualCollisions::build(mesh, vertices, dhat, dmin, broad_phase_method);
 }
 
 void Collisions::build(

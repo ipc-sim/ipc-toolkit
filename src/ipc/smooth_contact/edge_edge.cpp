@@ -27,12 +27,14 @@ namespace ipc {
 
     Vector12d SmoothEdgeEdgeCollision::positions_to_3d(const VectorMax12d& positions) const
     {
-        assert(positions.size() == 8 || positions.size() == 12);
-        const int dim = positions.size() / 4;
+        if (positions.size() == 12)
+            return positions;
+        
+        assert(positions.size() == 8);
         Vector12d positions_full;
         positions_full.setZero();
         for (int i = 0; i < 4; i++)
-            positions_full.segment(i * 3, dim) = positions.segment(i * dim, dim);
+            positions_full.segment<2>(i * 3) = positions.segment<2>(i * 2);
         return positions_full;
     }
 
@@ -83,10 +85,10 @@ namespace ipc {
         for (int i = 0; i < uv.size(); ++i)
         {
             p = e00 + edge0 * uv(i);
-            val += len0 * w(i) * smooth_point_edge_potential_single_point<double>(p, e10, e11, params);
+            val += len0 * w(i) * smooth_point_edge_potential_quadrature<double>(p, e10, e11, params);
 
             p = e10 + edge1 * uv(i);
-            val += len1 * w(i) * smooth_point_edge_potential_single_point<double>(p, e00, e01, params);
+            val += len1 * w(i) * smooth_point_edge_potential_quadrature<double>(p, e00, e01, params);
         }
         return val;
 
@@ -117,25 +119,22 @@ namespace ipc {
         using Diff=AutodiffScalarGrad<12>;
         auto [e00, e01, e10, e11] = slice_positions<Diff>(positions, _dim);
 
-        VectorMax12d grad;
-        grad.setZero(positions.size());
         Eigen::VectorXd uv, w;
         line_quadrature(params.n_quadrature, uv, w);
         VectorMax3<Diff> p;
         const VectorMax3<Diff> edge0 = e01 - e00;
         const VectorMax3<Diff> edge1 = e11 - e10;
         const Diff len0 = edge0.norm(), len1 = edge1.norm();
+        Diff val = Diff(0.);
         for (int i = 0; i < uv.size(); ++i)
         {
             p = e00 + Diff(uv(i)) * edge0;
-            auto val = len0 * smooth_point_edge_potential_single_point<Diff>(p, e10, e11, params);
-            grad += w(i) * val.getGradient().head(4*_dim);
+            val += Diff(w(i)) * len0 * smooth_point_edge_potential_quadrature<Diff>(p, e10, e11, params);
 
             p = e10 + Diff(uv(i)) * edge1;
-            val = len1 * smooth_point_edge_potential_single_point<Diff>(p, e00, e01, params);
-            grad += w(i) * val.getGradient().head(4*_dim);
+            val += Diff(w(i)) * len1 * smooth_point_edge_potential_quadrature<Diff>(p, e00, e01, params);
         }
-        return grad;
+        return val.getGradient().head(4*_dim);
     }
 
     MatrixMax12d SmoothEdgeEdgeCollision::hessian(
@@ -148,25 +147,22 @@ namespace ipc {
         using Diff=AutodiffScalarHessian<12>;
         auto [e00, e01, e10, e11] = slice_positions<Diff>(positions, _dim);
 
-        MatrixMax12d hess;
-        hess.setZero(positions.size(), positions.size());
         Eigen::VectorXd uv, w;
         line_quadrature(params.n_quadrature, uv, w);
         VectorMax3<Diff> p;
         const VectorMax3<Diff> edge0 = e01 - e00;
         const VectorMax3<Diff> edge1 = e11 - e10;
         const Diff len0 = edge0.norm(), len1 = edge1.norm();
+        Diff val = Diff(0.);
         for (int i = 0; i < uv.size(); ++i)
         {
             p = e00 + Diff(uv(i)) * edge0;
-            auto val = len0 * smooth_point_edge_potential_single_point<Diff>(p, e10, e11, params);
-            hess += w(i) * val.getHessian().topLeftCorner(4*_dim, 4*_dim);
+            val += Diff(w(i)) * len0 * smooth_point_edge_potential_quadrature<Diff>(p, e10, e11, params);
 
             p = e10 + Diff(uv(i)) * edge1;
-            val = len1 * smooth_point_edge_potential_single_point<Diff>(p, e00, e01, params);
-            hess += w(i) * val.getHessian().topLeftCorner(4*_dim, 4*_dim);
+            val += Diff(w(i)) * len1 * smooth_point_edge_potential_quadrature<Diff>(p, e00, e01, params);
         }
 
-        return hess;
+        return val.getHessian().topLeftCorner(4*_dim, 4*_dim);
     }
 }

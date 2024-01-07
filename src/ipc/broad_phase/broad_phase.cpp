@@ -8,6 +8,7 @@
 #include <ipc/candidates/candidates.hpp>
 
 #include <ipc/config.hpp>
+#include <iostream>
 
 namespace ipc {
 
@@ -54,12 +55,15 @@ void BroadPhase::detect_collision_candidates(Candidates& candidates, const Candi
     {
     case CandidateType::EdgeVertex:
         detect_edge_vertex_candidates(candidates.ev_candidates);
+        // std::cout << "edge vertex\n";
         break;
     case CandidateType::EdgeEdge:
         detect_edge_edge_candidates(candidates.ee_candidates);
+        // std::cout << "edge edge\n";
         break;
     case CandidateType::FaceVertex:
         detect_face_vertex_candidates(candidates.fv_candidates);
+        // std::cout << "face vertex\n";
         break;
     default:
         assert(false);
