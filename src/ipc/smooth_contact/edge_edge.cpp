@@ -101,7 +101,6 @@ namespace ipc {
         const VectorMax12d& positions, 
         const ParameterType &params) const
     {
-        
         const int _dim = positions.size() / num_vertices();
         DiffScalarBase::setVariableCount(12);
         using Diff=AutodiffScalarGrad<12>;

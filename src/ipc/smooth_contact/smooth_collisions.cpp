@@ -54,7 +54,6 @@ void SmoothCollisions::build(
     const double dhat,
     const double dmin)
 {
-
     assert(vertices.rows() == mesh.num_vertices());
 
     clear();
