@@ -390,22 +390,21 @@ void CollisionMesh::init_vertex_contact_distance_map()
                     const VectorMax3d e0 = m_rest_positions.row(m_edges(j, 0));
                     const VectorMax3d e1 = m_rest_positions.row(m_edges(j, 1));
 
-                    double a = 0;
-                    const double L = (a > 0) ? L_s(s, a) : L_ns(s);
-
-                    auto tangent = e1 - e0;
+                    VectorMax3d tangent = e1 - e0;
                     const double len = tangent.norm();
                     tangent = tangent / len;
 
-                    auto pos = p - e0;
+                    VectorMax3d pos = p - e0;
                     const double s = pos.dot(tangent) / len;
-                    auto sample = e0 + (s - L) * len * tangent;
-                    const double dist_sqr = intpow(cross2<scalar>(pos, tangent), 2) + intpow(len * L, 2);
+                    double a = 0;
+                    const double L = (a > 0) ? L_s(s, a) : L_ns(s);
+                    VectorMax3d sample = e0 + (s - L) * len * tangent;
+                    const double dist_sqr = intpow(cross2<double>(pos, tangent), 2) + intpow(len * L, 2);
 
                     if (min_dist_sqr > dist_sqr) min_dist_sqr = dist_sqr;
                 }
             }
-            m_vertex_to_rest_config_contact_dist[i] = sqrt(min_dist) / 2;
+            m_vertex_to_rest_config_contact_dist[i] = sqrt(min_dist_sqr) / 2;
         }
     }
     else if (dim() == 3) {
