@@ -12,7 +12,7 @@ public:
     SmoothEdgeVertexCollision(const EdgeVertexCandidate& candidate)
         : EdgeVertexCollision(candidate)
     {
-        std::cout << "candidate constructor" << std::endl;
+        //std::cout << "candidate constructor" << std::endl;
     }
 
     SmoothEdgeVertexCollision(

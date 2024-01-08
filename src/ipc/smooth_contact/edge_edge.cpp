@@ -62,7 +62,7 @@ namespace ipc {
         const VectorMax12d& positions, 
         const ParameterType &params) const
     {
-        std::cout << "smooth edge edge: " << this->edge0_id << this->edge1_id << std::endl;
+        //std::cout << "smooth edge edge: " << this->edge0_id << this->edge1_id << std::endl;
         const int _dim = positions.size() / num_vertices();
         auto [e00, e01, e10, e11] = slice_positions<double>(positions, _dim);
 
@@ -81,6 +81,7 @@ namespace ipc {
             p = e10 + edge1 * uv(i);
             val += len1 * w(i) * smooth_point_edge_potential_quadrature<double>(p, e00, e01, params);
         }
+        //std::cout << "edge edge val: " << val << std::endl;
         return val;
 
         // tbb::enumerable_thread_specific<VectorMax3d> storage;
@@ -105,6 +106,7 @@ namespace ipc {
         const VectorMax12d& positions, 
         const ParameterType &params) const
     {
+        
         const int _dim = positions.size() / num_vertices();
         DiffScalarBase::setVariableCount(12);
         using Diff=AutodiffScalarGrad<12>;
