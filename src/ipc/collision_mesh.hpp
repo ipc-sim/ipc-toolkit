@@ -281,7 +281,7 @@ public:
     /// @brief Determinte if min distances in rest configuration have been initialized by calling init_vertex_contact_distance_map().
     bool are_min_distances_initialized() const 
     {
-        return m_vertex_to_rest_config_contact_dist.size() == num_vertices();
+        return m_vertex_to_rest_config_contact_dist.rows() == m_rest_positions.rows();
     }
 
     // -----------------------------------------------------------------------
