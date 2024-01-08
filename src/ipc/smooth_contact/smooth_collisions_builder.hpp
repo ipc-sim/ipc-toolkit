@@ -38,10 +38,11 @@ public:
         const long edge_id,
         const long vertex_id,
         const double weight,
-        const Eigen::SparseVector<double>& weight_gradient)
+        const Eigen::SparseVector<double>& weight_gradient,
+        const double local_eps)
     {
         add_edge_vertex_collision(
-            SmoothEdgeVertexCollision(edge_id, vertex_id, weight, weight_gradient),
+            SmoothEdgeVertexCollision(edge_id, vertex_id, weight, weight_gradien, local_eps),
             ev_to_id, ev_collisions);
     }
 

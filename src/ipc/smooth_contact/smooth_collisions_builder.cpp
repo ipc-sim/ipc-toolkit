@@ -19,7 +19,7 @@ void SmoothCollisionsBuilder::add_edge_vertex_collisions(
     const size_t start_i,
     const size_t end_i)
 {
-    std::cout << "In SmoothCollisionsBuilder::add_edge_vertex" << std::endl;   
+    //std::cout << "In SmoothCollisionsBuilder::add_edge_vertex" << std::endl;   
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [ei, vi] = candidates[i];
         const auto [v, e0, e1, _] =
@@ -46,7 +46,7 @@ void SmoothCollisionsBuilder::add_edge_vertex_collision(
     const Eigen::SparseVector<double>& weight_gradient)
 {
     const auto& [ei, vi] = candidate;
-    add_edge_vertex_collision(ei, vi, weight, weight_gradient);
+    add_edge_vertex_collision(ei, vi, weight, weight_gradient, mesh.min_distance_in_rest_config(vi));
 }
 
 // ============================================================================

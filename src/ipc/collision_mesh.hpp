@@ -63,6 +63,9 @@ public:
     /// @brief Initialize vertex and edge areas.
     void init_area_jacobians();
 
+    ///@brief Initialize vertex to min contact distance at rest mapping
+    void init_vertex_contact_distance_map();
+
     /// @brief Destroy the Collision Mesh object
     ~CollisionMesh() { }
 
@@ -263,6 +266,24 @@ public:
             && m_edge_area_jacobian.size() == num_edges();
     }
 
+    /// @brief Get minimum distance to contact of a given vertex in rest config / 2.
+    /// @param vi Vertex ID.
+    /// @return Minimum distance to contact of vertex vi in rest config / 2 (adapative eps).
+    const double min_distance_in_rest_config(const size_t vi) const
+    {
+        if (!are_min_distances_initialized()) {
+            throw std::runtime_error(
+                "Min distances in rest config not initialized. Call init_vertex_contact_distance_map() first.");
+        }
+        return m_vertex_to_rest_config_contact_dist[vi];
+    }
+
+    /// @brief Determinte if min distances in rest configuration have been initialized by calling init_vertex_contact_distance_map().
+    bool are_min_distances_initialized() const 
+    {
+        return m_vertex_to_rest_config_contact_dist.size() == num_vertices();
+    }
+
     // -----------------------------------------------------------------------
 
     /// @brief Construct a vector of bools indicating whether each vertex is on the surface.
@@ -338,6 +359,9 @@ protected:
     /// @brief Mapping from full displacements to collision displacements
     /// @note this is premultiplied by m_select_dof
     Eigen::SparseMatrix<double> m_displacement_dof_map;
+
+    /// @brief Mapping from vertex indices to minimum distance to contact / 2 in rest configuration (adaptive eps)
+    Eigen::VectorXd m_vertex_to_rest_config_contact_dist;
 
     /// @brief Vertices adjacent to vertices
     std::vector<unordered_set<int>> m_vertex_vertex_adjacencies;

@@ -56,7 +56,7 @@ void SmoothCollisions::build(
     const double dhat,
     const double dmin)
 {
-    std::cout << "In SmoothCollisions::build" << std::endl;
+    //std::cout << "In SmoothCollisions::build" << std::endl;
 
     assert(vertices.rows() == mesh.num_vertices());
 
