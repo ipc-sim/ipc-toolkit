@@ -121,6 +121,18 @@ protected:
             ev_to_id, ev_collisions);
     }
 
+    /*void add_edge_vertex_collision(
+        const long edge_id,
+        const long vertex_id,
+        const double weight,
+        const Eigen::SparseVector<double>& weight_gradient,
+        const double eps)
+    {
+        add_edge_vertex_collision(
+            EdgeVertexCollision(edge_id, vertex_id, weight, weight_gradient, eps),
+            ev_to_id, ev_collisions);
+    }*/
+
     void add_edge_vertex_collision(
         const CollisionMesh& mesh,
         const EdgeVertexCandidate& candidate,

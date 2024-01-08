@@ -29,8 +29,8 @@ public:
         const long _edge_id,
         const long _vertex_id,
         const double _weight,
-        const Eigen::SparseVector<double>& _weight_gradient),
-        const double _eps
+        const Eigen::SparseVector<double>& _weight_gradient,
+        const double _eps)
         : EdgeVertexCollision(_edge_id, _vertex_id, _weight, _weight_gradient), local_eps(_eps)
     {
     }

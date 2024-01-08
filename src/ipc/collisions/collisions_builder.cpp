@@ -105,19 +105,16 @@ void CollisionsBuilder::add_edge_vertex_collision(
 
     switch (dtype) {
     case PointEdgeDistanceType::P_E0:
-        std::cout << "distance type: E0" << std::endl;
         add_vertex_vertex_collision(
             vi, mesh.edges()(ei, 0), weight, weight_gradient);
         break;
 
     case PointEdgeDistanceType::P_E1:
-        std::cout << "distance type: E1" << std::endl;
         add_vertex_vertex_collision(
             vi, mesh.edges()(ei, 1), weight, weight_gradient);
         break;
 
     case PointEdgeDistanceType::P_E:
-        std::cout << "distance type: EP" << std::endl;
         add_edge_vertex_collision(ei, vi, weight, weight_gradient);
         break;
 

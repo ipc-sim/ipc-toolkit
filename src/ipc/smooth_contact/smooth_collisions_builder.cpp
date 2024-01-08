@@ -102,11 +102,15 @@ void SmoothCollisionsBuilder::add_edge_edge_collisions(
 
         if (mesh.dim() == 2 && quad_type == SurfaceQuadratureType::SinglePoint)
         {
-            add_edge_vertex_collision(eai, eb0i, mesh.vertex_area(eb0i) / 2, weight_gradient);
-            add_edge_vertex_collision(eai, eb1i, mesh.vertex_area(eb1i) / 2, weight_gradient);
+            add_edge_vertex_collision(eai, eb0i, mesh.vertex_area(eb0i) / 2, weight_gradient, 
+                mesh.min_distance_in_rest_config(eb0i));
+            add_edge_vertex_collision(eai, eb1i, mesh.vertex_area(eb1i) / 2, weight_gradient, 
+                mesh.min_distance_in_rest_config(eb1i));
 
-            add_edge_vertex_collision(ebi, ea0i, mesh.vertex_area(ea0i) / 2, weight_gradient);
-            add_edge_vertex_collision(ebi, ea1i, mesh.vertex_area(ea1i) / 2, weight_gradient);
+            add_edge_vertex_collision(ebi, ea0i, mesh.vertex_area(ea0i) / 2, weight_gradient, 
+                mesh.min_distance_in_rest_config(ea0i));
+            add_edge_vertex_collision(ebi, ea1i, mesh.vertex_area(ea1i) / 2, weight_gradient, 
+                mesh.min_distance_in_rest_config(ea1i));
         }
         else
             add_edge_edge_collision(SmoothEdgeEdgeCollision(

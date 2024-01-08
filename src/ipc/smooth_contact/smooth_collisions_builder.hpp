@@ -42,7 +42,7 @@ public:
         const double local_eps)
     {
         add_edge_vertex_collision(
-            SmoothEdgeVertexCollision(edge_id, vertex_id, weight, weight_gradien, local_eps),
+            SmoothEdgeVertexCollision(edge_id, vertex_id, weight, weight_gradient, local_eps),
             ev_to_id, ev_collisions);
     }
 

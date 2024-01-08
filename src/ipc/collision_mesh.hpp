@@ -269,7 +269,7 @@ public:
     /// @brief Get minimum distance to contact of a given vertex in rest config / 2.
     /// @param vi Vertex ID.
     /// @return Minimum distance to contact of vertex vi in rest config / 2 (adapative eps).
-    const double min_distance_in_rest_config(const size_t vi) const
+    double min_distance_in_rest_config(const size_t vi) const
     {
         if (!are_min_distances_initialized()) {
             throw std::runtime_error(

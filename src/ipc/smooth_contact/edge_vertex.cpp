@@ -30,12 +30,7 @@ namespace ipc {
         const VectorMax12d& positions, 
         const ParameterType &params) const
     {
-        ParameterType local_params;
-        local_params.a = paramas.a;
-        local_params.alpha = params.alpha;
-        local_params.eps = local_eps;
-        local_params.n_quadrature = params.n_quadrature;
-        local_params.r = params.r;
+        const ParameterType local_params(local_eps, params.alpha, params.a, params.r, params.n_quadrature);
 
         //std::cout << "smooth edge vertex: " << this->vertex_id << std::endl;
         const int dim = positions.size() / num_vertices();
