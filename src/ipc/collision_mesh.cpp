@@ -382,6 +382,7 @@ void CollisionMesh::init_area_jacobians()
 void CollisionMesh::init_vertex_contact_distance_map()
 {
     if (dim() == 2) {
+        m_vertex_to_rest_config_contact_dist.resize(m_rest_positions.rows(), 1);
         std::cout << "size: " << m_rest_positions.rows() << std::endl;
         for (int i = 0; i < m_rest_positions.rows(); i++) {
             double min_dist_sqr = __DBL_MAX__;
