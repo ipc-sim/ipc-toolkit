@@ -376,7 +376,7 @@ void CollisionMesh::init_area_jacobians()
     }
 }
 
-void CollisionMesh::init_vertex_contact_distance_map();
+void CollisionMesh::init_vertex_contact_distance_map()
 {
     if (dim() == 2) {
         for (int i = 0; i < num_vertices(); i++) {
