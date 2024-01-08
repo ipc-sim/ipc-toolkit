@@ -382,10 +382,10 @@ void CollisionMesh::init_area_jacobians()
 void CollisionMesh::init_vertex_contact_distance_map()
 {
     if (dim() == 2) {
-        std::cout << "size: " << m_rest_positions.size() << std::endl;
-        for (int i = 0; i < m_rest_positions.size(); i++) {
+        std::cout << "size: " << m_rest_positions.rows() << std::endl;
+        for (int i = 0; i < m_rest_positions.rows(); i++) {
             double min_dist_sqr = __DBL_MAX__;
-            for (int j = 0; j < m_edges.size(); j++) {
+            for (int j = 0; j < m_edges.rows(); j++) {
                 if (m_edges(j, 0) != i && m_edges(j, 1) != i) {
                     // need a from params to use same distance as potential
                     // not sure how to design so hard coding for now
