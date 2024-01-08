@@ -103,7 +103,7 @@ void CollisionsBuilder::add_edge_vertex_collision(
 {
     const auto& [ei, vi] = candidate;
 
-    std::cout << "here in cbuilder" << std::endl;
+    //std::cout << "here in cbuilder" << std::endl;
 
     switch (dtype) {
     case PointEdgeDistanceType::P_E0:
