@@ -382,13 +382,13 @@ void CollisionMesh::init_vertex_contact_distance_map()
         for (int i = 0; i < num_vertices(); i++) {
             double min_dist_sqr = __DBL_MAX__;
             for (int j = 0; j < m_edges.size(); j++) {
-                if (m_edges[j][0] != i && m_edges[j][1] != i) {
+                if (m_edges(j, 0) != i && m_edges(j, 1) != i) {
                     // need a from params to use same distance as potential
                     // not sure how to design so hard coding for now
 
-                    auto p = m_rest_positions[i];
-                    auto e0 = m_rest_positions[m_edges[j][0]];
-                    auto e1 = m_rest_positions[m_edges[j][1]];
+                    const VectorMax3d p = m_rest_positions.row(i);
+                    const VectorMax3d e0 = m_rest_positions.row(m_edges(j, 0));
+                    const VectorMax3d e1 = m_rest_positions.row(m_edges(j, 1));
 
                     double a = 0;
                     const double L = (a > 0) ? L_s(s, a) : L_ns(s);
