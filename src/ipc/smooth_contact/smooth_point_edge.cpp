@@ -149,49 +149,4 @@ namespace ipc {
         const Eigen::Ref<const VectorMax3<AutodiffScalarHessian<12>>>& e0,
         const Eigen::Ref<const VectorMax3<AutodiffScalarHessian<12>>>& e1,
         const ParameterType &params);
-
-    template <typename scalar>
-    scalar smooth_points_edge_potential_single_point(
-        const Eigen::Ref<const Eigen::Matrix<scalar, -1, -1, 0, -1, 3>>& p,
-        const Eigen::Ref<const VectorMax3<scalar>>& e0,
-        const Eigen::Ref<const VectorMax3<scalar>>& e1,
-        const ParameterType &params)
-    {
-        return scalar(0.);
-        // VectorMax3<scalar> tangent = e1 - e0;
-        // const scalar len = tangent.norm();
-        // tangent = tangent / len;
-
-        // const Eigen::Matrix<scalar, -1, -1, 0, -1, 3> pos = p.array().rowwise() - e0.transpose().array();
-        // const Eigen::Matrix<scalar, -1, 1> s = pos * (tangent / len);
-        // Eigen::Matrix<scalar, -1, 1> L(s.size());
-        // for (int i = 0; i < L.size(); i++)
-        //     L(i) = (params.a > 0) ? L_s(s, params.a) : L_ns(s);
-        // const Eigen::Matrix<scalar, -1, -1, 0, -1, 3> sample = e0.transpose().array() + ((s - L) * (len * tangent)).array().rowwise();
-        // const Eigen::Matrix<scalar, -1, 1> Phi_sqrt = (sample - p).rowwise().normalized() * tangent;
-        // const scalar dist_sqr = intpow(cross2<scalar>(pos, tangent), 2) + intpow(len * L, 2);
-
-        // if (Phi > params.alpha)
-        //     return scalar(0.);
-        // if (dist_sqr > params.eps)
-        //     return scalar(0.);
-
-        // return len * cubic_spline(Phi * (2. / params.alpha)) * inv_barrier(dist_sqr, params.eps, params.r);
-    }
-
-    template double smooth_points_edge_potential_single_point(
-        const Eigen::Ref<const Eigen::Matrix<double, -1, -1, 0, -1, 3>>& p,
-        const Eigen::Ref<const VectorMax3<double>>& e0,
-        const Eigen::Ref<const VectorMax3<double>>& e1,
-        const ParameterType &params);
-    template AutodiffScalarGrad<12> smooth_points_edge_potential_single_point(
-        const Eigen::Ref<const Eigen::Matrix<AutodiffScalarGrad<12>, -1, -1, 0, -1, 3>>& p,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarGrad<12>>>& e0,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarGrad<12>>>& e1,
-        const ParameterType &params);
-    template AutodiffScalarHessian<12> smooth_points_edge_potential_single_point(
-        const Eigen::Ref<const Eigen::Matrix<AutodiffScalarHessian<12>, -1, -1, 0, -1, 3>>& p,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarHessian<12>>>& e0,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarHessian<12>>>& e1,
-        const ParameterType &params);
 }
