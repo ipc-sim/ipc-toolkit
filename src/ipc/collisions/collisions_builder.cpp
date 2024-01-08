@@ -7,6 +7,8 @@
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
+#include <iostream>
+
 namespace ipc {
 
 CollisionsBuilder::CollisionsBuilder(
@@ -100,6 +102,8 @@ void CollisionsBuilder::add_edge_vertex_collision(
     const Eigen::SparseVector<double>& weight_gradient)
 {
     const auto& [ei, vi] = candidate;
+
+    std::cout << "distance type": << dtype << std::endl;
 
     switch (dtype) {
     case PointEdgeDistanceType::P_E0:
