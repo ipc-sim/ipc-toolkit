@@ -1,11 +1,29 @@
 #pragma once
 #include <ipc/collisions/edge_vertex.hpp>
 
+#include <iostream>
+
 namespace ipc {
 
 class SmoothEdgeVertexCollision : public EdgeVertexCollision {
 public:
     using EdgeVertexCollision::EdgeVertexCollision;
+
+    SmoothEdgeVertexCollision(const EdgeVertexCandidate& candidate)
+        : EdgeVertexCollision(candidate)
+    {
+        std::cout << "candidate constructor" << std::endl;
+    }
+
+    SmoothEdgeVertexCollision(
+        const long _edge_id,
+        const long _vertex_id,
+        const double _weight,
+        const Eigen::SparseVector<double>& _weight_gradient)
+        : EdgeVertexCollision(_edge_id, _vertex_id, _weight, _weight_gradient)
+    {
+        std::cout << "id constructor" << std::endl;
+    }
 
     PointEdgeDistanceType known_dtype() const override
     {

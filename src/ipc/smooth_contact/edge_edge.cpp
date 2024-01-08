@@ -6,7 +6,6 @@
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 
-#include <iostream>
 
 namespace ipc {
     namespace {
@@ -74,7 +73,6 @@ namespace ipc {
         const VectorMax12d& positions, 
         const ParameterType &params) const
     {
-        std::cout << "smooth edge edge: " << this->edge0_id << this->edge1_id << std::endl;
         const int _dim = positions.size() / num_vertices();
         auto [e00, e01, e10, e11] = slice_positions<double>(positions, _dim);
 
