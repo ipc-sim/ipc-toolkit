@@ -1,8 +1,6 @@
 #pragma once
 #include <ipc/collisions/edge_vertex.hpp>
 
-#include <iostream>
-
 namespace ipc {
 
 class SmoothEdgeVertexCollision : public EdgeVertexCollision {
@@ -12,7 +10,6 @@ public:
     SmoothEdgeVertexCollision(const EdgeVertexCandidate& candidate)
         : EdgeVertexCollision(candidate)
     {
-        //std::cout << "candidate constructor" << std::endl;
     }
 
     SmoothEdgeVertexCollision(
@@ -22,7 +19,6 @@ public:
         const Eigen::SparseVector<double>& _weight_gradient)
         : EdgeVertexCollision(_edge_id, _vertex_id, _weight, _weight_gradient)
     {
-        //std::cout << "id constructor" << std::endl;
     }
 
     SmoothEdgeVertexCollision(

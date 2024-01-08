@@ -7,8 +7,6 @@
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
-#include <iostream>
-
 namespace ipc {
 
 void SmoothCollisionsBuilder::add_edge_vertex_collisions(
@@ -19,7 +17,6 @@ void SmoothCollisionsBuilder::add_edge_vertex_collisions(
     const size_t start_i,
     const size_t end_i)
 {
-    //std::cout << "In SmoothCollisionsBuilder::add_edge_vertex" << std::endl;   
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [ei, vi] = candidates[i];
         const auto [v, e0, e1, _] =

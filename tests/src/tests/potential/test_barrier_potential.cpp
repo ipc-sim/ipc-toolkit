@@ -602,9 +602,9 @@ TEST_CASE(
 
     {
         Collisions collisions_tmp;
-        //collisions_tmp.set_use_convergent_formulation(true);
-        //collisions_tmp.build(mesh, vertices, dhat, /*dmin=*/0, method);
-        //std::cout << "convergent ipc candidate size " << collisions_tmp.size() << "\n";
+        collisions_tmp.set_use_convergent_formulation(true);
+        collisions_tmp.build(mesh, vertices, dhat, /*dmin=*/0, method);
+        std::cout << "convergent ipc candidate size " << collisions_tmp.size() << "\n";
     }
 
     //ParameterType param(dhat*dhat, 5, 0.1, 1, 5);
