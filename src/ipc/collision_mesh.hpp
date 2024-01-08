@@ -275,7 +275,7 @@ public:
             throw std::runtime_error(
                 "Min distances in rest config not initialized. Call init_vertex_contact_distance_map() first.");
         }
-        return m_vertex_to_rest_config_contact_dist[vi];
+        return m_vertex_to_rest_config_contact_dist(vi);
     }
 
     /// @brief Determinte if min distances in rest configuration have been initialized by calling init_vertex_contact_distance_map().

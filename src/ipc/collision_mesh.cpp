@@ -415,7 +415,7 @@ void CollisionMesh::init_vertex_contact_distance_map()
                     min_dist_sqr = std::min(dist_sqr, min_dist_sqr);
                 }
             }
-            m_vertex_to_rest_config_contact_dist.row(i) = sqrt(min_dist_sqr) / 2;
+            m_vertex_to_rest_config_contact_dist(i) = sqrt(min_dist_sqr) / 2;
         }
     }
     else if (dim() == 3) {
