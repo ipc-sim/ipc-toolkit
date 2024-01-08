@@ -388,13 +388,13 @@ void CollisionMesh::init_vertex_contact_distance_map()
                     // need a from params to use same distance as potential
                     // not sure how to design so hard coding for now
 
-                    std:cout << "here1" << std::endl;
+                    std::cout << "here1" << std::endl;
                     const VectorMax3d p = m_rest_positions.row(i);
-                    std:cout << "here2" << std::endl;
+                    std::cout << "here2" << std::endl;
                     const VectorMax3d e0 = m_rest_positions.row(m_edges(j, 0));
-                    std:cout << "here3" << std::endl;
+                    std::cout << "here3" << std::endl;
                     const VectorMax3d e1 = m_rest_positions.row(m_edges(j, 1));
-                    std:cout << "here4" << std::endl;
+                    std::cout << "here4" << std::endl;
 
                     VectorMax3d tangent = e1 - e0;
                     const double len = tangent.norm();
