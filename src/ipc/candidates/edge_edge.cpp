@@ -5,6 +5,16 @@
 
 namespace ipc {
 
+namespace {
+    Eigen::Vector3d point_to_3d(const Eigen::Ref<const Eigen::Vector2d>& p)
+    {
+        Eigen::Vector3d p3;
+        p3.setZero();
+        p3.head<2>() = p;
+        return p3;
+    }
+}
+
 EdgeEdgeCandidate::EdgeEdgeCandidate(long _edge0_id, long _edge1_id)
     : edge0_id(_edge0_id)
     , edge1_id(_edge1_id)
@@ -47,18 +57,35 @@ bool EdgeEdgeCandidate::ccd(
     const long max_iterations,
     const double conservative_rescaling) const
 {
-    assert(vertices_t0.size() == 12 && vertices_t1.size() == 12);
-    return edge_edge_ccd(
-        // Edge 1 at t=0
-        vertices_t0.head<3>(), vertices_t0.segment<3>(3),
-        // Edge 2 at t=0
-        vertices_t0.segment<3>(6), vertices_t0.tail<3>(),
-        // Edge 1 at t=1
-        vertices_t1.head<3>(), vertices_t1.segment<3>(3),
-        // Edge 2 at t=1
-        vertices_t1.segment<3>(6), vertices_t1.tail<3>(), //
-        toi, min_distance, tmax, tolerance, max_iterations,
-        conservative_rescaling);
+    if (vertices_t0.size() == 12 && vertices_t1.size() == 12)
+        return edge_edge_ccd(
+            // Edge 1 at t=0
+            vertices_t0.head<3>(), vertices_t0.segment<3>(3),
+            // Edge 2 at t=0
+            vertices_t0.segment<3>(6), vertices_t0.tail<3>(),
+            // Edge 1 at t=1
+            vertices_t1.head<3>(), vertices_t1.segment<3>(3),
+            // Edge 2 at t=1
+            vertices_t1.segment<3>(6), vertices_t1.tail<3>(), //
+            toi, min_distance, tmax, tolerance, max_iterations,
+            conservative_rescaling);
+    else if (vertices_t0.size() == 8 && vertices_t1.size() == 8)
+        return edge_edge_ccd(
+            // Edge 1 at t=0
+            point_to_3d(vertices_t0.head<2>()), point_to_3d(vertices_t0.segment<2>(2)),
+            // Edge 2 at t=0
+            point_to_3d(vertices_t0.segment<2>(4)), point_to_3d(vertices_t0.tail<2>()),
+            // Edge 1 at t=1
+            point_to_3d(vertices_t1.head<2>()), point_to_3d(vertices_t1.segment<2>(2)),
+            // Edge 2 at t=1
+            point_to_3d(vertices_t1.segment<2>(4)), point_to_3d(vertices_t1.tail<2>()), //
+            toi, min_distance, tmax, tolerance, max_iterations,
+            conservative_rescaling);
+    else
+    {
+        assert(false);
+        return false;
+    }
 }
 
 bool EdgeEdgeCandidate::operator==(const EdgeEdgeCandidate& other) const
