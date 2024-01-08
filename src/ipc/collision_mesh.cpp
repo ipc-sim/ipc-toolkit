@@ -113,7 +113,7 @@ CollisionMesh::CollisionMesh(
     init_codim_edges();
     init_areas();
     init_adjacencies();
-    init_vertex_contact_distance_map();
+    //init_vertex_contact_distance_map();
     // Compute these manually if needed.
     // init_area_jacobian();
 }
