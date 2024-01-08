@@ -114,7 +114,7 @@ CollisionMesh::CollisionMesh(
     init_areas();
     init_adjacencies();
     init_vertex_contact_distance_map();
-    std::cout << "done initting" std::Endl;
+    std::cout << "done initting" << std::endl;
     // Compute these manually if needed.
     // init_area_jacobian();
 }
