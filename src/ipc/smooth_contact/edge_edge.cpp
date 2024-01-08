@@ -55,19 +55,6 @@ namespace ipc {
         return EdgeEdgeCandidate::compute_distance_hessian(positions_to_3d(positions));
     }
 
-    bool
-    SmoothEdgeEdgeCollision::ccd(const VectorMax12d& vertices_t0,
-        const VectorMax12d& vertices_t1,
-        double& toi,
-        const double min_distance,
-        const double tmax,
-        const double tolerance,
-        const long max_iterations,
-        const double conservative_rescaling) const
-    {
-        return EdgeEdgeCandidate::ccd(positions_to_3d(vertices_t0), positions_to_3d(vertices_t1), toi, min_distance, tmax, tolerance, max_iterations, conservative_rescaling);
-    }
-
     double SmoothEdgeEdgeCollision::operator()(
         const VectorMax12d& positions, 
         const ParameterType &params) const
