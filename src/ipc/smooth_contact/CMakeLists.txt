@@ -1,6 +1,8 @@
 set(SOURCES
   smooth_point_edge.cpp
   smooth_point_edge.hpp
+  smooth_point_face.cpp
+  smooth_point_face.hpp
   smooth_contact_potential.cpp
   smooth_contact_potential.hpp
   smooth_collisions.cpp
