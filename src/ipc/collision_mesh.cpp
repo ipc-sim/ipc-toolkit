@@ -383,24 +383,24 @@ void CollisionMesh::init_vertex_contact_distance_map()
 {
     if (dim() == 2) {
         m_vertex_to_rest_config_contact_dist.resize(m_rest_positions.rows(), 1);
-        std::cout << "size: " << m_rest_positions.rows() << std::endl;
+        //std::cout << "size: " << m_rest_positions.rows() << std::endl;
         for (int i = 0; i < m_rest_positions.rows(); i++) {
             double min_dist_sqr = __DBL_MAX__;
             for (int j = 0; j < m_edges.rows(); j++) {
                 if (m_edges(j, 0) != i && m_edges(j, 1) != i) {
                     // need a from params to use same distance as potential
                     // not sure how to design so hard coding for now
-                    std::cout << "p: " << i << std::endl;
-                    std::cout << "e1: " << m_edges(j, 0) << std::endl;
-                    std::cout << "e2: " << m_edges(j, 1) << std::endl;
+                    //std::cout << "p: " << i << std::endl;
+                    //std::cout << "e1: " << m_edges(j, 0) << std::endl;
+                    //std::cout << "e2: " << m_edges(j, 1) << std::endl;
 
-                    std::cout << "here1" << std::endl;
+                    //std::cout << "here1" << std::endl;
                     const VectorMax3d p = m_rest_positions.row(i);
-                    std::cout << "here2" << std::endl;
+                    //std::cout << "here2" << std::endl;
                     const VectorMax3d e0 = m_rest_positions.row(m_edges(j, 0));
-                    std::cout << "here3" << std::endl;
+                    //std::cout << "here3" << std::endl;
                     const VectorMax3d e1 = m_rest_positions.row(m_edges(j, 1));
-                    std::cout << "here4" << std::endl;
+                    //std::cout << "here4" << std::endl;
 
                     VectorMax3d tangent = e1 - e0;
                     const double len = tangent.norm();
@@ -408,7 +408,7 @@ void CollisionMesh::init_vertex_contact_distance_map()
 
                     VectorMax3d pos = p - e0;
                     const double s = pos.dot(tangent) / len;
-                    double a = 0;
+                    double a = 0.1;
                     const double L = (a > 0) ? L_s(s, a) : L_ns(s);
                     VectorMax3d sample = e0 + (s - L) * len * tangent;
                     const double dist_sqr = intpow(cross2<double>(pos, tangent), 2) + intpow(len * L, 2);
@@ -416,9 +416,10 @@ void CollisionMesh::init_vertex_contact_distance_map()
                     min_dist_sqr = std::min(dist_sqr, min_dist_sqr);
                 }
             }
-            std::cout << "through loop: " << i << std::endl;
+            //std::cout << "through loop: " << i << std::endl;
             m_vertex_to_rest_config_contact_dist(i) = std::min(sqrt(min_dist_sqr) / 2, .1);
-            std::cout << "local eps: " << m_vertex_to_rest_config_contact_dist(i) << std::endl;
+            m_vertex_to_rest_config_contact_dist(i) = min_dist_sqr;
+            //std::cout << "local eps: " << m_vertex_to_rest_config_contact_dist(i) << std::endl;
         }
     }
     else if (dim() == 3) {
