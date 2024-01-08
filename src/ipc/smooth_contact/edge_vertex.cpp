@@ -1,6 +1,9 @@
 #include "edge_vertex.hpp"
 #include "smooth_point_edge.hpp"
 #include <ipc/utils/AutodiffTypes.hpp>
+
+#include <iostream>
+
 DECLARE_DIFFSCALAR_BASE();
 
 namespace ipc {
@@ -27,6 +30,7 @@ namespace ipc {
         const VectorMax12d& positions, 
         const ParameterType &params) const
     {
+        std::cout << "smooth edge vertex: " << this->vertex_id << std::endl;
         const int dim = positions.size() / num_vertices();
         assert(dim * num_vertices() == positions.size());
         return smooth_point_edge_potential_single_point<double>(positions.segment(0, dim), positions.segment(dim, dim), positions.segment(dim * 2, dim), params);
