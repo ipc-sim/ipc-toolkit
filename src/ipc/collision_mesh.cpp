@@ -389,9 +389,9 @@ void CollisionMesh::init_vertex_contact_distance_map()
                 if (m_edges(j, 0) != i && m_edges(j, 1) != i) {
                     // need a from params to use same distance as potential
                     // not sure how to design so hard coding for now
-                    std::cout << "p: " << p << std::endl;
-                    std::cout << "e: " << m_edges(j, 0) << std::endl;
-                    std::cout << "p: " << m_edges(j, 1) << std::endl;
+                    std::cout << "p: " << i << std::endl;
+                    std::cout << "e1: " << m_edges(j, 0) << std::endl;
+                    std::cout << "e2: " << m_edges(j, 1) << std::endl;
 
                     std::cout << "here1" << std::endl;
                     const VectorMax3d p = m_rest_positions.row(i);
