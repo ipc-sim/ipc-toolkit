@@ -3,6 +3,7 @@
 #include <ipc/collisions/collisions.hpp>
 #include "edge_vertex.hpp"
 #include "edge_edge.hpp"
+#include "face_vertex.hpp"
 
 namespace ipc {
 
@@ -106,7 +107,7 @@ public:
     // std::vector<SmoothVertexVertexCollision> vv_collisions;
     std::vector<SmoothEdgeVertexCollision> ev_collisions;
     std::vector<SmoothEdgeEdgeCollision> ee_collisions;
-    // std::vector<SmoothFaceVertexCollision> fv_collisions;
+    std::vector<SmoothFaceVertexCollision> fv_collisions;
     // std::vector<SmoothPlaneVertexCollision> pv_collisions;
 };
 
