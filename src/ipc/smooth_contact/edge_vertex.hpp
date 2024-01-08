@@ -22,7 +22,7 @@ public:
         const Eigen::SparseVector<double>& _weight_gradient)
         : EdgeVertexCollision(_edge_id, _vertex_id, _weight, _weight_gradient)
     {
-        std::cout << "id constructor" << std::endl;
+        //std::cout << "id constructor" << std::endl;
     }
 
     PointEdgeDistanceType known_dtype() const override
