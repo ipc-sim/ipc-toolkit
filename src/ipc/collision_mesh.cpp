@@ -381,20 +381,20 @@ void CollisionMesh::init_area_jacobians()
 void CollisionMesh::init_vertex_contact_distance_map()
 {
     if (dim() == 2) {
-        for (int i = 0; i < num_vertices(); i++) {
+        for (int i = 0; i < m_rest_positions.size(); i++) {
             double min_dist_sqr = __DBL_MAX__;
             for (int j = 0; j < m_edges.size(); j++) {
                 if (m_edges(j, 0) != i && m_edges(j, 1) != i) {
                     // need a from params to use same distance as potential
                     // not sure how to design so hard coding for now
 
-                    std::cout << "here1" << std::endl;
+                    //std::cout << "here1" << std::endl;
                     const VectorMax3d p = m_rest_positions.row(i);
-                    std::cout << "here2" << std::endl;
+                    //std::cout << "here2" << std::endl;
                     const VectorMax3d e0 = m_rest_positions.row(m_edges(j, 0));
-                    std::cout << "here3" << std::endl;
+                    //std::cout << "here3" << std::endl;
                     const VectorMax3d e1 = m_rest_positions.row(m_edges(j, 1));
-                    std::cout << "here4" << std::endl;
+                    //std::cout << "here4" << std::endl;
 
                     VectorMax3d tangent = e1 - e0;
                     const double len = tangent.norm();
@@ -407,7 +407,7 @@ void CollisionMesh::init_vertex_contact_distance_map()
                     VectorMax3d sample = e0 + (s - L) * len * tangent;
                     const double dist_sqr = intpow(cross2<double>(pos, tangent), 2) + intpow(len * L, 2);
 
-                    if (min_dist_sqr > dist_sqr) min_dist_sqr = dist_sqr;
+                    min_dist_sqr = std::min(dist_sqr, min_dist_sqr);
                 }
             }
             m_vertex_to_rest_config_contact_dist[i] = sqrt(min_dist_sqr) / 2;
