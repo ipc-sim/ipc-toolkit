@@ -14,6 +14,8 @@
 
 #include <stdexcept> // std::out_of_range
 
+#include <iostream>
+
 namespace ipc {
 
 void SmoothCollisions::build(
@@ -54,6 +56,8 @@ void SmoothCollisions::build(
     const double dhat,
     const double dmin)
 {
+    std::cout << "In SmoothCollisions::build" << std::endl;
+
     assert(vertices.rows() == mesh.num_vertices());
 
     clear();
