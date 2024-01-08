@@ -396,9 +396,8 @@ void CollisionMesh::init_vertex_contact_distance_map()
 
                     VectorMax3d pos = p - e0;
                     const double s = pos.dot(tangent) / len;
-                    double a = 0.1;
+                    const double a = 0;
                     const double L = (a > 0) ? L_s(s, a) : L_ns(s);
-                    VectorMax3d sample = e0 + (s - L) * len * tangent;
                     const double dist_sqr = intpow(cross2<double>(pos, tangent), 2) + intpow(len * L, 2);
 
                     min_dist_sqr = std::min(dist_sqr, min_dist_sqr);
