@@ -1,10 +1,16 @@
 #include "collision_mesh.hpp"
 
+#include <ipc/distance/point_edge.hpp>
+
 #include <ipc/utils/unordered_map_and_set.hpp>
 #include <ipc/utils/logger.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/math.hpp>
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/area_gradient.hpp>
+
+#include <tbb/parallel_for.h>
+#include <tbb/blocked_range.h>
 
 namespace ipc {
 
@@ -109,6 +115,7 @@ CollisionMesh::CollisionMesh(
     init_codim_edges();
     init_areas();
     init_adjacencies();
+    init_vertex_contact_distance_map();
     // Compute these manually if needed.
     // init_area_jacobian();
 }
@@ -370,6 +377,33 @@ void CollisionMesh::init_area_jacobians()
                 edge_len_gradient, m_edges.row(i), dim(),
                 m_edge_area_jacobian[i]);
         }
+    }
+}
+
+void CollisionMesh::init_vertex_contact_distance_map()
+{
+    if (dim() == 2) {
+        m_vertex_to_rest_config_contact_dist.resize(m_rest_positions.rows(), 1);
+        tbb::parallel_for(
+            tbb::blocked_range<size_t>(size_t(0), m_rest_positions.rows()),
+            [&](const tbb::blocked_range<size_t>& r) {
+                for (int i = r.begin(); i < r.end(); i++) {
+                    double min_dist_sqr = std::numeric_limits<double>::max();
+                    for (int j = 0; j < m_edges.rows(); j++) {
+                        if (m_edges(j, 0) != i && m_edges(j, 1) != i) {
+                            const double dist_sqr = point_edge_distance(m_rest_positions.row(i), m_rest_positions.row(m_edges(j, 0)), m_rest_positions.row(m_edges(j, 1)));
+
+                            min_dist_sqr = std::min(dist_sqr, min_dist_sqr);
+                        }
+                    }
+                    m_vertex_to_rest_config_contact_dist(i) = min_dist_sqr;
+                }
+            });
+        logger().debug("min distance {}, max distance {}", m_vertex_to_rest_config_contact_dist.minCoeff(), m_vertex_to_rest_config_contact_dist.maxCoeff());
+    }
+    else if (dim() == 3) {
+        logger().error("3D adaptive dhat not implemented!");
+        //TODO
     }
 }
 
