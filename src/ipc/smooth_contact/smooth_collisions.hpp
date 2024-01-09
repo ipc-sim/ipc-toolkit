@@ -14,6 +14,10 @@ public:
 
 public:
     SmoothCollisions() = default;
+    SmoothCollisions(bool _use_adaptive_eps)
+    : use_adaptive_eps(_use_adaptive_eps)
+    {
+    }
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param mesh The collision mesh.
@@ -109,6 +113,8 @@ public:
     std::vector<SmoothEdgeEdgeCollision> ee_collisions;
     std::vector<SmoothFaceVertexCollision> fv_collisions;
     // std::vector<SmoothPlaneVertexCollision> pv_collisions;
+
+    const bool use_adaptive_eps = false;
 };
 
 } // namespace ipc
