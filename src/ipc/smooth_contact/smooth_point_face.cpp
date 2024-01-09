@@ -96,15 +96,47 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& v0,
         const Eigen::Ref<const Vector3<scalar>>& v1,
         const Eigen::Ref<const Vector3<scalar>>& v2,
-        const ParameterType &params)
+        const ParameterType &params,
+        const PointTriangleDistanceType &dtype)
     {
-        Vector3<scalar> tangent1 = v1 - v0;
-        Vector3<scalar> tangent2 = v2 - v0;
-        // Vector3<scalar> normal = tangent1.cross(tangent2);
-        // const scalar area = normal.norm();
-        // normal.normalize();
+        const Vector3<scalar> tangent1 = v1 - v0;
+        const Vector3<scalar> tangent2 = v2 - v0;
+        const Vector3<scalar> tangent3 = v2 - v1;
+        const Vector3<scalar> normal = tangent1.cross(tangent2);
+        const scalar area_sqr = normal.squaredNorm();
+        const Vector3<scalar> pos = p - v0;
 
-        return scalar(0.);
+        Vector3<scalar> sample;
+        switch (dtype)
+        {
+        case PointTriangleDistanceType::P_E0:
+            sample = v0 + (pos.dot(tangent1) / tangent1.squaredNorm()) * tangent1;
+            break;
+        case PointTriangleDistanceType::P_E1:
+            sample = v1 + (pos.dot(tangent3) / tangent3.squaredNorm()) * tangent3;
+            break;
+        case PointTriangleDistanceType::P_E2:
+            sample = v0 + (pos.dot(tangent2) / tangent2.squaredNorm()) * tangent2;
+            break;
+        case PointTriangleDistanceType::P_T0:
+            sample = v0;
+            break;
+        case PointTriangleDistanceType::P_T1:
+            sample = v1;
+            break;
+        case PointTriangleDistanceType::P_T2:
+            sample = v2;
+            break;
+        case PointTriangleDistanceType::P_T:
+            sample = pos - (normal.dot(pos) / area_sqr) * normal;
+            break;
+        default:
+            assert(false);
+        }
+
+        const scalar dist_sqr = (p - sample).squaredNorm();
+        const scalar Phi = cross2_sqr<scalar>(p - sample, normal) / dist_sqr / area_sqr;
+        return sqrt(area_sqr) * inv_barrier(dist_sqr, params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
     }
 
     template double smooth_point_face_potential_single_point(
@@ -112,17 +144,20 @@ namespace ipc {
         const Eigen::Ref<const Vector3<double>>& v0,
         const Eigen::Ref<const Vector3<double>>& v1,
         const Eigen::Ref<const Vector3<double>>& v2,
-        const ParameterType &params);
+        const ParameterType &params,
+        const PointTriangleDistanceType &dtype);
     template AutodiffScalarGrad<12> smooth_point_face_potential_single_point(
         const Eigen::Ref<const Vector3<AutodiffScalarGrad<12>>>& p,
         const Eigen::Ref<const Vector3<AutodiffScalarGrad<12>>>& v0,
         const Eigen::Ref<const Vector3<AutodiffScalarGrad<12>>>& v1,
         const Eigen::Ref<const Vector3<AutodiffScalarGrad<12>>>& v2,
-        const ParameterType &params);
+        const ParameterType &params,
+        const PointTriangleDistanceType &dtype);
     template AutodiffScalarHessian<12> smooth_point_face_potential_single_point(
         const Eigen::Ref<const Vector3<AutodiffScalarHessian<12>>>& p,
         const Eigen::Ref<const Vector3<AutodiffScalarHessian<12>>>& v0,
         const Eigen::Ref<const Vector3<AutodiffScalarHessian<12>>>& v1,
         const Eigen::Ref<const Vector3<AutodiffScalarHessian<12>>>& v2,
-        const ParameterType &params);
+        const ParameterType &params,
+        const PointTriangleDistanceType &dtype);
 }

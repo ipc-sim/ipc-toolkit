@@ -22,7 +22,7 @@ namespace ipc {
         VectorMax3<scalar> sample = e0 + (e1 - e0) * scalar(uv);
 
         const scalar dist_sqr = (p - sample).squaredNorm();
-        const scalar Phi = intpow(tangent.dot((p - sample)), 2) / dist_sqr;
+        const scalar Phi = intpow(tangent.dot(p - sample), 2) / dist_sqr;
 
         return inv_barrier(dist_sqr, params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
     }
@@ -124,7 +124,7 @@ namespace ipc {
         const scalar L = (params.a > 0) ? L_s(s, params.a) : L_ns(s);
         const VectorMax3<scalar> sample = e0 + (s - L) * len * tangent;
         const scalar Phi = intpow((sample - p).normalized().dot(tangent), 2);
-        const scalar dist_sqr = intpow(cross2<scalar>(pos, tangent), 2) + intpow(len * L, 2);
+        const scalar dist_sqr = cross2_sqr<scalar>(pos, tangent) + intpow(len * L, 2);
 
         if (Phi > params.alpha)
             return scalar(0.);

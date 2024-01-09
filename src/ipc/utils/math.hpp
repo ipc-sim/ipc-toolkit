@@ -67,18 +67,33 @@ namespace ipc {
     }
 
     template <typename scalar>
-    scalar cross2(const Eigen::Ref<const VectorMax3<scalar>> &a, const Eigen::Ref<const VectorMax3<scalar>> &b)
+    scalar cross2_sqr(const Eigen::Ref<const VectorMax3<scalar>> &a, const Eigen::Ref<const VectorMax3<scalar>> &b)
     {
         assert(a.size() == 3 || a.size() == 2);
         assert(b.size() == 3 || b.size() == 2);
         if (a.size() == 2)
-            return a[0] * b[1] - a[1] * b[0];
+            return intpow(a[0] * b[1] - a[1] * b[0], 2);
         else if (a.size() == 3)
         {
             const Eigen::Ref<const Vector3<scalar>> a_(a), b_(b);
-            return a_.cross(b_).norm();
+            return a_.cross(b_).squaredNorm();
         }
         else
+        {
+            assert(false);
             return scalar(0);
+        }
+    }
+
+    // linear solve for 2x2 matrix
+    template <typename scalar>
+    Vector2<scalar> linear_solve(const Eigen::Ref<const Matrix2<scalar>> &A, const Eigen::Ref<const Vector2<scalar>> &b)
+    {
+        const scalar det = A(0, 0) * A(1, 1) - A(0, 1) * A(0, 1);
+        Vector2<scalar> x;
+        x(0) = A(1, 1) * b(0) - A(0, 1) * b(1);
+        x(1) = A(1, 0) * b(0) - A(0, 0) * b(1);
+        x /= det;
+        return x;
     }
 }

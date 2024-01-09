@@ -146,7 +146,7 @@ void SmoothCollisionsBuilder::add_face_vertex_collisions(
         const double weight = mesh.vertex_area(vi) / 3;
         Eigen::SparseVector<double> weight_gradient;
         
-        fv_collisions.emplace_back(fi, vi, weight, weight_gradient);
+        fv_collisions.emplace_back(fi, vi, weight, weight_gradient, dtype);
     }
 }
 

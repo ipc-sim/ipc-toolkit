@@ -44,5 +44,6 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& v0,
         const Eigen::Ref<const Vector3<scalar>>& v1,
         const Eigen::Ref<const Vector3<scalar>>& v2,
-        const ParameterType &params);
+        const ParameterType &params,
+        const PointTriangleDistanceType &dtype);
 }

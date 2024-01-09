@@ -20,7 +20,7 @@ namespace ipc {
     double SmoothFaceVertexCollision::operator()(const VectorMax12d& positions, 
         const ParameterType &params) const
     {
-        return smooth_point_face_potential_single_point<double>(positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6), positions.tail<3>(), params);
+        return smooth_point_face_potential_single_point<double>(positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6), positions.tail<3>(), params, known_dtype());
     }
 
     VectorMax12d SmoothFaceVertexCollision::gradient(
@@ -31,7 +31,7 @@ namespace ipc {
         using Diff=AutodiffScalarGrad<12>;
         auto [p, v0, v1, v2] = slice_positions<Diff>(positions);
 
-        const auto val = smooth_point_face_potential_single_point<Diff>(p, v0, v1, v2, params);
+        const auto val = smooth_point_face_potential_single_point<Diff>(p, v0, v1, v2, params, known_dtype());
 
         return val.getGradient();
     }
@@ -45,8 +45,7 @@ namespace ipc {
         using Diff=AutodiffScalarHessian<12>;
         auto [p, v0, v1, v2] = slice_positions<Diff>(positions);
 
-        logger().error("Function incomplete!");
-        const auto val = smooth_point_face_potential_single_point<Diff>(p, v0, v1, v2, params);
+        const auto val = smooth_point_face_potential_single_point<Diff>(p, v0, v1, v2, params, known_dtype());
 
         return val.getHessian();
     }
