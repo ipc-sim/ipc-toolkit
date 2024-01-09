@@ -591,7 +591,7 @@ TEST_CASE(
 
     CollisionMesh mesh;
 
-    SmoothCollisions collisions;
+    SmoothCollisions collisions(true);
     collisions.set_edge_quadrature_type(quad_type);
     mesh = CollisionMesh(vertices, edges, faces);
     mesh.set_min_dist_ratio(min_dist_ratio);

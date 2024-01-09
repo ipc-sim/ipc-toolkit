@@ -116,10 +116,10 @@ void SmoothCollisionsBuilder::add_edge_edge_collisions(
 
         if (mesh.dim() == 2 && quad_type == SurfaceQuadratureType::SinglePoint)
         {
-            const double eps0 = use_adaptive_eps ? std::min(mesh.min_distance_in_rest_config(eb0i), dhat*dhat) : dhat*dhat;
-            const double eps1 = use_adaptive_eps ? std::min(mesh.min_distance_in_rest_config(eb1i), dhat*dhat) : dhat;
-            const double eps2 = use_adaptive_eps ? std::min(mesh.min_distance_in_rest_config(ea0i), dhat*dhat) : dhat*dhat;
-            const double eps3 = use_adaptive_eps ? std::min(mesh.min_distance_in_rest_config(ea1i), dhat*dhat) : dhat*dhat;
+            const double eps0 = use_adaptive_eps ? std::min(mesh.min_distance_in_rest_config(eb0i), dhat) : dhat*dhat;
+            const double eps1 = use_adaptive_eps ? std::min(mesh.min_distance_in_rest_config(eb1i), dhat) : dhat*dhat;
+            const double eps2 = use_adaptive_eps ? std::min(mesh.min_distance_in_rest_config(ea0i), dhat) : dhat*dhat;
+            const double eps3 = use_adaptive_eps ? std::min(mesh.min_distance_in_rest_config(ea1i), dhat) : dhat*dhat;
 
             add_edge_vertex_collision(eai, eb0i, mesh.vertex_area(eb0i) / 2, weight_gradient, 
                 eps0);
