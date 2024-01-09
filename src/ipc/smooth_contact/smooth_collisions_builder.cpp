@@ -16,7 +16,8 @@ void SmoothCollisionsBuilder::add_edge_vertex_collisions(
     const std::function<bool(double)>& is_active,
     const size_t start_i,
     const size_t end_i,
-    const double dhat)
+    const double dhat,
+    const bool use_adaptive_eps)
 {
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [ei, vi] = candidates[i];
@@ -32,7 +33,7 @@ void SmoothCollisionsBuilder::add_edge_vertex_collisions(
         Eigen::SparseVector<double> weight_gradient;
 
         add_edge_vertex_collision(
-            mesh, candidates[i], dtype, weight, weight_gradient, dhat);
+            mesh, candidates[i], dtype, weight, weight_gradient, dhat, use_adaptive_eps);
     }
 }
 
@@ -42,10 +43,16 @@ void SmoothCollisionsBuilder::add_edge_vertex_collision(
     const PointEdgeDistanceType dtype,
     const double weight,
     const Eigen::SparseVector<double>& weight_gradient,
-    const double dhat)
+    const double dhat,
+    const bool use_adaptive_eps)
 {
     const auto& [ei, vi] = candidate;
-    add_edge_vertex_collision(ei, vi, weight, weight_gradient, std::min(dhat, mesh.min_distance_in_rest_config(vi)));
+    if (use_adaptive_eps) {
+        add_edge_vertex_collision(ei, vi, weight, weight_gradient, std::min(dhat, mesh.min_distance_in_rest_config(vi)));
+    } else {
+        add_edge_vertex_collision(ei, vi, weight, weight_gradient, dhat*dhat);
+ 
+    }
 }
 
 // ============================================================================
@@ -75,7 +82,9 @@ void SmoothCollisionsBuilder::add_edge_edge_collisions(
     const std::function<bool(double)>& is_active,
     const size_t start_i,
     const size_t end_i,
-    const SurfaceQuadratureType quad_type)
+    const SurfaceQuadratureType quad_type,
+    const double dhat,
+    const bool use_adaptive_eps)
 {
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [eai, ebi] = candidates[i];
@@ -101,15 +110,20 @@ void SmoothCollisionsBuilder::add_edge_edge_collisions(
 
         if (mesh.dim() == 2 && quad_type == SurfaceQuadratureType::SinglePoint)
         {
+            const double eps0 = use_adaptive_eps ? std::min(mesh.min_distance_in_rest_config(eb0i), dhat) : dhat*dhat;
+            const double eps1 = use_adaptive_eps ? std::min(mesh.min_distance_in_rest_config(eb1i), dhat) : dhat*dhat;
+            const double eps2 = use_adaptive_eps ? std::min(mesh.min_distance_in_rest_config(ea0i), dhat) : dhat*dhat;
+            const double eps3 = use_adaptive_eps ? std::min(mesh.min_distance_in_rest_config(ea1i), dhat) : dhat*dhat;
+
             add_edge_vertex_collision(eai, eb0i, mesh.vertex_area(eb0i) / 2, weight_gradient, 
-                mesh.min_distance_in_rest_config(eb0i));
+                eps0);
             add_edge_vertex_collision(eai, eb1i, mesh.vertex_area(eb1i) / 2, weight_gradient, 
-                mesh.min_distance_in_rest_config(eb1i));
+                eps1);
 
             add_edge_vertex_collision(ebi, ea0i, mesh.vertex_area(ea0i) / 2, weight_gradient, 
-                mesh.min_distance_in_rest_config(ea0i));
+                eps2);
             add_edge_vertex_collision(ebi, ea1i, mesh.vertex_area(ea1i) / 2, weight_gradient, 
-                mesh.min_distance_in_rest_config(ea1i));
+                eps3);
         }
         else
             add_edge_edge_collision(SmoothEdgeEdgeCollision(
