@@ -579,7 +579,7 @@ TEST_CASE(
         dhat = 2e-2;
     }
 
-    double min_dist_ratio = 1;
+    double min_dist_ratio = 1.5;
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
     bool success = igl::readCSV(mesh_name + "-v.csv", vertices);

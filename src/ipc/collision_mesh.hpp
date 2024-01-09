@@ -268,6 +268,7 @@ public:
 
     /// @brief Get minimum distance to contact of a given vertex in rest config / 2.
     /// @param vi Vertex ID.
+    /// @note This really returns the square distance, since that is what becomes epsilon.
     /// @return Minimum distance to contact of vertex vi in rest config / 2 (adapative eps).
     double min_distance_in_rest_config(const size_t vi) const
     {
@@ -275,13 +276,24 @@ public:
             throw std::runtime_error(
                 "Min distances in rest config not initialized. Call init_vertex_contact_distance_map() first.");
         }
-        return m_vertex_to_rest_config_contact_dist(vi);
+        return min_dist_ratio * m_vertex_to_rest_config_contact_dist(vi);
     }
 
     /// @brief Determinte if min distances in rest configuration have been initialized by calling init_vertex_contact_distance_map().
     bool are_min_distances_initialized() const 
     {
         return m_vertex_to_rest_config_contact_dist.rows() == m_rest_positions.rows();
+    }
+
+    ///@brief Fetch maximum distance to contact in rest config
+    ///@return Maximum distance to contact in rest config
+    double max_distance_in_rest_config() const
+    {
+        double max_dist = m_vertex_to_rest_config_contact_dist.row(0).value(); 
+        for (size_t i = 1; i < m_vertex_to_rest_config_contact_dist.rows(); ++i) {
+            max_dist = std::max(max_dist, m_vertex_to_rest_config_contact_dist.row(i).value());
+        }
+        return sqrt(max_dist);
     }
 
     // -----------------------------------------------------------------------
