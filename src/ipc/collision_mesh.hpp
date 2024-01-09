@@ -308,6 +308,12 @@ public:
     /// primitives can collide with all other primitives.
     std::function<bool(size_t, size_t)> can_collide = default_can_collide;
 
+    ///@brief set ratio of min distance to use for adaptive epsilon, ie eps = min_dist_in_rest_config * ratio
+    void set_min_dist_ratio(const double val)
+    {
+        min_dist_ratio = val;
+    }
+
 protected:
     // -----------------------------------------------------------------------
     // Helper initialization functions
@@ -389,6 +395,9 @@ protected:
     std::vector<Eigen::SparseVector<double>> m_vertex_area_jacobian;
     /// @brief The rows of the Jacobian of the edge areas vector.
     std::vector<Eigen::SparseVector<double>> m_edge_area_jacobian;
+
+    ///@brief ratio of min distance to use for adaptive epsilon, ie eps = min_dist_in_rest_config * ratio
+    double min_dist_ratio = 0.5;
 
 private:
     /// @brief By default all primitives can collide with all other primitives.

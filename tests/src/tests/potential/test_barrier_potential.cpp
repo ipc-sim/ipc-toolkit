@@ -579,6 +579,7 @@ TEST_CASE(
         dhat = 2e-2;
     }
 
+    double min_dist_ratio = 1;
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
     bool success = igl::readCSV(mesh_name + "-v.csv", vertices);
@@ -593,6 +594,7 @@ TEST_CASE(
     SmoothCollisions collisions;
     collisions.set_edge_quadrature_type(quad_type);
     mesh = CollisionMesh(vertices, edges, faces);
+    mesh.set_min_dist_ratio(min_dist_ratio);
     collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
     CAPTURE(dhat, method);
     CHECK(collisions.size() > 0);
