@@ -461,7 +461,7 @@ TEST_CASE(
 
 
 TEST_CASE(
-    "Smooth barrier potential full gradient and hessian",
+    "Smooth barrier potential full gradient and hessian 3D",
     "[potential][barrier_potential][gradient][hessian]")
 {
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
@@ -508,7 +508,7 @@ TEST_CASE(
         mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
         vertices = mesh.vertices(vertices);
     }
-    collisions.build(mesh, vertices, std::max(dhat, mesh.max_edge_length()), /*dmin=*/0, method);
+    collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
     CAPTURE(dhat, method, all_vertices_on_surface);
     CHECK(collisions.size() > 0);
     CHECK(!has_intersections(mesh, vertices));
@@ -564,12 +564,13 @@ TEST_CASE(
 }
 
 TEST_CASE(
-    "Smooth barrier potential real sim",
+    "Smooth barrier potential real sim 2D",
     "[potential][barrier_potential][gradient][hessian]")
 {
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
 
     const auto quad_type = GENERATE(SurfaceQuadratureType::UniformSampling, SurfaceQuadratureType::SinglePoint);
+    const bool adaptive_dhat = GENERATE(true, false);
 
     double dhat = -1;
     std::string mesh_name = "";
@@ -591,7 +592,7 @@ TEST_CASE(
 
     CollisionMesh mesh;
 
-    SmoothCollisions collisions(true);
+    SmoothCollisions collisions(adaptive_dhat);
     collisions.set_edge_quadrature_type(quad_type);
     mesh = CollisionMesh(vertices, edges, faces);
     mesh.set_min_dist_ratio(min_dist_ratio);

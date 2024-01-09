@@ -106,36 +106,36 @@ namespace ipc {
         const scalar area_sqr = normal.squaredNorm();
         const Vector3<scalar> pos = p - v0;
 
-        Vector3<scalar> sample;
+        Vector3<scalar> diff;
         switch (dtype)
         {
         case PointTriangleDistanceType::P_E0:
-            sample = v0 + (pos.dot(tangent1) / tangent1.squaredNorm()) * tangent1;
+            diff = pos - (pos.dot(tangent1) / tangent1.squaredNorm()) * tangent1;
             break;
         case PointTriangleDistanceType::P_E1:
-            sample = v1 + (pos.dot(tangent3) / tangent3.squaredNorm()) * tangent3;
+            diff = p - (v1 + (pos.dot(tangent3) / tangent3.squaredNorm()) * tangent3);
             break;
         case PointTriangleDistanceType::P_E2:
-            sample = v0 + (pos.dot(tangent2) / tangent2.squaredNorm()) * tangent2;
+            diff = pos - (pos.dot(tangent2) / tangent2.squaredNorm()) * tangent2;
             break;
         case PointTriangleDistanceType::P_T0:
-            sample = v0;
+            diff = p - v0;
             break;
         case PointTriangleDistanceType::P_T1:
-            sample = v1;
+            diff = p - v1;
             break;
         case PointTriangleDistanceType::P_T2:
-            sample = v2;
+            diff = p - v2;
             break;
         case PointTriangleDistanceType::P_T:
-            sample = pos - (normal.dot(pos) / area_sqr) * normal;
+            diff = (normal.dot(pos) / area_sqr) * normal;
             break;
         default:
             assert(false);
         }
 
-        const scalar dist_sqr = (p - sample).squaredNorm();
-        const scalar Phi = cross2_sqr<scalar>(p - sample, normal) / dist_sqr / area_sqr;
+        const scalar dist_sqr = diff.squaredNorm();
+        const scalar Phi = cross2_sqr<scalar>(diff, normal) / dist_sqr / area_sqr;
         return sqrt(area_sqr) * inv_barrier(dist_sqr, params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
     }
 

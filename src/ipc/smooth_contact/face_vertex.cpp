@@ -11,7 +11,7 @@ namespace ipc {
             std::array<Vector<T, dim>, n_pts> out;
             for (int d = 0; d < dim; d++)
                 for (int i = 0; i < n_pts; i++)
-                    out[i](d) = T(i * dim + d, i * dim + positions(d));
+                    out[i](d) = T(i * dim + d, positions(i * dim + d));
 
             return out;
         }
@@ -32,7 +32,6 @@ namespace ipc {
         auto [p, v0, v1, v2] = slice_positions<Diff>(positions);
 
         const auto val = smooth_point_face_potential_single_point<Diff>(p, v0, v1, v2, params, known_dtype());
-
         return val.getGradient();
     }
 
