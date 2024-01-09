@@ -72,7 +72,7 @@ void SmoothCollisions::build(
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_edge_vertex_collisions(
                 mesh, vertices, candidates.ev_candidates, is_active, r.begin(),
-                r.end(), dhat);
+                r.end(), dhat, use_adaptive_eps);
         });
 
     tbb::parallel_for(
@@ -80,7 +80,7 @@ void SmoothCollisions::build(
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_edge_edge_collisions(
                 mesh, vertices, candidates.ee_candidates, is_active, r.begin(),
-                r.end(), quad_type);
+                r.end(), quad_type, dhat, use_adaptive_eps);
         });
 
     // -------------------------------------------------------------------------
