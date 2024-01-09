@@ -1,5 +1,7 @@
 #include "collision_mesh.hpp"
 
+#include <ipc/distance/point_edge.hpp>
+
 #include <ipc/utils/unordered_map_and_set.hpp>
 #include <ipc/utils/logger.hpp>
 #include <ipc/utils/eigen_ext.hpp>
@@ -383,22 +385,12 @@ void CollisionMesh::init_vertex_contact_distance_map()
             double min_dist_sqr = __DBL_MAX__;
             for (int j = 0; j < m_edges.rows(); j++) {
                 if (m_edges(j, 0) != i && m_edges(j, 1) != i) {
-                    // need a from params to use same distance as potential
-                    // not sure how to design so hard coding for now
 
                     const VectorMax3d p = m_rest_positions.row(i);
                     const VectorMax3d e0 = m_rest_positions.row(m_edges(j, 0));
                     const VectorMax3d e1 = m_rest_positions.row(m_edges(j, 1));
 
-                    VectorMax3d tangent = e1 - e0;
-                    const double len = tangent.norm();
-                    tangent = tangent / len;
-
-                    VectorMax3d pos = p - e0;
-                    const double s = pos.dot(tangent) / len;
-                    const double a = 0;
-                    const double L = (a > 0) ? L_s(s, a) : L_ns(s);
-                    const double dist_sqr = intpow(cross2<double>(pos, tangent), 2) + intpow(len * L, 2);
+                    const double dist_sqr = point_edge_distance(p, e0, e1);
 
                     min_dist_sqr = std::min(dist_sqr, min_dist_sqr);
                 }
