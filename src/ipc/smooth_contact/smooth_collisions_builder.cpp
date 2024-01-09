@@ -7,8 +7,6 @@
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
-#include <iostream>
-
 namespace ipc {
 
 void SmoothCollisionsBuilder::add_edge_vertex_collisions(
@@ -21,7 +19,6 @@ void SmoothCollisionsBuilder::add_edge_vertex_collisions(
     const double dhat,
     const bool use_adaptive_eps)
 {
-    std::cout << "adding edge vertex collisions" << std::endl;
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [ei, vi] = candidates[i];
         const auto [v, e0, e1, _] =
@@ -51,10 +48,8 @@ void SmoothCollisionsBuilder::add_edge_vertex_collision(
 {
     const auto& [ei, vi] = candidate;
     if (use_adaptive_eps) {
-        std::cout << "new dhat" << std::endl;
         add_edge_vertex_collision(ei, vi, weight, weight_gradient, std::min(dhat, mesh.min_distance_in_rest_config(vi)));
     } else {
-        std::cout << "old dhat" << std::endl;
         add_edge_vertex_collision(ei, vi, weight, weight_gradient, dhat*dhat);
  
     }
@@ -91,7 +86,6 @@ void SmoothCollisionsBuilder::add_edge_edge_collisions(
     const double dhat,
     const bool use_adaptive_eps)
 {
-    std::cout << "adding edge edge collisions" << std::endl;
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [eai, ebi] = candidates[i];
 
