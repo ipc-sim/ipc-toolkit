@@ -43,11 +43,4 @@ namespace ipc {
         const Eigen::Ref<const VectorMax3<scalar>>& e0,
         const Eigen::Ref<const VectorMax3<scalar>>& e1,
         const ParameterType &params);
-
-    template <typename scalar>
-    scalar smooth_points_edge_potential_single_point(
-        const Eigen::Ref<const Eigen::Matrix<scalar, -1, -1, 0, -1, 3>>& p,
-        const Eigen::Ref<const VectorMax3<scalar>>& e0,
-        const Eigen::Ref<const VectorMax3<scalar>>& e1,
-        const ParameterType &params);
 }

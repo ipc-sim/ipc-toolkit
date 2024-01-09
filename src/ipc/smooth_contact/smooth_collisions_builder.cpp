@@ -132,6 +132,38 @@ void SmoothCollisionsBuilder::add_edge_edge_collisions(
     }
 }
 
+void SmoothCollisionsBuilder::add_face_vertex_collisions(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const std::vector<FaceVertexCandidate>& candidates,
+    const std::function<bool(double)>& is_active,
+    const size_t start_i,
+    const size_t end_i)
+{
+    for (size_t i = start_i; i < end_i; i++) {
+        const auto& [fi, vi] = candidates[i];
+        const long f0i = mesh.faces()(fi, 0), f1i = mesh.faces()(fi, 1),
+                   f2i = mesh.faces()(fi, 2);
+
+        const auto [v, f0, f1, f2] =
+            candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
+
+        // Compute distance type
+        const PointTriangleDistanceType dtype =
+            point_triangle_distance_type(v, f0, f1, f2);
+        const double distance_sqr =
+            point_triangle_distance(v, f0, f1, f2, dtype);
+
+        if (!is_active(distance_sqr))
+            continue;
+
+        const double weight = mesh.vertex_area(vi) / 3;
+        Eigen::SparseVector<double> weight_gradient;
+        
+        fv_collisions.emplace_back(fi, vi, weight, weight_gradient);
+    }
+}
+
 void SmoothCollisionsBuilder::add_edge_edge_collision(
     const SmoothEdgeEdgeCollision& ee_collision,
     unordered_map<SmoothEdgeEdgeCollision, long>& ee_to_id_,
@@ -159,7 +191,7 @@ void SmoothCollisionsBuilder::merge(
     unordered_map<SmoothEdgeEdgeCollision, long> ee_to_id;
     auto& ev_collisions = merged_collisions.ev_collisions;
     auto& ee_collisions = merged_collisions.ee_collisions;
-    // auto& fv_collisions = merged_collisions.fv_collisions;
+    auto& fv_collisions = merged_collisions.fv_collisions;
 
     // size up the hash items
     size_t n_vv = 0, n_ev = 0, n_ee = 0, n_fv = 0;
@@ -167,11 +199,11 @@ void SmoothCollisionsBuilder::merge(
         // This is an conservative estimate
         n_ev += storage.ev_collisions.size();
         n_ee += storage.ee_collisions.size();
-        // n_fv += storage.fv_collisions.size();
+        n_fv += storage.fv_collisions.size();
     }
     ev_collisions.reserve(n_ev);
     ee_collisions.reserve(n_ee);
-    // fv_collisions.reserve(n_fv);
+    fv_collisions.reserve(n_fv);
 
     // merge
     for (const auto& builder : local_storage) {
@@ -193,9 +225,9 @@ void SmoothCollisionsBuilder::merge(
             }
         }
 
-        // fv_collisions.insert(
-        //     fv_collisions.end(), builder.fv_collisions.begin(),
-        //     builder.fv_collisions.end());
+        fv_collisions.insert(
+            fv_collisions.end(), builder.fv_collisions.begin(),
+            builder.fv_collisions.end());
     }
 
     // If positive and negative vertex-vertex collisions cancel out, remove

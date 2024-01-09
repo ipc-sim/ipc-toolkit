@@ -83,6 +83,14 @@ void SmoothCollisions::build(
                 r.end(), quad_type, dhat, use_adaptive_eps);
         });
 
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(size_t(0), candidates.fv_candidates.size()),
+        [&](const tbb::blocked_range<size_t>& r) {
+            storage.local().add_face_vertex_collisions(
+                mesh, vertices, candidates.fv_candidates, is_active, r.begin(),
+                r.end());
+        });
+
     // -------------------------------------------------------------------------
 
     SmoothCollisionsBuilder::merge(storage, *this);
@@ -99,18 +107,19 @@ void SmoothCollisions::build(
 
 size_t SmoothCollisions::size() const
 {
-    return ev_collisions.size() + ee_collisions.size();
+    return ev_collisions.size() + ee_collisions.size() + fv_collisions.size();
 }
 
 bool SmoothCollisions::empty() const
 {
-    return ev_collisions.empty() && ee_collisions.empty();
+    return ev_collisions.empty() && ee_collisions.empty() && fv_collisions.empty();
 }
 
 void SmoothCollisions::clear()
 {
     ev_collisions.clear();
     ee_collisions.clear();
+    fv_collisions.clear();
 }
 
 Collision& SmoothCollisions::operator[](size_t i)
@@ -123,6 +132,10 @@ Collision& SmoothCollisions::operator[](size_t i)
         return ee_collisions[i];
     }
     i -= ee_collisions.size();
+    if (i < fv_collisions.size()) {
+        return fv_collisions[i];
+    }
+    i -= fv_collisions.size();
     throw std::out_of_range("Collision index is out of range!");
 }
 
@@ -136,6 +149,10 @@ const Collision& SmoothCollisions::operator[](size_t i) const
         return ee_collisions[i];
     }
     i -= ee_collisions.size();
+    if (i < fv_collisions.size()) {
+        return fv_collisions[i];
+    }
+    i -= fv_collisions.size();
     throw std::out_of_range("Collision index is out of range!");
 }
 
@@ -163,7 +180,10 @@ bool SmoothCollisions::is_face_vertex(size_t i) const
 
 bool SmoothCollisions::is_plane_vertex(size_t i) const
 {
-    return false;
+    return i
+        >= ev_collisions.size() + ee_collisions.size()
+        && i < ev_collisions.size()
+            + ee_collisions.size() + fv_collisions.size();
 }
 
 std::string SmoothCollisions::to_string(
@@ -189,6 +209,15 @@ std::string SmoothCollisions::to_string(
                   ee.weight, int(ee.dtype),
                   ee.compute_distance(
                       ee.dof(vertices, mesh.edges(), mesh.faces())));
+    }
+    for (const auto& fv : fv_collisions) {
+        ss << "\n"
+           << fmt::format(
+                  "fv: {}=({}, {}, {}) {}, w: {:g}, d: {:g}", fv.face_id,
+                  mesh.faces()(fv.face_id, 0), mesh.faces()(fv.face_id, 1),
+                  mesh.faces()(fv.face_id, 2), fv.vertex_id, fv.weight,
+                  fv.compute_distance(
+                      fv.dof(vertices, mesh.edges(), mesh.faces())));
     }
     return ss.str();
 }

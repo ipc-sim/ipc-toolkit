@@ -68,6 +68,14 @@ public:
         const double dhat,
         const bool use_adaptive_eps = false);
 
+    void add_face_vertex_collisions(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const std::vector<FaceVertexCandidate>& candidates,
+        const std::function<bool(double)>& is_active,
+        const size_t start_i,
+        const size_t end_i);
+
     static void add_edge_edge_collision(
         const SmoothEdgeEdgeCollision& ee_collision,
         unordered_map<SmoothEdgeEdgeCollision, long>& ee_to_id_,
@@ -84,7 +92,7 @@ public:
     // std::vector<VertexVertexCollision> vv_collisions;
     std::vector<SmoothEdgeVertexCollision> ev_collisions;
     std::vector<SmoothEdgeEdgeCollision> ee_collisions;
-    // std::vector<FaceVertexCollision> fv_collisions;
+    std::vector<SmoothFaceVertexCollision> fv_collisions;
     // std::vector<PlaneVertexCollision> pv_collisions;
 };
 

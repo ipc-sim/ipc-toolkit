@@ -2,6 +2,7 @@ set(SOURCES
   # Tests
   test_interval.cpp
   test_utils.cpp
+  test_quadrature.cpp
 
   # Benchmarks
 

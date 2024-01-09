@@ -1,6 +1,8 @@
 set(SOURCES
   smooth_point_edge.cpp
   smooth_point_edge.hpp
+  smooth_point_face.cpp
+  smooth_point_face.hpp
   smooth_contact_potential.cpp
   smooth_contact_potential.hpp
   smooth_collisions.cpp
@@ -11,6 +13,8 @@ set(SOURCES
   edge_vertex.hpp
   edge_edge.cpp
   edge_edge.hpp
+  face_vertex.cpp
+  face_vertex.hpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})
