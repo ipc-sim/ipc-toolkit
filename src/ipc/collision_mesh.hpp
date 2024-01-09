@@ -289,11 +289,7 @@ public:
     ///@return Maximum distance to contact in rest config
     double max_distance_in_rest_config() const
     {
-        double max_dist = m_vertex_to_rest_config_contact_dist.row(0).value(); 
-        for (size_t i = 1; i < m_vertex_to_rest_config_contact_dist.rows(); ++i) {
-            max_dist = std::max(max_dist, m_vertex_to_rest_config_contact_dist.row(i).value());
-        }
-        return sqrt(max_dist);
+        return sqrt(m_vertex_to_rest_config_contact_dist.maxCoeff());
     }
 
     // -----------------------------------------------------------------------

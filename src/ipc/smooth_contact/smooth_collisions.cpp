@@ -58,11 +58,9 @@ void SmoothCollisions::build(
 
     clear();
 
-    double corrected_dhat = std::max(mesh.max_distance_in_rest_config(), dhat);
-
     // Cull the candidates by measuring the distance and dropping those that are
     // greater than dhat.
-    const double offset_sqr = (dmin + corrected_dhat) * (dmin + corrected_dhat);
+    const double offset_sqr = (dmin + dhat) * (dmin + dhat);
     auto is_active = [&](double distance_sqr) {
         return distance_sqr < offset_sqr;
     };
@@ -74,7 +72,7 @@ void SmoothCollisions::build(
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_edge_vertex_collisions(
                 mesh, vertices, candidates.ev_candidates, is_active, r.begin(),
-                r.end());
+                r.end(), dhat);
         });
 
     tbb::parallel_for(

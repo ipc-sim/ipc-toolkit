@@ -19,7 +19,8 @@ public:
         const std::vector<EdgeVertexCandidate>& candidates,
         const std::function<bool(double)>& is_active,
         const size_t start_i,
-        const size_t end_i);
+        const size_t end_i,
+        const double dhat);
 
     // ------------------------------------------------------------------------
 
@@ -51,7 +52,8 @@ public:
         const EdgeVertexCandidate& candidate,
         const PointEdgeDistanceType dtype,
         const double weight,
-        const Eigen::SparseVector<double>& weight_gradient);
+        const Eigen::SparseVector<double>& weight_gradient,
+        const double dhat);
 
     void add_edge_edge_collisions(
         const CollisionMesh& mesh,

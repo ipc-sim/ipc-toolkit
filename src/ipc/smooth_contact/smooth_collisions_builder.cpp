@@ -15,7 +15,8 @@ void SmoothCollisionsBuilder::add_edge_vertex_collisions(
     const std::vector<EdgeVertexCandidate>& candidates,
     const std::function<bool(double)>& is_active,
     const size_t start_i,
-    const size_t end_i)
+    const size_t end_i,
+    const double dhat)
 {
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [ei, vi] = candidates[i];
@@ -31,7 +32,7 @@ void SmoothCollisionsBuilder::add_edge_vertex_collisions(
         Eigen::SparseVector<double> weight_gradient;
 
         add_edge_vertex_collision(
-            mesh, candidates[i], dtype, weight, weight_gradient);
+            mesh, candidates[i], dtype, weight, weight_gradient, dhat);
     }
 }
 
@@ -40,10 +41,11 @@ void SmoothCollisionsBuilder::add_edge_vertex_collision(
     const EdgeVertexCandidate& candidate,
     const PointEdgeDistanceType dtype,
     const double weight,
-    const Eigen::SparseVector<double>& weight_gradient)
+    const Eigen::SparseVector<double>& weight_gradient,
+    const double dhat)
 {
     const auto& [ei, vi] = candidate;
-    add_edge_vertex_collision(ei, vi, weight, weight_gradient, mesh.min_distance_in_rest_config(vi));
+    add_edge_vertex_collision(ei, vi, weight, weight_gradient, std::min(dhat, mesh.min_distance_in_rest_config(vi)));
 }
 
 // ============================================================================
