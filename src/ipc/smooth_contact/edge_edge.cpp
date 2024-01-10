@@ -9,13 +9,13 @@
 namespace ipc {
     namespace {
         template <class T>
-        std::array<VectorMax3<T>, 4> slice_positions(const VectorMax12d &positions, const int &_dim)
+        std::array<VectorMax3<T>, 4> slice_positions(const VectorMax12d &positions, const int &dim_)
         {
             std::array<VectorMax3<T>, 4> points;
-            points.fill(VectorMax3<T>::Zero(_dim));
+            points.fill(VectorMax3<T>::Zero(dim_));
             
             for (int i = 0, id = 0; i < 4; i++)
-                for (int d = 0; d < _dim; d++, id++)
+                for (int d = 0; d < dim_; d++, id++)
                     if constexpr (std::is_same<T, double>::value)
                         points[i](d) = positions(id);
                     else
@@ -25,42 +25,54 @@ namespace ipc {
         }
     }
 
-    Vector12d SmoothEdgeEdgeCollision::positions_to_3d(const VectorMax12d& positions) const
+    template <int dim_>
+    Vector12d SmoothEdgeEdgeCollision<dim_>::positions_to_3d(const VectorMax12d& positions) const
     {
-        if (positions.size() == 12)
+        if constexpr (dim_ == 3)
             return positions;
         
         assert(positions.size() == 8);
         Vector12d positions_full;
         positions_full.setZero();
         for (int i = 0; i < 4; i++)
-            positions_full.segment<2>(i * 3) = positions.segment<2>(i * 2);
+            positions_full.segment<dim_>(i * 3) = positions.segment<dim_>(i * dim_);
         return positions_full;
     }
 
-    double SmoothEdgeEdgeCollision::compute_distance(const VectorMax12d& positions) const
+    template <int dim_>
+    double SmoothEdgeEdgeCollision<dim_>::compute_distance(const VectorMax12d& positions) const
     {
-        return EdgeEdgeCandidate::compute_distance(positions_to_3d(positions));
+        if constexpr (dim_ == 3)
+            return EdgeEdgeCandidate::compute_distance(positions);
+        else
+            return EdgeEdgeCandidate::compute_distance(positions_to_3d(positions));
     }
 
-    VectorMax12d SmoothEdgeEdgeCollision::compute_distance_gradient(
+    template <int dim_>
+    VectorMax12d SmoothEdgeEdgeCollision<dim_>::compute_distance_gradient(
         const VectorMax12d& positions) const
     {
-        return EdgeEdgeCandidate::compute_distance_gradient(positions_to_3d(positions));
+        if constexpr (dim_ == 3)
+            return EdgeEdgeCandidate::compute_distance_gradient(positions);
+        else
+            return EdgeEdgeCandidate::compute_distance_gradient(positions_to_3d(positions));
     }
 
-    MatrixMax12d
-    SmoothEdgeEdgeCollision::compute_distance_hessian(const VectorMax12d& positions) const
+    template <int dim_> MatrixMax12d
+    SmoothEdgeEdgeCollision<dim_>::compute_distance_hessian(const VectorMax12d& positions) const
     {
-        return EdgeEdgeCandidate::compute_distance_hessian(positions_to_3d(positions));
+        if constexpr (dim_ == 3)
+            return EdgeEdgeCandidate::compute_distance_hessian(positions);
+        else
+            return EdgeEdgeCandidate::compute_distance_hessian(positions_to_3d(positions));
     }
 
-    double SmoothEdgeEdgeCollision::operator()(
+    template <int dim_>
+    double SmoothEdgeEdgeCollision<dim_>::operator()(
         const VectorMax12d& positions, 
         const ParameterType &params) const
     {
-        const int _dim = positions.size() / num_vertices();
-        auto [e00, e01, e10, e11] = slice_positions<double>(positions, _dim);
+        auto [e00, e01, e10, e11] = slice_positions<double>(positions, dim_);
 
         double val = 0;
         Eigen::VectorXd uv, w;
@@ -77,34 +89,18 @@ namespace ipc {
             p = e10 + edge1 * uv(i);
             val += len1 * w(i) * smooth_point_edge_potential_quadrature<double>(p, e00, e01, params);
         }
+
         return val;
-
-        // tbb::enumerable_thread_specific<VectorMax3d> storage;
-        // tbb::enumerable_thread_specific<double> out(std::numeric_limits<double>::infinity());
-
-        // tbb::parallel_for(
-        //     tbb::blocked_range<size_t>(size_t(0), uv.size()),
-        //     [&](const tbb::blocked_range<size_t>& r) {
-        //         double &local_potential = out.local();
-        //         local_potential = 0;
-        //         for (int i = r.start(); i < r.end(); ++i)
-        //         {
-        //             storage.local() = positions.segment(0, _dim) + (positions.segment(_dim, _dim) - positions.segment(0, _dim)) * uv(i);
-        //             local_potential += w(i) * smooth_point_edge_potential_single_point<double>(p, positions.segment(2*_dim, _dim), positions.segment(3*_dim, _dim), params);
-        //         }
-        //     });
-        
-        // return out.combine([](double a, double b) { return a + b; });
     }
 
-    VectorMax12d SmoothEdgeEdgeCollision::gradient(
+    template <int dim_>
+    VectorMax12d SmoothEdgeEdgeCollision<dim_>::gradient(
         const VectorMax12d& positions, 
         const ParameterType &params) const
     {
-        const int _dim = positions.size() / num_vertices();
         DiffScalarBase::setVariableCount(12);
         using Diff=AutodiffScalarGrad<12>;
-        auto [e00, e01, e10, e11] = slice_positions<Diff>(positions, _dim);
+        auto [e00, e01, e10, e11] = slice_positions<Diff>(positions, dim_);
 
         Eigen::VectorXd uv, w;
         line_quadrature(params.n_quadrature, uv, w);
@@ -121,18 +117,18 @@ namespace ipc {
             p = e10 + Diff(uv(i)) * edge1;
             val += Diff(w(i)) * len1 * smooth_point_edge_potential_quadrature<Diff>(p, e00, e01, params);
         }
-        return val.getGradient().head(4*_dim);
+        return val.getGradient().head(4*dim_);
     }
 
-    MatrixMax12d SmoothEdgeEdgeCollision::hessian(
+    template <int dim_>
+    MatrixMax12d SmoothEdgeEdgeCollision<dim_>::hessian(
         const VectorMax12d& positions, 
         const ParameterType &params,
         const bool project_hessian_to_psd) const
     {
-        const int _dim = positions.size() / num_vertices();
         DiffScalarBase::setVariableCount(12);
         using Diff=AutodiffScalarHessian<12>;
-        auto [e00, e01, e10, e11] = slice_positions<Diff>(positions, _dim);
+        auto [e00, e01, e10, e11] = slice_positions<Diff>(positions, dim_);
 
         Eigen::VectorXd uv, w;
         line_quadrature(params.n_quadrature, uv, w);
@@ -150,6 +146,9 @@ namespace ipc {
             val += Diff(w(i)) * len1 * smooth_point_edge_potential_quadrature<Diff>(p, e00, e01, params);
         }
 
-        return val.getHessian().topLeftCorner(4*_dim, 4*_dim);
+        return val.getHessian().topLeftCorner(4*dim_, 4*dim_);
     }
+
+    template class SmoothEdgeEdgeCollision<2>;
+    template class SmoothEdgeEdgeCollision<3>;
 }

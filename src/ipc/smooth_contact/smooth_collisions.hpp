@@ -7,6 +7,7 @@
 
 namespace ipc {
 
+template <int dim>
 class SmoothCollisions : public VirtualCollisions {
 public:
     /// @brief The type of the collisions.
@@ -105,12 +106,12 @@ public:
         logger().error("Smooth contact formulation doesn't have shape derivatives implemented!");
     }
 
-    std::vector<CandidateType> get_candidate_types(const int &dim) const override;
+    std::vector<CandidateType> get_candidate_types(const int &_dim) const override;
 
 public:
     // std::vector<SmoothVertexVertexCollision> vv_collisions;
     std::vector<SmoothEdgeVertexCollision> ev_collisions;
-    std::vector<SmoothEdgeEdgeCollision> ee_collisions;
+    std::vector<SmoothEdgeEdgeCollision<dim>> ee_collisions;
     std::vector<SmoothFaceVertexCollision> fv_collisions;
     // std::vector<SmoothPlaneVertexCollision> pv_collisions;
 

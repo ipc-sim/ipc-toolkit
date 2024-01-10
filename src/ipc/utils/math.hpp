@@ -36,6 +36,16 @@ namespace ipc {
     }
 
     template <typename scalar>
+    scalar smooth_heaviside(const scalar &x)
+    {
+        if (x <= -1)
+            return scalar(0.);
+        if (x >= 0)
+            return scalar(1.);
+        return (1. - 2 * x) * intpow(x + 1., 2);
+    }
+
+    template <typename scalar>
     scalar inv_barrier(const scalar &x, const double &eps, const double &r)
     {
         return cubic_spline((2 / eps) * x) / pow(intpow(x/eps, 2), r / 2);

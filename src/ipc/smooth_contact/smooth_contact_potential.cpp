@@ -28,6 +28,7 @@ MatrixMax12d SmoothContactPotential<TCollisions>::hessian(
 }
 
 template class SmoothContactPotential<VirtualCollisions>;
-template class SmoothContactPotential<SmoothCollisions>;
+template class SmoothContactPotential<SmoothCollisions<2>>;
+template class SmoothContactPotential<SmoothCollisions<3>>;
 
 } // namespace ipc

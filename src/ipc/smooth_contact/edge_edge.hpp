@@ -4,6 +4,7 @@
 
 namespace ipc {
 
+template <int dim_>
 class SmoothEdgeEdgeCollision : public EdgeEdgeCollision {
 public:
     using EdgeEdgeCollision::EdgeEdgeCollision;

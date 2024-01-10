@@ -16,7 +16,8 @@
 
 namespace ipc {
 
-void SmoothCollisions::build(
+template <int dim>
+void SmoothCollisions<dim>::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const double dhat,
@@ -26,9 +27,11 @@ void SmoothCollisions::build(
     VirtualCollisions::build(mesh, vertices, dhat, dmin, broad_phase_method);
 }
 
-std::vector<CandidateType> SmoothCollisions::get_candidate_types(const int &dim) const
+template <int dim>
+std::vector<CandidateType> SmoothCollisions<dim>::get_candidate_types(const int &_dim) const
 {
-    if (dim == 2)
+    assert(dim == _dim);
+    if constexpr (dim == 2)
     {
         if (quad_type == SurfaceQuadratureType::SinglePoint)
             return {CandidateType::EdgeVertex};
@@ -47,7 +50,8 @@ std::vector<CandidateType> SmoothCollisions::get_candidate_types(const int &dim)
     }
 }
 
-void SmoothCollisions::build(
+template <int dim>
+void SmoothCollisions<dim>::build(
     const Candidates& candidates,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
@@ -65,7 +69,7 @@ void SmoothCollisions::build(
         return distance_sqr < offset_sqr;
     };
 
-    tbb::enumerable_thread_specific<SmoothCollisionsBuilder> storage;
+    tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>> storage;
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), candidates.ev_candidates.size()),
@@ -93,7 +97,7 @@ void SmoothCollisions::build(
 
     // -------------------------------------------------------------------------
 
-    SmoothCollisionsBuilder::merge(storage, *this);
+    SmoothCollisionsBuilder<dim>::merge(storage, *this);
 
     // logger().debug(to_string(mesh, vertices));
 
@@ -105,24 +109,28 @@ void SmoothCollisions::build(
 
 // ============================================================================
 
-size_t SmoothCollisions::size() const
+template <int dim>
+size_t SmoothCollisions<dim>::size() const
 {
     return ev_collisions.size() + ee_collisions.size() + fv_collisions.size();
 }
 
-bool SmoothCollisions::empty() const
+template <int dim>
+bool SmoothCollisions<dim>::empty() const
 {
     return ev_collisions.empty() && ee_collisions.empty() && fv_collisions.empty();
 }
 
-void SmoothCollisions::clear()
+template <int dim>
+void SmoothCollisions<dim>::clear()
 {
     ev_collisions.clear();
     ee_collisions.clear();
     fv_collisions.clear();
 }
 
-Collision& SmoothCollisions::operator[](size_t i)
+template <int dim>
+Collision& SmoothCollisions<dim>::operator[](size_t i)
 {
     if (i < ev_collisions.size()) {
         return ev_collisions[i];
@@ -139,7 +147,8 @@ Collision& SmoothCollisions::operator[](size_t i)
     throw std::out_of_range("Collision index is out of range!");
 }
 
-const Collision& SmoothCollisions::operator[](size_t i) const
+template <int dim>
+const Collision& SmoothCollisions<dim>::operator[](size_t i) const
 {
     if (i < ev_collisions.size()) {
         return ev_collisions[i];
@@ -156,29 +165,34 @@ const Collision& SmoothCollisions::operator[](size_t i) const
     throw std::out_of_range("Collision index is out of range!");
 }
 
-bool SmoothCollisions::is_vertex_vertex(size_t i) const
+template <int dim>
+bool SmoothCollisions<dim>::is_vertex_vertex(size_t i) const
 {
     return false;
 }
 
-bool SmoothCollisions::is_edge_vertex(size_t i) const
+template <int dim>
+bool SmoothCollisions<dim>::is_edge_vertex(size_t i) const
 {
     return i < ev_collisions.size();
 }
 
-bool SmoothCollisions::is_edge_edge(size_t i) const
+template <int dim>
+bool SmoothCollisions<dim>::is_edge_edge(size_t i) const
 {
     return i >= ev_collisions.size()
         && i
         < ev_collisions.size() + ee_collisions.size();
 }
 
-bool SmoothCollisions::is_face_vertex(size_t i) const
+template <int dim>
+bool SmoothCollisions<dim>::is_face_vertex(size_t i) const
 {
     return false;
 }
 
-bool SmoothCollisions::is_plane_vertex(size_t i) const
+template <int dim>
+bool SmoothCollisions<dim>::is_plane_vertex(size_t i) const
 {
     return i
         >= ev_collisions.size() + ee_collisions.size()
@@ -186,7 +200,8 @@ bool SmoothCollisions::is_plane_vertex(size_t i) const
             + ee_collisions.size() + fv_collisions.size();
 }
 
-std::string SmoothCollisions::to_string(
+template <int dim>
+std::string SmoothCollisions<dim>::to_string(
     const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
 {
     std::stringstream ss;
@@ -222,4 +237,6 @@ std::string SmoothCollisions::to_string(
     return ss.str();
 }
 
+template class SmoothCollisions<2>;
+template class SmoothCollisions<3>;
 } // namespace ipc

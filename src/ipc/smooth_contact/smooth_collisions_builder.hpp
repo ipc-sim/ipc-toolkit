@@ -9,6 +9,7 @@
 
 namespace ipc {
 
+template <int dim>
 class SmoothCollisionsBuilder {
 public:
     SmoothCollisionsBuilder() = default;
@@ -26,8 +27,8 @@ public:
     // ------------------------------------------------------------------------
 
     static void merge(
-        const tbb::enumerable_thread_specific<SmoothCollisionsBuilder>& local_storage,
-        SmoothCollisions& merged_collisions);
+        const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>& local_storage,
+        SmoothCollisions<dim>& merged_collisions);
 
     // -------------------------------------------------------------------------
 
@@ -77,21 +78,21 @@ public:
         const size_t end_i);
 
     static void add_edge_edge_collision(
-        const SmoothEdgeEdgeCollision& ee_collision,
-        unordered_map<SmoothEdgeEdgeCollision, long>& ee_to_id_,
-        std::vector<SmoothEdgeEdgeCollision>& ee_collisions_);
+        const SmoothEdgeEdgeCollision<dim>& ee_collision,
+        unordered_map<SmoothEdgeEdgeCollision<dim>, long>& ee_to_id_,
+        std::vector<SmoothEdgeEdgeCollision<dim>>& ee_collisions_);
 
     // -------------------------------------------------------------------------
 
     // Store the indices to pairs to avoid duplicates.
     // unordered_map<VertexVertexCollision, long> vv_to_id;
     unordered_map<SmoothEdgeVertexCollision, long> ev_to_id;
-    unordered_map<SmoothEdgeEdgeCollision, long> ee_to_id;
+    unordered_map<SmoothEdgeEdgeCollision<dim>, long> ee_to_id;
 
     // Constructed collisions
     // std::vector<VertexVertexCollision> vv_collisions;
     std::vector<SmoothEdgeVertexCollision> ev_collisions;
-    std::vector<SmoothEdgeEdgeCollision> ee_collisions;
+    std::vector<SmoothEdgeEdgeCollision<dim>> ee_collisions;
     std::vector<SmoothFaceVertexCollision> fv_collisions;
     // std::vector<PlaneVertexCollision> pv_collisions;
 };

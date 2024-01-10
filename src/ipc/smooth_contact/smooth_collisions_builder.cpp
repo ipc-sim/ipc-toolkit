@@ -9,7 +9,8 @@
 
 namespace ipc {
 
-void SmoothCollisionsBuilder::add_edge_vertex_collisions(
+template <int dim>
+void SmoothCollisionsBuilder<dim>::add_edge_vertex_collisions(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const std::vector<EdgeVertexCandidate>& candidates,
@@ -37,7 +38,8 @@ void SmoothCollisionsBuilder::add_edge_vertex_collisions(
     }
 }
 
-void SmoothCollisionsBuilder::add_edge_vertex_collision(
+template <int dim>
+void SmoothCollisionsBuilder<dim>::add_edge_vertex_collision(
     const CollisionMesh& mesh,
     const EdgeVertexCandidate& candidate,
     const PointEdgeDistanceType dtype,
@@ -52,7 +54,8 @@ void SmoothCollisionsBuilder::add_edge_vertex_collision(
 
 // ============================================================================
 
-void SmoothCollisionsBuilder::add_edge_vertex_collision(
+template <int dim>
+void SmoothCollisionsBuilder<dim>::add_edge_vertex_collision(
     const SmoothEdgeVertexCollision& ev_collision,
     unordered_map<SmoothEdgeVertexCollision, long>& ev_to_id,
     std::vector<SmoothEdgeVertexCollision>& ev_collisions)
@@ -70,7 +73,8 @@ void SmoothCollisionsBuilder::add_edge_vertex_collision(
     }
 }
 
-void SmoothCollisionsBuilder::add_edge_edge_collisions(
+template <int dim>
+void SmoothCollisionsBuilder<dim>::add_edge_edge_collisions(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const std::vector<EdgeEdgeCandidate>& candidates,
@@ -121,13 +125,14 @@ void SmoothCollisionsBuilder::add_edge_edge_collisions(
                 eps3);
         }
         else
-            add_edge_edge_collision(SmoothEdgeEdgeCollision(
+            add_edge_edge_collision(SmoothEdgeEdgeCollision<dim>(
                                 eai, ebi, eps_x, weight, weight_gradient, EdgeEdgeDistanceType::AUTO),
                                 ee_to_id, ee_collisions);
     }
 }
 
-void SmoothCollisionsBuilder::add_face_vertex_collisions(
+template <int dim>
+void SmoothCollisionsBuilder<dim>::add_face_vertex_collisions(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const std::vector<FaceVertexCandidate>& candidates,
@@ -159,10 +164,11 @@ void SmoothCollisionsBuilder::add_face_vertex_collisions(
     }
 }
 
-void SmoothCollisionsBuilder::add_edge_edge_collision(
-    const SmoothEdgeEdgeCollision& ee_collision,
-    unordered_map<SmoothEdgeEdgeCollision, long>& ee_to_id_,
-    std::vector<SmoothEdgeEdgeCollision>& ee_collisions_)
+template <int dim>
+void SmoothCollisionsBuilder<dim>::add_edge_edge_collision(
+    const SmoothEdgeEdgeCollision<dim>& ee_collision,
+    unordered_map<SmoothEdgeEdgeCollision<dim>, long>& ee_to_id_,
+    std::vector<SmoothEdgeEdgeCollision<dim>>& ee_collisions_)
 {
     auto found_item = ee_to_id_.find(ee_collision);
     if (found_item != ee_to_id_.end()) {
@@ -178,12 +184,13 @@ void SmoothCollisionsBuilder::add_edge_edge_collision(
     }
 }
 
-void SmoothCollisionsBuilder::merge(
-    const tbb::enumerable_thread_specific<SmoothCollisionsBuilder>& local_storage,
-    SmoothCollisions& merged_collisions)
+template <int dim>
+void SmoothCollisionsBuilder<dim>::merge(
+    const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>& local_storage,
+    SmoothCollisions<dim>& merged_collisions)
 {
     unordered_map<SmoothEdgeVertexCollision, long> ev_to_id;
-    unordered_map<SmoothEdgeEdgeCollision, long> ee_to_id;
+    unordered_map<SmoothEdgeEdgeCollision<dim>, long> ee_to_id;
     auto& ev_collisions = merged_collisions.ev_collisions;
     auto& ee_collisions = merged_collisions.ee_collisions;
     auto& fv_collisions = merged_collisions.fv_collisions;
@@ -238,8 +245,11 @@ void SmoothCollisionsBuilder::merge(
     ee_collisions.erase(
         std::remove_if(
             ee_collisions.begin(), ee_collisions.end(),
-            [&](const SmoothEdgeEdgeCollision& ee) { return ee.weight == 0; }),
+            [&](const SmoothEdgeEdgeCollision<dim>& ee) { return ee.weight == 0; }),
         ee_collisions.end());
 }
+
+template class SmoothCollisionsBuilder<2>;
+template class SmoothCollisionsBuilder<3>;
 
 } // namespace ipc
