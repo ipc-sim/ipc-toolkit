@@ -12,45 +12,49 @@ namespace ipc {
 
     template <typename scalar>
     scalar smooth_point_edge_potential_pointwise(
-        const Eigen::Ref<const VectorMax3<scalar>>& p,
-        const Eigen::Ref<const VectorMax3<scalar>>& e0,
-        const Eigen::Ref<const VectorMax3<scalar>>& e1,
+        const Eigen::Ref<const Vector2<scalar>>& p,
+        const Eigen::Ref<const Vector2<scalar>>& e0,
+        const Eigen::Ref<const Vector2<scalar>>& e1,
         const double &uv,
         const ParameterType &params)
     {
-        VectorMax3<scalar> tangent = (e1 - e0).normalized();
-        VectorMax3<scalar> sample = e0 + (e1 - e0) * scalar(uv);
+        const Vector2<scalar> tangent = (e1 - e0).normalized();
+        const Vector2<scalar> diff = p - (e0 + (e1 - e0) * scalar(uv));
+        const scalar dist_sqr = diff.squaredNorm();
+        const scalar Phi = 1 - cross2<scalar>(diff, tangent) / sqrt(dist_sqr);
 
-        const scalar dist_sqr = (p - sample).squaredNorm();
-        const scalar Phi = intpow(tangent.dot(p - sample), 2) / dist_sqr;
+        if (Phi > params.alpha)
+            return scalar(0.);
+        if (dist_sqr > params.eps)
+            return scalar(0.);
 
-        return inv_barrier(dist_sqr, params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
+        return inv_barrier(dist_sqr / params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
     }
 
     template double smooth_point_edge_potential_pointwise(
-        const Eigen::Ref<const VectorMax3<double>>& p,
-        const Eigen::Ref<const VectorMax3<double>>& e0,
-        const Eigen::Ref<const VectorMax3<double>>& e1,
+        const Eigen::Ref<const Vector2<double>>& p,
+        const Eigen::Ref<const Vector2<double>>& e0,
+        const Eigen::Ref<const Vector2<double>>& e1,
         const double &uv,
         const ParameterType &params);
     template AutodiffScalarGrad<12> smooth_point_edge_potential_pointwise(
-        const Eigen::Ref<const VectorMax3<AutodiffScalarGrad<12>>>& p,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarGrad<12>>>& e0,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarGrad<12>>>& e1,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& p,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& e0,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& e1,
         const double &uv,
         const ParameterType &params);
     template AutodiffScalarHessian<12> smooth_point_edge_potential_pointwise(
-        const Eigen::Ref<const VectorMax3<AutodiffScalarHessian<12>>>& p,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarHessian<12>>>& e0,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarHessian<12>>>& e1,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& p,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& e0,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& e1,
         const double &uv,
         const ParameterType &params);
 
     template <typename scalar>
     scalar smooth_point_edge_potential_quadrature(
-        const Eigen::Ref<const VectorMax3<scalar>>& p,
-        const Eigen::Ref<const VectorMax3<scalar>>& e0,
-        const Eigen::Ref<const VectorMax3<scalar>>& e1,
+        const Eigen::Ref<const Vector2<scalar>>& p,
+        const Eigen::Ref<const Vector2<scalar>>& e0,
+        const Eigen::Ref<const Vector2<scalar>>& e1,
         const ParameterType &params)
     {
         Eigen::VectorXd pts, weights;
@@ -66,26 +70,26 @@ namespace ipc {
     }
 
     template double smooth_point_edge_potential_quadrature(
-        const Eigen::Ref<const VectorMax3<double>>& p,
-        const Eigen::Ref<const VectorMax3<double>>& e0,
-        const Eigen::Ref<const VectorMax3<double>>& e1,
+        const Eigen::Ref<const Vector2<double>>& p,
+        const Eigen::Ref<const Vector2<double>>& e0,
+        const Eigen::Ref<const Vector2<double>>& e1,
         const ParameterType &params);
     template AutodiffScalarGrad<12> smooth_point_edge_potential_quadrature(
-        const Eigen::Ref<const VectorMax3<AutodiffScalarGrad<12>>>& p,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarGrad<12>>>& e0,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarGrad<12>>>& e1,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& p,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& e0,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& e1,
         const ParameterType &params);
     template AutodiffScalarHessian<12> smooth_point_edge_potential_quadrature(
-        const Eigen::Ref<const VectorMax3<AutodiffScalarHessian<12>>>& p,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarHessian<12>>>& e0,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarHessian<12>>>& e1,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& p,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& e0,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& e1,
         const ParameterType &params);
 
     template <typename scalar>
     Vector<scalar, -1, -1> smooth_point_edge_potentials_quadrature(
         const Eigen::Ref<Eigen::Matrix<scalar, -1, -1, Eigen::RowMajor, -1, 3>>& points,
-        const Eigen::Ref<const VectorMax3<scalar>>& e0,
-        const Eigen::Ref<const VectorMax3<scalar>>& e1,
+        const Eigen::Ref<const Vector2<scalar>>& e0,
+        const Eigen::Ref<const Vector2<scalar>>& e1,
         const ParameterType &params)
     {
         Vector<scalar, -1, -1> out;
@@ -104,49 +108,49 @@ namespace ipc {
 
     template Vector<double, -1, -1> smooth_point_edge_potentials_quadrature(
         const Eigen::Ref<Eigen::Matrix<double, -1, -1, Eigen::RowMajor, -1, 3>>& points,
-        const Eigen::Ref<const VectorMax3<double>>& e0,
-        const Eigen::Ref<const VectorMax3<double>>& e1,
+        const Eigen::Ref<const Vector2<double>>& e0,
+        const Eigen::Ref<const Vector2<double>>& e1,
         const ParameterType &params);
 
     template <typename scalar>
     scalar smooth_point_edge_potential_single_point(
-        const Eigen::Ref<const VectorMax3<scalar>>& p,
-        const Eigen::Ref<const VectorMax3<scalar>>& e0,
-        const Eigen::Ref<const VectorMax3<scalar>>& e1,
+        const Eigen::Ref<const Vector2<scalar>>& p,
+        const Eigen::Ref<const Vector2<scalar>>& e0,
+        const Eigen::Ref<const Vector2<scalar>>& e1,
         const ParameterType &params)
     {
-        VectorMax3<scalar> tangent = e1 - e0;
+        Vector2<scalar> tangent = e1 - e0;
         const scalar len = tangent.norm();
         tangent = tangent / len;
 
-        const VectorMax3<scalar> pos = p - e0;
+        const Vector2<scalar> pos = p - e0;
         const scalar s = pos.dot(tangent) / len;
         const scalar L = (params.a > 0) ? L_s(s, params.a) : L_ns(s);
-        const VectorMax3<scalar> sample = e0 + (s - L) * len * tangent;
-        const scalar Phi = intpow((sample - p).normalized().dot(tangent), 2);
-        const scalar dist_sqr = cross2_sqr<scalar>(pos, tangent) + intpow(len * L, 2);
+        const Vector2<scalar> diff = p - (e0 + ((s - L) * len) * tangent);
+        const scalar dist_sqr = diff.squaredNorm(); // cross2_sqr<scalar>(pos, tangent) + intpow(len * L, 2);
+        const scalar Phi = 1 - cross2<scalar>(diff, tangent) / sqrt(dist_sqr); // always non-negative
 
         if (Phi > params.alpha)
             return scalar(0.);
         if (dist_sqr > params.eps)
             return scalar(0.);
 
-        return len * cubic_spline(Phi * (2. / params.alpha)) * inv_barrier(dist_sqr, params.eps, params.r);
+        return len * cubic_spline(Phi * (2. / params.alpha)) * inv_barrier(dist_sqr / params.eps, params.r);
     }
 
     template double smooth_point_edge_potential_single_point(
-        const Eigen::Ref<const VectorMax3<double>>& p,
-        const Eigen::Ref<const VectorMax3<double>>& e0,
-        const Eigen::Ref<const VectorMax3<double>>& e1,
+        const Eigen::Ref<const Vector2<double>>& p,
+        const Eigen::Ref<const Vector2<double>>& e0,
+        const Eigen::Ref<const Vector2<double>>& e1,
         const ParameterType &params);
     template AutodiffScalarGrad<12> smooth_point_edge_potential_single_point(
-        const Eigen::Ref<const VectorMax3<AutodiffScalarGrad<12>>>& p,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarGrad<12>>>& e0,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarGrad<12>>>& e1,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& p,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& e0,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& e1,
         const ParameterType &params);
     template AutodiffScalarHessian<12> smooth_point_edge_potential_single_point(
-        const Eigen::Ref<const VectorMax3<AutodiffScalarHessian<12>>>& p,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarHessian<12>>>& e0,
-        const Eigen::Ref<const VectorMax3<AutodiffScalarHessian<12>>>& e1,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& p,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& e0,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& e1,
         const ParameterType &params);
 }

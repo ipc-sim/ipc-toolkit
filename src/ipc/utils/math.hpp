@@ -35,20 +35,31 @@ namespace ipc {
         return scalar(0.);
     }
 
-    template <typename scalar>
-    scalar smooth_heaviside(const scalar &x)
-    {
-        if (x <= -1)
-            return scalar(0.);
-        if (x >= 0)
-            return scalar(1.);
-        return (1. - 2 * x) * intpow(x + 1., 2);
-    }
+    // template <typename scalar>
+    // scalar smooth_heaviside(const scalar &x)
+    // {
+    //     if (x <= -1)
+    //         return scalar(0.);
+    //     if (x >= 0)
+    //         return scalar(1.);
+    //     return (1. - 2 * x) * intpow(x + 1., 2);
+    // }
 
+    // template <typename scalar>
+    // scalar smooth_heaviside(const scalar &x)
+    // {
+    //     if (x <= -1)
+    //         return scalar(0.);
+    //     if (x >= 1)
+    //         return scalar(1.);
+    //     return (0.5 - x / 4.) * intpow(x + 1., 2);
+    // }
+
+    // support is [0, 1]
     template <typename scalar>
-    scalar inv_barrier(const scalar &x, const double &eps, const double &r)
+    scalar inv_barrier(const scalar &x, const double &r)
     {
-        return cubic_spline((2 / eps) * x) / pow(intpow(x/eps, 2), r / 2);
+        return cubic_spline(2 * x) / pow(x, r);
     }
 
     template <typename scalar>
@@ -93,6 +104,12 @@ namespace ipc {
             assert(false);
             return scalar(0);
         }
+    }
+
+    template <typename scalar>
+    scalar cross2(const Eigen::Ref<const Vector2<scalar>> &a, const Eigen::Ref<const Vector2<scalar>> &b)
+    {
+        return a[0] * b[1] - a[1] * b[0];
     }
 
     // linear solve for 2x2 matrix

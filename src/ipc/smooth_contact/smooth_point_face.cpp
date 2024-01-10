@@ -25,7 +25,12 @@ namespace ipc {
         const scalar dist_sqr = (p - sample).squaredNorm();
         const scalar Phi = normal.cross(p - sample).squaredNorm() / dist_sqr;
 
-        return inv_barrier(dist_sqr, params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
+        if (Phi > params.alpha)
+            return scalar(0.);
+        if (dist_sqr > params.eps)
+            return scalar(0.);
+
+        return inv_barrier(dist_sqr / params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
     }
 
     template double smooth_point_face_potential_pointwise(
@@ -135,8 +140,14 @@ namespace ipc {
         }
 
         const scalar dist_sqr = diff.squaredNorm();
-        const scalar Phi = cross2_sqr<scalar>(diff, normal) / dist_sqr / area_sqr;
-        return sqrt(area_sqr) * inv_barrier(dist_sqr, params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
+        const scalar Phi = 1 - diff.dot(normal) / sqrt(dist_sqr * area_sqr); // cross2_sqr<scalar>(diff, normal) / dist_sqr / area_sqr;
+
+        if (Phi > params.alpha)
+            return scalar(0.);
+        if (dist_sqr > params.eps)
+            return scalar(0.);
+
+        return sqrt(area_sqr) * inv_barrier(dist_sqr / params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
     }
 
     template double smooth_point_face_potential_single_point(
