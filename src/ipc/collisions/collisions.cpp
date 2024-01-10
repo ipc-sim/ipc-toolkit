@@ -160,7 +160,7 @@ void VirtualCollisions::build(
     double inflation_radius = (dhat + dmin) / 2;
 
     Candidates candidates(get_candidate_types(mesh.dim()));
-    candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
+    candidates.build(mesh, vertices, inflation_radius, broad_phase_method, include_neighbor());
 
     this->build(candidates, mesh, vertices, dhat, dmin);
 }

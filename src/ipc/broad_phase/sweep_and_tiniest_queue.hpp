@@ -16,6 +16,8 @@ namespace ipc {
 // A version of the BP that copies the meshes into the class rather than making
 // the AABBs.
 class CopyMeshBroadPhase : public BroadPhase {
+public:
+    using BroadPhase::BroadPhase;
 protected:
     void copy_mesh(const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces);
 
@@ -30,6 +32,7 @@ protected:
 
 class SweepAndTiniestQueue : public CopyMeshBroadPhase {
 public:
+    using CopyMeshBroadPhase::CopyMeshBroadPhase;
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
     /// @param edges Collision mesh edges

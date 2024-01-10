@@ -116,6 +116,9 @@ public:
 
     virtual std::vector<CandidateType> get_candidate_types(const int &dim) const = 0;
 
+    // add edge-edge, edge-face, face-face neighbors to candidates
+    virtual bool include_neighbor() const = 0;
+
 protected:
     bool m_use_convergent_formulation = false;
     bool m_are_shape_derivatives_enabled = false;
@@ -206,6 +209,8 @@ public:
     to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
 
     std::vector<CandidateType> get_candidate_types(const int &dim) const override;
+
+    bool include_neighbor() const override { return false; }
 
     std::vector<VertexVertexCollision> vv_collisions;
     std::vector<EdgeVertexCollision> ev_collisions;

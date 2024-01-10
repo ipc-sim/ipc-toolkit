@@ -610,7 +610,7 @@ TEST_CASE(
         std::cout << "convergent ipc candidate size " << collisions_tmp.size() << "\n";
     }
 
-    ParameterType param(dhat*dhat, 5, 0.1, 1, 5);
+    ParameterType param(dhat*dhat, 5, 0.1, 1, 2);
 
     SmoothContactPotential<SmoothCollisions<2>> potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";

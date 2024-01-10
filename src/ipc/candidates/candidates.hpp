@@ -27,7 +27,8 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const double inflation_radius = 0,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
+        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
+        const bool include_neighbor = false);
 
     /// @brief Initialize the set of continuous collision detection candidates.
     /// @note Assumes the trajectory is linear.
@@ -41,7 +42,8 @@ public:
         const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
         const double inflation_radius = 0,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
+        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
+        const bool include_neighbor = false);
 
     size_t size() const;
 

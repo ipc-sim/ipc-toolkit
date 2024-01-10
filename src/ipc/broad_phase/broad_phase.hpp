@@ -38,13 +38,14 @@ class Candidates; // Forward declaration
 
 class BroadPhase {
 public:
+    BroadPhase(const bool _include_neighbor = false) : include_neighbor(_include_neighbor) {}
     virtual ~BroadPhase() { clear(); }
 
     /// @brief Construct a registered broad phase object.
     /// @param method The broad phase method to use.
     /// @return The constructed broad phase object.
     static std::shared_ptr<BroadPhase>
-    make_broad_phase(const BroadPhaseMethod method);
+    make_broad_phase(const BroadPhaseMethod method, const bool _include_neighbor = false);
 
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
@@ -119,6 +120,7 @@ public:
         default_can_vertices_collide;
 
 protected:
+    const bool include_neighbor;
     virtual bool can_edge_vertex_collide(size_t ei, size_t vi) const;
     virtual bool can_edges_collide(size_t eai, size_t ebi) const;
     virtual bool can_face_vertex_collide(size_t fi, size_t vi) const;

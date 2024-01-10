@@ -33,26 +33,23 @@ namespace ipc {
         scalar val = scalar(0.);
         if constexpr (dim_ == 2)
         {
-            Eigen::VectorXd uv, w;
-            line_quadrature(params.n_quadrature, uv, w);
+            Eigen::VectorXd uv = Eigen::VectorXd::LinSpaced(params.n_quadrature, 0, 1);
             Vector2<scalar> p;
             const Vector2<scalar> edge0 = e01 - e00;
             const Vector2<scalar> edge1 = e11 - e10;
             const scalar len0 = edge0.norm(), len1 = edge1.norm();
-
-            assert(uv(uv.size()-1) - uv(0) > 1 - 1e-10);
             
             scalar val0 = scalar(0.);
             scalar val1 = scalar(0.);
-            for (int i = 0; i < uv.size(); ++i)
+            for (int i = 1; i < uv.size(); ++i)
             {
                 for (int j = 1; j < uv.size(); ++j)
                 {
-                    p = e00 + scalar(uv(i)) * edge0;
-                    val0 += scalar(w(i)) * smooth_point_edge_potential_single_point<scalar>(p, e10 + scalar(uv(j-1)) * edge1, e10 + scalar(uv(j)) * edge1, params);
+                    p = e00 + scalar((uv(i) + uv(i-1)) / 2) * edge0;
+                    val0 += scalar(uv(i) - uv(i-1)) * smooth_point_edge_potential_single_point<scalar>(p, e10 + scalar(uv(j-1)) * edge1, e10 + scalar(uv(j)) * edge1, params);
 
-                    p = e10 + scalar(uv(i)) * edge1;
-                    val1 += scalar(w(i)) * smooth_point_edge_potential_single_point<scalar>(p, e00 + scalar(uv(j-1)) * edge0, e00 + scalar(uv(j)) * edge0, params);
+                    p = e10 + scalar((uv(i) + uv(i-1)) / 2) * edge1;
+                    val1 += scalar(uv(i) - uv(i-1)) * smooth_point_edge_potential_single_point<scalar>(p, e00 + scalar(uv(j-1)) * edge0, e00 + scalar(uv(j)) * edge0, params);
                 }
             }
             val = val0 * len0 + val1 * len1;

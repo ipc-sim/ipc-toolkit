@@ -41,14 +41,15 @@ void Candidates::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const double inflation_radius,
-    const BroadPhaseMethod broad_phase_method)
+    const BroadPhaseMethod broad_phase_method,
+    const bool include_neighbor)
 {
     const int dim = vertices.cols();
 
     clear();
 
     std::shared_ptr<BroadPhase> broad_phase =
-        BroadPhase::make_broad_phase(broad_phase_method);
+        BroadPhase::make_broad_phase(broad_phase_method, include_neighbor);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this, candidate_types);
@@ -121,14 +122,15 @@ void Candidates::build(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const double inflation_radius,
-    const BroadPhaseMethod broad_phase_method)
+    const BroadPhaseMethod broad_phase_method,
+    const bool include_neighbor)
 {
     const int dim = vertices_t0.cols();
 
     clear();
 
     std::shared_ptr<BroadPhase> broad_phase =
-        BroadPhase::make_broad_phase(broad_phase_method);
+        BroadPhase::make_broad_phase(broad_phase_method, include_neighbor);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(
         vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), inflation_radius);

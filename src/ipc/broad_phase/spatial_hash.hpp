@@ -12,6 +12,7 @@ namespace ipc {
 
 class SpatialHash : public BroadPhase {
 public: // data
+    using BroadPhase::BroadPhase;
     ArrayMax3d left_bottom_corner, right_top_corner;
     ArrayMax3i voxel_count;
     double one_div_voxelSize;

@@ -108,6 +108,8 @@ public:
 
     std::vector<CandidateType> get_candidate_types(const int &_dim) const override;
 
+    bool include_neighbor() const override { return true; }
+
 public:
     // std::vector<SmoothVertexVertexCollision> vv_collisions;
     std::vector<SmoothEdgeVertexCollision> ev_collisions;

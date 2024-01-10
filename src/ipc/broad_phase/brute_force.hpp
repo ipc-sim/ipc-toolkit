@@ -6,6 +6,7 @@ namespace ipc {
 
 class BruteForce : public BroadPhase {
 public:
+    using BroadPhase::BroadPhase;
     /// @brief Find the candidate vertex-vertex collisions.
     void detect_vertex_vertex_candidates(
         std::vector<VertexVertexCandidate>& candidates) const override;

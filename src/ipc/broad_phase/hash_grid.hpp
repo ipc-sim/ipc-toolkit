@@ -26,6 +26,7 @@ struct HashItem {
 
 class HashGrid : public BroadPhase {
 public:
+    using BroadPhase::BroadPhase;
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
     /// @param edges Collision mesh edges
