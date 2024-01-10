@@ -101,4 +101,13 @@ void BruteForce::detect_edge_face_candidates(
         candidates);
 }
 
+void BruteForce::detect_face_face_candidates(
+    std::vector<FaceFaceCandidate>& candidates) const
+{
+    detect_candidates(
+        face_boxes, face_boxes,
+        [&](size_t fi, size_t fj) { return can_face_face_collide(fi, fj); },
+        candidates);
+}
+
 } // namespace ipc

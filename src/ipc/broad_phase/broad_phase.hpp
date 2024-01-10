@@ -7,6 +7,7 @@
 #include <ipc/candidates/edge_edge.hpp>
 #include <ipc/candidates/face_vertex.hpp>
 #include <ipc/candidates/edge_face.hpp>
+#include <ipc/candidates/face_face.hpp>
 
 #include <Eigen/Core>
 
@@ -15,7 +16,8 @@ namespace ipc {
 enum class CandidateType {
     EdgeVertex,
     EdgeEdge,
-    FaceVertex
+    FaceVertex,
+    FaceFace
 };
 
 /// Enumeration of implemented broad phase methods.
@@ -95,6 +97,14 @@ public:
     /// @param[out] candidates The candidate edge-face intersections.
     virtual void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const = 0;
+
+    /// @brief Find the candidate face-face intersections.
+    /// @param[out] candidates The candidate face-face intersections.
+    virtual void detect_face_face_candidates(
+        std::vector<FaceFaceCandidate>& candidates) const
+    {
+        throw std::runtime_error("face-face candidate not implemented!");
+    }
     
     void detect_collision_candidates(Candidates& candidates, const CandidateType &candidate_type) const;
 
@@ -113,6 +123,7 @@ protected:
     virtual bool can_edges_collide(size_t eai, size_t ebi) const;
     virtual bool can_face_vertex_collide(size_t fi, size_t vi) const;
     virtual bool can_edge_face_collide(size_t ei, size_t fi) const;
+    virtual bool can_face_face_collide(size_t fj, size_t fi) const;
 
     static bool default_can_vertices_collide(size_t, size_t) { return true; }
 

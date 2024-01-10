@@ -148,6 +148,9 @@ public: // API
     void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const override;
 
+    void detect_face_face_candidates(
+        std::vector<FaceFaceCandidate>& candidates) const override;
+
 protected: // helper functions
     void query_point_for_points(int vi, unordered_set<int>& vert_inds) const;
 

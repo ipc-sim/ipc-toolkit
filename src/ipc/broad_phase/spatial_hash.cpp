@@ -390,6 +390,38 @@ void SpatialHash::detect_edge_face_candidates(
     merge_thread_local_vectors(storages, candidates);
 }
 
+void SpatialHash::detect_face_face_candidates(
+    std::vector<FaceFaceCandidate>& candidates) const
+{
+    throw std::runtime_error("face-face candidate with spatial hash not implemented!");
+    // tbb::enumerable_thread_specific<std::vector<FaceFaceCandidate>> storages;
+
+    // tbb::parallel_for(
+    //     tbb::blocked_range<size_t>(size_t(0), face_boxes.size()),
+    //     [&](const tbb::blocked_range<size_t>& range) {
+    //         auto& local_candidates = storages.local();
+
+    //         for (long fj = range.begin(); fj != range.end(); fj++) {
+    //             const AABB& face_boxj = face_boxes[fj];
+
+    //             unordered_set<int> tri_inds;
+    //             query_face_for_triangles(fj, tri_inds);
+
+    //             for (const auto& fi : tri_inds) {
+    //                 if (!can_face_face_collide(fj, fi)) {
+    //                     continue;
+    //                 }
+
+    //                 const AABB& face_boxi = face_boxes[fi];
+    //                 if (face_boxj.intersects(face_boxi)) {
+    //                     local_candidates.emplace_back(fj, fi);
+    //                 }
+    //             }
+    //         }
+    //     });
+
+    // merge_thread_local_vectors(storages, candidates);
+}
 // ============================================================================
 
 int SpatialHash::locate_voxel_index(const VectorMax3d& p) const
