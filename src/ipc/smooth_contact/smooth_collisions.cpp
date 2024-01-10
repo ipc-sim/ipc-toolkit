@@ -44,7 +44,7 @@ std::vector<CandidateType> SmoothCollisions<dim>::get_candidate_types(const int 
             return {CandidateType::FaceVertex, CandidateType::EdgeEdge};
         else
         {
-            logger().error("3D surface quadrature type is not implemented!");
+            logger().error("3D face-face candidate is not implemented!");
             return {CandidateType::FaceVertex, CandidateType::EdgeEdge};
         }
     }
