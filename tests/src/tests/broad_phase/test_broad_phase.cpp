@@ -2,6 +2,8 @@
 #include <tests/broad_phase/brute_force_comparison.hpp>
 #include <tests/utils.hpp>
 
+#include <ipc/broad_phase/brute_force.hpp>
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
@@ -10,12 +12,51 @@
 
 using namespace ipc;
 
+void test_face_face_broad_phase(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& V0,
+    const std::optional<Eigen::MatrixXd>& V1,
+    const BroadPhaseMethod method,
+    double inflation_radius)
+{
+    // Face-face collisions
+    if (mesh.num_faces() > 0 || method == BroadPhaseMethod::BRUTE_FORCE
+        || method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
+        || method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+        return;
+    }
+
+    std::shared_ptr<BroadPhase> broad_phase =
+        BroadPhase::make_broad_phase(method);
+    broad_phase->can_vertices_collide = mesh.can_collide;
+    if (V1.has_value()) {
+        broad_phase->build(
+            V0, V1.value(), mesh.edges(), mesh.faces(), inflation_radius);
+    } else {
+        broad_phase->build(V0, mesh.edges(), mesh.faces(), inflation_radius);
+    }
+    std::vector<FaceFaceCandidate> ff_candidates;
+    broad_phase->detect_face_face_candidates(ff_candidates);
+
+    BruteForce bf;
+    bf.can_vertices_collide = mesh.can_collide;
+    if (V1.has_value()) {
+        bf.build(V0, V1.value(), mesh.edges(), mesh.faces(), inflation_radius);
+    } else {
+        bf.build(V0, mesh.edges(), mesh.faces(), inflation_radius);
+    }
+    std::vector<FaceFaceCandidate> bf_ff_candidates;
+    bf.detect_face_face_candidates(bf_ff_candidates);
+
+    CHECK(ff_candidates.size() == bf_ff_candidates.size());
+}
+
 void test_broad_phase(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    BroadPhaseMethod method,
-    bool expect_collision = true,
+    const BroadPhaseMethod method,
+    const bool expect_collision = true,
     const std::string& cached_bf_candidates = "")
 {
     CAPTURE(method);
@@ -35,6 +76,9 @@ void test_broad_phase(
         brute_force_comparison(
             mesh, V0, V1, candidates, inflation_radius, cached_bf_candidates);
     }
+
+    // Face-face collisions
+    test_face_face_broad_phase(mesh, V0, V1, method, 0);
 }
 
 Candidates test_broad_phase(
@@ -54,6 +98,9 @@ Candidates test_broad_phase(
         brute_force_comparison(
             mesh, V, V, candidates, inflation_radius, cached_bf_candidates);
     }
+
+    // Face-face collisions
+    test_face_face_broad_phase(mesh, V, std::nullopt, method, inflation_radius);
 
     return candidates;
 }
