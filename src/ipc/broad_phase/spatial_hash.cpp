@@ -12,20 +12,36 @@
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 
+using namespace std::placeholders;
+
 namespace ipc {
 
 namespace {
+    inline void tbb_parallel_block_range_for(
+        const size_t start_i,
+        const size_t end_i,
+        const std::function<void(size_t)>& body)
+    {
+        tbb::parallel_for(
+            tbb::blocked_range(start_i, end_i),
+            [&](const tbb::blocked_range<size_t>& range) {
+                for (size_t i = range.begin(); i != range.end(); i++) {
+                    body(i);
+                }
+            });
+    }
+
     void fill_primitive_to_voxels(
         const Eigen::Array3i& min_voxel,
         const Eigen::Array3i& max_voxel,
         const ArrayMax3i& voxel_count,
+        const int voxel_count_0x1,
         std::vector<int>& primitive_to_voxels)
     {
         assert((min_voxel <= max_voxel).all());
+        assert(voxel_count_0x1 == voxel_count[0] * voxel_count[1]);
 
         primitive_to_voxels.reserve((max_voxel - min_voxel + 1).prod());
-
-        const size_t voxel_count_0x1 = voxel_count[0] * voxel_count[1];
 
         for (int iz = min_voxel[2]; iz <= max_voxel[2]; iz++) {
             int z_offset = iz * voxel_count_0x1;
@@ -47,9 +63,8 @@ namespace {
         unordered_map<int, std::vector<int>>& voxel_to_primitives)
     {
         for (int i = 0; i < num_primitives; i++) {
-            for (const auto& voxel_id : primitive_to_voxels[i]) {
-                voxel_to_primitives[voxel_id].emplace_back(
-                    i + primitive_offset);
+            for (const auto& voxel : primitive_to_voxels[i]) {
+                voxel_to_primitives[voxel].emplace_back(i + primitive_offset);
             }
         }
     }
@@ -108,7 +123,7 @@ void SpatialHash::build(
     voxel_count_0x1 = voxel_count[0] * voxel_count[1];
 
     // ------------------------------------------------------------------------
-    // precompute vertex min and max voxel indices
+    // precompute vertex min and max voxel axis indices
 
     std::vector<Eigen::Array3i> vertex_min_voxel_axis_index(
         num_vertices, Eigen::Array3i::Zero());
@@ -128,24 +143,24 @@ void SpatialHash::build(
     // ------------------------------------------------------------------------
 
     point_to_voxels.resize(num_vertices);
-    tbb::parallel_for(size_t(0), num_vertices, [&](size_t vi) {
+    tbb_parallel_block_range_for(0, num_vertices, [&](size_t vi) {
         fill_primitive_to_voxels(
             vertex_min_voxel_axis_index[vi], vertex_max_voxel_axis_index[vi],
-            voxel_count, point_to_voxels[vi]);
+            voxel_count, voxel_count_0x1, point_to_voxels[vi]);
     });
 
     edge_to_voxels.resize(edges.rows());
-    tbb::parallel_for(size_t(0), size_t(edges.rows()), [&](size_t ei) {
+    tbb_parallel_block_range_for(0, edges.rows(), [&](size_t ei) {
         fill_primitive_to_voxels(
             vertex_min_voxel_axis_index[edges(ei, 0)].min(
                 vertex_min_voxel_axis_index[edges(ei, 1)]),
             vertex_max_voxel_axis_index[edges(ei, 0)].max(
                 vertex_max_voxel_axis_index[edges(ei, 1)]),
-            voxel_count, edge_to_voxels[ei]);
+            voxel_count, voxel_count_0x1, edge_to_voxels[ei]);
     });
 
     face_to_voxels.resize(faces.rows());
-    tbb::parallel_for(size_t(0), size_t(faces.rows()), [&](size_t fi) {
+    tbb_parallel_block_range_for(0, faces.rows(), [&](size_t fi) {
         fill_primitive_to_voxels(
             vertex_min_voxel_axis_index[faces(fi, 0)]
                 .min(vertex_min_voxel_axis_index[faces(fi, 1)])
@@ -153,7 +168,7 @@ void SpatialHash::build(
             vertex_max_voxel_axis_index[faces(fi, 0)]
                 .max(vertex_max_voxel_axis_index[faces(fi, 1)])
                 .max(vertex_max_voxel_axis_index[faces(fi, 2)]),
-            voxel_count, face_to_voxels[fi]);
+            voxel_count, voxel_count_0x1, face_to_voxels[fi]);
     });
 
     // ------------------------------------------------------------------------
@@ -169,81 +184,84 @@ void SpatialHash::build(
         faces.rows(), tri_start_ind, face_to_voxels, voxel_to_primitives);
 }
 
-template <bool only_larger_id>
-void SpatialHash::query_A_for_Bs(
-    const std::vector<std::vector<int>>& A_to_voxels,
-    const std::function<bool(int)>& is_B_index,
-    const std::function<int(int)>& to_B_index,
-    const int a_id,
-    unordered_set<int>& b_ids) const
-{
-    b_ids.clear();
-    for (const int voxel : A_to_voxels[a_id]) {
-        const auto& primitives = voxel_to_primitives.at(voxel);
-        for (const auto& id : primitives) {
-            if (!is_B_index(id)) {
-                continue;
-            }
-
-            if constexpr (only_larger_id) {
-                if (id <= a_id) {
-                    continue;
-                }
-            }
-
-            b_ids.insert(to_B_index(id));
-        }
-    }
-}
-
 void SpatialHash::query_point_for_points(
     int vi, unordered_set<int>& vert_ids) const
 {
-    return query_A_for_Bs</*only_larger_id=*/true>(
-        point_to_voxels, [this](int id) { return is_vertex_index(id); },
-        [](int id) { return id; }, vi, vert_ids);
+    vert_ids.clear();
+    for (const int voxel : point_to_voxels[vi]) {
+        for (const int id : voxel_to_primitives.at(voxel)) {
+            if (is_vertex_index(id) && id > vi) {
+                vert_ids.insert(id);
+            }
+        }
+    }
 }
 
 void SpatialHash::query_point_for_edges(
     int vi, unordered_set<int>& edge_ids) const
 {
-    return query_A_for_Bs</*only_larger_id=*/false>(
-        point_to_voxels, [this](int id) { return is_edge_index(id); },
-        [this](int id) { return to_edge_index(id); }, vi, edge_ids);
+    edge_ids.clear();
+    for (const int voxel : point_to_voxels[vi]) {
+        for (const int id : voxel_to_primitives.at(voxel)) {
+            if (is_edge_index(id)) {
+                edge_ids.insert(to_edge_index(id));
+            }
+        }
+    }
 }
 
 void SpatialHash::query_point_for_triangles(
     int vi, unordered_set<int>& tri_ids) const
 {
-    return query_A_for_Bs</*only_larger_id=*/false>(
-        point_to_voxels, [this](int id) { return is_triangle_index(id); },
-        [this](int id) { return to_triangle_index(id); }, vi, tri_ids);
+    tri_ids.clear();
+    for (const int voxel : point_to_voxels[vi]) {
+        for (const int id : voxel_to_primitives.at(voxel)) {
+            if (is_triangle_index(id)) {
+                tri_ids.insert(to_triangle_index(id));
+            }
+        }
+    }
 }
 
 // will only put edges with larger than eai index into edge_ids
 void SpatialHash::query_edge_for_edges(
     int eai, unordered_set<int>& edge_ids) const
 {
-    return query_A_for_Bs</*only_larger_id=*/true>(
-        edge_to_voxels, [this](int id) { return is_edge_index(id); },
-        [this](int id) { return to_edge_index(id); }, eai, edge_ids);
+    edge_ids.clear();
+    for (const int voxel : edge_to_voxels[eai]) {
+        for (const int id : voxel_to_primitives.at(voxel)) {
+            if (is_edge_index(id) && to_edge_index(id) > eai) {
+                edge_ids.insert(to_edge_index(id));
+            }
+        }
+    }
 }
 
 void SpatialHash::query_edge_for_triangles(
     int ei, unordered_set<int>& tri_ids) const
 {
-    return query_A_for_Bs</*only_larger_id=*/false>(
-        edge_to_voxels, [this](int id) { return is_triangle_index(id); },
-        [this](int id) { return to_triangle_index(id); }, ei, tri_ids);
+    tri_ids.clear();
+    for (const int voxel : edge_to_voxels[ei]) {
+        for (const auto& id : voxel_to_primitives.at(voxel)) {
+            if (is_triangle_index(id)) {
+                tri_ids.insert(to_triangle_index(id));
+            }
+        }
+    }
 }
 
 // will only put triangles with larger than fai index into tri_ids
 void SpatialHash::query_triangle_for_triangles(
     int fai, unordered_set<int>& tri_ids) const
 {
-    return query_A_for_Bs</*only_larger_id=*/true>(
-        face_to_voxels, [this](int id) { return is_triangle_index(id); },
-        [this](int id) { return to_triangle_index(id); }, fai, tri_ids);
+    tri_ids.clear();
+    for (const int voxel : face_to_voxels[fai]) {
+        for (const auto& id : voxel_to_primitives.at(voxel)) {
+            if (is_triangle_index(id) && to_triangle_index(id) > fai) {
+                tri_ids.insert(to_triangle_index(id));
+            }
+        }
+    }
 }
 
 // ============================================================================
@@ -314,9 +332,7 @@ void SpatialHash::detect_vertex_vertex_candidates(
 
     detect_candidates(
         vertex_boxes,
-        [this](int vi, unordered_set<int>& vert_ids) {
-            query_point_for_points(vi, vert_ids);
-        },
+        std::bind(&SpatialHash::query_point_for_points, this, _1, _2),
         can_vertices_collide, candidates);
 }
 
@@ -329,10 +345,8 @@ void SpatialHash::detect_edge_vertex_candidates(
 
     detect_candidates<EdgeVertexCandidate, /*swap_order=*/true>(
         vertex_boxes, edge_boxes,
-        [this](int vi, unordered_set<int>& edge_ids) {
-            query_point_for_edges(vi, edge_ids);
-        },
-        [this](int ei, int vi) { return can_edge_vertex_collide(ei, vi); },
+        std::bind(&SpatialHash::query_point_for_edges, this, _1, _2),
+        std::bind(&SpatialHash::can_edge_vertex_collide, this, _1, _2),
         candidates);
 }
 
@@ -344,12 +358,8 @@ void SpatialHash::detect_edge_edge_candidates(
     }
 
     detect_candidates(
-        edge_boxes,
-        [this](int ei, unordered_set<int>& edge_ids) {
-            query_edge_for_edges(ei, edge_ids);
-        },
-        [&](size_t eai, size_t ebi) { return can_edges_collide(eai, ebi); },
-        candidates);
+        edge_boxes, std::bind(&SpatialHash::query_edge_for_edges, this, _1, _2),
+        std::bind(&SpatialHash::can_edges_collide, this, _1, _2), candidates);
 }
 
 void SpatialHash::detect_face_vertex_candidates(
@@ -362,10 +372,8 @@ void SpatialHash::detect_face_vertex_candidates(
     // The ratio vertices:faces is 1:2, so we want to iterate over the vertices.
     detect_candidates<FaceVertexCandidate, /*swap_order=*/true>(
         vertex_boxes, face_boxes,
-        [this](int vi, unordered_set<int>& tri_ids) {
-            query_point_for_triangles(vi, tri_ids);
-        },
-        [&](size_t fi, size_t vi) { return can_face_vertex_collide(fi, vi); },
+        std::bind(&SpatialHash::query_point_for_triangles, this, _1, _2),
+        std::bind(&SpatialHash::can_face_vertex_collide, this, _1, _2),
         candidates);
 }
 
@@ -378,10 +386,8 @@ void SpatialHash::detect_edge_face_candidates(
 
     detect_candidates<EdgeFaceCandidate, /*swap_order=*/false>(
         edge_boxes, face_boxes,
-        [this](int ei, unordered_set<int>& tri_ids) {
-            query_edge_for_triangles(ei, tri_ids);
-        },
-        [&](size_t ei, size_t fi) { return can_edge_face_collide(ei, fi); },
+        std::bind(&SpatialHash::query_edge_for_triangles, this, _1, _2),
+        std::bind(&SpatialHash::can_edge_face_collide, this, _1, _2),
         candidates);
 }
 
@@ -394,11 +400,8 @@ void SpatialHash::detect_face_face_candidates(
 
     detect_candidates(
         face_boxes,
-        [this](int fi, unordered_set<int>& tri_ids) {
-            query_triangle_for_triangles(fi, tri_ids);
-        },
-        [this](size_t fai, size_t fbi) { return can_faces_collide(fai, fbi); },
-        candidates);
+        std::bind(&SpatialHash::query_triangle_for_triangles, this, _1, _2),
+        std::bind(&SpatialHash::can_faces_collide, this, _1, _2), candidates);
 }
 
 // ============================================================================

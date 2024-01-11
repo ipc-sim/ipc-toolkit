@@ -8,6 +8,8 @@
 
 #include <algorithm> // std::min/max
 
+using namespace std::placeholders;
+
 namespace ipc {
 
 template <typename Candidate, bool triangular>
@@ -70,7 +72,7 @@ void BruteForce::detect_edge_vertex_candidates(
 {
     detect_candidates(
         edge_boxes, vertex_boxes,
-        [&](size_t ei, size_t vi) { return can_edge_vertex_collide(ei, vi); },
+        std::bind(&BruteForce::can_edge_vertex_collide, this, _1, _2),
         candidates);
 }
 
@@ -79,8 +81,7 @@ void BruteForce::detect_edge_edge_candidates(
 {
     detect_candidates<EdgeEdgeCandidate, true>(
         edge_boxes, edge_boxes,
-        [&](size_t eai, size_t ebi) { return can_edges_collide(eai, ebi); },
-        candidates);
+        std::bind(&BruteForce::can_edges_collide, this, _1, _2), candidates);
 }
 
 void BruteForce::detect_face_vertex_candidates(
@@ -88,7 +89,7 @@ void BruteForce::detect_face_vertex_candidates(
 {
     detect_candidates(
         face_boxes, vertex_boxes,
-        [&](size_t fi, size_t vi) { return can_face_vertex_collide(fi, vi); },
+        std::bind(&BruteForce::can_face_vertex_collide, this, _1, _2),
         candidates);
 }
 
@@ -97,7 +98,7 @@ void BruteForce::detect_edge_face_candidates(
 {
     detect_candidates(
         edge_boxes, face_boxes,
-        [&](size_t ei, size_t fi) { return can_edge_face_collide(ei, fi); },
+        std::bind(&BruteForce::can_edge_face_collide, this, _1, _2),
         candidates);
 }
 
@@ -106,8 +107,7 @@ void BruteForce::detect_face_face_candidates(
 {
     detect_candidates<FaceFaceCandidate, true>(
         face_boxes, face_boxes,
-        [&](size_t fai, size_t fbi) { return can_faces_collide(fai, fbi); },
-        candidates);
+        std::bind(&BruteForce::can_faces_collide, this, _1, _2), candidates);
 }
 
 } // namespace ipc

@@ -210,21 +210,6 @@ protected: // helper functions
     int voxel_axis_index_to_voxel_index(int ix, int iy, int iz) const;
 
 private:
-    /// @brief Query a primitive of type A for primitives of type B.
-    /// @tparam only_larger_id If true, only query primitives with larger id.
-    /// @param A_to_voxels The map from primitive index to voxel indices.
-    /// @param is_B_index A function that checks if a primitive index is of type B.
-    /// @param to_B_index A function that converts a primitive index to a B index.
-    /// @param a_i The index of the primitive of type A.
-    /// @param b_ids The set of indices of the primitives of type B.
-    template <bool only_larger_id>
-    void query_A_for_Bs(
-        const std::vector<std::vector<int>>& A_to_voxels,
-        const std::function<bool(int)>& is_B_index,
-        const std::function<int(int)>& to_B_index,
-        const int a_id,
-        unordered_set<int>& b_ids) const;
-
     /// @brief Detect candidate collisions between type A and type B.
     /// @tparam Candidate Type of candidate collision.
     /// @tparam swap_order Whether to swap the order of A and B when adding to the candidates.

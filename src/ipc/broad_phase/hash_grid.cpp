@@ -13,6 +13,8 @@
 
 #define IPC_TOOLKIT_HASH_GRID_USE_SORT_UNIQUE // else use unordered_set
 
+using namespace std::placeholders;
+
 namespace ipc {
 
 void HashGrid::build(
@@ -326,7 +328,7 @@ void HashGrid::detect_edge_vertex_candidates(
 {
     detect_candidates(
         edge_items, vertex_items, edge_boxes, vertex_boxes,
-        [&](size_t ei, size_t vi) { return can_edge_vertex_collide(ei, vi); },
+        std::bind(&HashGrid::can_edge_vertex_collide, this, _1, _2),
         candidates);
 }
 
@@ -335,8 +337,7 @@ void HashGrid::detect_edge_edge_candidates(
 {
     detect_candidates(
         edge_items, edge_boxes,
-        [&](size_t eai, size_t ebi) { return can_edges_collide(eai, ebi); },
-        candidates);
+        std::bind(&HashGrid::can_edges_collide, this, _1, _2), candidates);
 }
 
 void HashGrid::detect_face_vertex_candidates(
@@ -344,7 +345,7 @@ void HashGrid::detect_face_vertex_candidates(
 {
     detect_candidates(
         face_items, vertex_items, face_boxes, vertex_boxes,
-        [&](size_t fi, size_t vi) { return can_face_vertex_collide(fi, vi); },
+        std::bind(&HashGrid::can_face_vertex_collide, this, _1, _2),
         candidates);
 }
 
@@ -353,8 +354,7 @@ void HashGrid::detect_edge_face_candidates(
 {
     detect_candidates(
         edge_items, face_items, edge_boxes, face_boxes,
-        [&](size_t ei, size_t fi) { return can_edge_face_collide(ei, fi); },
-        candidates);
+        std::bind(&HashGrid::can_edge_face_collide, this, _1, _2), candidates);
 }
 
 void HashGrid::detect_face_face_candidates(
@@ -362,8 +362,7 @@ void HashGrid::detect_face_face_candidates(
 {
     detect_candidates(
         face_items, face_boxes,
-        [&](size_t fai, size_t fbi) { return can_faces_collide(fai, fbi); },
-        candidates);
+        std::bind(&HashGrid::can_faces_collide, this, _1, _2), candidates);
 }
 
 } // namespace ipc
