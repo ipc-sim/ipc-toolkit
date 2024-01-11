@@ -2,11 +2,17 @@
 
 #include <ipc/candidates/face_face.hpp>
 #include <ipc/collisions/collision.hpp>
+#include <ipc/collision_mesh.hpp>
 
 namespace ipc {
 
 class SmoothFaceFaceCollision : public FaceFaceCandidate, public Collision<6> {
 public:
+    SmoothFaceFaceCollision(long _face0_id, long _face1_id, const CollisionMesh &mesh)
+    : FaceFaceCandidate(_face0_id, _face1_id)
+    { 
+        vertices = vertex_ids(mesh.edges(), mesh.faces());
+    }
     SmoothFaceFaceCollision(long _face0_id, long _face1_id, std::array<long, 6> _vertices)
     : FaceFaceCandidate(_face0_id, _face1_id), vertices(_vertices)
     { }

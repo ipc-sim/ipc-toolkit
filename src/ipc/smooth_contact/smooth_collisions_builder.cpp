@@ -9,8 +9,8 @@
 
 namespace ipc {
 
-template <int dim, class TCollision>
-void SmoothCollisionsBuilder<dim, TCollision>::add_edge_vertex_collisions(
+template <int dim>
+void SmoothCollisionsBuilder<dim>::add_edge_vertex_collisions(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const std::vector<EdgeVertexCandidate>& candidates,
@@ -35,15 +35,13 @@ void SmoothCollisionsBuilder<dim, TCollision>::add_edge_vertex_collisions(
             
             for (int ej : vertex_edge_adj[vi])
                 if (ej != ei)
-                    add_collision(SmoothEdgeEdgeCollision<dim>(
-                                ej, ei, 0, {{mesh.edges()(ej, 0), mesh.edges()(ej, 1), mesh.edges()(ei, 0), mesh.edges()(ei, 1)}}),
-                                cc_to_id, collisions);
+                    add_collision(mesh, unordered_tuple(ej, ei), cc_to_id, collisions);
         }
     }
 }
 
-template <int dim, class TCollision>
-void SmoothCollisionsBuilder<dim, TCollision>::add_neighbor_edge_collisions(
+template <int dim>
+void SmoothCollisionsBuilder<dim>::add_neighbor_edge_collisions(
         const CollisionMesh& mesh,
         const size_t start_i,
         const size_t end_i,
@@ -56,16 +54,14 @@ void SmoothCollisionsBuilder<dim, TCollision>::add_neighbor_edge_collisions(
             for (int d : {0, 1})
                 for (int j : vertex_edge_adj[mesh.edges()(i, d)])
                     if (j != i)
-                        add_collision(SmoothEdgeEdgeCollision<dim>(
-                                    j, i, 0, {{mesh.edges()(j, 0), mesh.edges()(j, 1), mesh.edges()(i, 0), mesh.edges()(i, 1)}}),
-                                    cc_to_id, collisions);
+                        add_collision(mesh, unordered_tuple(j, i), cc_to_id, collisions);
     }
 }
 
 // ============================================================================
 
-template <int dim, class TCollision>
-void SmoothCollisionsBuilder<dim, TCollision>::add_edge_edge_collisions(
+template <int dim>
+void SmoothCollisionsBuilder<dim>::add_edge_edge_collisions(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const std::vector<EdgeEdgeCandidate>& candidates,
@@ -95,16 +91,13 @@ void SmoothCollisionsBuilder<dim, TCollision>::add_edge_edge_collisions(
                     for (int fi : vertices_to_faces_adj[mesh.edges()(eai, di)])
                         for (int fj : vertices_to_faces_adj[mesh.edges()(ebi, dj)])
                             if (fj != fi)
-                                add_collision(SmoothFaceFaceCollision(fi, fj,
-                                 {{mesh.faces()(fi, 0), mesh.faces()(fi, 1), mesh.faces()(fi, 2),
-                                   mesh.faces()(fj, 0), mesh.faces()(fj, 1), mesh.faces()(fj, 2)}}),
-                                 cc_to_id, collisions);
+                                add_collision(mesh, unordered_tuple(fi, fj), cc_to_id, collisions);
         }
     }
 }
 
-template <int dim, class TCollision>
-void SmoothCollisionsBuilder<dim, TCollision>::add_face_vertex_collisions(
+template <int dim>
+void SmoothCollisionsBuilder<dim>::add_face_vertex_collisions(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const std::vector<FaceVertexCandidate>& candidates,
@@ -132,36 +125,35 @@ void SmoothCollisionsBuilder<dim, TCollision>::add_face_vertex_collisions(
             
             for (int fj : vertices_to_faces_adj[vi])
                 if (fj != fi)
-                    add_collision(SmoothFaceFaceCollision(fi, fj, 
-                    {{mesh.faces()(fi, 0), mesh.faces()(fi, 1), mesh.faces()(fi, 2),
-                    mesh.faces()(fj, 0), mesh.faces()(fj, 1), mesh.faces()(fj, 2)}}),
-                    cc_to_id, collisions);
+                    add_collision(mesh, unordered_tuple(fi, fj), cc_to_id, collisions);
         }
     }
 }
 
-template <int dim, class TCollision>
-void SmoothCollisionsBuilder<dim, TCollision>::add_collision(
-    const TCollision& collision,
-    unordered_map<TCollision, long>& cc_to_id_,
+template <int dim>
+void SmoothCollisionsBuilder<dim>::add_collision(
+    const CollisionMesh &mesh,
+    const unordered_tuple& pair,
+    unordered_map<unordered_tuple, long>& cc_to_id_,
     std::vector<TCollision>& collisions_)
 {
-    auto found_item = cc_to_id_.find(collision);
+    auto found_item = cc_to_id_.find(pair);
     if (found_item != cc_to_id_.end()) {
-        // edge-edge collision shouldn't be counted multiple times
+        // edge-edge or face-face collision shouldn't be counted multiple times
     } else {
         // New collision, so add it to the end of collisions
-        cc_to_id_.emplace(collision, collisions_.size());
-        collisions_.push_back(collision);
+        cc_to_id_.emplace(pair, collisions_.size());
+        collisions_.emplace_back(pair[0], pair[1], mesh);
     }
 }
 
-template <int dim, class TCollision>
-void SmoothCollisionsBuilder<dim, TCollision>::merge(
-    const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim, TCollision>>& local_storage,
+template <int dim>
+void SmoothCollisionsBuilder<dim>::merge(
+    const CollisionMesh &mesh,
+    const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>& local_storage,
     SmoothCollisions<dim>& merged_collisions)
 {
-    unordered_map<TCollision, long> cc_to_id;
+    unordered_map<unordered_tuple, long> cc_to_id;
 
     // size up the hash items
     size_t total = 0;
@@ -173,10 +165,13 @@ void SmoothCollisionsBuilder<dim, TCollision>::merge(
     // merge
     for (const auto& builder : local_storage)
         for (const auto& cc : builder.collisions)
-            add_collision(cc, cc_to_id, merged_collisions.collisions);
+            if constexpr (dim == 2)
+                add_collision(mesh, unordered_tuple(cc.edge0_id, cc.edge1_id), cc_to_id, merged_collisions.collisions);
+            else
+                add_collision(mesh, unordered_tuple(cc.face0_id, cc.face1_id), cc_to_id, merged_collisions.collisions);
 }
 
-template class SmoothCollisionsBuilder<2, SmoothEdgeEdgeCollision<2>>;
-template class SmoothCollisionsBuilder<3, SmoothFaceFaceCollision>;
+template class SmoothCollisionsBuilder<2>;
+template class SmoothCollisionsBuilder<3>;
 
 } // namespace ipc

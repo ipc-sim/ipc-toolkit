@@ -46,7 +46,7 @@ void SmoothCollisions<dim>::build(
         return distance_sqr < offset_sqr;
     };
 
-    tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim, SmoothCollisions::TCollision>> storage;
+    tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>> storage;
     if constexpr (dim == 2)
     {
         tbb::parallel_for(
@@ -82,7 +82,7 @@ void SmoothCollisions<dim>::build(
                     r.end());
             });
     }
-    SmoothCollisionsBuilder<dim, SmoothCollisions::TCollision>::merge(storage, *this);
+    SmoothCollisionsBuilder<dim>::merge(mesh, storage, *this);
 
     // logger().debug(to_string(mesh, vertices));
 
