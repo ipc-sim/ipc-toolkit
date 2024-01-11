@@ -23,24 +23,20 @@ namespace ipc {
         const VectorMax12d& positions, 
         const ParameterType &params) const
     {
-        const ParameterType local_params(local_dhat*local_dhat, params.alpha, params.a, params.r, params.n_quadrature);
-
         assert(positions.size() == 6);
-        return smooth_point_edge_potential_single_point<double>(positions.segment<2>(0), positions.segment<2>(2), positions.segment<2>(4), local_params);
+        return smooth_point_edge_potential_single_point<double>(positions.segment<2>(0), positions.segment<2>(2), positions.segment<2>(4), params);
    }
 
     VectorMax12d SmoothEdgeVertexCollision::gradient(
         const VectorMax12d& positions, 
         const ParameterType &params) const
     {
-        const ParameterType local_params(local_dhat*local_dhat, params.alpha, params.a, params.r, params.n_quadrature);
-
         assert(positions.size() == 6);
         DiffScalarBase::setVariableCount(12);
         using Diff=AutodiffScalarGrad<12>;
         auto [p, e0, e1] = slice_positions<Diff>(positions);
 
-        const auto val = smooth_point_edge_potential_single_point<Diff>(p, e0, e1, local_params);
+        const auto val = smooth_point_edge_potential_single_point<Diff>(p, e0, e1, params);
 
         VectorMax12d grad;
         grad = val.getGradient().head(6);
@@ -53,14 +49,12 @@ namespace ipc {
         const ParameterType &params,
         const bool project_hessian_to_psd) const
     {
-        const ParameterType local_params(local_dhat*local_dhat, params.alpha, params.a, params.r, params.n_quadrature);
-
         assert(positions.size() == 6);
         DiffScalarBase::setVariableCount(12);
         using Diff=AutodiffScalarHessian<12>;
         auto [p, e0, e1] = slice_positions<Diff>(positions);
 
-        const auto val = smooth_point_edge_potential_single_point<Diff>(p, e0, e1, local_params);
+        const auto val = smooth_point_edge_potential_single_point<Diff>(p, e0, e1, params);
 
         MatrixMax12d hess;
         hess = val.getHessian().topLeftCorner(6, 6);

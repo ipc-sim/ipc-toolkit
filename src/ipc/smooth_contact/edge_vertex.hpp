@@ -5,29 +5,12 @@ namespace ipc {
 
 class SmoothEdgeVertexCollision : public EdgeVertexCollision {
 public:
-    using EdgeVertexCollision::EdgeVertexCollision;
-
-    SmoothEdgeVertexCollision(const EdgeVertexCandidate& candidate)
-        : EdgeVertexCollision(candidate)
-    {
-    }
-
     SmoothEdgeVertexCollision(
         const long _edge_id,
         const long _vertex_id,
         const double _weight,
         const Eigen::SparseVector<double>& _weight_gradient)
         : EdgeVertexCollision(_edge_id, _vertex_id, _weight, _weight_gradient)
-    {
-    }
-
-    SmoothEdgeVertexCollision(
-        const long _edge_id,
-        const long _vertex_id,
-        const double _weight,
-        const Eigen::SparseVector<double>& _weight_gradient,
-        const double _dhat)
-        : EdgeVertexCollision(_edge_id, _vertex_id, _weight, _weight_gradient), local_dhat(_dhat)
     {
     }
 
@@ -47,9 +30,6 @@ public:
         const VectorMax12d& positions, 
         const ParameterType &params,
         const bool project_hessian_to_psd = false) const override;
-
-    protected:
-        double local_dhat = -1;
 };
 
 } // namespace ipc

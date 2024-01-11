@@ -17,8 +17,7 @@ void SmoothCollisionsBuilder<dim>::add_edge_vertex_collisions(
     const std::function<bool(double)>& is_active,
     const size_t start_i,
     const size_t end_i,
-    const double dhat,
-    const bool use_adaptive_dhat)
+    const double dhat)
 {
     if constexpr (dim == 2)
     {
@@ -44,8 +43,7 @@ template <int dim>
 void SmoothCollisionsBuilder<dim>::add_neighbor_edge_collisions(
         const CollisionMesh& mesh,
         const size_t start_i,
-        const size_t end_i,
-        const bool use_adaptive_dhat)
+        const size_t end_i)
 {
     if constexpr (dim == 2)
     {
@@ -68,8 +66,7 @@ void SmoothCollisionsBuilder<dim>::add_edge_edge_collisions(
     const std::function<bool(double)>& is_active,
     const size_t start_i,
     const size_t end_i,
-    const double dhat,
-    const bool use_adaptive_dhat)
+    const double dhat)
 {
     if constexpr (dim == 3)
     {

@@ -575,10 +575,10 @@ TEST_CASE(
     SECTION("debug")
     {
         mesh_name = (tests::DATA_DIR / "nonlinear_solve_iter020.obj").string();
-        dhat = 2e-2;
+        dhat = 3e-2;
     }
 
-    double min_dist_ratio = 1.5;
+    double min_dist_ratio = 1.2;
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
     bool success = igl::readCSV(mesh_name + "-v.csv", vertices);

@@ -8,12 +8,18 @@ namespace ipc {
 
 class SmoothFaceFaceCollision : public FaceFaceCandidate, public Collision<6> {
 public:
-    SmoothFaceFaceCollision(long _face0_id, long _face1_id, const CollisionMesh &mesh)
+    SmoothFaceFaceCollision(
+        long _face0_id, 
+        long _face1_id, 
+        const CollisionMesh &mesh)
     : FaceFaceCandidate(_face0_id, _face1_id)
     { 
         vertices = vertex_ids(mesh.edges(), mesh.faces());
     }
-    SmoothFaceFaceCollision(long _face0_id, long _face1_id, std::array<long, 6> _vertices)
+    SmoothFaceFaceCollision(
+        long _face0_id, 
+        long _face1_id, 
+        std::array<long, 6> _vertices)
     : FaceFaceCandidate(_face0_id, _face1_id), vertices(_vertices)
     { }
     virtual ~SmoothFaceFaceCollision() { }
@@ -58,11 +64,19 @@ public:
         return H::combine(std::move(h), min_fi, max_fi, ff.vertices);
     }
 
+    void set_adaptive_dhat(const CollisionMesh &mesh, const double &dhat)
+    {
+        // dhat0 = std::min(dhat, mesh.min_distance_in_rest_config(edge0_id));
+        // dhat1 = std::min(dhat, mesh.min_distance_in_rest_config(edge1_id));
+    }
+
 private:
     template <typename scalar> 
     scalar evaluate_quadrature(const Vector<double, -1, 18>& positions, const ParameterType &params) const;
 
     std::array<long, 6> vertices;
+
+    double dhat0 = 0, dhat1 = 0;
 };
 
 }

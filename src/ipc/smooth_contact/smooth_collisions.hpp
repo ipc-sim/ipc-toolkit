@@ -30,8 +30,8 @@ public:
     using value_type = TCollision;
 
 public:
-    SmoothCollisions() = default;
-    SmoothCollisions(bool _use_adaptive_dhat)
+    // SmoothCollisions() = default;
+    SmoothCollisions(bool _use_adaptive_dhat = false)
     : use_adaptive_dhat(_use_adaptive_dhat)
     {
     }
@@ -100,7 +100,7 @@ public:
 public:
     std::vector<value_type> collisions;
 
-    const bool use_adaptive_dhat = false;
+    const bool use_adaptive_dhat;
 };
 
 } // namespace ipc

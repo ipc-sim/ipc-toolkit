@@ -54,14 +54,14 @@ void SmoothCollisions<dim>::build(
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_edge_vertex_collisions(
                     mesh, vertices, candidates.ev_candidates, is_active, r.begin(),
-                    r.end(), dhat, use_adaptive_dhat);
+                    r.end(), dhat);
             });
 
         tbb::parallel_for(
             tbb::blocked_range<size_t>(size_t(0), mesh.num_edges()),
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_neighbor_edge_collisions(
-                    mesh, r.begin(), r.end(), use_adaptive_dhat);
+                    mesh, r.begin(), r.end());
             });
     }
     else
@@ -71,7 +71,7 @@ void SmoothCollisions<dim>::build(
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_edge_edge_collisions(
                     mesh, vertices, candidates.ee_candidates, is_active, r.begin(),
-                    r.end(), dhat, use_adaptive_dhat);
+                    r.end(), dhat);
             });
 
         tbb::parallel_for(
@@ -90,6 +90,12 @@ void SmoothCollisions<dim>::build(
         typename SmoothCollisions<dim>::value_type& collision = (*this)[ci];
         collision.dmin = dmin;
     }
+
+    if (use_adaptive_dhat)
+        for (size_t ci = 0; ci < size(); ci++) {
+            typename SmoothCollisions<dim>::value_type& collision = (*this)[ci];
+            collision.set_adaptive_dhat(mesh, dhat);
+        }
 }
 
 // ============================================================================

@@ -47,6 +47,12 @@ public:
 
     bool is_mollified() const override { return false; }
 
+    void set_adaptive_dhat(const CollisionMesh &mesh, const double &dhat)
+    {
+        dhat0 = std::min(dhat, mesh.min_distance_in_rest_config(edge0_id));
+        dhat1 = std::min(dhat, mesh.min_distance_in_rest_config(edge1_id));
+    }
+
 private:
     Vector12d positions_to_3d(const VectorMax12d& positions) const;
     
@@ -54,6 +60,8 @@ private:
     scalar evaluate_quadrature(const VectorMax12d& positions, const ParameterType &params) const;
 
     std::array<long, 4> vertices;
+
+    double dhat0 = 0, dhat1 = 0;
 };
 
 }

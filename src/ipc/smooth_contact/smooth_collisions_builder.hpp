@@ -23,14 +23,12 @@ public:
         const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i,
-        const double dhat,
-        const bool use_adaptive_dhat);
+        const double dhat);
 
     void add_neighbor_edge_collisions(
         const CollisionMesh& mesh,
         const size_t start_i,
-        const size_t end_i,
-        const bool use_adaptive_dhat);
+        const size_t end_i);
 
     // ------------------------------------------------------------------------
 
@@ -49,8 +47,7 @@ public:
         const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i,
-        const double dhat,
-        const bool use_adaptive_dhat = false);
+        const double dhat);
 
     // only for 3D, transform face-vertex to face-face
     void add_face_vertex_collisions(
