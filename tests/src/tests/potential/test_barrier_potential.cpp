@@ -569,6 +569,7 @@ TEST_CASE(
 {
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
     const bool adaptive_dhat = GENERATE(true, false);
+    const int n_quad_pts = GENERATE(1, 3);
 
     double dhat = -1;
     std::string mesh_name = "";
@@ -578,7 +579,7 @@ TEST_CASE(
         dhat = 3e-2;
     }
 
-    double min_dist_ratio = 1.2;
+    double min_dist_ratio = 1.5;
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
     bool success = igl::readCSV(mesh_name + "-v.csv", vertices);
@@ -607,7 +608,7 @@ TEST_CASE(
         std::cout << "convergent ipc candidate size " << collisions_tmp.size() << "\n";
     }
 
-    ParameterType param(dhat*dhat, 5, 0.1, 1, 2);
+    ParameterType param(dhat*dhat, 5, 0.1, 1, n_quad_pts);
 
     SmoothContactPotential<SmoothCollisions<2>> potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";

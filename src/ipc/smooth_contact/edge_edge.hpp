@@ -57,7 +57,7 @@ private:
     Vector12d positions_to_3d(const VectorMax12d& positions) const;
     
     template <typename scalar> 
-    scalar evaluate_quadrature(const VectorMax12d& positions, const ParameterType &params) const;
+    scalar evaluate_quadrature(const VectorMax12d& positions, ParameterType params) const;
 
     std::array<long, 4> vertices;
 

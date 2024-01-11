@@ -26,7 +26,7 @@ namespace ipc {
     }
 
     template<int dim_> template<class scalar>
-    scalar SmoothEdgeEdgeCollision<dim_>::evaluate_quadrature(const VectorMax12d& positions, const ParameterType &params) const
+    scalar SmoothEdgeEdgeCollision<dim_>::evaluate_quadrature(const VectorMax12d& positions, ParameterType params) const
     {
         std::array<VectorMax3<scalar>, 4> points = slice_positions<scalar>(positions, dim_);
 
@@ -37,30 +37,36 @@ namespace ipc {
             {
                 Eigen::VectorXd uv = Eigen::VectorXd::LinSpaced(params.n_quadrature, 0, 1);
                 Vector2<scalar> p;
-                const Vector2<scalar> edge0 = points[1] - points[0];
-                const Vector2<scalar> edge1 = points[3] - points[2];
-                const scalar len0 = edge0.norm(), len1 = edge1.norm();
-                
-                scalar val0 = scalar(0.);
-                scalar val1 = scalar(0.);
-                for (int i = 1; i < uv.size(); ++i)
-                {
-                    for (int j = 1; j < uv.size(); ++j)
-                    {
-                        p = points[0] + scalar((uv(i) + uv(i-1)) / 2) * edge0;
-                        val0 += scalar(uv(i) - uv(i-1)) * smooth_point_edge_potential_single_point<scalar>(p, points[2] + scalar(uv(j-1)) * edge1, points[2] + scalar(uv(j)) * edge1, params);
+                std::array<Vector2<scalar>, 2> edges = {{points[1] - points[0], points[3] - points[2]}};
+                const std::array<scalar, 2> lens = {{edges[0].norm(), edges[1].norm()}};
 
-                        p = points[2] + scalar((uv(i) + uv(i-1)) / 2) * edge1;
-                        val1 += scalar(uv(i) - uv(i-1)) * smooth_point_edge_potential_single_point<scalar>(p, points[0] + scalar(uv(j-1)) * edge0, points[0] + scalar(uv(j)) * edge0, params);
+                for (const int e : {0, 1})
+                {
+                    const int ee = 1 - e;
+
+                    if (dhat0 > 0 && dhat1 > 0)
+                        params.eps = ee == 0 ? dhat0*dhat0 : dhat1*dhat1;
+                    
+                    scalar tmp = scalar(0.);
+                    for (int i = 1; i < uv.size(); ++i)
+                    {
+                        for (int j = 1; j < uv.size(); ++j)
+                        {
+                            p = points[2*e] + scalar((uv(i) + uv(i-1)) / 2) * edges[e];
+                            tmp += scalar(uv(i) - uv(i-1)) * smooth_point_edge_potential_single_point<scalar>(p, points[ee*2] + scalar(uv(j-1)) * edges[ee], points[ee*2] + scalar(uv(j)) * edges[ee], params);
+                        }
                     }
+                    val += tmp * lens[e];
                 }
-                val = val0 * len0 + val1 * len1;
             }
             else
             {
                 for (const int e : {0, 1})
                 {
                     const int ee = 1 - e;
+
+                    if (dhat0 > 0 && dhat1 > 0)
+                        params.eps = ee == 0 ? dhat0*dhat0 : dhat1*dhat1;
 
                     const scalar len = (points[e * 2 + 1] - points[e * 2 + 0]).norm();
                     for (const int i : {0, 1})
