@@ -14,9 +14,7 @@ namespace ipc {
 
 class Candidates {
 public:
-    Candidates(const std::vector<CandidateType> &_candidate_types = {}) : candidate_types(_candidate_types) { }
-
-    void set_candidate_types(const std::vector<CandidateType> &_candidate_types) { candidate_types = _candidate_types; }
+    Candidates() = default;
 
     /// @brief Initialize the set of discrete collision detection candidates.
     /// @param mesh The surface of the collision mesh.
@@ -27,8 +25,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const double inflation_radius = 0,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
-        const bool include_neighbor = false);
+        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
 
     /// @brief Initialize the set of continuous collision detection candidates.
     /// @note Assumes the trajectory is linear.
@@ -42,8 +39,7 @@ public:
         const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
         const double inflation_radius = 0,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
-        const bool include_neighbor = false);
+        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
 
     size_t size() const;
 
@@ -126,9 +122,6 @@ public:
     std::vector<EdgeVertexCandidate> ev_candidates;
     std::vector<EdgeEdgeCandidate> ee_candidates;
     std::vector<FaceVertexCandidate> fv_candidates;
-
-private:
-    std::vector<CandidateType> candidate_types;
 };
 
 } // namespace ipc

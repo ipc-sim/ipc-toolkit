@@ -17,6 +17,8 @@ set(SOURCES
   edge_edge.hpp
   face_vertex.cpp
   face_vertex.hpp
+  face_face.cpp
+  face_face.hpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})

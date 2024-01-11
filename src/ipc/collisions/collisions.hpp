@@ -16,11 +16,12 @@
 
 namespace ipc {
 
+template <int max_vert = 4>
 class VirtualCollisions {
 public:
     /// @brief The type of the collisions.
-    using value_type = Collision;
-public:
+    using value_type = Collision<max_vert>;
+
     VirtualCollisions() = default;
     virtual ~VirtualCollisions() = default;
 
@@ -57,12 +58,12 @@ public:
     /// @brief Get a reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A reference to the collision.
-    virtual Collision& operator[](size_t i) = 0;
+    virtual Collision<max_vert>& operator[](size_t i) = 0;
 
     /// @brief Get a const reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A const reference to the collision.
-    virtual const Collision& operator[](size_t i) const = 0;
+    virtual const Collision<max_vert>& operator[](size_t i) const = 0;
 
     /// @brief Get if the collision set should use the convergent formulation.
     /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
@@ -111,24 +112,15 @@ public:
         m_are_shape_derivatives_enabled = are_shape_derivatives_enabled;
     }
 
-    void set_edge_quadrature_type(const SurfaceQuadratureType type) { quad_type = type; }
-    SurfaceQuadratureType get_edge_quadrature_type() const { return quad_type; }
-
-    virtual std::vector<CandidateType> get_candidate_types(const int &dim) const = 0;
-
-    // add edge-edge, edge-face, face-face neighbors to candidates
-    virtual bool include_neighbor() const = 0;
-
 protected:
     bool m_use_convergent_formulation = false;
     bool m_are_shape_derivatives_enabled = false;
-    SurfaceQuadratureType quad_type = SurfaceQuadratureType::SinglePoint;
 };
 
-class Collisions : public VirtualCollisions {
+class Collisions : public VirtualCollisions<4> {
 public:
     /// @brief The type of the collisions.
-    using value_type = Collision;
+    using value_type = Collision<4>;
 
 public:
     Collisions() { }
@@ -173,12 +165,12 @@ public:
     /// @brief Get a reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A reference to the collision.
-    Collision& operator[](size_t i) override;
+    Collision<4>& operator[](size_t i) override;
 
     /// @brief Get a const reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A const reference to the collision.
-    const Collision& operator[](size_t i) const override;
+    const Collision<4>& operator[](size_t i) const override;
 
     /// @brief Get if the collision at i is a vertex-vertex collision.
     /// @param i The index of the collision.
@@ -207,10 +199,6 @@ public:
 
     std::string
     to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
-
-    std::vector<CandidateType> get_candidate_types(const int &dim) const override;
-
-    bool include_neighbor() const override { return false; }
 
     std::vector<VertexVertexCollision> vv_collisions;
     std::vector<EdgeVertexCollision> ev_collisions;

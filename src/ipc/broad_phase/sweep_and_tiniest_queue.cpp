@@ -241,7 +241,7 @@ bool CopyMeshBroadPhase::can_edges_collide(size_t eai, size_t ebi) const
     const bool share_endpoint =
         ea0i == eb0i || ea0i == eb1i || ea1i == eb0i || ea1i == eb1i;
 
-    return (include_neighbor || !share_endpoint)
+    return !share_endpoint
         && (can_vertices_collide(ea0i, eb0i) || can_vertices_collide(ea0i, eb1i)
             || can_vertices_collide(ea1i, eb0i)
             || can_vertices_collide(ea1i, eb1i));
@@ -264,7 +264,7 @@ bool CopyMeshBroadPhase::can_edge_face_collide(size_t ei, size_t fi) const
     const bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i
         || e1i == f0i || e1i == f1i || e1i == f2i;
 
-    return (include_neighbor || !share_endpoint)
+    return !share_endpoint
         && (can_vertices_collide(e0i, f0i) || can_vertices_collide(e0i, f1i)
             || can_vertices_collide(e0i, f2i) || can_vertices_collide(e1i, f0i)
             || can_vertices_collide(e1i, f1i)

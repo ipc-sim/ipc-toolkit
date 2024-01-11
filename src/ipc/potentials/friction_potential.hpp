@@ -10,6 +10,7 @@ class FrictionPotential : public Potential<FrictionCollisions> {
     using Super = Potential;
 
 public:
+    using Potential<FrictionCollisions>::element_size;
     /// @brief Construct a friction potential.
     /// @param epsv The smooth friction mollifier parameter \f$\epsilon_v\f$.
     FrictionPotential(const double epsv);
@@ -92,23 +93,23 @@ public:
     /// @return The potential.
     double operator()(
         const FrictionCollision& collision,
-        const VectorMax12d& velocities) const override;
+        const Vector<double, -1, element_size>& velocities) const override;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision
     /// @param velocities The collision stencil's velocities.
     /// @return The gradient of the potential.
-    VectorMax12d gradient(
+    Vector<double, -1, element_size> gradient(
         const FrictionCollision& collision,
-        const VectorMax12d& velocities) const override;
+        const Vector<double, -1, element_size>& velocities) const override;
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision
     /// @param velocities The collision stencil's velocities.
     /// @return The hessian of the potential.
-    MatrixMax12d hessian(
+    MatrixMax<double, element_size, element_size> hessian(
         const FrictionCollision& collision,
-        const VectorMax12d& velocities,
+        const Vector<double, -1, element_size>& velocities,
         const bool project_hessian_to_psd = false) const override;
 
     /// @brief Compute the friction force.
@@ -121,11 +122,11 @@ public:
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @param no_mu Whether to not multiply by mu
     /// @return Friction force
-    VectorMax12d force(
+    Vector<double, -1, element_size> force(
         const FrictionCollision& collision,
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& lagged_displacements,
-        const VectorMax12d& velocities,
+        const Vector<double, -1, element_size>& rest_positions,
+        const Vector<double, -1, element_size>& lagged_displacements,
+        const Vector<double, -1, element_size>& velocities,
         const BarrierPotential& barrier_potential,
         const double barrier_stiffness,
         const double dmin = 0,
@@ -141,11 +142,11 @@ public:
     /// @param wrt Variable to differentiate the friction force with respect to.
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @return Friction force Jacobian
-    MatrixMax12d force_jacobian(
+    MatrixMax<double, element_size, element_size> force_jacobian(
         const FrictionCollision& collision,
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& lagged_displacements,
-        const VectorMax12d& velocities,
+        const Vector<double, -1, element_size>& rest_positions,
+        const Vector<double, -1, element_size>& lagged_displacements,
+        const Vector<double, -1, element_size>& velocities,
         const BarrierPotential& barrier_potential,
         const double barrier_stiffness,
         const DiffWRT wrt,

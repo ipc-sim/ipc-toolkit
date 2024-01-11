@@ -6,7 +6,7 @@
 
 namespace ipc {
 
-class VertexVertexCollision : public VertexVertexCandidate, public Collision {
+class VertexVertexCollision : public VertexVertexCandidate, public Collision<4> {
 public:
     using VertexVertexCandidate::VertexVertexCandidate;
 

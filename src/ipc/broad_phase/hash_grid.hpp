@@ -84,9 +84,6 @@ public:
     void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const override;
 
-    void detect_face_face_candidates(
-        std::vector<FaceFaceCandidate>& candidates) const override;
-
     double cellSize() const { return m_cellSize; }
     const ArrayMax3i& gridSize() const { return m_gridSize; }
     const ArrayMax3d& domainMin() const { return m_domainMin; }

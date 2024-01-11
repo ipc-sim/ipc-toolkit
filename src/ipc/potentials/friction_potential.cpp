@@ -38,7 +38,7 @@ Eigen::VectorXd FrictionPotential::force(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const auto& collision = collisions[i];
 
-                const VectorMax12d local_force = force(
+                const Vector<double, -1, FrictionPotential::element_size> local_force = force(
                     collision, collision.dof(rest_positions, edges, faces),
                     collision.dof(lagged_displacements, edges, faces),
                     collision.dof(velocities, edges, faces), //
@@ -87,7 +87,7 @@ Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const FrictionCollision& collision = collisions[i];
 
-                const MatrixMax12d local_force_jacobian = force_jacobian(
+                const MatrixMax<double, FrictionPotential::element_size, FrictionPotential::element_size> local_force_jacobian = force_jacobian(
                     collision, collision.dof(rest_positions, edges, faces),
                     collision.dof(lagged_displacements, edges, faces),
                     collision.dof(velocities, edges, faces), //
@@ -120,7 +120,7 @@ Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
                     "Shape derivative is not computed for friction collision!");
             }
 
-            VectorMax12d local_force = force(
+            Vector<double, -1, FrictionPotential::element_size> local_force = force(
                 collision, collision.dof(rest_positions, edges, faces),
                 collision.dof(lagged_displacements, edges, faces),
                 collision.dof(velocities, edges, faces), //
@@ -142,7 +142,7 @@ Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
 // -- Single collision methods -------------------------------------------------
 
 double FrictionPotential::operator()(
-    const FrictionCollision& collision, const VectorMax12d& velocities) const
+    const FrictionCollision& collision, const Vector<double, -1, FrictionPotential::element_size>& velocities) const
 {
     // μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
 
@@ -154,8 +154,8 @@ double FrictionPotential::operator()(
         * f0_SF(u.norm(), epsv());
 }
 
-VectorMax12d FrictionPotential::gradient(
-    const FrictionCollision& collision, const VectorMax12d& velocities) const
+Vector<double, -1, FrictionPotential::element_size> FrictionPotential::gradient(
+    const FrictionCollision& collision, const Vector<double, -1, FrictionPotential::element_size>& velocities) const
 {
     // ∇ₓ μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
     //  = μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u
@@ -165,7 +165,7 @@ VectorMax12d FrictionPotential::gradient(
         * collision.relative_velocity(velocities);
 
     // Compute T = ΓᵀP
-    const MatrixMax<double, 12, 2> T =
+    const MatrixMax<double, FrictionPotential::element_size, 2> T =
         collision.relative_velocity_matrix().transpose()
         * collision.tangent_basis;
 
@@ -180,9 +180,9 @@ VectorMax12d FrictionPotential::gradient(
            * u);
 }
 
-MatrixMax12d FrictionPotential::hessian(
+MatrixMax<double, FrictionPotential::element_size, FrictionPotential::element_size> FrictionPotential::hessian(
     const FrictionCollision& collision,
-    const VectorMax12d& velocities,
+    const Vector<double, -1, FrictionPotential::element_size>& velocities,
     const bool project_hessian_to_psd) const
 {
     // ∇ₓ μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u (where u = T(xᵗ)ᵀ v)
@@ -194,7 +194,7 @@ MatrixMax12d FrictionPotential::hessian(
         * collision.relative_velocity(velocities);
 
     // Compute T = ΓᵀP
-    const MatrixMax<double, 12, 2> T =
+    const MatrixMax<double, FrictionPotential::element_size, 2> T =
         collision.relative_velocity_matrix().transpose()
         * collision.tangent_basis;
 
@@ -208,7 +208,7 @@ MatrixMax12d FrictionPotential::hessian(
     const double scale =
         collision.weight * collision.mu * collision.normal_force_magnitude;
 
-    MatrixMax12d hess;
+    MatrixMax<double, FrictionPotential::element_size, FrictionPotential::element_size> hess;
     if (norm_u >= epsv()) {
         // f₁(‖u‖) = 1 ⟹ f₁'(‖u‖) = 0
         //  ⟹ ∇²D(v) = μ N T [-f₁(‖u‖)/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
@@ -255,11 +255,11 @@ MatrixMax12d FrictionPotential::hessian(
     return hess;
 }
 
-VectorMax12d FrictionPotential::force(
+Vector<double, -1, FrictionPotential::element_size> FrictionPotential::force(
     const FrictionCollision& collision,
-    const VectorMax12d& rest_positions,       // = x
-    const VectorMax12d& lagged_displacements, // = u
-    const VectorMax12d& velocities,           // = v
+    const Vector<double, -1, FrictionPotential::element_size>& rest_positions,       // = x
+    const Vector<double, -1, FrictionPotential::element_size>& lagged_displacements, // = u
+    const Vector<double, -1, FrictionPotential::element_size>& velocities,           // = v
     const BarrierPotential& barrier_potential,
     const double barrier_stiffness,
     const double dmin,
@@ -274,10 +274,10 @@ VectorMax12d FrictionPotential::force(
     assert(rest_positions.size() == lagged_displacements.size());
     assert(rest_positions.size() == velocities.size());
 
-    // const VectorMax12d x = dof(rest_positions, edges, faces);
-    // const VectorMax12d u = dof(lagged_displacements, edges, faces);
-    // const VectorMax12d v = dof(velocities, edges, faces);
-    const VectorMax12d lagged_positions =
+    // const Vector<double, -1, FrictionPotential::element_size> x = dof(rest_positions, edges, faces);
+    // const Vector<double, -1, FrictionPotential::element_size> u = dof(lagged_displacements, edges, faces);
+    // const Vector<double, -1, FrictionPotential::element_size> v = dof(velocities, edges, faces);
+    const Vector<double, -1, FrictionPotential::element_size> lagged_positions =
         rest_positions + lagged_displacements; // = x
 
     // Compute N(x + u)
@@ -292,11 +292,11 @@ VectorMax12d FrictionPotential::force(
     const VectorMax2d beta = collision.compute_closest_point(lagged_positions);
 
     // Compute Γ
-    const MatrixMax<double, 3, 12> Gamma =
+    const MatrixMax<double, 3, FrictionPotential::element_size> Gamma =
         collision.relative_velocity_matrix(beta);
 
     // Compute T = ΓᵀP
-    const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
+    const MatrixMax<double, FrictionPotential::element_size, 2> T = Gamma.transpose() * P;
 
     // Compute τ = PᵀΓv
     const VectorMax2d tau = T.transpose() * velocities;
@@ -310,11 +310,11 @@ VectorMax12d FrictionPotential::force(
         * f1_over_norm_tau * T * tau;
 }
 
-MatrixMax12d FrictionPotential::force_jacobian(
+MatrixMax<double, FrictionPotential::element_size, FrictionPotential::element_size> FrictionPotential::force_jacobian(
     const FrictionCollision& collision,
-    const VectorMax12d& rest_positions,       // = x
-    const VectorMax12d& lagged_displacements, // = u
-    const VectorMax12d& velocities,           // = v
+    const Vector<double, -1, FrictionPotential::element_size>& rest_positions,       // = x
+    const Vector<double, -1, FrictionPotential::element_size>& lagged_displacements, // = u
+    const Vector<double, -1, FrictionPotential::element_size>& velocities,           // = v
     const BarrierPotential& barrier_potential,
     const double barrier_stiffness,
     const DiffWRT wrt,
@@ -334,11 +334,11 @@ MatrixMax12d FrictionPotential::force_jacobian(
     const int dim = n / collision.num_vertices();
     assert(n % collision.num_vertices() == 0);
 
-    // const VectorMax12d x = dof(rest_positions, edges, faces);
-    // const VectorMax12d u = dof(lagged_displacements, edges, faces);
-    // const VectorMax12d v = dof(velocities, edges, faces);
+    // const Vector<double, -1, FrictionPotential::element_size> x = dof(rest_positions, edges, faces);
+    // const Vector<double, -1, FrictionPotential::element_size> u = dof(lagged_displacements, edges, faces);
+    // const Vector<double, -1, FrictionPotential::element_size> v = dof(velocities, edges, faces);
 
-    const VectorMax12d lagged_positions =
+    const Vector<double, -1, FrictionPotential::element_size> lagged_positions =
         rest_positions + lagged_displacements; // = x + u
     const bool need_jac_N_or_T = wrt != DiffWRT::VELOCITIES;
 
@@ -347,7 +347,7 @@ MatrixMax12d FrictionPotential::force_jacobian(
         lagged_positions, barrier_potential, barrier_stiffness, dmin);
 
     // Compute ∇N
-    VectorMax12d grad_N;
+    Vector<double, -1, FrictionPotential::element_size> grad_N;
     if (need_jac_N_or_T) {
         // ∇ₓN = ∇ᵤN
         grad_N = collision.compute_normal_force_magnitude_gradient(
@@ -363,14 +363,14 @@ MatrixMax12d FrictionPotential::force_jacobian(
     const VectorMax2d beta = collision.compute_closest_point(lagged_positions);
 
     // Compute Γ
-    const MatrixMax<double, 3, 12> Gamma =
+    const MatrixMax<double, 3, FrictionPotential::element_size> Gamma =
         collision.relative_velocity_matrix(beta);
 
     // Compute T = ΓᵀP
-    const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
+    const MatrixMax<double, FrictionPotential::element_size, 2> T = Gamma.transpose() * P;
 
     // Compute ∇T
-    MatrixMax<double, 144, 2> jac_T;
+    MatrixMax<double, FrictionPotential::element_size*FrictionPotential::element_size, 2> jac_T;
     if (need_jac_N_or_T) {
         jac_T.resize(n * n, dim - 1);
         // ∇T = ∇(ΓᵀP) = ∇ΓᵀP + Γᵀ∇P
@@ -385,9 +385,9 @@ MatrixMax12d FrictionPotential::force_jacobian(
         // Vertex-vertex does not have a closest point
         if (beta.size()) {
             // ∇Γ(β) = ∇ᵦΓ∇β ∈ ℝ^{d×n×n} ≡ ℝ^{nd×n}
-            const MatrixMax<double, 2, 12> jac_beta =
+            const MatrixMax<double, 2, FrictionPotential::element_size> jac_beta =
                 collision.compute_closest_point_jacobian(lagged_positions);
-            const MatrixMax<double, 6, 12> jac_Gamma_wrt_beta =
+            const MatrixMax<double, 6, FrictionPotential::element_size> jac_Gamma_wrt_beta =
                 collision.relative_velocity_matrix_jacobian(beta);
 
             for (int k = 0; k < n; k++) {
@@ -404,7 +404,7 @@ MatrixMax12d FrictionPotential::force_jacobian(
     const VectorMax2d tau = P.transpose() * Gamma * velocities;
 
     // Compute ∇τ = ∇T(x + u)ᵀv + T(x + u)ᵀ∇v
-    MatrixMax<double, 2, 12> jac_tau;
+    MatrixMax<double, 2, FrictionPotential::element_size> jac_tau;
     if (need_jac_N_or_T) {
         jac_tau.resize(dim - 1, n);
         // Compute ∇T(x + u)ᵀv
@@ -421,7 +421,7 @@ MatrixMax12d FrictionPotential::force_jacobian(
     const double f1_over_norm_tau = f1_SF_over_x(tau_norm, epsv());
 
     // Compute ∇(f₁(‖τ‖)/‖τ‖)
-    VectorMax12d grad_f1_over_norm_tau;
+    Vector<double, -1, FrictionPotential::element_size> grad_f1_over_norm_tau;
     if (tau_norm == 0) {
         // lim_{x→0} f₂(x)x² = 0
         grad_f1_over_norm_tau.setZero(n);
@@ -433,11 +433,11 @@ MatrixMax12d FrictionPotential::force_jacobian(
     }
 
     // Premultiplied values
-    const VectorMax12d T_times_tau = T * tau;
+    const Vector<double, -1, FrictionPotential::element_size> T_times_tau = T * tau;
 
     // ------------------------------------------------------------------------
     // Compute J = ∇F = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
-    MatrixMax12d J = MatrixMax12d::Zero(n, n);
+    MatrixMax<double, FrictionPotential::element_size, FrictionPotential::element_size> J = MatrixMax<double, FrictionPotential::element_size, FrictionPotential::element_size>::Zero(n, n);
 
     // = -μ f₁(‖τ‖)/‖τ‖ (T τ) [∇N]ᵀ
     if (need_jac_N_or_T) {

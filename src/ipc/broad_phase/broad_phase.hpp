@@ -13,13 +13,6 @@
 
 namespace ipc {
 
-enum class CandidateType {
-    EdgeVertex,
-    EdgeEdge,
-    FaceVertex,
-    FaceFace
-};
-
 /// Enumeration of implemented broad phase methods.
 enum class BroadPhaseMethod {
     BRUTE_FORCE = 0,
@@ -38,14 +31,14 @@ class Candidates; // Forward declaration
 
 class BroadPhase {
 public:
-    BroadPhase(const bool _include_neighbor = false) : include_neighbor(_include_neighbor) {}
+    BroadPhase()  {}
     virtual ~BroadPhase() { clear(); }
 
     /// @brief Construct a registered broad phase object.
     /// @param method The broad phase method to use.
     /// @return The constructed broad phase object.
     static std::shared_ptr<BroadPhase>
-    make_broad_phase(const BroadPhaseMethod method, const bool _include_neighbor = false);
+    make_broad_phase(const BroadPhaseMethod method);
 
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
@@ -98,29 +91,18 @@ public:
     /// @param[out] candidates The candidate edge-face intersections.
     virtual void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const = 0;
-
-    /// @brief Find the candidate face-face intersections.
-    /// @param[out] candidates The candidate face-face intersections.
-    virtual void detect_face_face_candidates(
-        std::vector<FaceFaceCandidate>& candidates) const
-    {
-        throw std::runtime_error("face-face candidate not implemented!");
-    }
     
-    void detect_collision_candidates(Candidates& candidates, const CandidateType &candidate_type) const;
-
     /// @brief Detect all collision candidates needed for a given dimensional simulation.
     /// @param dim The dimension of the simulation (i.e., 2 or 3).
     /// @param candidates The detected collision candidates.
     virtual void
-    detect_collision_candidates(int dim, Candidates& candidates, const std::vector<CandidateType> &candidate_types) const;
+    detect_collision_candidates(int dim, Candidates& candidates) const;
 
     /// @brief Function for determining if two vertices can collide.
     std::function<bool(size_t, size_t)> can_vertices_collide =
         default_can_vertices_collide;
 
 protected:
-    const bool include_neighbor;
     virtual bool can_edge_vertex_collide(size_t ei, size_t vi) const;
     virtual bool can_edges_collide(size_t eai, size_t ebi) const;
     virtual bool can_face_vertex_collide(size_t fi, size_t vi) const;

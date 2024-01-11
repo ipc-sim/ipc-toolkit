@@ -27,9 +27,6 @@ public:
     void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const override;
 
-    virtual void detect_face_face_candidates(
-        std::vector<FaceFaceCandidate>& candidates) const override;
-
 private:
     template <typename Candidate, bool triangular = false>
     void detect_candidates(

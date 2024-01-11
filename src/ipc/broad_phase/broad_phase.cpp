@@ -50,72 +50,42 @@ void BroadPhase::clear()
     face_boxes.clear();
 }
 
-void BroadPhase::detect_collision_candidates(Candidates& candidates, const CandidateType &candidate_type) const
-{
-    switch (candidate_type)
-    {
-    case CandidateType::EdgeVertex:
-        detect_edge_vertex_candidates(candidates.ev_candidates);
-        // std::cout << "edge vertex\n";
-        break;
-    case CandidateType::EdgeEdge:
-        detect_edge_edge_candidates(candidates.ee_candidates);
-        // std::cout << "edge edge\n";
-        break;
-    case CandidateType::FaceVertex:
-        detect_face_vertex_candidates(candidates.fv_candidates);
-        // std::cout << "face vertex\n";
-        break;
-    default:
-        assert(false);
-    }
-}
-
 void BroadPhase::detect_collision_candidates(
-    int dim, Candidates& candidates, const std::vector<CandidateType> &candidate_types) const
+    int dim, Candidates& candidates) const
 {
-    candidates.clear();
-    if (candidate_types.empty())
-    {
-        if (dim == 2) {
-            // This is not needed for 3D
-            detect_edge_vertex_candidates(candidates.ev_candidates);
-        } else {
-            // These are not needed for 2D
-            detect_edge_edge_candidates(candidates.ee_candidates);
-            detect_face_vertex_candidates(candidates.fv_candidates);
-        }
-    }
-    else
-    {
-        for (const auto &type : candidate_types)
-            detect_collision_candidates(candidates, type);
+    if (dim == 2) {
+        // This is not needed for 3D
+        detect_edge_vertex_candidates(candidates.ev_candidates);
+    } else {
+        // These are not needed for 2D
+        detect_edge_edge_candidates(candidates.ee_candidates);
+        detect_face_vertex_candidates(candidates.fv_candidates);
     }
 }
 
 // ============================================================================
 
 std::shared_ptr<BroadPhase>
-BroadPhase::make_broad_phase(const BroadPhaseMethod method, const bool _include_neighbor)
+BroadPhase::make_broad_phase(const BroadPhaseMethod method)
 {
     switch (method) {
     case BroadPhaseMethod::BRUTE_FORCE:
-        return std::make_shared<BruteForce>(_include_neighbor);
+        return std::make_shared<BruteForce>();
     case BroadPhaseMethod::HASH_GRID:
-        return std::make_shared<HashGrid>(_include_neighbor);
+        return std::make_shared<HashGrid>();
     case BroadPhaseMethod::SPATIAL_HASH:
-        return std::make_shared<SpatialHash>(_include_neighbor);
+        return std::make_shared<SpatialHash>();
     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
-        return std::make_shared<SweepAndTiniestQueue>(_include_neighbor);
+        return std::make_shared<SweepAndTiniestQueue>();
     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU:
 #ifdef IPC_TOOLKIT_WITH_CUDA
-        return std::make_shared<SweepAndTiniestQueueGPU>(_include_neighbor);
+        return std::make_shared<SweepAndTiniestQueueGPU>();
 #else
         throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
                                  "because CUDA is disabled!");
 #endif
     case BroadPhaseMethod::BVH:
-        return std::make_shared<BVH>(_include_neighbor);
+        return std::make_shared<BVH>();
     default:
         throw std::runtime_error("Invalid BroadPhaseMethod!");
     }
@@ -139,7 +109,7 @@ bool BroadPhase::can_edges_collide(size_t eai, size_t ebi) const
     const bool share_endpoint =
         ea0i == eb0i || ea0i == eb1i || ea1i == eb0i || ea1i == eb1i;
 
-    return (include_neighbor || !share_endpoint)
+    return !share_endpoint
         && (can_vertices_collide(ea0i, eb0i) || can_vertices_collide(ea0i, eb1i)
             || can_vertices_collide(ea1i, eb0i)
             || can_vertices_collide(ea1i, eb1i));
@@ -162,7 +132,7 @@ bool BroadPhase::can_edge_face_collide(size_t ei, size_t fi) const
     const bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i
         || e1i == f0i || e1i == f1i || e1i == f2i;
 
-    return (include_neighbor || !share_endpoint)
+    return !share_endpoint
         && (can_vertices_collide(e0i, f0i) || can_vertices_collide(e0i, f1i)
             || can_vertices_collide(e0i, f2i) || can_vertices_collide(e1i, f0i)
             || can_vertices_collide(e1i, f1i)
@@ -177,7 +147,7 @@ bool BroadPhase::can_face_face_collide(size_t fj, size_t fi) const
     std::set<long> s = {f0j, f1j, f2j, f0i, f1i, f2i};
     const bool share_endpoint = s.size() < 6;
 
-    return (include_neighbor || !share_endpoint)
+    return !share_endpoint
         && (can_vertices_collide(f0j, f0i) || can_vertices_collide(f0j, f1i)
             || can_vertices_collide(f0j, f2i) || can_vertices_collide(f1j, f0i)
             || can_vertices_collide(f1j, f1i) || can_vertices_collide(f1j, f2i)

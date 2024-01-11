@@ -9,7 +9,7 @@
 namespace ipc {
 
 void FrictionCollision::init(
-    const Collision& collision,
+    const Collision<4>& collision,
     const VectorMax12d& positions,
     const BarrierPotential& barrier_potential,
     const double barrier_stiffness)

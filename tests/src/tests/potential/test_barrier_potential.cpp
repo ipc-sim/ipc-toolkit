@@ -501,7 +501,7 @@ TEST_CASE(
 
     CollisionMesh mesh;
 
-    SmoothCollisions<3> collisions;
+    SmoothCollisions3 collisions;
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(vertices, edges, faces);
     } else {
@@ -515,7 +515,7 @@ TEST_CASE(
 
     ParameterType param(dhat*dhat, 2, 0.2, 1, 5);
 
-    SmoothContactPotential<SmoothCollisions<3>> potential(param);
+    SmoothContactPotential<SmoothCollisions3> potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
 
     // -------------------------------------------------------------------------
@@ -568,8 +568,6 @@ TEST_CASE(
     "[potential][barrier_potential][gradient][hessian]")
 {
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
-
-    const auto quad_type = GENERATE(SurfaceQuadratureType::UniformSampling, SurfaceQuadratureType::SinglePoint);
     const bool adaptive_dhat = GENERATE(true, false);
 
     double dhat = -1;
@@ -592,8 +590,7 @@ TEST_CASE(
 
     CollisionMesh mesh;
 
-    SmoothCollisions<2> collisions(adaptive_dhat);
-    collisions.set_edge_quadrature_type(quad_type);
+    SmoothCollisions2 collisions(adaptive_dhat);
     mesh = CollisionMesh(vertices, edges, faces);
     mesh.set_min_dist_ratio(min_dist_ratio);
     collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
@@ -612,7 +609,7 @@ TEST_CASE(
 
     ParameterType param(dhat*dhat, 5, 0.1, 1, 2);
 
-    SmoothContactPotential<SmoothCollisions<2>> potential(param);
+    SmoothContactPotential<SmoothCollisions2> potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
 
     // -------------------------------------------------------------------------

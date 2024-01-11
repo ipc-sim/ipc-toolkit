@@ -5,7 +5,7 @@ namespace ipc {
 // -- Cumulative methods -------------------------------------------------------
 
 Eigen::SparseMatrix<double> DistanceBasedPotential::shape_derivative(
-    const VirtualCollisions& collisions,
+    const VirtualCollisions<4>& collisions,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices) const
 {
@@ -50,7 +50,7 @@ Eigen::SparseMatrix<double> DistanceBasedPotential::shape_derivative(
 // -- Single collision methods -------------------------------------------------
 
 double DistanceBasedPotential::operator()(
-    const Collision& collision, const VectorMax12d& positions) const
+    const Collision<4>& collision, const Vector<double, -1, DistanceBasedPotential::element_size>& positions) const
 {
     // w * m(x) * f(d(x))
     // NOTE: can save a multiplication by checking if !collision.is_mollified()
@@ -59,13 +59,13 @@ double DistanceBasedPotential::operator()(
         * distance_based_potential(d, collision.dmin);
 }
 
-VectorMax12d DistanceBasedPotential::gradient(
-    const Collision& collision, const VectorMax12d& positions) const
+Vector<double, -1, DistanceBasedPotential::element_size> DistanceBasedPotential::gradient(
+    const Collision<4>& collision, const Vector<double, -1, DistanceBasedPotential::element_size>& positions) const
 {
     // d(x)
     const double d = collision.compute_distance(positions);
     // ∇d(x)
-    const VectorMax12d grad_d = collision.compute_distance_gradient(positions);
+    const Vector<double, -1, DistanceBasedPotential::element_size> grad_d = collision.compute_distance_gradient(positions);
 
     // f(d(x))
     const double f = distance_based_potential(d, collision.dmin);
@@ -78,7 +78,7 @@ VectorMax12d DistanceBasedPotential::gradient(
     }
 
     const double m = collision.mollifier(positions); // m(x)
-    const VectorMax12d grad_m =
+    const Vector<double, -1, DistanceBasedPotential::element_size> grad_m =
         collision.mollifier_gradient(positions); // ∇m(x)
 
     // ∇[m(x) * f(d(x))] = f(d(x)) * ∇m(x) + m(x) * ∇ f(d(x))
@@ -86,24 +86,24 @@ VectorMax12d DistanceBasedPotential::gradient(
         + (collision.weight * m * grad_f) * grad_d;
 }
 
-MatrixMax12d DistanceBasedPotential::hessian(
-    const Collision& collision,
-    const VectorMax12d& positions,
+MatrixMax<double, DistanceBasedPotential::element_size, DistanceBasedPotential::element_size> DistanceBasedPotential::hessian(
+    const Collision<4>& collision,
+    const Vector<double, -1, DistanceBasedPotential::element_size>& positions,
     const bool project_hessian_to_psd) const
 {
     // d(x)
     const double d = collision.compute_distance(positions);
     // ∇d(x)
-    const VectorMax12d grad_d = collision.compute_distance_gradient(positions);
+    const Vector<double, -1, DistanceBasedPotential::element_size> grad_d = collision.compute_distance_gradient(positions);
     // ∇²d(x)
-    const MatrixMax12d hess_d = collision.compute_distance_hessian(positions);
+    const MatrixMax<double, DistanceBasedPotential::element_size, DistanceBasedPotential::element_size> hess_d = collision.compute_distance_hessian(positions);
 
     // f'(d(x))
     const double grad_f = distance_based_potential_gradient(d, collision.dmin);
     // f"(d(x))
     const double hess_f = distance_based_potential_hessian(d, collision.dmin);
 
-    MatrixMax12d hess;
+    MatrixMax<double, DistanceBasedPotential::element_size, DistanceBasedPotential::element_size> hess;
     if (!collision.is_mollified()) {
         // ∇²[f(d(x))] = ∇(f'(d(x)) * ∇d(x))
         //             = f"(d(x)) * ∇d(x) * ∇d(x)ᵀ + f'(d(x)) * ∇²d(x)
@@ -115,14 +115,14 @@ MatrixMax12d DistanceBasedPotential::hessian(
         // m(x)
         const double m = collision.mollifier(positions);
         // ∇ m(x)
-        const VectorMax12d grad_m = collision.mollifier_gradient(positions);
+        const Vector<double, -1, DistanceBasedPotential::element_size> grad_m = collision.mollifier_gradient(positions);
         // ∇² m(x)
-        const MatrixMax12d hess_m = collision.mollifier_hessian(positions);
+        const MatrixMax<double, DistanceBasedPotential::element_size, DistanceBasedPotential::element_size> hess_m = collision.mollifier_hessian(positions);
 
         const double weighted_m = collision.weight * m;
 
         // ∇f(d(x)) * ∇m(x)ᵀ
-        const MatrixMax12d grad_f_grad_m =
+        const MatrixMax<double, DistanceBasedPotential::element_size, DistanceBasedPotential::element_size> grad_f_grad_m =
             (collision.weight * grad_f) * grad_d * grad_m.transpose();
 
         // ∇²[m(x) * f(d(x))] = ∇[∇m(x) * f(d(x)) + m(x) * ∇f(d(x))]
@@ -139,10 +139,10 @@ MatrixMax12d DistanceBasedPotential::hessian(
 }
 
 void DistanceBasedPotential::shape_derivative(
-    const Collision& collision,
+    const Collision<4>& collision,
     const std::array<long, 4>& vertex_ids,
-    const VectorMax12d& rest_positions, // = x̄
-    const VectorMax12d& positions,      // = x̄ + u
+    const Vector<double, -1, DistanceBasedPotential::element_size>& rest_positions, // = x̄
+    const Vector<double, -1, DistanceBasedPotential::element_size>& positions,      // = x̄ + u
     std::vector<Eigen::Triplet<double>>& out) const
 {
     assert(rest_positions.size() == positions.size());
@@ -161,7 +161,7 @@ void DistanceBasedPotential::shape_derivative(
     }
 
     if (collision.weight_gradient.nonZeros()) {
-        VectorMax12d grad_b = gradient(collision, positions);
+        Vector<double, -1, DistanceBasedPotential::element_size> grad_b = gradient(collision, positions);
         assert(collision.weight != 0);
         grad_b.array() /= collision.weight; // remove weight
 
@@ -178,7 +178,7 @@ void DistanceBasedPotential::shape_derivative(
     }
 
     // Second term:
-    MatrixMax12d local_hess;
+    MatrixMax<double, DistanceBasedPotential::element_size, DistanceBasedPotential::element_size> local_hess;
     if (!collision.is_mollified()) {
         // w ∇ₓ∇ᵤf = w ∇ᵤ²f
         local_hess =
@@ -187,10 +187,10 @@ void DistanceBasedPotential::shape_derivative(
         // d(x̄+u)
         const double d = collision.compute_distance(positions);
         // ∇d(x̄+u)
-        const VectorMax12d grad_d =
+        const Vector<double, -1, DistanceBasedPotential::element_size> grad_d =
             collision.compute_distance_gradient(positions);
         // ∇²d(x̄+u)
-        const MatrixMax12d hess_d =
+        const MatrixMax<double, DistanceBasedPotential::element_size, DistanceBasedPotential::element_size> hess_d =
             collision.compute_distance_hessian(positions);
 
         // f(d(x̄+u))

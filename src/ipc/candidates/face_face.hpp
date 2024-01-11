@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ipc/ccd/ccd.hpp>
-
+// #include <ipc/candidates/collision_stencil.hpp>
 #include <Eigen/Core>
 
 #include <vector>
@@ -16,10 +16,12 @@ public:
     FaceFaceCandidate(long _face0_id, long _face1_id)
     : face0_id(_face0_id), face1_id(_face1_id)
     { }
+    virtual ~FaceFaceCandidate() = default;
 
     bool operator==(const FaceFaceCandidate& other) const
     {
-        return face0_id == other.face0_id && face1_id == other.face1_id;
+        return (face0_id == other.face0_id && face1_id == other.face1_id) || 
+                (face0_id == other.face1_id && face1_id == other.face0_id);
     }
     bool operator!=(const FaceFaceCandidate& other) const
     {
@@ -32,12 +34,6 @@ public:
             return face1_id < other.face1_id;
         }
         return face0_id < other.face0_id;
-    }
-
-    template <typename H>
-    friend H AbslHashValue(H h, const FaceFaceCandidate& ff)
-    {
-        return H::combine(std::move(h), ff.face0_id, ff.face1_id);
     }
 
     /// @brief ID of the face

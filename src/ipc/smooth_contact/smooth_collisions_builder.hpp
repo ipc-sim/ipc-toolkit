@@ -9,11 +9,12 @@
 
 namespace ipc {
 
-template <int dim>
+template <int dim, class TCollision>
 class SmoothCollisionsBuilder {
 public:
     SmoothCollisionsBuilder() = default;
 
+    // only for 2D, transform edge-vertex to edge-edge
     void add_edge_vertex_collisions(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
@@ -24,40 +25,21 @@ public:
         const double dhat,
         const bool use_adaptive_eps);
 
+    void add_neighbor_edge_collisions(
+        const CollisionMesh& mesh,
+        const size_t start_i,
+        const size_t end_i,
+        const bool use_adaptive_eps);
+
     // ------------------------------------------------------------------------
 
     static void merge(
-        const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>& local_storage,
-        SmoothCollisions<dim>& merged_collisions);
+        const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim, TCollision>>& local_storage,
+        SmoothCollisions<dim, TCollision>& merged_collisions);
 
     // -------------------------------------------------------------------------
 
-    static void add_edge_vertex_collision(
-        const SmoothEdgeVertexCollision& ev_collision,
-        unordered_map<SmoothEdgeVertexCollision, long>& ev_to_id,
-        std::vector<SmoothEdgeVertexCollision>& ev_collisions);
-
-    void add_edge_vertex_collision(
-        const long edge_id,
-        const long vertex_id,
-        const double weight,
-        const Eigen::SparseVector<double>& weight_gradient,
-        const double eps)
-    {
-        add_edge_vertex_collision(
-            SmoothEdgeVertexCollision(edge_id, vertex_id, weight, weight_gradient, eps),
-            ev_to_id, ev_collisions);
-    }
-
-    void add_edge_vertex_collision(
-        const CollisionMesh& mesh,
-        const EdgeVertexCandidate& candidate,
-        const PointEdgeDistanceType dtype,
-        const double weight,
-        const Eigen::SparseVector<double>& weight_gradient,
-        const double dhat,
-        const bool use_adaptive_eps);
-
+    // only for 3D, transform edge-edge to face-face
     void add_edge_edge_collisions(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
@@ -65,10 +47,10 @@ public:
         const std::function<bool(double)>& is_active,
         const size_t start_i,
         const size_t end_i,
-        const SurfaceQuadratureType quad_type,
         const double dhat,
         const bool use_adaptive_eps = false);
 
+    // only for 3D, transform face-vertex to face-face
     void add_face_vertex_collisions(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
@@ -77,24 +59,18 @@ public:
         const size_t start_i,
         const size_t end_i);
 
-    static void add_edge_edge_collision(
-        const SmoothEdgeEdgeCollision<dim>& ee_collision,
-        unordered_map<SmoothEdgeEdgeCollision<dim>, long>& ee_to_id_,
-        std::vector<SmoothEdgeEdgeCollision<dim>>& ee_collisions_);
+    static void add_collision(
+        const TCollision& collision,
+        unordered_map<TCollision, long>& cc_to_id_,
+        std::vector<std::shared_ptr<TCollision>>& collisions_);
 
     // -------------------------------------------------------------------------
 
     // Store the indices to pairs to avoid duplicates.
-    // unordered_map<VertexVertexCollision, long> vv_to_id;
-    unordered_map<SmoothEdgeVertexCollision, long> ev_to_id;
-    unordered_map<SmoothEdgeEdgeCollision<dim>, long> ee_to_id;
+    unordered_map<TCollision, long> cc_to_id;
 
     // Constructed collisions
-    // std::vector<VertexVertexCollision> vv_collisions;
-    std::vector<SmoothEdgeVertexCollision> ev_collisions;
-    std::vector<SmoothEdgeEdgeCollision<dim>> ee_collisions;
-    std::vector<SmoothFaceVertexCollision> fv_collisions;
-    // std::vector<PlaneVertexCollision> pv_collisions;
+    std::vector<std::shared_ptr<TCollision>> collisions;
 };
 
 } // namespace ipc

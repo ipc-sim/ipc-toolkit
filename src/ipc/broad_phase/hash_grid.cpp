@@ -354,13 +354,4 @@ void HashGrid::detect_edge_face_candidates(
         candidates);
 }
 
-void HashGrid::detect_face_face_candidates(
-    std::vector<FaceFaceCandidate>& candidates) const
-{
-    detect_candidates(
-        face_items, face_items, face_boxes, face_boxes,
-        [&](size_t fj, size_t fi) { return can_face_face_collide(fj, fi); },
-        candidates);
-}
-
 } // namespace ipc

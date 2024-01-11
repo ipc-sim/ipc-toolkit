@@ -168,16 +168,4 @@ void BVH::detect_edge_face_candidates(
         candidates);
 }
 
-void BVH::detect_face_face_candidates(
-    std::vector<FaceFaceCandidate>& candidates) const
-{
-    if (face_boxes.size() == 0) {
-        return;
-    }
-
-    detect_candidates<FaceFaceCandidate, /*swap_order=*/true>(
-        face_boxes, face_bvh,
-        [&](size_t fj, size_t fi) { return can_face_face_collide(fj, fi); },
-        candidates);
-}
 } // namespace ipc

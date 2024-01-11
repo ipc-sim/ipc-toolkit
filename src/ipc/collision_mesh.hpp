@@ -122,10 +122,10 @@ public:
     //     return m_vertices_to_edges;
     // }
 
-    // const std::vector<std::vector<int>>& vertices_to_faces() const
-    // {
-    //     return m_vertices_to_faces;
-    // }
+    const std::vector<std::vector<int>>& vertices_to_faces() const
+    {
+        return m_vertices_to_faces;
+    }
 
     // -----------------------------------------------------------------------
 
@@ -384,7 +384,7 @@ protected:
     /// @brief Vertices adjacent to edges
     std::vector<unordered_set<int>> m_edge_vertex_adjacencies;
 
-    // std::vector<std::vector<int>> m_vertices_to_faces;
+    std::vector<std::vector<int>> m_vertices_to_faces;
     // std::vector<std::vector<int>> m_vertices_to_edges;
 
     /// @brief Is vertex on the boundary of the triangle mesh in 3D or polyline in 2D?

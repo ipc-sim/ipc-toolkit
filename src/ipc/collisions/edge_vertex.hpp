@@ -5,7 +5,7 @@
 
 namespace ipc {
 
-class EdgeVertexCollision : public EdgeVertexCandidate, public Collision {
+class EdgeVertexCollision : public EdgeVertexCandidate, public Collision<4> {
 public:
     using EdgeVertexCandidate::EdgeVertexCandidate;
 

@@ -10,7 +10,7 @@
 
 namespace ipc {
 
-class FrictionCollision : virtual public CollisionStencil {
+class FrictionCollision : virtual public CollisionStencil<4> {
 protected:
     /// @brief Initialize the collision.
     /// @param collision Collision stencil.
@@ -18,7 +18,7 @@ protected:
     /// @param barrier_potential Barrier potential used for normal force.
     /// @param barrier_stiffness Barrier potential stiffness.
     void init(
-        const Collision& collision,
+        const Collision<4>& collision,
         const VectorMax12d& positions,
         const BarrierPotential& barrier_potential,
         const double barrier_stiffness);

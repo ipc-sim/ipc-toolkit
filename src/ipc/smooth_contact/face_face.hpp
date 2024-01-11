@@ -1,0 +1,60 @@
+#pragma once
+
+#include <ipc/candidates/face_face.hpp>
+#include <ipc/collisions/collision.hpp>
+
+namespace ipc {
+
+class SmoothFaceFaceCollision : public FaceFaceCandidate, public Collision<6> {
+public:
+    SmoothFaceFaceCollision(long _face0_id, long _face1_id, std::array<long, 6> _vertices)
+    : FaceFaceCandidate(_face0_id, _face1_id), vertices(_vertices)
+    { }
+    virtual ~SmoothFaceFaceCollision() { }
+
+    int num_vertices() const override
+    {
+        return 6;
+    }
+
+    std::array<long, 6> vertex_ids(
+        const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const override
+    {
+        return {{faces(face0_id, 0), faces(face0_id, 1), faces(face0_id, 2),
+                faces(face1_id, 0), faces(face1_id, 1), faces(face1_id, 2)}};
+    }
+    
+    double compute_distance(const Vector<double, -1, 18>& positions) const override;
+
+    Vector<double, -1, 18>
+    compute_distance_gradient(const Vector<double, -1, 18>& positions) const override;
+
+    MatrixMax<double, 18, 18>
+    compute_distance_hessian(const Vector<double, -1, 18>& positions) const override;
+
+    double operator()(const Vector<double, -1, 18>& positions, 
+        const ParameterType &params) const override;
+
+    Vector<double, -1, 18> gradient(
+        const Vector<double, -1, 18>& positions, 
+        const ParameterType &params) const override;
+
+    MatrixMax<double, 18, 18> hessian(
+        const Vector<double, -1, 18>& positions, 
+        const ParameterType &params,
+        const bool project_hessian_to_psd = false) const override;
+
+    template <typename H>
+    friend H AbslHashValue(H h, const SmoothFaceFaceCollision& ff)
+    {
+        return H::combine(std::move(h), ff.face0_id, ff.face1_id, ff.vertices);
+    }
+
+private:
+    template <typename scalar> 
+    scalar evaluate_quadrature(const Vector<double, -1, 18>& positions, const ParameterType &params) const;
+
+    std::array<long, 6> vertices;
+};
+
+}

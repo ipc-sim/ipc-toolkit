@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <ipc/candidates/collision_stencil.hpp>
@@ -29,13 +30,8 @@ struct ParameterType
     int n_quadrature;
 };
 
-enum class SurfaceQuadratureType
-{
-    SinglePoint,
-    UniformSampling
-};
-
-class Collision : virtual public CollisionStencil {
+template <int max_vert = 4>
+class Collision : virtual public CollisionStencil<max_vert> {
 public:
     Collision() = default;
 
@@ -48,17 +44,17 @@ public:
     // -- non distance type potential ----
 
     virtual double operator()(
-        const VectorMax12d& positions, 
+        const Vector<double, -1, 3*max_vert>& positions, 
         const ParameterType &params) const { return 0.; }
 
-    virtual VectorMax12d gradient(
-        const VectorMax12d& positions, 
-        const ParameterType &params) const { return VectorMax12d::Zero(positions.size()); }
+    virtual Vector<double, -1, 3*max_vert> gradient(
+        const Vector<double, -1, 3*max_vert>& positions, 
+        const ParameterType &params) const { return Vector<double, -1, 3*max_vert>::Zero(positions.size()); }
 
-    virtual MatrixMax12d hessian(
-        const VectorMax12d& positions, 
+    virtual MatrixMax<double, 3*max_vert, 3*max_vert> hessian(
+        const Vector<double, -1, 3*max_vert>& positions, 
         const ParameterType &params,
-        const bool project_hessian_to_psd = false) const { return MatrixMax12d::Zero(positions.size(), positions.size()); }
+        const bool project_hessian_to_psd = false) const { return MatrixMax<double, 3*max_vert, 3*max_vert>::Zero(positions.size(), positions.size()); }
 
     // -- Distance mollifier ---------------------------------------------------
 
@@ -68,7 +64,7 @@ public:
     /// @brief Compute the mollifier threshold for the distance.
     /// @param rest_positions The stencil's rest vertex positions.
     /// @return The mollifier threshold.
-    virtual double mollifier_threshold(const VectorMax12d& rest_positions) const
+    virtual double mollifier_threshold(const Vector<double, -1, 3*max_vert>& rest_positions) const
     {
         return std::numeric_limits<double>::quiet_NaN(); // No mollifier
     }
@@ -76,54 +72,54 @@ public:
     /// @brief Compute the mollifier for the distance.
     /// @param positions The stencil's vertex positions.
     /// @return The mollifier value.
-    virtual double mollifier(const VectorMax12d& positions) const;
+    virtual double mollifier(const Vector<double, -1, 3*max_vert>& positions) const;
 
     /// @brief Compute the mollifier for the distance.
     /// @param positions The stencil's vertex positions.
     /// @param eps_x The mollifier's threshold.
     /// @return The mollifier value.
-    virtual double mollifier(const VectorMax12d& positions, double eps_x) const;
+    virtual double mollifier(const Vector<double, -1, 3*max_vert>& positions, double eps_x) const;
 
     /// @brief Compute the gradient of the mollifier for the distance wrt the positions.
     /// @param positions The stencil's vertex positions.
     /// @return The mollifier gradient.
-    virtual VectorMax12d
-    mollifier_gradient(const VectorMax12d& positions) const;
+    virtual Vector<double, -1, 3*max_vert>
+    mollifier_gradient(const Vector<double, -1, 3*max_vert>& positions) const;
 
     /// @brief Compute the gradient of the mollifier for the distance wrt the positions.
     /// @param positions The stencil's vertex positions.
     /// @param eps_x The mollifier's threshold.
     /// @return The mollifier gradient.
-    virtual VectorMax12d
-    mollifier_gradient(const VectorMax12d& positions, double eps_x) const;
+    virtual Vector<double, -1, 3*max_vert>
+    mollifier_gradient(const Vector<double, -1, 3*max_vert>& positions, double eps_x) const;
 
     /// @brief Compute the Hessian of the mollifier for the distance wrt the positions.
     /// @param positions The stencil's vertex positions.
     /// @return The mollifier Hessian.
-    virtual MatrixMax12d mollifier_hessian(const VectorMax12d& positions) const;
+    virtual MatrixMax<double, 3*max_vert, 3*max_vert> mollifier_hessian(const Vector<double, -1, 3*max_vert>& positions) const;
 
     /// @brief Compute the Hessian of the mollifier for the distance wrt the positions.
     /// @param positions The stencil's vertex positions.
     /// @param eps_x The mollifier's threshold.
     /// @return The mollifier Hessian.
-    virtual MatrixMax12d
-    mollifier_hessian(const VectorMax12d& positions, double eps_x) const;
+    virtual MatrixMax<double, 3*max_vert, 3*max_vert>
+    mollifier_hessian(const Vector<double, -1, 3*max_vert>& positions, double eps_x) const;
 
     /// @brief Compute the gradient of the mollifier for the distance w.r.t. rest positions.
     /// @param rest_positions The stencil's rest vertex positions.
     /// @param positions The stencil's vertex positions.
     /// @return The mollifier gradient w.r.t. rest positions.
     virtual Vector12d mollifier_gradient_wrt_x(
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& positions) const;
+        const Vector<double, -1, 3*max_vert>& rest_positions,
+        const Vector<double, -1, 3*max_vert>& positions) const;
 
     /// @brief Compute the jacobian of the distance mollifier's gradient w.r.t. rest positions.
     /// @param rest_positions The stencil's rest vertex positions.
     /// @param positions The stencil's vertex positions.
     /// @return The jacobian of the mollifier's gradient w.r.t. rest positions.
     virtual Matrix12d mollifier_gradient_jacobian_wrt_x(
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& positions) const;
+        const Vector<double, -1, 3*max_vert>& rest_positions,
+        const Vector<double, -1, 3*max_vert>& positions) const;
 
     // -------------------------------------------------------------------------
 

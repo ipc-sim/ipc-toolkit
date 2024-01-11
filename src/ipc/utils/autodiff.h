@@ -121,7 +121,7 @@ public:
 	// ======================================================================
 
 	/// Create a new constant automatic differentiation scalar
-	explicit DScalar1(Scalar value_ = (Scalar)0) : value(value_)
+	explicit DScalar1(Scalar value_ = Scalar(0)) : value(value_)
 	{
 		size_t variableCount = getVariableCount();
 		grad.resize(variableCount);
@@ -246,10 +246,10 @@ public:
 	friend DScalar1 inverse(const DScalar1 &s)
 	{
 		Scalar valueSqr = s.value * s.value,
-			   invValueSqr = (Scalar)1 / valueSqr;
+			   invValueSqr = Scalar(1) / valueSqr;
 
 		// vn = 1/v, Dvn = -1/(v^2) Dv
-		return DScalar1((Scalar)1 / s.value, s.grad * -invValueSqr);
+		return DScalar1(Scalar(1) / s.value, s.grad * -invValueSqr);
 	}
 
 	inline DScalar1 &operator/=(const Scalar &v)
@@ -299,7 +299,7 @@ public:
 	friend DScalar1 sqrt(const DScalar1 &s)
 	{
 		Scalar sqrtVal = std::sqrt(s.value),
-			   temp = (Scalar)1 / ((Scalar)2 * sqrtVal);
+			   temp = Scalar(1) / (Scalar(2) * sqrtVal);
 
 		// vn = sqrt(v)
 		// Dvn = 1/(2 sqrt(v)) Dv
@@ -347,11 +347,11 @@ public:
 		if (std::abs(s.value) >= 1)
 			throw std::runtime_error("acos: Expected a value in (-1, 1)");
 
-		Scalar temp = -std::sqrt((Scalar)1 - s.value * s.value);
+		Scalar temp = -std::sqrt(Scalar(1) - s.value * s.value);
 
 		// vn = acos(v), Dvn = -1/sqrt(1-v^2) * Dv
 		return DScalar1(std::acos(s.value),
-						s.grad * ((Scalar)1 / temp));
+						s.grad * (Scalar(1) / temp));
 	}
 
 	friend DScalar1 asin(const DScalar1 &s)
@@ -359,11 +359,11 @@ public:
 		if (std::abs(s.value) >= 1)
 			throw std::runtime_error("asin: Expected a value in (-1, 1)");
 
-		Scalar temp = std::sqrt((Scalar)1 - s.value * s.value);
+		Scalar temp = std::sqrt(Scalar(1) - s.value * s.value);
 
 		// vn = asin(v), Dvn = 1/sqrt(1-v^2) * Dv
 		return DScalar1(std::asin(s.value),
-						s.grad * ((Scalar)1 / temp));
+						s.grad * (Scalar(1) / temp));
 	}
 
 	friend DScalar1 atan2(const DScalar1 &y, const DScalar1 &x)
@@ -503,7 +503,7 @@ public:
 	// ======================================================================
 
 	/// Create a new constant automatic differentiation scalar
-	explicit DScalar2(Scalar value_ = (Scalar)0) : value(value_)
+	explicit DScalar2(Scalar value_ = Scalar(0)) : value(value_)
 	{
 		size_t variableCount = getVariableCount();
 
@@ -639,10 +639,10 @@ public:
 	{
 		Scalar valueSqr = s.value * s.value,
 			   valueCub = valueSqr * s.value,
-			   invValueSqr = (Scalar)1 / valueSqr;
+			   invValueSqr = Scalar(1) / valueSqr;
 
 		// vn = 1/v
-		DScalar2 result((Scalar)1 / s.value);
+		DScalar2 result(Scalar(1) / s.value);
 
 		// Dvn = -1/(v^2) Dv
 		result.grad = s.grad * -invValueSqr;
@@ -650,7 +650,7 @@ public:
 		// D^2vn = -1/(v^2) D^2v + 2/(v^3) Dv Dv^T
 		result.hess = s.hess * -invValueSqr;
 		result.hess += s.grad * s.grad.transpose()
-					   * ((Scalar)2 / valueCub);
+					   * (Scalar(2) / valueCub);
 
 		return result;
 	}
@@ -712,7 +712,7 @@ public:
 	friend DScalar2 sqrt(const DScalar2 &s)
 	{
 		Scalar sqrtVal = std::sqrt(s.value),
-			   temp = (Scalar)1 / ((Scalar)2 * sqrtVal);
+			   temp = Scalar(1) / (Scalar(2) * sqrtVal);
 
 		// vn = sqrt(v)
 		DScalar2 result(sqrtVal);
@@ -723,7 +723,7 @@ public:
 		// D^2vn = 1/(2 sqrt(v)) D^2v - 1/(4 v*sqrt(v)) Dv Dv^T
 		result.hess = s.hess * temp;
 		result.hess += s.grad * s.grad.transpose()
-					   * (-(Scalar)1 / ((Scalar)4 * s.value * sqrtVal));
+					   * (-Scalar(1) / (Scalar(4) * s.value * sqrtVal));
 
 		return result;
 	}
@@ -820,16 +820,16 @@ public:
 		if (std::abs(s.value) >= 1)
 			throw std::runtime_error("acos: Expected a value in (-1, 1)");
 
-		Scalar temp = -std::sqrt((Scalar)1 - s.value * s.value);
+		Scalar temp = -std::sqrt(Scalar(1) - s.value * s.value);
 
 		// vn = acos(v)
 		DScalar2 result(std::acos(s.value));
 
 		// Dvn = -1/sqrt(1-v^2) * Dv
-		result.grad = s.grad * ((Scalar)1 / temp);
+		result.grad = s.grad * (Scalar(1) / temp);
 
 		// D^2vn = -1/sqrt(1-v^2) * D^2v - v/[(1-v^2)^(3/2)] * Dv*Dv^T
-		result.hess = s.hess * ((Scalar)1 / temp);
+		result.hess = s.hess * (Scalar(1) / temp);
 		result.hess += s.grad * s.grad.transpose()
 					   * s.value / (temp * temp * temp);
 
@@ -841,16 +841,16 @@ public:
 		if (std::abs(s.value) >= 1)
 			throw std::runtime_error("asin: Expected a value in (-1, 1)");
 
-		Scalar temp = std::sqrt((Scalar)1 - s.value * s.value);
+		Scalar temp = std::sqrt(Scalar(1) - s.value * s.value);
 
 		// vn = asin(v)
 		DScalar2 result(std::asin(s.value));
 
 		// Dvn = 1/sqrt(1-v^2) * Dv
-		result.grad = s.grad * ((Scalar)1 / temp);
+		result.grad = s.grad * (Scalar(1) / temp);
 
 		// D^2vn = 1/sqrt(1-v*v) * D^2v + v/[(1-v^2)^(3/2)] * Dv*Dv^T
-		result.hess = s.hess * ((Scalar)1 / temp);
+		result.hess = s.hess * (Scalar(1) / temp);
 		result.hess += s.grad * s.grad.transpose()
 					   * s.value / (temp * temp * temp);
 
@@ -877,7 +877,7 @@ public:
 					  / denom;
 
 		result.hess -=
-			(y.grad * (x.value / denomSqr) - x.grad * (y.value / denomSqr)) * (x.grad * ((Scalar)2 * x.value) + y.grad * ((Scalar)2 * y.value)).transpose();
+			(y.grad * (x.value / denomSqr) - x.grad * (y.value / denomSqr)) * (x.grad * (Scalar(2) * x.value) + y.grad * (Scalar(2) * y.value)).transpose();
 
 		return result;
 	}

@@ -61,9 +61,6 @@ public:
     void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const override;
 
-    void detect_face_face_candidates(
-        std::vector<FaceFaceCandidate>& candidates) const override;
-
 protected:
     static void init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh);
 

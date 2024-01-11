@@ -4,14 +4,16 @@
 #include "edge_vertex.hpp"
 #include "edge_edge.hpp"
 #include "face_vertex.hpp"
+#include "face_face.hpp"
 
 namespace ipc {
 
-template <int dim>
-class SmoothCollisions : public VirtualCollisions {
+template <int dim, class TCollision>
+class SmoothCollisions : public VirtualCollisions<2*dim> {
 public:
+    constexpr static int max_vert = 2 * dim;
     /// @brief The type of the collisions.
-    using value_type = Collision;
+    using value_type = TCollision;
 
 public:
     SmoothCollisions() = default;
@@ -60,37 +62,12 @@ public:
     /// @brief Get a reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A reference to the collision.
-    Collision& operator[](size_t i) override;
+    value_type& operator[](size_t i) override;
 
     /// @brief Get a const reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A const reference to the collision.
-    const Collision& operator[](size_t i) const override;
-
-    /// @brief Get if the collision at i is a vertex-vertex collision.
-    /// @param i The index of the collision.
-    /// @return If the collision at i is a vertex-vertex collision.
-    bool is_vertex_vertex(size_t i) const;
-
-    /// @brief Get if the collision at i is an edge-vertex collision.
-    /// @param i The index of the collision.
-    /// @return If the collision at i is an edge-vertex collision.
-    bool is_edge_vertex(size_t i) const;
-
-    /// @brief Get if the collision at i is an edge-edge collision.
-    /// @param i The index of the collision.
-    /// @return If the collision at i is an edge-edge collision.
-    bool is_edge_edge(size_t i) const;
-
-    /// @brief Get if the collision at i is an face-vertex collision.
-    /// @param i The index of the collision.
-    /// @return If the collision at i is an face-vertex collision.
-    bool is_face_vertex(size_t i) const;
-
-    /// @brief Get if the collision at i is an plane-vertex collision.
-    /// @param i The index of the collision.
-    /// @return If the collision at i is an plane-vertex collision.
-    bool is_plane_vertex(size_t i) const;
+    const value_type& operator[](size_t i) const override;
 
     std::string
     to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
@@ -106,18 +83,13 @@ public:
         logger().error("Smooth contact formulation doesn't have shape derivatives implemented!");
     }
 
-    std::vector<CandidateType> get_candidate_types(const int &_dim) const override;
-
-    bool include_neighbor() const override { return true; }
-
 public:
-    // std::vector<SmoothVertexVertexCollision> vv_collisions;
-    std::vector<SmoothEdgeVertexCollision> ev_collisions;
-    std::vector<SmoothEdgeEdgeCollision<dim>> ee_collisions;
-    std::vector<SmoothFaceVertexCollision> fv_collisions;
-    // std::vector<SmoothPlaneVertexCollision> pv_collisions;
+    std::vector<std::shared_ptr<value_type>> collisions;
 
     const bool use_adaptive_eps = false;
 };
+
+typedef SmoothCollisions<2, SmoothEdgeEdgeCollision<2>> SmoothCollisions2;
+typedef SmoothCollisions<3, SmoothFaceFaceCollision> SmoothCollisions3;
 
 } // namespace ipc

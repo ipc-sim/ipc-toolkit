@@ -5,7 +5,7 @@
 
 namespace ipc {
 
-class PlaneVertexCollision : public Collision {
+class PlaneVertexCollision : public Collision<4> {
 public:
     PlaneVertexCollision(
         const VectorMax3d& plane_origin,

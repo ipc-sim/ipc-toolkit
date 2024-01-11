@@ -139,16 +139,8 @@ namespace {
     }
 } // namespace
 
-std::vector<CandidateType> Collisions::get_candidate_types(const int &dim) const
-{
-    if (dim == 2) {
-        return {CandidateType::EdgeVertex};
-    } else {
-        return {CandidateType::EdgeEdge, CandidateType::FaceVertex};
-    }
-}
-
-void VirtualCollisions::build(
+template <int max_vert>
+void VirtualCollisions<max_vert>::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const double dhat,
@@ -159,8 +151,8 @@ void VirtualCollisions::build(
 
     double inflation_radius = (dhat + dmin) / 2;
 
-    Candidates candidates(get_candidate_types(mesh.dim()));
-    candidates.build(mesh, vertices, inflation_radius, broad_phase_method, include_neighbor());
+    Candidates candidates;
+    candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
 
     this->build(candidates, mesh, vertices, dhat, dmin);
 }
@@ -172,7 +164,7 @@ void Collisions::build(
     const double dmin,
     const BroadPhaseMethod broad_phase_method)
 {
-    VirtualCollisions::build(mesh, vertices, dhat, dmin, broad_phase_method);
+    VirtualCollisions<4>::build(mesh, vertices, dhat, dmin, broad_phase_method);
 }
 
 void Collisions::build(
@@ -294,7 +286,7 @@ void Collisions::build(
     // logger().debug(to_string(mesh, vertices));
 
     for (size_t ci = 0; ci < size(); ci++) {
-        Collision& collision = (*this)[ci];
+        Collision<4>& collision = (*this)[ci];
         collision.dmin = dmin;
     }
 
@@ -307,7 +299,7 @@ void Collisions::build(
             dhat * std::pow(dhat + 2 * dmin, 2);
 
         for (size_t ci = 0; ci < size(); ci++) {
-            Collision& collision = (*this)[ci];
+            Collision<4>& collision = (*this)[ci];
             collision.weight /= barrier_to_physical_barrier_divisor;
             if (are_shape_derivatives_enabled()) {
                 collision.weight_gradient /=
@@ -320,7 +312,8 @@ void Collisions::build(
 // ============================================================================
 
 // NOTE: Actually distance squared
-double VirtualCollisions::compute_minimum_distance(
+template <int max_vert>
+double VirtualCollisions<max_vert>::compute_minimum_distance(
     const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());
@@ -398,7 +391,7 @@ void Collisions::clear()
     pv_collisions.clear();
 }
 
-Collision& Collisions::operator[](size_t i)
+Collision<4>& Collisions::operator[](size_t i)
 {
     if (i < vv_collisions.size()) {
         return vv_collisions[i];
@@ -422,7 +415,7 @@ Collision& Collisions::operator[](size_t i)
     throw std::out_of_range("Collision index is out of range!");
 }
 
-const Collision& Collisions::operator[](size_t i) const
+const Collision<4>& Collisions::operator[](size_t i) const
 {
     if (i < vv_collisions.size()) {
         return vv_collisions[i];
@@ -524,5 +517,8 @@ std::string Collisions::to_string(
     }
     return ss.str();
 }
+
+template class VirtualCollisions<4>;
+template class VirtualCollisions<6>;
 
 } // namespace ipc

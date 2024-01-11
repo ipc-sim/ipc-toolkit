@@ -9,7 +9,7 @@
 namespace ipc {
 
 /// Virtual class for candidates that support CCD.
-class ContinuousCollisionCandidate : virtual public CollisionStencil {
+class ContinuousCollisionCandidate : virtual public CollisionStencil<4> {
 public:
     virtual ~ContinuousCollisionCandidate() { }
 

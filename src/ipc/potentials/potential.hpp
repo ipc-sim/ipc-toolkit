@@ -15,6 +15,8 @@ public:
     Potential() { }
     virtual ~Potential() { }
 
+    constexpr static int element_size = 3 * TCollision::element_size;
+
     // -- Cumulative methods ---------------------------------------------------
 
     /// @brief Compute the potential for a set of collisions.
@@ -56,22 +58,22 @@ public:
     /// @param x The collision stencil's degrees of freedom.
     /// @return The potential.
     virtual double
-    operator()(const TCollision& collision, const VectorMax12d& x) const = 0;
+    operator()(const TCollision& collision, const Vector<double, -1, element_size>& x) const = 0;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
     /// @return The gradient of the potential.
-    virtual VectorMax12d
-    gradient(const TCollision& collision, const VectorMax12d& x) const = 0;
+    virtual Vector<double, -1, element_size>
+    gradient(const TCollision& collision, const Vector<double, -1, element_size>& x) const = 0;
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
     /// @return The hessian of the potential.
-    virtual MatrixMax12d hessian(
+    virtual MatrixMax<double, element_size, element_size> hessian(
         const TCollision& collision,
-        const VectorMax12d& x,
+        const Vector<double, -1, element_size>& x,
         const bool project_hessian_to_psd = false) const = 0;
 };
 

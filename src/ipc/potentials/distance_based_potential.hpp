@@ -6,8 +6,8 @@
 namespace ipc {
 
 /// @brief Base class for distance-based potentials.
-class DistanceBasedPotential : public Potential<VirtualCollisions> {
-    using Super = Potential<VirtualCollisions>;
+class DistanceBasedPotential : public Potential<Collisions> {
+    using Super = Potential<Collisions>;
 
 public:
     DistanceBasedPotential() { }
@@ -28,7 +28,7 @@ public:
     /// @throws std::runtime_error If the collision collisions were not built with shape derivatives enabled.
     /// @returns The derivative of the force with respect to X, the rest vertices.
     Eigen::SparseMatrix<double> shape_derivative(
-        const VirtualCollisions& collisions,
+        const VirtualCollisions<4>& collisions,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices) const;
 
@@ -38,24 +38,24 @@ public:
     /// @param collision The collision.
     /// @param positions The collision stencil's positions.
     /// @return The potential.
-    double operator()(const Collision& collision, const VectorMax12d& positions)
+    double operator()(const Collision<4>& collision, const Vector<double, -1, element_size>& positions)
         const override;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision.
     /// @param positions The collision stencil's positions.
     /// @return The gradient of the potential.
-    VectorMax12d gradient(
-        const Collision& collision,
-        const VectorMax12d& positions) const override;
+    Vector<double, -1, element_size> gradient(
+        const Collision<4>& collision,
+        const Vector<double, -1, element_size>& positions) const override;
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision.
     /// @param positions The collision stencil's positions.
     /// @return The hessian of the potential.
-    MatrixMax12d hessian(
-        const Collision& collision,
-        const VectorMax12d& positions,
+    MatrixMax<double, element_size, element_size> hessian(
+        const Collision<4>& collision,
+        const Vector<double, -1, element_size>& positions,
         const bool project_hessian_to_psd = false) const override;
 
     /// @brief Compute the shape derivative of the potential for a single collision.
@@ -65,10 +65,10 @@ public:
     /// @param[in] positions The collision stencil's positions.
     /// @param[in,out] out Store the triplets of the shape derivative here.
     void shape_derivative(
-        const Collision& collision,
+        const Collision<4>& collision,
         const std::array<long, 4>& vertex_ids,
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& positions,
+        const Vector<double, -1, element_size>& rest_positions,
+        const Vector<double, -1, element_size>& positions,
         std::vector<Eigen::Triplet<double>>& out) const;
 
 protected:

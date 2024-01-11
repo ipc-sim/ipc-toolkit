@@ -5,7 +5,7 @@
 
 namespace ipc {
 
-class FaceVertexCollision : public FaceVertexCandidate, public Collision {
+class FaceVertexCollision : public FaceVertexCandidate, public Collision<4> {
 public:
     using FaceVertexCandidate::FaceVertexCandidate;
 

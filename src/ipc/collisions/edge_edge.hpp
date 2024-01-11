@@ -6,7 +6,7 @@
 
 namespace ipc {
 
-class EdgeEdgeCollision : public EdgeEdgeCandidate, public Collision {
+class EdgeEdgeCollision : public EdgeEdgeCandidate, public Collision<4> {
 public:
     EdgeEdgeCollision(
         const long edge0_id,
