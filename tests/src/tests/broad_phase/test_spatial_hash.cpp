@@ -7,7 +7,7 @@
 
 using namespace ipc;
 
-TEST_CASE("Build SpatialHash", "[spatial_hash][build]")
+TEST_CASE("Build SpatialHash", "[broad_phase][spatial_hash][build]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
