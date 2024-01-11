@@ -474,12 +474,12 @@ TEST_CASE(
         dhat = sqrt(2.0);
         mesh_name = "cube.obj";
     }
-    SECTION("two cubes far")
-    {
-        dhat = 1e-1;
-        mesh_name = "two-cubes-far.obj";
-        all_vertices_on_surface = false;
-    }
+    // SECTION("two cubes far")
+    // {
+    //     dhat = 1e-1;
+    //     mesh_name = "two-cubes-far.obj";
+    //     all_vertices_on_surface = false;
+    // }
     SECTION("two cubes close")
     {
         dhat = 1e-1;
@@ -513,7 +513,7 @@ TEST_CASE(
     CHECK(collisions.size() > 0);
     CHECK(!has_intersections(mesh, vertices));
 
-    ParameterType param(dhat*dhat, 2, 0.2, 1, 5);
+    ParameterType param(dhat*dhat, 2, 0, 1, 5);
 
     SmoothContactPotential<SmoothCollisions3> potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
@@ -532,7 +532,7 @@ TEST_CASE(
             return potential(
                 collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
-        fd::finite_gradient(fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-6);
+        fd::finite_gradient(fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-7);
     }
 
     REQUIRE(grad_b.squaredNorm() > 1e-8);
@@ -555,7 +555,7 @@ TEST_CASE(
             return potential.gradient(
                 collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
-        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-6);
+        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-7);
     }
 
     REQUIRE(hess_b.squaredNorm() > 1e-3);

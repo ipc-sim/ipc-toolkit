@@ -109,19 +109,18 @@ namespace ipc {
         const Vector3<scalar> tangent3 = v2 - v1;
         const Vector3<scalar> normal = tangent1.cross(tangent2);
         const scalar normal_len_sqr = normal.squaredNorm();
-        const Vector3<scalar> pos = p - v0;
 
         Vector3<scalar> diff;
         switch (dtype)
         {
         case PointTriangleDistanceType::P_E0:
-            diff = pos - (pos.dot(tangent1) / tangent1.squaredNorm()) * tangent1;
+            diff = (p - v0) - ((p - v0).dot(tangent1) / tangent1.squaredNorm()) * tangent1;
             break;
         case PointTriangleDistanceType::P_E1:
-            diff = p - (v1 + (pos.dot(tangent3) / tangent3.squaredNorm()) * tangent3);
+            diff = (p - v1) - ((p - v1).dot(tangent3) / tangent3.squaredNorm()) * tangent3;
             break;
         case PointTriangleDistanceType::P_E2:
-            diff = pos - (pos.dot(tangent2) / tangent2.squaredNorm()) * tangent2;
+            diff = (p - v0) - ((p - v0).dot(tangent2) / tangent2.squaredNorm()) * tangent2;
             break;
         case PointTriangleDistanceType::P_T0:
             diff = p - v0;
@@ -133,7 +132,7 @@ namespace ipc {
             diff = p - v2;
             break;
         case PointTriangleDistanceType::P_T:
-            diff = (normal.dot(pos) / normal_len_sqr) * normal;
+            diff = (normal.dot(p - v0) / normal_len_sqr) * normal;
             break;
         default:
             assert(false);
