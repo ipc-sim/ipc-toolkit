@@ -138,4 +138,25 @@ bool BroadPhase::can_edge_face_collide(size_t ei, size_t fi) const
             || can_vertices_collide(e1i, f2i));
 }
 
+bool BroadPhase::can_faces_collide(size_t fai, size_t fbi) const
+{
+    const auto& [fa0i, fa1i, fa2i] = face_boxes[fai].vertex_ids;
+    const auto& [fb0i, fb1i, fb2i] = face_boxes[fbi].vertex_ids;
+
+    const bool share_endpoint = fa0i == fb0i || fa0i == fb1i || fa0i == fb2i
+        || fa1i == fb0i || fa1i == fb1i || fa1i == fb2i || fa2i == fb0i
+        || fa2i == fb1i || fa2i == fb2i;
+
+    return !share_endpoint
+        && (can_vertices_collide(fa0i, fb0i) //
+            || can_vertices_collide(fa0i, fb1i)
+            || can_vertices_collide(fa0i, fb2i)
+            || can_vertices_collide(fa1i, fb0i)
+            || can_vertices_collide(fa1i, fb1i)
+            || can_vertices_collide(fa1i, fb2i)
+            || can_vertices_collide(fa2i, fb0i)
+            || can_vertices_collide(fa2i, fb1i)
+            || can_vertices_collide(fa2i, fb2i));
+}
+
 } // namespace ipc

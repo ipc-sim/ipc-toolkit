@@ -8,19 +8,19 @@ message(STATUS "Third-party: creating target 'evouga::ccd'")
 
 include(CPM)
 CPMAddPackage(
-    evccd
-    GIT_REPOSITORY https://github.com/evouga/collisiondetection.git
+    NAME evccd
+    GITHUB_REPOSITORY evouga/collisiondetection
     GIT_TAG e5fe5c9767207df5047e375fb20180a665ae186f
-    DOWNLOAD_ONLY ON
+    DOWNLOAD_ONLY YES
 )
 
 # file(GLOB EVOUGA_CCD_SOURCE_FILES "${evccd_SOURCE_DIR}/src/*.cpp")
 add_library(evouga_ccd
-    "${collisiondetection_SOURCE_DIR}/src/CTCD.cpp"
+    "${evccd_SOURCE_DIR}/src/CTCD.cpp"
 )
 add_library(evouga::ccd ALIAS evouga_ccd)
 
-target_include_directories(evouga_ccd PUBLIC "${collisiondetection_SOURCE_DIR}/include")
+target_include_directories(evouga_ccd PUBLIC "${evccd_SOURCE_DIR}/include")
 
 include(eigen)
 target_link_libraries(evouga_ccd PUBLIC Eigen3::Eigen)

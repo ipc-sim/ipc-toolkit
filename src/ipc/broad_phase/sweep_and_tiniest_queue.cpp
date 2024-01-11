@@ -46,13 +46,15 @@ void SweepAndTiniestQueue::clear()
 void SweepAndTiniestQueue::detect_vertex_vertex_candidates(
     std::vector<VertexVertexCandidate>& candidates) const
 {
-    throw std::runtime_error("Not implemented!");
+    throw std::runtime_error(
+        "SweepAndTiniestQueue::detect_vertex_vertex_candidates not implemented!");
 }
 
 void SweepAndTiniestQueue::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
-    throw std::runtime_error("Not implemented!");
+    throw std::runtime_error(
+        "SweepAndTiniestQueue::detect_edge_vertex_candidates not implemented!");
 }
 
 void SweepAndTiniestQueue::detect_edge_edge_candidates(
@@ -84,7 +86,15 @@ void SweepAndTiniestQueue::detect_face_vertex_candidates(
 void SweepAndTiniestQueue::detect_edge_face_candidates(
     std::vector<EdgeFaceCandidate>& candidates) const
 {
-    throw std::runtime_error("Not implemented!");
+    throw std::runtime_error(
+        "SweepAndTiniestQueue::detect_edge_face_candidates not implemented!");
+}
+
+void SweepAndTiniestQueue::detect_face_face_candidates(
+    std::vector<FaceFaceCandidate>& candidates) const
+{
+    throw std::runtime_error(
+        "SweepAndTiniestQueue::detect_face_face_candidates not implemented!");
 }
 
 long SweepAndTiniestQueue::to_edge_id(long id) const
@@ -154,14 +164,16 @@ void SweepAndTiniestQueueGPU::clear()
 void SweepAndTiniestQueueGPU::detect_vertex_vertex_candidates(
     std::vector<VertexVertexCandidate>& candidates) const
 {
-    throw std::runtime_error("Not implemented!");
+    throw std::runtime_error(
+        "SweepAndTiniestQueueGPU::detect_vertex_vertex_candidates not implemented!");
 }
 
 void SweepAndTiniestQueueGPU::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
     // 2D STQ is not implemented!
-    throw std::runtime_error("Not implemented!");
+    throw std::runtime_error(
+        "SweepAndTiniestQueueGPU::detect_edge_vertex_candidates not implemented!");
     // using namespace stq::gpu;
     // for (const std::pair<int, int>& overlap : overlaps) {
     //     const Aabb& boxA = boxes[overlap.first];
@@ -212,7 +224,15 @@ void SweepAndTiniestQueueGPU::detect_face_vertex_candidates(
 void SweepAndTiniestQueueGPU::detect_edge_face_candidates(
     std::vector<EdgeFaceCandidate>& candidates) const
 {
-    throw std::runtime_error("Not implemented!");
+    throw std::runtime_error(
+        "SweepAndTiniestQueueGPU::detect_edge_face_candidates not implemented!");
+}
+
+void SweepAndTiniestQueueGPU::detect_face_face_candidates(
+    std::vector<FaceFaceCandidate>& candidates) const
+{
+    throw std::runtime_error(
+        "SweepAndTiniestQueueGPU::detect_face_face_candidates not implemented!");
 }
 #endif
 

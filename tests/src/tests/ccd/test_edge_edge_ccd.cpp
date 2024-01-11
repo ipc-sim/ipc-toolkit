@@ -9,10 +9,10 @@ using namespace ipc;
 
 static const double EPSILON = std::numeric_limits<float>::epsilon();
 
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge]")
-#else
+#ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
 TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
+#else
+TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge]")
 #endif
 {
     Eigen::Vector3d ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1,

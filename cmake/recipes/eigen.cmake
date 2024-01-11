@@ -15,7 +15,7 @@ CPMAddPackage(
     NAME eigen
     GITLAB_REPOSITORY libeigen/eigen
     GIT_TAG 3.4.0
-    DOWNLOAD_ONLY ON
+    DOWNLOAD_ONLY YES
 )
 
 add_library(Eigen3_Eigen INTERFACE)

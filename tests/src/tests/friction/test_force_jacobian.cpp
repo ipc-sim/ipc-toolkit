@@ -61,8 +61,9 @@ void check_friction_force_jacobian(
     };
     Eigen::MatrixXd fd_JPA_wrt_X;
     fd::finite_jacobian(fd::flatten(X), PA_X, fd_JPA_wrt_X);
-    CHECK(fd::compare_jacobian(JPA_wrt_X, fd_JPA_wrt_X));
-    if (!fd::compare_jacobian(JPA_wrt_X, fd_JPA_wrt_X)) {
+
+    CHECKED_ELSE(fd::compare_jacobian(JPA_wrt_X, fd_JPA_wrt_X))
+    {
         tests::print_compare_nonzero(JPA_wrt_X, fd_JPA_wrt_X);
     }
 
@@ -79,8 +80,9 @@ void check_friction_force_jacobian(
     };
     Eigen::MatrixXd fd_JEA_wrt_X;
     fd::finite_jacobian(fd::flatten(X), EA_X, fd_JEA_wrt_X);
-    CHECK(fd::compare_jacobian(JEA_wrt_X, fd_JEA_wrt_X));
-    if (!fd::compare_jacobian(JEA_wrt_X, fd_JEA_wrt_X)) {
+
+    CHECKED_ELSE(fd::compare_jacobian(JEA_wrt_X, fd_JEA_wrt_X))
+    {
         tests::print_compare_nonzero(JEA_wrt_X, fd_JEA_wrt_X);
     }
 
@@ -116,8 +118,9 @@ void check_friction_force_jacobian(
     };
     Eigen::MatrixXd fd_JF_wrt_X;
     fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
-    CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
-    if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
+
+    CHECKED_ELSE(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X))
+    {
         tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
     }
 
@@ -150,8 +153,9 @@ void check_friction_force_jacobian(
     };
     Eigen::MatrixXd fd_JF_wrt_Ut;
     fd::finite_jacobian(fd::flatten(Ut), F_Ut, fd_JF_wrt_Ut);
-    CHECK(fd::compare_jacobian(JF_wrt_Ut, fd_JF_wrt_Ut));
-    if (!fd::compare_jacobian(JF_wrt_Ut, fd_JF_wrt_Ut)) {
+
+    CHECKED_ELSE(fd::compare_jacobian(JF_wrt_Ut, fd_JF_wrt_Ut))
+    {
         tests::print_compare_nonzero(JF_wrt_Ut, fd_JF_wrt_Ut);
     }
 
@@ -168,8 +172,9 @@ void check_friction_force_jacobian(
     };
     Eigen::MatrixXd fd_JF_wrt_V;
     fd::finite_jacobian(fd::flatten(velocities), F_V, fd_JF_wrt_V);
-    CHECK(fd::compare_jacobian(JF_wrt_V, fd_JF_wrt_V));
-    if (!fd::compare_jacobian(JF_wrt_V, fd_JF_wrt_V)) {
+
+    CHECKED_ELSE(fd::compare_jacobian(JF_wrt_V, fd_JF_wrt_V))
+    {
         tests::print_compare_nonzero(JF_wrt_V, fd_JF_wrt_V);
     }
 
@@ -184,8 +189,9 @@ void check_friction_force_jacobian(
     };
     Eigen::MatrixXd fd_hessian;
     fd::finite_jacobian(fd::flatten(velocities), grad, fd_hessian);
-    CHECK(fd::compare_jacobian(hess_D, fd_hessian));
-    if (!fd::compare_jacobian(hess_D, fd_hessian)) {
+
+    CHECKED_ELSE(fd::compare_jacobian(hess_D, fd_hessian))
+    {
         tests::print_compare_nonzero(hess_D, fd_hessian);
     }
 

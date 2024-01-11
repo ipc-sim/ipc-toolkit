@@ -2,11 +2,12 @@
 
 #include <ipc/collision_mesh.hpp>
 #include <ipc/broad_phase/aabb.hpp>
-#include <ipc/candidates/vertex_vertex.hpp>
-#include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/edge_edge.hpp>
-#include <ipc/candidates/face_vertex.hpp>
 #include <ipc/candidates/edge_face.hpp>
+#include <ipc/candidates/edge_vertex.hpp>
+#include <ipc/candidates/face_face.hpp>
+#include <ipc/candidates/face_vertex.hpp>
+#include <ipc/candidates/vertex_vertex.hpp>
 
 #include <Eigen/Core>
 
@@ -90,6 +91,11 @@ public:
     virtual void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const = 0;
 
+    /// @brief Find the candidate face-face collisions.
+    /// @param[out] candidates The candidate face-face collisions.
+    virtual void detect_face_face_candidates(
+        std::vector<FaceFaceCandidate>& candidates) const = 0;
+
     /// @brief Detect all collision candidates needed for a given dimensional simulation.
     /// @param dim The dimension of the simulation (i.e., 2 or 3).
     /// @param candidates The detected collision candidates.
@@ -105,6 +111,7 @@ protected:
     virtual bool can_edges_collide(size_t eai, size_t ebi) const;
     virtual bool can_face_vertex_collide(size_t fi, size_t vi) const;
     virtual bool can_edge_face_collide(size_t ei, size_t fi) const;
+    virtual bool can_faces_collide(size_t fai, size_t fbi) const;
 
     static bool default_can_vertices_collide(size_t, size_t) { return true; }
 

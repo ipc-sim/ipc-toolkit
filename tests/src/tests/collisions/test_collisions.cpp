@@ -56,10 +56,10 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
             mesh, vertices, V1, min_distance));
 
         // Account for conservative rescaling
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-        constexpr double conservative_min_dist = 1e-4;
-#else
+#ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
         constexpr double conservative_min_dist = 0.2 * (1 - min_distance);
+#else
+        constexpr double conservative_min_dist = 1e-4;
 #endif
         constexpr double expected_toi =
             (1 - (min_distance + conservative_min_dist)) / 2.0 / 0.25;
@@ -154,10 +154,10 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
             mesh, vertices, V1, min_distance));
 
         // Account for conservative rescaling
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-        constexpr double conservative_min_dist = 1e-4;
-#else
+#ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
         constexpr double conservative_min_dist = 0.2 * (1 - min_distance);
+#else
+        constexpr double conservative_min_dist = 1e-4;
 #endif
         constexpr double expected_toi =
             (1 - (min_distance + conservative_min_dist)) / 4;
