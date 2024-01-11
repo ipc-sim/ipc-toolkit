@@ -20,7 +20,7 @@ void test_face_face_broad_phase(
     double inflation_radius)
 {
     // Face-face collisions
-    if (mesh.num_faces() > 0 || method == BroadPhaseMethod::BRUTE_FORCE
+    if (mesh.num_faces() == 0 || method == BroadPhaseMethod::BRUTE_FORCE
         || method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
         || method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
         return;
@@ -48,6 +48,7 @@ void test_face_face_broad_phase(
     std::vector<FaceFaceCandidate> bf_ff_candidates;
     bf.detect_face_face_candidates(bf_ff_candidates);
 
+    CHECK(ff_candidates.size() > 0);
     CHECK(ff_candidates.size() == bf_ff_candidates.size());
 }
 
