@@ -25,7 +25,10 @@ public:
     /// @return The potential.
     double operator()(
         const typename TCollisions::value_type& collision, 
-        const Vector<double, -1, element_size>& positions) const override;
+        const Vector<double, -1, element_size>& positions) const override
+    {
+        return collision.weight * collision(positions, params);
+    }
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision.
@@ -33,7 +36,10 @@ public:
     /// @return The gradient of the potential.
     Vector<double, -1, element_size> gradient(
         const typename TCollisions::value_type& collision,
-        const Vector<double, -1, element_size>& positions) const override;
+        const Vector<double, -1, element_size>& positions) const override
+    {
+        return collision.weight * collision.gradient(positions, params);
+    }
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision.
@@ -42,7 +48,10 @@ public:
     MatrixMax<double, element_size, element_size> hessian(
         const typename TCollisions::value_type& collision,
         const Vector<double, -1, element_size>& positions,
-        const bool project_hessian_to_psd = false) const override;
+        const bool project_hessian_to_psd = false) const override
+    {
+        return collision.weight * collision.hessian(positions, params, project_hessian_to_psd);
+    }
 
 protected:
     ParameterType params;
