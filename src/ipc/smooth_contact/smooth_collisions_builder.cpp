@@ -33,12 +33,10 @@ void SmoothCollisionsBuilder<dim, TCollision>::add_edge_vertex_collisions(
             if (!is_active(distance_sqr))
                 continue;
             
-            const double weight = 1;
-            Eigen::SparseVector<double> weight_gradient;
             for (int ej : vertex_edge_adj[vi])
                 if (ej != ei)
                     add_collision(SmoothEdgeEdgeCollision<dim>(
-                                ej, ei, 0, weight, weight_gradient, EdgeEdgeDistanceType::AUTO),
+                                ej, ei, 0, {{mesh.edges()(ej, 0), mesh.edges()(ej, 1), mesh.edges()(ei, 0), mesh.edges()(ei, 1)}}),
                                 cc_to_id, collisions);
         }
     }
@@ -54,14 +52,12 @@ void SmoothCollisionsBuilder<dim, TCollision>::add_neighbor_edge_collisions(
     if constexpr (dim == 2)
     {
         const std::vector<unordered_set<int>>& vertex_edge_adj = mesh.vertex_edge_adjacencies();
-        const double weight = 1;
-        Eigen::SparseVector<double> weight_gradient;
         for (size_t i = start_i; i < end_i; i++)
             for (int d : {0, 1})
                 for (int j : vertex_edge_adj[mesh.edges()(i, d)])
                     if (j != i)
                         add_collision(SmoothEdgeEdgeCollision<dim>(
-                                    j, i, 0, weight, weight_gradient, EdgeEdgeDistanceType::AUTO),
+                                    j, i, 0, {{mesh.edges()(j, 0), mesh.edges()(j, 1), mesh.edges()(i, 0), mesh.edges()(i, 1)}}),
                                     cc_to_id, collisions);
     }
 }

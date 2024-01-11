@@ -28,31 +28,52 @@ namespace ipc {
     template<int dim_> template<class scalar>
     scalar SmoothEdgeEdgeCollision<dim_>::evaluate_quadrature(const VectorMax12d& positions, const ParameterType &params) const
     {
-        auto [e00, e01, e10, e11] = slice_positions<scalar>(positions, dim_);
+        std::array<VectorMax3<scalar>, 4> points = slice_positions<scalar>(positions, dim_);
 
         scalar val = scalar(0.);
         if constexpr (dim_ == 2)
         {
-            Eigen::VectorXd uv = Eigen::VectorXd::LinSpaced(params.n_quadrature, 0, 1);
-            Vector2<scalar> p;
-            const Vector2<scalar> edge0 = e01 - e00;
-            const Vector2<scalar> edge1 = e11 - e10;
-            const scalar len0 = edge0.norm(), len1 = edge1.norm();
-            
-            scalar val0 = scalar(0.);
-            scalar val1 = scalar(0.);
-            for (int i = 1; i < uv.size(); ++i)
+            if (params.n_quadrature > 1)
             {
-                for (int j = 1; j < uv.size(); ++j)
+                Eigen::VectorXd uv = Eigen::VectorXd::LinSpaced(params.n_quadrature, 0, 1);
+                Vector2<scalar> p;
+                const Vector2<scalar> edge0 = points[1] - points[0];
+                const Vector2<scalar> edge1 = points[3] - points[2];
+                const scalar len0 = edge0.norm(), len1 = edge1.norm();
+                
+                scalar val0 = scalar(0.);
+                scalar val1 = scalar(0.);
+                for (int i = 1; i < uv.size(); ++i)
                 {
-                    p = e00 + scalar((uv(i) + uv(i-1)) / 2) * edge0;
-                    val0 += scalar(uv(i) - uv(i-1)) * smooth_point_edge_potential_single_point<scalar>(p, e10 + scalar(uv(j-1)) * edge1, e10 + scalar(uv(j)) * edge1, params);
+                    for (int j = 1; j < uv.size(); ++j)
+                    {
+                        p = points[0] + scalar((uv(i) + uv(i-1)) / 2) * edge0;
+                        val0 += scalar(uv(i) - uv(i-1)) * smooth_point_edge_potential_single_point<scalar>(p, points[2] + scalar(uv(j-1)) * edge1, points[2] + scalar(uv(j)) * edge1, params);
 
-                    p = e10 + scalar((uv(i) + uv(i-1)) / 2) * edge1;
-                    val1 += scalar(uv(i) - uv(i-1)) * smooth_point_edge_potential_single_point<scalar>(p, e00 + scalar(uv(j-1)) * edge0, e00 + scalar(uv(j)) * edge0, params);
+                        p = points[2] + scalar((uv(i) + uv(i-1)) / 2) * edge1;
+                        val1 += scalar(uv(i) - uv(i-1)) * smooth_point_edge_potential_single_point<scalar>(p, points[0] + scalar(uv(j-1)) * edge0, points[0] + scalar(uv(j)) * edge0, params);
+                    }
+                }
+                val = val0 * len0 + val1 * len1;
+            }
+            else
+            {
+                for (const int e : {0, 1})
+                {
+                    const int ee = 1 - e;
+
+                    const scalar len = (points[e * 2 + 1] - points[e * 2 + 0]).norm();
+                    for (const int i : {0, 1})
+                    {
+                        const int p_id = e * 2 + i;
+                        if (vertices[p_id] == vertices[ee * 2 + 0] ||
+                            vertices[p_id] == vertices[ee * 2 + 1])
+                            continue;
+                        
+                        val += (len / scalar(2.)) * smooth_point_edge_potential_single_point<scalar>(points[p_id], points[ee * 2 + 0], points[ee * 2 + 1], params);
+                    }
                 }
             }
-            val = val0 * len0 + val1 * len1;
         }
 
         return val;

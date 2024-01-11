@@ -7,7 +7,14 @@ namespace ipc {
 template <int dim_>
 class SmoothEdgeEdgeCollision : public EdgeEdgeCollision {
 public:
-    using EdgeEdgeCollision::EdgeEdgeCollision;
+    // using EdgeEdgeCollision::EdgeEdgeCollision;
+    SmoothEdgeEdgeCollision(
+        const long _edge0_id,
+        const long _edge1_id,
+        const double _eps_x,
+        std::array<long, 4> _vertices)
+    : EdgeEdgeCollision(_edge0_id, _edge1_id, _eps_x), vertices(_vertices)
+    { }
 
     double compute_distance(const VectorMax12d& positions) const override;
 
@@ -36,6 +43,8 @@ private:
     
     template <typename scalar> 
     scalar evaluate_quadrature(const VectorMax12d& positions, const ParameterType &params) const;
+
+    std::array<long, 4> vertices;
 };
 
 }
