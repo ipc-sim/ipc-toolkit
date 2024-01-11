@@ -30,7 +30,7 @@ MatrixMax<double, SmoothContactPotential<TCollisions>::element_size, SmoothConta
 }
 
 // template class SmoothContactPotential<VirtualCollisions<4>>;
-template class SmoothContactPotential<SmoothCollisions<2, SmoothEdgeEdgeCollision<2>>>;
-template class SmoothContactPotential<SmoothCollisions<3, SmoothFaceFaceCollision>>;
+template class SmoothContactPotential<SmoothCollisions<2>>;
+template class SmoothContactPotential<SmoothCollisions<3>>;
 
 } // namespace ipc

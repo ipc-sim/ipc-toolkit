@@ -35,7 +35,7 @@ public:
 
     static void merge(
         const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim, TCollision>>& local_storage,
-        SmoothCollisions<dim, TCollision>& merged_collisions);
+        SmoothCollisions<dim>& merged_collisions);
 
     // -------------------------------------------------------------------------
 

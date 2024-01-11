@@ -8,11 +8,25 @@
 
 namespace ipc {
 
-template <int dim, class TCollision>
+template <int dim>
+struct SmoothCollision;
+
+template <>
+struct SmoothCollision<2> {
+    using Type = SmoothEdgeEdgeCollision<2>;
+};
+
+template <>
+struct SmoothCollision<3> {
+    using Type = SmoothFaceFaceCollision;
+};
+
+template <int dim>
 class SmoothCollisions : public VirtualCollisions<2*dim> {
 public:
     constexpr static int max_vert = 2 * dim;
     /// @brief The type of the collisions.
+    using TCollision = typename SmoothCollision<dim>::Type;
     using value_type = TCollision;
 
 public:
@@ -88,8 +102,5 @@ public:
 
     const bool use_adaptive_eps = false;
 };
-
-typedef SmoothCollisions<2, SmoothEdgeEdgeCollision<2>> SmoothCollisions2;
-typedef SmoothCollisions<3, SmoothFaceFaceCollision> SmoothCollisions3;
 
 } // namespace ipc

@@ -163,7 +163,7 @@ void SmoothCollisionsBuilder<dim, TCollision>::add_collision(
 template <int dim, class TCollision>
 void SmoothCollisionsBuilder<dim, TCollision>::merge(
     const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim, TCollision>>& local_storage,
-    SmoothCollisions<dim, TCollision>& merged_collisions)
+    SmoothCollisions<dim>& merged_collisions)
 {
     unordered_map<TCollision, long> cc_to_id;
 

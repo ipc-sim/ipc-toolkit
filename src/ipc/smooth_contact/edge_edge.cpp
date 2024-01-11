@@ -130,5 +130,5 @@ namespace ipc {
     }
 
     template class SmoothEdgeEdgeCollision<2>;
-    template class SmoothEdgeEdgeCollision<3>;
+    // template class SmoothEdgeEdgeCollision<3>;
 }

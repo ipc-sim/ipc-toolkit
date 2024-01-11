@@ -16,8 +16,8 @@
 
 namespace ipc {
 
-template <int dim, class TCollision>
-void SmoothCollisions<dim, TCollision>::build(
+template <int dim>
+void SmoothCollisions<dim>::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const double dhat,
@@ -27,8 +27,8 @@ void SmoothCollisions<dim, TCollision>::build(
     VirtualCollisions<max_vert>::build(mesh, vertices, dhat, dmin, broad_phase_method);
 }
 
-template <int dim, class TCollision>
-void SmoothCollisions<dim, TCollision>::build(
+template <int dim>
+void SmoothCollisions<dim>::build(
     const Candidates& candidates,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
@@ -46,7 +46,7 @@ void SmoothCollisions<dim, TCollision>::build(
         return distance_sqr < offset_sqr;
     };
 
-    tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim, TCollision>> storage;
+    tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim, SmoothCollisions::TCollision>> storage;
     if constexpr (dim == 2)
     {
         tbb::parallel_for(
@@ -82,38 +82,38 @@ void SmoothCollisions<dim, TCollision>::build(
                     r.end());
             });
     }
-    SmoothCollisionsBuilder<dim, TCollision>::merge(storage, *this);
+    SmoothCollisionsBuilder<dim, SmoothCollisions::TCollision>::merge(storage, *this);
 
     // logger().debug(to_string(mesh, vertices));
 
     for (size_t ci = 0; ci < size(); ci++) {
-        typename SmoothCollisions<dim, TCollision>::value_type& collision = (*this)[ci];
+        typename SmoothCollisions<dim>::value_type& collision = (*this)[ci];
         collision.dmin = dmin;
     }
 }
 
 // ============================================================================
 
-template <int dim, class TCollision>
-size_t SmoothCollisions<dim, TCollision>::size() const
+template <int dim>
+size_t SmoothCollisions<dim>::size() const
 {
     return collisions.size();
 }
 
-template <int dim, class TCollision>
-bool SmoothCollisions<dim, TCollision>::empty() const
+template <int dim>
+bool SmoothCollisions<dim>::empty() const
 {
     return collisions.empty();
 }
 
-template <int dim, class TCollision>
-void SmoothCollisions<dim, TCollision>::clear()
+template <int dim>
+void SmoothCollisions<dim>::clear()
 {
     collisions.clear();
 }
 
-template <int dim, class TCollision>
-typename SmoothCollisions<dim, TCollision>::value_type& SmoothCollisions<dim, TCollision>::operator[](size_t i)
+template <int dim>
+typename SmoothCollisions<dim>::value_type& SmoothCollisions<dim>::operator[](size_t i)
 {
     if (i < collisions.size()) {
         return *collisions[i];
@@ -121,8 +121,8 @@ typename SmoothCollisions<dim, TCollision>::value_type& SmoothCollisions<dim, TC
     throw std::out_of_range("Collision index is out of range!");
 }
 
-template <int dim, class TCollision>
-const typename SmoothCollisions<dim, TCollision>::value_type& SmoothCollisions<dim, TCollision>::operator[](size_t i) const
+template <int dim>
+const typename SmoothCollisions<dim>::value_type& SmoothCollisions<dim>::operator[](size_t i) const
 {
     if (i < collisions.size()) {
         return *collisions[i];
@@ -130,8 +130,8 @@ const typename SmoothCollisions<dim, TCollision>::value_type& SmoothCollisions<d
     throw std::out_of_range("Collision index is out of range!");
 }
 
-template <int dim, class TCollision>
-std::string SmoothCollisions<dim, TCollision>::to_string(
+template <int dim>
+std::string SmoothCollisions<dim>::to_string(
     const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
 {
     std::stringstream ss;
@@ -163,6 +163,6 @@ std::string SmoothCollisions<dim, TCollision>::to_string(
     return ss.str();
 }
 
-template class SmoothCollisions<2, SmoothEdgeEdgeCollision<2>>;
-template class SmoothCollisions<3, SmoothFaceFaceCollision>;
+template class SmoothCollisions<2>;
+template class SmoothCollisions<3>;
 } // namespace ipc
