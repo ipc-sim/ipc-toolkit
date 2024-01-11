@@ -1232,7 +1232,7 @@ We use this same process to download all external dependencies.</p>
 <li><p><a class="reference external" href="https://eigen.tuxfamily.org/">Eigen</a>: linear algebra</p></li>
 <li><p><a class="reference external" href="https://github.com/libigl/libigl">libigl</a>: basic geometry functions and predicates</p></li>
 <li><p><a class="reference external" href="https://github.com/oneapi-src/oneTBB">oneTBB</a>: parallelism</p></li>
-<li><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Tight-Inclusion">Tight-Inclusion</a>: correct (conservative) CCD</p></li>
+<li><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Tight-Inclusion">Tight-Inclusion</a>: provably conservative CCD of [Wang and Ferguson et al. 2021]</p></li>
 <li><p><a class="reference external" href="https://github.com/ipc-sim/SimpleBVH">SimpleBVH</a>: a simple bounding volume hierarchy data structure</p></li>
 <li><p><a class="reference external" href="https://github.com/gabime/spdlog">spdlog</a>: logging information</p></li>
 </ul>
@@ -1265,7 +1265,7 @@ We use this same process to download all external dependencies.</p>
 <li><p><a class="reference external" href="https://github.com/evouga/collisiondetection">Etienne Vouga’s Collision Detection Library</a>: inexact CCD</p>
 <ul>
 <li><p>Included for comparison with the original IPC library</p></li>
-<li><p>Enable by disabling the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_CORRECT_CCD</span></code></p></li>
+<li><p>Enable by using the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_WITH_INEXACT_CCD</span></code></p></li>
 <li><p>Replaces the default Tight-Inclusion CCD</p></li>
 </ul>
 </li>
@@ -1289,7 +1289,7 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
   <small>
     
       Last update:
-      Jan 02, 2024
+      Jan 11, 2024
     
   </small>
 </div>
