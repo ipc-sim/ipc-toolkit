@@ -47,7 +47,9 @@ public:
     template <typename H>
     friend H AbslHashValue(H h, const SmoothFaceFaceCollision& ff)
     {
-        return H::combine(std::move(h), ff.face0_id, ff.face1_id, ff.vertices);
+        long min_fi = std::min(ff.face0_id, ff.face1_id);
+        long max_fi = std::max(ff.face0_id, ff.face1_id);
+        return H::combine(std::move(h), min_fi, max_fi, ff.vertices);
     }
 
 private:

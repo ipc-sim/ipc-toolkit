@@ -18,7 +18,7 @@ void SmoothCollisionsBuilder<dim, TCollision>::add_edge_vertex_collisions(
     const size_t start_i,
     const size_t end_i,
     const double dhat,
-    const bool use_adaptive_eps)
+    const bool use_adaptive_dhat)
 {
     if constexpr (dim == 2)
     {
@@ -47,7 +47,7 @@ void SmoothCollisionsBuilder<dim, TCollision>::add_neighbor_edge_collisions(
         const CollisionMesh& mesh,
         const size_t start_i,
         const size_t end_i,
-        const bool use_adaptive_eps)
+        const bool use_adaptive_dhat)
 {
     if constexpr (dim == 2)
     {
@@ -73,7 +73,7 @@ void SmoothCollisionsBuilder<dim, TCollision>::add_edge_edge_collisions(
     const size_t start_i,
     const size_t end_i,
     const double dhat,
-    const bool use_adaptive_eps)
+    const bool use_adaptive_dhat)
 {
     if constexpr (dim == 3)
     {
@@ -144,7 +144,7 @@ template <int dim, class TCollision>
 void SmoothCollisionsBuilder<dim, TCollision>::add_collision(
     const TCollision& collision,
     unordered_map<TCollision, long>& cc_to_id_,
-    std::vector<std::shared_ptr<TCollision>>& collisions_)
+    std::vector<TCollision>& collisions_)
 {
     auto found_item = cc_to_id_.find(collision);
     if (found_item != cc_to_id_.end()) {
@@ -152,7 +152,7 @@ void SmoothCollisionsBuilder<dim, TCollision>::add_collision(
     } else {
         // New collision, so add it to the end of collisions
         cc_to_id_.emplace(collision, collisions_.size());
-        collisions_.push_back(std::make_shared<TCollision>(collision));
+        collisions_.push_back(collision);
     }
 }
 
@@ -173,7 +173,7 @@ void SmoothCollisionsBuilder<dim, TCollision>::merge(
     // merge
     for (const auto& builder : local_storage)
         for (const auto& cc : builder.collisions)
-            add_collision(*cc, cc_to_id, merged_collisions.collisions);
+            add_collision(cc, cc_to_id, merged_collisions.collisions);
 }
 
 template class SmoothCollisionsBuilder<2, SmoothEdgeEdgeCollision<2>>;

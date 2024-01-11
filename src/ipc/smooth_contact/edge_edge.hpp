@@ -38,6 +38,13 @@ public:
 
     bool is_mollified() const override { return false; }
 
+    template <typename H>
+    friend H AbslHashValue(H h, const SmoothEdgeEdgeCollision& ee)
+    {
+        return H::combine(
+            std::move(h), static_cast<const EdgeEdgeCollision&>(ee), ee.vertices);
+    }
+
 private:
     Vector12d positions_to_3d(const VectorMax12d& positions) const;
     

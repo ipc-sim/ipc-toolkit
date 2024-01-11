@@ -54,14 +54,14 @@ void SmoothCollisions<dim>::build(
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_edge_vertex_collisions(
                     mesh, vertices, candidates.ev_candidates, is_active, r.begin(),
-                    r.end(), dhat, use_adaptive_eps);
+                    r.end(), dhat, use_adaptive_dhat);
             });
 
         tbb::parallel_for(
             tbb::blocked_range<size_t>(size_t(0), mesh.num_edges()),
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_neighbor_edge_collisions(
-                    mesh, r.begin(), r.end(), use_adaptive_eps);
+                    mesh, r.begin(), r.end(), use_adaptive_dhat);
             });
     }
     else
@@ -71,7 +71,7 @@ void SmoothCollisions<dim>::build(
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_edge_edge_collisions(
                     mesh, vertices, candidates.ee_candidates, is_active, r.begin(),
-                    r.end(), dhat, use_adaptive_eps);
+                    r.end(), dhat, use_adaptive_dhat);
             });
 
         tbb::parallel_for(
@@ -116,7 +116,7 @@ template <int dim>
 typename SmoothCollisions<dim>::value_type& SmoothCollisions<dim>::operator[](size_t i)
 {
     if (i < collisions.size()) {
-        return *collisions[i];
+        return collisions[i];
     }
     throw std::out_of_range("Collision index is out of range!");
 }
@@ -125,7 +125,7 @@ template <int dim>
 const typename SmoothCollisions<dim>::value_type& SmoothCollisions<dim>::operator[](size_t i) const
 {
     if (i < collisions.size()) {
-        return *collisions[i];
+        return collisions[i];
     }
     throw std::out_of_range("Collision index is out of range!");
 }
@@ -141,23 +141,23 @@ std::string SmoothCollisions<dim>::to_string(
         {
             ss << fmt::format(
                   "ee: {}=({}, {}) {}=({}, {}), w: {:g}, dtype: {}, d: {:g}",
-                  cc->edge0_id, mesh.edges()(cc->edge0_id, 0),
-                  mesh.edges()(cc->edge0_id, 1), cc->edge1_id,
-                  mesh.edges()(cc->edge1_id, 0), mesh.edges()(cc->edge1_id, 1),
-                  cc->weight, int(cc->dtype),
-                  cc->compute_distance(
-                      cc->dof(vertices, mesh.edges(), mesh.faces())));
+                  cc.edge0_id, mesh.edges()(cc.edge0_id, 0),
+                  mesh.edges()(cc.edge0_id, 1), cc.edge1_id,
+                  mesh.edges()(cc.edge1_id, 0), mesh.edges()(cc.edge1_id, 1),
+                  cc.weight, int(cc.dtype),
+                  cc.compute_distance(
+                      cc.dof(vertices, mesh.edges(), mesh.faces())));
         }
         else
         {
             ss << fmt::format(
-                  "ff: {}=({}, {}, {}) {}=({}, {}, {}), w: {:g}, d: {:g}", cc->face0_id,
-                  mesh.faces()(cc->face0_id, 0), mesh.faces()(cc->face0_id, 1),
-                  mesh.faces()(cc->face0_id, 2), cc->face1_id,
-                  mesh.faces()(cc->face1_id, 0), mesh.faces()(cc->face1_id, 1),
-                  mesh.faces()(cc->face1_id, 2), cc->weight,
-                  cc->compute_distance(
-                      cc->dof(vertices, mesh.edges(), mesh.faces())));
+                  "ff: {}=({}, {}, {}) {}=({}, {}, {}), w: {:g}, d: {:g}", cc.face0_id,
+                  mesh.faces()(cc.face0_id, 0), mesh.faces()(cc.face0_id, 1),
+                  mesh.faces()(cc.face0_id, 2), cc.face1_id,
+                  mesh.faces()(cc.face1_id, 0), mesh.faces()(cc.face1_id, 1),
+                  mesh.faces()(cc.face1_id, 2), cc.weight,
+                  cc.compute_distance(
+                      cc.dof(vertices, mesh.edges(), mesh.faces())));
         }
     }
     return ss.str();

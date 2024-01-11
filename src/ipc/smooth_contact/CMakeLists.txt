@@ -9,12 +9,8 @@ set(SOURCES
   smooth_collisions.hpp
   smooth_collisions_builder.cpp
   smooth_collisions_builder.hpp
-  edge_vertex.cpp
-  edge_vertex.hpp
   edge_edge.cpp
   edge_edge.hpp
-  face_vertex.cpp
-  face_vertex.hpp
   face_face.cpp
   face_face.hpp
 )

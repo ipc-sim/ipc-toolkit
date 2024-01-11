@@ -64,7 +64,7 @@ public:
     void init_area_jacobians();
 
     ///@brief Initialize vertex to min contact distance at rest mapping
-    void init_vertex_contact_distance_map();
+    void init_contact_distance_map();
 
     /// @brief Destroy the Collision Mesh object
     ~CollisionMesh() { }
@@ -274,22 +274,22 @@ public:
     {
         if (!are_min_distances_initialized()) {
             throw std::runtime_error(
-                "Min distances in rest config not initialized. Call init_vertex_contact_distance_map() first.");
+                "Min distances in rest config not initialized. Call init_contact_distance_map() first.");
         }
-        return min_dist_ratio * m_vertex_to_rest_config_contact_dist(vi);
+        return min_dist_ratio * m_edge_to_rest_config_contact_dist(vi);
     }
 
-    /// @brief Determinte if min distances in rest configuration have been initialized by calling init_vertex_contact_distance_map().
+    /// @brief Determinte if min distances in rest configuration have been initialized by calling init_contact_distance_map().
     bool are_min_distances_initialized() const 
     {
-        return m_vertex_to_rest_config_contact_dist.rows() == m_rest_positions.rows();
+        return m_edge_to_rest_config_contact_dist.rows() == num_edges();
     }
 
     ///@brief Fetch maximum distance to contact in rest config
     ///@return Maximum distance to contact in rest config
     double max_distance_in_rest_config() const
     {
-        return sqrt(m_vertex_to_rest_config_contact_dist.maxCoeff());
+        return m_edge_to_rest_config_contact_dist.maxCoeff();
     }
 
     // -----------------------------------------------------------------------
@@ -374,8 +374,10 @@ protected:
     /// @note this is premultiplied by m_select_dof
     Eigen::SparseMatrix<double> m_displacement_dof_map;
 
-    /// @brief Mapping from vertex indices to minimum distance to contact / 2 in rest configuration (adaptive eps)
-    Eigen::VectorXd m_vertex_to_rest_config_contact_dist;
+    /// @brief Mapping from vertex indices to minimum distance to contact / 2 in rest configuration (adaptive dhat)
+    // Eigen::VectorXd m_vertex_to_rest_config_contact_dist;
+    /// @brief Mapping from edge indices to minimum distance to contact / 2 in rest configuration (adaptive dhat)
+    Eigen::VectorXd m_edge_to_rest_config_contact_dist;
 
     /// @brief Vertices adjacent to vertices
     std::vector<unordered_set<int>> m_vertex_vertex_adjacencies;

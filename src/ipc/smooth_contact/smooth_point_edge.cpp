@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include <iostream>
 
+DECLARE_DIFFSCALAR_BASE();
+
 namespace ipc {
 
     template <typename scalar>
@@ -128,7 +130,7 @@ namespace ipc {
         const scalar L = (params.a > 0) ? L_s(s, params.a) : L_ns(s);
         const Vector2<scalar> diff = p - (e0 + ((s - L) * len) * tangent);
         const scalar dist_sqr = diff.squaredNorm();
-        const scalar Phi = intpow(diff.dot(tangent), 2) / dist_sqr;
+        const scalar Phi = 1 - cross2<scalar>(diff, tangent) / sqrt(dist_sqr); // intpow(diff.dot(tangent), 2) / dist_sqr;
 
         if (Phi > params.alpha)
             return scalar(0.);

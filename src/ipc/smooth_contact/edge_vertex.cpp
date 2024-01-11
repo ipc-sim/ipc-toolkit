@@ -2,8 +2,6 @@
 #include "smooth_point_edge.hpp"
 #include <ipc/utils/AutodiffTypes.hpp>
 
-DECLARE_DIFFSCALAR_BASE();
-
 namespace ipc {
     namespace {
         template <class T>
@@ -25,7 +23,7 @@ namespace ipc {
         const VectorMax12d& positions, 
         const ParameterType &params) const
     {
-        const ParameterType local_params(local_eps, params.alpha, params.a, params.r, params.n_quadrature);
+        const ParameterType local_params(local_dhat*local_dhat, params.alpha, params.a, params.r, params.n_quadrature);
 
         assert(positions.size() == 6);
         return smooth_point_edge_potential_single_point<double>(positions.segment<2>(0), positions.segment<2>(2), positions.segment<2>(4), local_params);
@@ -35,7 +33,7 @@ namespace ipc {
         const VectorMax12d& positions, 
         const ParameterType &params) const
     {
-        const ParameterType local_params(local_eps, params.alpha, params.a, params.r, params.n_quadrature);
+        const ParameterType local_params(local_dhat*local_dhat, params.alpha, params.a, params.r, params.n_quadrature);
 
         assert(positions.size() == 6);
         DiffScalarBase::setVariableCount(12);
@@ -55,7 +53,7 @@ namespace ipc {
         const ParameterType &params,
         const bool project_hessian_to_psd) const
     {
-        const ParameterType local_params(local_eps, params.alpha, params.a, params.r, params.n_quadrature);
+        const ParameterType local_params(local_dhat*local_dhat, params.alpha, params.a, params.r, params.n_quadrature);
 
         assert(positions.size() == 6);
         DiffScalarBase::setVariableCount(12);

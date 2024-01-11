@@ -31,8 +31,8 @@ public:
 
 public:
     SmoothCollisions() = default;
-    SmoothCollisions(bool _use_adaptive_eps)
-    : use_adaptive_eps(_use_adaptive_eps)
+    SmoothCollisions(bool _use_adaptive_dhat)
+    : use_adaptive_dhat(_use_adaptive_dhat)
     {
     }
 
@@ -98,9 +98,9 @@ public:
     }
 
 public:
-    std::vector<std::shared_ptr<value_type>> collisions;
+    std::vector<value_type> collisions;
 
-    const bool use_adaptive_eps = false;
+    const bool use_adaptive_dhat = false;
 };
 
 } // namespace ipc

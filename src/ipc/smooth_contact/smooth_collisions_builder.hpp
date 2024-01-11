@@ -23,13 +23,13 @@ public:
         const size_t start_i,
         const size_t end_i,
         const double dhat,
-        const bool use_adaptive_eps);
+        const bool use_adaptive_dhat);
 
     void add_neighbor_edge_collisions(
         const CollisionMesh& mesh,
         const size_t start_i,
         const size_t end_i,
-        const bool use_adaptive_eps);
+        const bool use_adaptive_dhat);
 
     // ------------------------------------------------------------------------
 
@@ -48,7 +48,7 @@ public:
         const size_t start_i,
         const size_t end_i,
         const double dhat,
-        const bool use_adaptive_eps = false);
+        const bool use_adaptive_dhat = false);
 
     // only for 3D, transform face-vertex to face-face
     void add_face_vertex_collisions(
@@ -62,7 +62,7 @@ public:
     static void add_collision(
         const TCollision& collision,
         unordered_map<TCollision, long>& cc_to_id_,
-        std::vector<std::shared_ptr<TCollision>>& collisions_);
+        std::vector<TCollision>& collisions_);
 
     // -------------------------------------------------------------------------
 
@@ -70,7 +70,7 @@ public:
     unordered_map<TCollision, long> cc_to_id;
 
     // Constructed collisions
-    std::vector<std::shared_ptr<TCollision>> collisions;
+    std::vector<TCollision> collisions;
 };
 
 } // namespace ipc
