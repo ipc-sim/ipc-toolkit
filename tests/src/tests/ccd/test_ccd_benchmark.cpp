@@ -192,18 +192,18 @@ void run_benchmark(
     fmt::print("False negatives: {:L}\n\n", num_fn);
 }
 
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-TEST_CASE(
-    "Run CCD Benchmark on TI CCD",
-    "[ccd][benchmark][3D][point-triangle][edge-edge][.]")
-{
-    fmt::print("Tight Inclusion CCD:\n\n");
-#else
+#ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
 TEST_CASE(
     "Run CCD Benchmark on FP CCD",
     "[ccd][benchmark][3D][point-triangle][edge-edge][!mayfail][.]")
 {
     fmt::print("Floating-Point CCD:\n\n");
+#else
+TEST_CASE(
+    "Run CCD Benchmark on TI CCD",
+    "[ccd][benchmark][3D][point-triangle][edge-edge][.]")
+{
+    fmt::print("Tight Inclusion CCD:\n\n");
 #endif
 
     run_benchmark(

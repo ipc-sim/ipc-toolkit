@@ -66,7 +66,7 @@ The following libraries are used in this project:
 * [Eigen](https://eigen.tuxfamily.org/): linear algebra
 * [libigl](https://github.com/libigl/libigl): basic geometry functions and predicates
 * [oneTBB](https://github.com/oneapi-src/oneTBB): parallelism
-* [Tight-Inclusion](https://github.com/Continuous-Collision-Detection/Tight-Inclusion): correct (conservative) CCD
+* [Tight-Inclusion](https://github.com/Continuous-Collision-Detection/Tight-Inclusion): provably conservative CCD of [Wang and Ferguson et al. 2021]
 * [SimpleBVH](https://github.com/ipc-sim/SimpleBVH): a simple bounding volume hierarchy data structure
 * [spdlog](https://github.com/gabime/spdlog): logging information
 
@@ -86,7 +86,7 @@ The following libraries are used in this project:
     * Requires [GMP](https://gmplib.org/) to be installed at a system level
 * [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection): inexact CCD
     * Included for comparison with the original IPC library
-    * Enable by disabling the CMake option `IPC_TOOLKIT_WITH_CORRECT_CCD`
+    * Enable by using the CMake option `IPC_TOOLKIT_WITH_INEXACT_CCD`
     * Replaces the default Tight-Inclusion CCD
 
 ## Usage

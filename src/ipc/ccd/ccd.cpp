@@ -7,11 +7,11 @@
 
 #include <ipc/config.hpp>
 
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-#include <tight_inclusion/ccd.hpp>
-#else
+#ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
 #include <ipc/ccd/inexact_point_edge.hpp>
 #include <CTCD.h>
+#else
+#include <tight_inclusion/ccd.hpp>
 #endif
 
 #include <algorithm> // std::min/max
@@ -19,9 +19,11 @@
 
 namespace ipc {
 
+#ifndef IPC_TOOLKIT_WITH_INEXACT_CCD
 /// Scale the distance tolerance to be at most this fraction of the initial
 /// distance.
 static constexpr double INITIAL_DISTANCE_TOLERANCE_SCALE = 0.5;
+#endif
 
 /// Special value for max_iterations to run tight inclusion without a maximum
 /// number of iterations.
@@ -45,7 +47,7 @@ bool ccd_strategy(
 
     double min_effective_distance =
         (1.0 - conservative_rescaling) * (initial_distance - min_distance);
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+#ifndef IPC_TOOLKIT_WITH_INEXACT_CCD
     // Tight Inclusion performs better when the minimum separation is small
     min_effective_distance = std::min(min_effective_distance, 1e-4);
 #endif
@@ -58,7 +60,7 @@ bool ccd_strategy(
     bool is_impacting =
         ccd(max_iterations, min_effective_distance, /*no_zero_toi=*/false, toi);
 
-    // #ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+    // #ifndef IPC_TOOLKIT_WITH_INEXACT_CCD
     //     // Tight inclusion will have higher accuracy and better performance
     //     // if we shrink the minimum distance. The value 1e-10 is arbitrary.
     //     while (is_impacting && toi < CCD_SMALL_TOI && min_distance > 1e-10) {
@@ -103,12 +105,17 @@ bool point_point_ccd_3D(
         return check_initial_distance(initial_distance, min_distance, toi);
     }
 
+#ifndef IPC_TOOLKIT_WITH_INEXACT_CCD
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+#endif
 
     const auto ccd = [&](long _max_iterations, double _min_distance,
                          bool no_zero_toi, double& _toi) -> bool {
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+#ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
+        return CTCD::vertexVertexCTCD(
+            p0_t0, p1_t0, p0_t1, p1_t1, min_distance, toi);
+#else
         double output_tolerance;
         // NOTE: Use degenerate edge-edge
         return ticcd::edgeEdgeCCD(
@@ -121,9 +128,6 @@ bool point_point_ccd_3D(
             _max_iterations,              // maximum number of iterations
             output_tolerance,             // delta_actual
             no_zero_toi);
-#else
-        return CTCD::vertexVertexCTCD(
-            p0_t0, p1_t0, p0_t1, p1_t1, min_distance, toi);
 #endif
     };
 
@@ -175,12 +179,17 @@ bool point_edge_ccd_3D(
         return check_initial_distance(initial_distance, min_distance, toi);
     }
 
+#ifndef IPC_TOOLKIT_WITH_INEXACT_CCD
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+#endif
 
     const auto ccd = [&](long _max_iterations, double _min_distance,
                          bool no_zero_toi, double& _toi) -> bool {
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+#ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
+        return CTCD::vertexEdgeCTCD(
+            p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, min_distance, toi);
+#else
         double output_tolerance = tolerance;
         // NOTE: Use degenerate edge-edge
         bool is_impacting = ticcd::edgeEdgeCCD(
@@ -201,9 +210,6 @@ bool point_edge_ccd_3D(
                 output_tolerance, toi);
         }
         return is_impacting;
-#else
-        return CTCD::vertexEdgeCTCD(
-            p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, min_distance, toi);
 #endif
     };
 
@@ -261,12 +267,18 @@ bool edge_edge_ccd(
         return check_initial_distance(initial_distance, min_distance, toi);
     }
 
+#ifndef IPC_TOOLKIT_WITH_INEXACT_CCD
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+#endif
 
     const auto ccd = [&](long _max_iterations, double _min_distance,
                          bool no_zero_toi, double& _toi) -> bool {
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+#ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
+        return CTCD::edgeEdgeCTCD(
+            ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
+            min_distance, toi);
+#else
         double output_tolerance;
         bool is_impacting = ticcd::edgeEdgeCCD(
             ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
@@ -286,10 +298,6 @@ bool edge_edge_ccd(
                 output_tolerance, toi);
         }
         return is_impacting;
-#else
-        return CTCD::edgeEdgeCTCD(
-            ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
-            min_distance, toi);
 #endif
     };
 
@@ -324,12 +332,18 @@ bool point_triangle_ccd(
         return check_initial_distance(initial_distance, min_distance, toi);
     }
 
+#ifndef IPC_TOOLKIT_WITH_INEXACT_CCD
     const double adjusted_tolerance = std::min(
         INITIAL_DISTANCE_TOLERANCE_SCALE * initial_distance, tolerance);
+#endif
 
     const auto ccd = [&](long _max_iterations, double _min_distance,
                          bool no_zero_toi, double& _toi) -> bool {
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
+#ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
+        return CTCD::vertexFaceCTCD(
+            p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, //
+            min_distance, toi);
+#else
         double output_tolerance;
         bool is_impacting = ticcd::vertexFaceCCD(
             p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1,
@@ -349,10 +363,6 @@ bool point_triangle_ccd(
                 output_tolerance, toi);
         }
         return is_impacting;
-#else
-        return CTCD::vertexFaceCTCD(
-            p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, //
-            min_distance, toi);
 #endif
     };
 

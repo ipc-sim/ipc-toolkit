@@ -28,9 +28,8 @@ void HashGrid::build(
     ArrayMax3d mesh_max = vertices.colwise().maxCoeff().array();
     AABB::conservative_inflation(mesh_min, mesh_max, inflation_radius);
 
-    double cell_size =
+    const double cell_size =
         suggest_good_voxel_size(vertices, edges, inflation_radius);
-    assert(std::isfinite(cell_size));
     resize(mesh_min, mesh_max, cell_size);
 
     insert_boxes();
@@ -55,26 +54,30 @@ void HashGrid::build(
     ArrayMax3d mesh_max = mesh_max_t0.max(mesh_max_t1);
     AABB::conservative_inflation(mesh_min, mesh_max, inflation_radius);
 
-    double cell_size = suggest_good_voxel_size(
+    const double cell_size = suggest_good_voxel_size(
         vertices_t0, vertices_t1, edges, inflation_radius);
-    assert(std::isfinite(cell_size));
     resize(mesh_min, mesh_max, cell_size);
 
     insert_boxes();
 }
 
 void HashGrid::resize(
-    const ArrayMax3d& min, const ArrayMax3d& max, double cellSize)
+    const ArrayMax3d& domain_min,
+    const ArrayMax3d& domain_max,
+    double cell_size)
 {
-    assert(cellSize != 0.0);
-    assert(std::isfinite(cellSize));
-    m_cellSize = cellSize;
-    m_domainMin = min;
-    m_domainMax = max;
-    m_gridSize = ((max - min) / m_cellSize).ceil().cast<int>().max(1);
+    assert(cell_size != 0.0);
+    assert(std::isfinite(cell_size));
+
+    m_domain_min = domain_min;
+    m_domain_max = domain_max;
+    m_cell_size = cell_size;
+    m_grid_size =
+        ((domain_max - domain_min) / cell_size).ceil().cast<int>().max(1);
+
     logger().trace(
-        "hash-grid resized with a size of {:d}x{:d}x{:d}", m_gridSize[0],
-        m_gridSize[1], m_gridSize.size() == 3 ? m_gridSize[2] : 1);
+        "hash-grid resized with a size of {:d}x{:d}x{:d}", grid_size()[0],
+        grid_size()[1], grid_size().size() == 3 ? grid_size()[2] : 1);
 }
 
 void HashGrid::insert_boxes()
@@ -108,16 +111,16 @@ void HashGrid::insert_boxes(
 void HashGrid::insert_box(
     const AABB& aabb, const long id, std::vector<HashItem>& items) const
 {
-    ArrayMax3i int_min = ((aabb.min - m_domainMin) / m_cellSize).cast<int>();
+    ArrayMax3i int_min = ((aabb.min - domain_min()) / cell_size()).cast<int>();
     // We can round down to -1, but not less
     assert((int_min >= -1).all());
-    assert((int_min <= m_gridSize).all());
-    int_min = int_min.max(0).min(m_gridSize - 1);
+    assert((int_min <= grid_size()).all());
+    int_min = int_min.max(0).min(grid_size() - 1);
 
-    ArrayMax3i int_max = ((aabb.max - m_domainMin) / m_cellSize).cast<int>();
+    ArrayMax3i int_max = ((aabb.max - domain_min()) / cell_size()).cast<int>();
     assert((int_max >= -1).all());
-    assert((int_max <= m_gridSize).all());
-    int_max = int_max.max(0).min(m_gridSize - 1);
+    assert((int_max <= grid_size()).all());
+    int_max = int_max.max(0).min(grid_size() - 1);
     assert((int_min <= int_max).all());
 
     int min_z = int_min.size() == 3 ? int_min.z() : 0;
@@ -351,6 +354,15 @@ void HashGrid::detect_edge_face_candidates(
     detect_candidates(
         edge_items, face_items, edge_boxes, face_boxes,
         [&](size_t ei, size_t fi) { return can_edge_face_collide(ei, fi); },
+        candidates);
+}
+
+void HashGrid::detect_face_face_candidates(
+    std::vector<FaceFaceCandidate>& candidates) const
+{
+    detect_candidates(
+        face_items, face_boxes,
+        [&](size_t fai, size_t fbi) { return can_faces_collide(fai, fbi); },
         candidates);
 }
 

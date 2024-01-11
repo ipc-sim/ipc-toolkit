@@ -14,6 +14,7 @@ CPMAddPackage(
     NAME nlohmann_json
     URL "https://github.com/nlohmann/json/releases/download/${NLOHMANNJSON_VERSION}/include.zip"
     URL_HASH SHA256=e5c7a9f49a16814be27e4ed0ee900ecd0092bfb7dbfca65b5a421b774dccaaed
+    DOWNLOAD_ONLY YES
 )
 
 add_library(nlohmann_json INTERFACE)

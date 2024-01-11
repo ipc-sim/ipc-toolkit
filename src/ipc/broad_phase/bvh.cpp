@@ -66,12 +66,11 @@ void BVH::detect_candidates(
     tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(0ul, boxes.size()),
+        tbb::blocked_range<size_t>(size_t(0), boxes.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             auto& local_candidates = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-
                 std::vector<unsigned int> js;
                 bvh.intersect_box(boxes[i].min, boxes[i].max, js);
 
@@ -165,6 +164,20 @@ void BVH::detect_edge_face_candidates(
     detect_candidates<EdgeFaceCandidate, /*swap_order=*/true>(
         face_boxes, edge_bvh,
         [&](size_t ei, size_t fi) { return can_edge_face_collide(ei, fi); },
+        candidates);
+}
+
+void BVH::detect_face_face_candidates(
+    std::vector<FaceFaceCandidate>& candidates) const
+{
+    if (face_boxes.size() == 0) {
+        return;
+    }
+
+    detect_candidates<
+        FaceFaceCandidate, /*swap_order=*/false, /*triangular=*/true>(
+        face_boxes, face_bvh,
+        [&](size_t fai, size_t fbi) { return can_faces_collide(fai, fbi); },
         candidates);
 }
 } // namespace ipc

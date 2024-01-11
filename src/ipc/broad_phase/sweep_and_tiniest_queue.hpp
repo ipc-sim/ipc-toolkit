@@ -82,6 +82,11 @@ public:
     [[noreturn]] void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const override;
 
+    /// @brief Find the candidate face-face collisions.
+    /// @param[out] candidates The candidate face-face collisions.
+    [[noreturn]] void detect_face_face_candidates(
+        std::vector<FaceFaceCandidate>& candidates) const override;
+
 protected:
     long to_edge_id(long id) const;
     long to_face_id(long id) const;
@@ -149,6 +154,11 @@ public:
     /// @param[out] candidates The candidate edge-face intersections.
     [[noreturn]] void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const override;
+
+    /// @brief Find the candidate face-face collisions.
+    /// @param[out] candidates The candidate face-face collisions.
+    [[noreturn]] void detect_face_face_candidates(
+        std::vector<FaceFaceCandidate>& candidates) const override;
 
 private:
     std::vector<stq::gpu::Aabb> boxes;

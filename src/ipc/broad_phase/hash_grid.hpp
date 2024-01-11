@@ -83,13 +83,21 @@ public:
     void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const override;
 
-    double cellSize() const { return m_cellSize; }
-    const ArrayMax3i& gridSize() const { return m_gridSize; }
-    const ArrayMax3d& domainMin() const { return m_domainMin; }
-    const ArrayMax3d& domainMax() const { return m_domainMax; }
+    /// @brief Find the candidate face-face collisions.
+    /// @param[out] candidates The candidate face-face collisions.
+    void detect_face_face_candidates(
+        std::vector<FaceFaceCandidate>& candidates) const override;
+
+    double cell_size() const { return m_cell_size; }
+    const ArrayMax3i& grid_size() const { return m_grid_size; }
+    const ArrayMax3d& domain_min() const { return m_domain_min; }
+    const ArrayMax3d& domain_max() const { return m_domain_max; }
 
 protected:
-    void resize(const ArrayMax3d& min, const ArrayMax3d& max, double cellSize);
+    void resize(
+        const ArrayMax3d& domain_min,
+        const ArrayMax3d& domain_max,
+        double cell_size);
 
     void insert_boxes();
 
@@ -105,12 +113,20 @@ protected:
     {
         assert(x >= 0 && y >= 0 && z >= 0);
         assert(
-            x < m_gridSize[0] && y < m_gridSize[1]
-            && (m_gridSize.size() == 2 || z < m_gridSize[2]));
-        return (z * m_gridSize[1] + y) * m_gridSize[0] + x;
+            x < grid_size()[0] && y < grid_size()[1]
+            && (grid_size().size() == 2 || z < grid_size()[2]));
+        return (z * grid_size()[1] + y) * grid_size()[0] + x;
     }
 
 private:
+    /// @brief Find the candidate collisions between two sets of items.
+    /// @tparam Candidate The type of collision candidate.
+    /// @param[in] items0 First set of items.
+    /// @param[in] items1 Second set of items.
+    /// @param[in] boxes0 First set's boxes.
+    /// @param[in] boxes1 Second set's boxes.
+    /// @param[in] can_collide Function to determine if two items can collide.
+    /// @param[out] candidates The candidate collisions.
     template <typename Candidate>
     void detect_candidates(
         const std::vector<HashItem>& items0,
@@ -120,6 +136,12 @@ private:
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates) const;
 
+    /// @brief Find the candidate collisions among a set of items.
+    /// @tparam Candidate The type of collision candidate.
+    /// @param[in] items The set of items.
+    /// @param[in] boxes The items' boxes.
+    /// @param[in] can_collide Function to determine if two items can collide.
+    /// @param[out] candidates The candidate collisions.
     template <typename Candidate>
     void detect_candidates(
         const std::vector<HashItem>& items,
@@ -128,10 +150,10 @@ private:
         std::vector<Candidate>& candidates) const;
 
 protected:
-    double m_cellSize;
-    ArrayMax3i m_gridSize;
-    ArrayMax3d m_domainMin;
-    ArrayMax3d m_domainMax;
+    double m_cell_size;
+    ArrayMax3i m_grid_size;
+    ArrayMax3d m_domain_min;
+    ArrayMax3d m_domain_max;
 
     std::vector<HashItem> vertex_items;
     std::vector<HashItem> edge_items;

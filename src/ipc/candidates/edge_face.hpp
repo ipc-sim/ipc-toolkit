@@ -1,10 +1,6 @@
 #pragma once
 
-#include <ipc/ccd/ccd.hpp>
-
 #include <Eigen/Core>
-
-#include <vector>
 
 namespace ipc {
 
