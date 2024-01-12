@@ -58,6 +58,11 @@ public:
         const size_t start_i,
         const size_t end_i);
 
+    void add_neighbor_face_collisions(
+        const CollisionMesh& mesh,
+        const size_t start_i,
+        const size_t end_i);
+
     static void add_collision(
         const CollisionMesh &mesh,
         const unordered_tuple& pair,

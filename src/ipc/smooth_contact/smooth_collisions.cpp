@@ -58,7 +58,7 @@ void SmoothCollisions<dim>::build(
             });
 
         tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), mesh.num_edges()),
+            tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_neighbor_edge_collisions(
                     mesh, r.begin(), r.end());
@@ -80,6 +80,13 @@ void SmoothCollisions<dim>::build(
                 storage.local().add_face_vertex_collisions(
                     mesh, vertices, candidates.fv_candidates, is_active, r.begin(),
                     r.end());
+            });
+
+        tbb::parallel_for(
+            tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
+            [&](const tbb::blocked_range<size_t>& r) {
+                storage.local().add_neighbor_face_collisions(
+                    mesh, r.begin(), r.end());
             });
     }
     SmoothCollisionsBuilder<dim>::merge(mesh, storage, *this);

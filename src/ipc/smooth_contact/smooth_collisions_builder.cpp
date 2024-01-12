@@ -48,11 +48,11 @@ void SmoothCollisionsBuilder<dim>::add_neighbor_edge_collisions(
     if constexpr (dim == 2)
     {
         const std::vector<unordered_set<int>>& vertex_edge_adj = mesh.vertex_edge_adjacencies();
-        for (size_t i = start_i; i < end_i; i++)
-            for (int d : {0, 1})
-                for (int j : vertex_edge_adj[mesh.edges()(i, d)])
-                    if (j != i)
-                        add_collision(mesh, unordered_tuple(j, i), cc_to_id, collisions);
+        for (size_t v = start_i; v < end_i; v++)
+            for (int i : vertex_edge_adj[v])
+                for (int j : vertex_edge_adj[v])
+                    if (j > i)
+                        add_collision(mesh, unordered_tuple(i, j), cc_to_id, collisions);
     }
 }
 
@@ -124,6 +124,23 @@ void SmoothCollisionsBuilder<dim>::add_face_vertex_collisions(
                 if (fj != fi)
                     add_collision(mesh, unordered_tuple(fi, fj), cc_to_id, collisions);
         }
+    }
+}
+
+template <int dim>
+void SmoothCollisionsBuilder<dim>::add_neighbor_face_collisions(
+        const CollisionMesh& mesh,
+        const size_t start_i,
+        const size_t end_i)
+{
+    if constexpr (dim == 3)
+    {
+        const auto &vertices_to_faces_adj = mesh.vertices_to_faces();
+        for (size_t v = start_i; v < end_i; v++)
+            for (int i : vertices_to_faces_adj[v])
+                for (int j : vertices_to_faces_adj[v])
+                    if (j > i)
+                        add_collision(mesh, unordered_tuple(i, j), cc_to_id, collisions);
     }
 }
 
