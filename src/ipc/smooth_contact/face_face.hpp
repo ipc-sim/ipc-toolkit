@@ -3,6 +3,7 @@
 #include <ipc/candidates/face_face.hpp>
 #include <ipc/collisions/collision.hpp>
 #include <ipc/collision_mesh.hpp>
+#include <iostream>
 
 namespace ipc {
 
@@ -30,11 +31,7 @@ public:
     }
 
     std::array<long, 6> vertex_ids(
-        const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const override
-    {
-        return {{faces(face0_id, 0), faces(face0_id, 1), faces(face0_id, 2),
-                faces(face1_id, 0), faces(face1_id, 1), faces(face1_id, 2)}};
-    }
+        const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const override;
     
     double compute_distance(const Vector<double, -1, 18>& positions) const override;
 

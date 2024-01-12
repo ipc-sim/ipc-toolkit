@@ -1,5 +1,6 @@
 #include "face_face.hpp"
 #include "smooth_point_face.hpp"
+#include "smooth_edge_edge.hpp"
 #include <ipc/utils/AutodiffTypes.hpp>
 #include <iostream>
 #include <ipc/utils/logger.hpp>
@@ -24,73 +25,81 @@ namespace ipc {
             return points;
         }
 
-        enum class FD_RULE { central, left, right };
+        // enum class FD_RULE { central, left, right };
         
-        void finite_gradient(const Eigen::VectorXd& x, const std::function<double(const Eigen::VectorXd&)> &f, Eigen::VectorXd &grad, FD_RULE rule)
-        {
-            const double eps = 1e-7;
-            grad.setZero(x.size());
-            switch (rule)
-            {
-            case FD_RULE::central:
-                for (int i = 0; i < x.size(); i++)
-                    for (int d : {-1, 1})
-                    {
-                        auto y = x;
-                        y(i) += d * eps;
-                        grad(i) += d * f(y) / (2*eps);
-                    }
-                break;
-            case FD_RULE::left:
-                for (int i = 0; i < x.size(); i++)
-                {
-                        auto y = x;
-                        grad(i) += f(y) / eps;
-                        y(i) -= eps;
-                        grad(i) -= f(y) / eps;
-                }
-                break;
-            case FD_RULE::right:
-                for (int i = 0; i < x.size(); i++)
-                {
-                        auto y = x;
-                        grad(i) -= f(y) / eps;
-                        y(i) += eps;
-                        grad(i) += f(y) / eps;
-                }
-                break;
-            default:
-            assert(false);
-            }
-        }
+        // void finite_gradient(const Eigen::VectorXd& x, const std::function<double(const Eigen::VectorXd&)> &f, Eigen::VectorXd &grad, FD_RULE rule)
+        // {
+        //     const double eps = 1e-7;
+        //     grad.setZero(x.size());
+        //     switch (rule)
+        //     {
+        //     case FD_RULE::central:
+        //         for (int i = 0; i < x.size(); i++)
+        //             for (int d : {-1, 1})
+        //             {
+        //                 auto y = x;
+        //                 y(i) += d * eps;
+        //                 grad(i) += d * f(y) / (2*eps);
+        //             }
+        //         break;
+        //     case FD_RULE::left:
+        //         for (int i = 0; i < x.size(); i++)
+        //         {
+        //                 auto y = x;
+        //                 grad(i) += f(y) / eps;
+        //                 y(i) -= eps;
+        //                 grad(i) -= f(y) / eps;
+        //         }
+        //         break;
+        //     case FD_RULE::right:
+        //         for (int i = 0; i < x.size(); i++)
+        //         {
+        //                 auto y = x;
+        //                 grad(i) -= f(y) / eps;
+        //                 y(i) += eps;
+        //                 grad(i) += f(y) / eps;
+        //         }
+        //         break;
+        //     default:
+        //     assert(false);
+        //     }
+        // }
+    }
+
+    std::array<long, 6> SmoothFaceFaceCollision::vertex_ids(
+        const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const
+    {
+        return {{faces(face0_id, 0), faces(face0_id, 1), faces(face0_id, 2),
+                faces(face1_id, 0), faces(face1_id, 1), faces(face1_id, 2)}};
     }
 
     template <typename scalar> 
     scalar SmoothFaceFaceCollision::evaluate_quadrature(const Vector<double, -1, 18>& positions, const ParameterType &params) const
     {
         std::array<Vector3<scalar>, 6> points = slice_positions<scalar>(positions);
+        std::array<Vector3<double>, 6> points_double = slice_positions<double>(positions);
         scalar out = scalar(0.);
 
+        // face - vertex potential
         for (const int t : {0, 1})
         {
             const int tt = 1 - t;
             const scalar area = (points[t * 3 + 2] - points[t * 3 + 0]).cross(points[t * 3 + 1] - points[t * 3 + 0]).norm() / scalar(2.);
             
-            // face - vertex potential
+            const std::array<long, 3> ttv = {{vertices[tt * 3 + 0], vertices[tt * 3 + 1], vertices[tt * 3 + 2]}};
+            
             for (const int i : {0, 1, 2})
             {
                 const int p_id = t * 3 + i;
-                if (vertices[p_id] == vertices[tt * 3 + 0] ||
-                    vertices[p_id] == vertices[tt * 3 + 1] ||
-                    vertices[p_id] == vertices[tt * 3 + 2])
+                if (std::find(ttv.begin(), ttv.end(), vertices[p_id]) != std::end(ttv))
                     continue;
 
                 const PointTriangleDistanceType dtype = point_triangle_distance_type(
-                    positions.segment<3>(3 * p_id), positions.segment<3>(3 * (tt * 3 + 0)), 
-                    positions.segment<3>(3 * (tt * 3 + 1)), positions.segment<3>(3 * (tt * 3 + 2)));
+                    points_double[p_id], points_double[tt * 3 + 0], points_double[tt * 3 + 1], points_double[tt * 3 + 2]);
                 out += (area / scalar(3.)) * smooth_point_face_potential_single_point<scalar>(
                     points[p_id], points[tt * 3 + 0], points[tt * 3 + 1], points[tt * 3 + 2], params, dtype);
                 
+                // for debugging derivatives using finite difference
                 // if constexpr (std::is_same<scalar, AutodiffScalarGrad<18>>::value)
                 // {
                 //     mut.lock();
@@ -126,8 +135,31 @@ namespace ipc {
                 //     mut.unlock();
                 // }
             }
+        }
 
-            // TODO: edge - edge potential
+        // edge - edge potential
+        {
+            const int t = 0;
+            const int tt = 1;
+            const scalar area = ((points[t * 3 + 2] - points[t * 3 + 0]).cross(points[t * 3 + 1] - points[t * 3 + 0]).norm() / scalar(2.)) * ((points[tt * 3 + 2] - points[tt * 3 + 0]).cross(points[tt * 3 + 1] - points[tt * 3 + 0]).norm() / scalar(2.));
+            for (const int e0 : {0, 1, 2})
+            {
+                const std::array<long, 2> e0v = {{vertices[t * 3 + e0], vertices[t * 3 + (e0 + 1) % 3]}};
+                for (const int e1 : {0, 1, 2})
+                {
+                    const std::array<long, 2> e1v = {{vertices[tt * 3 + e1], vertices[tt * 3 + (e1 + 1) % 3]}};
+                    
+                    // skip if two edges share at least one end point
+                    if (std::find(e0v.begin(), e0v.end(), e1v[0]) != std::end(e0v) ||
+                        std::find(e0v.begin(), e0v.end(), e1v[1]) != std::end(e0v))
+                        continue;
+
+                    const EdgeEdgeDistanceType dtype = edge_edge_distance_type(points_double[t * 3 + e0], points_double[t * 3 + (e0 + 1) % 3], points_double[tt * 3 + e1], points_double[tt * 3 + (e1 + 1) % 3]);
+
+                    // Use original edge-edge for now
+                    out += (area / scalar(9.)) * smooth_edge_edge_potential_pointwise<scalar>(points[t * 3 + e0], points[t * 3 + (e0 + 1) % 3], points[tt * 3 + e1], points[tt * 3 + (e1 + 1) % 3], params, dtype);
+                }
+            }
         }
 
         return out;
