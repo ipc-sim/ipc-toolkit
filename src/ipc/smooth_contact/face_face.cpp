@@ -80,7 +80,7 @@ namespace ipc {
         std::array<Vector3<double>, 6> points_double = slice_positions<double>(positions);
         scalar out = scalar(0.);
 
-        // face - vertex potential
+        
         for (const int t : {0, 1})
         {
             const int tt = 1 - t;
@@ -88,6 +88,7 @@ namespace ipc {
             
             const std::array<long, 3> ttv = {{vertices[tt * 3 + 0], vertices[tt * 3 + 1], vertices[tt * 3 + 2]}};
             
+            // face - vertex potential
             for (const int i : {0, 1, 2})
             {
                 const int p_id = t * 3 + i;
@@ -137,11 +138,12 @@ namespace ipc {
             }
         }
 
-        // edge - edge potential
         {
             const int t = 0;
-            const int tt = 1;
+            const int tt = 1 - t;
             const scalar area = ((points[t * 3 + 2] - points[t * 3 + 0]).cross(points[t * 3 + 1] - points[t * 3 + 0]).norm() / scalar(2.)) * ((points[tt * 3 + 2] - points[tt * 3 + 0]).cross(points[tt * 3 + 1] - points[tt * 3 + 0]).norm() / scalar(2.));
+            
+            // edge - edge potential
             for (const int e0 : {0, 1, 2})
             {
                 const std::array<long, 2> e0v = {{vertices[t * 3 + e0], vertices[t * 3 + (e0 + 1) % 3]}};
@@ -157,7 +159,7 @@ namespace ipc {
                     const EdgeEdgeDistanceType dtype = edge_edge_distance_type(points_double[t * 3 + e0], points_double[t * 3 + (e0 + 1) % 3], points_double[tt * 3 + e1], points_double[tt * 3 + (e1 + 1) % 3]);
 
                     // Use original edge-edge for now
-                    out += (area / scalar(9.)) * smooth_edge_edge_potential_pointwise<scalar>(points[t * 3 + e0], points[t * 3 + (e0 + 1) % 3], points[tt * 3 + e1], points[tt * 3 + (e1 + 1) % 3], params, dtype);
+                    out += (area / scalar(9.)) * edge_edge_potential_single_point<scalar>(points[t * 3 + e0], points[t * 3 + (e0 + 1) % 3], points[tt * 3 + e1], points[tt * 3 + (e1 + 1) % 3], params, dtype);
                 }
             }
         }
