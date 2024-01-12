@@ -51,7 +51,6 @@ PYBIND11_MODULE(ipctk, m)
     define_face_vertex_collision(m);
     define_plane_vertex_collision(m);
     define_vertex_vertex_collision(m);
-    define_smooth_point_edge(m);
     
     // distance
     define_edge_edge_mollifier(m);

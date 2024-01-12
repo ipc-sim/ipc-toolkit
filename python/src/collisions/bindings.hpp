@@ -10,4 +10,3 @@ void define_edge_vertex_collision(py::module_& m);
 void define_face_vertex_collision(py::module_& m);
 void define_plane_vertex_collision(py::module_& m);
 void define_vertex_vertex_collision(py::module_& m);
-void define_smooth_point_edge(py::module_& m);
