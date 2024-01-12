@@ -110,6 +110,7 @@ CollisionMesh::CollisionMesh(
     } // else no need to change the edges and faces
 
     m_faces_to_edges = construct_faces_to_edges(m_faces, m_edges);
+    construct_edges_to_faces();
 
     init_codim_vertices();
     init_codim_edges();
@@ -121,6 +122,27 @@ CollisionMesh::CollisionMesh(
 }
 
 // ============================================================================
+
+void CollisionMesh::construct_edges_to_faces()
+{
+    if (dim() == 2)
+        return;
+    
+    m_edges_to_faces.setOnes(num_edges(), 2);
+    m_edges_to_faces *= -1;
+    for (int f = 0; f < m_faces_to_edges.rows(); f++)
+    {
+        for (int le = 0; le < 3; le++)
+        {
+            if (m_edges_to_faces(m_faces_to_edges(f, le), 0) < 0)
+                m_edges_to_faces(m_faces_to_edges(f, le), 0) = f;
+            else if (m_edges_to_faces(m_faces_to_edges(f, le), 1) < 0)
+                m_edges_to_faces(m_faces_to_edges(f, le), 1) = f;
+            else
+                assert(false);
+        }
+    }
+}
 
 void CollisionMesh::init_codim_vertices()
 {

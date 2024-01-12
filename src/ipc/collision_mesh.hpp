@@ -127,6 +127,11 @@ public:
         return m_vertices_to_faces;
     }
 
+    const Eigen::MatrixXi& edges_to_faces() const
+    {
+        return m_edges_to_faces;
+    }
+
     // -----------------------------------------------------------------------
 
     /// @brief Compute the vertex positions from the positions of the full mesh.
@@ -310,6 +315,8 @@ public:
     /// @return Matrix that maps from the faces' edges to rows in the edges matrix.
     static Eigen::MatrixXi construct_faces_to_edges(
         const Eigen::MatrixXi& faces, const Eigen::MatrixXi& edges);
+    
+    void construct_edges_to_faces();
 
     /// A function that takes two vertex IDs and returns true if the vertices
     /// (and faces or edges containing the vertices) can collide. By default all
@@ -355,6 +362,7 @@ protected:
     Eigen::MatrixXi m_faces;
     /// @brief Map from faces edges to rows of edges (#F × 3).
     Eigen::MatrixXi m_faces_to_edges;
+    Eigen::MatrixXi m_edges_to_faces;
 
     /// @brief Map from full vertices to collision vertices.
     /// @note Negative values indicate full vertex is dropped.

@@ -70,7 +70,7 @@ void SmoothCollisionsBuilder<dim>::add_edge_edge_collisions(
 {
     if constexpr (dim == 3)
     {
-        const auto &vertices_to_faces_adj = mesh.vertices_to_faces();
+        const auto &edges_to_faces_adj = mesh.edges_to_faces();
         for (size_t i = start_i; i < end_i; i++) {
             const auto& [eai, ebi] = candidates[i];
 
@@ -83,12 +83,24 @@ void SmoothCollisionsBuilder<dim>::add_edge_edge_collisions(
             if (!is_active(distance_sqr))
                 continue;
 
-            for (int di : {0, 1})
-                for (int dj : {0, 1})
-                    for (int fi : vertices_to_faces_adj[mesh.edges()(eai, di)])
-                        for (int fj : vertices_to_faces_adj[mesh.edges()(ebi, dj)])
-                            if (fj != fi)
-                                add_collision(mesh, unordered_tuple(fi, fj), cc_to_id, collisions);
+            for (int da : {0, 1})
+            {
+                for (int db : {0, 1})
+                {
+                    int fa = edges_to_faces_adj(eai, da);
+                    int fb = edges_to_faces_adj(ebi, db);
+                    if (fa >= 0 && fb >= 0 && fa != fb)
+                        add_collision(mesh, unordered_tuple(fa, fb), cc_to_id, collisions);
+                }
+            }
+
+            // add all faces adjacent to any of the vertex of the edges to collision set
+            // for (int di : {0, 1})
+            //     for (int dj : {0, 1})
+            //         for (int fi : vertices_to_faces_adj[mesh.edges()(eai, di)])
+            //             for (int fj : vertices_to_faces_adj[mesh.edges()(ebi, dj)])
+            //                 if (fj != fi)
+            //                     add_collision(mesh, unordered_tuple(fi, fj), cc_to_id, collisions);
         }
     }
 }
