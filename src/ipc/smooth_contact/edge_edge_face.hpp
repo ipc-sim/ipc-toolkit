@@ -43,7 +43,7 @@ private:
     template <typename scalar> 
     scalar evaluate_quadrature(const Vector<double, 24>& positions, const ParameterType &params) const;
 
-    std::array<long, 4> faces; // 2 faces adjacent to edge 1
+    Eigen::Matrix<int, 4, 3> face_to_vertex; // stores the local vertex ids for each vertex on each face
 };
 
 }
