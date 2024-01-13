@@ -57,12 +57,13 @@ void SmoothCollisions<dim>::build(
                     r.end(), dhat);
             });
 
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                storage.local().add_neighbor_edge_collisions(
-                    mesh, r.begin(), r.end());
-            });
+        if (use_high_order_quadrature)
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
+                [&](const tbb::blocked_range<size_t>& r) {
+                    storage.local().add_neighbor_edge_collisions(
+                        mesh, r.begin(), r.end());
+                });
     }
     else
     {
@@ -82,14 +83,15 @@ void SmoothCollisions<dim>::build(
                     r.end());
             });
 
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                storage.local().add_neighbor_face_collisions(
-                    mesh, r.begin(), r.end());
-            });
+        if (use_high_order_quadrature)
+            tbb::parallel_for(
+                tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
+                [&](const tbb::blocked_range<size_t>& r) {
+                    storage.local().add_neighbor_face_collisions(
+                        mesh, r.begin(), r.end());
+                });
     }
-    SmoothCollisionsBuilder<dim>::merge(mesh, storage, *this);
+    SmoothCollisionsBuilder<dim>::merge(storage, *this);
 
     // logger().debug(to_string(mesh, vertices));
 

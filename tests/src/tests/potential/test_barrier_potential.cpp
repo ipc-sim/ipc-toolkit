@@ -496,6 +496,7 @@ TEST_CASE(
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
     bool success = tests::load_mesh(mesh_name, vertices, edges, faces);
+    vertices += Eigen::MatrixXd::Random(vertices.rows(), vertices.cols()) * 1e-3;
     CAPTURE(mesh_name);
     REQUIRE(success);
 
@@ -560,7 +561,7 @@ TEST_CASE(
 
     REQUIRE(hess_b.squaredNorm() > 1e-3);
     std::cout << "hess relative error " << (hess_b - fhess_b).norm() / hess_b.norm() << "\n";
-    CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
+    CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-6));
 }
 
 TEST_CASE(

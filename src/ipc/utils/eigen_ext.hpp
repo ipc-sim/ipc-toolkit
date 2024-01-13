@@ -29,6 +29,7 @@ using MatrixX = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
 using Vector1d = Vector1<double>;
 using Vector6d = Vector<double, 6>;
+using Vector8d = Vector<double, 8>;
 using Vector9d = Vector<double, 9>;
 using Vector12d = Vector<double, 12>;
 using Matrix6d = Eigen::Matrix<double, 6, 6>;

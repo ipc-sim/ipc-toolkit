@@ -56,5 +56,6 @@ Matrix12d Collision<max_vert>::mollifier_gradient_jacobian_wrt_x(
 
 template class Collision<4>;
 template class Collision<6>;
+template class Collision<8>;
 
 } // namespace ipc

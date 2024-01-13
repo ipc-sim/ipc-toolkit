@@ -18,11 +18,6 @@ public:
     }
     virtual ~SmoothCollision() { }
 
-    int num_vertices() const override
-    {
-        return nvert;
-    }
-
     std::array<long, nvert> vertex_ids(
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override

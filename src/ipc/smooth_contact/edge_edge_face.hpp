@@ -1,29 +1,24 @@
 #pragma once
 
 #include "smooth_collision.hpp"
-#include <iostream>
 
 namespace ipc {
 
-class SmoothFaceFaceCollision : public SmoothCollision<8> {
+class SmoothEdgeEdge3Collision : public SmoothCollision<8> {
 public:
-    SmoothFaceFaceCollision(
+    SmoothEdgeEdge3Collision(
         long primitive0_,
         long primitive1_,
-        const CollisionMesh &mesh)
-    : SmoothCollision<8>(primitive0_, primitive1_, mesh)
-    { 
-        vertices = vertex_ids(mesh.edges(), mesh.faces());
-    }
-    virtual ~SmoothFaceFaceCollision() { }
+        const CollisionMesh &mesh);
+    virtual ~SmoothEdgeEdge3Collision() { }
 
     int num_vertices() const override
     {
-        return 6;
+        return 8;
     }
 
     std::array<long, 8> vertex_ids(
-        const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const override;
+        const Eigen::MatrixXi& _edges, const Eigen::MatrixXi& _faces) const override;
 
     double operator()(const Vector<double, -1, 24>& positions, 
         const ParameterType &params) const override;
@@ -44,8 +39,11 @@ public:
     }
 
 private:
+private:
     template <typename scalar> 
-    scalar evaluate_quadrature(const Vector<double, 18>& positions, const ParameterType &params) const;
+    scalar evaluate_quadrature(const Vector<double, 24>& positions, const ParameterType &params) const;
+
+    std::array<long, 4> faces; // 2 faces adjacent to edge 1
 };
 
 }

@@ -9,24 +9,8 @@
 
 namespace ipc {
 
-
-template <int dim>
-struct CollisionType;
-
-template <>
-struct CollisionType<2> {
-    using Type = SmoothEdgeEdgeCollision;
-};
-
-template <>
-struct CollisionType<3> {
-    using Type = SmoothFaceFaceCollision;
-};
-
-
 template <int dim>
 class SmoothCollisionsBuilder {
-    using TCollision = typename CollisionType<dim>::Type;
 public:
     SmoothCollisionsBuilder() = default;
 
@@ -48,7 +32,6 @@ public:
     // ------------------------------------------------------------------------
 
     static void merge(
-        const CollisionMesh &mesh,
         const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>& local_storage,
         SmoothCollisions<dim>& merged_collisions);
 
@@ -78,19 +61,21 @@ public:
         const size_t start_i,
         const size_t end_i);
 
+    template <typename TCollision>
     static void add_collision(
         const CollisionMesh &mesh,
         const unordered_tuple& pair,
         unordered_map<unordered_tuple, long>& cc_to_id_,
-        std::vector<std::shared_ptr<SmoothCollision<2*dim>>>& collisions_);
+        std::vector<std::shared_ptr<typename SmoothCollisions<dim>::value_type>>& collisions_);
 
     // -------------------------------------------------------------------------
 
     // Store the indices to pairs to avoid duplicates.
     unordered_map<unordered_tuple, long> cc_to_id;
+    unordered_map<unordered_tuple, long> ee_to_id;
 
     // Constructed collisions
-    std::vector<std::shared_ptr<SmoothCollision<2*dim>>> collisions;
+    std::vector<std::shared_ptr<typename SmoothCollisions<dim>::value_type>> collisions;
 };
 
 } // namespace ipc

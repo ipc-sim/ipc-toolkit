@@ -16,6 +16,11 @@ public:
         vertices = vertex_ids(mesh.edges(), mesh.faces());
     }
 
+    int num_vertices() const override
+    {
+        return 4;
+    }
+
     std::array<long, 4> vertex_ids(
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override
@@ -43,10 +48,10 @@ public:
     }
 
 private:
-    Vector12d positions_to_3d(const VectorMax12d& positions) const;
+    Vector12d positions_to_3d(const Vector8d& positions) const;
     
     template <typename scalar> 
-    scalar evaluate_quadrature(const VectorMax12d& positions, ParameterType params) const;
+    scalar evaluate_quadrature(const Vector8d& positions, ParameterType params) const;
 };
 
 }

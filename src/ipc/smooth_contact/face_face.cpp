@@ -66,15 +66,15 @@ namespace ipc {
         // }
     }
 
-    std::array<long, 6> SmoothFaceFaceCollision::vertex_ids(
+    std::array<long, 8> SmoothFaceFaceCollision::vertex_ids(
         const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const
     {
         return {{faces(primitive0, 0), faces(primitive0, 1), faces(primitive0, 2),
-                faces(primitive1, 0), faces(primitive1, 1), faces(primitive1, 2)}};
+                faces(primitive1, 0), faces(primitive1, 1), faces(primitive1, 2), -1, -1}};
     }
 
     template <typename scalar> 
-    scalar SmoothFaceFaceCollision::evaluate_quadrature(const Vector<double, -1, 18>& positions, const ParameterType &params) const
+    scalar SmoothFaceFaceCollision::evaluate_quadrature(const Vector<double, 18>& positions, const ParameterType &params) const
     {
         std::array<Vector3<scalar>, 6> points = slice_positions<scalar>(positions);
         std::array<Vector3<double>, 6> points_double = slice_positions<double>(positions);
@@ -168,14 +168,15 @@ namespace ipc {
         return out;
     }
 
-    double SmoothFaceFaceCollision::operator()(const Vector<double, -1, 18>& positions, 
+    double SmoothFaceFaceCollision::operator()(const Vector<double, -1, 24>& positions, 
         const ParameterType &params) const
     {
+        assert(positions.size() == 18);
         return evaluate_quadrature<double>(positions, params);
     }
 
-    Vector<double, -1, 18> SmoothFaceFaceCollision::gradient(
-        const Vector<double, -1, 18>& positions, 
+    Vector<double, -1, 24> SmoothFaceFaceCollision::gradient(
+        const Vector<double, -1, 24>& positions, 
         const ParameterType &params) const
     {
         DiffScalarBase::setVariableCount(18);
@@ -189,7 +190,7 @@ namespace ipc {
         //     finite_gradient(positions, f, fgrad);
         // }
 
-        Vector<double, -1, 18> grad = evaluate_quadrature<Diff>(positions, params).getGradient().head(18);
+        Vector<double, -1, 24> grad = evaluate_quadrature<Diff>(positions, params).getGradient().head(18);
 
         // if (grad.norm() > 1e-8)
         // {
@@ -210,8 +211,8 @@ namespace ipc {
         return grad;
     }
 
-    MatrixMax<double, 18, 18> SmoothFaceFaceCollision::hessian(
-        const Vector<double, -1, 18>& positions, 
+    MatrixMax<double, 24, 24> SmoothFaceFaceCollision::hessian(
+        const Vector<double, -1, 24>& positions, 
         const ParameterType &params,
         const bool project_hessian_to_psd) const
     {
@@ -219,5 +220,4 @@ namespace ipc {
         using Diff=AutodiffScalarHessian<18>;
         return evaluate_quadrature<Diff>(positions, params).getHessian().topLeftCorner(18, 18);
     }
-
 }

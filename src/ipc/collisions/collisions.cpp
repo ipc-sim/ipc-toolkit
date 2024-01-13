@@ -520,5 +520,6 @@ std::string Collisions::to_string(
 
 template class VirtualCollisions<4>;
 template class VirtualCollisions<6>;
+template class VirtualCollisions<8>;
 
 } // namespace ipc
