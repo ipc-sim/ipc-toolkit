@@ -1,37 +1,28 @@
 #pragma once
 
-#include <ipc/collisions/edge_edge.hpp>
-#include <ipc/collision_mesh.hpp>
+#include "smooth_collision.hpp"
 
 namespace ipc {
 
-template <int dim_>
-class SmoothEdgeEdgeCollision : public EdgeEdgeCollision {
+class SmoothEdgeEdgeCollision : public SmoothCollision<4> {
+    constexpr static int dim = 2;
 public:
-    // using EdgeEdgeCollision::EdgeEdgeCollision;
     SmoothEdgeEdgeCollision(
-        const long _edge0_id,
-        const long _edge1_id,
+        long primitive0_,
+        long primitive1_,
         const CollisionMesh &mesh)
-    : EdgeEdgeCollision(_edge0_id, _edge1_id, 0.)
+    : SmoothCollision(primitive0_, primitive1_, mesh)
     { 
         vertices = vertex_ids(mesh.edges(), mesh.faces());
     }
-    SmoothEdgeEdgeCollision(
-        const long _edge0_id,
-        const long _edge1_id,
-        const double _eps_x,
-        std::array<long, 4> _vertices)
-    : EdgeEdgeCollision(_edge0_id, _edge1_id, _eps_x), vertices(_vertices)
-    { }
 
-    double compute_distance(const VectorMax12d& positions) const override;
-
-    VectorMax12d
-    compute_distance_gradient(const VectorMax12d& positions) const override;
-
-    MatrixMax12d
-    compute_distance_hessian(const VectorMax12d& positions) const override;
+    std::array<long, 4> vertex_ids(
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const override
+    {
+        return { { edges(primitive0, 0), edges(primitive0, 1),
+                   edges(primitive1, 0), edges(primitive1, 1) } };
+    }
 
     double operator()(const VectorMax12d& positions, 
         const ParameterType &params) const override;
@@ -45,12 +36,10 @@ public:
         const ParameterType &params,
         const bool project_hessian_to_psd = false) const override;
 
-    bool is_mollified() const override { return false; }
-
-    void set_adaptive_dhat(const CollisionMesh &mesh, const double &dhat)
+    void set_adaptive_dhat(const CollisionMesh &mesh, const double &dhat) override
     {
-        dhat0 = std::min(dhat, mesh.min_distance_in_rest_config(edge0_id));
-        dhat1 = std::min(dhat, mesh.min_distance_in_rest_config(edge1_id));
+        dhat0 = std::min(dhat, mesh.min_distance_in_rest_config(primitive0));
+        dhat1 = std::min(dhat, mesh.min_distance_in_rest_config(primitive1));
     }
 
 private:
@@ -58,10 +47,6 @@ private:
     
     template <typename scalar> 
     scalar evaluate_quadrature(const VectorMax12d& positions, ParameterType params) const;
-
-    std::array<long, 4> vertices;
-
-    double dhat0 = 0, dhat1 = 0;
 };
 
 }

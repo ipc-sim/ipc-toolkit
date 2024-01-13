@@ -161,7 +161,7 @@ void SmoothCollisionsBuilder<dim>::add_collision(
     const CollisionMesh &mesh,
     const unordered_tuple& pair,
     unordered_map<unordered_tuple, long>& cc_to_id_,
-    std::vector<TCollision>& collisions_)
+    std::vector<std::shared_ptr<SmoothCollision<2*dim>>>& collisions_)
 {
     auto found_item = cc_to_id_.find(pair);
     if (found_item != cc_to_id_.end()) {
@@ -169,7 +169,7 @@ void SmoothCollisionsBuilder<dim>::add_collision(
     } else {
         // New collision, so add it to the end of collisions
         cc_to_id_.emplace(pair, collisions_.size());
-        collisions_.emplace_back(pair[0], pair[1], mesh);
+        collisions_.push_back(std::make_shared<TCollision>(pair[0], pair[1], mesh));
     }
 }
 
@@ -191,10 +191,7 @@ void SmoothCollisionsBuilder<dim>::merge(
     // merge
     for (const auto& builder : local_storage)
         for (const auto& cc : builder.collisions)
-            if constexpr (dim == 2)
-                add_collision(mesh, unordered_tuple(cc.edge0_id, cc.edge1_id), cc_to_id, merged_collisions.collisions);
-            else
-                add_collision(mesh, unordered_tuple(cc.face0_id, cc.face1_id), cc_to_id, merged_collisions.collisions);
+            add_collision(mesh, unordered_tuple(cc->primitive0, cc->primitive1), cc_to_id, merged_collisions.collisions);
 }
 
 template class SmoothCollisionsBuilder<2>;

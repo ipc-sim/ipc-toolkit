@@ -69,8 +69,8 @@ namespace ipc {
     std::array<long, 6> SmoothFaceFaceCollision::vertex_ids(
         const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const
     {
-        return {{faces(face0_id, 0), faces(face0_id, 1), faces(face0_id, 2),
-                faces(face1_id, 0), faces(face1_id, 1), faces(face1_id, 2)}};
+        return {{faces(primitive0, 0), faces(primitive0, 1), faces(primitive0, 2),
+                faces(primitive1, 0), faces(primitive1, 1), faces(primitive1, 2)}};
     }
 
     template <typename scalar> 
@@ -138,6 +138,7 @@ namespace ipc {
             }
         }
 
+        // old IPC, leave it here for now
         {
             const int t = 0;
             const int tt = 1 - t;
@@ -165,26 +166,6 @@ namespace ipc {
         }
 
         return out;
-    }
-
-    double SmoothFaceFaceCollision::compute_distance(const Vector<double, -1, 18>& positions) const
-    {
-        assert(false);
-        return 0.;
-    }
-
-    Vector<double, -1, 18>
-    SmoothFaceFaceCollision::compute_distance_gradient(const Vector<double, -1, 18>& positions) const
-    {
-        assert(false);
-        return Vector<double, -1, 18>::Zero(18);
-    }
-
-    MatrixMax<double, 18, 18>
-    SmoothFaceFaceCollision::compute_distance_hessian(const Vector<double, -1, 18>& positions) const
-    {
-        assert(false);
-        return MatrixMax<double, 18, 18>::Zero(18, 18);
     }
 
     double SmoothFaceFaceCollision::operator()(const Vector<double, -1, 18>& positions, 

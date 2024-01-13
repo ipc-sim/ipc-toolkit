@@ -501,7 +501,7 @@ TEST_CASE(
 
     CollisionMesh mesh;
 
-    SmoothCollisions<3> collisions;
+    SmoothCollisions<3> collisions(false, false);
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(vertices, edges, faces);
     } else {
@@ -513,7 +513,7 @@ TEST_CASE(
     CHECK(collisions.size() > 0);
     CHECK(!has_intersections(mesh, vertices));
 
-    ParameterType param(dhat*dhat, 0.2, 0, 1, 5);
+    ParameterType param(dhat*dhat, 0.2, 0, 1, 1);
 
     SmoothContactPotential<SmoothCollisions<3>> potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
@@ -591,7 +591,7 @@ TEST_CASE(
 
     CollisionMesh mesh;
 
-    SmoothCollisions<2> collisions(adaptive_dhat);
+    SmoothCollisions<2> collisions(n_quad_pts > 1, adaptive_dhat);
     mesh = CollisionMesh(vertices, edges, faces);
     mesh.set_min_dist_ratio(min_dist_ratio);
     collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);

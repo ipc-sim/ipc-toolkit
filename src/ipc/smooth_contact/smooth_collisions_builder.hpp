@@ -9,9 +9,24 @@
 
 namespace ipc {
 
+
+template <int dim>
+struct CollisionType;
+
+template <>
+struct CollisionType<2> {
+    using Type = SmoothEdgeEdgeCollision;
+};
+
+template <>
+struct CollisionType<3> {
+    using Type = SmoothFaceFaceCollision;
+};
+
+
 template <int dim>
 class SmoothCollisionsBuilder {
-    using TCollision = typename SmoothCollision<dim>::Type;
+    using TCollision = typename CollisionType<dim>::Type;
 public:
     SmoothCollisionsBuilder() = default;
 
@@ -67,7 +82,7 @@ public:
         const CollisionMesh &mesh,
         const unordered_tuple& pair,
         unordered_map<unordered_tuple, long>& cc_to_id_,
-        std::vector<TCollision>& collisions_);
+        std::vector<std::shared_ptr<SmoothCollision<2*dim>>>& collisions_);
 
     // -------------------------------------------------------------------------
 
@@ -75,7 +90,7 @@ public:
     unordered_map<unordered_tuple, long> cc_to_id;
 
     // Constructed collisions
-    std::vector<TCollision> collisions;
+    std::vector<std::shared_ptr<SmoothCollision<2*dim>>> collisions;
 };
 
 } // namespace ipc

@@ -9,30 +9,16 @@
 namespace ipc {
 
 template <int dim>
-struct SmoothCollision;
-
-template <>
-struct SmoothCollision<2> {
-    using Type = SmoothEdgeEdgeCollision<2>;
-};
-
-template <>
-struct SmoothCollision<3> {
-    using Type = SmoothFaceFaceCollision;
-};
-
-template <int dim>
 class SmoothCollisions : public VirtualCollisions<2*dim> {
 public:
     constexpr static int max_vert = 2 * dim;
     /// @brief The type of the collisions.
-    using TCollision = typename SmoothCollision<dim>::Type;
-    using value_type = TCollision;
+    using value_type = SmoothCollision<max_vert>;
 
 public:
     // SmoothCollisions() = default;
-    SmoothCollisions(bool _use_adaptive_dhat = false)
-    : use_adaptive_dhat(_use_adaptive_dhat)
+    SmoothCollisions(bool _use_high_order_quadrature = false, bool _use_adaptive_dhat = false)
+    : use_high_order_quadrature(_use_high_order_quadrature), use_adaptive_dhat(_use_adaptive_dhat)
     {
     }
 
@@ -98,8 +84,9 @@ public:
     }
 
 public:
-    std::vector<value_type> collisions;
+    std::vector<std::shared_ptr<value_type>> collisions;
 
+    const bool use_high_order_quadrature;
     const bool use_adaptive_dhat;
 };
 

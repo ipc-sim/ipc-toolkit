@@ -129,7 +129,7 @@ template <int dim>
 typename SmoothCollisions<dim>::value_type& SmoothCollisions<dim>::operator[](size_t i)
 {
     if (i < collisions.size()) {
-        return collisions[i];
+        return *collisions[i];
     }
     throw std::out_of_range("Collision index is out of range!");
 }
@@ -138,7 +138,7 @@ template <int dim>
 const typename SmoothCollisions<dim>::value_type& SmoothCollisions<dim>::operator[](size_t i) const
 {
     if (i < collisions.size()) {
-        return collisions[i];
+        return *collisions[i];
     }
     throw std::out_of_range("Collision index is out of range!");
 }
@@ -153,24 +153,19 @@ std::string SmoothCollisions<dim>::to_string(
         if constexpr (dim == 2)
         {
             ss << fmt::format(
-                  "ee: {}=({}, {}) {}=({}, {}), w: {:g}, dtype: {}, d: {:g}",
-                  cc.edge0_id, mesh.edges()(cc.edge0_id, 0),
-                  mesh.edges()(cc.edge0_id, 1), cc.edge1_id,
-                  mesh.edges()(cc.edge1_id, 0), mesh.edges()(cc.edge1_id, 1),
-                  cc.weight, int(cc.dtype),
-                  cc.compute_distance(
-                      cc.dof(vertices, mesh.edges(), mesh.faces())));
+                  "ee: {}=({}, {}) {}=({}, {})",
+                  cc->primitive0, mesh.edges()(cc->primitive0, 0),
+                  mesh.edges()(cc->primitive0, 1), cc->primitive1,
+                  mesh.edges()(cc->primitive1, 0), mesh.edges()(cc->primitive1, 1));
         }
         else
         {
             ss << fmt::format(
-                  "ff: {}=({}, {}, {}) {}=({}, {}, {}), w: {:g}, d: {:g}", cc.face0_id,
-                  mesh.faces()(cc.face0_id, 0), mesh.faces()(cc.face0_id, 1),
-                  mesh.faces()(cc.face0_id, 2), cc.face1_id,
-                  mesh.faces()(cc.face1_id, 0), mesh.faces()(cc.face1_id, 1),
-                  mesh.faces()(cc.face1_id, 2), cc.weight,
-                  cc.compute_distance(
-                      cc.dof(vertices, mesh.edges(), mesh.faces())));
+                  "ff: {}=({}, {}, {}) {}=({}, {}, {})", cc->primitive0,
+                  mesh.faces()(cc->primitive0, 0), mesh.faces()(cc->primitive0, 1),
+                  mesh.faces()(cc->primitive0, 2), cc->primitive1,
+                  mesh.faces()(cc->primitive1, 0), mesh.faces()(cc->primitive1, 1),
+                  mesh.faces()(cc->primitive1, 2));
         }
     }
     return ss.str();
