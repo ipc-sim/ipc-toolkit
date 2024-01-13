@@ -272,16 +272,15 @@ public:
     }
 
     /// @brief Get minimum distance to contact of a given vertex in rest config / 2.
-    /// @param vi Vertex ID.
-    /// @note This really returns the square distance, since that is what becomes epsilon.
-    /// @return Minimum distance to contact of vertex vi in rest config / 2 (adapative eps).
-    double min_distance_in_rest_config(const size_t vi) const
+    /// @param ei Edge/Face ID.
+    /// @return Minimum distance to contact of primitive ei in rest config / 2 (adapative eps).
+    double min_distance_in_rest_config(const size_t ei) const
     {
         if (!are_min_distances_initialized()) {
             throw std::runtime_error(
                 "Min distances in rest config not initialized. Call init_contact_distance_map() first.");
         }
-        return min_dist_ratio * m_edge_to_rest_config_contact_dist(vi);
+        return min_dist_ratio * m_edge_to_rest_config_contact_dist(ei);
     }
 
     /// @brief Determinte if min distances in rest configuration have been initialized by calling init_contact_distance_map().
