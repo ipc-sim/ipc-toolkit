@@ -139,7 +139,7 @@ namespace ipc {
         }
 
         const scalar dist_sqr = diff.squaredNorm();
-        const scalar Phi = 1 - diff.dot(normal) / sqrt(dist_sqr * normal_len_sqr); // cross2_sqr<scalar>(diff, normal) / dist_sqr / normal_len_sqr;
+        const scalar Phi = 1 - (p - v0).dot(normal) / sqrt(dist_sqr * normal_len_sqr); // cross2_sqr<scalar>(diff, normal) / dist_sqr / normal_len_sqr;
 
         if (Phi > params.alpha)
             return scalar(0.);

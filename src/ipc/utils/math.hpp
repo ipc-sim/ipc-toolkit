@@ -83,23 +83,23 @@ namespace ipc {
     template <typename scalar>
     scalar L_ns(const scalar &x)
     {
-        if (x < 0)
-            return x;
-        if (x > 1)
-            return x - 1;
-        return scalar(0.);
+        if (x < 0.)
+            return scalar(0.);
+        if (x > 1.)
+            return scalar(1.);
+        return x;
     }
 
     template <typename scalar>
     scalar L_s(const scalar &x, const double &a)
     {
         if (x < 0 && x > -a)
-            return -intpow(x / a, 2) * (2 * a + x);
+            return x - intpow(x / a, 2) * (2 * a + x);
         else
         {
-            scalar z = x - 1;
+            scalar z = x - 1.;
             if (z < a && z > 0)
-                return intpow(z / a, 2) * (2 * a - z);
+                return x - intpow(z / a, 2) * (2 * a - z);
             else
                 return L_ns(x);
         }

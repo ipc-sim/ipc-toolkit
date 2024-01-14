@@ -28,6 +28,7 @@ set(SOURCES
   AutodiffTypes.hpp
   unordered_tuple.hpp
   finitediff.hpp
+  distance_autodiff.hpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})

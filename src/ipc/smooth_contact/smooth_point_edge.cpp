@@ -128,9 +128,8 @@ namespace ipc {
         const Vector2<scalar> pos = p - e0;
         const scalar s = pos.dot(tangent) / len;
         const scalar L = (params.a > 0) ? L_s(s, params.a) : L_ns(s);
-        const Vector2<scalar> diff = p - (e0 + ((s - L) * len) * tangent);
-        const scalar dist_sqr = diff.squaredNorm();
-        const scalar Phi = 1 - cross2<scalar>(diff, tangent) / sqrt(dist_sqr); // intpow(diff.dot(tangent), 2) / dist_sqr;
+        const scalar dist_sqr = (pos - (L * len) * tangent).squaredNorm();
+        const scalar Phi = 1 - cross2<scalar>(pos, tangent) / sqrt(dist_sqr); // intpow(diff.dot(tangent), 2) / dist_sqr;
 
         if (Phi > params.alpha)
             return scalar(0.);
