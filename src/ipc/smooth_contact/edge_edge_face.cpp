@@ -5,9 +5,11 @@
 #include <iostream>
 #include <iterator>
 #include <ipc/utils/logger.hpp>
-// #include <ipc/utils/finitediff.hpp>
-// #include <mutex>
-// std::mutex mut;
+#include <ipc/utils/finitediff.hpp>
+#include <ipc/distance/point_line.hpp>
+#include <ipc/distance/line_line.hpp>
+#include <mutex>
+std::mutex mut;
 
 namespace ipc {
     namespace {
@@ -111,7 +113,7 @@ namespace ipc {
         //             points_[face_to_vertex(2, 1)], points_[face_to_vertex(2, 2)],
         //             normals_[0], normals_[1], normals_[2], normals_[3], params, dtype_);
         //     };
-        //     finite_gradient(positions, f, fgrad);
+        //     finite_gradient(positions, f, fgrad, FD_RULE::CENTRAL, 1e-8);
 
         //     if (out.getGradient().norm() > 1e-8)
         //     {
@@ -119,18 +121,28 @@ namespace ipc {
         //         if (err > 1e-2)
         //         {
         //             mut.lock();
-        //             finite_gradient(positions, f, fgrad1, FD_RULE::LEFT);
-        //             finite_gradient(positions, f, fgrad2, FD_RULE::RIGHT);
+        //             finite_gradient(positions, f, fgrad1, FD_RULE::LEFT, 1e-8);
+        //             finite_gradient(positions, f, fgrad2, FD_RULE::RIGHT, 1e-8);
 
-        //             // logger().error("p {}, t0 {}, t1 {}, t2 {}", p_id, tt * 3 + 0, tt * 3 + 1, tt * 3 + 2);
         //             logger().error("fa0 {} {} {}", face_to_vertex(0, 0), face_to_vertex(0, 1), face_to_vertex(0, 2));
         //             logger().error("fa1 {} {} {}", face_to_vertex(1, 0), face_to_vertex(1, 1), face_to_vertex(1, 2));
         //             logger().error("fb0 {} {} {}", face_to_vertex(2, 0), face_to_vertex(2, 1), face_to_vertex(2, 2));
         //             logger().error("fb1 {} {} {}", face_to_vertex(3, 0), face_to_vertex(3, 1), face_to_vertex(3, 2));
 
+        //             double line_line_distance_ = line_line_distance(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)], points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)]);
+        //             double vert_line_distance_ = std::numeric_limits<double>::max();
+        //             {
+        //                 for (int i : {2, 1})
+        //                     vert_line_distance_ = std::min(vert_line_distance_, 
+        //                     std::min(point_line_distance(points_double[face_to_vertex(0, i)], points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)]),
+        //                              point_line_distance(points_double[face_to_vertex(2, i)], points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)])));
+        //             }
+
         //             Vector3<double> u = points_double[face_to_vertex(0, 1)] - points_double[face_to_vertex(0, 2)];
         //             Vector3<double> v = points_double[face_to_vertex(2, 1)] - points_double[face_to_vertex(2, 2)];
         //             logger().error("distance type {}, parallel threshold {}", static_cast<int>(dtype), u.cross(v).squaredNorm() / u.squaredNorm() / v.squaredNorm());
+        //             logger().error("line line distance {}", line_line_distance_);
+        //             logger().error("vertex line distance {}", vert_line_distance_);
         //             logger().error("err {}, norm {}", err, out.getGradient().norm());
         //             logger().error("positions {}", positions.transpose());
         //             logger().error("grad {}", out.getGradient().transpose());

@@ -1,6 +1,6 @@
 #include <ipc/utils/quadrature.hpp>
 #include <ipc/distance/point_point.hpp>
-#include <ipc/utils/math.hpp>
+#include <ipc/utils/distance_autodiff.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
 #include "smooth_point_face.hpp"
 #include <tbb/parallel_for.h>
@@ -104,42 +104,9 @@ namespace ipc {
         const ParameterType &params,
         const PointTriangleDistanceType &dtype)
     {
-        const Vector3<scalar> tangent1 = v1 - v0;
-        const Vector3<scalar> tangent2 = v2 - v0;
-        const Vector3<scalar> tangent3 = v2 - v1;
-        const Vector3<scalar> normal = tangent1.cross(tangent2);
-        const scalar normal_len_sqr = normal.squaredNorm();
-
-        Vector3<scalar> diff;
-        switch (dtype)
-        {
-        case PointTriangleDistanceType::P_E0:
-            diff = (p - v0) - ((p - v0).dot(tangent1) / tangent1.squaredNorm()) * tangent1;
-            break;
-        case PointTriangleDistanceType::P_E1:
-            diff = (p - v1) - ((p - v1).dot(tangent3) / tangent3.squaredNorm()) * tangent3;
-            break;
-        case PointTriangleDistanceType::P_E2:
-            diff = (p - v0) - ((p - v0).dot(tangent2) / tangent2.squaredNorm()) * tangent2;
-            break;
-        case PointTriangleDistanceType::P_T0:
-            diff = p - v0;
-            break;
-        case PointTriangleDistanceType::P_T1:
-            diff = p - v1;
-            break;
-        case PointTriangleDistanceType::P_T2:
-            diff = p - v2;
-            break;
-        case PointTriangleDistanceType::P_T:
-            diff = (normal.dot(p - v0) / normal_len_sqr) * normal;
-            break;
-        default:
-            assert(false);
-        }
-
-        const scalar dist_sqr = diff.squaredNorm();
-        const scalar Phi = 1 - (p - v0).dot(normal) / sqrt(dist_sqr * normal_len_sqr); // cross2_sqr<scalar>(diff, normal) / dist_sqr / normal_len_sqr;
+        const Vector3<scalar> normal = (v1 - v0).cross(v2 - v0).normalized();
+        const scalar dist_sqr = point_triangle_distance(p, v0, v1, v2, dtype);
+        const scalar Phi = 1 - (p - v0).dot(normal) / sqrt(dist_sqr); // cross2_sqr<scalar>(diff, normal) / dist_sqr / normal_len_sqr;
 
         if (Phi > params.alpha)
             return scalar(0.);

@@ -13,6 +13,21 @@ namespace ipc {
     }
 
     template <typename scalar>
+    scalar point_edge_sqr_distance(
+        const Eigen::Ref<const VectorMax3<scalar>>& p,
+        const Eigen::Ref<const VectorMax3<scalar>>& e0,
+        const Eigen::Ref<const VectorMax3<scalar>>& e1)
+    {
+        VectorMax3<scalar> t = e1 - e0;
+        const scalar len = t.norm();
+        t = t / len;
+
+        const VectorMax3<scalar> pos = p - e0;
+        const scalar s = pos.dot(t) / len;
+        return (pos - (L_ns(s) * len) * t).squaredNorm();
+    }
+
+    template <typename scalar>
     scalar line_line_sqr_distance(
         const Eigen::Ref<const Vector3<scalar>>& ea0,
         const Eigen::Ref<const Vector3<scalar>>& ea1,
@@ -31,6 +46,53 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& e1)
     {
         return (e0 - p).cross(e1 - p).squaredNorm() / (e1 - e0).squaredNorm();
+    }
+
+    template <typename scalar>
+    scalar point_plane_sqr_distance(
+        const Eigen::Ref<const Vector3<scalar>>& p,
+        const Eigen::Ref<const Vector3<scalar>>& f0,
+        const Eigen::Ref<const Vector3<scalar>>& f1,
+        const Eigen::Ref<const Vector3<scalar>>& f2)
+    {
+        const Vector3<scalar> normal = (f2 - f0).cross(f1 - f0).normalized();
+        return intpow(normal.dot(p - f0), 2);
+    }
+
+    template <typename scalar>
+    scalar point_triangle_distance(
+        const Eigen::Ref<const Eigen::Vector3<scalar>>& p,
+        const Eigen::Ref<const Eigen::Vector3<scalar>>& t0,
+        const Eigen::Ref<const Eigen::Vector3<scalar>>& t1,
+        const Eigen::Ref<const Eigen::Vector3<scalar>>& t2,
+        PointTriangleDistanceType dtype)
+    {
+        switch (dtype) {
+        case PointTriangleDistanceType::P_T0:
+            return point_point_sqr_distance<scalar>(p, t0);
+
+        case PointTriangleDistanceType::P_T1:
+            return point_point_sqr_distance<scalar>(p, t1);
+
+        case PointTriangleDistanceType::P_T2:
+            return point_point_sqr_distance<scalar>(p, t2);
+
+        case PointTriangleDistanceType::P_E0:
+            return point_line_sqr_distance<scalar>(p, t0, t1);
+
+        case PointTriangleDistanceType::P_E1:
+            return point_line_sqr_distance<scalar>(p, t1, t2);
+
+        case PointTriangleDistanceType::P_E2:
+            return point_line_sqr_distance<scalar>(p, t2, t0);
+
+        case PointTriangleDistanceType::P_T:
+            return point_plane_sqr_distance<scalar>(p, t0, t1, t2);
+
+        default:
+            throw std::invalid_argument(
+                "Invalid distance type for point-triangle distance!");
+        }
     }
 
     template <typename scalar>
