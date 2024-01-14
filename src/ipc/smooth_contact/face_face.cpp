@@ -79,12 +79,13 @@ namespace ipc {
         std::array<Vector3<scalar>, 6> points = slice_positions<scalar>(positions);
         std::array<Vector3<double>, 6> points_double = slice_positions<double>(positions);
         scalar out = scalar(0.);
-        
+
+        const scalar area = (points[2] - points[0]).cross(points[1] - points[0]).norm() *
+                        (points[5] - points[3]).cross(points[4] - points[3]).norm() / scalar(4.);
+
         for (const int t : {0, 1})
         {
             const int tt = 1 - t;
-            const scalar area = (points[t * 3 + 2] - points[t * 3 + 0]).cross(points[t * 3 + 1] - points[t * 3 + 0]).norm() / scalar(2.);
-            
             const std::array<long, 3> ttv = {{vertices[tt * 3 + 0], vertices[tt * 3 + 1], vertices[tt * 3 + 2]}};
             
             // face - vertex potential
@@ -178,8 +179,8 @@ namespace ipc {
         const Vector<double, -1, 24>& positions, 
         const ParameterType &params) const
     {
-        DiffScalarBase::setVariableCount(18);
-        using Diff=AutodiffScalarGrad<18>;
+        DiffScalarBase::setVariableCount(24);
+        using Diff=AutodiffScalarGrad<24>;
 
         // Eigen::VectorXd fgrad;
         // {
@@ -215,8 +216,8 @@ namespace ipc {
         const ParameterType &params,
         const bool project_hessian_to_psd) const
     {
-        DiffScalarBase::setVariableCount(18);
-        using Diff=AutodiffScalarHessian<18>;
+        DiffScalarBase::setVariableCount(24);
+        using Diff=AutodiffScalarHessian<24>;
         return evaluate_quadrature<Diff>(positions, params).getHessian().topLeftCorner(18, 18);
     }
 }

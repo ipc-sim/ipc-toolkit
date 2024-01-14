@@ -43,15 +43,15 @@ namespace ipc {
         return scalar(1.);
     }
 
-    // template <typename scalar>
-    // scalar smooth_heaviside(const scalar &x)
-    // {
-    //     if (x <= -1)
-    //         return scalar(0.);
-    //     if (x >= 0)
-    //         return scalar(1.);
-    //     return (1. - 2 * x) * intpow(x + 1., 2);
-    // }
+    template <typename scalar>
+    scalar smooth_heaviside(const scalar &x)
+    {
+        if (x <= -1)
+            return scalar(0.);
+        if (x >= 0)
+            return scalar(1.);
+        return (1. - 2 * x) * intpow(x + 1., 2);
+    }
 
     // template <typename scalar>
     // scalar smooth_heaviside(const scalar &x)
@@ -63,15 +63,15 @@ namespace ipc {
     //     return (0.5 - x / 4.) * intpow(x + 1., 2);
     // }
 
-    template <typename scalar>
-    scalar smooth_heaviside(const scalar &x)
-    {
-        if (x <= 0)
-            return scalar(0.);
-        if (x >= 1)
-            return scalar(1.);
-        return (3. - 2. * x) * intpow(x, 2);
-    }
+    // template <typename scalar>
+    // scalar smooth_heaviside(const scalar &x)
+    // {
+    //     if (x <= 0)
+    //         return scalar(0.);
+    //     if (x >= 1)
+    //         return scalar(1.);
+    //     return (3. - 2. * x) * intpow(x, 2);
+    // }
 
     // support is [0, 1]
     template <typename scalar>

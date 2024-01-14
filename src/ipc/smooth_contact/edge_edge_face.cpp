@@ -89,7 +89,8 @@ namespace ipc {
         std::array<Vector3<double>, 8> points_double = slice_positions<double>(positions);
         scalar out = scalar(0.);
 
-        const EdgeEdgeDistanceType dtype = edge_edge_distance_type(points_double[0], points_double[1], points_double[2], points_double[3]);
+        const EdgeEdgeDistanceType dtype = edge_edge_distance_type(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)],
+            points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)]);
 
         std::array<Vector3<scalar>, 4> normals;
         for (int i = 0; i < 4; i++)

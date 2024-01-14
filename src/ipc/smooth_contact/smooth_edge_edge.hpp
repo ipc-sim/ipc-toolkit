@@ -3,6 +3,7 @@
 #include "smooth_point_face.hpp"
 #include <ipc/utils/math.hpp>
 #include <ipc/distance/distance_type.hpp>
+#include <ipc/utils/logger.hpp>
 
 namespace ipc {
     template <typename scalar>
@@ -83,7 +84,7 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& e1)
     {
         const Vector3<scalar> tangent = (e1 - e0).normalized();
-        return (p - p.dot(tangent) * tangent);
+        return (p - e0) - (p - e0).dot(tangent) * tangent;
     }
 
     template <typename scalar>
@@ -189,17 +190,24 @@ namespace ipc {
         const scalar mollifier_threshold = 1e-3 * u.squaredNorm() * v.squaredNorm();
         const scalar cross_sqr_norm = u.cross(v).squaredNorm();
         const scalar mollifier_val = mollifier<scalar>(cross_sqr_norm / mollifier_threshold);
+        Vector3<scalar> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype); // from edge a to edge b
         const scalar dist_sqr = edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype); // get rid of me after verified!
-        const Vector3<scalar> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype); // from edge a to edge b
         
         if constexpr (std::is_same<scalar, double>::value)
-            assert((direc.squaredNorm() - dist_sqr) < 1e-12 * std::max(1., dist_sqr));
+        {
+            assert ((direc.squaredNorm() - dist_sqr) < 1e-12 * std::max(1., dist_sqr));
+        }
 
         if (dist_sqr > params.eps)
             return scalar(0.);
         
-        return 0.5 * u.norm() * v.norm() * inv_barrier<scalar>(dist_sqr / params.eps, params.r) * mollifier_val * (
-                smooth_heaviside<scalar>(-direc.dot(fa0_normal.cross(u).normalized())) * smooth_heaviside<scalar>(-direc.dot(fa1_normal.cross(-u).normalized())) + 
-                smooth_heaviside<scalar>(direc.dot(fb0_normal.cross(v).normalized())) * smooth_heaviside<scalar>(direc.dot(fb1_normal.cross(-v).normalized())));
+        // vanishes if Phi < -alpha
+        direc = direc / sqrt(dist_sqr);
+        const scalar Phia0 = -direc.dot(fa0_normal.cross(u).normalized()) / params.alpha;
+        const scalar Phia1 = -direc.dot(fa1_normal.cross(-u).normalized()) / params.alpha;
+        const scalar Phib0 = direc.dot(fb0_normal.cross(v).normalized()) / params.alpha;
+        const scalar Phib1 = direc.dot(fb1_normal.cross(-v).normalized()) / params.alpha;
+
+        return 0.5 * u.norm() * v.norm() * inv_barrier<scalar>(dist_sqr / params.eps, params.r) * mollifier_val * (smooth_heaviside<scalar>(Phia0) * smooth_heaviside<scalar>(Phia1) + smooth_heaviside<scalar>(Phib0) * smooth_heaviside<scalar>(Phib1));
     }
 }
