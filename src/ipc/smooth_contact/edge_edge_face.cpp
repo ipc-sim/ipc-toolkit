@@ -116,15 +116,23 @@ namespace ipc {
 
         const EdgeEdgeDistanceType dtype = edge_edge_distance_type(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)],
             points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)]);
-
-        std::array<Vector3<scalar>, 4> normals;
-        for (int i = 0; i < 4; i++)
-            normals[i] = (points[face_to_vertex(i, 1)] - points[face_to_vertex(i, 0)]).cross(points[face_to_vertex(i, 2)] - points[face_to_vertex(i, 0)]).normalized();
         
-        scalar out = smooth_edge_edge_potential_single_point<scalar>(
+        std::array<PointEdgeDistanceType, 4> edge_dtypes;
+        edge_dtypes.fill(PointEdgeDistanceType::AUTO);
+        int id = 0;
+        for (int e : {0, 1})
+        {
+            for (int v : {0, 1})
+            {
+                edge_dtypes[id++] = point_edge_distance_type(points_double[face_to_vertex(2*e, v+1)], points_double[face_to_vertex(2*(1-e), 1)], points_double[face_to_vertex(2*(1-e), 2)]);
+            }
+        }
+        
+        const scalar out = smooth_edge_edge_potential_single_point_efficient<scalar>(
             points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
-            normals[0], normals[1], normals[2], normals[3], params, dtype);
+            points[face_to_vertex(0, 0)], points[face_to_vertex(1, 0)],
+            points[face_to_vertex(2, 0)], points[face_to_vertex(3, 0)], params, dtype, edge_dtypes);
         
         // if constexpr (std::is_same<scalar, AutodiffScalarGrad<24>>::value)
         // {
