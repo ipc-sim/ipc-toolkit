@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iterator>
 #include <ipc/utils/logger.hpp>
-#include <ipc/utils/finitediff.hpp>
+// #include <ipc/utils/finitediff.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/line_line.hpp>
 // #include <mutex>
