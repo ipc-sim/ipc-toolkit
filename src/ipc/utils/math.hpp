@@ -141,4 +141,20 @@ namespace ipc {
         x /= det;
         return x;
     }
+
+    template <class T, int nvert, int dim>
+    std::array<Vector<T, dim>, nvert> slice_positions(const Vector<double, nvert*dim> &positions)
+    {
+        std::array<Vector<T, dim>, nvert> points;
+        points.fill(Vector<T, dim>::Zero(dim));
+        
+        for (int i = 0, id = 0; i < nvert; i++)
+            for (int d = 0; d < dim; d++, id++)
+                if constexpr (std::is_same<T, double>::value)
+                    points[i](d) = positions(id);
+                else
+                    points[i](d) = T(id, positions(id));
+
+        return points;
+    }
 }

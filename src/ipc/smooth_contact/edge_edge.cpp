@@ -1,5 +1,6 @@
 #include "edge_edge.hpp"
 #include "smooth_point_edge.hpp"
+#include <ipc/utils/math.hpp>
 #include <ipc/utils/quadrature.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
 
@@ -7,28 +8,11 @@
 #include <tbb/blocked_range.h>
 
 namespace ipc {
-    namespace {
-        template <class T>
-        std::array<Vector2<T>, 4> slice_positions(const Vector8d &positions)
-        {
-            std::array<Vector2<T>, 4> points;
-            points.fill(Vector2<T>::Zero(2));
-            
-            for (int i = 0, id = 0; i < 4; i++)
-                for (int d = 0; d < 2; d++, id++)
-                    if constexpr (std::is_same<T, double>::value)
-                        points[i](d) = positions(id);
-                    else
-                        points[i](d) = T(id, positions(id));
-
-            return points;
-        }
-    }
 
     template<class scalar>
     scalar SmoothEdgeEdgeCollision::evaluate_quadrature(const Vector8d& positions, ParameterType params) const
     {
-        std::array<Vector2<scalar>, 4> points = slice_positions<scalar>(positions);
+        std::array<Vector2<scalar>, 4> points = slice_positions<scalar, 4, 2>(positions);
 
         scalar val = scalar(0.);
         if (params.n_quadrature > 1)

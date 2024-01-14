@@ -8,64 +8,6 @@
 // std::mutex mut;
 
 namespace ipc {
-    namespace {
-        template <class T>
-        std::array<Vector3<T>, 6> slice_positions(const Vector<double, 18> &positions)
-        {
-            std::array<Vector3<T>, 6> points;
-            points.fill(Vector3<T>::Zero(3));
-            
-            for (int i = 0, id = 0; i < 6; i++)
-                for (int d = 0; d < 3; d++, id++)
-                    if constexpr (std::is_same<T, double>::value)
-                        points[i](d) = positions(id);
-                    else
-                        points[i](d) = T(id, positions(id));
-
-            return points;
-        }
-
-        // enum class FD_RULE { central, left, right };
-        
-        // void finite_gradient(const Eigen::VectorXd& x, const std::function<double(const Eigen::VectorXd&)> &f, Eigen::VectorXd &grad, FD_RULE rule)
-        // {
-        //     const double eps = 1e-7;
-        //     grad.setZero(x.size());
-        //     switch (rule)
-        //     {
-        //     case FD_RULE::central:
-        //         for (int i = 0; i < x.size(); i++)
-        //             for (int d : {-1, 1})
-        //             {
-        //                 auto y = x;
-        //                 y(i) += d * eps;
-        //                 grad(i) += d * f(y) / (2*eps);
-        //             }
-        //         break;
-        //     case FD_RULE::left:
-        //         for (int i = 0; i < x.size(); i++)
-        //         {
-        //                 auto y = x;
-        //                 grad(i) += f(y) / eps;
-        //                 y(i) -= eps;
-        //                 grad(i) -= f(y) / eps;
-        //         }
-        //         break;
-        //     case FD_RULE::right:
-        //         for (int i = 0; i < x.size(); i++)
-        //         {
-        //                 auto y = x;
-        //                 grad(i) -= f(y) / eps;
-        //                 y(i) += eps;
-        //                 grad(i) += f(y) / eps;
-        //         }
-        //         break;
-        //     default:
-        //     assert(false);
-        //     }
-        // }
-    }
-
     std::array<long, 8> SmoothFaceFaceCollision::vertex_ids(
         const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const
     {
@@ -76,8 +18,8 @@ namespace ipc {
     template <typename scalar> 
     scalar SmoothFaceFaceCollision::evaluate_quadrature(const Vector<double, 18>& positions, const ParameterType &params) const
     {
-        std::array<Vector3<scalar>, 6> points = slice_positions<scalar>(positions);
-        std::array<Vector3<double>, 6> points_double = slice_positions<double>(positions);
+        std::array<Vector3<scalar>, 6> points = slice_positions<scalar, 6, 3>(positions);
+        std::array<Vector3<double>, 6> points_double = slice_positions<double, 6, 3>(positions);
         scalar out = scalar(0.);
 
         const scalar area = (points[2] - points[0]).cross(points[1] - points[0]).norm() *

@@ -5,25 +5,12 @@
 #include <iostream>
 #include <iterator>
 #include <ipc/utils/logger.hpp>
+// #include <ipc/utils/finitediff.hpp>
+// #include <mutex>
+// std::mutex mut;
 
 namespace ipc {
     namespace {
-        template <class T>
-        std::array<Vector3<T>, 8> slice_positions(const Vector<double, 24> &positions)
-        {
-            std::array<Vector3<T>, 8> points;
-            points.fill(Vector3<T>::Zero(3));
-            
-            for (int i = 0, id = 0; i < 8; i++)
-                for (int d = 0; d < 3; d++, id++)
-                    if constexpr (std::is_same<T, double>::value)
-                        points[i](d) = positions(id);
-                    else
-                        points[i](d) = T(id, positions(id));
-
-            return points;
-        }
-
         template <typename Iter>
         size_t index_of(Iter first, Iter last, const typename std::iterator_traits<Iter>::value_type& x)
         {
@@ -85,9 +72,8 @@ namespace ipc {
     template <typename scalar> 
     scalar SmoothEdgeEdge3Collision::evaluate_quadrature(const Vector<double, 24>& positions, const ParameterType &params) const
     {
-        std::array<Vector3<scalar>, 8> points = slice_positions<scalar>(positions);
-        std::array<Vector3<double>, 8> points_double = slice_positions<double>(positions);
-        scalar out = scalar(0.);
+        std::array<Vector3<scalar>, 8> points = slice_positions<scalar, 8, 3>(positions);
+        std::array<Vector3<double>, 8> points_double = slice_positions<double, 8, 3>(positions);
 
         const EdgeEdgeDistanceType dtype = edge_edge_distance_type(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)],
             points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)]);
@@ -96,10 +82,65 @@ namespace ipc {
         for (int i = 0; i < 4; i++)
             normals[i] = (points[face_to_vertex(i, 1)] - points[face_to_vertex(i, 0)]).cross(points[face_to_vertex(i, 2)] - points[face_to_vertex(i, 0)]).normalized();
         
-        out += smooth_edge_edge_potential_single_point<scalar>(
+        scalar out = smooth_edge_edge_potential_single_point<scalar>(
             points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
             normals[0], normals[1], normals[2], normals[3], params, dtype);
+        
+        // if constexpr (std::is_same<scalar, AutodiffScalarGrad<24>>::value)
+        // {
+        //     std::unordered_set<long> vert_set;
+        //     for (auto v : vertices)
+        //         vert_set.insert(v);
+        //     if (vert_set.size() < vertices.size())
+        //         return out;
+
+        //     Eigen::VectorXd fgrad, fgrad1, fgrad2;
+        //     auto f = [&](const Eigen::VectorXd& x) {
+        //         auto points_ = slice_positions<double, 8, 3>(x);
+        //         const EdgeEdgeDistanceType dtype_ = edge_edge_distance_type(
+        //             points_[face_to_vertex(0, 1)], points_[face_to_vertex(0, 2)],
+        //             points_[face_to_vertex(2, 1)], points_[face_to_vertex(2, 2)]);
+
+        //         std::array<Vector3<double>, 4> normals_;
+        //         for (int i = 0; i < 4; i++)
+        //             normals_[i] = (points_[face_to_vertex(i, 1)] - points_[face_to_vertex(i, 0)]).cross(points_[face_to_vertex(i, 2)] - points_[face_to_vertex(i, 0)]).normalized();
+                
+        //         return smooth_edge_edge_potential_single_point<double>(
+        //             points_[face_to_vertex(0, 1)], points_[face_to_vertex(0, 2)],
+        //             points_[face_to_vertex(2, 1)], points_[face_to_vertex(2, 2)],
+        //             normals_[0], normals_[1], normals_[2], normals_[3], params, dtype_);
+        //     };
+        //     finite_gradient(positions, f, fgrad);
+
+        //     if (out.getGradient().norm() > 1e-8)
+        //     {
+        //         double err = (out.getGradient() - fgrad).norm() / out.getGradient().norm();
+        //         if (err > 1e-2)
+        //         {
+        //             mut.lock();
+        //             finite_gradient(positions, f, fgrad1, FD_RULE::LEFT);
+        //             finite_gradient(positions, f, fgrad2, FD_RULE::RIGHT);
+
+        //             // logger().error("p {}, t0 {}, t1 {}, t2 {}", p_id, tt * 3 + 0, tt * 3 + 1, tt * 3 + 2);
+        //             logger().error("fa0 {} {} {}", face_to_vertex(0, 0), face_to_vertex(0, 1), face_to_vertex(0, 2));
+        //             logger().error("fa1 {} {} {}", face_to_vertex(1, 0), face_to_vertex(1, 1), face_to_vertex(1, 2));
+        //             logger().error("fb0 {} {} {}", face_to_vertex(2, 0), face_to_vertex(2, 1), face_to_vertex(2, 2));
+        //             logger().error("fb1 {} {} {}", face_to_vertex(3, 0), face_to_vertex(3, 1), face_to_vertex(3, 2));
+
+        //             Vector3<double> u = points_double[face_to_vertex(0, 1)] - points_double[face_to_vertex(0, 2)];
+        //             Vector3<double> v = points_double[face_to_vertex(2, 1)] - points_double[face_to_vertex(2, 2)];
+        //             logger().error("distance type {}, parallel threshold {}", static_cast<int>(dtype), u.cross(v).squaredNorm() / u.squaredNorm() / v.squaredNorm());
+        //             logger().error("err {}, norm {}", err, out.getGradient().norm());
+        //             logger().error("positions {}", positions.transpose());
+        //             logger().error("grad {}", out.getGradient().transpose());
+        //             logger().error("fgrad {}", fgrad.transpose());
+        //             logger().error("fgrad1 {}", fgrad1.transpose());
+        //             logger().error("fgrad2 {}", fgrad2.transpose());
+        //             mut.unlock();
+        //         }
+        //     }
+        // }
 
         return out;
     }
