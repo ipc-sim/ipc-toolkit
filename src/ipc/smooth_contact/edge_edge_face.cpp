@@ -1,5 +1,4 @@
 #include "edge_edge_face.hpp"
-#include "smooth_point_face.hpp"
 #include "smooth_edge_edge.hpp"
 #include <ipc/utils/AutodiffTypes.hpp>
 #include <iostream>
@@ -8,11 +7,49 @@
 #include <ipc/utils/finitediff.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/line_line.hpp>
-#include <mutex>
-std::mutex mut;
+// #include <mutex>
+// std::mutex mut_edge;
 
 namespace ipc {
     namespace {
+        enum class FD_RULE { CENTRAL, LEFT, RIGHT };
+        
+        void my_finite_gradient(const Eigen::VectorXd& x, const std::function<double(const Eigen::VectorXd&)> &f, Eigen::VectorXd &grad, FD_RULE rule = FD_RULE::CENTRAL, const double eps = 1e-7)
+        {
+            grad.setZero(x.size());
+            switch (rule)
+            {
+            case FD_RULE::CENTRAL:
+                for (int i = 0; i < x.size(); i++)
+                    for (int d : {-1, 1})
+                    {
+                        auto y = x;
+                        y(i) += d * eps;
+                        grad(i) += d * f(y) / (2*eps);
+                    }
+                break;
+            case FD_RULE::LEFT:
+                for (int i = 0; i < x.size(); i++)
+                {
+                        auto y = x;
+                        grad(i) += f(y) / eps;
+                        y(i) -= eps;
+                        grad(i) -= f(y) / eps;
+                }
+                break;
+            case FD_RULE::RIGHT:
+                for (int i = 0; i < x.size(); i++)
+                {
+                        auto y = x;
+                        grad(i) -= f(y) / eps;
+                        y(i) += eps;
+                        grad(i) += f(y) / eps;
+                }
+                break;
+            default:
+            assert(false);
+            }
+        }
         template <typename Iter>
         size_t index_of(Iter first, Iter last, const typename std::iterator_traits<Iter>::value_type& x)
         {
@@ -113,16 +150,16 @@ namespace ipc {
         //             points_[face_to_vertex(2, 1)], points_[face_to_vertex(2, 2)],
         //             normals_[0], normals_[1], normals_[2], normals_[3], params, dtype_);
         //     };
-        //     finite_gradient(positions, f, fgrad, FD_RULE::CENTRAL, 1e-8);
+        //     my_finite_gradient(positions, f, fgrad, FD_RULE::CENTRAL, 1e-8);
 
         //     if (out.getGradient().norm() > 1e-8)
         //     {
         //         double err = (out.getGradient() - fgrad).norm() / out.getGradient().norm();
-        //         if (err > 1e-2)
+        //         if (err > 1e-4)
         //         {
-        //             mut.lock();
-        //             finite_gradient(positions, f, fgrad1, FD_RULE::LEFT, 1e-8);
-        //             finite_gradient(positions, f, fgrad2, FD_RULE::RIGHT, 1e-8);
+        //             mut_edge.lock();
+        //             my_finite_gradient(positions, f, fgrad1, FD_RULE::LEFT, 1e-8);
+        //             my_finite_gradient(positions, f, fgrad2, FD_RULE::RIGHT, 1e-8);
 
         //             logger().error("fa0 {} {} {}", face_to_vertex(0, 0), face_to_vertex(0, 1), face_to_vertex(0, 2));
         //             logger().error("fa1 {} {} {}", face_to_vertex(1, 0), face_to_vertex(1, 1), face_to_vertex(1, 2));
@@ -149,7 +186,7 @@ namespace ipc {
         //             logger().error("fgrad {}", fgrad.transpose());
         //             logger().error("fgrad1 {}", fgrad1.transpose());
         //             logger().error("fgrad2 {}", fgrad2.transpose());
-        //             mut.unlock();
+        //             mut_edge.unlock();
         //         }
         //     }
         // }

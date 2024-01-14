@@ -4,10 +4,51 @@
 #include <ipc/utils/AutodiffTypes.hpp>
 #include <iostream>
 #include <ipc/utils/logger.hpp>
+#include <ipc/utils/finitediff.hpp>
 // #include <mutex>
-// std::mutex mut;
+// std::mutex mut_face;
 
 namespace ipc {
+    namespace {
+    enum class FD_RULE { CENTRAL, LEFT, RIGHT };
+    
+    void my_finite_gradient(const Eigen::VectorXd& x, const std::function<double(const Eigen::VectorXd&)> &f, Eigen::VectorXd &grad, FD_RULE rule = FD_RULE::CENTRAL, const double eps = 1e-7)
+    {
+        grad.setZero(x.size());
+        switch (rule)
+        {
+        case FD_RULE::CENTRAL:
+            for (int i = 0; i < x.size(); i++)
+                for (int d : {-1, 1})
+                {
+                    auto y = x;
+                    y(i) += d * eps;
+                    grad(i) += d * f(y) / (2*eps);
+                }
+            break;
+        case FD_RULE::LEFT:
+            for (int i = 0; i < x.size(); i++)
+            {
+                    auto y = x;
+                    grad(i) += f(y) / eps;
+                    y(i) -= eps;
+                    grad(i) -= f(y) / eps;
+            }
+            break;
+        case FD_RULE::RIGHT:
+            for (int i = 0; i < x.size(); i++)
+            {
+                    auto y = x;
+                    grad(i) -= f(y) / eps;
+                    y(i) += eps;
+                    grad(i) += f(y) / eps;
+            }
+            break;
+        default:
+        assert(false);
+        }
+    }
+    }
     std::array<long, 8> SmoothFaceFaceCollision::vertex_ids(
         const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const
     {
@@ -39,43 +80,45 @@ namespace ipc {
 
                 const PointTriangleDistanceType dtype = point_triangle_distance_type(
                     points_double[p_id], points_double[tt * 3 + 0], points_double[tt * 3 + 1], points_double[tt * 3 + 2]);
-                out += (area / scalar(3.)) * smooth_point_face_potential_single_point<scalar>(
+                const scalar tmp = smooth_point_face_potential_single_point<scalar>(
                     points[p_id], points[tt * 3 + 0], points[tt * 3 + 1], points[tt * 3 + 2], params, dtype);
+                out += (area / scalar(3.)) * tmp;
                 
                 // for debugging derivatives using finite difference
-                // if constexpr (std::is_same<scalar, AutodiffScalarGrad<18>>::value)
+                // if constexpr (std::is_same<scalar, AutodiffScalarGrad<24>>::value)
                 // {
-                //     mut.lock();
                 //     Eigen::VectorXd fgrad, fgrad1, fgrad2;
                 //     auto f = [&](const Eigen::VectorXd& x) {
-                //         std::array<Vector3<double>, 6> points_ = slice_positions<double>(x);
+                //         std::array<Vector3<double>, 6> points_ = slice_positions<double, 6, 3>(x);
                 //         const PointTriangleDistanceType dtype_ = point_triangle_distance_type(
                 //             x.segment<3>(3 * p_id), x.segment<3>(3 * (tt * 3 + 0)),
                 //             x.segment<3>(3 * (tt * 3 + 1)), x.segment<3>(3 * (tt * 3 + 2)));
                 //         return smooth_point_face_potential_single_point<double>(
                 //         points_[p_id], points_[tt * 3 + 0], points_[tt * 3 + 1], points_[tt * 3 + 2], params, dtype_);
                 //     };
-                //     finite_gradient(positions, f, fgrad, FD_RULE::central);
+                //     my_finite_gradient(positions, f, fgrad, FD_RULE::CENTRAL, 1e-8);
 
-                //     if (tmp.getGradient().norm() > 1e-8)
+                //     Eigen::VectorXd grad = tmp.getGradient().head(18);
+                //     if (grad.norm() > 1e-8)
                 //     {
-                //         double err = (tmp.getGradient() - fgrad).norm() / tmp.getGradient().norm();
-                //         if (err > 1e-3)
+                //         double err = (grad - fgrad).norm() / grad.norm();
+                //         if (err > 1e-4)
                 //         {
-                //             finite_gradient(positions, f, fgrad1, FD_RULE::left);
-                //             finite_gradient(positions, f, fgrad2, FD_RULE::right);
+                //             mut_face.lock();
+                //             my_finite_gradient(positions, f, fgrad1, FD_RULE::LEFT, 1e-8);
+                //             my_finite_gradient(positions, f, fgrad2, FD_RULE::RIGHT, 1e-8);
 
                 //             logger().error("p {}, t0 {}, t1 {}, t2 {}", p_id, tt * 3 + 0, tt * 3 + 1, tt * 3 + 2);
                 //             logger().error("distance type {}", static_cast<int>(dtype));
-                //             logger().error("err {}, norm {}", err, tmp.getGradient().norm());
+                //             logger().error("err {}, norm {}", err, grad.norm());
                 //             logger().error("positions {}", positions.transpose());
-                //             logger().error("grad {}", tmp.getGradient().transpose());
+                //             logger().error("grad {}", grad.transpose());
                 //             logger().error("fgrad {}", fgrad.transpose());
                 //             logger().error("fgrad1 {}", fgrad1.transpose());
                 //             logger().error("fgrad2 {}", fgrad2.transpose());
+                //             mut_face.unlock();
                 //         }
                 //     }
-                //     mut.unlock();
                 // }
             }
         }
@@ -129,7 +172,7 @@ namespace ipc {
         //     auto f = [&](const Eigen::VectorXd& x) {
         //         return evaluate_quadrature<double>(x, params);
         //     };
-        //     finite_gradient(positions, f, fgrad);
+        //     my_finite_gradient(positions, f, fgrad);
         // }
 
         Vector<double, -1, 24> grad = evaluate_quadrature<Diff>(positions, params).getGradient().head(18);

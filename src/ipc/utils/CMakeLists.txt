@@ -27,7 +27,7 @@ set(SOURCES
   autodiff.h
   AutodiffTypes.hpp
   unordered_tuple.hpp
-  finitediff.hpp
+  # finitediff.hpp
   distance_autodiff.hpp
 )
 
