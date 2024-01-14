@@ -56,7 +56,7 @@ TEST_CASE("Smooth friction gradient", "[friction][mollifier]")
         fd_f2);
     // fd_f2 /= x;
 
-    double f2 = ipc::df1_x_minus_f1_over_x3(x, epsv_times_h);
+    double f2 = ipc::df1_SF_x_minus_f1_SF_over_x3(x, epsv_times_h);
 
     CHECK(f2 * x == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
 }

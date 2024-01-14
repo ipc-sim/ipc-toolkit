@@ -10,7 +10,6 @@ class DistanceBasedPotential : public Potential<Collisions> {
     using Super = Potential<Collisions>;
 
 public:
-    DistanceBasedPotential() { }
     virtual ~DistanceBasedPotential() { }
 
     // -- Cumulative methods ---------------------------------------------------

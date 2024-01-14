@@ -7,6 +7,8 @@ set(SOURCES
   friction_potential.hpp
   potential.hpp
   potential.tpp
+  tangential_potential.cpp
+  tangential_potential.hpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})
