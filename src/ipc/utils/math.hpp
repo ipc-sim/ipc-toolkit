@@ -43,6 +43,10 @@ namespace ipc {
         return scalar(1.);
     }
 
+    enum class HEAVISIDE_TYPE {
+        ZERO, ONE, VARIANT
+    };
+
     template <typename scalar>
     scalar smooth_heaviside(const scalar &x)
     {

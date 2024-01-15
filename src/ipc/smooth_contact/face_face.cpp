@@ -173,8 +173,8 @@ namespace ipc {
         const Vector<double, -1, 24>& positions, 
         const ParameterType &params) const
     {
-        DiffScalarBase::setVariableCount(24);
-        using Diff=AutodiffScalarGrad<24>;
+        DiffScalarBase::setVariableCount(18);
+        using Diff=AutodiffScalarGrad<18>;
 
         // Eigen::VectorXd fgrad;
         // {
@@ -184,7 +184,7 @@ namespace ipc {
         //     my_finite_gradient(positions, f, fgrad);
         // }
 
-        Vector<double, -1, 24> grad = evaluate_quadrature<Diff>(positions, params).getGradient().head(18);
+        Vector<double, -1, 24> grad = evaluate_quadrature<Diff>(positions, params).getGradient();
 
         // if (grad.norm() > 1e-8)
         // {
@@ -210,8 +210,8 @@ namespace ipc {
         const ParameterType &params,
         const bool project_hessian_to_psd) const
     {
-        DiffScalarBase::setVariableCount(24);
-        using Diff=AutodiffScalarHessian<24>;
-        return evaluate_quadrature<Diff>(positions, params).getHessian().topLeftCorner(18, 18);
+        DiffScalarBase::setVariableCount(18);
+        using Diff=AutodiffScalarHessian<18>;
+        return evaluate_quadrature<Diff>(positions, params).getHessian();
     }
 }

@@ -116,15 +116,48 @@ namespace ipc {
 
         const EdgeEdgeDistanceType dtype = edge_edge_distance_type(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)],
             points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)]);
+        const Eigen::Vector3d direc = edge_edge_closest_point_direction<double>(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)], points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)], dtype).normalized();
         
         std::array<PointEdgeDistanceType, 4> edge_dtypes;
-        edge_dtypes.fill(PointEdgeDistanceType::AUTO);
-        int id = 0;
-        for (int e : {0, 1})
         {
-            for (int v : {0, 1})
+            edge_dtypes.fill(PointEdgeDistanceType::AUTO);
+            int id = 0;
+            for (int e : {0, 1})
+                for (int v : {0, 1})
+                    edge_dtypes[id++] = point_edge_distance_type(points_double[face_to_vertex(2*e, v+1)], points_double[face_to_vertex(2*(1-e), 1)], points_double[face_to_vertex(2*(1-e), 2)]);
+        }
+        
+        std::array<HEAVISIDE_TYPE, 4> normal_types;
+        {
+            for (int f : {0, 1, 2, 3})
             {
-                edge_dtypes[id++] = point_edge_distance_type(points_double[face_to_vertex(2*e, v+1)], points_double[face_to_vertex(2*(1-e), 1)], points_double[face_to_vertex(2*(1-e), 2)]);
+                const Eigen::Vector3d normal = (points_double[face_to_vertex(f, 1)] - points_double[face_to_vertex(f, 0)]).cross(points_double[face_to_vertex(f, 2)] - points_double[face_to_vertex(f, 0)]).normalized();
+                const double val = (f >= 2 ? -1. : 1.) * direc.dot(normal);
+                if (val < -params.alpha)
+                    return scalar(0.);
+                    // normal_types[f] = HEAVISIDE_TYPE::ZERO;
+                else if (val > 0)
+                    normal_types[f] = HEAVISIDE_TYPE::ONE;
+                else
+                    normal_types[f] = HEAVISIDE_TYPE::VARIANT;
+            }
+        }
+
+        std::array<HEAVISIDE_TYPE, 4> tangent_types;
+        {
+            for (int f : {0, 1, 2, 3})
+            {
+                const double val = (f >= 2 ? 1. : -1.) * direc.dot(
+                    point_line_closest_point_direction<double>(
+                    points_double[face_to_vertex(f, 0)],
+                    points_double[face_to_vertex(f, 1)],
+                    points_double[face_to_vertex(f, 2)]).normalized());
+                if (val < -params.alpha)
+                    tangent_types[f] = HEAVISIDE_TYPE::ZERO;
+                else if (val > 0)
+                    tangent_types[f] = HEAVISIDE_TYPE::ONE;
+                else
+                    tangent_types[f] = HEAVISIDE_TYPE::VARIANT;
             }
         }
         
@@ -132,7 +165,8 @@ namespace ipc {
             points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
             points[face_to_vertex(0, 0)], points[face_to_vertex(1, 0)],
-            points[face_to_vertex(2, 0)], points[face_to_vertex(3, 0)], params, dtype, edge_dtypes);
+            points[face_to_vertex(2, 0)], points[face_to_vertex(3, 0)], 
+            params, dtype, edge_dtypes, normal_types, tangent_types);
         
         // if constexpr (std::is_same<scalar, AutodiffScalarGrad<24>>::value)
         // {
