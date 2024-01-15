@@ -139,8 +139,7 @@ namespace {
     }
 } // namespace
 
-template <int max_vert>
-void VirtualCollisions<max_vert>::build(
+void Collisions::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const double dhat,
@@ -155,16 +154,6 @@ void VirtualCollisions<max_vert>::build(
     candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
 
     this->build(candidates, mesh, vertices, dhat, dmin);
-}
-
-void Collisions::build(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
-    const double dhat,
-    const double dmin,
-    const BroadPhaseMethod broad_phase_method)
-{
-    VirtualCollisions<4>::build(mesh, vertices, dhat, dmin, broad_phase_method);
 }
 
 void Collisions::build(
@@ -312,8 +301,7 @@ void Collisions::build(
 // ============================================================================
 
 // NOTE: Actually distance squared
-template <int max_vert>
-double VirtualCollisions<max_vert>::compute_minimum_distance(
+double Collisions::compute_minimum_distance(
     const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());

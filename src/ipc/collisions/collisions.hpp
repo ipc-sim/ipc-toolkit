@@ -25,27 +25,6 @@ public:
     VirtualCollisions() = default;
     virtual ~VirtualCollisions() = default;
 
-    virtual void build(
-        const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
-        const double dhat,
-        const double dmin = 0,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
-
-    virtual void build(
-        const Candidates& candidates,
-        const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
-        const double dhat,
-        const double dmin = 0) = 0;
-
-    /// @brief Computes the minimum distance between any non-adjacent elements.
-    /// @param mesh The collision mesh.
-    /// @param vertices Vertices of the collision mesh.
-    /// @returns The minimum distance between any non-adjacent elements.
-    double compute_minimum_distance(
-        const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
-
     /// @brief Get the number of collisions.
     virtual size_t size() const = 0;
 
@@ -64,6 +43,13 @@ public:
     /// @param i The index of the collision.
     /// @return A const reference to the collision.
     virtual const Collision<max_vert>& operator[](size_t i) const = 0;
+
+    /// @brief Computes the minimum distance between any non-adjacent elements.
+    /// @param mesh The collision mesh.
+    /// @param vertices Vertices of the collision mesh.
+    /// @returns The minimum distance between any non-adjacent elements.
+    virtual double compute_minimum_distance(
+        const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const = 0;
 
     /// @brief Get if the collision set should use the convergent formulation.
     /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
@@ -136,7 +122,7 @@ public:
         const Eigen::MatrixXd& vertices,
         const double dhat,
         const double dmin = 0,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD) override;
+        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param candidates Distance candidates from which the collision set is built.
@@ -149,7 +135,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const double dhat,
-        const double dmin = 0) override;
+        const double dmin = 0);
 
     // ------------------------------------------------------------------------
 
@@ -199,6 +185,9 @@ public:
 
     std::string
     to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
+
+    double compute_minimum_distance(
+        const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const override;
 
     std::vector<VertexVertexCollision> vv_collisions;
     std::vector<EdgeVertexCollision> ev_collisions;

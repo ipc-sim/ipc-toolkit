@@ -7,11 +7,17 @@
 namespace ipc {
 
 class SmoothEdgeEdge3Collision : public SmoothCollision<8> {
-public:
     SmoothEdgeEdge3Collision(
         long primitive0_,
         long primitive1_,
         const CollisionMesh &mesh);
+public:
+    SmoothEdgeEdge3Collision(
+        long primitive0_,
+        long primitive1_,
+        const CollisionMesh &mesh,
+        const ParameterType &param,
+        const Eigen::MatrixXd &V);
     virtual ~SmoothEdgeEdge3Collision() 
     {
     }
@@ -43,19 +49,17 @@ public:
     }
 
 private:
-private:
     template <typename scalar> 
     scalar evaluate_quadrature(const Vector<double, 24>& positions, const ParameterType &params) const;
 
-    bool compute_types(
-        const Vector<double, 24>& positions, 
-        const ParameterType &params,
-        EdgeEdgeDistanceType &dtype,
-        std::array<PointEdgeDistanceType, 4> &edge_dtypes,
-        std::array<HEAVISIDE_TYPE, 4> &tangent_types,
-        std::array<HEAVISIDE_TYPE, 4> &normal_types) const; // return true if the potential is nonzero, return false if the potential is zero and can be skipped
+    bool compute_types(const Vector<double, 24>& positions, const ParameterType &params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
 
     Eigen::Matrix<int, 4, 3> face_to_vertex; // stores the local vertex ids for each vertex on each face
+
+    EdgeEdgeDistanceType dtype;
+    std::array<PointEdgeDistanceType, 4> edge_dtypes;
+    std::array<HEAVISIDE_TYPE, 4> tangent_types;
+    std::array<HEAVISIDE_TYPE, 4> normal_types;
 };
 
 }

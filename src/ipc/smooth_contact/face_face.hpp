@@ -1,16 +1,24 @@
 #pragma once
 
 #include "smooth_collision.hpp"
+#include <ipc/utils/math.hpp>
+#include <ipc/distance/distance_type.hpp>
 #include <iostream>
 
 namespace ipc {
 
 class SmoothFaceFaceCollision : public SmoothCollision<8> {
-public:
     SmoothFaceFaceCollision(
         long primitive0_,
         long primitive1_,
         const CollisionMesh &mesh);
+public:
+    SmoothFaceFaceCollision(
+        long primitive0_,
+        long primitive1_,
+        const CollisionMesh &mesh,
+        const ParameterType &param,
+        const Eigen::MatrixXd &V);
     virtual ~SmoothFaceFaceCollision() { }
 
     int num_vertices() const override
@@ -42,6 +50,11 @@ public:
 private:
     template <typename scalar> 
     scalar evaluate_quadrature(const Vector<double, 18>& positions, const ParameterType &params) const;
+
+    bool compute_types(const Vector<double, 18>& positions, const ParameterType &params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
+
+    std::array<PointTriangleDistanceType, 6> dtypes;
+    std::array<HEAVISIDE_TYPE, 6> normal_types;
 };
 
 }

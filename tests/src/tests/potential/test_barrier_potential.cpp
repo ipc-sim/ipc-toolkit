@@ -477,7 +477,7 @@ TEST_CASE(
     // }
     SECTION("two cubes far")
     {
-        dhat = 1e-1;
+        dhat = 1;
         mesh_name = "two-cubes-far.obj";
         all_vertices_on_surface = false;
     }
@@ -510,12 +510,12 @@ TEST_CASE(
         mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
         vertices = mesh.vertices(vertices);
     }
-    collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
+
+    ParameterType param(dhat*dhat, 0.2, 0, 1, 1);
+    collisions.build(mesh, vertices, param, method);
     CAPTURE(dhat, method, all_vertices_on_surface);
     CHECK(collisions.size() > 0);
     CHECK(!has_intersections(mesh, vertices));
-
-    ParameterType param(dhat*dhat, 0.2, 0, 1, 1);
 
     SmoothContactPotential<SmoothCollisions<3>> potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
@@ -592,25 +592,16 @@ TEST_CASE(
     // std::cout << "\n" <<  vertices << "\n" << edges << "\n";
 
     CollisionMesh mesh;
-
+    ParameterType param(dhat*dhat, 5, 0.1, 1, n_quad_pts);
     SmoothCollisions<2> collisions(n_quad_pts > 1, adaptive_dhat);
     mesh = CollisionMesh(vertices, edges, faces);
     mesh.set_min_dist_ratio(min_dist_ratio);
-    collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
+    collisions.build(mesh, vertices, param, method);
     CAPTURE(dhat, method);
     CHECK(collisions.size() > 0);
     std::cout << "smooth collision candidate size " << collisions.size() << "\n";
 
     CHECK(!has_intersections(mesh, vertices));
-
-    {
-        Collisions collisions_tmp;
-        collisions_tmp.set_use_convergent_formulation(true);
-        collisions_tmp.build(mesh, vertices, dhat, /*dmin=*/0, method);
-        std::cout << "convergent ipc candidate size " << collisions_tmp.size() << "\n";
-    }
-
-    ParameterType param(dhat*dhat, 5, 0.1, 1, n_quad_pts);
 
     SmoothContactPotential<SmoothCollisions<2>> potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";

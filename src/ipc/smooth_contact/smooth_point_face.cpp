@@ -108,9 +108,6 @@ namespace ipc {
         const scalar dist_sqr = point_triangle_distance(p, v0, v1, v2, dtype);
         const scalar Phi = 1 - (p - v0).dot(normal) / sqrt(dist_sqr * normal.squaredNorm()); // cross2_sqr<scalar>(diff, normal) / dist_sqr / normal_len_sqr;
 
-        if (Phi > params.alpha)
-            return scalar(0.);
-
         return inv_barrier(dist_sqr / params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
     }
 

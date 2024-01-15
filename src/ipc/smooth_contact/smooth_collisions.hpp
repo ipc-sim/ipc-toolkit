@@ -26,28 +26,22 @@ public:
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param mesh The collision mesh.
     /// @param vertices Vertices of the collision mesh.
-    /// @param dhat The activation distance of the barrier.
-    /// @param dmin Minimum distance.
     /// @param broad_phase_method Broad-phase method to use.
     void build(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
-        const double dhat,
-        const double dmin = 0,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD) override;
+        const ParameterType &param,
+        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param candidates Distance candidates from which the collision set is built.
     /// @param mesh The collision mesh.
     /// @param vertices Vertices of the collision mesh.
-    /// @param dhat The activation distance of the barrier.
-    /// @param  dmin  Minimum distance.
     void build(
-        const Candidates& candidates,
+        const Candidates& _candidates,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
-        const double dhat,
-        const double dmin = 0) override;
+        const ParameterType &param);
 
     // ------------------------------------------------------------------------
 
@@ -70,6 +64,9 @@ public:
     /// @return A const reference to the collision.
     const value_type& operator[](size_t i) const override;
 
+    double compute_minimum_distance(
+        const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const override;
+
     std::string
     to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
 
@@ -89,6 +86,8 @@ public:
 
     const bool use_high_order_quadrature;
     const bool use_adaptive_dhat;
+
+    Candidates candidates;
 };
 
 } // namespace ipc

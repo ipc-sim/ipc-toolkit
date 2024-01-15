@@ -45,7 +45,7 @@ public:
     /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
     /// @param project_hessian_to_psd Make sure the hessian is positive semi-definite.
     /// @returns The Hessian of the potential w.r.t. X. This will have a size of |X|×|X|.
-    Eigen::SparseMatrix<double> hessian(
+    virtual Eigen::SparseMatrix<double> hessian(
         const TCollisions& collisions,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,

@@ -53,9 +53,17 @@ public:
         return collision.weight * collision.hessian(positions, params, project_hessian_to_psd);
     }
 
+    Eigen::SparseMatrix<double> hessian(
+        const TCollisions& collisions,
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& X,
+        const bool project_hessian_to_psd = false) const override
+    {
+        return Super::hessian(collisions, mesh, X, project_hessian_to_psd);
+    }
+
 protected:
     ParameterType params;
-
 };
 
 } // namespace ipc

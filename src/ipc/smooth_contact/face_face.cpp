@@ -3,6 +3,7 @@
 #include "smooth_edge_edge.hpp"
 #include <ipc/utils/AutodiffTypes.hpp>
 #include <iostream>
+#include <ipc/distance/point_triangle.hpp>
 #include <ipc/utils/logger.hpp>
 // #include <ipc/utils/finitediff.hpp>
 // #include <mutex>
@@ -55,6 +56,44 @@ namespace ipc {
         return {{faces(primitive0, 0), faces(primitive0, 1), faces(primitive0, 2),
                 faces(primitive1, 0), faces(primitive1, 1), faces(primitive1, 2), -1, -1}};
     }
+    
+    bool SmoothFaceFaceCollision::compute_types(const Vector<double, 18>& positions, const ParameterType &params)
+    {
+        bool skip = true;
+        std::array<Vector3<double>, 6> points = slice_positions<double, 6, 3>(positions);
+        normal_types.fill(HEAVISIDE_TYPE::ZERO);
+        for (const int t : {0, 1})
+        {
+            const int tt = 1 - t;
+            const std::array<long, 3> ttv = {{vertices[tt * 3 + 0], vertices[tt * 3 + 1], vertices[tt * 3 + 2]}};
+
+            for (const int i : {0, 1, 2})
+            {
+                const int p_id = t * 3 + i;
+                if (std::find(ttv.begin(), ttv.end(), vertices[p_id]) != std::end(ttv))
+                {
+                    // if p_id is one of the vertex of the target face, skip the computation
+                    continue;
+                }
+                else
+                {
+                    const auto &p = points[p_id];
+                    const auto &f0 = points[tt * 3 + 0], &f1 = points[tt * 3 + 1], &f2 = points[tt * 3 + 2];
+                    dtypes[p_id] = point_triangle_distance_type(points[p_id], f0, f1, f2);
+                    const Eigen::Vector3d normal = (f1 - f0).cross(f2 - f0);
+                    const double dist_sqr = point_triangle_distance(p, f0, f1, f2, dtypes[p_id]);
+                    const double Phi = 1 - (p - f0).dot(normal) / sqrt(dist_sqr * normal.squaredNorm());
+                    if (Phi < params.alpha && dist_sqr < params.eps)
+                    {
+                        normal_types[p_id] = HEAVISIDE_TYPE::VARIANT;
+                        skip = false;
+                    }
+                }
+            }
+        }
+
+        return !skip;
+    }
 
     SmoothFaceFaceCollision::SmoothFaceFaceCollision(
         long primitive0_,
@@ -65,11 +104,22 @@ namespace ipc {
         vertices = vertex_ids(mesh.edges(), mesh.faces());
     }
 
+    SmoothFaceFaceCollision::SmoothFaceFaceCollision(
+    long primitive0_,
+    long primitive1_,
+    const CollisionMesh &mesh,
+    const ParameterType &param,
+    const Eigen::MatrixXd &V): SmoothFaceFaceCollision(primitive0_, primitive1_, mesh)
+    {
+        Vector<double, 18> positions = dof(V, mesh.edges(), mesh.faces());
+        is_active_ = compute_types(positions, param);
+    }
+
     template <typename scalar> 
     scalar SmoothFaceFaceCollision::evaluate_quadrature(const Vector<double, 18>& positions, const ParameterType &params) const
     {
         std::array<Vector3<scalar>, 6> points = slice_positions<scalar, 6, 3>(positions);
-        std::array<Vector3<double>, 6> points_double = slice_positions<double, 6, 3>(positions);
+        
         scalar out = scalar(0.);
 
         const scalar area = (points[2] - points[0]).cross(points[1] - points[0]).norm() *
@@ -84,13 +134,11 @@ namespace ipc {
             for (const int i : {0, 1, 2})
             {
                 const int p_id = t * 3 + i;
-                if (std::find(ttv.begin(), ttv.end(), vertices[p_id]) != std::end(ttv))
+                if (normal_types[p_id] == HEAVISIDE_TYPE::ZERO)
                     continue;
 
-                const PointTriangleDistanceType dtype = point_triangle_distance_type(
-                    points_double[p_id], points_double[tt * 3 + 0], points_double[tt * 3 + 1], points_double[tt * 3 + 2]);
                 const scalar tmp = smooth_point_face_potential_single_point<scalar>(
-                    points[p_id], points[tt * 3 + 0], points[tt * 3 + 1], points[tt * 3 + 2], params, dtype);
+                    points[p_id], points[tt * 3 + 0], points[tt * 3 + 1], points[tt * 3 + 2], params, dtypes[p_id]);
                 out += (area / scalar(3.)) * tmp;
                 
                 // for debugging derivatives using finite difference

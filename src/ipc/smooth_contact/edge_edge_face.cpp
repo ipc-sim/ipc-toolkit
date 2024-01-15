@@ -108,13 +108,20 @@ namespace ipc {
         }
     }
 
+    SmoothEdgeEdge3Collision::SmoothEdgeEdge3Collision(
+    long primitive0_,
+    long primitive1_,
+    const CollisionMesh &mesh,
+    const ParameterType &param,
+    const Eigen::MatrixXd &V): SmoothEdgeEdge3Collision(primitive0_, primitive1_, mesh)
+    {
+        Vector<double, 24> positions = dof(V, mesh.edges(), mesh.faces());
+        is_active_ = compute_types(positions, param);
+    }
+
     bool SmoothEdgeEdge3Collision::compute_types(
         const Vector<double, 24>& positions, 
-        const ParameterType &params,
-        EdgeEdgeDistanceType &dtype,
-        std::array<PointEdgeDistanceType, 4> &edge_dtypes,
-        std::array<HEAVISIDE_TYPE, 4> &tangent_types,
-        std::array<HEAVISIDE_TYPE, 4> &normal_types) const
+        const ParameterType &params)
     {
         std::array<Vector3<double>, 8> points_double = slice_positions<double, 8, 3>(positions);
 
@@ -172,19 +179,17 @@ namespace ipc {
             for (int v : {0, 1})
                 edge_dtypes[id++] = point_edge_distance_type(points_double[face_to_vertex(2*e, v+1)], points_double[face_to_vertex(2*(1-e), 1)], points_double[face_to_vertex(2*(1-e), 2)]);
         
+        // logger().debug("dtype {}, edge_types {} {} {} {}, tangent_types {} {} {} {}, normal_types {} {} {} {}",
+        //     static_cast<int>(dtype), 
+        //     static_cast<int>(edge_dtypes[0]),static_cast<int>(edge_dtypes[1]),static_cast<int>(edge_dtypes[2]),static_cast<int>(edge_dtypes[3]),
+        //     static_cast<int>(tangent_types[0]),static_cast<int>(tangent_types[1]),static_cast<int>(tangent_types[2]),static_cast<int>(tangent_types[3]),
+        //     static_cast<int>(normal_types[0]),static_cast<int>(normal_types[1]),static_cast<int>(normal_types[2]),static_cast<int>(normal_types[3]));
         return true;
     }
 
     template <typename scalar> 
     scalar SmoothEdgeEdge3Collision::evaluate_quadrature(const Vector<double, 24>& positions, const ParameterType &params) const
     {
-        EdgeEdgeDistanceType dtype;
-        std::array<PointEdgeDistanceType, 4> edge_dtypes;
-        std::array<HEAVISIDE_TYPE, 4> tangent_types;
-        std::array<HEAVISIDE_TYPE, 4> normal_types;
-        if (!compute_types(positions, params, dtype, edge_dtypes, tangent_types, normal_types))
-            return scalar(0.);
-
         std::array<Vector3<scalar>, 8> points = slice_positions<scalar, 8, 3>(positions);
         const scalar out = smooth_edge_edge_potential_single_point<scalar>(
             points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
