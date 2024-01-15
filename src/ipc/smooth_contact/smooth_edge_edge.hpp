@@ -98,10 +98,13 @@ namespace ipc {
         
         // vanishes if Phi < -alpha
         const Vector3<scalar> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype) / sqrt(dist_sqr); // from edge a to edge b
-        const scalar tangent_penalty = smooth_edge_edge_potential_tangent_term<scalar>(fa0, ea0, ea1, -direc, params.alpha, tangent_types[0]) * 
-                            smooth_edge_edge_potential_tangent_term<scalar>(fa1, ea1, ea0, -direc, params.alpha, tangent_types[1]) +
-                            smooth_edge_edge_potential_tangent_term<scalar>(fb0, eb0, eb1, direc, params.alpha, tangent_types[2]) * 
-                            smooth_edge_edge_potential_tangent_term<scalar>(fb1, eb1, eb0, direc, params.alpha, tangent_types[3]);
+        scalar tangent_penalty = scalar(0.);
+        if (tangent_types[0] != HEAVISIDE_TYPE::ZERO && tangent_types[1] != HEAVISIDE_TYPE::ZERO)
+            tangent_penalty += smooth_edge_edge_potential_tangent_term<scalar>(fa0, ea0, ea1, -direc, params.alpha, tangent_types[0]) * 
+                                smooth_edge_edge_potential_tangent_term<scalar>(fa1, ea1, ea0, -direc, params.alpha, tangent_types[1]);
+        if (tangent_types[2] != HEAVISIDE_TYPE::ZERO && tangent_types[3] != HEAVISIDE_TYPE::ZERO)
+            tangent_penalty += smooth_edge_edge_potential_tangent_term<scalar>(fb0, eb0, eb1, direc, params.alpha, tangent_types[2]) * 
+                                smooth_edge_edge_potential_tangent_term<scalar>(fb1, eb1, eb0, direc, params.alpha, tangent_types[3]);
 
         const scalar normal_penalty = smooth_edge_edge_potential_normal_term<scalar>(fa0, ea0, ea1, direc, params.alpha, normal_types[0]) * 
                                     smooth_edge_edge_potential_normal_term<scalar>(fa1, ea1, ea0, direc, params.alpha, normal_types[1]) * 

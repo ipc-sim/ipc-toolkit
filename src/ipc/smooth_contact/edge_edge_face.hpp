@@ -1,6 +1,8 @@
 #pragma once
 
 #include "smooth_collision.hpp"
+#include <ipc/distance/distance_type.hpp>
+#include <ipc/utils/math.hpp>
 
 namespace ipc {
 
@@ -10,7 +12,9 @@ public:
         long primitive0_,
         long primitive1_,
         const CollisionMesh &mesh);
-    virtual ~SmoothEdgeEdge3Collision() { }
+    virtual ~SmoothEdgeEdge3Collision() 
+    {
+    }
 
     int num_vertices() const override
     {
@@ -42,6 +46,14 @@ private:
 private:
     template <typename scalar> 
     scalar evaluate_quadrature(const Vector<double, 24>& positions, const ParameterType &params) const;
+
+    bool compute_types(
+        const Vector<double, 24>& positions, 
+        const ParameterType &params,
+        EdgeEdgeDistanceType &dtype,
+        std::array<PointEdgeDistanceType, 4> &edge_dtypes,
+        std::array<HEAVISIDE_TYPE, 4> &tangent_types,
+        std::array<HEAVISIDE_TYPE, 4> &normal_types) const; // return true if the potential is nonzero, return false if the potential is zero and can be skipped
 
     Eigen::Matrix<int, 4, 3> face_to_vertex; // stores the local vertex ids for each vertex on each face
 };

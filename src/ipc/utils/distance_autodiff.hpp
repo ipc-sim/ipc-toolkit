@@ -40,8 +40,8 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& f1,
         const Eigen::Ref<const Vector3<scalar>>& f2)
     {
-        const Vector3<scalar> normal = (f2 - f0).cross(f1 - f0).normalized();
-        return intpow(normal.dot(p - f0), 2);
+        const Vector3<scalar> normal = (f2 - f0).cross(f1 - f0);
+        return intpow(normal.dot(p - f0), 2) / normal.squaredNorm();
     }
 
     template <typename scalar>
@@ -155,8 +155,9 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& e0,
         const Eigen::Ref<const Vector3<scalar>>& e1)
     {
-        const Vector3<scalar> tangent = (e1 - e0).normalized();
-        return (p - e0) - (p - e0).dot(tangent) * tangent;
+        const Vector3<scalar> d = p - e0;
+        const Vector3<scalar> t = e1 - e0;
+        return d - (d.dot(t) / t.squaredNorm()) * t;
     }
 
     template <typename scalar>
@@ -166,8 +167,8 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& eb0,
         const Eigen::Ref<const Vector3<scalar>>& eb1)
     {
-        const Vector3<scalar> normal = (ea1 - ea0).cross(eb1 - eb0).normalized();
-        return (eb0 - ea0).dot(normal) * normal;
+        const Vector3<scalar> normal = (ea1 - ea0).cross(eb1 - eb0);
+        return ((eb0 - ea0).dot(normal) / normal.squaredNorm()) * normal;
     }
 
     /// @brief Computes the direction of the closest point pair

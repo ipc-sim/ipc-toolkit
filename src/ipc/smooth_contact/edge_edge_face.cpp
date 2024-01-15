@@ -108,59 +108,84 @@ namespace ipc {
         }
     }
 
+    bool SmoothEdgeEdge3Collision::compute_types(
+        const Vector<double, 24>& positions, 
+        const ParameterType &params,
+        EdgeEdgeDistanceType &dtype,
+        std::array<PointEdgeDistanceType, 4> &edge_dtypes,
+        std::array<HEAVISIDE_TYPE, 4> &tangent_types,
+        std::array<HEAVISIDE_TYPE, 4> &normal_types) const
+    {
+        std::array<Vector3<double>, 8> points_double = slice_positions<double, 8, 3>(positions);
+
+        dtype = edge_edge_distance_type(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)],
+            points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)]);
+        
+        if (dtype != EdgeEdgeDistanceType::EA_EB)
+            return false;
+
+        const Eigen::Vector3d direc = edge_edge_closest_point_direction<double>(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)], points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)], dtype).normalized();
+
+        for (int f : {0, 1, 2, 3})
+        {
+            const Eigen::Vector3d normal = (points_double[face_to_vertex(f, 1)] - points_double[face_to_vertex(f, 0)]).cross(points_double[face_to_vertex(f, 2)] - points_double[face_to_vertex(f, 0)]).normalized();
+            const double val = (f >= 2 ? -1. : 1.) * direc.dot(normal);
+            if (val < -params.alpha)
+                return false;
+            else if (val > 0)
+                normal_types[f] = HEAVISIDE_TYPE::ONE;
+            else
+                normal_types[f] = HEAVISIDE_TYPE::VARIANT;
+        }
+
+        {
+            bool all_skip = true;
+            for (int e : {0, 1})
+            {
+                bool skip = false;
+                for (int f : {2*e+0, 2*e+1})
+                {
+                    const double val = (e > 0 ? 1. : -1.) * direc.dot(
+                        point_line_closest_point_direction<double>(
+                        points_double[face_to_vertex(f, 0)],
+                        points_double[face_to_vertex(f, 1)],
+                        points_double[face_to_vertex(f, 2)]).normalized());
+                    if (val < -params.alpha)
+                    {
+                        tangent_types[f] = HEAVISIDE_TYPE::ZERO;
+                        skip = true;
+                    }
+                    else if (val > 0)
+                        tangent_types[f] = HEAVISIDE_TYPE::ONE;
+                    else
+                        tangent_types[f] = HEAVISIDE_TYPE::VARIANT;
+                }
+                if (!skip)
+                    all_skip = false;
+            }
+            if (all_skip)
+                return false;
+        }
+
+        int id = 0;
+        for (int e : {0, 1})
+            for (int v : {0, 1})
+                edge_dtypes[id++] = point_edge_distance_type(points_double[face_to_vertex(2*e, v+1)], points_double[face_to_vertex(2*(1-e), 1)], points_double[face_to_vertex(2*(1-e), 2)]);
+        
+        return true;
+    }
+
     template <typename scalar> 
     scalar SmoothEdgeEdge3Collision::evaluate_quadrature(const Vector<double, 24>& positions, const ParameterType &params) const
     {
-        std::array<Vector3<scalar>, 8> points = slice_positions<scalar, 8, 3>(positions);
-        std::array<Vector3<double>, 8> points_double = slice_positions<double, 8, 3>(positions);
-
-        const EdgeEdgeDistanceType dtype = edge_edge_distance_type(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)],
-            points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)]);
-        const Eigen::Vector3d direc = edge_edge_closest_point_direction<double>(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)], points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)], dtype).normalized();
-        
+        EdgeEdgeDistanceType dtype;
         std::array<PointEdgeDistanceType, 4> edge_dtypes;
-        {
-            edge_dtypes.fill(PointEdgeDistanceType::AUTO);
-            int id = 0;
-            for (int e : {0, 1})
-                for (int v : {0, 1})
-                    edge_dtypes[id++] = point_edge_distance_type(points_double[face_to_vertex(2*e, v+1)], points_double[face_to_vertex(2*(1-e), 1)], points_double[face_to_vertex(2*(1-e), 2)]);
-        }
-        
-        std::array<HEAVISIDE_TYPE, 4> normal_types;
-        {
-            for (int f : {0, 1, 2, 3})
-            {
-                const Eigen::Vector3d normal = (points_double[face_to_vertex(f, 1)] - points_double[face_to_vertex(f, 0)]).cross(points_double[face_to_vertex(f, 2)] - points_double[face_to_vertex(f, 0)]).normalized();
-                const double val = (f >= 2 ? -1. : 1.) * direc.dot(normal);
-                if (val < -params.alpha)
-                    return scalar(0.);
-                    // normal_types[f] = HEAVISIDE_TYPE::ZERO;
-                else if (val > 0)
-                    normal_types[f] = HEAVISIDE_TYPE::ONE;
-                else
-                    normal_types[f] = HEAVISIDE_TYPE::VARIANT;
-            }
-        }
-
         std::array<HEAVISIDE_TYPE, 4> tangent_types;
-        {
-            for (int f : {0, 1, 2, 3})
-            {
-                const double val = (f >= 2 ? 1. : -1.) * direc.dot(
-                    point_line_closest_point_direction<double>(
-                    points_double[face_to_vertex(f, 0)],
-                    points_double[face_to_vertex(f, 1)],
-                    points_double[face_to_vertex(f, 2)]).normalized());
-                if (val < -params.alpha)
-                    tangent_types[f] = HEAVISIDE_TYPE::ZERO;
-                else if (val > 0)
-                    tangent_types[f] = HEAVISIDE_TYPE::ONE;
-                else
-                    tangent_types[f] = HEAVISIDE_TYPE::VARIANT;
-            }
-        }
-        
+        std::array<HEAVISIDE_TYPE, 4> normal_types;
+        if (!compute_types(positions, params, dtype, edge_dtypes, tangent_types, normal_types))
+            return scalar(0.);
+
+        std::array<Vector3<scalar>, 8> points = slice_positions<scalar, 8, 3>(positions);
         const scalar out = smooth_edge_edge_potential_single_point<scalar>(
             points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],

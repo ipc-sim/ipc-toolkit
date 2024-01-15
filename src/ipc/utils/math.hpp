@@ -44,7 +44,7 @@ namespace ipc {
     }
 
     enum class HEAVISIDE_TYPE {
-        ZERO, ONE, VARIANT
+        ZERO = 0, ONE = 1, VARIANT = 2
     };
 
     template <typename scalar>

@@ -20,10 +20,10 @@ namespace ipc {
         Vector3<scalar> tangent1 = v1 - v0;
         Vector3<scalar> tangent2 = v2 - v0;
         Vector3<scalar> sample = v0 + tangent1 * scalar(uv(0)) + tangent2 * scalar(uv(1));
-        Vector3<scalar> normal = tangent1.cross(tangent2).normalized();
+        Vector3<scalar> normal = tangent1.cross(tangent2);
 
         const scalar dist_sqr = (p - sample).squaredNorm();
-        const scalar Phi = normal.cross(p - sample).squaredNorm() / dist_sqr;
+        const scalar Phi = normal.cross(p - sample).squaredNorm() / dist_sqr / normal.squaredNorm();
 
         if (Phi > params.alpha)
             return scalar(0.);
@@ -104,9 +104,9 @@ namespace ipc {
         const ParameterType &params,
         const PointTriangleDistanceType &dtype)
     {
-        const Vector3<scalar> normal = (v1 - v0).cross(v2 - v0).normalized();
+        const Vector3<scalar> normal = (v1 - v0).cross(v2 - v0);
         const scalar dist_sqr = point_triangle_distance(p, v0, v1, v2, dtype);
-        const scalar Phi = 1 - (p - v0).dot(normal) / sqrt(dist_sqr); // cross2_sqr<scalar>(diff, normal) / dist_sqr / normal_len_sqr;
+        const scalar Phi = 1 - (p - v0).dot(normal) / sqrt(dist_sqr * normal.squaredNorm()); // cross2_sqr<scalar>(diff, normal) / dist_sqr / normal_len_sqr;
 
         if (Phi > params.alpha)
             return scalar(0.);
