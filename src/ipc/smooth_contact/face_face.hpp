@@ -10,11 +10,7 @@ public:
     SmoothFaceFaceCollision(
         long primitive0_,
         long primitive1_,
-        const CollisionMesh &mesh)
-    : SmoothCollision<8>(primitive0_, primitive1_, mesh)
-    { 
-        vertices = vertex_ids(mesh.edges(), mesh.faces());
-    }
+        const CollisionMesh &mesh);
     virtual ~SmoothFaceFaceCollision() { }
 
     int num_vertices() const override

@@ -26,57 +26,10 @@ namespace ipc {
     }
 
     /// @brief Compute edge-edge potential for edge [ea0, ea1] and [eb0, eb1]
-    /// assuming that edge [ea0, ea1] follows the orientation in face fa0 (so opposite orientation in fa1)
-    /// edge [eb0, eb1] follows the orientation in face fb0 (so opposite orientation in fb1)
-    /// @param fa0_normal, fa1_normal are the normals of two faces adjacent to edge [ea0, ea1]
+    /// edge [ea0, ea1] follows the orientation in face fa0 = [fa0, ea0, ea1], so opposite orientation in fa1 = [fa1, ea1, ea0]
+    /// edge [eb0, eb1] follows the orientation in face fb0 = [fb0, eb0, eb1], so opposite orientation in fb1 = [fb1, eb1, eb0]
     template <typename scalar>
     scalar smooth_edge_edge_potential_single_point(
-        const Eigen::Ref<const Vector3<scalar>>& ea0,
-        const Eigen::Ref<const Vector3<scalar>>& ea1,
-        const Eigen::Ref<const Vector3<scalar>>& eb0,
-        const Eigen::Ref<const Vector3<scalar>>& eb1,
-        const Eigen::Ref<const Vector3<scalar>>& fa0_normal,
-        const Eigen::Ref<const Vector3<scalar>>& fa1_normal,
-        const Eigen::Ref<const Vector3<scalar>>& fb0_normal,
-        const Eigen::Ref<const Vector3<scalar>>& fb1_normal,
-        const ParameterType &params,
-        EdgeEdgeDistanceType dtype)
-    {
-        constexpr double threshold_eps = 1e-2;
-
-        const Vector3<scalar> u = ea1 - ea0;
-        const Vector3<scalar> v = eb1 - eb0;
-        const scalar a = u.squaredNorm();
-        const scalar b = v.squaredNorm();
-        // const scalar mollifier_threshold = threshold_eps * a * b;
-        // const scalar cross_sqr_norm = u.cross(v).squaredNorm();
-        // const scalar mollifier_val = mollifier<scalar>(cross_sqr_norm / mollifier_threshold);
-        Vector3<scalar> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype); // from edge a to edge b
-        const scalar dist_sqr = edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype); // get rid of me after verified!
-        
-        if constexpr (std::is_same<scalar, double>::value)
-        {
-            assert ((direc.squaredNorm() - dist_sqr) < 1e-12 * std::max(1., dist_sqr));
-        }
-
-        if (dist_sqr > params.eps)
-            return scalar(0.);
-        
-        // vanishes if Phi < -alpha
-        direc = direc / sqrt(dist_sqr);
-        const scalar Phia0 = -direc.dot(fa0_normal.cross(u) / sqrt(a)) / params.alpha;
-        const scalar Phia1 = -direc.dot(fa1_normal.cross(-u) / sqrt(a)) / params.alpha;
-        const scalar Phib0 = direc.dot(fb0_normal.cross(v) / sqrt(b)) / params.alpha;
-        const scalar Phib1 = direc.dot(fb1_normal.cross(-v) / sqrt(b)) / params.alpha;
-
-        const scalar mollifier_a = mollifier<scalar>((point_edge_sqr_distance<scalar>(ea0, eb0, eb1) - dist_sqr) / a / threshold_eps) * mollifier<scalar>((point_edge_sqr_distance<scalar>(ea1, eb0, eb1) - dist_sqr) / a / threshold_eps);
-        const scalar mollifier_b = mollifier<scalar>((point_edge_sqr_distance<scalar>(eb0, ea0, ea1) - dist_sqr) / b / threshold_eps) * mollifier<scalar>((point_edge_sqr_distance<scalar>(eb1, ea0, ea1) - dist_sqr) / b / threshold_eps);
-
-        return 0.5 * sqrt(a * b) * inv_barrier<scalar>(dist_sqr / params.eps, params.r) * (smooth_heaviside<scalar>(Phia0) * smooth_heaviside<scalar>(Phia1) + smooth_heaviside<scalar>(Phib0) * smooth_heaviside<scalar>(Phib1)) * mollifier_a * mollifier_b;
-    }
-
-    template <typename scalar>
-    scalar smooth_edge_edge_potential_single_point_efficient(
         const Eigen::Ref<const Vector3<scalar>>& ea0,
         const Eigen::Ref<const Vector3<scalar>>& ea1,
         const Eigen::Ref<const Vector3<scalar>>& eb0,
@@ -102,14 +55,27 @@ namespace ipc {
         
         // vanishes if Phi < -alpha
         const Vector3<scalar> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype) / sqrt(dist_sqr); // from edge a to edge b
-        const scalar Phia0 = -direc.dot(point_line_closest_point_direction<scalar>(fa0, ea0, ea1).normalized()) / params.alpha;
-        const scalar Phia1 = -direc.dot(point_line_closest_point_direction<scalar>(fa1, ea0, ea1).normalized()) / params.alpha;
-        const scalar Phib0 = direc.dot(point_line_closest_point_direction<scalar>(fb0, eb0, eb1).normalized()) / params.alpha;
-        const scalar Phib1 = direc.dot(point_line_closest_point_direction<scalar>(fb1, eb0, eb1).normalized()) / params.alpha;
+        scalar tangent_penalty = scalar(1.);
+        {
+            const scalar Phia0 = -direc.dot(point_line_closest_point_direction<scalar>(fa0, ea0, ea1).normalized()) / params.alpha;
+            const scalar Phia1 = -direc.dot(point_line_closest_point_direction<scalar>(fa1, ea0, ea1).normalized()) / params.alpha;
+            const scalar Phib0 = direc.dot(point_line_closest_point_direction<scalar>(fb0, eb0, eb1).normalized()) / params.alpha;
+            const scalar Phib1 = direc.dot(point_line_closest_point_direction<scalar>(fb1, eb0, eb1).normalized()) / params.alpha;
+            tangent_penalty = smooth_heaviside<scalar>(Phia0) * smooth_heaviside<scalar>(Phia1) + smooth_heaviside<scalar>(Phib0) * smooth_heaviside<scalar>(Phib1);
+        }
+
+        scalar normal_penalty = scalar(1.);
+        {
+            const Vector3<scalar> n_a0 = (ea0 - fa0).cross(ea1 - fa0).normalized();
+            const Vector3<scalar> n_a1 = (ea1 - fa1).cross(ea0 - fa1).normalized();
+            const Vector3<scalar> n_b0 = (eb0 - fb0).cross(eb1 - fb0).normalized();
+            const Vector3<scalar> n_b1 = (eb1 - fb1).cross(eb0 - fb1).normalized();
+            normal_penalty = smooth_heaviside<scalar>(direc.dot(n_a0)) * smooth_heaviside<scalar>(direc.dot(n_a1)) * smooth_heaviside<scalar>(-direc.dot(n_b0)) * smooth_heaviside<scalar>(-direc.dot(n_b1));
+        }
 
         const scalar mollifier_a = mollifier<scalar>((point_edge_sqr_distance<scalar>(ea0, eb0, eb1, edge_dtypes[0]) - dist_sqr) / a / threshold_eps) * mollifier<scalar>((point_edge_sqr_distance<scalar>(ea1, eb0, eb1, edge_dtypes[1]) - dist_sqr) / a / threshold_eps);
         const scalar mollifier_b = mollifier<scalar>((point_edge_sqr_distance<scalar>(eb0, ea0, ea1, edge_dtypes[2]) - dist_sqr) / b / threshold_eps) * mollifier<scalar>((point_edge_sqr_distance<scalar>(eb1, ea0, ea1, edge_dtypes[3]) - dist_sqr) / b / threshold_eps);
 
-        return 0.5 * sqrt(a * b) * inv_barrier<scalar>(dist_sqr / params.eps, params.r) * (smooth_heaviside<scalar>(Phia0) * smooth_heaviside<scalar>(Phia1) + smooth_heaviside<scalar>(Phib0) * smooth_heaviside<scalar>(Phib1)) * mollifier_a * mollifier_b;
+        return 0.5 * sqrt(a * b) * inv_barrier<scalar>(dist_sqr / params.eps, params.r) * tangent_penalty * normal_penalty * mollifier_a * mollifier_b;
     }
 }

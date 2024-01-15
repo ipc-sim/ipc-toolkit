@@ -128,7 +128,7 @@ namespace ipc {
             }
         }
         
-        const scalar out = smooth_edge_edge_potential_single_point_efficient<scalar>(
+        const scalar out = smooth_edge_edge_potential_single_point<scalar>(
             points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
             points[face_to_vertex(0, 0)], points[face_to_vertex(1, 0)],

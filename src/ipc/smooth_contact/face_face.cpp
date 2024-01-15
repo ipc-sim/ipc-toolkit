@@ -56,6 +56,15 @@ namespace ipc {
                 faces(primitive1, 0), faces(primitive1, 1), faces(primitive1, 2), -1, -1}};
     }
 
+    SmoothFaceFaceCollision::SmoothFaceFaceCollision(
+        long primitive0_,
+        long primitive1_,
+        const CollisionMesh &mesh)
+    : SmoothCollision<8>(primitive0_, primitive1_, mesh)
+    { 
+        vertices = vertex_ids(mesh.edges(), mesh.faces());
+    }
+
     template <typename scalar> 
     scalar SmoothFaceFaceCollision::evaluate_quadrature(const Vector<double, 18>& positions, const ParameterType &params) const
     {
@@ -65,7 +74,7 @@ namespace ipc {
 
         const scalar area = (points[2] - points[0]).cross(points[1] - points[0]).norm() *
                         (points[5] - points[3]).cross(points[4] - points[3]).norm() / scalar(4.);
-
+        
         for (const int t : {0, 1})
         {
             const int tt = 1 - t;

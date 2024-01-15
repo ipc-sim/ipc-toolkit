@@ -110,8 +110,6 @@ namespace ipc {
 
         if (Phi > params.alpha)
             return scalar(0.);
-        if (dist_sqr > params.eps)
-            return scalar(0.);
 
         return inv_barrier(dist_sqr / params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
     }
