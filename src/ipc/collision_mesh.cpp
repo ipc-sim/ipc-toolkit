@@ -116,7 +116,6 @@ CollisionMesh::CollisionMesh(
     init_codim_edges();
     init_areas();
     init_adjacencies();
-    init_contact_distance_map();
     // Compute these manually if needed.
     // init_area_jacobian();
 }
@@ -399,52 +398,6 @@ void CollisionMesh::init_area_jacobians()
                 edge_len_gradient, m_edges.row(i), dim(),
                 m_edge_area_jacobian[i]);
         }
-    }
-}
-
-void CollisionMesh::init_contact_distance_map()
-{
-    if (dim() == 2) {
-        // m_vertex_to_rest_config_contact_dist.resize(m_rest_positions.rows(), 1);
-        // tbb::parallel_for(
-        //     tbb::blocked_range<size_t>(size_t(0), m_rest_positions.rows()),
-        //     [&](const tbb::blocked_range<size_t>& r) {
-        //         for (int i = r.begin(); i < r.end(); i++) {
-        //             double min_dist_sqr = std::numeric_limits<double>::max();
-        //             for (int j = 0; j < m_edges.rows(); j++) {
-        //                 if (m_edges(j, 0) != i && m_edges(j, 1) != i) {
-        //                     const double dist_sqr = point_edge_distance(m_rest_positions.row(i), m_rest_positions.row(m_edges(j, 0)), m_rest_positions.row(m_edges(j, 1)));
-
-        //                     min_dist_sqr = std::min(dist_sqr, min_dist_sqr);
-        //                 }
-        //             }
-        //             m_vertex_to_rest_config_contact_dist(i) = sqrt(min_dist_sqr);
-        //         }
-        //     });
-        // logger().debug("min distance {}, max distance {}", m_vertex_to_rest_config_contact_dist.minCoeff(), m_vertex_to_rest_config_contact_dist.maxCoeff());
-        m_edge_to_rest_config_contact_dist.setZero(num_edges(), 1);
-        if (num_edges() <= 0)
-            return;
-        tbb::parallel_for(
-            tbb::blocked_range<size_t>(size_t(0), m_edges.rows()),
-            [&](const tbb::blocked_range<size_t>& r) {
-                for (int e = r.begin(); e < r.end(); e++) {
-                    double min_dist_sqr = std::numeric_limits<double>::max();
-                    for (int v = 0; v < m_rest_positions.rows(); v++) {
-                        if (m_edges(e, 0) != v && m_edges(e, 1) != v) {
-                            const double dist_sqr = point_edge_distance(m_rest_positions.row(v), m_rest_positions.row(m_edges(e, 0)), m_rest_positions.row(m_edges(e, 1)));
-
-                            min_dist_sqr = std::min(dist_sqr, min_dist_sqr);
-                        }
-                    }
-                    m_edge_to_rest_config_contact_dist(e) = sqrt(min_dist_sqr);
-                }
-            });
-        logger().debug("min distance {}, max distance {}", m_edge_to_rest_config_contact_dist.minCoeff(), m_edge_to_rest_config_contact_dist.maxCoeff());
-    }
-    else if (dim() == 3) {
-        logger().error("3D adaptive dhat not implemented!");
-        //TODO
     }
 }
 

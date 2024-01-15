@@ -7,6 +7,7 @@
 // #include <ipc/utils/finitediff.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/line_line.hpp>
+#include <ipc/distance/edge_edge.hpp>
 // #include <mutex>
 // std::mutex mut_edge;
 
@@ -185,6 +186,14 @@ namespace ipc {
         //     static_cast<int>(tangent_types[0]),static_cast<int>(tangent_types[1]),static_cast<int>(tangent_types[2]),static_cast<int>(tangent_types[3]),
         //     static_cast<int>(normal_types[0]),static_cast<int>(normal_types[1]),static_cast<int>(normal_types[2]),static_cast<int>(normal_types[3]));
         return true;
+    }
+
+    double SmoothEdgeEdge3Collision::compute_distance(const Vector<double, -1, 24>& positions) const
+    {
+        std::array<Vector3<double>, 8> points = slice_positions<double, 8, 3>(positions);
+
+        return edge_edge_distance(points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
+            points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)], dtype);
     }
 
     template <typename scalar> 

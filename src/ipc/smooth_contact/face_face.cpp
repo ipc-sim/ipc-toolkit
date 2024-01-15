@@ -115,6 +115,28 @@ namespace ipc {
         is_active_ = compute_types(positions, param);
     }
 
+    double SmoothFaceFaceCollision::compute_distance(const Vector<double, -1, 24>& positions) const
+    {
+        std::array<Vector3<double>, 6> points = slice_positions<double, 6, 3>(positions);
+
+        double dist = std::numeric_limits<double>::max();
+        for (const int t : {0, 1})
+        {
+            const int tt = 1 - t;
+            for (const int i : {0, 1, 2})
+            {
+                const int p_id = t * 3 + i;
+                if (normal_types[p_id] != HEAVISIDE_TYPE::VARIANT)
+                    continue;
+                
+                const auto &p = points[p_id];
+                const auto &f0 = points[tt * 3 + 0], &f1 = points[tt * 3 + 1], &f2 = points[tt * 3 + 2];
+                dist = std::min(dist, point_triangle_distance(p, f0, f1, f2, dtypes[p_id]));
+            }
+        }
+        return dist;
+    }
+
     template <typename scalar> 
     scalar SmoothFaceFaceCollision::evaluate_quadrature(const Vector<double, 18>& positions, const ParameterType &params) const
     {
@@ -128,8 +150,6 @@ namespace ipc {
         for (const int t : {0, 1})
         {
             const int tt = 1 - t;
-            const std::array<long, 3> ttv = {{vertices[tt * 3 + 0], vertices[tt * 3 + 1], vertices[tt * 3 + 2]}};
-            
             // face - vertex potential
             for (const int i : {0, 1, 2})
             {

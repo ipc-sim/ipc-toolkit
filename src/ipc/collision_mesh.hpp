@@ -63,9 +63,6 @@ public:
     /// @brief Initialize vertex and edge areas.
     void init_area_jacobians();
 
-    ///@brief Initialize vertex to min contact distance at rest mapping
-    void init_contact_distance_map();
-
     /// @brief Destroy the Collision Mesh object
     ~CollisionMesh() { }
 
@@ -271,31 +268,6 @@ public:
             && m_edge_area_jacobian.size() == num_edges();
     }
 
-    /// @brief Get minimum distance to contact of a given vertex in rest config / 2.
-    /// @param ei Edge/Face ID.
-    /// @return Minimum distance to contact of primitive ei in rest config / 2 (adapative eps).
-    double min_distance_in_rest_config(const size_t ei) const
-    {
-        if (!are_min_distances_initialized()) {
-            throw std::runtime_error(
-                "Min distances in rest config not initialized. Call init_contact_distance_map() first.");
-        }
-        return min_dist_ratio * m_edge_to_rest_config_contact_dist(ei);
-    }
-
-    /// @brief Determinte if min distances in rest configuration have been initialized by calling init_contact_distance_map().
-    bool are_min_distances_initialized() const 
-    {
-        return m_edge_to_rest_config_contact_dist.rows() == num_edges();
-    }
-
-    ///@brief Fetch maximum distance to contact in rest config
-    ///@return Maximum distance to contact in rest config
-    double max_distance_in_rest_config() const
-    {
-        return m_edge_to_rest_config_contact_dist.maxCoeff();
-    }
-
     // -----------------------------------------------------------------------
 
     /// @brief Construct a vector of bools indicating whether each vertex is on the surface.
@@ -321,12 +293,6 @@ public:
     /// (and faces or edges containing the vertices) can collide. By default all
     /// primitives can collide with all other primitives.
     std::function<bool(size_t, size_t)> can_collide = default_can_collide;
-
-    ///@brief set ratio of min distance to use for adaptive epsilon, ie eps = min_dist_in_rest_config * ratio
-    void set_min_dist_ratio(const double val)
-    {
-        min_dist_ratio = val;
-    }
 
 protected:
     // -----------------------------------------------------------------------
@@ -381,11 +347,6 @@ protected:
     /// @note this is premultiplied by m_select_dof
     Eigen::SparseMatrix<double> m_displacement_dof_map;
 
-    /// @brief Mapping from vertex indices to minimum distance to contact / 2 in rest configuration (adaptive dhat)
-    // Eigen::VectorXd m_vertex_to_rest_config_contact_dist;
-    /// @brief Mapping from edge indices to minimum distance to contact / 2 in rest configuration (adaptive dhat)
-    Eigen::VectorXd m_edge_to_rest_config_contact_dist;
-
     /// @brief Vertices adjacent to vertices
     std::vector<unordered_set<int>> m_vertex_vertex_adjacencies;
     /// @brief Edges adjacent to vertices
@@ -412,9 +373,6 @@ protected:
     std::vector<Eigen::SparseVector<double>> m_vertex_area_jacobian;
     /// @brief The rows of the Jacobian of the edge areas vector.
     std::vector<Eigen::SparseVector<double>> m_edge_area_jacobian;
-
-    ///@brief ratio of min distance to use for adaptive epsilon, ie eps = min_dist_in_rest_config * ratio
-    double min_dist_ratio = 0.5;
 
 private:
     /// @brief By default all primitives can collide with all other primitives.

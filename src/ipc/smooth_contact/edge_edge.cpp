@@ -2,12 +2,66 @@
 #include "smooth_point_edge.hpp"
 #include <ipc/utils/math.hpp>
 #include <ipc/utils/quadrature.hpp>
+#include <ipc/distance/point_edge.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
 
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 
+#include <algorithm>
+
 namespace ipc {
+
+    SmoothEdgeEdgeCollision::SmoothEdgeEdgeCollision(
+    long primitive0_,
+    long primitive1_,
+    const CollisionMesh &mesh,
+    const ParameterType &param,
+    const Eigen::MatrixXd &V): SmoothEdgeEdgeCollision(primitive0_, primitive1_, mesh)
+    {
+        Vector8d positions = dof(V, mesh.edges(), mesh.faces());
+        is_active_ = compute_types(positions, param);
+    }
+
+    bool SmoothEdgeEdgeCollision::compute_types(const Vector8d& positions, const ParameterType &params)
+    {
+        std::array<Vector<double, 2>, 4> points = slice_positions<double, 4, 2>(positions);
+        bool skip = true;
+        normal_types.fill(HEAVISIDE_TYPE::ZERO);
+        for (const int e : {0, 1})
+        {
+            const int ee = 1 - e;
+            const auto &e0 = points[ee * 2 + 0];
+            const auto &e1 = points[ee * 2 + 1];
+            
+            Vector<double, 2> tangent = e1 - e0;
+            const double len = tangent.norm();
+            tangent = tangent / len;
+
+            for (const int i : {0, 1})
+            {
+                const int p_id = e * 2 + i;
+                const auto &p = points[p_id];
+
+                if (vertices[p_id] == vertices[ee * 2 + 0] || vertices[p_id] == vertices[ee * 2 + 1])
+                    continue;
+
+                const Vector<double, 2> pos = p - e0;
+                const double s = pos.dot(tangent) / len;
+                const double L = L_ns(s);
+                const double dist_sqr = (pos - (L * len) * tangent).squaredNorm();
+                const double Phi = 1 - cross2<double>(pos, tangent) / sqrt(dist_sqr);
+
+                if (Phi < params.alpha && dist_sqr < params.eps)
+                {
+                    normal_types[p_id] = HEAVISIDE_TYPE::VARIANT;
+                    skip = false;
+                }
+            }
+        }
+
+        return (params.n_quadrature > 1) || !skip;
+    }
 
     template<class scalar>
     scalar SmoothEdgeEdgeCollision::evaluate_quadrature(const Vector8d& positions, ParameterType params) const
@@ -54,11 +108,9 @@ namespace ipc {
                 for (const int i : {0, 1})
                 {
                     const int p_id = e * 2 + i;
-                    if (vertices[p_id] == vertices[ee * 2 + 0] ||
-                        vertices[p_id] == vertices[ee * 2 + 1])
-                        continue;
-                    
-                    val += (len / scalar(2.)) * smooth_point_edge_potential_single_point<scalar>(points[p_id], points[ee * 2 + 0], points[ee * 2 + 1], params);
+
+                    if (normal_types[p_id] != HEAVISIDE_TYPE::ZERO)
+                        val += (len / scalar(2.)) * smooth_point_edge_potential_single_point<scalar>(points[p_id], points[ee * 2 + 0], points[ee * 2 + 1], params);
                 }
             }
         }
@@ -73,6 +125,22 @@ namespace ipc {
         for (int i = 0; i < 4; i++)
             positions_full.segment<dim>(i * 3) = positions.segment<dim>(i * dim);
         return positions_full;
+    }
+
+    double SmoothEdgeEdgeCollision::compute_distance(const Vector<double, -1, 12>& positions) const
+    {
+        std::array<Vector2<double>, 4> points = slice_positions<double, 4, 2>(positions);
+        double min_dist = std::numeric_limits<double>::max();
+        if (points[0] != points[2] && points[0] != points[3]) 
+            min_dist = std::min(min_dist, point_edge_distance(points[0], points[2], points[3]));
+        if (points[1] != points[2] && points[1] != points[3]) 
+            min_dist = std::min(min_dist, point_edge_distance(points[1], points[2], points[3]));
+        if (points[2] != points[0] && points[2] != points[1]) 
+            min_dist = std::min(min_dist, point_edge_distance(points[2], points[0], points[1]));
+        if (points[3] != points[0] && points[3] != points[1]) 
+            min_dist = std::min(min_dist, point_edge_distance(points[3], points[0], points[1]));
+        
+        return min_dist;
     }
 
     double SmoothEdgeEdgeCollision::operator()(

@@ -28,11 +28,6 @@ public:
         return vertices;
     }
 
-    double compute_distance(const Vector<double, -1, 3*nvert>& positions) const override
-    {
-        return 0.;
-    }
-
     Vector<double, -1, 3*nvert>
     compute_distance_gradient(const Vector<double, -1, 3*nvert>& positions) const override
     {
@@ -82,7 +77,11 @@ public:
         return H::combine(std::move(h), min_ei, max_ei);
     }
 
-    virtual void set_adaptive_dhat(const CollisionMesh &mesh, const double &dhat) {}
+    void set_adaptive_dhat(const double &dhat0_, const double &dhat1_)
+    {
+        // dhat0 = dhat0_;
+        // dhat1 = dhat1_;
+    }
 
 protected:
     bool is_active_ = true;

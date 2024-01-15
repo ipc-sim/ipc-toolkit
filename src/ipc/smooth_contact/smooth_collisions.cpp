@@ -17,10 +17,54 @@
 namespace ipc {
 
 template <int dim>
+void SmoothCollisions<dim>::compute_adaptive_dhat(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices, // set to zero for rest pose
+    const ParameterType &param,
+    const bool use_adaptive_dhat,
+    const BroadPhaseMethod broad_phase_method)
+{
+    assert(vertices.rows() == mesh.num_vertices());
+
+    const double dhat = sqrt(param.eps);
+    double inflation_radius = dhat / 2;
+
+    candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
+    this->build(candidates, mesh, vertices, param, false /*disable adaptive dhat to compute true pairs*/);
+
+    edge_adaptive_dhat.resize(mesh.num_edges());
+    edge_adaptive_dhat.setConstant(dhat);
+    face_adaptive_dhat.resize(mesh.num_faces());
+    face_adaptive_dhat.setConstant(dhat);
+
+    for (auto cc : collisions)
+    {
+        const double dist = param.get_adaptive_dhat_ratio() * sqrt(cc->compute_distance(cc->dof(vertices, mesh.edges(), mesh.faces())));
+        if (std::dynamic_pointer_cast<SmoothEdgeEdgeCollision>(cc) || std::dynamic_pointer_cast<SmoothEdgeEdge3Collision>(cc))
+        {
+            edge_adaptive_dhat((*cc)[0]) = std::min(edge_adaptive_dhat((*cc)[0]), dist);
+            edge_adaptive_dhat((*cc)[1]) = std::min(edge_adaptive_dhat((*cc)[1]), dist);
+        }
+        else if (std::dynamic_pointer_cast<SmoothFaceFaceCollision>(cc))
+        {
+            face_adaptive_dhat((*cc)[0]) = std::min(face_adaptive_dhat((*cc)[0]), dist);
+            face_adaptive_dhat((*cc)[1]) = std::min(face_adaptive_dhat((*cc)[1]), dist);
+        }
+        else
+            throw std::runtime_error("Invalid collision type!");
+    }
+
+    logger().debug("edge dhat min {:.2e}, max {:.2e}", edge_adaptive_dhat.minCoeff(), edge_adaptive_dhat.maxCoeff());
+    if (mesh.dim() == 3)
+        logger().debug("face dhat min {:.2e}, max {:.2e}", face_adaptive_dhat.minCoeff(), face_adaptive_dhat.maxCoeff());
+}
+
+template <int dim>
 void SmoothCollisions<dim>::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const ParameterType &param,
+    const bool use_adaptive_dhat,
     const BroadPhaseMethod broad_phase_method)
 {
     assert(vertices.rows() == mesh.num_vertices());
@@ -28,7 +72,7 @@ void SmoothCollisions<dim>::build(
     double inflation_radius = sqrt(param.eps) / 2;
 
     candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
-    this->build(candidates, mesh, vertices, param);
+    this->build(candidates, mesh, vertices, param, use_adaptive_dhat);
 }
 
 template <int dim>
@@ -36,11 +80,21 @@ void SmoothCollisions<dim>::build(
     const Candidates& candidates_,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
-    const ParameterType &param)
+    const ParameterType &param,
+    const bool use_adaptive_dhat)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
     clear();
+
+    const double dhat = sqrt(param.eps);
+    if (!use_adaptive_dhat)
+    {
+        edge_adaptive_dhat.resize(1);
+        edge_adaptive_dhat(0) = dhat;
+        face_adaptive_dhat.resize(1);
+        face_adaptive_dhat(0) = dhat;
+    }
 
     tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>> storage;
     if constexpr (dim == 2)
@@ -58,7 +112,7 @@ void SmoothCollisions<dim>::build(
                 tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local().add_neighbor_edge_collisions(
-                        mesh, r.begin(), r.end());
+                        mesh, vertices, param, r.begin(), r.end());
                 });
     }
     else
@@ -93,9 +147,14 @@ void SmoothCollisions<dim>::build(
     // logger().debug(to_string(mesh, vertices));
 
     if (use_adaptive_dhat)
-        for (size_t ci = 0; ci < size(); ci++) {
-            typename SmoothCollisions<dim>::value_type& collision = (*this)[ci];
-            collision.set_adaptive_dhat(mesh, sqrt(param.eps));
+        for (auto cc : collisions)
+        {
+            if (std::dynamic_pointer_cast<SmoothEdgeEdgeCollision>(cc) || std::dynamic_pointer_cast<SmoothEdgeEdge3Collision>(cc))
+                cc->set_adaptive_dhat(get_edge_dhat((*cc)[0]), get_edge_dhat((*cc)[1]));
+            else if (std::dynamic_pointer_cast<SmoothFaceFaceCollision>(cc))
+                cc->set_adaptive_dhat(get_face_dhat((*cc)[0]), get_face_dhat((*cc)[1]));
+            else
+                throw std::runtime_error("Invalid collision type!");
         }
 }
 
@@ -170,56 +229,8 @@ template <int dim>
 double SmoothCollisions<dim>::compute_minimum_distance(
     const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
 {
-    return 0.;
-    // assert(vertices.rows() == mesh.num_vertices());
-
-    // if (candidates.empty()) {
-    //     return std::numeric_limits<double>::infinity();
-    // }
-
-    // const Eigen::MatrixXi& edges = mesh.edges();
-    // const Eigen::MatrixXi& faces = mesh.faces();
-
-    // tbb::enumerable_thread_specific<double> storage(
-    //     std::numeric_limits<double>::infinity());
-
-    // tbb::parallel_for(
-    //     tbb::blocked_range<size_t>(0, size()),
-    //     [&](tbb::blocked_range<size_t> r) {
-    //         double& local_min_dist = storage.local();
-
-    //         for (size_t i = r.begin(); i < r.end(); i++) {
-    //             const double dist = (*this)[i].compute_distance(
-    //                 (*this)[i].dof(vertices, edges, faces));
-
-    //             if (dist < local_min_dist) {
-    //                 local_min_dist = dist;
-    //             }
-    //         }
-    //     });
-
-    // const double min_dist = storage.combine([](double a, double b) { return std::min(a, b); });
-    // if (min_dist < 1e-10)
-    // {
-    //     for (int i = 0; i < size(); ++i)
-    //     {
-    //         const double dist = (*this)[i].compute_distance(
-    //             (*this)[i].dof(vertices, edges, faces));
-    //         if (dist <= min_dist * (1 + 1e-12))
-    //         {
-    //             const std::array<long, 4> idx = (*this)[i].vertex_ids(edges, faces);
-    //             std::cout << idx[0] << " " << idx[1] << " " << idx[2] << " " << idx[3] << "\n";
-    //             std::cout << vertices.row(idx[0]) << " " << vertices.row(idx[1]) << " " << vertices.row(idx[2]) << "\n";
-    //             Eigen::MatrixXd V = vertices;
-    //             V.conservativeResize(V.rows(), 3);
-    //             V.col(2).setZero();
-    //             igl::writePLY("zero-dist.ply", V, faces, edges);
-    //             exit(0);
-    //         }
-    //     }
-    // }
-
-    // return min_dist;
+    //TODO: REAL MINIMUM DISTANCE!
+    return Super::compute_minimum_distance(mesh, vertices);
 }
 
 template class SmoothCollisions<2>;

@@ -13,15 +13,23 @@ template <int dim>
 class SmoothCollisions : public VirtualCollisions<(dim == 2) ? 4 : 8> {
 public:
     constexpr static int max_vert = (dim == 2) ? 4 : 8;
+    using Super = VirtualCollisions<max_vert>;
     /// @brief The type of the collisions.
     using value_type = SmoothCollision<max_vert>;
 
 public:
     // SmoothCollisions() = default;
-    SmoothCollisions(bool _use_high_order_quadrature = false, bool _use_adaptive_dhat = false)
-    : use_high_order_quadrature(_use_high_order_quadrature), use_adaptive_dhat(_use_adaptive_dhat)
+    SmoothCollisions(bool _use_high_order_quadrature = false)
+    : use_high_order_quadrature(_use_high_order_quadrature)
     {
     }
+
+    void compute_adaptive_dhat(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const ParameterType &param,
+        const bool use_adaptive_dhat,
+        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param mesh The collision mesh.
@@ -31,6 +39,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const ParameterType &param,
+        const bool use_adaptive_dhat,
         const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
@@ -41,7 +50,8 @@ public:
         const Candidates& _candidates,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
-        const ParameterType &param);
+        const ParameterType &param,
+        const bool use_adaptive_dhat);
 
     // ------------------------------------------------------------------------
 
@@ -81,11 +91,28 @@ public:
         logger().error("Smooth contact formulation doesn't have shape derivatives implemented!");
     }
 
+    double get_edge_dhat(int edge_id) const 
+    { 
+        if (edge_adaptive_dhat.size() > 1) 
+            return edge_adaptive_dhat(edge_id);
+        else
+            return edge_adaptive_dhat(0);
+    }
+    double get_face_dhat(int face_id) const 
+    { 
+        if (face_adaptive_dhat.size() > 1)
+            return face_adaptive_dhat(face_id);
+        else
+            return face_adaptive_dhat(0);
+    }
+
 public:
     std::vector<std::shared_ptr<value_type>> collisions;
 
     const bool use_high_order_quadrature;
-    const bool use_adaptive_dhat;
+
+    Eigen::VectorXd edge_adaptive_dhat;
+    Eigen::VectorXd face_adaptive_dhat;
 
     Candidates candidates;
 };

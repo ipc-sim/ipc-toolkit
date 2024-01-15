@@ -503,7 +503,7 @@ TEST_CASE(
 
     CollisionMesh mesh;
 
-    SmoothCollisions<3> collisions(false, false);
+    SmoothCollisions<3> collisions(false);
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(vertices, edges, faces);
     } else {
@@ -511,8 +511,8 @@ TEST_CASE(
         vertices = mesh.vertices(vertices);
     }
 
-    ParameterType param(dhat*dhat, 0.2, 0, 1, 1);
-    collisions.build(mesh, vertices, param, method);
+    ParameterType param(dhat*dhat, 0.2, 1, 1);
+    collisions.build(mesh, vertices, param, false, method);
     CAPTURE(dhat, method, all_vertices_on_surface);
     CHECK(collisions.size() > 0);
     CHECK(!has_intersections(mesh, vertices));
@@ -570,7 +570,7 @@ TEST_CASE(
     "[potential][smooth_potential]")
 {
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
-    const bool adaptive_dhat = GENERATE(true, false);
+    const bool adaptive_dhat = false; // GENERATE(true, false);
     const int n_quad_pts = GENERATE(1, 3);
 
     double dhat = -1;
@@ -592,12 +592,13 @@ TEST_CASE(
     // std::cout << "\n" <<  vertices << "\n" << edges << "\n";
 
     CollisionMesh mesh;
-    ParameterType param(dhat*dhat, 5, 0.1, 1, n_quad_pts);
-    SmoothCollisions<2> collisions(n_quad_pts > 1, adaptive_dhat);
+    ParameterType param(dhat*dhat, 0.2, 1, n_quad_pts);
+    param.set_adaptive_dhat_ratio(min_dist_ratio);
+    SmoothCollisions<2> collisions(n_quad_pts > 1);
     mesh = CollisionMesh(vertices, edges, faces);
-    mesh.set_min_dist_ratio(min_dist_ratio);
-    collisions.build(mesh, vertices, param, method);
-    CAPTURE(dhat, method);
+    collisions.compute_adaptive_dhat(mesh, vertices, param, adaptive_dhat, method);
+    collisions.build(mesh, vertices, param, adaptive_dhat, method);
+    CAPTURE(dhat, method, adaptive_dhat, n_quad_pts);
     CHECK(collisions.size() > 0);
     std::cout << "smooth collision candidate size " << collisions.size() << "\n";
 

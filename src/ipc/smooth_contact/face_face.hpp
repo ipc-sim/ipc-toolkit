@@ -29,6 +29,8 @@ public:
     std::array<long, 8> vertex_ids(
         const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const override;
 
+    double compute_distance(const Vector<double, -1, 24>& positions) const override;
+
     double operator()(const Vector<double, -1, 24>& positions, 
         const ParameterType &params) const override;
 
@@ -40,12 +42,6 @@ public:
         const Vector<double, -1, 24>& positions, 
         const ParameterType &params,
         const bool project_hessian_to_psd = false) const override;
-
-    void set_adaptive_dhat(const CollisionMesh &mesh, const double &dhat) override
-    {
-        // dhat0 = std::min(dhat, mesh.min_distance_in_rest_config(edge0_id));
-        // dhat1 = std::min(dhat, mesh.min_distance_in_rest_config(edge1_id));
-    }
 
 private:
     template <typename scalar> 

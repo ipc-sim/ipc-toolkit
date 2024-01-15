@@ -12,22 +12,26 @@ namespace ipc {
 
 struct ParameterType
 {
-    ParameterType(const double &_eps, const double &_alpha, const double &_a, const double &_r, const int &_n_quadrature) : 
-    eps(_eps), alpha(_alpha), a(_a), r(_r), n_quadrature(_n_quadrature) 
+    ParameterType(const double &_eps, const double &_alpha, const double &_r, const int &_n_quadrature) : 
+    eps(_eps), alpha(_alpha), r(_r), n_quadrature(_n_quadrature) 
     {
         assert(r > 0);
-        assert(a >= 0);
         assert(eps > 0);
         assert(alpha > 0);
         assert(n_quadrature > 0);
     }
     ParameterType() = delete;
 
+    void set_adaptive_dhat_ratio(const double adaptive_dhat_ratio_) { adaptive_dhat_ratio = adaptive_dhat_ratio_; }
+    double get_adaptive_dhat_ratio() const { return adaptive_dhat_ratio; }
+
     double eps;
-    double alpha;
-    double a;
-    double r;
-    int n_quadrature;
+    const double alpha;
+    const double r;
+    const int n_quadrature;
+
+private:
+    double adaptive_dhat_ratio = 0.5;
 };
 
 template <int max_vert = 4>

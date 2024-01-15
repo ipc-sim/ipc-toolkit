@@ -33,7 +33,7 @@ void SmoothCollisionsBuilder<dim>::add_edge_vertex_collisions(
             
             for (int ej : vertex_edge_adj[vi])
                 if (ej != ei)
-                    add_collision<SmoothEdgeEdgeCollision>(std::make_shared<SmoothEdgeEdgeCollision>(ej, ei, mesh), edge_edge_2_to_id, collisions);
+                    add_collision<SmoothEdgeEdgeCollision>(std::make_shared<SmoothEdgeEdgeCollision>(ej, ei, mesh, param, vertices), edge_edge_2_to_id, collisions);
         }
     }
 }
@@ -41,6 +41,8 @@ void SmoothCollisionsBuilder<dim>::add_edge_vertex_collisions(
 template <int dim>
 void SmoothCollisionsBuilder<dim>::add_neighbor_edge_collisions(
         const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const ParameterType &param,
         const size_t start_i,
         const size_t end_i)
 {
@@ -51,7 +53,7 @@ void SmoothCollisionsBuilder<dim>::add_neighbor_edge_collisions(
             for (int i : vertex_edge_adj[v])
                 for (int j : vertex_edge_adj[v])
                     if (j > i)
-                        add_collision<SmoothEdgeEdgeCollision>(std::make_shared<SmoothEdgeEdgeCollision>(i, j, mesh), edge_edge_2_to_id, collisions);
+                        add_collision<SmoothEdgeEdgeCollision>(std::make_shared<SmoothEdgeEdgeCollision>(i, j, mesh, param, vertices), edge_edge_2_to_id, collisions);
     }
 }
 
