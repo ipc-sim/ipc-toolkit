@@ -39,16 +39,16 @@ namespace ipc {
         const Eigen::Ref<const Vector2<double>>& e1,
         const double &uv,
         const ParameterType &params);
-    template AutodiffScalarGrad<12> smooth_point_edge_potential_pointwise(
-        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& p,
-        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& e0,
-        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& e1,
+    template AutodiffScalarGrad<8> smooth_point_edge_potential_pointwise(
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<8>>>& p,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<8>>>& e0,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<8>>>& e1,
         const double &uv,
         const ParameterType &params);
-    template AutodiffScalarHessian<12> smooth_point_edge_potential_pointwise(
-        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& p,
-        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& e0,
-        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& e1,
+    template AutodiffScalarHessian<8> smooth_point_edge_potential_pointwise(
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<8>>>& p,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<8>>>& e0,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<8>>>& e1,
         const double &uv,
         const ParameterType &params);
 
@@ -76,15 +76,15 @@ namespace ipc {
         const Eigen::Ref<const Vector2<double>>& e0,
         const Eigen::Ref<const Vector2<double>>& e1,
         const ParameterType &params);
-    template AutodiffScalarGrad<12> smooth_point_edge_potential_quadrature(
-        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& p,
-        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& e0,
-        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& e1,
+    template AutodiffScalarGrad<8> smooth_point_edge_potential_quadrature(
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<8>>>& p,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<8>>>& e0,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<8>>>& e1,
         const ParameterType &params);
-    template AutodiffScalarHessian<12> smooth_point_edge_potential_quadrature(
-        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& p,
-        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& e0,
-        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& e1,
+    template AutodiffScalarHessian<8> smooth_point_edge_potential_quadrature(
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<8>>>& p,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<8>>>& e0,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<8>>>& e1,
         const ParameterType &params);
 
     template <typename scalar>
@@ -139,14 +139,14 @@ namespace ipc {
         const Eigen::Ref<const Vector2<double>>& e0,
         const Eigen::Ref<const Vector2<double>>& e1,
         const ParameterType &params);
-    template AutodiffScalarGrad<12> smooth_point_edge_potential_single_point(
-        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& p,
-        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& e0,
-        const Eigen::Ref<const Vector2<AutodiffScalarGrad<12>>>& e1,
+    template AutodiffScalarGrad<8> smooth_point_edge_potential_single_point(
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<8>>>& p,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<8>>>& e0,
+        const Eigen::Ref<const Vector2<AutodiffScalarGrad<8>>>& e1,
         const ParameterType &params);
-    template AutodiffScalarHessian<12> smooth_point_edge_potential_single_point(
-        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& p,
-        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& e0,
-        const Eigen::Ref<const Vector2<AutodiffScalarHessian<12>>>& e1,
+    template AutodiffScalarHessian<8> smooth_point_edge_potential_single_point(
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<8>>>& p,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<8>>>& e0,
+        const Eigen::Ref<const Vector2<AutodiffScalarHessian<8>>>& e1,
         const ParameterType &params);
 }

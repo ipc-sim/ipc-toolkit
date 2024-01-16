@@ -5,6 +5,9 @@
 
 namespace ipc {
 
+constexpr static int max_vert_2d = 6;
+constexpr static int max_vert_3d = 24;
+
 template <int nvert>
 class SmoothCollision : public Collision<nvert> {
 protected:
@@ -28,6 +31,8 @@ public:
     virtual ~SmoothCollision() { }
 
     bool is_active() const { return is_active_; }
+
+    virtual int ndofs() const = 0;
 
     std::array<long, nvert> vertex_ids(
         const Eigen::MatrixXi& edges,

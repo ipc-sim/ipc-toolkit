@@ -50,11 +50,17 @@ namespace ipc {
     //     }
     // }
     // }
-    std::array<long, 8> SmoothFaceFaceCollision::vertex_ids(
+    std::array<long, max_vert_3d> SmoothFaceFaceCollision::vertex_ids(
         const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const
     {
-        return {{faces(primitive0, 0), faces(primitive0, 1), faces(primitive0, 2),
-                faces(primitive1, 0), faces(primitive1, 1), faces(primitive1, 2), -1, -1}};
+        std::array<long, max_vert_3d> out;
+        out.fill(-1);
+        for (int i = 0; i < 3; i++)
+        {
+            out[i] = faces(primitive0, i);
+            out[i+3] = faces(primitive1, i);
+        }
+        return out;
     }
     
     bool SmoothFaceFaceCollision::compute_types(const Vector<double, 18>& positions, const ParameterType &params)
@@ -102,14 +108,14 @@ namespace ipc {
     const ParameterType &param,
     const std::array<double, 2> &dhats_,
     const Eigen::MatrixXd &V)
-    : SmoothCollision<8>(primitive0_, primitive1_, dhats_, mesh)
+    : SmoothCollision<max_vert_3d>(primitive0_, primitive1_, dhats_, mesh)
     { 
         vertices = vertex_ids(mesh.edges(), mesh.faces());
         Vector<double, 18> positions = dof(V, mesh.edges(), mesh.faces());
         is_active_ = compute_types(positions, param);
     }
 
-    double SmoothFaceFaceCollision::compute_distance(const Vector<double, -1, 24>& positions) const
+    double SmoothFaceFaceCollision::compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const
     {
         std::array<Vector3<double>, 6> points = slice_positions<double, 6, 3>(positions);
 
@@ -225,15 +231,15 @@ namespace ipc {
         return out;
     }
 
-    double SmoothFaceFaceCollision::operator()(const Vector<double, -1, 24>& positions, 
+    double SmoothFaceFaceCollision::operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params) const
     {
         assert(positions.size() == 18);
         return evaluate_quadrature<double>(positions, params);
     }
 
-    Vector<double, -1, 24> SmoothFaceFaceCollision::gradient(
-        const Vector<double, -1, 24>& positions, 
+    Vector<double, -1, 3*max_vert_3d> SmoothFaceFaceCollision::gradient(
+        const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params) const
     {
         DiffScalarBase::setVariableCount(18);
@@ -247,7 +253,7 @@ namespace ipc {
         //     my_finite_gradient(positions, f, fgrad);
         // }
 
-        Vector<double, -1, 24> grad = evaluate_quadrature<Diff>(positions, params).getGradient();
+        Vector<double, -1, 3*max_vert_3d> grad = evaluate_quadrature<Diff>(positions, params).getGradient();
 
         // if (grad.norm() > 1e-8)
         // {
@@ -268,8 +274,8 @@ namespace ipc {
         return grad;
     }
 
-    MatrixMax<double, 24, 24> SmoothFaceFaceCollision::hessian(
-        const Vector<double, -1, 24>& positions, 
+    MatrixMax<double, 3*max_vert_3d, 3*max_vert_3d> SmoothFaceFaceCollision::hessian(
+        const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params,
         const bool project_hessian_to_psd) const
     {

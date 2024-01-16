@@ -1,56 +1,15 @@
-#include "edge_edge_face.hpp"
+#include "edge_edge_3d.hpp"
 #include "smooth_edge_edge.hpp"
 #include <ipc/utils/AutodiffTypes.hpp>
 #include <iostream>
 #include <iterator>
 #include <ipc/utils/logger.hpp>
-// #include <ipc/utils/finitediff.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/line_line.hpp>
 #include <ipc/distance/edge_edge.hpp>
-// #include <mutex>
-// std::mutex mut_edge;
 
 namespace ipc {
     namespace {
-    //     enum class FD_RULE { CENTRAL, LEFT, RIGHT };
-        
-    //     void my_finite_gradient(const Eigen::VectorXd& x, const std::function<double(const Eigen::VectorXd&)> &f, Eigen::VectorXd &grad, FD_RULE rule = FD_RULE::CENTRAL, const double eps = 1e-7)
-    //     {
-    //         grad.setZero(x.size());
-    //         switch (rule)
-    //         {
-    //         case FD_RULE::CENTRAL:
-    //             for (int i = 0; i < x.size(); i++)
-    //                 for (int d : {-1, 1})
-    //                 {
-    //                     auto y = x;
-    //                     y(i) += d * eps;
-    //                     grad(i) += d * f(y) / (2*eps);
-    //                 }
-    //             break;
-    //         case FD_RULE::LEFT:
-    //             for (int i = 0; i < x.size(); i++)
-    //             {
-    //                     auto y = x;
-    //                     grad(i) += f(y) / eps;
-    //                     y(i) -= eps;
-    //                     grad(i) -= f(y) / eps;
-    //             }
-    //             break;
-    //         case FD_RULE::RIGHT:
-    //             for (int i = 0; i < x.size(); i++)
-    //             {
-    //                     auto y = x;
-    //                     grad(i) -= f(y) / eps;
-    //                     y(i) += eps;
-    //                     grad(i) += f(y) / eps;
-    //             }
-    //             break;
-    //         default:
-    //         assert(false);
-    //         }
-    //     }
         template <typename Iter>
         size_t index_of(Iter first, Iter last, const typename std::iterator_traits<Iter>::value_type& x)
         {
@@ -72,7 +31,7 @@ namespace ipc {
     const CollisionMesh &mesh,
     const ParameterType &param,
     const std::array<double, 2> &dhats_,
-    const Eigen::MatrixXd &V): SmoothCollision<8>(primitive0_, primitive1_, dhats_, mesh)
+    const Eigen::MatrixXd &V): SmoothCollision<max_vert_3d>(primitive0_, primitive1_, dhats_, mesh)
     {
         std::array<long, 4> faces = {{mesh.edges_to_faces()(primitive0, 0), mesh.edges_to_faces()(primitive0, 1),
                   mesh.edges_to_faces()(primitive1, 0), mesh.edges_to_faces()(primitive1, 1)}};
@@ -201,7 +160,7 @@ namespace ipc {
         return true;
     }
 
-    double SmoothEdgeEdge3Collision::compute_distance(const Vector<double, -1, 24>& positions) const
+    double SmoothEdgeEdge3Collision::compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const
     {
         std::array<Vector3<double>, 8> points = slice_positions<double, 8, 3>(positions);
 
@@ -288,21 +247,21 @@ namespace ipc {
         return out;
     }
 
-    std::array<long, 8> SmoothEdgeEdge3Collision::vertex_ids(
+    std::array<long, max_vert_3d> SmoothEdgeEdge3Collision::vertex_ids(
         const Eigen::MatrixXi& _edges, const Eigen::MatrixXi& _faces) const
     {
         return vertices;
     }
 
-    double SmoothEdgeEdge3Collision::operator()(const Vector<double, -1, 24>& positions, 
+    double SmoothEdgeEdge3Collision::operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params) const
     {
         assert(positions.size() == 24);
         return evaluate_quadrature<double>(positions, params);
     }
 
-    Vector<double, -1, 24> SmoothEdgeEdge3Collision::gradient(
-        const Vector<double, -1, 24>& positions, 
+    Vector<double, -1, 3*max_vert_3d> SmoothEdgeEdge3Collision::gradient(
+        const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params) const
     {
         DiffScalarBase::setVariableCount(24);
@@ -310,8 +269,8 @@ namespace ipc {
         return evaluate_quadrature<Diff>(positions, params).getGradient();
     }
 
-    MatrixMax<double, 24, 24> SmoothEdgeEdge3Collision::hessian(
-        const Vector<double, -1, 24>& positions, 
+    MatrixMax<double, 3*max_vert_3d, 3*max_vert_3d> SmoothEdgeEdge3Collision::hessian(
+        const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params,
         const bool project_hessian_to_psd) const
     {

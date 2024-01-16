@@ -18,6 +18,11 @@ public:
         const std::array<double, 2> &dhats_,
         const Eigen::MatrixXd &V);
 
+    int ndofs() const override
+    {
+        return 8;
+    }
+
     int num_vertices() const override
     {
         return 4;

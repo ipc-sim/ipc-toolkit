@@ -6,7 +6,7 @@
 
 namespace ipc {
 
-class SmoothEdgeEdge3Collision : public SmoothCollision<8> {
+class SmoothEdgeEdge3Collision : public SmoothCollision<max_vert_3d> {
 public:
     SmoothEdgeEdge3Collision(
         long primitive0_,
@@ -19,25 +19,30 @@ public:
     {
     }
 
+    int ndofs() const override
+    {
+        return num_vertices() * 3;
+    }
+
     int num_vertices() const override
     {
         return 8;
     }
 
-    std::array<long, 8> vertex_ids(
+    std::array<long, max_vert_3d> vertex_ids(
         const Eigen::MatrixXi& _edges, const Eigen::MatrixXi& _faces) const override;
     
-    double compute_distance(const Vector<double, -1, 24>& positions) const override;
+    double compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const override;
 
-    double operator()(const Vector<double, -1, 24>& positions, 
+    double operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params) const override;
 
-    Vector<double, -1, 24> gradient(
-        const Vector<double, -1, 24>& positions, 
+    Vector<double, -1, 3*max_vert_3d> gradient(
+        const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params) const override;
 
-    MatrixMax<double, 24, 24> hessian(
-        const Vector<double, -1, 24>& positions, 
+    MatrixMax<double, 3*max_vert_3d, 3*max_vert_3d> hessian(
+        const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params,
         const bool project_hessian_to_psd = false) const override;
 

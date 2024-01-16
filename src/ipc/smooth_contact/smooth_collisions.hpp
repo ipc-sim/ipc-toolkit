@@ -4,16 +4,16 @@
 #include "vertex_vertex.hpp"
 #include "edge_vertex.hpp"
 #include "edge_edge.hpp"
-#include "edge_edge_face.hpp"
+#include "edge_edge_3d.hpp"
 #include "face_vertex.hpp"
 #include "face_face.hpp"
 
 namespace ipc {
 
 template <int dim>
-class SmoothCollisions : public VirtualCollisions<(dim == 2) ? 6 : 8> {
+class SmoothCollisions : public VirtualCollisions<(dim == 2) ? max_vert_2d : max_vert_3d> {
 public:
-    constexpr static int max_vert = (dim == 2) ? 6 : 8;
+    constexpr static int max_vert = (dim == 2) ? max_vert_2d : max_vert_3d;
     using Super = VirtualCollisions<max_vert>;
     /// @brief The type of the collisions.
     using value_type = SmoothCollision<max_vert>;

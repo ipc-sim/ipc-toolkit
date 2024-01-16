@@ -145,9 +145,9 @@ namespace ipc {
         const VectorMax18d& positions, 
         const ParameterType &params) const
     {
-        DiffScalarBase::setVariableCount(12);
-        using Diff=AutodiffScalarGrad<12>;
-        return evaluate_quadrature<Diff>(positions, params).getGradient().head(4*dim);
+        DiffScalarBase::setVariableCount(8);
+        using Diff=AutodiffScalarGrad<8>;
+        return evaluate_quadrature<Diff>(positions, params).getGradient();
     }
 
     MatrixMax18d SmoothEdgeEdgeCollision::hessian(
@@ -155,8 +155,8 @@ namespace ipc {
         const ParameterType &params,
         const bool project_hessian_to_psd) const
     {
-        DiffScalarBase::setVariableCount(12);
-        using Diff=AutodiffScalarHessian<12>;
-        return evaluate_quadrature<Diff>(positions, params).getHessian().topLeftCorner(4*dim, 4*dim);
+        DiffScalarBase::setVariableCount(8);
+        using Diff=AutodiffScalarHessian<8>;
+        return evaluate_quadrature<Diff>(positions, params).getHessian();
     }
 }

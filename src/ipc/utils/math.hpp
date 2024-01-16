@@ -174,6 +174,23 @@ namespace ipc {
         return points;
     }
 
+    template <class T, int dim>
+    Eigen::Matrix<T, -1, dim> slice_positions_large(const Eigen::VectorXd &positions)
+    {
+        const int nvert = positions.size() / dim;
+        Eigen::Matrix<T, -1, dim> points;
+        points.setZero(nvert, dim);
+        
+        for (int i = 0, id = 0; i < nvert; i++)
+            for (int d = 0; d < dim; d++, id++)
+                if constexpr (std::is_same<T, double>::value)
+                    points(i, d) = positions(id);
+                else
+                    points(i, d) = T(id, positions(id));
+
+        return points;
+    }
+
     template <typename Less, typename T, typename... Ts>
     constexpr const T& min(Less less, const T& a, const T& b, const Ts&... rems) {
         if constexpr (sizeof...(rems)) {

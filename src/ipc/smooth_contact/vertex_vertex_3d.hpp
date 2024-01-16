@@ -1,36 +1,37 @@
 #pragma once
 
 #include "smooth_collision.hpp"
-#include <ipc/utils/math.hpp>
 #include <ipc/distance/distance_type.hpp>
-#include <iostream>
+#include <ipc/utils/math.hpp>
 
 namespace ipc {
 
-class SmoothFaceFaceCollision : public SmoothCollision<max_vert_3d> {
+class SmoothVertexVertex3Collision : public SmoothCollision<max_vert_3d> {
 public:
-    SmoothFaceFaceCollision(
+    SmoothVertexVertex3Collision(
         long primitive0_,
         long primitive1_,
         const CollisionMesh &mesh,
         const ParameterType &param,
         const std::array<double, 2> &dhats_,
         const Eigen::MatrixXd &V);
-    virtual ~SmoothFaceFaceCollision() { }
+    virtual ~SmoothVertexVertex3Collision() 
+    {
+    }
 
     int ndofs() const override
     {
-        return 18;
+        return num_vertices() * 3;
     }
 
     int num_vertices() const override
     {
-        return 6;
+        return n_neighbors[0] + n_neighbors[1] + 2;
     }
 
     std::array<long, max_vert_3d> vertex_ids(
-        const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const override;
-
+        const Eigen::MatrixXi& _edges, const Eigen::MatrixXi& _faces) const override;
+    
     double compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const override;
 
     double operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 
@@ -47,12 +48,11 @@ public:
 
 private:
     template <typename scalar> 
-    scalar evaluate_quadrature(const Vector<double, 18>& positions, ParameterType params) const;
+    scalar evaluate_quadrature(const Eigen::VectorXd& positions, ParameterType params) const;
 
-    bool compute_types(const Vector<double, 18>& positions, const ParameterType &params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
+    bool compute_types(const Eigen::VectorXd& positions, const ParameterType &params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
 
-    std::array<PointTriangleDistanceType, 6> dtypes;
-    std::array<HEAVISIDE_TYPE, 6> normal_types;
+    std::array<int, 2> n_neighbors;
 };
 
 }

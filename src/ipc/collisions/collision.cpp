@@ -1,4 +1,5 @@
 #include "collision.hpp"
+#include <ipc/smooth_contact/smooth_collision.hpp>
 
 namespace ipc {
 
@@ -55,7 +56,7 @@ Matrix12d Collision<max_vert>::mollifier_gradient_jacobian_wrt_x(
 }
 
 template class Collision<4>;
-template class Collision<6>;
-template class Collision<8>;
+template class Collision<max_vert_3d>;
+template class Collision<max_vert_2d>;
 
 } // namespace ipc
