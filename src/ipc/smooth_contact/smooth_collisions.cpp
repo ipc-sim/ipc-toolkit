@@ -224,8 +224,34 @@ template <int dim>
 double SmoothCollisions<dim>::compute_minimum_distance(
     const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
 {
-    //TODO: REAL MINIMUM DISTANCE!
-    return Super::compute_minimum_distance(mesh, vertices);
+    assert(vertices.rows() == mesh.num_vertices());
+
+    if (candidates.empty()) {
+        return std::numeric_limits<double>::infinity();
+    }
+
+    const Eigen::MatrixXi& edges = mesh.edges();
+    const Eigen::MatrixXi& faces = mesh.faces();
+
+    tbb::enumerable_thread_specific<double> storage(
+        std::numeric_limits<double>::infinity());
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, size()),
+        [&](tbb::blocked_range<size_t> r) {
+            double& local_min_dist = storage.local();
+
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                const double dist = candidates_[i].compute_distance(
+                    candidates_[i].dof(vertices, edges, faces));
+
+                if (dist < local_min_dist) {
+                    local_min_dist = dist;
+                }
+            }
+        });
+
+    return storage.combine([](double a, double b) { return std::min(a, b); });
 }
 
 template class SmoothCollisions<2>;
