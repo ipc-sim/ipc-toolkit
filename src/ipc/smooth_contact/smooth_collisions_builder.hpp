@@ -56,6 +56,7 @@ public:
         const Eigen::MatrixXd& vertices,
         const std::vector<FaceVertexCandidate>& candidates,
         const ParameterType &param,
+        const std::function<double(const long &)> &vert_dhat,
         const std::function<double(const long &)> &face_dhat,
         const size_t start_i,
         const size_t end_i);
@@ -79,7 +80,9 @@ public:
     // Store the indices to pairs to avoid duplicates.
     unordered_map<SmoothVertexVertexCollision, long> vert_vert_2_to_id;
     unordered_map<SmoothEdgeEdgeCollision, long> edge_edge_2_to_id;
+    
     unordered_map<SmoothFaceFaceCollision, long> face_face_to_id;
+    unordered_map<SmoothVertexVertex3Collision, long> vert_vert_3_to_id;
     unordered_map<SmoothEdgeEdge3Collision, long> edge_edge_3_to_id;
 
     // Constructed collisions

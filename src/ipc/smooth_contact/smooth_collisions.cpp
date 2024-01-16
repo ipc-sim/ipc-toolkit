@@ -51,7 +51,7 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
             face_adaptive_dhat((*cc)[0]) = std::min(face_adaptive_dhat((*cc)[0]), dist);
             face_adaptive_dhat((*cc)[1]) = std::min(face_adaptive_dhat((*cc)[1]), dist);
         }
-        else if (std::dynamic_pointer_cast<SmoothVertexVertexCollision>(cc))
+        else if (std::dynamic_pointer_cast<SmoothVertexVertexCollision>(cc) || std::dynamic_pointer_cast<SmoothVertexVertex3Collision>(cc))
         {
             vert_adaptive_dhat((*cc)[0]) = std::min(vert_adaptive_dhat((*cc)[0]), dist);
             vert_adaptive_dhat((*cc)[1]) = std::min(vert_adaptive_dhat((*cc)[1]), dist);
@@ -148,7 +148,7 @@ void SmoothCollisions<dim>::build(
             tbb::blocked_range<size_t>(size_t(0), candidates_.fv_candidates.size()),
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_face_vertex_collisions(
-                    mesh, vertices, candidates_.fv_candidates, param, face_dhat, r.begin(),
+                    mesh, vertices, candidates_.fv_candidates, param, vert_dhat, face_dhat, r.begin(),
                     r.end());
             });
 

@@ -29,9 +29,6 @@ public:
         return n_neighbors[0] + n_neighbors[1] + 2;
     }
 
-    std::array<long, max_vert_3d> vertex_ids(
-        const Eigen::MatrixXi& _edges, const Eigen::MatrixXi& _faces) const override;
-    
     double compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const override;
 
     double operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 

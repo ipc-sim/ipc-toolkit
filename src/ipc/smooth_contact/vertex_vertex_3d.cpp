@@ -38,9 +38,11 @@ namespace ipc {
             {
                 neighbors.push_back(iter->first);
                 iter = map.find(iter->second);
-                assert (iter != map.end());
+                if (iter == map.end())
+                    throw std::runtime_error("Non-manifold vertex!");
             }
-            assert(neighbors.size() == map.size());
+            if (neighbors.size() != map.size())
+                throw std::runtime_error("Non-manifold vertex!");
             n_neighbors[id++] = neighbors.size();
 
             if (vertices.size() < v_id + neighbors.size())
@@ -57,7 +59,54 @@ namespace ipc {
         const Eigen::VectorXd& positions, 
         const ParameterType &params)
     {
-        // auto points = slice_positions_large<double, 3>(positions);
+        auto points = slice_positions_large<double, 3>(positions);
+        const Eigen::Ref<const RowVector3<double>>& va = points.row(0);
+        const Eigen::Ref<const RowVector3<double>>& vb = points.row(1);
+        const Eigen::Matrix<double, -1, 3> &ra = points.middleRows(2, n_neighbors[0]); 
+        const Eigen::Matrix<double, -1, 3> &rb = points.bottomRows(n_neighbors[1]);
+
+        RowVector3<double> direc = va - vb;
+        const double dist = direc.norm();
+        direc = direc / dist;
+        RowVector3<double> t, t_prev;
+
+        if (dist > std::max(dhats[0], dhats[1]))
+            return false;
+
+        assert(ra.rows() > 2);
+        assert(rb.rows() > 2);
+
+        bool normal_term = false;
+        bool tangent_term1 = true, tangent_term2 = true;
+        t_prev = ra.row(ra.rows()-1) - va;
+        for (int a = 0; a < ra.rows(); a++)
+        {
+            t = ra.row(a) - va;
+            tangent_term1 = tangent_term1 && direc.dot(t) / t.norm() / params.alpha > -1;
+            normal_term = normal_term || -direc.dot(t_prev.cross(t).normalized()) / params.alpha > -1;
+            std::swap(t, t_prev);
+        }
+
+        if (!normal_term)
+            return false;
+
+        normal_term = false;
+        direc = -direc;
+        t_prev = rb.row(rb.rows()-1) - vb;
+        for (int b = 0; b < rb.rows(); b++)
+        {
+            t = rb.row(b) - vb;
+            tangent_term2 = tangent_term2 && direc.dot(t) / t.norm() / params.alpha > -1;
+            normal_term = normal_term || -direc.dot(t_prev.cross(t).normalized()) / params.alpha > -1;
+            std::swap(t, t_prev);
+        }
+
+        if (!normal_term)
+            return false;
+        
+        if (!tangent_term1 && !tangent_term2)
+            return false;
+
         return true;
     }
 
@@ -73,12 +122,6 @@ namespace ipc {
         auto points = slice_positions_large<scalar, 3>(positions);
         return smooth_point_point_potential_3d<scalar>(points.row(0), points.row(1), 
         points.middleRows(2, n_neighbors[0]), points.bottomRows(n_neighbors[1]), params, dhats);
-    }
-
-    std::array<long, max_vert_3d> SmoothVertexVertex3Collision::vertex_ids(
-        const Eigen::MatrixXi& _edges, const Eigen::MatrixXi& _faces) const
-    {
-        return vertices;
     }
 
     double SmoothVertexVertex3Collision::operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 

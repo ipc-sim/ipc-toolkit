@@ -1,5 +1,6 @@
 #include "collisions.hpp"
 
+#include <ipc/smooth_contact/smooth_collision.hpp>
 #include <ipc/collisions/collisions_builder.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_line.hpp>
@@ -487,7 +488,7 @@ std::string Collisions::to_string(
 }
 
 template class VirtualCollisions<4>;
-template class VirtualCollisions<6>;
-template class VirtualCollisions<8>;
+template class VirtualCollisions<max_vert_2d>;
+template class VirtualCollisions<max_vert_3d>;
 
 } // namespace ipc

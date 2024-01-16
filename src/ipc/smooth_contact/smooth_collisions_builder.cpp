@@ -97,6 +97,7 @@ void SmoothCollisionsBuilder<dim>::add_face_vertex_collisions(
     const Eigen::MatrixXd& vertices,
     const std::vector<FaceVertexCandidate>& candidates,
     const ParameterType &param,
+    const std::function<double(const long &)> &vert_dhat,
     const std::function<double(const long &)> &face_dhat,
     const size_t start_i,
     const size_t end_i)
@@ -113,6 +114,13 @@ void SmoothCollisionsBuilder<dim>::add_face_vertex_collisions(
                     std::array<double, 2> dhats = {{face_dhat(fi), face_dhat(fj)}};
                     add_collision<SmoothFaceFaceCollision>(std::make_shared<SmoothFaceFaceCollision>(fi, fj, mesh, param, dhats, vertices), face_face_to_id, collisions);
                 }
+            
+            for (int lv = 0; lv < 3; lv++)
+            {
+                const auto &vj = mesh.faces()(fi, lv);
+                std::array<double, 2> dhats = {{vert_dhat(vi), vert_dhat(vj)}};
+                add_collision<SmoothVertexVertex3Collision>(std::make_shared<SmoothVertexVertex3Collision>(vi, vj, mesh, param, dhats, vertices), vert_vert_3_to_id, collisions);
+            }
         }
     }
 }
@@ -162,6 +170,8 @@ void SmoothCollisionsBuilder<dim>::merge(
 {
     unordered_map<SmoothVertexVertexCollision, long> vert_vert_2_to_id;
     unordered_map<SmoothEdgeEdgeCollision, long> edge_edge_2_to_id;
+
+    unordered_map<SmoothVertexVertex3Collision, long> vert_vert_3_to_id;
     unordered_map<SmoothFaceFaceCollision, long> face_face_to_id;
     unordered_map<SmoothEdgeEdge3Collision, long> edge_edge_3_to_id;
 
@@ -185,12 +195,21 @@ void SmoothCollisionsBuilder<dim>::merge(
                     merged_collisions.collisions.push_back(cc);
                 }
             }
-            else if (auto vv = std::dynamic_pointer_cast<SmoothVertexVertexCollision>(cc))
+            else if (auto vv2 = std::dynamic_pointer_cast<SmoothVertexVertexCollision>(cc))
             {
-                if (vert_vert_2_to_id.find(*vv) == vert_vert_2_to_id.end())
+                if (vert_vert_2_to_id.find(*vv2) == vert_vert_2_to_id.end())
                 {
                     // New collision, so add it to the end of collisions
-                    vert_vert_2_to_id.emplace(*vv, merged_collisions.collisions.size());
+                    vert_vert_2_to_id.emplace(*vv2, merged_collisions.collisions.size());
+                    merged_collisions.collisions.push_back(cc);
+                }
+            }
+            else if (auto vv3 = std::dynamic_pointer_cast<SmoothVertexVertex3Collision>(cc))
+            {
+                if (vert_vert_3_to_id.find(*vv3) == vert_vert_3_to_id.end())
+                {
+                    // New collision, so add it to the end of collisions
+                    vert_vert_3_to_id.emplace(*vv3, merged_collisions.collisions.size());
                     merged_collisions.collisions.push_back(cc);
                 }
             }
