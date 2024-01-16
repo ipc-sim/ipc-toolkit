@@ -332,28 +332,7 @@ double VirtualCollisions<max_vert>::compute_minimum_distance(
             }
         });
 
-    const double min_dist = storage.combine([](double a, double b) { return std::min(a, b); });
-    // if (min_dist < 1e-10)
-    // {
-    //     for (int i = 0; i < size(); ++i)
-    //     {
-    //         const double dist = (*this)[i].compute_distance(
-    //             (*this)[i].dof(vertices, edges, faces));
-    //         if (dist <= min_dist * (1 + 1e-12))
-    //         {
-    //             const std::array<long, 4> idx = (*this)[i].vertex_ids(edges, faces);
-    //             std::cout << idx[0] << " " << idx[1] << " " << idx[2] << " " << idx[3] << "\n";
-    //             std::cout << vertices.row(idx[0]) << " " << vertices.row(idx[1]) << " " << vertices.row(idx[2]) << "\n";
-    //             Eigen::MatrixXd V = vertices;
-    //             V.conservativeResize(V.rows(), 3);
-    //             V.col(2).setZero();
-    //             igl::writePLY("zero-dist.ply", V, faces, edges);
-    //             exit(0);
-    //         }
-    //     }
-    // }
-
-    return min_dist;
+    return storage.combine([](double a, double b) { return std::min(a, b); });
 }
 
 // ============================================================================

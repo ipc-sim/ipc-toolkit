@@ -104,6 +104,13 @@ public:
         else
             return face_adaptive_dhat(0);
     }
+    double get_max_dhat() const
+    {
+        if constexpr (dim == 2)
+            return edge_adaptive_dhat.maxCoeff();
+        else
+            return std::max(edge_adaptive_dhat.maxCoeff(), face_adaptive_dhat.maxCoeff());
+    }
 
 public:
     std::vector<std::shared_ptr<value_type>> collisions;

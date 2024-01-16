@@ -109,10 +109,10 @@ namespace ipc {
                     smooth_edge_edge_potential_tangent_term<scalar>(fb1, eb1, eb0, direc, params.alpha, tangent_types[3]) *
                     inv_barrier<scalar>(dist_sqr / dhats[1], params.r);
 
-        const scalar normal_penalty = smooth_edge_edge_potential_normal_term<scalar>(fa0, ea0, ea1, direc, params.alpha, normal_types[0]) * 
-                                    smooth_edge_edge_potential_normal_term<scalar>(fa1, ea1, ea0, direc, params.alpha, normal_types[1]) * 
-                                    smooth_edge_edge_potential_normal_term<scalar>(fb0, eb0, eb1, -direc, params.alpha, normal_types[2]) * 
-                                    smooth_edge_edge_potential_normal_term<scalar>(fb1, eb1, eb0, -direc, params.alpha, normal_types[3]);
+        const scalar normal_penalty = (smooth_edge_edge_potential_normal_term<scalar>(fa0, ea0, ea1, direc, params.alpha, normal_types[0]) + 
+                                    smooth_edge_edge_potential_normal_term<scalar>(fa1, ea1, ea0, direc, params.alpha, normal_types[1])) * 
+                                    (smooth_edge_edge_potential_normal_term<scalar>(fb0, eb0, eb1, -direc, params.alpha, normal_types[2]) + 
+                                    smooth_edge_edge_potential_normal_term<scalar>(fb1, eb1, eb0, -direc, params.alpha, normal_types[3]));
         
         const scalar mollifier_a = mollifier<scalar>((point_edge_sqr_distance<scalar>(ea0, eb0, eb1, edge_dtypes[0]) - dist_sqr) / a / threshold_eps) * mollifier<scalar>((point_edge_sqr_distance<scalar>(ea1, eb0, eb1, edge_dtypes[1]) - dist_sqr) / a / threshold_eps);
         const scalar mollifier_b = mollifier<scalar>((point_edge_sqr_distance<scalar>(eb0, ea0, ea1, edge_dtypes[2]) - dist_sqr) / b / threshold_eps) * mollifier<scalar>((point_edge_sqr_distance<scalar>(eb1, ea0, ea1, edge_dtypes[3]) - dist_sqr) / b / threshold_eps);

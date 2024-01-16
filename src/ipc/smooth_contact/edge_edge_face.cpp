@@ -126,20 +126,35 @@ namespace ipc {
         if (dtype != EdgeEdgeDistanceType::EA_EB)
             return false;
 
-        const Eigen::Vector3d direc = edge_edge_closest_point_direction<double>(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)], points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)], dtype).normalized();
+        const Eigen::Vector3d direc = edge_edge_closest_point_direction<double>(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)], points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)], dtype);
         if (direc.norm() >= std::max(get_dhat(0), get_dhat(1)))
             return false;
 
-        for (int f : {0, 1, 2, 3})
         {
-            const Eigen::Vector3d normal = (points_double[face_to_vertex(f, 1)] - points_double[face_to_vertex(f, 0)]).cross(points_double[face_to_vertex(f, 2)] - points_double[face_to_vertex(f, 0)]).normalized();
-            const double val = (f >= 2 ? -1. : 1.) * direc.dot(normal);
-            if (val < -params.alpha)
+            bool all_skip = true;
+            for (int e : {0, 1})
+            {
+                bool skip = true;
+                for (int f : {2*e+0, 2*e+1})
+                {
+                    const Eigen::Vector3d normal = (points_double[face_to_vertex(f, 1)] - points_double[face_to_vertex(f, 0)]).cross(points_double[face_to_vertex(f, 2)] - points_double[face_to_vertex(f, 0)]).normalized();
+                    const double val = (f >= 2 ? -1. : 1.) * direc.dot(normal) / direc.norm();
+                    if (val < -params.alpha)
+                        normal_types[f] = HEAVISIDE_TYPE::ZERO;
+                    else
+                    {
+                        skip = false;
+                        if (val > 0)
+                            normal_types[f] = HEAVISIDE_TYPE::ONE;
+                        else
+                            normal_types[f] = HEAVISIDE_TYPE::VARIANT;
+                    }
+                }
+                if (!skip)
+                    all_skip = false;
+            }
+            if (all_skip)
                 return false;
-            else if (val > 0)
-                normal_types[f] = HEAVISIDE_TYPE::ONE;
-            else
-                normal_types[f] = HEAVISIDE_TYPE::VARIANT;
         }
 
         {
@@ -153,7 +168,7 @@ namespace ipc {
                         point_line_closest_point_direction<double>(
                         points_double[face_to_vertex(f, 0)],
                         points_double[face_to_vertex(f, 1)],
-                        points_double[face_to_vertex(f, 2)]).normalized());
+                        points_double[face_to_vertex(f, 2)]).normalized()) / direc.norm();
                     if (val < -params.alpha)
                     {
                         tangent_types[f] = HEAVISIDE_TYPE::ZERO;
