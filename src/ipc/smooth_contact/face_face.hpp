@@ -8,16 +8,13 @@
 namespace ipc {
 
 class SmoothFaceFaceCollision : public SmoothCollision<8> {
-    SmoothFaceFaceCollision(
-        long primitive0_,
-        long primitive1_,
-        const CollisionMesh &mesh);
 public:
     SmoothFaceFaceCollision(
         long primitive0_,
         long primitive1_,
         const CollisionMesh &mesh,
         const ParameterType &param,
+        const std::array<double, 2> &dhats_,
         const Eigen::MatrixXd &V);
     virtual ~SmoothFaceFaceCollision() { }
 
@@ -45,7 +42,7 @@ public:
 
 private:
     template <typename scalar> 
-    scalar evaluate_quadrature(const Vector<double, 18>& positions, const ParameterType &params) const;
+    scalar evaluate_quadrature(const Vector<double, 18>& positions, ParameterType params) const;
 
     bool compute_types(const Vector<double, 18>& positions, const ParameterType &params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
 

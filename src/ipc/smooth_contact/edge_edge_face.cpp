@@ -67,10 +67,12 @@ namespace ipc {
     }
 
     SmoothEdgeEdge3Collision::SmoothEdgeEdge3Collision(
-        long primitive0_,
-        long primitive1_,
-        const CollisionMesh &mesh)
-    : SmoothCollision(primitive0_, primitive1_, mesh)
+    long primitive0_,
+    long primitive1_,
+    const CollisionMesh &mesh,
+    const ParameterType &param,
+    const std::array<double, 2> &dhats_,
+    const Eigen::MatrixXd &V): SmoothCollision<8>(primitive0_, primitive1_, dhats_, mesh)
     {
         std::array<long, 4> faces = {{mesh.edges_to_faces()(primitive0, 0), mesh.edges_to_faces()(primitive0, 1),
                   mesh.edges_to_faces()(primitive1, 0), mesh.edges_to_faces()(primitive1, 1)}};
@@ -107,15 +109,7 @@ namespace ipc {
             face_to_vertex(j, 2) = index_of(vertices.begin(), vertices.begin() + 4, vc);
             assert(face_to_vertex(j, 1) < 4 && face_to_vertex(j, 2) < 4);
         }
-    }
-
-    SmoothEdgeEdge3Collision::SmoothEdgeEdge3Collision(
-    long primitive0_,
-    long primitive1_,
-    const CollisionMesh &mesh,
-    const ParameterType &param,
-    const Eigen::MatrixXd &V): SmoothEdgeEdge3Collision(primitive0_, primitive1_, mesh)
-    {
+        
         Vector<double, 24> positions = dof(V, mesh.edges(), mesh.faces());
         is_active_ = compute_types(positions, param);
     }
@@ -133,6 +127,8 @@ namespace ipc {
             return false;
 
         const Eigen::Vector3d direc = edge_edge_closest_point_direction<double>(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)], points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)], dtype).normalized();
+        if (direc.norm() >= std::max(get_dhat(0), get_dhat(1)))
+            return false;
 
         for (int f : {0, 1, 2, 3})
         {
@@ -197,7 +193,7 @@ namespace ipc {
     }
 
     template <typename scalar> 
-    scalar SmoothEdgeEdge3Collision::evaluate_quadrature(const Vector<double, 24>& positions, const ParameterType &params) const
+    scalar SmoothEdgeEdge3Collision::evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params) const
     {
         std::array<Vector3<scalar>, 8> points = slice_positions<scalar, 8, 3>(positions);
         const scalar out = smooth_edge_edge_potential_single_point<scalar>(
@@ -205,7 +201,7 @@ namespace ipc {
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
             points[face_to_vertex(0, 0)], points[face_to_vertex(1, 0)],
             points[face_to_vertex(2, 0)], points[face_to_vertex(3, 0)], 
-            params, dtype, edge_dtypes, normal_types, tangent_types);
+            params, dhats, dtype, edge_dtypes, normal_types, tangent_types);
         
         // if constexpr (std::is_same<scalar, AutodiffScalarGrad<24>>::value)
         // {

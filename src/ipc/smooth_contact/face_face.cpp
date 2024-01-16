@@ -83,7 +83,7 @@ namespace ipc {
                     const Eigen::Vector3d normal = (f1 - f0).cross(f2 - f0);
                     const double dist_sqr = point_triangle_distance(p, f0, f1, f2, dtypes[p_id]);
                     const double Phi = 1 - (p - f0).dot(normal) / sqrt(dist_sqr * normal.squaredNorm());
-                    if (Phi < params.alpha && dist_sqr < params.eps)
+                    if (Phi < params.alpha && dist_sqr < pow(get_dhat(tt), 2))
                     {
                         normal_types[p_id] = HEAVISIDE_TYPE::VARIANT;
                         skip = false;
@@ -96,21 +96,15 @@ namespace ipc {
     }
 
     SmoothFaceFaceCollision::SmoothFaceFaceCollision(
-        long primitive0_,
-        long primitive1_,
-        const CollisionMesh &mesh)
-    : SmoothCollision<8>(primitive0_, primitive1_, mesh)
-    { 
-        vertices = vertex_ids(mesh.edges(), mesh.faces());
-    }
-
-    SmoothFaceFaceCollision::SmoothFaceFaceCollision(
     long primitive0_,
     long primitive1_,
     const CollisionMesh &mesh,
     const ParameterType &param,
-    const Eigen::MatrixXd &V): SmoothFaceFaceCollision(primitive0_, primitive1_, mesh)
-    {
+    const std::array<double, 2> &dhats_,
+    const Eigen::MatrixXd &V)
+    : SmoothCollision<8>(primitive0_, primitive1_, dhats_, mesh)
+    { 
+        vertices = vertex_ids(mesh.edges(), mesh.faces());
         Vector<double, 18> positions = dof(V, mesh.edges(), mesh.faces());
         is_active_ = compute_types(positions, param);
     }
@@ -138,7 +132,7 @@ namespace ipc {
     }
 
     template <typename scalar> 
-    scalar SmoothFaceFaceCollision::evaluate_quadrature(const Vector<double, 18>& positions, const ParameterType &params) const
+    scalar SmoothFaceFaceCollision::evaluate_quadrature(const Vector<double, 18>& positions, ParameterType params) const
     {
         std::array<Vector3<scalar>, 6> points = slice_positions<scalar, 6, 3>(positions);
         
@@ -150,6 +144,7 @@ namespace ipc {
         for (const int t : {0, 1})
         {
             const int tt = 1 - t;
+            params.eps = pow(get_dhat(tt), 2);
             // face - vertex potential
             for (const int i : {0, 1, 2})
             {

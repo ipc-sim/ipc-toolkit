@@ -28,7 +28,6 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const ParameterType &param,
-        const bool use_adaptive_dhat,
         const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.

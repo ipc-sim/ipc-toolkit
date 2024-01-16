@@ -83,6 +83,7 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& fb0,
         const Eigen::Ref<const Vector3<scalar>>& fb1,
         const ParameterType &params,
+        const std::array<double, 2> &dhats,
         const EdgeEdgeDistanceType &dtype,
         const std::array<PointEdgeDistanceType, 4> &edge_dtypes,
         const std::array<HEAVISIDE_TYPE, 4> &tangent_types,
@@ -98,13 +99,15 @@ namespace ipc {
         
         // vanishes if Phi < -alpha
         const Vector3<scalar> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype) / sqrt(dist_sqr); // from edge a to edge b
-        scalar tangent_penalty = scalar(0.);
+        scalar out = scalar(0.);
         if (tangent_types[0] != HEAVISIDE_TYPE::ZERO && tangent_types[1] != HEAVISIDE_TYPE::ZERO)
-            tangent_penalty += smooth_edge_edge_potential_tangent_term<scalar>(fa0, ea0, ea1, -direc, params.alpha, tangent_types[0]) * 
-                                smooth_edge_edge_potential_tangent_term<scalar>(fa1, ea1, ea0, -direc, params.alpha, tangent_types[1]);
+            out += smooth_edge_edge_potential_tangent_term<scalar>(fa0, ea0, ea1, -direc, params.alpha, tangent_types[0]) *
+                    smooth_edge_edge_potential_tangent_term<scalar>(fa1, ea1, ea0, -direc, params.alpha, tangent_types[1]) *
+                    inv_barrier<scalar>(dist_sqr / dhats[0], params.r);
         if (tangent_types[2] != HEAVISIDE_TYPE::ZERO && tangent_types[3] != HEAVISIDE_TYPE::ZERO)
-            tangent_penalty += smooth_edge_edge_potential_tangent_term<scalar>(fb0, eb0, eb1, direc, params.alpha, tangent_types[2]) * 
-                                smooth_edge_edge_potential_tangent_term<scalar>(fb1, eb1, eb0, direc, params.alpha, tangent_types[3]);
+            out += smooth_edge_edge_potential_tangent_term<scalar>(fb0, eb0, eb1, direc, params.alpha, tangent_types[2]) *
+                    smooth_edge_edge_potential_tangent_term<scalar>(fb1, eb1, eb0, direc, params.alpha, tangent_types[3]) *
+                    inv_barrier<scalar>(dist_sqr / dhats[1], params.r);
 
         const scalar normal_penalty = smooth_edge_edge_potential_normal_term<scalar>(fa0, ea0, ea1, direc, params.alpha, normal_types[0]) * 
                                     smooth_edge_edge_potential_normal_term<scalar>(fa1, ea1, ea0, direc, params.alpha, normal_types[1]) * 
@@ -114,6 +117,6 @@ namespace ipc {
         const scalar mollifier_a = mollifier<scalar>((point_edge_sqr_distance<scalar>(ea0, eb0, eb1, edge_dtypes[0]) - dist_sqr) / a / threshold_eps) * mollifier<scalar>((point_edge_sqr_distance<scalar>(ea1, eb0, eb1, edge_dtypes[1]) - dist_sqr) / a / threshold_eps);
         const scalar mollifier_b = mollifier<scalar>((point_edge_sqr_distance<scalar>(eb0, ea0, ea1, edge_dtypes[2]) - dist_sqr) / b / threshold_eps) * mollifier<scalar>((point_edge_sqr_distance<scalar>(eb1, ea0, ea1, edge_dtypes[3]) - dist_sqr) / b / threshold_eps);
 
-        return 0.5 * sqrt(a * b) * inv_barrier<scalar>(dist_sqr / params.eps, params.r) * tangent_penalty * normal_penalty * mollifier_a * mollifier_b;
+        return 0.5 * sqrt(a * b) * out * normal_penalty * mollifier_a * mollifier_b;
     }
 }

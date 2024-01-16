@@ -7,16 +7,24 @@ namespace ipc {
 
 template <int nvert>
 class SmoothCollision : public Collision<nvert> {
-public:
+protected:
     SmoothCollision(
         long primitive0_,
         long primitive1_,
+        const std::array<double, 2> &dhats_,
         const CollisionMesh &mesh)
-    : primitive0(primitive0_), primitive1(primitive1_)
+    : primitive0(primitive0_), primitive1(primitive1_), dhats(dhats_)
     {
         vertices.fill(-1);
     }
-
+    SmoothCollision(
+        long primitive0_,
+        long primitive1_,
+        const double &dhat,
+        const CollisionMesh &mesh)
+    : SmoothCollision(primitive0_, primitive1_, {{dhat, dhat}}, mesh)
+    { }
+public:
     virtual ~SmoothCollision() { }
 
     bool is_active() const { return is_active_; }
@@ -77,16 +85,15 @@ public:
         return H::combine(std::move(h), min_ei, max_ei);
     }
 
-    void set_adaptive_dhat(const double &dhat0_, const double &dhat1_)
+    double get_dhat(const int &id) const
     {
-        // dhat0 = dhat0_;
-        // dhat1 = dhat1_;
+        return dhats[id];
     }
 
 protected:
     bool is_active_ = true;
     long primitive0, primitive1;
-    double dhat0 = 0, dhat1 = 0;
+    std::array<double, 2> dhats;
     std::array<long, nvert> vertices;
 };
 

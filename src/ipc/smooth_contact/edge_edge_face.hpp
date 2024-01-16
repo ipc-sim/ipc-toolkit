@@ -7,16 +7,13 @@
 namespace ipc {
 
 class SmoothEdgeEdge3Collision : public SmoothCollision<8> {
-    SmoothEdgeEdge3Collision(
-        long primitive0_,
-        long primitive1_,
-        const CollisionMesh &mesh);
 public:
     SmoothEdgeEdge3Collision(
         long primitive0_,
         long primitive1_,
         const CollisionMesh &mesh,
         const ParameterType &param,
+        const std::array<double, 2> &dhats_,
         const Eigen::MatrixXd &V);
     virtual ~SmoothEdgeEdge3Collision() 
     {
@@ -46,7 +43,7 @@ public:
 
 private:
     template <typename scalar> 
-    scalar evaluate_quadrature(const Vector<double, 24>& positions, const ParameterType &params) const;
+    scalar evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params) const;
 
     bool compute_types(const Vector<double, 24>& positions, const ParameterType &params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
 

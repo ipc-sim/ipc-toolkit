@@ -7,20 +7,15 @@ namespace ipc {
 
 class SmoothEdgeEdgeCollision : public SmoothCollision<4> {
     constexpr static int dim = 2;
-    SmoothEdgeEdgeCollision(
-        long primitive0_,
-        long primitive1_,
-        const CollisionMesh &mesh)
-    : SmoothCollision(primitive0_, primitive1_, mesh)
-    { 
-        vertices = vertex_ids(mesh.edges(), mesh.faces());
-    }
 public:
+    using Super = SmoothCollision<4>;
+    
     SmoothEdgeEdgeCollision(
         long primitive0_,
         long primitive1_,
         const CollisionMesh &mesh,
         const ParameterType &param,
+        const std::array<double, 2> &dhats_,
         const Eigen::MatrixXd &V);
 
     int num_vertices() const override

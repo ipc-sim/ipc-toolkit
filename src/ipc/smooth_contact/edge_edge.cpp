@@ -17,8 +17,10 @@ namespace ipc {
     long primitive1_,
     const CollisionMesh &mesh,
     const ParameterType &param,
-    const Eigen::MatrixXd &V): SmoothEdgeEdgeCollision(primitive0_, primitive1_, mesh)
+    const std::array<double, 2> &dhats_,
+    const Eigen::MatrixXd &V): SmoothCollision<4>(primitive0_, primitive1_, dhats_, mesh)
     {
+        vertices = vertex_ids(mesh.edges(), mesh.faces());
         Vector8d positions = dof(V, mesh.edges(), mesh.faces());
         is_active_ = compute_types(positions, param);
     }
@@ -52,7 +54,7 @@ namespace ipc {
                 const double dist_sqr = (pos - (L * len) * tangent).squaredNorm();
                 const double Phi = 1 - cross2<double>(pos, tangent) / sqrt(dist_sqr);
 
-                if (Phi < params.alpha && dist_sqr < params.eps)
+                if (Phi < params.alpha && dist_sqr < pow(get_dhat(ee), 2))
                 {
                     normal_types[p_id] = HEAVISIDE_TYPE::VARIANT;
                     skip = false;
@@ -80,8 +82,7 @@ namespace ipc {
             {
                 const int ee = 1 - e;
 
-                if (dhat0 > 0 && dhat1 > 0)
-                    params.eps = ee == 0 ? dhat0*dhat0 : dhat1*dhat1;
+                params.eps = pow(get_dhat(ee), 2);
                 
                 scalar tmp = scalar(0.);
                 for (int i = 1; i < uv.size(); ++i)
@@ -101,8 +102,7 @@ namespace ipc {
             {
                 const int ee = 1 - e;
 
-                if (dhat0 > 0 && dhat1 > 0)
-                    params.eps = ee == 0 ? dhat0*dhat0 : dhat1*dhat1;
+                params.eps = pow(get_dhat(ee), 2);
 
                 const scalar len = (points[e * 2 + 1] - points[e * 2 + 0]).norm();
                 for (const int i : {0, 1})
@@ -131,13 +131,13 @@ namespace ipc {
     {
         std::array<Vector2<double>, 4> points = slice_positions<double, 4, 2>(positions);
         double min_dist = std::numeric_limits<double>::max();
-        if (points[0] != points[2] && points[0] != points[3]) 
+        if (normal_types[0] != HEAVISIDE_TYPE::ZERO)
             min_dist = std::min(min_dist, point_edge_distance(points[0], points[2], points[3]));
-        if (points[1] != points[2] && points[1] != points[3]) 
+        if (normal_types[1] != HEAVISIDE_TYPE::ZERO)
             min_dist = std::min(min_dist, point_edge_distance(points[1], points[2], points[3]));
-        if (points[2] != points[0] && points[2] != points[1]) 
+        if (normal_types[2] != HEAVISIDE_TYPE::ZERO)
             min_dist = std::min(min_dist, point_edge_distance(points[2], points[0], points[1]));
-        if (points[3] != points[0] && points[3] != points[1]) 
+        if (normal_types[3] != HEAVISIDE_TYPE::ZERO)
             min_dist = std::min(min_dist, point_edge_distance(points[3], points[0], points[1]));
         
         return min_dist;

@@ -15,6 +15,7 @@ void SmoothCollisionsBuilder<dim>::add_edge_vertex_collisions(
     const Eigen::MatrixXd& vertices,
     const std::vector<EdgeVertexCandidate>& candidates,
     const ParameterType &param,
+    const std::function<double(const long &)> &edge_dhat,
     const size_t start_i,
     const size_t end_i)
 {
@@ -25,15 +26,13 @@ void SmoothCollisionsBuilder<dim>::add_edge_vertex_collisions(
             const auto& [ei, vi] = candidates[i];
             const auto [v, e0, e1, _] =
                 candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
-            const PointEdgeDistanceType dtype = point_edge_distance_type(v, e0, e1);
-            const double distance_sqr = point_edge_distance(v, e0, e1, dtype);
 
-            if (distance_sqr >= param.eps)
-                continue;
-            
             for (int ej : vertex_edge_adj[vi])
                 if (ej != ei)
-                    add_collision<SmoothEdgeEdgeCollision>(std::make_shared<SmoothEdgeEdgeCollision>(ej, ei, mesh, param, vertices), edge_edge_2_to_id, collisions);
+                {
+                    std::array<double, 2> dhats = {{edge_dhat(ej), edge_dhat(ei)}};
+                    add_collision<SmoothEdgeEdgeCollision>(std::make_shared<SmoothEdgeEdgeCollision>(ej, ei, mesh, param, dhats, vertices), edge_edge_2_to_id, collisions);
+                }
         }
     }
 }
@@ -43,6 +42,7 @@ void SmoothCollisionsBuilder<dim>::add_neighbor_edge_collisions(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const ParameterType &param,
+        const std::function<double(const long &)> &edge_dhat,
         const size_t start_i,
         const size_t end_i)
 {
@@ -53,7 +53,10 @@ void SmoothCollisionsBuilder<dim>::add_neighbor_edge_collisions(
             for (int i : vertex_edge_adj[v])
                 for (int j : vertex_edge_adj[v])
                     if (j > i)
-                        add_collision<SmoothEdgeEdgeCollision>(std::make_shared<SmoothEdgeEdgeCollision>(i, j, mesh, param, vertices), edge_edge_2_to_id, collisions);
+                    {
+                        std::array<double, 2> dhats = {{edge_dhat(i), edge_dhat(j)}};
+                        add_collision<SmoothEdgeEdgeCollision>(std::make_shared<SmoothEdgeEdgeCollision>(i, j, mesh, param, dhats, vertices), edge_edge_2_to_id, collisions);
+                    }
     }
 }
 
@@ -65,6 +68,7 @@ void SmoothCollisionsBuilder<dim>::add_edge_edge_collisions(
     const Eigen::MatrixXd& vertices,
     const std::vector<EdgeEdgeCandidate>& candidates,
     const ParameterType &param,
+    const std::function<double(const long &)> &edge_dhat,
     const size_t start_i,
     const size_t end_i)
 {
@@ -74,15 +78,8 @@ void SmoothCollisionsBuilder<dim>::add_edge_edge_collisions(
         for (size_t i = start_i; i < end_i; i++) {
             const auto& [eai, ebi] = candidates[i];
 
-            const auto [ea0, ea1, eb0, eb1] =
-                candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
-
-            const double distance_sqr = edge_edge_distance(ea0, ea1, eb0, eb1, EdgeEdgeDistanceType::AUTO);
-
-            if (distance_sqr >= param.eps)
-                continue;
-
-            add_collision<SmoothEdgeEdge3Collision>(std::make_shared<SmoothEdgeEdge3Collision>(eai, ebi, mesh, param, vertices), edge_edge_3_to_id, collisions);
+            std::array<double, 2> dhats = {{edge_dhat(eai), edge_dhat(ebi)}};
+            add_collision<SmoothEdgeEdge3Collision>(std::make_shared<SmoothEdgeEdge3Collision>(eai, ebi, mesh, param, dhats, vertices), edge_edge_3_to_id, collisions);
         }
     }
 }
@@ -93,6 +90,7 @@ void SmoothCollisionsBuilder<dim>::add_face_vertex_collisions(
     const Eigen::MatrixXd& vertices,
     const std::vector<FaceVertexCandidate>& candidates,
     const ParameterType &param,
+    const std::function<double(const long &)> &face_dhat,
     const size_t start_i,
     const size_t end_i)
 {
@@ -101,22 +99,13 @@ void SmoothCollisionsBuilder<dim>::add_face_vertex_collisions(
         const auto &vertices_to_faces_adj = mesh.vertices_to_faces();
         for (size_t i = start_i; i < end_i; i++) {
             const auto& [fi, vi] = candidates[i];
-
-            const auto [v, f0, f1, f2] =
-                candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
-
-            // Compute distance type
-            const PointTriangleDistanceType dtype =
-                point_triangle_distance_type(v, f0, f1, f2);
-            const double distance_sqr =
-                point_triangle_distance(v, f0, f1, f2, dtype);
-
-            if (distance_sqr >= param.eps)
-                continue;
             
             for (int fj : vertices_to_faces_adj[vi])
                 if (fj != fi)
-                    add_collision<SmoothFaceFaceCollision>(std::make_shared<SmoothFaceFaceCollision>(fi, fj, mesh, param, vertices), face_face_to_id, collisions);
+                {
+                    std::array<double, 2> dhats = {{face_dhat(fi), face_dhat(fj)}};
+                    add_collision<SmoothFaceFaceCollision>(std::make_shared<SmoothFaceFaceCollision>(fi, fj, mesh, param, dhats, vertices), face_face_to_id, collisions);
+                }
         }
     }
 }
@@ -126,6 +115,7 @@ void SmoothCollisionsBuilder<dim>::add_neighbor_face_collisions(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const ParameterType &param,
+        const std::function<double(const long &)> &face_dhat,
         const size_t start_i,
         const size_t end_i)
 {
@@ -136,7 +126,10 @@ void SmoothCollisionsBuilder<dim>::add_neighbor_face_collisions(
             for (int i : vertices_to_faces_adj[v])
                 for (int j : vertices_to_faces_adj[v])
                     if (j > i)
-                        add_collision<SmoothFaceFaceCollision>(std::make_shared<SmoothFaceFaceCollision>(i, j, mesh, param, vertices), face_face_to_id, collisions);
+                    {
+                        std::array<double, 2> dhats = {{face_dhat(i), face_dhat(j)}};
+                        add_collision<SmoothFaceFaceCollision>(std::make_shared<SmoothFaceFaceCollision>(i, j, mesh, param, dhats, vertices), face_face_to_id, collisions);
+                    }
     }
 }
 

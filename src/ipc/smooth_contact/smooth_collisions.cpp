@@ -21,7 +21,6 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices, // set to zero for rest pose
     const ParameterType &param,
-    const bool use_adaptive_dhat,
     const BroadPhaseMethod broad_phase_method)
 {
     assert(vertices.rows() == mesh.num_vertices());
@@ -96,6 +95,13 @@ void SmoothCollisions<dim>::build(
         face_adaptive_dhat(0) = dhat;
     }
 
+    auto edge_dhat = [&](const long &e_id) {
+        return this->get_edge_dhat(e_id);
+    };
+    auto face_dhat = [&](const long &f_id) {
+        return this->get_face_dhat(f_id);
+    };
+
     tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>> storage;
     if constexpr (dim == 2)
     {
@@ -103,7 +109,7 @@ void SmoothCollisions<dim>::build(
             tbb::blocked_range<size_t>(size_t(0), candidates_.ev_candidates.size()),
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_edge_vertex_collisions(
-                    mesh, vertices, candidates_.ev_candidates, param, r.begin(),
+                    mesh, vertices, candidates_.ev_candidates, param, edge_dhat, r.begin(),
                     r.end());
             });
 
@@ -112,7 +118,7 @@ void SmoothCollisions<dim>::build(
                 tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local().add_neighbor_edge_collisions(
-                        mesh, vertices, param, r.begin(), r.end());
+                        mesh, vertices, param, edge_dhat, r.begin(), r.end());
                 });
     }
     else
@@ -121,7 +127,7 @@ void SmoothCollisions<dim>::build(
             tbb::blocked_range<size_t>(size_t(0), candidates_.ee_candidates.size()),
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_edge_edge_collisions(
-                    mesh, vertices, candidates_.ee_candidates, param, r.begin(),
+                    mesh, vertices, candidates_.ee_candidates, param, edge_dhat, r.begin(),
                     r.end());
             });
 
@@ -129,7 +135,7 @@ void SmoothCollisions<dim>::build(
             tbb::blocked_range<size_t>(size_t(0), candidates_.fv_candidates.size()),
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_face_vertex_collisions(
-                    mesh, vertices, candidates_.fv_candidates, param, r.begin(),
+                    mesh, vertices, candidates_.fv_candidates, param, face_dhat, r.begin(),
                     r.end());
             });
 
@@ -138,24 +144,13 @@ void SmoothCollisions<dim>::build(
                 tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local().add_neighbor_face_collisions(
-                        mesh, vertices, param, r.begin(), r.end());
+                        mesh, vertices, param, face_dhat, r.begin(), r.end());
                 });
     }
     SmoothCollisionsBuilder<dim>::merge(storage, *this);
     candidates = candidates_;
 
     // logger().debug(to_string(mesh, vertices));
-
-    if (use_adaptive_dhat)
-        for (auto cc : collisions)
-        {
-            if (std::dynamic_pointer_cast<SmoothEdgeEdgeCollision>(cc) || std::dynamic_pointer_cast<SmoothEdgeEdge3Collision>(cc))
-                cc->set_adaptive_dhat(get_edge_dhat((*cc)[0]), get_edge_dhat((*cc)[1]));
-            else if (std::dynamic_pointer_cast<SmoothFaceFaceCollision>(cc))
-                cc->set_adaptive_dhat(get_face_dhat((*cc)[0]), get_face_dhat((*cc)[1]));
-            else
-                throw std::runtime_error("Invalid collision type!");
-        }
 }
 
 // ============================================================================
