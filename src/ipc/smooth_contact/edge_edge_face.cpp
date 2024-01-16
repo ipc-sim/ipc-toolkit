@@ -130,6 +130,7 @@ namespace ipc {
         if (direc.norm() >= std::max(get_dhat(0), get_dhat(1)))
             return false;
 
+        // normal term
         {
             bool all_skip = true;
             for (int e : {0, 1})
@@ -157,6 +158,7 @@ namespace ipc {
                 return false;
         }
 
+        // tangent term
         {
             bool all_skip = true;
             for (int e : {0, 1})

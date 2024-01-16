@@ -103,11 +103,11 @@ namespace ipc {
         if (tangent_types[0] != HEAVISIDE_TYPE::ZERO && tangent_types[1] != HEAVISIDE_TYPE::ZERO)
             out += smooth_edge_edge_potential_tangent_term<scalar>(fa0, ea0, ea1, -direc, params.alpha, tangent_types[0]) *
                     smooth_edge_edge_potential_tangent_term<scalar>(fa1, ea1, ea0, -direc, params.alpha, tangent_types[1]) *
-                    inv_barrier<scalar>(dist_sqr / dhats[0], params.r);
+                    inv_barrier<scalar>(dist_sqr / intpow(dhats[0], 2), params.r);
         if (tangent_types[2] != HEAVISIDE_TYPE::ZERO && tangent_types[3] != HEAVISIDE_TYPE::ZERO)
             out += smooth_edge_edge_potential_tangent_term<scalar>(fb0, eb0, eb1, direc, params.alpha, tangent_types[2]) *
                     smooth_edge_edge_potential_tangent_term<scalar>(fb1, eb1, eb0, direc, params.alpha, tangent_types[3]) *
-                    inv_barrier<scalar>(dist_sqr / dhats[1], params.r);
+                    inv_barrier<scalar>(dist_sqr / intpow(dhats[1], 2), params.r);
 
         const scalar normal_penalty = (smooth_edge_edge_potential_normal_term<scalar>(fa0, ea0, ea1, direc, params.alpha, normal_types[0]) + 
                                     smooth_edge_edge_potential_normal_term<scalar>(fa1, ea1, ea0, direc, params.alpha, normal_types[1])) * 
