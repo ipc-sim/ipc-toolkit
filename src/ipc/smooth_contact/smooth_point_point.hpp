@@ -28,19 +28,31 @@ scalar smooth_point_point_potential(
 {
     const Vector2<scalar> direc = vb - va;
     const scalar dist_sqr = direc.squaredNorm();
+    const scalar dist = sqrt(dist_sqr);
 
     const Vector2<scalar> ta0 = ea0 - va, ta1 = va - ea1;
     const Vector2<scalar> tb0 = eb0 - vb, tb1 = vb - eb1;
 
+    const scalar a0 = ta0.norm(), a1 = ta1.norm();
+    const scalar b0 = tb0.norm(), b1 = tb1.norm();
+
     scalar out(0.);
-    out += inv_barrier<scalar>(dist_sqr / dhats[0], params.r) *
-            smooth_heaviside<scalar>(-direc.dot(ta0) / sqrt(dist_sqr * ta0.squaredNorm()) / params.alpha) *
-            smooth_heaviside<scalar>(-direc.dot(ta1) / sqrt(dist_sqr * ta1.squaredNorm()) / params.alpha) *
-            (ta0.norm() + ta1.norm()) / 2.;
-    out += inv_barrier<scalar>(dist_sqr / dhats[1], params.r) *
-            smooth_heaviside<scalar>(direc.dot(tb0) / sqrt(dist_sqr * tb0.squaredNorm()) / params.alpha) *
-            smooth_heaviside<scalar>(direc.dot(tb1) / sqrt(dist_sqr * tb1.squaredNorm()) / params.alpha) *
-            (tb0.norm() + tb1.norm()) / 2.;
-    return out;
+    // tangent term
+    out += inv_barrier<scalar>(dist_sqr / intpow(dhats[0],2), params.r) *
+            smooth_heaviside<scalar>(-direc.dot(ta0) / dist / a0 / params.alpha) *
+            smooth_heaviside<scalar>(direc.dot(ta1) / dist / a1 / params.alpha) *
+            (a0 + a1) / 2.;
+    out += inv_barrier<scalar>(dist_sqr / intpow(dhats[1],2), params.r) *
+            smooth_heaviside<scalar>(direc.dot(tb0) / dist / b0 / params.alpha) *
+            smooth_heaviside<scalar>(direc.dot(-tb1) / dist / b1 / params.alpha) *
+            (b0 + b1) / 2.;
+
+    // normal term
+    scalar normal_term = (smooth_heaviside<scalar>(cross2<scalar>(direc, ta0) / dist / a0 / params.alpha) + 
+                         smooth_heaviside<scalar>(cross2<scalar>(direc, ta1) / dist / a1 / params.alpha)) *
+                        (smooth_heaviside<scalar>(-cross2<scalar>(direc, tb0) / dist / b0 / params.alpha) + 
+                         smooth_heaviside<scalar>(-cross2<scalar>(direc, tb1) / dist / b1 / params.alpha));
+
+    return out * normal_term;
 }
 }

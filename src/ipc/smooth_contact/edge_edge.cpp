@@ -18,7 +18,7 @@ namespace ipc {
     const CollisionMesh &mesh,
     const ParameterType &param,
     const std::array<double, 2> &dhats_,
-    const Eigen::MatrixXd &V): SmoothCollision<4>(primitive0_, primitive1_, dhats_, mesh)
+    const Eigen::MatrixXd &V): SmoothCollision<6>(primitive0_, primitive1_, dhats_, mesh)
     {
         vertices = vertex_ids(mesh.edges(), mesh.faces());
         Vector8d positions = dof(V, mesh.edges(), mesh.faces());
@@ -118,7 +118,7 @@ namespace ipc {
         return val;
     }
 
-    double SmoothEdgeEdgeCollision::compute_distance(const Vector<double, -1, 12>& positions) const
+    double SmoothEdgeEdgeCollision::compute_distance(const Vector<double, -1, 18>& positions) const
     {
         std::array<Vector2<double>, 4> points = slice_positions<double, 4, 2>(positions);
         double min_dist = std::numeric_limits<double>::max();
@@ -135,14 +135,14 @@ namespace ipc {
     }
 
     double SmoothEdgeEdgeCollision::operator()(
-        const VectorMax12d& positions, 
+        const VectorMax18d& positions, 
         const ParameterType &params) const
     {
         return evaluate_quadrature<double>(positions, params);
     }
 
-    VectorMax12d SmoothEdgeEdgeCollision::gradient(
-        const VectorMax12d& positions, 
+    VectorMax18d SmoothEdgeEdgeCollision::gradient(
+        const VectorMax18d& positions, 
         const ParameterType &params) const
     {
         DiffScalarBase::setVariableCount(12);
@@ -150,8 +150,8 @@ namespace ipc {
         return evaluate_quadrature<Diff>(positions, params).getGradient().head(4*dim);
     }
 
-    MatrixMax12d SmoothEdgeEdgeCollision::hessian(
-        const VectorMax12d& positions, 
+    MatrixMax18d SmoothEdgeEdgeCollision::hessian(
+        const VectorMax18d& positions, 
         const ParameterType &params,
         const bool project_hessian_to_psd) const
     {

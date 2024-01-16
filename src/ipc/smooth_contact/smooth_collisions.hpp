@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/collisions/collisions.hpp>
+#include "vertex_vertex.hpp"
 #include "edge_vertex.hpp"
 #include "edge_edge.hpp"
 #include "edge_edge_face.hpp"
@@ -10,9 +11,9 @@
 namespace ipc {
 
 template <int dim>
-class SmoothCollisions : public VirtualCollisions<(dim == 2) ? 4 : 8> {
+class SmoothCollisions : public VirtualCollisions<(dim == 2) ? 6 : 8> {
 public:
-    constexpr static int max_vert = (dim == 2) ? 4 : 8;
+    constexpr static int max_vert = (dim == 2) ? 6 : 8;
     using Super = VirtualCollisions<max_vert>;
     /// @brief The type of the collisions.
     using value_type = SmoothCollision<max_vert>;
@@ -90,6 +91,13 @@ public:
         logger().error("Smooth contact formulation doesn't have shape derivatives implemented!");
     }
 
+    double get_vert_dhat(int vert_id) const 
+    { 
+        if (vert_adaptive_dhat.size() > 1) 
+            return vert_adaptive_dhat(vert_id);
+        else
+            return vert_adaptive_dhat(0);
+    }
     double get_edge_dhat(int edge_id) const 
     { 
         if (edge_adaptive_dhat.size() > 1) 
@@ -106,10 +114,10 @@ public:
     }
     double get_max_dhat() const
     {
-        if constexpr (dim == 2)
-            return edge_adaptive_dhat.maxCoeff();
-        else
-            return std::max(edge_adaptive_dhat.maxCoeff(), face_adaptive_dhat.maxCoeff());
+        double out = std::max(vert_adaptive_dhat.maxCoeff(), edge_adaptive_dhat.maxCoeff());
+        if constexpr (dim == 3)
+            return std::max(out, face_adaptive_dhat.maxCoeff());
+        return out;
     }
 
 public:
@@ -117,6 +125,7 @@ public:
 
     const bool use_high_order_quadrature;
 
+    Eigen::VectorXd vert_adaptive_dhat;
     Eigen::VectorXd edge_adaptive_dhat;
     Eigen::VectorXd face_adaptive_dhat;
 

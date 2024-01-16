@@ -15,6 +15,7 @@ void SmoothCollisionsBuilder<dim>::add_edge_vertex_collisions(
     const Eigen::MatrixXd& vertices,
     const std::vector<EdgeVertexCandidate>& candidates,
     const ParameterType &param,
+    const std::function<double(const long &)> &vert_dhat,
     const std::function<double(const long &)> &edge_dhat,
     const size_t start_i,
     const size_t end_i)
@@ -24,15 +25,21 @@ void SmoothCollisionsBuilder<dim>::add_edge_vertex_collisions(
         const std::vector<unordered_set<int>>& vertex_edge_adj = mesh.vertex_edge_adjacencies();
         for (size_t i = start_i; i < end_i; i++) {
             const auto& [ei, vi] = candidates[i];
-            const auto [v, e0, e1, _] =
-                candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
 
             for (int ej : vertex_edge_adj[vi])
+            {
                 if (ej != ei)
                 {
                     std::array<double, 2> dhats = {{edge_dhat(ej), edge_dhat(ei)}};
                     add_collision<SmoothEdgeEdgeCollision>(std::make_shared<SmoothEdgeEdgeCollision>(ej, ei, mesh, param, dhats, vertices), edge_edge_2_to_id, collisions);
                 }
+            }
+            
+            for (int j : {0, 1})
+            {
+                std::array<double, 2> dhats = {{ vert_dhat(mesh.edges()(ei, j)), vert_dhat(vi) }};
+                add_collision<SmoothVertexVertexCollision>(std::make_shared<SmoothVertexVertexCollision>(mesh.edges()(ei, j), vi, mesh, param, dhats, vertices), vert_vert_2_to_id, collisions);
+            }
         }
     }
 }
@@ -153,6 +160,7 @@ void SmoothCollisionsBuilder<dim>::merge(
     const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>& local_storage,
     SmoothCollisions<dim>& merged_collisions)
 {
+    unordered_map<SmoothVertexVertexCollision, long> vert_vert_2_to_id;
     unordered_map<SmoothEdgeEdgeCollision, long> edge_edge_2_to_id;
     unordered_map<SmoothFaceFaceCollision, long> face_face_to_id;
     unordered_map<SmoothEdgeEdge3Collision, long> edge_edge_3_to_id;
@@ -174,6 +182,15 @@ void SmoothCollisionsBuilder<dim>::merge(
                 {
                     // New collision, so add it to the end of collisions
                     edge_edge_3_to_id.emplace(*ee3, merged_collisions.collisions.size());
+                    merged_collisions.collisions.push_back(cc);
+                }
+            }
+            else if (auto vv = std::dynamic_pointer_cast<SmoothVertexVertexCollision>(cc))
+            {
+                if (vert_vert_2_to_id.find(*vv) == vert_vert_2_to_id.end())
+                {
+                    // New collision, so add it to the end of collisions
+                    vert_vert_2_to_id.emplace(*vv, merged_collisions.collisions.size());
                     merged_collisions.collisions.push_back(cc);
                 }
             }

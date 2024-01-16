@@ -27,8 +27,10 @@ namespace ipc {
             {
                 if (mesh.edges()(i, 0) == vertices[j])
                     vertices[2*j+2] = mesh.edges()(i, 1);
-                else
+                else if (mesh.edges()(i, 1) == vertices[j])
                     vertices[2*j+3] = mesh.edges()(i, 0);
+                else
+                    throw std::runtime_error("Invalid edge-vertex adjacency!");
             }
 
         Vector12d positions = dof(V, mesh.edges(), mesh.faces());
@@ -39,24 +41,33 @@ namespace ipc {
     {
         std::array<Vector<double, 2>, 6> points = slice_positions<double, 6, 2>(positions);
 
-        if ((points[1] - points[0]).norm() >= std::max(get_dhat(0), get_dhat(1)))
-            return false;
+        Vector<double, 2> direc = points[1] - points[0];
+        Vector<double, 2> ta0 = points[2] - points[0], ta1 = points[0] - points[3];
+        Vector<double, 2> tb0 = points[4] - points[1], tb1 = points[1] - points[5];
+        ta0.normalize(); ta1.normalize();
+        tb0.normalize(); tb1.normalize();
 
-        bool all_skip = true;
-        for (int j : {0, 1})
+        if (direc.norm() >= std::max(get_dhat(0), get_dhat(1)))
+            return false;
+        direc.normalize();
+        
+        // tangent term
         {
-            bool skip = false;
-            for (int v : {0, 1})
-            {
-                const double val = (v == 1 ? -1 : 1) * (points[j] - points[1-j]).normalized().dot((points[2 + j * 2 + v] - points[j]).normalized());
-                if (val < -params.alpha)
-                    skip = true;
-            }
-            if (!skip)
-                all_skip = false;
+            bool A = -direc.dot(ta0) <= -params.alpha || -direc.dot(-ta1) <= -params.alpha;
+            bool B = direc.dot(tb0) <= -params.alpha || direc.dot(-tb1) <= -params.alpha;
+            if (A && B)
+                return false;
         }
 
-        return !all_skip;
+        // normal term
+        {
+            bool A = cross2<double>(direc, ta0) <= -params.alpha && cross2<double>(direc, ta1) <= -params.alpha;
+            bool B = cross2<double>(direc, tb0) >= params.alpha && cross2<double>(direc, tb1) >= params.alpha;
+            if (A || B)
+                return false;
+        }
+
+        return true;
     }
 
     template<class scalar>
@@ -71,7 +82,10 @@ namespace ipc {
     {
         std::array<Vector2<double>, 6> points = slice_positions<double, 6, 2>(positions);
 
-        return (points[0] - points[1]).squaredNorm();    
+        if (is_active_)
+            return (points[0] - points[1]).squaredNorm();
+        else
+            return std::numeric_limits<double>::max();
     }
 
     double SmoothVertexVertexCollision::operator()(

@@ -5,10 +5,10 @@
 
 namespace ipc {
 
-class SmoothEdgeEdgeCollision : public SmoothCollision<4> {
+class SmoothEdgeEdgeCollision : public SmoothCollision<6> {
     constexpr static int dim = 2;
 public:
-    using Super = SmoothCollision<4>;
+    using Super = SmoothCollision<6>;
     
     SmoothEdgeEdgeCollision(
         long primitive0_,
@@ -23,25 +23,25 @@ public:
         return 4;
     }
 
-    std::array<long, 4> vertex_ids(
+    std::array<long, 6> vertex_ids(
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const override
     {
         return { { edges(primitive0, 0), edges(primitive0, 1),
-                   edges(primitive1, 0), edges(primitive1, 1) } };
+                   edges(primitive1, 0), edges(primitive1, 1), -1, -1 } };
     }
 
-    double compute_distance(const Vector<double, -1, 12>& positions) const override;
+    double compute_distance(const Vector<double, -1, 18>& positions) const override;
 
-    double operator()(const VectorMax12d& positions, 
+    double operator()(const VectorMax18d& positions, 
         const ParameterType &params) const override;
 
-    VectorMax12d gradient(
-        const VectorMax12d& positions, 
+    VectorMax18d gradient(
+        const VectorMax18d& positions, 
         const ParameterType &params) const override;
 
-    MatrixMax12d hessian(
-        const VectorMax12d& positions, 
+    MatrixMax18d hessian(
+        const VectorMax18d& positions, 
         const ParameterType &params,
         const bool project_hessian_to_psd = false) const override;
 

@@ -31,6 +31,8 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
     candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
     this->build(candidates, mesh, vertices, param, false /*disable adaptive dhat to compute true pairs*/);
 
+    vert_adaptive_dhat.resize(mesh.num_vertices());
+    vert_adaptive_dhat.setConstant(dhat);
     edge_adaptive_dhat.resize(mesh.num_edges());
     edge_adaptive_dhat.setConstant(dhat);
     face_adaptive_dhat.resize(mesh.num_faces());
@@ -49,10 +51,16 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
             face_adaptive_dhat((*cc)[0]) = std::min(face_adaptive_dhat((*cc)[0]), dist);
             face_adaptive_dhat((*cc)[1]) = std::min(face_adaptive_dhat((*cc)[1]), dist);
         }
+        else if (std::dynamic_pointer_cast<SmoothVertexVertexCollision>(cc))
+        {
+            vert_adaptive_dhat((*cc)[0]) = std::min(vert_adaptive_dhat((*cc)[0]), dist);
+            vert_adaptive_dhat((*cc)[1]) = std::min(vert_adaptive_dhat((*cc)[1]), dist);
+        }
         else
             throw std::runtime_error("Invalid collision type!");
     }
 
+    logger().debug("vert dhat min {:.2e}, max {:.2e}", vert_adaptive_dhat.minCoeff(), vert_adaptive_dhat.maxCoeff());
     logger().debug("edge dhat min {:.2e}, max {:.2e}", edge_adaptive_dhat.minCoeff(), edge_adaptive_dhat.maxCoeff());
     if (mesh.dim() == 3)
         logger().debug("face dhat min {:.2e}, max {:.2e}", face_adaptive_dhat.minCoeff(), face_adaptive_dhat.maxCoeff());
@@ -89,12 +97,17 @@ void SmoothCollisions<dim>::build(
     const double dhat = sqrt(param.eps);
     if (!use_adaptive_dhat)
     {
+        vert_adaptive_dhat.resize(1);
+        vert_adaptive_dhat(0) = dhat;
         edge_adaptive_dhat.resize(1);
         edge_adaptive_dhat(0) = dhat;
         face_adaptive_dhat.resize(1);
         face_adaptive_dhat(0) = dhat;
     }
 
+    auto vert_dhat = [&](const long &v_id) {
+        return this->get_vert_dhat(v_id);
+    };
     auto edge_dhat = [&](const long &e_id) {
         return this->get_edge_dhat(e_id);
     };
@@ -109,7 +122,7 @@ void SmoothCollisions<dim>::build(
             tbb::blocked_range<size_t>(size_t(0), candidates_.ev_candidates.size()),
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_edge_vertex_collisions(
-                    mesh, vertices, candidates_.ev_candidates, param, edge_dhat, r.begin(),
+                    mesh, vertices, candidates_.ev_candidates, param, vert_dhat, edge_dhat, r.begin(),
                     r.end());
             });
 

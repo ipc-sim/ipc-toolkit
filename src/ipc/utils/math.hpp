@@ -134,6 +134,18 @@ namespace ipc {
         return a[0] * b[1] - a[1] * b[0];
     }
 
+    template <typename scalar>
+    scalar normalized_cross2(const Eigen::Ref<const Vector2<scalar>> &a, const Eigen::Ref<const Vector2<scalar>> &b)
+    {
+        return cross2(a, b) / a.norm() / b.norm();
+    }
+
+    template <typename scalar, int dim>
+    scalar normalized_dot(const Eigen::Ref<const Vector<scalar, dim>> &a, const Eigen::Ref<const Vector<scalar, dim>> &b)
+    {
+        return a.dot(b) / a.norm() / b.norm();
+    }
+
     // linear solve for 2x2 matrix
     template <typename scalar>
     Vector2<scalar> linear_solve(const Eigen::Ref<const Matrix2<scalar>> &A, const Eigen::Ref<const Vector2<scalar>> &b)
