@@ -118,15 +118,6 @@ namespace ipc {
         return val;
     }
 
-    Vector12d SmoothEdgeEdgeCollision::positions_to_3d(const Vector8d& positions) const
-    {
-        Vector12d positions_full;
-        positions_full.setZero();
-        for (int i = 0; i < 4; i++)
-            positions_full.segment<dim>(i * 3) = positions.segment<dim>(i * dim);
-        return positions_full;
-    }
-
     double SmoothEdgeEdgeCollision::compute_distance(const Vector<double, -1, 12>& positions) const
     {
         std::array<Vector2<double>, 4> points = slice_positions<double, 4, 2>(positions);

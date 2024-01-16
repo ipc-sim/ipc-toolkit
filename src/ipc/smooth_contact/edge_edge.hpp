@@ -46,8 +46,6 @@ public:
         const bool project_hessian_to_psd = false) const override;
 
 private:
-    Vector12d positions_to_3d(const Vector8d& positions) const;
-    
     template <typename scalar> 
     scalar evaluate_quadrature(const Vector8d& positions, ParameterType params) const;
 

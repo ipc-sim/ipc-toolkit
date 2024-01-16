@@ -242,8 +242,8 @@ double SmoothCollisions<dim>::compute_minimum_distance(
             double& local_min_dist = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-                const double dist = candidates_[i].compute_distance(
-                    candidates_[i].dof(vertices, edges, faces));
+                const double dist = candidates[i].compute_distance(
+                    candidates[i].dof(vertices, edges, faces));
 
                 if (dist < local_min_dist) {
                     local_min_dist = dist;
