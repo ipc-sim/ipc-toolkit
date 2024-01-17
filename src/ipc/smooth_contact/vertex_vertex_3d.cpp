@@ -33,7 +33,7 @@ namespace ipc {
                 }
             }
             if (mesh.vertices_to_faces()[v].size() != map.size())
-                throw std::runtime_error("Non-manifold vertex!");
+                throw std::runtime_error("Non-manifold vertex! Map size smaller than neighbor!");
             
             std::vector<long> neighbors;
             auto iter = map.find(map.begin()->first);
@@ -42,7 +42,10 @@ namespace ipc {
                 neighbors.push_back(iter->first);
                 iter = map.find(iter->second);
                 if (iter == map.end())
-                    throw std::runtime_error("Non-manifold vertex!");
+                {
+                    logger().error("neighbor faces {}, map {}", mesh.vertices_to_faces()[v].size(), map);
+                    throw std::runtime_error("Non-manifold vertex! Cannot find next neighbor!");
+                }
             }
             if (neighbors.size() != map.size())
                 throw std::runtime_error("Non-manifold vertex!");
