@@ -28,6 +28,7 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
     const double dhat = sqrt(param.eps);
     double inflation_radius = dhat / 2;
 
+    // Candidates candidates;
     candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
     this->build(candidates, mesh, vertices, param, false /*disable adaptive dhat to compute true pairs*/);
 
@@ -78,6 +79,7 @@ void SmoothCollisions<dim>::build(
 
     double inflation_radius = sqrt(param.eps) / 2;
 
+    // Candidates candidates;
     candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
     this->build(candidates, mesh, vertices, param, use_adaptive_dhat);
 }
@@ -161,7 +163,7 @@ void SmoothCollisions<dim>::build(
                 });
     }
     SmoothCollisionsBuilder<dim>::merge(storage, *this);
-    candidates = candidates_;
+    // candidates = candidates_;
 
     // logger().debug(to_string(mesh, vertices));
 }
@@ -250,7 +252,7 @@ double SmoothCollisions<dim>::compute_minimum_distance(
         std::numeric_limits<double>::infinity());
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, size()),
+        tbb::blocked_range<size_t>(0, candidates.size()),
         [&](tbb::blocked_range<size_t> r) {
             double& local_min_dist = storage.local();
 
