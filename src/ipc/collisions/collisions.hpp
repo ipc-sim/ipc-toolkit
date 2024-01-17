@@ -49,7 +49,7 @@ public:
     /// @param vertices Vertices of the collision mesh.
     /// @returns The minimum distance between any non-adjacent elements.
     virtual double compute_minimum_distance(
-        const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
+        const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const = 0;
 
     /// @brief Get if the collision set should use the convergent formulation.
     /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
@@ -182,6 +182,9 @@ public:
     /// @param i The index of the collision.
     /// @return If the collision at i is an plane-vertex collision.
     bool is_plane_vertex(size_t i) const;
+
+    double compute_minimum_distance(
+        const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const override;
 
     std::string
     to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
