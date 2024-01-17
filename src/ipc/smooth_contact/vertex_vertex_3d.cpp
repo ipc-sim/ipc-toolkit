@@ -119,7 +119,7 @@ namespace ipc {
     double SmoothVertexVertex3Collision::compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const
     {
         auto points = slice_positions_large<double, 3>(positions);
-        return std::numeric_limits<double>::max();
+        return (points.row(0) - points.row(1)).squaredNorm();
     }
 
     template <typename scalar> 

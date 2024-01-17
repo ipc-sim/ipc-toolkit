@@ -82,10 +82,7 @@ namespace ipc {
     {
         std::array<Vector2<double>, 6> points = slice_positions<double, 6, 2>(positions);
 
-        if (is_active_)
-            return (points[0] - points[1]).squaredNorm();
-        else
-            return std::numeric_limits<double>::max();
+        return (points[0] - points[1]).squaredNorm();
     }
 
     double SmoothVertexVertexCollision::operator()(

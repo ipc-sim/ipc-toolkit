@@ -21,8 +21,6 @@ set(SOURCES
   vertex_vertex.hpp
   vertex_vertex_3d.cpp
   vertex_vertex_3d.hpp
-  edge_vertex_3d.cpp
-  edge_vertex_3d.hpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})
