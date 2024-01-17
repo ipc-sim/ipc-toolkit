@@ -161,6 +161,33 @@ namespace ipc {
     }
 
     template <typename scalar>
+    VectorMax3<scalar> point_edge_closest_point_direction(
+        const Eigen::Ref<const VectorMax3<scalar>>& p,
+        const Eigen::Ref<const VectorMax3<scalar>>& e0,
+        const Eigen::Ref<const VectorMax3<scalar>>& e1,
+        const PointEdgeDistanceType &dtype)
+    {
+        switch (dtype)
+        {
+        case PointEdgeDistanceType::P_E:
+            return point_line_closest_point_direction<scalar>(p, e0, e1);
+        case PointEdgeDistanceType::P_E0:
+            return p - e0;
+        case PointEdgeDistanceType::P_E1:
+            return p - e1;
+        case PointEdgeDistanceType::AUTO:
+        default:
+            VectorMax3<scalar> t = e1 - e0;
+            const scalar len = t.norm();
+            t = t / len;
+
+            const VectorMax3<scalar> pos = p - e0;
+            const scalar s = pos.dot(t) / len;
+            return pos - (L_ns(s) * len) * t;
+        }
+    }
+
+    template <typename scalar>
     Vector3<scalar> line_line_closest_point_direction(
         const Eigen::Ref<const Vector3<scalar>>& ea0,
         const Eigen::Ref<const Vector3<scalar>>& ea1,

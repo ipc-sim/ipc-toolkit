@@ -29,9 +29,6 @@ public:
         return 8;
     }
 
-    std::array<long, max_vert_3d> vertex_ids(
-        const Eigen::MatrixXi& _edges, const Eigen::MatrixXi& _faces) const override;
-    
     double compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const override;
 
     double operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 
@@ -48,12 +45,19 @@ public:
 
 private:
     template <typename scalar> 
+    scalar evaluate_edge_edge_quadrature(const Vector<double, 24>& positions, ParameterType params) const;
+    template <typename scalar> 
+    scalar evaluate_point_edge_quadrature(const Vector<double, 24>& positions, ParameterType params) const;
+    template <typename scalar> 
     scalar evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params) const;
 
-    bool compute_types(const Vector<double, 24>& positions, const ParameterType &params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
+    bool compute_edge_edge_types(const Vector<double, 24>& positions, const ParameterType &params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
+    bool compute_point_edge_types(const Vector<double, 24>& positions, ParameterType params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
 
     Eigen::Matrix<int, 4, 3> face_to_vertex; // stores the local vertex ids for each vertex on each face
 
+    bool has_edge_edge;
+    bool has_point_edge;
     EdgeEdgeDistanceType dtype;
     std::array<PointEdgeDistanceType, 4> edge_dtypes;
     std::array<HEAVISIDE_TYPE, 4> tangent_types;

@@ -32,6 +32,9 @@ namespace ipc {
                     }
                 }
             }
+            if (mesh.vertices_to_faces()[v].size() != map.size())
+                throw std::runtime_error("Non-manifold vertex!");
+            
             std::vector<long> neighbors;
             auto iter = map.find(map.begin()->first);
             while (neighbors.empty() || iter->first != neighbors.front())

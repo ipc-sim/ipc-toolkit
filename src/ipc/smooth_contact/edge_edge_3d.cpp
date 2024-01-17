@@ -1,5 +1,5 @@
 #include "edge_edge_3d.hpp"
-#include "smooth_edge_edge.hpp"
+#include "smooth_point_edge.hpp"
 #include <ipc/utils/AutodiffTypes.hpp>
 #include <iostream>
 #include <iterator>
@@ -70,10 +70,12 @@ namespace ipc {
         }
         
         Vector<double, 24> positions = dof(V, mesh.edges(), mesh.faces());
-        is_active_ = compute_types(positions, param);
+        has_edge_edge = compute_edge_edge_types(positions, param);
+        has_point_edge = compute_point_edge_types(positions, param);
+        is_active_ = has_edge_edge || has_point_edge;
     }
 
-    bool SmoothEdgeEdge3Collision::compute_types(
+    bool SmoothEdgeEdge3Collision::compute_edge_edge_types(
         const Vector<double, 24>& positions, 
         const ParameterType &params)
     {
@@ -171,6 +173,79 @@ namespace ipc {
     template <typename scalar> 
     scalar SmoothEdgeEdge3Collision::evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params) const
     {
+        scalar out(0.);
+        if (has_edge_edge)
+            out = out + evaluate_edge_edge_quadrature<scalar>(positions, params);
+        if (has_point_edge)
+            out = out + evaluate_point_edge_quadrature<scalar>(positions, params);
+        return out;
+    }
+
+    bool SmoothEdgeEdge3Collision::compute_point_edge_types(
+        const Vector<double, 24>& positions, 
+        ParameterType params)
+    {
+        std::array<Vector3<double>, 8> points = slice_positions<double, 8, 3>(positions);
+        bool skip = true;
+        for (int le : {0, 2})
+        {
+            params.eps = pow(get_dhat(le/2), 2);
+            for (int lv : {1, 2})
+            {
+                const auto &p = points[face_to_vertex(le, lv)];
+                const auto &e0 = points[face_to_vertex(2-le, 1)];
+                const auto &e1 = points[face_to_vertex(2-le, 2)];
+                const auto &f0 = points[face_to_vertex(2-le+0, 0)];
+                const auto &f1 = points[face_to_vertex(2-le+1, 0)];
+
+                Vector3<double> direc = point_edge_closest_point_direction<double>(p, e0, e1, PointEdgeDistanceType::AUTO); // from edge a to edge b
+                const double dist_sqr = direc.squaredNorm();
+                if (dist_sqr > params.eps)
+                    continue;
+                
+                direc = direc / sqrt(dist_sqr);
+
+                Vector3<double> t = point_line_closest_point_direction<double>(f0, e0, e1);
+                if (-direc.dot(t) / t.norm() / params.alpha < -1)
+                    continue;
+                
+                t = point_line_closest_point_direction<double>(f1, e1, e0);
+                if (-direc.dot(t) / t.norm() / params.alpha < -1)
+                    continue;
+
+                const Vector3<double> normal1 = (e0 - f0).cross(e1 - f0);
+                const Vector3<double> normal2 = (e1 - f1).cross(e0 - f1);
+                if (direc.dot(normal1) / normal1.norm() / params.alpha < -1 && direc.dot(normal2) / normal2.norm() / params.alpha < -1)
+                    continue;
+                
+                skip = false;
+            }
+        }
+        return !skip;
+    }
+
+    template <typename scalar> 
+    scalar SmoothEdgeEdge3Collision::evaluate_point_edge_quadrature(const Vector<double, 24>& positions, ParameterType params) const
+    {
+        std::array<Vector3<scalar>, 8> points = slice_positions<scalar, 8, 3>(positions);
+        scalar out(0.);
+        for (int le : {0, 2})
+        {
+            params.eps = pow(get_dhat(le/2), 2);
+            for (int lv : {1, 2})
+            {
+                out += smooth_point_edge_potential_single_point_3d<scalar>(
+                    points[face_to_vertex(le, lv)],
+                    points[face_to_vertex(2-le, 1)],points[face_to_vertex(2-le, 2)],
+                    points[face_to_vertex(2-le+0, 0)],points[face_to_vertex(2-le+1, 0)], params);
+            }
+        }
+        return out;
+    }
+
+    template <typename scalar> 
+    scalar SmoothEdgeEdge3Collision::evaluate_edge_edge_quadrature(const Vector<double, 24>& positions, ParameterType params) const
+    {
         std::array<Vector3<scalar>, 8> points = slice_positions<scalar, 8, 3>(positions);
         const scalar out = smooth_edge_edge_potential_single_point<scalar>(
             points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
@@ -245,12 +320,6 @@ namespace ipc {
         // }
 
         return out;
-    }
-
-    std::array<long, max_vert_3d> SmoothEdgeEdge3Collision::vertex_ids(
-        const Eigen::MatrixXi& _edges, const Eigen::MatrixXi& _faces) const
-    {
-        return vertices;
     }
 
     double SmoothEdgeEdge3Collision::operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 

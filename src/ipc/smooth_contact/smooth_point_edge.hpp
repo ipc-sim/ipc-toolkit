@@ -2,6 +2,7 @@
 
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/collisions/collision.hpp>
+#include "smooth_edge_edge.hpp"
 
 namespace ipc {
 
@@ -43,4 +44,35 @@ namespace ipc {
         const Eigen::Ref<const Vector2<scalar>>& e0,
         const Eigen::Ref<const Vector2<scalar>>& e1,
         const ParameterType &params);
+
+    template <typename scalar>
+    scalar smooth_point_edge_potential_single_point_3d(
+        const Eigen::Ref<const Vector3<scalar>>& p,
+        const Eigen::Ref<const Vector3<scalar>>& e0,
+        const Eigen::Ref<const Vector3<scalar>>& e1,
+        const Eigen::Ref<const Vector3<scalar>>& f0,
+        const Eigen::Ref<const Vector3<scalar>>& f1,
+        const ParameterType &params)
+    {
+        // constexpr double threshold_eps = 1e-2;
+
+        const Vector3<scalar> u = e1 - e0;
+        const scalar len = u.squaredNorm();
+
+        Vector3<scalar> direc = point_edge_closest_point_direction<scalar>(p, e0, e1, PointEdgeDistanceType::AUTO); // from edge a to edge b
+        const scalar dist_sqr = direc.squaredNorm();
+        direc = direc / sqrt(dist_sqr);
+
+        scalar out = smooth_edge_edge_potential_tangent_term<scalar>(f0, e0, e1, -direc, params.alpha, HEAVISIDE_TYPE::VARIANT) *
+                smooth_edge_edge_potential_tangent_term<scalar>(f1, e1, e0, -direc, params.alpha, HEAVISIDE_TYPE::VARIANT) *
+                inv_barrier<scalar>(dist_sqr / params.eps, params.r);
+
+        const scalar normal_penalty = smooth_edge_edge_potential_normal_term<scalar>(f0, e0, e1, direc, params.alpha, HEAVISIDE_TYPE::VARIANT) + 
+                                    smooth_edge_edge_potential_normal_term<scalar>(f1, e1, e0, direc, params.alpha, HEAVISIDE_TYPE::VARIANT);
+
+        // const scalar mollifier = mollifier<scalar>(((p - e0).squaredNorm() - dist_sqr) / len / threshold_eps) * 
+        //                            mollifier<scalar>(((p - e1).squaredNorm() - dist_sqr) / len / threshold_eps);
+
+        return 0.5 * sqrt(len) * out * normal_penalty; // * mollifier;
+    }
 }
