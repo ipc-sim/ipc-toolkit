@@ -2,6 +2,7 @@
 
 #include <ipc/collisions/collision.hpp>
 #include <ipc/collision_mesh.hpp>
+#include <ipc/utils/unordered_tuple.hpp>
 
 namespace ipc {
 
@@ -82,13 +83,14 @@ public:
             throw std::runtime_error("Invalid index in smooth_collision!");
     }
 
-    template <typename H>
-    friend H AbslHashValue(H h, const SmoothCollision& other)
-    {
-        long min_ei = std::min(other.primitive0, other.primitive1);
-        long max_ei = std::max(other.primitive0, other.primitive1);
-        return H::combine(std::move(h), min_ei, max_ei);
-    }
+    // template <typename H>
+    // friend H AbslHashValue(H h, const SmoothCollision& other)
+    // {
+    //     long min_ei = std::min(other.primitive0, other.primitive1);
+    //     long max_ei = std::max(other.primitive0, other.primitive1);
+    //     return H::combine(std::move(h), min_ei, max_ei);
+    // }
+    unordered_tuple get_hash() const { return unordered_tuple(primitive0, primitive1); }
 
     double get_dhat(const int &id) const
     {
