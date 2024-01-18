@@ -78,14 +78,7 @@ namespace ipc {
         scalar tangent_term = smooth_heaviside<scalar>(t0.dot(direc) / l0 / params.alpha) *
                             smooth_heaviside<scalar>(t1.dot(direc) / l1 / params.alpha);
 
-        const scalar mollifier_val = mollifier<scalar>(((p - e0).squaredNorm() - intpow(dist, 2)) / len / mollifier_threshold_eps) * 
-                                   mollifier<scalar>(((p - e1).squaredNorm() - intpow(dist, 2)) / len / mollifier_threshold_eps);
-
-        if constexpr (std::is_same<double, scalar>::value)
-        {
-            if (std::isnan(mollifier_val) || std::isnan(dist) || std::isnan(tangent_term))
-                std::cout << mollifier_val << " " << dist << " " << tangent_term << "\n";
-        }
+        const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, intpow(dist, 2));
 
         return 0.5 * (l0 + l1) * len * cubic_spline(Phi * (2. / params.alpha)) * inv_barrier(intpow(dist, 2) / params.eps, params.r) * tangent_term * mollifier_val;
     }
@@ -113,8 +106,7 @@ namespace ipc {
         const scalar normal_penalty = smooth_edge_edge_potential_normal_term<scalar>(f0, e0, e1, direc, params.alpha, HEAVISIDE_TYPE::VARIANT) + 
                                     smooth_edge_edge_potential_normal_term<scalar>(f1, e1, e0, direc, params.alpha, HEAVISIDE_TYPE::VARIANT);
 
-        const scalar mollifier_val = mollifier<scalar>(((p - e0).squaredNorm() - dist_sqr) / len / mollifier_threshold_eps) * 
-                                   mollifier<scalar>(((p - e1).squaredNorm() - dist_sqr) / len / mollifier_threshold_eps);
+        const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, dist_sqr);
 
         return 0.5 * sqrt(len) * out * normal_penalty * mollifier_val;
     }

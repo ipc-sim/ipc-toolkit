@@ -112,9 +112,7 @@ namespace ipc {
                                     (smooth_edge_edge_potential_normal_term<scalar>(fb0, eb0, eb1, -direc, params.alpha, normal_types[2]) + 
                                     smooth_edge_edge_potential_normal_term<scalar>(fb1, eb1, eb0, -direc, params.alpha, normal_types[3]));
 
-        const scalar mollifier_a = mollifier<scalar>((point_edge_sqr_distance<scalar>(ea0, eb0, eb1, edge_dtypes[0]) - dist_sqr) / a / mollifier_threshold_eps) * mollifier<scalar>((point_edge_sqr_distance<scalar>(ea1, eb0, eb1, edge_dtypes[1]) - dist_sqr) / a / mollifier_threshold_eps);
-        const scalar mollifier_b = mollifier<scalar>((point_edge_sqr_distance<scalar>(eb0, ea0, ea1, edge_dtypes[2]) - dist_sqr) / b / mollifier_threshold_eps) * mollifier<scalar>((point_edge_sqr_distance<scalar>(eb1, ea0, ea1, edge_dtypes[3]) - dist_sqr) / b / mollifier_threshold_eps);
-
-        return 0.5 * sqrt(a * b) * out * normal_penalty * mollifier_a * mollifier_b;
+        const scalar mollifier_val = edge_mollifier<scalar>(ea0, eb0, eb1) * edge_mollifier<scalar>(eb0, ea0, ea1);
+        return 0.5 * sqrt(a * b) * out * normal_penalty * mollifier_val;
     }
 }

@@ -246,4 +246,18 @@ namespace ipc {
                 "Invalid distance type for edge-edge distance!");
         }
     }
+
+    template <typename scalar>
+    scalar edge_mollifier(const VectorMax3<scalar> &p, const VectorMax3<scalar> &e0, const VectorMax3<scalar> &e1, const scalar &dist_sqr)
+    {
+        scalar len_sqr = (e1 - e0).squaredNorm();
+        return mollifier<scalar>(((p - e0).squaredNorm() - dist_sqr) / len_sqr / mollifier_threshold_eps) *
+            mollifier<scalar>(((p - e1).squaredNorm() - dist_sqr) / len_sqr / mollifier_threshold_eps);
+    }
+
+    template <typename scalar>
+    scalar edge_mollifier(const VectorMax3<scalar> &p, const VectorMax3<scalar> &e0, const VectorMax3<scalar> &e1)
+    {
+        return edge_mollifier<scalar>(p, e0, e1, point_edge_sqr_distance<scalar>(p, e0, e1, PointEdgeDistanceType::AUTO));
+    }
 }
