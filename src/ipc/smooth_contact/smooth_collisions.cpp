@@ -47,6 +47,11 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
             edge_adaptive_dhat((*cc)[0]) = std::min(edge_adaptive_dhat((*cc)[0]), dist);
             edge_adaptive_dhat((*cc)[1]) = std::min(edge_adaptive_dhat((*cc)[1]), dist);
         }
+        else if (std::dynamic_pointer_cast<SmoothEdgeVertexCollision>(cc))
+        {
+            edge_adaptive_dhat((*cc)[0]) = std::min(edge_adaptive_dhat((*cc)[0]), dist);
+            vert_adaptive_dhat((*cc)[1]) = std::min(vert_adaptive_dhat((*cc)[1]), dist);
+        }
         else if (std::dynamic_pointer_cast<SmoothFaceFaceCollision>(cc))
         {
             face_adaptive_dhat((*cc)[0]) = std::min(face_adaptive_dhat((*cc)[0]), dist);
@@ -128,13 +133,13 @@ void SmoothCollisions<dim>::build(
                     r.end());
             });
 
-        if (use_high_order_quadrature)
-            tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
-                [&](const tbb::blocked_range<size_t>& r) {
-                    storage.local().add_neighbor_edge_collisions(
-                        mesh, vertices, param, edge_dhat, r.begin(), r.end());
-                });
+        // if (use_high_order_quadrature)
+        //     tbb::parallel_for(
+        //         tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
+        //         [&](const tbb::blocked_range<size_t>& r) {
+        //             storage.local().add_neighbor_edge_collisions(
+        //                 mesh, vertices, param, edge_dhat, r.begin(), r.end());
+        //         });
     }
     else
     {
@@ -154,13 +159,13 @@ void SmoothCollisions<dim>::build(
                     r.end());
             });
 
-        if (use_high_order_quadrature)
-            tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
-                [&](const tbb::blocked_range<size_t>& r) {
-                    storage.local().add_neighbor_face_collisions(
-                        mesh, vertices, param, face_dhat, r.begin(), r.end());
-                });
+        // if (use_high_order_quadrature)
+        //     tbb::parallel_for(
+        //         tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
+        //         [&](const tbb::blocked_range<size_t>& r) {
+        //             storage.local().add_neighbor_face_collisions(
+        //                 mesh, vertices, param, face_dhat, r.begin(), r.end());
+        //         });
     }
     SmoothCollisionsBuilder<dim>::merge(storage, *this);
     // candidates = candidates_;

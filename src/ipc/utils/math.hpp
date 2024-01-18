@@ -35,6 +35,8 @@ namespace ipc {
         return scalar(0.);
     }
 
+    constexpr double mollifier_threshold_eps = 1e-3;
+
     template <typename scalar>
     scalar mollifier(const scalar &x)
     {

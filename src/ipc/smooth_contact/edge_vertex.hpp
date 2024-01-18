@@ -1,35 +1,52 @@
 #pragma once
-#include <ipc/collisions/edge_vertex.hpp>
+
+#include "smooth_collision.hpp"
+#include <ipc/utils/math.hpp>
 
 namespace ipc {
 
-class SmoothEdgeVertexCollision : public EdgeVertexCollision {
+class SmoothEdgeVertexCollision : public SmoothCollision<6> {
+    constexpr static int dim = 2;
 public:
+    using Super = SmoothCollision<6>;
+    
     SmoothEdgeVertexCollision(
-        const long _edge_id,
-        const long _vertex_id,
-        const double _weight,
-        const Eigen::SparseVector<double>& _weight_gradient)
-        : EdgeVertexCollision(_edge_id, _vertex_id, _weight, _weight_gradient)
+        long primitive0_,
+        long primitive1_,
+        const CollisionMesh &mesh,
+        const ParameterType &param,
+        const std::array<double, 2> &dhats_,
+        const Eigen::MatrixXd &V);
+
+    int ndofs() const override
     {
+        return 10;
     }
 
-    PointEdgeDistanceType known_dtype() const override
+    int num_vertices() const override
     {
-        return PointEdgeDistanceType::AUTO;
+        return 5;
     }
 
-    double operator()(const VectorMax12d& positions, 
+    double compute_distance(const Vector<double, -1, 18>& positions) const override;
+
+    double operator()(const VectorMax18d& positions, 
         const ParameterType &params) const override;
 
-    VectorMax12d gradient(
-        const VectorMax12d& positions, 
+    VectorMax18d gradient(
+        const VectorMax18d& positions, 
         const ParameterType &params) const override;
 
-    MatrixMax12d hessian(
-        const VectorMax12d& positions, 
+    MatrixMax18d hessian(
+        const VectorMax18d& positions, 
         const ParameterType &params,
         const bool project_hessian_to_psd = false) const override;
+
+private:
+    template <typename scalar> 
+    scalar evaluate_quadrature(const Vector10d& positions, ParameterType params) const;
+
+    bool compute_types(const Vector10d& positions, const ParameterType &params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
 };
 
-} // namespace ipc
+}

@@ -31,9 +31,11 @@ using Vector1d = Vector1<double>;
 using Vector6d = Vector<double, 6>;
 using Vector8d = Vector<double, 8>;
 using Vector9d = Vector<double, 9>;
+using Vector10d = Vector<double, 10>;
 using Vector12d = Vector<double, 12>;
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
 using Matrix9d = Eigen::Matrix<double, 9, 9>;
+using Matrix10d = Eigen::Matrix<double, 10, 10>;
 using Matrix12d = Eigen::Matrix<double, 12, 12>;
 
 /// @brief A dynamic size matrix with a fixed maximum size of 3×1

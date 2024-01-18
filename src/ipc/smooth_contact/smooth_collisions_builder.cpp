@@ -22,16 +22,16 @@ void SmoothCollisionsBuilder<dim>::add_edge_vertex_collisions(
 {
     if constexpr (dim == 2)
     {
-        const std::vector<unordered_set<int>>& vertex_edge_adj = mesh.vertex_edge_adjacencies();
+        // const std::vector<unordered_set<int>>& vertex_edge_adj = mesh.vertex_edge_adjacencies();
         for (size_t i = start_i; i < end_i; i++) {
             const auto& [ei, vi] = candidates[i];
 
-            for (int ej : vertex_edge_adj[vi])
+            // for (int ej : vertex_edge_adj[vi])
             {
-                if (ej != ei)
+                // if (ej != ei)
                 {
-                    std::array<double, 2> dhats = {{edge_dhat(ej), edge_dhat(ei)}};
-                    add_collision<SmoothEdgeEdgeCollision>(std::make_shared<SmoothEdgeEdgeCollision>(ej, ei, mesh, param, dhats, vertices), edge_edge_2_to_id, collisions);
+                    std::array<double, 2> dhats = {{edge_dhat(ei), vert_dhat(vi)}};
+                    add_collision<SmoothEdgeVertexCollision>(std::make_shared<SmoothEdgeVertexCollision>(ei, vi, mesh, param, dhats, vertices), vert_edge_2_to_id, collisions);
                 }
             }
             
@@ -44,28 +44,28 @@ void SmoothCollisionsBuilder<dim>::add_edge_vertex_collisions(
     }
 }
 
-template <int dim>
-void SmoothCollisionsBuilder<dim>::add_neighbor_edge_collisions(
-        const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
-        const ParameterType &param,
-        const std::function<double(const long &)> &edge_dhat,
-        const size_t start_i,
-        const size_t end_i)
-{
-    if constexpr (dim == 2)
-    {
-        const std::vector<unordered_set<int>>& vertex_edge_adj = mesh.vertex_edge_adjacencies();
-        for (size_t v = start_i; v < end_i; v++)
-            for (int i : vertex_edge_adj[v])
-                for (int j : vertex_edge_adj[v])
-                    if (j > i)
-                    {
-                        std::array<double, 2> dhats = {{edge_dhat(i), edge_dhat(j)}};
-                        add_collision<SmoothEdgeEdgeCollision>(std::make_shared<SmoothEdgeEdgeCollision>(i, j, mesh, param, dhats, vertices), edge_edge_2_to_id, collisions);
-                    }
-    }
-}
+// template <int dim>
+// void SmoothCollisionsBuilder<dim>::add_neighbor_edge_collisions(
+//         const CollisionMesh& mesh,
+//         const Eigen::MatrixXd& vertices,
+//         const ParameterType &param,
+//         const std::function<double(const long &)> &edge_dhat,
+//         const size_t start_i,
+//         const size_t end_i)
+// {
+//     if constexpr (dim == 2)
+//     {
+//         const std::vector<unordered_set<int>>& vertex_edge_adj = mesh.vertex_edge_adjacencies();
+//         for (size_t v = start_i; v < end_i; v++)
+//             for (int i : vertex_edge_adj[v])
+//                 for (int j : vertex_edge_adj[v])
+//                     if (j > i)
+//                     {
+//                         std::array<double, 2> dhats = {{edge_dhat(i), edge_dhat(j)}};
+//                         add_collision<SmoothEdgeVertexCollision>(std::make_shared<SmoothEdgeVertexCollision>(i, j, mesh, param, dhats, vertices), vert_edge_2_to_id, collisions);
+//                     }
+//     }
+// }
 
 // ============================================================================
 
@@ -125,28 +125,28 @@ void SmoothCollisionsBuilder<dim>::add_face_vertex_collisions(
     }
 }
 
-template <int dim>
-void SmoothCollisionsBuilder<dim>::add_neighbor_face_collisions(
-        const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
-        const ParameterType &param,
-        const std::function<double(const long &)> &face_dhat,
-        const size_t start_i,
-        const size_t end_i)
-{
-    if constexpr (dim == 3)
-    {
-        const auto &vertices_to_faces_adj = mesh.vertices_to_faces();
-        for (size_t v = start_i; v < end_i; v++)
-            for (int i : vertices_to_faces_adj[v])
-                for (int j : vertices_to_faces_adj[v])
-                    if (j > i)
-                    {
-                        std::array<double, 2> dhats = {{face_dhat(i), face_dhat(j)}};
-                        add_collision<SmoothFaceFaceCollision>(std::make_shared<SmoothFaceFaceCollision>(i, j, mesh, param, dhats, vertices), face_face_to_id, collisions);
-                    }
-    }
-}
+// template <int dim>
+// void SmoothCollisionsBuilder<dim>::add_neighbor_face_collisions(
+//         const CollisionMesh& mesh,
+//         const Eigen::MatrixXd& vertices,
+//         const ParameterType &param,
+//         const std::function<double(const long &)> &face_dhat,
+//         const size_t start_i,
+//         const size_t end_i)
+// {
+//     if constexpr (dim == 3)
+//     {
+//         const auto &vertices_to_faces_adj = mesh.vertices_to_faces();
+//         for (size_t v = start_i; v < end_i; v++)
+//             for (int i : vertices_to_faces_adj[v])
+//                 for (int j : vertices_to_faces_adj[v])
+//                     if (j > i)
+//                     {
+//                         std::array<double, 2> dhats = {{face_dhat(i), face_dhat(j)}};
+//                         add_collision<SmoothFaceFaceCollision>(std::make_shared<SmoothFaceFaceCollision>(i, j, mesh, param, dhats, vertices), face_face_to_id, collisions);
+//                     }
+//     }
+// }
 
 template <int dim> template <typename TCollision>
 void SmoothCollisionsBuilder<dim>::add_collision(
@@ -169,7 +169,7 @@ void SmoothCollisionsBuilder<dim>::merge(
     SmoothCollisions<dim>& merged_collisions)
 {
     unordered_map<unordered_tuple, std::tuple<SmoothVertexVertexCollision, long> > vert_vert_2_to_id;
-    unordered_map<unordered_tuple, std::tuple<SmoothEdgeEdgeCollision, long> > edge_edge_2_to_id;
+    unordered_map<unordered_tuple, std::tuple<SmoothEdgeVertexCollision, long> > vert_edge_2_to_id;
 
     unordered_map<unordered_tuple, std::tuple<SmoothVertexVertex3Collision, long> > vert_vert_3_to_id;
     unordered_map<unordered_tuple, std::tuple<SmoothFaceFaceCollision, long> > face_face_to_id;
@@ -210,12 +210,12 @@ void SmoothCollisionsBuilder<dim>::merge(
                     vert_vert_3_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothVertexVertex3Collision, long>(std::move(*vv3), merged_collisions.collisions.size()));
                 }
             }
-            else if (auto ee = std::dynamic_pointer_cast<SmoothEdgeEdgeCollision>(cc))
+            else if (auto ee = std::dynamic_pointer_cast<SmoothEdgeVertexCollision>(cc))
             {
-                if (edge_edge_2_to_id.find(cc->get_hash()) == edge_edge_2_to_id.end())
+                if (vert_edge_2_to_id.find(cc->get_hash()) == vert_edge_2_to_id.end())
                 {
                     merged_collisions.collisions.push_back(cc);
-                    edge_edge_2_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothEdgeEdgeCollision, long>(std::move(*ee), merged_collisions.collisions.size()));
+                    vert_edge_2_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothEdgeVertexCollision, long>(std::move(*ee), merged_collisions.collisions.size()));
                 }
             }
             else if (auto ff = std::dynamic_pointer_cast<SmoothFaceFaceCollision>(cc))

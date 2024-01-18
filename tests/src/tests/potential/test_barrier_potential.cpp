@@ -595,7 +595,7 @@ TEST_CASE(
     // std::cout << "\n" <<  vertices << "\n" << edges << "\n";
 
     CollisionMesh mesh;
-    ParameterType param(dhat*dhat, 0.2, 1, n_quad_pts);
+    ParameterType param(dhat*dhat, 1, 1, n_quad_pts);
     param.set_adaptive_dhat_ratio(min_dist_ratio);
     SmoothCollisions<2> collisions(n_quad_pts > 1);
     mesh = CollisionMesh(vertices, edges, faces);

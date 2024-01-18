@@ -47,7 +47,7 @@ namespace ipc {
         ta0.normalize(); ta1.normalize();
         tb0.normalize(); tb1.normalize();
 
-        if (direc.norm() >= std::max(get_dhat(0), get_dhat(1)))
+        if (direc.squaredNorm() >= pow(std::min(get_dhat(0), get_dhat(1)), 2))
             return false;
         direc.normalize();
         
@@ -55,7 +55,7 @@ namespace ipc {
         {
             bool A = -direc.dot(ta0) <= -params.alpha || -direc.dot(-ta1) <= -params.alpha;
             bool B = direc.dot(tb0) <= -params.alpha || direc.dot(-tb1) <= -params.alpha;
-            if (A && B)
+            if (A || B)
                 return false;
         }
 
@@ -74,8 +74,9 @@ namespace ipc {
     scalar SmoothVertexVertexCollision::evaluate_quadrature(const Vector12d& positions, ParameterType params) const
     {
         std::array<Vector2<scalar>, 6> points = slice_positions<scalar, 6, 2>(positions);
+        params.eps = pow(std::min(get_dhat(0), get_dhat(1)), 2);
         return smooth_point_point_potential_2d<scalar>(
-            points[0], points[1], points[2], points[3], points[4], points[5], params, dhats);
+            points[0], points[1], points[2], points[3], points[4], points[5], params);
     }
 
     double SmoothVertexVertexCollision::compute_distance(const Vector<double, -1, 18>& positions) const

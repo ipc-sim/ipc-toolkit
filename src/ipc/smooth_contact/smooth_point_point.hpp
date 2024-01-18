@@ -23,8 +23,7 @@ scalar smooth_point_point_potential_2d(
     const Eigen::Ref<const Vector2<scalar>>& ea1,
     const Eigen::Ref<const Vector2<scalar>>& eb0,
     const Eigen::Ref<const Vector2<scalar>>& eb1,
-    const ParameterType &params,
-    const std::array<double, 2> &dhats)
+    const ParameterType &params)
 {
     const Vector2<scalar> direc = vb - va;
     const scalar dist_sqr = direc.squaredNorm();
@@ -38,14 +37,12 @@ scalar smooth_point_point_potential_2d(
 
     scalar out(0.);
     // tangent term
-    out += inv_barrier<scalar>(dist_sqr / intpow(dhats[0],2), params.r) *
+    out = inv_barrier<scalar>(dist_sqr / intpow(params.eps,2), params.r) *
             smooth_heaviside<scalar>(-direc.dot(ta0) / dist / a0 / params.alpha) *
             smooth_heaviside<scalar>(direc.dot(ta1) / dist / a1 / params.alpha) *
-            (a0 + a1) / 2.;
-    out += inv_barrier<scalar>(dist_sqr / intpow(dhats[1],2), params.r) *
             smooth_heaviside<scalar>(direc.dot(tb0) / dist / b0 / params.alpha) *
             smooth_heaviside<scalar>(direc.dot(-tb1) / dist / b1 / params.alpha) *
-            (b0 + b1) / 2.;
+            (a0 + a1) * (b0 + b1) / 4.;
 
     // normal term
     scalar normal_term = (smooth_heaviside<scalar>(cross2<scalar>(direc, ta0) / dist / a0 / params.alpha) + 

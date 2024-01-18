@@ -13,6 +13,8 @@ set(SOURCES
   smooth_collisions_builder.hpp
   edge_edge.cpp
   edge_edge.hpp
+  edge_vertex.cpp
+  edge_vertex.hpp
   edge_edge_3d.cpp
   edge_edge_3d.hpp
   face_face.cpp

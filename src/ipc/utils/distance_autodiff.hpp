@@ -150,13 +150,13 @@ namespace ipc {
     }
 
     template <typename scalar>
-    Vector3<scalar> point_line_closest_point_direction(
-        const Eigen::Ref<const Vector3<scalar>>& p,
-        const Eigen::Ref<const Vector3<scalar>>& e0,
-        const Eigen::Ref<const Vector3<scalar>>& e1)
+    VectorMax3<scalar> point_line_closest_point_direction(
+        const Eigen::Ref<const VectorMax3<scalar>>& p,
+        const Eigen::Ref<const VectorMax3<scalar>>& e0,
+        const Eigen::Ref<const VectorMax3<scalar>>& e1)
     {
-        const Vector3<scalar> d = p - e0;
-        const Vector3<scalar> t = e1 - e0;
+        const VectorMax3<scalar> d = p - e0;
+        const VectorMax3<scalar> t = e1 - e0;
         return d - (d.dot(t) / t.squaredNorm()) * t;
     }
 
@@ -227,16 +227,16 @@ namespace ipc {
             return (eb1 - ea1);
 
         case EdgeEdgeDistanceType::EA_EB0:
-            return point_line_closest_point_direction(eb0, ea0, ea1);
+            return point_line_closest_point_direction<scalar>(eb0, ea0, ea1);
 
         case EdgeEdgeDistanceType::EA_EB1:
-            return point_line_closest_point_direction(eb1, ea0, ea1);
+            return point_line_closest_point_direction<scalar>(eb1, ea0, ea1);
 
         case EdgeEdgeDistanceType::EA0_EB:
-            return -point_line_closest_point_direction(ea0, eb0, eb1);
+            return -point_line_closest_point_direction<scalar>(ea0, eb0, eb1);
 
         case EdgeEdgeDistanceType::EA1_EB:
-            return -point_line_closest_point_direction(ea1, eb0, eb1);
+            return -point_line_closest_point_direction<scalar>(ea1, eb0, eb1);
 
         case EdgeEdgeDistanceType::EA_EB:
             return line_line_closest_point_direction<scalar>(ea0, ea1, eb0, eb1);
