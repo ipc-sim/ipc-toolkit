@@ -41,7 +41,7 @@ namespace ipc {
     scalar mollifier(const scalar &x)
     {
         if (x <= 1)
-            return x * x * (2. - x);
+            return x * (2. - x);
         return scalar(1.);
     }
 
