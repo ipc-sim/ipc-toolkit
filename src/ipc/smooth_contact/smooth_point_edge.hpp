@@ -3,7 +3,6 @@
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/collisions/collision.hpp>
 #include "smooth_edge_edge.hpp"
-#include <iostream>
 
 namespace ipc {
 
@@ -76,11 +75,14 @@ namespace ipc {
         Vector2<scalar> t0 = x0 - p, t1 = p - x1;
         scalar l0 = t0.norm(), l1 = t1.norm();
         scalar tangent_term = smooth_heaviside<scalar>(t0.dot(direc) / l0 / params.alpha) *
-                            smooth_heaviside<scalar>(t1.dot(direc) / l1 / params.alpha);
+                            smooth_heaviside<scalar>(-t1.dot(direc) / l1 / params.alpha);
+
+        scalar normal_term = smooth_heaviside<scalar>(cross2<scalar>(t0, direc) / l0 / params.alpha) + 
+                            smooth_heaviside<scalar>(cross2<scalar>(t1, direc) / l1 / params.alpha);
 
         const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, intpow(dist, 2));
 
-        return 0.5 * (l0 + l1) * len * cubic_spline(Phi * (2. / params.alpha)) * inv_barrier(intpow(dist, 2) / params.eps, params.r) * tangent_term * mollifier_val;
+        return 0.5 * (l0 + l1) * len * cubic_spline(Phi * (2. / params.alpha)) * inv_barrier(intpow(dist, 2) / params.eps, params.r) * tangent_term * normal_term * mollifier_val;
     }
 
     template <typename scalar>

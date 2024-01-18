@@ -50,17 +50,17 @@ namespace ipc {
         if (dist >= std::min(get_dhat(0), get_dhat(1)))
             return false;
         direc /= dist;
-        
+
         // tangent term
         {
             const double Phi = 1 - cross2<double>(points[0] - points[1], e) / dist;
-            if (t0.dot(direc) <= -params.alpha || t1.dot(direc) <= -params.alpha || Phi >= params.alpha)
+            if (t0.dot(direc) <= -params.alpha || -t1.dot(direc) <= -params.alpha || Phi >= params.alpha)
                 return false;
         }
 
         // normal term
         {
-            if (cross2<double>(direc, t0) <= -params.alpha && cross2<double>(direc, t1) <= -params.alpha)
+            if (cross2<double>(direc, t0) >= params.alpha && cross2<double>(direc, t1) >= params.alpha)
                 return false;
         }
 
