@@ -50,6 +50,11 @@ namespace ipc {
 
         if (dtype != PointTriangleDistanceType::P_T)
             return false;
+
+        const Vector3<double> normal = (points.row(2) - points.row(1)).cross(points.row(3) - points.row(1));
+        const double Phi = 1 - (points.row(0) - points.row(1)).dot(normal) / sqrt(dist_sqr * normal.squaredNorm());
+        if (Phi >= params.alpha)
+            return false;
         
         return smooth_point3_term_type(points.row(0), direc, points.bottomRows(n_neighbors), params.alpha);
     }
