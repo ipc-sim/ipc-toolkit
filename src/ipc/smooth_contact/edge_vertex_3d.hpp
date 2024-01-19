@@ -6,16 +6,16 @@
 
 namespace ipc {
 
-class SmoothFaceVertexCollision : public SmoothCollision<max_vert_3d> {
+class SmoothEdgeVertex3Collision : public SmoothCollision<max_vert_3d> {
 public:
-    SmoothFaceVertexCollision(
+    SmoothEdgeVertex3Collision(
         long primitive0_,
         long primitive1_,
         const CollisionMesh &mesh,
         const ParameterType &param,
         const std::array<double, 2> &dhats_,
         const Eigen::MatrixXd &V);
-    virtual ~SmoothFaceVertexCollision() 
+    virtual ~SmoothEdgeVertex3Collision() 
     {
     }
 
@@ -26,7 +26,7 @@ public:
 
     int num_vertices() const override
     {
-        return n_neighbors + 1;
+        return n_neighbors + 5;
     }
 
     double compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const override;
@@ -47,11 +47,11 @@ private:
     template <typename scalar> 
     scalar evaluate_quadrature(const Eigen::VectorXd& positions, ParameterType params) const;
 
-    bool compute_types(const Eigen::VectorXd& positions, const ParameterType &params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
+    bool compute_types(const Eigen::VectorXd& positions, ParameterType params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
 
     int n_neighbors;
 
-    PointTriangleDistanceType dtype;
+    PointEdgeDistanceType dtype;
 };
 
 }

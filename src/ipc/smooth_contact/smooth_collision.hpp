@@ -92,9 +92,9 @@ public:
     // }
     unordered_tuple get_hash() const { return unordered_tuple(primitive0, primitive1); }
 
-    double get_dhat(const int &id) const
+    double get_eps() const
     {
-        return dhats[id];
+        return pow(std::min(dhats[0], dhats[1]), 2);
     }
 
 protected:
@@ -102,6 +102,8 @@ protected:
     long primitive0, primitive1;
     std::array<double, 2> dhats;
     std::array<long, nvert> vertices;
+
+    std::array<std::vector<int>, 2> primitive_vertices;
 };
 
 }

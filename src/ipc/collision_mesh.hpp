@@ -129,6 +129,9 @@ public:
         return m_edges_to_faces;
     }
 
+    std::vector<long> find_vertex_adjacent_vertices(const long &v) const;
+    std::array<long, 4> find_edge_adjacent_vertices(const long &e) const;
+
     // -----------------------------------------------------------------------
 
     /// @brief Compute the vertex positions from the positions of the full mesh.

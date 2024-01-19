@@ -42,20 +42,20 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
     for (auto cc : collisions)
     {
         const double dist = param.get_adaptive_dhat_ratio() * sqrt(cc->compute_distance(cc->dof(vertices, mesh.edges(), mesh.faces())));
-        if (std::dynamic_pointer_cast<SmoothEdgeEdgeCollision>(cc) || std::dynamic_pointer_cast<SmoothEdgeEdge3Collision>(cc))
+        if (std::dynamic_pointer_cast<SmoothEdgeEdge3Collision>(cc))
         {
             edge_adaptive_dhat((*cc)[0]) = std::min(edge_adaptive_dhat((*cc)[0]), dist);
             edge_adaptive_dhat((*cc)[1]) = std::min(edge_adaptive_dhat((*cc)[1]), dist);
         }
-        else if (std::dynamic_pointer_cast<SmoothEdgeVertexCollision>(cc))
+        else if (std::dynamic_pointer_cast<SmoothEdgeVertexCollision>(cc) || std::dynamic_pointer_cast<SmoothEdgeVertex3Collision>(cc))
         {
             edge_adaptive_dhat((*cc)[0]) = std::min(edge_adaptive_dhat((*cc)[0]), dist);
             vert_adaptive_dhat((*cc)[1]) = std::min(vert_adaptive_dhat((*cc)[1]), dist);
         }
-        else if (std::dynamic_pointer_cast<SmoothFaceFaceCollision>(cc))
+        else if (std::dynamic_pointer_cast<SmoothFaceVertexCollision>(cc))
         {
             face_adaptive_dhat((*cc)[0]) = std::min(face_adaptive_dhat((*cc)[0]), dist);
-            face_adaptive_dhat((*cc)[1]) = std::min(face_adaptive_dhat((*cc)[1]), dist);
+            vert_adaptive_dhat((*cc)[1]) = std::min(vert_adaptive_dhat((*cc)[1]), dist);
         }
         else if (std::dynamic_pointer_cast<SmoothVertexVertexCollision>(cc) || std::dynamic_pointer_cast<SmoothVertexVertex3Collision>(cc))
         {
@@ -155,7 +155,7 @@ void SmoothCollisions<dim>::build(
             tbb::blocked_range<size_t>(size_t(0), candidates_.fv_candidates.size()),
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_face_vertex_collisions(
-                    mesh, vertices, candidates_.fv_candidates, param, vert_dhat, face_dhat, r.begin(),
+                    mesh, vertices, candidates_.fv_candidates, param, vert_dhat, edge_dhat, face_dhat, r.begin(),
                     r.end());
             });
 
@@ -215,28 +215,28 @@ template <int dim>
 std::string SmoothCollisions<dim>::to_string(
     const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
 {
-    std::stringstream ss;
-    for (const auto& cc : collisions) {
-        ss << "\n";
-        if (!std::dynamic_pointer_cast<SmoothFaceFaceCollision>(cc))
-        {
-            ss << fmt::format(
-                  "ee: {}=({}, {}) {}=({}, {})",
-                  (*cc)[0], mesh.edges()((*cc)[0], 0),
-                  mesh.edges()((*cc)[0], 1), (*cc)[1],
-                  mesh.edges()((*cc)[1], 0), mesh.edges()((*cc)[1], 1));
-        }
-        else
-        {
-            ss << fmt::format(
-                  "ff: {}=({}, {}, {}) {}=({}, {}, {})", (*cc)[0],
-                  mesh.faces()((*cc)[0], 0), mesh.faces()((*cc)[0], 1),
-                  mesh.faces()((*cc)[0], 2), (*cc)[1],
-                  mesh.faces()((*cc)[1], 0), mesh.faces()((*cc)[1], 1),
-                  mesh.faces()((*cc)[1], 2));
-        }
-    }
-    return ss.str();
+    // std::stringstream ss;
+    // for (const auto& cc : collisions) {
+    //     ss << "\n";
+        // if (!std::dynamic_pointer_cast<SmoothFaceVertexCollision>(cc))
+        // {
+        //     ss << fmt::format(
+        //           "ee: {}=({}, {}) {}=({}, {})",
+        //           (*cc)[0], mesh.edges()((*cc)[0], 0),
+        //           mesh.edges()((*cc)[0], 1), (*cc)[1],
+        //           mesh.edges()((*cc)[1], 0), mesh.edges()((*cc)[1], 1));
+        // }
+        // else
+        // {
+        //     ss << fmt::format(
+        //           "ff: {}=({}, {}, {}) {}=({}, {}, {})", (*cc)[0],
+        //           mesh.faces()((*cc)[0], 0), mesh.faces()((*cc)[0], 1),
+        //           mesh.faces()((*cc)[0], 2), (*cc)[1],
+        //           mesh.faces()((*cc)[1], 0), mesh.faces()((*cc)[1], 1),
+        //           mesh.faces()((*cc)[1], 2));
+        // }
+    // }
+    return ""; // ss.str();
 }
 
 // NOTE: Actually distance squared

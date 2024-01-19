@@ -47,7 +47,7 @@ namespace ipc {
         Vector<double, 2> t0 = (points[3] - points[0]).normalized(), t1 = (points[0] - points[4]).normalized();
 
         const double dist = direc.norm();
-        if (dist >= std::min(get_dhat(0), get_dhat(1)))
+        if (dist*dist >= get_eps())
             return false;
         direc /= dist;
 
@@ -71,7 +71,7 @@ namespace ipc {
     scalar SmoothEdgeVertexCollision::evaluate_quadrature(const Vector10d& positions, ParameterType params) const
     {
         std::array<Vector2<scalar>, 5> points = slice_positions<scalar, 5, 2>(positions);
-        params.eps = pow(std::min(get_dhat(0), get_dhat(1)), 2);
+        params.eps = get_eps();
         return smooth_point_edge_potential_single_point<scalar>(
             points[0], points[1], points[2], points[3], points[4], params);
     }

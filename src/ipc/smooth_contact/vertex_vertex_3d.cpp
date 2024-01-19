@@ -20,35 +20,7 @@ namespace ipc {
         int v_id = 2;
         for (auto v : {primitive0, primitive1})
         {
-            std::unordered_map<long, long> map;
-            for (auto f : mesh.vertices_to_faces()[v])
-            {
-                for (int lv = 0; lv < 3; lv++)
-                {
-                    if (mesh.faces()(f, lv) == v)
-                    {
-                        map[mesh.faces()(f, (lv+1)%3)] = mesh.faces()(f, (lv+2)%3);
-                        break;
-                    }
-                }
-            }
-            if (mesh.vertices_to_faces()[v].size() != map.size())
-                throw std::runtime_error("Non-manifold vertex! Map size smaller than neighbor!");
-            
-            std::vector<long> neighbors;
-            auto iter = map.find(map.begin()->first);
-            while (neighbors.empty() || iter->first != neighbors.front())
-            {
-                neighbors.push_back(iter->first);
-                iter = map.find(iter->second);
-                if (iter == map.end())
-                {
-                    logger().error("neighbor faces {}, map {}", mesh.vertices_to_faces()[v].size(), map);
-                    throw std::runtime_error("Non-manifold vertex! Cannot find next neighbor!");
-                }
-            }
-            if (neighbors.size() != map.size())
-                throw std::runtime_error("Non-manifold vertex!");
+            auto neighbors = mesh.find_vertex_adjacent_vertices(v);
             n_neighbors[id++] = neighbors.size();
 
             if (vertices.size() < v_id + neighbors.size())
@@ -76,7 +48,7 @@ namespace ipc {
         direc = direc / dist;
         RowVector3<double> t, t_prev;
 
-        if (dist > std::max(dhats[0], dhats[1]))
+        if (dist > std::min(dhats[0], dhats[1]))
             return false;
 
         assert(ra.rows() > 2);
@@ -107,10 +79,7 @@ namespace ipc {
             std::swap(t, t_prev);
         }
 
-        if (!normal_term)
-            return false;
-        
-        if (!tangent_term1 && !tangent_term2)
+        if (!normal_term || !tangent_term1 || !tangent_term2)
             return false;
 
         return true;
@@ -126,8 +95,9 @@ namespace ipc {
     scalar SmoothVertexVertex3Collision::evaluate_quadrature(const Eigen::VectorXd& positions, ParameterType params) const
     {
         auto points = slice_positions_large<scalar, 3>(positions);
+        params.eps = get_eps();
         return smooth_point_point_potential_3d<scalar>(points.row(0), points.row(1), 
-        points.middleRows(2, n_neighbors[0]), points.bottomRows(n_neighbors[1]), params, dhats);
+        points.middleRows(2, n_neighbors[0]), points.bottomRows(n_neighbors[1]), params);
     }
 
     double SmoothVertexVertex3Collision::operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 

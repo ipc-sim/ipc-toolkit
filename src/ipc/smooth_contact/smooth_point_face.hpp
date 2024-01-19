@@ -2,6 +2,8 @@
 
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/collisions/collision.hpp>
+#include "smooth_point_point.hpp"
+#include <ipc/utils/distance_autodiff.hpp>
 
 namespace ipc {
 
@@ -39,11 +41,36 @@ namespace ipc {
 
     /// @brief Compute potential for a point p and an face [v0, v1, v2], using the smooth closest point
     template <typename scalar>
-    scalar smooth_point_face_potential_single_point(
+    scalar smooth_face_term(
         const Eigen::Ref<const Vector3<scalar>>& p,
         const Eigen::Ref<const Vector3<scalar>>& v0,
         const Eigen::Ref<const Vector3<scalar>>& v1,
         const Eigen::Ref<const Vector3<scalar>>& v2,
+        const scalar &dist_sqr,
+        const double &alpha)
+    {
+        const Vector3<scalar> normal = (v1 - v0).cross(v2 - v0);
+        const scalar Phi = 1 - (p - v0).dot(normal) / sqrt(dist_sqr * normal.squaredNorm());
+
+        return cubic_spline(Phi * (2. / alpha));
+    }
+
+    template <typename scalar>
+    scalar smooth_point_face_potential_single_point(
+        const Eigen::Ref<const Vector3<scalar>>& p,
+        const Eigen::Matrix<scalar, -1, 3> &neighbors,
+        const Eigen::Ref<const Vector3<scalar>>& v0,
+        const Eigen::Ref<const Vector3<scalar>>& v1,
+        const Eigen::Ref<const Vector3<scalar>>& v2,
         const ParameterType &params,
-        const PointTriangleDistanceType &dtype);
+        const PointTriangleDistanceType &dtype)
+    {
+        Vector3<scalar> direc = point_triangle_closest_point_direction<scalar>(p, v0, v1, v2, dtype);
+        const scalar dist_sqr = direc.squaredNorm();
+        
+        return inv_barrier(dist_sqr / params.eps, params.r) *
+            smooth_face_term<scalar>(p, v0, v1, v2, dist_sqr, params.alpha) *
+            smooth_point3_term<scalar>(p, direc, neighbors, params.alpha) *
+            triangle_mollifier<scalar>(p, v0, v1, v2, dist_sqr);
+    }
 }

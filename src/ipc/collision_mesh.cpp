@@ -13,6 +13,16 @@
 #include <tbb/blocked_range.h>
 
 namespace ipc {
+    namespace {
+        template <typename Iter>
+        size_t index_of(Iter first, Iter last, const typename std::iterator_traits<Iter>::value_type& x)
+        {
+            size_t i = 0;
+            while (first != last && *first != x)
+            ++first, ++i;
+            return i;
+        }
+    }
 
 CollisionMesh::CollisionMesh(
     const Eigen::MatrixXd& rest_positions,
@@ -514,6 +524,92 @@ double CollisionMesh::max_edge_length() const
     for (int i = 0; i < m_edges.rows(); i++)
         val = std::max(edge_length(i), val);
     return val;
+}
+
+std::vector<long> CollisionMesh::find_vertex_adjacent_vertices(const long &v) const
+{
+    std::vector<long> neighbors;
+    if (dim() == 2)
+    {
+        neighbors.resize(2);
+        for (long i : vertex_edge_adjacencies()[v])
+        {
+            if (edges()(i, 0) == v)
+                neighbors[0] = edges()(i, 1);
+            else if (edges()(i, 1) == v)
+                neighbors[1] = edges()(i, 0);
+            else
+                throw std::runtime_error("Invalid edge-vertex adjacency!");
+        }
+    }
+    else
+    {
+        std::unordered_map<long, long> map;
+        for (auto f : vertices_to_faces()[v])
+        {
+            for (int lv = 0; lv < 3; lv++)
+            {
+                if (faces()(f, lv) == v)
+                {
+                    map[faces()(f, (lv+1)%3)] = faces()(f, (lv+2)%3);
+                    break;
+                }
+            }
+        }
+        if (vertices_to_faces()[v].size() != map.size())
+            throw std::runtime_error("Non-manifold vertex! Map size smaller than neighbor!");
+        
+        auto iter = map.find(map.begin()->first);
+        while (neighbors.empty() || iter->first != neighbors.front())
+        {
+            neighbors.push_back(iter->first);
+            iter = map.find(iter->second);
+            if (iter == map.end())
+            {
+                logger().error("neighbor faces {}, map {}", vertices_to_faces()[v].size(), map);
+                throw std::runtime_error("Non-manifold vertex! Cannot find next neighbor!");
+            }
+        }
+        if (neighbors.size() != map.size())
+            throw std::runtime_error("Non-manifold vertex!");
+    }
+    return neighbors;
+}
+
+/// @brief 
+/// @param e edge id 
+/// @return 4 vertices of the 2 faces adjacent to this edge, in the order of [e0, e1, f0, f1]
+/// the two faces are [f0, e0, e1] and [f1, e1, e0]
+std::array<long, 4> CollisionMesh::find_edge_adjacent_vertices(const long &e) const
+{
+    std::array<long, 4> neighbors;
+    if (dim() == 2)
+        throw std::runtime_error("find_edge_adjacent_vertices is only for 3d collision mesh!");
+    
+    std::array<long, 2> lf = {{edges_to_faces()(e, 0), edges_to_faces()(e, 1)}};
+
+    for (int j : {0, 1})
+    {
+        int i;
+        for (i = 0; i < 3; i++)
+        {
+            const auto va = faces()(lf[j], i);
+
+            if (va != edges()(e, 0) && va != edges()(e, 1))
+            {
+                neighbors[2 + j] = va;
+                break;
+            }
+        }
+
+        if (j == 0)
+        {
+            neighbors[0] = faces()(lf[j], (i+1) % 3);
+            neighbors[1] = faces()(lf[j], (i+2) % 3);
+        }
+    }
+
+    return neighbors;
 }
 
 } // namespace ipc

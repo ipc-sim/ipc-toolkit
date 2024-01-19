@@ -58,6 +58,7 @@ public:
         const std::vector<FaceVertexCandidate>& candidates,
         const ParameterType &param,
         const std::function<double(const long &)> &vert_dhat,
+        const std::function<double(const long &)> &edge_dhat,
         const std::function<double(const long &)> &face_dhat,
         const size_t start_i,
         const size_t end_i);
@@ -82,8 +83,9 @@ public:
     unordered_map<unordered_tuple, std::tuple<SmoothVertexVertexCollision, long> > vert_vert_2_to_id;
     unordered_map<unordered_tuple, std::tuple<SmoothEdgeVertexCollision, long> > vert_edge_2_to_id;
     
-    unordered_map<unordered_tuple, std::tuple<SmoothFaceFaceCollision, long> > face_face_to_id;
+    unordered_map<unordered_tuple, std::tuple<SmoothFaceVertexCollision, long> > face_vert_to_id;
     unordered_map<unordered_tuple, std::tuple<SmoothVertexVertex3Collision, long> > vert_vert_3_to_id;
+    unordered_map<unordered_tuple, std::tuple<SmoothEdgeVertex3Collision, long> > edge_vert_3_to_id;
     unordered_map<unordered_tuple, std::tuple<SmoothEdgeEdge3Collision, long> > edge_edge_3_to_id;
 
     // Constructed collisions

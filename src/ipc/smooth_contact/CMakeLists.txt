@@ -11,14 +11,18 @@ set(SOURCES
   smooth_collisions.hpp
   smooth_collisions_builder.cpp
   smooth_collisions_builder.hpp
-  edge_edge.cpp
-  edge_edge.hpp
+  # edge_edge.cpp
+  # edge_edge.hpp
   edge_vertex.cpp
   edge_vertex.hpp
   edge_edge_3d.cpp
   edge_edge_3d.hpp
-  face_face.cpp
-  face_face.hpp
+  edge_vertex_3d.cpp
+  edge_vertex_3d.hpp
+  # face_face.cpp
+  # face_face.hpp
+  face_vertex.cpp
+  face_vertex.hpp
   vertex_vertex.cpp
   vertex_vertex.hpp
   vertex_vertex_3d.cpp

@@ -1,14 +1,13 @@
-#include "face_vertex.hpp"
-#include "smooth_point_point.hpp"
-#include "smooth_point_face.hpp"
-#include <ipc/distance/point_triangle.hpp>
+#include "edge_vertex_3d.hpp"
+#include "smooth_point_edge.hpp"
+#include <ipc/distance/point_edge.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
 #include <iostream>
 #include <iterator>
 #include <ipc/utils/logger.hpp>
 
 namespace ipc {
-    SmoothFaceVertexCollision::SmoothFaceVertexCollision(
+    SmoothEdgeVertex3Collision::SmoothEdgeVertex3Collision(
     long primitive0_,
     long primitive1_,
     const CollisionMesh &mesh,
@@ -16,17 +15,18 @@ namespace ipc {
     const std::array<double, 2> &dhats_,
     const Eigen::MatrixXd &V): SmoothCollision<max_vert_3d>(primitive0_, primitive1_, dhats_, mesh)
     {
-        for (int lv : {0,1,2})
-            vertices[lv+1] = mesh.faces()(primitive0, lv);
-
         vertices[0] = primitive1;
-
         {
-            int v_id = 4;
-            auto neighbors = mesh.find_vertex_adjacent_vertices(vertices[0]);
+            auto tmp = mesh.find_edge_adjacent_vertices(primitive0);
+            for (int i = 0; i < tmp.size(); i++)
+                vertices[1+i] = tmp[i];
+        }
+        int v_id = 5;
+        {
+            auto neighbors = mesh.find_vertex_adjacent_vertices(primitive1);
             n_neighbors = neighbors.size();
 
-            if (vertices.size() < v_id + n_neighbors)
+            if (vertices.size() < v_id + neighbors.size())
                 throw std::runtime_error("Max vertex size too small!");
             for (const auto &lv : neighbors)
                 vertices[v_id++] = lv;
@@ -36,48 +36,45 @@ namespace ipc {
         is_active_ = compute_types(positions, param);
     }
 
-    bool SmoothFaceVertexCollision::compute_types(
+    bool SmoothEdgeVertex3Collision::compute_types(
         const Eigen::VectorXd& positions, 
-        const ParameterType &params)
+        ParameterType params)
     {
         auto points = slice_positions_large<double, 3>(positions);
-        dtype = point_triangle_distance_type(points.row(0), points.row(1), points.row(2), points.row(3));
-        const double dist_sqr = point_triangle_distance(points.row(0), points.row(1), points.row(2), points.row(3), dtype);
-        Vector3<double> direc = point_triangle_closest_point_direction<double>(points.row(0), points.row(1), points.row(2), points.row(3), dtype);
+        dtype = point_edge_distance_type(points.row(0), points.row(1), points.row(2));
 
-        if (dist_sqr >= get_eps())
-            return false;
-
-        if (dtype != PointTriangleDistanceType::P_T)
+        // mollifier
+        if (dtype != PointEdgeDistanceType::P_E)
             return false;
         
-        return smooth_point3_term_type(points.row(0), direc, points.bottomRows(n_neighbors), params.alpha);
+        params.eps = get_eps();
+        return smooth_point_edge_potential_single_point_3d_type(points.row(0), points.bottomRows(n_neighbors), 
+            points.row(1), points.row(2), points.row(3), points.row(4), params);
+
     }
 
-    double SmoothFaceVertexCollision::compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const
+    double SmoothEdgeVertex3Collision::compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const
     {
         auto points = slice_positions_large<double, 3>(positions);
-        return point_triangle_distance(points.row(0), points.row(1), points.row(2), points.row(3));
+        return point_edge_distance(points.row(0), points.row(1), points.row(2));
     }
 
     template <typename scalar> 
-    scalar SmoothFaceVertexCollision::evaluate_quadrature(const Eigen::VectorXd& positions, ParameterType params) const
+    scalar SmoothEdgeVertex3Collision::evaluate_quadrature(const Eigen::VectorXd& positions, ParameterType params) const
     {
         auto points = slice_positions_large<scalar, 3>(positions);
         params.eps = get_eps();
-        return smooth_point_face_potential_single_point<scalar>(points.row(0), points.bottomRows(n_neighbors),
-        points.row(1), points.row(2), points.row(3), params, dtype);
-        return scalar(0.);
+        return smooth_point_edge_potential_single_point_3d<scalar>(points.row(0), points.bottomRows(n_neighbors), points.row(1), points.row(2), points.row(3), points.row(4), params);
     }
 
-    double SmoothFaceVertexCollision::operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 
+    double SmoothEdgeVertex3Collision::operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params) const
     {
         assert(positions.size() == ndofs());
         return evaluate_quadrature<double>(positions, params);
     }
 
-    Vector<double, -1, 3*max_vert_3d> SmoothFaceVertexCollision::gradient(
+    Vector<double, -1, 3*max_vert_3d> SmoothEdgeVertex3Collision::gradient(
         const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params) const
     {
@@ -86,7 +83,7 @@ namespace ipc {
         return evaluate_quadrature<Diff>(positions, params).getGradient().head(ndofs());
     }
 
-    MatrixMax<double, 3*max_vert_3d, 3*max_vert_3d> SmoothFaceVertexCollision::hessian(
+    MatrixMax<double, 3*max_vert_3d, 3*max_vert_3d> SmoothEdgeVertex3Collision::hessian(
         const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params,
         const bool project_hessian_to_psd) const

@@ -69,6 +69,58 @@ namespace ipc {
         }
     }
 
+    /// @brief 
+    /// @tparam scalar 
+    /// @param direc from edge to point outside, normalized
+    /// @param e0 
+    /// @param e1 
+    /// @param f0 face [f0, e0, e1]
+    /// @param f1 face [f1, e1, e0]
+    /// @param alpha 
+    /// @return 
+    template <typename scalar>
+    scalar smooth_edge3_term(
+        const Eigen::Ref<const Vector3<scalar>>& direc,
+        const Eigen::Ref<const Vector3<scalar>>& e0,
+        const Eigen::Ref<const Vector3<scalar>>& e1,
+        const Eigen::Ref<const Vector3<scalar>>& f0,
+        const Eigen::Ref<const Vector3<scalar>>& f1,
+        const double alpha)
+    {
+        const Vector3<scalar> t0 = point_line_closest_point_direction<scalar>(f0, e0, e1);
+        const Vector3<scalar> t1 = point_line_closest_point_direction<scalar>(f1, e0, e1);
+        scalar tangent_term = smooth_heaviside<scalar>(-direc.dot(t0) / t0.norm() / alpha) *
+                            smooth_heaviside<scalar>(-direc.dot(t1) / t1.norm() / alpha);
+
+        const Vector3<scalar> n0 = (e0 - f0).cross(e1 - f0);
+        const Vector3<scalar> n1 = -(e0 - f1).cross(e1 - f1);
+        scalar normal_term = smooth_heaviside<scalar>(direc.dot(n0) / n0.norm() / alpha) +
+                            smooth_heaviside<scalar>(direc.dot(n1) / n1.norm() / alpha);
+
+        return tangent_term * normal_term;
+    }
+
+    inline bool smooth_edge3_term_type(
+        const Eigen::Ref<const Vector3<double>>& direc,
+        const Eigen::Ref<const Vector3<double>>& e0,
+        const Eigen::Ref<const Vector3<double>>& e1,
+        const Eigen::Ref<const Vector3<double>>& f0,
+        const Eigen::Ref<const Vector3<double>>& f1,
+        const double alpha)
+    {
+        const Vector3<double> t0 = point_line_closest_point_direction<double>(f0, e0, e1);
+        const Vector3<double> t1 = point_line_closest_point_direction<double>(f1, e0, e1);
+        if (-direc.dot(t0) / t0.norm() / alpha <= -1 || -direc.dot(t1) / t1.norm() / alpha <= -1)
+            return false;
+
+        const Vector3<double> n0 = (e0 - f0).cross(e1 - f0);
+        const Vector3<double> n1 = -(e0 - f1).cross(e1 - f1);
+        if (direc.dot(n0) / n0.norm() / alpha <= -1 && direc.dot(n1) / n1.norm() / alpha <= -1)
+            return false;
+
+        return true;
+    }
+
     /// @brief Compute edge-edge potential for edge [ea0, ea1] and [eb0, eb1]
     /// edge [ea0, ea1] follows the orientation in face fa0 = [fa0, ea0, ea1], so opposite orientation in fa1 = [fa1, ea1, ea0]
     /// edge [eb0, eb1] follows the orientation in face fb0 = [fb0, eb0, eb1], so opposite orientation in fb1 = [fb1, eb1, eb0]
@@ -83,7 +135,6 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& fb0,
         const Eigen::Ref<const Vector3<scalar>>& fb1,
         const ParameterType &params,
-        const std::array<double, 2> &dhats,
         const EdgeEdgeDistanceType &dtype,
         const std::array<PointEdgeDistanceType, 4> &edge_dtypes,
         const std::array<HEAVISIDE_TYPE, 4> &tangent_types,
@@ -93,26 +144,23 @@ namespace ipc {
         const Vector3<scalar> v = eb1 - eb0;
         const scalar a = u.squaredNorm();
         const scalar b = v.squaredNorm();
+
         const scalar dist_sqr = edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype);
+        const scalar barrier = inv_barrier<scalar>(dist_sqr / params.eps, params.r);
         
-        // vanishes if Phi < -alpha
         const Vector3<scalar> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype) / sqrt(dist_sqr); // from edge a to edge b
-        scalar out = scalar(0.);
-        if (tangent_types[0] != HEAVISIDE_TYPE::ZERO && tangent_types[1] != HEAVISIDE_TYPE::ZERO)
-            out += smooth_edge_edge_potential_tangent_term<scalar>(fa0, ea0, ea1, -direc, params.alpha, tangent_types[0]) *
-                    smooth_edge_edge_potential_tangent_term<scalar>(fa1, ea1, ea0, -direc, params.alpha, tangent_types[1]) *
-                    inv_barrier<scalar>(dist_sqr / intpow(dhats[0], 2), params.r);
-        if (tangent_types[2] != HEAVISIDE_TYPE::ZERO && tangent_types[3] != HEAVISIDE_TYPE::ZERO)
-            out += smooth_edge_edge_potential_tangent_term<scalar>(fb0, eb0, eb1, direc, params.alpha, tangent_types[2]) *
-                    smooth_edge_edge_potential_tangent_term<scalar>(fb1, eb1, eb0, direc, params.alpha, tangent_types[3]) *
-                    inv_barrier<scalar>(dist_sqr / intpow(dhats[1], 2), params.r);
+        const scalar out = smooth_edge3_term<scalar>(direc, ea0, ea1, fa0, fa1, params.alpha) * 
+                          smooth_edge3_term<scalar>(-direc, eb0, eb1, fb0, fb1, params.alpha);
 
-        const scalar normal_penalty = (smooth_edge_edge_potential_normal_term<scalar>(fa0, ea0, ea1, direc, params.alpha, normal_types[0]) + 
-                                    smooth_edge_edge_potential_normal_term<scalar>(fa1, ea1, ea0, direc, params.alpha, normal_types[1])) * 
-                                    (smooth_edge_edge_potential_normal_term<scalar>(fb0, eb0, eb1, -direc, params.alpha, normal_types[2]) + 
-                                    smooth_edge_edge_potential_normal_term<scalar>(fb1, eb1, eb0, -direc, params.alpha, normal_types[3]));
+        const scalar mollifier_val = edge_mollifier<scalar>(ea0, eb0, eb1, dist_sqr) * 
+                                    edge_mollifier<scalar>(eb0, ea0, ea1, dist_sqr);
 
-        const scalar mollifier_val = edge_mollifier<scalar>(ea0, eb0, eb1) * edge_mollifier<scalar>(eb0, ea0, ea1);
-        return 0.5 * sqrt(a * b) * out * normal_penalty * mollifier_val;
+        // if constexpr (std::is_same<double,scalar>::value)
+        // {
+        //     if (dist_sqr < 1e-20)
+        //         logger().error("a {} b {}, barrier {}, out {}, mollifier {}", a, b, barrier, out, mollifier_val);
+        // }
+        
+        return 0.5 * sqrt(a * b) * barrier * out * mollifier_val;
     }
 }

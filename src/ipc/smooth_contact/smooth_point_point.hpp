@@ -53,54 +53,81 @@ scalar smooth_point_point_potential_2d(
     return out * normal_term;
 }
 
+/// @brief 
+/// @tparam scalar 
+/// @param direc normalized
+/// @param v 
+/// @param direc points to v
+/// @param neighbors follow counter-clockwise order
+/// @param params 
+/// @return 
+template <typename scalar>
+scalar smooth_point3_term(
+    const Eigen::Ref<const RowVector3<scalar>>& v,
+    const Eigen::Ref<const RowVector3<scalar>>& direc,
+    const Eigen::Matrix<scalar, -1, 3> &neighbors,
+    const double &alpha)
+{
+    RowVector3<scalar> t, t_prev;
+    assert(neighbors.rows() > 2);
+
+    scalar tangent_term(1.);
+    scalar weight(0.);
+    scalar normal_term(0.);
+    t_prev = neighbors.row(neighbors.rows()-1) - v;
+    for (int a = 0; a < neighbors.rows(); a++)
+    {
+        t = neighbors.row(a) - v;
+        tangent_term = tangent_term * smooth_heaviside<scalar>(direc.dot(t) / t.norm() / alpha);
+        weight = weight + t.norm();
+
+        normal_term = normal_term + smooth_heaviside<scalar>(-direc.dot(t_prev.cross(t).normalized()) / alpha);
+        std::swap(t, t_prev);
+    }
+
+    return tangent_term * normal_term * weight / neighbors.rows();
+}
+
+inline bool smooth_point3_term_type(
+    const Eigen::Ref<const RowVector3<double>>& v,
+    const Eigen::Ref<const RowVector3<double>>& direc,
+    const Eigen::Matrix<double, -1, 3> &neighbors,
+    const double &alpha)
+{
+    RowVector3<double> t, t_prev;
+    assert(neighbors.rows() > 2);
+
+    bool tangent_term = true;
+    bool normal_term = false;
+    t_prev = neighbors.row(neighbors.rows()-1) - v;
+    for (int a = 0; a < neighbors.rows(); a++)
+    {
+        t = neighbors.row(a) - v;
+        tangent_term = tangent_term && (direc.dot(t) / t.norm() / alpha > -1);
+
+        normal_term = normal_term || (-direc.dot(t_prev.cross(t).normalized()) / alpha > -1);
+        std::swap(t, t_prev);
+    }
+
+    return tangent_term && normal_term;
+}
+
 template <typename scalar>
 scalar smooth_point_point_potential_3d(
     const Eigen::Ref<const RowVector3<scalar>>& va,
     const Eigen::Ref<const RowVector3<scalar>>& vb,
     const Eigen::Matrix<scalar, -1, 3> &ra,
     const Eigen::Matrix<scalar, -1, 3> &rb,
-    const ParameterType &params,
-    const std::array<double, 2> &dhats)
+    const ParameterType &params)
 {
     RowVector3<scalar> direc = va - vb;
     const scalar dist = direc.norm();
     direc = direc / dist;
-    RowVector3<scalar> t, t_prev;
 
-    assert(ra.rows() > 2);
-    assert(rb.rows() > 2);
+    const scalar term_a = smooth_point3_term<scalar>(va, direc, ra, params.alpha);
+    const scalar term_b = smooth_point3_term<scalar>(vb, -direc, rb, params.alpha);
+    const scalar barrier = inv_barrier<scalar>(intpow(dist, 2) / params.eps, params.r);
 
-    scalar out_a = inv_barrier<scalar>(intpow(dist / dhats[0], 2), params.r);
-    scalar normal_term_a(0.);
-    scalar weight(0.);
-    t_prev = ra.row(ra.rows()-1) - va;
-    for (int a = 0; a < ra.rows(); a++)
-    {
-        t = ra.row(a) - va;
-        out_a = out_a * smooth_heaviside<scalar>(direc.dot(t) / t.norm() / params.alpha);
-        weight = weight + t.norm();
-
-        normal_term_a = normal_term_a + smooth_heaviside<scalar>(-direc.dot(t_prev.cross(t).normalized()) / params.alpha);
-        std::swap(t, t_prev);
-    }
-    out_a = out_a * weight / ra.rows();
-
-    direc = -direc;
-    scalar out_b = inv_barrier<scalar>(intpow(dist / dhats[1], 2), params.r);
-    scalar normal_term_b(0.);
-    weight = scalar(0.);
-    t_prev = rb.row(rb.rows()-1) - vb;
-    for (int b = 0; b < rb.rows(); b++)
-    {
-        t = rb.row(b) - vb;
-        out_b = out_b * smooth_heaviside<scalar>(direc.dot(t) / t.norm() / params.alpha);
-        weight = weight + t.norm();
-
-        normal_term_b = normal_term_b + smooth_heaviside<scalar>(-direc.dot(t_prev.cross(t).normalized()) / params.alpha);
-        std::swap(t, t_prev);
-    }
-    out_b = out_b * weight / rb.rows();
-
-    return (out_a + out_b) * normal_term_a * normal_term_b;
+    return term_a * term_b * barrier;
 }
 }

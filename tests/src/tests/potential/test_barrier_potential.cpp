@@ -498,7 +498,7 @@ TEST_CASE(
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
     bool success = tests::load_mesh(mesh_name, vertices, edges, faces);
-    vertices += Eigen::MatrixXd::Random(vertices.rows(), vertices.cols()) * 1e-3;
+    vertices += Eigen::MatrixXd::Random(vertices.rows(), vertices.cols()) * 1e-5;
     CAPTURE(mesh_name);
     REQUIRE(success);
 

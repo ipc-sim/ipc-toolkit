@@ -62,7 +62,7 @@ namespace ipc {
             }
         }
 
-        return (params.n_quadrature > 1) || !skip;
+        return !skip;
     }
 
     template<class scalar>
@@ -70,33 +70,8 @@ namespace ipc {
     {
         std::array<Vector2<scalar>, 4> points = slice_positions<scalar, 4, 2>(positions);
 
+        params.eps = get_eps();
         scalar val = scalar(0.);
-        if (params.n_quadrature > 1)
-        {
-            Eigen::VectorXd uv = Eigen::VectorXd::LinSpaced(params.n_quadrature, 0, 1);
-            Vector2<scalar> p;
-            std::array<Vector2<scalar>, 2> edges = {{points[1] - points[0], points[3] - points[2]}};
-            const std::array<scalar, 2> lens = {{edges[0].norm(), edges[1].norm()}};
-
-            for (const int e : {0, 1})
-            {
-                const int ee = 1 - e;
-
-                params.eps = pow(get_dhat(ee), 2);
-                
-                scalar tmp = scalar(0.);
-                for (int i = 1; i < uv.size(); ++i)
-                {
-                    for (int j = 1; j < uv.size(); ++j)
-                    {
-                        p = points[2*e] + scalar((uv(i) + uv(i-1)) / 2) * edges[e];
-                        tmp += scalar(uv(i) - uv(i-1)) * smooth_point_edge_potential_single_point<scalar>(p, points[ee*2] + scalar(uv(j-1)) * edges[ee], points[ee*2] + scalar(uv(j)) * edges[ee], params);
-                    }
-                }
-                val += tmp * lens[e];
-            }
-        }
-        else
         {
             for (const int e : {0, 1})
             {

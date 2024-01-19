@@ -94,42 +94,4 @@ namespace ipc {
         const Eigen::Ref<const Vector3<AutodiffScalarHessian<18>>>& v1,
         const Eigen::Ref<const Vector3<AutodiffScalarHessian<18>>>& v2,
         const ParameterType &params);
-
-    template <typename scalar>
-    scalar smooth_point_face_potential_single_point(
-        const Eigen::Ref<const Vector3<scalar>>& p,
-        const Eigen::Ref<const Vector3<scalar>>& v0,
-        const Eigen::Ref<const Vector3<scalar>>& v1,
-        const Eigen::Ref<const Vector3<scalar>>& v2,
-        const ParameterType &params,
-        const PointTriangleDistanceType &dtype)
-    {
-        const Vector3<scalar> normal = (v1 - v0).cross(v2 - v0);
-        const scalar dist_sqr = point_triangle_distance(p, v0, v1, v2, dtype);
-        const scalar Phi = 1 - (p - v0).dot(normal) / sqrt(dist_sqr * normal.squaredNorm()); // cross2_sqr<scalar>(diff, normal) / dist_sqr / normal_len_sqr;
-
-        return inv_barrier(dist_sqr / params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
-    }
-
-    template double smooth_point_face_potential_single_point(
-        const Eigen::Ref<const Vector3<double>>& p,
-        const Eigen::Ref<const Vector3<double>>& v0,
-        const Eigen::Ref<const Vector3<double>>& v1,
-        const Eigen::Ref<const Vector3<double>>& v2,
-        const ParameterType &params,
-        const PointTriangleDistanceType &dtype);
-    template AutodiffScalarGrad<18> smooth_point_face_potential_single_point(
-        const Eigen::Ref<const Vector3<AutodiffScalarGrad<18>>>& p,
-        const Eigen::Ref<const Vector3<AutodiffScalarGrad<18>>>& v0,
-        const Eigen::Ref<const Vector3<AutodiffScalarGrad<18>>>& v1,
-        const Eigen::Ref<const Vector3<AutodiffScalarGrad<18>>>& v2,
-        const ParameterType &params,
-        const PointTriangleDistanceType &dtype);
-    template AutodiffScalarHessian<18> smooth_point_face_potential_single_point(
-        const Eigen::Ref<const Vector3<AutodiffScalarHessian<18>>>& p,
-        const Eigen::Ref<const Vector3<AutodiffScalarHessian<18>>>& v0,
-        const Eigen::Ref<const Vector3<AutodiffScalarHessian<18>>>& v1,
-        const Eigen::Ref<const Vector3<AutodiffScalarHessian<18>>>& v2,
-        const ParameterType &params,
-        const PointTriangleDistanceType &dtype);
 }

@@ -3,6 +3,7 @@
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/collisions/collision.hpp>
 #include "smooth_edge_edge.hpp"
+#include "smooth_point_point.hpp"
 
 namespace ipc {
 
@@ -85,31 +86,47 @@ namespace ipc {
         return 0.5 * (l0 + l1) * len * cubic_spline(Phi * (2. / params.alpha)) * inv_barrier(intpow(dist, 2) / params.eps, params.r) * tangent_term * normal_term * mollifier_val;
     }
 
+    inline bool smooth_point_edge_potential_single_point_3d_type(
+        const Eigen::Ref<const Vector3<double>>& p,
+        const Eigen::Matrix<double, -1, 3> &neighbors,
+        const Eigen::Ref<const Vector3<double>>& e0,
+        const Eigen::Ref<const Vector3<double>>& e1,
+        const Eigen::Ref<const Vector3<double>>& f0,
+        const Eigen::Ref<const Vector3<double>>& f1,
+        const ParameterType &params)
+    {
+        Vector3<double> direc = point_edge_closest_point_direction<double>(p, e0, e1, PointEdgeDistanceType::AUTO); // from edge a to edge b
+        const double dist_sqr = direc.squaredNorm();
+        if (dist_sqr >= params.eps)
+            return false;
+        
+        direc = direc / sqrt(dist_sqr);
+
+        const bool edge_term = smooth_edge3_term_type(direc, e0, e1, f0, f1, params.alpha);
+        const bool vert_term = smooth_point3_term_type(p, direc, neighbors, params.alpha);
+
+        return edge_term && vert_term;
+    }
+
     template <typename scalar>
     scalar smooth_point_edge_potential_single_point_3d(
         const Eigen::Ref<const Vector3<scalar>>& p,
+        const Eigen::Matrix<scalar, -1, 3> &neighbors,
         const Eigen::Ref<const Vector3<scalar>>& e0,
         const Eigen::Ref<const Vector3<scalar>>& e1,
         const Eigen::Ref<const Vector3<scalar>>& f0,
         const Eigen::Ref<const Vector3<scalar>>& f1,
         const ParameterType &params)
     {
-        const Vector3<scalar> u = e1 - e0;
-        const scalar len = u.squaredNorm();
-
         Vector3<scalar> direc = point_edge_closest_point_direction<scalar>(p, e0, e1, PointEdgeDistanceType::AUTO); // from edge a to edge b
         const scalar dist_sqr = direc.squaredNorm();
         direc = direc / sqrt(dist_sqr);
 
-        scalar out = smooth_edge_edge_potential_tangent_term<scalar>(f0, e0, e1, -direc, params.alpha, HEAVISIDE_TYPE::VARIANT) *
-                smooth_edge_edge_potential_tangent_term<scalar>(f1, e1, e0, -direc, params.alpha, HEAVISIDE_TYPE::VARIANT) *
-                inv_barrier<scalar>(dist_sqr / params.eps, params.r);
-
-        const scalar normal_penalty = smooth_edge_edge_potential_normal_term<scalar>(f0, e0, e1, direc, params.alpha, HEAVISIDE_TYPE::VARIANT) + 
-                                    smooth_edge_edge_potential_normal_term<scalar>(f1, e1, e0, direc, params.alpha, HEAVISIDE_TYPE::VARIANT);
-
+        const scalar edge_term = smooth_edge3_term<scalar>(direc, e0, e1, f0, f1, params.alpha);
+        const scalar barrier = inv_barrier<scalar>(dist_sqr / params.eps, params.r);
         const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, dist_sqr);
+        const scalar vert_term = smooth_point3_term<scalar>(p, direc, neighbors, params.alpha);
 
-        return 0.5 * sqrt(len) * out * normal_penalty * mollifier_val;
+        return (e1 - e0).norm() * edge_term * mollifier_val * vert_term * barrier;
     }
 }

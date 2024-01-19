@@ -4,10 +4,10 @@
 #include "vertex_vertex.hpp"
 #include "vertex_vertex_3d.hpp"
 #include "edge_vertex.hpp"
+#include "edge_vertex_3d.hpp"
 #include "edge_edge.hpp"
 #include "edge_edge_3d.hpp"
 #include "face_vertex.hpp"
-#include "face_face.hpp"
 
 namespace ipc {
 

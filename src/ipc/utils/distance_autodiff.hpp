@@ -45,11 +45,11 @@ namespace ipc {
     }
 
     template <typename scalar>
-    scalar point_triangle_distance(
-        const Eigen::Ref<const Eigen::Vector3<scalar>>& p,
-        const Eigen::Ref<const Eigen::Vector3<scalar>>& t0,
-        const Eigen::Ref<const Eigen::Vector3<scalar>>& t1,
-        const Eigen::Ref<const Eigen::Vector3<scalar>>& t2,
+    scalar point_triangle_sqr_distance(
+        const Eigen::Ref<const Vector3<scalar>>& p,
+        const Eigen::Ref<const Vector3<scalar>>& t0,
+        const Eigen::Ref<const Vector3<scalar>>& t1,
+        const Eigen::Ref<const Vector3<scalar>>& t2,
         PointTriangleDistanceType dtype)
     {
         switch (dtype) {
@@ -248,16 +248,71 @@ namespace ipc {
     }
 
     template <typename scalar>
-    scalar edge_mollifier(const VectorMax3<scalar> &p, const VectorMax3<scalar> &e0, const VectorMax3<scalar> &e1, const scalar &dist_sqr)
+    Vector3<scalar> point_plane_closest_point_direction(
+        const Eigen::Ref<const Vector3<scalar>>& p,
+        const Eigen::Ref<const Vector3<scalar>>& f0,
+        const Eigen::Ref<const Vector3<scalar>>& f1,
+        const Eigen::Ref<const Vector3<scalar>>& f2)
     {
-        scalar len_sqr = (e1 - e0).squaredNorm();
-        return mollifier<scalar>(((p - e0).squaredNorm() - dist_sqr) / len_sqr / mollifier_threshold_eps) *
-            mollifier<scalar>(((p - e1).squaredNorm() - dist_sqr) / len_sqr / mollifier_threshold_eps);
+        const Vector3<scalar> normal = (f2 - f0).cross(f1 - f0);
+        return (normal.dot(p - f0) / normal.squaredNorm()) * normal;
     }
 
     template <typename scalar>
-    scalar edge_mollifier(const VectorMax3<scalar> &p, const VectorMax3<scalar> &e0, const VectorMax3<scalar> &e1)
+    Vector3<scalar> point_triangle_closest_point_direction(
+        const Eigen::Ref<const Vector3<scalar>>& p,
+        const Eigen::Ref<const Vector3<scalar>>& t0,
+        const Eigen::Ref<const Vector3<scalar>>& t1,
+        const Eigen::Ref<const Vector3<scalar>>& t2,
+        PointTriangleDistanceType dtype)
     {
-        return edge_mollifier<scalar>(p, e0, e1, point_edge_sqr_distance<scalar>(p, e0, e1, PointEdgeDistanceType::AUTO));
+        switch (dtype) {
+        case PointTriangleDistanceType::P_T0:
+            return p - t0;
+
+        case PointTriangleDistanceType::P_T1:
+            return p - t1;
+
+        case PointTriangleDistanceType::P_T2:
+            return p - t2;
+
+        case PointTriangleDistanceType::P_E0:
+            return point_line_closest_point_direction<scalar>(p, t0, t1);
+
+        case PointTriangleDistanceType::P_E1:
+            return point_line_closest_point_direction<scalar>(p, t1, t2);
+
+        case PointTriangleDistanceType::P_E2:
+            return point_line_closest_point_direction<scalar>(p, t2, t0);
+
+        case PointTriangleDistanceType::P_T:
+            return point_plane_closest_point_direction<scalar>(p, t0, t1, t2);
+
+        default:
+            throw std::invalid_argument(
+                "Invalid distance type for point-triangle distance!");
+        }
+    }
+
+    template <typename scalar>
+    scalar edge_mollifier(const VectorMax3<scalar> &p, const VectorMax3<scalar> &e0, const VectorMax3<scalar> &e1, const scalar &dist_sqr)
+    {
+        const scalar denominator = (e1 - e0).squaredNorm() * mollifier_threshold_eps;
+        return mollifier<scalar>(((p - e0).squaredNorm() - dist_sqr) / denominator) *
+            mollifier<scalar>(((p - e1).squaredNorm() - dist_sqr) / denominator);
+    }
+
+    template <typename scalar>
+    scalar triangle_mollifier(
+        const VectorMax3<scalar> &p, 
+        const VectorMax3<scalar> &e0, 
+        const VectorMax3<scalar> &e1,
+        const VectorMax3<scalar> &e2,
+        const scalar &dist_sqr)
+    {
+        const scalar denominator = ((e1 - e0).squaredNorm() + (e1 - e2).squaredNorm() + (e2 - e0).squaredNorm()) / 3. * mollifier_threshold_eps;
+        return mollifier<scalar>(((p - e0).squaredNorm() - dist_sqr) / denominator) *
+            mollifier<scalar>(((p - e1).squaredNorm() - dist_sqr) / denominator) *
+            mollifier<scalar>(((p - e2).squaredNorm() - dist_sqr) / denominator);
     }
 }
