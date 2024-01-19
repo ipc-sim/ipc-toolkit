@@ -48,9 +48,10 @@ namespace ipc {
         direc = direc / dist;
         RowVector3<double> t, t_prev;
 
-        if (dist > std::min(dhats[0], dhats[1]))
+        if (dist*dist > get_eps())
             return false;
 
+        // return true;
         assert(ra.rows() > 2);
         assert(rb.rows() > 2);
 
@@ -104,6 +105,25 @@ namespace ipc {
         const ParameterType &params) const
     {
         assert(positions.size() == ndofs());
+
+        // auto func = [&](const Eigen::VectorXd &x)
+        // {
+        //     return evaluate_quadrature<double>(positions, params);
+        // };
+
+        // Eigen::VectorXd g, gc, gl, gr;
+        // my_finite_gradient(positions, func, gc, FD_RULE::CENTRAL);
+        // my_finite_gradient(positions, func, gl, FD_RULE::LEFT);
+        // my_finite_gradient(positions, func, gr, FD_RULE::RIGHT);
+        // g = gradient(positions, params);
+        
+        // Eigen::VectorXd max_ = gr.array().max(gc.array().max(gl.array()));
+        // Eigen::VectorXd min_ = gr.array().min(gc.array().min(gl.array()));
+        // if ((max_ - min_).maxCoeff() > 1e-3 * max_.norm())
+        // {
+        //     logger().error("[vert-vert] {}: {} {}, {}, {}", (max_ - min_).maxCoeff(), g.transpose(), gc.transpose(), gl.transpose(), gr.transpose());
+        // }
+
         return evaluate_quadrature<double>(positions, params);
     }
 

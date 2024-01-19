@@ -83,7 +83,7 @@ namespace ipc {
 
         const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, intpow(dist, 2));
 
-        return 0.5 * (l0 + l1) * len * cubic_spline(Phi * (2. / params.alpha)) * inv_barrier(intpow(dist, 2) / params.eps, params.r) * tangent_term * normal_term * mollifier_val;
+        return 0.5 * (l0 + l1) * len * quadratic_spline(Phi / params.alpha) * inv_barrier(intpow(dist, 2) / params.eps, params.r) * tangent_term * normal_term * mollifier_val;
     }
 
     inline bool smooth_point_edge_potential_single_point_3d_type(

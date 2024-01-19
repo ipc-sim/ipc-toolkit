@@ -152,8 +152,7 @@ namespace ipc {
         const scalar out = smooth_edge3_term<scalar>(direc, ea0, ea1, fa0, fa1, params.alpha) * 
                           smooth_edge3_term<scalar>(-direc, eb0, eb1, fb0, fb1, params.alpha);
 
-        const scalar mollifier_val = edge_mollifier<scalar>(ea0, eb0, eb1, dist_sqr) * 
-                                    edge_mollifier<scalar>(eb0, ea0, ea1, dist_sqr);
+        const scalar mollifier_val = edge_edge_mollifier<scalar>(ea0, ea1, eb0, eb1, dist_sqr);
 
         // if constexpr (std::is_same<double,scalar>::value)
         // {

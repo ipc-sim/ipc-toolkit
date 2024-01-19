@@ -35,11 +35,41 @@ namespace ipc {
         return scalar(0.);
     }
 
+    /// @brief support is [0, 3]
+    /// @tparam scalar 
+    /// @param x 
+    /// @return 
+    template <typename scalar>
+    scalar quadratic_spline_aux(const scalar &x)
+    {
+        if (x <= 0)
+            return scalar(0.);
+        if (x <= 1)
+            return intpow(x, 2) / 2.;
+        if (x <= 2)
+            return (-3 + x * (6 - 2 * x)) / 2.;
+        if (x < 3)
+            return intpow(3. - x, 2) / 2.;
+        return scalar(0.);
+    }
+
+    /// @brief support is [-1, 1]
+    /// @tparam scalar 
+    /// @param x 
+    /// @return 
+    template <typename scalar>
+    scalar quadratic_spline(const scalar &x)
+    {
+        return quadratic_spline_aux(x * 1.5 + 1.5);
+    }
+
     constexpr double mollifier_threshold_eps = 1e-3;
 
     template <typename scalar>
     scalar mollifier(const scalar &x)
     {
+        if (x <= 0)
+            return scalar(0.);
         if (x <= 1)
             return x * (2. - x);
         return scalar(1.);
@@ -50,13 +80,22 @@ namespace ipc {
     };
 
     template <typename scalar>
+    scalar smooth_heaviside_aux(const scalar &x)
+    {
+        if (x <= -2)
+            return scalar(0.);
+        if (x <= -1)
+            return intpow(2. + x, 2) / 2.;
+        if (x <= 0)
+            return 1 - intpow(x, 2) / 2.;
+
+        return scalar(1.);
+    }
+
+    template <typename scalar>
     scalar smooth_heaviside(const scalar &x)
     {
-        if (x <= -1)
-            return scalar(0.);
-        if (x >= 0)
-            return scalar(1.);
-        return (1. - 2 * x) * intpow(x + 1., 2);
+        return smooth_heaviside_aux(2 * x);
     }
 
     // template <typename scalar>
@@ -83,7 +122,7 @@ namespace ipc {
     template <typename scalar>
     scalar inv_barrier(const scalar &x, const double &r)
     {
-        return cubic_spline(2 * x) / pow(x, r);
+        return quadratic_spline(x) / pow(x, r);
     }
 
     template <typename scalar>
@@ -94,21 +133,6 @@ namespace ipc {
         if (x > 1.)
             return scalar(1.);
         return x;
-    }
-
-    template <typename scalar>
-    scalar L_s(const scalar &x, const double &a)
-    {
-        if (x < 0 && x > -a)
-            return x - intpow(x / a, 2) * (2 * a + x);
-        else
-        {
-            scalar z = x - 1.;
-            if (z < a && z > 0)
-                return x - intpow(z / a, 2) * (2 * a - z);
-            else
-                return L_ns(x);
-        }
     }
 
     template <typename scalar>
@@ -200,6 +224,46 @@ namespace ipc {
         }
         else {
             return std::min(a, b, less);
+        }
+    }
+
+
+    enum class FD_RULE { CENTRAL, LEFT, RIGHT };
+    
+    inline void my_finite_gradient(const Eigen::VectorXd& x, const std::function<double(const Eigen::VectorXd&)> &f, Eigen::VectorXd &grad, FD_RULE rule = FD_RULE::CENTRAL, const double eps = 1e-7)
+    {
+        grad.setZero(x.size());
+        switch (rule)
+        {
+        case FD_RULE::CENTRAL:
+            for (int i = 0; i < x.size(); i++)
+                for (int d : {-1, 1})
+                {
+                    auto y = x;
+                    y(i) += d * eps;
+                    grad(i) += d * f(y) / (2*eps);
+                }
+            break;
+        case FD_RULE::LEFT:
+            for (int i = 0; i < x.size(); i++)
+            {
+                    auto y = x;
+                    grad(i) += f(y) / eps;
+                    y(i) -= eps;
+                    grad(i) -= f(y) / eps;
+            }
+            break;
+        case FD_RULE::RIGHT:
+            for (int i = 0; i < x.size(); i++)
+            {
+                    auto y = x;
+                    grad(i) -= f(y) / eps;
+                    y(i) += eps;
+                    grad(i) += f(y) / eps;
+            }
+            break;
+        default:
+        assert(false);
         }
     }
 }

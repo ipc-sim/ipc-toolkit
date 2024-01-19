@@ -52,7 +52,7 @@ namespace ipc {
         const Vector3<scalar> normal = (v1 - v0).cross(v2 - v0);
         const scalar Phi = 1 - (p - v0).dot(normal) / sqrt(dist_sqr * normal.squaredNorm());
 
-        return cubic_spline(Phi * (2. / alpha));
+        return quadratic_spline(Phi / alpha);
     }
 
     template <typename scalar>
@@ -71,6 +71,6 @@ namespace ipc {
         return inv_barrier(dist_sqr / params.eps, params.r) *
             smooth_face_term<scalar>(p, v0, v1, v2, dist_sqr, params.alpha) *
             smooth_point3_term<scalar>(p, direc, neighbors, params.alpha) *
-            triangle_mollifier<scalar>(p, v0, v1, v2, dist_sqr);
+            triangle_mollifier<scalar>(p - direc, v0, v1, v2, dist_sqr);
     }
 }

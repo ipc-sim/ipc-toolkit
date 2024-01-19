@@ -30,7 +30,7 @@ namespace ipc {
         if (dist_sqr > params.eps)
             return scalar(0.);
 
-        return inv_barrier(dist_sqr / params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
+        return inv_barrier(dist_sqr / params.eps, params.r) * quadratic_spline(Phi / params.alpha);
     }
 
     template double smooth_point_face_potential_pointwise(

@@ -30,7 +30,7 @@ namespace ipc {
         if (dist_sqr > params.eps)
             return scalar(0.);
 
-        return inv_barrier(dist_sqr / params.eps, params.r) * cubic_spline(Phi * (2. / params.alpha));
+        return inv_barrier(dist_sqr / params.eps, params.r) * quadratic_spline(Phi / params.alpha);
     }
 
     template double smooth_point_edge_potential_pointwise(
@@ -131,7 +131,7 @@ namespace ipc {
         const scalar dist_sqr = (pos - (L * len) * tangent).squaredNorm();
         const scalar Phi = 1 - cross2<scalar>(pos, tangent) / sqrt(dist_sqr); // intpow(diff.dot(tangent), 2) / dist_sqr;
 
-        return len * cubic_spline(Phi * (2. / params.alpha)) * inv_barrier(dist_sqr / params.eps, params.r);
+        return len * quadratic_spline(Phi / params.alpha) * inv_barrier(dist_sqr / params.eps, params.r);
     }
 
     template double smooth_point_edge_potential_single_point(

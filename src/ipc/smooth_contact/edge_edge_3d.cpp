@@ -47,7 +47,7 @@ namespace ipc {
 
         dtype = edge_edge_distance_type(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)],
             points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)]);
-        
+        // return true;
         if (dtype != EdgeEdgeDistanceType::EA_EB)
             return false;
 
@@ -154,78 +154,6 @@ namespace ipc {
             points[face_to_vertex(2, 0)], points[face_to_vertex(3, 0)], 
             params, dtype, edge_dtypes, tangent_types, normal_types);
 
-        // logger().debug("after: edge {} {}, dtype {}, edge_types {} {} {} {}, tangent_types {} {} {} {}, normal_types {} {} {} {}",
-        //     primitive0, primitive1,
-        //     static_cast<int>(dtype), 
-        //     static_cast<int>(edge_dtypes[0]),static_cast<int>(edge_dtypes[1]),static_cast<int>(edge_dtypes[2]),static_cast<int>(edge_dtypes[3]),
-        //     static_cast<int>(tangent_types[0]),static_cast<int>(tangent_types[1]),static_cast<int>(tangent_types[2]),static_cast<int>(tangent_types[3]),
-        //     static_cast<int>(normal_types[0]),static_cast<int>(normal_types[1]),static_cast<int>(normal_types[2]),static_cast<int>(normal_types[3]));
-
-        // if constexpr (std::is_same<scalar, AutodiffScalarGrad<24>>::value)
-        // {
-        //     std::unordered_set<long> vert_set;
-        //     for (auto v : vertices)
-        //         vert_set.insert(v);
-        //     if (vert_set.size() < vertices.size())
-        //         return out;
-
-        //     Eigen::VectorXd fgrad, fgrad1, fgrad2;
-        //     auto f = [&](const Eigen::VectorXd& x) {
-        //         auto points_ = slice_positions<double, 8, 3>(x);
-        //         const EdgeEdgeDistanceType dtype_ = edge_edge_distance_type(
-        //             points_[face_to_vertex(0, 1)], points_[face_to_vertex(0, 2)],
-        //             points_[face_to_vertex(2, 1)], points_[face_to_vertex(2, 2)]);
-
-        //         std::array<Vector3<double>, 4> normals_;
-        //         for (int i = 0; i < 4; i++)
-        //             normals_[i] = (points_[face_to_vertex(i, 1)] - points_[face_to_vertex(i, 0)]).cross(points_[face_to_vertex(i, 2)] - points_[face_to_vertex(i, 0)]).normalized();
-                
-        //         return smooth_edge_edge_potential_single_point<double>(
-        //             points_[face_to_vertex(0, 1)], points_[face_to_vertex(0, 2)],
-        //             points_[face_to_vertex(2, 1)], points_[face_to_vertex(2, 2)],
-        //             normals_[0], normals_[1], normals_[2], normals_[3], params, dtype_);
-        //     };
-        //     my_finite_gradient(positions, f, fgrad, FD_RULE::CENTRAL, 1e-8);
-
-        //     if (out.getGradient().norm() > 1e-8)
-        //     {
-        //         double err = (out.getGradient() - fgrad).norm() / out.getGradient().norm();
-        //         if (err > 1e-4)
-        //         {
-        //             mut_edge.lock();
-        //             my_finite_gradient(positions, f, fgrad1, FD_RULE::LEFT, 1e-8);
-        //             my_finite_gradient(positions, f, fgrad2, FD_RULE::RIGHT, 1e-8);
-
-        //             logger().error("fa0 {} {} {}", face_to_vertex(0, 0), face_to_vertex(0, 1), face_to_vertex(0, 2));
-        //             logger().error("fa1 {} {} {}", face_to_vertex(1, 0), face_to_vertex(1, 1), face_to_vertex(1, 2));
-        //             logger().error("fb0 {} {} {}", face_to_vertex(2, 0), face_to_vertex(2, 1), face_to_vertex(2, 2));
-        //             logger().error("fb1 {} {} {}", face_to_vertex(3, 0), face_to_vertex(3, 1), face_to_vertex(3, 2));
-
-        //             double line_line_distance_ = line_line_distance(points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)], points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)]);
-        //             double vert_line_distance_ = std::numeric_limits<double>::max();
-        //             {
-        //                 for (int i : {2, 1})
-        //                     vert_line_distance_ = std::min(vert_line_distance_, 
-        //                     std::min(point_line_distance(points_double[face_to_vertex(0, i)], points_double[face_to_vertex(2, 1)], points_double[face_to_vertex(2, 2)]),
-        //                              point_line_distance(points_double[face_to_vertex(2, i)], points_double[face_to_vertex(0, 1)], points_double[face_to_vertex(0, 2)])));
-        //             }
-
-        //             Vector3<double> u = points_double[face_to_vertex(0, 1)] - points_double[face_to_vertex(0, 2)];
-        //             Vector3<double> v = points_double[face_to_vertex(2, 1)] - points_double[face_to_vertex(2, 2)];
-        //             logger().error("distance type {}, parallel threshold {}", static_cast<int>(dtype), u.cross(v).squaredNorm() / u.squaredNorm() / v.squaredNorm());
-        //             logger().error("line line distance {}", line_line_distance_);
-        //             logger().error("vertex line distance {}", vert_line_distance_);
-        //             logger().error("err {}, norm {}", err, out.getGradient().norm());
-        //             logger().error("positions {}", positions.transpose());
-        //             logger().error("grad {}", out.getGradient().transpose());
-        //             logger().error("fgrad {}", fgrad.transpose());
-        //             logger().error("fgrad1 {}", fgrad1.transpose());
-        //             logger().error("fgrad2 {}", fgrad2.transpose());
-        //             mut_edge.unlock();
-        //         }
-        //     }
-        // }
-
         return out;
     }
 
@@ -233,6 +161,25 @@ namespace ipc {
         const ParameterType &params) const
     {
         assert(positions.size() == 24);
+
+        // auto func = [&](const Eigen::VectorXd &x)
+        // {
+        //     return evaluate_quadrature<double>(positions, params);
+        // };
+
+        // Eigen::VectorXd g, gc, gl, gr;
+        // my_finite_gradient(positions, func, gc, FD_RULE::CENTRAL);
+        // my_finite_gradient(positions, func, gl, FD_RULE::LEFT);
+        // my_finite_gradient(positions, func, gr, FD_RULE::RIGHT);
+        // g = gradient(positions, params);
+        
+        // Eigen::VectorXd max_ = gr.array().max(gc.array().max(gl.array()));
+        // Eigen::VectorXd min_ = gr.array().min(gc.array().min(gl.array()));
+        // if ((max_ - min_).maxCoeff() > 1e-3 * max_.norm())
+        // {
+        //     logger().error("[edge-edge] {}: {} {}, {}, {}", (max_ - min_).maxCoeff(), g.transpose(), gc.transpose(), gl.transpose(), gr.transpose());
+        // }
+        
         return evaluate_quadrature<double>(positions, params);
     }
 

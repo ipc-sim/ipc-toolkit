@@ -48,6 +48,7 @@ namespace ipc {
         if (dist_sqr >= get_eps())
             return false;
 
+        // return true;
         if (dtype != PointTriangleDistanceType::P_T)
             return false;
 
@@ -79,6 +80,25 @@ namespace ipc {
         const ParameterType &params) const
     {
         assert(positions.size() == ndofs());
+
+        // auto func = [&](const Eigen::VectorXd &x)
+        // {
+        //     return evaluate_quadrature<double>(positions, params);
+        // };
+
+        // Eigen::VectorXd g, gc, gl, gr;
+        // my_finite_gradient(positions, func, gc, FD_RULE::CENTRAL);
+        // my_finite_gradient(positions, func, gl, FD_RULE::LEFT);
+        // my_finite_gradient(positions, func, gr, FD_RULE::RIGHT);
+        // g = gradient(positions, params);
+        
+        // Eigen::VectorXd max_ = gr.array().max(gc.array().max(gl.array()));
+        // Eigen::VectorXd min_ = gr.array().min(gc.array().min(gl.array()));
+        // if ((max_ - min_).maxCoeff() > 1e-3 * max_.norm())
+        // {
+        //     logger().error("[face-vert] {}: {} {}, {}, {}", (max_ - min_).maxCoeff(), g.transpose(), gc.transpose(), gl.transpose(), gr.transpose());
+        // }
+
         return evaluate_quadrature<double>(positions, params);
     }
 

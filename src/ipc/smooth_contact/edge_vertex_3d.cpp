@@ -43,6 +43,7 @@ namespace ipc {
         auto points = slice_positions_large<double, 3>(positions);
         dtype = point_edge_distance_type(points.row(0), points.row(1), points.row(2));
 
+        // return true;
         // mollifier
         if (dtype != PointEdgeDistanceType::P_E)
             return false;
@@ -50,7 +51,6 @@ namespace ipc {
         params.eps = get_eps();
         return smooth_point_edge_potential_single_point_3d_type(points.row(0), points.bottomRows(n_neighbors), 
             points.row(1), points.row(2), points.row(3), points.row(4), params);
-
     }
 
     double SmoothEdgeVertex3Collision::compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const
@@ -71,6 +71,25 @@ namespace ipc {
         const ParameterType &params) const
     {
         assert(positions.size() == ndofs());
+
+        // auto func = [&](const Eigen::VectorXd &x)
+        // {
+        //     return evaluate_quadrature<double>(positions, params);
+        // };
+
+        // Eigen::VectorXd g, gc, gl, gr;
+        // my_finite_gradient(positions, func, gc, FD_RULE::CENTRAL);
+        // my_finite_gradient(positions, func, gl, FD_RULE::LEFT);
+        // my_finite_gradient(positions, func, gr, FD_RULE::RIGHT);
+        // g = gradient(positions, params);
+        
+        // Eigen::VectorXd max_ = gr.array().max(gc.array().max(gl.array()));
+        // Eigen::VectorXd min_ = gr.array().min(gc.array().min(gl.array()));
+        // if ((max_ - min_).maxCoeff() > 1e-3 * max_.norm())
+        // {
+        //     logger().error("[edge-edge] {}: {} {}, {}, {}", (max_ - min_).maxCoeff(), g.transpose(), gc.transpose(), gl.transpose(), gr.transpose());
+        // }
+
         return evaluate_quadrature<double>(positions, params);
     }
 

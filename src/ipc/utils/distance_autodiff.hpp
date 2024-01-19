@@ -165,7 +165,7 @@ namespace ipc {
         const Eigen::Ref<const VectorMax3<scalar>>& p,
         const Eigen::Ref<const VectorMax3<scalar>>& e0,
         const Eigen::Ref<const VectorMax3<scalar>>& e1,
-        const PointEdgeDistanceType &dtype)
+        const PointEdgeDistanceType &dtype = PointEdgeDistanceType::AUTO)
     {
         switch (dtype)
         {
@@ -303,6 +303,27 @@ namespace ipc {
     }
 
     template <typename scalar>
+    scalar edge_edge_mollifier(
+        const Vector3<scalar> &ea0, const Vector3<scalar> &ea1,
+        const Vector3<scalar> &eb0, const Vector3<scalar> &eb1, 
+        const scalar &dist_sqr)
+    {
+        // Vector3<scalar> u = ea1 - ea0, v = eb1 - eb0;
+        // scalar a = u.norm(), b = v.norm();
+        // return mollifier<scalar>(-point_edge_closest_point_direction<scalar>(ea0, eb0, eb1).normalized().dot(u / a) / mollifier_threshold_eps) * 
+        // mollifier<scalar>(-point_edge_closest_point_direction<scalar>(ea1, eb0, eb1).normalized().dot(-u / a) / mollifier_threshold_eps) *
+        // mollifier<scalar>(-point_edge_closest_point_direction<scalar>(eb0, ea0, ea1).normalized().dot(v / b) / mollifier_threshold_eps) *
+        // mollifier<scalar>(-point_edge_closest_point_direction<scalar>(eb1, ea0, ea1).normalized().dot(-v / b) / mollifier_threshold_eps);
+        const scalar da = (ea1 - ea0).squaredNorm() * mollifier_threshold_eps;
+        const scalar db = (eb1 - eb0).squaredNorm() * mollifier_threshold_eps;
+
+        return mollifier<scalar>((point_edge_sqr_distance<scalar>(ea0, eb0, eb1, PointEdgeDistanceType::AUTO) - dist_sqr) / da) *
+        mollifier<scalar>((point_edge_sqr_distance<scalar>(ea1, eb0, eb1, PointEdgeDistanceType::AUTO) - dist_sqr) / da) *
+        mollifier<scalar>((point_edge_sqr_distance<scalar>(eb0, ea0, ea1, PointEdgeDistanceType::AUTO) - dist_sqr) / db) *
+        mollifier<scalar>((point_edge_sqr_distance<scalar>(eb1, ea0, ea1, PointEdgeDistanceType::AUTO) - dist_sqr) / db);
+    }
+
+    template <typename scalar>
     scalar triangle_mollifier(
         const VectorMax3<scalar> &p, 
         const VectorMax3<scalar> &e0, 
@@ -311,8 +332,8 @@ namespace ipc {
         const scalar &dist_sqr)
     {
         const scalar denominator = ((e1 - e0).squaredNorm() + (e1 - e2).squaredNorm() + (e2 - e0).squaredNorm()) / 3. * mollifier_threshold_eps;
-        return mollifier<scalar>(((p - e0).squaredNorm() - dist_sqr) / denominator) *
-            mollifier<scalar>(((p - e1).squaredNorm() - dist_sqr) / denominator) *
-            mollifier<scalar>(((p - e2).squaredNorm() - dist_sqr) / denominator);
+        return mollifier<scalar>(point_edge_sqr_distance<scalar>(p, e0, e1, PointEdgeDistanceType::AUTO) / denominator) *
+            mollifier<scalar>(point_edge_sqr_distance<scalar>(p, e2, e1, PointEdgeDistanceType::AUTO) / denominator) *
+            mollifier<scalar>(point_edge_sqr_distance<scalar>(p, e0, e2, PointEdgeDistanceType::AUTO) / denominator);
     }
 }
