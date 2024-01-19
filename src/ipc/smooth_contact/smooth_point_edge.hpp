@@ -78,8 +78,8 @@ namespace ipc {
         scalar tangent_term = smooth_heaviside<scalar>(t0.dot(direc) / l0 / params.alpha) *
                             smooth_heaviside<scalar>(-t1.dot(direc) / l1 / params.alpha);
 
-        scalar normal_term = smooth_heaviside<scalar>(cross2<scalar>(t0, direc) / l0 / params.alpha) + 
-                            smooth_heaviside<scalar>(cross2<scalar>(t1, direc) / l1 / params.alpha);
+        scalar normal_term = smooth_heaviside<scalar>(-cross2<scalar>(t0, direc) / l0 / params.alpha) + 
+                            smooth_heaviside<scalar>(-cross2<scalar>(t1, direc) / l1 / params.alpha);
 
         const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, intpow(dist, 2));
 

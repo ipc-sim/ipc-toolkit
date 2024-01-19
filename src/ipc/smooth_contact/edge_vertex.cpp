@@ -60,7 +60,7 @@ namespace ipc {
 
         // normal term
         {
-            if (cross2<double>(direc, t0) <= -params.alpha && cross2<double>(direc, t1) <= -params.alpha)
+            if (cross2<double>(direc, t0) >= params.alpha && cross2<double>(direc, t1) >= params.alpha)
                 return false;
         }
 
