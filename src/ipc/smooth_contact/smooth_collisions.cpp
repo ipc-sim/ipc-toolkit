@@ -66,6 +66,17 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
             throw std::runtime_error("Invalid collision type!");
     }
 
+    for (int f = 0; f < mesh.num_faces(); f++)
+        for (int lv = 0; lv < 3; lv++)
+        {
+            face_adaptive_dhat(f) = std::min(face_adaptive_dhat(f), vert_adaptive_dhat(mesh.faces()(f, lv)));
+            face_adaptive_dhat(f) = std::min(face_adaptive_dhat(f), edge_adaptive_dhat(mesh.faces_to_edges()(f, lv)));
+        }
+
+    for (int e = 0; e < mesh.num_edges(); e++)
+        for (int lv = 0; lv < 2; lv++)
+            edge_adaptive_dhat(e) = std::min(edge_adaptive_dhat(e), vert_adaptive_dhat(mesh.edges()(e, lv)));
+
     logger().debug("vert dhat min {:.2e}, max {:.2e}", vert_adaptive_dhat.minCoeff(), vert_adaptive_dhat.maxCoeff());
     logger().debug("edge dhat min {:.2e}, max {:.2e}", edge_adaptive_dhat.minCoeff(), edge_adaptive_dhat.maxCoeff());
     if (mesh.dim() == 3)
