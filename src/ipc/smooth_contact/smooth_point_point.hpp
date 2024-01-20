@@ -62,7 +62,7 @@ scalar smooth_point_point_potential_2d(
 /// @param params 
 /// @return 
 template <typename scalar>
-scalar smooth_point3_term(
+inline scalar smooth_point3_term(
     const Eigen::Ref<const RowVector3<scalar>>& v,
     const Eigen::Ref<const RowVector3<scalar>>& direc,
     const Eigen::Matrix<scalar, -1, 3> &neighbors,
@@ -111,6 +111,43 @@ inline bool smooth_point3_term_type(
 
     return tangent_term && normal_term;
 }
+// template <typename scalar>
+// scalar smooth_point3_term(
+//     const Eigen::Ref<const RowVector3<scalar>>& v,
+//     const Eigen::Ref<const RowVector3<scalar>>& direc,
+//     const Eigen::Matrix<scalar, -1, 3> &neighbors,
+//     const double &alpha)
+// {
+//     RowVector3<scalar> t;
+//     assert(neighbors.rows() > 2);
+
+//     scalar tangent_term(1.);
+//     scalar weight(0.);
+//     for (int a = 0; a < neighbors.rows(); a++)
+//     {
+//         t = neighbors.row(a) - v;
+//         tangent_term = tangent_term * smooth_heaviside<scalar>(direc.dot(t) / t.norm() / alpha);
+//         weight = weight + t.squaredNorm();
+//     }
+
+//     return tangent_term * weight / neighbors.rows();
+// }
+
+// /// @brief 
+// /// @param v 
+// /// @param ray normalized
+// /// @param neighbors counter-clockwise
+// /// @return 
+// bool is_outside_object(
+//     const Eigen::Ref<const RowVector3<double>>& v,
+//     const Eigen::Ref<const RowVector3<double>>& ray,
+//     const Eigen::Matrix<double, -1, 3> &neighbors);
+
+// bool smooth_point3_term_type(
+//     const Eigen::Ref<const RowVector3<double>>& v,
+//     const Eigen::Ref<const RowVector3<double>>& direc,
+//     const Eigen::Matrix<double, -1, 3> &neighbors,
+//     const double &alpha);
 
 template <typename scalar>
 scalar smooth_point_point_potential_3d(

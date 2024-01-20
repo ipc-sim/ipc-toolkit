@@ -1,4 +1,5 @@
 set(SOURCES
+  smooth_point_point.cpp
   smooth_point_point.hpp
   smooth_point_edge.cpp
   smooth_point_edge.hpp

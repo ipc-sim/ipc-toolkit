@@ -50,9 +50,10 @@ namespace ipc {
         const double &alpha)
     {
         const Vector3<scalar> normal = (v1 - v0).cross(v2 - v0);
-        const scalar Phi = 1 - (p - v0).dot(normal) / sqrt(dist_sqr * normal.squaredNorm());
+        const scalar norm = normal.norm();
+        const scalar Phi = 1 - (p - v0).dot(normal) / sqrt(dist_sqr) / norm;
 
-        return quadratic_spline(Phi / alpha);
+        return 0.5 * norm * quadratic_spline(Phi / alpha);
     }
 
     template <typename scalar>

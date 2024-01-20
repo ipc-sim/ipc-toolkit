@@ -97,7 +97,7 @@ namespace ipc {
         scalar normal_term = smooth_heaviside<scalar>(direc.dot(n0) / n0.norm() / alpha) +
                             smooth_heaviside<scalar>(direc.dot(n1) / n1.norm() / alpha);
 
-        return tangent_term * normal_term;
+        return (e1 - e0).squaredNorm() * tangent_term * normal_term;
     }
 
     inline bool smooth_edge3_term_type(
@@ -140,11 +140,6 @@ namespace ipc {
         const std::array<HEAVISIDE_TYPE, 4> &tangent_types,
         const std::array<HEAVISIDE_TYPE, 4> &normal_types)
     {
-        const Vector3<scalar> u = ea1 - ea0;
-        const Vector3<scalar> v = eb1 - eb0;
-        const scalar a = u.squaredNorm();
-        const scalar b = v.squaredNorm();
-
         const scalar dist_sqr = edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype);
         const scalar barrier = inv_barrier<scalar>(dist_sqr / params.eps, params.r);
         
@@ -160,6 +155,6 @@ namespace ipc {
         //         logger().error("a {} b {}, barrier {}, out {}, mollifier {}", a, b, barrier, out, mollifier_val);
         // }
         
-        return 0.5 * sqrt(a * b) * barrier * out * mollifier_val;
+        return barrier * out * mollifier_val;
     }
 }

@@ -127,6 +127,6 @@ namespace ipc {
         const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, dist_sqr);
         const scalar vert_term = smooth_point3_term<scalar>(p, direc, neighbors, params.alpha);
 
-        return (e1 - e0).norm() * edge_term * mollifier_val * vert_term * barrier;
+        return edge_term * mollifier_val * vert_term * barrier;
     }
 }

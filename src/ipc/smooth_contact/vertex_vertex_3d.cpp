@@ -46,42 +46,45 @@ namespace ipc {
         RowVector3<double> direc = va - vb;
         const double dist = direc.norm();
         direc = direc / dist;
-        RowVector3<double> t, t_prev;
+        // RowVector3<double> t, t_prev;
 
         if (dist*dist > get_eps())
             return false;
+        
+        return smooth_point3_term_type(va, direc, ra, params.alpha) &&
+               smooth_point3_term_type(vb, -direc, rb, params.alpha);
 
         // return true;
-        assert(ra.rows() > 2);
-        assert(rb.rows() > 2);
+        // assert(ra.rows() > 2);
+        // assert(rb.rows() > 2);
 
-        bool normal_term = false;
-        bool tangent_term1 = true, tangent_term2 = true;
-        t_prev = ra.row(ra.rows()-1) - va;
-        for (int a = 0; a < ra.rows(); a++)
-        {
-            t = ra.row(a) - va;
-            tangent_term1 = tangent_term1 && direc.dot(t) / t.norm() / params.alpha > -1;
-            normal_term = normal_term || -direc.dot(t_prev.cross(t).normalized()) / params.alpha > -1;
-            std::swap(t, t_prev);
-        }
+        // bool normal_term = false;
+        // bool tangent_term1 = true, tangent_term2 = true;
+        // t_prev = ra.row(ra.rows()-1) - va;
+        // for (int a = 0; a < ra.rows(); a++)
+        // {
+        //     t = ra.row(a) - va;
+        //     tangent_term1 = tangent_term1 && direc.dot(t) / t.norm() / params.alpha > -1;
+        //     normal_term = normal_term || -direc.dot(t_prev.cross(t).normalized()) / params.alpha > -1;
+        //     std::swap(t, t_prev);
+        // }
 
-        if (!normal_term)
-            return false;
+        // if (!normal_term)
+        //     return false;
 
-        normal_term = false;
-        direc = -direc;
-        t_prev = rb.row(rb.rows()-1) - vb;
-        for (int b = 0; b < rb.rows(); b++)
-        {
-            t = rb.row(b) - vb;
-            tangent_term2 = tangent_term2 && direc.dot(t) / t.norm() / params.alpha > -1;
-            normal_term = normal_term || -direc.dot(t_prev.cross(t).normalized()) / params.alpha > -1;
-            std::swap(t, t_prev);
-        }
+        // normal_term = false;
+        // direc = -direc;
+        // t_prev = rb.row(rb.rows()-1) - vb;
+        // for (int b = 0; b < rb.rows(); b++)
+        // {
+        //     t = rb.row(b) - vb;
+        //     tangent_term2 = tangent_term2 && direc.dot(t) / t.norm() / params.alpha > -1;
+        //     normal_term = normal_term || -direc.dot(t_prev.cross(t).normalized()) / params.alpha > -1;
+        //     std::swap(t, t_prev);
+        // }
 
-        if (!normal_term || !tangent_term1 || !tangent_term2)
-            return false;
+        // if (!normal_term || !tangent_term1 || !tangent_term2)
+        //     return false;
 
         return true;
     }

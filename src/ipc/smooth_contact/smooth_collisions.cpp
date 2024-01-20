@@ -179,7 +179,7 @@ void SmoothCollisions<dim>::build(
         //         });
     }
     SmoothCollisionsBuilder<dim>::merge(storage, *this);
-    // candidates = candidates_;
+    candidates = candidates_;
 
     // logger().debug(to_string(mesh, vertices));
 }

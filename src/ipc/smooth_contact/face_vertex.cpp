@@ -57,6 +57,7 @@ namespace ipc {
         if (Phi >= params.alpha)
             return false;
         
+        direc.normalize();
         return smooth_point3_term_type(points.row(0), direc, points.bottomRows(n_neighbors), params.alpha);
     }
 

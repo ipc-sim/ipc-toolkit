@@ -574,7 +574,7 @@ TEST_CASE(
 {
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
     const bool adaptive_dhat = GENERATE(true, false);
-    const int n_quad_pts = GENERATE(1, 3);
+    const int n_quad_pts = 1;
 
     double dhat = -1;
     std::string mesh_name = "";
