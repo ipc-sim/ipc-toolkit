@@ -85,7 +85,7 @@ inline scalar smooth_point3_term(
         std::swap(t, t_prev);
     }
 
-    return tangent_term * normal_term * weight / neighbors.rows();
+    return tangent_term * smooth_heaviside<scalar>(normal_term - 2) * weight / 3;
 }
 
 inline bool smooth_point3_term_type(
@@ -98,18 +98,18 @@ inline bool smooth_point3_term_type(
     assert(neighbors.rows() > 2);
 
     bool tangent_term = true;
-    bool normal_term = false;
+    double normal_term = 0;
     t_prev = neighbors.row(neighbors.rows()-1) - v;
     for (int a = 0; a < neighbors.rows(); a++)
     {
         t = neighbors.row(a) - v;
         tangent_term = tangent_term && (direc.dot(t) / t.norm() / alpha > -1);
 
-        normal_term = normal_term || (-direc.dot(t_prev.cross(t).normalized()) / alpha > -1);
+        normal_term += smooth_heaviside<double>(-direc.dot(t_prev.cross(t).normalized()) / alpha);
         std::swap(t, t_prev);
     }
 
-    return tangent_term && normal_term;
+    return tangent_term && (normal_term > 1);
 }
 // template <typename scalar>
 // scalar smooth_point3_term(

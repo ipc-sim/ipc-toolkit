@@ -38,7 +38,7 @@ namespace ipc {
 
     bool SmoothFaceVertexCollision::compute_types(
         const Eigen::VectorXd& positions, 
-        const ParameterType &params)
+        ParameterType params)
     {
         auto points = slice_positions_large<double, 3>(positions);
         dtype = point_triangle_distance_type(points.row(0), points.row(1), points.row(2), points.row(3));
@@ -58,6 +58,7 @@ namespace ipc {
             return false;
         
         direc.normalize();
+        params.eps = get_eps();
         return smooth_point3_term_type(points.row(0), direc, points.bottomRows(n_neighbors), params.alpha);
     }
 

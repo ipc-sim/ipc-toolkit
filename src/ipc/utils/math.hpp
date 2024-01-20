@@ -22,16 +22,17 @@ namespace ipc {
     template <typename scalar>
     scalar cubic_spline(const scalar &x)
     {
-        if (x <= -2)
+        scalar y = 2. * x;
+        if (y <= -2)
             return scalar(0.);
-        if (x <= -1)
-            return intpow(x + 2, 3) / 6;
-        if (x <= 0)
-            return 2. / 3 - intpow(x, 2) * (1 + x / 2);
-        if (x <= 1)
-            return 2. / 3 - intpow(x, 2) * (1 - x / 2);
-        if (x < 2)
-            return -intpow(x - 2, 3) / 6;
+        if (y <= -1)
+            return intpow(y + 2, 3) / 6;
+        if (y <= 0)
+            return 2. / 3 - intpow(y, 2) * (1 + y / 2);
+        if (y <= 1)
+            return 2. / 3 - intpow(y, 2) * (1 - y / 2);
+        if (y < 2)
+            return -intpow(y - 2, 3) / 6;
         return scalar(0.);
     }
 
@@ -63,31 +64,34 @@ namespace ipc {
         return quadratic_spline_aux(x * 1.5 + 1.5);
     }
 
-    constexpr double mollifier_threshold_eps = 1e-3;
-
-    template <typename scalar>
-    scalar mollifier(const scalar &x)
-    {
-        if (x <= 0)
-            return scalar(0.);
-        if (x <= 1)
-            return x * (2. - x);
-        return scalar(1.);
-    }
-
     enum class HEAVISIDE_TYPE {
         ZERO = 0, ONE = 1, VARIANT = 2
     };
 
+    // template <typename scalar>
+    // scalar smooth_heaviside_aux(const scalar &x)
+    // {
+    //     if (x <= -2)
+    //         return scalar(0.);
+    //     if (x <= -1)
+    //         return intpow(2. + x, 2) / 2.;
+    //     if (x <= 0)
+    //         return 1 - intpow(x, 2) / 2.;
+
+    //     return scalar(1.);
+    // }
+
     template <typename scalar>
     scalar smooth_heaviside_aux(const scalar &x)
     {
-        if (x <= -2)
+        if (x <= -3)
             return scalar(0.);
+        if (x <= -2)
+            return intpow(3. + x, 3) / 6.;
         if (x <= -1)
-            return intpow(2. + x, 2) / 2.;
+            return (((-2 * x - 9) * x - 9) * x + 3) / 6;
         if (x <= 0)
-            return 1 - intpow(x, 2) / 2.;
+            return intpow(x, 3) / 6. + 1.;
 
         return scalar(1.);
     }
@@ -95,34 +99,28 @@ namespace ipc {
     template <typename scalar>
     scalar smooth_heaviside(const scalar &x)
     {
-        return smooth_heaviside_aux(2 * x);
+        return smooth_heaviside_aux(3 * x);
     }
 
-    // template <typename scalar>
-    // scalar smooth_heaviside(const scalar &x)
-    // {
-    //     if (x <= -1)
-    //         return scalar(0.);
-    //     if (x >= 1)
-    //         return scalar(1.);
-    //     return (0.5 - x / 4.) * intpow(x + 1., 2);
-    // }
+    constexpr double mollifier_threshold_eps = 1e-3;
 
-    // template <typename scalar>
-    // scalar smooth_heaviside(const scalar &x)
-    // {
-    //     if (x <= 0)
-    //         return scalar(0.);
-    //     if (x >= 1)
-    //         return scalar(1.);
-    //     return (3. - 2. * x) * intpow(x, 2);
-    // }
+    template <typename scalar>
+    scalar mollifier(const scalar &x)
+    {
+        // if (x <= 0)
+        //     return scalar(0.);
+        // if (x <= 1)
+        //     return x * (2. - x);
+        // return scalar(1.);
+        return smooth_heaviside<scalar>(x - 1.);
+    }
 
     // support is [0, 1]
     template <typename scalar>
     scalar inv_barrier(const scalar &x, const double &r)
     {
-        return quadratic_spline(x) / pow(x, r);
+        return cubic_spline<scalar>(x) / pow(x, r);
+        // return -pow(1 - x, 2.) * log(x);
     }
 
     template <typename scalar>

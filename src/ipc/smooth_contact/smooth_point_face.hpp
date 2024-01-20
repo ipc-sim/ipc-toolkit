@@ -53,7 +53,7 @@ namespace ipc {
         const scalar norm = normal.norm();
         const scalar Phi = 1 - (p - v0).dot(normal) / sqrt(dist_sqr) / norm;
 
-        return 0.5 * norm * quadratic_spline(Phi / alpha);
+        return 0.5 * norm * cubic_spline(Phi / alpha);
     }
 
     template <typename scalar>

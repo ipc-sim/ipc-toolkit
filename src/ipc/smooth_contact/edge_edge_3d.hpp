@@ -49,7 +49,7 @@ private:
     template <typename scalar> 
     scalar evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params) const;
 
-    bool compute_types(const Vector<double, 24>& positions, const ParameterType &params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
+    bool compute_types(const Vector<double, 24>& positions, ParameterType params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
 
     Eigen::Matrix<int, 4, 3> face_to_vertex; // stores the local vertex ids for each vertex on each face
 

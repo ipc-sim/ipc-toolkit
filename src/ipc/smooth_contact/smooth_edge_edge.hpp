@@ -94,10 +94,10 @@ namespace ipc {
 
         const Vector3<scalar> n0 = (e0 - f0).cross(e1 - f0);
         const Vector3<scalar> n1 = -(e0 - f1).cross(e1 - f1);
-        scalar normal_term = smooth_heaviside<scalar>(direc.dot(n0) / n0.norm() / alpha) +
-                            smooth_heaviside<scalar>(direc.dot(n1) / n1.norm() / alpha);
+        scalar normal_term = smooth_heaviside<scalar>( smooth_heaviside<scalar>(direc.dot(n0) / n0.norm() / alpha) +
+                             smooth_heaviside<scalar>(direc.dot(n1) / n1.norm() / alpha) - 2 );
 
-        return (e1 - e0).squaredNorm() * tangent_term * normal_term;
+        return (e1 - e0).norm() * tangent_term * normal_term;
     }
 
     inline bool smooth_edge3_term_type(
@@ -115,10 +115,30 @@ namespace ipc {
 
         const Vector3<double> n0 = (e0 - f0).cross(e1 - f0);
         const Vector3<double> n1 = -(e0 - f1).cross(e1 - f1);
-        if (direc.dot(n0) / n0.norm() / alpha <= -1 && direc.dot(n1) / n1.norm() / alpha <= -1)
+        if (smooth_heaviside<double>(direc.dot(n0) / n0.norm() / alpha) + smooth_heaviside<double>(direc.dot(n1) / n1.norm() / alpha) <= 1)
             return false;
 
         return true;
+    }
+
+    inline bool smooth_edge_edge_potential_type(
+        const Eigen::Ref<const Vector3<double>>& ea0,
+        const Eigen::Ref<const Vector3<double>>& ea1,
+        const Eigen::Ref<const Vector3<double>>& eb0,
+        const Eigen::Ref<const Vector3<double>>& eb1,
+        const Eigen::Ref<const Vector3<double>>& fa0,
+        const Eigen::Ref<const Vector3<double>>& fa1,
+        const Eigen::Ref<const Vector3<double>>& fb0,
+        const Eigen::Ref<const Vector3<double>>& fb1,
+        const ParameterType &params,
+        const EdgeEdgeDistanceType &dtype)
+    {
+        const double dist_sqr = edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype);
+        if (dist_sqr >= params.eps)
+            return false;
+        
+        const Vector3<double> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype) / sqrt(dist_sqr); // from edge a to edge b
+        return smooth_edge3_term_type(direc, ea0, ea1, fa0, fa1, params.alpha) && smooth_edge3_term_type(-direc, eb0, eb1, fb0, fb1, params.alpha);
     }
 
     /// @brief Compute edge-edge potential for edge [ea0, ea1] and [eb0, eb1]
@@ -135,10 +155,7 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& fb0,
         const Eigen::Ref<const Vector3<scalar>>& fb1,
         const ParameterType &params,
-        const EdgeEdgeDistanceType &dtype,
-        const std::array<PointEdgeDistanceType, 4> &edge_dtypes,
-        const std::array<HEAVISIDE_TYPE, 4> &tangent_types,
-        const std::array<HEAVISIDE_TYPE, 4> &normal_types)
+        const EdgeEdgeDistanceType &dtype)
     {
         const scalar dist_sqr = edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype);
         const scalar barrier = inv_barrier<scalar>(dist_sqr / params.eps, params.r);

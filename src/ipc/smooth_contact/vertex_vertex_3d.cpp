@@ -35,7 +35,7 @@ namespace ipc {
 
     bool SmoothVertexVertex3Collision::compute_types(
         const Eigen::VectorXd& positions, 
-        const ParameterType &params)
+        ParameterType params)
     {
         auto points = slice_positions_large<double, 3>(positions);
         const Eigen::Ref<const RowVector3<double>>& va = points.row(0);
@@ -51,6 +51,7 @@ namespace ipc {
         if (dist*dist > get_eps())
             return false;
         
+        params.eps = get_eps();
         return smooth_point3_term_type(va, direc, ra, params.alpha) &&
                smooth_point3_term_type(vb, -direc, rb, params.alpha);
 
