@@ -26,7 +26,7 @@ public:
 
     int num_vertices() const override
     {
-        return n_neighbors + 1;
+        return n_neighbors + 4;
     }
 
     double compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const override;

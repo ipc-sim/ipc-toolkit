@@ -107,12 +107,12 @@ namespace ipc {
     template <typename scalar>
     scalar mollifier(const scalar &x)
     {
-        // if (x <= 0)
-        //     return scalar(0.);
-        // if (x <= 1)
-        //     return x * (2. - x);
-        // return scalar(1.);
-        return smooth_heaviside<scalar>(x - 1.);
+        if (x <= 0)
+            return scalar(0.);
+        if (x <= 1)
+            return x * (2. - x);
+        return scalar(1.);
+        // return smooth_heaviside<scalar>(x - 1.);
     }
 
     // support is [0, 1]
