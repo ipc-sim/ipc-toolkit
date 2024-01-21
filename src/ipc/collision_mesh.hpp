@@ -55,6 +55,13 @@ public:
             full_rest_positions, edges, faces);
     }
 
+    Eigen::Vector3d face_normal(const long f) const
+    {
+        Eigen::Vector3d a = rest_positions().row(faces()(f, 1)) - rest_positions().row(faces()(f, 0));
+        Eigen::Vector3d b = rest_positions().row(faces()(f, 2)) - rest_positions().row(faces()(f, 0));
+        return (a).cross(b);
+    }
+
     // The following functions are used to initialize optional data structures.
 
     /// @brief Initialize vertex-vertex and edge-vertex adjacencies.

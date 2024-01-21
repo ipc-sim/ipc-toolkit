@@ -42,6 +42,8 @@ public:
         const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params,
         const bool project_hessian_to_psd = false) const override;
+    
+    std::string name() const override { return "vert-vert"; }
 
 private:
     template <typename scalar> 

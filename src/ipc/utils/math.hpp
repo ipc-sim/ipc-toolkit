@@ -90,7 +90,7 @@ namespace ipc {
             return intpow(3. + x, 3) / 6.;
         if (x <= -1)
             return (((-2 * x - 9) * x - 9) * x + 3) / 6;
-        if (x <= 0)
+        if (x < 0)
             return intpow(x, 3) / 6. + 1.;
 
         return scalar(1.);
@@ -107,12 +107,12 @@ namespace ipc {
     template <typename scalar>
     scalar mollifier(const scalar &x)
     {
-        if (x <= 0)
-            return scalar(0.);
-        if (x <= 1)
-            return x * (2. - x);
-        return scalar(1.);
-        // return smooth_heaviside<scalar>(x - 1.);
+        // if (x <= 0)
+        //     return scalar(0.);
+        // if (x <= 1)
+        //     return x * (2. - x);
+        // return scalar(1.);
+        return smooth_heaviside<scalar>(x - 1.);
     }
 
     // support is [0, 1]
@@ -120,15 +120,18 @@ namespace ipc {
     scalar inv_barrier(const scalar &x, const double &r)
     {
         return cubic_spline<scalar>(x) / pow(x, r);
-        // return -pow(1 - x, 2.) * log(x);
+        // if (x < 1)
+        //     return -pow(1 - x, 2.) * log(x);
+        // else
+        //     return scalar(0.);
     }
 
     template <typename scalar>
     scalar L_ns(const scalar &x)
     {
-        if (x < 0.)
+        if (x <= 0.)
             return scalar(0.);
-        if (x > 1.)
+        if (x >= 1.)
             return scalar(1.);
         return x;
     }
@@ -216,7 +219,7 @@ namespace ipc {
     }
 
     template <typename Less, typename T, typename... Ts>
-    constexpr const T& min(Less less, const T& a, const T& b, const Ts&... rems) {
+    inline constexpr const T& min(Less less, const T& a, const T& b, const Ts&... rems) {
         if constexpr (sizeof...(rems)) {
             return min(less, std::min(a, b, less), rems...);
         }
@@ -225,6 +228,15 @@ namespace ipc {
         }
     }
 
+    template <typename Less, typename T, typename... Ts>
+    inline constexpr const T& max(Less less, const T& a, const T& b, const Ts&... rems) {
+        if constexpr (sizeof...(rems)) {
+            return max(less, std::max(a, b, less), rems...);
+        }
+        else {
+            return std::max(a, b, less);
+        }
+    }
 
     enum class FD_RULE { CENTRAL, LEFT, RIGHT };
     

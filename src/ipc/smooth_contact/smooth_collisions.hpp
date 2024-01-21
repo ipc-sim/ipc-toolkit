@@ -78,7 +78,7 @@ public:
         const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const override;
 
     std::string
-    to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
+    to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices, const ParameterType &params) const;
 
     void set_use_convergent_formulation(
         const bool use_convergent_formulation) override

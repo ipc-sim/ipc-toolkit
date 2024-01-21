@@ -30,7 +30,16 @@ namespace ipc {
     {
         auto a = mesh.find_edge_adjacent_vertices(primitive0_);
         auto b = mesh.find_edge_adjacent_vertices(primitive1_);
-        vertices = {{a[0], a[1], b[0], b[1], a[2], a[3], b[2], b[3]}};
+        // vertices = {{a[0], a[1], b[0], b[1], a[2], a[3], b[2], b[3]}};
+        vertices.fill(-1);
+        vertices[0] = a[0];
+        vertices[1] = a[1];
+        vertices[4] = a[2];
+        vertices[5] = a[3];
+        vertices[2] = b[0];
+        vertices[3] = b[1];
+        vertices[6] = b[2];
+        vertices[7] = b[3];
         face_to_vertex << 4, 0, 1,
                           5, 1, 0,
                           6, 2, 3,
@@ -48,16 +57,28 @@ namespace ipc {
         dtype = edge_edge_distance_type(points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)]);
 
+        bool return_val = true;
         if (dtype != EdgeEdgeDistanceType::EA_EB)
-            return false;
+            return_val = false;
 
         params.eps = get_eps();
-        return smooth_edge_edge_potential_type(
+        return_val = return_val && smooth_edge_edge_potential_type(
             points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
             points[face_to_vertex(0, 0)], points[face_to_vertex(1, 0)],
             points[face_to_vertex(2, 0)], points[face_to_vertex(3, 0)], 
             params, dtype);
+
+        double dist = sqrt(edge_edge_distance(points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
+            points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)], dtype));
+
+        if (dist < 1e-10 || (!return_val && abs(evaluate_quadrature<double>(positions, params)) > 1e-15))
+        {
+            logger().warn("[edge-edge] Dist {}, active {}, residual {}", dist, return_val, abs(evaluate_quadrature<double>(positions, params, true)));
+            return true;
+        }
+        
+        return return_val;
 
         // logger().debug("before: edge {} {}, dtype {}, edge_types {} {} {} {}, tangent_types {} {} {} {}, normal_types {} {} {} {}",
         //     primitive0, primitive1,
@@ -76,49 +97,22 @@ namespace ipc {
     }
 
     template <typename scalar> 
-    scalar SmoothEdgeEdge3Collision::evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params) const
-    {
-        params.eps = get_eps();
-        return evaluate_edge_edge_quadrature<scalar>(positions, params);
-    }
-
-    template <typename scalar> 
-    scalar SmoothEdgeEdge3Collision::evaluate_edge_edge_quadrature(const Vector<double, 24>& positions, ParameterType params) const
+    scalar SmoothEdgeEdge3Collision::evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params, bool debug) const
     {
         std::array<Vector3<scalar>, 8> points = slice_positions<scalar, 8, 3>(positions);
         params.eps = get_eps();
-        const scalar out = smooth_edge_edge_potential_single_point<scalar>(
+        return smooth_edge_edge_potential_single_point<scalar>(
             points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
             points[face_to_vertex(0, 0)], points[face_to_vertex(1, 0)],
             points[face_to_vertex(2, 0)], points[face_to_vertex(3, 0)], 
-            params, dtype);
-
-        return out;
+            params, dtype, debug);
     }
 
     double SmoothEdgeEdge3Collision::operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 
         const ParameterType &params) const
     {
         assert(positions.size() == 24);
-
-        // auto func = [&](const Eigen::VectorXd &x)
-        // {
-        //     return evaluate_quadrature<double>(positions, params);
-        // };
-
-        // Eigen::VectorXd g, gc, gl, gr;
-        // my_finite_gradient(positions, func, gc, FD_RULE::CENTRAL);
-        // my_finite_gradient(positions, func, gl, FD_RULE::LEFT);
-        // my_finite_gradient(positions, func, gr, FD_RULE::RIGHT);
-        // g = gradient(positions, params);
-        
-        // Eigen::VectorXd max_ = gr.array().max(gc.array().max(gl.array()));
-        // Eigen::VectorXd min_ = gr.array().min(gc.array().min(gl.array()));
-        // if ((max_ - min_).maxCoeff() > 1e-3 * max_.norm())
-        // {
-        //     logger().error("[edge-edge] {}: {} {}, {}, {}", (max_ - min_).maxCoeff(), g.transpose(), gc.transpose(), gl.transpose(), gr.transpose());
-        // }
         
         return evaluate_quadrature<double>(positions, params);
     }
@@ -129,6 +123,25 @@ namespace ipc {
     {
         DiffScalarBase::setVariableCount(24);
         using Diff=AutodiffScalarGrad<24>;
+
+        // auto func = [&](const Eigen::VectorXd &x)
+        // {
+        //     return evaluate_quadrature<double>(positions, params);
+        // };
+
+        // Eigen::VectorXd g, gc, gl, gr;
+        // my_finite_gradient(positions, func, gc, FD_RULE::CENTRAL, 1e-8);
+        // my_finite_gradient(positions, func, gl, FD_RULE::LEFT, 1e-8);
+        // my_finite_gradient(positions, func, gr, FD_RULE::RIGHT, 1e-8);
+        // g = evaluate_quadrature<Diff>(positions, params).getGradient();
+        
+        // Eigen::VectorXd max_ = gr.array().max(gc.array().max(gl.array()));
+        // Eigen::VectorXd min_ = gr.array().min(gc.array().min(gl.array()));
+        // if (std::max((g - max_).maxCoeff(), (max_ - min_).maxCoeff()) > 1e-2 * std::max(std::max(max_.norm(), min_.norm()), 1e-2))
+        // {
+        //     logger().error("[edge-edge] Not C1! fd err {:.5e}, grad err {:.5e}, norm {:.5e}", (max_ - min_).maxCoeff(), std::max((g - max_).maxCoeff(), (max_ - min_).maxCoeff()), std::max(max_.norm(), min_.norm()));
+        // }
+
         return evaluate_quadrature<Diff>(positions, params).getGradient();
     }
 

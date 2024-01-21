@@ -97,6 +97,8 @@ public:
         return pow(std::min(dhats[0], dhats[1]), 2);
     }
 
+    virtual std::string name() const { return ""; }
+
 protected:
     bool is_active_ = true;
     long primitive0, primitive1;

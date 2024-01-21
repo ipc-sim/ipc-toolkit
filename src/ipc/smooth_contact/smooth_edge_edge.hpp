@@ -2,6 +2,8 @@
 
 #include "smooth_point_face.hpp"
 #include <ipc/utils/distance_autodiff.hpp>
+#include <ipc/utils/AutodiffTypes.hpp>
+#include <iostream>
 
 namespace ipc {
     /// @brief Old IPC formulation. Compute edge-edge potential for edge [ea0, ea1] and [eb0, eb1]
@@ -94,10 +96,11 @@ namespace ipc {
 
         const Vector3<scalar> n0 = (e0 - f0).cross(e1 - f0);
         const Vector3<scalar> n1 = -(e0 - f1).cross(e1 - f1);
-        scalar normal_term = smooth_heaviside<scalar>( smooth_heaviside<scalar>(direc.dot(n0) / n0.norm() / alpha) +
-                             smooth_heaviside<scalar>(direc.dot(n1) / n1.norm() / alpha) - 2 );
+        scalar normal_term = smooth_heaviside<scalar>( (smooth_heaviside<scalar>(direc.dot(n0) / n0.norm() / alpha) +
+                             smooth_heaviside<scalar>(direc.dot(n1) / n1.norm() / alpha) - 1) / alpha );
 
         return (e1 - e0).norm() * tangent_term * normal_term;
+        // return (e1 - e0).norm() * mollifier<scalar>()
     }
 
     inline bool smooth_edge3_term_type(
@@ -115,7 +118,7 @@ namespace ipc {
 
         const Vector3<double> n0 = (e0 - f0).cross(e1 - f0);
         const Vector3<double> n1 = -(e0 - f1).cross(e1 - f1);
-        if (smooth_heaviside<double>(direc.dot(n0) / n0.norm() / alpha) + smooth_heaviside<double>(direc.dot(n1) / n1.norm() / alpha) <= 1)
+        if (smooth_heaviside<double>(direc.dot(n0) / n0.norm() / alpha) + smooth_heaviside<double>(direc.dot(n1) / n1.norm() / alpha) <= 1 - alpha)
             return false;
 
         return true;
@@ -155,7 +158,8 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& fb0,
         const Eigen::Ref<const Vector3<scalar>>& fb1,
         const ParameterType &params,
-        const EdgeEdgeDistanceType &dtype)
+        const EdgeEdgeDistanceType &dtype,
+        bool debug = false)
     {
         const scalar dist_sqr = edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype);
         const scalar barrier = inv_barrier<scalar>(dist_sqr / params.eps, params.r);
@@ -166,11 +170,19 @@ namespace ipc {
 
         const scalar mollifier_val = edge_edge_mollifier<scalar>(ea0, ea1, eb0, eb1, dist_sqr);
 
-        // if constexpr (std::is_same<double,scalar>::value)
-        // {
-        //     if (dist_sqr < 1e-20)
-        //         logger().error("a {} b {}, barrier {}, out {}, mollifier {}", a, b, barrier, out, mollifier_val);
-        // }
+        if constexpr (std::is_same<double,scalar>::value)
+        {
+            if (debug || dist_sqr < 1e-20)
+            {
+                logger().error("barrier {}, tangent {} {}, mollifier {}", barrier, smooth_edge3_term<scalar>(direc, ea0, ea1, fa0, fa1, params.alpha), smooth_edge3_term<scalar>(-direc, eb0, eb1, fb0, fb1, params.alpha), mollifier_val);
+                // std::cout << ea0.transpose() << "\n"  << ea1.transpose() << "\n"  << eb0.transpose() << "\n"  << eb1.transpose() << "\n"  << fa0.transpose() << "\n"  << fa1.transpose() << "\n"  << fb0.transpose() << "\n"  << fb1.transpose() << "\n";
+                // std::cout << direc.transpose() << "\n" <<
+                //              point_line_closest_point_direction<double>(fa0, ea0, ea1).transpose() << "\n" <<
+                //             point_line_closest_point_direction<double>(fa1, ea0, ea1).transpose() << "\n" <<
+                //             point_line_closest_point_direction<double>(fb0, eb0, eb1).transpose() << "\n" <<
+                //             point_line_closest_point_direction<double>(fb1, eb0, eb1).transpose() << "\n";
+            }
+        }
         
         return barrier * out * mollifier_val;
     }

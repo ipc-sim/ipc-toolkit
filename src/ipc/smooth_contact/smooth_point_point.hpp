@@ -85,7 +85,7 @@ inline scalar smooth_point3_term(
         std::swap(t, t_prev);
     }
 
-    return tangent_term * smooth_heaviside<scalar>(normal_term - 2) * weight / 3;
+    return tangent_term * smooth_heaviside<scalar>((normal_term - 1) / alpha) * weight / 3;
 }
 
 inline bool smooth_point3_term_type(
@@ -105,11 +105,13 @@ inline bool smooth_point3_term_type(
         t = neighbors.row(a) - v;
         tangent_term = tangent_term && (direc.dot(t) / t.norm() / alpha > -1);
 
+        // logger().warn("normal term direction {}, should be negative", direc.dot(t_prev.cross(t).normalized()));
+
         normal_term += smooth_heaviside<double>(-direc.dot(t_prev.cross(t).normalized()) / alpha);
         std::swap(t, t_prev);
     }
 
-    return tangent_term && (normal_term > 1);
+    return tangent_term && (normal_term > 1 - alpha);
 }
 // template <typename scalar>
 // scalar smooth_point3_term(

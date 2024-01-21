@@ -52,8 +52,20 @@ namespace ipc {
             return false;
         
         params.eps = get_eps();
-        return smooth_point3_term_type(va, direc, ra, params.alpha) &&
+        bool return_val = smooth_point3_term_type(va, direc, ra, params.alpha) &&
                smooth_point3_term_type(vb, -direc, rb, params.alpha);
+
+        if (dist < 1e-10)
+            logger().error("[vert-vert] dist {}, active {}, type 1 {}, type 2 {}", dist, return_val, smooth_point3_term_type(va, direc, ra, params.alpha), smooth_point3_term_type(vb, -direc, rb, params.alpha));
+
+        if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-15 ))
+        {
+            if (!return_val)
+                logger().error("[vert-vert] Wrong type! error {}", abs(evaluate_quadrature<double>(positions, params)));
+            return true;
+        }
+
+        return return_val;
 
         // return true;
         // assert(ra.rows() > 2);
@@ -123,7 +135,7 @@ namespace ipc {
         
         // Eigen::VectorXd max_ = gr.array().max(gc.array().max(gl.array()));
         // Eigen::VectorXd min_ = gr.array().min(gc.array().min(gl.array()));
-        // if ((max_ - min_).maxCoeff() > 1e-3 * max_.norm())
+        // if (std::max((g - max_).maxCoeff(), (max_ - min_).maxCoeff()) > 1e-3 * std::max(max_.norm(), min_.norm()))
         // {
         //     logger().error("[vert-vert] {}: {} {}, {}, {}", (max_ - min_).maxCoeff(), g.transpose(), gc.transpose(), gl.transpose(), gr.transpose());
         // }

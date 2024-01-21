@@ -43,23 +43,31 @@ namespace ipc {
         auto points = slice_positions_large<double, 3>(positions);
         dtype = point_triangle_distance_type(points.row(0), points.row(1), points.row(2), points.row(3));
         const double dist_sqr = point_triangle_distance(points.row(0), points.row(1), points.row(2), points.row(3), dtype);
-        Vector3<double> direc = point_triangle_closest_point_direction<double>(points.row(0), points.row(1), points.row(2), points.row(3), dtype);
 
+        bool return_val = true;
         if (dist_sqr >= get_eps())
-            return false;
+            return_val = false;
 
         // return true;
         if (dtype != PointTriangleDistanceType::P_T)
-            return false;
+            return_val = false;
 
         const Vector3<double> normal = (points.row(2) - points.row(1)).cross(points.row(3) - points.row(1));
         const double Phi = 1 - (points.row(0) - points.row(1)).dot(normal) / sqrt(dist_sqr * normal.squaredNorm());
         if (Phi >= params.alpha)
-            return false;
-        
-        direc.normalize();
+            return_val = false;
+
         params.eps = get_eps();
-        return smooth_point3_term_type(points.row(0), direc, points.bottomRows(n_neighbors), params.alpha);
+        Vector3<double> direc = point_triangle_closest_point_direction<double>(points.row(0), points.row(1), points.row(2), points.row(3), dtype) / sqrt(dist_sqr);
+        return_val = return_val && smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha);
+
+        if (sqrt(dist_sqr) < 1e-10 || (!return_val && abs(evaluate_quadrature<double>(positions, params)) > 1e-15))
+        {
+            logger().error("[face-vert] dist {}, active {}, face term {}, point term {}, error {}", sqrt(dist_sqr), return_val, !(Phi >= params.alpha), smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha), abs(evaluate_quadrature<double>(positions, params)));
+            return true;
+        }
+
+        return return_val;
     }
 
     double SmoothFaceVertexCollision::compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const
@@ -83,24 +91,6 @@ namespace ipc {
     {
         assert(positions.size() == ndofs());
 
-        // auto func = [&](const Eigen::VectorXd &x)
-        // {
-        //     return evaluate_quadrature<double>(positions, params);
-        // };
-
-        // Eigen::VectorXd g, gc, gl, gr;
-        // my_finite_gradient(positions, func, gc, FD_RULE::CENTRAL);
-        // my_finite_gradient(positions, func, gl, FD_RULE::LEFT);
-        // my_finite_gradient(positions, func, gr, FD_RULE::RIGHT);
-        // g = gradient(positions, params);
-        
-        // Eigen::VectorXd max_ = gr.array().max(gc.array().max(gl.array()));
-        // Eigen::VectorXd min_ = gr.array().min(gc.array().min(gl.array()));
-        // if ((max_ - min_).maxCoeff() > 1e-3 * max_.norm())
-        // {
-        //     logger().error("[face-vert] {}: {} {}, {}, {}", (max_ - min_).maxCoeff(), g.transpose(), gc.transpose(), gl.transpose(), gr.transpose());
-        // }
-
         return evaluate_quadrature<double>(positions, params);
     }
 
@@ -110,6 +100,25 @@ namespace ipc {
     {
         DiffScalarBase::setVariableCount(ndofs());
         using Diff=AutodiffScalarGrad<-1>;
+
+        // auto func = [&](const Eigen::VectorXd &x)
+        // {
+        //     return evaluate_quadrature<double>(positions, params);
+        // };
+
+        // Eigen::VectorXd g, gc, gl, gr;
+        // my_finite_gradient(positions, func, gc, FD_RULE::CENTRAL, 1e-8);
+        // my_finite_gradient(positions, func, gl, FD_RULE::LEFT, 1e-8);
+        // my_finite_gradient(positions, func, gr, FD_RULE::RIGHT, 1e-8);
+        // g = evaluate_quadrature<Diff>(positions, params).getGradient().head(ndofs());
+        
+        // Eigen::VectorXd max_ = gr.array().max(gc.array().max(gl.array()));
+        // Eigen::VectorXd min_ = gr.array().min(gc.array().min(gl.array()));
+        // if (std::max((g - max_).maxCoeff(), (max_ - min_).maxCoeff()) > 1e-2 * std::max(max_.norm(), min_.norm()))
+        // {
+        //     logger().error("[face-vert] {}: {} {}, {}, {}", (max_ - min_).maxCoeff(), g.transpose(), gc.transpose(), gl.transpose(), gr.transpose());
+        // }
+
         return evaluate_quadrature<Diff>(positions, params).getGradient().head(ndofs());
     }
 

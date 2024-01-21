@@ -181,7 +181,7 @@ void SmoothCollisions<dim>::build(
     SmoothCollisionsBuilder<dim>::merge(storage, *this);
     candidates = candidates_;
 
-    // logger().debug(to_string(mesh, vertices));
+    // logger().debug(to_string(mesh, vertices, param));
 }
 
 // ============================================================================
@@ -224,30 +224,21 @@ const typename SmoothCollisions<dim>::value_type& SmoothCollisions<dim>::operato
 
 template <int dim>
 std::string SmoothCollisions<dim>::to_string(
-    const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
+    const CollisionMesh& mesh, const Eigen::MatrixXd& vertices, const ParameterType &params) const
 {
-    // std::stringstream ss;
-    // for (const auto& cc : collisions) {
-    //     ss << "\n";
-        // if (!std::dynamic_pointer_cast<SmoothFaceVertexCollision>(cc))
-        // {
-        //     ss << fmt::format(
-        //           "ee: {}=({}, {}) {}=({}, {})",
-        //           (*cc)[0], mesh.edges()((*cc)[0], 0),
-        //           mesh.edges()((*cc)[0], 1), (*cc)[1],
-        //           mesh.edges()((*cc)[1], 0), mesh.edges()((*cc)[1], 1));
-        // }
-        // else
-        // {
-        //     ss << fmt::format(
-        //           "ff: {}=({}, {}, {}) {}=({}, {}, {})", (*cc)[0],
-        //           mesh.faces()((*cc)[0], 0), mesh.faces()((*cc)[0], 1),
-        //           mesh.faces()((*cc)[0], 2), (*cc)[1],
-        //           mesh.faces()((*cc)[1], 0), mesh.faces()((*cc)[1], 1),
-        //           mesh.faces()((*cc)[1], 2));
-        // }
-    // }
-    return ""; // ss.str();
+    std::stringstream ss;
+    for (const auto& cc : collisions) {
+        ss << "\n";
+        {
+            ss << fmt::format(
+                  "[{}]: ({} {}) dist {} potential {} grad {}", cc->name(), (*cc)[0], (*cc)[1],
+                    cc->compute_distance(cc->dof(vertices, mesh.edges(), mesh.faces())),
+                    (*cc)(cc->dof(vertices, mesh.edges(), mesh.faces()), params),
+                    (*cc).gradient(cc->dof(vertices, mesh.edges(), mesh.faces()), params).norm()
+                  );
+        }
+    }
+    return ss.str();
 }
 
 // NOTE: Actually distance squared

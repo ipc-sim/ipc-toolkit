@@ -43,11 +43,11 @@ public:
         const ParameterType &params,
         const bool project_hessian_to_psd = false) const override;
 
+    std::string name() const override { return "edge-edge"; }
+
 private:
     template <typename scalar> 
-    scalar evaluate_edge_edge_quadrature(const Vector<double, 24>& positions, ParameterType params) const;
-    template <typename scalar> 
-    scalar evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params) const;
+    scalar evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params, bool debug = false) const;
 
     bool compute_types(const Vector<double, 24>& positions, ParameterType params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
 

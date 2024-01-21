@@ -45,12 +45,26 @@ namespace ipc {
 
         // return true;
         // mollifier
+        bool return_val = true;
         if (dtype != PointEdgeDistanceType::P_E)
-            return false;
+            return_val = false;
         
         params.eps = get_eps();
-        return smooth_point_edge_potential_single_point_3d_type(points.row(0), points.bottomRows(n_neighbors), 
+        return_val = return_val && smooth_point_edge_potential_single_point_3d_type(points.row(0), points.bottomRows(n_neighbors), 
             points.row(1), points.row(2), points.row(3), points.row(4), params);
+
+        double dist = sqrt(point_edge_distance(points.row(0), points.row(1), points.row(2), dtype));
+        if (dist < 1e-10)
+            logger().error("[edge-vert] dist {}, active {}", dist, return_val);
+
+        if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-15 ))
+        {
+            if (!return_val)
+                logger().error("[edge-vert] Wrong type! error {}", abs(evaluate_quadrature<double>(positions, params)));
+            return true;
+        }
+
+        return return_val;
     }
 
     double SmoothEdgeVertex3Collision::compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const
@@ -85,7 +99,7 @@ namespace ipc {
         
         // Eigen::VectorXd max_ = gr.array().max(gc.array().max(gl.array()));
         // Eigen::VectorXd min_ = gr.array().min(gc.array().min(gl.array()));
-        // if ((max_ - min_).maxCoeff() > 1e-3 * max_.norm())
+        // if (std::max((g - max_).maxCoeff(), (max_ - min_).maxCoeff()) > 1e-3 * std::max(max_.norm(), min_.norm()))
         // {
         //     logger().error("[edge-edge] {}: {} {}, {}, {}", (max_ - min_).maxCoeff(), g.transpose(), gc.transpose(), gl.transpose(), gr.transpose());
         // }
