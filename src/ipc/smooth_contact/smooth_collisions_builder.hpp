@@ -47,6 +47,7 @@ public:
         const Eigen::MatrixXd& vertices,
         const std::vector<EdgeEdgeCandidate>& candidates,
         const ParameterType &param,
+        const std::function<double(const long &)> &vert_dhat,
         const std::function<double(const long &)> &edge_dhat,
         const size_t start_i,
         const size_t end_i);

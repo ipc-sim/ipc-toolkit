@@ -52,17 +52,19 @@ namespace ipc {
             return false;
         
         params.eps = get_eps();
-        bool return_val = smooth_point3_term_type(va, direc, ra, params.alpha) &&
-               smooth_point3_term_type(vb, -direc, rb, params.alpha);
+        bool return_val = smooth_point3_term_type(va, direc, ra, params.alpha, params.beta) &&
+               smooth_point3_term_type(vb, -direc, rb, params.alpha, params.beta);
 
         if (dist < 1e-10)
-            logger().error("[vert-vert] dist {}, active {}, type 1 {}, type 2 {}", dist, return_val, smooth_point3_term_type(va, direc, ra, params.alpha), smooth_point3_term_type(vb, -direc, rb, params.alpha));
+            logger().warn("[vert-vert] dist {}, active {}, type 1 {}, type 2 {}", dist, return_val, smooth_point3_term_type(va, direc, ra, params.alpha, params.beta), smooth_point3_term_type(vb, -direc, rb, params.alpha, params.beta));
 
-        if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-15 ))
+        if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-12 ))
         {
             if (!return_val)
-                logger().error("[vert-vert] Wrong type! error {}", abs(evaluate_quadrature<double>(positions, params)));
-            return true;
+            {
+                logger().error("[vert-vert] dist {}, active {}, type 1 {}, type 2 {}", dist, return_val, smooth_point3_term_type(va, direc, ra, params.alpha, params.beta), smooth_point3_term_type(vb, -direc, rb, params.alpha, params.beta));
+                return true;
+            }
         }
 
         return return_val;

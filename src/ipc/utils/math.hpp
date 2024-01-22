@@ -97,9 +97,9 @@ namespace ipc {
     }
 
     template <typename scalar>
-    scalar smooth_heaviside(const scalar &x)
+    scalar smooth_heaviside(const scalar &x, const double alpha, const double beta = 0)
     {
-        return smooth_heaviside_aux(3 * x);
+        return smooth_heaviside_aux((x - beta) * (3 / (alpha + beta)));
     }
 
     constexpr double mollifier_threshold_eps = 1e-3;
@@ -107,12 +107,14 @@ namespace ipc {
     template <typename scalar>
     scalar mollifier(const scalar &x)
     {
-        // if (x <= 0)
-        //     return scalar(0.);
-        // if (x <= 1)
-        //     return x * (2. - x);
-        // return scalar(1.);
-        return smooth_heaviside<scalar>(x - 1.);
+        if (x <= 0)
+            return scalar(0.);
+        if (x <= 1)
+        {
+            return x * (2. - x);
+        }
+        return scalar(1.);
+        // return smooth_heaviside<scalar>(x - 1.);
     }
 
     // support is [0, 1]

@@ -72,12 +72,21 @@ namespace ipc {
         double dist = sqrt(edge_edge_distance(points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)], dtype));
 
-        if (dist < 1e-10 || (!return_val && abs(evaluate_quadrature<double>(positions, params)) > 1e-15))
+        if (dist < 1e-10)
         {
             logger().warn("[edge-edge] Dist {}, active {}, residual {}", dist, return_val, abs(evaluate_quadrature<double>(positions, params, true)));
-            return true;
+            // return true;
         }
-        
+
+        if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-12 ))
+        {
+            if (!return_val)
+            {
+                logger().error("[edge-edge] Dist {}, active {}, residual {}", dist, return_val, abs(evaluate_quadrature<double>(positions, params, true)));
+                return true;
+            }
+        }
+
         return return_val;
 
         // logger().debug("before: edge {} {}, dtype {}, edge_types {} {} {} {}, tangent_types {} {} {} {}, normal_types {} {} {} {}",

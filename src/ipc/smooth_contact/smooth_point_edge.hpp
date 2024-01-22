@@ -36,11 +36,11 @@ namespace ipc {
 
         Vector2<scalar> t0 = x0 - p, t1 = p - x1;
         scalar l0 = t0.norm(), l1 = t1.norm();
-        scalar tangent_term = smooth_heaviside<scalar>(t0.dot(direc) / l0 / params.alpha) *
-                            smooth_heaviside<scalar>(-t1.dot(direc) / l1 / params.alpha);
+        scalar tangent_term = smooth_heaviside<scalar>(t0.dot(direc) / l0, params.alpha, params.beta) *
+                            smooth_heaviside<scalar>(-t1.dot(direc) / l1, params.alpha, params.beta);
 
-        scalar normal_term = smooth_heaviside<scalar>(-cross2<scalar>(t0, direc) / l0 / params.alpha) + 
-                            smooth_heaviside<scalar>(-cross2<scalar>(t1, direc) / l1 / params.alpha);
+        scalar normal_term = smooth_heaviside<scalar>(-cross2<scalar>(t0, direc) / l0, params.alpha, params.beta) + 
+                            smooth_heaviside<scalar>(-cross2<scalar>(t1, direc) / l1, params.alpha, params.beta);
 
         const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, intpow(dist, 2));
 
@@ -63,8 +63,8 @@ namespace ipc {
         
         direc = direc / sqrt(dist_sqr);
 
-        const bool edge_term = smooth_edge3_term_type(direc, e0, e1, f0, f1, params.alpha);
-        const bool vert_term = smooth_point3_term_type(p, direc, neighbors, params.alpha);
+        const bool edge_term = smooth_edge3_term_type(direc, e0, e1, f0, f1, params.alpha, params.beta);
+        const bool vert_term = smooth_point3_term_type(p, direc, neighbors, params.alpha, params.beta);
 
         return edge_term && vert_term;
     }
@@ -83,10 +83,10 @@ namespace ipc {
         const scalar dist_sqr = direc.squaredNorm();
         direc = direc / sqrt(dist_sqr);
 
-        const scalar edge_term = smooth_edge3_term<scalar>(direc, e0, e1, f0, f1, params.alpha);
+        const scalar edge_term = smooth_edge3_term<scalar>(direc, e0, e1, f0, f1, params.alpha, params.beta);
         const scalar barrier = inv_barrier<scalar>(dist_sqr / params.eps, params.r);
         const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, dist_sqr);
-        const scalar vert_term = smooth_point3_term<scalar>(p, direc, neighbors, params.alpha);
+        const scalar vert_term = smooth_point3_term<scalar>(p, direc, neighbors, params.alpha, params.beta);
 
         return edge_term * mollifier_val * vert_term * barrier;
     }

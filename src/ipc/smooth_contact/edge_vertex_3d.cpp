@@ -55,12 +55,16 @@ namespace ipc {
 
         double dist = sqrt(point_edge_distance(points.row(0), points.row(1), points.row(2), dtype));
         if (dist < 1e-10)
-            logger().error("[edge-vert] dist {}, active {}", dist, return_val);
+            logger().warn("[edge-vert] dist {}, active {}", dist, return_val);
 
-        if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-15 ))
+        if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-12 ))
         {
             if (!return_val)
-                logger().error("[edge-vert] Wrong type! error {}", abs(evaluate_quadrature<double>(positions, params)));
+            {
+                Vector3<double> direc = point_edge_closest_point_direction<double>(points.row(0), points.row(1), points.row(2), PointEdgeDistanceType::AUTO).normalized();
+                logger().error("[edge-vert] Wrong type! error {}, dist {}, edge_term {}, vert_term {}", 
+                    abs(evaluate_quadrature<double>(positions, params)), dist, smooth_edge3_term_type(direc, points.row(1), points.row(2), points.row(3), points.row(4), params.alpha, params.beta), smooth_point3_term_type(points.row(0), direc, points.bottomRows(n_neighbors), params.alpha, params.beta));
+            }
             return true;
         }
 

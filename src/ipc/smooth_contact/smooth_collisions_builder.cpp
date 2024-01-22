@@ -75,6 +75,7 @@ void SmoothCollisionsBuilder<dim>::add_edge_edge_collisions(
     const Eigen::MatrixXd& vertices,
     const std::vector<EdgeEdgeCandidate>& candidates,
     const ParameterType &param,
+    const std::function<double(const long &)> &vert_dhat,
     const std::function<double(const long &)> &edge_dhat,
     const size_t start_i,
     const size_t end_i)
@@ -84,25 +85,56 @@ void SmoothCollisionsBuilder<dim>::add_edge_edge_collisions(
         for (size_t i = start_i; i < end_i; i++) {
             const auto& [eai, ebi] = candidates[i];
 
-            // {
-            //     const auto [ea0i, ea1i, eb0i, eb1i] =
-            //         candidates[i].vertex_ids(mesh.edges(), mesh.faces());
+            {
+                const auto [ea0i, ea1i, eb0i, eb1i] =
+                    candidates[i].vertex_ids(mesh.edges(), mesh.faces());
 
-            //     const auto [ea0, ea1, eb0, eb1] =
-            //         candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
+                const auto [ea0, ea1, eb0, eb1] =
+                    candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
 
-            //     const EdgeEdgeDistanceType actual_dtype =
-            //         edge_edge_distance_type(ea0, ea1, eb0, eb1);
+                const EdgeEdgeDistanceType actual_dtype =
+                    edge_edge_distance_type(ea0, ea1, eb0, eb1);
 
-            //     const double distance_sqr =
-            //         edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype);
+                const double distance_sqr =
+                    edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype);
                 
-            //     if (distance_sqr < 1e-10)
-            //         logger().error("edge {} {} dist {}", eai, ebi, sqrt(distance_sqr));
-            // }
+                if (distance_sqr < 1e-20)
+                    logger().error("edge {} {} dist {}", eai, ebi, sqrt(distance_sqr));
+                
+                if (distance_sqr > param.eps)
+                    continue;
+            }
 
-            std::array<double, 2> dhats = {{edge_dhat(eai), edge_dhat(ebi)}};
-            add_collision<SmoothEdgeEdge3Collision>(std::make_shared<SmoothEdgeEdge3Collision>(eai, ebi, mesh, param, dhats, vertices), edge_edge_3_to_id, collisions);
+            {
+                std::array<double, 2> dhats = {{edge_dhat(eai), edge_dhat(ebi)}};
+                add_collision<SmoothEdgeEdge3Collision>(std::make_shared<SmoothEdgeEdge3Collision>(eai, ebi, mesh, param, dhats, vertices), edge_edge_3_to_id, collisions);
+            }
+
+            for (int v0 = 0; v0 < 2; v0++)
+            for (int v1 = 0; v1 < 2; v1++)
+            {
+                std::array<double, 2> dhats = {{vert_dhat(mesh.edges()(eai, v0)), vert_dhat(mesh.edges()(ebi, v1))}};
+                if ((vertices.row(mesh.edges()(eai, v0)) - vertices.row(mesh.edges()(ebi, v1))).norm() >= std::min(dhats[0], dhats[1]))
+                    continue;
+                add_collision<SmoothVertexVertex3Collision>(std::make_shared<SmoothVertexVertex3Collision>(mesh.edges()(eai, v0), mesh.edges()(ebi, v1), mesh, param, dhats, vertices), vert_vert_3_to_id, collisions);
+            }
+
+            std::array<long, 2> edges = {{eai, ebi}};
+            for (int le = 0; le < 2; le++)
+            for (int v0 = 0; v0 < 2; v0++)
+            {
+                const long eid = edges[le];
+                const long vi = mesh.edges()(edges[1-le], v0);
+                std::array<double, 2> dhats = {{edge_dhat(eid), vert_dhat(vi)}};
+
+                const PointEdgeDistanceType dtype = point_edge_distance_type(vertices.row(vi), vertices.row(mesh.edges()(eid, 0)), vertices.row(mesh.edges()(eid, 1)));
+                const double distance_sqr = point_edge_distance(vertices.row(vi), vertices.row(mesh.edges()(eid, 0)), vertices.row(mesh.edges()(eid, 1)), dtype);
+
+                if (distance_sqr >= pow(std::min(dhats[0], dhats[1]), 2))
+                    continue;
+
+                add_collision<SmoothEdgeVertex3Collision>(std::make_shared<SmoothEdgeVertex3Collision>(eid, vi, mesh, param, dhats, vertices), edge_vert_3_to_id, collisions);
+            }
         }
     }
 }

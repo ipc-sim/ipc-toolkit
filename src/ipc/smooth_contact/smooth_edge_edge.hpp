@@ -6,71 +6,6 @@
 #include <iostream>
 
 namespace ipc {
-    /// @brief Old IPC formulation. Compute edge-edge potential for edge [ea0, ea1] and [eb0, eb1]
-    /// @param fa0_normal, fa1_normal are the normals of two faces adjacent to edge [ea0, ea1]
-    template <typename scalar>
-    scalar edge_edge_potential_single_point(
-        const Eigen::Ref<const Vector3<scalar>>& ea0,
-        const Eigen::Ref<const Vector3<scalar>>& ea1,
-        const Eigen::Ref<const Vector3<scalar>>& eb0,
-        const Eigen::Ref<const Vector3<scalar>>& eb1,
-        const ParameterType &params,
-        EdgeEdgeDistanceType dtype)
-    {
-        const Vector3<scalar> u = ea1 - ea0;
-        const Vector3<scalar> v = eb1 - eb0;
-        const scalar mollifier_threshold = 1e-3 * u.squaredNorm() * v.squaredNorm();
-        const scalar cross_sqr_norm = u.cross(v).squaredNorm();
-        const scalar mollifier_val = mollifier<scalar>(cross_sqr_norm / mollifier_threshold);
-        const scalar dist_sqr = edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype);
-
-        return inv_barrier<scalar>(dist_sqr / params.eps, params.r) * mollifier_val;
-    }
-
-    template <typename scalar>
-    scalar smooth_edge_edge_potential_tangent_term(
-        const Eigen::Ref<const Vector3<scalar>>& f0,
-        const Eigen::Ref<const Vector3<scalar>>& f1,
-        const Eigen::Ref<const Vector3<scalar>>& f2,
-        const Eigen::Ref<const Vector3<scalar>>& direc,
-        const double &alpha,
-        const HEAVISIDE_TYPE &type)
-    {
-        switch (type)
-        {
-        case HEAVISIDE_TYPE::ZERO:
-            return scalar(0.);
-        case HEAVISIDE_TYPE::ONE:
-            return scalar(1.);
-        case HEAVISIDE_TYPE::VARIANT:
-        default:
-            Vector3<scalar> t = point_line_closest_point_direction<scalar>(f0, f1, f2);
-            return smooth_heaviside<scalar>(direc.dot(t) / t.norm() / alpha);
-        }
-    }
-
-    template <typename scalar>
-    scalar smooth_edge_edge_potential_normal_term(
-        const Eigen::Ref<const Vector3<scalar>>& f0,
-        const Eigen::Ref<const Vector3<scalar>>& f1,
-        const Eigen::Ref<const Vector3<scalar>>& f2,
-        const Eigen::Ref<const Vector3<scalar>>& direc,
-        const double &alpha,
-        const HEAVISIDE_TYPE &type)
-    {
-        switch (type)
-        {
-        case HEAVISIDE_TYPE::ZERO:
-            return scalar(0.);
-        case HEAVISIDE_TYPE::ONE:
-            return scalar(1.);
-        case HEAVISIDE_TYPE::VARIANT:
-        default:
-            const Vector3<scalar> normal = (f1 - f0).cross(f2 - f0);
-            return smooth_heaviside<scalar>(direc.dot(normal) / normal.norm() / alpha);
-        }
-    }
-
     /// @brief 
     /// @tparam scalar 
     /// @param direc from edge to point outside, normalized
@@ -87,17 +22,18 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& e1,
         const Eigen::Ref<const Vector3<scalar>>& f0,
         const Eigen::Ref<const Vector3<scalar>>& f1,
-        const double alpha)
+        const double alpha,
+        const double beta)
     {
         const Vector3<scalar> t0 = point_line_closest_point_direction<scalar>(f0, e0, e1);
         const Vector3<scalar> t1 = point_line_closest_point_direction<scalar>(f1, e0, e1);
-        scalar tangent_term = smooth_heaviside<scalar>(-direc.dot(t0) / t0.norm() / alpha) *
-                            smooth_heaviside<scalar>(-direc.dot(t1) / t1.norm() / alpha);
+        scalar tangent_term = smooth_heaviside<scalar>(-direc.dot(t0) / t0.norm(), alpha, beta) *
+                            smooth_heaviside<scalar>(-direc.dot(t1) / t1.norm(), alpha, beta);
 
         const Vector3<scalar> n0 = (e0 - f0).cross(e1 - f0);
         const Vector3<scalar> n1 = -(e0 - f1).cross(e1 - f1);
-        scalar normal_term = smooth_heaviside<scalar>( (smooth_heaviside<scalar>(direc.dot(n0) / n0.norm() / alpha) +
-                             smooth_heaviside<scalar>(direc.dot(n1) / n1.norm() / alpha) - 1) / alpha );
+        scalar normal_term = smooth_heaviside<scalar>( (smooth_heaviside<scalar>(direc.dot(n0) / n0.norm(), alpha, beta) +
+                             smooth_heaviside<scalar>(direc.dot(n1) / n1.norm(), alpha, beta) - 1), alpha, 0);
 
         return (e1 - e0).norm() * tangent_term * normal_term;
         // return (e1 - e0).norm() * mollifier<scalar>()
@@ -109,16 +45,18 @@ namespace ipc {
         const Eigen::Ref<const Vector3<double>>& e1,
         const Eigen::Ref<const Vector3<double>>& f0,
         const Eigen::Ref<const Vector3<double>>& f1,
-        const double alpha)
+        const double alpha,
+        const double beta)
     {
         const Vector3<double> t0 = point_line_closest_point_direction<double>(f0, e0, e1);
         const Vector3<double> t1 = point_line_closest_point_direction<double>(f1, e0, e1);
-        if (-direc.dot(t0) / t0.norm() / alpha <= -1 || -direc.dot(t1) / t1.norm() / alpha <= -1)
+        if (-direc.dot(t0) / t0.norm() <= -alpha || -direc.dot(t1) / t1.norm() <= -alpha)
             return false;
 
         const Vector3<double> n0 = (e0 - f0).cross(e1 - f0);
         const Vector3<double> n1 = -(e0 - f1).cross(e1 - f1);
-        if (smooth_heaviside<double>(direc.dot(n0) / n0.norm() / alpha) + smooth_heaviside<double>(direc.dot(n1) / n1.norm() / alpha) <= 1 - alpha)
+        if (smooth_heaviside<double>(direc.dot(n0) / n0.norm(), alpha, beta) + 
+            smooth_heaviside<double>(direc.dot(n1) / n1.norm(), alpha, beta) <= 1 - alpha)
             return false;
 
         return true;
@@ -141,7 +79,7 @@ namespace ipc {
             return false;
         
         const Vector3<double> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype) / sqrt(dist_sqr); // from edge a to edge b
-        return smooth_edge3_term_type(direc, ea0, ea1, fa0, fa1, params.alpha) && smooth_edge3_term_type(-direc, eb0, eb1, fb0, fb1, params.alpha);
+        return smooth_edge3_term_type(direc, ea0, ea1, fa0, fa1, params.alpha, params.beta) && smooth_edge3_term_type(-direc, eb0, eb1, fb0, fb1, params.alpha, params.beta);
     }
 
     /// @brief Compute edge-edge potential for edge [ea0, ea1] and [eb0, eb1]
@@ -165,8 +103,8 @@ namespace ipc {
         const scalar barrier = inv_barrier<scalar>(dist_sqr / params.eps, params.r);
         
         const Vector3<scalar> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype) / sqrt(dist_sqr); // from edge a to edge b
-        const scalar out = smooth_edge3_term<scalar>(direc, ea0, ea1, fa0, fa1, params.alpha) * 
-                          smooth_edge3_term<scalar>(-direc, eb0, eb1, fb0, fb1, params.alpha);
+        const scalar out = smooth_edge3_term<scalar>(direc, ea0, ea1, fa0, fa1, params.alpha, params.beta) * 
+                          smooth_edge3_term<scalar>(-direc, eb0, eb1, fb0, fb1, params.alpha, params.beta);
 
         const scalar mollifier_val = edge_edge_mollifier<scalar>(ea0, ea1, eb0, eb1, dist_sqr);
 
@@ -174,7 +112,7 @@ namespace ipc {
         {
             if (debug || dist_sqr < 1e-20)
             {
-                logger().error("barrier {}, tangent {} {}, mollifier {}", barrier, smooth_edge3_term<scalar>(direc, ea0, ea1, fa0, fa1, params.alpha), smooth_edge3_term<scalar>(-direc, eb0, eb1, fb0, fb1, params.alpha), mollifier_val);
+                logger().error("barrier {}, tangent {} {}, mollifier {}", barrier, smooth_edge3_term<scalar>(direc, ea0, ea1, fa0, fa1, params.alpha, params.beta), smooth_edge3_term<scalar>(-direc, eb0, eb1, fb0, fb1, params.alpha, params.beta), mollifier_val);
                 // std::cout << ea0.transpose() << "\n"  << ea1.transpose() << "\n"  << eb0.transpose() << "\n"  << eb1.transpose() << "\n"  << fa0.transpose() << "\n"  << fa1.transpose() << "\n"  << fb0.transpose() << "\n"  << fb1.transpose() << "\n";
                 // std::cout << direc.transpose() << "\n" <<
                 //              point_line_closest_point_direction<double>(fa0, ea0, ea1).transpose() << "\n" <<

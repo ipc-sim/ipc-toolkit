@@ -59,12 +59,21 @@ namespace ipc {
 
         params.eps = get_eps();
         Vector3<double> direc = point_triangle_closest_point_direction<double>(points.row(0), points.row(1), points.row(2), points.row(3), dtype) / sqrt(dist_sqr);
-        return_val = return_val && smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha);
+        return_val = return_val && smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta);
 
-        if (sqrt(dist_sqr) < 1e-10 || (!return_val && abs(evaluate_quadrature<double>(positions, params)) > 1e-15))
+        if (sqrt(dist_sqr) < 1e-10)
         {
-            logger().error("[face-vert] dist {}, active {}, face term {}, point term {}, error {}", sqrt(dist_sqr), return_val, !(Phi >= params.alpha), smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha), abs(evaluate_quadrature<double>(positions, params)));
-            return true;
+            logger().warn("[face-vert] dist {}, active {}, face term {}, point term {}, error {}", sqrt(dist_sqr), return_val, !(Phi >= params.alpha), smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta), abs(evaluate_quadrature<double>(positions, params)));
+            // return true;
+        }
+
+        if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-12 ))
+        {
+            if (!return_val)
+            {
+                logger().error("[face-vert] dist {}, active {}, face term {}, point term {}, error {}", sqrt(dist_sqr), return_val, !(Phi >= params.alpha), smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta), abs(evaluate_quadrature<double>(positions, params)));
+                return true;
+            }
         }
 
         return return_val;

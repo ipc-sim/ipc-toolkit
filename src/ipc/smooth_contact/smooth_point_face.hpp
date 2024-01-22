@@ -71,7 +71,7 @@ namespace ipc {
 
         auto b = inv_barrier(dist_sqr / params.eps, params.r);
         auto ff = smooth_face_term<scalar>(p, v0, v1, v2, dist_sqr, params.alpha);
-        auto pp = smooth_point3_term<scalar>(p, direc / direc.norm(), neighbors, params.alpha);
+        auto pp = smooth_point3_term<scalar>(p, direc / direc.norm(), neighbors, params.alpha, params.beta);
         auto tt = triangle_mollifier<scalar>(p - direc, v0, v1, v2, dist_sqr);
 
         // if constexpr (std::is_same<double,scalar>::value)

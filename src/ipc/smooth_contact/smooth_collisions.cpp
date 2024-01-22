@@ -158,7 +158,7 @@ void SmoothCollisions<dim>::build(
             tbb::blocked_range<size_t>(size_t(0), candidates_.ee_candidates.size()),
             [&](const tbb::blocked_range<size_t>& r) {
                 storage.local().add_edge_edge_collisions(
-                    mesh, vertices, candidates_.ee_candidates, param, edge_dhat, r.begin(),
+                    mesh, vertices, candidates_.ee_candidates, param, vert_dhat, edge_dhat, r.begin(),
                     r.end());
             });
 
