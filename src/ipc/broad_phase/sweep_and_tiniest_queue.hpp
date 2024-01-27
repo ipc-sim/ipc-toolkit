@@ -4,11 +4,9 @@
 
 #include <ipc/config.hpp>
 
-#include <stq/cpu/aabb.hpp>
+#include <scalable_ccd/stq/aabb.hpp>
 #ifdef IPC_TOOLKIT_WITH_CUDA
-#include <cuda.h>
-#include <cuda_runtime.h>
-#include <stq/gpu/aabb.cuh>
+#include <scalable_ccd/cuda/stq/aabb.cuh>
 #endif
 
 namespace ipc {
@@ -95,9 +93,10 @@ protected:
     bool is_edge(long id) const;
     bool is_face(long id) const;
 
-    std::vector<stq::cpu::Aabb> boxes;
+    std::vector<scalable_ccd::stq::Aabb> boxes;
     std::vector<std::pair<int, int>> overlaps;
     long num_vertices;
+    int sort_axis = 0;
 };
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
@@ -161,7 +160,7 @@ public:
         std::vector<FaceFaceCandidate>& candidates) const override;
 
 private:
-    std::vector<stq::gpu::Aabb> boxes;
+    std::vector<scalable_ccd::cuda::stq::Aabb> boxes;
     std::vector<std::pair<int, int>> overlaps;
 };
 #endif

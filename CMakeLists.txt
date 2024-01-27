@@ -146,6 +146,10 @@ target_link_libraries(ipc_toolkit PUBLIC TBB::tbb)
 include(tight_inclusion)
 target_link_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
 
+# Scalable CCD (STQ broad phase and GPU Tight Inclusion)
+include(scalable_ccd)
+target_link_libraries(ipc_toolkit PUBLIC scalable_ccd::scalable_ccd)
+
 # CCD
 if(IPC_TOOLKIT_WITH_INEXACT_CCD)
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
@@ -165,17 +169,6 @@ target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   include(rational_cpp)
   target_link_libraries(ipc_toolkit PUBLIC rational::rational)
-endif()
-
-# Sweep and Tiniest Queue and CCD
-if(IPC_TOOLKIT_WITH_CUDA)
-  include(gpu_ccd)
-  target_link_libraries(ipc_toolkit PUBLIC gpu_ccd::gpu_ccd)
-  target_link_libraries(ipc_toolkit PUBLIC STQ::CPU)
-else()
-  set(STQ_WITH_CUDA OFF CACHE BOOL "Enable CUDA Implementation" FORCE)
-  include(sweep_and_tiniest_queue)
-  target_link_libraries(ipc_toolkit PUBLIC STQ::CPU)
 endif()
 
 # Faster unordered map
@@ -236,30 +229,6 @@ if(IPC_TOOLKIT_WITH_CUDA)
   # library to be built with -dc as the member functions could be called by
   # other libraries and executables.
   set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-  if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
-    set(CMAKE_CUDA_ARCHITECTURES "native")
-    set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "native")
-  else()
-    include(FindCUDA/select_compute_arch)
-    CUDA_DETECT_INSTALLED_GPUS(CUDA_ARCH_LIST)
-    string(STRIP "${CUDA_ARCH_LIST}" CUDA_ARCH_LIST)
-    string(REPLACE " " ";" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
-    string(REPLACE "." "" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
-    set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
-    set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}")
-  endif()
-
-  if(APPLE)
-    # We need to add the path to the driver (libcuda.dylib) as an rpath,
-    # so that the static cuda runtime can find it at runtime.
-    set_property(TARGET ipc_toolkit
-                 PROPERTY
-                 BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
-  endif()
-
-  find_package(CUDAToolkit)
-  target_link_libraries(ipc_toolkit PRIVATE CUDA::cudart)
 endif()
 
 ################################################################################

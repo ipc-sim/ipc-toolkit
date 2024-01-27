@@ -2,10 +2,9 @@
 
 #include <ipc/config.hpp>
 
-#include <stq/cpu/io.hpp>
-#include <stq/cpu/sweep.hpp>
+#include <scalable_ccd/stq/sweep.hpp>
 #ifdef IPC_TOOLKIT_WITH_CUDA
-#include <ccdgpu/helper.cuh>
+#include <scalable_ccd/cuda/tight_inclusion/helper.cuh>
 #endif
 
 namespace ipc {
@@ -28,11 +27,9 @@ void SweepAndTiniestQueue::build(
 {
     CopyMeshBroadPhase::copy_mesh(_edges, _faces);
     num_vertices = vertices_t0.rows();
-    stq::cpu::constructBoxes(
+    scalable_ccd::stq::constructBoxes(
         vertices_t0, vertices_t1, edges, faces, boxes, inflation_radius);
-    int n = boxes.size();
-    stq::cpu::sort_along_xaxis(boxes);
-    stq::cpu::run_sweep_cpu(boxes, n, overlaps);
+    scalable_ccd::stq::sort_and_sweep(boxes, sort_axis, overlaps);
 }
 
 void SweepAndTiniestQueue::clear()
@@ -137,7 +134,7 @@ void SweepAndTiniestQueueGPU::build(
     const double inflation_radius)
 {
     CopyMeshBroadPhase::copy_mesh(_edges, _faces);
-    ccd::gpu::construct_static_collision_candidates(
+    scalable_ccd::cuda::construct_static_collision_candidates(
         vertices, edges, faces, overlaps, boxes, inflation_radius);
 }
 
@@ -149,7 +146,7 @@ void SweepAndTiniestQueueGPU::build(
     const double inflation_radius)
 {
     CopyMeshBroadPhase::copy_mesh(_edges, _faces);
-    ccd::gpu::construct_continuous_collision_candidates(
+    scalable_ccd::cuda::construct_continuous_collision_candidates(
         vertices_t0, vertices_t1, edges, faces, overlaps, boxes,
         inflation_radius);
 }
@@ -192,7 +189,7 @@ void SweepAndTiniestQueueGPU::detect_edge_vertex_candidates(
 void SweepAndTiniestQueueGPU::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
-    using namespace stq::gpu;
+    using namespace scalable_ccd::cuda::stq;
     for (const std::pair<int, int>& overlap : overlaps) {
         const Aabb& boxA = boxes[overlap.first];
         const Aabb& boxB = boxes[overlap.second];
@@ -206,7 +203,7 @@ void SweepAndTiniestQueueGPU::detect_edge_edge_candidates(
 void SweepAndTiniestQueueGPU::detect_face_vertex_candidates(
     std::vector<FaceVertexCandidate>& candidates) const
 {
-    using namespace stq::gpu;
+    using namespace scalable_ccd::cuda::stq;
     for (const std::pair<int, int>& overlap : overlaps) {
         const Aabb& boxA = boxes[overlap.first];
         const Aabb& boxB = boxes[overlap.second];
