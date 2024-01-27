@@ -1,10 +1,9 @@
 #include "edge_vertex.hpp"
 #include "smooth_point_edge.hpp"
-#include <ipc/utils/math.hpp>
 #include <ipc/utils/quadrature.hpp>
-#include <ipc/distance/point_point.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
-#include <ipc/utils/distance_autodiff.hpp>
+
+DECLARE_DIFFSCALAR_BASE();
 
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
@@ -48,7 +47,7 @@ namespace ipc {
         
         Vector<double, 2> direc = point_edge_closest_point_direction<double>(points[0], points[1], points[2], dtype);
         const double dist = direc.norm();
-        if (dist*dist >= get_eps())
+        if (dist >= get_dhat())
             return false;
         direc.normalize();
 
@@ -74,7 +73,7 @@ namespace ipc {
     scalar SmoothEdgeVertexCollision::evaluate_quadrature(const Vector10d& positions, ParameterType params) const
     {
         std::array<Vector2<scalar>, 5> points = slice_positions<scalar, 5, 2>(positions);
-        params.eps = get_eps();
+        params.dhat = get_dhat();
         return smooth_point_edge_potential_single_point<scalar>(
             points[0], points[1], points[2], points[3], points[4], params);
     }

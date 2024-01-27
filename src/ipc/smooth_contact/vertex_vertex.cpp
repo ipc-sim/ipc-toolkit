@@ -1,12 +1,7 @@
 #include "vertex_vertex.hpp"
 #include "smooth_point_point.hpp"
-#include <ipc/utils/math.hpp>
-#include <ipc/utils/quadrature.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
-
-#include <tbb/parallel_for.h>
-#include <tbb/blocked_range.h>
 
 #include <algorithm>
 
@@ -43,7 +38,7 @@ namespace ipc {
 
         Vector<double, 2> direc = points[1] - points[0];
 
-        if (direc.squaredNorm() >= get_eps())
+        if (direc.norm() >= get_dhat())
             return false;
         direc.normalize();
 
@@ -56,7 +51,7 @@ namespace ipc {
     scalar SmoothVertexVertexCollision::evaluate_quadrature(const Vector12d& positions, ParameterType params) const
     {
         std::array<Vector2<scalar>, 6> points = slice_positions<scalar, 6, 2>(positions);
-        params.eps = get_eps();
+        params.dhat = get_dhat();
         return smooth_point_point_potential_2d<scalar>(
             points[0], points[1], points[2], points[3], points[4], points[5], params);
     }

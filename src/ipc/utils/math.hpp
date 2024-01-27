@@ -31,7 +31,7 @@ namespace ipc {
     template <typename scalar>
     scalar cubic_spline(const scalar &x)
     {
-        scalar y = 2. * x;
+        const scalar y = 2. * x;
         if (abs(y) >= 2)
             return scalar(0.);
         if (abs(y) >= 1)
@@ -235,26 +235,6 @@ namespace ipc {
                     points(i, d) = T(id, positions(id));
 
         return points;
-    }
-
-    template <typename Less, typename T, typename... Ts>
-    inline constexpr const T& min(Less less, const T& a, const T& b, const Ts&... rems) {
-        if constexpr (sizeof...(rems)) {
-            return min(less, std::min(a, b, less), rems...);
-        }
-        else {
-            return std::min(a, b, less);
-        }
-    }
-
-    template <typename Less, typename T, typename... Ts>
-    inline constexpr const T& max(Less less, const T& a, const T& b, const Ts&... rems) {
-        if constexpr (sizeof...(rems)) {
-            return max(less, std::max(a, b, less), rems...);
-        }
-        else {
-            return std::max(a, b, less);
-        }
     }
 
     enum class FD_RULE { CENTRAL, LEFT, RIGHT };

@@ -1,8 +1,6 @@
 #include "vertex_vertex_3d.hpp"
 #include "smooth_point_point.hpp"
 #include <ipc/utils/AutodiffTypes.hpp>
-#include <iostream>
-#include <iterator>
 #include <ipc/utils/logger.hpp>
 
 namespace ipc {
@@ -48,10 +46,10 @@ namespace ipc {
         direc = direc / dist;
         // RowVector3<double> t, t_prev;
 
-        if (dist*dist > get_eps())
+        if (dist > get_dhat())
             return false;
         
-        params.eps = get_eps();
+        params.dhat = get_dhat();
         bool return_val = smooth_point3_term_type(va, direc, ra, params.alpha, params.beta) &&
                smooth_point3_term_type(vb, -direc, rb, params.alpha, params.beta);
 
@@ -80,7 +78,7 @@ namespace ipc {
     scalar SmoothVertexVertex3Collision::evaluate_quadrature(const Eigen::VectorXd& positions, ParameterType params) const
     {
         auto points = slice_positions_large<scalar, 3>(positions);
-        params.eps = get_eps();
+        params.dhat = get_dhat();
         return smooth_point_point_potential_3d<scalar>(points.row(0), points.row(1), 
         points.middleRows(2, n_neighbors[0]), points.bottomRows(n_neighbors[1]), params);
     }

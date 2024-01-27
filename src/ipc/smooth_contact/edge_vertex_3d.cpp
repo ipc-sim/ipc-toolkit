@@ -2,8 +2,6 @@
 #include "smooth_point_edge.hpp"
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
-#include <iostream>
-#include <iterator>
 #include <ipc/utils/logger.hpp>
 
 namespace ipc {
@@ -49,7 +47,7 @@ namespace ipc {
         if (dtype != PointEdgeDistanceType::P_E)
             return_val = false;
         
-        params.eps = get_eps();
+        params.dhat = get_dhat();
         return_val = return_val && smooth_point_edge_potential_single_point_3d_type(points.row(0), points.bottomRows(n_neighbors), 
             points.row(1), points.row(2), points.row(3), points.row(4), params);
 
@@ -81,7 +79,7 @@ namespace ipc {
     scalar SmoothEdgeVertex3Collision::evaluate_quadrature(const Eigen::VectorXd& positions, ParameterType params) const
     {
         auto points = slice_positions_large<scalar, 3>(positions);
-        params.eps = get_eps();
+        params.dhat = get_dhat();
         return smooth_point_edge_potential_single_point_3d<scalar>(points.row(0), points.bottomRows(n_neighbors), points.row(1), points.row(2), points.row(3), points.row(4), params);
     }
 

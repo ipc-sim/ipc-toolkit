@@ -9,30 +9,6 @@
 #include <array>
 
 namespace ipc {
-
-struct ParameterType
-{
-    ParameterType(const double &_eps, const double &_alpha, const double &_r, const int &_n_quadrature, const double &_beta) : 
-    eps(_eps), alpha(_alpha), r(_r), n_quadrature(_n_quadrature), beta(_beta)
-    {
-        if (!(r > 0) || !(eps > 0) || !(alpha > 0) || !(beta + alpha > 1e-8) || !(n_quadrature > 0))
-            logger().error("Wrong parameters for smooth contact! eps {} alpha {} r {} quadrature {} beta {}", eps, alpha, r, n_quadrature, beta);
-    }
-    ParameterType() = delete;
-
-    void set_adaptive_dhat_ratio(const double adaptive_dhat_ratio_) { adaptive_dhat_ratio = adaptive_dhat_ratio_; }
-    double get_adaptive_dhat_ratio() const { return adaptive_dhat_ratio; }
-
-    double eps;
-    const double alpha;
-    const double r;
-    const int n_quadrature;
-    const double beta;
-
-private:
-    double adaptive_dhat_ratio = 0.5;
-};
-
 template <int max_vert = 4>
 class Collision : virtual public CollisionStencil<max_vert> {
 public:
@@ -43,21 +19,6 @@ public:
         const Eigen::SparseVector<double>& weight_gradient);
 
     virtual ~Collision() { }
-
-    // -- non distance type potential ----
-
-    virtual double operator()(
-        const Vector<double, -1, 3*max_vert>& positions, 
-        const ParameterType &params) const { return 0.; }
-
-    virtual Vector<double, -1, 3*max_vert> gradient(
-        const Vector<double, -1, 3*max_vert>& positions, 
-        const ParameterType &params) const { return Vector<double, -1, 3*max_vert>::Zero(positions.size()); }
-
-    virtual MatrixMax<double, 3*max_vert, 3*max_vert> hessian(
-        const Vector<double, -1, 3*max_vert>& positions, 
-        const ParameterType &params,
-        const bool project_hessian_to_psd = false) const { return MatrixMax<double, 3*max_vert, 3*max_vert>::Zero(positions.size(), positions.size()); }
 
     // -- Distance mollifier ---------------------------------------------------
 

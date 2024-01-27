@@ -25,6 +25,7 @@ public:
         const size_t start_i,
         const size_t end_i);
 
+    // plan for high order quadrature
     // void add_neighbor_edge_collisions(
     //     const CollisionMesh& mesh,
     //     const Eigen::MatrixXd& vertices,
@@ -64,6 +65,7 @@ public:
         const size_t start_i,
         const size_t end_i);
 
+    // plan for high order quadrature
     // void add_neighbor_face_collisions(
     //     const CollisionMesh& mesh,
     //     const Eigen::MatrixXd& vertices,

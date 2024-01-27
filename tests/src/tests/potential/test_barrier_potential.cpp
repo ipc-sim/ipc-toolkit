@@ -512,7 +512,7 @@ TEST_CASE(
         vertices = mesh.vertices(vertices);
     }
 
-    ParameterType param(dhat*dhat, 0.2, 1, 1, -0.05);
+    ParameterType param(dhat, 0.2, 2, 1, -0.05);
     param.set_adaptive_dhat_ratio(min_dist_ratio);
     collisions.compute_adaptive_dhat(mesh, vertices, param, method);
     collisions.build(mesh, vertices, param, adaptive_dhat, method);
@@ -595,7 +595,7 @@ TEST_CASE(
     // std::cout << "\n" <<  vertices << "\n" << edges << "\n";
 
     CollisionMesh mesh;
-    ParameterType param(dhat*dhat, 1, 1, n_quad_pts, -0.05);
+    ParameterType param(dhat, 1, 1, n_quad_pts, -0.05);
     param.set_adaptive_dhat_ratio(min_dist_ratio);
     SmoothCollisions<2> collisions(n_quad_pts > 1);
     mesh = CollisionMesh(vertices, edges, faces);
@@ -624,7 +624,7 @@ TEST_CASE(
             return potential(
                 collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
-        fd::finite_gradient(fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-7);
+        fd::finite_gradient(fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-8);
     }
 
     REQUIRE(grad_b.squaredNorm() > 1e-8);
@@ -646,7 +646,7 @@ TEST_CASE(
             return potential.gradient(
                 collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
-        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-7);
+        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-8);
     }
 
     REQUIRE(hess_b.squaredNorm() > 1e-3);

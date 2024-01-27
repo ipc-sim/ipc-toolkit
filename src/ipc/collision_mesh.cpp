@@ -13,16 +13,6 @@
 #include <tbb/blocked_range.h>
 
 namespace ipc {
-    namespace {
-        template <typename Iter>
-        size_t index_of(Iter first, Iter last, const typename std::iterator_traits<Iter>::value_type& x)
-        {
-            size_t i = 0;
-            while (first != last && *first != x)
-            ++first, ++i;
-            return i;
-        }
-    }
 
 CollisionMesh::CollisionMesh(
     const Eigen::MatrixXd& rest_positions,

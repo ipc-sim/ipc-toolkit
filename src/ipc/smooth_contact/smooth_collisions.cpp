@@ -25,7 +25,7 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
 {
     assert(vertices.rows() == mesh.num_vertices());
 
-    const double dhat = sqrt(param.eps);
+    const double dhat = param.dhat;
     double inflation_radius = dhat / 2;
 
     // Candidates candidates;
@@ -93,7 +93,7 @@ void SmoothCollisions<dim>::build(
 {
     assert(vertices.rows() == mesh.num_vertices());
 
-    double inflation_radius = sqrt(param.eps) / 2;
+    double inflation_radius = param.dhat / 2;
 
     // Candidates candidates;
     candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
@@ -112,7 +112,7 @@ void SmoothCollisions<dim>::build(
 
     clear();
 
-    const double dhat = sqrt(param.eps);
+    const double dhat = param.dhat;
     if (!use_adaptive_dhat)
     {
         vert_adaptive_dhat.resize(1);

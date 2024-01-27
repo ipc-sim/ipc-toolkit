@@ -1,9 +1,10 @@
 set(SOURCES
-  smooth_point_point.cpp
+  common.hpp
+  edge.hpp
+  face.hpp
+  point.hpp
   smooth_point_point.hpp
-  smooth_point_edge.cpp
   smooth_point_edge.hpp
-  smooth_point_face.cpp
   smooth_point_face.hpp
   smooth_edge_edge.hpp
   smooth_contact_potential.cpp
@@ -12,16 +13,12 @@ set(SOURCES
   smooth_collisions.hpp
   smooth_collisions_builder.cpp
   smooth_collisions_builder.hpp
-  # edge_edge.cpp
-  # edge_edge.hpp
   edge_vertex.cpp
   edge_vertex.hpp
   edge_edge_3d.cpp
   edge_edge_3d.hpp
   edge_vertex_3d.cpp
   edge_vertex_3d.hpp
-  # face_face.cpp
-  # face_face.hpp
   face_vertex.cpp
   face_vertex.hpp
   vertex_vertex.cpp

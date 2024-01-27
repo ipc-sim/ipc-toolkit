@@ -1,10 +1,7 @@
 #include "face_vertex.hpp"
-#include "smooth_point_point.hpp"
 #include "smooth_point_face.hpp"
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
-#include <iostream>
-#include <iterator>
 #include <ipc/utils/logger.hpp>
 
 namespace ipc {
@@ -42,10 +39,10 @@ namespace ipc {
     {
         auto points = slice_positions_large<double, 3>(positions);
         dtype = point_triangle_distance_type(points.row(0), points.row(1), points.row(2), points.row(3));
-        const double dist_sqr = point_triangle_distance(points.row(0), points.row(1), points.row(2), points.row(3), dtype);
+        const double dist = sqrt(point_triangle_distance(points.row(0), points.row(1), points.row(2), points.row(3), dtype));
 
         bool return_val = true;
-        if (dist_sqr >= get_eps())
+        if (dist >= get_dhat())
             return_val = false;
 
         // return true;
@@ -53,17 +50,17 @@ namespace ipc {
             return_val = false;
 
         const Vector3<double> normal = (points.row(2) - points.row(1)).cross(points.row(3) - points.row(1));
-        const double Phi = 1 - (points.row(0) - points.row(1)).dot(normal) / sqrt(dist_sqr * normal.squaredNorm());
+        const double Phi = 1 - (points.row(0) - points.row(1)).dot(normal) / dist / normal.norm();
         if (Phi >= params.alpha)
             return_val = false;
 
-        params.eps = get_eps();
-        Vector3<double> direc = point_triangle_closest_point_direction<double>(points.row(0), points.row(1), points.row(2), points.row(3), dtype) / sqrt(dist_sqr);
+        params.dhat = get_dhat();
+        Vector3<double> direc = point_triangle_closest_point_direction<double>(points.row(0), points.row(1), points.row(2), points.row(3), dtype) / dist;
         return_val = return_val && smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta);
 
-        // if (sqrt(dist_sqr) < 1e-10)
+        // if (dist < 1e-10)
         // {
-        //     logger().warn("[face-vert] dist {}, active {}, face term {}, point term {}, error {}", sqrt(dist_sqr), return_val, !(Phi >= params.alpha), smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta), abs(evaluate_quadrature<double>(positions, params)));
+        //     logger().warn("[face-vert] dist {}, active {}, face term {}, point term {}, error {}", dist, return_val, !(Phi >= params.alpha), smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta), abs(evaluate_quadrature<double>(positions, params)));
         //     // return true;
         // }
 
@@ -71,7 +68,7 @@ namespace ipc {
         // {
         //     if (!return_val)
         //     {
-        //         logger().error("[face-vert] dist {}, active {}, face term {}, point term {}, error {}", sqrt(dist_sqr), return_val, !(Phi >= params.alpha), smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta), abs(evaluate_quadrature<double>(positions, params)));
+        //         logger().error("[face-vert] dist {}, active {}, face term {}, point term {}, error {}", dist, return_val, !(Phi >= params.alpha), smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta), abs(evaluate_quadrature<double>(positions, params)));
         //         return true;
         //     }
         // }
@@ -89,7 +86,7 @@ namespace ipc {
     scalar SmoothFaceVertexCollision::evaluate_quadrature(const Eigen::VectorXd& positions, ParameterType params) const
     {
         auto points = slice_positions_large<scalar, 3>(positions);
-        params.eps = get_eps();
+        params.dhat = get_dhat();
         return smooth_point_face_potential_single_point<scalar>(points.row(0), points.bottomRows(n_neighbors),
         points.row(1), points.row(2), points.row(3), params, dtype);
         return scalar(0.);

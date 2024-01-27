@@ -2,12 +2,10 @@
 
 #include <ipc/collisions/collision.hpp>
 #include <ipc/collision_mesh.hpp>
+#include "common.hpp"
 #include <ipc/utils/unordered_tuple.hpp>
 
 namespace ipc {
-
-constexpr static int max_vert_2d = 6;
-constexpr static int max_vert_3d = 24;
 
 template <int nvert>
 class SmoothCollision : public Collision<nvert> {
@@ -41,6 +39,23 @@ public:
     {
         return vertices;
     }
+
+    // ---- non distance type potential ----
+
+    virtual double operator()(
+        const Vector<double, -1, 3*nvert>& positions, 
+        const ParameterType &params) const { return 0.; }
+
+    virtual Vector<double, -1, 3*nvert> gradient(
+        const Vector<double, -1, 3*nvert>& positions, 
+        const ParameterType &params) const { return Vector<double, -1, 3*nvert>::Zero(positions.size()); }
+
+    virtual MatrixMax<double, 3*nvert, 3*nvert> hessian(
+        const Vector<double, -1, 3*nvert>& positions, 
+        const ParameterType &params,
+        const bool project_hessian_to_psd = false) const { return MatrixMax<double, 3*nvert, 3*nvert>::Zero(positions.size(), positions.size()); }
+
+    // ---- distance ----
 
     Vector<double, -1, 3*nvert>
     compute_distance_gradient(const Vector<double, -1, 3*nvert>& positions) const override
@@ -94,7 +109,12 @@ public:
 
     double get_eps() const
     {
-        return pow(std::min(dhats[0], dhats[1]), 2);
+        return pow(get_dhat(), 2);
+    }
+
+    double get_dhat() const
+    {
+        return std::min(dhats[0], dhats[1]);
     }
 
     virtual std::string name() const { return ""; }

@@ -1,24 +1,10 @@
 #include "edge_edge_3d.hpp"
-#include "smooth_point_edge.hpp"
+#include "smooth_edge_edge.hpp"
 #include <ipc/utils/AutodiffTypes.hpp>
-#include <iostream>
-#include <iterator>
 #include <ipc/utils/logger.hpp>
-#include <ipc/distance/point_line.hpp>
-#include <ipc/distance/line_line.hpp>
 #include <ipc/distance/edge_edge.hpp>
 
 namespace ipc {
-    namespace {
-        template <typename Iter>
-        size_t index_of(Iter first, Iter last, const typename std::iterator_traits<Iter>::value_type& x)
-        {
-            size_t i = 0;
-            while (first != last && *first != x)
-            ++first, ++i;
-            return i;
-        }
-    }
 
     SmoothEdgeEdge3Collision::SmoothEdgeEdge3Collision(
     long primitive0_,
@@ -61,7 +47,7 @@ namespace ipc {
         if (dtype != EdgeEdgeDistanceType::EA_EB)
             return_val = false;
 
-        params.eps = get_eps();
+        params.dhat = get_dhat();
         return_val = return_val && smooth_edge_edge_potential_type(
             points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
@@ -109,7 +95,7 @@ namespace ipc {
     scalar SmoothEdgeEdge3Collision::evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params) const
     {
         std::array<Vector3<scalar>, 8> points = slice_positions<scalar, 8, 3>(positions);
-        params.eps = get_eps();
+        params.dhat = get_dhat();
         return smooth_edge_edge_potential_single_point<scalar>(
             points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
