@@ -5,6 +5,57 @@
 #include <ipc/utils/math.hpp>
 
 namespace ipc {
+
+/// @brief 
+/// @param v 
+/// @param direc normalized, points to v
+/// @param e0 
+/// @param e1 
+/// @param alpha 
+/// @param beta 
+/// @return 
+template <class scalar>
+inline scalar smooth_point2_term(
+    const Eigen::Ref<const Vector2<scalar>>& v,
+    const Eigen::Ref<const Vector2<scalar>>& direc,
+    const Eigen::Ref<const Vector2<scalar>>& e0,
+    const Eigen::Ref<const Vector2<scalar>>& e1,
+    const double &alpha,
+    const double &beta)
+{
+    const Vector2<scalar> t0 = (e0 - v).normalized(), t1 = (v - e1).normalized();
+
+    const scalar tangent_term = smooth_heaviside<scalar>(direc.dot(t0), alpha, beta) *
+                        smooth_heaviside<scalar>(-direc.dot(t1), alpha, beta);
+
+    const scalar tmp = smooth_heaviside<scalar>(-cross2<scalar>(direc, t0), alpha, beta) + 
+                         smooth_heaviside<scalar>(-cross2<scalar>(direc, t1), alpha, beta);
+    const scalar normal_term = smooth_heaviside<scalar>(tmp - 1., alpha, 0);
+
+    return tangent_term * normal_term * ((e0 - v).norm() + (e1 - v).norm()) / 2.;
+}
+
+inline bool smooth_point2_term_type(
+    const Eigen::Ref<const Vector2<double>>& v,
+    const Eigen::Ref<const Vector2<double>>& direc,
+    const Eigen::Ref<const Vector2<double>>& e0,
+    const Eigen::Ref<const Vector2<double>>& e1,
+    const double &alpha,
+    const double &beta)
+{
+    const Vector2<double> t0 = (e0 - v).normalized(), t1 = (v - e1).normalized();
+
+    if (direc.dot(t0) <= -alpha || -direc.dot(t1) <= -alpha)
+        return false;
+
+    const double tmp = smooth_heaviside<double>(-cross2<double>(direc, t0), alpha, beta) + 
+                         smooth_heaviside<double>(-cross2<double>(direc, t1), alpha, beta);
+    if (tmp <= 1. - alpha)
+        return false;
+
+    return true;
+}
+
 /// @brief 
 /// @tparam scalar 
 /// @param va 
@@ -25,32 +76,13 @@ scalar smooth_point_point_potential_2d(
     const Eigen::Ref<const Vector2<scalar>>& eb1,
     const ParameterType &params)
 {
-    const Vector2<scalar> direc = vb - va;
+    Vector2<scalar> direc = vb - va;
     const scalar dist_sqr = direc.squaredNorm();
-    const scalar dist = sqrt(dist_sqr);
+    direc = direc / sqrt(dist_sqr);
 
-    const Vector2<scalar> ta0 = ea0 - va, ta1 = va - ea1;
-    const Vector2<scalar> tb0 = eb0 - vb, tb1 = vb - eb1;
-
-    const scalar a0 = ta0.norm(), a1 = ta1.norm();
-    const scalar b0 = tb0.norm(), b1 = tb1.norm();
-
-    scalar out(0.);
-    // tangent term
-    out = inv_barrier<scalar>(dist_sqr / intpow(params.eps,2), params.r) *
-            smooth_heaviside<scalar>(-direc.dot(ta0) / dist / a0, params.alpha, params.beta) *
-            smooth_heaviside<scalar>(direc.dot(ta1) / dist / a1, params.alpha, params.beta) *
-            smooth_heaviside<scalar>(direc.dot(tb0) / dist / b0, params.alpha, params.beta) *
-            smooth_heaviside<scalar>(direc.dot(-tb1) / dist / b1, params.alpha, params.beta) *
-            (a0 + a1) * (b0 + b1) / 4.;
-
-    // normal term
-    scalar normal_term = (smooth_heaviside<scalar>(cross2<scalar>(direc, ta0) / dist / a0, params.alpha, params.beta) + 
-                         smooth_heaviside<scalar>(cross2<scalar>(direc, ta1) / dist / a1, params.alpha, params.beta)) *
-                        (smooth_heaviside<scalar>(-cross2<scalar>(direc, tb0) / dist / b0, params.alpha, params.beta) + 
-                         smooth_heaviside<scalar>(-cross2<scalar>(direc, tb1) / dist / b1, params.alpha, params.beta));
-
-    return out * normal_term;
+    return inv_barrier<scalar>(dist_sqr / params.eps, params.r) *
+            smooth_point2_term<scalar>(va, -direc, ea0, ea1, params.alpha, params.beta) *
+            smooth_point2_term<scalar>(vb,  direc, eb0, eb1, params.alpha, params.beta);
 }
 
 /// @brief 
@@ -67,8 +99,7 @@ inline scalar smooth_point3_term(
     const Eigen::Ref<const RowVector3<scalar>>& direc,
     const Eigen::Matrix<scalar, -1, 3> &neighbors,
     const double &alpha,
-    const double &beta,
-    bool debug = false)
+    const double &beta)
 {
     RowVector3<scalar> t, t_prev;
     assert(neighbors.rows() > 2);
@@ -83,7 +114,7 @@ inline scalar smooth_point3_term(
         const scalar tmp0 = smooth_heaviside<scalar>(direc.dot(t) / t.norm(), alpha, beta);
 
         tangent_term = tangent_term * tmp0;
-        weight = weight + t.norm();
+        weight = weight + t.squaredNorm();
 
         normal_term = normal_term + smooth_heaviside<scalar>(-direc.dot(t_prev.cross(t).normalized()), alpha, beta);
         std::swap(t, t_prev);
@@ -123,6 +154,40 @@ inline bool smooth_point3_term_type(
     return  tangent_term && (normal_term > 1 - alpha);
 }
 
+// inline bool smooth_point3_term_type(
+//     const Eigen::Ref<const RowVector3<double>>& v,
+//     const Eigen::Ref<const RowVector3<double>>& direc,
+//     const Eigen::Matrix<double, -1, 3> &neighbors,
+//     const double &alpha,
+//     const double &beta,
+//     ORIENTATION_TYPES &types)
+// {
+//     RowVector3<double> t, t_prev;
+//     assert(neighbors.rows() > 2);
+
+//     types.tangent_types.resize(neighbors.size());
+//     types.normal_types.resize(neighbors.size());
+
+//     bool tangent_term = true;
+//     double normal_term = 0;
+//     t_prev = neighbors.row(neighbors.rows()-1) - v;
+//     for (int a = 0; a < neighbors.rows(); a++)
+//     {
+//         t = neighbors.row(a) - v;
+//         types.tangent_types[a] = ORIENTATION_TYPES::compute_type(direc.dot(t) / t.norm(), alpha, beta);
+//         tangent_term = tangent_term && types.tangent_types[a];
+
+//         // logger().warn("normal term direction {}, should be negative", direc.dot(t_prev.cross(t).normalized()));
+
+//         const double val = -direc.dot(t_prev.cross(t).normalized());
+//         types.normal_types[a] = ORIENTATION_TYPES::compute_type(val, alpha, beta);
+//         normal_term += smooth_heaviside<double>(val, alpha, beta);
+//         std::swap(t, t_prev);
+//     }
+
+//     return  tangent_term && (normal_term > 1 - alpha);
+// }
+
 template <typename scalar>
 scalar smooth_point_point_potential_3d(
     const Eigen::Ref<const RowVector3<scalar>>& va,
@@ -132,12 +197,12 @@ scalar smooth_point_point_potential_3d(
     const ParameterType &params)
 {
     RowVector3<scalar> direc = va - vb;
-    const scalar dist = direc.norm();
-    direc = direc / dist;
+    const scalar dist_sqr = direc.squaredNorm();
+    direc = direc / sqrt(dist_sqr);
 
     const scalar term_a = smooth_point3_term<scalar>(va, direc, ra, params.alpha, params.beta);
     const scalar term_b = smooth_point3_term<scalar>(vb, -direc, rb, params.alpha, params.beta);
-    const scalar barrier = inv_barrier<scalar>(intpow(dist, 2) / params.eps, params.r);
+    const scalar barrier = inv_barrier<scalar>(dist_sqr / params.eps, params.r);
 
     return term_a * term_b * barrier;
 }

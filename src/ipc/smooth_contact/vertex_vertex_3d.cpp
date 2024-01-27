@@ -24,7 +24,7 @@ namespace ipc {
             n_neighbors[id++] = neighbors.size();
 
             if (vertices.size() < v_id + neighbors.size())
-                throw std::runtime_error("Max vertex size too small!");
+                throw std::runtime_error("[vert-vert] Max vertex size too small!" + std::to_string(v_id + neighbors.size()));
             for (const auto &lv : neighbors)
                 vertices[v_id++] = lv;
         }
@@ -55,53 +55,19 @@ namespace ipc {
         bool return_val = smooth_point3_term_type(va, direc, ra, params.alpha, params.beta) &&
                smooth_point3_term_type(vb, -direc, rb, params.alpha, params.beta);
 
-        if (dist < 1e-10)
-            logger().warn("[vert-vert] dist {}, active {}, type 1 {}, type 2 {}", dist, return_val, smooth_point3_term_type(va, direc, ra, params.alpha, params.beta), smooth_point3_term_type(vb, -direc, rb, params.alpha, params.beta));
+        // if (dist < 1e-10)
+        //     logger().warn("[vert-vert] dist {}, active {}, type 1 {}, type 2 {}", dist, return_val, smooth_point3_term_type(va, direc, ra, params.alpha, params.beta), smooth_point3_term_type(vb, -direc, rb, params.alpha, params.beta));
 
-        if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-12 ))
-        {
-            if (!return_val)
-            {
-                logger().error("[vert-vert] dist {}, active {}, type 1 {}, type 2 {}", dist, return_val, smooth_point3_term_type(va, direc, ra, params.alpha, params.beta), smooth_point3_term_type(vb, -direc, rb, params.alpha, params.beta));
-                return true;
-            }
-        }
+        // if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-15 ))
+        // {
+        //     if (!return_val)
+        //     {
+        //         logger().error("[vert-vert] dist {}, active {}, type 1 {}, type 2 {}", dist, return_val, smooth_point3_term_type(va, direc, ra, params.alpha, params.beta), smooth_point3_term_type(vb, -direc, rb, params.alpha, params.beta));
+        //         return true;
+        //     }
+        // }
 
         return return_val;
-
-        // return true;
-        // assert(ra.rows() > 2);
-        // assert(rb.rows() > 2);
-
-        // bool normal_term = false;
-        // bool tangent_term1 = true, tangent_term2 = true;
-        // t_prev = ra.row(ra.rows()-1) - va;
-        // for (int a = 0; a < ra.rows(); a++)
-        // {
-        //     t = ra.row(a) - va;
-        //     tangent_term1 = tangent_term1 && direc.dot(t) / t.norm() / params.alpha > -1;
-        //     normal_term = normal_term || -direc.dot(t_prev.cross(t).normalized()) / params.alpha > -1;
-        //     std::swap(t, t_prev);
-        // }
-
-        // if (!normal_term)
-        //     return false;
-
-        // normal_term = false;
-        // direc = -direc;
-        // t_prev = rb.row(rb.rows()-1) - vb;
-        // for (int b = 0; b < rb.rows(); b++)
-        // {
-        //     t = rb.row(b) - vb;
-        //     tangent_term2 = tangent_term2 && direc.dot(t) / t.norm() / params.alpha > -1;
-        //     normal_term = normal_term || -direc.dot(t_prev.cross(t).normalized()) / params.alpha > -1;
-        //     std::swap(t, t_prev);
-        // }
-
-        // if (!normal_term || !tangent_term1 || !tangent_term2)
-        //     return false;
-
-        return true;
     }
 
     double SmoothVertexVertex3Collision::compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const

@@ -35,8 +35,7 @@ namespace ipc {
         scalar normal_term = smooth_heaviside<scalar>( (smooth_heaviside<scalar>(direc.dot(n0) / n0.norm(), alpha, beta) +
                              smooth_heaviside<scalar>(direc.dot(n1) / n1.norm(), alpha, beta) - 1), alpha, 0);
 
-        return (e1 - e0).norm() * tangent_term * normal_term;
-        // return (e1 - e0).norm() * mollifier<scalar>()
+        return (e1 - e0).squaredNorm() * tangent_term * normal_term;
     }
 
     inline bool smooth_edge3_term_type(
@@ -96,8 +95,7 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& fb0,
         const Eigen::Ref<const Vector3<scalar>>& fb1,
         const ParameterType &params,
-        const EdgeEdgeDistanceType &dtype,
-        bool debug = false)
+        const EdgeEdgeDistanceType &dtype)
     {
         const scalar dist_sqr = edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype);
         const scalar barrier = inv_barrier<scalar>(dist_sqr / params.eps, params.r);
@@ -108,19 +106,20 @@ namespace ipc {
 
         const scalar mollifier_val = edge_edge_mollifier<scalar>(ea0, ea1, eb0, eb1, dist_sqr);
 
-        if constexpr (std::is_same<double,scalar>::value)
-        {
-            if (debug || dist_sqr < 1e-20)
-            {
-                logger().error("barrier {}, tangent {} {}, mollifier {}", barrier, smooth_edge3_term<scalar>(direc, ea0, ea1, fa0, fa1, params.alpha, params.beta), smooth_edge3_term<scalar>(-direc, eb0, eb1, fb0, fb1, params.alpha, params.beta), mollifier_val);
-                // std::cout << ea0.transpose() << "\n"  << ea1.transpose() << "\n"  << eb0.transpose() << "\n"  << eb1.transpose() << "\n"  << fa0.transpose() << "\n"  << fa1.transpose() << "\n"  << fb0.transpose() << "\n"  << fb1.transpose() << "\n";
-                // std::cout << direc.transpose() << "\n" <<
-                //              point_line_closest_point_direction<double>(fa0, ea0, ea1).transpose() << "\n" <<
-                //             point_line_closest_point_direction<double>(fa1, ea0, ea1).transpose() << "\n" <<
-                //             point_line_closest_point_direction<double>(fb0, eb0, eb1).transpose() << "\n" <<
-                //             point_line_closest_point_direction<double>(fb1, eb0, eb1).transpose() << "\n";
-            }
-        }
+        // if constexpr (std::is_same<double,scalar>::value)
+        // {
+        //     if (dist_sqr < 1e-20)
+        //     {
+        //         logger().error("barrier {}, tangent {} {}, mollifier {}", barrier, smooth_edge3_term<scalar>(direc, ea0, ea1, fa0, fa1, params.alpha, params.beta, debug), smooth_edge3_term<scalar>(-direc, eb0, eb1, fb0, fb1, params.alpha, params.beta, debug), mollifier_val);
+        //         logger().error("tangent types {} {}", smooth_edge3_term_type(direc, ea0, ea1, fa0, fa1, params.alpha, params.beta), smooth_edge3_term_type(-direc, eb0, eb1, fb0, fb1, params.alpha, params.beta));
+        //         std::cout << ea0.transpose() << "\n"  << ea1.transpose() << "\n"  << eb0.transpose() << "\n"  << eb1.transpose() << "\n"  << fa0.transpose() << "\n"  << fa1.transpose() << "\n"  << fb0.transpose() << "\n"  << fb1.transpose() << "\n";
+        //         std::cout << direc.transpose() << "\n" <<
+        //                      point_line_closest_point_direction<double>(fa0, ea0, ea1).transpose() << "\n" <<
+        //                     point_line_closest_point_direction<double>(fa1, ea0, ea1).transpose() << "\n" <<
+        //                     point_line_closest_point_direction<double>(fb0, eb0, eb1).transpose() << "\n" <<
+        //                     point_line_closest_point_direction<double>(fb1, eb0, eb1).transpose() << "\n";
+        //     }
+        // }
         
         return barrier * out * mollifier_val;
     }

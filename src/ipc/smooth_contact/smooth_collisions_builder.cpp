@@ -6,7 +6,7 @@
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/distance/point_triangle.hpp>
-
+#include <iostream>
 namespace ipc {
 
 template <int dim>
@@ -259,6 +259,11 @@ void SmoothCollisionsBuilder<dim>::merge(
     
     merged_collisions.collisions.reserve(total);
 
+    int edge_vert_count = 0;
+    int vert_vert_count = 0;
+    int face_vert_count = 0;
+    int edge_edge_count = 0;
+
     // merge
     for (auto& builder : local_storage)
         for (auto& cc : builder.collisions)
@@ -269,6 +274,7 @@ void SmoothCollisionsBuilder<dim>::merge(
                 {
                     merged_collisions.collisions.push_back(cc);
                     edge_edge_3_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothEdgeEdge3Collision, long>(std::move(*ee3), merged_collisions.collisions.size()));
+                    edge_edge_count++;
                 }
             }
             else if (auto vv2 = std::dynamic_pointer_cast<SmoothVertexVertexCollision>(cc))
@@ -277,6 +283,7 @@ void SmoothCollisionsBuilder<dim>::merge(
                 {
                     merged_collisions.collisions.push_back(cc);
                     vert_vert_2_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothVertexVertexCollision, long>(std::move(*vv2), merged_collisions.collisions.size()));
+                    vert_vert_count++;
                 }
             }
             else if (auto vv3 = std::dynamic_pointer_cast<SmoothVertexVertex3Collision>(cc))
@@ -285,6 +292,7 @@ void SmoothCollisionsBuilder<dim>::merge(
                 {
                     merged_collisions.collisions.push_back(cc);
                     vert_vert_3_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothVertexVertex3Collision, long>(std::move(*vv3), merged_collisions.collisions.size()));
+                    vert_vert_count++;
                 }
             }
             else if (auto ev = std::dynamic_pointer_cast<SmoothEdgeVertexCollision>(cc))
@@ -293,6 +301,7 @@ void SmoothCollisionsBuilder<dim>::merge(
                 {
                     merged_collisions.collisions.push_back(cc);
                     vert_edge_2_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothEdgeVertexCollision, long>(std::move(*ev), merged_collisions.collisions.size()));
+                    edge_vert_count++;
                 }
             }
             else if (auto ev3 = std::dynamic_pointer_cast<SmoothEdgeVertex3Collision>(cc))
@@ -301,6 +310,7 @@ void SmoothCollisionsBuilder<dim>::merge(
                 {
                     merged_collisions.collisions.push_back(cc);
                     edge_vert_3_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothEdgeVertex3Collision, long>(std::move(*ev3), merged_collisions.collisions.size()));
+                    edge_vert_count++;
                 }
             }
             else if (auto ff = std::dynamic_pointer_cast<SmoothFaceVertexCollision>(cc))
@@ -309,11 +319,16 @@ void SmoothCollisionsBuilder<dim>::merge(
                 {
                     merged_collisions.collisions.push_back(cc);
                     face_vert_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothFaceVertexCollision, long>(std::move(*ff), merged_collisions.collisions.size()));
+                    face_vert_count++;
                 }
             }
             else
                 throw std::runtime_error("Invalid collision type!");
         }
+
+    logger().debug("edge-vert pairs {}, vert-vert pairs {}", edge_vert_count, vert_vert_count);
+    if (face_vert_count || edge_edge_count)
+        logger().debug("face-vert pairs {}, edge-edge pairs {}", face_vert_count, edge_edge_count);
 }
 
 template class SmoothCollisionsBuilder<2>;

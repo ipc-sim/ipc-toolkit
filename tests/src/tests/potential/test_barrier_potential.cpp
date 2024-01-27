@@ -462,7 +462,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Smooth barrier potential full gradient and hessian 3D",
-    "[potential][smooth_potential]")
+    "[smooth_potential]")
 {
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
     const bool adaptive_dhat = GENERATE(true, false);
@@ -512,7 +512,7 @@ TEST_CASE(
         vertices = mesh.vertices(vertices);
     }
 
-    ParameterType param(dhat*dhat, 0.2, 1, 1);
+    ParameterType param(dhat*dhat, 0.2, 1, 1, -0.05);
     param.set_adaptive_dhat_ratio(min_dist_ratio);
     collisions.compute_adaptive_dhat(mesh, vertices, param, method);
     collisions.build(mesh, vertices, param, adaptive_dhat, method);
@@ -570,7 +570,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Smooth barrier potential real sim 2D",
-    "[potential][smooth_potential]")
+    "[smooth_potential]")
 {
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
     const bool adaptive_dhat = GENERATE(true, false);
@@ -595,7 +595,7 @@ TEST_CASE(
     // std::cout << "\n" <<  vertices << "\n" << edges << "\n";
 
     CollisionMesh mesh;
-    ParameterType param(dhat*dhat, 1, 1, n_quad_pts);
+    ParameterType param(dhat*dhat, 1, 1, n_quad_pts, -0.05);
     param.set_adaptive_dhat_ratio(min_dist_ratio);
     SmoothCollisions<2> collisions(n_quad_pts > 1);
     mesh = CollisionMesh(vertices, edges, faces);
@@ -654,6 +654,7 @@ TEST_CASE(
     CHECK((hess_b - fhess_b).norm() < 1e-7 * hess_b.norm());
     // CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
 }
+
 
 // -- Benchmarking ------------------------------------------------------------
 

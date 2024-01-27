@@ -6,34 +6,38 @@
 
 namespace ipc {
     template <typename scalar>
-    scalar intpow(const scalar &x, int p)
+    scalar abs(const scalar &x)
     {
-        assert(p >= 0);
-        if (p == 0)
-            return scalar(1.);
-        
-        scalar out = x;
-        while (p-- > 1)
-            out = out * x;
-        
-        return out;
+        if (x >= 0)
+            return x;
+        else
+            return -x;
     }
-    
+
+    template <int p, typename scalar>
+    inline typename std::enable_if<(p == 0), scalar>::type
+    intpow(const scalar &x)
+    {
+        return scalar(1.);
+    }
+
+    template <int p, typename scalar>
+    inline typename std::enable_if<(p > 0), scalar>::type
+    intpow(const scalar &x)
+    {
+        return x * intpow<p-1, scalar>(x);
+    }
+
     template <typename scalar>
     scalar cubic_spline(const scalar &x)
     {
         scalar y = 2. * x;
-        if (y <= -2)
+        if (abs(y) >= 2)
             return scalar(0.);
-        if (y <= -1)
-            return intpow(y + 2, 3) / 6;
-        if (y <= 0)
-            return 2. / 3 - intpow(y, 2) * (1 + y / 2);
-        if (y <= 1)
-            return 2. / 3 - intpow(y, 2) * (1 - y / 2);
-        if (y < 2)
-            return -intpow(y - 2, 3) / 6;
-        return scalar(0.);
+        if (abs(y) >= 1)
+            return intpow<3>(2 - abs(y)) / 6;
+        
+        return 2. / 3 - (y * y) * (1 - abs(y) / 2);
     }
 
     /// @brief support is [0, 3]
@@ -46,11 +50,11 @@ namespace ipc {
         if (x <= 0)
             return scalar(0.);
         if (x <= 1)
-            return intpow(x, 2) / 2.;
+            return x * x / 2.;
         if (x <= 2)
             return (-3 + x * (6 - 2 * x)) / 2.;
         if (x < 3)
-            return intpow(3. - x, 2) / 2.;
+            return intpow<2>(3. - x) / 2.;
         return scalar(0.);
     }
 
@@ -66,6 +70,19 @@ namespace ipc {
 
     enum class HEAVISIDE_TYPE {
         ZERO = 0, ONE = 1, VARIANT = 2
+    };
+
+    struct ORIENTATION_TYPES {
+        static HEAVISIDE_TYPE compute_type(const double &val, const double &alpha, const double &beta)
+        {
+            if (val < -alpha)
+                return HEAVISIDE_TYPE::ZERO;
+            if (val > beta)
+                return HEAVISIDE_TYPE::ONE;
+            
+            return HEAVISIDE_TYPE::VARIANT;
+        }
+        std::vector<HEAVISIDE_TYPE> tangent_types, normal_types;
     };
 
     // template <typename scalar>
@@ -87,11 +104,11 @@ namespace ipc {
         if (x <= -3)
             return scalar(0.);
         if (x <= -2)
-            return intpow(3. + x, 3) / 6.;
+            return intpow<3>(3. + x) / 6.;
         if (x <= -1)
             return (((-2 * x - 9) * x - 9) * x + 3) / 6;
         if (x < 0)
-            return intpow(x, 3) / 6. + 1.;
+            return intpow<3>(x) / 6. + 1.;
 
         return scalar(1.);
     }
@@ -123,7 +140,7 @@ namespace ipc {
     {
         return cubic_spline<scalar>(x) / pow(x, r);
         // if (x < 1)
-        //     return -pow(1 - x, 2.) * log(x);
+        //     return -intpow(1 - sqrt(x), 2) * log(x);
         // else
         //     return scalar(0.);
     }
@@ -144,7 +161,7 @@ namespace ipc {
         assert(a.size() == 3 || a.size() == 2);
         assert(b.size() == 3 || b.size() == 2);
         if (a.size() == 2)
-            return intpow(a[0] * b[1] - a[1] * b[0], 2);
+            return intpow<2>(a[0] * b[1] - a[1] * b[0]);
         else if (a.size() == 3)
         {
             const Eigen::Ref<const Vector3<scalar>> a_(a), b_(b);

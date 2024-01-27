@@ -3,7 +3,7 @@
 
 #include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/utils/eigen_ext.hpp>
-
+#include <ipc/utils/logger.hpp>
 #include <Eigen/Core>
 
 #include <array>
@@ -15,11 +15,8 @@ struct ParameterType
     ParameterType(const double &_eps, const double &_alpha, const double &_r, const int &_n_quadrature, const double &_beta) : 
     eps(_eps), alpha(_alpha), r(_r), n_quadrature(_n_quadrature), beta(_beta)
     {
-        assert(r > 0);
-        assert(eps > 0);
-        assert(alpha > 0);
-        assert(beta >= 0);
-        assert(n_quadrature > 0);
+        if (!(r > 0) || !(eps > 0) || !(alpha > 0) || !(beta + alpha > 1e-8) || !(n_quadrature > 0))
+            logger().error("Wrong parameters for smooth contact! eps {} alpha {} r {} quadrature {} beta {}", eps, alpha, r, n_quadrature, beta);
     }
     ParameterType() = delete;
 

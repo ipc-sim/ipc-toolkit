@@ -69,23 +69,23 @@ namespace ipc {
             points[face_to_vertex(2, 0)], points[face_to_vertex(3, 0)], 
             params, dtype);
 
-        double dist = sqrt(edge_edge_distance(points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
-            points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)], dtype));
+        // double dist = sqrt(edge_edge_distance(points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
+        //     points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)], dtype));
 
-        if (dist < 1e-10)
-        {
-            logger().warn("[edge-edge] Dist {}, active {}, residual {}", dist, return_val, abs(evaluate_quadrature<double>(positions, params, true)));
-            // return true;
-        }
+        // if (dist < 1e-10)
+        // {
+        //     logger().warn("[edge-edge] Dtype {}, Dist {}, active {}, residual {}", static_cast<int>(dtype), dist, return_val, abs(evaluate_quadrature<double>(positions, params, true)));
+        //     // return true;
+        // }
 
-        if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-12 ))
-        {
-            if (!return_val)
-            {
-                logger().error("[edge-edge] Dist {}, active {}, residual {}", dist, return_val, abs(evaluate_quadrature<double>(positions, params, true)));
-                return true;
-            }
-        }
+        // if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-15 ))
+        // {
+        //     if (!return_val)
+        //     {
+        //         logger().error("[edge-edge] Dtype {}, Dist {}, active {}, residual {}", static_cast<int>(dtype), dist, return_val, abs(evaluate_quadrature<double>(positions, params, true)));
+        //         return true;
+        //     }
+        // }
 
         return return_val;
 
@@ -106,7 +106,7 @@ namespace ipc {
     }
 
     template <typename scalar> 
-    scalar SmoothEdgeEdge3Collision::evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params, bool debug) const
+    scalar SmoothEdgeEdge3Collision::evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params) const
     {
         std::array<Vector3<scalar>, 8> points = slice_positions<scalar, 8, 3>(positions);
         params.eps = get_eps();
@@ -115,7 +115,7 @@ namespace ipc {
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
             points[face_to_vertex(0, 0)], points[face_to_vertex(1, 0)],
             points[face_to_vertex(2, 0)], points[face_to_vertex(3, 0)], 
-            params, dtype, debug);
+            params, dtype);
     }
 
     double SmoothEdgeEdge3Collision::operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 

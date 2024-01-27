@@ -30,21 +30,13 @@ namespace ipc {
         tangent = tangent / len;
 
         Vector2<scalar> direc = point_edge_closest_point_direction<scalar>(p, e0, e1, PointEdgeDistanceType::AUTO);
-        const scalar dist = direc.norm();
-        direc = direc / dist;
-        const scalar Phi = 1 - cross2<scalar>(p - e0, tangent) / dist; // intpow(diff.dot(tangent), 2) / dist_sqr;
+        const scalar dist_sqr = direc.squaredNorm();
+        direc = direc / sqrt(dist_sqr);
+        const scalar Phi = 1 - cross2<scalar>(direc, tangent);
+        const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, dist_sqr);
 
-        Vector2<scalar> t0 = x0 - p, t1 = p - x1;
-        scalar l0 = t0.norm(), l1 = t1.norm();
-        scalar tangent_term = smooth_heaviside<scalar>(t0.dot(direc) / l0, params.alpha, params.beta) *
-                            smooth_heaviside<scalar>(-t1.dot(direc) / l1, params.alpha, params.beta);
-
-        scalar normal_term = smooth_heaviside<scalar>(-cross2<scalar>(t0, direc) / l0, params.alpha, params.beta) + 
-                            smooth_heaviside<scalar>(-cross2<scalar>(t1, direc) / l1, params.alpha, params.beta);
-
-        const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, intpow(dist, 2));
-
-        return 0.5 * (l0 + l1) * len * cubic_spline(Phi / params.alpha) * inv_barrier(intpow(dist, 2) / params.eps, params.r) * tangent_term * normal_term * mollifier_val;
+        return len * cubic_spline(Phi / params.alpha) * inv_barrier(dist_sqr / params.eps, params.r) * 
+                mollifier_val * smooth_point2_term<scalar>(p, direc, x0, x1, params.alpha, params.beta);
     }
 
     inline bool smooth_point_edge_potential_single_point_3d_type(

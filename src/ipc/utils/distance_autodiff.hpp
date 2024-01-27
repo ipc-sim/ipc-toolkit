@@ -41,7 +41,7 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& f2)
     {
         const Vector3<scalar> normal = (f2 - f0).cross(f1 - f0);
-        return intpow(normal.dot(p - f0), 2) / normal.squaredNorm();
+        return intpow<2>(normal.dot(p - f0)) / normal.squaredNorm();
     }
 
     template <typename scalar>

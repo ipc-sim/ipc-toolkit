@@ -27,7 +27,7 @@ namespace ipc {
             n_neighbors = neighbors.size();
 
             if (vertices.size() < v_id + neighbors.size())
-                throw std::runtime_error("Max vertex size too small!");
+                throw std::runtime_error("[edge-vert] Max vertex size too small! " + std::to_string(v_id + neighbors.size()));
             for (const auto &lv : neighbors)
                 vertices[v_id++] = lv;
         }
@@ -53,20 +53,20 @@ namespace ipc {
         return_val = return_val && smooth_point_edge_potential_single_point_3d_type(points.row(0), points.bottomRows(n_neighbors), 
             points.row(1), points.row(2), points.row(3), points.row(4), params);
 
-        double dist = sqrt(point_edge_distance(points.row(0), points.row(1), points.row(2), dtype));
-        if (dist < 1e-10)
-            logger().warn("[edge-vert] dist {}, active {}", dist, return_val);
+        // double dist = sqrt(point_edge_distance(points.row(0), points.row(1), points.row(2), dtype));
+        // if (dist < 1e-10)
+        //     logger().warn("[edge-vert] dist {}, active {}", dist, return_val);
 
-        if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-12 ))
-        {
-            if (!return_val)
-            {
-                Vector3<double> direc = point_edge_closest_point_direction<double>(points.row(0), points.row(1), points.row(2), PointEdgeDistanceType::AUTO).normalized();
-                logger().error("[edge-vert] Wrong type! error {}, dist {}, edge_term {}, vert_term {}", 
-                    abs(evaluate_quadrature<double>(positions, params)), dist, smooth_edge3_term_type(direc, points.row(1), points.row(2), points.row(3), points.row(4), params.alpha, params.beta), smooth_point3_term_type(points.row(0), direc, points.bottomRows(n_neighbors), params.alpha, params.beta));
-            }
-            return true;
-        }
+        // if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-15 ))
+        // {
+        //     if (!return_val)
+        //     {
+        //         Vector3<double> direc = point_edge_closest_point_direction<double>(points.row(0), points.row(1), points.row(2), PointEdgeDistanceType::AUTO).normalized();
+        //         logger().error("[edge-vert] Wrong type! error {}, dist {}, edge_term {}, vert_term {}", 
+        //             abs(evaluate_quadrature<double>(positions, params)), dist, smooth_edge3_term_type(direc, points.row(1), points.row(2), points.row(3), points.row(4), params.alpha, params.beta), smooth_point3_term_type(points.row(0), direc, points.bottomRows(n_neighbors), params.alpha, params.beta));
+        //     }
+        //     return true;
+        // }
 
         return return_val;
     }

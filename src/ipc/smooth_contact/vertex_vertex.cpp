@@ -42,32 +42,14 @@ namespace ipc {
         std::array<Vector<double, 2>, 6> points = slice_positions<double, 6, 2>(positions);
 
         Vector<double, 2> direc = points[1] - points[0];
-        Vector<double, 2> ta0 = points[2] - points[0], ta1 = points[0] - points[3];
-        Vector<double, 2> tb0 = points[4] - points[1], tb1 = points[1] - points[5];
-        ta0.normalize(); ta1.normalize();
-        tb0.normalize(); tb1.normalize();
 
         if (direc.squaredNorm() >= get_eps())
             return false;
         direc.normalize();
-        
-        // tangent term
-        {
-            bool A = -direc.dot(ta0) <= -params.alpha || -direc.dot(-ta1) <= -params.alpha;
-            bool B = direc.dot(tb0) <= -params.alpha || direc.dot(-tb1) <= -params.alpha;
-            if (A || B)
-                return false;
-        }
 
-        // normal term
-        {
-            bool A = cross2<double>(direc, ta0) <= -params.alpha && cross2<double>(direc, ta1) <= -params.alpha;
-            bool B = cross2<double>(direc, tb0) >= params.alpha && cross2<double>(direc, tb1) >= params.alpha;
-            if (A || B)
-                return false;
-        }
+        return smooth_point2_term_type(points[0], -direc, points[2], points[3], params.alpha, params.beta) &&
+                smooth_point2_term_type(points[1], direc, points[4], points[5], params.alpha, params.beta);
 
-        return true;
     }
 
     template<class scalar>

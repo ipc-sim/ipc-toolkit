@@ -42,26 +42,29 @@ namespace ipc {
     {
         std::array<Vector<double, 2>, 5> points = slice_positions<double, 5, 2>(positions);
 
-        Vector<double, 2> direc = point_edge_closest_point_direction<double>(points[0], points[1], points[2], PointEdgeDistanceType::AUTO);
-        Vector<double, 2> e = (points[2] - points[1]).normalized();
-        Vector<double, 2> t0 = (points[3] - points[0]).normalized(), t1 = (points[0] - points[4]).normalized();
-
+        auto dtype = point_edge_distance_type(points[0], points[1], points[2]);
+        if (dtype != PointEdgeDistanceType::P_E)
+            return false;
+        
+        Vector<double, 2> direc = point_edge_closest_point_direction<double>(points[0], points[1], points[2], dtype);
         const double dist = direc.norm();
         if (dist*dist >= get_eps())
             return false;
-        direc /= dist;
+        direc.normalize();
 
-        // tangent term
+        // edge term
+        const double Phi = 1 - cross2<double>(direc, (points[2] - points[1]).normalized());
+        if (Phi >= params.alpha)
         {
-            const double Phi = 1 - cross2<double>(points[0] - points[1], e) / dist;
-            if (t0.dot(direc) <= -params.alpha || -t1.dot(direc) <= -params.alpha || Phi >= params.alpha)
-                return false;
+            // std::cout << "edge term zero\n";
+            return false;
         }
 
-        // normal term
+        // point term
+        if (!smooth_point2_term_type(points[0], direc, points[3], points[4], params.alpha, params.beta))
         {
-            if (cross2<double>(direc, t0) >= params.alpha && cross2<double>(direc, t1) >= params.alpha)
-                return false;
+            // std::cout << "point term zero\n";
+            return false;
         }
 
         return true;

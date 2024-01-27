@@ -47,7 +47,7 @@ public:
 
 private:
     template <typename scalar> 
-    scalar evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params, bool debug = false) const;
+    scalar evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params) const;
 
     bool compute_types(const Vector<double, 24>& positions, ParameterType params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
 
