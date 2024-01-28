@@ -56,7 +56,7 @@ namespace ipc {
 
         params.dhat = get_dhat();
         Vector3<double> direc = point_triangle_closest_point_direction<double>(points.row(0), points.row(1), points.row(2), points.row(3), dtype) / dist;
-        return_val = return_val && smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta);
+        return_val = return_val && smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta, otypes);
 
         // if (dist < 1e-10)
         // {
@@ -88,7 +88,7 @@ namespace ipc {
         auto points = slice_positions_large<scalar, 3>(positions);
         params.dhat = get_dhat();
         return smooth_point_face_potential_single_point<scalar>(points.row(0), points.bottomRows(n_neighbors),
-        points.row(1), points.row(2), points.row(3), params, dtype);
+        points.row(1), points.row(2), points.row(3), params, dtype, otypes);
         return scalar(0.);
     }
 

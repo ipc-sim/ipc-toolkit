@@ -39,14 +39,15 @@ scalar smooth_point_point_potential_3d(
     const Eigen::Ref<const RowVector3<scalar>>& vb,
     const Eigen::Matrix<scalar, -1, 3> &ra,
     const Eigen::Matrix<scalar, -1, 3> &rb,
-    const ParameterType &params)
+    const ParameterType &params,
+    const std::array<ORIENTATION_TYPES, 2> &otypes)
 {
     RowVector3<scalar> direc = va - vb;
     const scalar dist = direc.norm();
     direc = direc / dist;
 
-    const scalar term_a = smooth_point3_term<scalar>(va, direc, ra, params.alpha, params.beta);
-    const scalar term_b = smooth_point3_term<scalar>(vb, -direc, rb, params.alpha, params.beta);
+    const scalar term_a = smooth_point3_term<scalar>(va, direc, ra, params.alpha, params.beta, otypes[0]);
+    const scalar term_b = smooth_point3_term<scalar>(vb, -direc, rb, params.alpha, params.beta, otypes[1]);
     const scalar barrier = inv_barrier<scalar>(dist / params.dhat, params.r);
 
     return term_a * term_b * barrier;

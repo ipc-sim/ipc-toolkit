@@ -50,8 +50,9 @@ namespace ipc {
             return false;
         
         params.dhat = get_dhat();
-        bool return_val = smooth_point3_term_type(va, direc, ra, params.alpha, params.beta) &&
-               smooth_point3_term_type(vb, -direc, rb, params.alpha, params.beta);
+        // otypes are computed here, if the return value is false, otypes are not initialized. It's not a bug because the potential is not computed in that case.
+        bool return_val = smooth_point3_term_type(va, direc, ra, params.alpha, params.beta, otypes[0]) &&
+               smooth_point3_term_type(vb, -direc, rb, params.alpha, params.beta, otypes[1]);
 
         // if (dist < 1e-10)
         //     logger().warn("[vert-vert] dist {}, active {}, type 1 {}, type 2 {}", dist, return_val, smooth_point3_term_type(va, direc, ra, params.alpha, params.beta), smooth_point3_term_type(vb, -direc, rb, params.alpha, params.beta));
@@ -80,7 +81,7 @@ namespace ipc {
         auto points = slice_positions_large<scalar, 3>(positions);
         params.dhat = get_dhat();
         return smooth_point_point_potential_3d<scalar>(points.row(0), points.row(1), 
-        points.middleRows(2, n_neighbors[0]), points.bottomRows(n_neighbors[1]), params);
+        points.middleRows(2, n_neighbors[0]), points.bottomRows(n_neighbors[1]), params, otypes);
     }
 
     double SmoothVertexVertex3Collision::operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 

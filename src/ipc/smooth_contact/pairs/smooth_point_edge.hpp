@@ -40,7 +40,8 @@ namespace ipc {
         const Eigen::Ref<const Vector3<double>>& e1,
         const Eigen::Ref<const Vector3<double>>& f0,
         const Eigen::Ref<const Vector3<double>>& f1,
-        const ParameterType &params)
+        const ParameterType &params,
+        ORIENTATION_TYPES &otypes)
     {
         Vector3<double> direc = point_edge_closest_point_direction<double>(p, e0, e1, PointEdgeDistanceType::AUTO); // from edge a to edge b
         const double dist = direc.norm();
@@ -50,7 +51,7 @@ namespace ipc {
         direc = direc / dist;
 
         const bool edge_term = smooth_edge3_term_type(direc, e0, e1, f0, f1, params.alpha, params.beta);
-        const bool vert_term = smooth_point3_term_type(p, direc, neighbors, params.alpha, params.beta);
+        const bool vert_term = smooth_point3_term_type(p, direc, neighbors, params.alpha, params.beta, otypes);
 
         return edge_term && vert_term;
     }
@@ -63,7 +64,8 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& e1,
         const Eigen::Ref<const Vector3<scalar>>& f0,
         const Eigen::Ref<const Vector3<scalar>>& f1,
-        const ParameterType &params)
+        const ParameterType &params,
+        const ORIENTATION_TYPES &otypes)
     {
         Vector3<scalar> direc = point_edge_closest_point_direction<scalar>(p, e0, e1, PointEdgeDistanceType::AUTO); // from edge a to edge b
         const scalar dist = direc.norm();
@@ -72,7 +74,7 @@ namespace ipc {
         const scalar edge_term = smooth_edge3_term<scalar>(direc, e0, e1, f0, f1, params.alpha, params.beta);
         const scalar barrier = inv_barrier<scalar>(dist / params.dhat, params.r);
         const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, dist*dist);
-        const scalar vert_term = smooth_point3_term<scalar>(p, direc, neighbors, params.alpha, params.beta);
+        const scalar vert_term = smooth_point3_term<scalar>(p, direc, neighbors, params.alpha, params.beta, otypes);
 
         return edge_term * mollifier_val * vert_term * barrier;
     }

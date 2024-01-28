@@ -54,6 +54,7 @@ private:
     int n_neighbors;
 
     PointTriangleDistanceType dtype;
+    ORIENTATION_TYPES otypes;
 };
 
 }

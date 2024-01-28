@@ -68,10 +68,12 @@ inline scalar smooth_point3_term(
     const Eigen::Ref<const RowVector3<scalar>>& direc,
     const Eigen::Matrix<scalar, -1, 3> &neighbors,
     const double &alpha,
-    const double &beta)
+    const double &beta,
+    const ORIENTATION_TYPES &otypes)
 {
     RowVector3<scalar> t, t_prev;
     assert(neighbors.rows() > 2);
+    assert(otypes.size() == neighbors.rows());
 
     scalar tangent_term(1.);
     scalar weight(0.);
@@ -80,12 +82,22 @@ inline scalar smooth_point3_term(
     for (int a = 0; a < neighbors.rows(); a++)
     {
         t = neighbors.row(a) - v;
-        const scalar tmp0 = smooth_heaviside<scalar>(direc.dot(t) / t.norm(), alpha, beta);
+        if (otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT)
+        {
+            scalar tmp0 = smooth_heaviside<scalar>(direc.dot(t) / t.norm(), alpha, beta);
+            tangent_term = tangent_term * tmp0;
+        }
+        else if (otypes.tangent_type(a) == HEAVISIDE_TYPE::ZERO)
+        {
+            tangent_term = scalar(0.);
+            break;
+        }
 
-        tangent_term = tangent_term * tmp0;
+        // if normal_term >= 1, the term depending on it becomes constant 1
+        if (normal_term < 1 && otypes.normal_type(a) != HEAVISIDE_TYPE::ZERO)
+            normal_term = normal_term + (otypes.normal_type(a) == HEAVISIDE_TYPE::ONE ? scalar(1.) : smooth_heaviside<scalar>(-direc.dot(t_prev.cross(t).normalized()), alpha, beta));
+        
         weight = weight + t.squaredNorm();
-
-        normal_term = normal_term + smooth_heaviside<scalar>(-direc.dot(t_prev.cross(t).normalized()), alpha, beta);
         std::swap(t, t_prev);
     }
 
@@ -101,10 +113,12 @@ inline bool smooth_point3_term_type(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Matrix<double, -1, 3> &neighbors,
     const double &alpha,
-    const double &beta)
+    const double &beta,
+    ORIENTATION_TYPES &otypes)
 {
     RowVector3<double> t, t_prev;
     assert(neighbors.rows() > 2);
+    otypes.set_size(neighbors.rows());
 
     bool tangent_term = true;
     double normal_term = 0;
@@ -112,11 +126,14 @@ inline bool smooth_point3_term_type(
     for (int a = 0; a < neighbors.rows(); a++)
     {
         t = neighbors.row(a) - v;
-        tangent_term = tangent_term && ((direc.dot(t) / t.norm()) > - alpha);
+        otypes.tangent_type(a) = otypes.compute_type(direc.dot(t) / t.norm(), alpha, beta);
+        if (otypes.tangent_type(a) == HEAVISIDE_TYPE::ZERO)
+            return false;
 
-        // logger().warn("normal term direction {}, should be negative", direc.dot(t_prev.cross(t).normalized()));
+        const double tmp = -direc.dot(t_prev.cross(t).normalized());
+        otypes.normal_type(a) = otypes.compute_type(tmp, alpha, beta);
+        normal_term += smooth_heaviside<double>(tmp, alpha, beta);
 
-        normal_term += smooth_heaviside<double>(-direc.dot(t_prev.cross(t).normalized()), alpha, beta);
         std::swap(t, t_prev);
     }
 

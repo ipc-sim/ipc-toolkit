@@ -52,6 +52,7 @@ private:
     bool compute_types(const Eigen::VectorXd& positions, ParameterType params); // return true if the potential is nonzero, return false if the potential is zero and can be skipped
 
     std::array<int, 2> n_neighbors;
+    std::array<ORIENTATION_TYPES, 2> otypes;
 };
 
 }
