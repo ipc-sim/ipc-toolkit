@@ -2,6 +2,7 @@
 
 #include <ipc/smooth_contact/primitives/point.hpp>
 #include <ipc/smooth_contact/primitives/face.hpp>
+#include <ipc/smooth_contact/distance/mollifier.hpp>
 #include <ipc/smooth_contact/common.hpp>
 
 namespace ipc {

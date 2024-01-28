@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/utils/distance_autodiff.hpp>
+#include <ipc/smooth_contact/distance/mollifier.hpp>
 
 namespace ipc {
     template <typename scalar>

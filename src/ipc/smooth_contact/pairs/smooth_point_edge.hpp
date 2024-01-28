@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/smooth_contact/common.hpp>
+#include <ipc/smooth_contact/distance/mollifier.hpp>
 #include <ipc/smooth_contact/primitives/edge.hpp>
 #include <ipc/smooth_contact/primitives/point.hpp>
 

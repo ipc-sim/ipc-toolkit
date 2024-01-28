@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/utils/distance_autodiff.hpp>
+#include <ipc/smooth_contact/distance/mollifier.hpp>
 
 namespace ipc {
     /// @brief Compute potential for a point p and an face [v0, v1, v2], using the smooth closest point
