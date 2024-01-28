@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ipc/config.hpp>
+#include "eigen_ext.hpp"
 
 namespace ipc {
     template <typename scalar>
@@ -69,11 +70,8 @@ namespace ipc {
     template <typename scalar>
     Vector2<scalar> linear_solve(const Eigen::Ref<const Matrix2<scalar>> &A, const Eigen::Ref<const Vector2<scalar>> &b);
 
-    template <class T, int nvert, int dim>
-    std::array<Vector<T, dim>, nvert> slice_positions(const Vector<double, nvert*dim> &positions);
-
-    template <class T, int dim>
-    Eigen::Matrix<T, -1, dim> slice_positions_large(const Eigen::VectorXd &positions);
+    template <class T, int rows, int dim, int max_rows=rows>
+    Eigen::Matrix<T, rows, dim, Eigen::ColMajor, max_rows, dim> slice_positions(const Eigen::VectorXd &positions);
 
     enum class FD_RULE { CENTRAL, LEFT, RIGHT };
     

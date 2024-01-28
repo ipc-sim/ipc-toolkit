@@ -38,17 +38,17 @@ namespace ipc {
         const Vector<double, 24>& positions, 
         ParameterType params)
     {
-        std::array<Vector3<double>, 8> points = slice_positions<double, 8, 3>(positions);
+        auto points = slice_positions<double, 8, 3>(positions);
 
-        // already computed outside
-        dtype = EdgeEdgeDistanceType::EA_EB; // edge_edge_distance_type(points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)], points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)]);
+        // already computed in SmoothCollisionsBuilder before class construction
+        dtype = EdgeEdgeDistanceType::EA_EB;
 
         params.dhat = get_dhat();
         return smooth_edge_edge_potential_type(
-            points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
-            points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
-            points[face_to_vertex(0, 0)], points[face_to_vertex(1, 0)],
-            points[face_to_vertex(2, 0)], points[face_to_vertex(3, 0)], 
+            points.row(face_to_vertex(0, 1)), points.row(face_to_vertex(0, 2)),
+            points.row(face_to_vertex(2, 1)), points.row(face_to_vertex(2, 2)),
+            points.row(face_to_vertex(0, 0)), points.row(face_to_vertex(1, 0)),
+            points.row(face_to_vertex(2, 0)), points.row(face_to_vertex(3, 0)), 
             params, dtype, otypes, mtypes);
 
         // double dist = sqrt(edge_edge_distance(points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
@@ -79,22 +79,22 @@ namespace ipc {
 
     double SmoothEdgeEdge3Collision::compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const
     {
-        std::array<Vector3<double>, 8> points = slice_positions<double, 8, 3>(positions);
+        auto points = slice_positions<double, 8, 3>(positions);
 
-        return edge_edge_distance(points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
-            points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)], dtype);
+        return edge_edge_distance(points.row(face_to_vertex(0, 1)), points.row(face_to_vertex(0, 2)),
+            points.row(face_to_vertex(2, 1)), points.row(face_to_vertex(2, 2)), dtype);
     }
 
     template <typename scalar> 
     scalar SmoothEdgeEdge3Collision::evaluate_quadrature(const Vector<double, 24>& positions, ParameterType params) const
     {
-        std::array<Vector3<scalar>, 8> points = slice_positions<scalar, 8, 3>(positions);
+        auto points = slice_positions<scalar, 8, 3>(positions);
         params.dhat = get_dhat();
         return smooth_edge_edge_potential_single_point<scalar>(
-            points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
-            points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
-            points[face_to_vertex(0, 0)], points[face_to_vertex(1, 0)],
-            points[face_to_vertex(2, 0)], points[face_to_vertex(3, 0)], 
+            points.row(face_to_vertex(0, 1)), points.row(face_to_vertex(0, 2)),
+            points.row(face_to_vertex(2, 1)), points.row(face_to_vertex(2, 2)),
+            points.row(face_to_vertex(0, 0)), points.row(face_to_vertex(1, 0)),
+            points.row(face_to_vertex(2, 0)), points.row(face_to_vertex(3, 0)), 
             params, dtype, otypes, mtypes);
     }
 

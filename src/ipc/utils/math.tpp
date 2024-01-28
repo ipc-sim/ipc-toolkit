@@ -1,6 +1,5 @@
 #pragma once
 #include "math.hpp"
-#include <ipc/utils/AutodiffTypes.hpp>
 
 namespace ipc {
     template <typename scalar>
@@ -11,20 +10,6 @@ namespace ipc {
         else
             return -x;
     }
-
-    // template <int p, typename scalar>
-    // inline typename std::enable_if<(p == 0), scalar>::type
-    // intpow(const scalar &x)
-    // {
-    //     return scalar(1.);
-    // }
-
-    // template <int p, typename scalar>
-    // inline typename std::enable_if<(p > 0), scalar>::type
-    // intpow(const scalar &x)
-    // {
-    //     return x * intpow<p-1, scalar>(x);
-    // }
 
     template <typename scalar>
     scalar cubic_spline(const scalar &x)
@@ -97,7 +82,7 @@ namespace ipc {
     // }
 
     template <typename scalar>
-    scalar smooth_heaviside_aux(const scalar &x)
+    scalar smooth_heaviside_standard(const scalar &x)
     {
         if (x <= -3)
             return scalar(0.);
@@ -114,7 +99,7 @@ namespace ipc {
     template <typename scalar>
     scalar smooth_heaviside(const scalar &x, const double alpha, const double beta)
     {
-        return smooth_heaviside_aux((x - beta) * (3 / (alpha + beta)));
+        return smooth_heaviside_standard((x - beta) * (3 / (alpha + beta)));
     }
 
     template <typename scalar>
@@ -169,26 +154,11 @@ namespace ipc {
         return x;
     }
 
-    template <class T, int nvert, int dim>
-    std::array<Vector<T, dim>, nvert> slice_positions(const Vector<double, nvert*dim> &positions)
-    {
-        std::array<Vector<T, dim>, nvert> points;
-        points.fill(Vector<T, dim>::Zero(dim));
-
-        const AutoDiffAllocator<T> allocate_auto_diff_scalar;
-        
-        for (int i = 0, id = 0; i < nvert; i++)
-            for (int d = 0; d < dim; d++, id++)
-                points[i](d) = allocate_auto_diff_scalar(id, positions(id));
-
-        return points;
-    }
-
-    template <class T, int dim>
-    Eigen::Matrix<T, -1, dim> slice_positions_large(const Eigen::VectorXd &positions)
+    template <class T, int rows, int dim, int max_rows=rows>
+    Eigen::Matrix<T, rows, dim, Eigen::ColMajor, max_rows, dim> slice_positions(const Eigen::VectorXd &positions)
     {
         const int nvert = positions.size() / dim;
-        Eigen::Matrix<T, -1, dim> points;
+        Eigen::Matrix<T, rows, dim, Eigen::ColMajor, max_rows, dim> points;
         points.setZero(nvert, dim);
         
         for (int i = 0, id = 0; i < nvert; i++)

@@ -40,33 +40,33 @@ namespace ipc {
 
     bool SmoothEdgeVertexCollision::compute_types(const Vector10d& positions, const ParameterType &params)
     {
-        std::array<Vector<double, 2>, 5> points = slice_positions<double, 5, 2>(positions);
+        auto points = slice_positions<double, 5, 2>(positions);
 
-        auto dtype = point_edge_distance_type(points[0], points[1], points[2]);
+        auto dtype = point_edge_distance_type(points.row(0), points.row(1), points.row(2));
         if (dtype != PointEdgeDistanceType::P_E)
             return false;
         
-        Vector<double, 2> direc = point_edge_closest_point_direction<double>(points[0], points[1], points[2], dtype);
+        Vector<double, 2> direc = point_edge_closest_point_direction<double>(points.row(0), points.row(1), points.row(2), dtype);
         const double dist = direc.norm();
         if (dist >= get_dhat())
             return false;
         direc /= dist;
 
         // edge term
-        if (cross2<double>(direc, (points[2] - points[1]).normalized()) < 0)
+        if (cross2<double>(direc, (points.row(2) - points.row(1)).normalized()) < 0)
         {
             // std::cout << "edge term zero\n";
             if (dist < 1e-10)
-                std::cout << direc.transpose() << ", " << points[1].transpose() << ", " << points[2].transpose() << "\n";
+                std::cout << direc.transpose() << ", " << points.row(1).transpose() << ", " << points.row(2).transpose() << "\n";
             return false;
         }
 
         // point term
-        if (!smooth_point2_term_type(points[0], direc, points[3], points[4], params.alpha, params.beta))
+        if (!smooth_point2_term_type(points.row(0), direc, points.row(3), points.row(4), params.alpha, params.beta))
         {
             // std::cout << "point term zero\n";
             if (dist < 1e-10)
-                std::cout << direc.transpose() << ", " << points[1].transpose() << ", " << points[2].transpose() << "\n";
+                std::cout << direc.transpose() << ", " << points.row(1).transpose() << ", " << points.row(2).transpose() << "\n";
             return false;
         }
 
@@ -76,17 +76,17 @@ namespace ipc {
     template<class scalar>
     scalar SmoothEdgeVertexCollision::evaluate_quadrature(const Vector10d& positions, ParameterType params) const
     {
-        std::array<Vector2<scalar>, 5> points = slice_positions<scalar, 5, 2>(positions);
+        auto points = slice_positions<scalar, 5, 2>(positions);
         params.dhat = get_dhat();
         return smooth_point_edge_potential_single_point<scalar>(
-            points[0], points[1], points[2], points[3], points[4], params);
+            points.row(0), points.row(1), points.row(2), points.row(3), points.row(4), params);
     }
 
     double SmoothEdgeVertexCollision::compute_distance(const Vector<double, -1, 18>& positions) const
     {
-        std::array<Vector2<double>, 5> points = slice_positions<double, 5, 2>(positions);
+        auto points = slice_positions<double, 5, 2>(positions);
 
-        return point_edge_sqr_distance<double>(points[0], points[1], points[2], PointEdgeDistanceType::AUTO); 
+        return point_edge_sqr_distance<double>(points.row(0), points.row(1), points.row(2), PointEdgeDistanceType::AUTO); 
     }
 
     double SmoothEdgeVertexCollision::operator()(

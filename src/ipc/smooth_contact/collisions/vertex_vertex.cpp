@@ -34,33 +34,33 @@ namespace ipc {
 
     bool SmoothVertexVertexCollision::compute_types(const Vector12d& positions, const ParameterType &params)
     {
-        std::array<Vector<double, 2>, 6> points = slice_positions<double, 6, 2>(positions);
+        auto points = slice_positions<double, 6, 2>(positions);
 
-        Vector<double, 2> direc = points[1] - points[0];
+        Vector<double, 2> direc = points.row(1) - points.row(0);
         const double dist = direc.norm();
         if (direc.norm() >= get_dhat())
             return false;
         direc /= dist;
 
-        return smooth_point2_term_type(points[0], -direc, points[2], points[3], params.alpha, params.beta) &&
-                smooth_point2_term_type(points[1], direc, points[4], points[5], params.alpha, params.beta);
+        return smooth_point2_term_type(points.row(0), -direc, points.row(2), points.row(3), params.alpha, params.beta) &&
+                smooth_point2_term_type(points.row(1), direc, points.row(4), points.row(5), params.alpha, params.beta);
 
     }
 
     template<class scalar>
     scalar SmoothVertexVertexCollision::evaluate_quadrature(const Vector12d& positions, ParameterType params) const
     {
-        std::array<Vector2<scalar>, 6> points = slice_positions<scalar, 6, 2>(positions);
+        auto points = slice_positions<scalar, 6, 2>(positions);
         params.dhat = get_dhat();
         return smooth_point_point_potential_2d<scalar>(
-            points[0], points[1], points[2], points[3], points[4], points[5], params);
+            points.row(0), points.row(1), points.row(2), points.row(3), points.row(4), points.row(5), params);
     }
 
     double SmoothVertexVertexCollision::compute_distance(const Vector<double, -1, 18>& positions) const
     {
-        std::array<Vector2<double>, 6> points = slice_positions<double, 6, 2>(positions);
+        auto points = slice_positions<double, 6, 2>(positions);
 
-        return (points[0] - points[1]).squaredNorm();
+        return (points.row(0) - points.row(1)).squaredNorm();
     }
 
     double SmoothVertexVertexCollision::operator()(

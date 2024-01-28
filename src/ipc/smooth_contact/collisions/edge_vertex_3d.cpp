@@ -38,7 +38,7 @@ namespace ipc {
         const Eigen::VectorXd& positions, 
         ParameterType params)
     {
-        auto points = slice_positions_large<double, 3>(positions);
+        auto points = slice_positions<double, -1, 3>(positions);
         dtype = point_edge_distance_type(points.row(0), points.row(1), points.row(2));
 
         // return true;
@@ -71,14 +71,14 @@ namespace ipc {
 
     double SmoothEdgeVertex3Collision::compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const
     {
-        auto points = slice_positions_large<double, 3>(positions);
+        auto points = slice_positions<double, -1, 3>(positions);
         return point_edge_distance(points.row(0), points.row(1), points.row(2));
     }
 
     template <typename scalar> 
     scalar SmoothEdgeVertex3Collision::evaluate_quadrature(const Eigen::VectorXd& positions, ParameterType params) const
     {
-        auto points = slice_positions_large<scalar, 3>(positions);
+        auto points = slice_positions<scalar, -1, 3>(positions);
         params.dhat = get_dhat();
         return smooth_point_edge_potential_single_point_3d<scalar>(points.row(0), points.bottomRows(n_neighbors), points.row(1), points.row(2), points.row(3), points.row(4), params, vert_otypes, edge_otypes);
     }

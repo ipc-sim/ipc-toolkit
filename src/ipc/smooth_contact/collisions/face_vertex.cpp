@@ -37,7 +37,7 @@ namespace ipc {
         const Eigen::VectorXd& positions, 
         ParameterType params)
     {
-        auto points = slice_positions_large<double, 3>(positions);
+        auto points = slice_positions<double, -1, 3>(positions);
         dtype = point_triangle_distance_type(points.row(0), points.row(1), points.row(2), points.row(3));
         const double dist = sqrt(point_triangle_distance(points.row(0), points.row(1), points.row(2), points.row(3), dtype));
 
@@ -78,14 +78,14 @@ namespace ipc {
 
     double SmoothFaceVertexCollision::compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const
     {
-        auto points = slice_positions_large<double, 3>(positions);
+        auto points = slice_positions<double, -1, 3>(positions);
         return point_triangle_distance(points.row(0), points.row(1), points.row(2), points.row(3));
     }
 
     template <typename scalar> 
     scalar SmoothFaceVertexCollision::evaluate_quadrature(const Eigen::VectorXd& positions, ParameterType params) const
     {
-        auto points = slice_positions_large<scalar, 3>(positions);
+        auto points = slice_positions<scalar, -1, 3>(positions);
         params.dhat = get_dhat();
         return smooth_point_face_potential_single_point<scalar>(points.row(0), points.bottomRows(n_neighbors),
         points.row(1), points.row(2), points.row(3), params, dtype, otypes);
