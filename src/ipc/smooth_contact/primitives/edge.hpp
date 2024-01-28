@@ -31,17 +31,31 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& f0,
         const Eigen::Ref<const Vector3<scalar>>& f1,
         const double alpha,
-        const double beta)
+        const double beta,
+        const ORIENTATION_TYPES &otypes)
     {
-        const Vector3<scalar> t0 = point_line_closest_point_direction<scalar>(f0, e0, e1);
-        const Vector3<scalar> t1 = point_line_closest_point_direction<scalar>(f1, e0, e1);
-        scalar tangent_term = smooth_heaviside<scalar>(-direc.dot(t0) / t0.norm(), alpha, beta) *
-                            smooth_heaviside<scalar>(-direc.dot(t1) / t1.norm(), alpha, beta);
+        scalar tangent_term = scalar(1.); 
+        if (otypes.tangent_type(0) != HEAVISIDE_TYPE::ONE)
+        {
+            const Vector3<scalar> t0 = point_line_closest_point_direction<scalar>(f0, e0, e1);
+            tangent_term = tangent_term * smooth_heaviside<scalar>(-direc.dot(t0) / t0.norm(), alpha, beta);
+        }
+        if (otypes.tangent_type(1) != HEAVISIDE_TYPE::ONE)
+        {
+            const Vector3<scalar> t1 = point_line_closest_point_direction<scalar>(f1, e0, e1);
+            tangent_term = tangent_term * smooth_heaviside<scalar>(-direc.dot(t1) / t1.norm(), alpha, beta);
+        }
 
-        const Vector3<scalar> n0 = (e0 - f0).cross(e1 - f0);
-        const Vector3<scalar> n1 = -(e0 - f1).cross(e1 - f1);
-        scalar normal_term = smooth_heaviside<scalar>( (smooth_heaviside<scalar>(direc.dot(n0) / n0.norm(), alpha, beta) +
-                             smooth_heaviside<scalar>(direc.dot(n1) / n1.norm(), alpha, beta) - 1), alpha, 0);
+        scalar normal_term = scalar(0.);
+        if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE || otypes.normal_type(1) == HEAVISIDE_TYPE::ONE)
+            normal_term = scalar(1.);
+        else
+        {
+            const Vector3<scalar> n0 = (e0 - f0).cross(e1 - f0);
+            const Vector3<scalar> n1 = -(e0 - f1).cross(e1 - f1);
+            normal_term = smooth_heaviside<scalar>( (smooth_heaviside<scalar>(direc.dot(n0) / n0.norm(), alpha, beta) +
+            smooth_heaviside<scalar>(direc.dot(n1) / n1.norm(), alpha, beta) - 1), alpha, 0);
+        }
 
         return (e1 - e0).squaredNorm() * tangent_term * normal_term;
     }
@@ -53,18 +67,33 @@ namespace ipc {
         const Eigen::Ref<const Vector3<double>>& f0,
         const Eigen::Ref<const Vector3<double>>& f1,
         const double alpha,
-        const double beta)
+        const double beta,
+        ORIENTATION_TYPES &otypes)
     {
+        otypes.set_size(2);
+
         const Vector3<double> t0 = point_line_closest_point_direction<double>(f0, e0, e1);
         const Vector3<double> t1 = point_line_closest_point_direction<double>(f1, e0, e1);
-        if (-direc.dot(t0) / t0.norm() <= -alpha || -direc.dot(t1) / t1.norm() <= -alpha)
+        otypes.tangent_type(0) = otypes.compute_type(-direc.dot(t0) / t0.norm(), alpha, beta);
+        otypes.tangent_type(1) = otypes.compute_type(-direc.dot(t1) / t1.norm(), alpha, beta);
+        if (otypes.tangent_type(0) == HEAVISIDE_TYPE::ZERO || otypes.tangent_type(1) == HEAVISIDE_TYPE::ZERO)
             return false;
 
         const Vector3<double> n0 = (e0 - f0).cross(e1 - f0);
         const Vector3<double> n1 = -(e0 - f1).cross(e1 - f1);
-        if (smooth_heaviside<double>(direc.dot(n0) / n0.norm(), alpha, beta) + 
-            smooth_heaviside<double>(direc.dot(n1) / n1.norm(), alpha, beta) <= 1 - alpha)
+        const double tmp0 = direc.dot(n0) / n0.norm();
+        const double tmp1 = direc.dot(n1) / n1.norm();
+        otypes.normal_type(0) = otypes.compute_type(tmp0, alpha, beta);
+        otypes.normal_type(1) = otypes.compute_type(tmp1, alpha, beta);
+        const double sum = smooth_heaviside<double>(tmp0, alpha, beta) + 
+                            smooth_heaviside<double>(tmp1, alpha, beta);
+        if (sum <= 1 - alpha)
             return false;
+        else if (sum >= 1)
+        {
+            otypes.normal_type(0) = HEAVISIDE_TYPE::ONE;
+            otypes.normal_type(1) = HEAVISIDE_TYPE::ONE;
+        }
 
         return true;
     }

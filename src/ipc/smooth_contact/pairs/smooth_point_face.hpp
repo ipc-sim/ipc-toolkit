@@ -17,12 +17,12 @@ namespace ipc {
         const ORIENTATION_TYPES &otypes)
     {
         Vector3<scalar> direc = point_triangle_closest_point_direction<scalar>(p, v0, v1, v2, dtype);
-        const scalar dist_sqr = direc.squaredNorm();
+        const scalar dist = direc.norm();
 
-        auto b = inv_barrier(sqrt(dist_sqr) / params.dhat, params.r);
+        auto b = inv_barrier(dist / params.dhat, params.r);
         auto ff = smooth_face_term<scalar>(p, v0, v1, v2);
         auto pp = smooth_point3_term<scalar>(p, direc / direc.norm(), neighbors, params.alpha, params.beta, otypes);
-        auto tt = triangle_mollifier<scalar>(p - direc, v0, v1, v2, dist_sqr);
+        auto tt = triangle_mollifier<scalar>(p - direc, v0, v1, v2, dist);
 
         // if constexpr (std::is_same<double,scalar>::value)
         // {

@@ -40,20 +40,16 @@ namespace ipc {
     {
         std::array<Vector3<double>, 8> points = slice_positions<double, 8, 3>(positions);
 
-        dtype = edge_edge_distance_type(points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
-            points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)]);
-
-        bool return_val = true;
-        if (dtype != EdgeEdgeDistanceType::EA_EB)
-            return_val = false;
+        // already computed outside
+        dtype = EdgeEdgeDistanceType::EA_EB; // edge_edge_distance_type(points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)], points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)]);
 
         params.dhat = get_dhat();
-        return_val = return_val && smooth_edge_edge_potential_type(
+        return smooth_edge_edge_potential_type(
             points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
             points[face_to_vertex(0, 0)], points[face_to_vertex(1, 0)],
             points[face_to_vertex(2, 0)], points[face_to_vertex(3, 0)], 
-            params, dtype);
+            params, dtype, otypes, mtypes);
 
         // double dist = sqrt(edge_edge_distance(points[face_to_vertex(0, 1)], points[face_to_vertex(0, 2)],
         //     points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)], dtype));
@@ -72,8 +68,6 @@ namespace ipc {
         //         return true;
         //     }
         // }
-
-        return return_val;
 
         // logger().debug("before: edge {} {}, dtype {}, edge_types {} {} {} {}, tangent_types {} {} {} {}, normal_types {} {} {} {}",
         //     primitive0, primitive1,
@@ -101,7 +95,7 @@ namespace ipc {
             points[face_to_vertex(2, 1)], points[face_to_vertex(2, 2)],
             points[face_to_vertex(0, 0)], points[face_to_vertex(1, 0)],
             points[face_to_vertex(2, 0)], points[face_to_vertex(3, 0)], 
-            params, dtype);
+            params, dtype, otypes, mtypes);
     }
 
     double SmoothEdgeEdge3Collision::operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 

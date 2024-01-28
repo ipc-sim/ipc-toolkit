@@ -54,7 +54,7 @@ private:
     int n_neighbors;
 
     PointEdgeDistanceType dtype;
-    ORIENTATION_TYPES otypes;
+    ORIENTATION_TYPES vert_otypes, edge_otypes;
 };
 
 }

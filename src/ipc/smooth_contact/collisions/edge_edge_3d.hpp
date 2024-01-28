@@ -54,9 +54,8 @@ private:
     Eigen::Matrix<int, 4, 3> face_to_vertex; // stores the local vertex ids for each vertex on each face
 
     EdgeEdgeDistanceType dtype;
-    std::array<PointEdgeDistanceType, 4> edge_dtypes;
-    std::array<HEAVISIDE_TYPE, 4> tangent_types;
-    std::array<HEAVISIDE_TYPE, 4> normal_types;
+    std::array<ORIENTATION_TYPES, 2> otypes;
+    std::array<HEAVISIDE_TYPE, 4> mtypes;
 };
 
 }

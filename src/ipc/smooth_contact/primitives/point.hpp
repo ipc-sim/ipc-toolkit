@@ -94,8 +94,13 @@ inline scalar smooth_point3_term(
         }
 
         // if normal_term >= 1, the term depending on it becomes constant 1
-        if (normal_term < 1 && otypes.normal_type(a) != HEAVISIDE_TYPE::ZERO)
-            normal_term = normal_term + (otypes.normal_type(a) == HEAVISIDE_TYPE::ONE ? scalar(1.) : smooth_heaviside<scalar>(-direc.dot(t_prev.cross(t).normalized()), alpha, beta));
+        if (normal_term < 1)
+        {
+            if (otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT)
+                normal_term = normal_term + (otypes.normal_type(a) == HEAVISIDE_TYPE::ONE ? scalar(1.) : smooth_heaviside<scalar>(-direc.dot(t_prev.cross(t).normalized()), alpha, beta));
+            else if (otypes.normal_type(a) == HEAVISIDE_TYPE::ONE)
+                normal_term += scalar(1.);
+        }
         
         weight = weight + t.squaredNorm();
         std::swap(t, t_prev);
@@ -135,6 +140,12 @@ inline bool smooth_point3_term_type(
         normal_term += smooth_heaviside<double>(tmp, alpha, beta);
 
         std::swap(t, t_prev);
+    }
+
+    if (normal_term >= 1)
+    {
+        for (int a = 0; a < neighbors.rows(); a++)
+            otypes.normal_type(a) = HEAVISIDE_TYPE::ONE;
     }
 
     return  tangent_term && (normal_term > 1 - alpha);

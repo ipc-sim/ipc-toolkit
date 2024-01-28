@@ -85,7 +85,7 @@ namespace ipc {
         const Eigen::Ref<const VectorMax3<scalar>>& p,
         const Eigen::Ref<const VectorMax3<scalar>>& e0,
         const Eigen::Ref<const VectorMax3<scalar>>& e1,
-        const PointEdgeDistanceType &dtype)
+        const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO)
     {
         switch (dtype)
         {
@@ -97,13 +97,10 @@ namespace ipc {
             return point_point_sqr_distance<scalar>(p, e1);
         case PointEdgeDistanceType::AUTO:
         default:
-            VectorMax3<scalar> t = e1 - e0;
-            const scalar len = t.norm();
-            t = t / len;
-
+            const VectorMax3<scalar> t = e1 - e0;
             const VectorMax3<scalar> pos = p - e0;
-            const scalar s = pos.dot(t) / len;
-            return (pos - (L_ns(s) * len) * t).squaredNorm();
+            const scalar s = pos.dot(t) / t.squaredNorm();
+            return (pos - L_ns(s) * t).squaredNorm();
         }
     }
 
@@ -295,24 +292,39 @@ namespace ipc {
     }
 
     template <typename scalar>
-    scalar edge_mollifier(const VectorMax3<scalar> &p, const VectorMax3<scalar> &e0, const VectorMax3<scalar> &e1, const scalar &dist_sqr)
+    scalar edge_mollifier(const VectorMax3<scalar> &p, const VectorMax3<scalar> &e0, const VectorMax3<scalar> &e1, const scalar &dist)
     {
-        const scalar denominator = dist_sqr * mollifier_threshold_eps;
-        return mollifier<scalar>(((p - e0).squaredNorm() - dist_sqr) / denominator) *
-            mollifier<scalar>(((p - e1).squaredNorm() - dist_sqr) / denominator);
+        const scalar denominator = dist * mollifier_threshold_eps;
+        return mollifier<scalar>(((p - e0).norm() - dist) / denominator) *
+            mollifier<scalar>(((p - e1).norm() - dist) / denominator);
+    }
+
+    inline std::array<HEAVISIDE_TYPE, 4> edge_edge_mollifier_type(
+        const Vector3<double> &ea0, const Vector3<double> &ea1,
+        const Vector3<double> &eb0, const Vector3<double> &eb1, 
+        const double &dist)
+    {
+        const double denominator = dist * mollifier_threshold_eps;
+        std::array<HEAVISIDE_TYPE, 4> mtypes;
+        mtypes[0] = (sqrt(point_edge_sqr_distance<double>(ea0, eb0, eb1)) - dist) >= denominator ? HEAVISIDE_TYPE::ONE : HEAVISIDE_TYPE::VARIANT;
+        mtypes[1] = (sqrt(point_edge_sqr_distance<double>(ea1, eb0, eb1)) - dist) >= denominator ? HEAVISIDE_TYPE::ONE : HEAVISIDE_TYPE::VARIANT;
+        mtypes[2] = (sqrt(point_edge_sqr_distance<double>(eb0, ea0, ea1)) - dist) >= denominator ? HEAVISIDE_TYPE::ONE : HEAVISIDE_TYPE::VARIANT;
+        mtypes[3] = (sqrt(point_edge_sqr_distance<double>(eb1, ea0, ea1)) - dist) >= denominator ? HEAVISIDE_TYPE::ONE : HEAVISIDE_TYPE::VARIANT;
+        return mtypes;
     }
 
     template <typename scalar>
     scalar edge_edge_mollifier(
         const Vector3<scalar> &ea0, const Vector3<scalar> &ea1,
         const Vector3<scalar> &eb0, const Vector3<scalar> &eb1, 
-        const scalar &dist_sqr)
+        const std::array<HEAVISIDE_TYPE, 4> mtypes,
+        const scalar &dist)
     {
-        const scalar denominator = dist_sqr * mollifier_threshold_eps;
-        scalar a = mollifier<scalar>((point_edge_sqr_distance<scalar>(ea0, eb0, eb1, PointEdgeDistanceType::AUTO) - dist_sqr) / denominator);
-        scalar b = mollifier<scalar>((point_edge_sqr_distance<scalar>(ea1, eb0, eb1, PointEdgeDistanceType::AUTO) - dist_sqr) / denominator);
-        scalar c = mollifier<scalar>((point_edge_sqr_distance<scalar>(eb0, ea0, ea1, PointEdgeDistanceType::AUTO) - dist_sqr) / denominator);
-        scalar d = mollifier<scalar>((point_edge_sqr_distance<scalar>(eb1, ea0, ea1, PointEdgeDistanceType::AUTO) - dist_sqr) / denominator);
+        const scalar denominator = dist * mollifier_threshold_eps;
+        scalar a = mtypes[0] == HEAVISIDE_TYPE::VARIANT ? mollifier<scalar>((sqrt(point_edge_sqr_distance<scalar>(ea0, eb0, eb1)) - dist) / denominator) : (mtypes[0] == HEAVISIDE_TYPE::ZERO ? scalar(0.) : scalar(1.));
+        scalar b = mtypes[1] == HEAVISIDE_TYPE::VARIANT ? mollifier<scalar>((sqrt(point_edge_sqr_distance<scalar>(ea1, eb0, eb1)) - dist) / denominator) : (mtypes[1] == HEAVISIDE_TYPE::ZERO ? scalar(0.) : scalar(1.));
+        scalar c = mtypes[2] == HEAVISIDE_TYPE::VARIANT ? mollifier<scalar>((sqrt(point_edge_sqr_distance<scalar>(eb0, ea0, ea1)) - dist) / denominator) : (mtypes[2] == HEAVISIDE_TYPE::ZERO ? scalar(0.) : scalar(1.));
+        scalar d = mtypes[3] == HEAVISIDE_TYPE::VARIANT ? mollifier<scalar>((sqrt(point_edge_sqr_distance<scalar>(eb1, ea0, ea1)) - dist) / denominator) : (mtypes[3] == HEAVISIDE_TYPE::ZERO ? scalar(0.) : scalar(1.));
         
         return a * b * c * d;
     }
@@ -323,11 +335,11 @@ namespace ipc {
         const VectorMax3<scalar> &e0, 
         const VectorMax3<scalar> &e1,
         const VectorMax3<scalar> &e2,
-        const scalar &dist_sqr)
+        const scalar &dist)
     {
-        const scalar denominator = dist_sqr * mollifier_threshold_eps;
-        return mollifier<scalar>(point_edge_sqr_distance<scalar>(p, e0, e1, PointEdgeDistanceType::AUTO) / denominator) *
-            mollifier<scalar>(point_edge_sqr_distance<scalar>(p, e2, e1, PointEdgeDistanceType::AUTO) / denominator) *
-            mollifier<scalar>(point_edge_sqr_distance<scalar>(p, e0, e2, PointEdgeDistanceType::AUTO) / denominator);
+        const scalar denominator = dist * mollifier_threshold_eps;
+        return mollifier<scalar>(sqrt(point_edge_sqr_distance<scalar>(p, e0, e1)) / denominator) *
+            mollifier<scalar>(sqrt(point_edge_sqr_distance<scalar>(p, e2, e1)) / denominator) *
+            mollifier<scalar>(sqrt(point_edge_sqr_distance<scalar>(p, e0, e2)) / denominator);
     }
 }

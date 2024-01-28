@@ -49,7 +49,7 @@ namespace ipc {
         
         params.dhat = get_dhat();
         return_val = return_val && smooth_point_edge_potential_single_point_3d_type(points.row(0), points.bottomRows(n_neighbors), 
-            points.row(1), points.row(2), points.row(3), points.row(4), params, otypes);
+            points.row(1), points.row(2), points.row(3), points.row(4), params, vert_otypes, edge_otypes);
 
         // double dist = sqrt(point_edge_distance(points.row(0), points.row(1), points.row(2), dtype));
         // if (dist < 1e-10)
@@ -80,7 +80,7 @@ namespace ipc {
     {
         auto points = slice_positions_large<scalar, 3>(positions);
         params.dhat = get_dhat();
-        return smooth_point_edge_potential_single_point_3d<scalar>(points.row(0), points.bottomRows(n_neighbors), points.row(1), points.row(2), points.row(3), points.row(4), params, otypes);
+        return smooth_point_edge_potential_single_point_3d<scalar>(points.row(0), points.bottomRows(n_neighbors), points.row(1), points.row(2), points.row(3), points.row(4), params, vert_otypes, edge_otypes);
     }
 
     double SmoothEdgeVertex3Collision::operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 

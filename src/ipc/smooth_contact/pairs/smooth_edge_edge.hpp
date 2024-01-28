@@ -14,14 +14,19 @@ namespace ipc {
         const Eigen::Ref<const Vector3<double>>& fb0,
         const Eigen::Ref<const Vector3<double>>& fb1,
         const ParameterType &params,
-        const EdgeEdgeDistanceType &dtype)
+        const EdgeEdgeDistanceType &dtype,
+        std::array<ORIENTATION_TYPES, 2> &otypes,
+        std::array<HEAVISIDE_TYPE, 4> &mtypes)
     {
         const double dist = sqrt(edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype));
         if (dist >= params.dhat)
             return false;
         
+        mtypes = edge_edge_mollifier_type(ea0, ea1, eb0, eb1, dist);
+        
         const Vector3<double> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype) / dist; // from edge a to edge b
-        return smooth_edge3_term_type(direc, ea0, ea1, fa0, fa1, params.alpha, params.beta) && smooth_edge3_term_type(-direc, eb0, eb1, fb0, fb1, params.alpha, params.beta);
+        return smooth_edge3_term_type(direc, ea0, ea1, fa0, fa1, params.alpha, params.beta, otypes[0]) && 
+                smooth_edge3_term_type(-direc, eb0, eb1, fb0, fb1, params.alpha, params.beta, otypes[1]);
     }
 
     /// @brief Compute edge-edge potential for edge [ea0, ea1] and [eb0, eb1]
@@ -38,16 +43,18 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& fb0,
         const Eigen::Ref<const Vector3<scalar>>& fb1,
         const ParameterType &params,
-        const EdgeEdgeDistanceType &dtype)
+        const EdgeEdgeDistanceType &dtype,
+        const std::array<ORIENTATION_TYPES, 2> &otypes,
+        const std::array<HEAVISIDE_TYPE, 4> &mtypes)
     {
-        const scalar dist_sqr = edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype);
-        const scalar barrier = inv_barrier<scalar>(sqrt(dist_sqr) / params.dhat, params.r);
+        const scalar dist = sqrt(edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype));
+        const scalar barrier = inv_barrier<scalar>(dist / params.dhat, params.r);
         
-        const Vector3<scalar> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype) / sqrt(dist_sqr); // from edge a to edge b
-        const scalar out = smooth_edge3_term<scalar>(direc, ea0, ea1, fa0, fa1, params.alpha, params.beta) * 
-                          smooth_edge3_term<scalar>(-direc, eb0, eb1, fb0, fb1, params.alpha, params.beta);
+        const Vector3<scalar> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype) / dist; // from edge a to edge b
+        const scalar out = smooth_edge3_term<scalar>(direc, ea0, ea1, fa0, fa1, params.alpha, params.beta, otypes[0]) * 
+                          smooth_edge3_term<scalar>(-direc, eb0, eb1, fb0, fb1, params.alpha, params.beta, otypes[1]);
 
-        const scalar mollifier_val = edge_edge_mollifier<scalar>(ea0, ea1, eb0, eb1, dist_sqr);
+        const scalar mollifier_val = edge_edge_mollifier<scalar>(ea0, ea1, eb0, eb1, mtypes, dist);
 
         // if constexpr (std::is_same<double,scalar>::value)
         // {
