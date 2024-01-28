@@ -24,22 +24,13 @@ namespace ipc {
         const Eigen::Ref<const Vector2<scalar>>& x1,
         const ParameterType &params)
     {
-        Vector2<scalar> tangent = e1 - e0;
-        const scalar len = tangent.norm();
-        tangent = tangent / len;
-
         Vector2<scalar> direc = point_edge_closest_point_direction<scalar>(p, e0, e1, PointEdgeDistanceType::AUTO);
-        const scalar dist_sqr = direc.squaredNorm();
-        direc = direc / sqrt(dist_sqr);
+        const scalar dist = direc.norm();
+        direc = direc / dist;
 
-        if (cross2<scalar>(direc, tangent) < 0)
-            return scalar(0.);
-        else
-        {
-            const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, dist_sqr);
-            return len * inv_barrier(sqrt(dist_sqr) / params.dhat, params.r) * mollifier_val * 
-                smooth_point2_term<scalar>(p, direc, x0, x1, params.alpha, params.beta);
-        }
+        const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, dist*dist);
+        return smooth_edge2_term<scalar>(direc, e1 - e0) * inv_barrier(dist / params.dhat, params.r) * mollifier_val * 
+            smooth_point2_term<scalar>(p, direc, x0, x1, params.alpha, params.beta);
     }
 
     inline bool smooth_point_edge_potential_single_point_3d_type(

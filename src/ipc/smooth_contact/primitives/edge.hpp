@@ -3,6 +3,17 @@
 #include <ipc/utils/distance_autodiff.hpp>
 
 namespace ipc {
+    template <typename scalar>
+    inline scalar smooth_edge2_term(
+        const Eigen::Ref<const Vector2<scalar>>& direc,
+        const Eigen::Ref<const Vector2<scalar>>& tangent)
+    {
+        if (cross2<scalar>(direc, tangent) < 0)
+            return scalar(0.);
+        else
+            return tangent.norm();
+    }
+
     /// @brief 
     /// @tparam scalar 
     /// @param direc from edge to point outside, normalized

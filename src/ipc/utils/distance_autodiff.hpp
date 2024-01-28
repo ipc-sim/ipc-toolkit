@@ -308,26 +308,11 @@ namespace ipc {
         const Vector3<scalar> &eb0, const Vector3<scalar> &eb1, 
         const scalar &dist_sqr)
     {
-        // Vector3<scalar> u = ea1 - ea0, v = eb1 - eb0;
-        // scalar a = u.norm(), b = v.norm();
-        // return mollifier<scalar>(-point_edge_closest_point_direction<scalar>(ea0, eb0, eb1).normalized().dot(u / a) / mollifier_threshold_eps) * 
-        // mollifier<scalar>(-point_edge_closest_point_direction<scalar>(ea1, eb0, eb1).normalized().dot(-u / a) / mollifier_threshold_eps) *
-        // mollifier<scalar>(-point_edge_closest_point_direction<scalar>(eb0, ea0, ea1).normalized().dot(v / b) / mollifier_threshold_eps) *
-        // mollifier<scalar>(-point_edge_closest_point_direction<scalar>(eb1, ea0, ea1).normalized().dot(-v / b) / mollifier_threshold_eps);
-        // const scalar da = (ea1 - ea0).squaredNorm() * mollifier_threshold_eps;
-        // const scalar db = (eb1 - eb0).squaredNorm() * mollifier_threshold_eps;
-
         const scalar denominator = dist_sqr * mollifier_threshold_eps;
         scalar a = mollifier<scalar>((point_edge_sqr_distance<scalar>(ea0, eb0, eb1, PointEdgeDistanceType::AUTO) - dist_sqr) / denominator);
         scalar b = mollifier<scalar>((point_edge_sqr_distance<scalar>(ea1, eb0, eb1, PointEdgeDistanceType::AUTO) - dist_sqr) / denominator);
         scalar c = mollifier<scalar>((point_edge_sqr_distance<scalar>(eb0, ea0, ea1, PointEdgeDistanceType::AUTO) - dist_sqr) / denominator);
         scalar d = mollifier<scalar>((point_edge_sqr_distance<scalar>(eb1, ea0, ea1, PointEdgeDistanceType::AUTO) - dist_sqr) / denominator);
-
-        // if constexpr (std::is_same<double, scalar>::value)
-        // {
-        //     if (a * b * c * d < 1e-18)
-        //         logger().error("")
-        // }
         
         return a * b * c * d;
     }

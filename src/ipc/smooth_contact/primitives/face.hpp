@@ -34,6 +34,6 @@ namespace ipc {
         if (normal.dot(p - v0) < 0)
             return scalar(0.);
         else
-            return 0.5 * normal.squaredNorm(); // area of triangle
+            return 0.5 * normal.norm(); // area of triangle
     }
 }
