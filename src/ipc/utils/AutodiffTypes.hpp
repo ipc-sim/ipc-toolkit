@@ -5,16 +5,16 @@
 
 namespace ipc
 {
-	template <int max_dim>
-	using AutodiffScalarGrad = DScalar1<double, Eigen::Matrix<double, Eigen::Dynamic, 1, 0, max_dim, 1>>;
-	template <int max_dim>
-	using AutodiffScalarHessian = DScalar2<double, Eigen::Matrix<double, Eigen::Dynamic, 1, 0, max_dim, 1>, Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, 0, max_dim, max_dim>>;
+	template <int dim, int max_dim = dim>
+	using AutodiffScalarGrad = DScalar1<double, Eigen::Matrix<double, dim, 1, 0, max_dim, 1>>;
+	template <int dim, int max_dim = dim>
+	using AutodiffScalarHessian = DScalar2<double, Eigen::Matrix<double, dim, 1, 0, max_dim, 1>, Eigen::Matrix<double, dim, dim, 0, max_dim, max_dim>>;
 
 	template <class T>
 	class AutoDiffAllocator
 	{
 	public:
-		T operator()(const int i, double v) const
+		T operator()(const int i, const double &v) const
 		{
 			return T(i, v);
 		}
@@ -24,7 +24,7 @@ namespace ipc
 	class AutoDiffAllocator<double>
 	{
 	public:
-		double operator()(const int i, double v) const
+		double operator()(const int i, const double &v) const
 		{
 			return v;
 		}

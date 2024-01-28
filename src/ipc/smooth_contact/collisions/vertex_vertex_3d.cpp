@@ -114,7 +114,7 @@ namespace ipc {
         const ParameterType &params) const
     {
         DiffScalarBase::setVariableCount(ndofs());
-        using Diff=AutodiffScalarGrad<-1>;
+        using Diff=AutodiffScalarGrad<-1, max_vert_3d * 3>;
         return evaluate_quadrature<Diff>(positions, params).getGradient().head(ndofs());
     }
 
@@ -124,7 +124,7 @@ namespace ipc {
         const bool project_hessian_to_psd) const
     {
         DiffScalarBase::setVariableCount(ndofs());
-        using Diff=AutodiffScalarHessian<-1>;
+        using Diff=AutodiffScalarHessian<-1, max_vert_3d * 3>;
         return evaluate_quadrature<Diff>(positions, params).getHessian().topLeftCorner(ndofs(), ndofs());
     }
 }

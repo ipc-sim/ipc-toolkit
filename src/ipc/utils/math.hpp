@@ -2,7 +2,7 @@
 
 #include <ipc/config.hpp>
 
-#include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/AutodiffTypes.hpp>
 
 namespace ipc {
     template <typename scalar>
@@ -209,13 +209,12 @@ namespace ipc {
     {
         std::array<Vector<T, dim>, nvert> points;
         points.fill(Vector<T, dim>::Zero(dim));
+
+        const AutoDiffAllocator<T> allocate_auto_diff_scalar;
         
         for (int i = 0, id = 0; i < nvert; i++)
             for (int d = 0; d < dim; d++, id++)
-                if constexpr (std::is_same<T, double>::value)
-                    points[i](d) = positions(id);
-                else
-                    points[i](d) = T(id, positions(id));
+                points[i](d) = allocate_auto_diff_scalar(id, positions(id));
 
         return points;
     }
