@@ -75,7 +75,7 @@ namespace ipc {
         const ParameterType &params) const
     {
         DiffScalarBase::setVariableCount(12);
-        using Diff=AutodiffScalarGrad<12>;
+        using Diff=ADGrad<12>;
         return evaluate_quadrature<Diff>(positions, params).getGradient();
     }
 
@@ -85,7 +85,7 @@ namespace ipc {
         const bool project_hessian_to_psd) const
     {
         DiffScalarBase::setVariableCount(12);
-        using Diff=AutodiffScalarHessian<12>;
+        using Diff=ADHessian<12>;
         return evaluate_quadrature<Diff>(positions, params).getHessian();
     }
 }

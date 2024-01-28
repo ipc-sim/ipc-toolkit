@@ -19,10 +19,10 @@ namespace ipc {
         const double dist_sqr = dist * dist;
         const double denominator = dist_sqr * mollifier_threshold_eps;
         std::array<HEAVISIDE_TYPE, 4> mtypes;
-        mtypes[0] = (point_edge_sqr_distance<double>(ea0, eb0, eb1) - dist_sqr) >= denominator ? HEAVISIDE_TYPE::ONE : HEAVISIDE_TYPE::VARIANT;
-        mtypes[1] = (point_edge_sqr_distance<double>(ea1, eb0, eb1) - dist_sqr) >= denominator ? HEAVISIDE_TYPE::ONE : HEAVISIDE_TYPE::VARIANT;
-        mtypes[2] = (point_edge_sqr_distance<double>(eb0, ea0, ea1) - dist_sqr) >= denominator ? HEAVISIDE_TYPE::ONE : HEAVISIDE_TYPE::VARIANT;
-        mtypes[3] = (point_edge_sqr_distance<double>(eb1, ea0, ea1) - dist_sqr) >= denominator ? HEAVISIDE_TYPE::ONE : HEAVISIDE_TYPE::VARIANT;
+        mtypes[0] = (point_edge_distance(ea0, eb0, eb1) - dist_sqr) >= denominator ? HEAVISIDE_TYPE::ONE : HEAVISIDE_TYPE::VARIANT;
+        mtypes[1] = (point_edge_distance(ea1, eb0, eb1) - dist_sqr) >= denominator ? HEAVISIDE_TYPE::ONE : HEAVISIDE_TYPE::VARIANT;
+        mtypes[2] = (point_edge_distance(eb0, ea0, ea1) - dist_sqr) >= denominator ? HEAVISIDE_TYPE::ONE : HEAVISIDE_TYPE::VARIANT;
+        mtypes[3] = (point_edge_distance(eb1, ea0, ea1) - dist_sqr) >= denominator ? HEAVISIDE_TYPE::ONE : HEAVISIDE_TYPE::VARIANT;
         return mtypes;
     }
 
@@ -46,7 +46,7 @@ namespace ipc {
     template <typename scalar>
     scalar triangle_mollifier(
         const VectorMax3<scalar> &p, 
-        const VectorMax3<scalar> &e0, 
+        const VectorMax3<scalar> &e0,
         const VectorMax3<scalar> &e1,
         const VectorMax3<scalar> &e2,
         const scalar &dist)

@@ -1,5 +1,6 @@
 #include "edge_vertex.hpp"
 #include <ipc/smooth_contact/pairs/smooth_point_edge.hpp>
+#include <ipc/distance/point_edge.hpp>
 #include <ipc/utils/quadrature.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
 #include <iostream>
@@ -86,7 +87,7 @@ namespace ipc {
     {
         auto points = slice_positions<double, 5, 2>(positions);
 
-        return point_edge_sqr_distance<double>(points.row(0), points.row(1), points.row(2), PointEdgeDistanceType::AUTO); 
+        return point_edge_distance(points.row(0), points.row(1), points.row(2), PointEdgeDistanceType::AUTO);
     }
 
     double SmoothEdgeVertexCollision::operator()(
@@ -101,7 +102,7 @@ namespace ipc {
         const ParameterType &params) const
     {
         DiffScalarBase::setVariableCount(10);
-        using Diff=AutodiffScalarGrad<10>;
+        using Diff=ADGrad<10>;
         return evaluate_quadrature<Diff>(positions, params).getGradient();
     }
 
@@ -111,7 +112,7 @@ namespace ipc {
         const bool project_hessian_to_psd) const
     {
         DiffScalarBase::setVariableCount(10);
-        using Diff=AutodiffScalarHessian<10>;
+        using Diff=ADHessian<10>;
         return evaluate_quadrature<Diff>(positions, params).getHessian();
     }
 }

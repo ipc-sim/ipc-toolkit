@@ -111,7 +111,7 @@ namespace ipc {
         const ParameterType &params) const
     {
         DiffScalarBase::setVariableCount(24);
-        using Diff=AutodiffScalarGrad<24>;
+        using Diff=ADGrad<24>;
 
         // auto func = [&](const Eigen::VectorXd &x)
         // {
@@ -140,7 +140,7 @@ namespace ipc {
         const bool project_hessian_to_psd) const
     {
         DiffScalarBase::setVariableCount(24);
-        using Diff=AutodiffScalarHessian<24>;
+        using Diff=ADHessian<24>;
         return evaluate_quadrature<Diff>(positions, params).getHessian();
     }
 }
