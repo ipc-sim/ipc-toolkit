@@ -498,7 +498,7 @@ TEST_CASE(
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
     bool success = tests::load_mesh(mesh_name, vertices, edges, faces);
-    vertices += Eigen::MatrixXd::Random(vertices.rows(), vertices.cols()) * 1e-5;
+    vertices += Eigen::MatrixXd::Random(vertices.rows(), vertices.cols()) * 1e-3;
     CAPTURE(mesh_name);
     REQUIRE(success);
 
@@ -560,7 +560,7 @@ TEST_CASE(
             return potential.gradient(
                 collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
-        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-6);
+        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-7);
     }
 
     REQUIRE(hess_b.squaredNorm() > 1e-3);
