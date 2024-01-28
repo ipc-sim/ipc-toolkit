@@ -1,5 +1,5 @@
 #include "collision.hpp"
-#include <ipc/smooth_contact/smooth_collision.hpp>
+#include <ipc/smooth_contact/collisions/smooth_collision.hpp>
 
 namespace ipc {
 

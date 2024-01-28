@@ -1,5 +1,5 @@
 #include "vertex_vertex_3d.hpp"
-#include "smooth_point_point.hpp"
+#include <ipc/smooth_contact/pairs/smooth_point_point.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
 #include <ipc/utils/logger.hpp>
 

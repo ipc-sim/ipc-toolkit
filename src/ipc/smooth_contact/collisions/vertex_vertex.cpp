@@ -1,5 +1,5 @@
 #include "vertex_vertex.hpp"
-#include "smooth_point_point.hpp"
+#include <ipc/smooth_contact/pairs/smooth_point_point.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
 
@@ -37,10 +37,10 @@ namespace ipc {
         std::array<Vector<double, 2>, 6> points = slice_positions<double, 6, 2>(positions);
 
         Vector<double, 2> direc = points[1] - points[0];
-
+        const double dist = direc.norm();
         if (direc.norm() >= get_dhat())
             return false;
-        direc.normalize();
+        direc /= dist;
 
         return smooth_point2_term_type(points[0], -direc, points[2], points[3], params.alpha, params.beta) &&
                 smooth_point2_term_type(points[1], direc, points[4], points[5], params.alpha, params.beta);

@@ -2,7 +2,7 @@
 
 #include <ipc/collisions/collision.hpp>
 #include <ipc/collision_mesh.hpp>
-#include "common.hpp"
+#include <ipc/smooth_contact/common.hpp>
 #include <ipc/utils/unordered_tuple.hpp>
 
 namespace ipc {

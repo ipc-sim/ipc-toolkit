@@ -25,15 +25,6 @@ public:
         const size_t start_i,
         const size_t end_i);
 
-    // plan for high order quadrature
-    // void add_neighbor_edge_collisions(
-    //     const CollisionMesh& mesh,
-    //     const Eigen::MatrixXd& vertices,
-    //     const ParameterType &param,
-    //     const std::function<double(const long &)> &edge_dhat,
-    //     const size_t start_i,
-    //     const size_t end_i);
-
     // ------------------------------------------------------------------------
 
     static void merge(
@@ -64,15 +55,6 @@ public:
         const std::function<double(const long &)> &face_dhat,
         const size_t start_i,
         const size_t end_i);
-
-    // plan for high order quadrature
-    // void add_neighbor_face_collisions(
-    //     const CollisionMesh& mesh,
-    //     const Eigen::MatrixXd& vertices,
-    //     const ParameterType &param,
-    //     const std::function<double(const long &)> &face_dhat,
-    //     const size_t start_i,
-    //     const size_t end_i);
 
     template <typename TCollision>
     static void add_collision(

@@ -1,5 +1,5 @@
 #include "edge_vertex_3d.hpp"
-#include "smooth_point_edge.hpp"
+#include <ipc/smooth_contact/pairs/smooth_point_edge.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
 #include <ipc/utils/logger.hpp>

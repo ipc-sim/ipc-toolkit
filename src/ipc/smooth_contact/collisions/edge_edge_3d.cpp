@@ -1,5 +1,5 @@
 #include "edge_edge_3d.hpp"
-#include "smooth_edge_edge.hpp"
+#include <ipc/smooth_contact/pairs/smooth_edge_edge.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
 #include <ipc/utils/logger.hpp>
 #include <ipc/distance/edge_edge.hpp>

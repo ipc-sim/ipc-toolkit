@@ -1,8 +1,8 @@
 #pragma once
 
-#include "point.hpp"
-#include "face.hpp"
-#include "common.hpp"
+#include <ipc/smooth_contact/primitives/point.hpp>
+#include <ipc/smooth_contact/primitives/face.hpp>
+#include <ipc/smooth_contact/common.hpp>
 
 namespace ipc {
     template <typename scalar>

@@ -1,5 +1,5 @@
 #include "face_vertex.hpp"
-#include "smooth_point_face.hpp"
+#include <ipc/smooth_contact/pairs/smooth_point_face.hpp>
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
 #include <ipc/utils/logger.hpp>

@@ -1,7 +1,8 @@
 #include "edge_vertex.hpp"
-#include "smooth_point_edge.hpp"
+#include <ipc/smooth_contact/pairs/smooth_point_edge.hpp>
 #include <ipc/utils/quadrature.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
+#include <iostream>
 
 DECLARE_DIFFSCALAR_BASE();
 
@@ -49,13 +50,14 @@ namespace ipc {
         const double dist = direc.norm();
         if (dist >= get_dhat())
             return false;
-        direc.normalize();
+        direc /= dist;
 
         // edge term
-        const double Phi = 1 - cross2<double>(direc, (points[2] - points[1]).normalized());
-        if (Phi >= params.alpha)
+        if (cross2<double>(direc, (points[2] - points[1]).normalized()) < 0)
         {
             // std::cout << "edge term zero\n";
+            if (dist < 1e-10)
+                std::cout << direc.transpose() << ", " << points[1].transpose() << ", " << points[2].transpose() << "\n";
             return false;
         }
 
@@ -63,6 +65,8 @@ namespace ipc {
         if (!smooth_point2_term_type(points[0], direc, points[3], points[4], params.alpha, params.beta))
         {
             // std::cout << "point term zero\n";
+            if (dist < 1e-10)
+                std::cout << direc.transpose() << ", " << points[1].transpose() << ", " << points[2].transpose() << "\n";
             return false;
         }
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "edge.hpp"
-#include "common.hpp"
+#include <ipc/smooth_contact/primitives/edge.hpp>
+#include <ipc/smooth_contact/common.hpp>
 
 namespace ipc {
     inline bool smooth_edge_edge_potential_type(
