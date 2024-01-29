@@ -21,7 +21,6 @@ void test_face_face_broad_phase(
 {
     // Face-face collisions
     if (mesh.num_faces() == 0 || method == BroadPhaseMethod::BRUTE_FORCE
-        || method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
         || method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
         return;
     }

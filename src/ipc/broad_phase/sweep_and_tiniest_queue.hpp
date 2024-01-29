@@ -42,12 +42,12 @@ public:
 
     /// @brief Find the candidate vertex-vertex collisions.
     /// @param[out] candidates The candidate vertex-vertex collisions.
-    [[noreturn]] void detect_vertex_vertex_candidates(
+    void detect_vertex_vertex_candidates(
         std::vector<VertexVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-vertex collisions.
     /// @param[out] candidates The candidate edge-vertex collisions.
-    [[noreturn]] void detect_edge_vertex_candidates(
+    void detect_edge_vertex_candidates(
         std::vector<EdgeVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-edge collisions.
@@ -62,12 +62,12 @@ public:
 
     /// @brief Find the candidate edge-face intersections.
     /// @param[out] candidates The candidate edge-face intersections.
-    [[noreturn]] void detect_edge_face_candidates(
+    void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const override;
 
     /// @brief Find the candidate face-face collisions.
     /// @param[out] candidates The candidate face-face collisions.
-    [[noreturn]] void detect_face_face_candidates(
+    void detect_face_face_candidates(
         std::vector<FaceFaceCandidate>& candidates) const override;
 
 protected:
@@ -80,8 +80,13 @@ protected:
     std::vector<scalable_ccd::AABB> vertex_boxes;
     std::vector<scalable_ccd::AABB> edge_boxes;
     std::vector<scalable_ccd::AABB> face_boxes;
-    mutable int fv_sort_axis = 0;
+
+    mutable int vv_sort_axis = 0;
+    mutable int ev_sort_axis = 0;
     mutable int ee_sort_axis = 0;
+    mutable int fv_sort_axis = 0;
+    mutable int ef_sort_axis = 0;
+    mutable int ff_sort_axis = 0;
 };
 
 #ifdef IPC_TOOLKIT_WITH_CUDA

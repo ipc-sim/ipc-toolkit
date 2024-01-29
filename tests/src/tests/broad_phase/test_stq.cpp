@@ -38,37 +38,54 @@ TEST_CASE("STQ Missing Features", "[broad_phase][stq]")
     CHECK(candidates.fv_candidates.size() == 1'655'541);
 
     // Test missing features for code coverage
+    if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+        try {
+            std::vector<VertexVertexCandidate> vv_candidates;
+            stq->detect_vertex_vertex_candidates(vv_candidates);
+            FAIL("Should have thrown");
+        } catch (const std::runtime_error& e) {
+            SUCCEED(e.what());
+        }
 
-    try {
+        try {
+            std::vector<EdgeVertexCandidate> ev_candidates;
+            stq->detect_edge_vertex_candidates(ev_candidates);
+            FAIL("Should have thrown");
+        } catch (const std::runtime_error& e) {
+            SUCCEED(e.what());
+        }
+
+        try {
+            std::vector<EdgeFaceCandidate> ef_candidates;
+            stq->detect_edge_face_candidates(ef_candidates);
+            FAIL("Should have thrown");
+        } catch (const std::runtime_error& e) {
+            SUCCEED(e.what());
+        }
+
+        try {
+            std::vector<FaceFaceCandidate> ff_candidates;
+            stq->detect_face_face_candidates(ff_candidates);
+            FAIL("Should have thrown");
+        } catch (const std::runtime_error& e) {
+            SUCCEED(e.what());
+        }
+    } else {
         std::vector<VertexVertexCandidate> vv_candidates;
         stq->detect_vertex_vertex_candidates(vv_candidates);
-        FAIL("Should have thrown");
-    } catch (const std::runtime_error& e) {
-        SUCCEED(e.what());
-    }
+        CHECK(vv_candidates.size() == 84'912);
 
-    try {
         std::vector<EdgeVertexCandidate> ev_candidates;
         stq->detect_edge_vertex_candidates(ev_candidates);
-        FAIL("Should have thrown");
-    } catch (const std::runtime_error& e) {
-        SUCCEED(e.what());
-    }
+        CHECK(ev_candidates.size() == 1'666'926);
 
-    try {
         std::vector<EdgeFaceCandidate> ef_candidates;
         stq->detect_edge_face_candidates(ef_candidates);
-        FAIL("Should have thrown");
-    } catch (const std::runtime_error& e) {
-        SUCCEED(e.what());
-    }
+        CHECK(ef_candidates.size() == 9'248'220);
 
-    try {
         std::vector<FaceFaceCandidate> ff_candidates;
         stq->detect_face_face_candidates(ff_candidates);
-        FAIL("Should have thrown");
-    } catch (const std::runtime_error& e) {
-        SUCCEED(e.what());
+        CHECK(ff_candidates.size() == 3'975'589);
     }
 
     stq->clear();

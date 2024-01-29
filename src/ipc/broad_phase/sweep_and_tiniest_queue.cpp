@@ -47,15 +47,28 @@ void SweepAndTiniestQueue::clear()
 void SweepAndTiniestQueue::detect_vertex_vertex_candidates(
     std::vector<VertexVertexCandidate>& candidates) const
 {
-    throw std::runtime_error(
-        "SweepAndTiniestQueue::detect_vertex_vertex_candidates not implemented!");
+    std::vector<std::pair<int, int>> overlaps;
+    scalable_ccd::sort_and_sweep(vertex_boxes, vv_sort_axis, overlaps);
+
+    for (const auto& [vai, vbi] : overlaps) {
+        if (can_vertices_collide(vai, vbi)) {
+            candidates.emplace_back(vai, vbi);
+        }
+    }
 }
 
 void SweepAndTiniestQueue::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
-    throw std::runtime_error(
-        "SweepAndTiniestQueue::detect_edge_vertex_candidates not implemented!");
+    std::vector<std::pair<int, int>> overlaps;
+    scalable_ccd::sort_and_sweep(
+        edge_boxes, vertex_boxes, ev_sort_axis, overlaps);
+
+    for (const auto& [ei, vi] : overlaps) {
+        if (can_edge_vertex_collide(ei, vi)) {
+            candidates.emplace_back(ei, vi);
+        }
+    }
 }
 
 void SweepAndTiniestQueue::detect_edge_edge_candidates(
@@ -88,15 +101,28 @@ void SweepAndTiniestQueue::detect_face_vertex_candidates(
 void SweepAndTiniestQueue::detect_edge_face_candidates(
     std::vector<EdgeFaceCandidate>& candidates) const
 {
-    throw std::runtime_error(
-        "SweepAndTiniestQueue::detect_edge_face_candidates not implemented!");
+    std::vector<std::pair<int, int>> overlaps;
+    scalable_ccd::sort_and_sweep(
+        edge_boxes, face_boxes, ef_sort_axis, overlaps);
+
+    for (const auto& [ei, fi] : overlaps) {
+        if (can_edge_face_collide(ei, fi)) {
+            candidates.emplace_back(ei, fi);
+        }
+    }
 }
 
 void SweepAndTiniestQueue::detect_face_face_candidates(
     std::vector<FaceFaceCandidate>& candidates) const
 {
-    throw std::runtime_error(
-        "SweepAndTiniestQueue::detect_face_face_candidates not implemented!");
+    std::vector<std::pair<int, int>> overlaps;
+    scalable_ccd::sort_and_sweep(face_boxes, ff_sort_axis, overlaps);
+
+    for (const auto& [fai, fbi] : overlaps) {
+        if (can_faces_collide(fai, fbi)) {
+            candidates.emplace_back(fai, fbi);
+        }
+    }
 }
 
 // ----------------------------------------------------------------------------
