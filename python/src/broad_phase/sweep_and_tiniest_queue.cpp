@@ -7,13 +7,10 @@ using namespace ipc;
 
 void define_sweep_and_tiniest_queue(py::module_& m)
 {
-    py::class_<CopyMeshBroadPhase, BroadPhase>(m, "CopyMeshBroadPhase");
-
-    py::class_<SweepAndTiniestQueue, CopyMeshBroadPhase>(
-        m, "SweepAndTiniestQueue");
+    py::class_<SweepAndTiniestQueue, BroadPhase>(m, "SweepAndTiniestQueue");
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
-    py::class_<SweepAndTiniestQueueGPU, CopyMeshBroadPhase>(
+    py::class_<SweepAndTiniestQueueGPU, BroadPhase>(
         m, "SweepAndTiniestQueueGPU");
 #endif
 }

@@ -11,22 +11,7 @@
 
 namespace ipc {
 
-// A version of the BP that copies the meshes into the class rather than making
-// the AABBs.
-class CopyMeshBroadPhase : public BroadPhase {
-protected:
-    void copy_mesh(const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces);
-
-    bool can_edge_vertex_collide(size_t ei, size_t vi) const override;
-    bool can_edges_collide(size_t eai, size_t ebi) const override;
-    bool can_face_vertex_collide(size_t fi, size_t vi) const override;
-    bool can_edge_face_collide(size_t ei, size_t fi) const override;
-
-    Eigen::MatrixXi edges;
-    Eigen::MatrixXi faces;
-};
-
-class SweepAndTiniestQueue : public CopyMeshBroadPhase {
+class SweepAndTiniestQueue : public BroadPhase {
 public:
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
@@ -86,21 +71,21 @@ public:
         std::vector<FaceFaceCandidate>& candidates) const override;
 
 protected:
-    long to_edge_id(long id) const;
-    long to_face_id(long id) const;
+    bool can_edge_vertex_collide(size_t ei, size_t vi) const override;
+    bool can_edges_collide(size_t eai, size_t ebi) const override;
+    bool can_face_vertex_collide(size_t fi, size_t vi) const override;
+    bool can_edge_face_collide(size_t ei, size_t fi) const override;
+    bool can_faces_collide(size_t fai, size_t fbi) const override;
 
-    bool is_vertex(long id) const;
-    bool is_edge(long id) const;
-    bool is_face(long id) const;
-
-    std::vector<scalable_ccd::stq::Aabb> boxes;
-    std::vector<std::pair<int, int>> overlaps;
-    long num_vertices;
-    int sort_axis = 0;
+    std::vector<scalable_ccd::AABB> vertex_boxes;
+    std::vector<scalable_ccd::AABB> edge_boxes;
+    std::vector<scalable_ccd::AABB> face_boxes;
+    mutable int fv_sort_axis = 0;
+    mutable int ee_sort_axis = 0;
 };
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
-class SweepAndTiniestQueueGPU : public CopyMeshBroadPhase {
+class SweepAndTiniestQueueGPU : public BroadPhase {
 public:
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
@@ -160,6 +145,16 @@ public:
         std::vector<FaceFaceCandidate>& candidates) const override;
 
 private:
+    bool can_edge_vertex_collide(size_t ei, size_t vi) const override;
+    bool can_edges_collide(size_t eai, size_t ebi) const override;
+    bool can_face_vertex_collide(size_t fi, size_t vi) const override;
+    bool can_edge_face_collide(size_t ei, size_t fi) const override;
+    bool can_faces_collide(size_t fai, size_t fbi) const override;
+
+    // Copy mesh
+    Eigen::MatrixXi edges;
+    Eigen::MatrixXi faces;
+
     std::vector<scalable_ccd::cuda::stq::Aabb> boxes;
     std::vector<std::pair<int, int>> overlaps;
 };
