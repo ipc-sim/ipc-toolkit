@@ -36,7 +36,7 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
     CAPTURE(method);
 
     // These methods do not support vertex-vertex candidates
-    if (method == ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+    if (method == ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE) {
         return;
     }
 
@@ -130,7 +130,7 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
     CAPTURE(method);
 
     // These methods do not support vertex-vertex candidates
-    if (method == ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+    if (method == ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE) {
         return;
     }
 

@@ -17,7 +17,7 @@ namespace ipc {
 namespace {
     bool implements_vertex_vertex(const BroadPhaseMethod method)
     {
-        return method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU;
+        return method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE;
     }
 
     // Pad codim_edges because remove_unreferenced requires a N×3 matrix.

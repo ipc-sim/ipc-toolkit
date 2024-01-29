@@ -4,6 +4,7 @@
 #include <ipc/broad_phase/bvh.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>
+#include <ipc/broad_phase/sweep_and_prune.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 #include <ipc/candidates/candidates.hpp>
 
@@ -74,11 +75,11 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod method)
         return std::make_shared<HashGrid>();
     case BroadPhaseMethod::SPATIAL_HASH:
         return std::make_shared<SpatialHash>();
+    case BroadPhaseMethod::SWEEP_AND_PRUNE:
+        return std::make_shared<SweepAndPrune>();
     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
-        return std::make_shared<SweepAndTiniestQueue>();
-    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU:
 #ifdef IPC_TOOLKIT_WITH_CUDA
-        return std::make_shared<SweepAndTiniestQueueGPU>();
+        return std::make_shared<SweepAndTiniestQueue>();
 #else
         throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
                                  "because CUDA is disabled!");

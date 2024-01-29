@@ -52,7 +52,7 @@ double compute_collision_free_stepsize(
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
 
-    if (broad_phase_method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+    if (broad_phase_method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE) {
 #ifdef IPC_TOOLKIT_WITH_CUDA
         // TODO: Use correct min_distance
         const double step_size = scalable_ccd::cuda::compute_toi_strategy(

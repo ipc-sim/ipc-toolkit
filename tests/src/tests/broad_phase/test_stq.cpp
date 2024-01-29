@@ -3,6 +3,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <ipc/broad_phase/sweep_and_prune.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 
 using namespace ipc;
@@ -19,10 +20,10 @@ TEST_CASE("STQ Missing Features", "[broad_phase][stq]")
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
     const BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE,
-        BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU);
+        BroadPhaseMethod::SWEEP_AND_PRUNE,
+        BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE);
 #else
-    const BroadPhaseMethod method = BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE;
+    const BroadPhaseMethod method = BroadPhaseMethod::SWEEP_AND_PRUNE;
 #endif
 
     std::shared_ptr<BroadPhase> stq = BroadPhase::make_broad_phase(method);
@@ -38,7 +39,7 @@ TEST_CASE("STQ Missing Features", "[broad_phase][stq]")
     CHECK(candidates.fv_candidates.size() == 1'655'541);
 
     // Test missing features for code coverage
-    if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+    if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE) {
         try {
             std::vector<VertexVertexCandidate> vv_candidates;
             stq->detect_vertex_vertex_candidates(vv_candidates);

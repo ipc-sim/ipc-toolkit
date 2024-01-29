@@ -522,7 +522,7 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
                 broad_phase_method=ipctk.BroadPhaseMethod.HASH_GRID)
 
 Possible values for ``broad_phase_method`` are: ``BRUTE_FORCE`` (parallel brute force culling), ``HASH_GRID`` (default), ``SPATIAL_HASH`` (implementation from the original IPC codebase),
-``BVH`` (`SimpleBVH <https://github.com/geometryprocessing/SimpleBVH>`_), ``SWEEP_AND_TINIEST_QUEUE`` (method of :cite:t:`Belgrod2023Time`), or ``SWEEP_AND_TINIEST_QUEUE_GPU`` (requires CUDA).
+``BVH`` (`SimpleBVH <https://github.com/geometryprocessing/SimpleBVH>`_), ``SWEEP_AND_PRUNE`` (method of :cite:t:`Belgrod2023Time`), or ``SWEEP_AND_TINIEST_QUEUE`` (requires CUDA).
 
 Narrow-Phase
 ^^^^^^^^^^^^
