@@ -135,7 +135,7 @@ void SmoothCollisionsBuilder<dim>::add_face_vertex_collisions(
 template <int dim> template <typename TCollision>
 void SmoothCollisionsBuilder<dim>::add_collision(
     const std::shared_ptr<TCollision>& pair,
-    unordered_map<unordered_tuple, std::tuple<TCollision, long> >& cc_to_id_,
+    unordered_map<std::pair<long, long>, std::tuple<TCollision, long> >& cc_to_id_,
     std::vector<std::shared_ptr<typename SmoothCollisions<dim>::value_type>>& collisions_)
 {
     const auto &cc = *std::dynamic_pointer_cast<TCollision>(pair);
@@ -152,13 +152,13 @@ void SmoothCollisionsBuilder<dim>::merge(
     const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>& local_storage,
     SmoothCollisions<dim>& merged_collisions)
 {
-    unordered_map<unordered_tuple, std::tuple<SmoothVertexVertexCollision, long> > vert_vert_2_to_id;
-    unordered_map<unordered_tuple, std::tuple<SmoothEdgeVertexCollision, long> > vert_edge_2_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothVertexVertexCollision, long> > vert_vert_2_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothEdgeVertexCollision, long> > vert_edge_2_to_id;
     
-    unordered_map<unordered_tuple, std::tuple<SmoothFaceVertexCollision, long> > face_vert_to_id;
-    unordered_map<unordered_tuple, std::tuple<SmoothVertexVertex3Collision, long> > vert_vert_3_to_id;
-    unordered_map<unordered_tuple, std::tuple<SmoothEdgeVertex3Collision, long> > edge_vert_3_to_id;
-    unordered_map<unordered_tuple, std::tuple<SmoothEdgeEdge3Collision, long> > edge_edge_3_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothFaceVertexCollision, long> > face_vert_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothVertexVertex3Collision, long> > vert_vert_3_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothEdgeVertex3Collision, long> > edge_vert_3_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothEdgeEdge3Collision, long> > edge_edge_3_to_id;
 
     // size up the hash items
     size_t total = 0;

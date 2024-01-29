@@ -3,7 +3,6 @@
 #include <ipc/collisions/collision.hpp>
 #include <ipc/collision_mesh.hpp>
 #include <ipc/smooth_contact/common.hpp>
-#include <ipc/utils/unordered_tuple.hpp>
 
 namespace ipc {
 
@@ -98,7 +97,7 @@ public:
     //     long max_ei = std::max(other.primitive0, other.primitive1);
     //     return H::combine(std::move(h), min_ei, max_ei);
     // }
-    unordered_tuple get_hash() const { return unordered_tuple(primitive0, primitive1); }
+    std::pair<long, long> get_hash() const { return std::make_pair(primitive0, primitive1); }
 
     double get_dhat() const
     {

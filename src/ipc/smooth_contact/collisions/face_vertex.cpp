@@ -41,38 +41,19 @@ namespace ipc {
         dtype = point_triangle_distance_type(points.row(0), points.row(1), points.row(2), points.row(3));
         const double dist = sqrt(point_triangle_distance(points.row(0), points.row(1), points.row(2), points.row(3), dtype));
 
-        bool return_val = true;
         if (dist >= get_dhat())
-            return_val = false;
+            return false;
 
-        // return true;
         if (dtype != PointTriangleDistanceType::P_T)
-            return_val = false;
+            return false;
 
         const Vector3<double> normal = (points.row(2) - points.row(1)).cross(points.row(3) - points.row(1));
         if ((points.row(0) - points.row(1)).dot(normal) < 0)
-            return_val = false;
+            return false;
 
         params.dhat = get_dhat();
         Vector3<double> direc = point_triangle_closest_point_direction<double>(points.row(0), points.row(1), points.row(2), points.row(3), dtype) / dist;
-        return_val = return_val && smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta, otypes);
-
-        // if (dist < 1e-10)
-        // {
-        //     logger().warn("[face-vert] dist {}, active {}, face term {}, point term {}, error {}", dist, return_val, !(Phi >= params.alpha), smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta), abs(evaluate_quadrature<double>(positions, params)));
-        //     // return true;
-        // }
-
-        // if (return_val || (abs(evaluate_quadrature<double>(positions, params)) > 1e-15 ))
-        // {
-        //     if (!return_val)
-        //     {
-        //         logger().error("[face-vert] dist {}, active {}, face term {}, point term {}, error {}", dist, return_val, !(Phi >= params.alpha), smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta), abs(evaluate_quadrature<double>(positions, params)));
-        //         return true;
-        //     }
-        // }
-
-        return return_val;
+        return smooth_point3_term_type(points.row(0), direc / direc.norm(), points.bottomRows(n_neighbors), params.alpha, params.beta, otypes);
     }
 
     double SmoothFaceVertexCollision::compute_distance(const Vector<double, -1, SmoothFaceVertexCollision::max_size>& positions) const

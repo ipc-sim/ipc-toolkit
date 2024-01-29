@@ -10,7 +10,7 @@ namespace ipc {
     const CollisionMesh &mesh,
     const ParameterType &param,
     const double &dhat,
-    const Eigen::MatrixXd &V): SmoothCollision<max_vert_3d>(primitive0_, primitive1_, dhat, mesh)
+    const Eigen::MatrixXd &V): SmoothCollision<max_vert_3d>(std::min(primitive0_, primitive1_), std::max(primitive0_, primitive1_), dhat, mesh)
     {
         vertices[0] = primitive0;
         vertices[1] = primitive1;
