@@ -4,16 +4,17 @@
 
 namespace ipc {
     template <typename scalar>
-    scalar edge_mollifier(const VectorMax3<scalar> &p, const VectorMax3<scalar> &e0, const VectorMax3<scalar> &e1, const scalar &dist)
+    scalar point_edge_mollifier(const VectorMax3<scalar> &p, const VectorMax3<scalar> &e0, const VectorMax3<scalar> &e1, const scalar &dist)
     {
-        const scalar denominator = dist * mollifier_threshold_eps;
-        return mollifier<scalar>(((p - e0).norm() - dist) / denominator) *
-            mollifier<scalar>(((p - e1).norm() - dist) / denominator);
+        const scalar dist_sqr = dist * dist;
+        const scalar denominator = dist_sqr * mollifier_threshold_eps;
+        return mollifier<scalar>(((p - e0).squaredNorm() - dist_sqr) / denominator) *
+            mollifier<scalar>(((p - e1).squaredNorm() - dist_sqr) / denominator);
     }
 
     inline std::array<HEAVISIDE_TYPE, 4> edge_edge_mollifier_type(
         const Vector3<double> &ea0, const Vector3<double> &ea1,
-        const Vector3<double> &eb0, const Vector3<double> &eb1, 
+        const Vector3<double> &eb0, const Vector3<double> &eb1,
         const double &dist)
     {
         const double dist_sqr = dist * dist;
@@ -44,7 +45,7 @@ namespace ipc {
     }
 
     template <typename scalar>
-    scalar triangle_mollifier(
+    scalar point_face_mollifier(
         const VectorMax3<scalar> &p, 
         const VectorMax3<scalar> &e0,
         const VectorMax3<scalar> &e1,

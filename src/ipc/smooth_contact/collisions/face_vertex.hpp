@@ -8,12 +8,13 @@ namespace ipc {
 
 class SmoothFaceVertexCollision : public SmoothCollision<max_vert_3d> {
 public:
+    constexpr static int max_size = SmoothCollision<max_vert_3d>::max_size;
     SmoothFaceVertexCollision(
         long primitive0_,
         long primitive1_,
         const CollisionMesh &mesh,
         const ParameterType &param,
-        const std::array<double, 2> &dhats_,
+        const double &dhat,
         const Eigen::MatrixXd &V);
     virtual ~SmoothFaceVertexCollision() 
     {
@@ -29,19 +30,18 @@ public:
         return n_neighbors + 4;
     }
 
-    double compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const override;
+    double compute_distance(const Vector<double, -1, max_size>& positions) const override;
 
-    double operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 
+    double operator()(const Vector<double, -1, max_size>& positions, 
         const ParameterType &params) const override;
 
-    Vector<double, -1, 3*max_vert_3d> gradient(
-        const Vector<double, -1, 3*max_vert_3d>& positions, 
+    Vector<double, -1, max_size> gradient(
+        const Vector<double, -1, max_size>& positions, 
         const ParameterType &params) const override;
 
-    MatrixMax<double, 3*max_vert_3d, 3*max_vert_3d> hessian(
-        const Vector<double, -1, 3*max_vert_3d>& positions, 
-        const ParameterType &params,
-        const bool project_hessian_to_psd = false) const override;
+    MatrixMax<double, max_size, max_size> hessian(
+        const Vector<double, -1, max_size>& positions, 
+        const ParameterType &params) const override;
     
     std::string name() const override { return "face-vert"; }
 

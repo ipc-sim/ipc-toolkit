@@ -1,6 +1,9 @@
 #pragma once
 
 #include "point_edge.hpp"
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/utils/AutodiffTypes.hpp>
+#include <iostream>
 
 namespace ipc {
     template <typename scalar>
@@ -44,6 +47,47 @@ namespace ipc {
         }
     }
 
+    // template <int dim, int max_dim>
+    // ADHessian<dim, max_dim> point_edge_sqr_distance(
+    //     const Eigen::Ref<const VectorMax3<ADHessian<dim, max_dim>>>& p,
+    //     const Eigen::Ref<const VectorMax3<ADHessian<dim, max_dim>>>& e0,
+    //     const Eigen::Ref<const VectorMax3<ADHessian<dim, max_dim>>>& e1,
+    //     const PointEdgeDistanceType dtype)
+    // {
+    //     const int size = p.size();
+    //     VectorMax9d vec(size * 3);
+    //     vec.head(size) = AutoDiffToDouble(p);
+    //     vec.segment(size, size) = AutoDiffToDouble(e0);
+    //     vec.tail(size) = AutoDiffToDouble(e1);
+
+    //     double val = point_edge_distance(vec.head(size), vec.segment(size, size), vec.tail(size), dtype);
+    //     auto grad = point_edge_distance_gradient(vec.head(size), vec.segment(size, size), vec.tail(size), dtype);
+    //     auto hess = point_edge_distance_hessian(vec.head(size), vec.segment(size, size), vec.tail(size), dtype);
+
+    //     ADHessian<dim, max_dim> out;
+    //     out.value = val;
+
+    //     MatrixMax9d G(size * 3, size * 3);
+    //     for (int d = 0; d < size; d++)
+    //     {
+    //         G.col(d) = p(d).grad;
+    //         G.col(size+d) = e0(d).grad;
+    //         G.col(2*size+d) = e1(d).grad;
+    //     }
+    //     out.grad = G * grad;
+
+    //     for (int d = 0; d < size; d++)
+    //     {
+    //         out.hess += p(d).hess * grad(d);
+    //         out.hess += e0(d).hess * grad(size+d);
+    //         out.hess += e1(d).hess * grad(2*size+d);
+    //     }
+    //     out.hess += G * hess * G.transpose();
+    //     std::cout << "point-edge dist hess fast\n";
+
+    //     return out;
+    // }
+
     template <typename scalar>
     VectorMax3<scalar> point_line_closest_point_direction(
         const Eigen::Ref<const VectorMax3<scalar>>& p,
@@ -73,12 +117,9 @@ namespace ipc {
         case PointEdgeDistanceType::AUTO:
         default:
             VectorMax3<scalar> t = e1 - e0;
-            const scalar len = t.norm();
-            t = t / len;
-
             const VectorMax3<scalar> pos = p - e0;
-            const scalar s = pos.dot(t) / len;
-            return pos - (L_ns(s) * len) * t;
+            const scalar s = pos.dot(t) / t.squaredNorm();
+            return pos - L_ns(s) * t;
         }
     }
 }

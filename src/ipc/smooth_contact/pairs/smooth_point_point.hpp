@@ -37,8 +37,8 @@ template <typename scalar>
 scalar smooth_point_point_potential_3d(
     const Eigen::Ref<const RowVector3<scalar>>& va,
     const Eigen::Ref<const RowVector3<scalar>>& vb,
-    const Eigen::Matrix<scalar, -1, 3> &ra,
-    const Eigen::Matrix<scalar, -1, 3> &rb,
+    const Eigen::Ref<const Eigen::Matrix<scalar, -1, 3>>& ra,
+    const Eigen::Ref<const Eigen::Matrix<scalar, -1, 3>>& rb,
     const ParameterType &params,
     const std::array<ORIENTATION_TYPES, 2> &otypes)
 {

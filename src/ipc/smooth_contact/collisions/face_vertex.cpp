@@ -10,8 +10,8 @@ namespace ipc {
     long primitive1_,
     const CollisionMesh &mesh,
     const ParameterType &param,
-    const std::array<double, 2> &dhats_,
-    const Eigen::MatrixXd &V): SmoothCollision<max_vert_3d>(primitive0_, primitive1_, dhats_, mesh)
+    const double &dhat,
+    const Eigen::MatrixXd &V): SmoothCollision<max_vert_3d>(primitive0_, primitive1_, dhat, mesh)
     {
         for (int lv : {0,1,2})
             vertices[lv+1] = mesh.faces()(primitive0, lv);
@@ -50,8 +50,7 @@ namespace ipc {
             return_val = false;
 
         const Vector3<double> normal = (points.row(2) - points.row(1)).cross(points.row(3) - points.row(1));
-        const double Phi = 1 - (points.row(0) - points.row(1)).dot(normal) / dist / normal.norm();
-        if (Phi >= params.alpha)
+        if ((points.row(0) - points.row(1)).dot(normal) < 0)
             return_val = false;
 
         params.dhat = get_dhat();
@@ -76,7 +75,7 @@ namespace ipc {
         return return_val;
     }
 
-    double SmoothFaceVertexCollision::compute_distance(const Vector<double, -1, 3*max_vert_3d>& positions) const
+    double SmoothFaceVertexCollision::compute_distance(const Vector<double, -1, SmoothFaceVertexCollision::max_size>& positions) const
     {
         auto points = slice_positions<double, -1, 3>(positions);
         return point_triangle_distance(points.row(0), points.row(1), points.row(2), points.row(3));
@@ -89,10 +88,9 @@ namespace ipc {
         params.dhat = get_dhat();
         return smooth_point_face_potential_single_point<scalar>(points.row(0), points.bottomRows(n_neighbors),
         points.row(1), points.row(2), points.row(3), params, dtype, otypes);
-        return scalar(0.);
     }
 
-    double SmoothFaceVertexCollision::operator()(const Vector<double, -1, 3*max_vert_3d>& positions, 
+    double SmoothFaceVertexCollision::operator()(const Vector<double, -1, SmoothFaceVertexCollision::max_size>& positions, 
         const ParameterType &params) const
     {
         assert(positions.size() == ndofs());
@@ -100,38 +98,18 @@ namespace ipc {
         return evaluate_quadrature<double>(positions, params);
     }
 
-    Vector<double, -1, 3*max_vert_3d> SmoothFaceVertexCollision::gradient(
-        const Vector<double, -1, 3*max_vert_3d>& positions, 
+    Vector<double, -1, SmoothFaceVertexCollision::max_size> SmoothFaceVertexCollision::gradient(
+        const Vector<double, -1, SmoothFaceVertexCollision::max_size>& positions, 
         const ParameterType &params) const
     {
         DiffScalarBase::setVariableCount(ndofs());
         using Diff=ADGrad<-1>;
-
-        // auto func = [&](const Eigen::VectorXd &x)
-        // {
-        //     return evaluate_quadrature<double>(positions, params);
-        // };
-
-        // Eigen::VectorXd g, gc, gl, gr;
-        // my_finite_gradient(positions, func, gc, FD_RULE::CENTRAL, 1e-8);
-        // my_finite_gradient(positions, func, gl, FD_RULE::LEFT, 1e-8);
-        // my_finite_gradient(positions, func, gr, FD_RULE::RIGHT, 1e-8);
-        // g = evaluate_quadrature<Diff>(positions, params).getGradient().head(ndofs());
-        
-        // Eigen::VectorXd max_ = gr.array().max(gc.array().max(gl.array()));
-        // Eigen::VectorXd min_ = gr.array().min(gc.array().min(gl.array()));
-        // if (std::max((g - max_).maxCoeff(), (max_ - min_).maxCoeff()) > 1e-2 * std::max(max_.norm(), min_.norm()))
-        // {
-        //     logger().error("[face-vert] {}: {} {}, {}, {}", (max_ - min_).maxCoeff(), g.transpose(), gc.transpose(), gl.transpose(), gr.transpose());
-        // }
-
         return evaluate_quadrature<Diff>(positions, params).getGradient().head(ndofs());
     }
 
-    MatrixMax<double, 3*max_vert_3d, 3*max_vert_3d> SmoothFaceVertexCollision::hessian(
-        const Vector<double, -1, 3*max_vert_3d>& positions, 
-        const ParameterType &params,
-        const bool project_hessian_to_psd) const
+    MatrixMax<double, SmoothFaceVertexCollision::max_size, SmoothFaceVertexCollision::max_size> SmoothFaceVertexCollision::hessian(
+        const Vector<double, -1, SmoothFaceVertexCollision::max_size>& positions, 
+        const ParameterType &params) const
     {
         DiffScalarBase::setVariableCount(ndofs());
         using Diff=ADHessian<-1>;

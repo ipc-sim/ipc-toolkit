@@ -29,7 +29,7 @@ namespace ipc {
         const scalar dist = direc.norm();
         direc = direc / dist;
 
-        const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, dist);
+        const scalar mollifier_val = point_edge_mollifier<scalar>(p, e0, e1, dist);
         return smooth_edge2_term<scalar>(direc, e1 - e0) * inv_barrier(dist / params.dhat, params.r) * mollifier_val * 
             smooth_point2_term<scalar>(p, direc, x0, x1, params.alpha, params.beta);
     }
@@ -61,7 +61,7 @@ namespace ipc {
     template <typename scalar>
     scalar smooth_point_edge_potential_single_point_3d(
         const Eigen::Ref<const Vector3<scalar>>& p,
-        const Eigen::Matrix<scalar, -1, 3> &neighbors,
+        const Eigen::Ref<const Eigen::Matrix<scalar, -1, 3>>& neighbors,
         const Eigen::Ref<const Vector3<scalar>>& e0,
         const Eigen::Ref<const Vector3<scalar>>& e1,
         const Eigen::Ref<const Vector3<scalar>>& f0,
@@ -76,7 +76,7 @@ namespace ipc {
 
         const scalar edge_term = smooth_edge3_term<scalar>(direc, e0, e1, f0, f1, params.alpha, params.beta, edge_otypes);
         const scalar barrier = inv_barrier<scalar>(dist / params.dhat, params.r);
-        const scalar mollifier_val = edge_mollifier<scalar>(p, e0, e1, dist);
+        const scalar mollifier_val = point_edge_mollifier<scalar>(p, e0, e1, dist);
         const scalar vert_term = smooth_point3_term<scalar>(p, direc, neighbors, params.alpha, params.beta, point_otypes);
 
         return edge_term * mollifier_val * vert_term * barrier;

@@ -50,7 +50,7 @@ public:
         const Vector<double, -1, element_size>& positions,
         const bool project_hessian_to_psd = false) const override
     {
-        MatrixMax<double, element_size, element_size> hess = collision.weight * collision.hessian(positions, params, project_hessian_to_psd);
+        MatrixMax<double, element_size, element_size> hess = collision.weight * collision.hessian(positions, params);
         return project_hessian_to_psd ? project_to_psd(hess) : hess;
     }
 

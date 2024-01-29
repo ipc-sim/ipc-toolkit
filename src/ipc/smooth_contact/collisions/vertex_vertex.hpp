@@ -15,7 +15,7 @@ public:
         long primitive1_,
         const CollisionMesh &mesh,
         const ParameterType &param,
-        const std::array<double, 2> &dhats_,
+        const double &dhat,
         const Eigen::MatrixXd &V);
 
     int ndofs() const override
@@ -39,8 +39,9 @@ public:
 
     MatrixMax18d hessian(
         const VectorMax18d& positions, 
-        const ParameterType &params,
-        const bool project_hessian_to_psd = false) const override;
+        const ParameterType &params) const override;
+
+    std::string name() const override { return "vert-vert-2d"; }
 
 private:
     template <typename scalar> 

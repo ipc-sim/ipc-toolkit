@@ -12,8 +12,8 @@ namespace ipc {
     long primitive1_,
     const CollisionMesh &mesh,
     const ParameterType &param,
-    const std::array<double, 2> &dhats_,
-    const Eigen::MatrixXd &V): SmoothCollision<6>(primitive0_, primitive1_, dhats_, mesh)
+    const double &dhat,
+    const Eigen::MatrixXd &V): SmoothCollision<6>(primitive0_, primitive1_, dhat, mesh)
     {
         vertices[0] = primitive0_;
         vertices[1] = primitive1_;
@@ -81,8 +81,7 @@ namespace ipc {
 
     MatrixMax18d SmoothVertexVertexCollision::hessian(
         const VectorMax18d& positions, 
-        const ParameterType &params,
-        const bool project_hessian_to_psd) const
+        const ParameterType &params) const
     {
         DiffScalarBase::setVariableCount(12);
         using Diff=ADHessian<12>;

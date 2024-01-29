@@ -5,7 +5,7 @@
 
 namespace ipc {
     template <typename scalar>
-    scalar edge_mollifier(const VectorMax3<scalar> &p, const VectorMax3<scalar> &e0, const VectorMax3<scalar> &e1, const scalar &dist);
+    scalar point_edge_mollifier(const VectorMax3<scalar> &p, const VectorMax3<scalar> &e0, const VectorMax3<scalar> &e1, const scalar &dist);
 
     inline std::array<HEAVISIDE_TYPE, 4> edge_edge_mollifier_type(
         const Vector3<double> &ea0, const Vector3<double> &ea1,
@@ -20,7 +20,7 @@ namespace ipc {
         const scalar &dist);
 
     template <typename scalar>
-    scalar triangle_mollifier(
+    scalar point_face_mollifier(
         const VectorMax3<scalar> &p, 
         const VectorMax3<scalar> &e0, 
         const VectorMax3<scalar> &e1,

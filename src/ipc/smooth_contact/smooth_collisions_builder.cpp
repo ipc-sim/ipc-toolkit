@@ -4,7 +4,6 @@
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/edge_edge.hpp>
-#include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/distance/point_triangle.hpp>
 #include <iostream>
 namespace ipc {
@@ -25,13 +24,11 @@ void SmoothCollisionsBuilder<dim>::add_edge_vertex_collisions(
         for (size_t i = start_i; i < end_i; i++) {
             const auto& [ei, vi] = candidates[i];
 
-            std::array<double, 2> dhats = {{edge_dhat(ei), vert_dhat(vi)}};
-            add_collision<SmoothEdgeVertexCollision>(std::make_shared<SmoothEdgeVertexCollision>(ei, vi, mesh, param, dhats, vertices), vert_edge_2_to_id, collisions);
+            add_collision<SmoothEdgeVertexCollision>(std::make_shared<SmoothEdgeVertexCollision>(ei, vi, mesh, param, std::min(edge_dhat(ei), vert_dhat(vi)), vertices), vert_edge_2_to_id, collisions);
 
             for (int j : {0, 1})
             {
-                dhats = {{ vert_dhat(mesh.edges()(ei, j)), vert_dhat(vi) }};
-                add_collision<SmoothVertexVertexCollision>(std::make_shared<SmoothVertexVertexCollision>(mesh.edges()(ei, j), vi, mesh, param, dhats, vertices), vert_vert_2_to_id, collisions);
+                add_collision<SmoothVertexVertexCollision>(std::make_shared<SmoothVertexVertexCollision>(mesh.edges()(ei, j), vi, mesh, param, std::min(vert_dhat(mesh.edges()(ei, j)), vert_dhat(vi)), vertices), vert_vert_2_to_id, collisions);
             }
         }
     }
@@ -72,8 +69,7 @@ void SmoothCollisionsBuilder<dim>::add_edge_edge_collisions(
                     continue;
             }
 
-            std::array<double, 2> dhats = {{edge_dhat(eai), edge_dhat(ebi)}};
-            add_collision<SmoothEdgeEdge3Collision>(std::make_shared<SmoothEdgeEdge3Collision>(eai, ebi, mesh, param, dhats, vertices), edge_edge_3_to_id, collisions);
+            add_collision<SmoothEdgeEdge3Collision>(std::make_shared<SmoothEdgeEdge3Collision>(eai, ebi, mesh, param, std::min(edge_dhat(eai), edge_dhat(ebi)), vertices), edge_edge_3_to_id, collisions);
         }
     }
 }
@@ -107,31 +103,30 @@ void SmoothCollisionsBuilder<dim>::add_face_vertex_collisions(
             if (distance >= vert_dhat(vi))
                 continue;
 
-            std::array<double, 2> dhats = {{face_dhat(fi), vert_dhat(vi)}};
             if (pt_dtype == PointTriangleDistanceType::P_T)
-                add_collision<SmoothFaceVertexCollision>(std::make_shared<SmoothFaceVertexCollision>(fi, vi, mesh, param, dhats, vertices), face_vert_to_id, collisions);
+                add_collision<SmoothFaceVertexCollision>(std::make_shared<SmoothFaceVertexCollision>(fi, vi, mesh, param, std::min(face_dhat(fi), vert_dhat(vi)), vertices), face_vert_to_id, collisions);
             
             for (int lv = 0; lv < 3; lv++)
             {
                 const auto &vj = mesh.faces()(fi, lv);
-                dhats = {{vert_dhat(vi), vert_dhat(vj)}};
-                if ((vertices.row(vi) - vertices.row(vj)).norm() >= std::min(dhats[0], dhats[1]))
+                const double dhat = std::min(vert_dhat(vi), vert_dhat(vj));
+                if ((vertices.row(vi) - vertices.row(vj)).norm() >= dhat)
                     continue;
-                add_collision<SmoothVertexVertex3Collision>(std::make_shared<SmoothVertexVertex3Collision>(vi, vj, mesh, param, dhats, vertices), vert_vert_3_to_id, collisions);
+                add_collision<SmoothVertexVertex3Collision>(std::make_shared<SmoothVertexVertex3Collision>(vi, vj, mesh, param, dhat, vertices), vert_vert_3_to_id, collisions);
             }
             
             for (int le = 0; le < 3; le++)
             {
                 const auto &eid = mesh.faces_to_edges()(fi, le);
-                dhats = {{edge_dhat(eid), vert_dhat(vi)}};
+                const double dhat = std::min(edge_dhat(eid), vert_dhat(vi));
 
                 const PointEdgeDistanceType pe_dtype = point_edge_distance_type(vertices.row(vi), vertices.row(mesh.edges()(eid, 0)), vertices.row(mesh.edges()(eid, 1)));
                 const double distance_sqr = point_edge_distance(vertices.row(vi), vertices.row(mesh.edges()(eid, 0)), vertices.row(mesh.edges()(eid, 1)), pe_dtype);
 
-                if (pe_dtype != PointEdgeDistanceType::P_E || sqrt(distance_sqr) >= std::min(dhats[0], dhats[1]))
+                if (pe_dtype != PointEdgeDistanceType::P_E || sqrt(distance_sqr) >= dhat)
                     continue;
 
-                add_collision<SmoothEdgeVertex3Collision>(std::make_shared<SmoothEdgeVertex3Collision>(eid, vi, mesh, param, dhats, vertices), edge_vert_3_to_id, collisions);
+                add_collision<SmoothEdgeVertex3Collision>(std::make_shared<SmoothEdgeVertex3Collision>(eid, vi, mesh, param, dhat, vertices), edge_vert_3_to_id, collisions);
             }
         }
     }

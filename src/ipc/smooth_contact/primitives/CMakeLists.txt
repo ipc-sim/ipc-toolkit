@@ -1,6 +1,10 @@
 set(SOURCES
+  edge.cpp
   edge.hpp
+  face.cpp
   face.hpp
+  primitive.hpp
+  point.cpp
   point.hpp
 )
 

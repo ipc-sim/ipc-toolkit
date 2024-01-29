@@ -1,17 +1,40 @@
 #pragma once
 
+#include "primitive.hpp"
 #include <ipc/smooth_contact/distance/mollifier.hpp>
 
 namespace ipc {
+    class Edge3 : public Primitive
+    {
+    public:
+        // d is a vector from closest point on the edge to the point outside of the edge
+        Edge3(const long &eid,
+            const Eigen::Ref<const Eigen::Vector3d>& d,
+            const Eigen::Ref<const Eigen::Vector3d>& v0,
+            const Eigen::Ref<const Eigen::Vector3d>& v1,
+            const Eigen::Ref<const Eigen::Vector3d>& f0,
+            const Eigen::Ref<const Eigen::Vector3d>& f1,
+            const double alpha, const double beta);
+        
+        bool is_active() override;
+        int n_vertices() const override;
+        
+        double potential() const override;
+        Eigen::VectorXd grad() const override;
+        Eigen::MatrixXd hessian() const override;
+    private:
+        const Eigen::Vector3d _d, _v0, _v1, _f0, _f1;
+        const double _alpha, _beta;
+
+        ORIENTATION_TYPES otypes;
+    };
+
     template <typename scalar>
     inline scalar smooth_edge2_term(
         const Eigen::Ref<const Vector2<scalar>>& direc,
         const Eigen::Ref<const Vector2<scalar>>& tangent)
     {
-        if (cross2<scalar>(direc, tangent) < 0)
-            return scalar(0.);
-        else
-            return tangent.norm();
+        return tangent.norm();
     }
 
     /// @brief 

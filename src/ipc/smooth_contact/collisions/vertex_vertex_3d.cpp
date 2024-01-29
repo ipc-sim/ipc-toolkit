@@ -9,8 +9,8 @@ namespace ipc {
     long primitive1_,
     const CollisionMesh &mesh,
     const ParameterType &param,
-    const std::array<double, 2> &dhats_,
-    const Eigen::MatrixXd &V): SmoothCollision<max_vert_3d>(primitive0_, primitive1_, dhats_, mesh)
+    const double &dhat,
+    const Eigen::MatrixXd &V): SmoothCollision<max_vert_3d>(primitive0_, primitive1_, dhat, mesh)
     {
         vertices[0] = primitive0;
         vertices[1] = primitive1;
@@ -121,8 +121,7 @@ namespace ipc {
 
     MatrixMax<double, 3*max_vert_3d, 3*max_vert_3d> SmoothVertexVertex3Collision::hessian(
         const Vector<double, -1, 3*max_vert_3d>& positions, 
-        const ParameterType &params,
-        const bool project_hessian_to_psd) const
+        const ParameterType &params) const
     {
         DiffScalarBase::setVariableCount(ndofs());
         using Diff=ADHessian<-1, max_vert_3d * 3>;

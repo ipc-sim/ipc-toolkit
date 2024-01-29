@@ -12,6 +12,8 @@ namespace ipc {
 template <int max_vert = 4>
 class Collision : virtual public CollisionStencil<max_vert> {
 public:
+    constexpr static int max_size = max_vert * 3;
+
     Collision() = default;
 
     Collision(
@@ -28,7 +30,7 @@ public:
     /// @brief Compute the mollifier threshold for the distance.
     /// @param rest_positions The stencil's rest vertex positions.
     /// @return The mollifier threshold.
-    virtual double mollifier_threshold(const Vector<double, -1, 3*max_vert>& rest_positions) const
+    virtual double mollifier_threshold(const Vector<double, -1, max_size>& rest_positions) const
     {
         return std::numeric_limits<double>::quiet_NaN(); // No mollifier
     }
@@ -36,54 +38,54 @@ public:
     /// @brief Compute the mollifier for the distance.
     /// @param positions The stencil's vertex positions.
     /// @return The mollifier value.
-    virtual double mollifier(const Vector<double, -1, 3*max_vert>& positions) const;
+    virtual double mollifier(const Vector<double, -1, max_size>& positions) const;
 
     /// @brief Compute the mollifier for the distance.
     /// @param positions The stencil's vertex positions.
     /// @param eps_x The mollifier's threshold.
     /// @return The mollifier value.
-    virtual double mollifier(const Vector<double, -1, 3*max_vert>& positions, double eps_x) const;
+    virtual double mollifier(const Vector<double, -1, max_size>& positions, double eps_x) const;
 
     /// @brief Compute the gradient of the mollifier for the distance wrt the positions.
     /// @param positions The stencil's vertex positions.
     /// @return The mollifier gradient.
-    virtual Vector<double, -1, 3*max_vert>
-    mollifier_gradient(const Vector<double, -1, 3*max_vert>& positions) const;
+    virtual Vector<double, -1, max_size>
+    mollifier_gradient(const Vector<double, -1, max_size>& positions) const;
 
     /// @brief Compute the gradient of the mollifier for the distance wrt the positions.
     /// @param positions The stencil's vertex positions.
     /// @param eps_x The mollifier's threshold.
     /// @return The mollifier gradient.
-    virtual Vector<double, -1, 3*max_vert>
-    mollifier_gradient(const Vector<double, -1, 3*max_vert>& positions, double eps_x) const;
+    virtual Vector<double, -1, max_size>
+    mollifier_gradient(const Vector<double, -1, max_size>& positions, double eps_x) const;
 
     /// @brief Compute the Hessian of the mollifier for the distance wrt the positions.
     /// @param positions The stencil's vertex positions.
     /// @return The mollifier Hessian.
-    virtual MatrixMax<double, 3*max_vert, 3*max_vert> mollifier_hessian(const Vector<double, -1, 3*max_vert>& positions) const;
+    virtual MatrixMax<double, max_size, max_size> mollifier_hessian(const Vector<double, -1, max_size>& positions) const;
 
     /// @brief Compute the Hessian of the mollifier for the distance wrt the positions.
     /// @param positions The stencil's vertex positions.
     /// @param eps_x The mollifier's threshold.
     /// @return The mollifier Hessian.
-    virtual MatrixMax<double, 3*max_vert, 3*max_vert>
-    mollifier_hessian(const Vector<double, -1, 3*max_vert>& positions, double eps_x) const;
+    virtual MatrixMax<double, max_size, max_size>
+    mollifier_hessian(const Vector<double, -1, max_size>& positions, double eps_x) const;
 
     /// @brief Compute the gradient of the mollifier for the distance w.r.t. rest positions.
     /// @param rest_positions The stencil's rest vertex positions.
     /// @param positions The stencil's vertex positions.
     /// @return The mollifier gradient w.r.t. rest positions.
     virtual Vector12d mollifier_gradient_wrt_x(
-        const Vector<double, -1, 3*max_vert>& rest_positions,
-        const Vector<double, -1, 3*max_vert>& positions) const;
+        const Vector<double, -1, max_size>& rest_positions,
+        const Vector<double, -1, max_size>& positions) const;
 
     /// @brief Compute the jacobian of the distance mollifier's gradient w.r.t. rest positions.
     /// @param rest_positions The stencil's rest vertex positions.
     /// @param positions The stencil's vertex positions.
     /// @return The jacobian of the mollifier's gradient w.r.t. rest positions.
     virtual Matrix12d mollifier_gradient_jacobian_wrt_x(
-        const Vector<double, -1, 3*max_vert>& rest_positions,
-        const Vector<double, -1, 3*max_vert>& positions) const;
+        const Vector<double, -1, max_size>& rest_positions,
+        const Vector<double, -1, max_size>& positions) const;
 
     // -------------------------------------------------------------------------
 

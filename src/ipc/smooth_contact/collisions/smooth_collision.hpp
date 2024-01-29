@@ -13,20 +13,14 @@ protected:
     SmoothCollision(
         long primitive0_,
         long primitive1_,
-        const std::array<double, 2> &dhats_,
+        const double &dhat,
         const CollisionMesh &mesh)
-    : primitive0(primitive0_), primitive1(primitive1_), dhats(dhats_)
+    : primitive0(primitive0_), primitive1(primitive1_), dhat_(dhat)
     {
         vertices.fill(-1);
     }
-    SmoothCollision(
-        long primitive0_,
-        long primitive1_,
-        const double &dhat,
-        const CollisionMesh &mesh)
-    : SmoothCollision(primitive0_, primitive1_, {{dhat, dhat}}, mesh)
-    { }
 public:
+    constexpr static int max_size = Collision<nvert>::max_size;
     virtual ~SmoothCollision() { }
 
     bool is_active() const { return is_active_; }
@@ -43,30 +37,29 @@ public:
     // ---- non distance type potential ----
 
     virtual double operator()(
-        const Vector<double, -1, 3*nvert>& positions, 
+        const Vector<double, -1, max_size>& positions, 
         const ParameterType &params) const { return 0.; }
 
-    virtual Vector<double, -1, 3*nvert> gradient(
-        const Vector<double, -1, 3*nvert>& positions, 
-        const ParameterType &params) const { return Vector<double, -1, 3*nvert>::Zero(positions.size()); }
+    virtual Vector<double, -1, max_size> gradient(
+        const Vector<double, -1, max_size>& positions, 
+        const ParameterType &params) const { return Vector<double, -1, max_size>::Zero(positions.size()); }
 
-    virtual MatrixMax<double, 3*nvert, 3*nvert> hessian(
-        const Vector<double, -1, 3*nvert>& positions, 
-        const ParameterType &params,
-        const bool project_hessian_to_psd = false) const { return MatrixMax<double, 3*nvert, 3*nvert>::Zero(positions.size(), positions.size()); }
+    virtual MatrixMax<double, max_size, max_size> hessian(
+        const Vector<double, -1, max_size>& positions, 
+        const ParameterType &params) const { return MatrixMax<double, max_size, max_size>::Zero(positions.size(), positions.size()); }
 
     // ---- distance ----
 
-    Vector<double, -1, 3*nvert>
-    compute_distance_gradient(const Vector<double, -1, 3*nvert>& positions) const override
+    Vector<double, -1, max_size>
+    compute_distance_gradient(const Vector<double, -1, max_size>& positions) const override
     {
-        return Vector<double, -1, 3*nvert>::Zero(3*nvert);
+        return Vector<double, -1, max_size>::Zero(max_size);
     }
 
-    MatrixMax<double, 3*nvert, 3*nvert>
-    compute_distance_hessian(const Vector<double, -1, 3*nvert>& positions) const override
+    MatrixMax<double, max_size, max_size>
+    compute_distance_hessian(const Vector<double, -1, max_size>& positions) const override
     {
-        return MatrixMax<double, 3*nvert, 3*nvert>::Zero(3*nvert, 3*nvert);
+        return MatrixMax<double, max_size, max_size>::Zero(max_size, max_size);
     }
 
     bool operator==(const SmoothCollision& other) const
@@ -107,14 +100,9 @@ public:
     // }
     unordered_tuple get_hash() const { return unordered_tuple(primitive0, primitive1); }
 
-    double get_eps() const
-    {
-        return pow(get_dhat(), 2);
-    }
-
     double get_dhat() const
     {
-        return std::min(dhats[0], dhats[1]);
+        return dhat_;
     }
 
     virtual std::string name() const { return ""; }
@@ -122,10 +110,8 @@ public:
 protected:
     bool is_active_ = true;
     long primitive0, primitive1;
-    std::array<double, 2> dhats;
+    double dhat_;
     std::array<long, nvert> vertices;
-
-    std::array<std::vector<int>, 2> primitive_vertices;
 };
 
 }

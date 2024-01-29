@@ -9,7 +9,7 @@ namespace ipc {
     template <typename scalar>
     scalar smooth_point_face_potential_single_point(
         const Eigen::Ref<const Vector3<scalar>>& p,
-        const Eigen::Matrix<scalar, -1, 3> &neighbors,
+        const Eigen::Ref<const Eigen::Matrix<scalar, -1, 3>>& neighbors,
         const Eigen::Ref<const Vector3<scalar>>& v0,
         const Eigen::Ref<const Vector3<scalar>>& v1,
         const Eigen::Ref<const Vector3<scalar>>& v2,
@@ -21,9 +21,9 @@ namespace ipc {
         const scalar dist = direc.norm();
 
         auto b = inv_barrier(dist / params.dhat, params.r);
-        auto ff = smooth_face_term<scalar>(p, v0, v1, v2);
+        auto ff = smooth_face_term<scalar>(v0, v1, v2);
         auto pp = smooth_point3_term<scalar>(p, direc / direc.norm(), neighbors, params.alpha, params.beta, otypes);
-        auto tt = triangle_mollifier<scalar>(p - direc, v0, v1, v2, dist);
+        auto tt = point_face_mollifier<scalar>(p - direc, v0, v1, v2, dist);
 
         // if constexpr (std::is_same<double,scalar>::value)
         // {

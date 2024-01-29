@@ -11,8 +11,8 @@ namespace ipc {
     long primitive1_,
     const CollisionMesh &mesh,
     const ParameterType &param,
-    const std::array<double, 2> &dhats_,
-    const Eigen::MatrixXd &V): SmoothCollision<max_vert_3d>(primitive0_, primitive1_, dhats_, mesh)
+    const double &dhat,
+    const Eigen::MatrixXd &V): SmoothCollision<max_vert_3d>(primitive0_, primitive1_, dhat, mesh)
     {
         auto a = mesh.find_edge_adjacent_vertices(primitive0_);
         auto b = mesh.find_edge_adjacent_vertices(primitive1_);
@@ -136,8 +136,7 @@ namespace ipc {
 
     MatrixMax<double, 3*max_vert_3d, 3*max_vert_3d> SmoothEdgeEdge3Collision::hessian(
         const Vector<double, -1, 3*max_vert_3d>& positions, 
-        const ParameterType &params,
-        const bool project_hessian_to_psd) const
+        const ParameterType &params) const
     {
         DiffScalarBase::setVariableCount(24);
         using Diff=ADHessian<24>;

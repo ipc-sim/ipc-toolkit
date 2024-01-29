@@ -13,7 +13,7 @@ public:
         long primitive1_,
         const CollisionMesh &mesh,
         const ParameterType &param,
-        const std::array<double, 2> &dhats_,
+        const double &dhat,
         const Eigen::MatrixXd &V);
     virtual ~SmoothEdgeVertex3Collision() 
     {
@@ -40,10 +40,9 @@ public:
 
     MatrixMax<double, 3*max_vert_3d, 3*max_vert_3d> hessian(
         const Vector<double, -1, 3*max_vert_3d>& positions, 
-        const ParameterType &params,
-        const bool project_hessian_to_psd = false) const override;
+        const ParameterType &params) const override;
     
-    std::string name() const override { return "edge-vert"; }
+    std::string name() const override { return "edge-vert-3d"; }
 
 private:
     template <typename scalar> 

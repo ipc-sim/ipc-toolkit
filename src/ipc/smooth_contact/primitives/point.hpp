@@ -1,8 +1,33 @@
 #pragma once
 
+#include "primitive.hpp"
 #include <ipc/smooth_contact/distance/mollifier.hpp>
 
 namespace ipc {
+    class Point3 : public Primitive
+    {
+    public:
+        // d is a vector from this point to the other primitive
+        Point3(const long &pid,
+            const Eigen::Ref<const Vector3<double>>& d,
+            const Eigen::Ref<const Vector3<double>>& v,
+            const Eigen::Ref<const Eigen::Matrix<double, 3, -1>>& neighbors,
+            const double alpha, const double beta);
+        
+        bool is_active() override;
+        int n_neighbors() const { return _neighbors.cols(); }
+        int n_vertices() const override;
+        
+        double potential() const override;
+        Eigen::VectorXd grad() const override;
+        Eigen::MatrixXd hessian() const override;
+    private:
+        const Eigen::Vector3d _d, _v;
+        const Eigen::Matrix<double, 3, -1> _neighbors;
+        const double _alpha, _beta;
+
+        ORIENTATION_TYPES otypes;
+    };
 
 /// @brief 
 /// @param v 
@@ -58,7 +83,7 @@ inline bool smooth_point2_term_type(
 /// @tparam scalar 
 /// @param direc normalized
 /// @param v 
-/// @param direc points to v
+/// @param direc points from the other primitive to v
 /// @param neighbors follow counter-clockwise order
 /// @param params 
 /// @return 
@@ -66,7 +91,7 @@ template <typename scalar>
 inline scalar smooth_point3_term(
     const Eigen::Ref<const RowVector3<scalar>>& v,
     const Eigen::Ref<const RowVector3<scalar>>& direc,
-    const Eigen::Matrix<scalar, -1, 3> &neighbors,
+    const Eigen::Ref<const Eigen::Matrix<scalar, -1, 3>>& neighbors,
     const double &alpha,
     const double &beta,
     const ORIENTATION_TYPES &otypes)
