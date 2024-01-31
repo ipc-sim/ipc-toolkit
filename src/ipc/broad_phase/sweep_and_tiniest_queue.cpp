@@ -2,7 +2,7 @@
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
 
-#include <scalable_ccd/cuda/tight_inclusion/helper.cuh>
+#include <scalable_ccd/cuda/stq/broadphase.cuh>
 
 namespace ipc {
 
@@ -20,8 +20,8 @@ void SweepAndTiniestQueue::build(
     edges = _edges;
     faces = _faces;
 
-    scalable_ccd::cuda::construct_static_collision_candidates(
-        vertices, edges, faces, overlaps, boxes, inflation_radius);
+    stq.build(vertices, edges, faces, boxes, inflation_radius);
+    overlaps = stq.detect_overlaps();
 }
 
 void SweepAndTiniestQueue::build(
@@ -39,14 +39,14 @@ void SweepAndTiniestQueue::build(
     edges = _edges;
     faces = _faces;
 
-    scalable_ccd::cuda::construct_continuous_collision_candidates(
-        vertices_t0, vertices_t1, edges, faces, overlaps, boxes,
-        inflation_radius);
+    stq.build(vertices_t0, vertices_t1, edges, faces, boxes, inflation_radius);
+    overlaps = stq.detect_overlaps();
 }
 
 void SweepAndTiniestQueue::clear()
 {
     BroadPhase::clear();
+    stq.clear();
     overlaps.clear();
     boxes.clear();
 }

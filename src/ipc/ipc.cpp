@@ -7,7 +7,7 @@
 #include <ipc/config.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
-#include <scalable_ccd/cuda/tight_inclusion/helper.cuh>
+#include <scalable_ccd/cuda/ipc_ccd_strategy.hpp>
 #endif
 
 #include <igl/predicates/segment_segment_intersect.h>
@@ -55,7 +55,7 @@ double compute_collision_free_stepsize(
     if (broad_phase_method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE) {
 #ifdef IPC_TOOLKIT_WITH_CUDA
         // TODO: Use correct min_distance
-        const double step_size = scalable_ccd::cuda::compute_toi_strategy(
+        const double step_size = scalable_ccd::cuda::ipc_ccd_strategy(
             vertices_t0, vertices_t1, mesh.edges(), mesh.faces(),
             max_iterations, /*min_distance=*/0, tolerance);
         if (step_size < 1.0) {

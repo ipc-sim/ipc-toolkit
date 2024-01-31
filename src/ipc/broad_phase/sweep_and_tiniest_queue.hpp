@@ -5,7 +5,7 @@
 #ifdef IPC_TOOLKIT_WITH_CUDA
 
 #include <ipc/broad_phase/broad_phase.hpp>
-#include <scalable_ccd/cuda/stq/aabb.cuh>
+#include <scalable_ccd/cuda/stq/broadphase.cuh>
 
 namespace ipc {
 
@@ -79,6 +79,7 @@ private:
     Eigen::MatrixXi edges;
     Eigen::MatrixXi faces;
 
+    scalable_ccd::cuda::stq::BroadPhase stq;
     std::vector<scalable_ccd::cuda::stq::Aabb> boxes;
     std::vector<std::pair<int, int>> overlaps;
 };
