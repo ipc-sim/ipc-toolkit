@@ -6,10 +6,10 @@ namespace ipc {
     constexpr static int n_vert_neighbors_2d = 3;
     constexpr static int n_edge_neighbors_2d = 2;
     constexpr static int max_vert_2d = 2 * std::max(n_vert_neighbors_2d, n_edge_neighbors_2d);
-    constexpr static int n_vert_neighbors_3d = 10;
+    constexpr static int n_vert_neighbors_3d = 15;
     constexpr static int n_edge_neighbors_3d = 4;
     constexpr static int n_face_neighbors_3d = 3;
-    constexpr static int max_vert_3d = 2 * std::max(std::max(n_vert_neighbors_3d, n_edge_neighbors_3d), n_face_neighbors_3d);
+    constexpr static int max_vert_3d = 24;
 
     struct ParameterType
     {

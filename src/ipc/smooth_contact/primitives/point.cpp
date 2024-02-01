@@ -15,6 +15,9 @@ namespace ipc {
         _vert_ids.reserve(1 + n_neighbors);
         _vert_ids.push_back(id);
         _vert_ids.insert( _vert_ids.end(), neighbor_ids.begin(), neighbor_ids.end() );
+
+        if (_vert_ids.size() > n_vert_neighbors_3d)
+            logger().error("Too many neighbors for point3 primitive! {} > {}", _vert_ids.size(), n_vert_neighbors_3d);
         
         otypes.set_size(n_neighbors);
 
