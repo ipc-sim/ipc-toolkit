@@ -1,9 +1,6 @@
 #pragma once
 
 #include "point_edge.hpp"
-#include <ipc/distance/point_edge.hpp>
-#include <ipc/utils/AutodiffTypes.hpp>
-#include <iostream>
 
 namespace ipc {
     template <typename scalar>
@@ -21,30 +18,6 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& e1)
     {
         return (e0 - p).cross(e1 - p).squaredNorm() / (e1 - e0).squaredNorm();
-    }
-
-    template <typename scalar>
-    scalar point_edge_sqr_distance(
-        const Eigen::Ref<const VectorMax3<scalar>>& p,
-        const Eigen::Ref<const VectorMax3<scalar>>& e0,
-        const Eigen::Ref<const VectorMax3<scalar>>& e1,
-        const PointEdgeDistanceType dtype)
-    {
-        switch (dtype)
-        {
-        case PointEdgeDistanceType::P_E:
-            return point_line_sqr_distance<scalar>(p, e0, e1);
-        case PointEdgeDistanceType::P_E0:
-            return point_point_sqr_distance<scalar>(p, e0);
-        case PointEdgeDistanceType::P_E1:
-            return point_point_sqr_distance<scalar>(p, e1);
-        case PointEdgeDistanceType::AUTO:
-        default:
-            const VectorMax3<scalar> t = e1 - e0;
-            const VectorMax3<scalar> pos = p - e0;
-            const scalar s = pos.dot(t) / t.squaredNorm();
-            return (pos - Math<scalar>::L_ns(s) * t).squaredNorm();
-        }
     }
 
     // template <int dim, int max_dim>
