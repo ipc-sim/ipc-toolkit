@@ -56,21 +56,21 @@ namespace ipc {
         const ORIENTATION_TYPES &otypes)
     {
         scalar tangent_term = scalar(1.); 
-        // if (otypes.tangent_type(0) != HEAVISIDE_TYPE::ONE)
+        if (otypes.tangent_type(0) != HEAVISIDE_TYPE::ONE)
         {
             const Vector3<scalar> t0 = point_line_closest_point_direction<scalar>(f0, e0, e1);
             tangent_term = tangent_term * Math<scalar>::smooth_heaviside(-direc.dot(t0) / t0.norm(), alpha, beta);
         }
-        // if (otypes.tangent_type(1) != HEAVISIDE_TYPE::ONE)
+        if (otypes.tangent_type(1) != HEAVISIDE_TYPE::ONE)
         {
             const Vector3<scalar> t1 = point_line_closest_point_direction<scalar>(f1, e0, e1);
             tangent_term = tangent_term * Math<scalar>::smooth_heaviside(-direc.dot(t1) / t1.norm(), alpha, beta);
         }
 
         scalar normal_term = scalar(0.);
-        // if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE || otypes.normal_type(1) == HEAVISIDE_TYPE::ONE)
-            // normal_term = scalar(1.);
-        // else
+        if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE || otypes.normal_type(1) == HEAVISIDE_TYPE::ONE)
+            normal_term = scalar(1.);
+        else
         {
             const Vector3<scalar> n0 = (e0 - f0).cross(e1 - f0);
             const Vector3<scalar> n1 = -(e0 - f1).cross(e1 - f1);

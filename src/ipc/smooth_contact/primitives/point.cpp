@@ -18,8 +18,6 @@ namespace ipc {
 
         if (_vert_ids.size() > n_vert_neighbors_3d)
             logger().error("Too many neighbors for point3 primitive! {} > {}", _vert_ids.size(), n_vert_neighbors_3d);
-        
-        otypes.set_size(n_neighbors);
 
         Eigen::Vector3d v = vertices.row(id);
         MatrixMax<double, n_vert_neighbors_3d, 3> neighbors(n_neighbors, dim);
@@ -27,8 +25,7 @@ namespace ipc {
         for (long i : neighbor_ids)
             neighbors.row(k++) = vertices.row(i);
 
-        ORIENTATION_TYPES tmp;
-        is_active_ = smooth_point3_term_type(v, -d.normalized(), neighbors, _alpha, _beta, tmp);
+        is_active_ = smooth_point3_term_type(v, -d.normalized(), neighbors, _alpha, _beta, otypes);
     }
 
     int Point3::n_vertices() const

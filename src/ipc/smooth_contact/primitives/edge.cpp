@@ -40,10 +40,7 @@ namespace ipc {
     {
         auto ids = mesh.find_edge_adjacent_vertices(id);
         _vert_ids = std::vector<long>(ids.begin(), ids.begin() + ids.size());
-        otypes.set_size(2);
-
-        ORIENTATION_TYPES tmp;
-        is_active_ = smooth_edge3_term_type(d.normalized(), vertices.row(_vert_ids[0]), vertices.row(_vert_ids[1]), vertices.row(_vert_ids[2]), vertices.row(_vert_ids[3]), _alpha, _beta, tmp);
+        is_active_ = smooth_edge3_term_type(d.normalized(), vertices.row(_vert_ids[0]), vertices.row(_vert_ids[1]), vertices.row(_vert_ids[2]), vertices.row(_vert_ids[3]), _alpha, _beta, otypes);
     }
     
     int Edge3::n_vertices() const

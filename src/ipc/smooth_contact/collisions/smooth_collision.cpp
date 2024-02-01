@@ -130,6 +130,7 @@ namespace ipc {
         const Vector<double, dim> closest_direction = PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, double>::compute_closest_direction(x, DTYPE::AUTO);
         const double dist = closest_direction.norm();
 
+        assert(positions.size() == pA->n_dofs() + pB->n_dofs());
         double a1 = pA->potential(closest_direction, positions.head(pA->n_dofs()));
         double a2 = pB->potential(-closest_direction, positions.tail(pB->n_dofs()));
         double a3 = Math<double>::inv_barrier(dist / Super::get_dhat(), params.r);
