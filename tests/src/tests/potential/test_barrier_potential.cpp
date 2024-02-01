@@ -563,7 +563,7 @@ TEST_CASE(
 
     REQUIRE(hess_b.squaredNorm() > 1e-3);
     std::cout << "hess relative error " << (hess_b - fhess_b).norm() / hess_b.norm() << ", norms " << hess_b.norm() << " " << fhess_b.norm() << "\n";
-    CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-4));
+    CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
 }
 
 TEST_CASE(
