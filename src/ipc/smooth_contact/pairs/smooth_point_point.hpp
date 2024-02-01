@@ -28,7 +28,7 @@ scalar smooth_point_point_potential_2d(
     const scalar dist = direc.norm();
     direc = direc / dist;
 
-    return inv_barrier<scalar>(dist / params.dhat, params.r) *
+    return Math<scalar>::inv_barrier(dist / params.dhat, params.r) *
             smooth_point2_term<scalar>(va, -direc, ea0, ea1, params.alpha, params.beta) *
             smooth_point2_term<scalar>(vb,  direc, eb0, eb1, params.alpha, params.beta);
 }
@@ -48,7 +48,7 @@ scalar smooth_point_point_potential_3d(
 
     const scalar term_a = smooth_point3_term<scalar>(va, direc, ra, params.alpha, params.beta, otypes[0]);
     const scalar term_b = smooth_point3_term<scalar>(vb, -direc, rb, params.alpha, params.beta, otypes[1]);
-    const scalar barrier = inv_barrier<scalar>(dist / params.dhat, params.r);
+    const scalar barrier = Math<scalar>::inv_barrier(dist / params.dhat, params.r);
 
     return term_a * term_b * barrier;
 }

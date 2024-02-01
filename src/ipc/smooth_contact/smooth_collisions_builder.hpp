@@ -6,6 +6,13 @@
 
 #include <Eigen/Core>
 
+#include <ipc/smooth_contact/collisions/vertex_vertex.hpp>
+// #include <ipc/smooth_contact/collisions/vertex_vertex_3d.hpp>
+#include <ipc/smooth_contact/collisions/edge_vertex.hpp>
+// #include <ipc/smooth_contact/collisions/edge_vertex_3d.hpp>
+// #include <ipc/smooth_contact/collisions/edge_edge_3d.hpp>
+// #include <ipc/smooth_contact/collisions/face_vertex.hpp>
+
 namespace ipc {
 
 template <int dim>
@@ -67,10 +74,10 @@ public:
     unordered_map<std::pair<long, long>, std::tuple<SmoothVertexVertexCollision, long> > vert_vert_2_to_id;
     unordered_map<std::pair<long, long>, std::tuple<SmoothEdgeVertexCollision, long> > vert_edge_2_to_id;
     
-    unordered_map<std::pair<long, long>, std::tuple<SmoothFaceVertexCollision, long> > face_vert_to_id;
-    unordered_map<std::pair<long, long>, std::tuple<SmoothVertexVertex3Collision, long> > vert_vert_3_to_id;
-    unordered_map<std::pair<long, long>, std::tuple<SmoothEdgeVertex3Collision, long> > edge_vert_3_to_id;
-    unordered_map<std::pair<long, long>, std::tuple<SmoothEdgeEdge3Collision, long> > edge_edge_3_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothCollisionTemplate<max_vert_3d, Face  , Point3>, long> > face_vert_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>, long> > vert_vert_3_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothCollisionTemplate<max_vert_3d, Edge3 , Point3>, long> > edge_vert_3_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothCollisionTemplate<max_vert_3d, Edge3 , Edge3 >, long> > edge_edge_3_to_id;
 
     // Constructed collisions
     std::vector<std::shared_ptr<typename SmoothCollisions<dim>::value_type>> collisions;

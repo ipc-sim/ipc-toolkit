@@ -43,7 +43,7 @@ namespace ipc {
             const VectorMax3<scalar> t = e1 - e0;
             const VectorMax3<scalar> pos = p - e0;
             const scalar s = pos.dot(t) / t.squaredNorm();
-            return (pos - L_ns(s) * t).squaredNorm();
+            return (pos - Math<scalar>::L_ns(s) * t).squaredNorm();
         }
     }
 
@@ -119,7 +119,7 @@ namespace ipc {
             VectorMax3<scalar> t = e1 - e0;
             const VectorMax3<scalar> pos = p - e0;
             const scalar s = pos.dot(t) / t.squaredNorm();
-            return pos - L_ns(s) * t;
+            return pos - Math<scalar>::L_ns(s) * t;
         }
     }
 }

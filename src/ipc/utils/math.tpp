@@ -112,7 +112,7 @@ namespace ipc {
             return x * (2. - x);
         }
         return scalar(1.);
-        // return smooth_heaviside<scalar>(x - 1.);
+        // return smooth_heaviside<scalar>(x - 1., 1., 0.);
     }
 
     // support is [0, 1]

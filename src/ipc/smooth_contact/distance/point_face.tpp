@@ -11,7 +11,7 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& f2)
     {
         const Vector3<scalar> normal = (f2 - f0).cross(f1 - f0);
-        return sqr(normal.dot(p - f0)) / normal.squaredNorm();
+        return Math<scalar>::sqr(normal.dot(p - f0)) / normal.squaredNorm();
     }
 
     template <typename scalar>
@@ -22,6 +22,10 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& t2,
         PointTriangleDistanceType dtype)
     {
+        if constexpr (std::is_same<double, scalar>::value)
+            if (dtype == PointTriangleDistanceType::AUTO)
+                dtype = point_triangle_distance_type(p, t0, t1, t2);
+
         switch (dtype) {
         case PointTriangleDistanceType::P_T0:
             return point_point_sqr_distance<scalar>(p, t0);
@@ -69,6 +73,10 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& t2,
         PointTriangleDistanceType dtype)
     {
+        if constexpr (std::is_same<double, scalar>::value)
+            if (dtype == PointTriangleDistanceType::AUTO)
+                dtype = point_triangle_distance_type(p, t0, t1, t2);
+
         switch (dtype) {
         case PointTriangleDistanceType::P_T0:
             return p - t0;

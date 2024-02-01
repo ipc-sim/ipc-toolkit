@@ -29,8 +29,8 @@ namespace ipc {
         const scalar dist = direc.norm();
         direc = direc / dist;
 
-        const scalar mollifier_val = point_edge_mollifier<scalar>(p, e0, e1, dist);
-        return smooth_edge2_term<scalar>(direc, e1 - e0) * inv_barrier(dist / params.dhat, params.r) * mollifier_val * 
+        const scalar mollifier_val = point_edge_mollifier<scalar>(p, e0, e1, dist*dist);
+        return smooth_edge2_term<scalar>(direc, e1 - e0) * Math<scalar>::inv_barrier(dist / params.dhat, params.r) * mollifier_val * 
             smooth_point2_term<scalar>(p, direc, x0, x1, params.alpha, params.beta);
     }
 
@@ -75,8 +75,8 @@ namespace ipc {
         direc = direc / dist;
 
         const scalar edge_term = smooth_edge3_term<scalar>(direc, e0, e1, f0, f1, params.alpha, params.beta, edge_otypes);
-        const scalar barrier = inv_barrier<scalar>(dist / params.dhat, params.r);
-        const scalar mollifier_val = point_edge_mollifier<scalar>(p, e0, e1, dist);
+        const scalar barrier = Math<scalar>::inv_barrier(dist / params.dhat, params.r);
+        const scalar mollifier_val = point_edge_mollifier<scalar>(p, e0, e1, dist*dist);
         const scalar vert_term = smooth_point3_term<scalar>(p, direc, neighbors, params.alpha, params.beta, point_otypes);
 
         return edge_term * mollifier_val * vert_term * barrier;

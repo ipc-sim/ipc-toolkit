@@ -22,7 +22,7 @@ set(SOURCES
   quadrature.hpp
   tangents.cpp
   tangents.hpp
-  math.tpp
+  math.cpp
   math.hpp
   autodiff.h
   AutodiffTypes.hpp

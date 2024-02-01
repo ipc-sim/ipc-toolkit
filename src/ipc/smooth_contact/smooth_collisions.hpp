@@ -1,12 +1,7 @@
 #pragma once
 
 #include <ipc/collisions/collisions.hpp>
-#include <ipc/smooth_contact/collisions/vertex_vertex.hpp>
-#include <ipc/smooth_contact/collisions/vertex_vertex_3d.hpp>
-#include <ipc/smooth_contact/collisions/edge_vertex.hpp>
-#include <ipc/smooth_contact/collisions/edge_vertex_3d.hpp>
-#include <ipc/smooth_contact/collisions/edge_edge_3d.hpp>
-#include <ipc/smooth_contact/collisions/face_vertex.hpp>
+#include <ipc/smooth_contact/collisions/smooth_collision.hpp>
 
 namespace ipc {
 

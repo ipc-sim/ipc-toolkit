@@ -19,44 +19,42 @@ namespace ipc {
     //         return {{v0_, v1_, v2_}};
     //     }
     // }
-    Face::Face(const long &fid,
-        const Eigen::Ref<const Eigen::Vector3d>& d,
-        const Eigen::Ref<const Eigen::Vector3d>& v0,
-        const Eigen::Ref<const Eigen::Vector3d>& v1,
-        const Eigen::Ref<const Eigen::Vector3d>& v2)
-    : Primitive(fid), _d(d), _v0(v0), _v1(v1), _v2(v2)
+    Face::Face(const long &id, 
+            const CollisionMesh& mesh,
+            const Eigen::MatrixXd& vertices,
+            const VectorMax3d& d,
+            const double &alpha,
+            const double &beta)
+    : Primitive(id, alpha, beta)
     {
-        normal = (v1 - v0).cross(v2 - v0);
-    }
-    bool Face::is_active()
-    {
-        return normal.dot(_d) > 0;
+        _vert_ids = {{mesh.faces()(id, 0), mesh.faces()(id, 1), mesh.faces()(id, 2)}};
+        Vector3d a = vertices.row(_vert_ids[1]) - vertices.row(_vert_ids[0]);
+        Vector3d b = vertices.row(_vert_ids[2]) - vertices.row(_vert_ids[0]);
+        is_active_ = a.cross(b).dot(d) > 0;
     }
     int Face::n_vertices() const
     {
-        return 1 + n_face_neighbors_3d;
+        return n_face_neighbors_3d;
     }
-    double Face::potential() const
+    double Face::potential(const Vector3d &d, const Vector9d &x) const
     {
-        return smooth_face_term<double>(_v0, _v1, _v2);
+        return smooth_face_term<double>(x.head<3>(), x.segment<3>(3), x.tail<3>());
     }
-    Eigen::VectorXd Face::grad() const
+    Vector12d Face::grad(const Vector3d &d, const Vector9d &x) const
     {
-        Eigen::VectorXd g;
-        g.setZero(n_vertices() * 3);
-        Eigen::VectorXd tmp(9);
-        tmp << _v0, _v1, _v2;
-        auto X = slice_positions<ADGrad<9>, 3, 3>(tmp);
+        Vector12d g;
+        g.setZero();
+        DiffScalarBase::setVariableCount(9);
+        auto X = slice_positions<ADGrad<9>, 3, 3>(x);
         g.tail<9>() = smooth_face_term<ADGrad<9>>(X.row(0), X.row(1), X.row(2)).getGradient();
         return g;
     }
-    Eigen::MatrixXd Face::hessian() const
+    Matrix12d Face::hessian(const Vector3d &d, const Vector9d &x) const
     {
-        Eigen::MatrixXd h;
-        h.setZero(n_vertices() * 3, n_vertices() * 3);
-        Eigen::VectorXd tmp(9);
-        tmp << _v0, _v1, _v2;
-        auto X = slice_positions<ADHessian<9>, 3, 3>(tmp);
+        Matrix12d h;
+        h.setZero();
+        DiffScalarBase::setVariableCount(9);
+        auto X = slice_positions<ADHessian<9>, 3, 3>(x);
         h.bottomRightCorner<9, 9>() = smooth_face_term<ADHessian<9>>(X.row(0), X.row(1), X.row(2)).getHessian();
         return h;
     }

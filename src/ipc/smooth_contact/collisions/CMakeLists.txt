@@ -11,6 +11,7 @@ set(SOURCES
   vertex_vertex.hpp
   vertex_vertex_3d.cpp
   vertex_vertex_3d.hpp
+  smooth_collision.cpp
   smooth_collision.hpp
 )
 

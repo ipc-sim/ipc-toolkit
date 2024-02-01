@@ -541,9 +541,7 @@ TEST_CASE(
     }
 
     REQUIRE(grad_b.squaredNorm() > 1e-8);
-    std::cout << "grad relative error " << (grad_b - fgrad_b).norm() / grad_b.norm() << "\n";
-    // std::cout << std::setprecision(15) << grad_b.transpose() << "\n";
-    // std::cout << fgrad_b.transpose() << "\n";
+    std::cout << "grad relative error " << (grad_b - fgrad_b).norm() / grad_b.norm() << ", norms " << grad_b.norm() << " " << fgrad_b.norm() << "\n";
     CHECK(fd::compare_gradient(grad_b, fgrad_b));
 
     // -------------------------------------------------------------------------
@@ -560,12 +558,12 @@ TEST_CASE(
             return potential.gradient(
                 collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
-        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-7);
+        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-8);
     }
 
     REQUIRE(hess_b.squaredNorm() > 1e-3);
-    std::cout << "hess relative error " << (hess_b - fhess_b).norm() / hess_b.norm() << "\n";
-    CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
+    std::cout << "hess relative error " << (hess_b - fhess_b).norm() / hess_b.norm() << ", norms " << hess_b.norm() << " " << fhess_b.norm() << "\n";
+    CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-4));
 }
 
 TEST_CASE(

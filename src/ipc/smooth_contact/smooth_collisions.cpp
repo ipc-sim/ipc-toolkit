@@ -7,6 +7,13 @@
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
+#include <ipc/smooth_contact/collisions/vertex_vertex.hpp>
+// #include <ipc/smooth_contact/collisions/vertex_vertex_3d.hpp>
+#include <ipc/smooth_contact/collisions/edge_vertex.hpp>
+// #include <ipc/smooth_contact/collisions/edge_vertex_3d.hpp>
+// #include <ipc/smooth_contact/collisions/edge_edge_3d.hpp>
+// #include <ipc/smooth_contact/collisions/face_vertex.hpp>
+
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 #include <tbb/blocked_range.h>
@@ -42,22 +49,22 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
     for (auto cc : collisions)
     {
         const double dist = param.get_adaptive_dhat_ratio() * sqrt(cc->compute_distance(cc->dof(vertices, mesh.edges(), mesh.faces())));
-        if (std::dynamic_pointer_cast<SmoothEdgeEdge3Collision>(cc))
+        if (std::dynamic_pointer_cast<SmoothCollisionTemplate<max_vert_3d, Edge3 , Edge3 >>(cc))
         {
             edge_adaptive_dhat((*cc)[0]) = std::min(edge_adaptive_dhat((*cc)[0]), dist);
             edge_adaptive_dhat((*cc)[1]) = std::min(edge_adaptive_dhat((*cc)[1]), dist);
         }
-        else if (std::dynamic_pointer_cast<SmoothEdgeVertexCollision>(cc) || std::dynamic_pointer_cast<SmoothEdgeVertex3Collision>(cc))
+        else if (std::dynamic_pointer_cast<SmoothEdgeVertexCollision>(cc) || std::dynamic_pointer_cast<SmoothCollisionTemplate<max_vert_3d, Edge3 , Point3>>(cc))
         {
             edge_adaptive_dhat((*cc)[0]) = std::min(edge_adaptive_dhat((*cc)[0]), dist);
             vert_adaptive_dhat((*cc)[1]) = std::min(vert_adaptive_dhat((*cc)[1]), dist);
         }
-        else if (std::dynamic_pointer_cast<SmoothFaceVertexCollision>(cc))
+        else if (std::dynamic_pointer_cast<SmoothCollisionTemplate<max_vert_3d, Face  , Point3>>(cc))
         {
             face_adaptive_dhat((*cc)[0]) = std::min(face_adaptive_dhat((*cc)[0]), dist);
             vert_adaptive_dhat((*cc)[1]) = std::min(vert_adaptive_dhat((*cc)[1]), dist);
         }
-        else if (std::dynamic_pointer_cast<SmoothVertexVertexCollision>(cc) || std::dynamic_pointer_cast<SmoothVertexVertex3Collision>(cc))
+        else if (std::dynamic_pointer_cast<SmoothVertexVertexCollision>(cc) || std::dynamic_pointer_cast<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>(cc))
         {
             vert_adaptive_dhat((*cc)[0]) = std::min(vert_adaptive_dhat((*cc)[0]), dist);
             vert_adaptive_dhat((*cc)[1]) = std::min(vert_adaptive_dhat((*cc)[1]), dist);

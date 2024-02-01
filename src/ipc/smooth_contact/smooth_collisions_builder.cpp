@@ -52,24 +52,22 @@ void SmoothCollisionsBuilder<dim>::add_edge_edge_collisions(
         for (size_t i = start_i; i < end_i; i++) {
             const auto& [eai, ebi] = candidates[i];
 
-            {
-                const auto [ea0, ea1, eb0, eb1] =
-                    candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
+            const auto [ea0, ea1, eb0, eb1] =
+                candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
 
-                const EdgeEdgeDistanceType actual_dtype =
-                    edge_edge_distance_type(ea0, ea1, eb0, eb1);
+            const EdgeEdgeDistanceType actual_dtype =
+                edge_edge_distance_type(ea0, ea1, eb0, eb1);
 
-                const double distance =
-                    sqrt(edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype));
-                
-                if (distance < 1e-12)
-                    logger().warn("edge {} {} dist {}", eai, ebi, distance);
-                
-                if (actual_dtype != EdgeEdgeDistanceType::EA_EB || distance >= param.dhat)
-                    continue;
-            }
+            const double distance =
+                sqrt(edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype));
+            
+            if (distance < 1e-12)
+                logger().warn("edge {} {} dist {}", eai, ebi, distance);
+            
+            if (actual_dtype != EdgeEdgeDistanceType::EA_EB || distance >= param.dhat)
+                continue;
 
-            add_collision<SmoothEdgeEdge3Collision>(std::make_shared<SmoothEdgeEdge3Collision>(eai, ebi, mesh, param, std::min(edge_dhat(eai), edge_dhat(ebi)), vertices), edge_edge_3_to_id, collisions);
+            add_collision<SmoothCollisionTemplate<max_vert_3d, Edge3 , Edge3 >>(std::make_shared<SmoothCollisionTemplate<max_vert_3d, Edge3 , Edge3 >>(std::min(eai, ebi), std::max(eai, ebi), actual_dtype, mesh, param, std::min(edge_dhat(eai), edge_dhat(ebi)), vertices), edge_edge_3_to_id, collisions);
         }
     }
 }
@@ -104,7 +102,7 @@ void SmoothCollisionsBuilder<dim>::add_face_vertex_collisions(
                 continue;
 
             if (pt_dtype == PointTriangleDistanceType::P_T)
-                add_collision<SmoothFaceVertexCollision>(std::make_shared<SmoothFaceVertexCollision>(fi, vi, mesh, param, std::min(face_dhat(fi), vert_dhat(vi)), vertices), face_vert_to_id, collisions);
+                add_collision<SmoothCollisionTemplate<max_vert_3d, Face  , Point3>>(std::make_shared<SmoothCollisionTemplate<max_vert_3d, Face  , Point3>>(fi, vi, pt_dtype, mesh, param, std::min(face_dhat(fi), vert_dhat(vi)), vertices), face_vert_to_id, collisions);
             
             for (int lv = 0; lv < 3; lv++)
             {
@@ -112,7 +110,7 @@ void SmoothCollisionsBuilder<dim>::add_face_vertex_collisions(
                 const double dhat = std::min(vert_dhat(vi), vert_dhat(vj));
                 if ((vertices.row(vi) - vertices.row(vj)).norm() >= dhat)
                     continue;
-                add_collision<SmoothVertexVertex3Collision>(std::make_shared<SmoothVertexVertex3Collision>(vi, vj, mesh, param, dhat, vertices), vert_vert_3_to_id, collisions);
+                add_collision<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>(std::make_shared<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>(std::min<long>(vi, vj), std::max<long>(vi, vj), PointPointDistanceType::AUTO, mesh, param, dhat, vertices), vert_vert_3_to_id, collisions);
             }
             
             for (int le = 0; le < 3; le++)
@@ -126,7 +124,7 @@ void SmoothCollisionsBuilder<dim>::add_face_vertex_collisions(
                 if (pe_dtype != PointEdgeDistanceType::P_E || sqrt(distance_sqr) >= dhat)
                     continue;
 
-                add_collision<SmoothEdgeVertex3Collision>(std::make_shared<SmoothEdgeVertex3Collision>(eid, vi, mesh, param, dhat, vertices), edge_vert_3_to_id, collisions);
+                add_collision<SmoothCollisionTemplate<max_vert_3d, Edge3 , Point3>>(std::make_shared<SmoothCollisionTemplate<max_vert_3d, Edge3 , Point3>>(eid, vi, pe_dtype, mesh, param, dhat, vertices), edge_vert_3_to_id, collisions);
             }
         }
     }
@@ -155,10 +153,10 @@ void SmoothCollisionsBuilder<dim>::merge(
     unordered_map<std::pair<long, long>, std::tuple<SmoothVertexVertexCollision, long> > vert_vert_2_to_id;
     unordered_map<std::pair<long, long>, std::tuple<SmoothEdgeVertexCollision, long> > vert_edge_2_to_id;
     
-    unordered_map<std::pair<long, long>, std::tuple<SmoothFaceVertexCollision, long> > face_vert_to_id;
-    unordered_map<std::pair<long, long>, std::tuple<SmoothVertexVertex3Collision, long> > vert_vert_3_to_id;
-    unordered_map<std::pair<long, long>, std::tuple<SmoothEdgeVertex3Collision, long> > edge_vert_3_to_id;
-    unordered_map<std::pair<long, long>, std::tuple<SmoothEdgeEdge3Collision, long> > edge_edge_3_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothCollisionTemplate<max_vert_3d, Face  , Point3>, long> > face_vert_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>, long> > vert_vert_3_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothCollisionTemplate<max_vert_3d, Edge3 , Point3>, long> > edge_vert_3_to_id;
+    unordered_map<std::pair<long, long>, std::tuple<SmoothCollisionTemplate<max_vert_3d, Edge3 , Edge3 >, long> > edge_edge_3_to_id;
 
     // size up the hash items
     size_t total = 0;
@@ -176,12 +174,12 @@ void SmoothCollisionsBuilder<dim>::merge(
     for (auto& builder : local_storage)
         for (auto& cc : builder.collisions)
         {
-            if (auto ee3 = std::dynamic_pointer_cast<SmoothEdgeEdge3Collision>(cc))
+            if (auto ee3 = std::dynamic_pointer_cast<SmoothCollisionTemplate<max_vert_3d, Edge3 , Edge3 >>(cc))
             {
                 if (edge_edge_3_to_id.find(cc->get_hash()) == edge_edge_3_to_id.end())
                 {
                     merged_collisions.collisions.push_back(cc);
-                    edge_edge_3_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothEdgeEdge3Collision, long>(std::move(*ee3), merged_collisions.collisions.size()));
+                    edge_edge_3_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothCollisionTemplate<max_vert_3d, Edge3 , Edge3 >, long>(std::move(*ee3), merged_collisions.collisions.size()));
                     edge_edge_count++;
                 }
             }
@@ -194,12 +192,12 @@ void SmoothCollisionsBuilder<dim>::merge(
                     vert_vert_count++;
                 }
             }
-            else if (auto vv3 = std::dynamic_pointer_cast<SmoothVertexVertex3Collision>(cc))
+            else if (auto vv3 = std::dynamic_pointer_cast<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>(cc))
             {
                 if (vert_vert_3_to_id.find(cc->get_hash()) == vert_vert_3_to_id.end())
                 {
                     merged_collisions.collisions.push_back(cc);
-                    vert_vert_3_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothVertexVertex3Collision, long>(std::move(*vv3), merged_collisions.collisions.size()));
+                    vert_vert_3_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>, long>(std::move(*vv3), merged_collisions.collisions.size()));
                     vert_vert_count++;
                 }
             }
@@ -212,21 +210,21 @@ void SmoothCollisionsBuilder<dim>::merge(
                     edge_vert_count++;
                 }
             }
-            else if (auto ev3 = std::dynamic_pointer_cast<SmoothEdgeVertex3Collision>(cc))
+            else if (auto ev3 = std::dynamic_pointer_cast<SmoothCollisionTemplate<max_vert_3d, Edge3 , Point3>>(cc))
             {
                 if (edge_vert_3_to_id.find(cc->get_hash()) == edge_vert_3_to_id.end())
                 {
                     merged_collisions.collisions.push_back(cc);
-                    edge_vert_3_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothEdgeVertex3Collision, long>(std::move(*ev3), merged_collisions.collisions.size()));
+                    edge_vert_3_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothCollisionTemplate<max_vert_3d, Edge3 , Point3>, long>(std::move(*ev3), merged_collisions.collisions.size()));
                     edge_vert_count++;
                 }
             }
-            else if (auto ff = std::dynamic_pointer_cast<SmoothFaceVertexCollision>(cc))
+            else if (auto ff = std::dynamic_pointer_cast<SmoothCollisionTemplate<max_vert_3d, Face  , Point3>>(cc))
             {
                 if (face_vert_to_id.find(cc->get_hash()) == face_vert_to_id.end())
                 {
                     merged_collisions.collisions.push_back(cc);
-                    face_vert_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothFaceVertexCollision, long>(std::move(*ff), merged_collisions.collisions.size()));
+                    face_vert_to_id.emplace(cc->get_hash(), std::make_tuple<SmoothCollisionTemplate<max_vert_3d, Face  , Point3>, long>(std::move(*ff), merged_collisions.collisions.size()));
                     face_vert_count++;
                 }
             }
@@ -234,9 +232,9 @@ void SmoothCollisionsBuilder<dim>::merge(
                 throw std::runtime_error("Invalid collision type!");
         }
 
-    logger().debug("edge-vert pairs {}, vert-vert pairs {}", edge_vert_count, vert_vert_count);
+    logger().trace("edge-vert pairs {}, vert-vert pairs {}", edge_vert_count, vert_vert_count);
     if (face_vert_count || edge_edge_count)
-        logger().debug("face-vert pairs {}, edge-edge pairs {}", face_vert_count, edge_edge_count);
+        logger().trace("face-vert pairs {}, edge-edge pairs {}", face_vert_count, edge_edge_count);
 }
 
 template class SmoothCollisionsBuilder<2>;

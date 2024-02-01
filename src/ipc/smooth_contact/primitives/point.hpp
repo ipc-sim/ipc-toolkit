@@ -7,25 +7,29 @@ namespace ipc {
     class Point3 : public Primitive
     {
     public:
+        constexpr static int n_core_points = 1;
+        constexpr static int dim = 3;
+        constexpr static int max_size = n_vert_neighbors_3d * dim;
         // d is a vector from this point to the other primitive
-        Point3(const long &pid,
-            const Eigen::Ref<const Vector3<double>>& d,
-            const Eigen::Ref<const Vector3<double>>& v,
-            const Eigen::Ref<const Eigen::Matrix<double, 3, -1>>& neighbors,
-            const double alpha, const double beta);
-        
-        bool is_active() override;
-        int n_neighbors() const { return _neighbors.cols(); }
-        int n_vertices() const override;
-        
-        double potential() const override;
-        Eigen::VectorXd grad() const override;
-        Eigen::MatrixXd hessian() const override;
-    private:
-        const Eigen::Vector3d _d, _v;
-        const Eigen::Matrix<double, 3, -1> _neighbors;
-        const double _alpha, _beta;
+        Point3(const long &id, 
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const VectorMax3d& d,
+        const double &alpha,
+        const double &beta);
 
+        Point3(const long &id, const CollisionMesh& mesh, const Eigen::MatrixXd& vertices);
+
+        int n_vertices() const override;
+        int n_dofs() const override { return n_vertices() * dim; }
+        
+        // assume the following functions are only called if active
+        double potential(const Vector<double, dim> &d, const Vector<double, -1, max_size> &x) const;
+        // derivatives including wrt. d (the closest direction) in front
+        Vector<double, -1, max_size+dim> grad(const Vector<double, dim> &d, const Vector<double, -1, max_size> &x) const;
+        MatrixMax<double, max_size+dim, max_size+dim> hessian(const Vector<double, dim> &d, const Vector<double, -1, max_size> &x) const;
+    private:
+        int n_neighbors;
         ORIENTATION_TYPES otypes;
     };
 
@@ -48,12 +52,12 @@ inline scalar smooth_point2_term(
 {
     const Vector2<scalar> t0 = (e0 - v).normalized(), t1 = (v - e1).normalized();
 
-    const scalar tangent_term = smooth_heaviside<scalar>(direc.dot(t0), alpha, beta) *
-                        smooth_heaviside<scalar>(-direc.dot(t1), alpha, beta);
+    const scalar tangent_term = Math<scalar>::smooth_heaviside(direc.dot(t0), alpha, beta) *
+                        Math<scalar>::smooth_heaviside(-direc.dot(t1), alpha, beta);
 
-    const scalar tmp = smooth_heaviside<scalar>(-cross2<scalar>(direc, t0), alpha, beta) + 
-                         smooth_heaviside<scalar>(-cross2<scalar>(direc, t1), alpha, beta);
-    const scalar normal_term = smooth_heaviside<scalar>(tmp - 1., alpha, 0);
+    const scalar tmp = Math<scalar>::smooth_heaviside(-Math<scalar>::cross2(direc, t0), alpha, beta) + 
+                         Math<scalar>::smooth_heaviside(-Math<scalar>::cross2(direc, t1), alpha, beta);
+    const scalar normal_term = Math<scalar>::smooth_heaviside(tmp - 1., alpha, 0);
 
     return tangent_term * normal_term * ((e0 - v).norm() + (e1 - v).norm()) / 2.;
 }
@@ -71,8 +75,8 @@ inline bool smooth_point2_term_type(
     if (direc.dot(t0) <= -alpha || -direc.dot(t1) <= -alpha)
         return false;
 
-    const double tmp = smooth_heaviside<double>(-cross2<double>(direc, t0), alpha, beta) + 
-                         smooth_heaviside<double>(-cross2<double>(direc, t1), alpha, beta);
+    const double tmp = Math<double>::smooth_heaviside(-Math<double>::cross2(direc, t0), alpha, beta) + 
+                         Math<double>::smooth_heaviside(-Math<double>::cross2(direc, t1), alpha, beta);
     if (tmp <= 1. - alpha)
         return false;
 
@@ -109,7 +113,7 @@ inline scalar smooth_point3_term(
         t = neighbors.row(a) - v;
         if (otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT)
         {
-            scalar tmp0 = smooth_heaviside<scalar>(direc.dot(t) / t.norm(), alpha, beta);
+            scalar tmp0 = Math<scalar>::smooth_heaviside(direc.dot(t) / t.norm(), alpha, beta);
             tangent_term = tangent_term * tmp0;
         }
         else if (otypes.tangent_type(a) == HEAVISIDE_TYPE::ZERO)
@@ -122,7 +126,7 @@ inline scalar smooth_point3_term(
         if (normal_term < 1)
         {
             if (otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT)
-                normal_term = normal_term + (otypes.normal_type(a) == HEAVISIDE_TYPE::ONE ? scalar(1.) : smooth_heaviside<scalar>(-direc.dot(t_prev.cross(t).normalized()), alpha, beta));
+                normal_term = normal_term + (otypes.normal_type(a) == HEAVISIDE_TYPE::ONE ? scalar(1.) : Math<scalar>::smooth_heaviside(-direc.dot(t_prev.cross(t).normalized()), alpha, beta));
             else if (otypes.normal_type(a) == HEAVISIDE_TYPE::ONE)
                 normal_term += scalar(1.);
         }
@@ -135,7 +139,7 @@ inline scalar smooth_point3_term(
     //     if (debug)
     //         logger().warn("normal {}, tangent {}", normal_term, tangent_term);
 
-    return weight / 3 * tangent_term * smooth_heaviside<scalar>(normal_term - 1, alpha, 0);
+    return weight / 3 * tangent_term * Math<scalar>::smooth_heaviside(normal_term - 1, alpha, 0);
 }
 
 inline bool smooth_point3_term_type(
@@ -162,7 +166,7 @@ inline bool smooth_point3_term_type(
 
         const double tmp = -direc.dot(t_prev.cross(t).normalized());
         otypes.normal_type(a) = otypes.compute_type(tmp, alpha, beta);
-        normal_term += smooth_heaviside<double>(tmp, alpha, beta);
+        normal_term += Math<double>::smooth_heaviside(tmp, alpha, beta);
 
         std::swap(t, t_prev);
     }

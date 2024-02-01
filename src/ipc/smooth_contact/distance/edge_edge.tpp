@@ -84,37 +84,41 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& eb1,
         EdgeEdgeDistanceType dtype)
     {
+        if constexpr (std::is_same<double, scalar>::value)
+            if (dtype == EdgeEdgeDistanceType::AUTO)
+                dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+
         switch (dtype) {
-        case EdgeEdgeDistanceType::EA0_EB0:
-            return (eb0 - ea0);
+            case EdgeEdgeDistanceType::EA0_EB0:
+                return (eb0 - ea0);
 
-        case EdgeEdgeDistanceType::EA0_EB1:
-            return (eb1 - ea0);
+            case EdgeEdgeDistanceType::EA0_EB1:
+                return (eb1 - ea0);
 
-        case EdgeEdgeDistanceType::EA1_EB0:
-            return (eb0 - ea1);
+            case EdgeEdgeDistanceType::EA1_EB0:
+                return (eb0 - ea1);
 
-        case EdgeEdgeDistanceType::EA1_EB1:
-            return (eb1 - ea1);
+            case EdgeEdgeDistanceType::EA1_EB1:
+                return (eb1 - ea1);
 
-        case EdgeEdgeDistanceType::EA_EB0:
-            return point_line_closest_point_direction<scalar>(eb0, ea0, ea1);
+            case EdgeEdgeDistanceType::EA_EB0:
+                return point_line_closest_point_direction<scalar>(eb0, ea0, ea1);
 
-        case EdgeEdgeDistanceType::EA_EB1:
-            return point_line_closest_point_direction<scalar>(eb1, ea0, ea1);
+            case EdgeEdgeDistanceType::EA_EB1:
+                return point_line_closest_point_direction<scalar>(eb1, ea0, ea1);
 
-        case EdgeEdgeDistanceType::EA0_EB:
-            return -point_line_closest_point_direction<scalar>(ea0, eb0, eb1);
+            case EdgeEdgeDistanceType::EA0_EB:
+                return -point_line_closest_point_direction<scalar>(ea0, eb0, eb1);
 
-        case EdgeEdgeDistanceType::EA1_EB:
-            return -point_line_closest_point_direction<scalar>(ea1, eb0, eb1);
+            case EdgeEdgeDistanceType::EA1_EB:
+                return -point_line_closest_point_direction<scalar>(ea1, eb0, eb1);
 
-        case EdgeEdgeDistanceType::EA_EB:
-            return line_line_closest_point_direction<scalar>(ea0, ea1, eb0, eb1);
+            case EdgeEdgeDistanceType::EA_EB:
+                return line_line_closest_point_direction<scalar>(ea0, ea1, eb0, eb1);
 
-        default:
-            throw std::invalid_argument(
-                "Invalid distance type for edge-edge distance!");
+            default:
+                throw std::invalid_argument(
+                    "Invalid distance type for edge-edge distance!");
         }
     }
 }

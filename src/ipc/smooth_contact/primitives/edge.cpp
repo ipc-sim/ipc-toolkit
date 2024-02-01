@@ -20,46 +20,55 @@ namespace ipc {
             }
             return {{v0_, v1_, f0_, f1_}};
         }
+
+        // apply chain rule of "d -> d / |d|" on grad g
+        // VectorMax3d normalize_vec_jacobian(VectorMax3d d, VectorMax3d g)
+        // {
+        //     g /= d.norm();
+        //     d.normalize();
+        //     return g - d * (d.transpose() * g);
+        // }
     }
     // d is a vector from any point on the edge to the point outside of the edge
-    Edge3::Edge3(const long &eid,
-        const Eigen::Ref<const Eigen::Vector3d>& d,
-        const Eigen::Ref<const Eigen::Vector3d>& v0,
-        const Eigen::Ref<const Eigen::Vector3d>& v1,
-        const Eigen::Ref<const Eigen::Vector3d>& f0,
-        const Eigen::Ref<const Eigen::Vector3d>& f1,
-        const double alpha, const double beta)
-    : Primitive(eid), _d(d), _v0(v0), _v1(v1), _f0(f0), _f1(f1), _alpha(alpha), _beta(beta)
+    Edge3::Edge3(const long &id, 
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const VectorMax3d& d,
+        const double &alpha,
+        const double &beta)
+    : Primitive(id, alpha, beta)
     {
+        auto ids = mesh.find_edge_adjacent_vertices(id);
+        _vert_ids = std::vector<long>(ids.begin(), ids.begin() + ids.size());
         otypes.set_size(2);
+
+        ORIENTATION_TYPES tmp;
+        is_active_ = smooth_edge3_term_type(d.normalized(), vertices.row(_vert_ids[0]), vertices.row(_vert_ids[1]), vertices.row(_vert_ids[2]), vertices.row(_vert_ids[3]), _alpha, _beta, tmp);
     }
     
-    bool Edge3::is_active()
-    {
-        return smooth_edge3_term_type(_d, _v0, _v1, _f0, _f1, _alpha, _beta, otypes);
-    }
     int Edge3::n_vertices() const
     {
-        return 1 + n_edge_neighbors_3d;
+        return n_edge_neighbors_3d;
     }
     
-    double Edge3::potential() const
+    double Edge3::potential(const Vector3d &d, const Vector12d &x) const
     {
-        return smooth_edge3_term<double>(_d, _v0, _v1, _f0, _f1, _alpha, _beta, otypes);
+        return smooth_edge3_term<double>(d.normalized(), x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), _alpha, _beta, otypes);
     }
-    Eigen::VectorXd Edge3::grad() const
+    Vector15d Edge3::grad(const Vector3d &d, const Vector12d &x) const
     {
-        Eigen::VectorXd tmp(15);
-        tmp << _d, _v0, _v1, _f0, _f1;
+        Vector15d tmp;
+        tmp << d, x;
+        DiffScalarBase::setVariableCount(15);
         auto X = slice_positions<ADGrad<15>, 5, 3>(tmp);
-        return smooth_edge3_term<ADGrad<15>>(X.row(0), X.row(1), X.row(2), X.row(3), X.row(4), _alpha, _beta, otypes).getGradient();
+        return smooth_edge3_term<ADGrad<15>>(X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3), X.row(4), _alpha, _beta, otypes).getGradient();
     }
-    Eigen::MatrixXd Edge3::hessian() const
+    Matrix15d Edge3::hessian(const Vector3d &d, const Vector12d &x) const
     {
-        Eigen::MatrixXd h;
-        Eigen::VectorXd tmp(15);
-        tmp << _d, _v0, _v1, _f0, _f1;
+        Vector15d tmp;
+        tmp << d, x;
+        DiffScalarBase::setVariableCount(15);
         auto X = slice_positions<ADHessian<15>, 5, 3>(tmp);
-        return smooth_edge3_term<ADHessian<15>>(X.row(0), X.row(1), X.row(2), X.row(3), X.row(4), _alpha, _beta, otypes).getHessian();
+        return smooth_edge3_term<ADHessian<15>>(X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3), X.row(4), _alpha, _beta, otypes).getHessian();
     }
 }

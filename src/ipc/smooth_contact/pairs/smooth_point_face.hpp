@@ -20,10 +20,13 @@ namespace ipc {
         Vector3<scalar> direc = point_triangle_closest_point_direction<scalar>(p, v0, v1, v2, dtype);
         const scalar dist = direc.norm();
 
-        auto b = inv_barrier(dist / params.dhat, params.r);
+        auto b = Math<scalar>::inv_barrier(dist / params.dhat, params.r);
         auto ff = smooth_face_term<scalar>(v0, v1, v2);
         auto pp = smooth_point3_term<scalar>(p, direc / direc.norm(), neighbors, params.alpha, params.beta, otypes);
-        auto tt = point_face_mollifier<scalar>(p - direc, v0, v1, v2, dist);
+        auto tt = point_face_mollifier<scalar>(p, v0, v1, v2, dist*dist);
+
+        // if constexpr (std::is_same<double,scalar>::value)
+        //     logger().warn("old collision: tangent terms {} {}, barrier {}, mollifier {}", ff, pp, b, tt);
 
         // if constexpr (std::is_same<double,scalar>::value)
         // {

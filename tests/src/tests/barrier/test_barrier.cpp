@@ -8,6 +8,9 @@
 
 #include <finitediff.hpp>
 
+#include <ipc/utils/math.hpp>
+#include <ipc/utils/AutodiffTypes.hpp>
+
 namespace {
 double normalized_barrier(const double d, const double dhat)
 {
@@ -47,6 +50,69 @@ double normalized_barrier_second_derivative(const double d, const double dhat)
         - 2 * std::log(t1) / std::pow(dhat, 2);
 }
 } // namespace
+
+TEST_CASE("Spline derivatives", "[deriv]")
+{
+    const int n_samples = 1000;
+    DiffScalarBase::setVariableCount(1);
+    using T = ipc::ADHessian<1>;
+    for (int i = 0; i < n_samples; i++)
+    {
+        const double x = 2. * i / static_cast<double>(n_samples) - 1;
+        double deriv = ipc::Math<double>::cubic_spline_grad(x);
+        double hess = ipc::Math<double>::cubic_spline_hess(x);
+        T x_ad = T(0, x);
+        T y_ad = ipc::Math<T>::cubic_spline(x_ad);
+        double deriv_ad = y_ad.getGradient()(0);
+        double hess_ad = y_ad.getHessian()(0);
+
+        CHECK(abs(deriv_ad - deriv) < 1e-14 * std::max(1., abs(deriv)));
+        CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
+    }
+}
+
+TEST_CASE("Barrier derivatives", "[deriv]")
+{
+    const int n_samples = 1000;
+    DiffScalarBase::setVariableCount(1);
+    using T = ipc::ADHessian<1>;
+    const double r = 0.5;
+    const double dhat = 0.13;
+    for (int i = 1; i <= n_samples; i++)
+    {
+        const double x = i / static_cast<double>(n_samples);
+        double deriv = ipc::Math<double>::inv_barrier_grad(x / dhat, r) / dhat;
+        double hess = ipc::Math<double>::inv_barrier_hess(x / dhat, r) / dhat / dhat;
+        T x_ad = T(0, x);
+        T y_ad = ipc::Math<T>::inv_barrier(x_ad / dhat, r);
+        double deriv_ad = y_ad.getGradient()(0);
+        double hess_ad = y_ad.getHessian()(0);
+
+        CHECK(abs(deriv_ad - deriv) < 1e-14 * std::max(1., abs(deriv)));
+        CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
+    }
+
+    DiffScalarBase::setVariableCount(3);
+    using T3 = ipc::ADHessian<3>;
+
+    for (int i = 1; i <= n_samples; i++)
+    {
+        Eigen::Vector3d x = Eigen::Vector3d::Random() * dhat / 3.;
+        double deriv = ipc::Math<double>::inv_barrier_grad(x.norm() / dhat, r) / dhat;
+        double hess = ipc::Math<double>::inv_barrier_hess(x.norm() / dhat, r) / dhat / dhat;
+        auto x_ad = ipc::slice_positions<T3, 3, 1>(x);
+        T3 y_ad = ipc::Math<T3>::inv_barrier(x_ad.norm() / dhat, r);
+        Eigen::Vector3d deriv_ad = y_ad.getGradient();
+        Eigen::Matrix3d hess_ad = y_ad.getHessian();
+
+        Eigen::Vector3d xn = x / x.norm();
+        Eigen::Vector3d deriv_analytic = deriv * xn;
+        Eigen::Matrix3d hess_analytic = (deriv / x.norm()) * Eigen::Matrix3d::Identity() + (hess - deriv / x.norm()) * xn * xn.transpose();
+
+        CHECK((deriv_ad - deriv_analytic).norm() < 1e-14 * std::max(1., deriv_ad.norm()));
+        CHECK((hess_ad - hess_analytic).norm() < 1e-12 * std::max(1., hess_ad.norm()));
+    }
+}
 
 TEST_CASE("Barrier derivatives", "[barrier]")
 {

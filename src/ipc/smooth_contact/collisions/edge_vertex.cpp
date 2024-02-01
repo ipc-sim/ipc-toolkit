@@ -54,7 +54,7 @@ namespace ipc {
         direc /= dist;
 
         // edge term
-        if (cross2<double>(direc, (points.row(2) - points.row(1)).normalized()) < 0)
+        if (Math<double>::cross2(direc, (points.row(2) - points.row(1)).normalized()) < 0)
         {
             // std::cout << "edge term zero\n";
             if (dist < 1e-10)

@@ -23,7 +23,7 @@ namespace ipc {
         if (dist >= params.dhat)
             return false;
         
-        mtypes = edge_edge_mollifier_type(ea0, ea1, eb0, eb1, dist);
+        mtypes = edge_edge_mollifier_type(ea0, ea1, eb0, eb1, dist*dist);
         
         const Vector3<double> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype) / dist; // from edge a to edge b
         return smooth_edge3_term_type(direc, ea0, ea1, fa0, fa1, params.alpha, params.beta, otypes[0]) && 
@@ -49,13 +49,13 @@ namespace ipc {
         const std::array<HEAVISIDE_TYPE, 4> &mtypes)
     {
         const scalar dist = sqrt(edge_edge_sqr_distance(ea0, ea1, eb0, eb1, dtype));
-        const scalar barrier = inv_barrier<scalar>(dist / params.dhat, params.r);
+        const scalar barrier = Math<scalar>::inv_barrier(dist / params.dhat, params.r);
         
         const Vector3<scalar> direc = edge_edge_closest_point_direction(ea0, ea1, eb0, eb1, dtype) / dist; // from edge a to edge b
         const scalar out = smooth_edge3_term<scalar>(direc, ea0, ea1, fa0, fa1, params.alpha, params.beta, otypes[0]) * 
                           smooth_edge3_term<scalar>(-direc, eb0, eb1, fb0, fb1, params.alpha, params.beta, otypes[1]);
 
-        const scalar mollifier_val = edge_edge_mollifier<scalar>(ea0, ea1, eb0, eb1, mtypes, dist);
+        const scalar mollifier_val = edge_edge_mollifier<scalar>(ea0, ea1, eb0, eb1, mtypes, dist*dist);
 
         // if constexpr (std::is_same<double,scalar>::value)
         // {
