@@ -45,6 +45,8 @@ namespace ipc {
         static scalar smooth_heaviside(const scalar &x, const double alpha, const double beta = 0);
 
         static scalar mollifier(const scalar &x);
+        static double mollifier_grad(const double &x);
+        static double mollifier_hess(const double &x);
 
         // support is [0, 1]
         static scalar inv_barrier(const scalar &x, const double &r);
@@ -57,11 +59,11 @@ namespace ipc {
     };
 
     template <class T, int rows, int cols, int max_rows=rows>
-    inline Eigen::Matrix<T, rows, cols, Eigen::ColMajor, max_rows, cols> slice_positions(const Eigen::VectorXd &positions)
+    inline Eigen::Matrix<T, rows, cols, (max_rows > 1 ? Eigen::ColMajor : Eigen::RowMajor), max_rows, cols> slice_positions(const Eigen::VectorXd &positions, const int offset = 0)
     {
         assert(cols > 0);
         const int nrows = rows > 0 ? rows : positions.size() / cols;
-        Eigen::Matrix<T, rows, cols, Eigen::ColMajor, max_rows, cols> points;
+        Eigen::Matrix<T, rows, cols, (max_rows > 1 ? Eigen::ColMajor : Eigen::RowMajor), max_rows, cols> points;
         points.setZero(nrows, cols);
         
         for (int i = 0, id = 0; i < nrows; i++)
@@ -69,17 +71,17 @@ namespace ipc {
                 if constexpr (std::is_same<T, double>::value)
                     points(i, d) = positions(id);
                 else
-                    points(i, d) = T(id, positions(id));
+                    points(i, d) = T(id + offset, positions(id));
 
         return points;
     }
 
     template <class T, int rows, int cols, int max_rows=rows>
-    inline Eigen::Matrix<double, rows, cols, Eigen::ColMajor, max_rows, cols> autodiff_to_double(const Eigen::Matrix<T, rows, cols, Eigen::ColMajor, max_rows, cols> &x)
+    inline Eigen::Matrix<double, rows, cols, (max_rows > 1 ? Eigen::ColMajor : Eigen::RowMajor), max_rows, cols> autodiff_to_double(const Eigen::Matrix<T, rows, cols, (max_rows > 1 ? Eigen::ColMajor : Eigen::RowMajor), max_rows, cols> &x)
     {
         assert(cols > 0);
         const int nrows = rows > 0 ? rows : x.size() / cols;
-        Eigen::Matrix<double, rows, cols, Eigen::ColMajor, max_rows, cols> out;
+        Eigen::Matrix<double, rows, cols, (max_rows > 1 ? Eigen::ColMajor : Eigen::RowMajor), max_rows, cols> out;
         out.setZero(nrows, cols);
         
         for (int i = 0, id = 0; i < nrows; i++)

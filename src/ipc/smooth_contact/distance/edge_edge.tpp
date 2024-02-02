@@ -26,28 +26,28 @@ namespace ipc {
     {
         switch (dtype) {
         case EdgeEdgeDistanceType::EA0_EB0:
-            return point_point_sqr_distance<scalar>(ea0, eb0);
+            return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(ea0, eb0);
 
         case EdgeEdgeDistanceType::EA0_EB1:
-            return point_point_sqr_distance<scalar>(ea0, eb1);
+            return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(ea0, eb1);
 
         case EdgeEdgeDistanceType::EA1_EB0:
-            return point_point_sqr_distance<scalar>(ea1, eb0);
+            return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(ea1, eb0);
 
         case EdgeEdgeDistanceType::EA1_EB1:
-            return point_point_sqr_distance<scalar>(ea1, eb1);
+            return PointEdgeDistance<scalar, 3>::point_point_sqr_distance(ea1, eb1);
 
         case EdgeEdgeDistanceType::EA_EB0:
-            return point_line_sqr_distance<scalar>(eb0, ea0, ea1);
+            return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(eb0, ea0, ea1);
 
         case EdgeEdgeDistanceType::EA_EB1:
-            return point_line_sqr_distance<scalar>(eb1, ea0, ea1);
+            return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(eb1, ea0, ea1);
 
         case EdgeEdgeDistanceType::EA0_EB:
-            return point_line_sqr_distance<scalar>(ea0, eb0, eb1);
+            return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(ea0, eb0, eb1);
 
         case EdgeEdgeDistanceType::EA1_EB:
-            return point_line_sqr_distance<scalar>(ea1, eb0, eb1);
+            return PointEdgeDistance<scalar, 3>::point_line_sqr_distance(ea1, eb0, eb1);
 
         case EdgeEdgeDistanceType::EA_EB:
             return line_line_sqr_distance<scalar>(ea0, ea1, eb0, eb1);
@@ -102,16 +102,16 @@ namespace ipc {
                 return (eb1 - ea1);
 
             case EdgeEdgeDistanceType::EA_EB0:
-                return point_line_closest_point_direction<scalar>(eb0, ea0, ea1);
+                return PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(eb0, ea0, ea1);
 
             case EdgeEdgeDistanceType::EA_EB1:
-                return point_line_closest_point_direction<scalar>(eb1, ea0, ea1);
+                return PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(eb1, ea0, ea1);
 
             case EdgeEdgeDistanceType::EA0_EB:
-                return -point_line_closest_point_direction<scalar>(ea0, eb0, eb1);
+                return -PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(ea0, eb0, eb1);
 
             case EdgeEdgeDistanceType::EA1_EB:
-                return -point_line_closest_point_direction<scalar>(ea1, eb0, eb1);
+                return -PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(ea1, eb0, eb1);
 
             case EdgeEdgeDistanceType::EA_EB:
                 return line_line_closest_point_direction<scalar>(ea0, ea1, eb0, eb1);

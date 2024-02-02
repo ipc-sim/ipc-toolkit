@@ -30,22 +30,27 @@ namespace ipc {
     template <typename PrimitiveA, typename PrimitiveB>
     class PrimitiveDistance
     {
+        static_assert(PrimitiveA::dim == PrimitiveB::dim, "Primitives must have the same dimension");
+        constexpr static int dim = PrimitiveA::dim;
+        constexpr static int n_core_dofs = PrimitiveA::n_core_points * PrimitiveA::dim + PrimitiveB::n_core_points * PrimitiveB::dim;
     public:
-        static typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type compute_distance_type(const Vector<double, -1, 12>& x);
+        static typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type compute_distance_type(const Vector<double, n_core_dofs>& x);
         
         static double compute_distance(const CollisionMesh &mesh, const Eigen::MatrixXd &V, const long &a, const long &b, typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype);
 
         // points from primitiveA to primitiveB
-        static VectorMax3d compute_closest_direction(const CollisionMesh &mesh, const Eigen::MatrixXd &V, const long &a, const long &b, typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype);
+        static Vector<double, dim> compute_closest_direction(const CollisionMesh &mesh, const Eigen::MatrixXd &V, const long &a, const long &b, typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype);
     };
 
     template <typename PrimitiveA, typename PrimitiveB, typename T>
     class PrimitiveDistanceTemplate
     {
+        static_assert(PrimitiveA::dim == PrimitiveB::dim, "Primitives must have the same dimension");
+        constexpr static int dim = PrimitiveA::dim;
+        constexpr static int n_core_dofs = PrimitiveA::n_core_points * PrimitiveA::dim + PrimitiveB::n_core_points * PrimitiveB::dim;
     public:
-        static VectorMax3<T> compute_closest_direction(const Vector<T, -1, 12>& x, typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype);
-        // mollifier only depends on at most 4 points
-        static T mollifier(const Vector<T, -1, 12>& x, const T& dist_sqr);
+        static Vector<T, dim> compute_closest_direction(const Vector<T, n_core_dofs>& x, typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype);
+        static T mollifier(const Vector<T, n_core_dofs>& x, const T& dist_sqr);
     };
     
 }

@@ -169,45 +169,45 @@ namespace ipc {
             closest_direction_grad.block(pA->n_dofs(), k, n_core_dofs_B, 1) = closest_direction_autodiff(k).getGradient().tail(n_core_dofs_B);
         }
 
-        // grad of tangent/normal terms
-        double orient = 0;
-        Vector<double, -1, max_size> gOrient;
-        {
-            Vector<double, -1, max_size> gA, gB;
-            {
-                gA = closest_direction_grad * gA_reduced.head(dim);
-                gA.head(pA->n_dofs()) += gA_reduced.tail(pA->n_dofs());
+        double out = 0.;
+        Vector<double, -1, max_size> gOut(ndofs());
+        gOut.setZero();
 
-                gB = closest_direction_grad * -gB_reduced.head(dim);
-                gB.tail(pB->n_dofs()) += gB_reduced.tail(pB->n_dofs());
-            }
+        // grad of tangent/normal terms
+        {
             const double potential_a = pA->potential(closest_direction, positions.head(pA->n_dofs()));
             const double potential_b = pB->potential(-closest_direction, positions.tail(pB->n_dofs()));
-            gOrient = gA * potential_b + gB * potential_a;
-            orient = potential_a * potential_b;
+
+            gOut += closest_direction_grad * (gA_reduced.head(dim) * potential_b);
+            gOut.head(pA->n_dofs()) += gA_reduced.tail(pA->n_dofs()) * potential_b;
+            
+            gOut += closest_direction_grad * (-gB_reduced.head(dim) * potential_a);
+            gOut.tail(pB->n_dofs()) += gB_reduced.tail(pB->n_dofs()) * potential_a;
+            
+            out = potential_a * potential_b;
         }
 
         // grad of barrier potential
-        double barrier = 0;
-        Vector<double, -1, max_size> gBarrier;
         {
             double barrier_deriv = Math<double>::inv_barrier_grad(dist / Super::get_dhat(), params.r);
-            gBarrier = (barrier_deriv / Super::get_dhat() / dist) * (closest_direction_grad * closest_direction);
-            barrier = Math<double>::inv_barrier(dist / Super::get_dhat(), params.r);
+            Vector<double, -1, max_size> gBarrier = (barrier_deriv / Super::get_dhat() / dist) * closest_direction;
+            double barrier = Math<double>::inv_barrier(dist / Super::get_dhat(), params.r);
+
+            gOut = gOut * barrier + closest_direction_grad * gBarrier * out;
+            out *= barrier;
         }
 
         // grad of mollifier
-        double mollifier = 0;
-        Vector<double, -1, max_size> gMollifier;
-        gMollifier.setZero(ndofs());
         {
             auto mollifier_autodiff = PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(x, closest_direction_autodiff.squaredNorm());
-            mollifier = mollifier_autodiff.getValue();
-            gMollifier.segment(0, n_core_dofs_A) = mollifier_autodiff.getGradient().head(n_core_dofs_A);
-            gMollifier.segment(pA->n_dofs(), n_core_dofs_B) = mollifier_autodiff.getGradient().tail(n_core_dofs_B);
+            
+            gOut *= mollifier_autodiff.getValue();
+            gOut.head(n_core_dofs_A) += mollifier_autodiff.getGradient().head(n_core_dofs_A) * out;
+            gOut.segment(pA->n_dofs(), n_core_dofs_B) += mollifier_autodiff.getGradient().tail(n_core_dofs_B) * out;
+            out *= mollifier_autodiff.getValue();
         }
 
-        return (orient * barrier) * gMollifier + (orient * mollifier) * gBarrier + (barrier * mollifier) * gOrient;
+        return gOut;
     }
 
     template <int max_vert, typename PrimitiveA, typename PrimitiveB>

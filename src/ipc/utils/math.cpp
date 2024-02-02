@@ -149,12 +149,29 @@ namespace ipc {
     {
         if (x <= 0)
             return scalar(0.);
-        if (x <= 1)
-        {
+        else if (x < 1)
             return x * (2. - x);
-        }
-        return scalar(1.);
+        else
+            return scalar(1.);
         // return smooth_heaviside<scalar>(x - 1.);
+    }
+
+    template <typename scalar>
+    double Math<scalar>::mollifier_grad(const double &x)
+    {
+        if (x <= 0 || x >= 1)
+            return 0.;
+        else
+            return 2. * (1. - x);
+    }
+
+    template <typename scalar>
+    double Math<scalar>::mollifier_hess(const double &x)
+    {
+        if (x <= 0 || x >= 1)
+            return 0.;
+        else
+            return -2.;
     }
 
     // support is [0, 1]
@@ -162,6 +179,7 @@ namespace ipc {
     scalar Math<scalar>::inv_barrier(const scalar &x, const double &r)
     {
         return cubic_spline(x) / pow(x, r);
+        // log barrier
         // if (x < 1)
         //     return -intpow(1 - sqrt(x), 2) * log(x);
         // else
@@ -235,6 +253,7 @@ namespace ipc {
     template class Math<double>;
     template class Math<ADGrad<1>>;
     template class Math<ADGrad<3>>;
+    template class Math<ADGrad<4>>;
     template class Math<ADGrad<6>>;
     template class Math<ADGrad<9>>;
     template class Math<ADGrad<10>>;
@@ -245,6 +264,7 @@ namespace ipc {
     // template class Math<ADGrad<-1, max_vert_3d*3>>;
     template class Math<ADHessian<1>>;
     template class Math<ADHessian<3>>;
+    template class Math<ADHessian<4>>;
     template class Math<ADHessian<6>>;
     template class Math<ADHessian<9>>;
     template class Math<ADHessian<10>>;

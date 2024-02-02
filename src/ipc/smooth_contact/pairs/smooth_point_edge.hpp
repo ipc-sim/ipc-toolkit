@@ -25,7 +25,7 @@ namespace ipc {
         const Eigen::Ref<const Vector2<scalar>>& x1,
         const ParameterType &params)
     {
-        Vector2<scalar> direc = point_edge_closest_point_direction<scalar>(p, e0, e1, PointEdgeDistanceType::AUTO);
+        Vector2<scalar> direc = PointEdgeDistance<scalar, 2>::point_edge_closest_point_direction(p, e0, e1, PointEdgeDistanceType::AUTO);
         const scalar dist = direc.norm();
         direc = direc / dist;
 
@@ -45,7 +45,7 @@ namespace ipc {
         ORIENTATION_TYPES &point_otypes,
         ORIENTATION_TYPES &edge_otypes)
     {
-        Vector3<double> direc = point_edge_closest_point_direction<double>(p, e0, e1, PointEdgeDistanceType::AUTO); // from edge a to edge b
+        Vector3<double> direc = PointEdgeDistance<double, 3>::point_edge_closest_point_direction(p, e0, e1, PointEdgeDistanceType::AUTO); // from edge a to edge b
         const double dist = direc.norm();
         if (dist >= params.dhat)
             return false;
@@ -70,7 +70,7 @@ namespace ipc {
         const ORIENTATION_TYPES &point_otypes,
         const ORIENTATION_TYPES &edge_otypes)
     {
-        Vector3<scalar> direc = point_edge_closest_point_direction<scalar>(p, e0, e1, PointEdgeDistanceType::AUTO); // from edge a to edge b
+        Vector3<scalar> direc = PointEdgeDistance<scalar, 3>::point_edge_closest_point_direction(p, e0, e1, PointEdgeDistanceType::AUTO); // from edge a to edge b
         const scalar dist = direc.norm();
         direc = direc / dist;
 

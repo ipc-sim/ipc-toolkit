@@ -47,7 +47,7 @@ namespace ipc {
         if (dtype != PointEdgeDistanceType::P_E)
             return false;
         
-        Vector<double, 2> direc = point_edge_closest_point_direction<double>(points.row(0), points.row(1), points.row(2), dtype);
+        Vector<double, 2> direc = PointEdgeDistance<double, 2>::point_edge_closest_point_direction(points.row(0), points.row(1), points.row(2), dtype);
         const double dist = direc.norm();
         if (dist >= get_dhat())
             return false;
