@@ -2,6 +2,16 @@
 #include <ipc/utils/AutodiffTypes.hpp>
 
 namespace ipc {
+    namespace {
+        template <int size, typename T = ADGrad<size * 3>>
+        T evaluate(const Vector<double, size * 3> &input, const double &alpha, const double &beta, const ORIENTATION_TYPES &otypes)
+        {
+            DiffScalarBase::setVariableCount(size * 3);
+            auto X = slice_positions<T, size, 3>(input);
+            return smooth_point3_term<T>(X.row(1), -X.row(0) / X.row(0).norm(), X.bottomRows(size-2), alpha, beta, otypes);
+        }
+    }
+
     Point3::Point3(const long &id, 
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
@@ -42,16 +52,41 @@ namespace ipc {
     {
         Vector<double, -1, max_size+dim> tmp(d.size() + x.size());
         tmp << d, x;
-        DiffScalarBase::setVariableCount(tmp.size());
-        auto X = slice_positions<ADGrad<-1, max_size+dim>, -1, dim>(tmp);
-        return smooth_point3_term<ADGrad<-1, max_size+dim>>(X.row(1), -X.row(0) / X.row(0).norm(), X.bottomRows(n_neighbors), _alpha, _beta, otypes).getGradient();
+        switch(tmp.size() / 3)
+        {
+        case 5:
+            return evaluate<5, ADGrad<15>>(tmp, _alpha, _beta, otypes).getGradient();
+        case 6:
+            return evaluate<6, ADGrad<18>>(tmp, _alpha, _beta, otypes).getGradient();
+        case 7:
+            return evaluate<7, ADGrad<21>>(tmp, _alpha, _beta, otypes).getGradient();
+        case 8:
+            return evaluate<8, ADGrad<24>>(tmp, _alpha, _beta, otypes).getGradient();
+        default:
+            DiffScalarBase::setVariableCount(tmp.size());
+            auto X = slice_positions<ADGrad<-1, max_size+dim>, -1, dim>(tmp);
+            return smooth_point3_term<ADGrad<-1, max_size+dim>>(X.row(1), -X.row(0) / X.row(0).norm(), X.bottomRows(n_neighbors), _alpha, _beta, otypes).getGradient();
+        }
+        
     }
     MatrixMax<double, Point3::max_size+Point3::dim, Point3::max_size+Point3::dim> Point3::hessian(const Vector<double, dim> &d, const Vector<double, -1, max_size> &x) const
     {
         Vector<double, -1, max_size+dim> tmp(d.size() + x.size());
         tmp << d, x;
-        DiffScalarBase::setVariableCount(tmp.size());
-        auto X = slice_positions<ADHessian<-1, max_size+dim>, -1, dim>(tmp);
-        return smooth_point3_term<ADHessian<-1, max_size+dim>>(X.row(1), -X.row(0) / X.row(0).norm(), X.bottomRows(n_neighbors), _alpha, _beta, otypes).getHessian();
+        switch(tmp.size() / 3)
+        {
+        case 5:
+            return evaluate<5, ADHessian<15>>(tmp, _alpha, _beta, otypes).getHessian();
+        case 6:
+            return evaluate<6, ADHessian<18>>(tmp, _alpha, _beta, otypes).getHessian();
+        case 7:
+            return evaluate<7, ADHessian<21>>(tmp, _alpha, _beta, otypes).getHessian();
+        case 8:
+            return evaluate<8, ADHessian<24>>(tmp, _alpha, _beta, otypes).getHessian();
+        default:
+            DiffScalarBase::setVariableCount(tmp.size());
+            auto X = slice_positions<ADHessian<-1, max_size+dim>, -1, dim>(tmp);    
+            return smooth_point3_term<ADHessian<-1, max_size+dim>>(X.row(1), -X.row(0) / X.row(0).norm(), X.bottomRows(n_neighbors), _alpha, _beta, otypes).getHessian();
+        }
     }
 }

@@ -30,10 +30,10 @@ namespace ipc {
         const double &dist_sqr);
 
     /// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
-    Eigen::Matrix<double, 13, 13> edge_edge_mollifier_hessian(
+    std::tuple<double, Vector<double, 13>, Eigen::Matrix<double, 13, 13>> 
+    edge_edge_mollifier_hessian(
         const Vector3<double> &ea0, const Vector3<double> &ea1,
         const Vector3<double> &eb0, const Vector3<double> &eb1, 
-        const std::array<HEAVISIDE_TYPE, 4> mtypes,
         const double &dist_sqr);
 
     template <typename scalar>
