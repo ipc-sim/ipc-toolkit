@@ -198,13 +198,23 @@ namespace ipc {
         }
 
         // grad of mollifier
-        {
-            auto mollifier_autodiff = PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(x, closest_direction_autodiff.squaredNorm());
+        auto dist_sqr_AD = closest_direction_autodiff.squaredNorm();
+        if constexpr (!std::is_same<PrimitiveA, Edge3>::value || !std::is_same<PrimitiveB, Edge3>::value) {
+            auto mollifier_autodiff = PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(x, dist_sqr_AD);
             
             gOut *= mollifier_autodiff.getValue();
             gOut.head(n_core_dofs_A) += mollifier_autodiff.getGradient().head(n_core_dofs_A) * out;
             gOut.segment(pA->n_dofs(), n_core_dofs_B) += mollifier_autodiff.getGradient().tail(n_core_dofs_B) * out;
             out *= mollifier_autodiff.getValue();
+        }
+        else {
+            auto [mollifier, mollifier_grad] = edge_edge_mollifier_grad(x_double.head(3), x_double.segment(3, 3), x_double.segment(6, 3), x_double.tail(3), dist_sqr_AD.getValue());
+            mollifier_grad.head(12) += mollifier_grad(12) * dist_sqr_AD.getGradient();
+
+            gOut *= mollifier;
+            gOut.head(6) += mollifier_grad.head(6) * out;
+            gOut.segment(pA->n_dofs(), 6) += mollifier_grad.segment(6, 6) * out;
+            out *= mollifier;
         }
 
         return gOut;

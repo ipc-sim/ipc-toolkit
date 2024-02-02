@@ -251,26 +251,34 @@ namespace ipc {
     }
 
     template class Math<double>;
+
     template class Math<ADGrad<1>>;
-    template class Math<ADGrad<3>>;
-    template class Math<ADGrad<4>>;
-    template class Math<ADGrad<6>>;
-    template class Math<ADGrad<9>>;
-    template class Math<ADGrad<10>>;
-    template class Math<ADGrad<12>>;
-    template class Math<ADGrad<15>>;
-    // template class Math<ADGrad<24>>;
-    template class Math<ADGrad<-1, n_vert_neighbors_3d*3+3>>;
-    // template class Math<ADGrad<-1, max_vert_3d*3>>;
     template class Math<ADHessian<1>>;
+
+    template class Math<ADGrad<3>>;
     template class Math<ADHessian<3>>;
+
+    template class Math<ADGrad<4>>;
     template class Math<ADHessian<4>>;
+
+    template class Math<ADGrad<6>>;
     template class Math<ADHessian<6>>;
+
+    template class Math<ADGrad<9>>;
     template class Math<ADHessian<9>>;
+
+    template class Math<ADGrad<10>>;
     template class Math<ADHessian<10>>;
+
+    template class Math<ADGrad<12>>;
     template class Math<ADHessian<12>>;
+
+    template class Math<ADGrad<13>>;
+    template class Math<ADHessian<13>>;
+
+    template class Math<ADGrad<15>>;
     template class Math<ADHessian<15>>;
-    // template class Math<ADHessian<24>>;
+
+    template class Math<ADGrad<-1, n_vert_neighbors_3d*3+3>>;
     template class Math<ADHessian<-1, n_vert_neighbors_3d*3+3>>;
-    // template class Math<ADHessian<-1, max_vert_3d*3>>;
 }
