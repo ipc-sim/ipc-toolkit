@@ -80,7 +80,7 @@ private:
     Eigen::MatrixXi faces;
 
     scalable_ccd::cuda::stq::BroadPhase stq;
-    std::vector<scalable_ccd::cuda::stq::Aabb> boxes;
+    std::vector<scalable_ccd::cuda::stq::AABB> boxes;
     std::vector<std::pair<int, int>> overlaps;
 };
 

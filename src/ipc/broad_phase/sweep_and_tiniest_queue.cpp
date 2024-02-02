@@ -61,34 +61,19 @@ void SweepAndTiniestQueue::detect_vertex_vertex_candidates(
 void SweepAndTiniestQueue::detect_edge_vertex_candidates(
     std::vector<EdgeVertexCandidate>& candidates) const
 {
-    // 2D STQ is not implemented!
     throw std::runtime_error(
         "SweepAndTiniestQueue::detect_edge_vertex_candidates not implemented!");
-    // using namespace stq::gpu;
-    // for (const std::pair<int, int>& overlap : overlaps) {
-    //     const Aabb& boxA = boxes[overlap.first];
-    //     const Aabb& boxB = boxes[overlap.second];
-    //     if (is_edge(boxA) && is_vertex(boxB)
-    //         && can_edge_vertex_collide(boxA.ref_id, boxB.ref_id)) { // EV
-    //         candidates.emplace_back(boxA.ref_id, boxB.ref_id);
-    //     } else if (
-    //         is_edge(boxB) && is_vertex(boxA)
-    //         && can_edge_vertex_collide(boxB.ref_id, boxA.ref_id)) { // VE
-    //         candidates.emplace_back(boxB.ref_id, boxA.ref_id);
-    //     }
-    // }
 }
 
 void SweepAndTiniestQueue::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
-    using namespace scalable_ccd::cuda::stq;
     for (const std::pair<int, int>& overlap : overlaps) {
-        const Aabb& boxA = boxes[overlap.first];
-        const Aabb& boxB = boxes[overlap.second];
-        if (is_edge(boxA) && is_edge(boxB)
-            && can_edges_collide(boxA.ref_id, boxB.ref_id)) { // EE
-            candidates.emplace_back(boxA.ref_id, boxB.ref_id);
+        const scalable_ccd::cuda::stq::AABB& boxA = boxes[overlap.first];
+        const scalable_ccd::cuda::stq::AABB& boxB = boxes[overlap.second];
+        if (boxA.is_edge() && boxB.is_edge()
+            && can_edges_collide(boxA.element_id, boxB.element_id)) {
+            candidates.emplace_back(boxA.element_id, boxB.element_id);
         }
     }
 }
@@ -96,17 +81,16 @@ void SweepAndTiniestQueue::detect_edge_edge_candidates(
 void SweepAndTiniestQueue::detect_face_vertex_candidates(
     std::vector<FaceVertexCandidate>& candidates) const
 {
-    using namespace scalable_ccd::cuda::stq;
     for (const std::pair<int, int>& overlap : overlaps) {
-        const Aabb& boxA = boxes[overlap.first];
-        const Aabb& boxB = boxes[overlap.second];
-        if (is_face(boxA) && is_vertex(boxB)
-            && can_face_vertex_collide(boxA.ref_id, boxB.ref_id)) { // FV
-            candidates.emplace_back(boxA.ref_id, boxB.ref_id);
+        const scalable_ccd::cuda::stq::AABB& boxA = boxes[overlap.first];
+        const scalable_ccd::cuda::stq::AABB& boxB = boxes[overlap.second];
+        if (boxA.is_face() && boxB.is_vertex()
+            && can_face_vertex_collide(boxA.element_id, boxB.element_id)) {
+            candidates.emplace_back(boxA.element_id, boxB.element_id);
         } else if (
-            is_face(boxB) && is_vertex(boxA)
-            && can_face_vertex_collide(boxB.ref_id, boxA.ref_id)) { // VF
-            candidates.emplace_back(boxB.ref_id, boxA.ref_id);
+            boxB.is_face() && boxA.is_vertex()
+            && can_face_vertex_collide(boxB.element_id, boxA.element_id)) {
+            candidates.emplace_back(boxB.element_id, boxA.element_id);
         }
     }
 }

@@ -41,7 +41,7 @@ bool AABB::intersects(const AABB& other) const
 
     // This on the otherhand, is exact because there is no rounding.
     return (this->min <= other.max).all() && (other.min <= this->max).all();
-};
+}
 
 void AABB::conservative_inflation(
     ArrayMax3d& min, ArrayMax3d& max, const double inflation_radius)

@@ -10,7 +10,14 @@ void SweepAndPrune::build(
     const Eigen::MatrixXi& faces,
     const double inflation_radius)
 {
-    build(vertices, vertices, edges, faces, inflation_radius);
+    assert(edges.size() == 0 || edges.cols() == 2);
+    assert(faces.size() == 0 || faces.cols() == 3);
+
+    clear();
+
+    scalable_ccd::build_vertex_boxes(vertices, vertex_boxes, inflation_radius);
+    scalable_ccd::build_edge_boxes(vertex_boxes, edges, edge_boxes);
+    scalable_ccd::build_face_boxes(vertex_boxes, faces, face_boxes);
 }
 
 void SweepAndPrune::build(
