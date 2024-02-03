@@ -247,7 +247,7 @@ TEST_CASE("Compare BP against brute force", "[broad_phase]")
     }
 }
 
-TEST_CASE("Cloth-Ball", "[ccd][broad_phase][cloth-ball]")
+TEST_CASE("Cloth-Ball", "[ccd][broad_phase][cloth-ball][.]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
@@ -258,6 +258,7 @@ TEST_CASE("Cloth-Ball", "[ccd][broad_phase][cloth-ball]")
     CollisionMesh mesh(V0, E, F);
 
     // const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    // const BroadPhaseMethod method = BroadPhaseMethod::SWEEP_AND_PRUNE;
     const BroadPhaseMethod method = BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE;
 
     test_broad_phase(

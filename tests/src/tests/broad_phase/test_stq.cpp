@@ -91,3 +91,29 @@ TEST_CASE("STQ Missing Features", "[broad_phase][stq]")
 
     stq->clear();
 }
+
+#ifdef IPC_TOOLKIT_WITH_CUDA
+TEST_CASE("Puffer-Ball", "[ccd][broad_phase][stq]")
+{
+    Eigen::MatrixXd V0, V1;
+    Eigen::MatrixXi E, F;
+
+    if (!tests::load_mesh("private/puffer-ball/20.ply", V0, E, F)
+        || !tests::load_mesh("private/puffer-ball/21.ply", V1, E, F)) {
+        return; // Data is private
+    }
+
+    CollisionMesh mesh(V0, E, F);
+
+    const BroadPhaseMethod method = BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE;
+
+    Candidates candidates;
+    candidates.build(mesh, V0, V1, /*inflation_radius=*/0, method);
+
+    CHECK(candidates.size() == 249'805'425);
+    CHECK(candidates.vv_candidates.size() == 0);
+    CHECK(candidates.ev_candidates.size() == 0);
+    CHECK(candidates.ee_candidates.size() == 178'227'707);
+    CHECK(candidates.fv_candidates.size() == 71'577'718);
+}
+#endif

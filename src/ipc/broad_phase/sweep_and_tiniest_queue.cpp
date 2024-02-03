@@ -2,7 +2,7 @@
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
 
-#include <scalable_ccd/cuda/stq/broadphase.cuh>
+#include <scalable_ccd/cuda/broad_phase/broad_phase.cuh>
 
 namespace ipc {
 
@@ -69,8 +69,8 @@ void SweepAndTiniestQueue::detect_edge_edge_candidates(
     std::vector<EdgeEdgeCandidate>& candidates) const
 {
     for (const std::pair<int, int>& overlap : overlaps) {
-        const scalable_ccd::cuda::stq::AABB& boxA = boxes[overlap.first];
-        const scalable_ccd::cuda::stq::AABB& boxB = boxes[overlap.second];
+        const scalable_ccd::cuda::AABB& boxA = boxes[overlap.first];
+        const scalable_ccd::cuda::AABB& boxB = boxes[overlap.second];
         if (boxA.is_edge() && boxB.is_edge()
             && can_edges_collide(boxA.element_id, boxB.element_id)) {
             candidates.emplace_back(boxA.element_id, boxB.element_id);
@@ -82,8 +82,8 @@ void SweepAndTiniestQueue::detect_face_vertex_candidates(
     std::vector<FaceVertexCandidate>& candidates) const
 {
     for (const std::pair<int, int>& overlap : overlaps) {
-        const scalable_ccd::cuda::stq::AABB& boxA = boxes[overlap.first];
-        const scalable_ccd::cuda::stq::AABB& boxB = boxes[overlap.second];
+        const scalable_ccd::cuda::AABB& boxA = boxes[overlap.first];
+        const scalable_ccd::cuda::AABB& boxB = boxes[overlap.second];
         if (boxA.is_face() && boxB.is_vertex()
             && can_face_vertex_collide(boxA.element_id, boxB.element_id)) {
             candidates.emplace_back(boxA.element_id, boxB.element_id);
