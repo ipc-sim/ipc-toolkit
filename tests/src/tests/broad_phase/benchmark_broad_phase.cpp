@@ -111,11 +111,11 @@ TEST_CASE(
         mesh_name_t0 = "cloth_ball92.ply";
         mesh_name_t1 = "cloth_ball93.ply";
     }
-    SECTION("Squishy-Ball")
-    {
-        mesh_name_t0 = "private/puffer-ball/20.ply";
-        mesh_name_t1 = "private/puffer-ball/21.ply";
-    }
+    // SECTION("Squishy-Ball")
+    // {
+    //     mesh_name_t0 = "private/puffer-ball/20.ply";
+    //     mesh_name_t1 = "private/puffer-ball/21.ply";
+    // }
 
     if (!tests::load_mesh(mesh_name_t0, V0, E, F)
         || !tests::load_mesh(mesh_name_t1, V1, E, F)) {
