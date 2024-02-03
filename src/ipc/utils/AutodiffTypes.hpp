@@ -22,6 +22,24 @@ namespace ipc
 		return out;
 	}
 
+    template<typename T>
+    struct isADGrad {
+    static const bool value = false;
+    };
+    template<int dim, int max_dim>
+    struct isADGrad<ADGrad<dim, max_dim>> {
+    static const bool value = true;
+    };
+
+    template<typename T>
+    struct isADHessian {
+    static const bool value = false;
+    };
+    template<int dim, int max_dim>
+    struct isADHessian<ADHessian<dim, max_dim>> {
+    static const bool value = true;
+    };
+
 	template <class T>
 	class AutoDiffAllocator
 	{

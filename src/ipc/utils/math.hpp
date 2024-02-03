@@ -43,6 +43,8 @@ namespace ipc {
         static scalar quadratic_spline(const scalar &x);
 
         static scalar smooth_heaviside(const scalar &x, const double alpha, const double beta = 0);
+        static double smooth_heaviside_grad(const double &x, const double alpha, const double beta = 0);
+        static double smooth_heaviside_hess(const double &x, const double alpha, const double beta = 0);
 
         static scalar mollifier(const scalar &x);
         static double mollifier_grad(const double &x);
@@ -58,6 +60,11 @@ namespace ipc {
         static scalar cross2(const Eigen::Ref<const Vector2<scalar>> &a, const Eigen::Ref<const Vector2<scalar>> &b);
     };
 
+    // gradient is symmetric
+    std::tuple<Eigen::Vector3d, Eigen::Matrix3d> normalize_vector_grad(const Eigen::Ref<const Eigen::Vector3d> &t);
+    // hessian is symmetric wrt. the three dimensions
+    std::tuple<Eigen::Vector3d, Eigen::Matrix3d, std::array<Eigen::Matrix<double, 3, 3>, 3>> normalize_vector_hess(const Eigen::Ref<const Eigen::Vector3d> &t);
+    
     template <class T, int rows, int cols, int max_rows=rows>
     inline Eigen::Matrix<T, rows, cols, (max_rows > 1 ? Eigen::ColMajor : Eigen::RowMajor), max_rows, cols> slice_positions(const Eigen::VectorXd &positions, const int offset = 0)
     {
@@ -94,4 +101,20 @@ namespace ipc {
     enum class FD_RULE { CENTRAL, LEFT, RIGHT };
     
     void my_finite_gradient(const Eigen::VectorXd& x, const std::function<double(const Eigen::VectorXd&)> &f, Eigen::VectorXd &grad, FD_RULE rule = FD_RULE::CENTRAL, const double eps = 1e-7);
+
+    // assume unit vector d
+    double func1(
+        const Eigen::Ref<const Eigen::Vector3d> &t,
+        const Eigen::Ref<const Eigen::Vector3d> &d,
+        const double &alpha, const double &beta);
+
+    std::tuple<double, Vector6d> func1_grad(
+        const Eigen::Ref<const Eigen::Vector3d> &t, 
+        const Eigen::Ref<const Eigen::Vector3d> &d,
+        const double &alpha, const double &beta);
+
+    std::tuple<double, Vector6d, Matrix6d> func1_hess(
+        const Eigen::Ref<const Eigen::Vector3d> &t, 
+        const Eigen::Ref<const Eigen::Vector3d> &d,
+        const double &alpha, const double &beta);
 }

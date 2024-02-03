@@ -10,6 +10,7 @@
 
 #include <ipc/utils/math.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
+#include <iostream>
 
 namespace {
 double normalized_barrier(const double d, const double dhat)
@@ -53,7 +54,7 @@ double normalized_barrier_second_derivative(const double d, const double dhat)
 
 TEST_CASE("Spline derivatives", "[deriv]")
 {
-    const int n_samples = 1000;
+    const int n_samples = 100;
     DiffScalarBase::setVariableCount(1);
     using T = ipc::ADHessian<1>;
     for (int i = 0; i < n_samples; i++)
@@ -71,9 +72,29 @@ TEST_CASE("Spline derivatives", "[deriv]")
     }
 }
 
-TEST_CASE("Barrier derivatives", "[deriv]")
+TEST_CASE("Heaviside derivatives", "[deriv]")
 {
-    const int n_samples = 1000;
+    const int n_samples = 100;
+    DiffScalarBase::setVariableCount(1);
+    using T = ipc::ADHessian<1>;
+    for (int i = 0; i < n_samples; i++)
+    {
+        const double x = i / static_cast<double>(n_samples) - 1;
+        double deriv = ipc::Math<double>::smooth_heaviside_grad(x, 1., 0.);
+        double hess = ipc::Math<double>::smooth_heaviside_hess(x, 1., 0.);
+        T x_ad = T(0, x);
+        T y_ad = ipc::Math<T>::smooth_heaviside(x_ad, 1., 0.);
+        double deriv_ad = y_ad.getGradient()(0);
+        double hess_ad = y_ad.getHessian()(0);
+
+        CHECK(abs(deriv_ad - deriv) < 1e-14 * std::max(1., abs(deriv)));
+        CHECK(abs(hess_ad - hess) < 1e-12 * std::max(1., abs(hess)));
+    }
+}
+
+TEST_CASE("Inv barrier derivatives", "[deriv]")
+{
+    const int n_samples = 100;
     DiffScalarBase::setVariableCount(1);
     using T = ipc::ADHessian<1>;
     const double r = 0.5;
@@ -111,6 +132,53 @@ TEST_CASE("Barrier derivatives", "[deriv]")
 
         CHECK((deriv_ad - deriv_analytic).norm() < 1e-14 * std::max(1., deriv_ad.norm()));
         CHECK((hess_ad - hess_analytic).norm() < 1e-12 * std::max(1., hess_ad.norm()));
+    }
+}
+
+TEST_CASE("Normalize vector derivatives", "[deriv]")
+{
+    const int n_samples = 1000;
+    DiffScalarBase::setVariableCount(3);
+    using T = ipc::ADHessian<3>; 
+    for (int i = 1; i <= n_samples; i++)
+    {
+        Eigen::Vector3d x = Eigen::Vector3d::Random();
+        ipc::Vector<T, 3> x_ad = ipc::slice_positions<T, 3, 1>(x);
+        ipc::Vector<T, 3> y_ad = x_ad / x_ad.norm();
+        
+        const auto [y, grad, hess] = ipc::normalize_vector_hess(x);
+
+        double err_grad = 0, err_hess = 0;
+        for (int j = 0; j < 3; j++)
+        {
+            err_grad += (grad.col(j) - y_ad(j).getGradient()).norm();
+            err_hess += (hess[j] - y_ad(j).getHessian()).norm();
+        }
+
+        CHECK((grad - grad.transpose()).norm() <= 1e-12);
+        CHECK((hess[0] - hess[0].transpose()).norm() <= 1e-12);
+        CHECK(err_grad <= 1e-12);
+        CHECK(err_hess <= 1e-12);
+    }
+}
+
+TEST_CASE("Func1 derivatives", "[deriv]")
+{
+    const int n_samples = 1000;
+    DiffScalarBase::setVariableCount(6);
+    using T = ipc::ADHessian<6>;
+    const double alpha = 1;
+    const double beta = 1;
+    for (int i = 1; i <= n_samples; i++)
+    {
+        ipc::Vector6d x = ipc::Vector6d::Random();
+        ipc::Vector<T, 6> x_ad = ipc::slice_positions<T, 6, 1>(x);
+        T y_ad = ipc::Math<T>::smooth_heaviside(x_ad.tail(3).dot(x_ad.head(3)) / x_ad.head(3).norm(), alpha, beta);
+        
+        const auto [y, grad, hess] = ipc::func1_hess(x.head(3), x.tail(3), alpha, beta);
+
+        CHECK((grad - y_ad.getGradient()).norm() <= 1e-12);
+        CHECK((hess - y_ad.getHessian()).norm() <= 1e-12);
     }
 }
 

@@ -36,6 +36,30 @@ namespace ipc {
 
             return scalar(1.);
         }
+
+        double smooth_heaviside_standard_grad(const double &x)
+        {
+            if (x <= -3 || x >= 0)
+                return 0.;
+            if (x <= -2)
+                return Math<double>::sqr(3. + x) / 2.;
+            if (x <= -1)
+                return -(x * x + 3 * x + 1.5);
+            
+            return Math<double>::sqr(x) / 2.;
+        }
+
+        double smooth_heaviside_standard_hess(const double &x)
+        {
+            if (x <= -3 || x >= 0)
+                return 0.;
+            if (x <= -2)
+                return 3. + x;
+            if (x <= -1)
+                return - 3 - 2 * x;
+            
+            return x;
+        }
     }
     template <typename scalar>
     double Math<scalar>::sign(const double &x)
@@ -145,15 +169,45 @@ namespace ipc {
     }
 
     template <typename scalar>
+    double Math<scalar>::smooth_heaviside_grad(const double &x, const double alpha, const double beta)
+    {
+        const double s = 3 / (alpha + beta);
+        return smooth_heaviside_standard_grad((x - beta) * s) * s;
+    }
+
+    template <typename scalar>
+    double Math<scalar>::smooth_heaviside_hess(const double &x, const double alpha, const double beta)
+    {
+        const double s = 3 / (alpha + beta);
+        return smooth_heaviside_standard_hess((x - beta) * s) * s * s;
+    }
+
+    template <typename scalar>
     scalar Math<scalar>::mollifier(const scalar &x)
     {
-        if (x <= 0)
-            return scalar(0.);
-        else if (x < 1)
-            return x * (2. - x);
+        if constexpr (isADHessian<scalar>::value)
+        {
+            if (x <= 0)
+                return scalar(0.);
+            else if (x < 1)
+            {
+                const double deriv = 2. * (1. - x.getValue()), hess = -2.;
+                return scalar(x.getValue() * (2. - x.getValue()), deriv * x.getGradient(), x.getGradient() * hess * x.getGradient().transpose() + deriv * x.getHessian());
+            }
+            else
+                return scalar(1.);
+            // return smooth_heaviside<scalar>(x - 1.);
+        }
         else
-            return scalar(1.);
-        // return smooth_heaviside<scalar>(x - 1.);
+        {
+            if (x <= 0)
+                return scalar(0.);
+            else if (x < 1)
+                return x * (2. - x);
+            else
+                return scalar(1.);
+            // return smooth_heaviside<scalar>(x - 1.);
+        }
     }
 
     template <typename scalar>
@@ -248,6 +302,77 @@ namespace ipc {
         default:
         assert(false);
         }
+    }
+
+    std::tuple<Eigen::Vector3d, Eigen::Matrix3d> normalize_vector_grad(const Eigen::Ref<const Eigen::Vector3d> &t)
+    {
+        double norm = t.norm();
+        Eigen::Vector3d y = t / norm;
+        Eigen::Matrix3d grad = (Eigen::Matrix3d::Identity() - y * y.transpose()) / norm;
+        return std::make_tuple(y, grad);
+    }
+
+    std::tuple<Eigen::Vector3d, Eigen::Matrix3d, std::array<Eigen::Matrix<double, 3, 3>, 3>> normalize_vector_hess(const Eigen::Ref<const Eigen::Vector3d> &t)
+    {
+        double norm = t.norm();
+        Eigen::Vector3d y = t / norm;
+        Eigen::Matrix3d grad = (Eigen::Matrix3d::Identity() - y * y.transpose()) / norm;
+        std::array<Eigen::Matrix<double, 3, 3>, 3> hess;
+        for (int i = 0; i < 3; i++)
+            hess[i] = -(y(i) * grad + y * grad.row(i) + grad.col(i) * y.transpose()) / norm;
+
+        return std::make_tuple(y, grad, hess);
+    }
+
+    double func1(
+        const Eigen::Ref<const Eigen::Vector3d> &t, 
+        const Eigen::Ref<const Eigen::Vector3d> &d,
+        const double &alpha, const double &beta)
+    {
+        return Math<double>::smooth_heaviside(d.dot(t) / t.norm(), alpha, beta);
+    }
+
+    std::tuple<double, Vector6d> func1_grad(
+        const Eigen::Ref<const Eigen::Vector3d> &t, 
+        const Eigen::Ref<const Eigen::Vector3d> &d,
+        const double &alpha, const double &beta)
+    {
+        auto [tn, tn_grad] = normalize_vector_grad(t);
+        const double a = d.dot(tn);
+        const double y = Math<double>::smooth_heaviside(a, alpha, beta);
+        const double dy = Math<double>::smooth_heaviside_grad(a, alpha, beta);
+
+        Vector6d grad;
+        grad << tn_grad * dy * d, dy * tn;
+        return std::make_tuple(y, grad);
+    }
+
+    std::tuple<double, Vector6d, Matrix6d> func1_hess(
+        const Eigen::Ref<const Eigen::Vector3d> &t, 
+        const Eigen::Ref<const Eigen::Vector3d> &d,
+        const double &alpha, const double &beta)
+    {
+        auto [tn, tn_grad, tn_hess] = normalize_vector_hess(t);
+        const double a = d.dot(tn);
+        const double y = Math<double>::smooth_heaviside(a, alpha, beta);
+        const double dy = Math<double>::smooth_heaviside_grad(a, alpha, beta);
+        const double ddy = Math<double>::smooth_heaviside_hess(a, alpha, beta);
+
+        Vector6d grad;
+        grad << dy * d, dy * tn;
+
+        Matrix6d hess;
+        hess << d * ddy * d.transpose(), d * ddy * tn.transpose() + Eigen::Matrix3d::Identity() * dy,
+            tn * ddy * d.transpose() + Eigen::Matrix3d::Identity() * dy, tn * ddy * tn.transpose();
+        
+        // chain rule of vector t normalize
+        hess.topRows(3) = tn_grad * hess.topRows(3);
+        hess.leftCols(3) = hess.leftCols(3) * tn_grad;
+        hess.topLeftCorner(3, 3) += grad(0) * tn_hess[0] + grad(1) * tn_hess[1] + grad(2) * tn_hess[2];
+
+        grad.head(3) = tn_grad * grad.head(3);
+
+        return std::make_tuple(y, grad, hess);
     }
 
     template class Math<double>;
