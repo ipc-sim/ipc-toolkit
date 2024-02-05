@@ -329,17 +329,19 @@ namespace ipc {
         MatrixMax<double, max_size, max_size> hMollifier;
         hMollifier.setZero(ndofs(), ndofs());
         const auto dist_sqr_AD = closest_direction_autodiff.squaredNorm();
+
+        Eigen::VectorXi core_indices(n_core_dofs);
+        for (int i = 0; i < n_core_dofs_A; i++)
+            core_indices(i) = i;
+        for (int i = 0; i < n_core_dofs_B; i++)
+            core_indices(i + n_core_dofs_A) = i + pA->n_dofs();
+
         if constexpr (!std::is_same<PrimitiveA, Edge3>::value || !std::is_same<PrimitiveB, Edge3>::value) {
             auto mollifier_autodiff = PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(x, dist_sqr_AD);
             mollifier = mollifier_autodiff.getValue();
-            
-            gMollifier.segment(0, n_core_dofs_A) = mollifier_autodiff.getGradient().head(n_core_dofs_A);
-            gMollifier.segment(pA->n_dofs(), n_core_dofs_B) = mollifier_autodiff.getGradient().tail(n_core_dofs_B);
 
-            hMollifier.block(0, 0, n_core_dofs_A, n_core_dofs_A) = mollifier_autodiff.getHessian().topLeftCorner(n_core_dofs_A, n_core_dofs_A);
-            hMollifier.block(pA->n_dofs(), pA->n_dofs(), n_core_dofs_B, n_core_dofs_B) = mollifier_autodiff.getHessian().bottomRightCorner(n_core_dofs_B, n_core_dofs_B);
-            hMollifier.block(0, pA->n_dofs(), n_core_dofs_A, n_core_dofs_B) = mollifier_autodiff.getHessian().topRightCorner(n_core_dofs_A, n_core_dofs_B);
-            hMollifier.block(pA->n_dofs(), 0, n_core_dofs_B, n_core_dofs_A) = mollifier_autodiff.getHessian().bottomLeftCorner(n_core_dofs_B, n_core_dofs_A);
+            gMollifier(core_indices) = mollifier_autodiff.getGradient();
+            hMollifier(core_indices, core_indices) = mollifier_autodiff.getHessian();
         } else {
             const auto otypes = edge_edge_mollifier_type(x_double.head(3), x_double.segment(3, 3), x_double.segment(6, 3), x_double.tail(3), dist_sqr_AD.getValue());
 
@@ -354,13 +356,8 @@ namespace ipc {
                 dist_sqr_AD.getGradient() * mollifier_hess.block(12, 0, 1, 12) + 
                 mollifier_hess.block(0, 12, 12, 1) * dist_sqr_AD.getGradient().transpose();
 
-            gMollifier.segment(0, n_core_dofs_A) = mollifier_grad.head(n_core_dofs_A);
-            gMollifier.segment(pA->n_dofs(), n_core_dofs_B) = mollifier_grad.segment(n_core_dofs_A, n_core_dofs_B);
-
-            hMollifier.block(0, 0, n_core_dofs_A, n_core_dofs_A) = mollifier_hess.block(0, 0, n_core_dofs_A, n_core_dofs_A);
-            hMollifier.block(pA->n_dofs(), pA->n_dofs(), n_core_dofs_B, n_core_dofs_B) = mollifier_hess.block(n_core_dofs_A, n_core_dofs_A, n_core_dofs_B, n_core_dofs_B);
-            hMollifier.block(0, pA->n_dofs(), n_core_dofs_A, n_core_dofs_B) = mollifier_hess.block(0, n_core_dofs_A, n_core_dofs_A, n_core_dofs_B);
-            hMollifier.block(pA->n_dofs(), 0, n_core_dofs_B, n_core_dofs_A) = mollifier_hess.block(n_core_dofs_A, 0, n_core_dofs_B, n_core_dofs_A);
+            gMollifier(core_indices) = mollifier_grad;
+            hMollifier(core_indices, core_indices) = mollifier_hess;
         }
 
         DiffScalarBase::setVariableCount(ndofs());

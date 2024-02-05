@@ -10,6 +10,15 @@ namespace {
         return (a - c) / b;
     }
 
+    Vector<int, 9> get_indices(int i, int j, int k)
+    {
+        Vector<int, 9> out;
+        out << 3 * i + 0, 3 * i + 1, 3 * i + 2,
+                3 * j + 0, 3 * j + 1, 3 * j + 2,
+                3 * k + 0, 3 * k + 1, 3 * k + 2;
+        return out;
+    }
+
     // Eigen::Vector3d func_aux1_grad(const double &a, const double &b, const double &c)
     // {
     //     return Eigen::Vector3d(1. / b, -func_aux1(a, b, c) / b, -1. / b);
@@ -125,53 +134,41 @@ edge_edge_mollifier_hessian(
     input << ea0, ea1, eb0, eb1, dist_sqr;
     Vector<T, 13> input_ad = slice_positions<T, 13, 1>(input);
 
+    Eigen::Matrix<int, 4, 9> dof_indices;
+    dof_indices << get_indices(0, 2, 3).transpose(),
+                    get_indices(1, 2, 3).transpose(), 
+                    get_indices(2, 0, 1).transpose(), 
+                    get_indices(3, 0, 1).transpose();
+
     const double da0 = point_edge_distance(ea0, eb0, eb1);
     const double da1 = point_edge_distance(ea1, eb0, eb1);
     const double db0 = point_edge_distance(eb0, ea0, ea1);
     const double db1 = point_edge_distance(eb1, ea0, ea1);
 
-    Vector<double,13> da0_wrt_x_1, da1_wrt_x_1, db0_wrt_x_1, db1_wrt_x_1;
+    Vector<double,13> da0_wrt_x_1 = Vector<double, 13>::Zero(),
+                    da1_wrt_x_1 = Vector<double, 13>::Zero(),
+                    db0_wrt_x_1 = Vector<double, 13>::Zero(),
+                    db1_wrt_x_1 = Vector<double, 13>::Zero();
     {
-        Vector9d tmp = point_edge_distance_gradient(ea0, eb0, eb1);
-        da0_wrt_x_1 << tmp.head(3), Eigen::Vector3d::Zero(), tmp.tail(6), 0.;
-
-        tmp = point_edge_distance_gradient(ea1, eb0, eb1);
-        da1_wrt_x_1 << Eigen::Vector3d::Zero(), tmp, 0.;
-
-        tmp = point_edge_distance_gradient(eb0, ea0, ea1);
-        db0_wrt_x_1 << tmp.tail(6), tmp.head(3), Eigen::Vector3d::Zero(), 0.;
-
-        tmp = point_edge_distance_gradient(eb1, ea0, ea1);
-        db1_wrt_x_1 << tmp.tail(6), Eigen::Vector3d::Zero(), tmp.head(3), 0.;
+        da0_wrt_x_1(dof_indices.row(0)) = point_edge_distance_gradient(ea0, eb0, eb1);
+        da1_wrt_x_1(dof_indices.row(1)) = point_edge_distance_gradient(ea1, eb0, eb1);
+        db0_wrt_x_1(dof_indices.row(2)) = point_edge_distance_gradient(eb0, ea0, ea1);
+        db1_wrt_x_1(dof_indices.row(3)) = point_edge_distance_gradient(eb1, ea0, ea1);
     }
 
-    Eigen::Matrix<double, 13, 13> da0_wrt_x_2, da1_wrt_x_2, db0_wrt_x_2, db1_wrt_x_2;
+    Eigen::Matrix<double, 13, 13> da0_wrt_x_2 = Eigen::Matrix<double, 13, 13>::Zero(), 
+                                da1_wrt_x_2 = Eigen::Matrix<double, 13, 13>::Zero(), 
+                                db0_wrt_x_2 = Eigen::Matrix<double, 13, 13>::Zero(), 
+                                db1_wrt_x_2 = Eigen::Matrix<double, 13, 13>::Zero();
     {
-        Matrix9d tmp = point_edge_distance_hessian(ea0, eb0, eb1);
-        da0_wrt_x_2 << tmp.topLeftCorner(3,3),  Eigen::Matrix<double, 3,3>::Zero() , tmp.topRightCorner(3,6), Eigen::Matrix<double, 3,1>::Zero(),
-                                                Eigen::Matrix<double, 3,13>::Zero(),
-                     tmp.bottomLeftCorner(6,3), Eigen::Matrix<double, 6,3>::Zero() , tmp.bottomRightCorner(6,6), Eigen::Matrix<double, 6,1>::Zero(),
-                                                Eigen::Matrix<double, 1,13>::Zero();
-
-        tmp = point_edge_distance_hessian(ea1, eb0, eb1);
-        da1_wrt_x_2 << Eigen::Matrix<double, 3,13>::Zero(),
-                       Eigen::Matrix<double, 9,3>::Zero(), tmp, Eigen::Matrix<double, 9, 1>::Zero(),
-                       Eigen::Matrix<double, 1,13>::Zero();
-
-        tmp = point_edge_distance_hessian(eb0, ea0, ea1);
-        db0_wrt_x_2 << tmp.bottomRightCorner(6, 6), tmp.bottomLeftCorner(6, 3), Eigen::Matrix<double, 6, 4>::Zero(),
-                          tmp.topRightCorner(3, 6), tmp.topLeftCorner(3, 3)   , Eigen::Matrix<double, 3, 4>::Zero(), 
-                                                    Eigen::Matrix<double, 4, 13>::Zero();
-
-        tmp = point_edge_distance_hessian(eb1, ea0, ea1);
-        db1_wrt_x_2 << tmp.bottomRightCorner(6, 6), Eigen::Matrix<double, 6, 3>::Zero(), tmp.bottomLeftCorner(6, 3), Eigen::Matrix<double, 6, 1>::Zero(),
-                                                    Eigen::Matrix<double, 3, 13>::Zero(),
-                       tmp.topRightCorner(3, 6)   , Eigen::Matrix<double, 3, 3>::Zero(), tmp.topLeftCorner(3, 3), Eigen::Matrix<double, 3, 1>::Zero(),
-                                                    Eigen::Matrix<double, 1, 13>::Zero();
+        da0_wrt_x_2(dof_indices.row(0), dof_indices.row(0)) = point_edge_distance_hessian(ea0, eb0, eb1);
+        da1_wrt_x_2(dof_indices.row(1), dof_indices.row(1)) = point_edge_distance_hessian(ea1, eb0, eb1);
+        db0_wrt_x_2(dof_indices.row(2), dof_indices.row(2)) = point_edge_distance_hessian(eb0, ea0, ea1);
+        db1_wrt_x_2(dof_indices.row(3), dof_indices.row(3)) = point_edge_distance_hessian(eb1, ea0, ea1);
     }
 
-    T laAD = (input_ad.head(3) - input_ad.segment(3,3)).squaredNorm() * mollifier_threshold_eps;
-    T lbAD = (input_ad.segment(6,3) - input_ad.segment(9,3)).squaredNorm() * mollifier_threshold_eps;
+    T laAD = (input_ad.head<3>() - input_ad.segment<3>(3)).squaredNorm() * mollifier_threshold_eps;
+    T lbAD = (input_ad.segment<3>(6) - input_ad.segment<3>(9)).squaredNorm() * mollifier_threshold_eps;
     T aAD = mtypes[0] == HEAVISIDE_TYPE::VARIANT ? Math<T>::mollifier((T(da0, da0_wrt_x_1, da0_wrt_x_2) - input_ad(12)) / lbAD) : T(1.);
     T bAD = mtypes[1] == HEAVISIDE_TYPE::VARIANT ? Math<T>::mollifier((T(da1, da1_wrt_x_1, da1_wrt_x_2) - input_ad(12)) / lbAD) : T(1.);
     T cAD = mtypes[2] == HEAVISIDE_TYPE::VARIANT ? Math<T>::mollifier((T(db0, db0_wrt_x_1, db0_wrt_x_2) - input_ad(12)) / laAD) : T(1.);
