@@ -517,16 +517,4 @@ namespace ipc {
 
     template class Math<ADGrad<15>>;
     template class Math<ADHessian<15>>;
-
-    template class Math<ADGrad<18>>;
-    template class Math<ADHessian<18>>;
-
-    template class Math<ADGrad<21>>;
-    template class Math<ADHessian<21>>;
-
-    template class Math<ADGrad<24>>;
-    template class Math<ADHessian<24>>;
-
-    template class Math<ADGrad<-1, n_vert_neighbors_3d*3+3>>;
-    template class Math<ADHessian<-1, n_vert_neighbors_3d*3+3>>;
 }
