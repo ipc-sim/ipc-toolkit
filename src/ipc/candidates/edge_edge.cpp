@@ -13,7 +13,7 @@ namespace {
         p3.head<2>() = p;
         return p3;
     }
-}
+} // namespace
 
 EdgeEdgeCandidate::EdgeEdgeCandidate(long _edge0_id, long _edge1_id)
     : edge0_id(_edge0_id)
@@ -72,17 +72,20 @@ bool EdgeEdgeCandidate::ccd(
     else if (vertices_t0.size() == 8 && vertices_t1.size() == 8)
         return edge_edge_ccd(
             // Edge 1 at t=0
-            point_to_3d(vertices_t0.head<2>()), point_to_3d(vertices_t0.segment<2>(2)),
+            point_to_3d(vertices_t0.head<2>()),
+            point_to_3d(vertices_t0.segment<2>(2)),
             // Edge 2 at t=0
-            point_to_3d(vertices_t0.segment<2>(4)), point_to_3d(vertices_t0.tail<2>()),
+            point_to_3d(vertices_t0.segment<2>(4)),
+            point_to_3d(vertices_t0.tail<2>()),
             // Edge 1 at t=1
-            point_to_3d(vertices_t1.head<2>()), point_to_3d(vertices_t1.segment<2>(2)),
+            point_to_3d(vertices_t1.head<2>()),
+            point_to_3d(vertices_t1.segment<2>(2)),
             // Edge 2 at t=1
-            point_to_3d(vertices_t1.segment<2>(4)), point_to_3d(vertices_t1.tail<2>()), //
+            point_to_3d(vertices_t1.segment<2>(4)),
+            point_to_3d(vertices_t1.tail<2>()), //
             toi, min_distance, tmax, tolerance, max_iterations,
             conservative_rescaling);
-    else
-    {
+    else {
         assert(false);
         return false;
     }

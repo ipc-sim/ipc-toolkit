@@ -144,7 +144,7 @@ bool BroadPhase::can_face_face_collide(size_t fj, size_t fi) const
     const auto& [f0j, f1j, f2j] = face_boxes[fj].vertex_ids;
     const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
 
-    std::set<long> s = {f0j, f1j, f2j, f0i, f1i, f2i};
+    std::set<long> s = { f0j, f1j, f2j, f0i, f1i, f2i };
     const bool share_endpoint = s.size() < 6;
 
     return !share_endpoint

@@ -6,7 +6,7 @@ namespace ipc {
 
 /// @brief Closest pair between a point and point.
 enum class PointPointDistanceType {
-    AUTO  ///< Automatically determine the closest pair.
+    AUTO ///< Automatically determine the closest pair.
 };
 
 /// @brief Closest pair between a point and edge.

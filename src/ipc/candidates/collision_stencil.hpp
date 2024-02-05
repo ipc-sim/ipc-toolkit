@@ -8,8 +8,7 @@
 namespace ipc {
 
 /// @brief A stencil representing a collision between at most four vertices.
-template <int max_vert = 4>
-class CollisionStencil {
+template <int max_vert = 4> class CollisionStencil {
 public:
     constexpr static int element_size = max_vert;
     CollisionStencil() = default;
@@ -48,7 +47,8 @@ public:
     {
         constexpr double NaN = std::numeric_limits<double>::signaling_NaN();
 
-        const std::array<long, max_vert> vertex_ids = this->vertex_ids(edges, faces);
+        const std::array<long, max_vert> vertex_ids =
+            this->vertex_ids(edges, faces);
 
         std::array<VectorMax3<T>, max_vert> stencil_vertices;
         for (int i = 0; i < max_vert; i++) {
@@ -69,13 +69,13 @@ public:
     /// @param faces Collision mesh faces
     /// @return This stencil's DOF.
     template <typename T>
-    Vector<T, -1, 3*max_vert>
+    Vector<T, -1, 3 * max_vert>
     dof(const MatrixX<T>& X,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const
     {
         const int dim = X.cols();
-        Vector<T, -1, 3*max_vert> x(num_vertices() * dim);
+        Vector<T, -1, 3 * max_vert> x(num_vertices() * dim);
         const std::array<long, max_vert> idx = vertex_ids(edges, faces);
         for (int i = 0; i < num_vertices(); i++) {
             x.segment(i * dim, dim) = X.row(idx[i]);
@@ -91,21 +91,23 @@ public:
     /// @param positions Stencil's vertex positions.
     /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance of the stencil.
-    virtual double compute_distance(const Vector<double, -1, 3*max_vert>& positions) const = 0;
+    virtual double compute_distance(
+        const Vector<double, -1, 3 * max_vert>& positions) const = 0;
 
     /// @brief Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
     /// @param positions Stencil's vertex positions.
     /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance gradient of the stencil w.r.t. the stencil's vertex positions.
-    virtual Vector<double, -1, 3*max_vert>
-    compute_distance_gradient(const Vector<double, -1, 3*max_vert>& positions) const = 0;
+    virtual Vector<double, -1, 3 * max_vert> compute_distance_gradient(
+        const Vector<double, -1, 3 * max_vert>& positions) const = 0;
 
     /// @brief Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
     /// @param positions Stencil's vertex positions.
     /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
-    virtual MatrixMax<double, 3*max_vert, 3*max_vert>
-    compute_distance_hessian(const Vector<double, -1, 3*max_vert>& positions) const = 0;
+    virtual MatrixMax<double, 3 * max_vert, 3 * max_vert>
+    compute_distance_hessian(
+        const Vector<double, -1, 3 * max_vert>& positions) const = 0;
 };
 
 } // namespace ipc

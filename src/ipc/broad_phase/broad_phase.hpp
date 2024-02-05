@@ -31,7 +31,7 @@ class Candidates; // Forward declaration
 
 class BroadPhase {
 public:
-    BroadPhase()  {}
+    BroadPhase() { }
     virtual ~BroadPhase() { clear(); }
 
     /// @brief Construct a registered broad phase object.
@@ -91,7 +91,7 @@ public:
     /// @param[out] candidates The candidate edge-face intersections.
     virtual void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const = 0;
-    
+
     /// @brief Detect all collision candidates needed for a given dimensional simulation.
     /// @param dim The dimension of the simulation (i.e., 2 or 3).
     /// @param candidates The detected collision candidates.

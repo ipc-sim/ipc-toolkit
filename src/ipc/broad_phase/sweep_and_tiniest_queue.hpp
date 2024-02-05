@@ -18,6 +18,7 @@ namespace ipc {
 class CopyMeshBroadPhase : public BroadPhase {
 public:
     using BroadPhase::BroadPhase;
+
 protected:
     void copy_mesh(const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces);
 

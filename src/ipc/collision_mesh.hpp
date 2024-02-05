@@ -57,8 +57,10 @@ public:
 
     Eigen::Vector3d face_normal(const long f) const
     {
-        Eigen::Vector3d a = rest_positions().row(faces()(f, 1)) - rest_positions().row(faces()(f, 0));
-        Eigen::Vector3d b = rest_positions().row(faces()(f, 2)) - rest_positions().row(faces()(f, 0));
+        Eigen::Vector3d a = rest_positions().row(faces()(f, 1))
+            - rest_positions().row(faces()(f, 0));
+        Eigen::Vector3d b = rest_positions().row(faces()(f, 2))
+            - rest_positions().row(faces()(f, 0));
         return (a).cross(b);
     }
 
@@ -118,7 +120,7 @@ public:
     /// @brief Get the mapping from faces to edges of the collision mesh (#F × 3).
     const Eigen::MatrixXi& faces_to_edges() const { return m_faces_to_edges; }
 
-    double edge_length(const int &edge_id) const;
+    double edge_length(const int& edge_id) const;
     double max_edge_length() const;
 
     // const std::vector<std::vector<int>>& vertices_to_edges() const
@@ -131,13 +133,10 @@ public:
         return m_vertices_to_faces;
     }
 
-    const Eigen::MatrixXi& edges_to_faces() const
-    {
-        return m_edges_to_faces;
-    }
+    const Eigen::MatrixXi& edges_to_faces() const { return m_edges_to_faces; }
 
-    std::vector<long> find_vertex_adjacent_vertices(const long &v) const;
-    std::array<long, 4> find_edge_adjacent_vertices(const long &e) const;
+    std::vector<long> find_vertex_adjacent_vertices(const long& v) const;
+    std::array<long, 4> find_edge_adjacent_vertices(const long& e) const;
 
     // -----------------------------------------------------------------------
 
@@ -296,7 +295,7 @@ public:
     /// @return Matrix that maps from the faces' edges to rows in the edges matrix.
     static Eigen::MatrixXi construct_faces_to_edges(
         const Eigen::MatrixXi& faces, const Eigen::MatrixXi& edges);
-    
+
     void construct_edges_to_faces();
 
     /// A function that takes two vertex IDs and returns true if the vertices

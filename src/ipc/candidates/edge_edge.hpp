@@ -26,7 +26,8 @@ public:
                    edges(edge1_id, 0), edges(edge1_id, 1) } };
     }
 
-    virtual double compute_distance(const VectorMax12d& positions) const override;
+    virtual double
+    compute_distance(const VectorMax12d& positions) const override;
 
     virtual VectorMax12d
     compute_distance_gradient(const VectorMax12d& positions) const override;

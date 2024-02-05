@@ -11,46 +11,70 @@ Collision<max_vert>::Collision(
 {
 }
 template <int max_vert>
-double Collision<max_vert>::mollifier(const Vector<double, -1, Collision<max_vert>::max_size>& positions) const { return 1.0; }
-template <int max_vert>
-double Collision<max_vert>::mollifier(const Vector<double, -1, Collision<max_vert>::max_size>& positions, double eps_x) const
+double Collision<max_vert>::mollifier(
+    const Vector<double, -1, Collision<max_vert>::max_size>& positions) const
 {
     return 1.0;
 }
 template <int max_vert>
-Vector<double, -1, Collision<max_vert>::max_size> Collision<max_vert>::mollifier_gradient(const Vector<double, -1, Collision<max_vert>::max_size>& positions) const
+double Collision<max_vert>::mollifier(
+    const Vector<double, -1, Collision<max_vert>::max_size>& positions,
+    double eps_x) const
 {
-    return Vector<double, -1, Collision<max_vert>::max_size>::Zero(positions.size());
+    return 1.0;
 }
-
-template <int max_vert> Vector<double, -1, Collision<max_vert>::max_size>
-Collision<max_vert>::mollifier_gradient(const Vector<double, -1, Collision<max_vert>::max_size>& positions, double eps_x) const
+template <int max_vert>
+Vector<double, -1, Collision<max_vert>::max_size>
+Collision<max_vert>::mollifier_gradient(
+    const Vector<double, -1, Collision<max_vert>::max_size>& positions) const
 {
-    return Vector<double, -1, Collision<max_vert>::max_size>::Zero(positions.size());
+    return Vector<double, -1, Collision<max_vert>::max_size>::Zero(
+        positions.size());
 }
 
 template <int max_vert>
-MatrixMax<double, Collision<max_vert>::max_size, Collision<max_vert>::max_size> Collision<max_vert>::mollifier_hessian(const Vector<double, -1, Collision<max_vert>::max_size>& positions) const
+Vector<double, -1, Collision<max_vert>::max_size>
+Collision<max_vert>::mollifier_gradient(
+    const Vector<double, -1, Collision<max_vert>::max_size>& positions,
+    double eps_x) const
 {
-    return MatrixMax<double, Collision<max_vert>::max_size, Collision<max_vert>::max_size>::Zero(positions.size(), positions.size());
+    return Vector<double, -1, Collision<max_vert>::max_size>::Zero(
+        positions.size());
 }
 
-template <int max_vert> MatrixMax<double, Collision<max_vert>::max_size, Collision<max_vert>::max_size>
-Collision<max_vert>::mollifier_hessian(const Vector<double, -1, Collision<max_vert>::max_size>& positions, double eps_x) const
+template <int max_vert>
+MatrixMax<double, Collision<max_vert>::max_size, Collision<max_vert>::max_size>
+Collision<max_vert>::mollifier_hessian(
+    const Vector<double, -1, Collision<max_vert>::max_size>& positions) const
 {
-    return MatrixMax<double, Collision<max_vert>::max_size, Collision<max_vert>::max_size>::Zero(positions.size(), positions.size());
+    return MatrixMax<
+        double, Collision<max_vert>::max_size, Collision<max_vert>::max_size>::
+        Zero(positions.size(), positions.size());
+}
+
+template <int max_vert>
+MatrixMax<double, Collision<max_vert>::max_size, Collision<max_vert>::max_size>
+Collision<max_vert>::mollifier_hessian(
+    const Vector<double, -1, Collision<max_vert>::max_size>& positions,
+    double eps_x) const
+{
+    return MatrixMax<
+        double, Collision<max_vert>::max_size, Collision<max_vert>::max_size>::
+        Zero(positions.size(), positions.size());
 }
 
 template <int max_vert>
 Vector12d Collision<max_vert>::mollifier_gradient_wrt_x(
-    const Vector<double, -1, Collision<max_vert>::max_size>& rest_positions, const Vector<double, -1, Collision<max_vert>::max_size>& positions) const
+    const Vector<double, -1, Collision<max_vert>::max_size>& rest_positions,
+    const Vector<double, -1, Collision<max_vert>::max_size>& positions) const
 {
     return Vector12d::Zero(rest_positions.size());
 }
 
 template <int max_vert>
 Matrix12d Collision<max_vert>::mollifier_gradient_jacobian_wrt_x(
-    const Vector<double, -1, Collision<max_vert>::max_size>& rest_positions, const Vector<double, -1, Collision<max_vert>::max_size>& positions) const
+    const Vector<double, -1, Collision<max_vert>::max_size>& rest_positions,
+    const Vector<double, -1, Collision<max_vert>::max_size>& positions) const
 {
     return Matrix12d::Zero(rest_positions.size(), positions.size());
 }

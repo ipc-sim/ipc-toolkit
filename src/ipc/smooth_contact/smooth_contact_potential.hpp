@@ -10,7 +10,7 @@ class SmoothContactPotential : public Potential<TCollisions> {
     using Super = Potential<TCollisions>;
 
 public:
-    SmoothContactPotential(ParameterType &_params) : params(_params) { }
+    SmoothContactPotential(ParameterType& _params) : params(_params) { }
 
     using Super::element_size;
     using Super::operator();
@@ -24,7 +24,7 @@ public:
     /// @param positions The collision stencil's positions.
     /// @return The potential.
     double operator()(
-        const typename TCollisions::value_type& collision, 
+        const typename TCollisions::value_type& collision,
         const Vector<double, -1, element_size>& positions) const override
     {
         return collision.weight * collision(positions, params);
@@ -50,7 +50,8 @@ public:
         const Vector<double, -1, element_size>& positions,
         const bool project_hessian_to_psd = false) const override
     {
-        MatrixMax<double, element_size, element_size> hess = collision.weight * collision.hessian(positions, params);
+        MatrixMax<double, element_size, element_size> hess =
+            collision.weight * collision.hessian(positions, params);
         return project_hessian_to_psd ? project_to_psd(hess) : hess;
     }
 

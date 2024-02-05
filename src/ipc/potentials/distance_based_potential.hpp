@@ -38,8 +38,9 @@ public:
     /// @param collision The collision.
     /// @param positions The collision stencil's positions.
     /// @return The potential.
-    double operator()(const Collision<4>& collision, const Vector<double, -1, element_size>& positions)
-        const override;
+    double operator()(
+        const Collision<4>& collision,
+        const Vector<double, -1, element_size>& positions) const override;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision.

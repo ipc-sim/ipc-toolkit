@@ -15,8 +15,7 @@
 
 namespace ipc {
 
-template <int dim>
-class SmoothCollisionsBuilder {
+template <int dim> class SmoothCollisionsBuilder {
 public:
     SmoothCollisionsBuilder() = default;
 
@@ -25,16 +24,17 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<EdgeVertexCandidate>& candidates,
-        const ParameterType &param,
-        const std::function<double(const long &)> &vert_dhat,
-        const std::function<double(const long &)> &edge_dhat,
+        const ParameterType& param,
+        const std::function<double(const long&)>& vert_dhat,
+        const std::function<double(const long&)>& edge_dhat,
         const size_t start_i,
         const size_t end_i);
 
     // ------------------------------------------------------------------------
 
     static void merge(
-        const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>& local_storage,
+        const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>&
+            local_storage,
         SmoothCollisions<dim>& merged_collisions);
 
     // -------------------------------------------------------------------------
@@ -44,9 +44,9 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<EdgeEdgeCandidate>& candidates,
-        const ParameterType &param,
-        const std::function<double(const long &)> &vert_dhat,
-        const std::function<double(const long &)> &edge_dhat,
+        const ParameterType& param,
+        const std::function<double(const long&)>& vert_dhat,
+        const std::function<double(const long&)>& edge_dhat,
         const size_t start_i,
         const size_t end_i);
 
@@ -55,32 +55,54 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const std::vector<FaceVertexCandidate>& candidates,
-        const ParameterType &param,
-        const std::function<double(const long &)> &vert_dhat,
-        const std::function<double(const long &)> &edge_dhat,
-        const std::function<double(const long &)> &face_dhat,
+        const ParameterType& param,
+        const std::function<double(const long&)>& vert_dhat,
+        const std::function<double(const long&)>& edge_dhat,
+        const std::function<double(const long&)>& face_dhat,
         const size_t start_i,
         const size_t end_i);
 
     template <typename TCollision>
     static void add_collision(
         const std::shared_ptr<TCollision>& pair,
-        unordered_map<std::pair<long, long>, std::tuple<TCollision, long> >& cc_to_id_,
-        std::vector<std::shared_ptr<typename SmoothCollisions<dim>::value_type>>& collisions_);
+        unordered_map<std::pair<long, long>, std::tuple<TCollision, long>>&
+            cc_to_id_,
+        std::vector<
+            std::shared_ptr<typename SmoothCollisions<dim>::value_type>>&
+            collisions_);
 
     // -------------------------------------------------------------------------
 
     // Store the indices to pairs to avoid duplicates.
-    unordered_map<std::pair<long, long>, std::tuple<SmoothVertexVertexCollision, long> > vert_vert_2_to_id;
-    unordered_map<std::pair<long, long>, std::tuple<SmoothEdgeVertexCollision, long> > vert_edge_2_to_id;
-    
-    unordered_map<std::pair<long, long>, std::tuple<SmoothCollisionTemplate<max_vert_3d, Face  , Point3>, long> > face_vert_to_id;
-    unordered_map<std::pair<long, long>, std::tuple<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>, long> > vert_vert_3_to_id;
-    unordered_map<std::pair<long, long>, std::tuple<SmoothCollisionTemplate<max_vert_3d, Edge3 , Point3>, long> > edge_vert_3_to_id;
-    unordered_map<std::pair<long, long>, std::tuple<SmoothCollisionTemplate<max_vert_3d, Edge3 , Edge3 >, long> > edge_edge_3_to_id;
+    unordered_map<
+        std::pair<long, long>,
+        std::tuple<SmoothVertexVertexCollision, long>>
+        vert_vert_2_to_id;
+    unordered_map<
+        std::pair<long, long>,
+        std::tuple<SmoothEdgeVertexCollision, long>>
+        vert_edge_2_to_id;
+
+    unordered_map<
+        std::pair<long, long>,
+        std::tuple<SmoothCollisionTemplate<max_vert_3d, Face, Point3>, long>>
+        face_vert_to_id;
+    unordered_map<
+        std::pair<long, long>,
+        std::tuple<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>, long>>
+        vert_vert_3_to_id;
+    unordered_map<
+        std::pair<long, long>,
+        std::tuple<SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>, long>>
+        edge_vert_3_to_id;
+    unordered_map<
+        std::pair<long, long>,
+        std::tuple<SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>, long>>
+        edge_edge_3_to_id;
 
     // Constructed collisions
-    std::vector<std::shared_ptr<typename SmoothCollisions<dim>::value_type>> collisions;
+    std::vector<std::shared_ptr<typename SmoothCollisions<dim>::value_type>>
+        collisions;
 };
 
 } // namespace ipc

@@ -5,18 +5,20 @@
 #include <ipc/smooth_contact/distance/primitive_distance.hpp>
 
 namespace ipc {
-template <int max_vert>
-class SmoothCollision : public Collision<max_vert> {
+template <int max_vert> class SmoothCollision : public Collision<max_vert> {
 protected:
     SmoothCollision(
         long primitive0_,
         long primitive1_,
-        const double &dhat,
-        const CollisionMesh &mesh)
-    : primitive0(primitive0_), primitive1(primitive1_), dhat_(dhat)
+        const double& dhat,
+        const CollisionMesh& mesh)
+        : primitive0(primitive0_)
+        , primitive1(primitive1_)
+        , dhat_(dhat)
     {
         vertices.fill(-1);
     }
+
 public:
     constexpr static int max_size = Collision<max_vert>::max_size;
     virtual ~SmoothCollision() { }
@@ -35,34 +37,45 @@ public:
     // ---- non distance type potential ----
 
     virtual double operator()(
-        const Vector<double, -1, max_size>& positions, 
-        const ParameterType &params) const { return 0.; }
+        const Vector<double, -1, max_size>& positions,
+        const ParameterType& params) const
+    {
+        return 0.;
+    }
 
     virtual Vector<double, -1, max_size> gradient(
-        const Vector<double, -1, max_size>& positions, 
-        const ParameterType &params) const { return Vector<double, -1, max_size>::Zero(positions.size()); }
+        const Vector<double, -1, max_size>& positions,
+        const ParameterType& params) const
+    {
+        return Vector<double, -1, max_size>::Zero(positions.size());
+    }
 
     virtual MatrixMax<double, max_size, max_size> hessian(
-        const Vector<double, -1, max_size>& positions, 
-        const ParameterType &params) const { return MatrixMax<double, max_size, max_size>::Zero(positions.size(), positions.size()); }
+        const Vector<double, -1, max_size>& positions,
+        const ParameterType& params) const
+    {
+        return MatrixMax<double, max_size, max_size>::Zero(
+            positions.size(), positions.size());
+    }
 
     // ---- distance ----
 
-    Vector<double, -1, max_size>
-    compute_distance_gradient(const Vector<double, -1, max_size>& positions) const override
+    Vector<double, -1, max_size> compute_distance_gradient(
+        const Vector<double, -1, max_size>& positions) const override
     {
         return Vector<double, -1, max_size>::Zero(max_size);
     }
 
-    MatrixMax<double, max_size, max_size>
-    compute_distance_hessian(const Vector<double, -1, max_size>& positions) const override
+    MatrixMax<double, max_size, max_size> compute_distance_hessian(
+        const Vector<double, -1, max_size>& positions) const override
     {
         return MatrixMax<double, max_size, max_size>::Zero(max_size, max_size);
     }
 
     bool operator==(const SmoothCollision& other) const
     {
-        return (primitive0 == other.primitive0 && primitive1 == other.primitive1);
+        return (
+            primitive0 == other.primitive0 && primitive1 == other.primitive1);
     }
     bool operator!=(const SmoothCollision& other) const
     {
@@ -78,12 +91,12 @@ public:
             throw std::runtime_error("Invalid index in smooth_collision!");
     }
 
-    std::pair<long, long> get_hash() const { return std::make_pair(primitive0, primitive1); }
-
-    double get_dhat() const
+    std::pair<long, long> get_hash() const
     {
-        return dhat_;
+        return std::make_pair(primitive0, primitive1);
     }
+
+    double get_dhat() const { return dhat_; }
 
     virtual std::string name() const { return ""; }
 
@@ -99,7 +112,8 @@ class SmoothCollisionTemplate : public SmoothCollision<max_vert> {
 public:
     using Super = SmoothCollision<max_vert>;
     using DTYPE = typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type;
-    constexpr static int n_core_points = PrimitiveA::n_core_points + PrimitiveB::n_core_points;
+    constexpr static int n_core_points =
+        PrimitiveA::n_core_points + PrimitiveB::n_core_points;
     constexpr static int dim = PrimitiveA::dim;
     constexpr static int n_core_dofs_A = PrimitiveA::n_core_points * dim;
     constexpr static int n_core_dofs_B = PrimitiveB::n_core_points * dim;
@@ -110,16 +124,13 @@ public:
         long primitive0_,
         long primitive1_,
         DTYPE dtype,
-        const CollisionMesh &mesh,
-        const ParameterType &param,
-        const double &dhat,
-        const Eigen::MatrixXd &V);
+        const CollisionMesh& mesh,
+        const ParameterType& param,
+        const double& dhat,
+        const Eigen::MatrixXd& V);
     virtual ~SmoothCollisionTemplate();
 
-    int ndofs() const override
-    {
-        return pA->n_dofs() + pB->n_dofs();
-    }
+    int ndofs() const override { return pA->n_dofs() + pB->n_dofs(); }
 
     int num_vertices() const override
     {
@@ -129,30 +140,31 @@ public:
     // ---- non distance type potential ----
 
     double operator()(
-        const Vector<double, -1, max_size>& positions, 
-        const ParameterType &params) const override;
+        const Vector<double, -1, max_size>& positions,
+        const ParameterType& params) const override;
 
     Vector<double, -1, max_size> gradient(
-        const Vector<double, -1, max_size>& positions, 
-        const ParameterType &params) const override;
+        const Vector<double, -1, max_size>& positions,
+        const ParameterType& params) const override;
 
     MatrixMax<double, max_size, max_size> hessian(
-        const Vector<double, -1, max_size>& positions, 
-        const ParameterType &params) const override;
+        const Vector<double, -1, max_size>& positions,
+        const ParameterType& params) const override;
 
     // ---- distance ----
 
-    double compute_distance(const Vector<double, -1, max_size>& positions) const override;
+    double compute_distance(
+        const Vector<double, -1, max_size>& positions) const override;
 
-    Vector<double, -1, max_size>
-    compute_distance_gradient(const Vector<double, -1, max_size>& positions) const override;
+    Vector<double, -1, max_size> compute_distance_gradient(
+        const Vector<double, -1, max_size>& positions) const override;
 
-    MatrixMax<double, max_size, max_size>
-    compute_distance_hessian(const Vector<double, -1, max_size>& positions) const override;
+    MatrixMax<double, max_size, max_size> compute_distance_hessian(
+        const Vector<double, -1, max_size>& positions) const override;
 
 protected:
     std::shared_ptr<PrimitiveA> pA;
     std::shared_ptr<PrimitiveB> pB;
 };
 
-}
+} // namespace ipc

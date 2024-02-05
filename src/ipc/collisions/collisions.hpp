@@ -16,8 +16,7 @@
 
 namespace ipc {
 
-template <int max_vert = 4>
-class VirtualCollisions {
+template <int max_vert = 4> class VirtualCollisions {
 public:
     /// @brief The type of the collisions.
     using value_type = Collision<max_vert>;
@@ -62,8 +61,8 @@ public:
     /// @brief Set if the collision set should use the convergent formulation.
     /// @warning This must be set before the collisions are built.
     /// @param use_convergent_formulation If the collision set should use the convergent formulation.
-    virtual void set_use_convergent_formulation(
-        const bool use_convergent_formulation)
+    virtual void
+    set_use_convergent_formulation(const bool use_convergent_formulation)
     {
         if (!empty()
             && use_convergent_formulation != m_use_convergent_formulation) {
@@ -86,10 +85,12 @@ public:
     /// @brief Set if the collision set should enable shape derivative computation.
     /// @warning This must be set before the collisions are built.
     /// @param are_shape_derivatives_enabled If the collision set should enable shape derivative computation.
-    virtual void set_are_shape_derivatives_enabled(const bool are_shape_derivatives_enabled) 
+    virtual void
+    set_are_shape_derivatives_enabled(const bool are_shape_derivatives_enabled)
     {
         if (!empty()
-            && are_shape_derivatives_enabled != m_are_shape_derivatives_enabled) {
+            && are_shape_derivatives_enabled
+                != m_are_shape_derivatives_enabled) {
             logger().warn(
                 "Setting enable_shape_derivatives after building collisions. "
                 "Re-build collisions for this to have an effect.");
@@ -184,7 +185,8 @@ public:
     bool is_plane_vertex(size_t i) const;
 
     double compute_minimum_distance(
-        const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const override;
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices) const override;
 
     std::string
     to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;

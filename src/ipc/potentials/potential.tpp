@@ -71,8 +71,10 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const TCollision& collision = collisions[i];
 
-                const Vector<double, -1, Potential<TCollisions>::element_size> local_grad = this->gradient(
-                    collision, collision.dof(X, mesh.edges(), mesh.faces()));
+                const Vector<double, -1, Potential<TCollisions>::element_size>
+                    local_grad = this->gradient(
+                        collision,
+                        collision.dof(X, mesh.edges(), mesh.faces()));
 
                 const std::array<long, TCollision::element_size> vids =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
@@ -116,9 +118,12 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const TCollision& collision = collisions[i];
 
-                const MatrixMax<double, Potential<TCollisions>::element_size, Potential<TCollisions>::element_size> local_hess = this->hessian(
-                    collisions[i], collisions[i].dof(X, edges, faces),
-                    project_hessian_to_psd);
+                const MatrixMax<
+                    double, Potential<TCollisions>::element_size,
+                    Potential<TCollisions>::element_size>
+                    local_hess = this->hessian(
+                        collisions[i], collisions[i].dof(X, edges, faces),
+                        project_hessian_to_psd);
 
                 const std::array<long, TCollision::element_size> vids =
                     collision.vertex_ids(edges, faces);

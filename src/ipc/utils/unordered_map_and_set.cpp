@@ -17,7 +17,8 @@ template <>
 Hash<std::pair<long, long>>
 AbslHashValue(Hash<std::pair<long, long>> h, std::pair<long, long> p)
 {
-    return Hash<std::pair<long, long>>::combine(std::move(h), p.first, p.second);
+    return Hash<std::pair<long, long>>::combine(
+        std::move(h), p.first, p.second);
 }
 
 template <> Hash<int> AbslHashValue(Hash<int> h, const int i)
