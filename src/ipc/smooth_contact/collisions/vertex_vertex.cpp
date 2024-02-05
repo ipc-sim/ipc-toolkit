@@ -42,8 +42,8 @@ namespace ipc {
             return false;
         direc /= dist;
 
-        return smooth_point2_term_type(points.row(0), -direc, points.row(2), points.row(3), params.alpha, params.beta) &&
-                smooth_point2_term_type(points.row(1), direc, points.row(4), points.row(5), params.alpha, params.beta);
+        return smooth_point2_term_type(points.row(0), direc, points.row(2), points.row(3), params.alpha, params.beta) &&
+                smooth_point2_term_type(points.row(1), -direc, points.row(4), points.row(5), params.alpha, params.beta);
 
     }
 

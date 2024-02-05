@@ -1,5 +1,5 @@
 #include "smooth_collision.hpp"
-#include <ipc/smooth_contact/primitives/point.hpp>
+#include <ipc/smooth_contact/primitives/point3.hpp>
 #include <ipc/smooth_contact/primitives/edge.hpp>
 #include <ipc/smooth_contact/primitives/face.hpp>
 

@@ -63,7 +63,7 @@ namespace ipc {
         }
 
         // point term
-        if (!smooth_point2_term_type(points.row(0), direc, points.row(3), points.row(4), params.alpha, params.beta))
+        if (!smooth_point2_term_type(points.row(0), -direc, points.row(3), points.row(4), params.alpha, params.beta))
         {
             // std::cout << "point term zero\n";
             if (dist < 1e-10)

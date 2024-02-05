@@ -4,9 +4,10 @@ set(SOURCES
   face.cpp
   face.hpp
   primitive.hpp
-  point.cpp
-  point.hpp
-  point.tpp
+  point3.cpp
+  point3.hpp
+  point2.cpp
+  point2.hpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})

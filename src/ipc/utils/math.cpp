@@ -503,6 +503,9 @@ namespace ipc {
     template class Math<ADGrad<6>>;
     template class Math<ADHessian<6>>;
 
+    template class Math<ADGrad<8>>;
+    template class Math<ADHessian<8>>;
+
     template class Math<ADGrad<9>>;
     template class Math<ADHessian<9>>;
 

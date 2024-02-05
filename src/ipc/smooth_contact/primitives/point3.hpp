@@ -34,31 +34,6 @@ namespace ipc {
     };
 
 /// @brief 
-/// @param v 
-/// @param direc normalized, points to v
-/// @param e0 
-/// @param e1 
-/// @param alpha 
-/// @param beta 
-/// @return 
-template <class scalar>
-scalar smooth_point2_term(
-    const Eigen::Ref<const Vector2<scalar>>& v,
-    const Eigen::Ref<const Vector2<scalar>>& direc,
-    const Eigen::Ref<const Vector2<scalar>>& e0,
-    const Eigen::Ref<const Vector2<scalar>>& e1,
-    const double &alpha,
-    const double &beta);
-
-bool smooth_point2_term_type(
-    const Eigen::Ref<const Vector2<double>>& v,
-    const Eigen::Ref<const Vector2<double>>& direc,
-    const Eigen::Ref<const Vector2<double>>& e0,
-    const Eigen::Ref<const Vector2<double>>& e1,
-    const double &alpha,
-    const double &beta);
-
-/// @brief 
 /// @tparam scalar 
 /// @param direc normalized
 /// @param v 
@@ -141,5 +116,3 @@ std::tuple<double, Eigen::VectorXd, Eigen::MatrixXd> smooth_point3_term_normal_h
     const double &beta,
     const ORIENTATION_TYPES &otypes);
 }
-
-#include "point.tpp"

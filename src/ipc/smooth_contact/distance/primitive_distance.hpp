@@ -3,7 +3,7 @@
 #include <ipc/collision_mesh.hpp>
 #include <ipc/distance/distance_type.hpp>
 
-#include <ipc/smooth_contact/primitives/point.hpp>
+#include <ipc/smooth_contact/primitives/point3.hpp>
 #include <ipc/smooth_contact/primitives/face.hpp>
 #include <ipc/smooth_contact/primitives/edge.hpp>
 

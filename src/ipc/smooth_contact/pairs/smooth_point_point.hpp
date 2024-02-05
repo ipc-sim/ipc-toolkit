@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/smooth_contact/primitives/point.hpp>
+#include <ipc/smooth_contact/primitives/point2.hpp>
 #include <ipc/smooth_contact/common.hpp>
 
 namespace ipc {
@@ -26,7 +26,7 @@ scalar smooth_point_point_potential_2d(
 {
     Vector2<scalar> direc = vb - va;
     const scalar dist = direc.norm();
-    direc = direc / dist;
+    direc = -direc / dist;
 
     return Math<scalar>::inv_barrier(dist / params.dhat, params.r) *
             smooth_point2_term<scalar>(va, -direc, ea0, ea1, params.alpha, params.beta) *

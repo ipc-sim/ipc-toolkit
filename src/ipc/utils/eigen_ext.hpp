@@ -28,6 +28,7 @@ template <typename T>
 using MatrixX = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
 using Vector1d = Vector1<double>;
+using Vector2d = Vector<double, 2>;
 using Vector3d = Vector<double, 3>;
 using Vector6d = Vector<double, 6>;
 using Vector8d = Vector<double, 8>;
