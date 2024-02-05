@@ -217,8 +217,10 @@ namespace ipc {
     template class PointEdgeDistance<ADGrad<13>, 3>;
     template class PointEdgeDistance<ADHessian<13>, 3>;
 
+#ifdef DERIVATIVES_WITH_AUTODIFF
     template class PointEdgeDistance<ADGrad<15>, 3>;
     template class PointEdgeDistance<ADHessian<15>, 3>;
+#endif
 
     template class PointEdgeDistanceDerivatives<2>;
     template class PointEdgeDistanceDerivatives<3>;

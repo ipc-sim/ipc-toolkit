@@ -210,12 +210,14 @@ namespace ipc {
         else {
             const auto otypes = edge_edge_mollifier_type(x_double.head(3), x_double.segment(3, 3), x_double.segment(6, 3), x_double.tail(3), dist_sqr_AD.getValue());
 
-            auto [mollifier, mollifier_grad] = edge_edge_mollifier_grad(x_double.head(3), x_double.segment(3, 3), x_double.segment(6, 3), x_double.tail(3), otypes, dist_sqr_AD.getValue());
-            mollifier_grad.head(12) += mollifier_grad(12) * dist_sqr_AD.getGradient();
+            double mollifier;
+            Vector<double, 13> mollifier_grad;
+            std::tie(mollifier, mollifier_grad) = edge_edge_mollifier_grad(x_double.head(3), x_double.segment(3, 3), x_double.segment(6, 3), x_double.tail(3), otypes, dist_sqr_AD.getValue());
+            mollifier_grad.head<12>() += mollifier_grad(12) * dist_sqr_AD.getGradient();
 
             gOut *= mollifier;
-            gOut.head(6) += mollifier_grad.head(6) * out;
-            gOut.segment(pA->n_dofs(), 6) += mollifier_grad.segment(6, 6) * out;
+            gOut.head(6) += mollifier_grad.head<6>() * out;
+            gOut.segment(pA->n_dofs(), 6) += mollifier_grad.segment<6>(6) * out;
             out *= mollifier;
         }
 
