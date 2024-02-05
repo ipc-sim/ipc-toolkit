@@ -29,7 +29,7 @@ namespace ipc {
 
     template <typename scalar>
     inline scalar smooth_edge2_term(
-        const Eigen::Ref<const Vector2<scalar>>& direc,
+        const Eigen::Ref<const Vector2<scalar>>& dn,
         const Eigen::Ref<const Vector2<scalar>>& tangent)
     {
         return tangent.norm();
@@ -37,7 +37,7 @@ namespace ipc {
 
     /// @brief 
     /// @tparam scalar 
-    /// @param direc from edge to point outside, normalized
+    /// @param dn from edge to point outside, normalized
     /// @param e0 
     /// @param e1 
     /// @param f0 face [f0, e0, e1]
@@ -45,8 +45,8 @@ namespace ipc {
     /// @param alpha 
     /// @return 
     template <typename scalar>
-    inline scalar smooth_edge3_term(
-        const Eigen::Ref<const Vector3<scalar>>& direc,
+    inline scalar smooth_edge3_term_template(
+        const Eigen::Ref<const Vector3<scalar>>& dn,
         const Eigen::Ref<const Vector3<scalar>>& e0,
         const Eigen::Ref<const Vector3<scalar>>& e1,
         const Eigen::Ref<const Vector3<scalar>>& f0,
@@ -59,12 +59,12 @@ namespace ipc {
         if (otypes.tangent_type(0) != HEAVISIDE_TYPE::ONE)
         {
             const Vector3<scalar> t0 = PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(f0, e0, e1);
-            tangent_term = tangent_term * Math<scalar>::smooth_heaviside(-direc.dot(t0) / t0.norm(), alpha, beta);
+            tangent_term = tangent_term * Math<scalar>::smooth_heaviside(-dn.dot(t0) / t0.norm(), alpha, beta);
         }
         if (otypes.tangent_type(1) != HEAVISIDE_TYPE::ONE)
         {
             const Vector3<scalar> t1 = PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(f1, e0, e1);
-            tangent_term = tangent_term * Math<scalar>::smooth_heaviside(-direc.dot(t1) / t1.norm(), alpha, beta);
+            tangent_term = tangent_term * Math<scalar>::smooth_heaviside(-dn.dot(t1) / t1.norm(), alpha, beta);
         }
 
         scalar normal_term = scalar(0.);
@@ -74,14 +74,98 @@ namespace ipc {
         {
             const Vector3<scalar> n0 = (e0 - f0).cross(e1 - f0);
             const Vector3<scalar> n1 = -(e0 - f1).cross(e1 - f1);
-            normal_term = Math<scalar>::smooth_heaviside( (Math<scalar>::smooth_heaviside(direc.dot(n0) / n0.norm(), alpha, beta) +
-            Math<scalar>::smooth_heaviside(direc.dot(n1) / n1.norm(), alpha, beta) - 1), alpha, 0);
+            normal_term = Math<scalar>::smooth_heaviside( (Math<scalar>::smooth_heaviside(dn.dot(n0) / n0.norm(), alpha, beta) +
+            Math<scalar>::smooth_heaviside(dn.dot(n1) / n1.norm(), alpha, beta) - 1), alpha, 0);
         }
 
         return (e1 - e0).squaredNorm() * tangent_term * normal_term;
     }
 
-    inline bool smooth_edge3_term_type(
+    bool smooth_edge3_term_type(
+        const Eigen::Ref<const Vector3<double>>& dn,
+        const Eigen::Ref<const Vector3<double>>& e0,
+        const Eigen::Ref<const Vector3<double>>& e1,
+        const Eigen::Ref<const Vector3<double>>& f0,
+        const Eigen::Ref<const Vector3<double>>& f1,
+        const double alpha,
+        const double beta,
+        ORIENTATION_TYPES &otypes);
+
+    /// @brief 
+    /// @param dn should be unit size, from edge to point outside
+    /// @param e0 
+    /// @param e1 
+    /// @param f0 
+    /// @param f1 
+    /// @param alpha 
+    /// @param beta 
+    /// @param otypes 
+    /// @return 
+    double smooth_edge3_normal_term(
+        const Eigen::Ref<const Vector3<double>>& dn,
+        const Eigen::Ref<const Vector3<double>>& e0,
+        const Eigen::Ref<const Vector3<double>>& e1,
+        const Eigen::Ref<const Vector3<double>>& f0,
+        const Eigen::Ref<const Vector3<double>>& f1,
+        const double alpha,
+        const double beta,
+        const ORIENTATION_TYPES &otypes);
+
+    std::tuple<double, Vector<double, 15>>
+    smooth_edge3_normal_term_gradient(
+        const Eigen::Ref<const Vector3<double>>& dn,
+        const Eigen::Ref<const Vector3<double>>& e0,
+        const Eigen::Ref<const Vector3<double>>& e1,
+        const Eigen::Ref<const Vector3<double>>& f0,
+        const Eigen::Ref<const Vector3<double>>& f1,
+        const double alpha,
+        const double beta,
+        const ORIENTATION_TYPES &otypes);
+
+    std::tuple<double, Vector<double, 15>, Eigen::Matrix<double, 15, 15>>
+    smooth_edge3_normal_term_hessian(
+        const Eigen::Ref<const Vector3<double>>& dn,
+        const Eigen::Ref<const Vector3<double>>& e0,
+        const Eigen::Ref<const Vector3<double>>& e1,
+        const Eigen::Ref<const Vector3<double>>& f0,
+        const Eigen::Ref<const Vector3<double>>& f1,
+        const double alpha,
+        const double beta,
+        const ORIENTATION_TYPES &otypes);
+
+    double smooth_edge3_tangent_term(
+        const Eigen::Ref<const Vector3<double>>& dn,
+        const Eigen::Ref<const Vector3<double>>& e0,
+        const Eigen::Ref<const Vector3<double>>& e1,
+        const Eigen::Ref<const Vector3<double>>& f0,
+        const Eigen::Ref<const Vector3<double>>& f1,
+        const double alpha,
+        const double beta,
+        const ORIENTATION_TYPES &otypes);
+
+    std::tuple<double, Vector<double, 15>>
+    smooth_edge3_tangent_term_gradient(
+        const Eigen::Ref<const Vector3<double>>& dn,
+        const Eigen::Ref<const Vector3<double>>& e0,
+        const Eigen::Ref<const Vector3<double>>& e1,
+        const Eigen::Ref<const Vector3<double>>& f0,
+        const Eigen::Ref<const Vector3<double>>& f1,
+        const double alpha,
+        const double beta,
+        const ORIENTATION_TYPES &otypes);
+
+    std::tuple<double, Vector<double, 15>, Eigen::Matrix<double, 15, 15>>
+    smooth_edge3_tangent_term_hessian(
+        const Eigen::Ref<const Vector3<double>>& dn,
+        const Eigen::Ref<const Vector3<double>>& e0,
+        const Eigen::Ref<const Vector3<double>>& e1,
+        const Eigen::Ref<const Vector3<double>>& f0,
+        const Eigen::Ref<const Vector3<double>>& f1,
+        const double alpha,
+        const double beta,
+        const ORIENTATION_TYPES &otypes);
+
+    double smooth_edge3_term(
         const Eigen::Ref<const Vector3<double>>& direc,
         const Eigen::Ref<const Vector3<double>>& e0,
         const Eigen::Ref<const Vector3<double>>& e1,
@@ -89,33 +173,27 @@ namespace ipc {
         const Eigen::Ref<const Vector3<double>>& f1,
         const double alpha,
         const double beta,
-        ORIENTATION_TYPES &otypes)
-    {
-        otypes.set_size(2);
+        const ORIENTATION_TYPES &otypes);
 
-        const Vector3<double> t0 = PointEdgeDistance<double, 3>::point_line_closest_point_direction(f0, e0, e1);
-        const Vector3<double> t1 = PointEdgeDistance<double, 3>::point_line_closest_point_direction(f1, e0, e1);
-        otypes.tangent_type(0) = otypes.compute_type(-direc.dot(t0) / t0.norm(), alpha, beta);
-        otypes.tangent_type(1) = otypes.compute_type(-direc.dot(t1) / t1.norm(), alpha, beta);
-        if (otypes.tangent_type(0) == HEAVISIDE_TYPE::ZERO || otypes.tangent_type(1) == HEAVISIDE_TYPE::ZERO)
-            return false;
+    std::tuple<double, Vector<double, 15>>
+    smooth_edge3_term_gradient(
+        const Eigen::Ref<const Vector3<double>>& direc,
+        const Eigen::Ref<const Vector3<double>>& e0,
+        const Eigen::Ref<const Vector3<double>>& e1,
+        const Eigen::Ref<const Vector3<double>>& f0,
+        const Eigen::Ref<const Vector3<double>>& f1,
+        const double alpha,
+        const double beta,
+        const ORIENTATION_TYPES &otypes);
 
-        const Vector3<double> n0 = (e0 - f0).cross(e1 - f0);
-        const Vector3<double> n1 = -(e0 - f1).cross(e1 - f1);
-        const double tmp0 = direc.dot(n0) / n0.norm();
-        const double tmp1 = direc.dot(n1) / n1.norm();
-        otypes.normal_type(0) = otypes.compute_type(tmp0, alpha, beta);
-        otypes.normal_type(1) = otypes.compute_type(tmp1, alpha, beta);
-        const double sum = Math<double>::smooth_heaviside(tmp0, alpha, beta) + 
-                            Math<double>::smooth_heaviside(tmp1, alpha, beta);
-        if (sum <= 1 - alpha)
-            return false;
-        else if (sum >= 1)
-        {
-            otypes.normal_type(0) = HEAVISIDE_TYPE::ONE;
-            otypes.normal_type(1) = HEAVISIDE_TYPE::ONE;
-        }
-
-        return true;
-    }
+    std::tuple<double, Vector<double, 15>, Eigen::Matrix<double, 15, 15>>
+    smooth_edge3_term_hessian(
+        const Eigen::Ref<const Vector3<double>>& direc,
+        const Eigen::Ref<const Vector3<double>>& e0,
+        const Eigen::Ref<const Vector3<double>>& e1,
+        const Eigen::Ref<const Vector3<double>>& f0,
+        const Eigen::Ref<const Vector3<double>>& f1,
+        const double alpha,
+        const double beta,
+        const ORIENTATION_TYPES &otypes);
 }

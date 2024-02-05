@@ -106,23 +106,28 @@ namespace ipc {
     }
 
     template <int dim>
-    Eigen::Matrix<double, dim, dim*dim> PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_grad(
+    std::tuple<Vector<double, dim>, Eigen::Matrix<double, dim, dim*dim>>
+    PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_grad(
         const Eigen::Ref<const Vector<double, dim>>& p,
         const Eigen::Ref<const Vector<double, dim>>& e0,
         const Eigen::Ref<const Vector<double, dim>>& e1)
     {
         using T = ADGrad<dim*dim>;
         DiffScalarBase::setVariableCount(dim*dim);
-        Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
-        Vector<T, dim> e0T = slice_positions<T, 1, dim>(e0, dim);
-        Vector<T, dim> e1T = slice_positions<T, 1, dim>(e1, 2*dim);
+        const Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
+        const Vector<T, dim> e0T = slice_positions<T, 1, dim>(e0, dim);
+        const Vector<T, dim> e1T = slice_positions<T, 1, dim>(e1, 2*dim);
 
-        Vector<T, dim> out = PointEdgeDistance<T, dim>::point_line_closest_point_direction(pT, e0T, e1T);
+        const Vector<T, dim> out = PointEdgeDistance<T, dim>::point_line_closest_point_direction(pT, e0T, e1T);
+        Vector<double, dim> val;
         Eigen::Matrix<double, dim, dim*dim> grad;
         for (int i = 0; i < dim; i++)
+        {
+            val(i) = out(i).getValue();
             grad.row(i) = out(i).getGradient();
+        }
         
-        return grad;
+        return std::make_tuple(val, grad);
     }
 
     template <int dim>

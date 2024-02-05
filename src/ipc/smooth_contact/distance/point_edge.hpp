@@ -41,7 +41,8 @@ namespace ipc {
     template <int dim>
     class PointEdgeDistanceDerivatives {
     public:
-        static Eigen::Matrix<double, dim, dim*dim> point_line_closest_point_direction_grad(
+        static std::tuple<Vector<double, dim>, Eigen::Matrix<double, dim, dim*dim>> 
+        point_line_closest_point_direction_grad(
             const Eigen::Ref<const Vector<double, dim>>& p,
             const Eigen::Ref<const Vector<double, dim>>& e0,
             const Eigen::Ref<const Vector<double, dim>>& e1);
