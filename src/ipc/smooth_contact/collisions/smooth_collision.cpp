@@ -208,7 +208,9 @@ namespace ipc {
             out *= mollifier_autodiff.getValue();
         }
         else {
-            auto [mollifier, mollifier_grad] = edge_edge_mollifier_grad(x_double.head(3), x_double.segment(3, 3), x_double.segment(6, 3), x_double.tail(3), dist_sqr_AD.getValue());
+            const auto otypes = edge_edge_mollifier_type(x_double.head(3), x_double.segment(3, 3), x_double.segment(6, 3), x_double.tail(3), dist_sqr_AD.getValue());
+
+            auto [mollifier, mollifier_grad] = edge_edge_mollifier_grad(x_double.head(3), x_double.segment(3, 3), x_double.segment(6, 3), x_double.tail(3), otypes, dist_sqr_AD.getValue());
             mollifier_grad.head(12) += mollifier_grad(12) * dist_sqr_AD.getGradient();
 
             gOut *= mollifier;
@@ -328,6 +330,7 @@ namespace ipc {
         if constexpr (!std::is_same<PrimitiveA, Edge3>::value || !std::is_same<PrimitiveB, Edge3>::value) {
             auto mollifier_autodiff = PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(x, dist_sqr_AD);
             mollifier = mollifier_autodiff.getValue();
+            
             gMollifier.segment(0, n_core_dofs_A) = mollifier_autodiff.getGradient().head(n_core_dofs_A);
             gMollifier.segment(pA->n_dofs(), n_core_dofs_B) = mollifier_autodiff.getGradient().tail(n_core_dofs_B);
 
@@ -336,9 +339,11 @@ namespace ipc {
             hMollifier.block(0, pA->n_dofs(), n_core_dofs_A, n_core_dofs_B) = mollifier_autodiff.getHessian().topRightCorner(n_core_dofs_A, n_core_dofs_B);
             hMollifier.block(pA->n_dofs(), 0, n_core_dofs_B, n_core_dofs_A) = mollifier_autodiff.getHessian().bottomLeftCorner(n_core_dofs_B, n_core_dofs_A);
         } else {
+            const auto otypes = edge_edge_mollifier_type(x_double.head(3), x_double.segment(3, 3), x_double.segment(6, 3), x_double.tail(3), dist_sqr_AD.getValue());
+
             Vector<double, 13> mollifier_grad;
             Eigen::Matrix<double, 13, 13> mollifier_hess;
-            std::tie(mollifier, mollifier_grad, mollifier_hess) = edge_edge_mollifier_hessian(x_double.head(3), x_double.segment(3, 3), x_double.segment(6, 3), x_double.tail(3), dist_sqr_AD.getValue());
+            std::tie(mollifier, mollifier_grad, mollifier_hess) = edge_edge_mollifier_hessian(x_double.head(3), x_double.segment(3, 3), x_double.segment(6, 3), x_double.tail(3), otypes, dist_sqr_AD.getValue());
 
             mollifier_grad.head(12) += mollifier_grad(12) * dist_sqr_AD.getGradient();
             
@@ -347,13 +352,13 @@ namespace ipc {
                 dist_sqr_AD.getGradient() * mollifier_hess.block(12, 0, 1, 12) + 
                 mollifier_hess.block(0, 12, 12, 1) * dist_sqr_AD.getGradient().transpose();
 
-            gMollifier.segment(0, 6) = mollifier_grad.head(6);
-            gMollifier.segment(pA->n_dofs(), 6) = mollifier_grad.segment(6, 6);
+            gMollifier.segment(0, n_core_dofs_A) = mollifier_grad.head(n_core_dofs_A);
+            gMollifier.segment(pA->n_dofs(), n_core_dofs_B) = mollifier_grad.segment(n_core_dofs_A, n_core_dofs_B);
 
-            hMollifier.block(0, 0, 6, 6) = mollifier_hess.topLeftCorner(6, 6);
-            hMollifier.block(pA->n_dofs(), pA->n_dofs(), 6, 6) = mollifier_hess.block(6, 6, 6, 6);
-            hMollifier.block(0, pA->n_dofs(), 6, 6) = mollifier_hess.block(0, 6, 6, 6);
-            hMollifier.block(pA->n_dofs(), 0, 6, 6) = mollifier_hess.block(6, 0, 6, 6);
+            hMollifier.block(0, 0, n_core_dofs_A, n_core_dofs_A) = mollifier_hess.block(0, 0, n_core_dofs_A, n_core_dofs_A);
+            hMollifier.block(pA->n_dofs(), pA->n_dofs(), n_core_dofs_B, n_core_dofs_B) = mollifier_hess.block(n_core_dofs_A, n_core_dofs_A, n_core_dofs_B, n_core_dofs_B);
+            hMollifier.block(0, pA->n_dofs(), n_core_dofs_A, n_core_dofs_B) = mollifier_hess.block(0, n_core_dofs_A, n_core_dofs_A, n_core_dofs_B);
+            hMollifier.block(pA->n_dofs(), 0, n_core_dofs_B, n_core_dofs_A) = mollifier_hess.block(n_core_dofs_A, 0, n_core_dofs_B, n_core_dofs_A);
         }
 
         DiffScalarBase::setVariableCount(ndofs());

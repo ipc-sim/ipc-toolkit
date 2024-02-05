@@ -28,7 +28,7 @@ namespace ipc {
     scalar edge_edge_mollifier(
         const Vector3<scalar> &ea0, const Vector3<scalar> &ea1,
         const Vector3<scalar> &eb0, const Vector3<scalar> &eb1, 
-        const std::array<HEAVISIDE_TYPE, 4> mtypes,
+        const std::array<HEAVISIDE_TYPE, 4> &mtypes,
         const scalar &dist_sqr)
     {
         const scalar da = (ea1 - ea0).squaredNorm() * mollifier_threshold_eps;

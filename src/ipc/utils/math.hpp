@@ -14,10 +14,13 @@ namespace ipc {
 
         int size() const { return size_; }
         void set_size(const int size);
-        HEAVISIDE_TYPE tangent_type(const int &i) const { return tangent_types[i]; }
-        HEAVISIDE_TYPE normal_type(const int &i) const { return normal_types[i]; }
+        const HEAVISIDE_TYPE& tangent_type(const int &i) const { return tangent_types[i]; }
+        const HEAVISIDE_TYPE& normal_type(const int &i) const { return normal_types[i]; }
         HEAVISIDE_TYPE& tangent_type(const int &i) { return tangent_types[i]; }
         HEAVISIDE_TYPE& normal_type(const int &i) { return normal_types[i]; }
+
+        bool are_tangent_types_all_one() const;
+        bool exists_normal_type_one() const;
 
         int size_ = 0;
         std::vector<HEAVISIDE_TYPE> tangent_types, normal_types;
@@ -103,18 +106,38 @@ namespace ipc {
     void my_finite_gradient(const Eigen::VectorXd& x, const std::function<double(const Eigen::VectorXd&)> &f, Eigen::VectorXd &grad, FD_RULE rule = FD_RULE::CENTRAL, const double eps = 1e-7);
 
     // assume unit vector d
-    double func1(
+    double opposite_direction_penalty(
         const Eigen::Ref<const Eigen::Vector3d> &t,
         const Eigen::Ref<const Eigen::Vector3d> &d,
         const double &alpha, const double &beta);
 
-    std::tuple<double, Vector6d> func1_grad(
+    std::tuple<double, Vector6d> opposite_direction_penalty_grad(
         const Eigen::Ref<const Eigen::Vector3d> &t, 
         const Eigen::Ref<const Eigen::Vector3d> &d,
         const double &alpha, const double &beta);
 
-    std::tuple<double, Vector6d, Matrix6d> func1_hess(
+    std::tuple<double, Vector6d, Matrix6d> opposite_direction_penalty_hess(
         const Eigen::Ref<const Eigen::Vector3d> &t, 
         const Eigen::Ref<const Eigen::Vector3d> &d,
         const double &alpha, const double &beta);
+
+    // assume unit vector d
+    double negative_orientation_penalty(
+        const Eigen::Ref<const Eigen::Vector3d> &t1,
+        const Eigen::Ref<const Eigen::Vector3d> &t2,
+        const Eigen::Ref<const Eigen::Vector3d> &d,
+        const double &alpha, const double &beta);
+
+    std::tuple<double, Vector9d> negative_orientation_penalty_grad(
+        const Eigen::Ref<const Eigen::Vector3d> &t1, 
+        const Eigen::Ref<const Eigen::Vector3d> &t2, 
+        const Eigen::Ref<const Eigen::Vector3d> &d,
+        const double &alpha, const double &beta);
+
+    std::tuple<double, Vector9d, Matrix9d> negative_orientation_penalty_hess(
+        const Eigen::Ref<const Eigen::Vector3d> &t1, 
+        const Eigen::Ref<const Eigen::Vector3d> &t2, 
+        const Eigen::Ref<const Eigen::Vector3d> &d,
+        const double &alpha, const double &beta);
+
 }

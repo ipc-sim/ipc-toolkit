@@ -42,141 +42,104 @@ namespace ipc {
 /// @param beta 
 /// @return 
 template <class scalar>
-inline scalar smooth_point2_term(
+scalar smooth_point2_term(
     const Eigen::Ref<const Vector2<scalar>>& v,
     const Eigen::Ref<const Vector2<scalar>>& direc,
     const Eigen::Ref<const Vector2<scalar>>& e0,
     const Eigen::Ref<const Vector2<scalar>>& e1,
     const double &alpha,
-    const double &beta)
-{
-    const Vector2<scalar> t0 = (e0 - v).normalized(), t1 = (v - e1).normalized();
+    const double &beta);
 
-    const scalar tangent_term = Math<scalar>::smooth_heaviside(direc.dot(t0), alpha, beta) *
-                        Math<scalar>::smooth_heaviside(-direc.dot(t1), alpha, beta);
-
-    const scalar tmp = Math<scalar>::smooth_heaviside(-Math<scalar>::cross2(direc, t0), alpha, beta) + 
-                         Math<scalar>::smooth_heaviside(-Math<scalar>::cross2(direc, t1), alpha, beta);
-    const scalar normal_term = Math<scalar>::smooth_heaviside(tmp - 1., alpha, 0);
-
-    return tangent_term * normal_term * ((e0 - v).norm() + (e1 - v).norm()) / 2.;
-}
-
-inline bool smooth_point2_term_type(
+bool smooth_point2_term_type(
     const Eigen::Ref<const Vector2<double>>& v,
     const Eigen::Ref<const Vector2<double>>& direc,
     const Eigen::Ref<const Vector2<double>>& e0,
     const Eigen::Ref<const Vector2<double>>& e1,
     const double &alpha,
-    const double &beta)
-{
-    const Vector2<double> t0 = (e0 - v).normalized(), t1 = (v - e1).normalized();
-
-    if (direc.dot(t0) <= -alpha || -direc.dot(t1) <= -alpha)
-        return false;
-
-    const double tmp = Math<double>::smooth_heaviside(-Math<double>::cross2(direc, t0), alpha, beta) + 
-                         Math<double>::smooth_heaviside(-Math<double>::cross2(direc, t1), alpha, beta);
-    if (tmp <= 1. - alpha)
-        return false;
-
-    return true;
-}
+    const double &beta);
 
 /// @brief 
 /// @tparam scalar 
 /// @param direc normalized
 /// @param v 
-/// @param direc points from the other primitive to v
+/// @param direc points from v to the other point
 /// @param neighbors follow counter-clockwise order
 /// @param params 
 /// @return 
-template <typename scalar>
-inline scalar smooth_point3_term(
+template <typename scalar, int n_neighbors = -1>
+scalar smooth_point3_term(
     const Eigen::Ref<const RowVector3<scalar>>& v,
     const Eigen::Ref<const RowVector3<scalar>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<scalar, -1, 3>>& neighbors,
+    const Eigen::Ref<const Eigen::Matrix<scalar, n_neighbors, 3>>& neighbors,
     const double &alpha,
     const double &beta,
-    const ORIENTATION_TYPES &otypes)
-{
-    RowVector3<scalar> t, t_prev;
-    assert(neighbors.rows() > 2);
-    assert(otypes.size() == neighbors.rows());
+    const ORIENTATION_TYPES &otypes);
 
-    scalar tangent_term(1.);
-    scalar weight(0.);
-    scalar normal_term(0.);
-    t_prev = neighbors.row(neighbors.rows()-1) - v;
-    for (int a = 0; a < neighbors.rows(); a++)
-    {
-        t = neighbors.row(a) - v;
-        if (otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT)
-        {
-            scalar tmp0 = Math<scalar>::smooth_heaviside(direc.dot(t) / t.norm(), alpha, beta);
-            tangent_term = tangent_term * tmp0;
-        }
-        else if (otypes.tangent_type(a) == HEAVISIDE_TYPE::ZERO)
-        {
-            tangent_term = scalar(0.);
-            break;
-        }
-
-        // if normal_term >= 1, the term depending on it becomes constant 1
-        if (normal_term < 1)
-        {
-            if (otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT)
-                normal_term = normal_term + (otypes.normal_type(a) == HEAVISIDE_TYPE::ONE ? scalar(1.) : Math<scalar>::smooth_heaviside(-direc.dot(t_prev.cross(t).normalized()), alpha, beta));
-            else if (otypes.normal_type(a) == HEAVISIDE_TYPE::ONE)
-                normal_term += scalar(1.);
-        }
-        
-        weight = weight + t.squaredNorm();
-        std::swap(t, t_prev);
-    }
-
-    // if constexpr (std::is_same<double, scalar>::value) 
-    //     if (debug)
-    //         logger().warn("normal {}, tangent {}", normal_term, tangent_term);
-
-    return weight / 3 * tangent_term * Math<scalar>::smooth_heaviside(normal_term - 1, alpha, 0);
-}
-
-inline bool smooth_point3_term_type(
+bool smooth_point3_term_type(
     const Eigen::Ref<const RowVector3<double>>& v,
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Matrix<double, -1, 3> &neighbors,
     const double &alpha,
     const double &beta,
-    ORIENTATION_TYPES &otypes)
-{
-    RowVector3<double> t, t_prev;
-    assert(neighbors.rows() > 2);
-    otypes.set_size(neighbors.rows());
+    ORIENTATION_TYPES &otypes);
 
-    bool tangent_term = true;
-    double normal_term = 0;
-    t_prev = neighbors.row(neighbors.rows()-1) - v;
-    for (int a = 0; a < neighbors.rows(); a++)
-    {
-        t = neighbors.row(a) - v;
-        otypes.tangent_type(a) = otypes.compute_type(direc.dot(t) / t.norm(), alpha, beta);
-        if (otypes.tangent_type(a) == HEAVISIDE_TYPE::ZERO)
-            return false;
+std::tuple<double, Eigen::VectorXd> smooth_point3_term_gradient(
+    const Eigen::Ref<const RowVector3<double>>& direc,
+    const Eigen::Ref<const RowVector3<double>>& v,
+    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,
+    const double &alpha,
+    const double &beta,
+    const ORIENTATION_TYPES &otypes);
 
-        const double tmp = -direc.dot(t_prev.cross(t).normalized());
-        otypes.normal_type(a) = otypes.compute_type(tmp, alpha, beta);
-        normal_term += Math<double>::smooth_heaviside(tmp, alpha, beta);
+std::tuple<double, Eigen::VectorXd, Eigen::MatrixXd> smooth_point3_term_hessian(
+    const Eigen::Ref<const RowVector3<double>>& direc,
+    const Eigen::Ref<const RowVector3<double>>& v,
+    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,
+    const double &alpha,
+    const double &beta,
+    const ORIENTATION_TYPES &otypes);
 
-        std::swap(t, t_prev);
-    }
+double smooth_point3_term_tangent(
+    const Eigen::Ref<const RowVector3<double>>& direc,
+    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+    const double &alpha,
+    const double &beta,
+    const ORIENTATION_TYPES &otypes);
 
-    if (normal_term >= 1)
-    {
-        for (int a = 0; a < neighbors.rows(); a++)
-            otypes.normal_type(a) = HEAVISIDE_TYPE::ONE;
-    }
+std::tuple<double, Eigen::VectorXd> smooth_point3_term_tangent_gradient(
+    const Eigen::Ref<const RowVector3<double>>& direc,
+    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+    const double &alpha,
+    const double &beta,
+    const ORIENTATION_TYPES &otypes);
 
-    return  tangent_term && (normal_term > 1 - alpha);
+std::tuple<double, Eigen::VectorXd, Eigen::MatrixXd> smooth_point3_term_tangent_hessian(
+    const Eigen::Ref<const RowVector3<double>>& direc,
+    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+    const double &alpha,
+    const double &beta,
+    const ORIENTATION_TYPES &otypes);
+
+double smooth_point3_term_normal(
+    const Eigen::Ref<const RowVector3<double>>& direc,
+    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+    const double &alpha,
+    const double &beta,
+    const ORIENTATION_TYPES &otypes);
+
+std::tuple<double, Eigen::VectorXd> smooth_point3_term_normal_gradient(
+    const Eigen::Ref<const RowVector3<double>>& direc,
+    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+    const double &alpha,
+    const double &beta,
+    const ORIENTATION_TYPES &otypes);
+
+std::tuple<double, Eigen::VectorXd, Eigen::MatrixXd> smooth_point3_term_normal_hessian(
+    const Eigen::Ref<const RowVector3<double>>& direc,
+    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+    const double &alpha,
+    const double &beta,
+    const ORIENTATION_TYPES &otypes);
 }
-}
+
+#include "point.tpp"

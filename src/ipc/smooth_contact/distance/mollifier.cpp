@@ -10,45 +10,46 @@ namespace {
         return (a - c) / b;
     }
 
-    Eigen::Vector3d func_aux1_grad(const double &a, const double &b, const double &c)
-    {
-        return Eigen::Vector3d(1. / b, -func_aux1(a, b, c) / b, -1. / b);
-    }
+    // Eigen::Vector3d func_aux1_grad(const double &a, const double &b, const double &c)
+    // {
+    //     return Eigen::Vector3d(1. / b, -func_aux1(a, b, c) / b, -1. / b);
+    // }
 
-    Eigen::Matrix3d func_aux1_hess(const double &a, const double &b, const double &c)
-    {
-        const double b2 = 1. / b / b;
-        Eigen::Matrix3d out;
-        out << 0.,           -b2, 0.,
-              -b2, 2. * func_aux1(a, b, c) * b2, b2,
-               0.,            b2, 0.;
-        return out;
-    }
+    // Eigen::Matrix3d func_aux1_hess(const double &a, const double &b, const double &c)
+    // {
+    //     const double b2 = 1. / b / b;
+    //     Eigen::Matrix3d out;
+    //     out << 0.,           -b2, 0.,
+    //           -b2, 2. * func_aux1(a, b, c) * b2, b2,
+    //            0.,            b2, 0.;
+    //     return out;
+    // }
 
-    double func_aux2(const double &a, const double &b, const double &c)
-    {
-        return Math<double>::mollifier(func_aux1(a, b, c));
-    }
+    // double func_aux2(const double &a, const double &b, const double &c)
+    // {
+    //     return Math<double>::mollifier(func_aux1(a, b, c));
+    // }
 
-    Eigen::Vector3d func_aux2_grad(const double &a, const double &b, const double &c)
-    {
-        double val = func_aux1(a, b, c);
-        return Math<double>::mollifier_grad(val) * func_aux1_grad(a, b, c);
-    }
+    // Eigen::Vector3d func_aux2_grad(const double &a, const double &b, const double &c)
+    // {
+    //     double val = func_aux1(a, b, c);
+    //     return Math<double>::mollifier_grad(val) * func_aux1_grad(a, b, c);
+    // }
 
-    Eigen::Matrix3d func_aux2_hess(const double &a, const double &b, const double &c)
-    {
-        double val = func_aux1(a, b, c);
-        Eigen::Vector3d g = func_aux1_grad(a, b, c);
-        Eigen::Matrix3d h = func_aux1_hess(a, b, c);
-        return g * Math<double>::mollifier_hess(val) * g.transpose() + Math<double>::mollifier_grad(val) * h;
-    }
+    // Eigen::Matrix3d func_aux2_hess(const double &a, const double &b, const double &c)
+    // {
+    //     double val = func_aux1(a, b, c);
+    //     Eigen::Vector3d g = func_aux1_grad(a, b, c);
+    //     Eigen::Matrix3d h = func_aux1_hess(a, b, c);
+    //     return g * Math<double>::mollifier_hess(val) * g.transpose() + Math<double>::mollifier_grad(val) * h;
+    // }
 }
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
 std::pair<double, Vector<double, 13>> edge_edge_mollifier_grad(
     const Vector3<double> &ea0, const Vector3<double> &ea1,
     const Vector3<double> &eb0, const Vector3<double> &eb1,
+    const std::array<HEAVISIDE_TYPE, 4> &mtypes,
     const double &dist_sqr)
 {
     const double da0 = point_edge_distance(ea0, eb0, eb1);
@@ -115,6 +116,7 @@ std::tuple<double, Vector<double, 13>, Eigen::Matrix<double, 13, 13>>
 edge_edge_mollifier_hessian(
     const Vector3<double> &ea0, const Vector3<double> &ea1,
     const Vector3<double> &eb0, const Vector3<double> &eb1, 
+    const std::array<HEAVISIDE_TYPE, 4> &mtypes,
     const double &dist_sqr)
 {
     DiffScalarBase::setVariableCount(13);
@@ -170,10 +172,10 @@ edge_edge_mollifier_hessian(
 
     T laAD = (input_ad.head(3) - input_ad.segment(3,3)).squaredNorm() * mollifier_threshold_eps;
     T lbAD = (input_ad.segment(6,3) - input_ad.segment(9,3)).squaredNorm() * mollifier_threshold_eps;
-    T aAD = Math<T>::mollifier((T(da0, da0_wrt_x_1, da0_wrt_x_2) - input_ad(12)) / lbAD);
-    T bAD = Math<T>::mollifier((T(da1, da1_wrt_x_1, da1_wrt_x_2) - input_ad(12)) / lbAD);
-    T cAD = Math<T>::mollifier((T(db0, db0_wrt_x_1, db0_wrt_x_2) - input_ad(12)) / laAD);
-    T dAD = Math<T>::mollifier((T(db1, db1_wrt_x_1, db1_wrt_x_2) - input_ad(12)) / laAD);
+    T aAD = mtypes[0] == HEAVISIDE_TYPE::VARIANT ? Math<T>::mollifier((T(da0, da0_wrt_x_1, da0_wrt_x_2) - input_ad(12)) / lbAD) : T(1.);
+    T bAD = mtypes[1] == HEAVISIDE_TYPE::VARIANT ? Math<T>::mollifier((T(da1, da1_wrt_x_1, da1_wrt_x_2) - input_ad(12)) / lbAD) : T(1.);
+    T cAD = mtypes[2] == HEAVISIDE_TYPE::VARIANT ? Math<T>::mollifier((T(db0, db0_wrt_x_1, db0_wrt_x_2) - input_ad(12)) / laAD) : T(1.);
+    T dAD = mtypes[3] == HEAVISIDE_TYPE::VARIANT ? Math<T>::mollifier((T(db1, db1_wrt_x_1, db1_wrt_x_2) - input_ad(12)) / laAD) : T(1.);
 
     T outAD = aAD * bAD * cAD * dAD;
     return std::make_tuple(outAD.getValue(), outAD.getGradient(), outAD.getHessian());

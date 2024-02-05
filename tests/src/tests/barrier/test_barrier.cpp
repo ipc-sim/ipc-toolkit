@@ -10,6 +10,7 @@
 
 #include <ipc/utils/math.hpp>
 #include <ipc/utils/AutodiffTypes.hpp>
+#include <ipc/smooth_contact/primitives/point.hpp>
 #include <iostream>
 
 namespace {
@@ -162,7 +163,7 @@ TEST_CASE("Normalize vector derivatives", "[deriv]")
     }
 }
 
-TEST_CASE("Func1 derivatives", "[deriv]")
+TEST_CASE("opposite_direction_penalty derivatives", "[deriv]")
 {
     const int n_samples = 1000;
     DiffScalarBase::setVariableCount(6);
@@ -175,10 +176,81 @@ TEST_CASE("Func1 derivatives", "[deriv]")
         ipc::Vector<T, 6> x_ad = ipc::slice_positions<T, 6, 1>(x);
         T y_ad = ipc::Math<T>::smooth_heaviside(x_ad.tail(3).dot(x_ad.head(3)) / x_ad.head(3).norm(), alpha, beta);
         
-        const auto [y, grad, hess] = ipc::func1_hess(x.head(3), x.tail(3), alpha, beta);
+        const auto [y, grad, hess] = ipc::opposite_direction_penalty_hess(x.head(3), x.tail(3), alpha, beta);
 
         CHECK((grad - y_ad.getGradient()).norm() <= 1e-12);
         CHECK((hess - y_ad.getHessian()).norm() <= 1e-12);
+    }
+}
+
+TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
+{
+    const int n_samples = 1000;
+    const double alpha = 1;
+    const double beta = 1;
+    for (int i = 1; i <= n_samples; i++)
+    {
+        DiffScalarBase::setVariableCount(9);
+        using T = ipc::ADHessian<9>;
+        ipc::Vector9d x = ipc::Vector9d::Random();
+        ipc::Vector<T, 9> x_ad = ipc::slice_positions<T, 9, 1>(x);
+        ipc::Vector<T, 3> t = x_ad.head<3>().cross(x_ad.segment<3>(3));
+        T y_ad = ipc::Math<T>::smooth_heaviside(x_ad.tail(3).dot(t) / t.norm(), alpha, beta);
+        
+        auto [y, grad, hess] = ipc::negative_orientation_penalty_hess(x.head(3), x.segment(3, 3), x.tail(3), alpha, beta);
+
+        // hess.topLeftCorner(6, 6).setZero();
+        // auto hess_ad = y_ad.getHessian();
+        // hess_ad.topLeftCorner(6, 6).setZero();
+        // y_ad = T(y_ad.getValue(), y_ad.getGradient(), hess_ad);
+
+        CHECK(abs(y - y_ad.getValue()) <= 1e-12);
+        CHECK((grad - y_ad.getGradient()).norm() <= 1e-12);
+        CHECK((hess - y_ad.getHessian()).norm() <= 1e-10);
+    }
+}
+
+TEST_CASE("point tangent term derivatives", "[deriv]")
+{
+    Eigen::Matrix<double, -1, 3> vectors(9, 3);
+    vectors << -0.696515, -0.173578, -0.696231,
+                0.50146, -0.0017947,   0.999718,
+                0.346908,   0.152939,    1.00049,
+                0.208062,   0.290611,    1.00075,
+                0.280725,   0.498548,    1.00069,
+                0.499796,    0.49999,    1.00127,
+                0.501162,   0.498839,   0.779581,
+                0.50047 ,  0.290411 ,  0.709051,
+                0.500615,   0.153465,   0.846423;
+    const double alpha = 1;
+    const double beta = 1;
+    {
+        ipc::ORIENTATION_TYPES otypes;
+        otypes.set_size(8);
+
+        auto [y, y_grad, y_hess] = ipc::smooth_point3_term_tangent_hessian(vectors.row(0), vectors.bottomRows(8), alpha, beta, otypes);
+        
+        Eigen::VectorXd fgrad;
+        fd::finite_gradient(
+            fd::flatten(vectors), [&](const Eigen::VectorXd& x)
+            { 
+                return std::get<0>(ipc::smooth_point3_term_tangent_hessian(x.head(3), fd::unflatten(x.tail(x.size()-3), 3), alpha, beta, otypes));
+            },
+            fgrad);
+
+        std::cout << "err " << (y_grad - fgrad).norm() / fgrad.norm() << ", norm " << fgrad.norm() << " " << y_grad.norm() << "\n";
+        CHECK((y_grad - fgrad).norm() <= 1e-7 * fgrad.norm());
+
+        Eigen::MatrixXd fhess;
+        fd::finite_jacobian(
+            fd::flatten(vectors), [&](const Eigen::VectorXd& x)
+            { 
+                return std::get<1>(ipc::smooth_point3_term_tangent_hessian(x.head(3), fd::unflatten(x.tail(x.size()-3), 3), alpha, beta, otypes));
+            },
+            fhess);
+        
+        std::cout << "err " << (y_hess - fhess).norm() / fhess.norm() << ", norm " << fhess.norm() << " " << y_hess.norm() << "\n";
+        CHECK((y_hess - fhess).norm() <= 1e-7 * fhess.norm());
     }
 }
 
