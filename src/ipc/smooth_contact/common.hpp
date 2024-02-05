@@ -1,6 +1,8 @@
 #pragma once
 #include <cmath>
 
+#define DERIVATIVES_WITH_AUTODIFF
+
 namespace ipc {
 
     constexpr static int n_vert_neighbors_2d = 3;

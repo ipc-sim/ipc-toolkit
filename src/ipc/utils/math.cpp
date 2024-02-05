@@ -518,6 +518,11 @@ namespace ipc {
     template class Math<ADGrad<13>>;
     template class Math<ADHessian<13>>;
 
+#ifdef DERIVATIVES_WITH_AUTODIFF
     template class Math<ADGrad<15>>;
     template class Math<ADHessian<15>>;
+
+    template class Math<ADGrad<-1>>;
+    template class Math<ADHessian<-1>>;
+#endif
 }

@@ -47,7 +47,8 @@ namespace ipc {
             const Eigen::Ref<const Vector<double, dim>>& e0,
             const Eigen::Ref<const Vector<double, dim>>& e1);
 
-        static std::array<Eigen::Matrix<double, dim*dim, dim*dim>, dim> point_line_closest_point_direction_hessian(
+        static std::tuple<Vector<double, dim>, Eigen::Matrix<double, dim, dim*dim>, std::array<Eigen::Matrix<double, dim*dim, dim*dim>, dim>> 
+        point_line_closest_point_direction_hessian(
             const Eigen::Ref<const Vector<double, dim>>& p,
             const Eigen::Ref<const Vector<double, dim>>& e0,
             const Eigen::Ref<const Vector<double, dim>>& e1);

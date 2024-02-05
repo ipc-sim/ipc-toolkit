@@ -42,25 +42,34 @@ double Point3::potential(const Vector<double, dim> &d, const Vector<double, -1, 
 
 Vector<double, -1, Point3::max_size+Point3::dim> Point3::grad(const Vector<double, dim> &d, const Vector<double, -1, max_size> &x) const
 {
+#ifdef DERIVATIVES_WITH_AUTODIFF
+    using T = ADGrad<-1>;
+    Eigen::VectorXd tmp(x.size() + d.size());
+    tmp << d, x;
+    DiffScalarBase::setVariableCount(tmp.size());
+    const Eigen::Matrix<T, -1, dim> X = slice_positions<T, -1, dim>(tmp);
+    return smooth_point3_term<T, -1>(X.row(1), X.row(0), X.bottomRows(n_neighbors), _alpha, _beta, otypes).getGradient();
+#else
     const Eigen::Matrix<double, -1, dim> X = slice_positions<double, -1, dim>(x);
     const auto [val, grad] = smooth_point3_term_gradient(d, X.row(0), X.bottomRows(n_neighbors), _alpha, _beta, otypes);
     return grad;
+#endif
 }
 
 MatrixMax<double, Point3::max_size+Point3::dim, Point3::max_size+Point3::dim> Point3::hessian(const Vector<double, dim> &d, const Vector<double, -1, max_size> &x) const
 {
-    // {
-    //     using T = ADHessian<-1>;
-    //     Eigen::VectorXd tmp(x.size() + d.size());
-    //     tmp << d, x;
-    //     DiffScalarBase::setVariableCount(tmp.size());
-    //     const Eigen::Matrix<T, -1, dim> X = slice_positions<T, -1, dim>(tmp);
-    //     smooth_point3_term<T, -1>(X.row(1), X.row(0), X.bottomRows(n_neighbors), _alpha, _beta, otypes);
-    // }
-
+#ifdef DERIVATIVES_WITH_AUTODIFF
+    using T = ADHessian<-1>;
+    Eigen::VectorXd tmp(x.size() + d.size());
+    tmp << d, x;
+    DiffScalarBase::setVariableCount(tmp.size());
+    const Eigen::Matrix<T, -1, dim> X = slice_positions<T, -1, dim>(tmp);
+    return smooth_point3_term<T, -1>(X.row(1), X.row(0), X.bottomRows(n_neighbors), _alpha, _beta, otypes).getHessian();
+#else
     const auto X = slice_positions<double, -1, dim>(x);
     const auto [val, grad, hess] = smooth_point3_term_hessian(d, X.row(0), X.bottomRows(n_neighbors), _alpha, _beta, otypes);
     return hess;
+#endif
 }
 
 std::tuple<double, Eigen::VectorXd> smooth_point3_term_gradient(
@@ -502,11 +511,20 @@ template double smooth_point3_term(
     const double &beta,
     const ORIENTATION_TYPES &otypes);
 
-template ADHessian<-1> smooth_point3_term(
-    const Eigen::Ref<const RowVector3<ADHessian<-1>>>& v,
-    const Eigen::Ref<const RowVector3<ADHessian<-1>>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<ADHessian<-1>, -1, 3>>& neighbors,
-    const double &alpha,
-    const double &beta,
-    const ORIENTATION_TYPES &otypes);
+#ifdef DERIVATIVES_WITH_AUTODIFF
+    template ADGrad<-1> smooth_point3_term(
+        const Eigen::Ref<const RowVector3<ADGrad<-1>>>& v,
+        const Eigen::Ref<const RowVector3<ADGrad<-1>>>& direc,
+        const Eigen::Ref<const Eigen::Matrix<ADGrad<-1>, -1, 3>>& neighbors,
+        const double &alpha,
+        const double &beta,
+        const ORIENTATION_TYPES &otypes);
+    template ADHessian<-1> smooth_point3_term(
+        const Eigen::Ref<const RowVector3<ADHessian<-1>>>& v,
+        const Eigen::Ref<const RowVector3<ADHessian<-1>>>& direc,
+        const Eigen::Ref<const Eigen::Matrix<ADHessian<-1>, -1, 3>>& neighbors,
+        const double &alpha,
+        const double &beta,
+        const ORIENTATION_TYPES &otypes);
+#endif
 }

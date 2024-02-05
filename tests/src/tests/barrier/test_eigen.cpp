@@ -59,3 +59,12 @@ TEST_CASE("eigen map and ref", "[eigen_unit]")
     std::cout << "B:\n" << B << "\n";
     std::cout << "ref:\n" << ref.transpose() << "\n";
 }
+
+TEST_CASE("eigen ref and seqN", "[eigen_unit]")
+{
+    Eigen::Matrix4i B;
+    B.setZero();
+    B({1,2,3},{1,2,3}) = fun1();
+
+    std::cout << "B:\n" << B << "\n";
+}

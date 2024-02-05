@@ -20,9 +20,9 @@ namespace ipc {
         int n_vertices() const override;
         int n_dofs() const override { return n_vertices() * 3; }
 
-        double potential(const Vector3d &d, const Vector12d &x) const;
-        Vector15d grad(const Vector3d &d, const Vector12d &x) const;
-        Matrix15d hessian(const Vector3d &d, const Vector12d &x) const;
+        double potential(const Eigen::Ref<const Eigen::Vector3d> &d, const Eigen::Ref<const Vector12d> &x) const;
+        Vector15d grad(const Eigen::Ref<const Eigen::Vector3d> &d, const Eigen::Ref<const Vector12d> &x) const;
+        Matrix15d hessian(const Eigen::Ref<const Eigen::Vector3d> &d, const Eigen::Ref<const Vector12d> &x) const;
     private:
         ORIENTATION_TYPES otypes;
     };
@@ -53,33 +53,7 @@ namespace ipc {
         const Eigen::Ref<const Vector3<scalar>>& f1,
         const double alpha,
         const double beta,
-        const ORIENTATION_TYPES &otypes)
-    {
-        scalar tangent_term = scalar(1.); 
-        if (otypes.tangent_type(0) != HEAVISIDE_TYPE::ONE)
-        {
-            const Vector3<scalar> t0 = PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(f0, e0, e1);
-            tangent_term = tangent_term * Math<scalar>::smooth_heaviside(-dn.dot(t0) / t0.norm(), alpha, beta);
-        }
-        if (otypes.tangent_type(1) != HEAVISIDE_TYPE::ONE)
-        {
-            const Vector3<scalar> t1 = PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(f1, e0, e1);
-            tangent_term = tangent_term * Math<scalar>::smooth_heaviside(-dn.dot(t1) / t1.norm(), alpha, beta);
-        }
-
-        scalar normal_term = scalar(0.);
-        if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE || otypes.normal_type(1) == HEAVISIDE_TYPE::ONE)
-            normal_term = scalar(1.);
-        else
-        {
-            const Vector3<scalar> n0 = (e0 - f0).cross(e1 - f0);
-            const Vector3<scalar> n1 = -(e0 - f1).cross(e1 - f1);
-            normal_term = Math<scalar>::smooth_heaviside( (Math<scalar>::smooth_heaviside(dn.dot(n0) / n0.norm(), alpha, beta) +
-            Math<scalar>::smooth_heaviside(dn.dot(n1) / n1.norm(), alpha, beta) - 1), alpha, 0);
-        }
-
-        return (e1 - e0).squaredNorm() * tangent_term * normal_term;
-    }
+        const ORIENTATION_TYPES &otypes);
 
     bool smooth_edge3_term_type(
         const Eigen::Ref<const Vector3<double>>& dn,

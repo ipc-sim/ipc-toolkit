@@ -131,7 +131,8 @@ namespace ipc {
     }
 
     template <int dim>
-    std::array<Eigen::Matrix<double, dim*dim, dim*dim>, dim> PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_hessian(
+    std::tuple<Vector<double, dim>, Eigen::Matrix<double, dim, dim*dim>, std::array<Eigen::Matrix<double, dim*dim, dim*dim>, dim>> 
+    PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_hessian(
         const Eigen::Ref<const Vector<double, dim>>& p,
         const Eigen::Ref<const Vector<double, dim>>& e0,
         const Eigen::Ref<const Vector<double, dim>>& e1)
@@ -143,11 +144,17 @@ namespace ipc {
         Vector<T, dim> e1T = slice_positions<T, 1, dim>(e1, 2*dim);
 
         Vector<T, dim> out = PointEdgeDistance<T, dim>::point_line_closest_point_direction(pT, e0T, e1T);
+        Vector<double, dim> val;
+        Eigen::Matrix<double, dim, dim*dim> grad;
         std::array<Eigen::Matrix<double, dim*dim, dim*dim>, dim> hess;
         for (int i = 0; i < dim; i++)
+        {
+            val(i) = out(i).getValue();
+            grad.row(i) = out(i).getGradient();
             hess[i] = out(i).getHessian();
+        }
         
-        return hess;
+        return std::make_tuple(val, grad, hess);
     }
 
     template <int dim>
