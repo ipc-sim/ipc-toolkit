@@ -39,14 +39,25 @@ double Point3::potential(const Vector<double, dim> &d, const Vector<double, -1, 
     const Eigen::Matrix<double, -1, dim> X = slice_positions<double, -1, dim>(x);
     return smooth_point3_term<double, -1>(X.row(0), d, X.bottomRows(n_neighbors), _alpha, _beta, otypes);
 }
+
 Vector<double, -1, Point3::max_size+Point3::dim> Point3::grad(const Vector<double, dim> &d, const Vector<double, -1, max_size> &x) const
 {
     const Eigen::Matrix<double, -1, dim> X = slice_positions<double, -1, dim>(x);
     const auto [val, grad] = smooth_point3_term_gradient(d, X.row(0), X.bottomRows(n_neighbors), _alpha, _beta, otypes);
     return grad;
 }
+
 MatrixMax<double, Point3::max_size+Point3::dim, Point3::max_size+Point3::dim> Point3::hessian(const Vector<double, dim> &d, const Vector<double, -1, max_size> &x) const
 {
+    // {
+    //     using T = ADHessian<-1>;
+    //     Eigen::VectorXd tmp(x.size() + d.size());
+    //     tmp << d, x;
+    //     DiffScalarBase::setVariableCount(tmp.size());
+    //     const Eigen::Matrix<T, -1, dim> X = slice_positions<T, -1, dim>(tmp);
+    //     smooth_point3_term<T, -1>(X.row(1), X.row(0), X.bottomRows(n_neighbors), _alpha, _beta, otypes);
+    // }
+
     const auto X = slice_positions<double, -1, dim>(x);
     const auto [val, grad, hess] = smooth_point3_term_hessian(d, X.row(0), X.bottomRows(n_neighbors), _alpha, _beta, otypes);
     return hess;
@@ -311,7 +322,7 @@ double smooth_point3_term_normal(
             normal_term += negative_orientation_penalty(t_prev, t, -direc, alpha, beta);
     }
 
-    return Math<double>::smooth_heaviside(normal_term - 1, beta + alpha, 0);
+    return Math<double>::smooth_heaviside(normal_term - 1, alpha, 0);
 }
 
 std::tuple<double, Eigen::VectorXd> smooth_point3_term_normal_gradient(
@@ -336,18 +347,18 @@ std::tuple<double, Eigen::VectorXd> smooth_point3_term_normal_gradient(
         {
             const int id_prev = (a_prev + 1) * 3;
             const int id = (a + 1) * 3;
-            auto [y, dy, ddy] = negative_orientation_penalty_hess(t_prev, t, -direc, alpha, beta);
+            const auto [y, dy] = negative_orientation_penalty_grad(t_prev, t, -direc, alpha, beta);
             
             normal_term += y;
             
-            grad.segment<3>(id_prev) += dy.head(3);
-            grad.segment<3>(id) += dy.segment(3, 3);
-            grad.head<3>() -= dy.tail(3);
+            grad.segment<3>(id_prev) += dy.head<3>();
+            grad.segment<3>(id) += dy.segment<3>(3);
+            grad.head<3>() -= dy.tail<3>();
         }
     }
 
-    const double val = Math<double>::smooth_heaviside(normal_term - 1, beta + alpha, 0);
-    const double grad_val = Math<double>::smooth_heaviside_grad(normal_term - 1, beta + alpha, 0);
+    const double val = Math<double>::smooth_heaviside(normal_term - 1, alpha, 0);
+    const double grad_val = Math<double>::smooth_heaviside_grad(normal_term - 1, alpha, 0);
 
     return std::make_tuple(val, grad * grad_val);
 }
@@ -397,9 +408,9 @@ std::tuple<double, Eigen::VectorXd, Eigen::MatrixXd> smooth_point3_term_normal_h
         }
     }
 
-    const double val = Math<double>::smooth_heaviside(normal_term - 1, beta + alpha, 0);
-    const double grad_val = Math<double>::smooth_heaviside_grad(normal_term - 1, beta + alpha, 0);
-    const double hess_val = Math<double>::smooth_heaviside_hess(normal_term - 1, beta + alpha, 0);
+    const double val = Math<double>::smooth_heaviside(normal_term - 1, alpha, 0);
+    const double grad_val = Math<double>::smooth_heaviside_grad(normal_term - 1, alpha, 0);
+    const double hess_val = Math<double>::smooth_heaviside_hess(normal_term - 1, alpha, 0);
 
     return std::make_tuple(val, grad * grad_val, grad * hess_val * grad.transpose() + grad_val * hess);
 }
@@ -487,6 +498,14 @@ template double smooth_point3_term(
     const Eigen::Ref<const RowVector3<double>>& v,
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,
+    const double &alpha,
+    const double &beta,
+    const ORIENTATION_TYPES &otypes);
+
+template ADHessian<-1> smooth_point3_term(
+    const Eigen::Ref<const RowVector3<ADHessian<-1>>>& v,
+    const Eigen::Ref<const RowVector3<ADHessian<-1>>>& direc,
+    const Eigen::Ref<const Eigen::Matrix<ADHessian<-1>, -1, 3>>& neighbors,
     const double &alpha,
     const double &beta,
     const ORIENTATION_TYPES &otypes);
