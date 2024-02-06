@@ -270,7 +270,8 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::gradient(
 
         double mollifier;
         Vector<double, 13> mollifier_grad;
-        std::tie(mollifier, mollifier_grad) = edge_edge_mollifier_grad(
+        Eigen::Matrix<double, 13, 13> mollifier_hess;
+        std::tie(mollifier, mollifier_grad, mollifier_hess) = edge_edge_mollifier_hessian(
             x_double.head(3), x_double.segment(3, 3), x_double.segment(6, 3),
             x_double.tail(3), otypes, dist_sqr_AD.getValue());
         mollifier_grad.head<12>() +=
@@ -483,8 +484,8 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::hessian(
             + mollifier_hess.block(0, 12, 12, 1)
                 * dist_sqr_AD.getGradient().transpose();
 
-        gMollifier(core_indices) = mollifier_grad;
-        hMollifier(core_indices, core_indices) = mollifier_hess;
+        gMollifier(core_indices) = mollifier_grad.head(core_indices.size());
+        hMollifier(core_indices, core_indices) = mollifier_hess.topLeftCorner(core_indices.size(), core_indices.size());
     }
 
     DiffScalarBase::setVariableCount(ndofs());

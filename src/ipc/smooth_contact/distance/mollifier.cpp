@@ -5,11 +5,6 @@
 
 namespace ipc {
 namespace {
-    double func_aux1(const double& a, const double& b, const double& c)
-    {
-        return (a - c) / b;
-    }
-
     Vector<int, 9> get_indices(int i, int j, int k)
     {
         Vector<int, 9> out;
@@ -18,44 +13,25 @@ namespace {
         return out;
     }
 
-    // Eigen::Vector3d func_aux1_grad(const double &a, const double &b, const
-    // double &c)
-    // {
-    //     return Eigen::Vector3d(1. / b, -func_aux1(a, b, c) / b, -1. / b);
-    // }
+    double func_aux1(const double& a, const double& b, const double& c, const double& eps)
+    {
+        return (a - c) / b / eps;
+    }
 
-    // Eigen::Matrix3d func_aux1_hess(const double &a, const double &b, const
-    // double &c)
-    // {
-    //     const double b2 = 1. / b / b;
-    //     Eigen::Matrix3d out;
-    //     out << 0.,           -b2, 0.,
-    //           -b2, 2. * func_aux1(a, b, c) * b2, b2,
-    //            0.,            b2, 0.;
-    //     return out;
-    // }
+    Eigen::Vector3d
+    func_aux1_grad(const double& a, const double& b, const double& c, const double& eps)
+    {
+        return Eigen::Vector3d(1. / b, -func_aux1(a, b, c, 1.) / b, -1. / b) / eps;
+    }
 
-    // double func_aux2(const double &a, const double &b, const double &c)
-    // {
-    //     return Math<double>::mollifier(func_aux1(a, b, c));
-    // }
-
-    // Eigen::Vector3d func_aux2_grad(const double &a, const double &b, const
-    // double &c)
-    // {
-    //     double val = func_aux1(a, b, c);
-    //     return Math<double>::mollifier_grad(val) * func_aux1_grad(a, b, c);
-    // }
-
-    // Eigen::Matrix3d func_aux2_hess(const double &a, const double &b, const
-    // double &c)
-    // {
-    //     double val = func_aux1(a, b, c);
-    //     Eigen::Vector3d g = func_aux1_grad(a, b, c);
-    //     Eigen::Matrix3d h = func_aux1_hess(a, b, c);
-    //     return g * Math<double>::mollifier_hess(val) * g.transpose() +
-    //     Math<double>::mollifier_grad(val) * h;
-    // }
+    Eigen::Matrix3d
+    func_aux1_hess(const double& a, const double& b, const double& c, const double& eps)
+    {
+        const double b2 = 1. / b / b;
+        Eigen::Matrix3d out;
+        out << 0., -b2, 0., -b2, 2. * func_aux1(a, b, c, 1.) * b2, b2, 0., b2, 0.;
+        return out / eps;
+    }
 } // namespace
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
@@ -87,21 +63,18 @@ std::pair<double, Vector<double, 13>> edge_edge_mollifier_grad(
         db1_wrt_x << tmp.tail(6), Eigen::Vector3d::Zero(), tmp.head(3);
     }
 
-    const double la = point_point_distance(ea0, ea1);
-    const double lb = point_point_distance(eb0, eb1);
-
-    const double db = lb * mollifier_threshold_eps;
-    const double da = la * mollifier_threshold_eps;
+    const double db = point_point_distance(eb0, eb1) * mollifier_threshold_eps;
+    const double da = point_point_distance(ea0, ea1) * mollifier_threshold_eps;
 
     Vector6d da_wrt_x =
         point_point_distance_gradient(ea0, ea1) * mollifier_threshold_eps;
     Vector6d db_wrt_x =
         point_point_distance_gradient(eb0, eb1) * mollifier_threshold_eps;
 
-    const double ma0 = func_aux1(da0, db, dist_sqr);
-    const double ma1 = func_aux1(da1, db, dist_sqr);
-    const double mb0 = func_aux1(db0, da, dist_sqr);
-    const double mb1 = func_aux1(db1, da, dist_sqr);
+    const double ma0 = func_aux1(da0, db, dist_sqr, 1.);
+    const double ma1 = func_aux1(da1, db, dist_sqr, 1.);
+    const double mb0 = func_aux1(db0, da, dist_sqr, 1.);
+    const double mb1 = func_aux1(db1, da, dist_sqr, 1.);
 
     const double a = Math<double>::mollifier(ma0);
     const double b = Math<double>::mollifier(ma1);
@@ -139,76 +112,165 @@ edge_edge_mollifier_hessian(
     const std::array<HEAVISIDE_TYPE, 4>& mtypes,
     const double& dist_sqr)
 {
-    DiffScalarBase::setVariableCount(13);
-    using T = ADHessian<13>;
     Vector<double, 13> input;
     input << ea0, ea1, eb0, eb1, dist_sqr;
-    Vector<T, 13> input_ad = slice_positions<T, 13, 1>(input);
+
+#ifndef DERIVATIVES_WITH_AUTODIFF
+    Eigen::Matrix<int, 4, 3> vert_indices;
+    vert_indices << 0, 2, 3, 1, 2, 3, 2, 0, 1, 3, 0, 1;
 
     Eigen::Matrix<int, 4, 9> dof_indices;
-    dof_indices << get_indices(0, 2, 3).transpose(),
-        get_indices(1, 2, 3).transpose(), get_indices(2, 0, 1).transpose(),
-        get_indices(3, 0, 1).transpose();
+    for (int i = 0; i < 4; i++)
+        dof_indices.row(i) =
+            get_indices(
+                vert_indices(i, 0), vert_indices(i, 1), vert_indices(i, 2))
+                .transpose();
 
-    const double da0 = point_edge_distance(ea0, eb0, eb1);
-    const double da1 = point_edge_distance(ea1, eb0, eb1);
-    const double db0 = point_edge_distance(eb0, ea0, ea1);
-    const double db1 = point_edge_distance(eb1, ea0, ea1);
-
-    Vector<double, 13> da0_wrt_x_1 = Vector<double, 13>::Zero(),
-                       da1_wrt_x_1 = Vector<double, 13>::Zero(),
-                       db0_wrt_x_1 = Vector<double, 13>::Zero(),
-                       db1_wrt_x_1 = Vector<double, 13>::Zero();
+    // derivatives of point edge distances
+    Eigen::Vector4d point_edge_dists;
+    Eigen::Matrix<double, 4, 12> point_edge_dists_grad;
+    point_edge_dists_grad.setZero();
+    std::array<Eigen::Matrix<double, 12, 12>, 4> point_edge_dists_hess;
+    for (auto& mat : point_edge_dists_hess)
+        mat.setZero();
+    for (int i = 0; i < 4; i++)
     {
-        da0_wrt_x_1(dof_indices.row(0)) =
-            point_edge_distance_gradient(ea0, eb0, eb1);
-        da1_wrt_x_1(dof_indices.row(1)) =
-            point_edge_distance_gradient(ea1, eb0, eb1);
-        db0_wrt_x_1(dof_indices.row(2)) =
-            point_edge_distance_gradient(eb0, ea0, ea1);
-        db1_wrt_x_1(dof_indices.row(3)) =
-            point_edge_distance_gradient(eb1, ea0, ea1);
+        point_edge_dists(i) =
+            point_edge_distance(input.segment<3>(3 * vert_indices(i, 0)),
+            input.segment<3>(3 * vert_indices(i, 1)),
+            input.segment<3>(3 * vert_indices(i, 2))); 
+        point_edge_dists_grad(i, dof_indices.row(i)) =
+            point_edge_distance_gradient(input.segment<3>(3 * vert_indices(i, 0)),
+            input.segment<3>(3 * vert_indices(i, 1)),
+            input.segment<3>(3 * vert_indices(i, 2)));
+        point_edge_dists_hess[i](dof_indices.row(i), dof_indices.row(i)) =
+            point_edge_distance_hessian(input.segment<3>(3 * vert_indices(i, 0)),
+            input.segment<3>(3 * vert_indices(i, 1)),
+            input.segment<3>(3 * vert_indices(i, 2)));
     }
 
-    Eigen::Matrix<double, 13, 13> da0_wrt_x_2 =
-                                      Eigen::Matrix<double, 13, 13>::Zero(),
-                                  da1_wrt_x_2 =
-                                      Eigen::Matrix<double, 13, 13>::Zero(),
-                                  db0_wrt_x_2 =
-                                      Eigen::Matrix<double, 13, 13>::Zero(),
-                                  db1_wrt_x_2 =
-                                      Eigen::Matrix<double, 13, 13>::Zero();
-    {
-        da0_wrt_x_2(dof_indices.row(0), dof_indices.row(0)) =
-            point_edge_distance_hessian(ea0, eb0, eb1);
-        da1_wrt_x_2(dof_indices.row(1), dof_indices.row(1)) =
-            point_edge_distance_hessian(ea1, eb0, eb1);
-        db0_wrt_x_2(dof_indices.row(2), dof_indices.row(2)) =
-            point_edge_distance_hessian(eb0, ea0, ea1);
-        db1_wrt_x_2(dof_indices.row(3), dof_indices.row(3)) =
-            point_edge_distance_hessian(eb1, ea0, ea1);
+    // derivatives of edge lengths
+    Vector2d edge_lengths;
+    Eigen::Matrix<double, 2, 12> edge_lengths_grad;
+    edge_lengths_grad.setZero();
+    for (int i = 0; i < 2; i++) {
+        Vector3d edge = input.segment<3>(i * 6) - input.segment<3>(i * 6 + 3);
+        edge_lengths(i) = edge.squaredNorm();
+        edge_lengths_grad.block<1, 3>(i, 0 + 6 * i) = 2 * edge;
+        edge_lengths_grad.block<1, 3>(i, 3 + 6 * i) = -2 * edge;
     }
 
-    T laAD = (input_ad.head<3>() - input_ad.segment<3>(3)).squaredNorm()
+    // derivatives of mollifier and ratios, input order : [dist_sqr, edge_lengths
+    // (1 x 2), point_edge_dists (1 x 4)]
+    Eigen::Vector4d mollifier;
+    Eigen::Matrix<double, 4, 7> mollifier_grad;
+    mollifier_grad.setZero();
+    std::array<Eigen::Matrix<double, 7, 7>, 4> mollifier_hess;
+    for (auto& mat : mollifier_hess)
+        mat.setZero();
+    for (int i = 0; i < 4; i++) {
+        const double len = edge_lengths(1 - i / 2);
+        const double val1 = func_aux1(point_edge_dists(i), len, input(12), mollifier_threshold_eps);
+        const Vector3d g1 = func_aux1_grad(point_edge_dists(i), len, input(12), mollifier_threshold_eps);
+        const Eigen::Matrix3d h1 = func_aux1_hess(point_edge_dists(i), len, input(12), mollifier_threshold_eps);
+
+        const double val2 = Math<double>::mollifier(val1);
+        const double g2 = Math<double>::mollifier_grad(val1);
+        const double h2 = Math<double>::mollifier_hess(val1);
+
+        Eigen::Vector3i ind;
+        ind << 3 + i, 2 - i / 2, 0;
+        mollifier(i) = val2;
+        mollifier_grad(i, ind) = g2 * g1;
+        mollifier_hess[i](ind, ind) = g1 * h2 * g1.transpose() + h1 * g2;
+    }
+
+    // partial products of mollifiers
+    Vector<double, 4> partial_products_1;
+    partial_products_1.setOnes();
+    Eigen::Matrix<double, 4, 4> partial_products_2;
+    partial_products_2.setOnes();
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (i != j) {
+                partial_products_1(j) *= mollifier(i);
+
+                for (int k = 0; k < 4; k++)
+                    if (i != k)
+                        partial_products_2(j, k) *= mollifier(i);
+            }
+        }
+    }
+    partial_products_2.diagonal().setZero();
+
+    // derivatives of mollifier products, input order : [dist_sqr, edge_lengths
+    // (1 x 2), point_edge_dists (1 x 4)]
+    Vector<double, 7> product_grad = mollifier_grad.transpose() * partial_products_1;
+    Eigen::Matrix<double, 7, 7> product_hess = mollifier_grad.transpose() * partial_products_2 * mollifier_grad;
+    for (int i = 0; i < 4; i++)
+        product_hess += mollifier_hess[i] * partial_products_1(i);
+    
+    // derivatives wrt. input : [ea0, ea1, eb0, eb1, dist_sqr]
+    Vector<double, 13> grad = Vector<double, 13>::Zero();
+    Eigen::Matrix<double, 13, 13> hess = Eigen::Matrix<double, 13, 13>::Zero();
+    {
+        Eigen::Matrix<double, 6, 12> grads;
+        grads << edge_lengths_grad, point_edge_dists_grad;
+
+        grad(12) = product_grad(0);
+        grad.head<12>() = grads.transpose() * product_grad.segment<6>(1);
+
+        hess(12, 12) = product_hess(0, 0);
+        hess.block<1, 12>(12, 0) += product_hess.block<1, 6>(0, 1) * grads;
+        hess.block<12, 1>(0, 12) += grads.transpose() * product_hess.block<6, 1>(1, 0);
+
+        for (int j = 0; j < 2; j++)
+        {
+            hess.block<6, 6>(j * 6, j * 6).diagonal().array() += 2 * product_grad(1 + j);
+            hess.block<3, 3>(j * 6, j * 6 + 3).diagonal().array() -= 2 * product_grad(1 + j);
+            hess.block<3, 3>(j * 6 + 3, j * 6).diagonal().array() -= 2 * product_grad(1 + j);
+        }
+        for (int i = 0; i < 4; i++)
+            hess.topLeftCorner<12, 12>() += product_grad(3 + i) * point_edge_dists_hess[i];
+
+        hess.topLeftCorner<12, 12>() += grads.transpose() * product_hess.block<6, 6>(1, 1) * grads;
+    }
+    return std::make_tuple(mollifier.prod(), grad, hess);
+#else
+    DiffScalarBase::setVariableCount(13);
+    using T = ADHessian<13>;
+    Vector<T, 13> input_ad = slice_positions<T, 13, 1>(input);
+
+    const T da = (input_ad.segment<3>(3) - input_ad.head<3>()).squaredNorm()
         * mollifier_threshold_eps;
-    T lbAD = (input_ad.segment<3>(6) - input_ad.segment<3>(9)).squaredNorm()
+    const T db = (input_ad.segment<3>(9) - input_ad.segment<3>(6)).squaredNorm()
         * mollifier_threshold_eps;
-    T aAD = mtypes[0] == HEAVISIDE_TYPE::VARIANT ? Math<T>::mollifier(
-                (T(da0, da0_wrt_x_1, da0_wrt_x_2) - input_ad(12)) / lbAD)
-                                                 : T(1.);
-    T bAD = mtypes[1] == HEAVISIDE_TYPE::VARIANT ? Math<T>::mollifier(
-                (T(da1, da1_wrt_x_1, da1_wrt_x_2) - input_ad(12)) / lbAD)
-                                                 : T(1.);
-    T cAD = mtypes[2] == HEAVISIDE_TYPE::VARIANT ? Math<T>::mollifier(
-                (T(db0, db0_wrt_x_1, db0_wrt_x_2) - input_ad(12)) / laAD)
-                                                 : T(1.);
-    T dAD = mtypes[3] == HEAVISIDE_TYPE::VARIANT ? Math<T>::mollifier(
-                (T(db1, db1_wrt_x_1, db1_wrt_x_2) - input_ad(12)) / laAD)
-                                                 : T(1.);
+    T aAD = (mtypes[0] == HEAVISIDE_TYPE::VARIANT) ? Math<T>::mollifier(
+                (PointEdgeDistance<T, 3>::point_edge_sqr_distance(
+                     input_ad.head<3>(), input_ad.segment<3>(6),
+                     input_ad.segment<3>(9))
+                 - input_ad(12)) / db) : T(1.);
+    T bAD = (mtypes[1] == HEAVISIDE_TYPE::VARIANT) ? Math<T>::mollifier(
+                (PointEdgeDistance<T, 3>::point_edge_sqr_distance(
+                     input_ad.segment<3>(3), input_ad.segment<3>(6),
+                     input_ad.segment<3>(9))
+                 - input_ad(12)) / db) : T(1.);
+    T cAD = (mtypes[2] == HEAVISIDE_TYPE::VARIANT) ? Math<T>::mollifier(
+                (PointEdgeDistance<T, 3>::point_edge_sqr_distance(
+                     input_ad.segment<3>(6), input_ad.head<3>(),
+                     input_ad.segment<3>(3))
+                 - input_ad(12)) / da) : T(1.);
+    T dAD = (mtypes[3] == HEAVISIDE_TYPE::VARIANT) ? Math<T>::mollifier(
+                (PointEdgeDistance<T, 3>::point_edge_sqr_distance(
+                     input_ad.segment<3>(9), input_ad.head<3>(),
+                     input_ad.segment<3>(3))
+                 - input_ad(12)) / da) : T(1.);
 
     T outAD = aAD * bAD * cAD * dAD;
+
     return std::make_tuple(
         outAD.getValue(), outAD.getGradient(), outAD.getHessian());
+#endif
 }
 
 } // namespace ipc

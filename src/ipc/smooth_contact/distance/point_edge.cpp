@@ -226,10 +226,10 @@ template class PointEdgeDistance<ADHessian<9>, 3>;
 template class PointEdgeDistance<ADGrad<12>, 3>;
 template class PointEdgeDistance<ADHessian<12>, 3>;
 
+#ifdef DERIVATIVES_WITH_AUTODIFF
 template class PointEdgeDistance<ADGrad<13>, 3>;
 template class PointEdgeDistance<ADHessian<13>, 3>;
 
-#ifdef DERIVATIVES_WITH_AUTODIFF
 template class PointEdgeDistance<ADGrad<15>, 3>;
 template class PointEdgeDistance<ADHessian<15>, 3>;
 #endif
