@@ -18,33 +18,6 @@ scalar point_edge_mollifier(
                ((p - e1).squaredNorm() - dist_sqr) / denominator);
 }
 
-inline std::array<HEAVISIDE_TYPE, 4> edge_edge_mollifier_type(
-    const Vector3<double>& ea0,
-    const Vector3<double>& ea1,
-    const Vector3<double>& eb0,
-    const Vector3<double>& eb1,
-    const double& dist_sqr)
-{
-    std::array<HEAVISIDE_TYPE, 4> mtypes;
-    mtypes[0] = (point_edge_distance(ea0, eb0, eb1) - dist_sqr)
-            >= (eb1 - eb0).squaredNorm() * mollifier_threshold_eps
-        ? HEAVISIDE_TYPE::ONE
-        : HEAVISIDE_TYPE::VARIANT;
-    mtypes[1] = (point_edge_distance(ea1, eb0, eb1) - dist_sqr)
-            >= (eb1 - eb0).squaredNorm() * mollifier_threshold_eps
-        ? HEAVISIDE_TYPE::ONE
-        : HEAVISIDE_TYPE::VARIANT;
-    mtypes[2] = (point_edge_distance(eb0, ea0, ea1) - dist_sqr)
-            >= (ea1 - ea0).squaredNorm() * mollifier_threshold_eps
-        ? HEAVISIDE_TYPE::ONE
-        : HEAVISIDE_TYPE::VARIANT;
-    mtypes[3] = (point_edge_distance(eb1, ea0, ea1) - dist_sqr)
-            >= (ea1 - ea0).squaredNorm() * mollifier_threshold_eps
-        ? HEAVISIDE_TYPE::ONE
-        : HEAVISIDE_TYPE::VARIANT;
-    return mtypes;
-}
-
 template <typename scalar>
 scalar edge_edge_mollifier(
     const Vector3<scalar>& ea0,

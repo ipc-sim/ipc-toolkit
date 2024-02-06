@@ -11,7 +11,7 @@ scalar point_edge_mollifier(
     const VectorMax3<scalar>& e1,
     const scalar& dist_sqr);
 
-inline std::array<HEAVISIDE_TYPE, 4> edge_edge_mollifier_type(
+std::array<HEAVISIDE_TYPE, 4> edge_edge_mollifier_type(
     const Vector3<double>& ea0,
     const Vector3<double>& ea1,
     const Vector3<double>& eb0,
