@@ -150,6 +150,14 @@ void my_finite_gradient(
     FD_RULE rule = FD_RULE::CENTRAL,
     const double eps = 1e-7);
 
+Eigen::Matrix<double, 3, 6> cross_product_gradient(
+    const Eigen::Ref<const Eigen::Vector3d>& t1,
+    const Eigen::Ref<const Eigen::Vector3d>& t2);
+
+std::array<Matrix6d, 3> cross_product_hessian(
+    const Eigen::Ref<const Eigen::Vector3d>& t1,
+    const Eigen::Ref<const Eigen::Vector3d>& t2);
+
 // assume unit vector d
 double opposite_direction_penalty(
     const Eigen::Ref<const Eigen::Vector3d>& t,

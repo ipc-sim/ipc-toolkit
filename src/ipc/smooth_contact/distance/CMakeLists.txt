@@ -7,6 +7,7 @@ set(SOURCES
   point_edge.tpp
   point_face.hpp
   point_face.tpp
+  edge_edge.cpp
   edge_edge.hpp
   edge_edge.tpp
   primitive_distance.cpp

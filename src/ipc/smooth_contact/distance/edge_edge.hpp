@@ -26,6 +26,20 @@ Vector3<scalar> line_line_closest_point_direction(
     const Eigen::Ref<const Vector3<scalar>>& eb0,
     const Eigen::Ref<const Vector3<scalar>>& eb1);
 
+std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>>
+line_line_closest_point_direction_gradient(
+    const Eigen::Ref<const Vector3d>& ea0,
+    const Eigen::Ref<const Vector3d>& ea1,
+    const Eigen::Ref<const Vector3d>& eb0,
+    const Eigen::Ref<const Vector3d>& eb1);
+
+std::tuple<Vector3d, Eigen::Matrix<double, 3, 12>, std::array<Matrix12d, 3>>
+line_line_closest_point_direction_hessian(
+    const Eigen::Ref<const Vector3d>& ea0,
+    const Eigen::Ref<const Vector3d>& ea1,
+    const Eigen::Ref<const Vector3d>& eb0,
+    const Eigen::Ref<const Vector3d>& eb1);
+
 /// @brief Computes the direction of the closest point pair
 /// @param ea0 Vertex 0 of edge 0
 /// @param ea1 Vertex 1 of edge 0

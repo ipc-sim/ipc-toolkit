@@ -5,17 +5,18 @@
 
 namespace ipc {
 namespace {
+    double func_aux1(const double& a, const double& b, const double& c, const double& eps)
+    {
+        return (a - c) / b / eps;
+    }
+
+#ifndef DERIVATIVES_WITH_AUTODIFF
     Vector<int, 9> get_indices(int i, int j, int k)
     {
         Vector<int, 9> out;
         out << 3 * i + 0, 3 * i + 1, 3 * i + 2, 3 * j + 0, 3 * j + 1, 3 * j + 2,
             3 * k + 0, 3 * k + 1, 3 * k + 2;
         return out;
-    }
-
-    double func_aux1(const double& a, const double& b, const double& c, const double& eps)
-    {
-        return (a - c) / b / eps;
     }
 
     Eigen::Vector3d
@@ -32,6 +33,7 @@ namespace {
         out << 0., -b2, 0., -b2, 2. * func_aux1(a, b, c, 1.) * b2, b2, 0., b2, 0.;
         return out / eps;
     }
+#endif
 } // namespace
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared

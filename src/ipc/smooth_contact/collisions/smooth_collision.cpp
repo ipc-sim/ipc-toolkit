@@ -306,9 +306,14 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::hessian(
     const auto dtype =
         PrimitiveDistance<PrimitiveA, PrimitiveB>::compute_distance_type(
             x_double);
-    const Vector<double, dim> closest_direction =
-        PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, double>::
-            compute_closest_direction(x_double, dtype);
+    // const Vector<double, dim> closest_direction =
+    //     PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, double>::
+    //         compute_closest_direction(x_double, dtype);
+    Vector<double, dim> closest_direction;
+    Eigen::Matrix<double, dim, n_core_dofs> closest_direction_grad;
+    std::array<Eigen::Matrix<double, n_core_dofs, n_core_dofs>, dim> closest_direction_hess;
+    std::tie(closest_direction, closest_direction_grad, closest_direction_hess) = PrimitiveDistance<PrimitiveA, PrimitiveB>::compute_closest_direction_hessian(x_double, dtype);
+    
     const double dist = closest_direction.norm();
 
     // these two use autodiff with different variable count
@@ -323,75 +328,66 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::hessian(
     DiffScalarBase::setVariableCount(n_core_dofs);
     using T = ADHessian<n_core_dofs>;
 
+    Eigen::VectorXi core_indices(n_core_dofs);
+    for (int i = 0; i < n_core_dofs_A; i++)
+        core_indices(i) = i;
+    for (int i = 0; i < n_core_dofs_B; i++)
+        core_indices(i + n_core_dofs_A) = i + pA->n_dofs();
+
     Vector<T, n_core_dofs> x = slice_positions<T, n_core_dofs, 1>(x_double);
 
-    auto closest_direction_autodiff = PrimitiveDistanceTemplate<
-        PrimitiveA, PrimitiveB, T>::compute_closest_direction(x, dtype);
-    Eigen::Matrix<double, -1, dim, Eigen::ColMajor, max_size, dim>
-        closest_direction_grad;
-    closest_direction_grad.setZero(ndofs(), dim);
-    std::array<MatrixMax<double, max_size, max_size>, dim>
-        closest_direction_hess;
-    for (int k = 0; k < dim; k++) {
-        closest_direction_grad.block(0, k, n_core_dofs_A, 1) =
-            closest_direction_autodiff(k).getGradient().head(n_core_dofs_A);
-        closest_direction_grad.block(pA->n_dofs(), k, n_core_dofs_B, 1) =
-            closest_direction_autodiff(k).getGradient().tail(n_core_dofs_B);
+    Vector<T, dim> closest_direction_autodiff;// = PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::compute_closest_direction(x, dtype);
+    for (int d = 0; d < dim; d++)
+        closest_direction_autodiff(d) = T(closest_direction(d), closest_direction_grad.row(d).transpose(), closest_direction_hess[d]);
 
-        closest_direction_hess[k].setZero(ndofs(), ndofs());
-        const auto& hess = closest_direction_autodiff(k).getHessian();
-        closest_direction_hess[k].block(0, 0, n_core_dofs_A, n_core_dofs_A) =
-            hess.topLeftCorner(n_core_dofs_A, n_core_dofs_A);
-        closest_direction_hess[k].block(
-            pA->n_dofs(), pA->n_dofs(), n_core_dofs_B, n_core_dofs_B) =
-            hess.bottomRightCorner(n_core_dofs_B, n_core_dofs_B);
-        closest_direction_hess[k].block(
-            0, pA->n_dofs(), n_core_dofs_A, n_core_dofs_B) =
-            hess.topRightCorner(n_core_dofs_A, n_core_dofs_B);
-        closest_direction_hess[k].block(
-            pA->n_dofs(), 0, n_core_dofs_B, n_core_dofs_A) =
-            hess.bottomLeftCorner(n_core_dofs_B, n_core_dofs_A);
-    }
+    // Eigen::Matrix<double, -1, dim, Eigen::ColMajor, max_size, dim> closest_direction_grad;
+    // closest_direction_grad.setZero(ndofs(), dim);
+    // std::array<MatrixMax<double, max_size, max_size>, dim> closest_direction_hess;
+    // for (int k = 0; k < dim; k++) {
+    //     closest_direction_grad(core_indices, k) = closest_direction_autodiff(k).getGradient();
+
+    //     closest_direction_hess[k].setZero(ndofs(), ndofs());
+    //     closest_direction_hess[k](core_indices, core_indices) = closest_direction_autodiff(k).getHessian();
+    // }
 
     // grad of tangent/normal terms
     double orient = 0;
     Vector<double, -1, max_size> gOrient;
     MatrixMax<double, max_size, max_size> hOrient;
     {
-        Vector<double, -1, max_size> gA, gB;
-        MatrixMax<double, max_size, max_size> hA, hB;
+        Vector<double, -1, max_size> gA = Vector<double, -1, max_size>::Zero(ndofs()), gB = Vector<double, -1, max_size>::Zero(ndofs());
+        MatrixMax<double, max_size, max_size> hA = MatrixMax<double, max_size, max_size>::Zero(ndofs(), ndofs()), hB = MatrixMax<double, max_size, max_size>::Zero(ndofs(), ndofs());
         {
-            gA = closest_direction_grad * gA_reduced.head(dim);
+            gA(core_indices) = closest_direction_grad.transpose() * gA_reduced.head(dim);
             gA.head(pA->n_dofs()) += gA_reduced.tail(pA->n_dofs());
 
-            hA = closest_direction_grad * hA_reduced.topLeftCorner(dim, dim)
-                * closest_direction_grad.transpose();
+            hA(core_indices, core_indices) = closest_direction_grad.transpose() * hA_reduced.topLeftCorner(dim, dim) * closest_direction_grad;
             for (int d = 0; d < dim; d++)
-                hA += gA_reduced(d) * closest_direction_hess[d];
+                hA(core_indices, core_indices) += gA_reduced(d) * closest_direction_hess[d];
 
             hA.topLeftCorner(pA->n_dofs(), pA->n_dofs()) +=
                 hA_reduced.bottomRightCorner(pA->n_dofs(), pA->n_dofs());
-            hA.leftCols(pA->n_dofs()) += closest_direction_grad
+            hA(core_indices, Eigen::seqN(0, pA->n_dofs())) += closest_direction_grad.transpose()
                 * hA_reduced.topRightCorner(dim, pA->n_dofs());
-            hA.topRows(pA->n_dofs()) +=
+            hA(Eigen::seqN(0, pA->n_dofs()), core_indices) +=
                 hA_reduced.bottomLeftCorner(pA->n_dofs(), dim)
-                * closest_direction_grad.transpose();
+                * closest_direction_grad;
 
-            gB = closest_direction_grad * -gB_reduced.head(dim);
+            gB(core_indices) = closest_direction_grad.transpose() * -gB_reduced.head(dim);
             gB.tail(pB->n_dofs()) += gB_reduced.tail(pB->n_dofs());
 
-            hB = closest_direction_grad * hB_reduced.topLeftCorner(dim, dim)
-                * closest_direction_grad.transpose();
+            hB(core_indices, core_indices) = closest_direction_grad.transpose() * hB_reduced.topLeftCorner(dim, dim)
+                * closest_direction_grad;
             for (int d = 0; d < dim; d++)
-                hB -= gB_reduced(d) * closest_direction_hess[d];
+                hB(core_indices, core_indices) -= gB_reduced(d) * closest_direction_hess[d];
 
             hB.bottomRightCorner(pB->n_dofs(), pB->n_dofs()) +=
                 hB_reduced.bottomRightCorner(pB->n_dofs(), pB->n_dofs());
-            hB.rightCols(pB->n_dofs()) -= closest_direction_grad
+            hB(core_indices, Eigen::seqN(pA->n_dofs(), pB->n_dofs())) -= closest_direction_grad.transpose()
                 * hB_reduced.topRightCorner(dim, pB->n_dofs());
-            hB.bottomRows(pB->n_dofs()) -=
+            hB(Eigen::seqN(pA->n_dofs(), pB->n_dofs()), core_indices) -=
                 hB_reduced.bottomLeftCorner(pB->n_dofs(), dim)
-                * closest_direction_grad.transpose();
+                * closest_direction_grad;
         }
         const double potential_a =
             pA->potential(closest_direction, positions.head(pA->n_dofs()));
@@ -404,10 +400,10 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::hessian(
             + (gA * gB.transpose() + gB * gA.transpose());
     }
 
-    // grad of barrier potential
+    // hessian of barrier potential
     double barrier = 0;
-    Vector<double, -1, max_size> gBarrier;
-    MatrixMax<double, max_size, max_size> hBarrier;
+    Vector<double, -1, max_size> gBarrier = Vector<double, -1, max_size>::Zero(ndofs());
+    MatrixMax<double, max_size, max_size> hBarrier = MatrixMax<double, max_size, max_size>::Zero(ndofs(), ndofs());
     {
         barrier = Math<double>::inv_barrier(dist / Super::get_dhat(), params.r);
 
@@ -418,7 +414,7 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::hessian(
             / Super::get_dhat();
         const Vector<double, dim> gBarrier_wrt_d =
             barrier_1st_deriv * closest_direction_normalized;
-        gBarrier = closest_direction_grad * gBarrier_wrt_d;
+        gBarrier(core_indices) = closest_direction_grad.transpose() * gBarrier_wrt_d;
 
         const double barrier_2nd_deriv =
             Math<double>::inv_barrier_hess(dist / Super::get_dhat(), params.r)
@@ -429,25 +425,19 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::hessian(
             + (barrier_2nd_deriv - barrier_1st_deriv / dist)
                 * closest_direction_normalized
                 * closest_direction_normalized.transpose();
-        hBarrier = closest_direction_grad * hBarrier_wrt_d
-            * closest_direction_grad.transpose();
+        hBarrier(core_indices, core_indices) = closest_direction_grad.transpose() * hBarrier_wrt_d
+            * closest_direction_grad;
         for (int d = 0; d < dim; d++)
-            hBarrier += closest_direction_hess[d] * gBarrier_wrt_d(d);
+            hBarrier(core_indices, core_indices) += closest_direction_hess[d] * gBarrier_wrt_d(d);
     }
 
-    // grad of mollifier
+    // hessian of mollifier
     double mollifier = 0;
-    Vector<double, -1, max_size> gMollifier;
+    Vector<double, -1, max_size> gMollifier = Vector<double, -1, max_size>::Zero(ndofs());
     gMollifier.setZero(ndofs());
-    MatrixMax<double, max_size, max_size> hMollifier;
+    MatrixMax<double, max_size, max_size> hMollifier = MatrixMax<double, max_size, max_size>::Zero(ndofs(), ndofs());
     hMollifier.setZero(ndofs(), ndofs());
     const auto dist_sqr_AD = closest_direction_autodiff.squaredNorm();
-
-    Eigen::VectorXi core_indices(n_core_dofs);
-    for (int i = 0; i < n_core_dofs_A; i++)
-        core_indices(i) = i;
-    for (int i = 0; i < n_core_dofs_B; i++)
-        core_indices(i + n_core_dofs_A) = i + pA->n_dofs();
 
     if constexpr (
         !std::is_same<PrimitiveA, Edge3>::value

@@ -163,6 +163,35 @@ TEST_CASE("Normalize vector derivatives", "[deriv]")
     }
 }
 
+TEST_CASE("line-line closest direction derivatives", "[deriv]")
+{
+    const int n_samples = 100;
+    DiffScalarBase::setVariableCount(12);
+    using T = ipc::ADHessian<12>; 
+    for (int i = 1; i <= n_samples; i++)
+    {
+        ipc::Vector6d ea = ipc::Vector6d::Random();
+        ipc::Vector<T, 6> eaT = ipc::slice_positions<T, 6, 1>(ea);
+        ipc::Vector6d eb = ipc::Vector6d::Random();
+        ipc::Vector<T, 6> ebT = ipc::slice_positions<T, 6, 1>(eb, 6);
+        
+        ipc::Vector<T, 3> dT = ipc::line_line_closest_point_direction<T>(eaT.head<3>(), eaT.tail<3>(), ebT.head<3>(), ebT.tail<3>());
+
+        const auto [d, grad, hess] = ipc::line_line_closest_point_direction_hessian(ea.head<3>(), ea.tail<3>(), eb.head<3>(), eb.tail<3>());
+
+        double err_grad = 0;
+        double err_hess = 0;
+        for (int j = 0; j < 3; j++)
+        {
+            err_grad += (grad.row(j).transpose() - dT(j).getGradient()).norm();
+            err_hess += (hess[j] - dT(j).getHessian()).norm();
+        }
+
+        CHECK(err_grad <= 1e-12);
+        CHECK(err_hess <= 1e-10);
+    }
+}
+
 TEST_CASE("opposite_direction_penalty derivatives", "[deriv]")
 {
     const int n_samples = 1000;

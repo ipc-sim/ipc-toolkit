@@ -70,38 +70,6 @@ namespace {
        + dy[i - 1] D[n[[i]], {t}, {t}], {i, 1, 3}, {j, 1, 3}]]
     */
 
-    std::tuple<
-        Eigen::Vector3d,
-        Eigen::Matrix<double, 3, 6>,
-        std::array<Matrix6d, 3>>
-    cross_prod_hess(
-        const Eigen::Ref<const Eigen::Vector3d>& t1,
-        const Eigen::Ref<const Eigen::Vector3d>& t2)
-    {
-        Eigen::Vector3d prod = t1.cross(t2);
-        Eigen::Matrix<double, 3, 6> grad;
-        grad << 0, t2(2), -t2(1), 0, -t1(2), t1(1), -t2(2), 0, t2(0), t1(2), 0,
-            -t1(0), t2(1), -t2(0), 0, -t1(1), t1(0), 0;
-
-        std::array<Matrix6d, 3> hess;
-        hess.fill(Matrix6d::Zero());
-        hess[0](1, 5) = 1;
-        hess[0](5, 1) = 1;
-        hess[0](2, 4) = -1;
-        hess[0](4, 2) = -1;
-
-        hess[1](0, 5) = -1;
-        hess[1](5, 0) = -1;
-        hess[1](2, 3) = 1;
-        hess[1](3, 2) = 1;
-
-        hess[2](0, 4) = 1;
-        hess[2](4, 0) = 1;
-        hess[2](1, 3) = -1;
-        hess[2](3, 1) = -1;
-
-        return std::make_tuple(prod, grad, hess);
-    }
 } // namespace
 template <typename scalar> double Math<scalar>::sign(const double& x)
 {
@@ -494,7 +462,9 @@ std::tuple<double, Vector9d, Matrix9d> negative_orientation_penalty_hess(
     const double& alpha,
     const double& beta)
 {
-    const auto [n, cross_grad, cross_hess] = cross_prod_hess(t1, t2);
+    const Vector3d n = t1.cross(t2);
+    const Eigen::Matrix<double, 3, 6> cross_grad = cross_product_gradient(t1, t2);
+    const std::array<Matrix6d, 3> cross_hess = cross_product_hessian(t1, t2);
     auto [y, dy, ddy] = opposite_direction_penalty_hess(n, d, alpha, beta);
 
     Vector9d grad;
@@ -512,6 +482,42 @@ std::tuple<double, Vector9d, Matrix9d> negative_orientation_penalty_hess(
 
     return std::make_tuple(y, grad, hess);
 }
+
+Eigen::Matrix<double, 3, 6> cross_product_gradient(
+    const Eigen::Ref<const Eigen::Vector3d>& t1,
+    const Eigen::Ref<const Eigen::Vector3d>& t2)
+{
+    Eigen::Matrix<double, 3, 6> grad;
+    grad << 0, t2(2), -t2(1), 0, -t1(2), t1(1), -t2(2), 0, t2(0), t1(2), 0,
+        -t1(0), t2(1), -t2(0), 0, -t1(1), t1(0), 0;
+
+    return grad;
+}
+
+std::array<Matrix6d, 3> cross_product_hessian(
+    const Eigen::Ref<const Eigen::Vector3d>& t1,
+    const Eigen::Ref<const Eigen::Vector3d>& t2)
+{
+    std::array<Matrix6d, 3> hess;
+    hess.fill(Matrix6d::Zero());
+    hess[0](1, 5) = 1;
+    hess[0](5, 1) = 1;
+    hess[0](2, 4) = -1;
+    hess[0](4, 2) = -1;
+
+    hess[1](0, 5) = -1;
+    hess[1](5, 0) = -1;
+    hess[1](2, 3) = 1;
+    hess[1](3, 2) = 1;
+
+    hess[2](0, 4) = 1;
+    hess[2](4, 0) = 1;
+    hess[2](1, 3) = -1;
+    hess[2](3, 1) = -1;
+
+    return hess;
+}
+
 
 template class Math<double>;
 
