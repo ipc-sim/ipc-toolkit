@@ -59,10 +59,10 @@ scalar edge_edge_mollifier(
 
 template <typename scalar>
 scalar point_face_mollifier(
-    const VectorMax3<scalar>& p,
-    const VectorMax3<scalar>& e0,
-    const VectorMax3<scalar>& e1,
-    const VectorMax3<scalar>& e2,
+    const Vector3<scalar>& p,
+    const Vector3<scalar>& e0,
+    const Vector3<scalar>& e1,
+    const Vector3<scalar>& e2,
     const scalar& dist_sqr)
 {
     return Math<scalar>::mollifier(

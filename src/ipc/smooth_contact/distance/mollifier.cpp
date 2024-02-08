@@ -37,7 +37,7 @@ namespace {
 } // namespace
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
-std::pair<double, Vector<double, 13>> edge_edge_mollifier_grad(
+std::pair<double, Vector<double, 13>> edge_edge_mollifier_gradient(
     const Vector3<double>& ea0,
     const Vector3<double>& ea1,
     const Vector3<double>& eb0,
@@ -300,6 +300,32 @@ std::array<HEAVISIDE_TYPE, 4> edge_edge_mollifier_type(
         ? HEAVISIDE_TYPE::ONE
         : HEAVISIDE_TYPE::VARIANT;
     return mtypes;
+}
+
+/// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
+std::tuple<double, Vector<double, 13>>
+point_face_mollifier_gradient(
+    const Vector3d& p,
+    const Vector3d& e0,
+    const Vector3d& e1,
+    const Vector3d& e2,
+    const double& dist_sqr)
+{
+    assert(false);
+    return std::make_tuple(0, Vector<double, 13>::Zero());
+}
+
+/// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
+std::tuple<double, Vector<double, 13>, Eigen::Matrix<double, 13, 13>>
+point_face_mollifier_hessian(
+    const Vector3d& p,
+    const Vector3d& e0,
+    const Vector3d& e1,
+    const Vector3d& e2,
+    const double& dist_sqr)
+{
+    assert(false);
+    return std::make_tuple(0, Vector<double, 13>::Zero(), Eigen::Matrix<double, 13, 13>::Zero());
 }
 
 } // namespace ipc

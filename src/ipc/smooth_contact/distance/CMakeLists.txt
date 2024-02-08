@@ -12,6 +12,7 @@ set(SOURCES
   edge_edge.tpp
   primitive_distance.cpp
   primitive_distance.hpp
+  primitive_distance.tpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})

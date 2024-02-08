@@ -116,6 +116,33 @@ public:
         }
         return std::make_tuple(out, J, H);
     }
+
+    static std::tuple<double, Vector<double, n_core_dofs + 1>>
+    compute_mollifier_gradient(
+        const Vector<double, n_core_dofs>& x, const double dist_sqr)
+    {
+        DiffScalarBase::setVariableCount(n_core_dofs + 1);
+        using T = ADGrad<n_core_dofs + 1>;
+        const Vector<T, n_core_dofs + 1> X = slice_positions<T, n_core_dofs + 1, 1>((Vector<double, n_core_dofs + 1>() << x, dist_sqr).finished());
+        const T out = PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(X.head(n_core_dofs), X(n_core_dofs));
+
+        return std::make_tuple(out.getValue(), out.getGradient());
+    }
+
+    static std::tuple<double, Vector<double, n_core_dofs + 1>, Eigen::Matrix<double, n_core_dofs + 1, n_core_dofs + 1>>
+    compute_mollifier_hessian(
+        const Vector<double, n_core_dofs>& x, const double dist_sqr)
+    {
+        DiffScalarBase::setVariableCount(n_core_dofs + 1);
+        using T = ADHessian<n_core_dofs + 1>;
+        const Vector<T, n_core_dofs + 1> X = slice_positions<T, n_core_dofs + 1, 1>((Vector<double, n_core_dofs + 1>() << x, dist_sqr).finished());
+        const T out = PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::mollifier(X.head(n_core_dofs), X(n_core_dofs));
+
+        return std::make_tuple(out.getValue(), out.getGradient(), out.getHessian());
+    }
+
 };
 
 } // namespace ipc
+
+#include "primitive_distance.tpp"

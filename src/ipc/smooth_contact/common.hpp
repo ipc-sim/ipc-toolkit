@@ -1,7 +1,7 @@
 #pragma once
 #include <cmath>
 
-// #define DERIVATIVES_WITH_AUTODIFF
+#define DERIVATIVES_WITH_AUTODIFF
 
 namespace ipc {
 

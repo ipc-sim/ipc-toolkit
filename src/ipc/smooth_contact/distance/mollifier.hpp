@@ -28,31 +28,49 @@ scalar edge_edge_mollifier(
     const scalar& dist_sqr);
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
-std::pair<double, Vector<double, 13>> edge_edge_mollifier_grad(
-    const Vector3<double>& ea0,
-    const Vector3<double>& ea1,
-    const Vector3<double>& eb0,
-    const Vector3<double>& eb1,
+std::pair<double, Vector<double, 13>> edge_edge_mollifier_gradient(
+    const Vector3d& ea0,
+    const Vector3d& ea1,
+    const Vector3d& eb0,
+    const Vector3d& eb1,
     const std::array<HEAVISIDE_TYPE, 4>& mtypes,
     const double& dist_sqr);
 
 /// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
 std::tuple<double, Vector<double, 13>, Eigen::Matrix<double, 13, 13>>
 edge_edge_mollifier_hessian(
-    const Vector3<double>& ea0,
-    const Vector3<double>& ea1,
-    const Vector3<double>& eb0,
-    const Vector3<double>& eb1,
+    const Vector3d& ea0,
+    const Vector3d& ea1,
+    const Vector3d& eb0,
+    const Vector3d& eb1,
     const std::array<HEAVISIDE_TYPE, 4>& mtypes,
     const double& dist_sqr);
 
 template <typename scalar>
 scalar point_face_mollifier(
-    const VectorMax3<scalar>& p,
-    const VectorMax3<scalar>& e0,
-    const VectorMax3<scalar>& e1,
-    const VectorMax3<scalar>& e2,
+    const Vector3<scalar>& p,
+    const Vector3<scalar>& e0,
+    const Vector3<scalar>& e1,
+    const Vector3<scalar>& e2,
     const scalar& dist_sqr);
+
+/// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
+std::tuple<double, Vector<double, 13>>
+point_face_mollifier_gradient(
+    const Vector3d& p,
+    const Vector3d& e0,
+    const Vector3d& e1,
+    const Vector3d& e2,
+    const double& dist_sqr);
+
+/// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
+std::tuple<double, Vector<double, 13>, Eigen::Matrix<double, 13, 13>>
+point_face_mollifier_hessian(
+    const Vector3d& p,
+    const Vector3d& e0,
+    const Vector3d& e1,
+    const Vector3d& e2,
+    const double& dist_sqr);
 } // namespace ipc
 
 #include "mollifier.tpp"
