@@ -15,18 +15,22 @@ struct PrimitiveDistType { };
 
 template <> struct PrimitiveDistType<Point3, Point3> {
     using type = PointPointDistanceType;
+    constexpr static std::string_view name = "PointPoint";
 };
 
 template <> struct PrimitiveDistType<Edge3, Point3> {
     using type = PointEdgeDistanceType;
+    constexpr static std::string_view name = "EdgePoint";
 };
 
 template <> struct PrimitiveDistType<Face, Point3> {
     using type = PointTriangleDistanceType;
+    constexpr static std::string_view name = "FacePoint";
 };
 
 template <> struct PrimitiveDistType<Edge3, Edge3> {
     using type = EdgeEdgeDistanceType;
+    constexpr static std::string_view name = "EdgeEdge";
 };
 
 template <typename PrimitiveA, typename PrimitiveB, typename T>

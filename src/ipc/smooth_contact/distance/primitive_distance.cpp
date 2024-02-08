@@ -209,10 +209,28 @@ PrimitiveDistance<Edge3, Edge3>::compute_closest_direction_hessian(
     const Vector<double, n_core_dofs>& x,
     typename PrimitiveDistType<Edge3, Edge3>::type dtype)
 {
-    assert(dtype == EdgeEdgeDistanceType::EA_EB);
-    return line_line_closest_point_direction_hessian(
-        x.head<3>() /* edge 0 */, x.segment<3>(3) /* edge 0 */,
-        x.segment<3>(6) /* edge 1 */, x.tail<3>() /* edge 1 */);
+    if (dtype == EdgeEdgeDistanceType::EA_EB)
+        return line_line_closest_point_direction_hessian(
+            x.head<3>() /* edge 0 */, x.segment<3>(3) /* edge 0 */,
+            x.segment<3>(6) /* edge 1 */, x.tail<3>() /* edge 1 */);
+    else
+    {
+        DiffScalarBase::setVariableCount(n_core_dofs);
+        using T = ADHessian<n_core_dofs>;
+        const Vector<T, n_core_dofs> X = slice_positions<T, n_core_dofs, 1>(x);
+        const Vector<T, dim> d = PrimitiveDistanceTemplate<Edge3, Edge3, T>::compute_closest_direction(X, dtype);
+
+        Vector<double, dim> out;
+        Eigen::Matrix<double, dim, n_core_dofs> J = Eigen::Matrix<double, dim, n_core_dofs>::Zero();
+        std::array<Eigen::Matrix<double, n_core_dofs, n_core_dofs>, dim> H;
+        for (int i = 0; i < dim; i++)
+        {
+            out(i) = d(i).getValue();
+            J.row(i) = d(i).getGradient();
+            H[i] = d(i).getHessian();
+        }
+        return std::make_tuple(out, J, H);
+    }
 }
 
 template <>

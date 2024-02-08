@@ -95,6 +95,10 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
     Super::is_active_ =
         (d.norm() < Super::get_dhat()) && pA->is_active() && pB->is_active();
 
+    if (d.norm() < 1e-13)
+        logger().warn("pair distance {}, id {} and {}, dtype {}, active {}", d.norm(), primitive0_,
+                        primitive1_, PrimitiveDistType<PrimitiveA, PrimitiveB>::name, Super::is_active_);
+
     if (!Super::is_active())
         return;
 
