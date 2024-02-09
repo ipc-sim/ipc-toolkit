@@ -5,9 +5,9 @@
 namespace ipc {
 template <typename scalar>
 scalar point_edge_mollifier(
-    const VectorMax3<scalar>& p,
-    const VectorMax3<scalar>& e0,
-    const VectorMax3<scalar>& e1,
+    const Eigen::Ref<const VectorMax3<scalar>>& p,
+    const Eigen::Ref<const VectorMax3<scalar>>& e0,
+    const Eigen::Ref<const VectorMax3<scalar>>& e1,
     const scalar& dist_sqr)
 {
     const scalar denominator =
@@ -20,10 +20,10 @@ scalar point_edge_mollifier(
 
 template <typename scalar>
 scalar edge_edge_mollifier(
-    const Vector3<scalar>& ea0,
-    const Vector3<scalar>& ea1,
-    const Vector3<scalar>& eb0,
-    const Vector3<scalar>& eb1,
+    const Eigen::Ref<const Vector3<scalar>>& ea0,
+    const Eigen::Ref<const Vector3<scalar>>& ea1,
+    const Eigen::Ref<const Vector3<scalar>>& eb0,
+    const Eigen::Ref<const Vector3<scalar>>& eb1,
     const std::array<HEAVISIDE_TYPE, 4>& mtypes,
     const scalar& dist_sqr)
 {
@@ -59,29 +59,27 @@ scalar edge_edge_mollifier(
 
 template <typename scalar>
 scalar point_face_mollifier(
-    const Vector3<scalar>& p,
-    const Vector3<scalar>& e0,
-    const Vector3<scalar>& e1,
-    const Vector3<scalar>& e2,
+    const Eigen::Ref<const Vector3<scalar>>& p,
+    const Eigen::Ref<const Vector3<scalar>>& e0,
+    const Eigen::Ref<const Vector3<scalar>>& e1,
+    const Eigen::Ref<const Vector3<scalar>>& e2,
     const scalar& dist_sqr)
 {
+    // use point-line distance instead of point-edge distance because
+    // this function vanishes if the point is outside the triangle, so
+    // whenever this function is nonzero the point-edge distance equals 
+    // the point-line distance
     return Math<scalar>::mollifier(
-               (PointEdgeDistance<scalar, 3>::point_edge_sqr_distance(p, e0, e1)
-                - dist_sqr)
-               / mollifier_threshold_eps
-               / PointEdgeDistance<scalar, 3>::point_edge_sqr_distance(
-                   e2, e0, e1))
+               (PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, e0, e1)
+                - dist_sqr) / mollifier_threshold_eps
+               / PointEdgeDistance<scalar, 3>::point_line_sqr_distance(e2, e0, e1))
         * Math<scalar>::mollifier(
-               (PointEdgeDistance<scalar, 3>::point_edge_sqr_distance(p, e2, e1)
-                - dist_sqr)
-               / mollifier_threshold_eps
-               / PointEdgeDistance<scalar, 3>::point_edge_sqr_distance(
-                   e0, e2, e1))
+               (PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, e2, e1)
+                - dist_sqr) / mollifier_threshold_eps
+               / PointEdgeDistance<scalar, 3>::point_line_sqr_distance(e0, e2, e1))
         * Math<scalar>::mollifier(
-               (PointEdgeDistance<scalar, 3>::point_edge_sqr_distance(p, e0, e2)
-                - dist_sqr)
-               / mollifier_threshold_eps
-               / PointEdgeDistance<scalar, 3>::point_edge_sqr_distance(
-                   e1, e0, e2));
+               (PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, e0, e2)
+                - dist_sqr) / mollifier_threshold_eps
+               / PointEdgeDistance<scalar, 3>::point_line_sqr_distance(e1, e0, e2));
 }
 } // namespace ipc

@@ -31,7 +31,7 @@ struct ORIENTATION_TYPES {
     std::vector<HEAVISIDE_TYPE> tangent_types, normal_types;
 };
 
-constexpr double mollifier_threshold_eps = 1e-3;
+constexpr double mollifier_threshold_eps = 1e-4;
 
 template <typename scalar> struct Math {
     static double sign(const double& x);
@@ -200,3 +200,5 @@ std::tuple<double, Vector9d, Matrix9d> negative_orientation_penalty_hess(
     const double& beta);
 
 } // namespace ipc
+
+#include "math.tpp"

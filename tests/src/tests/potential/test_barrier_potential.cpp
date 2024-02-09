@@ -542,7 +542,7 @@ TEST_CASE(
 
     REQUIRE(grad_b.squaredNorm() > 1e-8);
     std::cout << "grad relative error " << (grad_b - fgrad_b).norm() / grad_b.norm() << ", norms " << grad_b.norm() << " " << fgrad_b.norm() << "\n";
-    CHECK(fd::compare_gradient(grad_b, fgrad_b));
+    CHECK((grad_b - fgrad_b).norm() / grad_b.norm() < 1e-5);
 
     // -------------------------------------------------------------------------
     // Hessian
@@ -563,7 +563,7 @@ TEST_CASE(
 
     REQUIRE(hess_b.squaredNorm() > 1e-3);
     std::cout << "hess relative error " << (hess_b - fhess_b).norm() / hess_b.norm() << ", norms " << hess_b.norm() << " " << fhess_b.norm() << "\n";
-    CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
+    CHECK((hess_b - fhess_b).norm() / hess_b.norm() < 1e-5);
 }
 
 TEST_CASE(

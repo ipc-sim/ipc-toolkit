@@ -24,6 +24,7 @@ set(SOURCES
   tangents.hpp
   math.cpp
   math.hpp
+  math.tpp
   autodiff.h
   AutodiffTypes.hpp
 )

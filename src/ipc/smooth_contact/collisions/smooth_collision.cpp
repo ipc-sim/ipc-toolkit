@@ -245,7 +245,7 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::gradient(
 
         const Vector<double, n_core_dofs> dist_sqr_grad = 2 * closest_direction_grad.transpose() * closest_direction;
         mollifier_grad.head(n_core_dofs) += mollifier_grad(n_core_dofs) * dist_sqr_grad;
-        gMollifier = mollifier_grad.head(core_indices.size());
+        gMollifier = mollifier_grad.head(n_core_dofs);
 #endif
         // merge mollifier into barrier
         gBarrier = gBarrier * mollifier + gMollifier * barrier;

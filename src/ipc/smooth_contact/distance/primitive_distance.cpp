@@ -215,21 +215,10 @@ PrimitiveDistance<Edge3, Edge3>::compute_closest_direction_hessian(
             x.segment<3>(6) /* edge 1 */, x.tail<3>() /* edge 1 */);
     else
     {
-        DiffScalarBase::setVariableCount(n_core_dofs);
-        using T = ADHessian<n_core_dofs>;
-        const Vector<T, n_core_dofs> X = slice_positions<T, n_core_dofs, 1>(x);
-        const Vector<T, dim> d = PrimitiveDistanceTemplate<Edge3, Edge3, T>::compute_closest_direction(X, dtype);
-
-        Vector<double, dim> out;
-        Eigen::Matrix<double, dim, n_core_dofs> J = Eigen::Matrix<double, dim, n_core_dofs>::Zero();
         std::array<Eigen::Matrix<double, n_core_dofs, n_core_dofs>, dim> H;
-        for (int i = 0; i < dim; i++)
-        {
-            out(i) = d(i).getValue();
-            J.row(i) = d(i).getGradient();
-            H[i] = d(i).getHessian();
-        }
-        return std::make_tuple(out, J, H);
+        for (auto &h : H)
+            h.setZero();
+        return std::make_tuple(Eigen::Vector<double, dim>::Zero(), Eigen::Matrix<double, dim, n_core_dofs>::Zero(), H);
     }
 }
 
@@ -270,12 +259,36 @@ PrimitiveDistance<Edge3, Edge3>::compute_mollifier_hessian(
     const Vector<double, n_core_dofs>& x, const double dist_sqr)
 {
     const auto otypes = edge_edge_mollifier_type(
-        x.head(3), x.segment(3, 3), x.segment(6, 3),
-        x.tail(3), dist_sqr);
+        x.head<3>(), x.segment<3>(3), x.segment<3>(6),
+        x.tail<3>(), dist_sqr);
 
     return edge_edge_mollifier_hessian(
-        x.head(3), x.segment(3, 3), x.segment(6, 3),
-        x.tail(3), otypes, dist_sqr);
+        x.head<3>(), x.segment<3>(3), x.segment<3>(6),
+        x.tail<3>(), otypes, dist_sqr);
+}
+
+template <>
+std::tuple<double, Vector<double, PrimitiveDistance<Face, Point3>::n_core_dofs + 1>>
+PrimitiveDistance<Face, Point3>::compute_mollifier_gradient(
+    const Vector<double, n_core_dofs>& x, const double dist_sqr)
+{
+    const auto [val, grad] = point_face_mollifier_gradient(
+        x.tail<3>(), x.head<3>(), x.segment<3>(3), x.segment<3>(6), dist_sqr);
+    Vector<int, 13> indices;
+    indices << 3,4,5,6,7,8,9,10,11,0,1,2,12;
+    return std::make_tuple(val, grad(indices));
+}
+
+template <>
+std::tuple<double, Vector<double, PrimitiveDistance<Face, Point3>::n_core_dofs + 1>, Eigen::Matrix<double, PrimitiveDistance<Face, Point3>::n_core_dofs + 1, PrimitiveDistance<Face, Point3>::n_core_dofs + 1>>
+PrimitiveDistance<Face, Point3>::compute_mollifier_hessian(
+    const Vector<double, n_core_dofs>& x, const double dist_sqr)
+{
+    const auto [val, grad, hess] = point_face_mollifier_hessian(
+        x.tail<3>(), x.head<3>(), x.segment<3>(3), x.segment<3>(6), dist_sqr);
+    Vector<int, 13> indices;
+    indices << 3,4,5,6,7,8,9,10,11,0,1,2,12;
+    return std::make_tuple(val, grad(indices), hess(indices, indices));
 }
 
 #endif
