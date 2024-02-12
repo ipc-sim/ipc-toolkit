@@ -1,4 +1,4 @@
-#include "edge.hpp"
+#include "edge3.hpp"
 #include <ipc/utils/AutodiffTypes.hpp>
 
 namespace ipc {
@@ -324,44 +324,6 @@ std::tuple<double, Vector15d> smooth_edge3_tangent_term_gradient(
             grads[d](indices) = gradient_tmp;
         }
     }
-
-    // if (otypes.tangent_type(0) != HEAVISIDE_TYPE::ONE)
-    // {
-    //     const auto [t0, g] =
-    //     PointEdgeDistanceDerivatives<3>::point_line_closest_point_direction_grad(f0,
-    //     e0, e1); const auto [tmp_val, tmp_grad] =
-    //     opposite_direction_penalty_grad(t0, -dn, alpha, beta);
-
-    //     vals[0] = tmp_val;
-
-    //     // dn
-    //     grads[0].head<3>() = -tmp_grad.tail<3>();
-    //     // e0, e1
-    //     grads[0].segment<6>(3) = tmp_grad.head<3>().transpose() * g.block<3,
-    //     6>(0, 3);
-    //     // f0
-    //     grads[0].segment<3>(9) = tmp_grad.head<3>().transpose() * g.block<3,
-    //     3>(0, 0);
-    // }
-
-    // if (otypes.tangent_type(1) != HEAVISIDE_TYPE::ONE)
-    // {
-    //     const auto [t1, g] =
-    //     PointEdgeDistanceDerivatives<3>::point_line_closest_point_direction_grad(f1,
-    //     e0, e1); const auto [tmp_val, tmp_grad] =
-    //     opposite_direction_penalty_grad(t1, -dn, alpha, beta);
-
-    //     vals[1] = tmp_val;
-
-    //     // dn
-    //     grads[1].head<3>() = -tmp_grad.tail<3>();
-    //     // e0, e1
-    //     grads[1].segment<6>(3) = tmp_grad.head<3>().transpose() * g.block<3,
-    //     6>(0, 3);
-    //     // f0
-    //     grads[1].segment<3>(12) = tmp_grad.head<3>().transpose() * g.block<3,
-    //     3>(0, 0);
-    // }
 
     return std::make_tuple(
         vals.prod(), vals[0] * grads[1] + vals[1] * grads[0]);

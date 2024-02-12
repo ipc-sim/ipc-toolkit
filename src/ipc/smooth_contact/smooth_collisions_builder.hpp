@@ -6,13 +6,6 @@
 
 #include <Eigen/Core>
 
-#include <ipc/smooth_contact/collisions/vertex_vertex.hpp>
-// #include <ipc/smooth_contact/collisions/vertex_vertex_3d.hpp>
-#include <ipc/smooth_contact/collisions/edge_vertex.hpp>
-// #include <ipc/smooth_contact/collisions/edge_vertex_3d.hpp>
-// #include <ipc/smooth_contact/collisions/edge_edge_3d.hpp>
-// #include <ipc/smooth_contact/collisions/face_vertex.hpp>
-
 namespace ipc {
 
 template <int dim> class SmoothCollisionsBuilder {
@@ -76,11 +69,11 @@ public:
     // Store the indices to pairs to avoid duplicates.
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothVertexVertexCollision, long>>
+        std::tuple<SmoothCollisionTemplate<max_vert_2d, Point2, Point2>, long>>
         vert_vert_2_to_id;
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothEdgeVertexCollision, long>>
+        std::tuple<SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>, long>>
         vert_edge_2_to_id;
 
     unordered_map<

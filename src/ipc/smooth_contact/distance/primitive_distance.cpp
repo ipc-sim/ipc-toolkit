@@ -11,55 +11,6 @@
 
 namespace ipc {
 
-// template <typename PrimitiveA, typename PrimitiveB>
-// std::tuple<
-//     Vector<double, PrimitiveDistance<PrimitiveA, PrimitiveB>::dim>, 
-//     Eigen::Matrix<double, PrimitiveDistance<PrimitiveA, PrimitiveB>::dim, PrimitiveDistance<PrimitiveA, PrimitiveB>::n_core_dofs>>
-// PrimitiveDistance<PrimitiveA, PrimitiveB>::compute_closest_direction_gradient(
-//     const Vector<double, PrimitiveDistance<PrimitiveA, PrimitiveB>::n_core_dofs>& x,
-//     typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype)
-// {
-//     DiffScalarBase::setVariableCount(n_core_dofs);
-//     using T = ADGrad<n_core_dofs>;
-//     const Vector<T, n_core_dofs> X = slice_positions<T, n_core_dofs, 1>(x);
-//     const Vector<T, dim> d = PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::compute_closest_direction(X, dtype);
-
-//     Vector<double, dim> out;
-//     Eigen::Matrix<double, dim, n_core_dofs> J = Eigen::Matrix<double, dim, n_core_dofs>::Zero();
-//     for (int i = 0; i < dim; i++)
-//     {
-//         out(i) = d(i).getValue();
-//         J.row(i) = d.getGradient();
-//     }
-//     return std::make_tuple(out, J);
-// }
-
-// template <typename PrimitiveA, typename PrimitiveB>
-// std::tuple<
-//     Vector<double, PrimitiveDistance<PrimitiveA, PrimitiveB>::dim>, 
-//     Eigen::Matrix<double, PrimitiveDistance<PrimitiveA, PrimitiveB>::dim, PrimitiveDistance<PrimitiveA, PrimitiveB>::n_core_dofs>,
-//     std::array<Eigen::Matrix<double, PrimitiveDistance<PrimitiveA, PrimitiveB>::n_core_dofs, PrimitiveDistance<PrimitiveA, PrimitiveB>::n_core_dofs>, PrimitiveDistance<PrimitiveA, PrimitiveB>::dim>>
-// PrimitiveDistance<PrimitiveA, PrimitiveB>::compute_closest_direction_hessian(
-//     const Vector<double, PrimitiveDistance<PrimitiveA, PrimitiveB>::n_core_dofs>& x,
-//     typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype)
-// {
-//     DiffScalarBase::setVariableCount(n_core_dofs);
-//     using T = ADHessian<n_core_dofs>;
-//     const Vector<T, n_core_dofs> X = slice_positions<T, n_core_dofs, 1>(x);
-//     const Vector<T, dim> d = PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::compute_closest_direction(X, dtype);
-
-//     Vector<double, dim> out;
-//     Eigen::Matrix<double, dim, n_core_dofs> J = Eigen::Matrix<double, dim, n_core_dofs>::Zero();
-//     std::array<Eigen::Matrix<double, n_core_dofs, n_core_dofs>, dim> H;
-//     for (int i = 0; i < dim; i++)
-//     {
-//         out(i) = d(i).getValue();
-//         J.row(i) = d.getGradient();
-//         H[i] = d.getHessian();
-//     }
-//     return std::make_tuple(out, J, H);
-// }
-
 template <>
 typename PrimitiveDistType<Face, Point3>::type
 PrimitiveDistance<Face, Point3>::compute_distance_type(
@@ -88,6 +39,22 @@ PrimitiveDistance<Edge3, Point3>::compute_distance_type(
     return point_edge_distance_type(
         x.tail(3) /* point */, x.head(3) /* edge */,
         x.segment(3, 3) /* edge */);
+}
+
+template <>
+typename PrimitiveDistType<Edge2, Point2>::type
+PrimitiveDistance<Edge2, Point2>::compute_distance_type(
+    const Vector<double, n_core_dofs>& x)
+{
+    return PointEdgeDistanceType::AUTO;
+}
+
+template <>
+typename PrimitiveDistType<Point2, Point2>::type
+PrimitiveDistance<Point2, Point2>::compute_distance_type(
+    const Vector<double, n_core_dofs>& x)
+{
+    return PointPointDistanceType::AUTO;
 }
 
 template <>
@@ -134,6 +101,29 @@ double PrimitiveDistance<Edge3, Point3>::compute_distance(
 {
     return point_edge_distance(
         V.row(b), V.row(mesh.edges()(a, 0)), V.row(mesh.edges()(a, 1)), dtype);
+}
+
+template <>
+double PrimitiveDistance<Edge2, Point2>::compute_distance(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& V,
+    const long& a,
+    const long& b,
+    typename PrimitiveDistType<Edge2, Point2>::type dtype)
+{
+    return point_edge_distance(
+        V.row(b), V.row(mesh.edges()(a, 0)), V.row(mesh.edges()(a, 1)), dtype);
+}
+
+template <>
+double PrimitiveDistance<Point2, Point2>::compute_distance(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& V,
+    const long& a,
+    const long& b,
+    typename PrimitiveDistType<Point2, Point2>::type dtype)
+{
+    return point_point_distance(V.row(a), V.row(b));
 }
 
 template <>
@@ -189,6 +179,31 @@ PrimitiveDistance<Edge3, Point3>::compute_closest_direction(
 }
 
 template <>
+Vector<double, PrimitiveDistance<Edge2, Point2>::dim>
+PrimitiveDistance<Edge2, Point2>::compute_closest_direction(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& V,
+    const long& a,
+    const long& b,
+    typename PrimitiveDistType<Edge2, Point2>::type dtype)
+{
+    return PointEdgeDistance<double, 2>::point_edge_closest_point_direction(
+        V.row(b), V.row(mesh.edges()(a, 0)), V.row(mesh.edges()(a, 1)), dtype);
+}
+
+template <>
+Vector<double, PrimitiveDistance<Point2, Point2>::dim>
+PrimitiveDistance<Point2, Point2>::compute_closest_direction(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& V,
+    const long& a,
+    const long& b,
+    typename PrimitiveDistType<Point2, Point2>::type dtype)
+{
+    return V.row(b) - V.row(a);
+}
+
+template <>
 Vector<double, PrimitiveDistance<Point3, Point3>::dim>
 PrimitiveDistance<Point3, Point3>::compute_closest_direction(
     const CollisionMesh& mesh,
@@ -220,6 +235,23 @@ PrimitiveDistance<Edge3, Edge3>::compute_closest_direction_hessian(
             h.setZero();
         return std::make_tuple(Eigen::Vector<double, dim>::Zero(), Eigen::Matrix<double, dim, n_core_dofs>::Zero(), H);
     }
+}
+
+template <>
+std::tuple<Vector<double, PrimitiveDistance<Point2, Point2>::dim>, Eigen::Matrix<double, PrimitiveDistance<Point2, Point2>::dim, PrimitiveDistance<Point2, Point2>::n_core_dofs>,
+    std::array<Eigen::Matrix<double, PrimitiveDistance<Point2, Point2>::n_core_dofs, PrimitiveDistance<Point2, Point2>::n_core_dofs>, PrimitiveDistance<Point2, Point2>::dim>>
+PrimitiveDistance<Point2, Point2>::compute_closest_direction_hessian(
+    const Vector<double, n_core_dofs>& x,
+    typename PrimitiveDistType<Point2, Point2>::type dtype)
+{
+    Vector2d out = x.tail(2) - x.head(2);
+    Eigen::Matrix<double, 2, 4> J = Eigen::Matrix<double, 2, 4>::Zero();
+    J.leftCols<2>().diagonal().array() = -1;
+    J.rightCols<2>().diagonal().array() = 1;
+    std::array<Eigen::Matrix<double, 4, 4>, 2> H;
+    for (auto &h : H)
+        h.setZero();
+    return std::make_tuple(out, J, H);
 }
 
 template <>
@@ -292,6 +324,9 @@ PrimitiveDistance<Face, Point3>::compute_mollifier_hessian(
 }
 
 #endif
+
+template class PrimitiveDistance<Edge2, Point2>;
+template class PrimitiveDistance<Point2, Point2>;
 
 template class PrimitiveDistance<Edge3, Point3>;
 template class PrimitiveDistance<Edge3, Edge3>;

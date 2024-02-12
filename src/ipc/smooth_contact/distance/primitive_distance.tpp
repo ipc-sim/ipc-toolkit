@@ -57,6 +57,31 @@ public:
     }
 };
 
+template <typename T> class PrimitiveDistanceTemplate<Edge2, Point2, T> {
+    static_assert(
+        Edge2::dim == Point2::dim, "Primitives must have the same dimension");
+    constexpr static int dim = Point2::dim;
+    constexpr static int n_core_dofs = Edge2::n_core_points * Edge2::dim
+        + Point2::n_core_points * Point2::dim;
+
+public:
+    static Vector<T, dim> compute_closest_direction(
+        const Vector<T, n_core_dofs>& x,
+        typename PrimitiveDistType<Edge2, Point2>::type dtype)
+    {
+        return PointEdgeDistance<T, dim>::point_edge_closest_point_direction(
+            x.tail(2) /* point */, x.head(2) /* edge */,
+            x.segment(2, 2) /* edge */, dtype);
+    }
+
+    static T mollifier(const Vector<T, n_core_dofs>& x, const T& dist_sqr)
+    {
+        return point_edge_mollifier<T>(
+            x.tail(2) /* point */, x.segment(2, 2) /* edge */,
+            x.head(2) /* edge */, dist_sqr);
+    }
+};
+
 template <typename T> class PrimitiveDistanceTemplate<Edge3, Point3, T> {
     static_assert(
         Edge3::dim == Point3::dim, "Primitives must have the same dimension");
@@ -79,6 +104,27 @@ public:
         return point_edge_mollifier<T>(
             x.tail(3) /* point */, x.segment(3, 3) /* edge */,
             x.head(3) /* edge */, dist_sqr);
+    }
+};
+
+template <typename T> class PrimitiveDistanceTemplate<Point2, Point2, T> {
+    static_assert(
+        Point2::dim == Point2::dim, "Primitives must have the same dimension");
+    constexpr static int dim = Point2::dim;
+    constexpr static int n_core_dofs = Point2::n_core_points * Point2::dim
+        + Point2::n_core_points * Point2::dim;
+
+public:
+    static Vector<T, dim> compute_closest_direction(
+        const Vector<T, n_core_dofs>& x,
+        typename PrimitiveDistType<Point2, Point2>::type dtype)
+    {
+        return x.tail(2) - x.head(2);
+    }
+
+    static T mollifier(const Vector<T, n_core_dofs>& x, const T& dist_sqr)
+    {
+        return T(1.);
     }
 };
 

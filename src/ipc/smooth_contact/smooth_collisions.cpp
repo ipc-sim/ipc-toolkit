@@ -7,13 +7,6 @@
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
-#include <ipc/smooth_contact/collisions/vertex_vertex.hpp>
-// #include <ipc/smooth_contact/collisions/vertex_vertex_3d.hpp>
-#include <ipc/smooth_contact/collisions/edge_vertex.hpp>
-// #include <ipc/smooth_contact/collisions/edge_vertex_3d.hpp>
-// #include <ipc/smooth_contact/collisions/edge_edge_3d.hpp>
-// #include <ipc/smooth_contact/collisions/face_vertex.hpp>
-
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 #include <tbb/blocked_range.h>
@@ -59,7 +52,8 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
             edge_adaptive_dhat((*cc)[1]) =
                 std::min(edge_adaptive_dhat((*cc)[1]), dist);
         } else if (
-            std::dynamic_pointer_cast<SmoothEdgeVertexCollision>(cc)
+            std::dynamic_pointer_cast<
+                SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>(cc)
             || std::dynamic_pointer_cast<
                 SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>(cc)) {
             edge_adaptive_dhat((*cc)[0]) =
@@ -74,7 +68,8 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
             vert_adaptive_dhat((*cc)[1]) =
                 std::min(vert_adaptive_dhat((*cc)[1]), dist);
         } else if (
-            std::dynamic_pointer_cast<SmoothVertexVertexCollision>(cc)
+            std::dynamic_pointer_cast<
+                SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(cc)
             || std::dynamic_pointer_cast<
                 SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>(cc)) {
             vert_adaptive_dhat((*cc)[0]) =
@@ -170,15 +165,6 @@ void SmoothCollisions<dim>::build(
                     mesh, vertices, candidates_.ev_candidates, param, vert_dhat,
                     edge_dhat, r.begin(), r.end());
             });
-
-        // if (use_high_order_quadrature)
-        //     tbb::parallel_for(
-        //         tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
-        //         [&](const tbb::blocked_range<size_t>& r) {
-        //             storage.local().add_neighbor_edge_collisions(
-        //                 mesh, vertices, param, edge_dhat, r.begin(),
-        //                 r.end());
-        //         });
     } else {
         tbb::parallel_for(
             tbb::blocked_range<size_t>(
@@ -197,15 +183,6 @@ void SmoothCollisions<dim>::build(
                     mesh, vertices, candidates_.fv_candidates, param, vert_dhat,
                     edge_dhat, face_dhat, r.begin(), r.end());
             });
-
-        // if (use_high_order_quadrature)
-        //     tbb::parallel_for(
-        //         tbb::blocked_range<size_t>(size_t(0), mesh.num_vertices()),
-        //         [&](const tbb::blocked_range<size_t>& r) {
-        //             storage.local().add_neighbor_face_collisions(
-        //                 mesh, vertices, param, face_dhat, r.begin(),
-        //                 r.end());
-        //         });
     }
     SmoothCollisionsBuilder<dim>::merge(storage, *this);
     candidates = candidates_;

@@ -110,46 +110,6 @@ slice_positions(const Eigen::VectorXd& positions, const int offset = 0)
     return points;
 }
 
-template <class T, int rows, int cols, int max_rows = rows>
-inline Eigen::Matrix<
-    double,
-    rows,
-    cols,
-    (max_rows > 1 ? Eigen::ColMajor : Eigen::RowMajor),
-    max_rows,
-    cols>
-autodiff_to_double(const Eigen::Matrix<
-                   T,
-                   rows,
-                   cols,
-                   (max_rows > 1 ? Eigen::ColMajor : Eigen::RowMajor),
-                   max_rows,
-                   cols>& x)
-{
-    assert(cols > 0);
-    const int nrows = rows > 0 ? rows : x.size() / cols;
-    Eigen::Matrix<
-        double, rows, cols, (max_rows > 1 ? Eigen::ColMajor : Eigen::RowMajor),
-        max_rows, cols>
-        out;
-    out.setZero(nrows, cols);
-
-    for (int i = 0, id = 0; i < nrows; i++)
-        for (int d = 0; d < cols; d++, id++)
-            out(i, d) = x(id).getValue();
-
-    return out;
-}
-
-enum class FD_RULE { CENTRAL, LEFT, RIGHT };
-
-void my_finite_gradient(
-    const Eigen::VectorXd& x,
-    const std::function<double(const Eigen::VectorXd&)>& f,
-    Eigen::VectorXd& grad,
-    FD_RULE rule = FD_RULE::CENTRAL,
-    const double eps = 1e-7);
-
 Eigen::Matrix<double, 3, 6> cross_product_gradient(
     const Eigen::Ref<const Eigen::Vector3d>& t1,
     const Eigen::Ref<const Eigen::Vector3d>& t2);

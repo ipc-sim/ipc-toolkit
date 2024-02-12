@@ -17,5 +17,4 @@ target_sources(ipc_toolkit PRIVATE ${SOURCES})
 
 add_subdirectory(collisions)
 add_subdirectory(distance)
-add_subdirectory(pairs)
 add_subdirectory(primitives)

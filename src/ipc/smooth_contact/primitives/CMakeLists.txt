@@ -1,6 +1,8 @@
 set(SOURCES
-  edge.cpp
-  edge.hpp
+  edge2.cpp
+  edge2.hpp
+  edge3.cpp
+  edge3.hpp
   face.cpp
   face.hpp
   primitive.hpp

@@ -2,6 +2,8 @@
 #include <ipc/smooth_contact/common.hpp>
 #include "AutodiffTypes.hpp"
 
+DECLARE_DIFFSCALAR_BASE();
+
 namespace ipc {
 namespace {
 
@@ -50,44 +52,6 @@ bool ORIENTATION_TYPES::exists_normal_type_one() const
         if (b == HEAVISIDE_TYPE::ONE)
             return true;
     return false;
-}
-
-void my_finite_gradient(
-    const Eigen::VectorXd& x,
-    const std::function<double(const Eigen::VectorXd&)>& f,
-    Eigen::VectorXd& grad,
-    FD_RULE rule,
-    const double eps)
-{
-    grad.setZero(x.size());
-    switch (rule) {
-    case FD_RULE::CENTRAL:
-        for (int i = 0; i < x.size(); i++)
-            for (int d : { -1, 1 }) {
-                auto y = x;
-                y(i) += d * eps;
-                grad(i) += d * f(y) / (2 * eps);
-            }
-        break;
-    case FD_RULE::LEFT:
-        for (int i = 0; i < x.size(); i++) {
-            auto y = x;
-            grad(i) += f(y) / eps;
-            y(i) -= eps;
-            grad(i) -= f(y) / eps;
-        }
-        break;
-    case FD_RULE::RIGHT:
-        for (int i = 0; i < x.size(); i++) {
-            auto y = x;
-            grad(i) -= f(y) / eps;
-            y(i) += eps;
-            grad(i) += f(y) / eps;
-        }
-        break;
-    default:
-        assert(false);
-    }
 }
 
 std::tuple<Eigen::Vector3d, Eigen::Matrix3d>

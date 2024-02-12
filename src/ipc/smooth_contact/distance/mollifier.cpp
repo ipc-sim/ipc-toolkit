@@ -1,3 +1,5 @@
+#ifndef DERIVATIVES_WITH_AUTODIFF
+
 #include "mollifier.hpp"
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_edge.hpp>
@@ -11,7 +13,6 @@ namespace {
         return Math<double>::mollifier((a - c) / b / eps);
     }
 
-#ifndef DERIVATIVES_WITH_AUTODIFF
     Vector<int, 9> get_indices(int i, int j, int k)
     {
         Vector<int, 9> out;
@@ -45,7 +46,6 @@ namespace {
          h1 * (g2 * common_factor / b) +
          g1 * (h2 * common_factor * common_factor) * g1.transpose());
     }
-#endif
 } // namespace
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
@@ -403,3 +403,5 @@ point_face_mollifier_hessian(
 }
 
 } // namespace ipc
+
+#endif

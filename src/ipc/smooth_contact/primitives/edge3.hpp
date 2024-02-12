@@ -35,14 +35,6 @@ private:
     ORIENTATION_TYPES otypes;
 };
 
-template <typename scalar>
-inline scalar smooth_edge2_term(
-    const Eigen::Ref<const Vector2<scalar>>& dn,
-    const Eigen::Ref<const Vector2<scalar>>& tangent)
-{
-    return tangent.norm();
-}
-
 /// @brief
 /// @tparam scalar
 /// @param dn from edge to point outside, normalized

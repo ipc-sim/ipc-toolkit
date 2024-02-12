@@ -23,16 +23,16 @@ void SmoothCollisionsBuilder<dim>::add_edge_vertex_collisions(
         for (size_t i = start_i; i < end_i; i++) {
             const auto& [ei, vi] = candidates[i];
 
-            add_collision<SmoothEdgeVertexCollision>(
-                std::make_shared<SmoothEdgeVertexCollision>(
-                    ei, vi, mesh, param, std::min(edge_dhat(ei), vert_dhat(vi)),
+            add_collision<SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>(
+                std::make_shared<SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>(
+                    ei, vi, PointEdgeDistanceType::AUTO, mesh, param, std::min(edge_dhat(ei), vert_dhat(vi)),
                     vertices),
                 vert_edge_2_to_id, collisions);
 
             for (int j : { 0, 1 }) {
-                add_collision<SmoothVertexVertexCollision>(
-                    std::make_shared<SmoothVertexVertexCollision>(
-                        mesh.edges()(ei, j), vi, mesh, param,
+                add_collision<SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(
+                    std::make_shared<SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(
+                        mesh.edges()(ei, j), vi, PointPointDistanceType::AUTO, mesh, param,
                         std::min(vert_dhat(mesh.edges()(ei, j)), vert_dhat(vi)),
                         vertices),
                     vert_vert_2_to_id, collisions);
@@ -189,10 +189,12 @@ void SmoothCollisionsBuilder<dim>::merge(
     SmoothCollisions<dim>& merged_collisions)
 {
     unordered_map<
-        std::pair<long, long>, std::tuple<SmoothVertexVertexCollision, long>>
+        std::pair<long, long>, 
+        std::tuple<SmoothCollisionTemplate<max_vert_2d, Point2, Point2>, long>>
         vert_vert_2_to_id;
     unordered_map<
-        std::pair<long, long>, std::tuple<SmoothEdgeVertexCollision, long>>
+        std::pair<long, long>, 
+        std::tuple<SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>, long>>
         vert_edge_2_to_id;
 
     unordered_map<
@@ -242,15 +244,17 @@ void SmoothCollisionsBuilder<dim>::merge(
                     edge_edge_count++;
                 }
             } else if (
-                auto vv2 =
-                    std::dynamic_pointer_cast<SmoothVertexVertexCollision>(
-                        cc)) {
+                auto vv2 = std::dynamic_pointer_cast<
+                    SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(cc)) {
                 if (vert_vert_2_to_id.find(cc->get_hash())
                     == vert_vert_2_to_id.end()) {
                     merged_collisions.collisions.push_back(cc);
                     vert_vert_2_to_id.emplace(
                         cc->get_hash(),
-                        std::make_tuple<SmoothVertexVertexCollision, long>(
+                        std::make_tuple<
+                            SmoothCollisionTemplate<
+                                max_vert_2d, Point2, Point2>,
+                            long>(
                             std::move(*vv2),
                             merged_collisions.collisions.size()));
                     vert_vert_count++;
@@ -272,17 +276,20 @@ void SmoothCollisionsBuilder<dim>::merge(
                     vert_vert_count++;
                 }
             } else if (
-                auto ev =
-                    std::dynamic_pointer_cast<SmoothEdgeVertexCollision>(cc)) {
+                auto ev2 = std::dynamic_pointer_cast<
+                    SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>(cc)) {
                 if (vert_edge_2_to_id.find(cc->get_hash())
                     == vert_edge_2_to_id.end()) {
                     merged_collisions.collisions.push_back(cc);
                     vert_edge_2_to_id.emplace(
                         cc->get_hash(),
-                        std::make_tuple<SmoothEdgeVertexCollision, long>(
-                            std::move(*ev),
+                        std::make_tuple<
+                            SmoothCollisionTemplate<
+                                max_vert_2d, Edge2, Point2>,
+                            long>(
+                            std::move(*ev2),
                             merged_collisions.collisions.size()));
-                    edge_vert_count++;
+                    vert_vert_count++;
                 }
             } else if (
                 auto ev3 = std::dynamic_pointer_cast<

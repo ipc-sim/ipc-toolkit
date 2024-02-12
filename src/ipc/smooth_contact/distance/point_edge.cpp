@@ -214,8 +214,12 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_hessian(
 template class PointEdgeDistance<double, 2>;
 template class PointEdgeDistance<double, 3>;
 
+// #ifdef DERIVATIVES_WITH_AUTODIFF
 template class PointEdgeDistance<ADGrad<4>, 2>;
 template class PointEdgeDistance<ADHessian<4>, 2>;
+
+template class PointEdgeDistance<ADGrad<6>, 2>;
+template class PointEdgeDistance<ADHessian<6>, 2>;
 
 template class PointEdgeDistance<ADGrad<10>, 2>;
 template class PointEdgeDistance<ADHessian<10>, 2>;
@@ -226,7 +230,6 @@ template class PointEdgeDistance<ADHessian<9>, 3>;
 template class PointEdgeDistance<ADGrad<12>, 3>;
 template class PointEdgeDistance<ADHessian<12>, 3>;
 
-// #ifdef DERIVATIVES_WITH_AUTODIFF
 template class PointEdgeDistance<ADGrad<13>, 3>;
 template class PointEdgeDistance<ADHessian<13>, 3>;
 

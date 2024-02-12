@@ -35,7 +35,7 @@ int Point2::n_vertices() const
 
 double Point2::potential(const Vector<double, dim> &d, const Vector<double, -1, max_size> &x) const
 {
-    return smooth_point2_term<double>(x.segment<dim>(0), d, x.segment<dim>(dim), x.segment<dim>(dim), _alpha, _beta);
+    return smooth_point2_term<double>(x.segment<dim>(0), d, x.segment<dim>(dim), x.segment<dim>(2 * dim), _alpha, _beta);
 }
 Vector<double, -1, Point2::max_size+Point2::dim> Point2::grad(const Vector<double, dim> &d, const Vector<double, -1, max_size> &x) const
 {

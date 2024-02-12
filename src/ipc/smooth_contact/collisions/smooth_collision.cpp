@@ -1,7 +1,4 @@
 #include "smooth_collision.hpp"
-#include <ipc/smooth_contact/primitives/point3.hpp>
-#include <ipc/smooth_contact/primitives/edge.hpp>
-#include <ipc/smooth_contact/primitives/face.hpp>
 
 namespace ipc {
 namespace {
@@ -518,6 +515,9 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
 }
 
 // Note: Primitive pair order cannot change
+template class SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>;
+template class SmoothCollisionTemplate<max_vert_2d, Point2, Point2>;
+
 template class SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>;
 template class SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>;
 template class SmoothCollisionTemplate<max_vert_3d, Point3, Point3>;

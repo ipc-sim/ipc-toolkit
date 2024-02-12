@@ -3,9 +3,11 @@
 #include <ipc/collision_mesh.hpp>
 #include <ipc/distance/distance_type.hpp>
 
+#include <ipc/smooth_contact/primitives/point2.hpp>
 #include <ipc/smooth_contact/primitives/point3.hpp>
 #include <ipc/smooth_contact/primitives/face.hpp>
-#include <ipc/smooth_contact/primitives/edge.hpp>
+#include <ipc/smooth_contact/primitives/edge3.hpp>
+#include <ipc/smooth_contact/primitives/edge2.hpp>
 
 #include <ipc/utils/AutodiffTypes.hpp>
 
@@ -13,9 +15,19 @@ namespace ipc {
 template <typename PrimitiveA, typename PrimitiveB>
 struct PrimitiveDistType { };
 
+template <> struct PrimitiveDistType<Point2, Point2> {
+    using type = PointPointDistanceType;
+    constexpr static std::string_view name = "PointPoint";
+};
+
 template <> struct PrimitiveDistType<Point3, Point3> {
     using type = PointPointDistanceType;
     constexpr static std::string_view name = "PointPoint";
+};
+
+template <> struct PrimitiveDistType<Edge2, Point2> {
+    using type = PointEdgeDistanceType;
+    constexpr static std::string_view name = "EdgePoint";
 };
 
 template <> struct PrimitiveDistType<Edge3, Point3> {

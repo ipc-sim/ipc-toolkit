@@ -1,8 +1,4 @@
 set(SOURCES
-  edge_vertex.cpp
-  edge_vertex.hpp
-  vertex_vertex.cpp
-  vertex_vertex.hpp
   smooth_collision.cpp
   smooth_collision.hpp
 )
