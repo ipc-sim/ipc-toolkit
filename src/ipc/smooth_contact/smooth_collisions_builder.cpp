@@ -6,6 +6,7 @@
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/point_triangle.hpp>
 #include <iostream>
+
 namespace ipc {
 
 template <int dim>
@@ -184,7 +185,13 @@ void SmoothCollisionsBuilder<dim>::add_collision(
 
 template <int dim>
 void SmoothCollisionsBuilder<dim>::merge(
-    const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>&
+#if defined(IPC_TOOLKIT_WITH_TBB)
+        const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>&
+#elif defined(IPC_TOOLKIT_WITH_CPP_THREADS)
+        const std::vector<SmoothCollisionsBuilder<dim>>&
+#else
+        const std::array<SmoothCollisionsBuilder<dim>, 1>&
+#endif
         local_storage,
     SmoothCollisions<dim>& merged_collisions)
 {

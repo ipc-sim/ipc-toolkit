@@ -7,6 +7,8 @@
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
+#include <ipc/utils/MaybeParallelFor.hpp>
+#include <igl/Timer.h>
 
 namespace ipc {
 
@@ -60,15 +62,18 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
 
     const int dim = X.cols();
 
-    tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
-        Eigen::VectorXd::Zero(X.size()));
+    // tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
+    //     Eigen::VectorXd::Zero(X.size()));
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& global_grad = storage.local();
+    // tbb::parallel_for(
+    //     tbb::blocked_range<size_t>(size_t(0), collisions.size()),
+    //     [&](const tbb::blocked_range<size_t>& r) {
+    //         auto& global_grad = storage.local();
+    auto storage = ipc::utils::create_thread_storage<Eigen::VectorXd>(Eigen::VectorXd::Zero(X.size()));
+    ipc::utils::maybe_parallel_for(collisions.size(), [&](int start, int end, int thread_id) {
+        auto& global_grad = ipc::utils::get_local_thread_storage(storage, thread_id);
 
-            for (size_t i = r.begin(); i < r.end(); i++) {
+            for (size_t i = start; i < end; i++) {
                 const TCollision& collision = collisions[i];
 
                 const Vector<double, -1, Potential<TCollisions>::element_size>
@@ -84,8 +89,14 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
             }
         });
 
-    return storage.combine([](const Eigen::VectorXd& a,
-                              const Eigen::VectorXd& b) { return a + b; });
+    Eigen::VectorXd grad;
+    grad.setZero(X.size());
+    for (const auto &local_storage : storage)
+        grad += local_storage;
+    return grad;
+
+    // return storage.combine([](const Eigen::VectorXd& a,
+    //                           const Eigen::VectorXd& b) { return a + b; });
 }
 
 template <class TCollisions>
@@ -107,15 +118,24 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const int dim = X.cols();
     const int ndof = X.size();
 
-    tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
-        storage;
+    igl::Timer timer;
+    timer.start();
 
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& hess_triplets = storage.local();
+    // tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
+    //     storage;
 
-            for (size_t i = r.begin(); i < r.end(); i++) {
+    // tbb::parallel_for(
+    //     tbb::blocked_range<size_t>(size_t(0), collisions.size()),
+    //     [&](const tbb::blocked_range<size_t>& r) {
+    //         auto& hess_triplets = storage.local();
+
+    const int max_triplets_size = int(1e7);
+    const int buffer_size = std::min(max_triplets_size, ndof);
+    auto storage = ipc::utils::create_thread_storage(LocalThreadMatStorage(buffer_size, ndof, ndof));
+    ipc::utils::maybe_parallel_for(collisions.size(), [&](int start, int end, int thread_id) {
+        auto& hess_triplets = ipc::utils::get_local_thread_storage(storage, thread_id);
+
+            for (size_t i = start; i < end; i++) {
                 const TCollision& collision = collisions[i];
 
                 const MatrixMax<
@@ -129,17 +149,124 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
                     collision.vertex_ids(edges, faces);
 
                 local_hessian_to_global_triplets(
-                    local_hess, vids, dim, hess_triplets);
+                    local_hess, vids, dim, *(hess_triplets.cache));
+            }
+        });
+    
+    timer.stop();
+    logger().trace("done separate assembly {}s...", timer.getElapsedTime());
+
+    Eigen::SparseMatrix<double> hess(ndof, ndof);
+    // for (const auto& local_hess_triplets : storage) {
+    //     Eigen::SparseMatrix<double> local_hess(ndof, ndof);
+    //     local_hess.setFromTriplets(
+    //         local_hess_triplets.begin(), local_hess_triplets.end());
+    //     hess += local_hess;
+    // }
+    // return hess;
+
+    // Assemble the stiffness matrix by concatenating the tuples in each local storage
+
+    // Collect thread storages
+    std::vector<LocalThreadMatStorage *> storages(storage.size());
+    int index = 0;
+    for (auto &local_storage : storage)
+    {
+        storages[index++] = &local_storage;
+    }
+
+    timer.start();
+    utils::maybe_parallel_for(storages.size(), [&](int i) {
+        storages[i]->cache->prune();
+    });
+    timer.stop();
+    logger().trace("done pruning triplets {}s...", timer.getElapsedTime());
+
+    // Prepares for parallel concatenation
+    std::vector<int> offsets(storage.size());
+
+    index = 0;
+    int triplet_count = 0;
+    for (auto &local_storage : storage)
+    {
+        offsets[index++] = triplet_count;
+        triplet_count += local_storage.cache->triplet_count();
+    }
+
+    std::vector<Eigen::Triplet<double>> triplets;
+
+    assert(storages.size() >= 1);
+    if (storages[0]->cache->is_dense())
+    {
+        timer.start();
+        // Serially merge local storages
+        Eigen::MatrixXd tmp(hess);
+        for (const auto &local_storage : storage)
+            tmp += dynamic_cast<const DenseMatrixCache &>(*local_storage.cache).mat();
+        hess = tmp.sparseView();
+        hess.makeCompressed();
+        timer.stop();
+
+        logger().trace("Serial assembly time: {}s...", timer.getElapsedTime());
+    }
+    else if (triplet_count >= triplets.max_size())
+    {
+        // Serial fallback version in case the vector of triplets cannot be allocated
+
+        logger().warn("Cannot allocate space for triplets, switching to serial assembly.");
+
+        timer.start();
+        // Serially merge local storages
+        for (LocalThreadMatStorage &local_storage : storage)
+            hess += local_storage.cache->get_matrix(false); // will also prune
+        hess.makeCompressed();
+        timer.stop();
+
+        logger().trace("Serial assembly time: {}s...", timer.getElapsedTime());
+    }
+    else
+    {
+        timer.start();
+        triplets.resize(triplet_count);
+        timer.stop();
+
+        logger().trace("done allocate triplets {}s...", timer.getElapsedTime());
+        logger().trace("Triplets Count: {}", triplet_count);
+
+        timer.start();
+        // Parallel copy into triplets
+        utils::maybe_parallel_for(storages.size(), [&](int i) {
+            const SparseMatrixCache &cache = dynamic_cast<const SparseMatrixCache &>(*storages[i]->cache);
+            int offset = offsets[i];
+
+            std::copy(cache.entries().begin(), cache.entries().end(), triplets.begin() + offset);
+            offset += cache.entries().size();
+
+            if (cache.mat().nonZeros() > 0)
+            {
+                int count = 0;
+                for (int k = 0; k < cache.mat().outerSize(); ++k)
+                {
+                    for (Eigen::SparseMatrix<double>::InnerIterator it(cache.mat(), k); it; ++it)
+                    {
+                        assert(count < cache.mat().nonZeros());
+                        triplets[offset + count++] = Eigen::Triplet<double>(it.row(), it.col(), it.value());
+                    }
+                }
             }
         });
 
-    Eigen::SparseMatrix<double> hess(ndof, ndof);
-    for (const auto& local_hess_triplets : storage) {
-        Eigen::SparseMatrix<double> local_hess(ndof, ndof);
-        local_hess.setFromTriplets(
-            local_hess_triplets.begin(), local_hess_triplets.end());
-        hess += local_hess;
+        timer.stop();
+        logger().trace("done concatenate triplets {}s...", timer.getElapsedTime());
+
+        timer.start();
+        // Sort and assemble
+        hess.setFromTriplets(triplets.begin(), triplets.end());
+        timer.stop();
+
+        logger().trace("done setFromTriplets assembly {}s...", timer.getElapsedTime());
     }
+
     return hess;
 }
 

@@ -7,6 +7,8 @@
 #include <tbb/global_control.h>
 #include <tbb/info.h>
 
+#include <ipc/utils/par_for.hpp>
+
 Catch::Clara::ParserResult parse_log_level(int const d, int& log_level)
 {
     if (d < 0 || d > spdlog::level::off) {
@@ -67,6 +69,7 @@ int main(int argc, char** argv)
 
     tbb::global_control thread_limiter(
         tbb::global_control::max_allowed_parallelism, num_threads);
+    ipc::utils::NThread::get().set_num_threads(num_threads);
 
     return session.run();
 }

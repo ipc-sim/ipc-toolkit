@@ -10,7 +10,7 @@ namespace ipc {
 
 template <int dim> class SmoothCollisionsBuilder {
 public:
-    SmoothCollisionsBuilder() = default;
+    SmoothCollisionsBuilder() {}
 
     // only for 2D, transform edge-vertex to edge-edge
     void add_edge_vertex_collisions(
@@ -26,7 +26,13 @@ public:
     // ------------------------------------------------------------------------
 
     static void merge(
+#if defined(IPC_TOOLKIT_WITH_TBB)
         const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>&
+#elif defined(IPC_TOOLKIT_WITH_CPP_THREADS)
+        const std::vector<SmoothCollisionsBuilder<dim>>&
+#else
+        const std::array<SmoothCollisionsBuilder<dim>, 1>&
+#endif
             local_storage,
         SmoothCollisions<dim>& merged_collisions);
 

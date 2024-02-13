@@ -25,7 +25,7 @@ public:
 
     bool is_active() const { return is_active_; }
 
-    virtual int ndofs() const = 0;
+    virtual int n_dofs() const = 0;
 
     std::array<long, max_vert> vertex_ids(
         const Eigen::MatrixXi& edges,
@@ -130,11 +130,18 @@ public:
         const Eigen::MatrixXd& V);
     virtual ~SmoothCollisionTemplate();
 
-    int ndofs() const override { return pA->n_dofs() + pB->n_dofs(); }
+    inline int n_dofs() const override { return pA->n_dofs() + pB->n_dofs(); }
+    Vector<int, n_core_dofs> get_core_indices() const;
 
-    int num_vertices() const override
+    inline int num_vertices() const override { return pA->n_vertices() + pB->n_vertices(); }
+
+    template <typename T>
+    Vector<T, n_core_dofs>
+    core_dof(const MatrixX<T>& X,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const
     {
-        return pA->n_vertices() + pB->n_vertices();
+        return this->dof(X, edges, faces)(get_core_indices());
     }
 
     // ---- non distance type potential ----

@@ -121,6 +121,8 @@ target_include_directories(ipc_toolkit PUBLIC "${IPC_TOOLKIT_INCLUDE_DIR}")
 # For MSVC, do not use the min and max macros.
 target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
 
+target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_CPP_THREADS)
+
 ################################################################################
 # Dependencies
 ################################################################################

@@ -52,7 +52,8 @@ line_line_closest_point_direction_hessian(
 
     Eigen::Matrix<double, 3, 12> grad = Eigen::Matrix<double, 3, 12>::Zero();
     // derivative wrt. normal and t
-    Eigen::Matrix3d grad_normal = (normal * t.transpose() + t.transpose() * normal * Eigen::Matrix3d::Identity() - 2 * vec * normal.transpose()) / normal_sqr_norm;
+    Eigen::Matrix3d grad_normal = (normal * t.transpose() - 2 * vec * normal.transpose()) / normal_sqr_norm;
+    grad_normal.diagonal().array() += (t.transpose() * normal)(0) / normal_sqr_norm;
     Eigen::Matrix3d grad_t = normal * normal.transpose() / normal_sqr_norm;
     grad.middleCols<3>(6) = grad_t;
     grad.leftCols<3>() = -grad_t;
@@ -79,10 +80,8 @@ line_line_closest_point_direction_hessian(
     }
 
     // grad and hessian of [normal, t] wrt. [ea0, ea1, eb0, eb1]
-    Eigen::Matrix<double, 6, 12> inner_grad = Eigen::Matrix<double, 6, 12>::Zero();
-    inner_grad.topRows<3>() << -cross_grad.leftCols<3>(), cross_grad.leftCols<3>(), -cross_grad.rightCols<3>(), cross_grad.rightCols<3>();
-    inner_grad.block<3, 3>(3, 0).diagonal().array() = -1;
-    inner_grad.block<3, 3>(3, 6).diagonal().array() = 1;
+    Eigen::Matrix<double, 3, 12> inner_grad;
+    inner_grad << -cross_grad.leftCols<3>(), cross_grad.leftCols<3>(), -cross_grad.rightCols<3>(), cross_grad.rightCols<3>();
     
     std::array<Matrix12d, 3> inner_hess;
     {
@@ -98,8 +97,12 @@ line_line_closest_point_direction_hessian(
     std::array<Matrix12d, 3> hess;
     for (int d = 0; d < 3; d++)
     {
-        Matrix12d term1 = inner_grad.topRows<3>().transpose() * mixed_hess[d] * inner_grad.bottomRows<3>();
-        hess[d] = inner_grad.topRows<3>().transpose() * hess_wrt_normal[d] * inner_grad.topRows<3>() + term1 + term1.transpose();
+        Eigen::Matrix<double, 12, 3> tmp = inner_grad.transpose() * mixed_hess[d];
+        hess[d] = inner_grad.transpose() * hess_wrt_normal[d] * inner_grad;
+        hess[d].middleCols<3>(6) += tmp;
+        hess[d].middleCols<3>(0) -= tmp;
+        hess[d].middleRows<3>(6) += tmp.transpose();
+        hess[d].middleRows<3>(0) -= tmp.transpose();
         for (int i = 0; i < 3; i++)
             hess[d] += inner_hess[i] * grad_normal(d, i);
     }

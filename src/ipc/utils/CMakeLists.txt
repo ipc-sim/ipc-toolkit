@@ -27,6 +27,12 @@ set(SOURCES
   math.tpp
   autodiff.h
   AutodiffTypes.hpp
+  MaybeParallelFor.hpp
+  MaybeParallelFor.tpp
+  par_for.hpp
+  par_for.cpp
+  MatrixCache.hpp
+  MatrixCache.cpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})

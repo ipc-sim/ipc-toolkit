@@ -156,7 +156,6 @@ public:
 
         return std::make_tuple(out.getValue(), out.getGradient(), out.getHessian());
     }
-
 };
 
 } // namespace ipc

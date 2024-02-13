@@ -10,7 +10,8 @@
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/utils/local_to_global.hpp>
-
+#include <ipc/smooth_contact/distance/edge_edge.hpp>
+#include <ipc/distance/line_line.hpp>
 #include <ipc/smooth_contact/smooth_contact_potential.hpp>
 
 #include <finitediff.hpp>
@@ -755,5 +756,25 @@ TEST_CASE(
     {
         JF_wrt_X =
             barrier_potential.shape_derivative(collisions, mesh, vertices);
+    };
+}
+
+TEST_CASE(
+    "Benchmark autogen code", "[!benchmark]")
+{
+    ipc::Vector3d ea0, ea1, eb0, eb1;
+    ea0 << -0.9, 0, 0;
+    ea1 <<  1.05, 0, 0;
+    eb0 << 0, -1.1, 1.02;
+    eb1 << 0,  0.99, 1.01;
+
+    BENCHMARK("autogen")
+    {
+        ipc::line_line_distance_hessian(ea0, ea1, eb0, eb1);
+    };
+
+    BENCHMARK("manual")
+    {
+        ipc::line_line_closest_point_direction_hessian(ea0, ea1, eb0, eb1);
     };
 }
