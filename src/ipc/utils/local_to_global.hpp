@@ -129,9 +129,9 @@ void local_hessian_to_global_triplets(
         for (int j = 0; j < n_verts; j++) {
             for (int k = 0; k < dim; k++) {
                 for (int l = 0; l < dim; l++) {
-                    triplets.add_value(0,
-                        dim * ids[i] + k, dim * ids[j] + l,
-                        local_hessian(dim * i + k, dim * j + l));
+                    const auto &val = local_hessian(dim * i + k, dim * j + l);
+                    if (val != 0)
+                        triplets.add_value(0, dim * ids[i] + k, dim * ids[j] + l, val);
                 }
             }
         }

@@ -224,17 +224,9 @@ PrimitiveDistance<Edge3, Edge3>::compute_closest_direction_hessian(
     const Vector<double, n_core_dofs>& x,
     typename PrimitiveDistType<Edge3, Edge3>::type dtype)
 {
-    if (dtype == EdgeEdgeDistanceType::EA_EB)
-        return line_line_closest_point_direction_hessian(
-            x.head<3>() /* edge 0 */, x.segment<3>(3) /* edge 0 */,
-            x.segment<3>(6) /* edge 1 */, x.tail<3>() /* edge 1 */);
-    else
-    {
-        std::array<Eigen::Matrix<double, n_core_dofs, n_core_dofs>, dim> H;
-        for (auto &h : H)
-            h.setZero();
-        return std::make_tuple(Eigen::Vector<double, dim>::Zero(), Eigen::Matrix<double, dim, n_core_dofs>::Zero(), H);
-    }
+    return line_line_closest_point_direction_hessian(
+        x.head<3>() /* edge 0 */, x.segment<3>(3) /* edge 0 */,
+        x.segment<3>(6) /* edge 1 */, x.tail<3>() /* edge 1 */);
 }
 
 template <>
