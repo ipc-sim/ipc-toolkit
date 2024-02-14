@@ -118,6 +118,14 @@ public:
     /// @param use_convergent_formulation If the collision set should use the convergent formulation.
     void set_use_convergent_formulation(const bool use_convergent_formulation);
 
+    bool use_improved_max_approximator() const
+    {
+        return m_use_improved_max_approximator;
+    }
+
+    void
+    set_use_improved_max_approximator(const bool use_improved_max_approximator);
+
     /// @brief Get if the collision set are using the convergent formulation.
     /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
     /// @return If the collision set are using the convergent formulation.
@@ -144,6 +152,7 @@ public:
 
 protected:
     bool m_use_convergent_formulation = false;
+    bool m_use_improved_max_approximator = false;
     bool m_are_shape_derivatives_enabled = false;
 };
 

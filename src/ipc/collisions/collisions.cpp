@@ -207,7 +207,7 @@ void Collisions::build(
                 r.end());
         });
 
-    if (use_convergent_formulation()) {
+    if (use_improved_max_approximator()) {
         if (candidates.ev_candidates.size() > 0) {
             // Convert edge-vertex to vertex-vertex
             const std::vector<VertexVertexCandidate> vv_candidates =
@@ -307,6 +307,20 @@ void Collisions::set_use_convergent_formulation(
     }
 
     m_use_convergent_formulation = use_convergent_formulation;
+    m_use_improved_max_approximator = use_convergent_formulation;
+}
+
+void Collisions::set_use_improved_max_approximator(
+    const bool use_improved_max_approximator)
+{
+    if (!empty()
+        && use_improved_max_approximator != m_use_improved_max_approximator) {
+        logger().warn(
+            "Setting use_improved_max_approximator after building collisions. "
+            "Re-build collisions for this to have an effect.");
+    }
+
+    m_use_improved_max_approximator = use_improved_max_approximator;
 }
 
 void Collisions::set_are_shape_derivatives_enabled(
