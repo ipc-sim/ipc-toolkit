@@ -11,7 +11,7 @@ scalar point_edge_mollifier(
     const scalar& dist_sqr)
 {
     const scalar denominator =
-        (e1 - e0).squaredNorm() * mollifier_threshold_eps;
+        dist_sqr * mollifier_threshold_eps;
     return Math<scalar>::mollifier(
                ((p - e0).squaredNorm() - dist_sqr) / denominator)
         * Math<scalar>::mollifier(
@@ -27,8 +27,8 @@ scalar edge_edge_mollifier(
     const std::array<HEAVISIDE_TYPE, 4>& mtypes,
     const scalar& dist_sqr)
 {
-    const scalar da = (ea1 - ea0).squaredNorm() * mollifier_threshold_eps;
-    const scalar db = (eb1 - eb0).squaredNorm() * mollifier_threshold_eps;
+    const scalar da = dist_sqr * mollifier_threshold_eps;
+    const scalar db = dist_sqr * mollifier_threshold_eps;
     scalar a = (mtypes[0] == HEAVISIDE_TYPE::VARIANT) ? Math<scalar>::mollifier(
                    (PointEdgeDistance<scalar, 3>::point_edge_sqr_distance(
                         ea0, eb0, eb1)
@@ -72,14 +72,14 @@ scalar point_face_mollifier(
     return Math<scalar>::mollifier(
                (PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, e0, e1)
                 - dist_sqr) / mollifier_threshold_eps
-               / PointEdgeDistance<scalar, 3>::point_line_sqr_distance(e2, e0, e1))
+               / dist_sqr)
         * Math<scalar>::mollifier(
                (PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, e2, e1)
                 - dist_sqr) / mollifier_threshold_eps
-               / PointEdgeDistance<scalar, 3>::point_line_sqr_distance(e0, e2, e1))
+               / dist_sqr)
         * Math<scalar>::mollifier(
                (PointEdgeDistance<scalar, 3>::point_line_sqr_distance(p, e0, e2)
                 - dist_sqr) / mollifier_threshold_eps
-               / PointEdgeDistance<scalar, 3>::point_line_sqr_distance(e1, e0, e2));
+               / dist_sqr);
 }
 } // namespace ipc

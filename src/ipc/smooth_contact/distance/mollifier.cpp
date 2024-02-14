@@ -10,7 +10,7 @@ namespace ipc {
 namespace {
     double func_aux(const double& a, const double& b, const double& c, const double& eps)
     {
-        return Math<double>::mollifier((a - c) / b / eps);
+        return Math<double>::mollifier((a - c) / c / eps);
     }
 
     Vector<int, 9> get_indices(int i, int j, int k)
@@ -24,26 +24,28 @@ namespace {
     Eigen::Vector3d
     func_aux_grad(const double& a, const double& b, const double& c, const double& eps)
     {
-        const double val = (a - c) / b;
-        return Eigen::Vector3d(1., -val, -1.) * Math<double>::mollifier_grad(val / eps) / b / eps;
+        return Eigen::Vector3d(1. / c, 0., -a / c / c) * Math<double>::mollifier_grad((a - c) / c / eps) / eps;
     }
 
     std::tuple<double, Vector3d, Matrix3d>
     func_aux_hess(const double& a, const double& b, const double& c, const double& eps)
     {
-        const double val = (a - c) / b;
+        const double c2 = 1. / c / c;
         Eigen::Matrix3d h1;
-        h1 << 0., -1, 0., -1, 2. * val, 1, 0., 1, 0.;
+        h1 << 0., 0., -c2, 
+             0., 0., 0.,
+            -c2, 0., 2 * a * c2 / c;
         Eigen::Vector3d g1;
-        g1 << 1., -val, -1.;
+        g1 << 1. / c, 0., -a * c2;
 
+        const double val = (a - c) / c;
         const double g2 = Math<double>::mollifier_grad(val / eps);
         const double h2 = Math<double>::mollifier_hess(val / eps);
 
-        const double common_factor = 1. / b / eps;
+        const double common_factor = 1. / eps;
         return std::make_tuple(Math<double>::mollifier(val / eps),
          g1 * g2 * common_factor,
-         h1 * (g2 * common_factor / b) +
+         h1 * (g2 * common_factor) +
          g1 * (h2 * common_factor * common_factor) * g1.transpose());
     }
 } // namespace
@@ -278,19 +280,19 @@ std::array<HEAVISIDE_TYPE, 4> edge_edge_mollifier_type(
 {
     std::array<HEAVISIDE_TYPE, 4> mtypes;
     mtypes[0] = (point_edge_distance(ea0, eb0, eb1) - dist_sqr)
-            >= (eb1 - eb0).squaredNorm() * mollifier_threshold_eps
+            >= dist_sqr * mollifier_threshold_eps
         ? HEAVISIDE_TYPE::ONE
         : HEAVISIDE_TYPE::VARIANT;
     mtypes[1] = (point_edge_distance(ea1, eb0, eb1) - dist_sqr)
-            >= (eb1 - eb0).squaredNorm() * mollifier_threshold_eps
+            >= dist_sqr * mollifier_threshold_eps
         ? HEAVISIDE_TYPE::ONE
         : HEAVISIDE_TYPE::VARIANT;
     mtypes[2] = (point_edge_distance(eb0, ea0, ea1) - dist_sqr)
-            >= (ea1 - ea0).squaredNorm() * mollifier_threshold_eps
+            >= dist_sqr * mollifier_threshold_eps
         ? HEAVISIDE_TYPE::ONE
         : HEAVISIDE_TYPE::VARIANT;
     mtypes[3] = (point_edge_distance(eb1, ea0, ea1) - dist_sqr)
-            >= (ea1 - ea0).squaredNorm() * mollifier_threshold_eps
+            >= dist_sqr * mollifier_threshold_eps
         ? HEAVISIDE_TYPE::ONE
         : HEAVISIDE_TYPE::VARIANT;
     return mtypes;
