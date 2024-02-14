@@ -16,8 +16,7 @@ public:
 
 public:
     // SmoothCollisions() = default;
-    SmoothCollisions(bool _use_high_order_quadrature = false)
-        : use_high_order_quadrature(_use_high_order_quadrature)
+    SmoothCollisions()
     {
     }
 
@@ -125,8 +124,6 @@ public:
 
 public:
     std::vector<std::shared_ptr<value_type>> collisions;
-
-    const bool use_high_order_quadrature;
 
     Eigen::VectorXd vert_adaptive_dhat;
     Eigen::VectorXd edge_adaptive_dhat;

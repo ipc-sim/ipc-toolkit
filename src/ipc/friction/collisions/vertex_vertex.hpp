@@ -16,6 +16,11 @@ public:
     VertexVertexFrictionCollision(
         const VertexVertexCollision& collision,
         const VectorMax12d& positions,
+        const double _normal_force_magnitude);
+
+    VertexVertexFrictionCollision(
+        const VertexVertexCollision& collision,
+        const VectorMax12d& positions,
         const BarrierPotential& barrier_potential,
         const double barrier_stiffness);
 

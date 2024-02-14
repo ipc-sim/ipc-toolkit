@@ -18,6 +18,16 @@ FaceVertexFrictionCollision::FaceVertexFrictionCollision(
 FaceVertexFrictionCollision::FaceVertexFrictionCollision(
     const FaceVertexCollision& collision,
     const VectorMax12d& positions,
+    const double _normal_force_magnitude)
+    : FaceVertexFrictionCollision(collision)
+{
+    FrictionCollision::init(
+        collision, positions, _normal_force_magnitude);
+}
+
+FaceVertexFrictionCollision::FaceVertexFrictionCollision(
+    const FaceVertexCollision& collision,
+    const VectorMax12d& positions,
     const BarrierPotential& barrier_potential,
     const double barrier_stiffness)
     : FaceVertexFrictionCollision(collision)

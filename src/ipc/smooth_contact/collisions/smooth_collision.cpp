@@ -1,68 +1,6 @@
 #include "smooth_collision.hpp"
 
 namespace ipc {
-namespace {
-    template <int max_vert, typename T, int dim, int max_dim = dim>
-    Vector<T, dim, max_dim> reorder_vector(
-        const SmoothCollision<max_vert>& a,
-        const SmoothCollision<max_vert>& b,
-        const Vector<T, dim, max_dim>& vec_a)
-    {
-        auto ids_a = a.vertices;
-        auto ids_b = b.vertices;
-
-        auto vec_b = vec_a;
-        for (int i = 0; i < ids_a.size(); i++) {
-            if (ids_a[i] < 0)
-                break;
-            for (int j = 0; j < ids_b.size(); j++) {
-                if (ids_b[j] == ids_a[i]) {
-                    vec_b.segment(j * 3, 3) = vec_a.segment(i * 3, 3);
-                    break;
-                }
-                if (ids_b[j] < 0)
-                    break;
-            }
-        }
-
-        return vec_b;
-    }
-
-    template <int max_vert, typename T, int dim>
-    MatrixMax<T, dim, dim> reorder_matrix(
-        const SmoothCollision<max_vert>& a,
-        const SmoothCollision<max_vert>& b,
-        const MatrixMax<T, dim, dim>& mat_a)
-    {
-        auto ids_a = a.vertices;
-        auto ids_b = b.vertices;
-
-        std::map<int, int> id_map;
-        for (int i = 0; i < ids_a.size(); i++) {
-            if (ids_a[i] < 0)
-                break;
-            for (int j = 0; j < ids_b.size(); j++) {
-                if (ids_b[j] == ids_a[i]) {
-                    id_map[i] = j;
-                    break;
-                }
-                if (ids_b[j] < 0)
-                    break;
-            }
-        }
-
-        auto mat_b = mat_a;
-        for (int i = 0; i < ids_a.size(); i++)
-            for (int j = 0; j < ids_a.size(); j++) {
-                if (ids_a[i] < 0 || ids_a[j] < 0)
-                    break;
-                mat_b.block(id_map[i] * 3, id_map[j] * 3, 3, 3) =
-                    mat_a.block(i * 3, j * 3, 3, 3);
-            }
-
-        return mat_b;
-    }
-} // namespace
 
 template <int max_vert, typename PrimitiveA, typename PrimitiveB> Vector<int, SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::n_core_dofs> 
 SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::get_core_indices() const
@@ -101,7 +39,7 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
     Super::is_active_ =
         (d.norm() < Super::get_dhat()) && pA->is_active() && pB->is_active();
 
-    if (d.norm() < 1e-13)
+    if (d.norm() < 1e-12)
         logger().warn("pair distance {}, id {} and {}, dtype {}, active {}", d.norm(), primitive0_,
                         primitive1_, PrimitiveDistType<PrimitiveA, PrimitiveB>::name, Super::is_active_);
 
@@ -141,6 +79,9 @@ double SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::operator()(
     double a4 =
         PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, double>::mollifier(
             x, dist * dist);
+    
+    if (dist < 1e-12)
+        logger().warn("pair distance {:.3e}, barrier {:.3e}, mollifier {:.3e}, orient {:.3e} {:.3e}", dist, a3, a4, a1, a2);
 
     return a1 * a2 * a3 * a4;
 }
@@ -493,6 +434,18 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
         dist_sqr_hess += 2 * closest_direction(d) * closest_direction_hess[d];
     
     return dist_sqr_hess;
+}
+
+template <int max_vert, typename PrimitiveA, typename PrimitiveB>
+std::array<long, SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::n_core_dofs> 
+SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
+core_vertex_ids(const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const
+{
+    std::array<long, n_core_dofs> vids;
+    auto ids = get_core_indices();
+    for (int i = 0; i < n_core_dofs; i++)
+        vids[i] = Super::vertices[ids[i]];
+    return vids;
 }
 
 // Note: Primitive pair order cannot change

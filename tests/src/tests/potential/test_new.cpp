@@ -46,13 +46,13 @@
 //     REQUIRE(success);
 
 //     CollisionMesh mesh;
-//     ParameterType param(dhat*dhat, 0.8, 0.5, n_quad_pts, 0);
+//     ParameterType param(dhat*dhat, 0.8, 0.5, 0);
 //     param.set_adaptive_dhat_ratio(min_dist_ratio);
-//     SmoothCollisions<2> collisions(n_quad_pts > 1);
+//     SmoothCollisions<2> collisions;
 //     mesh = CollisionMesh(vertices, edges, faces);
 //     collisions.compute_adaptive_dhat(mesh, vertices, param, method);
 //     collisions.build(mesh, vertices, param, adaptive_dhat, method);
-//     CAPTURE(dhat, method, adaptive_dhat, n_quad_pts);
+//     CAPTURE(dhat, method, adaptive_dhat);
 //     CHECK(collisions.size() > 0);
 //     std::cout << "smooth collision candidate size " << collisions.size() << "\n";
 
@@ -102,13 +102,13 @@
 //     REQUIRE(success);
 
 //     CollisionMesh mesh;
-//     ParameterType param(dhat*dhat, 0.5, 1, n_quad_pts, 0);
+//     ParameterType param(dhat*dhat, 0.5, 1, 0);
 //     param.set_adaptive_dhat_ratio(min_dist_ratio);
-//     SmoothCollisions<3> collisions(n_quad_pts > 1);
+//     SmoothCollisions<3> collisions;
 //     mesh = CollisionMesh(vertices, edges, faces);
 //     collisions.compute_adaptive_dhat(mesh, vertices, param, method);
 //     collisions.build(mesh, vertices, param, adaptive_dhat, method);
-//     CAPTURE(dhat, method, adaptive_dhat, n_quad_pts);
+//     CAPTURE(dhat, method, adaptive_dhat);
 //     CHECK(collisions.size() > 0);
 //     std::cout << "smooth collision candidate size " << collisions.size() << "\n";
 

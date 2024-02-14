@@ -14,14 +14,22 @@ void FrictionCollision::init(
     const BarrierPotential& barrier_potential,
     const double barrier_stiffness)
 {
+    init(collision, positions, this->compute_normal_force_magnitude(
+        positions, barrier_potential, barrier_stiffness, collision.dmin));
+}
+
+void FrictionCollision::init(
+    const Collision<4>& collision,
+    const VectorMax12d& positions,
+    const double _normal_force_magnitude)
+{
     // do this to initialize dim()
     const int dim = collision.dim(positions.size());
     tangent_basis.resize(dim, dim - 1);
 
     closest_point = compute_closest_point(positions);
     tangent_basis = compute_tangent_basis(positions);
-    normal_force_magnitude = this->compute_normal_force_magnitude(
-        positions, barrier_potential, barrier_stiffness, collision.dmin);
+    normal_force_magnitude = _normal_force_magnitude;
 }
 
 double FrictionCollision::compute_normal_force_magnitude(

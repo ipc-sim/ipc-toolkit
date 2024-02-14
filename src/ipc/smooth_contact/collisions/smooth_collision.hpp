@@ -132,6 +132,8 @@ public:
 
     inline int n_dofs() const override { return pA->n_dofs() + pB->n_dofs(); }
     Vector<int, n_core_dofs> get_core_indices() const;
+    std::array<long, n_core_dofs> core_vertex_ids(
+        const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const;
 
     inline int num_vertices() const override { return pA->n_vertices() + pB->n_vertices(); }
 

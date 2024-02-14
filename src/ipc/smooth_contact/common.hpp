@@ -19,19 +19,16 @@ struct ParameterType {
         const double& _dhat,
         const double& _alpha,
         const double& _r,
-        const int& _n_quadrature,
         const double& _beta)
         : dhat(_dhat)
         , alpha(_alpha)
         , r(_r)
-        , n_quadrature(_n_quadrature)
         , beta(_beta)
     {
-        if (!(r > 0) || !(dhat > 0) || !(alpha > 0) || !(beta + alpha > 1e-8)
-            || !(n_quadrature > 0))
+        if (!(r > 0) || !(dhat > 0) || !(alpha > 0) || !(beta + alpha > 1e-8))
             logger().error(
-                "Wrong parameters for smooth contact! dhat {} alpha {} r {} quadrature {} beta {}",
-                dhat, alpha, r, n_quadrature, beta);
+                "Wrong parameters for smooth contact! dhat {} alpha {} r {} beta {}",
+                dhat, alpha, r, beta);
     }
     ParameterType() = delete;
 
@@ -44,7 +41,6 @@ struct ParameterType {
     double dhat;
     const double alpha;
     const double r;
-    const int n_quadrature;
     const double beta;
 
 private:

@@ -68,9 +68,6 @@ void SmoothCollisionsBuilder<dim>::add_edge_edge_collisions(
             const double distance =
                 sqrt(edge_edge_distance(ea0, ea1, eb0, eb1, actual_dtype));
 
-            if (distance < 1e-12)
-                logger().warn("edge {} {} dist {}", eai, ebi, distance);
-
             if (actual_dtype != EdgeEdgeDistanceType::EA_EB
                 || distance >= param.dhat)
                 continue;

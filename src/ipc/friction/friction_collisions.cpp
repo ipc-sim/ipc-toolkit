@@ -11,6 +11,127 @@
 
 namespace ipc {
 
+template <int dim>
+void FrictionCollisions::build(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const SmoothCollisions<dim>& collisions,
+    const ParameterType &params,
+    const double barrier_stiffness,
+    const Eigen::VectorXd& mus,
+    const std::function<double(double, double)>& blend_mu)
+{
+    assert(mus.size() == vertices.rows());
+
+    const Eigen::MatrixXi& edges = mesh.edges();
+    const Eigen::MatrixXi& faces = mesh.faces();
+
+    clear();
+
+    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
+
+    // FC_vv.reserve(C_vv.size());
+    for (size_t i = 0; i < collisions.size(); i++) {
+        const auto& cc = collisions[i];
+        const double contact_force = barrier_stiffness * cc.gradient(cc.dof(vertices, edges, faces), params).norm();
+        if constexpr (dim == 3)
+        {
+            if (const auto cvv = dynamic_cast<const SmoothCollisionTemplate<max_vert_3d, Point3, Point3> *>(&cc))
+            {
+                FC_vv.emplace_back(
+                    VertexVertexCollision(cc[0], cc[1], 1., Eigen::SparseVector<double>()), cvv->core_dof(vertices, edges, faces), contact_force);
+                const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
+
+                FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
+            }
+            else if (const auto cev = dynamic_cast<const SmoothCollisionTemplate<max_vert_3d, Edge3, Point3> *>(&cc))
+            {
+                FC_ev.emplace_back(
+                    EdgeVertexCollision(cc[0], cc[1], 1., Eigen::SparseVector<double>()), cev->core_dof(vertices, edges, faces), contact_force);
+                const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
+
+                const double edge_mu =
+                    (mus(e1i) - mus(e0i)) * FC_ev.back().closest_point[0] + mus(e0i);
+                FC_ev.back().mu = blend_mu(edge_mu, mus(vi));
+            }
+            else if (const auto cee = dynamic_cast<const SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3> *>(&cc))
+            {
+                const auto vert_ids = cee->core_vertex_ids(edges, faces);
+                const Eigen::Vector3d ea0 = vertices.row(vert_ids[0]);
+                const Eigen::Vector3d ea1 = vertices.row(vert_ids[1]);
+                const Eigen::Vector3d eb0 = vertices.row(vert_ids[2]);
+                const Eigen::Vector3d eb1 = vertices.row(vert_ids[3]);
+
+                // Skip EE collisions that are close to parallel
+                if (edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1) < edge_edge_mollifier_threshold(ea0, ea1, eb0, eb1)) {
+                    continue;
+                }
+
+                FC_ee.emplace_back(
+                    EdgeEdgeCollision(cc[0], cc[1], 0., EdgeEdgeDistanceType::EA_EB), cee->core_dof(vertices, edges, faces), contact_force);
+
+                double ea_mu =
+                    (mus(vert_ids[1]) - mus(vert_ids[0])) * FC_ee.back().closest_point[0] + mus(vert_ids[0]);
+                double eb_mu =
+                    (mus(vert_ids[3]) - mus(vert_ids[2])) * FC_ee.back().closest_point[1] + mus(vert_ids[2]);
+                FC_ee.back().mu = blend_mu(ea_mu, eb_mu);
+            }
+            else if (const auto cfv = dynamic_cast<const SmoothCollisionTemplate<max_vert_3d, Face, Point3> *>(&cc))
+            {
+                FC_fv.emplace_back(
+                    FaceVertexCollision(cc[0], cc[1], 1., Eigen::SparseVector<double>()), cfv->core_dof(vertices, edges, faces), contact_force);
+                const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
+
+                double face_mu = mus(f0i)
+                    + FC_fv.back().closest_point[0] * (mus(f1i) - mus(f0i))
+                    + FC_fv.back().closest_point[1] * (mus(f2i) - mus(f0i));
+                FC_fv.back().mu = blend_mu(face_mu, mus(vi));
+            }
+        }
+        else
+        {
+            if (const auto cvv = dynamic_cast<const SmoothCollisionTemplate<max_vert_2d, Point2, Point2> *>(&cc))
+            {
+                FC_vv.emplace_back(
+                    VertexVertexCollision(cc[0], cc[1], 1., Eigen::SparseVector<double>()), cvv->core_dof(vertices, edges, faces), contact_force);
+                const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
+
+                FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
+            }
+            else if (const auto cev = dynamic_cast<const SmoothCollisionTemplate<max_vert_2d, Edge2, Point2> *>(&cc))
+            {
+                FC_ev.emplace_back(
+                    EdgeVertexCollision(cc[0], cc[1], 1., Eigen::SparseVector<double>()), cev->core_dof(vertices, edges, faces), contact_force);
+                const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
+
+                const double edge_mu =
+                    (mus(e1i) - mus(e0i)) * FC_ev.back().closest_point[0] + mus(e0i);
+                FC_ev.back().mu = blend_mu(edge_mu, mus(vi));
+            }
+        }
+    }
+}
+
+template
+void FrictionCollisions::build<2>(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const SmoothCollisions<2>& collisions,
+    const ParameterType &params,
+    const double barrier_stiffness,
+    const Eigen::VectorXd& mus,
+    const std::function<double(double, double)>& blend_mu);
+
+template
+void FrictionCollisions::build<3>(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const SmoothCollisions<3>& collisions,
+    const ParameterType &params,
+    const double barrier_stiffness,
+    const Eigen::VectorXd& mus,
+    const std::function<double(double, double)>& blend_mu);
+
 void FrictionCollisions::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,

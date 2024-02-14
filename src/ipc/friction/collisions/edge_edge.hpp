@@ -19,6 +19,11 @@ public:
         const BarrierPotential& barrier_potential,
         const double barrier_stiffness);
 
+    EdgeEdgeFrictionCollision(
+        const EdgeEdgeCollision& collision,
+        const VectorMax12d& positions,
+        const double _normal_force_magnitude);
+
 protected:
     EdgeEdgeDistanceType known_dtype() const override
     {

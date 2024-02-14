@@ -13,6 +13,8 @@
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
+#include <ipc/smooth_contact/smooth_collisions.hpp>
+
 namespace ipc {
 
 class FrictionCollisions {
@@ -41,6 +43,31 @@ public:
         const Eigen::MatrixXd& vertices,
         const Collisions& collisions,
         const BarrierPotential& barrier_potential,
+        const double barrier_stiffness,
+        const Eigen::VectorXd& mus,
+        const std::function<double(double, double)>& blend_mu =
+            default_blend_mu);
+
+    template <int dim>
+    void build(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const SmoothCollisions<dim>& collisions,
+        const ParameterType &params,
+        const double barrier_stiffness,
+        double mu)
+    {
+        this->build(
+            mesh, vertices, collisions, params, barrier_stiffness,
+            Eigen::VectorXd::Constant(vertices.rows(), mu));
+    }
+
+    template <int dim>
+    void build(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const SmoothCollisions<dim>& collisions,
+        const ParameterType &params,
         const double barrier_stiffness,
         const Eigen::VectorXd& mus,
         const std::function<double(double, double)>& blend_mu =
