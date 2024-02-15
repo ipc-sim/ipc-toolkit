@@ -31,7 +31,7 @@ struct ORIENTATION_TYPES {
     std::vector<HEAVISIDE_TYPE> tangent_types, normal_types;
 };
 
-constexpr double mollifier_threshold_eps = 1e-4;
+constexpr double mollifier_threshold_eps = 1e-2;
 
 template <typename scalar> struct Math {
     static double sign(const double& x);

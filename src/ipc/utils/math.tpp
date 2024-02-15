@@ -211,7 +211,7 @@ scalar Math<scalar>::inv_barrier(const scalar& x, const double& r)
     return cubic_spline(x) / pow(x, r);
     // log barrier
     // if (x < 1)
-    //     return -intpow(1 - sqrt(x), 2) * log(x);
+    //     return -(1 - x) * (1 - x) * log(x);
     // else
     //     return scalar(0.);
 }
