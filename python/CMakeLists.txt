@@ -14,6 +14,7 @@ pybind11_add_module(ipctk
   src/broad_phase/bvh.cpp
   src/broad_phase/hash_grid.cpp
   src/broad_phase/spatial_hash.cpp
+  src/broad_phase/sweep_and_prune.cpp
   src/broad_phase/sweep_and_tiniest_queue.cpp
   src/broad_phase/voxel_size_heuristic.cpp
 
