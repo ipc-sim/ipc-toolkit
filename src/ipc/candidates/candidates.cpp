@@ -15,11 +15,6 @@
 namespace ipc {
 
 namespace {
-    bool implements_vertex_vertex(const BroadPhaseMethod method)
-    {
-        return method != BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE;
-    }
-
     // Pad codim_edges because remove_unreferenced requires a N×3 matrix.
     Eigen::MatrixXi pad_edges(const Eigen::MatrixXi& E)
     {
@@ -51,14 +46,6 @@ void Candidates::build(
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this);
-
-    if (mesh.num_codim_vertices()
-        && !implements_vertex_vertex(broad_phase_method)) {
-        // TODO: Assumes this is the same as implements_edge_vertex
-        logger().warn(
-            "STQ broad phase does not support codim. point-point nor point-edge, skipping.");
-        return;
-    }
 
     // Codim. vertices to codim. vertices:
     if (mesh.num_codim_vertices()) {
@@ -132,14 +119,6 @@ void Candidates::build(
     broad_phase->build(
         vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this);
-
-    if (mesh.num_codim_vertices()
-        && !implements_vertex_vertex(broad_phase_method)) {
-        // TODO: Assumes this is the same as implements_edge_vertex
-        logger().warn(
-            "STQ broad phase does not support codim. point-point nor point-edge, skipping.");
-        return;
-    }
 
     // Codim. vertices to codim. vertices:
     if (mesh.num_codim_vertices()) {

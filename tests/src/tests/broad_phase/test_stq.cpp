@@ -8,7 +8,7 @@
 
 using namespace ipc;
 
-TEST_CASE("STQ Missing Features", "[broad_phase][stq]")
+TEST_CASE("STQ All Cases", "[broad_phase][stq]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
@@ -38,56 +38,21 @@ TEST_CASE("STQ Missing Features", "[broad_phase][stq]")
     CHECK(candidates.ee_candidates.size() == 5'197'332);
     CHECK(candidates.fv_candidates.size() == 1'655'541);
 
-    // Test missing features for code coverage
-    if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE) {
-        try {
-            std::vector<VertexVertexCandidate> vv_candidates;
-            stq->detect_vertex_vertex_candidates(vv_candidates);
-            FAIL("Should have thrown");
-        } catch (const std::runtime_error& e) {
-            SUCCEED(e.what());
-        }
+    std::vector<VertexVertexCandidate> vv_candidates;
+    stq->detect_vertex_vertex_candidates(vv_candidates);
+    CHECK(vv_candidates.size() == 84'912);
 
-        try {
-            std::vector<EdgeVertexCandidate> ev_candidates;
-            stq->detect_edge_vertex_candidates(ev_candidates);
-            FAIL("Should have thrown");
-        } catch (const std::runtime_error& e) {
-            SUCCEED(e.what());
-        }
+    std::vector<EdgeVertexCandidate> ev_candidates;
+    stq->detect_edge_vertex_candidates(ev_candidates);
+    CHECK(ev_candidates.size() == 1'666'926);
 
-        try {
-            std::vector<EdgeFaceCandidate> ef_candidates;
-            stq->detect_edge_face_candidates(ef_candidates);
-            FAIL("Should have thrown");
-        } catch (const std::runtime_error& e) {
-            SUCCEED(e.what());
-        }
+    std::vector<EdgeFaceCandidate> ef_candidates;
+    stq->detect_edge_face_candidates(ef_candidates);
+    CHECK(ef_candidates.size() == 9'248'220);
 
-        try {
-            std::vector<FaceFaceCandidate> ff_candidates;
-            stq->detect_face_face_candidates(ff_candidates);
-            FAIL("Should have thrown");
-        } catch (const std::runtime_error& e) {
-            SUCCEED(e.what());
-        }
-    } else {
-        std::vector<VertexVertexCandidate> vv_candidates;
-        stq->detect_vertex_vertex_candidates(vv_candidates);
-        CHECK(vv_candidates.size() == 84'912);
-
-        std::vector<EdgeVertexCandidate> ev_candidates;
-        stq->detect_edge_vertex_candidates(ev_candidates);
-        CHECK(ev_candidates.size() == 1'666'926);
-
-        std::vector<EdgeFaceCandidate> ef_candidates;
-        stq->detect_edge_face_candidates(ef_candidates);
-        CHECK(ef_candidates.size() == 9'248'220);
-
-        std::vector<FaceFaceCandidate> ff_candidates;
-        stq->detect_face_face_candidates(ff_candidates);
-        CHECK(ff_candidates.size() == 3'975'589);
-    }
+    std::vector<FaceFaceCandidate> ff_candidates;
+    stq->detect_face_face_candidates(ff_candidates);
+    CHECK(ff_candidates.size() == 3'975'589);
 
     stq->clear();
 }

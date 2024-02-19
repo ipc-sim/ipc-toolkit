@@ -40,12 +40,12 @@ public:
 
     /// @brief Find the candidate vertex-vertex collisions.
     /// @param[out] candidates The candidate vertex-vertex collisions.
-    [[noreturn]] void detect_vertex_vertex_candidates(
+    void detect_vertex_vertex_candidates(
         std::vector<VertexVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-vertex collisions.
     /// @param[out] candidates The candidate edge-vertex collisions.
-    [[noreturn]] void detect_edge_vertex_candidates(
+    void detect_edge_vertex_candidates(
         std::vector<EdgeVertexCandidate>& candidates) const override;
 
     /// @brief Find the candidate edge-edge collisions.
@@ -60,12 +60,12 @@ public:
 
     /// @brief Find the candidate edge-face intersections.
     /// @param[out] candidates The candidate edge-face intersections.
-    [[noreturn]] void detect_edge_face_candidates(
+    void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const override;
 
     /// @brief Find the candidate face-face collisions.
     /// @param[out] candidates The candidate face-face collisions.
-    [[noreturn]] void detect_face_face_candidates(
+    void detect_face_face_candidates(
         std::vector<FaceFaceCandidate>& candidates) const override;
 
 private:
@@ -75,13 +75,9 @@ private:
     bool can_edge_face_collide(size_t ei, size_t fi) const override;
     bool can_faces_collide(size_t fai, size_t fbi) const override;
 
-    // Copy mesh
-    Eigen::MatrixXi edges;
-    Eigen::MatrixXi faces;
-
-    scalable_ccd::cuda::BroadPhase stq;
-    std::vector<scalable_ccd::cuda::AABB> boxes;
-    std::vector<std::pair<int, int>> overlaps;
+    std::vector<scalable_ccd::cuda::AABB> vertex_boxes;
+    std::vector<scalable_ccd::cuda::AABB> edge_boxes;
+    std::vector<scalable_ccd::cuda::AABB> face_boxes;
 };
 
 } // namespace ipc

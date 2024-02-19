@@ -20,8 +20,7 @@ void test_face_face_broad_phase(
     double inflation_radius)
 {
     // Face-face collisions
-    if (mesh.num_faces() == 0 || method == BroadPhaseMethod::BRUTE_FORCE
-        || method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE) {
+    if (mesh.num_faces() == 0 || method == BroadPhaseMethod::BRUTE_FORCE) {
         return;
     }
 
@@ -124,9 +123,6 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase][2D]")
     CollisionMesh mesh(V0, E, /*F=*/Eigen::MatrixXi());
 
     const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
-    if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE) {
-        return;
-    }
 
     test_broad_phase(mesh, V0, V1, method);
 }
@@ -155,9 +151,6 @@ TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D][.]")
     const Eigen::MatrixXd V1 = mesh.vertices(V1_full);
 
     const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
-    if (method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE) {
-        return;
-    }
 
     test_broad_phase(mesh, V0, V1, method);
 }
@@ -257,9 +250,7 @@ TEST_CASE("Cloth-Ball", "[ccd][broad_phase][cloth-ball][.]")
 
     CollisionMesh mesh(V0, E, F);
 
-    // const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
-    // const BroadPhaseMethod method = BroadPhaseMethod::SWEEP_AND_PRUNE;
-    const BroadPhaseMethod method = BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE;
+    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 
     test_broad_phase(
         mesh, V0, V1, method, true,
