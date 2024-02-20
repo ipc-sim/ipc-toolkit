@@ -32,7 +32,7 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.af531f03affe68837.min.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.03ee1730f15ed0f74.min.css" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css" />
         <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
@@ -1801,7 +1801,7 @@ Python</label></div>
 </div>
 </div>
 </div><p>Possible values for <code class="docutils literal notranslate"><span class="pre">broad_phase_method</span></code> are: <code class="docutils literal notranslate"><span class="pre">BRUTE_FORCE</span></code> (parallel brute force culling), <code class="docutils literal notranslate"><span class="pre">HASH_GRID</span></code> (default), <code class="docutils literal notranslate"><span class="pre">SPATIAL_HASH</span></code> (implementation from the original IPC codebase),
-<code class="docutils literal notranslate"><span class="pre">BVH</span></code> (<a class="reference external" href="https://github.com/geometryprocessing/SimpleBVH">SimpleBVH</a>), <code class="docutils literal notranslate"><span class="pre">SWEEP_AND_TINIEST_QUEUE</span></code> (method of <span id="id4">Belgrod <em>et al.</em> [<a class="reference internal" href="references.html#id6" title="David Belgrod, Bolun Wang, Zachary Ferguson, Xin Zhao, Marco Attene, Daniele Panozzo, and Teseo Schneider. Time of impact dataset for continuous collision detection and a scalable conservative algorithm. 2023. arXiv:2112.06300.">2023</a>]</span>), or <code class="docutils literal notranslate"><span class="pre">SWEEP_AND_TINIEST_QUEUE_GPU</span></code> (requires CUDA).</p>
+<code class="docutils literal notranslate"><span class="pre">BVH</span></code> (<a class="reference external" href="https://github.com/geometryprocessing/SimpleBVH">SimpleBVH</a>), <code class="docutils literal notranslate"><span class="pre">SWEEP_AND_PRUNE</span></code> (method of <span id="id4">Belgrod <em>et al.</em> [<a class="reference internal" href="references.html#id6" title="David Belgrod, Bolun Wang, Zachary Ferguson, Xin Zhao, Marco Attene, Daniele Panozzo, and Teseo Schneider. Time of impact dataset for continuous collision detection and a scalable conservative algorithm. 2023. arXiv:2112.06300.">2023</a>]</span>), or <code class="docutils literal notranslate"><span class="pre">SWEEP_AND_TINIEST_QUEUE</span></code> (requires CUDA).</p>
 <h3 id="narrow-phase">Narrow-Phase<a class="headerlink" href="#narrow-phase" title="Permalink to this heading">¶</a></h3>
 <p>The narrow phase computes the time of impact between two primitives (e.g., a point and a triangle or two edges in 3D). To do this we utilize the Tight Inclusion CCD method of <span id="id5">Wang <em>et al.</em> [<a class="reference internal" href="references.html#id5" title="Bolun Wang, Zachary Ferguson, Teseo Schneider, Xin Jiang, Marco Attene, and Daniele Panozzo. A large scale benchmark and an inclusion-based algorithm for continuous collision detection. ACM Transactions on Graphics, October 2021. https://continuous-collision-detection.github.io/tight_inclusion/.">2021</a>]</span> for the narrow phase as it is provably conservative (i.e., never misses collisions), accurate (i.e., rarely reports false positives), and efficient.</p>
 <p>The following example shows how to use the narrow phase to determine if a point is colliding with a triangle (static in this case).</p>
@@ -1934,7 +1934,7 @@ Python</label></div>
   <small>
     
       Last update:
-      Jan 11, 2024
+      Feb 20, 2024
     
   </small>
 </div>
