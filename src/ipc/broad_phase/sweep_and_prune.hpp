@@ -1,15 +1,12 @@
 #pragma once
 
-#include <ipc/config.hpp>
-
-#ifdef IPC_TOOLKIT_WITH_CUDA
-
 #include <ipc/broad_phase/broad_phase.hpp>
-#include <scalable_ccd/cuda/broad_phase/broad_phase.cuh>
+
+#include <scalable_ccd/broad_phase/aabb.hpp>
 
 namespace ipc {
 
-class SweepAndTiniestQueue : public BroadPhase {
+class SweepAndPrune : public BroadPhase {
 public:
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
@@ -68,18 +65,23 @@ public:
     void detect_face_face_candidates(
         std::vector<FaceFaceCandidate>& candidates) const override;
 
-private:
+protected:
     bool can_edge_vertex_collide(size_t ei, size_t vi) const override;
     bool can_edges_collide(size_t eai, size_t ebi) const override;
     bool can_face_vertex_collide(size_t fi, size_t vi) const override;
     bool can_edge_face_collide(size_t ei, size_t fi) const override;
     bool can_faces_collide(size_t fai, size_t fbi) const override;
 
-    std::vector<scalable_ccd::cuda::AABB> vertex_boxes;
-    std::vector<scalable_ccd::cuda::AABB> edge_boxes;
-    std::vector<scalable_ccd::cuda::AABB> face_boxes;
+    std::vector<scalable_ccd::AABB> vertex_boxes;
+    std::vector<scalable_ccd::AABB> edge_boxes;
+    std::vector<scalable_ccd::AABB> face_boxes;
+
+    mutable int vv_sort_axis = 0;
+    mutable int ev_sort_axis = 0;
+    mutable int ee_sort_axis = 0;
+    mutable int fv_sort_axis = 0;
+    mutable int ef_sort_axis = 0;
+    mutable int ff_sort_axis = 0;
 };
 
 } // namespace ipc
-
-#endif

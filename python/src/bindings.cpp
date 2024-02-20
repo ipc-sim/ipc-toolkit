@@ -21,6 +21,7 @@ PYBIND11_MODULE(ipctk, m)
     define_bvh(m);
     define_hash_grid(m);
     define_spatial_hash(m);
+    define_sweep_and_prune(m);
     define_sweep_and_tiniest_queue(m);
     define_voxel_size_heuristic(m);
 

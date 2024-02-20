@@ -20,9 +20,7 @@ void test_face_face_broad_phase(
     double inflation_radius)
 {
     // Face-face collisions
-    if (mesh.num_faces() == 0 || method == BroadPhaseMethod::BRUTE_FORCE
-        || method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
-        || method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
+    if (mesh.num_faces() == 0 || method == BroadPhaseMethod::BRUTE_FORCE) {
         return;
     }
 
@@ -124,9 +122,7 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase][2D]")
 
     CollisionMesh mesh(V0, E, /*F=*/Eigen::MatrixXi());
 
-    BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-        BroadPhaseMethod::SPATIAL_HASH, BroadPhaseMethod::BVH);
+    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 
     test_broad_phase(mesh, V0, V1, method);
 }
@@ -154,9 +150,7 @@ TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D][.]")
     const Eigen::MatrixXd V0 = mesh.vertices(V0_full);
     const Eigen::MatrixXd V1 = mesh.vertices(V1_full);
 
-    BroadPhaseMethod method = GENERATE(
-        BroadPhaseMethod::BRUTE_FORCE, BroadPhaseMethod::HASH_GRID,
-        BroadPhaseMethod::SPATIAL_HASH, BroadPhaseMethod::BVH);
+    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 
     test_broad_phase(mesh, V0, V1, method);
 }
@@ -191,7 +185,7 @@ TEST_CASE("Compare BP against brute force", "[broad_phase]")
 {
     using namespace ipc;
 
-    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 
     Eigen::MatrixXd V0, U;
     Eigen::MatrixXi E, F;
@@ -256,9 +250,9 @@ TEST_CASE("Cloth-Ball", "[ccd][broad_phase][cloth-ball][.]")
 
     CollisionMesh mesh(V0, E, F);
 
-    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 
     test_broad_phase(
         mesh, V0, V1, method, true,
-        (tests::DATA_DIR / "cloth_ball_bf_ccd_candidated.json").string());
+        (tests::DATA_DIR / "cloth_ball_bf_ccd_candidates.json").string());
 }

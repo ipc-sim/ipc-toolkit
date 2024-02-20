@@ -35,12 +35,6 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
     const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
     CAPTURE(method);
 
-    // These methods do not support vertex-vertex candidates
-    if (method == ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
-        || method == ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
-        return;
-    }
-
     SECTION("Candidates")
     {
         Eigen::MatrixXd V1 = vertices;
@@ -129,12 +123,6 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
 
     const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
     CAPTURE(method);
-
-    // These methods do not support vertex-vertex candidates
-    if (method == ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
-        || method == ipc::BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
-        return;
-    }
 
     SECTION("Candidates")
     {

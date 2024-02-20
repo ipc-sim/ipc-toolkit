@@ -32,7 +32,8 @@ double suggest_good_voxel_size(
     }
     assert(std::isfinite(voxel_size));
     logger().trace(
-        "suggesting voxel size of {} (avg_edge_len={})", voxel_size, edge_len);
+        "suggesting voxel size of {:g} (avg_edge_len={:g})", voxel_size,
+        edge_len);
     return voxel_size;
 }
 
@@ -68,7 +69,7 @@ double suggest_good_voxel_size(
     }
     assert(std::isfinite(voxel_size));
     logger().trace(
-        "suggesting voxel size of {} (avg_edge_len={} avg_disp_len={})",
+        "suggesting voxel size of {:g} (avg_edge_len={:g} avg_disp_len={:g})",
         voxel_size, edge_len, disp_len);
     return voxel_size;
 }

@@ -65,11 +65,6 @@ if (IPC_TOOLKIT_TESTS_CCD_BENCHMARK)
   endif()
 endif()
 
-if(IPC_TOOLKIT_WITH_CUDA)
-  find_package(CUDAToolkit)
-  target_link_libraries(ipc_toolkit_tests PRIVATE CUDA::cudart)
-endif()
-
 # Extra warnings (link last for highest priority)
 include(ipc_toolkit_warnings)
 target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)

@@ -68,6 +68,7 @@ The following libraries are used in this project:
 * [oneTBB](https://github.com/oneapi-src/oneTBB): parallelism
 * [Tight-Inclusion](https://github.com/Continuous-Collision-Detection/Tight-Inclusion): provably conservative CCD of [Wang and Ferguson et al. 2021]
 * [SimpleBVH](https://github.com/ipc-sim/SimpleBVH): a simple bounding volume hierarchy data structure
+* [Scalable-CCD](https://github.com/Continuous-Collision-Detection/Scalable-CCD): scalable (GPU) CCD of [Belgrod et al. 2023]
 * [spdlog](https://github.com/gabime/spdlog): logging information
 
 #### Optional
