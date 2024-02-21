@@ -21,7 +21,7 @@ struct ParameterType {
         const double& _beta_t,
         const double& _alpha_n,
         const double& _beta_n,
-        const double& _r)
+        const int& _r)
         : dhat(_dhat)
         , alpha_t(_alpha_t)
         , beta_t(_beta_t)
@@ -29,7 +29,10 @@ struct ParameterType {
         , beta_n(_beta_n)
         , r(_r)
     {
-        if (!(r > 0) || !(dhat > 0) || !(alpha_t > 0) || !(beta_t + alpha_t > 1e-8) || !(alpha_n > 0) || !(beta_n + alpha_n > 1e-8))
+        if (!(r > 0) || !(dhat > 0) || 
+        !(abs(alpha_t) <= 1) || !(abs(alpha_n) <= 1) || 
+        !(abs(beta_t) <= 1) || !(abs(beta_n) <= 1) || 
+        !(beta_t + alpha_t > 1e-6) || !(beta_n + alpha_n > 1e-6))
             logger().error(
                 "Wrong parameters for smooth contact! dhat {} alpha_t {} beta_t {} alpha_n {} beta_n {} r {}",
                 dhat, alpha_t, beta_t, alpha_n, beta_n, r);
@@ -45,7 +48,7 @@ struct ParameterType {
     double dhat;
     const double alpha_t, beta_t;
     const double alpha_n, beta_n;
-    const double r;
+    const int r;
 
 private:
     double adaptive_dhat_ratio = 0.5;

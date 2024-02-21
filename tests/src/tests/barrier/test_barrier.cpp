@@ -98,7 +98,7 @@ TEST_CASE("Inv barrier derivatives", "[deriv]")
     const int n_samples = 100;
     DiffScalarBase::setVariableCount(1);
     using T = ipc::ADHessian<1>;
-    const double r = 0.5;
+    const int r = 1;
     const double dhat = 0.13;
     for (int i = 1; i <= n_samples; i++)
     {

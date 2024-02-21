@@ -206,7 +206,7 @@ template <typename scalar> double Math<scalar>::mollifier_hess(const double& x)
 
 // support is [0, 1]
 template <typename scalar>
-scalar Math<scalar>::inv_barrier(const scalar& x, const double& r)
+scalar Math<scalar>::inv_barrier(const scalar& x, const int& r)
 {
     return cubic_spline(x) / pow(x, r);
     // log barrier
@@ -217,13 +217,13 @@ scalar Math<scalar>::inv_barrier(const scalar& x, const double& r)
 }
 
 template <typename scalar>
-double Math<scalar>::inv_barrier_grad(const double& x, const double& r)
+double Math<scalar>::inv_barrier_grad(const double& x, const int& r)
 {
     return (cubic_spline_grad(x) - Math<double>::cubic_spline(x) * r / x)
         / pow(x, r);
 }
 template <typename scalar>
-double Math<scalar>::inv_barrier_hess(const double& x, const double& r)
+double Math<scalar>::inv_barrier_hess(const double& x, const int& r)
 {
     return (cubic_spline_hess(x)
             + (-2. * cubic_spline_grad(x)

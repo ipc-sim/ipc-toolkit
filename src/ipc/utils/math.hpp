@@ -31,7 +31,7 @@ struct ORIENTATION_TYPES {
     std::vector<HEAVISIDE_TYPE> tangent_types, normal_types;
 };
 
-constexpr double mollifier_threshold_eps = 1e-3;
+constexpr double mollifier_threshold_eps = 1e-2;
 
 template <typename scalar> struct Math {
     static double sign(const double& x);
@@ -61,9 +61,9 @@ template <typename scalar> struct Math {
     static double mollifier_hess(const double& x);
 
     // support is [0, 1]
-    static scalar inv_barrier(const scalar& x, const double& r);
-    static double inv_barrier_grad(const double& x, const double& r);
-    static double inv_barrier_hess(const double& x, const double& r);
+    static scalar inv_barrier(const scalar& x, const int& r);
+    static double inv_barrier_grad(const double& x, const int& r);
+    static double inv_barrier_hess(const double& x, const int& r);
 
     static scalar L_ns(const scalar& x);
 
