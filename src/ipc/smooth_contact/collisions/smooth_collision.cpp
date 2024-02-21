@@ -27,9 +27,9 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
         PrimitiveDistance<PrimitiveA, PrimitiveB>::compute_closest_direction(
             mesh, V, primitive0_, primitive1_, dtype);
     pA = std::make_shared<PrimitiveA>(
-        primitive0_, mesh, V, d, param.alpha, param.beta);
+        primitive0_, mesh, V, d, param);
     pB = std::make_shared<PrimitiveB>(
-        primitive1_, mesh, V, -d, param.alpha, param.beta);
+        primitive1_, mesh, V, -d, param);
     int i = 0;
     for (auto& v : pA->vertex_ids())
         Super::vertices[i++] = v;

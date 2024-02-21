@@ -14,8 +14,7 @@ namespace ipc {
             const CollisionMesh& mesh,
             const Eigen::MatrixXd& vertices,
             const VectorMax3d& d,
-            const double& alpha,
-            const double& beta);
+            const ParameterType& param);
 
         int n_vertices() const override;
         int n_dofs() const override { return n_vertices() * dim; }

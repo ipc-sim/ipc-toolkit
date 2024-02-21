@@ -6,10 +6,9 @@
 namespace ipc {
 class Primitive {
 public:
-    Primitive(const long& id, const double& alpha, const double& beta)
+    Primitive(const long& id, const ParameterType& param)
         : _id(id)
-        , _alpha(alpha)
-        , _beta(beta)
+        , _param(param)
     {
     }
     virtual ~Primitive() = default;
@@ -25,7 +24,7 @@ public:
 protected:
     std::vector<long> _vert_ids;
     long _id;
-    double _alpha, _beta;
+    const ParameterType _param;
 
     bool is_active_ = true;
 };

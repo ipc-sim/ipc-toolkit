@@ -15,8 +15,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const VectorMax3d& d,
-        const double& alpha,
-        const double& beta);
+        const ParameterType& param);
 
     Point3(
         const long& id,
@@ -56,32 +55,28 @@ scalar smooth_point3_term(
     const Eigen::Ref<const RowVector3<scalar>>& v,
     const Eigen::Ref<const RowVector3<scalar>>& direc,
     const Eigen::Ref<const Eigen::Matrix<scalar, n_neighbors, 3>>& neighbors,
-    const double& alpha,
-    const double& beta,
+    const ParameterType& param,
     const ORIENTATION_TYPES& otypes);
 
 bool smooth_point3_term_type(
     const Eigen::Ref<const RowVector3<double>>& v,
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Matrix<double, -1, 3>& neighbors,
-    const double& alpha,
-    const double& beta,
+    const ParameterType& param,
     ORIENTATION_TYPES& otypes);
 
 std::tuple<double, Eigen::VectorXd> smooth_point3_term_gradient(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const RowVector3<double>>& v,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,
-    const double& alpha,
-    const double& beta,
+    const ParameterType& param,
     const ORIENTATION_TYPES& otypes);
 
 std::tuple<double, Eigen::VectorXd, Eigen::MatrixXd> smooth_point3_term_hessian(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const RowVector3<double>>& v,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,
-    const double& alpha,
-    const double& beta,
+    const ParameterType& param,
     const ORIENTATION_TYPES& otypes);
 
 double smooth_point3_term_tangent(

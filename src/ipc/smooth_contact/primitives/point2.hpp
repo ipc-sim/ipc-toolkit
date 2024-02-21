@@ -15,8 +15,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const VectorMax3d& d,
-        const double& alpha,
-        const double& beta);
+        const ParameterType& param);
 
     Point2(
         const long& id,
@@ -53,8 +52,7 @@ scalar smooth_point2_term(
     const Eigen::Ref<const Vector2<scalar>>& direc,
     const Eigen::Ref<const Vector2<scalar>>& e0,
     const Eigen::Ref<const Vector2<scalar>>& e1,
-    const double& alpha,
-    const double& beta);
+    const ParameterType& param);
 
 /// @brief
 /// @param v
@@ -69,7 +67,6 @@ bool smooth_point2_term_type(
     const Eigen::Ref<const Vector2<double>>& direc,
     const Eigen::Ref<const Vector2<double>>& e0,
     const Eigen::Ref<const Vector2<double>>& e1,
-    const double& alpha,
-    const double& beta);
+    const ParameterType& param);
 
 } // namespace ipc

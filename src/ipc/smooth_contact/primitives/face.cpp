@@ -24,9 +24,8 @@ Face::Face(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const VectorMax3d& d,
-    const double& alpha,
-    const double& beta)
-    : Primitive(id, alpha, beta)
+    const ParameterType& param)
+    : Primitive(id, param)
 {
     _vert_ids = { { mesh.faces()(id, 0), mesh.faces()(id, 1),
                     mesh.faces()(id, 2) } };

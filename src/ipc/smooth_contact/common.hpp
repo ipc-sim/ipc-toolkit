@@ -17,18 +17,22 @@ constexpr static int max_vert_3d = 24;
 struct ParameterType {
     ParameterType(
         const double& _dhat,
-        const double& _alpha,
-        const double& _r,
-        const double& _beta)
+        const double& _alpha_t,
+        const double& _beta_t,
+        const double& _alpha_n,
+        const double& _beta_n,
+        const double& _r)
         : dhat(_dhat)
-        , alpha(_alpha)
+        , alpha_t(_alpha_t)
+        , beta_t(_beta_t)
+        , alpha_n(_alpha_n)
+        , beta_n(_beta_n)
         , r(_r)
-        , beta(_beta)
     {
-        if (!(r > 0) || !(dhat > 0) || !(alpha > 0) || !(beta + alpha > 1e-8))
+        if (!(r > 0) || !(dhat > 0) || !(alpha_t > 0) || !(beta_t + alpha_t > 1e-8) || !(alpha_n > 0) || !(beta_n + alpha_n > 1e-8))
             logger().error(
-                "Wrong parameters for smooth contact! dhat {} alpha {} r {} beta {}",
-                dhat, alpha, r, beta);
+                "Wrong parameters for smooth contact! dhat {} alpha_t {} beta_t {} alpha_n {} beta_n {} r {}",
+                dhat, alpha_t, beta_t, alpha_n, beta_n, r);
     }
     ParameterType() = delete;
 
@@ -39,9 +43,9 @@ struct ParameterType {
     double get_adaptive_dhat_ratio() const { return adaptive_dhat_ratio; }
 
     double dhat;
-    const double alpha;
+    const double alpha_t, beta_t;
+    const double alpha_n, beta_n;
     const double r;
-    const double beta;
 
 private:
     double adaptive_dhat_ratio = 0.5;

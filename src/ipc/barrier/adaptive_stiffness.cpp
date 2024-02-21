@@ -51,6 +51,23 @@ double initial_barrier_stiffness(
         max_barrier_stiffness, std::max(min_barrier_stiffness, kappa));
 }
 
+double initial_barrier_stiffness(
+    const Eigen::VectorXd& grad_energy,
+    const Eigen::VectorXd& grad_barrier,
+    double min_barrier_stiffness,
+    double max_barrier_stiffness)
+{
+    double kappa = min_barrier_stiffness;
+    if (grad_barrier.squaredNorm() > 0) {
+        // If this value is negative it will be clamped to κ_min anyways
+        kappa = -grad_barrier.dot(grad_energy) / grad_barrier.squaredNorm();
+        assert(std::isfinite(kappa));
+    }
+
+    return std::min(
+        max_barrier_stiffness, std::max(min_barrier_stiffness, kappa));
+}
+
 // Adaptive κ
 double update_barrier_stiffness(
     const double prev_min_distance,

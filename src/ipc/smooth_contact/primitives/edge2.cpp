@@ -6,9 +6,8 @@ Edge2::Edge2(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const VectorMax3d& d,
-    const double& alpha,
-    const double& beta)
-    : Primitive(id, alpha, beta)
+    const ParameterType& param)
+    : Primitive(id, param)
 {
     _vert_ids = { { mesh.edges()(id, 0), mesh.edges()(id, 1) } };
     Vector2d edge = vertices.row(_vert_ids[1]) - vertices.row(_vert_ids[0]);
