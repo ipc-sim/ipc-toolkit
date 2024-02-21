@@ -430,10 +430,8 @@ std::tuple<double, Vector15d> smooth_edge3_term_gradient(
 
     auto [t_term, t_grad] = smooth_edge3_tangent_term_gradient(
         dn, e0, e1, f0, f1, alpha, beta, otypes);
-    // auto [n_term, n_grad] = smooth_edge3_normal_term_gradient(dn, e0, e1, f0,
-    // f1, alpha, beta, otypes);
-    double n_term = 1.;
-    Vector15d n_grad = Vector15d::Zero();
+    auto [n_term, n_grad] = smooth_edge3_normal_term_gradient(dn, e0, e1, f0,
+    f1, alpha, beta, otypes);
 
     t_grad.head<3>() = dn_grad * t_grad.head<3>();
     n_grad.head<3>() = dn_grad * n_grad.head<3>();
@@ -465,11 +463,8 @@ std::tuple<double, Vector15d, Matrix15d> smooth_edge3_term_hessian(
 
     auto [t_term, t_grad, t_hess] = smooth_edge3_tangent_term_hessian(
         dn, e0, e1, f0, f1, alpha, beta, otypes);
-    // auto [n_term, n_grad, n_hess] = smooth_edge3_normal_term_hessian(dn, e0,
-    // e1, f0, f1, alpha, beta, otypes);
-    double n_term = 1.;
-    Vector15d n_grad = Vector15d::Zero();
-    Matrix15d n_hess = Matrix15d::Zero();
+    auto [n_term, n_grad, n_hess] = smooth_edge3_normal_term_hessian(dn, e0,
+    e1, f0, f1, alpha, beta, otypes);
 
     t_hess.topRows<3>() = dn_grad * t_hess.topRows<3>();
     t_hess.leftCols<3>() = t_hess.leftCols<3>() * dn_grad;
