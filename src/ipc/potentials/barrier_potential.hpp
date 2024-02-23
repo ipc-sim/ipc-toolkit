@@ -12,7 +12,7 @@ class BarrierPotential : public DistanceBasedPotential {
 public:
     /// @brief Construct a barrier potential.
     /// @param dhat The activation distance of the barrier.
-    BarrierPotential(const double dhat);
+    explicit BarrierPotential(const double dhat);
 
     /// @brief Construct a barrier potential.
     /// @param dhat The activation distance of the barrier.

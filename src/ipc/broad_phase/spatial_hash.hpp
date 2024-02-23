@@ -49,7 +49,7 @@ protected:
     double built_in_radius;
 
 public: // constructor
-    SpatialHash() { }
+    SpatialHash() = default;
 
     SpatialHash(
         const Eigen::MatrixXd& vertices,

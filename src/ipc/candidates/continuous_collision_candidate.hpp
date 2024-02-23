@@ -11,7 +11,7 @@ namespace ipc {
 /// Virtual class for candidates that support CCD.
 class ContinuousCollisionCandidate : virtual public CollisionStencil {
 public:
-    virtual ~ContinuousCollisionCandidate() { }
+    virtual ~ContinuousCollisionCandidate() = default;
 
     /// @brief Perform narrow-phase CCD on the candidate.
     /// @param vertices_t0 Stencil vertices at the start of the time step.

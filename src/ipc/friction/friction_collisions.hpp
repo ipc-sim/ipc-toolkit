@@ -21,7 +21,7 @@ public:
     using value_type = FrictionCollision;
 
 public:
-    FrictionCollisions() { }
+    FrictionCollisions() = default;
 
     void build(
         const CollisionMesh& mesh,

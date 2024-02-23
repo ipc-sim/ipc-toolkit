@@ -14,7 +14,7 @@ namespace ipc {
 
 class Candidates {
 public:
-    Candidates() { }
+    Candidates() = default;
 
     /// @brief Initialize the set of discrete collision detection candidates.
     /// @param mesh The surface of the collision mesh.
