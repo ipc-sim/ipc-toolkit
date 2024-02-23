@@ -235,7 +235,7 @@ double smooth_point3_term_normal(
                 negative_orientation_penalty(t_prev, t, -direc, alpha, beta);
     }
 
-    return Math<double>::smooth_heaviside(normal_term - 1, alpha, 0);
+    return Math<double>::smooth_heaviside(normal_term - 1, 1., 0);
 }
 
 std::tuple<double, Eigen::VectorXd> smooth_point3_term_normal_gradient(
@@ -271,9 +271,9 @@ std::tuple<double, Eigen::VectorXd> smooth_point3_term_normal_gradient(
     }
 
     const double val =
-        Math<double>::smooth_heaviside(normal_term - 1, alpha, 0);
+        Math<double>::smooth_heaviside(normal_term - 1, 1., 0);
     const double grad_val =
-        Math<double>::smooth_heaviside_grad(normal_term - 1, alpha, 0);
+        Math<double>::smooth_heaviside_grad(normal_term - 1, 1., 0);
 
     return std::make_tuple(val, grad * grad_val);
 }
@@ -325,11 +325,11 @@ smooth_point3_term_normal_hessian(
     }
 
     const double val =
-        Math<double>::smooth_heaviside(normal_term - 1, alpha, 0);
+        Math<double>::smooth_heaviside(normal_term - 1, 1., 0);
     const double grad_val =
-        Math<double>::smooth_heaviside_grad(normal_term - 1, alpha, 0);
+        Math<double>::smooth_heaviside_grad(normal_term - 1, 1., 0);
     const double hess_val =
-        Math<double>::smooth_heaviside_hess(normal_term - 1, alpha, 0);
+        Math<double>::smooth_heaviside_hess(normal_term - 1, 1., 0);
 
     return std::make_tuple(
         val, grad * grad_val,
@@ -369,7 +369,7 @@ bool smooth_point3_term_type(
             otypes.normal_type(a) = HEAVISIDE_TYPE::ONE;
     }
 
-    return normal_term > 1 - param.alpha_n;
+    return normal_term > 0;
 }
 
 std::tuple<double, Eigen::VectorXd> smooth_point3_term_gradient(
@@ -549,7 +549,7 @@ scalar smooth_point3_term(
     if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE)
         normal_term = scalar(1.);
     else
-        normal_term = Math<scalar>::smooth_heaviside(normal_term - 1, param.alpha_n, 0);
+        normal_term = Math<scalar>::smooth_heaviside(normal_term - 1, 1., 0);
 
     return weight * normal_term * tangent_term;
 }

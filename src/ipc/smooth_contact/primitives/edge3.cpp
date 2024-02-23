@@ -107,7 +107,7 @@ bool smooth_edge3_term_type(
     otypes.normal_type(1) = otypes.compute_type(tmp1, param.alpha_n, param.beta_n);
     const double sum = Math<double>::smooth_heaviside(tmp0, param.alpha_n, param.beta_n)
         + Math<double>::smooth_heaviside(tmp1, param.alpha_n, param.beta_n);
-    if (sum <= 1 - param.alpha_n)
+    if (sum <= 0)
         return false;
     else if (sum >= 1) {
         otypes.normal_type(0) = HEAVISIDE_TYPE::ONE;
@@ -135,7 +135,7 @@ double smooth_edge3_normal_term(
         negative_orientation_penalty(e0 - f0, e1 - f0, dn, alpha, beta)
             + negative_orientation_penalty(e0 - f1, e1 - f1, -dn, alpha, beta)
             - 1,
-        alpha, 0);
+        1., 0);
 }
 
 std::tuple<double, Vector15d> smooth_edge3_normal_term_gradient(
@@ -185,8 +185,8 @@ std::tuple<double, Vector15d> smooth_edge3_normal_term_gradient(
         gradient.segment<3>(12) -= dy.segment<3>(0) + dy.segment<3>(3);
     }
 
-    gradient *= Math<double>::smooth_heaviside_grad(val - 1, alpha, 0);
-    val = Math<double>::smooth_heaviside(val - 1, alpha, 0);
+    gradient *= Math<double>::smooth_heaviside_grad(val - 1, 1., 0);
+    val = Math<double>::smooth_heaviside(val - 1, 1., 0);
     return std::make_tuple(val, gradient);
 }
 
@@ -255,9 +255,9 @@ std::tuple<double, Vector15d, Matrix15d> smooth_edge3_normal_term_hessian(
     }
 
     const double hess_val =
-        Math<double>::smooth_heaviside_hess(value - 1, alpha, 0);
+        Math<double>::smooth_heaviside_hess(value - 1, 1., 0);
     const double grad_val =
-        Math<double>::smooth_heaviside_grad(value - 1, alpha, 0);
+        Math<double>::smooth_heaviside_grad(value - 1, 1., 0);
 
     hessian = gradient * hess_val * gradient.transpose() + grad_val * hessian;
     gradient = gradient * grad_val;
@@ -274,7 +274,7 @@ std::tuple<double, Vector15d, Matrix15d> smooth_edge3_normal_term_hessian(
     //     T normal_term = Math<T>::smooth_heaviside(
     //         (Math<T>::smooth_heaviside(X.head<3>().dot(n0) / n0.norm(), alpha, beta)
     //         + Math<T>::smooth_heaviside(X.head<3>().dot(n1) / n1.norm(), alpha, beta)
-    //         - 1), alpha, 0);
+    //         - 1), 1., 0);
         
     //     if ((normal_term.getHessian() - hessian).norm() > 1e-6 * hessian.norm()) {
     //         std::cout << "gradient: \n" << normal_term.getGradient().transpose() << "\n vs \n" << gradient.transpose() << std::endl;
@@ -283,7 +283,7 @@ std::tuple<double, Vector15d, Matrix15d> smooth_edge3_normal_term_hessian(
     // }
 
     return std::make_tuple(
-        Math<double>::smooth_heaviside(value - 1, alpha, 0),
+        Math<double>::smooth_heaviside(value - 1, 1., 0),
         gradient,
         hessian);
 }
@@ -567,7 +567,7 @@ scalar smooth_edge3_term_template(
              + Math<scalar>::smooth_heaviside(
                  dn.dot(n1) / n1.norm(), param.alpha_n, param.beta_n)
              - 1),
-            param.alpha_n, 0);
+            1., 0);
     }
 
     return (e1 - e0).squaredNorm() * tangent_term * normal_term;
