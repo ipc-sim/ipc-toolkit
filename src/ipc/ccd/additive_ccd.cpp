@@ -70,7 +70,7 @@ bool additive_ccd(
     const double tmax,
     const double conservative_rescaling)
 {
-    assert(conservative_rescaling > 0 && conservative_rescaling < 1);
+    assert(conservative_rescaling > 0 && conservative_rescaling <= 1);
 
     const double min_distance_sq = min_distance * min_distance;
 

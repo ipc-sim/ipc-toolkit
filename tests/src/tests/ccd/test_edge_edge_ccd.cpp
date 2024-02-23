@@ -140,7 +140,7 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge]")
         is_collision_expected = dy >= d0 / 2;
         conservative_check = false;
     }
-    CAPTURE(int(is_collision_expected));
+    CAPTURE(is_collision_expected);
 
     double toi;
     bool is_colliding = edge_edge_ccd(

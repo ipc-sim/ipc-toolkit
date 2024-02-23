@@ -17,7 +17,7 @@ public:
         const double weight,
         const Eigen::SparseVector<double>& weight_gradient);
 
-    virtual ~Collision() { }
+    virtual ~Collision() = default;
 
     // -- Distance mollifier ---------------------------------------------------
 

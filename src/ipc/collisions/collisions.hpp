@@ -22,7 +22,7 @@ public:
     using value_type = Collision;
 
 public:
-    Collisions() { }
+    Collisions() = default;
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param mesh The collision mesh.

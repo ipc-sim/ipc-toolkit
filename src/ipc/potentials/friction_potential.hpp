@@ -12,7 +12,7 @@ class FrictionPotential : public Potential<FrictionCollisions> {
 public:
     /// @brief Construct a friction potential.
     /// @param epsv The smooth friction mollifier parameter \f$\epsilon_v\f$.
-    FrictionPotential(const double epsv);
+    explicit FrictionPotential(const double epsv);
 
     /// @brief Get the smooth friction mollifier parameter \f$\epsilon_v\f$.
     double epsv() const { return m_epsv; }

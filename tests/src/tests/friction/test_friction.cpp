@@ -195,7 +195,8 @@ TEST_CASE(
 
     FrictionCollisions friction_collisions;
     friction_collisions.build(
-        mesh, V_lagged, collisions, dhat, barrier_stiffness, mu);
+        mesh, V_lagged, collisions, BarrierPotential(dhat), barrier_stiffness,
+        mu);
     REQUIRE(friction_collisions.size() == collisions.size());
     REQUIRE(friction_collisions.size() == expected_friction_collisions.size());
 
