@@ -28,7 +28,7 @@ scalar edge_edge_mollifier(
     const scalar& dist_sqr);
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
-std::tuple<double, Vector<double, 13>> edge_edge_mollifier_gradient(
+GradType<13> edge_edge_mollifier_gradient(
     const Eigen::Ref<const Vector3d>& ea0,
     const Eigen::Ref<const Vector3d>& ea1,
     const Eigen::Ref<const Vector3d>& eb0,
@@ -37,7 +37,7 @@ std::tuple<double, Vector<double, 13>> edge_edge_mollifier_gradient(
     const double& dist_sqr);
 
 /// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
-std::tuple<double, Vector<double, 13>, Eigen::Matrix<double, 13, 13>>
+HessianType<13>
 edge_edge_mollifier_hessian(
     const Eigen::Ref<const Vector3d>& ea0,
     const Eigen::Ref<const Vector3d>& ea1,
@@ -55,7 +55,7 @@ scalar point_face_mollifier(
     const scalar& dist_sqr);
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
-std::tuple<double, Vector<double, 13>>
+GradType<13>
 point_face_mollifier_gradient(
     const Eigen::Ref<const Vector3d>& p,
     const Eigen::Ref<const Vector3d>& e0,
@@ -64,7 +64,7 @@ point_face_mollifier_gradient(
     const double& dist_sqr);
 
 /// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
-std::tuple<double, Vector<double, 13>, Eigen::Matrix<double, 13, 13>>
+HessianType<13>
 point_face_mollifier_hessian(
     const Eigen::Ref<const Vector3d>& p,
     const Eigen::Ref<const Vector3d>& e0,

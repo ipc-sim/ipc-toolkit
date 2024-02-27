@@ -138,7 +138,7 @@ double smooth_edge3_normal_term(
         1., 0);
 }
 
-std::tuple<double, Vector15d> smooth_edge3_normal_term_gradient(
+GradType<15> smooth_edge3_normal_term_gradient(
     const Eigen::Ref<const Vector3d>& dn,
     const Eigen::Ref<const Vector3d>& e0,
     const Eigen::Ref<const Vector3d>& e1,
@@ -190,7 +190,7 @@ std::tuple<double, Vector15d> smooth_edge3_normal_term_gradient(
     return std::make_tuple(val, gradient);
 }
 
-std::tuple<double, Vector15d, Matrix15d> smooth_edge3_normal_term_hessian(
+HessianType<15> smooth_edge3_normal_term_hessian(
     const Eigen::Ref<const Vector3d>& dn,
     const Eigen::Ref<const Vector3d>& e0,
     const Eigen::Ref<const Vector3d>& e1,
@@ -315,7 +315,7 @@ double smooth_edge3_tangent_term(
     return tangent_term;
 }
 
-std::tuple<double, Vector15d> smooth_edge3_tangent_term_gradient(
+GradType<15> smooth_edge3_tangent_term_gradient(
     const Eigen::Ref<const Vector3d>& dn,
     const Eigen::Ref<const Vector3d>& e0,
     const Eigen::Ref<const Vector3d>& e1,
@@ -358,7 +358,7 @@ std::tuple<double, Vector15d> smooth_edge3_tangent_term_gradient(
         vals.prod(), vals[0] * grads[1] + vals[1] * grads[0]);
 }
 
-std::tuple<double, Vector15d, Matrix15d> smooth_edge3_tangent_term_hessian(
+HessianType<15> smooth_edge3_tangent_term_hessian(
     const Eigen::Ref<const Vector3d>& dn,
     const Eigen::Ref<const Vector3d>& e0,
     const Eigen::Ref<const Vector3d>& e1,
@@ -442,7 +442,7 @@ double smooth_edge3_term(
     return (e1 - e0).squaredNorm() * tangent_term * normal_term;
 }
 
-std::tuple<double, Vector15d> smooth_edge3_term_gradient(
+GradType<15> smooth_edge3_term_gradient(
     const Eigen::Ref<const Vector3d>& direc,
     const Eigen::Ref<const Vector3d>& e0,
     const Eigen::Ref<const Vector3d>& e1,
@@ -474,7 +474,7 @@ std::tuple<double, Vector15d> smooth_edge3_term_gradient(
     return std::make_tuple(val, gradient);
 }
 
-std::tuple<double, Vector15d, Matrix15d> smooth_edge3_term_hessian(
+HessianType<15> smooth_edge3_term_hessian(
     const Eigen::Ref<const Vector3d>& direc,
     const Eigen::Ref<const Vector3d>& e0,
     const Eigen::Ref<const Vector3d>& e1,

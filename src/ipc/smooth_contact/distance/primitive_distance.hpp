@@ -133,7 +133,7 @@ public:
         return std::make_tuple(out, J, H);
     }
 
-    static std::tuple<double, Vector<double, n_core_dofs + 1>>
+    static GradType<n_core_dofs + 1>
     compute_mollifier_gradient(
         const Vector<double, n_core_dofs>& x, const double dist_sqr)
     {
@@ -145,7 +145,7 @@ public:
         return std::make_tuple(out.getValue(), out.getGradient());
     }
 
-    static std::tuple<double, Vector<double, n_core_dofs + 1>, Eigen::Matrix<double, n_core_dofs + 1, n_core_dofs + 1>>
+    static HessianType<n_core_dofs + 1>
     compute_mollifier_hessian(
         const Vector<double, n_core_dofs>& x, const double dist_sqr)
     {

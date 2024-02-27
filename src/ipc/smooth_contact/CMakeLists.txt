@@ -1,6 +1,5 @@
 set(SOURCES
   common.hpp
-  smooth_contact_potential.cpp
   smooth_contact_potential.hpp
   smooth_collisions.cpp
   smooth_collisions.hpp

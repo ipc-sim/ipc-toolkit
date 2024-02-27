@@ -19,7 +19,7 @@ Point3::Point3(
 
     if (_vert_ids.size() > n_vert_neighbors_3d)
         logger().error(
-            "Too many neighbors for point3 primitive! {} > {}",
+            "Too many neighbors for point3 primitive! {} > {}! Increase n_vert_neighbors_3d in common.hpp",
             _vert_ids.size(), n_vert_neighbors_3d);
 
     Eigen::Vector3d v = vertices.row(id);
@@ -106,7 +106,7 @@ double smooth_point3_term_tangent(
     return tangent_term;
 }
 
-std::tuple<double, Eigen::VectorXd> smooth_point3_term_tangent_gradient(
+GradType<-1> smooth_point3_term_tangent_gradient(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
     const double& alpha,
@@ -139,7 +139,7 @@ std::tuple<double, Eigen::VectorXd> smooth_point3_term_tangent_gradient(
     return std::make_tuple(values.prod(), tangent_grad);
 }
 
-std::tuple<double, Eigen::VectorXd, Eigen::MatrixXd>
+HessianType<-1>
 smooth_point3_term_tangent_hessian(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
@@ -238,7 +238,7 @@ double smooth_point3_term_normal(
     return Math<double>::smooth_heaviside(normal_term - 1, 1., 0);
 }
 
-std::tuple<double, Eigen::VectorXd> smooth_point3_term_normal_gradient(
+GradType<-1> smooth_point3_term_normal_gradient(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
     const double& alpha,
@@ -278,7 +278,7 @@ std::tuple<double, Eigen::VectorXd> smooth_point3_term_normal_gradient(
     return std::make_tuple(val, grad * grad_val);
 }
 
-std::tuple<double, Eigen::VectorXd, Eigen::MatrixXd>
+HessianType<-1>
 smooth_point3_term_normal_hessian(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
@@ -372,7 +372,7 @@ bool smooth_point3_term_type(
     return normal_term > 0;
 }
 
-std::tuple<double, Eigen::VectorXd> smooth_point3_term_gradient(
+GradType<-1> smooth_point3_term_gradient(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const RowVector3<double>>& v,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,
@@ -420,7 +420,7 @@ std::tuple<double, Eigen::VectorXd> smooth_point3_term_gradient(
     return std::tuple(val, grad);
 }
 
-std::tuple<double, Eigen::VectorXd, Eigen::MatrixXd> smooth_point3_term_hessian(
+HessianType<-1> smooth_point3_term_hessian(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const RowVector3<double>>& v,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,

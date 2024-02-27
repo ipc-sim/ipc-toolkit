@@ -125,13 +125,13 @@ double opposite_direction_penalty(
     const double& alpha,
     const double& beta);
 
-std::tuple<double, Vector6d> opposite_direction_penalty_grad(
+GradType<6> opposite_direction_penalty_grad(
     const Eigen::Ref<const Eigen::Vector3d>& t,
     const Eigen::Ref<const Eigen::Vector3d>& d,
     const double& alpha,
     const double& beta);
 
-std::tuple<double, Vector6d, Matrix6d> opposite_direction_penalty_hess(
+HessianType<6> opposite_direction_penalty_hess(
     const Eigen::Ref<const Eigen::Vector3d>& t,
     const Eigen::Ref<const Eigen::Vector3d>& d,
     const double& alpha,
@@ -145,14 +145,14 @@ double negative_orientation_penalty(
     const double& alpha,
     const double& beta);
 
-std::tuple<double, Vector9d> negative_orientation_penalty_grad(
+GradType<9> negative_orientation_penalty_grad(
     const Eigen::Ref<const Eigen::Vector3d>& t1,
     const Eigen::Ref<const Eigen::Vector3d>& t2,
     const Eigen::Ref<const Eigen::Vector3d>& d,
     const double& alpha,
     const double& beta);
 
-std::tuple<double, Vector9d, Matrix9d> negative_orientation_penalty_hess(
+HessianType<9> negative_orientation_penalty_hess(
     const Eigen::Ref<const Eigen::Vector3d>& t1,
     const Eigen::Ref<const Eigen::Vector3d>& t2,
     const Eigen::Ref<const Eigen::Vector3d>& d,

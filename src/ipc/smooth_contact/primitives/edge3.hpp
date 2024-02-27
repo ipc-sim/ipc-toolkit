@@ -72,7 +72,7 @@ double smooth_edge3_term(
     const ParameterType& param,
     const ORIENTATION_TYPES& otypes);
 
-std::tuple<double, Vector<double, 15>> smooth_edge3_term_gradient(
+GradType<15> smooth_edge3_term_gradient(
     const Eigen::Ref<const Vector3<double>>& direc,
     const Eigen::Ref<const Vector3<double>>& e0,
     const Eigen::Ref<const Vector3<double>>& e1,
@@ -81,7 +81,7 @@ std::tuple<double, Vector<double, 15>> smooth_edge3_term_gradient(
     const ParameterType& param,
     const ORIENTATION_TYPES& otypes);
 
-std::tuple<double, Vector<double, 15>, Eigen::Matrix<double, 15, 15>>
+HessianType<15>
 smooth_edge3_term_hessian(
     const Eigen::Ref<const Vector3<double>>& direc,
     const Eigen::Ref<const Vector3<double>>& e0,

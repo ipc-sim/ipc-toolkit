@@ -65,14 +65,14 @@ bool smooth_point3_term_type(
     const ParameterType& param,
     ORIENTATION_TYPES& otypes);
 
-std::tuple<double, Eigen::VectorXd> smooth_point3_term_gradient(
+GradType<-1> smooth_point3_term_gradient(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const RowVector3<double>>& v,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,
     const ParameterType& param,
     const ORIENTATION_TYPES& otypes);
 
-std::tuple<double, Eigen::VectorXd, Eigen::MatrixXd> smooth_point3_term_hessian(
+HessianType<-1> smooth_point3_term_hessian(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const RowVector3<double>>& v,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,
@@ -86,14 +86,14 @@ double smooth_point3_term_tangent(
     const double& beta,
     const ORIENTATION_TYPES& otypes);
 
-std::tuple<double, Eigen::VectorXd> smooth_point3_term_tangent_gradient(
+GradType<-1> smooth_point3_term_tangent_gradient(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
     const double& alpha,
     const double& beta,
     const ORIENTATION_TYPES& otypes);
 
-std::tuple<double, Eigen::VectorXd, Eigen::MatrixXd>
+HessianType<-1>
 smooth_point3_term_tangent_hessian(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
@@ -108,14 +108,14 @@ double smooth_point3_term_normal(
     const double& beta,
     const ORIENTATION_TYPES& otypes);
 
-std::tuple<double, Eigen::VectorXd> smooth_point3_term_normal_gradient(
+GradType<-1> smooth_point3_term_normal_gradient(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
     const double& alpha,
     const double& beta,
     const ORIENTATION_TYPES& otypes);
 
-std::tuple<double, Eigen::VectorXd, Eigen::MatrixXd>
+HessianType<-1>
 smooth_point3_term_normal_hessian(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,

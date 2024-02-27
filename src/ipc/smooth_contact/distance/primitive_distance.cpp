@@ -264,7 +264,7 @@ PrimitiveDistance<Point3, Point3>::compute_closest_direction_hessian(
 }
 
 template <>
-std::tuple<double, Vector<double, PrimitiveDistance<Edge3, Edge3>::n_core_dofs + 1>>
+GradType<PrimitiveDistance<Edge3, Edge3>::n_core_dofs + 1>
 PrimitiveDistance<Edge3, Edge3>::compute_mollifier_gradient(
     const Vector<double, n_core_dofs>& x, const double dist_sqr)
 {
@@ -278,7 +278,7 @@ PrimitiveDistance<Edge3, Edge3>::compute_mollifier_gradient(
 }
 
 template <>
-std::tuple<double, Vector<double, PrimitiveDistance<Edge3, Edge3>::n_core_dofs + 1>, Eigen::Matrix<double, PrimitiveDistance<Edge3, Edge3>::n_core_dofs + 1, PrimitiveDistance<Edge3, Edge3>::n_core_dofs + 1>>
+HessianType<PrimitiveDistance<Edge3, Edge3>::n_core_dofs + 1>
 PrimitiveDistance<Edge3, Edge3>::compute_mollifier_hessian(
     const Vector<double, n_core_dofs>& x, const double dist_sqr)
 {
@@ -292,7 +292,7 @@ PrimitiveDistance<Edge3, Edge3>::compute_mollifier_hessian(
 }
 
 template <>
-std::tuple<double, Vector<double, PrimitiveDistance<Face, Point3>::n_core_dofs + 1>>
+GradType<PrimitiveDistance<Face, Point3>::n_core_dofs + 1>
 PrimitiveDistance<Face, Point3>::compute_mollifier_gradient(
     const Vector<double, n_core_dofs>& x, const double dist_sqr)
 {
@@ -304,7 +304,7 @@ PrimitiveDistance<Face, Point3>::compute_mollifier_gradient(
 }
 
 template <>
-std::tuple<double, Vector<double, PrimitiveDistance<Face, Point3>::n_core_dofs + 1>, Eigen::Matrix<double, PrimitiveDistance<Face, Point3>::n_core_dofs + 1, PrimitiveDistance<Face, Point3>::n_core_dofs + 1>>
+HessianType<PrimitiveDistance<Face, Point3>::n_core_dofs + 1>
 PrimitiveDistance<Face, Point3>::compute_mollifier_hessian(
     const Vector<double, n_core_dofs>& x, const double dist_sqr)
 {

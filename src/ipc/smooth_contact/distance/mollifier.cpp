@@ -8,10 +8,10 @@
 
 namespace ipc {
 namespace {
-    double func_aux(const double& a, const double& b, const double& c, const double& eps)
-    {
-        return Math<double>::mollifier((a - c) / c / eps);
-    }
+    // double func_aux(const double& a, const double& b, const double& c, const double& eps)
+    // {
+    //     return Math<double>::mollifier((a - c) / c / eps);
+    // }
 
     Vector<int, 9> get_indices(int i, int j, int k)
     {
@@ -21,13 +21,15 @@ namespace {
         return out;
     }
 
-    Eigen::Vector3d
+    GradType<3>
     func_aux_grad(const double& a, const double& b, const double& c, const double& eps)
     {
-        return Eigen::Vector3d(1. / c, 0., -a / c / c) * Math<double>::mollifier_grad((a - c) / c / eps) / eps;
+        const double val = (a - c) / c / eps;
+        return std::make_tuple(Math<double>::mollifier(val), 
+        Eigen::Vector3d(1. / c, 0., -a / c / c) * Math<double>::mollifier_grad(val) / eps);
     }
 
-    std::tuple<double, Vector3d, Matrix3d>
+    HessianType<3>
     func_aux_hess(const double& a, const double& b, const double& c, const double& eps)
     {
         const double c2 = 1. / c / c;
@@ -39,19 +41,17 @@ namespace {
         g1 << 1. / c, 0., -a * c2;
 
         const double val = (a - c) / c;
-        const double g2 = Math<double>::mollifier_grad(val / eps);
-        const double h2 = Math<double>::mollifier_hess(val / eps);
+        const double g2 = Math<double>::mollifier_grad(val / eps) / eps;
+        const double h2 = Math<double>::mollifier_hess(val / eps) / eps / eps;
 
-        const double common_factor = 1. / eps;
         return std::make_tuple(Math<double>::mollifier(val / eps),
-         g1 * g2 * common_factor,
-         h1 * (g2 * common_factor) +
-         g1 * (h2 * common_factor * common_factor) * g1.transpose());
+         g1 * g2,
+         h1 * g2 + g1 * h2 * g1.transpose());
     }
 } // namespace
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
-std::tuple<double, Vector<double, 13>> edge_edge_mollifier_gradient(
+GradType<13> edge_edge_mollifier_gradient(
     const Eigen::Ref<const Vector3<double>>& ea0,
     const Eigen::Ref<const Vector3<double>>& ea1,
     const Eigen::Ref<const Vector3<double>>& eb0,
@@ -106,8 +106,7 @@ std::tuple<double, Vector<double, 13>> edge_edge_mollifier_gradient(
     mollifier_grad.setZero();
     for (int i = 0; i < 4; i++) {
         const double len = edge_lengths(1 - i / 2);
-        const double val2 = func_aux(point_edge_dists(i), len, input(12), mollifier_threshold_eps);
-        const Vector3d g2 = func_aux_grad(point_edge_dists(i), len, input(12), mollifier_threshold_eps);
+        const auto [val2, g2] = func_aux_grad(point_edge_dists(i), len, input(12), mollifier_threshold_eps);
 
         Eigen::Vector3i ind;
         ind << 3 + i, 2 - i / 2, 0;
@@ -116,7 +115,7 @@ std::tuple<double, Vector<double, 13>> edge_edge_mollifier_gradient(
     }
 
     // partial products of mollifiers
-    Vector<double, 4> partial_products_1;
+    Vector4d partial_products_1;
     partial_products_1.setOnes();
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
@@ -130,19 +129,15 @@ std::tuple<double, Vector<double, 13>> edge_edge_mollifier_gradient(
     Vector<double, 7> product_grad = mollifier_grad.transpose() * partial_products_1;
     
     // derivatives wrt. input : [ea0, ea1, eb0, eb1, dist_sqr]
-    Vector<double, 13> grad = Vector<double, 13>::Zero();
-    {
-        Eigen::Matrix<double, 6, 12> grads;
-        grads << edge_lengths_grad, point_edge_dists_grad;
-
-        grad(12) = product_grad(0);
-        grad.head<12>() = grads.transpose() * product_grad.segment<6>(1);
-    }
+    Vector<double, 13> grad;
+    grad << edge_lengths_grad.transpose() * product_grad.segment<2>(1) +
+            point_edge_dists_grad.transpose() * product_grad.segment<4>(3), product_grad(0);
+    
     return std::make_tuple(mollifier.prod(), grad);
 }
 
 /// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
-std::tuple<double, Vector<double, 13>, Eigen::Matrix<double, 13, 13>>
+HessianType<13>
 edge_edge_mollifier_hessian(
     const Eigen::Ref<const Vector3<double>>& ea0,
     const Eigen::Ref<const Vector3<double>>& ea1,
@@ -192,7 +187,7 @@ edge_edge_mollifier_hessian(
     Eigen::Matrix<double, 2, 12> edge_lengths_grad;
     edge_lengths_grad.setZero();
     for (int i = 0; i < 2; i++) {
-        Vector3d edge = input.segment<3>(i * 6) - input.segment<3>(i * 6 + 3);
+        const Vector3d edge = input.segment<3>(i * 6) - input.segment<3>(i * 6 + 3);
         edge_lengths(i) = edge.squaredNorm();
         edge_lengths_grad.block<1, 3>(i, 0 + 6 * i) = 2 * edge;
         edge_lengths_grad.block<1, 3>(i, 3 + 6 * i) = -2 * edge;
@@ -218,7 +213,7 @@ edge_edge_mollifier_hessian(
     }
 
     // partial products of mollifiers
-    Vector<double, 4> partial_products_1;
+    Vector4d partial_products_1;
     partial_products_1.setOnes();
     Eigen::Matrix<double, 4, 4> partial_products_2;
     partial_products_2.setOnes();
@@ -299,7 +294,7 @@ std::array<HEAVISIDE_TYPE, 4> edge_edge_mollifier_type(
 }
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
-std::tuple<double, Vector<double, 13>>
+GradType<13>
 point_face_mollifier_gradient(
     const Eigen::Ref<const Vector3d>& p,
     const Eigen::Ref<const Vector3d>& e0,
@@ -330,8 +325,8 @@ point_face_mollifier_gradient(
         ind << ek,ek+1,ek+2, ei,ei+1,ei+2, ej,ej+1,ej+2;
         dist_grad(1, ind) = point_line_distance_gradient(x.segment<3>(ek), x.segment<3>(ei), x.segment<3>(ej));
         
-        vals(i) = func_aux(point_edge_dist, vert_edge_dist, dist_sqr, mollifier_threshold_eps);
-        Vector3d tmp_grad = func_aux_grad(point_edge_dist, vert_edge_dist, dist_sqr, mollifier_threshold_eps);
+        Vector3d tmp_grad;
+        std::tie(vals(i), tmp_grad) = func_aux_grad(point_edge_dist, vert_edge_dist, dist_sqr, mollifier_threshold_eps);
 
         grads.row(i) = tmp_grad.head<2>().transpose() * dist_grad;
         grads(i, 12) += tmp_grad(2);
@@ -343,7 +338,7 @@ point_face_mollifier_gradient(
 }
 
 /// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
-std::tuple<double, Vector<double, 13>, Eigen::Matrix<double, 13, 13>>
+HessianType<13>
 point_face_mollifier_hessian(
     const Eigen::Ref<const Vector3d>& p,
     const Eigen::Ref<const Vector3d>& e0,
