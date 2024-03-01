@@ -485,6 +485,6 @@ std::string Collisions::to_string(
     return ss.str();
 }
 
-template class VirtualCollisions<4>;
+template class CollisionsBase<4>;
 
 } // namespace ipc

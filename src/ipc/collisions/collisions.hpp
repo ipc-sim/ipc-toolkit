@@ -16,13 +16,13 @@
 
 namespace ipc {
 
-template <int max_vert = 4> class VirtualCollisions {
+template <int max_vert = 4> class CollisionsBase {
 public:
     /// @brief The type of the collisions.
     using value_type = Collision<max_vert>;
 
-    VirtualCollisions() = default;
-    virtual ~VirtualCollisions() = default;
+    CollisionsBase() = default;
+    virtual ~CollisionsBase() = default;
 
     /// @brief Get the number of collisions.
     virtual size_t size() const = 0;
@@ -104,7 +104,7 @@ protected:
     bool m_are_shape_derivatives_enabled = false;
 };
 
-class Collisions : public VirtualCollisions<4> {
+class Collisions : public CollisionsBase<4> {
 public:
     /// @brief The type of the collisions.
     using value_type = Collision<4>;

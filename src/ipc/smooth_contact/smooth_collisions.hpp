@@ -7,18 +7,14 @@ namespace ipc {
 
 template <int dim>
 class SmoothCollisions
-    : public VirtualCollisions<(dim == 2) ? max_vert_2d : max_vert_3d> {
+    : public CollisionsBase<MaxVertices<dim>::value> {
 public:
-    constexpr static int max_vert = (dim == 2) ? max_vert_2d : max_vert_3d;
-    using Super = VirtualCollisions<max_vert>;
+    using Super = CollisionsBase<MaxVertices<dim>::value>;
     /// @brief The type of the collisions.
-    using value_type = SmoothCollision<max_vert>;
+    using value_type = SmoothCollision<MaxVertices<dim>::value>;
 
 public:
-    // SmoothCollisions() = default;
-    SmoothCollisions()
-    {
-    }
+    SmoothCollisions() = default;
 
     void compute_adaptive_dhat(
         const CollisionMesh& mesh,

@@ -12,6 +12,10 @@ constexpr static int n_edge_neighbors_3d = 4;
 constexpr static int n_face_neighbors_3d = 3;
 constexpr static int max_vert_3d = 24;
 
+template <int dim> class MaxVertices;
+template <> class MaxVertices<2> { public: static constexpr int value = max_vert_2d; };
+template <> class MaxVertices<3> { public: static constexpr int value = max_vert_3d; };
+
 struct ParameterType {
     ParameterType(
         const double& _dhat,
