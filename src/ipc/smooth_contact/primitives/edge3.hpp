@@ -18,7 +18,7 @@ public:
         const ParameterType& param);
 
     int n_vertices() const override;
-    int n_dofs() const override { return n_vertices() * 3; }
+    int n_dofs() const override { return n_vertices() * dim; }
 
     double potential(
         const Eigen::Ref<const Eigen::Vector3d>& d,

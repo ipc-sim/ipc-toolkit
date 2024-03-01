@@ -1,5 +1,5 @@
 #include "smooth_collisions_builder.hpp"
-
+#include <tbb/enumerable_thread_specific.h>
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_edge.hpp>
@@ -182,14 +182,7 @@ void SmoothCollisionsBuilder<dim>::add_collision(
 
 template <int dim>
 void SmoothCollisionsBuilder<dim>::merge(
-#if defined(IPC_TOOLKIT_WITH_TBB)
-        const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>&
-#elif defined(IPC_TOOLKIT_WITH_CPP_THREADS)
-        const std::vector<SmoothCollisionsBuilder<dim>>&
-#else
-        const std::array<SmoothCollisionsBuilder<dim>, 1>&
-#endif
-        local_storage,
+    const utils::ParallelCacheType<SmoothCollisionsBuilder<dim>>& local_storage,
     SmoothCollisions<dim>& merged_collisions)
 {
     unordered_map<

@@ -18,7 +18,7 @@ public:
         const ParameterType& param);
 
     int n_vertices() const override;
-    int n_dofs() const override { return n_vertices() * 3; }
+    int n_dofs() const override { return n_vertices() * dim; }
 
     double potential(const Vector3d& d, const Vector9d& x) const;
     Vector12d grad(const Vector3d& d, const Vector9d& x) const;

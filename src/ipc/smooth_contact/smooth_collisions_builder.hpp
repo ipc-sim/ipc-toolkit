@@ -2,7 +2,7 @@
 
 #include <ipc/collision_mesh.hpp>
 #include "smooth_collisions.hpp"
-#include <tbb/enumerable_thread_specific.h>
+#include <ipc/utils/MaybeParallelFor.hpp>
 
 #include <Eigen/Core>
 
@@ -26,14 +26,7 @@ public:
     // ------------------------------------------------------------------------
 
     static void merge(
-#if defined(IPC_TOOLKIT_WITH_TBB)
-        const tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>>&
-#elif defined(IPC_TOOLKIT_WITH_CPP_THREADS)
-        const std::vector<SmoothCollisionsBuilder<dim>>&
-#else
-        const std::array<SmoothCollisionsBuilder<dim>, 1>&
-#endif
-            local_storage,
+        const utils::ParallelCacheType<SmoothCollisionsBuilder<dim>>& local_storage,
         SmoothCollisions<dim>& merged_collisions);
 
     // -------------------------------------------------------------------------

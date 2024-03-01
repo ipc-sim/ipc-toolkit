@@ -1,5 +1,5 @@
 #include "smooth_collisions.hpp"
-
+#include <tbb/enumerable_thread_specific.h>
 #include "smooth_collisions_builder.hpp"
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>

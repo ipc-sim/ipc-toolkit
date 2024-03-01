@@ -6,7 +6,9 @@
 #include <tbb/enumerable_thread_specific.h>
 #elif defined(IPC_TOOLKIT_WITH_CPP_THREADS)
 #include "par_for.hpp"
+#include <vector>
 #else
+#include <array>
 // Not using parallel for
 #endif
 
@@ -14,6 +16,16 @@ namespace ipc
 {
 	namespace utils
 	{
+		
+		template <typename T>
+#if defined(IPC_TOOLKIT_WITH_TBB)
+        using ParallelCacheType = tbb::enumerable_thread_specific<T>;
+#elif defined(IPC_TOOLKIT_WITH_CPP_THREADS)
+        using ParallelCacheType = std::vector<T>;
+#else
+        using ParallelCacheType = std::array<T, 1>;
+#endif
+
 		// Perform a parallel (maybe) for loop.
 		// The parallel for used depends on the compile definitions.
 		// The overall for loop is from 0 up to `size` with an increment of 1.

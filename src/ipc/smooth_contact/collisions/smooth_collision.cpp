@@ -42,9 +42,6 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
     if (d.norm() < 1e-12)
         logger().warn("pair distance {}, id {} and {}, dtype {}, active {}", d.norm(), primitive0_,
                         primitive1_, PrimitiveDistType<PrimitiveA, PrimitiveB>::name, Super::is_active_);
-
-    if (!Super::is_active())
-        return;
 }
 
 template <int max_vert, typename PrimitiveA, typename PrimitiveB>
