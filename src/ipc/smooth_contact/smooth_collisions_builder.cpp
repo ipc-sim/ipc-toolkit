@@ -13,7 +13,7 @@ namespace {
     template <int dim, typename TCollision>
     void add_collision(
         const std::shared_ptr<TCollision>& pair,
-        unordered_map<std::pair<long, long>, std::tuple<TCollision, long>>&
+        unordered_map<std::pair<long, long>, std::shared_ptr<TCollision>>&
             cc_to_id_,
         std::vector<
             std::shared_ptr<typename SmoothCollisions<dim>::value_type>>&
@@ -24,7 +24,7 @@ namespace {
             // New collision, so add it to the end of collisions
             cc_to_id_.emplace(
                 pair->get_hash(),
-                std::tuple<TCollision, long>(*pair, collisions_.size()));
+                pair);
             collisions_.push_back(pair);
         }
     }
@@ -181,19 +181,19 @@ void SmoothCollisionsBuilder<3>::merge(
 {
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothCollisionTemplate<max_vert_3d, Face, Point3>, long>>
+        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Face, Point3>>>
         face_vert_to_id;
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>, long>>
+        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>>
         vert_vert_3_to_id;
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>, long>>
+        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>>
         edge_vert_3_to_id;
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>, long>>
+        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>>
         edge_edge_3_to_id;
 
     // size up the hash items
@@ -203,77 +203,27 @@ void SmoothCollisionsBuilder<3>::merge(
 
     merged_collisions.collisions.reserve(total);
 
-    int edge_vert_count = 0;
-    int vert_vert_count = 0;
-    int face_vert_count = 0;
-    int edge_edge_count = 0;
-
     // merge
     for (auto& builder : local_storage)
-        for (auto& cc : builder.collisions) {
-            if (auto ee3 = std::dynamic_pointer_cast<
-                    SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>(cc)) {
-                if (edge_edge_3_to_id.find(cc->get_hash())
-                    == edge_edge_3_to_id.end()) {
-                    merged_collisions.collisions.push_back(cc);
-                    edge_edge_3_to_id.emplace(
-                        cc->get_hash(),
-                        std::make_tuple<
-                            SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>,
-                            long>(
-                            std::move(*ee3),
-                            merged_collisions.collisions.size()));
-                    edge_edge_count++;
-                }
-            } else if (
-                auto vv3 = std::dynamic_pointer_cast<
-                    SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>(cc)) {
-                if (vert_vert_3_to_id.find(cc->get_hash())
-                    == vert_vert_3_to_id.end()) {
-                    merged_collisions.collisions.push_back(cc);
-                    vert_vert_3_to_id.emplace(
-                        cc->get_hash(),
-                        std::make_tuple<
-                            SmoothCollisionTemplate<
-                                max_vert_3d, Point3, Point3>,
-                            long>(
-                            std::move(*vv3),
-                            merged_collisions.collisions.size()));
-                    vert_vert_count++;
-                }
-            } else if (
-                auto ev3 = std::dynamic_pointer_cast<
-                    SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>(cc)) {
-                if (edge_vert_3_to_id.find(cc->get_hash())
-                    == edge_vert_3_to_id.end()) {
-                    merged_collisions.collisions.push_back(cc);
-                    edge_vert_3_to_id.emplace(
-                        cc->get_hash(),
-                        std::make_tuple<
-                            SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>,
-                            long>(
-                            std::move(*ev3),
-                            merged_collisions.collisions.size()));
-                    edge_vert_count++;
-                }
-            } else if (
-                auto ff = std::dynamic_pointer_cast<
-                    SmoothCollisionTemplate<max_vert_3d, Face, Point3>>(cc)) {
-                if (face_vert_to_id.find(cc->get_hash())
-                    == face_vert_to_id.end()) {
-                    merged_collisions.collisions.push_back(cc);
-                    face_vert_to_id.emplace(
-                        cc->get_hash(),
-                        std::make_tuple<
-                            SmoothCollisionTemplate<max_vert_3d, Face, Point3>,
-                            long>(
-                            std::move(*ff),
-                            merged_collisions.collisions.size()));
-                    face_vert_count++;
-                }
-            } else
-                throw std::runtime_error("Invalid collision type!");
-        }
+    {
+        face_vert_to_id.insert(builder.face_vert_to_id.begin(), builder.face_vert_to_id.end());
+        vert_vert_3_to_id.insert(builder.vert_vert_3_to_id.begin(), builder.vert_vert_3_to_id.end());
+        edge_vert_3_to_id.insert(builder.edge_vert_3_to_id.begin(), builder.edge_vert_3_to_id.end());
+        edge_edge_3_to_id.insert(builder.edge_edge_3_to_id.begin(), builder.edge_edge_3_to_id.end());
+    }
+    int edge_vert_count = edge_vert_3_to_id.size();
+    int vert_vert_count = vert_vert_3_to_id.size();
+    int face_vert_count = face_vert_to_id.size();
+    int edge_edge_count = edge_edge_3_to_id.size();
+
+    for (const auto& [key, val] : face_vert_to_id)
+        merged_collisions.collisions.push_back(val);
+    for (const auto& [key, val] : vert_vert_3_to_id)
+        merged_collisions.collisions.push_back(val);
+    for (const auto& [key, val] : edge_vert_3_to_id)
+        merged_collisions.collisions.push_back(val);
+    for (const auto& [key, val] : edge_edge_3_to_id)
+        merged_collisions.collisions.push_back(val);
 
     logger().trace(
         "edge-vert pairs {}, vert-vert pairs {}", edge_vert_count,
@@ -289,11 +239,11 @@ void SmoothCollisionsBuilder<2>::merge(
 {
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothCollisionTemplate<max_vert_2d, Point2, Point2>, long>>
+        std::shared_ptr<SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>>
         vert_vert_2_to_id;
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>, long>>
+        std::shared_ptr<SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>>
         vert_edge_2_to_id;
 
     // size up the hash items
@@ -303,45 +253,19 @@ void SmoothCollisionsBuilder<2>::merge(
 
     merged_collisions.collisions.reserve(total);
 
-    int edge_vert_count = 0;
-    int vert_vert_count = 0;
-
     // merge
     for (auto& builder : local_storage)
-        for (auto& cc : builder.collisions) {
-            if (auto vv2 = std::dynamic_pointer_cast<
-                    SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(cc)) {
-                if (vert_vert_2_to_id.find(cc->get_hash())
-                    == vert_vert_2_to_id.end()) {
-                    merged_collisions.collisions.push_back(cc);
-                    vert_vert_2_to_id.emplace(
-                        cc->get_hash(),
-                        std::make_tuple<
-                            SmoothCollisionTemplate<
-                                max_vert_2d, Point2, Point2>,
-                            long>(
-                            std::move(*vv2),
-                            merged_collisions.collisions.size()));
-                    vert_vert_count++;
-                }
-            } else if (
-                auto ev2 = std::dynamic_pointer_cast<
-                    SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>(cc)) {
-                if (vert_edge_2_to_id.find(cc->get_hash())
-                    == vert_edge_2_to_id.end()) {
-                    merged_collisions.collisions.push_back(cc);
-                    vert_edge_2_to_id.emplace(
-                        cc->get_hash(),
-                        std::make_tuple<
-                            SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>,
-                            long>(
-                            std::move(*ev2),
-                            merged_collisions.collisions.size()));
-                    vert_vert_count++;
-                }
-            } else
-                throw std::runtime_error("Invalid collision type!");
-        }
+    {
+        vert_vert_2_to_id.insert(builder.vert_vert_2_to_id.begin(), builder.vert_vert_2_to_id.end());
+        vert_edge_2_to_id.insert(builder.vert_edge_2_to_id.begin(), builder.vert_edge_2_to_id.end());
+    }
+    int edge_vert_count = vert_edge_2_to_id.size();
+    int vert_vert_count = vert_vert_2_to_id.size();
+
+    for (const auto& [key, val] : vert_vert_2_to_id)
+        merged_collisions.collisions.push_back(val);
+    for (const auto& [key, val] : vert_edge_2_to_id)
+        merged_collisions.collisions.push_back(val);
 
     logger().trace(
         "edge-vert pairs {}, vert-vert pairs {}", edge_vert_count,

@@ -39,11 +39,11 @@ public:
     // Store the indices to pairs to avoid duplicates.
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothCollisionTemplate<max_vert_2d, Point2, Point2>, long>>
+        std::shared_ptr<SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>>
         vert_vert_2_to_id;
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>, long>>
+        std::shared_ptr<SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>>
         vert_edge_2_to_id;
 };
 
@@ -87,19 +87,19 @@ public:
     // Store the indices to pairs to avoid duplicates.
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothCollisionTemplate<max_vert_3d, Face, Point3>, long>>
+        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Face, Point3>>>
         face_vert_to_id;
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>, long>>
+        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>>
         vert_vert_3_to_id;
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>, long>>
+        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>>
         edge_vert_3_to_id;
     unordered_map<
         std::pair<long, long>,
-        std::tuple<SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>, long>>
+        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>>
         edge_edge_3_to_id;
 };
 
