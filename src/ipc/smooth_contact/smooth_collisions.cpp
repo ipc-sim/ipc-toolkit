@@ -34,75 +34,70 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
         candidates, mesh, vertices, param,
         false /*disable adaptive dhat to compute true pairs*/);
 
-    vert_adaptive_dhat.resize(mesh.num_vertices());
-    vert_adaptive_dhat.setConstant(dhat);
-    edge_adaptive_dhat.resize(mesh.num_edges());
-    edge_adaptive_dhat.setConstant(dhat);
-    face_adaptive_dhat.resize(mesh.num_faces());
-    face_adaptive_dhat.setConstant(dhat);
+    vert_adaptive_dhat.setConstant(mesh.num_vertices(), dhat);
+    edge_adaptive_dhat.setConstant(mesh.num_edges(), dhat);
+    if constexpr (dim == 3)
+        face_adaptive_dhat.setConstant(mesh.num_faces(), dhat);
 
-    for (auto cc : collisions) {
+    auto assign_min = [](double &a, const double &b) -> void {
+        a = std::min(a, b);
+    };
+
+    for (const auto& cc : collisions) {
         const double dist = param.get_adaptive_dhat_ratio()
             * sqrt(cc->compute_distance(
                 cc->dof(vertices, mesh.edges(), mesh.faces())));
-        if (std::dynamic_pointer_cast<
-                SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>(cc)) {
-            edge_adaptive_dhat((*cc)[0]) =
-                std::min(edge_adaptive_dhat((*cc)[0]), dist);
-            edge_adaptive_dhat((*cc)[1]) =
-                std::min(edge_adaptive_dhat((*cc)[1]), dist);
-        } else if (
-            std::dynamic_pointer_cast<
-                SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>(cc)
-            || std::dynamic_pointer_cast<
-                SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>(cc)) {
-            edge_adaptive_dhat((*cc)[0]) =
-                std::min(edge_adaptive_dhat((*cc)[0]), dist);
-            vert_adaptive_dhat((*cc)[1]) =
-                std::min(vert_adaptive_dhat((*cc)[1]), dist);
-        } else if (std::dynamic_pointer_cast<
-                       SmoothCollisionTemplate<max_vert_3d, Face, Point3>>(
-                       cc)) {
-            face_adaptive_dhat((*cc)[0]) =
-                std::min(face_adaptive_dhat((*cc)[0]), dist);
-            vert_adaptive_dhat((*cc)[1]) =
-                std::min(vert_adaptive_dhat((*cc)[1]), dist);
-        } else if (
-            std::dynamic_pointer_cast<
-                SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(cc)
-            || std::dynamic_pointer_cast<
-                SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>(cc)) {
-            vert_adaptive_dhat((*cc)[0]) =
-                std::min(vert_adaptive_dhat((*cc)[0]), dist);
-            vert_adaptive_dhat((*cc)[1]) =
-                std::min(vert_adaptive_dhat((*cc)[1]), dist);
-        } else
-            throw std::runtime_error("Invalid collision type!");
+        switch (cc->type()) {
+            case CollisionType::EdgeEdge:
+                    assign_min(edge_adaptive_dhat((*cc)[0]), dist);
+                    assign_min(edge_adaptive_dhat((*cc)[1]), dist);
+                break;
+            case CollisionType::EdgeVertex:
+                    assign_min(edge_adaptive_dhat((*cc)[0]), dist);
+                    assign_min(vert_adaptive_dhat((*cc)[1]), dist);
+                break;
+            case CollisionType::FaceVertex:
+                    assign_min(face_adaptive_dhat((*cc)[0]), dist);
+                    assign_min(vert_adaptive_dhat((*cc)[1]), dist);
+                break;
+            case CollisionType::VertexVertex:
+                    assign_min(vert_adaptive_dhat((*cc)[0]), dist);
+                    assign_min(vert_adaptive_dhat((*cc)[1]), dist);
+                break;
+            default:
+                throw std::runtime_error("Invalid collision type!");
+        }
     }
 
-    for (int f = 0; f < mesh.num_faces(); f++)
-        for (int lv = 0; lv < 3; lv++) {
-            face_adaptive_dhat(f) = std::min(
-                face_adaptive_dhat(f), vert_adaptive_dhat(mesh.faces()(f, lv)));
-            face_adaptive_dhat(f) = std::min(
-                face_adaptive_dhat(f),
-                edge_adaptive_dhat(mesh.faces_to_edges()(f, lv)));
+    // face adaptive dhat should be minimum of all its adjacent vertices and edges
+    if constexpr (dim == 3)
+        for (int f = 0; f < mesh.num_faces(); f++) {
+            for (int lv = 0; lv < 3; lv++) {
+                face_adaptive_dhat(f) = std::min(
+                    face_adaptive_dhat(f), vert_adaptive_dhat(mesh.faces()(f, lv)));
+                face_adaptive_dhat(f) = std::min(
+                    face_adaptive_dhat(f),
+                    edge_adaptive_dhat(mesh.faces_to_edges()(f, lv)));
+            }
         }
 
-    for (int e = 0; e < mesh.num_edges(); e++)
-        for (int lv = 0; lv < 2; lv++)
+    // edge adaptive dhat should be minimum of all its adjacent vertices
+    for (int e = 0; e < mesh.num_edges(); e++) {
+        for (int lv = 0; lv < 2; lv++) {
             edge_adaptive_dhat(e) = std::min(
                 edge_adaptive_dhat(e), vert_adaptive_dhat(mesh.edges()(e, lv)));
+        }
+    }
 
     logger().debug(
-        "vert dhat min {:.2e}, max {:.2e}", vert_adaptive_dhat.minCoeff(),
+        "Adaptive dhat: vert dhat min {:.2e}, max {:.2e}", vert_adaptive_dhat.minCoeff(),
         vert_adaptive_dhat.maxCoeff());
     logger().debug(
-        "edge dhat min {:.2e}, max {:.2e}", edge_adaptive_dhat.minCoeff(),
+        "Adaptive dhat: edge dhat min {:.2e}, max {:.2e}", edge_adaptive_dhat.minCoeff(),
         edge_adaptive_dhat.maxCoeff());
-    if (mesh.dim() == 3)
+    if constexpr (dim == 3)
         logger().debug(
-            "face dhat min {:.2e}, max {:.2e}", face_adaptive_dhat.minCoeff(),
+            "Adaptive dhat: face dhat min {:.2e}, max {:.2e}", face_adaptive_dhat.minCoeff(),
             face_adaptive_dhat.maxCoeff());
 }
 

@@ -4,6 +4,14 @@
 #include <ipc/smooth_contact/common.hpp>
 #include <ipc/smooth_contact/distance/primitive_distance.hpp>
 
+enum class CollisionType
+{
+    EdgeVertex,
+    VertexVertex,
+    FaceVertex,
+    EdgeEdge,
+};
+
 namespace ipc {
 template <int max_vert> class SmoothCollision : public Collision<max_vert> {
 protected:
@@ -26,6 +34,7 @@ public:
     bool is_active() const { return is_active_; }
 
     virtual int n_dofs() const = 0;
+    virtual CollisionType type() const = 0;
 
     std::array<long, max_vert> vertex_ids(
         const Eigen::MatrixXi& edges,
@@ -131,6 +140,8 @@ public:
     virtual ~SmoothCollisionTemplate();
 
     inline int n_dofs() const override { return pA->n_dofs() + pB->n_dofs(); }
+    CollisionType type() const override;
+
     Vector<int, n_core_dofs> get_core_indices() const;
     std::array<long, n_core_dofs> core_vertex_ids(
         const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const;

@@ -2,6 +2,26 @@
 
 namespace ipc {
 
+template <int max_vert, typename PrimitiveA, typename PrimitiveB> 
+CollisionType SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::type() const
+{
+    if constexpr (std::is_same_v<PrimitiveA, Edge2> && std::is_same_v<PrimitiveB, Point2>)
+        return CollisionType::EdgeVertex;
+    if constexpr (std::is_same_v<PrimitiveA, Point2> && std::is_same_v<PrimitiveB, Point2>)
+        return CollisionType::VertexVertex;
+    if constexpr (std::is_same_v<PrimitiveA, Face> && std::is_same_v<PrimitiveB, Point3>)
+        return CollisionType::FaceVertex;
+    if constexpr (std::is_same_v<PrimitiveA, Edge3> && std::is_same_v<PrimitiveB, Point3>)
+        return CollisionType::EdgeVertex;
+    if constexpr (std::is_same_v<PrimitiveA, Edge3> && std::is_same_v<PrimitiveB, Edge3>)
+        return CollisionType::EdgeEdge;
+    if constexpr (std::is_same_v<PrimitiveA, Point3> && std::is_same_v<PrimitiveB, Point3>)
+        return CollisionType::VertexVertex;
+
+    throw std::runtime_error("Invalid collision pair type!");
+    return CollisionType::VertexVertex;
+}
+
 template <int max_vert, typename PrimitiveA, typename PrimitiveB> Vector<int, SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::n_core_dofs> 
 SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::get_core_indices() const
 {
