@@ -71,6 +71,7 @@ option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather tha
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
 option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic"              ON)
 option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
+option(IPC_TOOLKIT_WITH_AUTODIFF              "Enable AutoDiff for computing derivatives"     OFF)
 mark_as_advanced(IPC_TOOLKIT_WITH_CODE_COVERAGE)
 
 # Set default minimum C++ standard
@@ -120,8 +121,6 @@ target_include_directories(ipc_toolkit PUBLIC "${IPC_TOOLKIT_INCLUDE_DIR}")
 
 # For MSVC, do not use the min and max macros.
 target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
-
-target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_CPP_THREADS)
 
 ################################################################################
 # Dependencies
@@ -294,3 +293,8 @@ endif()
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_PYTHON)
   add_subdirectory(python)
 endif()
+
+if(IPC_TOOLKIT_WITH_AUTODIFF)
+  target_compile_definitions(ipc_toolkit PUBLIC DERIVATIVES_WITH_AUTODIFF)
+endif()
+target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_CPP_THREADS)
