@@ -22,6 +22,100 @@
 using namespace ipc;
 
 TEST_CASE(
+    "Number of contact pairs",
+    "[potential][barrier_potential]")
+{
+    const BroadPhaseMethod method{0};
+
+    double dhat = -1;
+    std::string mesh_name = "";
+    bool all_vertices_on_surface = true;
+
+    SECTION("two cubes close")
+    {
+        dhat = 5e-3;
+        mesh_name = (tests::DATA_DIR / "step_1000_surf_contact.obj").string();
+        all_vertices_on_surface = true;
+    }
+
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXi edges, faces;
+    bool success = tests::load_mesh(mesh_name, vertices, edges, faces);
+    CAPTURE(mesh_name);
+    REQUIRE(success);
+
+    CollisionMesh mesh;
+    if (all_vertices_on_surface) {
+        mesh = CollisionMesh(vertices, edges, faces);
+    } else {
+        mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
+        vertices = mesh.vertices(vertices);
+    }
+
+    {
+        Collisions collisions;
+
+        collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
+        CHECK(collisions.size() > 0);
+        std::cout << "IPC number of pairs " << collisions.size() << "\n";
+    }
+
+    {
+        Collisions collisions;
+        collisions.set_use_convergent_formulation(true);
+
+        collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
+        CHECK(collisions.size() > 0);
+        std::cout << "CIPC number of pairs " << collisions.size() << "\n";
+    }
+
+    {
+        SmoothCollisions<3> collisions;
+
+        ParameterType param(dhat, 0.8, 0, 1, 0, 2);
+        collisions.build(mesh, vertices, param, false, method);
+        CHECK(collisions.size() > 0);
+        std::cout << "OIPC number of pairs (only tangent) " << collisions.size() << "\n";
+    }
+
+    {
+        SmoothCollisions<3> collisions;
+
+        ParameterType param(dhat, 1, 0, 0, 0.1, 2);
+        collisions.build(mesh, vertices, param, false, method);
+        CHECK(collisions.size() > 0);
+        std::cout << "OIPC number of pairs (only normal) " << collisions.size() << "\n";
+    }
+
+    {
+        SmoothCollisions<3> collisions;
+
+        ParameterType param(dhat, 0.8, 0, 0, 0.1, 2);
+        collisions.build(mesh, vertices, param, false, method);
+        CHECK(collisions.size() > 0);
+        std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
+    }
+
+    {
+        SmoothCollisions<3> collisions;
+
+        ParameterType param(dhat, 0.5, 0, 0, 0.1, 2);
+        collisions.build(mesh, vertices, param, false, method);
+        CHECK(collisions.size() > 0);
+        std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
+    }
+
+    {
+        SmoothCollisions<3> collisions;
+
+        ParameterType param(dhat, 0.1, 0, 0, 0.1, 2);
+        collisions.build(mesh, vertices, param, false, method);
+        CHECK(collisions.size() > 0);
+        std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
+    }
+}
+
+TEST_CASE(
     "Barrier potential full gradient and hessian",
     "[potential][barrier_potential][gradient][hessian]")
 {

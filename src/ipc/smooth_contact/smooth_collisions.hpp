@@ -69,6 +69,10 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices) const override;
 
+    double compute_active_minimum_distance(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices) const;
+
     std::string to_string(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,

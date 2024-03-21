@@ -298,6 +298,41 @@ double SmoothCollisions<dim>::compute_minimum_distance(
     return storage.combine([](double a, double b) { return std::min(a, b); });
 }
 
+template <int dim>
+double SmoothCollisions<dim>::compute_active_minimum_distance(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices) const
+{
+    assert(vertices.rows() == mesh.num_vertices());
+
+    if (collisions.empty()) {
+        return std::numeric_limits<double>::infinity();
+    }
+
+    const Eigen::MatrixXi& edges = mesh.edges();
+    const Eigen::MatrixXi& faces = mesh.faces();
+
+    tbb::enumerable_thread_specific<double> storage(
+        std::numeric_limits<double>::infinity());
+
+    tbb::parallel_for(
+        tbb::blocked_range<size_t>(0, collisions.size()),
+        [&](tbb::blocked_range<size_t> r) {
+            double& local_min_dist = storage.local();
+
+            for (size_t i = r.begin(); i < r.end(); i++) {
+                const double dist = collisions[i]->compute_distance(
+                    collisions[i]->dof(vertices, edges, faces));
+
+                if (dist < local_min_dist) {
+                    local_min_dist = dist;
+                }
+            }
+        });
+
+    return storage.combine([](double a, double b) { return std::min(a, b); });
+}
+
 template class CollisionsBase<max_vert_2d>;
 template class CollisionsBase<max_vert_3d>;
 template class SmoothCollisions<2>;
