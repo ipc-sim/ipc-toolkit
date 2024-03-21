@@ -7,7 +7,7 @@ using namespace ipc;
 
 void define_edge_edge_collision(py::module_& m)
 {
-    py::class_<EdgeEdgeCollision, EdgeEdgeCandidate, Collision>(
+    py::class_<EdgeEdgeCollision, EdgeEdgeCandidate, Collision<4>>(
         m, "EdgeEdgeCollision")
         .def(
             py::init<

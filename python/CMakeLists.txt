@@ -40,7 +40,6 @@ pybind11_add_module(ipctk
   src/collisions/face_vertex.cpp
   src/collisions/plane_vertex.cpp
   src/collisions/vertex_vertex.cpp
-  src/collisions/smooth_point_edge.cpp
 
   src/distance/distance_type.cpp
   src/distance/edge_edge.cpp
@@ -52,18 +51,18 @@ pybind11_add_module(ipctk
   src/distance/point_point.cpp
   src/distance/point_triangle.cpp
 
-  src/friction/closest_point.cpp
-  src/friction/friction_collisions.cpp
-  src/friction/normal_force_magnitude.cpp
-  src/friction/relative_velocity.cpp
-  src/friction/smooth_friction_mollifier.cpp
-  src/friction/tangent_basis.cpp
+  # src/friction/closest_point.cpp
+  # src/friction/friction_collisions.cpp
+  # src/friction/normal_force_magnitude.cpp
+  # src/friction/relative_velocity.cpp
+  # src/friction/smooth_friction_mollifier.cpp
+  # src/friction/tangent_basis.cpp
 
-  src/friction/collisions/edge_edge.cpp
-  src/friction/collisions/edge_vertex.cpp
-  src/friction/collisions/face_vertex.cpp
-  src/friction/collisions/friction_collision.cpp
-  src/friction/collisions/vertex_vertex.cpp
+  # src/friction/collisions/edge_edge.cpp
+  # src/friction/collisions/edge_vertex.cpp
+  # src/friction/collisions/face_vertex.cpp
+  # src/friction/collisions/friction_collision.cpp
+  # src/friction/collisions/vertex_vertex.cpp
 
   src/implicits/plane.cpp
 

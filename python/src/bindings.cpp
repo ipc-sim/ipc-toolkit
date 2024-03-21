@@ -66,20 +66,20 @@ PYBIND11_MODULE(ipctk, m)
     define_barrier_potential(m);
 
     // friction
-    define_closest_point(m);
-    define_friction_collisions(m);
-    define_normal_force_magnitude(m);
-    define_relative_velocity(m);
-    define_smooth_friction_mollifier(m);
-    define_tangent_basis(m);
+    // define_closest_point(m);
+    // define_friction_collisions(m);
+    // define_normal_force_magnitude(m);
+    // define_relative_velocity(m);
+    // define_smooth_friction_mollifier(m);
+    // define_tangent_basis(m);
 
     // friction/collisions
     // NOTE: this has to be defined before the other friction collisions
-    define_friction_collision(m);
-    define_edge_edge_friction_collision(m);
-    define_edge_vertex_friction_collision(m);
-    define_face_vertex_friction_collision(m);
-    define_vertex_vertex_friction_collision(m);
+    // define_friction_collision(m);
+    // define_edge_edge_friction_collision(m);
+    // define_edge_vertex_friction_collision(m);
+    // define_face_vertex_friction_collision(m);
+    // define_vertex_vertex_friction_collision(m);
 
     // potentials
     define_friction_potential(m);

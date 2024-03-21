@@ -7,7 +7,7 @@ using namespace ipc;
 
 void define_friction_collision(py::module_& m)
 {
-    py::class_<FrictionCollision, CollisionStencil>(m, "FrictionCollision")
+    py::class_<FrictionCollision, CollisionStencil<4>>(m, "FrictionCollision")
         .def(
             "dim", &FrictionCollision::dim,
             "Get the dimension of the collision.")

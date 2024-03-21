@@ -75,7 +75,7 @@ void define_barrier_potential(py::module_& m)
         .def(
             "shape_derivative",
             py::overload_cast<
-                const Collisions&, const CollisionMesh&,
+                const CollisionsBase<4>&, const CollisionMesh&,
                 const Eigen::MatrixXd&>(
                 &BarrierPotential::shape_derivative, py::const_),
             R"ipc_Qu8mg5v7(
@@ -94,7 +94,7 @@ void define_barrier_potential(py::module_& m)
             py::arg("collisions"), py::arg("mesh"), py::arg("vertices"))
         .def(
             "__call__",
-            py::overload_cast<const Collision&, const VectorMax12d&>(
+            py::overload_cast<const Collision<4>&, const VectorMax12d&>(
                 &BarrierPotential::operator(), py::const_),
             R"ipc_Qu8mg5v7(
             Compute the potential for a single collision.
@@ -109,7 +109,7 @@ void define_barrier_potential(py::module_& m)
             py::arg("collision"), py::arg("x"))
         .def(
             "gradient",
-            py::overload_cast<const Collision&, const VectorMax12d&>(
+            py::overload_cast<const Collision<4>&, const VectorMax12d&>(
                 &BarrierPotential::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the potential for a single collision.
@@ -125,7 +125,7 @@ void define_barrier_potential(py::module_& m)
         .def(
             "hessian",
             py::overload_cast<
-                const Collision&, const VectorMax12d&, const bool>(
+                const Collision<4>&, const VectorMax12d&, const bool>(
                 &BarrierPotential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the potential for a single collision.
@@ -141,7 +141,7 @@ void define_barrier_potential(py::module_& m)
             py::arg("project_hessian_to_psd") = false)
         .def(
             "shape_derivative",
-            [](const DistanceBasedPotential& self, const Collision& collision,
+            [](const DistanceBasedPotential& self, const Collision<4>& collision,
                const std::array<long, 4>& vertex_ids,
                const VectorMax12d& rest_positions,
                const VectorMax12d& positions) {

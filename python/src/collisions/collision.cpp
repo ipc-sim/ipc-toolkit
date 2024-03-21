@@ -7,12 +7,12 @@ using namespace ipc;
 
 void define_collision(py::module_& m)
 {
-    py::class_<Collision, CollisionStencil>(m, "Collision")
+    py::class_<Collision<4>, CollisionStencil<4>>(m, "Collision")
         .def(
-            "is_mollified", &Collision::is_mollified,
+            "is_mollified", &Collision<4>::is_mollified,
             "Does the distance potentially have to be mollified?")
         .def(
-            "mollifier_threshold", &Collision::mollifier_threshold,
+            "mollifier_threshold", &Collision<4>::mollifier_threshold,
             R"ipc_Qu8mg5v7(
             Compute the mollifier threshold for the distance.
 
@@ -26,7 +26,7 @@ void define_collision(py::module_& m)
         .def(
             "mollifier",
             py::overload_cast<const VectorMax12d&>(
-                &Collision::mollifier, py::const_),
+                &Collision<4>::mollifier, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the mollifier for the distance.
 
@@ -40,7 +40,7 @@ void define_collision(py::module_& m)
         .def(
             "mollifier",
             py::overload_cast<const VectorMax12d&, double>(
-                &Collision::mollifier, py::const_),
+                &Collision<4>::mollifier, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the mollifier for the distance.
 
@@ -55,7 +55,7 @@ void define_collision(py::module_& m)
         .def(
             "mollifier_gradient",
             py::overload_cast<const VectorMax12d&>(
-                &Collision::mollifier_gradient, py::const_),
+                &Collision<4>::mollifier_gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the mollifier for the distance wrt the positions.
 
@@ -69,7 +69,7 @@ void define_collision(py::module_& m)
         .def(
             "mollifier_gradient",
             py::overload_cast<const VectorMax12d&, double>(
-                &Collision::mollifier_gradient, py::const_),
+                &Collision<4>::mollifier_gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the mollifier for the distance wrt the positions.
 
@@ -84,7 +84,7 @@ void define_collision(py::module_& m)
         .def(
             "mollifier_hessian",
             py::overload_cast<const VectorMax12d&>(
-                &Collision::mollifier_hessian, py::const_),
+                &Collision<4>::mollifier_hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the Hessian of the mollifier for the distance wrt the positions.
 
@@ -98,7 +98,7 @@ void define_collision(py::module_& m)
         .def(
             "mollifier_hessian",
             py::overload_cast<const VectorMax12d&, double>(
-                &Collision::mollifier_hessian, py::const_),
+                &Collision<4>::mollifier_hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the Hessian of the mollifier for the distance wrt the positions.
 
@@ -111,7 +111,7 @@ void define_collision(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("positions"), py::arg("eps_x"))
         .def(
-            "mollifier_gradient_wrt_x", &Collision::mollifier_gradient_wrt_x,
+            "mollifier_gradient_wrt_x", &Collision<4>::mollifier_gradient_wrt_x,
             R"ipc_Qu8mg5v7(
             Compute the gradient of the mollifier for the distance w.r.t. rest positions.
 
@@ -125,7 +125,7 @@ void define_collision(py::module_& m)
             py::arg("rest_positions"), py::arg("positions"))
         .def(
             "mollifier_gradient_jacobian_wrt_x",
-            &Collision::mollifier_gradient_jacobian_wrt_x,
+            &Collision<4>::mollifier_gradient_jacobian_wrt_x,
             R"ipc_Qu8mg5v7(
             Compute the jacobian of the distance mollifier's gradient w.r.t. rest positions.
 
@@ -138,16 +138,16 @@ void define_collision(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("rest_positions"), py::arg("positions"))
         .def_readwrite(
-            "dmin", &Collision::dmin, "The minimum separation distance.")
+            "dmin", &Collision<4>::dmin, "The minimum separation distance.")
         .def_readwrite(
-            "weight", &Collision::weight,
+            "weight", &Collision<4>::weight,
             "The term's weight (e.g., collision area)")
         .def_property(
             "weight_gradient",
-            [](const Collision& self) -> Eigen::SparseMatrix<double> {
+            [](const Collision<4>& self) -> Eigen::SparseMatrix<double> {
                 return self.weight_gradient;
             },
-            [](Collision& self,
+            [](Collision<4>& self,
                const Eigen::SparseMatrix<double>& weight_gradient) {
                 assert_is_sparse_vector(weight_gradient, "weight_gradient");
                 self.weight_gradient = weight_gradient;

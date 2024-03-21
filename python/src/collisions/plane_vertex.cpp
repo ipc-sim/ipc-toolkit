@@ -7,7 +7,7 @@ using namespace ipc;
 
 void define_plane_vertex_collision(py::module_& m)
 {
-    py::class_<PlaneVertexCollision, Collision>(m, "PlaneVertexCollision")
+    py::class_<PlaneVertexCollision, Collision<4>>(m, "PlaneVertexCollision")
         .def(
             py::init<const VectorMax3d&, const VectorMax3d&, const long>(),
             py::arg("plane_origin"), py::arg("plane_normal"),

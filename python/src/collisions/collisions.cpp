@@ -62,7 +62,7 @@ void define_collisions(py::module_& m)
         .def("clear", &Collisions::clear, "Clear the collision set.")
         .def(
             "__getitem__",
-            [](Collisions& self, size_t i) -> Collision& { return self[i]; },
+            [](Collisions& self, size_t i) -> Collision<4>& { return self[i]; },
             py::return_value_policy::reference,
             R"ipc_Qu8mg5v7(
             Get a reference to collision at index i.

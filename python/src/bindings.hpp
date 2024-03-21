@@ -6,7 +6,7 @@
 #include <ccd/bindings.hpp>
 #include <collisions/bindings.hpp>
 #include <distance/bindings.hpp>
-#include <friction/bindings.hpp>
+// #include <friction/bindings.hpp>
 #include <implicits/bindings.hpp>
 #include <potentials/bindings.hpp>
 #include <utils/bindings.hpp>

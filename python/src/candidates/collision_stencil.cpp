@@ -7,12 +7,12 @@ using namespace ipc;
 
 void define_collision_stencil(py::module_& m)
 {
-    py::class_<CollisionStencil>(m, "CollisionStencil")
+    py::class_<CollisionStencil<4>>(m, "CollisionStencil")
         .def(
-            "num_vertices", &CollisionStencil::num_vertices,
+            "num_vertices", &CollisionStencil<4>::num_vertices,
             "Get the number of vertices in the collision stencil.")
         .def(
-            "vertex_ids", &CollisionStencil::vertex_ids,
+            "vertex_ids", &CollisionStencil<4>::vertex_ids,
             R"ipc_Qu8mg5v7(
             Get the vertex IDs of the collision stencil.
 
@@ -25,7 +25,7 @@ void define_collision_stencil(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("edges"), py::arg("faces"))
         .def(
-            "vertices", &CollisionStencil::vertices<double>,
+            "vertices", &CollisionStencil<4>::vertices<double>,
             R"ipc_Qu8mg5v7(
             Get the vertex attributes of the collision stencil.
 
@@ -41,7 +41,7 @@ void define_collision_stencil(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("vertices"), py::arg("edges"), py::arg("faces"))
         .def(
-            "dof", &CollisionStencil::dof<double>,
+            "dof", &CollisionStencil<4>::dof<double>,
             R"ipc_Qu8mg5v7(
             Select this stencil's DOF from the full matrix of DOF.
 
@@ -57,7 +57,7 @@ void define_collision_stencil(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("X"), py::arg("edges"), py::arg("faces"))
         .def(
-            "compute_distance", &CollisionStencil::compute_distance,
+            "compute_distance", &CollisionStencil<4>::compute_distance,
             R"ipc_Qu8mg5v7(
             Compute the distance of the stencil.
 
@@ -73,7 +73,7 @@ void define_collision_stencil(py::module_& m)
             py::arg("positions"))
         .def(
             "compute_distance_gradient",
-            &CollisionStencil::compute_distance_gradient,
+            &CollisionStencil<4>::compute_distance_gradient,
             R"ipc_Qu8mg5v7(
             Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
 
@@ -89,7 +89,7 @@ void define_collision_stencil(py::module_& m)
             py::arg("positions"))
         .def(
             "compute_distance_hessian",
-            &CollisionStencil::compute_distance_hessian,
+            &CollisionStencil<4>::compute_distance_hessian,
             R"ipc_Qu8mg5v7(
             Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
 

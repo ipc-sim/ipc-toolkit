@@ -7,7 +7,7 @@ using namespace ipc;
 
 void define_face_vertex_collision(py::module_& m)
 {
-    py::class_<FaceVertexCollision, FaceVertexCandidate, Collision>(
+    py::class_<FaceVertexCollision, FaceVertexCandidate, Collision<4>>(
         m, "FaceVertexCollision")
         .def(
             py::init<long, long>(), "", py::arg("face_id"),
