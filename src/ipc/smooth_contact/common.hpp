@@ -18,12 +18,18 @@ template <> class MaxVertices<3> { public: static constexpr int value = max_vert
 
 struct ParameterType {
     ParameterType(
-        const double& _dhat,
-        const double& _alpha_t,
-        const double& _beta_t,
-        const double& _alpha_n,
-        const double& _beta_n,
-        const int& _r)
+        const double _dhat,
+        const double _alpha_t,
+        const double _beta_t,
+        const int _r):
+        ParameterType(_dhat, _alpha_t, _beta_t, 0, 0.1, _r) {}
+    ParameterType(
+        const double _dhat,
+        const double _alpha_t,
+        const double _beta_t,
+        const double _alpha_n,
+        const double _beta_n,
+        const int _r)
         : dhat(_dhat)
         , alpha_t(_alpha_t)
         , beta_t(_beta_t)

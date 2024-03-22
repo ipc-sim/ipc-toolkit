@@ -19,7 +19,7 @@ public:
     void compute_adaptive_dhat(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
-        const ParameterType& param,
+        const ParameterType param,
         const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
@@ -29,7 +29,7 @@ public:
     void build(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
-        const ParameterType& param,
+        const ParameterType param,
         const bool use_adaptive_dhat,
         const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
 
@@ -41,7 +41,7 @@ public:
         const Candidates& _candidates,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
-        const ParameterType& param,
+        const ParameterType param,
         const bool use_adaptive_dhat);
 
     // ------------------------------------------------------------------------
@@ -121,6 +121,8 @@ public:
             return std::max(out, face_adaptive_dhat.maxCoeff());
         return out;
     }
+
+    inline int n_candidates() const { return candidates.size(); }
 
 public:
     std::vector<std::shared_ptr<value_type>> collisions;

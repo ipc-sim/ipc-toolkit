@@ -20,7 +20,7 @@ template <int dim>
 void SmoothCollisions<dim>::compute_adaptive_dhat(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices, // set to zero for rest pose
-    const ParameterType& param,
+    const ParameterType param,
     const BroadPhaseMethod broad_phase_method)
 {
     assert(vertices.rows() == mesh.num_vertices());
@@ -105,7 +105,7 @@ template <int dim>
 void SmoothCollisions<dim>::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
-    const ParameterType& param,
+    const ParameterType param,
     const bool use_adaptive_dhat,
     const BroadPhaseMethod broad_phase_method)
 {
@@ -123,7 +123,7 @@ void SmoothCollisions<dim>::build(
     const Candidates& candidates_,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
-    const ParameterType& param,
+    const ParameterType param,
     const bool use_adaptive_dhat)
 {
     assert(vertices.rows() == mesh.num_vertices());

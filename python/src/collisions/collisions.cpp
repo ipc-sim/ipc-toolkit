@@ -1,6 +1,7 @@
 #include <common.hpp>
 
 #include <ipc/collisions/collisions.hpp>
+#include <ipc/smooth_contact/smooth_collisions.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
@@ -155,4 +156,83 @@ void define_collisions(py::module_& m)
         .def_readwrite("ee_collisions", &Collisions::ee_collisions)
         .def_readwrite("fv_collisions", &Collisions::fv_collisions)
         .def_readwrite("pv_collisions", &Collisions::pv_collisions);
+
+
+    py::class_<SmoothCollisions<2>>(m, "SmoothCollisions2")
+        .def(py::init())
+        .def(
+            "build",
+            py::overload_cast<
+                const CollisionMesh&, const Eigen::MatrixXd&, const ParameterType, const bool, const BroadPhaseMethod>(&SmoothCollisions<2>::build),
+            R"ipc_Qu8mg5v7(
+            Initialize the set of collisions used to compute the barrier potential.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices: Vertices of the collision mesh.
+                param: ParameterType.
+                use_adaptive_dhat: If the adaptive dhat should be used.
+                broad_phase: Broad phase method.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("vertices"), py::arg("param"),
+            py::arg("use_adaptive_dhat") = false, py::arg("broad_phase") = DEFAULT_BROAD_PHASE_METHOD)
+        .def(
+            "compute_minimum_distance", &SmoothCollisions<2>::compute_minimum_distance,
+            R"ipc_Qu8mg5v7(
+            Computes the minimum distance between any non-adjacent elements.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices: Vertices of the collision mesh.
+
+            Returns:
+                The minimum distance between any non-adjacent elements.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("vertices"))
+        .def("__len__", &SmoothCollisions<2>::size, "Get the number of collisions.")
+        .def("empty", &SmoothCollisions<2>::empty, "Get if the collision set is empty.")
+        .def("clear", &SmoothCollisions<2>::clear, "Clear the collision set.")
+        .def(
+            "to_string", &SmoothCollisions<2>::to_string, py::arg("mesh"),
+            py::arg("vertices"), py::arg("param"))
+        .def("n_candidates", &SmoothCollisions<2>::n_candidates, "Get the number of candidates.");
+
+    py::class_<SmoothCollisions<3>>(m, "SmoothCollisions3")
+        .def(py::init())
+        .def(
+            "build",
+            py::overload_cast<
+                const CollisionMesh&, const Eigen::MatrixXd&, const ParameterType, const bool, const BroadPhaseMethod>(&SmoothCollisions<3>::build),
+            R"ipc_Qu8mg5v7(
+            Initialize the set of collisions used to compute the barrier potential.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices: Vertices of the collision mesh.
+                param: ParameterType.
+                use_adaptive_dhat: If the adaptive dhat should be used.
+                broad_phase: Broad phase method.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("vertices"), py::arg("param"),
+            py::arg("use_adaptive_dhat") = false, py::arg("broad_phase") = DEFAULT_BROAD_PHASE_METHOD)
+        .def(
+            "compute_minimum_distance", &SmoothCollisions<3>::compute_minimum_distance,
+            R"ipc_Qu8mg5v7(
+            Computes the minimum distance between any non-adjacent elements.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices: Vertices of the collision mesh.
+
+            Returns:
+                The minimum distance between any non-adjacent elements.
+            )ipc_Qu8mg5v7",
+            py::arg("mesh"), py::arg("vertices"))
+        .def("__len__", &SmoothCollisions<3>::size, "Get the number of collisions.")
+        .def("empty", &SmoothCollisions<3>::empty, "Get if the collision set is empty.")
+        .def("clear", &SmoothCollisions<3>::clear, "Clear the collision set.")
+        .def(
+            "to_string", &SmoothCollisions<3>::to_string, py::arg("mesh"),
+            py::arg("vertices"), py::arg("param"))
+        .def("n_candidates", &SmoothCollisions<3>::n_candidates, "Get the number of candidates.");
 }

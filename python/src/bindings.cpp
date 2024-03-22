@@ -64,6 +64,7 @@ PYBIND11_MODULE(ipctk, m)
 
     // potentials
     define_barrier_potential(m);
+    define_smooth_potential(m);
 
     // friction
     // define_closest_point(m);

@@ -10,7 +10,7 @@ class SmoothContactPotential : public Potential<TCollisions> {
     using Super = Potential<TCollisions>;
 
 public:
-    SmoothContactPotential(ParameterType& _params) : params(_params) { }
+    SmoothContactPotential(const ParameterType& _params) : params(_params) { }
 
     using Super::element_size;
     using Super::operator();
