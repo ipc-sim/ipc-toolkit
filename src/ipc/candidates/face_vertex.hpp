@@ -1,6 +1,5 @@
 #pragma once
 
-#include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/candidates/continuous_collision_candidate.hpp>
 #include <ipc/distance/distance_type.hpp>
 
@@ -10,10 +9,12 @@
 
 namespace ipc {
 
-class FaceVertexCandidate : virtual public CollisionStencil,
-                            public ContinuousCollisionCandidate {
+class FaceVertexCandidate : public ContinuousCollisionCandidate {
 public:
     FaceVertexCandidate(long face_id, long vertex_id);
+
+    // ------------------------------------------------------------------------
+    // CollisionStencil
 
     int num_vertices() const override { return 4; };
 
@@ -25,13 +26,20 @@ public:
                    faces(face_id, 2) } };
     }
 
+    double compute_distance(const VectorMax12d& positions) const override;
+
+    VectorMax12d
+    compute_distance_gradient(const VectorMax12d& positions) const override;
+
+    MatrixMax12d
+    compute_distance_hessian(const VectorMax12d& positions) const override;
+
     // ------------------------------------------------------------------------
+    // ContinuousCollisionCandidate
 
     bool
-    ccd(const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+    ccd(const VectorMax12d& vertices_t0,
+        const VectorMax12d& vertices_t1,
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
@@ -40,13 +48,12 @@ public:
         const double conservative_rescaling =
             DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
 
-    void print_ccd_query(
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override;
-
     // ------------------------------------------------------------------------
+
+    virtual PointTriangleDistanceType known_dtype() const
+    {
+        return PointTriangleDistanceType::AUTO;
+    }
 
     bool operator==(const FaceVertexCandidate& other) const;
     bool operator!=(const FaceVertexCandidate& other) const;
@@ -59,26 +66,12 @@ public:
         return H::combine(std::move(h), fv.face_id, fv.vertex_id);
     }
 
-    long face_id;   ///< @brief ID of the face
-    long vertex_id; ///< @brief ID of the vertex
+    // ------------------------------------------------------------------------
 
-    using CollisionStencil::compute_distance;
-    using CollisionStencil::compute_distance_gradient;
-    using CollisionStencil::compute_distance_hessian;
-
-protected:
-    double compute_distance(const VectorMax12d& positions) const override;
-
-    VectorMax12d
-    compute_distance_gradient(const VectorMax12d& positions) const override;
-
-    MatrixMax12d
-    compute_distance_hessian(const VectorMax12d& positions) const override;
-
-    virtual PointTriangleDistanceType known_dtype() const
-    {
-        return PointTriangleDistanceType::AUTO;
-    }
+    /// @brief ID of the face
+    long face_id;
+    /// @brief ID of the vertex
+    long vertex_id;
 };
 
 } // namespace ipc

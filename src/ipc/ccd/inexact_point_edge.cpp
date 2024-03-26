@@ -1,3 +1,10 @@
+//
+// NOTE: This method is provided for reference comparison and is not utilized by
+// the high-level functionality. In compairson to Tight Inclusion CCD, this CCD
+// method is not provably conservative and so can potentially produce false
+// negatives (i.e., miss collisions) due to floating-point rounding error.
+//
+
 #include "inexact_point_edge.hpp"
 
 #include <ipc/distance/distance_type.hpp>
@@ -86,7 +93,6 @@ bool inexact_point_edge_ccd_2D(
     for (int i = 0; i < rootAmt; ++i) {
         if (roots[i] > 0 && roots[i] <= 1) {
             // check overlap
-            double ratio;
             if (point_edge_distance_type(
                     Eigen::Vector2d(p_t0 + roots[i] * d0),
                     Eigen::Vector2d(e0_t0 + roots[i] * d1),

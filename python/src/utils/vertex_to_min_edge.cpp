@@ -8,6 +8,6 @@ using namespace ipc;
 void define_vertex_to_min_edge(py::module_& m)
 {
     m.def(
-        "vertex_to_min_edge", &vertex_to_min_edge, "", py::arg("num_vertices"),
+        "vertex_to_min_edge", &vertex_to_min_edge, py::arg("num_vertices"),
         py::arg("edges"));
 }

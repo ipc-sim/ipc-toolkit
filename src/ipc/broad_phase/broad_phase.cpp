@@ -1,8 +1,10 @@
 #include "broad_phase.hpp"
 
 #include <ipc/broad_phase/brute_force.hpp>
+#include <ipc/broad_phase/bvh.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>
+#include <ipc/broad_phase/sweep_and_prune.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 #include <ipc/broad_phase/broadmark.hpp>
 #include <ipc/candidates/candidates.hpp>
@@ -32,7 +34,7 @@ void BroadPhase::build(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     assert(edges.size() == 0 || edges.cols() == 2);
     assert(faces.size() == 0 || faces.cols() == 3);
@@ -47,7 +49,7 @@ void BroadPhase::build(
     const Eigen::MatrixXd& vertices_t1,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    double inflation_radius)
+    const double inflation_radius)
 {
     assert(edges.size() == 0 || edges.cols() == 2);
     assert(faces.size() == 0 || faces.cols() == 3);
@@ -79,7 +81,7 @@ void BroadPhase::detect_collision_candidates(
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 bool BroadPhase::is_enabled(const BroadPhaseMethod broad_phase_method)
 {
@@ -87,9 +89,10 @@ bool BroadPhase::is_enabled(const BroadPhaseMethod broad_phase_method)
     case BroadPhaseMethod::BRUTE_FORCE:
     case BroadPhaseMethod::HASH_GRID:
     case BroadPhaseMethod::SPATIAL_HASH:
-    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
+    case BroadPhaseMethod::BVH:
+    case BroadPhaseMethod::SWEEP_AND_PRUNE:
 #ifdef IPC_TOOLKIT_WITH_CUDA
-    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU:
+    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
 #endif
 #ifdef IPC_TOOLKIT_WITH_BROADMARK
     case BroadPhaseMethod::BROADMARK_GPU_LBVH:
@@ -116,60 +119,62 @@ bool BroadPhase::is_enabled(const BroadPhaseMethod broad_phase_method)
     }
 }
 
-std::unique_ptr<BroadPhase>
-BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
+std::shared_ptr<BroadPhase>
+BroadPhase::make_broad_phase(const BroadPhaseMethod method)
 {
-    switch (broad_phase_method) {
+    switch (method) {
     case BroadPhaseMethod::BRUTE_FORCE:
-        return std::make_unique<BruteForce>();
+        return std::make_shared<BruteForce>();
     case BroadPhaseMethod::HASH_GRID:
-        return std::make_unique<HashGrid>();
+        return std::make_shared<HashGrid>();
     case BroadPhaseMethod::SPATIAL_HASH:
-        return std::make_unique<SpatialHash>();
+        return std::make_shared<SpatialHash>();
+    case BroadPhaseMethod::BVH:
+        return std::make_shared<BVH>();
+    case BroadPhaseMethod::SWEEP_AND_PRUNE:
+        return std::make_shared<SweepAndPrune>();
     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
-        return std::make_unique<SweepAndTiniestQueue>();
-    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU:
 #ifdef IPC_TOOLKIT_WITH_CUDA
-        return std::make_unique<SweepAndTiniestQueueGPU>();
+        return std::make_shared<SweepAndTiniestQueue>();
 #else
         throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
                                  "because CUDA is disabled!");
 #endif
 #ifdef IPC_TOOLKIT_WITH_BROADMARK
     case BroadPhaseMethod::BROADMARK_GPU_LBVH:
-        return std::make_unique<Broadmark<GPU_LBVH>>();
+        return std::make_shared<Broadmark<GPU_LBVH>>();
     case BroadPhaseMethod::BROADMARK_GRID:
-        return std::make_unique<Broadmark<Grid_3D>>();
+        return std::make_shared<Broadmark<Grid_3D>>();
     case BroadPhaseMethod::BROADMARK_GRID_PARALLEL:
-        return std::make_unique<Broadmark<Grid_3D_Parallel>>();
+        return std::make_shared<Broadmark<Grid_3D_Parallel>>();
     case BroadPhaseMethod::BROADMARK_SAP:
-        return std::make_unique<Broadmark<SAP>>();
+        return std::make_shared<Broadmark<SAP>>();
     case BroadPhaseMethod::BROADMARK_SAP_PARALLEL:
-        return std::make_unique<Broadmark<SAP_Parallel>>();
+        return std::make_shared<Broadmark<SAP_Parallel>>();
     case BroadPhaseMethod::BROADMARK_DBVT_D:
-        return std::make_unique<Broadmark<DBVT_D>>();
+        return std::make_shared<Broadmark<DBVT_D>>();
     case BroadPhaseMethod::BROADMARK_DBVT_F:
-        return std::make_unique<Broadmark<DBVT_F>>();
+        return std::make_shared<Broadmark<DBVT_F>>();
     case BroadPhaseMethod::BROADMARK_ISAP:
-        return std::make_unique<Broadmark<AxisSweep>>();
+        return std::make_shared<Broadmark<AxisSweep>>();
     case BroadPhaseMethod::BROADMARK_KD:
-        return std::make_unique<Broadmark<KD>>();
+        return std::make_shared<Broadmark<KD>>();
     case BroadPhaseMethod::BROADMARK_TRACY:
-        return std::make_unique<Broadmark<Tracy>>();
+        return std::make_shared<Broadmark<Tracy>>();
     case BroadPhaseMethod::BROADMARK_TRACY_PARALLEL:
-        return std::make_unique<Broadmark<Tracy_Parallel>>();
+        return std::make_shared<Broadmark<Tracy_Parallel>>();
     case BroadPhaseMethod::BROADMARK_GRID_SAP:
-        return std::make_unique<Broadmark<Grid_3D_SAP>>();
+        return std::make_shared<Broadmark<Grid_3D_SAP>>();
     case BroadPhaseMethod::BROADMARK_CGAL:
 #ifdef IPC_TOOLKIT_WITH_CGAL
-        return std::make_unique<Broadmark<CGAL_Internal>>();
+        return std::make_shared<Broadmark<CGAL_Internal>>();
 #else
         throw std::runtime_error("CGAL broad phase is disabled!");
 #endif
     case BroadPhaseMethod::BROADMARK_GPU_GRID:
-        return std::make_unique<Broadmark<GPU_Grid>>();
+        return std::make_shared<Broadmark<GPU_Grid>>();
     case BroadPhaseMethod::BROADMARK_GPU_SAP:
-        return std::make_unique<Broadmark<GPU_SAP>>();
+        return std::make_shared<Broadmark<GPU_SAP>>();
 #else
     case BroadPhaseMethod::BROADMARK_GPU_LBVH:
     case BroadPhaseMethod::BROADMARK_GRID:
@@ -193,7 +198,7 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod broad_phase_method)
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 bool BroadPhase::can_edge_vertex_collide(size_t ei, size_t vi) const
 {
@@ -208,7 +213,7 @@ bool BroadPhase::can_edges_collide(size_t eai, size_t ebi) const
     const auto& [ea0i, ea1i, _] = edge_boxes[eai].vertex_ids;
     const auto& [eb0i, eb1i, __] = edge_boxes[ebi].vertex_ids;
 
-    bool share_endpoint =
+    const bool share_endpoint =
         ea0i == eb0i || ea0i == eb1i || ea1i == eb0i || ea1i == eb1i;
 
     return !share_endpoint
@@ -231,14 +236,35 @@ bool BroadPhase::can_edge_face_collide(size_t ei, size_t fi) const
     const auto& [e0i, e1i, _] = edge_boxes[ei].vertex_ids;
     const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
 
-    bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i || e1i == f0i
-        || e1i == f1i || e1i == f2i;
+    const bool share_endpoint = e0i == f0i || e0i == f1i || e0i == f2i
+        || e1i == f0i || e1i == f1i || e1i == f2i;
 
     return !share_endpoint
         && (can_vertices_collide(e0i, f0i) || can_vertices_collide(e0i, f1i)
             || can_vertices_collide(e0i, f2i) || can_vertices_collide(e1i, f0i)
             || can_vertices_collide(e1i, f1i)
             || can_vertices_collide(e1i, f2i));
+}
+
+bool BroadPhase::can_faces_collide(size_t fai, size_t fbi) const
+{
+    const auto& [fa0i, fa1i, fa2i] = face_boxes[fai].vertex_ids;
+    const auto& [fb0i, fb1i, fb2i] = face_boxes[fbi].vertex_ids;
+
+    const bool share_endpoint = fa0i == fb0i || fa0i == fb1i || fa0i == fb2i
+        || fa1i == fb0i || fa1i == fb1i || fa1i == fb2i || fa2i == fb0i
+        || fa2i == fb1i || fa2i == fb2i;
+
+    return !share_endpoint
+        && (can_vertices_collide(fa0i, fb0i) //
+            || can_vertices_collide(fa0i, fb1i)
+            || can_vertices_collide(fa0i, fb2i)
+            || can_vertices_collide(fa1i, fb0i)
+            || can_vertices_collide(fa1i, fb1i)
+            || can_vertices_collide(fa1i, fb2i)
+            || can_vertices_collide(fa2i, fb0i)
+            || can_vertices_collide(fa2i, fb1i)
+            || can_vertices_collide(fa2i, fb2i));
 }
 
 } // namespace ipc

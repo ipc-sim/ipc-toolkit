@@ -1,3 +1,5 @@
+#pragma once
+
 #include "eigen_ext.hpp"
 
 #include <ipc/utils/logger.hpp>
@@ -22,6 +24,7 @@ project_to_pd(
     double eps)
 {
     assert(eps > 0);
+    assert(A.isApprox(A.transpose()) && "A must be symmetric");
 
     // https://math.stackexchange.com/q/2776803
     Eigen::SelfAdjointEigenSolver<
@@ -62,6 +65,8 @@ Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
 project_to_psd(
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A)
 {
+    assert(A.isApprox(A.transpose()) && "A must be symmetric");
+
     // https://math.stackexchange.com/q/2776803
     Eigen::SelfAdjointEigenSolver<
         Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>

@@ -1,8 +1,8 @@
 set(SOURCES
   closest_point.cpp
   closest_point.hpp
-  friction_constraints.cpp
-  friction_constraints.hpp
+  friction_collisions.cpp
+  friction_collisions.hpp
   normal_force_magnitude.cpp
   normal_force_magnitude.hpp
   relative_velocity.cpp
@@ -13,12 +13,11 @@ set(SOURCES
   tangent_basis.hpp
 )
 
-ipc_toolkit_prepend_current_path(SOURCES)
-ipc_toolkit_set_source_group(${SOURCES})
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})
 target_sources(ipc_toolkit PRIVATE ${SOURCES})
 
 ################################################################################
 # Subfolders
 ################################################################################
 
-add_subdirectory(constraints)
+add_subdirectory(collisions)

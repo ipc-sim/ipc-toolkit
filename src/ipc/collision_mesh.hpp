@@ -12,7 +12,7 @@ class CollisionMesh {
 public:
     /// @brief Construct a new Collision Mesh object.
     /// Collision Mesh objects are immutable, so use the other constructors.
-    CollisionMesh() { }
+    CollisionMesh() = default;
 
     /// @brief Construct a new Collision Mesh object directly from the collision mesh vertices.
     /// @param rest_positions The vertices of the collision mesh at rest (#V × dim).
@@ -64,10 +64,16 @@ public:
     void init_area_jacobians();
 
     /// @brief Destroy the Collision Mesh object
-    ~CollisionMesh() { }
+    ~CollisionMesh() = default;
 
     /// @brief Get the number of vertices in the collision mesh.
     size_t num_vertices() const { return m_vertex_to_full_vertex.size(); }
+
+    /// @brief Get the number of codimensional vertices in the collision mesh.
+    size_t num_codim_vertices() const { return codim_vertices().size(); }
+
+    /// @brief Get the number of codimensional edges in the collision mesh.
+    size_t num_codim_edges() const { return codim_edges().size(); }
 
     /// @brief Get the number of edges in the collision mesh.
     size_t num_edges() const { return edges().rows(); }
@@ -89,6 +95,12 @@ public:
 
     /// @brief Get the vertices of the collision mesh at rest (#V × dim).
     const Eigen::MatrixXd& rest_positions() const { return m_rest_positions; }
+
+    /// @brief Get the indices of codimensional vertices of the collision mesh (#CV x 1).
+    const Eigen::VectorXi& codim_vertices() const { return m_codim_vertices; }
+
+    /// @brief Get the indices of codimensional edges of the collision mesh (#CE x 1).
+    const Eigen::VectorXi& codim_edges() const { return m_codim_edges; }
 
     /// @brief Get the edges of the collision mesh (#E × 2).
     const Eigen::MatrixXi& edges() const { return m_edges; }
@@ -164,12 +176,22 @@ public:
         return m_vertex_vertex_adjacencies;
     }
 
+    /// @brief Get the vertex-edge adjacency matrix.
+    const std::vector<unordered_set<int>>& vertex_edge_adjacencies() const
+    {
+        if (!are_adjacencies_initialized()) {
+            throw std::runtime_error(
+                "Vertex-edge adjacencies not initialized. Call init_adjacencies() first.");
+        }
+        return m_vertex_edge_adjacencies;
+    }
+
     /// @brief Get the edge-vertex adjacency matrix.
     const std::vector<unordered_set<int>>& edge_vertex_adjacencies() const
     {
         if (!are_adjacencies_initialized()) {
             throw std::runtime_error(
-                "Edge-vertex adjacencies not initialized. Call init_area_jacobians() first.");
+                "Edge-vertex adjacencies not initialized. Call init_adjacencies() first.");
         }
         return m_edge_vertex_adjacencies;
     }
@@ -178,6 +200,7 @@ public:
     bool are_adjacencies_initialized() const
     {
         return !m_vertex_vertex_adjacencies.empty()
+            && !m_vertex_edge_adjacencies.empty()
             && !m_edge_vertex_adjacencies.empty();
     }
 
@@ -242,9 +265,12 @@ public:
     /// @brief Construct a vector of bools indicating whether each vertex is on the surface.
     /// @param num_vertices The number of vertices in the mesh.
     /// @param edges The surface edges of the mesh (#E × 2).
+    /// @param codim_vertices The indices of codimensional vertices (#CV x 1).
     /// @return A vector of bools indicating whether each vertex is on the surface.
     static std::vector<bool> construct_is_on_surface(
-        const int num_vertices, const Eigen::MatrixXi& edges);
+        const long num_vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::VectorXi& codim_vertices = Eigen::VectorXi());
 
     /// @brief Construct a matrix that maps from the faces' edges to rows in the edges matrix.
     /// @param faces The face matrix of mesh (#F × 3).
@@ -262,6 +288,9 @@ protected:
     // -----------------------------------------------------------------------
     // Helper initialization functions
 
+    void init_codim_vertices();
+    void init_codim_edges();
+
     /// @brief Initialize the selection matrix from full vertices/DOF to collision vertices/DOF.
     void init_selection_matrices(const int dim);
 
@@ -278,6 +307,10 @@ protected:
     Eigen::MatrixXd m_full_rest_positions;
     /// @brief The vertex positions at rest (#V × dim).
     Eigen::MatrixXd m_rest_positions;
+    /// @brief The indices of codimensional vertices (#CV x 1).
+    Eigen::VectorXi m_codim_vertices;
+    /// @brief The indices of codimensional edges (#CE x 1).
+    Eigen::VectorXi m_codim_edges;
     /// @brief Edges as rows of indicies into vertices (#E × 2).
     Eigen::MatrixXi m_edges;
     /// @brief Triangular faces as rows of indicies into vertices (#F × 3).
@@ -305,7 +338,9 @@ protected:
 
     /// @brief Vertices adjacent to vertices
     std::vector<unordered_set<int>> m_vertex_vertex_adjacencies;
-    /// @brief Edges adjacent to edges
+    /// @brief Edges adjacent to vertices
+    std::vector<unordered_set<int>> m_vertex_edge_adjacencies;
+    /// @brief Vertices adjacent to edges
     std::vector<unordered_set<int>> m_edge_vertex_adjacencies;
 
     // std::vector<std::vector<int>> m_vertices_to_faces;

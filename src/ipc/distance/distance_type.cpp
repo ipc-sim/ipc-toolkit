@@ -91,46 +91,61 @@ EdgeEdgeDistanceType edge_edge_distance_type(
     const Eigen::Vector3d v = eb1 - eb0;
     const Eigen::Vector3d w = ea0 - eb0;
 
-    const double a = u.squaredNorm(); // always >= 0
+    const double a = u.squaredNorm(); // always ≥ 0
     const double b = u.dot(v);
-    const double c = v.squaredNorm(); // always >= 0
+    const double c = v.squaredNorm(); // always ≥ 0
     const double d = u.dot(w);
     const double e = v.dot(w);
-    const double D = a * c - b * b; // always >= 0
+    const double D = a * c - b * b; // always ≥ 0
 
-    EdgeEdgeDistanceType defaultCase = EdgeEdgeDistanceType::EA_EB;
+    // Degenerate cases should not happen in practice, but we handle them
+    if (a == 0.0 && c == 0.0) {
+        return EdgeEdgeDistanceType::EA0_EB0;
+    } else if (a == 0.0) {
+        return EdgeEdgeDistanceType::EA0_EB;
+    } else if (c == 0.0) {
+        return EdgeEdgeDistanceType::EA_EB0;
+    }
+
+    // Special handling for parallel edges
+    const double parallel_tolerance = PARALLEL_THRESHOLD * std::max(1.0, a * c);
+    if (u.cross(v).squaredNorm() < parallel_tolerance) {
+        return edge_edge_parallel_distance_type(ea0, ea1, eb0, eb1);
+    }
+
+    EdgeEdgeDistanceType default_case = EdgeEdgeDistanceType::EA_EB;
 
     // compute the line parameters of the two closest points
     const double sN = (b * e - c * d);
     double tN, tD;   // tc = tN / tD
-    if (sN <= 0.0) { // sc < 0 => the s=0 edge is visible
+    if (sN <= 0.0) { // sc < 0 ⟹ the s=0 edge is visible
         tN = e;
         tD = c;
-        defaultCase = EdgeEdgeDistanceType::EA0_EB;
-    } else if (sN >= D) { // sc > 1  => the s=1 edge is visible
+        default_case = EdgeEdgeDistanceType::EA0_EB;
+    } else if (sN >= D) { // sc > 1 ⟹ the s=1 edge is visible
         tN = e + b;
         tD = c;
-        defaultCase = EdgeEdgeDistanceType::EA1_EB;
+        default_case = EdgeEdgeDistanceType::EA1_EB;
     } else {
         tN = (a * e - b * d);
-        tD = D; // default tD = D >= 0
+        tD = D; // default tD = D ≥ 0
         if (tN > 0.0 && tN < tD
-            && u.cross(v).squaredNorm() < PARALLEL_THRESHOLD * a * c) {
-            // avoid nearly parallel EE
+            && u.cross(v).squaredNorm() < parallel_tolerance) {
+            // avoid coplanar or nearly parallel EE
             if (sN < D / 2) {
                 tN = e;
                 tD = c;
-                defaultCase = EdgeEdgeDistanceType::EA0_EB;
+                default_case = EdgeEdgeDistanceType::EA0_EB;
             } else {
                 tN = e + b;
                 tD = c;
-                defaultCase = EdgeEdgeDistanceType::EA1_EB;
+                default_case = EdgeEdgeDistanceType::EA1_EB;
             }
         }
-        // else defaultCase stays EdgeEdgeDistanceType::EA_EB
+        // else default_case stays EdgeEdgeDistanceType::EA_EB
     }
 
-    if (tN <= 0.0) { // tc < 0 => the t=0 edge is visible
+    if (tN <= 0.0) { // tc < 0 ⟹ the t=0 edge is visible
         // recompute sc for this edge
         if (-d <= 0.0) {
             return EdgeEdgeDistanceType::EA0_EB0;
@@ -139,7 +154,7 @@ EdgeEdgeDistanceType edge_edge_distance_type(
         } else {
             return EdgeEdgeDistanceType::EA_EB0;
         }
-    } else if (tN >= tD) { // tc > 1  => the t=1 edge is visible
+    } else if (tN >= tD) { // tc > 1 ⟹ the t=1 edge is visible
         // recompute sc for this edge
         if ((-d + b) <= 0.0) {
             return EdgeEdgeDistanceType::EA0_EB1;
@@ -150,7 +165,44 @@ EdgeEdgeDistanceType edge_edge_distance_type(
         }
     }
 
-    return defaultCase;
+    return default_case;
+}
+
+EdgeEdgeDistanceType edge_edge_parallel_distance_type(
+    const Eigen::Ref<const Eigen::Vector3d>& ea0,
+    const Eigen::Ref<const Eigen::Vector3d>& ea1,
+    const Eigen::Ref<const Eigen::Vector3d>& eb0,
+    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+{
+    const Eigen::Vector3d ea = ea1 - ea0;
+    const double alpha = (eb0 - ea0).dot(ea) / ea.squaredNorm();
+    const double beta = (eb1 - ea0).dot(ea) / ea.squaredNorm();
+
+    uint8_t eac; // 0: EA0, 1: EA1, 2: EA
+    uint8_t ebc; // 0: EB0, 1: EB1, 2: EB
+    if (alpha < 0) {
+        eac = (0 <= beta && beta <= 1) ? 2 : 0;
+        ebc = (beta <= alpha) ? 0 : (beta <= 1 ? 1 : 2);
+    } else if (alpha > 1) {
+        eac = (0 <= beta && beta <= 1) ? 2 : 1;
+        ebc = (beta >= alpha) ? 0 : (0 <= beta ? 1 : 2);
+    } else {
+        eac = 2;
+        ebc = 0;
+    }
+
+    // f(0, 0) = 0000 = 0 -> EA0_EB0
+    // f(0, 1) = 0001 = 1 -> EA0_EB1
+    // f(1, 0) = 0010 = 2 -> EA1_EB0
+    // f(1, 1) = 0011 = 3 -> EA1_EB1
+    // f(2, 0) = 0100 = 4 -> EA_EB0
+    // f(2, 1) = 0101 = 5 -> EA_EB1
+    // f(0, 2) = 0110 = 6 -> EA0_EB
+    // f(1, 2) = 0111 = 7 -> EA1_EB
+    // f(2, 2) = 1000 = 8 -> EA_EB
+
+    assert(eac != 2 || ebc != 2); // This case results in a degenerate line-line
+    return EdgeEdgeDistanceType(ebc < 2 ? (eac << 1 | ebc) : (6 + eac));
 }
 
 } // namespace ipc

@@ -2,12 +2,15 @@
 
 #pragma once
 
+#include <ipc/barrier/barrier.hpp>
+
 #include <Eigen/Core>
 
 namespace ipc {
 
 /// @brief Compute an inital barrier stiffness using the barrier potential gradient.
 /// @param[in] bbox_diagonal Length of the diagonal of the bounding box of the scene.
+/// @param[in] barrier Barrier function.
 /// @param[in] dhat Activation distance of the barrier.
 /// @param[in] average_mass Average mass of all bodies.
 /// @param[in] grad_energy Gradient of the elasticity energy function.
@@ -18,6 +21,7 @@ namespace ipc {
 /// @return The initial barrier stiffness.
 double initial_barrier_stiffness(
     const double bbox_diagonal,
+    const Barrier& barrier,
     const double dhat,
     const double average_mass,
     const Eigen::VectorXd& grad_energy,

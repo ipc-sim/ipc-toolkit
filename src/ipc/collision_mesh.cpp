@@ -17,7 +17,8 @@ CollisionMesh::CollisionMesh(
         std::vector<bool>(rest_positions.rows(), true),
         rest_positions,
         edges,
-        faces)
+        faces,
+        displacement_map)
 {
 }
 
@@ -55,7 +56,7 @@ CollisionMesh::CollisionMesh(
             dynamic_vertex_to_full_vertex.size());
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    // ========================================================================
 
     const int dim = full_rest_positions.cols();
 
@@ -77,7 +78,7 @@ CollisionMesh::CollisionMesh(
         m_displacement_dof_map.makeCompressed();
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    // ========================================================================
 
     // Set vertices at rest using full → reduced map
     m_rest_positions = m_select_vertices * full_rest_positions;
@@ -104,13 +105,57 @@ CollisionMesh::CollisionMesh(
 
     m_faces_to_edges = construct_faces_to_edges(m_faces, m_edges);
 
+    init_codim_vertices();
+    init_codim_edges();
     init_areas();
+    init_adjacencies();
     // Compute these manually if needed.
-    // init_adjacencies();
     // init_area_jacobian();
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
+
+void CollisionMesh::init_codim_vertices()
+{
+    std::vector<bool> is_codim_vertex(num_vertices(), true);
+    for (int i : m_edges.reshaped()) {
+        is_codim_vertex[i] = false;
+    }
+
+    m_codim_vertices.resize(
+        std::count(is_codim_vertex.begin(), is_codim_vertex.end(), true));
+
+    int j = 0;
+    for (int i = 0; i < num_vertices(); i++) {
+        if (is_codim_vertex[i]) {
+            assert(j < m_codim_vertices.size());
+            m_codim_vertices[j++] = i;
+        }
+    }
+    assert(j == m_codim_vertices.size());
+}
+
+void CollisionMesh::init_codim_edges()
+{
+    std::vector<bool> is_codim_edge(num_edges(), true);
+    for (int i : m_faces_to_edges.reshaped()) {
+        is_codim_edge[i] = false;
+    }
+
+    m_codim_edges.resize(
+        std::count(is_codim_edge.begin(), is_codim_edge.end(), true));
+
+    int j = 0;
+    for (int i = 0; i < num_edges(); i++) {
+        if (is_codim_edge[i]) {
+            assert(j < m_codim_edges.size());
+            m_codim_edges[j++] = i;
+        }
+    }
+    assert(j == m_codim_edges.size());
+}
+
+// ============================================================================
 
 void CollisionMesh::init_selection_matrices(const int dim)
 {
@@ -147,15 +192,18 @@ Eigen::SparseMatrix<double> CollisionMesh::vertex_matrix_to_dof_matrix(
     return M_dof;
 }
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 
 void CollisionMesh::init_adjacencies()
 {
     m_vertex_vertex_adjacencies.resize(num_vertices());
+    m_vertex_edge_adjacencies.resize(num_vertices());
     // Edges includes the edges of the faces
     for (int i = 0; i < m_edges.rows(); i++) {
         m_vertex_vertex_adjacencies[m_edges(i, 0)].insert(m_edges(i, 1));
         m_vertex_vertex_adjacencies[m_edges(i, 1)].insert(m_edges(i, 0));
+        m_vertex_edge_adjacencies[m_edges(i, 0)].insert(i);
+        m_vertex_edge_adjacencies[m_edges(i, 1)].insert(i);
     }
 
     m_edge_vertex_adjacencies.resize(m_edges.rows());
@@ -250,63 +298,82 @@ void CollisionMesh::init_areas()
                 (vertex_edge_areas.array() < 0).select(1, vertex_edge_areas),
                 vertex_face_areas);
 
-    // Select the area based on the order face, codim
-    m_edge_areas = (m_edge_areas.array() < 0).select(1, m_edge_areas);
+    for (int i = 0; i < m_edge_areas.size(); i++) {
+        if (m_edge_areas[i] < 0) {
+            // Use the edge length for codim edges
+            const VectorMax3d e0 = m_rest_positions.row(m_edges(i, 0));
+            const VectorMax3d e1 = m_rest_positions.row(m_edges(i, 1));
+            m_edge_areas[i] = (e1 - e0).norm();
+        }
+    }
 }
 
 void CollisionMesh::init_area_jacobians()
 {
-    // Compute vertex areas as the sum of ½ the length of connected edges
+    std::vector<bool> was_vertex_visited(num_vertices(), false);
+    std::vector<bool> was_edge_visited(num_edges(), false);
+
     m_vertex_area_jacobian.resize(
         num_vertices(), Eigen::SparseVector<double>(ndof()));
-    for (int i = 0; i < m_edges.rows(); i++) {
-        const VectorMax3d e0 = m_rest_positions.row(m_edges(i, 0));
-        const VectorMax3d e1 = m_rest_positions.row(m_edges(i, 1));
+    m_edge_area_jacobian.resize(
+        num_edges(), Eigen::SparseVector<double>(ndof()));
 
-        const VectorMax6d edge_len_gradient = edge_length_gradient(e0, e1) / 2;
+    // Compute vertex/edge areas as the sum of ⅓ the area of connected face
+    for (int i = 0; i < m_faces.rows(); i++) {
+        assert(dim() == 3);
+        const Eigen::Vector3d f0 = m_rest_positions.row(m_faces(i, 0));
+        const Eigen::Vector3d f1 = m_rest_positions.row(m_faces(i, 1));
+        const Eigen::Vector3d f2 = m_rest_positions.row(m_faces(i, 2));
 
-        for (int j = 0; j < m_edges.cols(); j++) {
+        const Vector9d face_area_gradient =
+            triangle_area_gradient(f0, f1, f2) / 3.0;
+
+        for (int j = 0; j < m_faces.cols(); ++j) {
+            // compute gradient of area
+
+            was_vertex_visited[m_faces(i, j)] = true;
             local_gradient_to_global_gradient(
-                edge_len_gradient, m_edges.row(i), dim(),
-                m_vertex_area_jacobian[m_edges(i, j)]);
+                face_area_gradient, m_faces.row(i), dim(),
+                m_vertex_area_jacobian[m_faces(i, j)]);
+
+            was_edge_visited[m_faces_to_edges(i, j)] = true;
+            local_gradient_to_global_gradient(
+                face_area_gradient, m_faces.row(i), dim(),
+                m_edge_area_jacobian[m_faces_to_edges(i, j)]);
         }
     }
 
-    // Compute vertex/edge areas as the sum of ⅓ the area of connected face
-    m_edge_area_jacobian.resize(
-        m_edges.rows(), Eigen::SparseVector<double>(ndof()));
-    if (dim() == 3) {
-        std::vector<bool> visited_vertex_before(num_vertices(), false);
-        for (int i = 0; i < m_faces.rows(); i++) {
-            const Eigen::Vector3d f0 = m_rest_positions.row(m_faces(i, 0));
-            const Eigen::Vector3d f1 = m_rest_positions.row(m_faces(i, 1));
-            const Eigen::Vector3d f2 = m_rest_positions.row(m_faces(i, 2));
+    // Compute unvisited vertex areas as the sum of ½ the length of connected
+    // edges
+    for (int i = 0; i < m_edges.rows(); i++) {
+        const int e0i = m_edges(i, 0), e1i = m_edges(i, 1);
+        const VectorMax3d e0 = m_rest_positions.row(e0i);
+        const VectorMax3d e1 = m_rest_positions.row(e1i);
 
-            const Vector9d face_area_gradient =
-                triangle_area_gradient(f0, f1, f2) / 3.0;
+        assert(was_vertex_visited[e0i] == was_vertex_visited[e1i]);
+        if (was_vertex_visited[e0i] && was_edge_visited[i]) {
+            continue;
+        }
 
-            for (int j = 0; j < m_faces.cols(); ++j) {
-                if (!visited_vertex_before[m_faces(i, j)]) {
-                    // remove the computed value from vertex_edge_areas
-                    m_vertex_area_jacobian[m_faces(i, j)].setZero();
-                    visited_vertex_before[m_faces(i, j)] = true;
-                }
+        const VectorMax6d edge_len_gradient = edge_length_gradient(e0, e1);
 
-                // compute gradient of area
-
+        if (!was_vertex_visited[e0i]) {
+            for (int j = 0; j < m_edges.cols(); j++) {
                 local_gradient_to_global_gradient(
-                    face_area_gradient, m_faces.row(i), dim(),
-                    m_vertex_area_jacobian[m_faces(i, j)]);
-
-                local_gradient_to_global_gradient(
-                    face_area_gradient, m_faces.row(i), dim(),
-                    m_edge_area_jacobian[m_faces_to_edges(i, j)]);
+                    edge_len_gradient / 2, m_edges.row(i), dim(),
+                    m_vertex_area_jacobian[m_edges(i, j)]);
             }
+        }
+
+        if (!was_edge_visited[i]) {
+            local_gradient_to_global_gradient(
+                edge_len_gradient, m_edges.row(i), dim(),
+                m_edge_area_jacobian[i]);
         }
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================/
 
 Eigen::MatrixXd
 CollisionMesh::vertices(const Eigen::MatrixXd& full_positions) const
@@ -332,7 +399,7 @@ Eigen::MatrixXd CollisionMesh::map_displacements(
     return m_displacement_map * full_displacements;
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================/
 
 Eigen::VectorXd CollisionMesh::to_full_dof(const Eigen::VectorXd& x) const
 {
@@ -350,12 +417,18 @@ CollisionMesh::to_full_dof(const Eigen::SparseMatrix<double>& X) const
     return m_displacement_dof_map.transpose() * X * m_displacement_dof_map;
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================/
 
 std::vector<bool> CollisionMesh::construct_is_on_surface(
-    const int num_vertices, const Eigen::MatrixXi& edges)
+    const long num_vertices,
+    const Eigen::MatrixXi& edges,
+    const Eigen::VectorXi& codim_vertices)
 {
     std::vector<bool> is_on_surface(num_vertices, false);
+    for (int i = 0; i < codim_vertices.size(); i++) {
+        assert(codim_vertices[i] < num_vertices);
+        is_on_surface[codim_vertices[i]] = true;
+    }
     // Column first because colmajor
     for (size_t ej = 0; ej < edges.cols(); ej++) {
         for (size_t ei = 0; ei < edges.rows(); ei++) {
@@ -366,7 +439,7 @@ std::vector<bool> CollisionMesh::construct_is_on_surface(
     return is_on_surface;
 }
 
-////////////////////////////////////////////////////////////////////////////////
+// ============================================================================/
 
 Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
     const Eigen::MatrixXi& faces, const Eigen::MatrixXi& edges)

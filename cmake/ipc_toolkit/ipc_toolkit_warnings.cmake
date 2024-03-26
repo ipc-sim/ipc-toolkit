@@ -7,23 +7,29 @@ if(TARGET ipc::toolkit::warnings)
   return()
 endif()
 
-set(IPC_TOOLKIT_FLAGS
+set(IPC_TOOLKIT_WARNING_FLAGS
   -Wall
   -Wextra
-  -pedantic
+  -Wpedantic
+  # -Werror
 
   # -Wconversion
+  -Werror=enum-conversion
+  -Wfloat-conversion
+  # Disable these errors for now, because they are too noisy
+  # -Wno-sign-conversion
+  # -Wno-shorten-64-to-32
   # -Wunsafe-loop-optimizations # broken with C++11 loops
   -Wunused
 
-  -Wno-long-long
+  -Wno-long-long # disable warnings about using long long
   -Wpointer-arith
   -Wformat=2
   -Wuninitialized
   -Wcast-qual
-  # -Wmissing-noreturn
+  -Wmissing-noreturn
   -Wmissing-format-attribute
-  # -Wredundant-decls
+  -Wredundant-decls
 
   -Werror=implicit
   -Werror=nonnull
@@ -38,17 +44,17 @@ set(IPC_TOOLKIT_FLAGS
   -Werror=address
   -Werror=int-to-pointer-cast
   -Werror=pointer-to-int-cast
+  -Werror=inconsistent-missing-override
+  -Werror=return-stack-address
 
-  -Wno-unused-variable
+  -Wunused-variable
   -Wunused-but-set-variable
   -Wno-unused-parameter
 
   # -Weffc++
-  -Wno-old-style-cast
-  # -Wno-sign-conversion
-  # -Wsign-conversion
+  -Wold-style-cast
 
-  # -Wshadow
+  -Wshadow
 
   -Wstrict-null-sentinel
   -Woverloaded-virtual
@@ -61,7 +67,7 @@ set(IPC_TOOLKIT_FLAGS
   # lacks a case for one or more of the named codes of that enumeration.
   -Wswitch
   # This is annoying if all cases are already covered.
-  # -Wswitch-default
+  -Wswitch-default
   # This is annoying if there is a default that covers the rest.
   # -Wswitch-enum
   -Wswitch-unreachable
@@ -71,20 +77,17 @@ set(IPC_TOOLKIT_FLAGS
   -Wdisabled-optimization
   # -Winline # produces warning on default implicit destructor
   -Winvalid-pch
-  # -Wmissing-include-dirs
+  -Wmissing-include-dirs
   -Wpacked
   -Wno-padded
   -Wstrict-overflow
   -Wstrict-overflow=2
 
-  # -Wctor-dtor-privacy
+  -Wctor-dtor-privacy
   -Wlogical-op
-  # -Wnoexcept
   -Woverloaded-virtual
   # -Wundef
 
-  -Wnon-virtual-dtor
-  -Wdelete-non-virtual-dtor
   -Werror=non-virtual-dtor
   -Werror=delete-non-virtual-dtor
 
@@ -141,27 +144,17 @@ set(IPC_TOOLKIT_FLAGS
   -fno-omit-frame-pointer
   -fno-optimize-sibling-calls
 
-  -Wno-pedantic
-
   -Wno-redundant-decls
 )
 
 # Flags above don't make sense for MSVC
 if(MSVC)
-  set(IPC_TOOLKIT_FLAGS)
+  set(IPC_TOOLKIT_WARNING_FLAGS)
 endif()
-
-include(CheckCXXCompilerFlag)
 
 add_library(ipc_toolkit_warnings INTERFACE)
 add_library(ipc::toolkit::warnings ALIAS ipc_toolkit_warnings)
 
-foreach(FLAG IN ITEMS ${IPC_TOOLKIT_FLAGS})
-  string(REPLACE "=" "-" FLAG_VAR "${FLAG}")
-  if(NOT DEFINED IS_SUPPORTED_${FLAG_VAR})
-    check_cxx_compiler_flag("${FLAG}" IS_SUPPORTED_${FLAG_VAR})
-  endif()
-  if(IS_SUPPORTED_${FLAG_VAR})
-    target_compile_options(ipc_toolkit_warnings INTERFACE ${FLAG})
-  endif()
-endforeach()
+include(ipc_toolkit_filter_flags)
+ipc_toolkit_filter_flags(IPC_TOOLKIT_WARNING_FLAGS)
+target_compile_options(ipc_toolkit_warnings INTERFACE ${IPC_TOOLKIT_WARNING_FLAGS})

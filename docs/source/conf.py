@@ -20,10 +20,12 @@ import pathlib
 
 # -- Project information -----------------------------------------------------
 
+import ipctk
+
 project = "IPC Toolkit"
 copyright = '2020-2023, IPC-Sim Organization; MIT License'
 author = "Zachary Ferguson"
-version = "1.0.0"
+version = ipctk.__version__
 
 # -- General configuration ---------------------------------------------------
 
@@ -42,7 +44,7 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.autosectionlabel",
+    # "sphinx.ext.autosectionlabel",
     "sphinx.ext.todo",
     "sphinx.ext.mathjax",
     "sphinx.ext.ifconfig",
@@ -56,6 +58,17 @@ extensions = [
     "sphinx_immaterial.apidoc.python.apigen",
     "sphinx_immaterial.apidoc.format_signatures",
     # 'sphinx_autodoc_toolbox.collapse',
+    "sphinxcontrib.bibtex",
+    "sphinxemoji.sphinxemoji",
+    "sphinx_last_updated_by_git",
+]
+
+bibtex_bibfiles = ['refs.bib']
+bibtex_reference_style = 'author_year'
+bibtex_default_style = 'plain'
+
+myst_enable_extensions = [
+    "dollarmath",
 ]
 
 object_description_options = [
@@ -129,24 +142,6 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # a list of builtin themes.
 html_theme = "sphinx_immaterial"
 
-# Theme options are theme-specific and customize the look and feel of a theme
-# further.  For a list of options available for each theme, see the
-# documentation.
-# html_theme_options = {
-#     "description": ("A set of reusable functions to integrate IPC into an "
-#                     "existing simulation."),
-#     "logo": "teaser@0_3.png",
-#     "logo_name": True,
-#     "github_banner": False,
-#     "github_button": True,
-#     "github_repo": "ipc-toolkit",
-#     "github_user": "ipc-sim",
-#     "github_type": "star",
-#     "fixed_sidebar": False,
-#     "page_width": "1200px",
-#     "canonical_url": "https://ipc-sim.github.io/ipc-toolkit/",
-# }
-
 # Material theme options
 html_theme_options = {
     "palette": [{
@@ -169,12 +164,11 @@ html_theme_options = {
         }
     }],
 
-    "site_url": "https://ipc-sim.github.io/ipc-toolkit",
+    "site_url": "https://ipctk.xyz",
 
     # Set the repo location to get a badge with stats
     "repo_url": "https://github.com/ipc-sim/ipc-toolkit",
     "repo_name": "ipc-sim/ipc-toolkit",
-    "repo_type": "github",
     "icon": {"repo": "fontawesome/brands/github"},
 
     "edit_uri": "blob/main/docs/source",
@@ -198,7 +192,7 @@ html_theme_options = {
     "toc_title": "Contents",
 
     "version_dropdown": True,
-    "version_json": "https://ipc-sim.github.io/ipc-toolkit/versions.json",
+    "version_json": "https://ipctk.xyz/versions.json",
 }
 
 html_title = "IPC Toolkit"
@@ -215,4 +209,4 @@ html_static_path = ["_static"]
 # or fully qualified paths (eg. https://...)
 html_css_files = ["css/custom.css"]
 
-html_last_updated_fmt = "%B %d, %Y"
+# html_last_updated_fmt = "%B %d, %Y"

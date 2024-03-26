@@ -3,6 +3,5 @@ set(SOURCES
   plane.hpp
 )
 
-ipc_toolkit_prepend_current_path(SOURCES)
-ipc_toolkit_set_source_group(${SOURCES})
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})
 target_sources(ipc_toolkit PRIVATE ${SOURCES})

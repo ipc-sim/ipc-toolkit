@@ -51,29 +51,6 @@ Eigen::Matrix<double, 2, 12> point_triangle_closest_point_jacobian(
 // ============================================================================
 
 namespace autogen {
-    // J is (6×1) flattened in column-major order
-    void point_edge_closest_point_2D_jacobian(
-        double p_x,
-        double p_y,
-        double e0_x,
-        double e0_y,
-        double e1_x,
-        double e1_y,
-        double J[6]);
-
-    // J is (9×1) flattened in column-major order
-    void point_edge_closest_point_3D_jacobian(
-        double p_x,
-        double p_y,
-        double p_z,
-        double e0_x,
-        double e0_y,
-        double e0_z,
-        double e1_x,
-        double e1_y,
-        double e1_z,
-        double J[9]);
-
     // J is (2×12) flattened in column-major order
     void edge_edge_closest_point_jacobian(
         double ea0_x,

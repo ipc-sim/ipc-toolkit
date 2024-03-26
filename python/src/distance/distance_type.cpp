@@ -92,9 +92,9 @@ void define_distance_type(py::module_& m)
         Determine the closest pair between a point and edge.
 
         Parameters:
-            p: point
-            e0: first vertex of the edge
-            e1: second vertex of the edge
+            p: The point.
+            e0: The first vertex of the edge.
+            e1: The second vertex of the edge.
 
         Returns:
             The distance type of the point-edge pair.
@@ -107,10 +107,10 @@ void define_distance_type(py::module_& m)
         Determine the closest pair between a point and triangle.
 
         Parameters:
-            p: point
-            t0: first vertex of the triangle
-            t1: second vertex of the triangle
-            t2: third vertex of the triangle
+            p: The point.
+            t0: The first vertex of the triangle.
+            t1: The second vertex of the triangle.
+            t2: The third vertex of the triangle.
 
         Returns:
             The distance type of the point-triangle pair.
@@ -123,10 +123,26 @@ void define_distance_type(py::module_& m)
         Determine the closest pair between two edges.
 
         Parameters:
-            ea0: first vertex of the first edge
-            ea1: second vertex of the first edge
-            eb0: first vertex of the second edge
-            eb1: second vertex of the second edge
+            ea0: The first vertex of the first edge.
+            ea1: The second vertex of the first edge.
+            eb0: The first vertex of the second edge.
+            eb1: The second vertex of the second edge.
+
+        Returns:
+            The distance type of the edge-edge pair.
+        )ipc_Qu8mg5v7",
+        py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
+
+    m.def(
+        "edge_edge_parallel_distance_type", &edge_edge_parallel_distance_type,
+        R"ipc_Qu8mg5v7(
+        Determine the closest pair between two parallel edges.
+
+        Parameters:
+            ea0: The first vertex of the first edge.
+            ea1: The second vertex of the first edge.
+            eb0: The first vertex of the second edge.
+            eb1: The second vertex of the second edge.
 
         Returns:
             The distance type of the edge-edge pair.

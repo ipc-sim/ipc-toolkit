@@ -8,21 +8,21 @@ using namespace ipc;
 void define_plane_implicit(py::module_& m)
 {
     m.def(
-        "construct_point_plane_constraint_set",
+        "construct_point_plane_collisions",
         [](const Eigen::MatrixXd& points, const Eigen::MatrixXd& plane_origins,
            const Eigen::MatrixXd& plane_normals, const double dhat,
            const double dmin = 0) {
-            std::vector<PlaneVertexConstraint> pv_constraints;
-            construct_point_plane_constraint_set(
-                points, plane_origins, plane_normals, dhat, pv_constraints,
+            std::vector<PlaneVertexCollision> pv_collisions;
+            construct_point_plane_collisions(
+                points, plane_origins, plane_normals, dhat, pv_collisions,
                 dmin);
-            return pv_constraints;
+            return pv_collisions;
         },
         R"ipc_Qu8mg5v7(
-        Construct a set of point-plane distance constraints used to compute
+        Construct a set of point-plane distance collisions used to compute
 
         Note:
-            The given pv_constraints will be cleared.
+            The given pv_collisions will be cleared.
 
         the barrier potential.
 
@@ -34,28 +34,28 @@ void define_plane_implicit(py::module_& m)
             dmin: Minimum distance.
 
         Returns:
-            The constructed set of constraints.
+            The constructed set of collisions.
         )ipc_Qu8mg5v7",
         py::arg("points"), py::arg("plane_origins"), py::arg("plane_normals"),
         py::arg("dhat"), py::arg("dmin") = 0);
 
     m.def(
-        "construct_point_plane_constraint_set",
+        "construct_point_plane_collisions",
         [](const Eigen::MatrixXd& points, const Eigen::MatrixXd& plane_origins,
            const Eigen::MatrixXd& plane_normals, const double dhat,
            const double dmin,
            const std::function<bool(size_t, size_t)>& can_collide) {
-            std::vector<PlaneVertexConstraint> pv_constraints;
-            construct_point_plane_constraint_set(
-                points, plane_origins, plane_normals, dhat, pv_constraints,
-                dmin, can_collide);
-            return pv_constraints;
+            std::vector<PlaneVertexCollision> pv_collisions;
+            construct_point_plane_collisions(
+                points, plane_origins, plane_normals, dhat, pv_collisions, dmin,
+                can_collide);
+            return pv_collisions;
         },
         R"ipc_Qu8mg5v7(
-        Construct a set of point-plane distance constraints used to compute
+        Construct a set of point-plane distance collisions used to compute
 
         Note:
-            The given pv_constraints will be cleared.
+            The given pv_collisions will be cleared.
 
         the barrier potential.
 
@@ -68,7 +68,7 @@ void define_plane_implicit(py::module_& m)
             can_collide: A function that takes a vertex ID (row numbers in points) and a plane ID (row number in plane_origins) then returns true if the vertex can collide with the plane. By default all points can collide with all planes.
 
         Returns:
-            The constructed set of constraints.
+            The constructed set of collisions.
         )ipc_Qu8mg5v7",
         py::arg("points"), py::arg("plane_origins"), py::arg("plane_normals"),
         py::arg("dhat"), py::arg("dmin"), py::arg("can_collide"));

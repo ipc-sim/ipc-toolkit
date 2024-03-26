@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.0.0
         with:
           fetch-depth: 10
 
@@ -23,9 +23,24 @@ jobs:
       - name: Requirements
         run: |
           sudo apt-get update
-          sudo apt-get install doxygen python3-sphinx graphviz
+          sudo apt-get install doxygen python3-sphinx graphviz ccache
+          echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
           python -m pip install --upgrade pip
           pip install -r docs/requirements.txt
+
+      - name: Cache Build
+        id: cache-build
+        uses: actions/cache@v3.0.11
+        with:
+          path: ${{ env.CACHE_PATH }}
+          key: docs-cache
+          restore-keys: Linux-Python-cache
+
+      - name: Prepare Ccache
+        run: |
+          ccache --max-size=1.0G
+          ccache -V && ccache --show-config
+          ccache --show-stats && ccache --zero-stats
 
       - name: Build release docs
         run: |
@@ -35,8 +50,18 @@ jobs:
           for version in $(git tag -l); do
               echo "Processing $version:"
               git checkout $version
+
+              # Fix links
+              grep -rli 'url = {https://ipc-sim.github.io/ipc-toolkit/}' ../* | xargs -i@ sed -i 's/ipc-sim.github.io\/ipc-toolkit\//github.com\/ipc-sim\/ipc-toolkit/g' @
+              grep -rli 'ipc-sim.github.io/ipc-toolkit' ../* | xargs -i@ sed -i 's/ipc-sim.github.io\/ipc-toolkit/ipctk.xyz/g' @
+
               pip install --force-reinstall -v "ipctk==$version"
-              sphinx-build source build/html/$version -D html_theme_options.version_dropdown=true
+              sphinx-build source build/html/$version \
+                -D html_theme_options.version_dropdown=true \
+                -D html_theme_options.version_json=https://ipctk.xyz/versions.json
+
+              # Discard changes
+              git reset --hard
           done
           pip uninstall -y ipctk
           git checkout $HEAD
@@ -44,7 +69,9 @@ jobs:
           cd ..
 
       - name: Build ipctk
-        run: pip install --verbose .
+        run: |
+          pip install --verbose .
+          ccache --show-stats
 
       - name: Build docs
         run: |
@@ -56,6 +83,5 @@ jobs:
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4.4.1
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: docs/build/html # The folder the action should deploy.
+          branch: gh-pages # The branch the action should deploy to.
+          folder: docs/build/html # The folder the action should deploy.

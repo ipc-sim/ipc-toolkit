@@ -25,10 +25,18 @@ Spatial Hash
 
 .. doxygenclass:: ipc::SpatialHash
 
-Sweep and Tiniest Queue
+BVH
+---
+
+.. doxygenclass:: ipc::BVH
+
+Sweep and Prune
 -----------------------
 
-.. doxygenclass:: ipc::SweepAndTiniestQueue
+.. doxygenclass:: ipc::SweepAndPrune
+
+Sweep and Tiniest Queue
+-----------------------
 
 .. .. doxygenclass:: ipc::SweepAndTiniestQueueGPU
 

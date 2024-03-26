@@ -2,96 +2,116 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/config.hpp>
-#ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
-#include <ipc/utils/rational.hpp>
-#endif
 
 #include <igl/predicates/predicates.h>
 
 #include <Eigen/Geometry>
 
+#ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
+#include <rational/rational.hpp>
+#endif
+
 namespace ipc {
 
 #ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
-bool is_edge_intersecting_triangle_rational(
-    const Eigen::Vector3d& e0_float,
-    const Eigen::Vector3d& e1_float,
-    const Eigen::Vector3d& t0_float,
-    const Eigen::Vector3d& t1_float,
-    const Eigen::Vector3d& t2_float)
-{
-    Vector3<Rational> e0, e1, t0, t1, t2;
+namespace {
+    bool is_edge_intersecting_triangle_rational(
+        const Eigen::Vector3d& e0_float,
+        const Eigen::Vector3d& e1_float,
+        const Eigen::Vector3d& t0_float,
+        const Eigen::Vector3d& t1_float,
+        const Eigen::Vector3d& t2_float)
+    {
+        using namespace rational;
 
-    for (int d = 0; d < 3; ++d) {
-        e0[d] = e0_float[d];
-        e1[d] = e1_float[d];
+        typedef Eigen::Matrix<
+            Rational, 3, 1, Eigen::ColMajor | Eigen::DontAlign>
+            Vector3r;
 
-        t0[d] = t0_float[d];
-        t1[d] = t1_float[d];
-        t2[d] = t2_float[d];
+        Vector3r e0, e1, t0, t1, t2;
+
+        for (int d = 0; d < 3; ++d) {
+            e0[d] = e0_float[d];
+            e1[d] = e1_float[d];
+
+            t0[d] = t0_float[d];
+            t1[d] = t1_float[d];
+            t2[d] = t2_float[d];
+        }
+
+        const Rational d = e0[0] * t0[1] * t1[2] - e0[0] * t0[1] * t2[2]
+            - e0[0] * t0[2] * t1[1] + e0[0] * t0[2] * t2[1]
+            + e0[0] * t1[1] * t2[2] - e0[0] * t1[2] * t2[1]
+            - e0[1] * t0[0] * t1[2] + e0[1] * t0[0] * t2[2]
+            + e0[1] * t0[2] * t1[0] - e0[1] * t0[2] * t2[0]
+            - e0[1] * t1[0] * t2[2] + e0[1] * t1[2] * t2[0]
+            + e0[2] * t0[0] * t1[1] - e0[2] * t0[0] * t2[1]
+            - e0[2] * t0[1] * t1[0] + e0[2] * t0[1] * t2[0]
+            + e0[2] * t1[0] * t2[1] - e0[2] * t1[1] * t2[0]
+            - e1[0] * t0[1] * t1[2] + e1[0] * t0[1] * t2[2]
+            + e1[0] * t0[2] * t1[1] - e1[0] * t0[2] * t2[1]
+            - e1[0] * t1[1] * t2[2] + e1[0] * t1[2] * t2[1]
+            + e1[1] * t0[0] * t1[2] - e1[1] * t0[0] * t2[2]
+            - e1[1] * t0[2] * t1[0] + e1[1] * t0[2] * t2[0]
+            + e1[1] * t1[0] * t2[2] - e1[1] * t1[2] * t2[0]
+            - e1[2] * t0[0] * t1[1] + e1[2] * t0[0] * t2[1]
+            + e1[2] * t0[1] * t1[0] - e1[2] * t0[1] * t2[0]
+            - e1[2] * t1[0] * t2[1] + e1[2] * t1[1] * t2[0];
+        if (d.sign() == 0) {
+            return true;
+        }
+
+        // t is the parametric coordinate for the edge
+        const Rational t = (e0[0] * t0[1] * t1[2] - e0[0] * t0[1] * t2[2]
+                            - e0[0] * t0[2] * t1[1] + e0[0] * t0[2] * t2[1]
+                            + e0[0] * t1[1] * t2[2] - e0[0] * t1[2] * t2[1]
+                            - e0[1] * t0[0] * t1[2] + e0[1] * t0[0] * t2[2]
+                            + e0[1] * t0[2] * t1[0] - e0[1] * t0[2] * t2[0]
+                            - e0[1] * t1[0] * t2[2] + e0[1] * t1[2] * t2[0]
+                            + e0[2] * t0[0] * t1[1] - e0[2] * t0[0] * t2[1]
+                            - e0[2] * t0[1] * t1[0] + e0[2] * t0[1] * t2[0]
+                            + e0[2] * t1[0] * t2[1] - e0[2] * t1[1] * t2[0]
+                            - t0[0] * t1[1] * t2[2] + t0[0] * t1[2] * t2[1]
+                            + t0[1] * t1[0] * t2[2] - t0[1] * t1[2] * t2[0]
+                            - t0[2] * t1[0] * t2[1] + t0[2] * t1[1] * t2[0])
+            / d;
+
+        if (t < 0 || t > 1) {
+            return false;
+        }
+
+        // u is the first barycentric coordinate for the triangle
+        const Rational u = (-e0[0] * e1[1] * t0[2] + e0[0] * e1[1] * t2[2]
+                            + e0[0] * e1[2] * t0[1] - e0[0] * e1[2] * t2[1]
+                            - e0[0] * t0[1] * t2[2] + e0[0] * t0[2] * t2[1]
+                            + e0[1] * e1[0] * t0[2] - e0[1] * e1[0] * t2[2]
+                            - e0[1] * e1[2] * t0[0] + e0[1] * e1[2] * t2[0]
+                            + e0[1] * t0[0] * t2[2] - e0[1] * t0[2] * t2[0]
+                            - e0[2] * e1[0] * t0[1] + e0[2] * e1[0] * t2[1]
+                            + e0[2] * e1[1] * t0[0] - e0[2] * e1[1] * t2[0]
+                            - e0[2] * t0[0] * t2[1] + e0[2] * t0[1] * t2[0]
+                            + e1[0] * t0[1] * t2[2] - e1[0] * t0[2] * t2[1]
+                            - e1[1] * t0[0] * t2[2] + e1[1] * t0[2] * t2[0]
+                            + e1[2] * t0[0] * t2[1] - e1[2] * t0[1] * t2[0])
+            / d;
+        // v is the second barycentric coordinate for the triangle
+        const Rational v = (e0[0] * e1[1] * t0[2] - e0[0] * e1[1] * t1[2]
+                            - e0[0] * e1[2] * t0[1] + e0[0] * e1[2] * t1[1]
+                            + e0[0] * t0[1] * t1[2] - e0[0] * t0[2] * t1[1]
+                            - e0[1] * e1[0] * t0[2] + e0[1] * e1[0] * t1[2]
+                            + e0[1] * e1[2] * t0[0] - e0[1] * e1[2] * t1[0]
+                            - e0[1] * t0[0] * t1[2] + e0[1] * t0[2] * t1[0]
+                            + e0[2] * e1[0] * t0[1] - e0[2] * e1[0] * t1[1]
+                            - e0[2] * e1[1] * t0[0] + e0[2] * e1[1] * t1[0]
+                            + e0[2] * t0[0] * t1[1] - e0[2] * t0[1] * t1[0]
+                            - e1[0] * t0[1] * t1[2] + e1[0] * t0[2] * t1[1]
+                            + e1[1] * t0[0] * t1[2] - e1[1] * t0[2] * t1[0]
+                            - e1[2] * t0[0] * t1[1] + e1[2] * t0[1] * t1[0])
+            / d;
+
+        return u >= 0 && u <= 1 && v >= 0 && v <= 1 && u + v <= 1;
     }
-
-    const Rational d = e0[0] * t0[1] * t1[2] - e0[0] * t0[1] * t2[2]
-        - e0[0] * t0[2] * t1[1] + e0[0] * t0[2] * t2[1] + e0[0] * t1[1] * t2[2]
-        - e0[0] * t1[2] * t2[1] - e0[1] * t0[0] * t1[2] + e0[1] * t0[0] * t2[2]
-        + e0[1] * t0[2] * t1[0] - e0[1] * t0[2] * t2[0] - e0[1] * t1[0] * t2[2]
-        + e0[1] * t1[2] * t2[0] + e0[2] * t0[0] * t1[1] - e0[2] * t0[0] * t2[1]
-        - e0[2] * t0[1] * t1[0] + e0[2] * t0[1] * t2[0] + e0[2] * t1[0] * t2[1]
-        - e0[2] * t1[1] * t2[0] - e1[0] * t0[1] * t1[2] + e1[0] * t0[1] * t2[2]
-        + e1[0] * t0[2] * t1[1] - e1[0] * t0[2] * t2[1] - e1[0] * t1[1] * t2[2]
-        + e1[0] * t1[2] * t2[1] + e1[1] * t0[0] * t1[2] - e1[1] * t0[0] * t2[2]
-        - e1[1] * t0[2] * t1[0] + e1[1] * t0[2] * t2[0] + e1[1] * t1[0] * t2[2]
-        - e1[1] * t1[2] * t2[0] - e1[2] * t0[0] * t1[1] + e1[2] * t0[0] * t2[1]
-        + e1[2] * t0[1] * t1[0] - e1[2] * t0[1] * t2[0] - e1[2] * t1[0] * t2[1]
-        + e1[2] * t1[1] * t2[0];
-    if (d.get_sign() == 0) {
-        return true;
-    }
-
-    // t is the parametric coordinate for the edge
-    const Rational t =
-        (e0[0] * t0[1] * t1[2] - e0[0] * t0[1] * t2[2] - e0[0] * t0[2] * t1[1]
-         + e0[0] * t0[2] * t2[1] + e0[0] * t1[1] * t2[2] - e0[0] * t1[2] * t2[1]
-         - e0[1] * t0[0] * t1[2] + e0[1] * t0[0] * t2[2] + e0[1] * t0[2] * t1[0]
-         - e0[1] * t0[2] * t2[0] - e0[1] * t1[0] * t2[2] + e0[1] * t1[2] * t2[0]
-         + e0[2] * t0[0] * t1[1] - e0[2] * t0[0] * t2[1] - e0[2] * t0[1] * t1[0]
-         + e0[2] * t0[1] * t2[0] + e0[2] * t1[0] * t2[1] - e0[2] * t1[1] * t2[0]
-         - t0[0] * t1[1] * t2[2] + t0[0] * t1[2] * t2[1] + t0[1] * t1[0] * t2[2]
-         - t0[1] * t1[2] * t2[0] - t0[2] * t1[0] * t2[1]
-         + t0[2] * t1[1] * t2[0])
-        / d;
-
-    if (t < 0 || t > 1) {
-        return false;
-    }
-
-    // u is the first barycentric coordinate for the triangle
-    const Rational u =
-        (-e0[0] * e1[1] * t0[2] + e0[0] * e1[1] * t2[2] + e0[0] * e1[2] * t0[1]
-         - e0[0] * e1[2] * t2[1] - e0[0] * t0[1] * t2[2] + e0[0] * t0[2] * t2[1]
-         + e0[1] * e1[0] * t0[2] - e0[1] * e1[0] * t2[2] - e0[1] * e1[2] * t0[0]
-         + e0[1] * e1[2] * t2[0] + e0[1] * t0[0] * t2[2] - e0[1] * t0[2] * t2[0]
-         - e0[2] * e1[0] * t0[1] + e0[2] * e1[0] * t2[1] + e0[2] * e1[1] * t0[0]
-         - e0[2] * e1[1] * t2[0] - e0[2] * t0[0] * t2[1] + e0[2] * t0[1] * t2[0]
-         + e1[0] * t0[1] * t2[2] - e1[0] * t0[2] * t2[1] - e1[1] * t0[0] * t2[2]
-         + e1[1] * t0[2] * t2[0] + e1[2] * t0[0] * t2[1]
-         - e1[2] * t0[1] * t2[0])
-        / d;
-    // v is the second barycentric coordinate for the triangle
-    const Rational v =
-        (e0[0] * e1[1] * t0[2] - e0[0] * e1[1] * t1[2] - e0[0] * e1[2] * t0[1]
-         + e0[0] * e1[2] * t1[1] + e0[0] * t0[1] * t1[2] - e0[0] * t0[2] * t1[1]
-         - e0[1] * e1[0] * t0[2] + e0[1] * e1[0] * t1[2] + e0[1] * e1[2] * t0[0]
-         - e0[1] * e1[2] * t1[0] - e0[1] * t0[0] * t1[2] + e0[1] * t0[2] * t1[0]
-         + e0[2] * e1[0] * t0[1] - e0[2] * e1[0] * t1[1] - e0[2] * e1[1] * t0[0]
-         + e0[2] * e1[1] * t1[0] + e0[2] * t0[0] * t1[1] - e0[2] * t0[1] * t1[0]
-         - e1[0] * t0[1] * t1[2] + e1[0] * t0[2] * t1[1] + e1[1] * t0[0] * t1[2]
-         - e1[1] * t0[2] * t1[0] - e1[2] * t0[0] * t1[1]
-         + e1[2] * t0[1] * t1[0])
-        / d;
-
-    return u >= 0 && u <= 1 && v >= 0 && v <= 1 && u + v <= 1;
-}
+} // namespace
 #endif
 
 bool is_edge_intersecting_triangle(
@@ -111,7 +131,7 @@ bool is_edge_intersecting_triangle(
         return false;
     }
 
-#ifdef IPC_TOOLKIT_USE_RATIONAL_INTERSECTION
+#ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
     return is_edge_intersecting_triangle_rational(e0, e1, t0, t1, t2);
 #else
     Eigen::Matrix3d M;

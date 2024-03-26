@@ -1,9 +1,5 @@
 #pragma once
 
-// NOTE: Include this so the user can just include ipc.hpp
-#include <ipc/collisions/collision_constraints.hpp>
-#include <ipc/friction/friction_constraints.hpp>
-
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/collision_mesh.hpp>
 
@@ -13,7 +9,7 @@
 /// Incremental Potential Contact functions
 namespace ipc {
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 // Collision detection
 
 /// @brief Determine if the step is collision free.
@@ -54,7 +50,7 @@ double compute_collision_free_stepsize(
     const double tolerance = DEFAULT_CCD_TOLERANCE,
     const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS);
 
-///////////////////////////////////////////////////////////////////////////////
+// ============================================================================
 // Utilities
 
 /// @brief Determine if the mesh has self intersections.

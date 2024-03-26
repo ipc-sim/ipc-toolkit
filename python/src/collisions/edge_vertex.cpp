@@ -5,12 +5,16 @@
 namespace py = pybind11;
 using namespace ipc;
 
-void define_edge_vertex_constraint(py::module_& m)
+void define_edge_vertex_collision(py::module_& m)
 {
-    py::class_<EdgeVertexConstraint, EdgeVertexCandidate, CollisionConstraint>(
-        m, "EdgeVertexConstraint")
-        .def(
-            py::init<long, long>(), "", py::arg("edge_id"),
-            py::arg("vertex_id"))
-        .def(py::init<EdgeVertexCandidate>(), "", py::arg("ev_candidate"));
+    py::class_<EdgeVertexCollision, EdgeVertexCandidate, Collision>(
+        m, "EdgeVertexCollision")
+        .def(py::init<long, long>(), py::arg("edge_id"), py::arg("vertex_id"))
+        .def(py::init<const EdgeVertexCandidate&>(), py::arg("candidate"));
+    // .def(
+    //     py::init<
+    //         const long, const long, const double,
+    //         const Eigen::SparseVector<double>&>(),
+    //     py::arg("edge_id"), py::arg("vertex_id"), py::arg("weight"),
+    //     py::arg("weight_gradient"));
 }

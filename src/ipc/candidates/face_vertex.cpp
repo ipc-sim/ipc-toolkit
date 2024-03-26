@@ -1,15 +1,14 @@
 #include "face_vertex.hpp"
 
 #include <ipc/distance/point_triangle.hpp>
-#include <ipc/utils/save_obj.hpp>
 
 #include <iostream>
 
 namespace ipc {
 
-FaceVertexCandidate::FaceVertexCandidate(long face_id, long vertex_id)
-    : face_id(face_id)
-    , vertex_id(vertex_id)
+FaceVertexCandidate::FaceVertexCandidate(long _face_id, long _vertex_id)
+    : face_id(_face_id)
+    , vertex_id(_vertex_id)
 {
 }
 
@@ -41,10 +40,8 @@ MatrixMax12d FaceVertexCandidate::compute_distance_hessian(
 }
 
 bool FaceVertexCandidate::ccd(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    const VectorMax12d& vertices_t0,
+    const VectorMax12d& vertices_t1,
     double& toi,
     const double min_distance,
     const double tmax,
@@ -52,36 +49,20 @@ bool FaceVertexCandidate::ccd(
     const long max_iterations,
     const double conservative_rescaling) const
 {
+    assert(vertices_t0.size() == 12 && vertices_t1.size() == 12);
     return point_triangle_ccd(
         // Point at t=0
-        vertices_t0.row(vertex_id),
+        vertices_t0.head<3>(),
         // Triangle at t=0
-        vertices_t0.row(faces(face_id, 0)), vertices_t0.row(faces(face_id, 1)),
-        vertices_t0.row(faces(face_id, 2)),
+        vertices_t0.segment<3>(3), vertices_t0.segment<3>(6),
+        vertices_t0.tail<3>(),
         // Point at t=1
-        vertices_t1.row(vertex_id),
+        vertices_t1.head<3>(),
         // Triangle at t=1
-        vertices_t1.row(faces(face_id, 0)), vertices_t1.row(faces(face_id, 1)),
-        vertices_t1.row(faces(face_id, 2)), //
+        vertices_t1.segment<3>(3), vertices_t1.segment<3>(6),
+        vertices_t1.tail<3>(), //
         toi, min_distance, tmax, tolerance, max_iterations,
         conservative_rescaling);
-}
-
-void FaceVertexCandidate::print_ccd_query(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
-{
-    std::cout << vertices_t0.row(faces(face_id, 0)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t0.row(faces(face_id, 1)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t0.row(faces(face_id, 2)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t0.row(vertex_id).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(faces(face_id, 0)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(faces(face_id, 1)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(faces(face_id, 2)).format(OBJ_VERTEX_FORMAT);
-    std::cout << vertices_t1.row(vertex_id).format(OBJ_VERTEX_FORMAT);
-    std::cout << std::flush;
 }
 
 bool FaceVertexCandidate::operator==(const FaceVertexCandidate& other) const

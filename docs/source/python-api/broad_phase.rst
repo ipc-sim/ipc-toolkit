@@ -35,12 +35,22 @@ Spatial Hash
 
     .. autoclasstoc::
 
-Sweep and Tiniest Queue
------------------------
+BVH
+---
 
-.. autoclass:: ipctk.SweepAndTiniestQueue
+.. autoclass:: ipctk.BVH
 
     .. autoclasstoc::
+
+Sweep and Prune
+---------------
+
+.. autoclass:: ipctk.SweepAndPrune
+
+    .. autoclasstoc::
+
+Sweep and Tiniest Queue
+-----------------------
 
 .. .. autoclass:: ipctk.SweepAndTiniestQueueGPU
 ..     :members:

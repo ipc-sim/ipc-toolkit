@@ -6,124 +6,133 @@
 
 namespace ipc {
 
-EdgeEdgeConstraint::EdgeEdgeConstraint(
-    long edge0_id, long edge1_id, double eps_x)
-    : EdgeEdgeCandidate(edge0_id, edge1_id)
-    , eps_x(eps_x)
+EdgeEdgeCollision::EdgeEdgeCollision(
+    const long _edge0_id,
+    const long _edge1_id,
+    const double _eps_x,
+    const EdgeEdgeDistanceType _dtype)
+    : EdgeEdgeCandidate(_edge0_id, _edge1_id)
+    , eps_x(_eps_x)
+    , dtype(_dtype)
 {
 }
 
-EdgeEdgeConstraint::EdgeEdgeConstraint(
-    const EdgeEdgeCandidate& candidate, double eps_x)
+EdgeEdgeCollision::EdgeEdgeCollision(
+    const EdgeEdgeCandidate& candidate,
+    const double _eps_x,
+    const EdgeEdgeDistanceType _dtype)
     : EdgeEdgeCandidate(candidate)
-    , eps_x(eps_x)
+    , eps_x(_eps_x)
+    , dtype(_dtype)
 {
 }
 
-double EdgeEdgeConstraint::compute_potential(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    const double dhat) const
+EdgeEdgeCollision::EdgeEdgeCollision(
+    const long _edge0_id,
+    const long _edge1_id,
+    const double _eps_x,
+    const double _weight,
+    const Eigen::SparseVector<double>& _weight_gradient,
+    const EdgeEdgeDistanceType _dtype)
+    : EdgeEdgeCandidate(_edge0_id, _edge1_id)
+    , Collision(_weight, _weight_gradient)
+    , eps_x(_eps_x)
+    , dtype(_dtype)
 {
+}
+
+double
+EdgeEdgeCollision::mollifier_threshold(const VectorMax12d& rest_positions) const
+{
+    return edge_edge_mollifier_threshold(
+        rest_positions.segment<3>(0), rest_positions.segment<3>(3),
+        rest_positions.segment<3>(6), rest_positions.segment<3>(9));
+}
+
+double EdgeEdgeCollision::mollifier(const VectorMax12d& positions) const
+{
+    return mollifier(positions, eps_x);
+}
+
+double EdgeEdgeCollision::mollifier(
+    const VectorMax12d& positions, const double _eps_x) const
+{
+    assert(positions.size() == 12);
     return edge_edge_mollifier(
-               vertices.row(edges(edge0_id, 0)),
-               vertices.row(edges(edge0_id, 1)),
-               vertices.row(edges(edge1_id, 0)),
-               vertices.row(edges(edge1_id, 1)), eps_x)
-        * CollisionConstraint::compute_potential(vertices, edges, faces, dhat);
+        positions.segment<3>(0), positions.segment<3>(3),
+        positions.segment<3>(6), positions.segment<3>(9), _eps_x);
 }
 
-VectorMax12d EdgeEdgeConstraint::compute_potential_gradient(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    const double dhat) const
+VectorMax12d
+EdgeEdgeCollision::mollifier_gradient(const VectorMax12d& positions) const
 {
-    const double adjusted_dhat = 2 * minimum_distance * dhat + dhat * dhat;
-    const double min_dist_squared = minimum_distance * minimum_distance;
-
-    // ∇[m(x) * b(d(x))] = (∇m(x)) * b(d(x)) + m(x) * b'(d(x)) * ∇d(x)
-    const auto& [ea0, ea1, eb0, eb1] = this->vertices(vertices, edges, faces);
-
-    // The distance type is unknown because of mollified PP and PE
-    // constraints where also added as EE constraints.
-    const EdgeEdgeDistanceType dtype =
-        edge_edge_distance_type(ea0, ea1, eb0, eb1);
-    const double distance = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
-    const Vector12d distance_grad =
-        edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype);
-
-    // m(x)
-    const double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
-    // ∇m(x)
-    const Vector12d mollifier_grad =
-        edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x);
-
-    // b(d(x))
-    const double b = barrier(distance - min_dist_squared, adjusted_dhat);
-    // b'(d(x))
-    const double grad_b =
-        barrier_gradient(distance - min_dist_squared, adjusted_dhat);
-
-    return weight * (mollifier_grad * b + mollifier * grad_b * distance_grad);
+    return mollifier_gradient(positions, eps_x);
 }
 
-MatrixMax12d EdgeEdgeConstraint::compute_potential_hessian(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
-    const double dhat,
-    const bool project_hessian_to_psd) const
+VectorMax12d EdgeEdgeCollision::mollifier_gradient(
+    const VectorMax12d& positions, const double _eps_x) const
 {
-    const double adjusted_dhat = 2 * minimum_distance * dhat + dhat * dhat;
-    const double min_dist_squared = minimum_distance * minimum_distance;
+    assert(positions.size() == 12);
+    return edge_edge_mollifier_gradient(
+        positions.segment<3>(0), positions.segment<3>(3),
+        positions.segment<3>(6), positions.segment<3>(9), _eps_x);
+}
 
-    // ∇²[m(x) * b(d(x))] = ∇[∇m(x) * b(d(x)) + m(x) * b'(d(x)) * ∇d(x)]
-    //                    = ∇²m(x) * b(d(x)) + b'(d(x)) * ∇d(x) * ∇m(x)ᵀ
-    //                      + ∇m(x) * b'(d(x)) * ∇d(x))ᵀ
-    //                      + m(x) * b"(d(x)) * ∇d(x) * ∇d(x)ᵀ
-    //                      + m(x) * b'(d(x)) * ∇²d(x)
-    const auto& [ea0, ea1, eb0, eb1] = this->vertices(vertices, edges, faces);
+MatrixMax12d
+EdgeEdgeCollision::mollifier_hessian(const VectorMax12d& positions) const
+{
+    return mollifier_hessian(positions, eps_x);
+}
 
-    // Compute distance derivatives
-    // The distance type is unknown because of mollified PP and PE
-    // constraints where also added as EE constraints.
-    const EdgeEdgeDistanceType dtype =
-        edge_edge_distance_type(ea0, ea1, eb0, eb1);
-    const double distance = edge_edge_distance(ea0, ea1, eb0, eb1, dtype);
-    const Vector12d distance_grad =
-        edge_edge_distance_gradient(ea0, ea1, eb0, eb1, dtype);
-    const Matrix12d distance_hess =
-        edge_edge_distance_hessian(ea0, ea1, eb0, eb1, dtype);
+MatrixMax12d EdgeEdgeCollision::mollifier_hessian(
+    const VectorMax12d& positions, const double _eps_x) const
+{
+    assert(positions.size() == 12);
+    return edge_edge_mollifier_hessian(
+        positions.segment<3>(0), positions.segment<3>(3),
+        positions.segment<3>(6), positions.segment<3>(9), _eps_x);
+}
 
-    // Compute mollifier derivatives
-    const double mollifier = edge_edge_mollifier(ea0, ea1, eb0, eb1, eps_x);
-    const VectorMax12d mollifier_grad =
-        edge_edge_mollifier_gradient(ea0, ea1, eb0, eb1, eps_x);
-    const MatrixMax12d mollifier_hess =
-        edge_edge_mollifier_hessian(ea0, ea1, eb0, eb1, eps_x);
+Vector12d EdgeEdgeCollision::mollifier_gradient_wrt_x(
+    const VectorMax12d& rest_positions, const VectorMax12d& positions) const
+{
+    assert(rest_positions.size() == 12);
+    assert(positions.size() == 12);
+    return edge_edge_mollifier_gradient_wrt_x(
+        rest_positions.segment<3>(0), rest_positions.segment<3>(3),
+        rest_positions.segment<3>(6), rest_positions.segment<3>(9),
+        positions.segment<3>(0), positions.segment<3>(3),
+        positions.segment<3>(6), positions.segment<3>(9));
+}
 
-    // Compute barrier derivatives
-    const double b = barrier(distance - min_dist_squared, adjusted_dhat);
-    const double grad_b =
-        barrier_gradient(distance - min_dist_squared, adjusted_dhat);
-    const double hess_b =
-        barrier_hessian(distance - min_dist_squared, adjusted_dhat);
+Matrix12d EdgeEdgeCollision::mollifier_gradient_jacobian_wrt_x(
+    const VectorMax12d& rest_positions, const VectorMax12d& positions) const
+{
+    assert(rest_positions.size() == 12);
+    assert(positions.size() == 12);
+    return edge_edge_mollifier_gradient_jacobian_wrt_x(
+        rest_positions.segment<3>(0), rest_positions.segment<3>(3),
+        rest_positions.segment<3>(6), rest_positions.segment<3>(9),
+        positions.segment<3>(0), positions.segment<3>(3),
+        positions.segment<3>(6), positions.segment<3>(9));
+}
 
-    MatrixMax12d hess = mollifier_hess * b
-        + grad_b
-            * (distance_grad * mollifier_grad.transpose()
-               + mollifier_grad * distance_grad.transpose())
-        + mollifier
-            * (hess_b * distance_grad * distance_grad.transpose()
-               + grad_b * distance_hess);
+bool EdgeEdgeCollision::operator==(const EdgeEdgeCollision& other) const
+{
+    return EdgeEdgeCandidate::operator==(other) && dtype == other.dtype;
+}
 
-    if (project_hessian_to_psd) {
-        hess = project_to_psd(hess);
+bool EdgeEdgeCollision::operator!=(const EdgeEdgeCollision& other) const
+{
+    return !(*this == other);
+}
+
+bool EdgeEdgeCollision::operator<(const EdgeEdgeCollision& other) const
+{
+    if (EdgeEdgeCandidate::operator==(other)) {
+        return dtype < other.dtype;
     }
-
-    return weight * hess;
+    return EdgeEdgeCandidate::operator<(other);
 }
 
 } // namespace ipc

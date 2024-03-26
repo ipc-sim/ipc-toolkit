@@ -115,68 +115,6 @@ Eigen::Matrix<double, 2, 12> point_triangle_closest_point_jacobian(
 // ============================================================================
 
 namespace autogen {
-    // J is (6×1) flattened in column-major order
-    void point_edge_closest_point_2D_jacobian(
-        double p_x,
-        double p_y,
-        double e0_x,
-        double e0_y,
-        double e1_x,
-        double e1_y,
-        double J[6])
-    {
-        const auto t0 = e0_x - e1_x;
-        const auto t1 = e0_y - e1_y;
-        const auto t2 = 1.0 / (t0 * t0 + t1 * t1);
-        const auto t3 = t0 * t2;
-        const auto t4 = t1 * t2;
-        const auto t5 = 2 * t0 * (e0_x - p_x) + 2 * t1 * (e0_y - p_y);
-        const auto t6 = p_x + t3 * t5;
-        const auto t7 = p_y + t4 * t5;
-        J[0] = -t3;
-        J[1] = -t4;
-        J[2] = -t2 * (-2 * e0_x + e1_x + t6);
-        J[3] = -t2 * (-2 * e0_y + e1_y + t7);
-        J[4] = t2 * (-e0_x + t6);
-        J[5] = t2 * (-e0_y + t7);
-    }
-
-    // J is (9×1) flattened in column-major order
-    void point_edge_closest_point_3D_jacobian(
-        double p_x,
-        double p_y,
-        double p_z,
-        double e0_x,
-        double e0_y,
-        double e0_z,
-        double e1_x,
-        double e1_y,
-        double e1_z,
-        double J[9])
-    {
-        const auto t0 = e0_x - e1_x;
-        const auto t1 = e0_y - e1_y;
-        const auto t2 = e0_z - e1_z;
-        const auto t3 = 1.0 / (t0 * t0 + t1 * t1 + t2 * t2);
-        const auto t4 = t0 * t3;
-        const auto t5 = t1 * t3;
-        const auto t6 = t2 * t3;
-        const auto t7 = 2 * t0 * (e0_x - p_x) + 2 * t1 * (e0_y - p_y)
-            + 2 * t2 * (e0_z - p_z);
-        const auto t8 = p_x + t4 * t7;
-        const auto t9 = p_y + t5 * t7;
-        const auto t10 = p_z + t6 * t7;
-        J[0] = -t4;
-        J[1] = -t5;
-        J[2] = -t6;
-        J[3] = -t3 * (-2 * e0_x + e1_x + t8);
-        J[4] = -t3 * (-2 * e0_y + e1_y + t9);
-        J[5] = -t3 * (-2 * e0_z + e1_z + t10);
-        J[6] = t3 * (-e0_x + t8);
-        J[7] = t3 * (-e0_y + t9);
-        J[8] = t3 * (-e0_z + t10);
-    }
-
     // J is (2×12) flattened in column-major order
     void edge_edge_closest_point_jacobian(
         double ea0_x,

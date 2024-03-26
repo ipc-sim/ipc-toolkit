@@ -1,10 +1,10 @@
 set(SOURCES
-  collision_constraint.cpp
-  collision_constraint.hpp
-  collision_constraints_builder.cpp
-  collision_constraints_builder.hpp
-  collision_constraints.cpp
-  collision_constraints.hpp
+  collision.cpp
+  collision.hpp
+  collisions_builder.cpp
+  collisions_builder.hpp
+  collisions.cpp
+  collisions.hpp
   edge_edge.cpp
   edge_edge.hpp
   # edge_vertex.cpp
@@ -17,6 +17,5 @@ set(SOURCES
   vertex_vertex.hpp
 )
 
-ipc_toolkit_prepend_current_path(SOURCES)
-ipc_toolkit_set_source_group(${SOURCES})
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})
 target_sources(ipc_toolkit PRIVATE ${SOURCES})

@@ -3,7 +3,8 @@
 ![PyPI](https://img.shields.io/pypi/v/ipctk?color=brightgreen&label=PyPI&logo=python&logoColor=white)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/ipctk?label=PyPI%20Downloads&logo=python&logoColor=white)
 [![Python](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg)](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml)
-[![Docs](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg)](https://ipc-sim.github.io/ipc-toolkit/)
+[![Docs](https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg)](https://ipctk.xyz/)
+[![codecov](https://codecov.io/github/ipc-sim/ipc-toolkit/graph/badge.svg?token=9BR6GPKRY8)](https://codecov.io/github/ipc-sim/ipc-toolkit)
 [![License](https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue)](https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE)
 
 We provide Python bindings for functions in the toolkit using [pybind11](https://github.com/pybind/pybind11).
@@ -50,6 +51,6 @@ make -j4
 
 ## Help/Documentation
 
-* A tutorial on how to use the toolkit can be found [here](https://ipc-sim.github.io/ipc-toolkit/tutorial/getting_started.html).
+* A tutorial on how to use the toolkit can be found [here](https://ipctk.xyz/tutorial/getting_started.html).
 * We provide a Jupyter notebook (`python/example.ipynb`) with some simple examples.
-* A function reference can be found [here](https://ipc-sim.github.io/ipc-toolkit/python.html).
+* A function reference can be found [here](https://ipctk.xyz/python.html).
