@@ -74,11 +74,8 @@ option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic
 
 # Temporary options
 option(IPC_TOOLKIT_WITH_BROADMARK             "Enable Broadmark"                              OFF)
-option(IPC_TOOLKIT_WITH_CGAL                  "Enable CGAL"                                   OFF)
-if(IPC_TOOLKIT_WITH_CGAL)
-  set(LIBIGL_COPYLEFT_CGAL ON CACHE BOOL "Use CGAL")
-  set(LIBIGL_DEFAULT_CGAL ON CACHE BOOL "Use CGAL")
-endif()
+include(CMakeDependentOption)
+cmake_dependent_option(IPC_TOOLKIT_WITH_CGAL  "Enable CGAL"  OFF "IPC_TOOLKIT_WITH_BROADMARK" OFF)
 
 # Advanced options
 option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
@@ -182,16 +179,6 @@ if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   target_link_libraries(ipc_toolkit PUBLIC rational::rational)
 endif()
 
-if(IPC_TOOLKIT_WITH_BROADMARK)
-  include(broadmark)
-  ipc_toolkit_target_link_system_libraries(ipc_toolkit PUBLIC broadmark::broadmark)
-endif()
-
-# CGAL
-if(IPC_TOOLKIT_WITH_CGAL)
-  target_link_libraries(ipc_toolkit PUBLIC CGAL::CGAL)
-endif()
-
 # Faster unordered map
 if(IPC_TOOLKIT_WITH_ROBIN_MAP)
   include(robin_map)
@@ -208,6 +195,17 @@ endif()
 if(IPC_TOOLKIT_WITH_FILIB)
   include(filib)
   target_link_libraries(ipc_toolkit PUBLIC filib::filib)
+endif()
+
+# Broadmark
+if(IPC_TOOLKIT_WITH_BROADMARK)
+  include(broadmark)
+  target_link_libraries(ipc_toolkit PUBLIC broadmark::broadmark)
+
+  # CGAL
+  if(IPC_TOOLKIT_WITH_CGAL)
+    target_link_libraries(ipc_toolkit PUBLIC CGAL::CGAL)
+  endif()
 endif()
 
 # Extra warnings (link last for highest priority)

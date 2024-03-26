@@ -7,6 +7,10 @@ endif()
 message(STATUS "Third-party: creating target 'igl::core'")
 
 set(LIBIGL_PREDICATES ON CACHE BOOL "Use exact predicates" FORCE)
+if(IPC_TOOLKIT_WITH_CGAL)
+    set(LIBIGL_COPYLEFT_CGAL ON CACHE BOOL "Use CGAL" FORCE)
+    set(LIBIGL_DEFAULT_CGAL ON CACHE BOOL "Use CGAL" FORCE)
+endif()
 
 # set(LIBIGL_COPYLEFT_CGAL ON CACHE BOOL "Use CGAL" FORCE)
 include(eigen)

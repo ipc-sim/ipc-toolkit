@@ -23,7 +23,7 @@ void Interface<DBVT_F>::FilterOverlaps(
     const long num_vertices,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    Candidates& candidates) const
+    Candidates& p_candidates) const
 {
     auto b3BroadphasePairs = algo->m_broadphase->getOverlappingPairCache()
                                  ->getOverlappingPairArray();
@@ -51,12 +51,12 @@ void Interface<DBVT_F>::FilterOverlaps(
 
         if (is_vertex(ai) && is_face(bi)
             && !is_endpoint(ai, bi - num_vertices - edges.rows())) {
-            candidates.fv_candidates.emplace_back(
+            p_candidates.fv_candidates.emplace_back(
                 bi - num_vertices - edges.rows(), ai);
         } else if (
             is_edge(ai) && is_edge(bi)
             && !has_common_endpoint(ai - num_vertices, bi - num_vertices)) {
-            candidates.ee_candidates.emplace_back(
+            p_candidates.ee_candidates.emplace_back(
                 ai - num_vertices, bi - num_vertices);
         }
     };
@@ -72,19 +72,23 @@ void Interface<DBVT_F>::FilterOverlaps(
 
     //  remove duplicates
 
-    std::sort(candidates.ee_candidates.begin(), candidates.ee_candidates.end());
-    std::sort(candidates.fv_candidates.begin(), candidates.fv_candidates.end());
+    std::sort(
+        p_candidates.ee_candidates.begin(), p_candidates.ee_candidates.end());
+    std::sort(
+        p_candidates.fv_candidates.begin(), p_candidates.fv_candidates.end());
 
-    candidates.ee_candidates.erase(
+    p_candidates.ee_candidates.erase(
         unique(
-            candidates.ee_candidates.begin(), candidates.ee_candidates.end()),
-        candidates.ee_candidates.end());
-    candidates.fv_candidates.erase(
+            p_candidates.ee_candidates.begin(),
+            p_candidates.ee_candidates.end()),
+        p_candidates.ee_candidates.end());
+    p_candidates.fv_candidates.erase(
         unique(
-            candidates.fv_candidates.begin(), candidates.fv_candidates.end()),
-        candidates.fv_candidates.end());
+            p_candidates.fv_candidates.begin(),
+            p_candidates.fv_candidates.end()),
+        p_candidates.fv_candidates.end());
 
-    // m_broadPhase = candidates.size();
+    // m_broadPhase = p_candidates.size();
     // std::cout << "m_broadPhase: " << m_broadPhase << std::endl;
 }
 
