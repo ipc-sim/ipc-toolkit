@@ -7,5 +7,5 @@ using namespace ipc;
 
 void define_sweep_and_prune(py::module_& m)
 {
-    py::class_<SweepAndPrune, BroadPhase>(m, "SweepAndPrune");
+    py::class_<SweepAndPrune, BroadPhase>(m, "SweepAndPrune").def(py::init());
 }

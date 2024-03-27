@@ -8,6 +8,8 @@ namespace ipc {
 
 class BVH : public BroadPhase {
 public:
+    BVH() = default;
+
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
     /// @param edges Collision mesh edges

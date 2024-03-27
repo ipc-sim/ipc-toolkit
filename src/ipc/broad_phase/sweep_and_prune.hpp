@@ -8,6 +8,8 @@ namespace ipc {
 
 class SweepAndPrune : public BroadPhase {
 public:
+    SweepAndPrune() = default;
+
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
     /// @param edges Collision mesh edges

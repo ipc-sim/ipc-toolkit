@@ -42,6 +42,7 @@ PYBIND11_MODULE(ipctk, m)
     define_inexact_point_edge(m);
     define_nonlinear_ccd(m);
     define_point_static_plane(m);
+    define_tight_inclusion_ccd(m);
 
     // collisions
     define_distance_type(m); // define early because it is used next

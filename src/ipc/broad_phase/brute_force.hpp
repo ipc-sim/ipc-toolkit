@@ -6,6 +6,8 @@ namespace ipc {
 
 class BruteForce : public BroadPhase {
 public:
+    BruteForce() = default;
+
     /// @brief Find the candidate vertex-vertex collisions.
     /// @param[out] candidates The candidate vertex-vertex collisions.
     void detect_vertex_vertex_candidates(

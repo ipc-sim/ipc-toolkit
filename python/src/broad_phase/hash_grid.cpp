@@ -19,6 +19,7 @@ void define_hash_grid(py::module_& m)
         .def_readwrite("id", &HashItem::id, "The value of the item.");
 
     py::class_<HashGrid, BroadPhase>(m, "HashGrid")
+        .def(py::init())
         .def_property_readonly("cell_size", &HashGrid::cell_size)
         .def_property_readonly(
             "grid_size", &HashGrid::grid_size,
