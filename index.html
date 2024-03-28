@@ -1202,7 +1202,7 @@
 <h3 id="features">Features<a class="headerlink" href="#features" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>IPC barrier function and its derivatives and adaptive barrier stiffness algorithm</p></li>
-<li><p>Broad-phase and narrow-phase continuous collision detection (CCD)</p></li>
+<li><p>Broad- and narrow-phase continuous collision detection (CCD) of linear and nonlinear trajectories</p></li>
 <li><p>Distance computation and derivatives between edges in 2D and triangles in 3D</p></li>
 <li><p>Distance barrier potential and its derivatives</p></li>
 <li><p>Smooth and lagged dissipative friction potential and its derivatives</p></li>
@@ -1213,7 +1213,7 @@
 <h2 id="build">Build<a class="headerlink" href="#build" title="Permalink to this heading">¶</a></h2>
 <p>The easiest way to add the toolkit to an existing CMake project is to download it through CMake.
 CMake provides functionality for doing this called <a class="reference external" href="https://cmake.org/cmake/help/latest/module/FetchContent.html">FetchContent</a> (requires CMake ≥ 3.14).
-We use this same process to download all external dependencies.</p>
+We use a very similar process to download all external dependencies (using <a class="reference external" href="https://github.com/cpm-cmake/CPM.cmake">CPM</a>).</p>
 <p>For example,</p>
 <div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><code><span class="nb">include</span><span class="p">(</span><span class="s">FetchContent</span><span class="p">)</span>
 <span class="nb">FetchContent_Declare</span><span class="p">(</span>
@@ -1244,6 +1244,7 @@ We use this same process to download all external dependencies.</p>
 <li><p><a class="reference external" href="https://github.com/gabime/spdlog">spdlog</a>: logging information</p></li>
 </ul>
 <h4 id="optional">Optional<a class="headerlink" href="#optional" title="Permalink to this heading">¶</a></h4>
+<p>The following dependencies are optionally used based on CMake options:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/Tessil/robin-map">robin-map</a>: faster hash set/map than <code class="docutils literal notranslate"><span class="pre">std::unordered_set</span></code>/<code class="docutils literal notranslate"><span class="pre">std::unordered_map</span></code></p>
 <ul>
@@ -1281,9 +1282,9 @@ We use this same process to download all external dependencies.</p>
 <p>See the <a class="reference external" href="https://ipctk.xyz/tutorial/getting_started.html">tutorial</a> for a quick introduction to the toolkit, or the <a class="reference external" href="https://ipctk.xyz/cpp.html">documentation</a> for a full reference.</p>
 <h2 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Permalink to this heading">¶</a></h2>
 <p>We provide unit tests to ensure the correctness of our algorithmic pieces.
-To enable the unit tests use the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_UNIT_TESTS</span></code>.</p>
+To enable the unit tests use the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_TESTS</span></code>.</p>
 <h3 id="id1">Dependencies<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
-<p>The following are downloaded when unit tests are enabled (<code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_TESTS</span></code>)</p>
+<p>The following are downloaded when unit tests are enabled:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/catchorg/Catch2.git">Catch2</a>: testing framework</p></li>
 <li><p><a class="reference external" href="https://github.com/zfergus/finite-diff">finite-diff</a>: finite-difference comparisons</p></li>
@@ -1334,7 +1335,7 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
   <small>
     
       Last update:
-      Mar 27, 2024
+      Mar 28, 2024
     
   </small>
 </div>

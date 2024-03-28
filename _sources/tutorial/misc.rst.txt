@@ -45,7 +45,7 @@ The IPC Toolkit uses the `spdlog <https://github.com/gabime/spdlog>`_ library fo
 
         .. code-block:: python
 
-            # Unfourtnately, this is not yet supported in Python.
+            # Unfortunately, this is not yet supported in Python.
 
 You can also set the log level:
 

@@ -1146,7 +1146,7 @@
 <p>While the IPC Toolkit provides all the principle components of the IPC algorithm, it does not provide a complete simulation framework. Instead, it provides building blocks that can be used to integrate the IPC algorithm into a physical simulation. If all you want is a complete simulation framework using the IPC algorithm, then you should check out our other project <a class="reference external" href="https://polyfem.github.io/">PolyFEM</a> which uses the IPC Toolkit for its collision handling.</p>
 <p>We provide several helper functions to make your job easier. The following examples show how to use these functions.</p>
 <h2 id="volumetric-meshes">Volumetric Meshes<a class="headerlink" href="#volumetric-meshes" title="Permalink to this heading">¶</a></h2>
-<p>The IPC Toolkit only handles surface meshes (through the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code>). However, the finite element method often relies on volumetric discretizations. In this case, the computed gradients and Hessians need to be mapped back to the full volumetric mesh. The <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> class provides this functionality.</p>
+<p>The IPC Toolkit only handles surface meshes (through the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code>). However, the finite element method often relies on volumetric discretization. In this case, the computed gradients and Hessians need to be mapped back to the full volumetric mesh. The <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> class provides this functionality.</p>
 <p>From the full (volumetric) mesh vertices and surface edges/faces which index into the full mesh vertices, you can build a <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> using the function <code class="docutils literal notranslate"><span class="pre">CollisionMesh::build_from_full_mesh</span></code>. This will internally build and store a selection matrix that goes from the full to surface vertices as well as map the edge/faces entries accordingly.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2">
 <input checked type="radio" id="__tabbed_1_1" name="__tabbed_1"><input type="radio" id="__tabbed_1_2" name="__tabbed_1"><div class="tabbed-labels docutils">
@@ -1285,7 +1285,7 @@ Python</label></div>
   <small>
     
       Last update:
-      Mar 27, 2024
+      Mar 28, 2024
     
   </small>
 </div>
