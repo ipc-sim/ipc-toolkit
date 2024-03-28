@@ -22,6 +22,14 @@ Generic Interface
 
 .. autofunction:: ipctk.ccd_strategy
 
+Tight Inclusion CCD
+-------------------
+
+.. autofunction:: ipctk.tight_inclusion.edge_edge_ccd
+.. autofunction:: ipctk.tight_inclusion.point_triangle_ccd
+
+.. autofunction:: ipctk.tight_inclusion.compute_ccd_filters
+
 Additive CCD
 ------------
 

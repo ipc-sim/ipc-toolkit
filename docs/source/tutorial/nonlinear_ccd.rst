@@ -63,7 +63,7 @@ Let's dive deeper by breaking down the implementation of Rigid2DTrajectory. The 
 
         .. literalinclude:: ../../../python/tests/test_ccd.py
             :language: python
-            :lines: 88-92
+            :lines: 91-95
             :dedent: 8
 
 This function computes the position of the point at a time :math:`t \in [0, 1]`. This defines the trajectory of the point. In this case, we have a rigid body with a center of mass (COM) at the origin. The trajectory of the point is given by:
@@ -92,7 +92,7 @@ The second function we need to implement is ``max_distance_from_linear``.
 
         .. literalinclude:: ../../../python/tests/test_ccd.py
             :language: python
-            :lines: 94-100
+            :lines: 97-103
             :dedent: 8
 
 This function computes the maximum distance over a time interval :math:`[t_0, t_1]` between the nonlinear trajectory and a line segment from :math:`x(t_0)` to :math:`x(t_1)`. Mathematically this function computes
