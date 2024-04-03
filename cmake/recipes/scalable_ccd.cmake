@@ -1,4 +1,4 @@
-# Abseil (https://github.com/continuous-collision-detection/scalable-ccd)
+# Scalable-CCD (https://github.com/continuous-collision-detection/scalable-ccd)
 # License: Apache 2.0
 if(TARGET scalable_ccd::scalable_ccd)
     return()
