@@ -1,4 +1,6 @@
 set(SOURCES
+  autogen.cpp
+  autogen.hpp
   edge2.cpp
   edge2.hpp
   edge3.cpp

@@ -44,7 +44,7 @@ private:
 /// @param alpha
 /// @return
 template <typename scalar>
-inline scalar smooth_edge3_term_template(
+scalar smooth_edge3_term_template(
     const Eigen::Ref<const Vector3<scalar>>& dn,
     const Eigen::Ref<const Vector3<scalar>>& e0,
     const Eigen::Ref<const Vector3<scalar>>& e1,
@@ -89,5 +89,35 @@ smooth_edge3_term_hessian(
     const Eigen::Ref<const Vector3<double>>& f0,
     const Eigen::Ref<const Vector3<double>>& f1,
     const ParameterType& param,
+    const ORIENTATION_TYPES& otypes);
+
+double smooth_edge3_normal_term(
+    const Eigen::Ref<const Vector3d>& dn,
+    const Eigen::Ref<const Vector3d>& e0,
+    const Eigen::Ref<const Vector3d>& e1,
+    const Eigen::Ref<const Vector3d>& f0,
+    const Eigen::Ref<const Vector3d>& f1,
+    const double alpha,
+    const double beta,
+    const ORIENTATION_TYPES& otypes);
+
+GradType<15> smooth_edge3_normal_term_gradient(
+    const Eigen::Ref<const Vector3d>& dn,
+    const Eigen::Ref<const Vector3d>& e0,
+    const Eigen::Ref<const Vector3d>& e1,
+    const Eigen::Ref<const Vector3d>& f0,
+    const Eigen::Ref<const Vector3d>& f1,
+    const double alpha,
+    const double beta,
+    const ORIENTATION_TYPES& otypes);
+
+HessianType<15> smooth_edge3_normal_term_hessian(
+    const Eigen::Ref<const Vector3d>& dn,
+    const Eigen::Ref<const Vector3d>& e0,
+    const Eigen::Ref<const Vector3d>& e1,
+    const Eigen::Ref<const Vector3d>& f0,
+    const Eigen::Ref<const Vector3d>& f1,
+    const double alpha,
+    const double beta,
     const ORIENTATION_TYPES& otypes);
 } // namespace ipc

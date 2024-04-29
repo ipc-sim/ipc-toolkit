@@ -8,6 +8,9 @@
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
+#include <ipc/smooth_contact/primitives/edge3.hpp>
+#include <iomanip>
+
 #include <finitediff.hpp>
 #include <igl/PI.h>
 
@@ -304,4 +307,41 @@ TEST_CASE(
     CHECK(distance == Catch::Approx(1.0));
     CHECK(fd::compare_gradient(grad, fgrad));
     // CHECK(distance.getHessian().squaredNorm() != Catch::Approx(0.0));
+}
+
+
+TEST_CASE(
+    "Edge normal term", "[distance][edge-edge][gradient]")
+{
+    ORIENTATION_TYPES otypes;
+    otypes.set_size(2);
+    const double alpha = 0.85;
+    const double beta = 0.2;
+    ParameterType param{1e-3, 1, 0, alpha, beta, 2};
+
+    ipc::Vector3d dn, e0, e1, f0, f1;
+    e0 << 0, 0, 0;
+    e1 << 1, 0, 0;
+    dn << 0, 0, 1;
+    f0 << 0.4, 0.3, GENERATE(take(10, random(-0.4, 0.4)));
+    f1 << 0.6, 0.2, GENERATE(take(10, random(-0.4, 0.4)));
+
+    ipc::Vector15d x;
+    x << dn, e0, e1, f0, f1;
+    
+    const auto [val, grad, hess] = smooth_edge3_normal_term_hessian(dn, e0, e1, f0, f1, alpha, beta, otypes);
+
+    Eigen::VectorXd fgrad;
+    fd::finite_gradient(x, [&](const Eigen::VectorXd &y) {
+        return smooth_edge3_normal_term(y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3), y.segment(12, 3), alpha, beta, otypes);
+    }, fgrad);
+
+    CHECK((fgrad - grad).norm() <= 1e-6 * grad.norm());
+
+    Eigen::MatrixXd fhess;
+    fd::finite_jacobian(x, [&](const Eigen::VectorXd &y) {
+        return std::get<1>(smooth_edge3_normal_term_gradient(y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3), y.segment(12, 3), alpha, beta, otypes));
+    }, fhess);
+
+    CHECK((fhess - hess).norm() <= 1e-6 * hess.norm());
 }
