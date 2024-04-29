@@ -37,14 +37,17 @@ using Vector9d = Vector<double, 9>;
 using Vector10d = Vector<double, 10>;
 using Vector12d = Vector<double, 12>;
 using Vector15d = Vector<double, 15>;
+using Vector18d = Vector<double, 18>;
 using Matrix2d = Eigen::Matrix2d;
 using Matrix3d = Eigen::Matrix3d;
 using Matrix4d = Eigen::Matrix<double, 4, 4>;
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
+using Matrix8d = Eigen::Matrix<double, 8, 8>;
 using Matrix9d = Eigen::Matrix<double, 9, 9>;
 using Matrix10d = Eigen::Matrix<double, 10, 10>;
 using Matrix12d = Eigen::Matrix<double, 12, 12>;
 using Matrix15d = Eigen::Matrix<double, 15, 15>;
+using Matrix18d = Eigen::Matrix<double, 18, 18>;
 
 /// @brief A dynamic size matrix with a fixed maximum size of 3×1
 template <typename T> using VectorMax2 = Vector<T, Eigen::Dynamic, 2>;

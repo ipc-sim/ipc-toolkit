@@ -34,7 +34,7 @@ public:
         const Eigen::Ref<const Vector<scalar, dim>>& p,
         const Eigen::Ref<const Vector<scalar, dim>>& e0,
         const Eigen::Ref<const Vector<scalar, dim>>& e1,
-        const PointEdgeDistanceType& dtype = PointEdgeDistanceType::AUTO);
+        const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO);
 };
 
 template <int dim> class PointEdgeDistanceDerivatives {
@@ -55,19 +55,23 @@ public:
         const Eigen::Ref<const Vector<double, dim>>& e0,
         const Eigen::Ref<const Vector<double, dim>>& e1);
 
-    static Eigen::Matrix<double, dim, dim * dim>
-    point_edge_closest_point_direction_grad(
-        const Eigen::Ref<const Vector<double, dim>>& p,
-        const Eigen::Ref<const Vector<double, dim>>& e0,
-        const Eigen::Ref<const Vector<double, dim>>& e1,
-        const PointEdgeDistanceType& dtype = PointEdgeDistanceType::AUTO);
+    static std::
+        tuple<Vector<double, dim>, Eigen::Matrix<double, dim, dim * dim>>
+        point_edge_closest_point_direction_grad(
+            const Eigen::Ref<const Vector<double, dim>>& p,
+            const Eigen::Ref<const Vector<double, dim>>& e0,
+            const Eigen::Ref<const Vector<double, dim>>& e1,
+            const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO);
 
-    static std::array<Eigen::Matrix<double, dim * dim, dim * dim>, dim>
+    static std::tuple<
+        Vector<double, dim>,
+        Eigen::Matrix<double, dim, dim * dim>,
+        std::array<Eigen::Matrix<double, dim * dim, dim * dim>, dim>>
     point_edge_closest_point_direction_hessian(
         const Eigen::Ref<const Vector<double, dim>>& p,
         const Eigen::Ref<const Vector<double, dim>>& e0,
         const Eigen::Ref<const Vector<double, dim>>& e1,
-        const PointEdgeDistanceType& dtype = PointEdgeDistanceType::AUTO);
+        const PointEdgeDistanceType dtype = PointEdgeDistanceType::AUTO);
 };
 } // namespace ipc
 

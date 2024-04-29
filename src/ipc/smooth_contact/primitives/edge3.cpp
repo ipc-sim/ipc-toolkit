@@ -542,7 +542,7 @@ scalar smooth_edge3_term_template(
     return normal_term; // (e1 - e0).squaredNorm() * tangent_term * 
 }
 
-// #ifdef DERIVATIVES_WITH_AUTODIFF
+#ifdef DERIVATIVES_WITH_AUTODIFF
 template double smooth_edge3_term_template(
     const Eigen::Ref<const Vector3<double>>& dn,
     const Eigen::Ref<const Vector3<double>>& e0,
@@ -567,5 +567,5 @@ template ADHessian<15> smooth_edge3_term_template(
     const Eigen::Ref<const Vector3<ADHessian<15>>>& f1,
     const ParameterType& param,
     const ORIENTATION_TYPES& otypes);
-// #endif
+#endif
 } // namespace ipc

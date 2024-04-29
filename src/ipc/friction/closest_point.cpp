@@ -3,6 +3,7 @@
 #include <Eigen/Core>
 #include <Eigen/Cholesky>
 
+#include <ipc/smooth_contact/distance/autogen.hpp>
 namespace ipc {
 
 // ============================================================================
@@ -35,6 +36,24 @@ VectorMax9d point_edge_closest_point_jacobian(
     J.segment(dim, dim) = (2 / e_sqnorm * e.dot(e2p) * e - e - e2p) / e_sqnorm;
     J.tail(dim) = (e2p - 2 / e_sqnorm * e.dot(e2p) * e) / e_sqnorm;
     return J;
+}
+
+MatrixMax9d point_edge_closest_point_hessian(
+    const Eigen::Ref<const VectorMax3d>& p,
+    const Eigen::Ref<const VectorMax3d>& e0,
+    const Eigen::Ref<const VectorMax3d>& e1)
+{
+    const int dim = p.size();
+    assert(dim == 2 || dim == 3);
+    assert(e0.size() == dim && e1.size() == dim);
+
+    Matrix9d H;
+    autogen::point_edge_closest_point_3D_hessian(
+        p(0), p(1), dim == 2 ? 0 : p(2), 
+        e0(0), e0(1), dim == 2 ? 0 : e0(2), 
+        e1(0), e1(1), dim == 2 ? 0 : e1(2), H.data());
+    
+    return H;
 }
 
 // ============================================================================

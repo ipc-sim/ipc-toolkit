@@ -430,4 +430,25 @@ bool Candidates::save_obj(
     return true;
 }
 
+bool Candidates::save_pairs(const std::string& filename) const
+{
+    std::ofstream obj(filename, std::ios::out);
+    if (!obj.is_open()) {
+        return false;
+    }
+    for (const auto& c : vv_candidates) {
+        obj << 0 << " " << c.vertex0_id << " " << c.vertex1_id << "\n";
+    }
+    for (const auto& c : ev_candidates) {
+        obj << 1 << " " << c.edge_id << " " << c.vertex_id << "\n";
+    }
+    for (const auto& c : ee_candidates) {
+        obj << 2 << " " << c.edge0_id << " " << c.edge1_id << "\n";
+    }
+    for (const auto& c : fv_candidates) {
+        obj << 3 << " " << c.face_id << " " << c.vertex_id << "\n";
+    }
+    return true;
+}
+
 } // namespace ipc

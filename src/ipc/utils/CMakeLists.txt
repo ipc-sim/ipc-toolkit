@@ -22,6 +22,8 @@ set(SOURCES
   quadrature.hpp
   tangents.cpp
   tangents.hpp
+  getRSS.h
+  getRSS.c
   math.cpp
   math.hpp
   math.tpp

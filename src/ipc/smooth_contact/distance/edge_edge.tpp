@@ -73,6 +73,28 @@ Vector3<scalar> line_line_closest_point_direction(
     return ((eb0 - ea0).dot(normal) / normal.squaredNorm()) * normal;
 }
 
+template <typename scalar>
+Eigen::Matrix<scalar, 3, 2> line_line_closest_point_pairs(
+    const Eigen::Ref<const Vector3<scalar>>& ea0,
+    const Eigen::Ref<const Vector3<scalar>>& ea1,
+    const Eigen::Ref<const Vector3<scalar>>& eb0,
+    const Eigen::Ref<const Vector3<scalar>>& eb1)
+{
+    const Vector3<scalar> ta = ea1 - ea0;
+    const Vector3<scalar> tb = eb1 - eb0;
+    const scalar la = ta.squaredNorm();
+    const scalar lb = tb.squaredNorm();
+    const scalar lab = ta.dot(tb);
+    const Vector3<scalar> d = eb0 - ea0;
+
+    Eigen::Matrix<scalar, 3, 2> out;
+    const scalar fac = la * lb - pow(lab, 2);
+    out.col(0) = ea0 + (lb * ta.dot(d) - lab * tb.dot(d)) / fac * ta;
+    out.col(1) = eb0 + (lab * ta.dot(d) - la * tb.dot(d)) / fac * tb;
+
+    return out;
+}
+
 /// @brief Computes the direction of the closest point pair
 /// @param ea0 Vertex 0 of edge 0
 /// @param ea1 Vertex 1 of edge 0
@@ -129,4 +151,67 @@ Vector3<scalar> edge_edge_closest_point_direction(
             "Invalid distance type for edge-edge distance!");
     }
 }
+
+template <typename scalar>
+Eigen::Matrix<scalar, 3, 2> edge_edge_closest_point_pairs(
+    const Eigen::Ref<const Vector3<scalar>>& ea0,
+    const Eigen::Ref<const Vector3<scalar>>& ea1,
+    const Eigen::Ref<const Vector3<scalar>>& eb0,
+    const Eigen::Ref<const Vector3<scalar>>& eb1,
+    EdgeEdgeDistanceType dtype)
+{
+    if constexpr (std::is_same<double, scalar>::value)
+        if (dtype == EdgeEdgeDistanceType::AUTO)
+            dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+
+    Eigen::Matrix<scalar, 3, 2> out;
+    switch (dtype) {
+    case EdgeEdgeDistanceType::EA0_EB0:
+        out << ea0, eb0;
+        break;
+
+    case EdgeEdgeDistanceType::EA0_EB1:
+        out << ea0, eb1;
+        break;
+
+    case EdgeEdgeDistanceType::EA1_EB0:
+        out << ea1, eb0;
+        break;
+
+    case EdgeEdgeDistanceType::EA1_EB1:
+        out << ea1, eb1;
+        break;
+
+    case EdgeEdgeDistanceType::EA_EB0:
+        out << eb0 - PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
+            eb0, ea0, ea1), eb0;
+        break;
+
+    case EdgeEdgeDistanceType::EA_EB1:
+        out << eb1 - PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
+            eb1, ea0, ea1), eb1;
+        break;
+
+    case EdgeEdgeDistanceType::EA0_EB:
+        out << ea0, ea0 - PointEdgeDistance<
+            scalar, 3>::point_line_closest_point_direction(ea0, eb0, eb1);
+        break;
+
+    case EdgeEdgeDistanceType::EA1_EB:
+        out << ea1, ea1 - PointEdgeDistance<
+            scalar, 3>::point_line_closest_point_direction(ea1, eb0, eb1);
+        break;
+
+    case EdgeEdgeDistanceType::EA_EB:
+        out = line_line_closest_point_pairs<scalar>(ea0, ea1, eb0, eb1);
+        break;
+
+    default:
+        throw std::invalid_argument(
+            "Invalid distance type for edge-edge distance!");
+    }
+
+    return out;
+}
+
 } // namespace ipc

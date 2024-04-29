@@ -117,6 +117,8 @@ public:
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const;
 
+    bool save_pairs(const std::string& filename) const;
+
 public:
     std::vector<VertexVertexCandidate> vv_candidates;
     std::vector<EdgeVertexCandidate> ev_candidates;

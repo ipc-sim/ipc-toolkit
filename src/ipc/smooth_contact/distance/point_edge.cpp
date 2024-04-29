@@ -1,4 +1,5 @@
 #include "point_edge.hpp"
+#include <ipc/friction/closest_point.hpp>
 
 namespace ipc {
 template <typename scalar, int dim>
@@ -45,31 +46,6 @@ scalar PointEdgeDistance<scalar, dim>::point_edge_sqr_distance(
     }
 }
 
-// template <int size>
-// ADHessian<size> point_edge_sqr_distance(
-//     const Eigen::Ref<const Vector<ADHessian<size>, dim>>& p,
-//     const Eigen::Ref<const Vector<ADHessian<size>, dim>>& e0,
-//     const Eigen::Ref<const Vector<ADHessian<size>, dim>>& e1,
-//     const PointEdgeDistanceType dtype)
-// {
-//     std::cout << "This is partial specialization\n";
-//     switch (dtype)
-//     {
-//     case PointEdgeDistanceType::P_E:
-//         return point_line_sqr_distance<ADHessian<size>>(p, e0, e1);
-//     case PointEdgeDistanceType::P_E0:
-//         return point_point_sqr_distance<ADHessian<size>>(p, e0);
-//     case PointEdgeDistanceType::P_E1:
-//         return point_point_sqr_distance<ADHessian<size>>(p, e1);
-//     case PointEdgeDistanceType::AUTO:
-//     default:
-//         const Vector<ADHessian<size>> t = e1 - e0;
-//         const Vector<ADHessian<size>> pos = p - e0;
-//         const ADHessian<size> s = pos.dot(t) / t.squaredNorm();
-//         return (pos - Math<ADHessian<size>>::L_ns(s) * t).squaredNorm();
-//     }
-// }
-
 template <typename scalar, int dim>
 Vector<scalar, dim>
 PointEdgeDistance<scalar, dim>::point_line_closest_point_direction(
@@ -88,7 +64,7 @@ PointEdgeDistance<scalar, dim>::point_edge_closest_point_direction(
     const Eigen::Ref<const Vector<scalar, dim>>& p,
     const Eigen::Ref<const Vector<scalar, dim>>& e0,
     const Eigen::Ref<const Vector<scalar, dim>>& e1,
-    const PointEdgeDistanceType& dtype)
+    const PointEdgeDistanceType dtype)
 {
     switch (dtype) {
     case PointEdgeDistanceType::P_E:
@@ -113,6 +89,9 @@ PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_grad(
     const Eigen::Ref<const Vector<double, dim>>& e0,
     const Eigen::Ref<const Vector<double, dim>>& e1)
 {
+    Vector<double, dim> val;
+    Eigen::Matrix<double, dim, dim * dim> grad;
+#ifdef DERIVATIVES_WITH_AUTODIFF
     using T = ADGrad<dim * dim>;
     DiffScalarBase::setVariableCount(dim * dim);
     const Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
@@ -122,12 +101,23 @@ PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_grad(
     const Vector<T, dim> out =
         PointEdgeDistance<T, dim>::point_line_closest_point_direction(
             pT, e0T, e1T);
-    Vector<double, dim> val;
-    Eigen::Matrix<double, dim, dim * dim> grad;
     for (int i = 0; i < dim; i++) {
         val(i) = out(i).getValue();
         grad.row(i) = out(i).getGradient();
     }
+#else
+    const double uv = point_edge_closest_point(p, e0, e1);
+    const Vector<double, dim * dim> g =
+        point_edge_closest_point_jacobian(p, e0, e1);
+
+    val = (p - e0) - uv * (e1 - e0);
+
+    grad.setZero();
+    grad -= (e1 - e0) * g.transpose();
+    grad.block(0, 0, dim, dim).diagonal().array() += 1.;
+    grad.block(0, dim, dim, dim).diagonal().array() += -1. + uv;
+    grad.block(0, 2 * dim, dim, dim).diagonal().array() -= uv;
+#endif
 
     return std::make_tuple(val, grad);
 }
@@ -142,6 +132,11 @@ PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_hessian(
     const Eigen::Ref<const Vector<double, dim>>& e0,
     const Eigen::Ref<const Vector<double, dim>>& e1)
 {
+    Vector<double, dim> val;
+    Eigen::Matrix<double, dim, dim * dim> grad;
+    std::array<Eigen::Matrix<double, dim * dim, dim * dim>, dim> hess;
+
+#ifdef DERIVATIVES_WITH_AUTODIFF
     using T = ADHessian<dim * dim>;
     DiffScalarBase::setVariableCount(dim * dim);
     Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
@@ -151,26 +146,57 @@ PointEdgeDistanceDerivatives<dim>::point_line_closest_point_direction_hessian(
     Vector<T, dim> out =
         PointEdgeDistance<T, dim>::point_line_closest_point_direction(
             pT, e0T, e1T);
-    Vector<double, dim> val;
-    Eigen::Matrix<double, dim, dim * dim> grad;
-    std::array<Eigen::Matrix<double, dim * dim, dim * dim>, dim> hess;
     for (int i = 0; i < dim; i++) {
         val(i) = out(i).getValue();
         grad.row(i) = out(i).getGradient();
         hess[i] = out(i).getHessian();
     }
+#else
+    const double uv = point_edge_closest_point(p, e0, e1);
+    const Vector<double, dim * dim> g =
+        point_edge_closest_point_jacobian(p, e0, e1);
+    const Eigen::Matrix<double, dim * dim, dim * dim> h =
+        point_edge_closest_point_hessian(p, e0, e1);
+
+    val = (p - e0) - uv * (e1 - e0);
+
+    grad.setZero();
+    grad -= (e1 - e0) * g.transpose();
+    grad.block(0, 0, dim, dim).diagonal().array() += 1.;
+    grad.block(0, dim, dim, dim).diagonal().array() += -1. + uv;
+    grad.block(0, 2 * dim, dim, dim).diagonal().array() -= uv;
+
+    for (auto& hi : hess)
+        hi.setZero();
+    for (int d = 0; d < dim; d++) {
+        // wrt. uv
+        hess[d] -= (e1(d) - e0(d)) * h;
+
+        // wrt. uv & e0
+        hess[d].row(dim + d) += g.transpose();
+        hess[d].col(dim + d) += g;
+
+        // wrt. uv & e1
+        hess[d].row(2 * dim + d) -= g.transpose();
+        hess[d].col(2 * dim + d) -= g;
+    }
+#endif
 
     return std::make_tuple(val, grad, hess);
 }
 
 template <int dim>
-Eigen::Matrix<double, dim, dim * dim>
+std::tuple<Vector<double, dim>, Eigen::Matrix<double, dim, dim * dim>>
 PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_grad(
     const Eigen::Ref<const Vector<double, dim>>& p,
     const Eigen::Ref<const Vector<double, dim>>& e0,
     const Eigen::Ref<const Vector<double, dim>>& e1,
-    const PointEdgeDistanceType& dtype)
+    const PointEdgeDistanceType dtype)
 {
+    Vector<double, dim> vec;
+    Eigen::Matrix<double, dim, dim * dim> grad =
+        Eigen::Matrix<double, dim, dim * dim>::Zero();
+#ifdef DERIVATIVES_WITH_AUTODIFF
     using T = ADGrad<dim * dim>;
     DiffScalarBase::setVariableCount(dim * dim);
     Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
@@ -179,22 +205,53 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_grad(
 
     Vector<T, dim> out =
         PointEdgeDistance<T, dim>::point_edge_closest_point_direction(
-            pT, e0T, e1T);
-    Eigen::Matrix<double, dim, dim * dim> grad;
-    for (int i = 0; i < dim; i++)
+            pT, e0T, e1T, dtype);
+    for (int i = 0; i < dim; i++) {
+        vec(i) = out(i).getValue();
         grad.row(i) = out(i).getGradient();
+    }
+#else
+    switch (dtype) {
+    case PointEdgeDistanceType::P_E:
+        std::tie(vec, grad) =
+            point_line_closest_point_direction_grad(p, e0, e1);
+        break;
+    case PointEdgeDistanceType::P_E0:
+        vec = p - e0;
+        grad.leftCols(dim).diagonal().array() = 1.;
+        grad.middleCols(3, dim).diagonal().array() = -1.;
+        break;
+    case PointEdgeDistanceType::P_E1:
+        vec = p - e1;
+        grad.leftCols(dim).diagonal().array() = 1.;
+        grad.middleCols(6, dim).diagonal().array() = -1.;
+        break;
+    default:
+        throw std::runtime_error("PointEdgeDistanceType not specified!");
+    }
+#endif
 
-    return grad;
+    return { vec, grad };
 }
 
 template <int dim>
-std::array<Eigen::Matrix<double, dim * dim, dim * dim>, dim>
+std::tuple<
+    Vector<double, dim>,
+    Eigen::Matrix<double, dim, dim * dim>,
+    std::array<Eigen::Matrix<double, dim * dim, dim * dim>, dim>>
 PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_hessian(
     const Eigen::Ref<const Vector<double, dim>>& p,
     const Eigen::Ref<const Vector<double, dim>>& e0,
     const Eigen::Ref<const Vector<double, dim>>& e1,
-    const PointEdgeDistanceType& dtype)
+    const PointEdgeDistanceType dtype)
 {
+    Vector<double, dim> vec;
+    Eigen::Matrix<double, dim, dim * dim> grad =
+        Eigen::Matrix<double, dim, dim * dim>::Zero();
+    std::array<Eigen::Matrix<double, dim * dim, dim * dim>, dim> hess;
+    for (auto &hi : hess)
+        hi.setZero();
+#ifdef DERIVATIVES_WITH_AUTODIFF
     using T = ADHessian<dim * dim>;
     DiffScalarBase::setVariableCount(dim * dim);
     Vector<T, dim> pT = slice_positions<T, 1, dim>(p);
@@ -202,19 +259,41 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_hessian(
     Vector<T, dim> e1T = slice_positions<T, 1, dim>(e1, 2 * dim);
 
     Vector<T, dim> out =
-        PointEdgeDistance<T, dim>::point_line_closest_point_direction(
+        PointEdgeDistance<T, dim>::point_edge_closest_point_direction(
             pT, e0T, e1T);
-    std::array<Eigen::Matrix<double, dim * dim, dim * dim>, dim> hess;
-    for (int i = 0; i < dim; i++)
-        hess[i] = out(i).getHessian();
 
-    return hess;
+    for (int i = 0; i < dim; i++) {
+        vec(i) = out(i).getValue();
+        grad.row(i) = out(i).getGradient();
+        hess[i] = out(i).getHessian();
+    }
+#else
+    switch (dtype) {
+    case PointEdgeDistanceType::P_E:
+        std::tie(vec, grad, hess) =
+            point_line_closest_point_direction_hessian(p, e0, e1);
+        break;
+    case PointEdgeDistanceType::P_E0:
+        vec = p - e0;
+        grad.leftCols(dim).diagonal().array() = 1.;
+        grad.middleCols(3, dim).diagonal().array() = -1.;
+        break;
+    case PointEdgeDistanceType::P_E1:
+        vec = p - e1;
+        grad.leftCols(dim).diagonal().array() = 1.;
+        grad.middleCols(6, dim).diagonal().array() = -1.;
+        break;
+    default:
+        throw std::runtime_error("PointEdgeDistanceType not specified!");
+    }
+#endif
+
+    return { vec, grad, hess };
 }
 
 template class PointEdgeDistance<double, 2>;
 template class PointEdgeDistance<double, 3>;
 
-// #ifdef DERIVATIVES_WITH_AUTODIFF
 template class PointEdgeDistance<ADGrad<4>, 2>;
 template class PointEdgeDistance<ADHessian<4>, 2>;
 
@@ -233,9 +312,13 @@ template class PointEdgeDistance<ADHessian<12>, 3>;
 template class PointEdgeDistance<ADGrad<13>, 3>;
 template class PointEdgeDistance<ADHessian<13>, 3>;
 
+#ifdef DERIVATIVES_WITH_AUTODIFF
 template class PointEdgeDistance<ADGrad<15>, 3>;
 template class PointEdgeDistance<ADHessian<15>, 3>;
-// #endif
+
+template class PointEdgeDistance<ADGrad<18>, 3>;
+template class PointEdgeDistance<ADHessian<18>, 3>;
+#endif
 
 template class PointEdgeDistanceDerivatives<2>;
 template class PointEdgeDistanceDerivatives<3>;

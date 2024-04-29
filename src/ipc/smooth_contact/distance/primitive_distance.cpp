@@ -79,6 +79,38 @@ double PrimitiveDistance<Face, Point3>::compute_distance(
 }
 
 template <>
+GradType<PrimitiveDistance<Face, Point3>::n_core_dofs> 
+PrimitiveDistance<Face, Point3>::compute_distance_gradient(
+    const Vector<double, PrimitiveDistance<Face, Point3>::n_core_dofs>& x,
+    typename PrimitiveDistType<Face, Point3>::type dtype)
+{
+    const double dist = point_triangle_distance(
+            x.tail<3>(), x.head<3>(), x.segment<3>(3), x.segment<3>(6), dtype);
+    Vector<double, n_core_dofs> dist_grad = point_triangle_distance_gradient(
+            x.tail<3>(), x.head<3>(), x.segment<3>(3), x.segment<3>(6), dtype);
+    dist_grad = dist_grad({3,4,5,6,7,8,9,10,11,0,1,2}).eval();
+    return {dist, dist_grad};
+}
+
+template <>
+HessianType<PrimitiveDistance<Face, Point3>::n_core_dofs> 
+PrimitiveDistance<Face, Point3>::compute_distance_hessian(
+    const Vector<double, PrimitiveDistance<Face, Point3>::n_core_dofs>& x,
+    typename PrimitiveDistType<Face, Point3>::type dtype)
+{
+    const double dist = point_triangle_distance(
+            x.tail<3>(), x.head<3>(), x.segment<3>(3), x.segment<3>(6), dtype);
+    Vector<double, n_core_dofs> dist_grad = point_triangle_distance_gradient(
+            x.tail<3>(), x.head<3>(), x.segment<3>(3), x.segment<3>(6), dtype);
+    Eigen::Matrix<double, n_core_dofs, n_core_dofs> dist_hess = point_triangle_distance_hessian(
+            x.tail<3>(), x.head<3>(), x.segment<3>(3), x.segment<3>(6), dtype);
+    const std::vector<int> ind{3,4,5,6,7,8,9,10,11,0,1,2};
+    dist_grad = dist_grad(ind).eval();
+    dist_hess = dist_hess(ind, ind).eval();
+    return {dist, dist_grad, dist_hess};
+}
+
+template <>
 double PrimitiveDistance<Edge3, Edge3>::compute_distance(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
@@ -92,6 +124,34 @@ double PrimitiveDistance<Edge3, Edge3>::compute_distance(
 }
 
 template <>
+GradType<PrimitiveDistance<Edge3, Edge3>::n_core_dofs> 
+PrimitiveDistance<Edge3, Edge3>::compute_distance_gradient(
+    const Vector<double, PrimitiveDistance<Edge3, Edge3>::n_core_dofs>& x,
+    typename PrimitiveDistType<Edge3, Edge3>::type dtype)
+{
+    return {
+        edge_edge_distance(
+            x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), dtype),
+        edge_edge_distance_gradient(
+            x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), dtype)};
+}
+
+template <>
+HessianType<PrimitiveDistance<Edge3, Edge3>::n_core_dofs> 
+PrimitiveDistance<Edge3, Edge3>::compute_distance_hessian(
+    const Vector<double, PrimitiveDistance<Edge3, Edge3>::n_core_dofs>& x,
+    typename PrimitiveDistType<Edge3, Edge3>::type dtype)
+{
+    return {
+        edge_edge_distance(
+            x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), dtype),
+        edge_edge_distance_gradient(
+            x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), dtype),
+        edge_edge_distance_hessian(
+            x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), dtype)};
+}
+
+template <>
 double PrimitiveDistance<Edge3, Point3>::compute_distance(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
@@ -101,6 +161,50 @@ double PrimitiveDistance<Edge3, Point3>::compute_distance(
 {
     return point_edge_distance(
         V.row(b), V.row(mesh.edges()(a, 0)), V.row(mesh.edges()(a, 1)), dtype);
+}
+
+template <>
+GradType<PrimitiveDistance<Edge3, Point3>::n_core_dofs> 
+PrimitiveDistance<Edge3, Point3>::compute_distance_gradient(
+    const Vector<double, PrimitiveDistance<Edge3, Point3>::n_core_dofs>& x,
+    typename PrimitiveDistType<Edge3, Point3>::type dtype)
+{
+    const double dist = point_edge_distance(
+            x.tail<3>(), x.head<3>(), x.segment<3>(3), dtype);
+    Vector<double, n_core_dofs> dist_grad = point_edge_distance_gradient(
+            x.tail<3>(), x.head<3>(), x.segment<3>(3), dtype);
+    dist_grad = dist_grad({3,4,5,6,7,8,0,1,2}).eval();
+    return {dist, dist_grad};
+}
+
+template <>
+HessianType<PrimitiveDistance<Edge3, Point3>::n_core_dofs> 
+PrimitiveDistance<Edge3, Point3>::compute_distance_hessian(
+    const Vector<double, PrimitiveDistance<Edge3, Point3>::n_core_dofs>& x,
+    typename PrimitiveDistType<Edge3, Point3>::type dtype)
+{
+    const double dist = point_edge_distance(
+            x.tail<3>(), x.head<3>(), x.segment<3>(3), dtype);
+    Vector<double, n_core_dofs> dist_grad = point_edge_distance_gradient(
+            x.tail<3>(), x.head<3>(), x.segment<3>(3), dtype);
+    Eigen::Matrix<double, n_core_dofs, n_core_dofs> dist_hess = point_edge_distance_hessian(
+            x.tail<3>(), x.head<3>(), x.segment<3>(3), dtype);
+    const std::vector<int> ind{3,4,5,6,7,8,0,1,2};
+    dist_grad = dist_grad(ind).eval();
+    dist_hess = dist_hess(ind, ind).eval();
+    return {dist, dist_grad, dist_hess};
+}
+
+template <>
+GradType<PrimitiveDistance<Point3, Point3>::n_core_dofs> 
+PrimitiveDistance<Point3, Point3>::compute_distance_gradient(
+    const Vector<double, PrimitiveDistance<Point3, Point3>::n_core_dofs>& x,
+    typename PrimitiveDistType<Point3, Point3>::type dtype)
+{
+    const double dist = (x.head<3>() - x.tail<3>()).squaredNorm();
+    Vector<double, n_core_dofs> dist_grad;
+    dist_grad << 2 * (x.head<3>() - x.tail<3>()), -2 * (x.head<3>() - x.tail<3>());
+    return {dist, dist_grad};
 }
 
 template <>
@@ -224,6 +328,7 @@ PrimitiveDistance<Edge3, Edge3>::compute_closest_direction_hessian(
     const Vector<double, n_core_dofs>& x,
     typename PrimitiveDistType<Edge3, Edge3>::type dtype)
 {
+    assert(dtype == EdgeEdgeDistanceType::EA_EB);
     return line_line_closest_point_direction_hessian(
         x.head<3>() /* edge 0 */, x.segment<3>(3) /* edge 0 */,
         x.segment<3>(6) /* edge 1 */, x.tail<3>() /* edge 1 */);

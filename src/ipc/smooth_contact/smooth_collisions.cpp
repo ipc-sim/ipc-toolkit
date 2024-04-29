@@ -6,6 +6,7 @@
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/getRSS.h>
 
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
@@ -115,6 +116,7 @@ void SmoothCollisions<dim>::build(
 
     // Candidates candidates;
     candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
+    // std::cout << "Candidate Memory " << getCurrentRSS() / (1024.*1024) << "MB\n";
     this->build(candidates, mesh, vertices, param, use_adaptive_dhat);
 }
 
@@ -153,14 +155,6 @@ void SmoothCollisions<dim>::build(
     // tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>> storage;
     auto storage = ipc::utils::create_thread_storage<SmoothCollisionsBuilder<dim>>(SmoothCollisionsBuilder<dim>());
     if constexpr (dim == 2) {
-        // tbb::parallel_for(
-        //     tbb::blocked_range<size_t>(
-        //         size_t(0), candidates_.ev_candidates.size()),
-        //     [&](const tbb::blocked_range<size_t>& r) {
-        //         storage.local().add_edge_vertex_collisions(
-        //             mesh, vertices, candidates_.ev_candidates, param, vert_dhat,
-        //             edge_dhat, r.begin(), r.end());
-        //     });
         ipc::utils::maybe_parallel_for(candidates_.ev_candidates.size(), [&](int start, int end, int thread_id) {
             SmoothCollisionsBuilder<dim> &local_storage = ipc::utils::get_local_thread_storage(storage, thread_id);
             local_storage.add_edge_vertex_collisions(
@@ -168,14 +162,6 @@ void SmoothCollisions<dim>::build(
                 edge_dhat, start, end);
         });
     } else {
-        // tbb::parallel_for(
-        //     tbb::blocked_range<size_t>(
-        //         size_t(0), candidates_.ee_candidates.size()),
-        //     [&](const tbb::blocked_range<size_t>& r) {
-        //         storage.local().add_edge_edge_collisions(
-        //             mesh, vertices, candidates_.ee_candidates, param, vert_dhat,
-        //             edge_dhat, r.begin(), r.end());
-        //     });
         ipc::utils::maybe_parallel_for(candidates_.ee_candidates.size(), [&](int start, int end, int thread_id) {
             SmoothCollisionsBuilder<dim> &local_storage = ipc::utils::get_local_thread_storage(storage, thread_id);
             local_storage.add_edge_edge_collisions(
@@ -183,14 +169,6 @@ void SmoothCollisions<dim>::build(
                 edge_dhat, start, end);
         });
 
-        // tbb::parallel_for(
-        //     tbb::blocked_range<size_t>(
-        //         size_t(0), candidates_.fv_candidates.size()),
-        //     [&](const tbb::blocked_range<size_t>& r) {
-        //         storage.local().add_face_vertex_collisions(
-        //             mesh, vertices, candidates_.fv_candidates, param, vert_dhat,
-        //             edge_dhat, face_dhat, r.begin(), r.end());
-        //     });
         ipc::utils::maybe_parallel_for(candidates_.fv_candidates.size(), [&](int start, int end, int thread_id) {
             SmoothCollisionsBuilder<dim> &local_storage = ipc::utils::get_local_thread_storage(storage, thread_id);
             local_storage.add_face_vertex_collisions(

@@ -1,10 +1,13 @@
 set(SOURCES
+  autogen.hpp
+  autogen.cpp
   mollifier.cpp
   mollifier.hpp
   mollifier.tpp
   point_edge.cpp
   point_edge.hpp
   point_edge.tpp
+  point_face.cpp
   point_face.hpp
   point_face.tpp
   edge_edge.cpp

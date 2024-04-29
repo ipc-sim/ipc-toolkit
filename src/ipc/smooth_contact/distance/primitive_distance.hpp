@@ -56,7 +56,13 @@ class PrimitiveDistanceTemplate {
         + PrimitiveB::n_core_points * PrimitiveB::dim;
 
 public:
+    static T compute_distance(
+        const Vector<T, n_core_dofs>& x,
+        typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype);
     static Vector<T, dim> compute_closest_direction(
+        const Vector<T, n_core_dofs>& x,
+        typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype);
+    static Eigen::Matrix<T, dim, 2> compute_closest_point_pairs(
         const Vector<T, n_core_dofs>& x,
         typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype);
     static T mollifier(const Vector<T, n_core_dofs>& x, const T& dist_sqr);
@@ -66,12 +72,12 @@ template <typename PrimitiveA, typename PrimitiveB> class PrimitiveDistance {
     static_assert(
         PrimitiveA::dim == PrimitiveB::dim,
         "Primitives must have the same dimension");
+public:
     constexpr static int dim = PrimitiveA::dim;
     constexpr static int n_core_dofs =
         PrimitiveA::n_core_points * PrimitiveA::dim
         + PrimitiveB::n_core_points * PrimitiveB::dim;
-
-public:
+    
     static typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type
     compute_distance_type(const Vector<double, n_core_dofs>& x);
 
@@ -81,6 +87,30 @@ public:
         const long& a,
         const long& b,
         typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype);
+
+    static GradType<n_core_dofs> compute_distance_gradient(
+        const Vector<double, n_core_dofs>& x,
+        typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype)
+    {
+        DiffScalarBase::setVariableCount(n_core_dofs);
+        using T = ADGrad<n_core_dofs>;
+        const Vector<T, n_core_dofs> X = slice_positions<T, n_core_dofs, 1>(x);
+        const T d = PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::compute_distance(X, dtype);
+
+        return {d.getValue(), d.getGradient()};
+    }
+
+    static HessianType<n_core_dofs> compute_distance_hessian(
+        const Vector<double, n_core_dofs>& x,
+        typename PrimitiveDistType<PrimitiveA, PrimitiveB>::type dtype)
+    {
+        DiffScalarBase::setVariableCount(n_core_dofs);
+        using T = ADHessian<n_core_dofs>;
+        const Vector<T, n_core_dofs> X = slice_positions<T, n_core_dofs, 1>(x);
+        const T d = PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, T>::compute_distance(X, dtype);
+
+        return {d.getValue(), d.getGradient(), d.getHessian()};
+    }
 
     // points from primitiveA to primitiveB
     static Vector<double, dim> compute_closest_direction(

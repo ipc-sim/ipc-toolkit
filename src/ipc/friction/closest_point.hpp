@@ -17,6 +17,11 @@ VectorMax9d point_edge_closest_point_jacobian(
     const Eigen::Ref<const VectorMax3d>& e0,
     const Eigen::Ref<const VectorMax3d>& e1);
 
+MatrixMax9d point_edge_closest_point_hessian(
+    const Eigen::Ref<const VectorMax3d>& p,
+    const Eigen::Ref<const VectorMax3d>& e0,
+    const Eigen::Ref<const VectorMax3d>& e1);
+
 // ============================================================================
 // Edge - Edge
 

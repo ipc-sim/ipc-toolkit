@@ -4,6 +4,8 @@
 #include <ipc/smooth_contact/common.hpp>
 #include <ipc/smooth_contact/distance/primitive_distance.hpp>
 
+namespace ipc {
+
 enum class CollisionType
 {
     EdgeVertex,
@@ -12,7 +14,6 @@ enum class CollisionType
     EdgeEdge,
 };
 
-namespace ipc {
 template <int max_vert> class SmoothCollision : public Collision<max_vert> {
 protected:
     SmoothCollision(

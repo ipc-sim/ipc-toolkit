@@ -84,11 +84,7 @@ public:
 
     // -------------------------------------------------------------------------
 
-    // Store the indices to pairs to avoid duplicates.
-    unordered_map<
-        std::pair<long, long>,
-        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Face, Point3>>>
-        face_vert_to_id;
+    // Store the indices to pairs to avoid duplicates, no need for Face-Vertex and Edge-Edge
     unordered_map<
         std::pair<long, long>,
         std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>>
@@ -97,10 +93,6 @@ public:
         std::pair<long, long>,
         std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>>
         edge_vert_3_to_id;
-    unordered_map<
-        std::pair<long, long>,
-        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>>
-        edge_edge_3_to_id;
 };
 
 } // namespace ipc

@@ -1,6 +1,8 @@
 #include "edge_edge.hpp"
 
 #include <unsupported/Eigen/KroneckerProduct>
+#include <ipc/friction/closest_point.hpp>
+#include "autogen.hpp"
 
 namespace ipc {
 
@@ -108,5 +110,95 @@ line_line_closest_point_direction_hessian(
     }
 
     return std::make_tuple(vec, grad, hess);
+}
+
+
+std::tuple<Vector6d, Eigen::Matrix<double, 6, 12>>
+line_line_closest_point_pairs_gradient(
+    const Eigen::Ref<const Vector3d>& ea0,
+    const Eigen::Ref<const Vector3d>& ea1,
+    const Eigen::Ref<const Vector3d>& eb0,
+    const Eigen::Ref<const Vector3d>& eb1)
+{
+    const auto uv = edge_edge_closest_point(ea0, ea1, eb0, eb1);
+    const auto J = edge_edge_closest_point_jacobian(ea0, ea1, eb0, eb1);
+
+    Vector6d out;
+    out << uv(0) * (ea1 - ea0) + ea0, uv(1) * (eb1 - eb0) + eb0;
+    Eigen::Matrix<double, 6, 12> grad = Eigen::Matrix<double, 6, 12>::Zero();
+    grad.topRows<3>() += (ea1 - ea0) * J.row(0);
+    grad.block<3, 3>(0, 3).diagonal().array() += uv(0);
+    grad.block<3, 3>(0, 0).diagonal().array() += (1 - uv(0));
+    grad.bottomRows<3>() += (eb1 - eb0) * J.row(1);
+    grad.block<3, 3>(3, 9).diagonal().array() += uv(1);
+    grad.block<3, 3>(3, 6).diagonal().array() += (1 - uv(1));
+
+    return {out, grad};
+}
+
+std::tuple<Vector6d, Eigen::Matrix<double, 6, 12>, std::array<Matrix12d, 6>>
+line_line_closest_point_pairs_hessian(
+    const Eigen::Ref<const Vector3d>& ea0,
+    const Eigen::Ref<const Vector3d>& ea1,
+    const Eigen::Ref<const Vector3d>& eb0,
+    const Eigen::Ref<const Vector3d>& eb1)
+{
+    const auto uv = edge_edge_closest_point(ea0, ea1, eb0, eb1);
+    const auto J = edge_edge_closest_point_jacobian(ea0, ea1, eb0, eb1);
+
+    Vector6d out;
+    out << uv(0) * (ea1 - ea0) + ea0, uv(1) * (eb1 - eb0) + eb0;
+
+    Eigen::Matrix<double, 6, 12> grad = Eigen::Matrix<double, 6, 12>::Zero();
+    grad.topRows<3>() += (ea1 - ea0) * J.row(0);
+    grad.block<3, 3>(0, 3).diagonal().array() += uv(0);
+    grad.block<3, 3>(0, 0).diagonal().array() += (1 - uv(0));
+    grad.bottomRows<3>() += (eb1 - eb0) * J.row(1);
+    grad.block<3, 3>(3, 9).diagonal().array() += uv(1);
+    grad.block<3, 3>(3, 6).diagonal().array() += (1 - uv(1));
+
+    std::array<Matrix12d, 6> hess;
+    for (auto &h : hess)
+        h.setZero();
+    {
+        Eigen::Matrix<double, 12, 12> Ha, Hb;
+        autogen::edge_edge_closest_point_hessian_a(
+            ea0.x(), ea0.y(), ea0.z(),
+            ea1.x(), ea1.y(), ea1.z(),
+            eb0.x(), eb0.y(), eb0.z(),
+            eb1.x(), eb1.y(), eb1.z(),
+            Ha.data());
+        autogen::edge_edge_closest_point_hessian_b(
+            ea0.x(), ea0.y(), ea0.z(),
+            ea1.x(), ea1.y(), ea1.z(),
+            eb0.x(), eb0.y(), eb0.z(),
+            eb1.x(), eb1.y(), eb1.z(),
+            Hb.data());
+        
+        for (int d = 0; d < 3; d++)
+        {
+            // wrt. uv
+            hess[d] += (ea1(d) - ea0(d)) * Ha;
+            hess[d+3] += (eb1(d) - eb0(d)) * Hb;
+
+            // wrt. ea0 & uv(0)
+            hess[d].row(d) -= J.row(0);
+            hess[d].col(d) -= J.row(0).transpose();
+
+            // wrt. ea1 & uv(0)
+            hess[d].row(d+3) += J.row(0);
+            hess[d].col(d+3) += J.row(0).transpose();
+
+            // wrt. eb0 & uv(1)
+            hess[d+3].row(d+6) -= J.row(1);
+            hess[d+3].col(d+6) -= J.row(1).transpose();
+
+            // wrt. eb1 & uv(1)
+            hess[d+3].row(d+9) += J.row(1);
+            hess[d+3].col(d+9) += J.row(1).transpose();
+        }
+    }
+
+    return {out, grad, hess};
 }
 }

@@ -19,14 +19,25 @@ namespace {
             std::shared_ptr<typename SmoothCollisions<dim>::value_type>>&
             collisions_)
     {
-        if (pair->is_active()
-            && cc_to_id_.find(pair->get_hash()) == cc_to_id_.end()) {
+        if (pair->is_active() && cc_to_id_.find(pair->get_hash()) == cc_to_id_.end())
+        {
             // New collision, so add it to the end of collisions
             cc_to_id_.emplace(
                 pair->get_hash(),
                 pair);
             collisions_.push_back(pair);
         }
+    }
+
+    template <int dim, typename TCollision>
+    void add_collision(
+        const std::shared_ptr<TCollision>& pair,
+        std::vector<
+            std::shared_ptr<typename SmoothCollisions<dim>::value_type>>&
+            collisions_)
+    {
+        if (pair->is_active())
+            collisions_.push_back(pair);
     }
 } // namespace
 
@@ -96,8 +107,7 @@ void SmoothCollisionsBuilder<3>::add_edge_edge_collisions(
             std::make_shared<
                 SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>(
                 std::min(eai, ebi), std::max(eai, ebi), actual_dtype, mesh,
-                param, std::min(edge_dhat(eai), edge_dhat(ebi)), vertices),
-            edge_edge_3_to_id, collisions);
+                param, std::min(edge_dhat(eai), edge_dhat(ebi)), vertices), collisions);
     }
 }
 
@@ -133,8 +143,7 @@ void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
                 std::make_shared<
                     SmoothCollisionTemplate<max_vert_3d, Face, Point3>>(
                     fi, vi, pt_dtype, mesh, param,
-                    std::min(face_dhat(fi), vert_dhat(vi)), vertices),
-                face_vert_to_id, collisions);
+                    std::min(face_dhat(fi), vert_dhat(vi)), vertices), collisions);
 
         for (int lv = 0; lv < 3; lv++) {
             const auto& vj = mesh.faces()(fi, lv);
@@ -181,20 +190,12 @@ void SmoothCollisionsBuilder<3>::merge(
 {
     unordered_map<
         std::pair<long, long>,
-        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Face, Point3>>>
-        face_vert_to_id;
-    unordered_map<
-        std::pair<long, long>,
         std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>>
         vert_vert_3_to_id;
     unordered_map<
         std::pair<long, long>,
         std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>>
         edge_vert_3_to_id;
-    unordered_map<
-        std::pair<long, long>,
-        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>>
-        edge_edge_3_to_id;
 
     // size up the hash items
     size_t total = 0;
@@ -204,26 +205,37 @@ void SmoothCollisionsBuilder<3>::merge(
     merged_collisions.collisions.reserve(total);
 
     // merge
-    for (auto& builder : local_storage)
+    for (const auto& builder : local_storage)
     {
-        face_vert_to_id.insert(builder.face_vert_to_id.begin(), builder.face_vert_to_id.end());
         vert_vert_3_to_id.insert(builder.vert_vert_3_to_id.begin(), builder.vert_vert_3_to_id.end());
         edge_vert_3_to_id.insert(builder.edge_vert_3_to_id.begin(), builder.edge_vert_3_to_id.end());
-        edge_edge_3_to_id.insert(builder.edge_edge_3_to_id.begin(), builder.edge_edge_3_to_id.end());
     }
     int edge_vert_count = edge_vert_3_to_id.size();
     int vert_vert_count = vert_vert_3_to_id.size();
-    int face_vert_count = face_vert_to_id.size();
-    int edge_edge_count = edge_edge_3_to_id.size();
+    int face_vert_count = 0;
+    int edge_edge_count = 0;
 
-    for (const auto& [key, val] : face_vert_to_id)
-        merged_collisions.collisions.push_back(val);
     for (const auto& [key, val] : vert_vert_3_to_id)
         merged_collisions.collisions.push_back(val);
     for (const auto& [key, val] : edge_vert_3_to_id)
         merged_collisions.collisions.push_back(val);
-    for (const auto& [key, val] : edge_edge_3_to_id)
-        merged_collisions.collisions.push_back(val);
+
+    for (const auto& builder : local_storage)
+    {
+        for (const auto& cc : builder.collisions)
+        {
+            if (cc->type() == CollisionType::FaceVertex)
+            {
+                face_vert_count++;
+                merged_collisions.collisions.push_back(cc);
+            }
+            else if (cc->type() == CollisionType::EdgeEdge)
+            {
+                edge_edge_count++;
+                merged_collisions.collisions.push_back(cc);
+            }
+        }
+    }
 
     logger().trace(
         "edge-vert pairs {}, vert-vert pairs {}", edge_vert_count,

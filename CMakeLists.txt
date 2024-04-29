@@ -58,7 +58,7 @@ endif()
 
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
-        LANGUAGES CXX
+        LANGUAGES CXX C
         VERSION "1.3.0")
 
 option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
