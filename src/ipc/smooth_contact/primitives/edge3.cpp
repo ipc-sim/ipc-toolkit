@@ -539,7 +539,7 @@ scalar smooth_edge3_term_template(
         normal_term = Math<scalar>::smooth_heaviside((d - t0).cross(d - t1).dot(edge), param.alpha_n, param.beta_n);
     }
 
-    return normal_term; // (e1 - e0).squaredNorm() * tangent_term * 
+    return (e1 - e0).squaredNorm() * tangent_term * normal_term;
 }
 
 #ifdef DERIVATIVES_WITH_AUTODIFF
