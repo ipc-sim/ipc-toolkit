@@ -16,6 +16,18 @@ public:
 public:
     SmoothCollisions() = default;
 
+    std::shared_ptr<CollisionsBase> deepcopy() const override
+    {
+        std::shared_ptr<SmoothCollisions<dim>> ptr = std::make_shared<SmoothCollisions<dim>>();
+        ptr->candidates = this->candidates;
+        ptr->vert_adaptive_dhat = this->vert_adaptive_dhat;
+        ptr->edge_adaptive_dhat = this->edge_adaptive_dhat;
+        ptr->face_adaptive_dhat = this->face_adaptive_dhat;
+        for (const auto& cc : this->collisions)
+            ptr->collisions.push_back(cc);
+        return ptr;
+    }
+
     void compute_adaptive_dhat(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,

@@ -21,6 +21,8 @@ public:
     CollisionsBase() = default;
     virtual ~CollisionsBase() = default;
 
+    virtual std::shared_ptr<CollisionsBase> deepcopy() const = 0;
+
     /// @brief Get the number of collisions.
     virtual size_t size() const = 0;
 
@@ -98,6 +100,11 @@ public:
 
 public:
     Collisions() { }
+
+    std::shared_ptr<CollisionsBase> deepcopy() const override
+    {
+        return std::make_shared<Collisions>(*this);
+    }
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param mesh The collision mesh.
