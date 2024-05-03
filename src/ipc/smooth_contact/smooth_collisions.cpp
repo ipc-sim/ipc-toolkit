@@ -311,8 +311,6 @@ double SmoothCollisions<dim>::compute_active_minimum_distance(
     return storage.combine([](double a, double b) { return std::min(a, b); });
 }
 
-template class CollisionsBase<max_vert_2d>;
-template class CollisionsBase<max_vert_3d>;
 template class SmoothCollisions<2>;
 template class SmoothCollisions<3>;
 } // namespace ipc

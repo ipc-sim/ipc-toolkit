@@ -16,11 +16,8 @@
 
 namespace ipc {
 
-template <int max_vert = 4> class CollisionsBase {
+class CollisionsBase {
 public:
-    /// @brief The type of the collisions.
-    using value_type = Collision<max_vert>;
-
     CollisionsBase() = default;
     virtual ~CollisionsBase() = default;
 
@@ -32,16 +29,6 @@ public:
 
     /// @brief Clear the collision set.
     virtual void clear() = 0;
-
-    /// @brief Get a reference to collision at index i.
-    /// @param i The index of the collision.
-    /// @return A reference to the collision.
-    virtual Collision<max_vert>& operator[](size_t i) = 0;
-
-    /// @brief Get a const reference to collision at index i.
-    /// @param i The index of the collision.
-    /// @return A const reference to the collision.
-    virtual const Collision<max_vert>& operator[](size_t i) const = 0;
 
     /// @brief Computes the minimum distance between any non-adjacent elements.
     /// @param mesh The collision mesh.
@@ -104,7 +91,7 @@ protected:
     bool m_are_shape_derivatives_enabled = false;
 };
 
-class Collisions : public CollisionsBase<4> {
+class Collisions : public CollisionsBase {
 public:
     /// @brief The type of the collisions.
     using value_type = Collision<4>;
@@ -152,12 +139,12 @@ public:
     /// @brief Get a reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A reference to the collision.
-    Collision<4>& operator[](size_t i) override;
+    Collision<4>& operator[](size_t i);
 
     /// @brief Get a const reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A const reference to the collision.
-    const Collision<4>& operator[](size_t i) const override;
+    const Collision<4>& operator[](size_t i) const;
 
     /// @brief Get if the collision at i is a vertex-vertex collision.
     /// @param i The index of the collision.

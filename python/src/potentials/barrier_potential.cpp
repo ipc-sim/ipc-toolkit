@@ -76,7 +76,7 @@ void define_barrier_potential(py::module_& m)
         .def(
             "shape_derivative",
             py::overload_cast<
-                const CollisionsBase<4>&, const CollisionMesh&,
+                const CollisionsBase&, const CollisionMesh&,
                 const Eigen::MatrixXd&>(
                 &BarrierPotential::shape_derivative, py::const_),
             R"ipc_Qu8mg5v7(

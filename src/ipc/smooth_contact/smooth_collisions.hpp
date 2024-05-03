@@ -7,9 +7,9 @@ namespace ipc {
 
 template <int dim>
 class SmoothCollisions
-    : public CollisionsBase<MaxVertices<dim>::value> {
+    : public CollisionsBase {
 public:
-    using Super = CollisionsBase<MaxVertices<dim>::value>;
+    using Super = CollisionsBase;
     /// @brief The type of the collisions.
     using value_type = SmoothCollision<MaxVertices<dim>::value>;
 
@@ -58,12 +58,12 @@ public:
     /// @brief Get a reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A reference to the collision.
-    value_type& operator[](size_t i) override;
+    value_type& operator[](size_t i);
 
     /// @brief Get a const reference to collision at index i.
     /// @param i The index of the collision.
     /// @return A const reference to the collision.
-    const value_type& operator[](size_t i) const override;
+    const value_type& operator[](size_t i) const;
 
     double compute_minimum_distance(
         const CollisionMesh& mesh,

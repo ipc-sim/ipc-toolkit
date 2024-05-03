@@ -28,7 +28,7 @@ public:
     /// @throws std::runtime_error If the collision collisions were not built with shape derivatives enabled.
     /// @returns The derivative of the force with respect to X, the rest vertices.
     Eigen::SparseMatrix<double> shape_derivative(
-        const CollisionsBase<4>& collisions,
+        const Collisions& collisions,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices) const;
 

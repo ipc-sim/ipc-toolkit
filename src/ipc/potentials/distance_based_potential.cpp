@@ -5,7 +5,7 @@ namespace ipc {
 // -- Cumulative methods -------------------------------------------------------
 
 Eigen::SparseMatrix<double> DistanceBasedPotential::shape_derivative(
-    const CollisionsBase<4>& collisions,
+    const Collisions& collisions,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices) const
 {
