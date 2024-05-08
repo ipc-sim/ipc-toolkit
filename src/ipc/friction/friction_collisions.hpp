@@ -107,6 +107,8 @@ public:
     std::vector<EdgeVertexFrictionCollision> ev_collisions;
     std::vector<EdgeEdgeFrictionCollision> ee_collisions;
     std::vector<FaceVertexFrictionCollision> fv_collisions;
+
+    double barrier_stiffness_;
 };
 
 } // namespace ipc

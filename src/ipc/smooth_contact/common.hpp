@@ -45,7 +45,7 @@ struct ParameterType {
                 "Wrong parameters for smooth contact! dhat {} alpha_t {} beta_t {} alpha_n {} beta_n {} r {}",
                 dhat, alpha_t, beta_t, alpha_n, beta_n, r);
     }
-    ParameterType() = delete;
+    ParameterType() {}
 
     void set_adaptive_dhat_ratio(const double adaptive_dhat_ratio_)
     {
@@ -53,10 +53,10 @@ struct ParameterType {
     }
     double get_adaptive_dhat_ratio() const { return adaptive_dhat_ratio; }
 
-    double dhat;
-    const double alpha_t, beta_t;
-    const double alpha_n, beta_n;
-    const int r;
+    double dhat = 1;
+    double alpha_t = 1, beta_t = 0;
+    double alpha_n = 0.1, beta_n = 0;
+    int r = 2;
 
 private:
     double adaptive_dhat_ratio = 0.5;

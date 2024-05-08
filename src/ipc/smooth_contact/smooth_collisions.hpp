@@ -42,7 +42,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const ParameterType param,
-        const bool use_adaptive_dhat,
+        const bool use_adaptive_dhat = false,
         const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
@@ -54,7 +54,7 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const ParameterType param,
-        const bool use_adaptive_dhat);
+        const bool use_adaptive_dhat = false);
 
     // ------------------------------------------------------------------------
 
@@ -95,13 +95,6 @@ public:
     {
         logger().error(
             "Smooth contact formulation doesn't have convergent version!");
-    }
-
-    void set_are_shape_derivatives_enabled(
-        const bool are_shape_derivatives_enabled) override
-    {
-        logger().error(
-            "Smooth contact formulation doesn't have shape derivatives implemented!");
     }
 
     double get_vert_dhat(int vert_id) const

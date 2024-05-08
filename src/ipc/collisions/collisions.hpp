@@ -74,7 +74,7 @@ public:
     /// @brief Set if the collision set should enable shape derivative computation.
     /// @warning This must be set before the collisions are built.
     /// @param are_shape_derivatives_enabled If the collision set should enable shape derivative computation.
-    virtual void
+    void
     set_are_shape_derivatives_enabled(const bool are_shape_derivatives_enabled)
     {
         if (!empty()

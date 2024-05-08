@@ -128,6 +128,7 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::gradient(
     std::tie(closest_direction, closest_direction_grad) = PrimitiveDistance<PrimitiveA, PrimitiveB>::compute_closest_direction_gradient(x, dtype);
     
     const double dist = closest_direction.norm();
+    assert(dist > 0);
 
     // these two use autodiff with different variable count
     auto gA_reduced = pA->grad(closest_direction, positions.head(pA->n_dofs()));

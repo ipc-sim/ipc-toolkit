@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/smooth_contact/smooth_collisions.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/friction/relative_velocity.hpp>
 #include <ipc/friction/smooth_friction_mollifier.hpp>
@@ -116,6 +117,8 @@ public:
 public:
     /// @brief Collision force magnitude
     double normal_force_magnitude;
+    std::shared_ptr<SmoothCollision<max_vert_2d>> smooth_collision_2d;
+    std::shared_ptr<SmoothCollision<max_vert_3d>> smooth_collision_3d;
 
     /// @brief Coefficient of friction
     double mu;

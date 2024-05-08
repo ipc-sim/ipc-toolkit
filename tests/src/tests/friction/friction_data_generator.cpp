@@ -5,6 +5,9 @@
 #include <ipc/config.hpp>
 
 #include <igl/edges.h>
+#include <igl/writeOBJ.h>
+#include <ipc/distance/distance_type.hpp>
+#include <ipc/smooth_contact/smooth_collisions.hpp>
 
 Eigen::VectorXd LogSpaced(int num, double start, double stop, double base)
 {
@@ -140,6 +143,152 @@ FrictionData friction_data_generator()
         collisions.vv_collisions.emplace_back(0, 1);
         collisions.vv_collisions.back().weight_gradient.resize(V0.size());
     }
+
+    return data;
+}
+
+using namespace ipc;
+
+SmoothFrictionData<3> smooth_friction_data_generator()
+{
+    SmoothFrictionData<3> data;
+
+    auto& [V0, V1, E, F, collisions, mu, epsv_times_h, param, barrier_stiffness] =
+        data;
+
+    double &dhat = param.dhat;
+    collisions.set_are_shape_derivatives_enabled(true);
+
+    mu = 1.; // GENERATE(range(0.0, 1.0, 0.2));
+#ifdef NDEBUG
+    epsv_times_h = pow(10, GENERATE(range(-6, 0)));
+    dhat = pow(10, GENERATE(range(-4, 0)));
+    barrier_stiffness = pow(10, GENERATE(range(0, 2)));
+#else
+    epsv_times_h = 1.; // pow(10, GENERATE(range(-6, 0, 2)));
+    dhat = 1e-2; // pow(10, GENERATE(range(-4, 0, 2)));
+    barrier_stiffness = 1.; // 100;
+#endif
+
+    param = ParameterType(dhat, 0.8, 0, 1, 0, 2);
+    const double max_d = dhat * 0.9;
+    const double d = GENERATE_COPY(range(1e-5, max_d, max_d / 10));
+    SECTION("point-triangle")
+    {
+        V0.resize(8, 3);
+        V0 << 0, d, 0,   // point at t=0
+              -1, 0, 1,  // triangle vertex 0 at t=0
+              2, 0, 0,   // triangle vertex 1 at t=0
+              -1, 0, -1, // triangle vertex 2 at t=0
+              -1, d+2, 1,
+              2, d+2, 0,
+              -1, d+2, -1,
+              0, -2, 0;
+
+        V1 = V0;
+        double dy = GENERATE(-1, 1, 1e-1);
+        V1.row(0) << 1, d + dy, 0; // point at t=1
+
+        F.resize(8, 3);
+        F << 1, 2, 3,
+             1, 7, 2,
+             2, 7, 3,
+             3, 7, 1,
+             4, 5, 6,
+             4, 0, 5,
+             5, 0, 6,
+             6, 0, 4;
+        igl::edges(F, E);
+
+        CollisionMesh mesh(V0, E, F);
+    	// igl::writeOBJ(
+    	// 	"collision.obj",
+    	// 	V0, F);
+        // std::terminate();
+        collisions.collisions.push_back(std::make_shared<SmoothCollisionTemplate<max_vert_3d, Face, Point3>>(0, 0, PointTriangleDistanceType::P_T, mesh, param, dhat, V0));
+    }
+    // SECTION("edge-edge")
+    // {
+    //     V0.resize(4, 3);
+    //     V0.row(0) << -1, d, 0; // edge a vertex 0 at t=0
+    //     V0.row(1) << 1, d, 0;  // edge a vertex 1 at t=0
+    //     V0.row(2) << 0, 0, -1; // edge b vertex 0 at t=0
+    //     V0.row(3) << 0, 0, 1;  // edge b vertex 1 at t=0
+
+    //     V1 = V0;
+    //     // double dy = GENERATE(-1, 1, 1e-1);
+    //     V1.row(0) << 0.5, d, 0; // edge a vertex 0 at t=1
+    //     V1.row(1) << 2.5, d, 0; // edge a vertex 1 at t=1
+
+    //     E.resize(2, 2);
+    //     E.row(0) << 0, 1;
+    //     E.row(1) << 2, 3;
+
+    //     CollisionMesh mesh(V0, E, F);
+    //     collisions.collisions.push_back(std::make_shared<SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>(0, 1, EdgeEdgeDistanceType::EA_EB, mesh, param, dhat, V0));
+    // }
+    // SECTION("point-edge")
+    // {
+    //     V0.resize(3, 3);
+    //     V0.row(0) << -0.5, d, 0; // point at t=0
+    //     V0.row(1) << 0, 0, -1;   // edge vertex 0 at t=0
+    //     V0.row(2) << 0, 0, 1;    // edge vertex 1 at t=0
+
+    //     V1 = V0;
+    //     // double dy = GENERATE(-1, 1, 1e-1);
+    //     V1.row(0) << 0.5, d, 0; // point at t=1
+
+    //     E.resize(1, 2);
+    //     E.row(0) << 1, 2;
+
+    //     collisions.ev_collisions.emplace_back(0, 1);
+    //     collisions.ev_collisions.back().weight_gradient.resize(V0.size());
+    // }
+    // SECTION("point-point")
+    // {
+    //     V0.resize(2, 3);
+    //     V0.row(0) << -1, d, 0; // point 0 at t=0
+    //     V0.row(1) << 1, d, 0;  // point 1 at t=0
+
+    //     V1 = V0;
+    //     // double dy = GENERATE(-1, 1, 1e-1);
+    //     V1.row(0) << 0.5, d, 0;  // edge a vertex 0 at t=1
+    //     V1.row(1) << -0.5, d, 0; // edge a vertex 1 at t=1
+
+    //     collisions.vv_collisions.emplace_back(0, 1);
+    //     collisions.vv_collisions.back().weight_gradient.resize(V0.size());
+    // }
+    // SECTION("point-edge 2D")
+    // {
+    //     V0.resize(3, 2);
+    //     V0.row(0) << -0.5, d; // point at t=0
+    //     V0.row(1) << -1, 0;   // edge vertex 0 at t=0
+    //     V0.row(2) << 1, 0;    // edge vertex 1 at t=0
+
+    //     V1 = V0;
+    //     // double dy = GENERATE(-1, 1, 1e-1);
+    //     V1.row(0) << 0.5, d; // point at t=1
+
+    //     E.resize(1, 2);
+    //     E.row(0) << 1, 2;
+
+    //     collisions.ev_collisions.emplace_back(0, 1);
+    //     collisions.ev_collisions.back().weight_gradient.resize(V0.size());
+    // }
+    // SECTION("point-point 2D")
+    // {
+    //     V0.resize(2, 2);
+    //     V0.row(0) << -1, d; // point 0 at t=0
+    //     V0.row(1) << 1, d;  // point 1 at t=0
+
+    //     V1 = V0;
+    //     // double dy = GENERATE(-1, 1, 1e-1);
+    //     V1.row(0) << 0.5, d;  // edge a vertex 0 at t=1
+    //     V1.row(1) << -0.5, d; // edge a vertex 1 at t=1
+
+    //     collisions.vv_collisions.emplace_back(0, 1);
+    //     collisions.vv_collisions.back().weight_gradient.resize(V0.size());
+    // }
 
     return data;
 }

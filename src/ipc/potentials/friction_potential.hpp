@@ -85,6 +85,25 @@ public:
         const DiffWRT wrt,
         const double dmin = 0) const;
 
+    Eigen::VectorXd smooth_contact_force(
+        const FrictionCollisions& collisions,
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& rest_positions,
+        const Eigen::MatrixXd& lagged_displacements,
+        const Eigen::MatrixXd& velocities,
+        const double dmin = 0,
+        const bool no_mu = false) const;
+
+    Eigen::SparseMatrix<double> smooth_contact_force_jacobian(
+        const FrictionCollisions& collisions,
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& rest_positions,
+        const Eigen::MatrixXd& lagged_displacements,
+        const Eigen::MatrixXd& velocities,
+        const ParameterType &params,
+        const DiffWRT wrt,
+        const double dmin = 0) const;
+
     // -- Single collision methods ---------------------------------------------
 
     /// @brief Compute the potential for a single collision.
@@ -149,6 +168,41 @@ public:
         const Vector<double, -1, element_size>& velocities,
         const BarrierPotential& barrier_potential,
         const double barrier_stiffness,
+        const DiffWRT wrt,
+        const double dmin = 0) const;
+
+
+    /// @brief Compute the friction force.
+    /// @param collision The collision
+    /// @param rest_positions Rest positions of the vertices (rowwise).
+    /// @param lagged_displacements Previous displacements of the vertices (rowwise).
+    /// @param velocities Current displacements of the vertices (rowwise).
+    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param dmin Minimum distance (used for normal force magnitude).
+    /// @param no_mu Whether to not multiply by mu
+    /// @return Friction force
+    Vector<double, -1, element_size> smooth_contact_force(
+        const FrictionCollision& collision,
+        const Vector<double, -1, element_size>& rest_positions,
+        const Vector<double, -1, element_size>& lagged_displacements,
+        const Vector<double, -1, element_size>& velocities,
+        const double dmin = 0,
+        const bool no_mu = false) const; //< whether to not multiply by mu
+
+    /// @brief Compute the friction force Jacobian.
+    /// @param collision The collision
+    /// @param rest_positions Rest positions of the vertices (rowwise).
+    /// @param lagged_displacements Previous displacements of the vertices (rowwise).
+    /// @param velocities Current displacements of the vertices (rowwise).
+    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param wrt Variable to differentiate the friction force with respect to.
+    /// @param dmin Minimum distance (used for normal force magnitude).
+    /// @return Friction force Jacobian
+    Eigen::MatrixXd smooth_contact_force_jacobian(
+        const FrictionCollision& collision,
+        const Vector<double, -1, element_size>& rest_positions,
+        const Vector<double, -1, element_size>& lagged_displacements,
+        const Vector<double, -1, element_size>& velocities,
         const DiffWRT wrt,
         const double dmin = 0) const;
 
