@@ -1,5 +1,6 @@
 #pragma once
 #include <cmath>
+#include <ipc/utils/logger.hpp>
 
 namespace ipc {
 

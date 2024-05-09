@@ -182,6 +182,11 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     timer.stop();
     logger().trace("done pruning triplets {}s...", timer.getElapsedTime());
 
+    if (storage.size() == 0)
+    {
+        return Eigen::SparseMatrix<double>();
+    }
+
     // Prepares for parallel concatenation
     std::vector<int> offsets(storage.size());
 
