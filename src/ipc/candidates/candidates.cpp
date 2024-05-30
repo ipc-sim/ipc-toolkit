@@ -52,11 +52,7 @@ void Candidates::build(
     if (mesh.num_codim_vertices()) {
         broad_phase->clear();
         broad_phase->build(
-#if EIGEN_VERSION_AT_LEAST(3, 4, 90)
-            vertices(mesh.codim_vertices(), Eigen::indexing::all), //
-#else
             vertices(mesh.codim_vertices(), Eigen::all), //
-#endif
             Eigen::MatrixXi(), Eigen::MatrixXi(), inflation_radius);
 
         broad_phase->detect_vertex_vertex_candidates(vv_candidates);
@@ -78,23 +74,14 @@ void Candidates::build(
             Eigen::VectorXi _I, _J; // unused mappings
             igl::remove_unreferenced(
                 vertices,
-#if EIGEN_VERSION_AT_LEAST(3, 4, 90)
-                pad_edges(
-                    mesh.edges()(mesh.codim_edges(), Eigen::indexing::all)),
-#else
-                pad_edges(mesh.edges()(mesh.codim_edges(), Eigen::all)),
-#endif
-                CE_V, CE, _I, _J);
+                pad_edges(mesh.edges()(mesh.codim_edges(), Eigen::all)), CE_V,
+                CE, _I, _J);
             CE = unpad_edges(CE);
         }
 
         const size_t nCV = mesh.num_codim_vertices();
         Eigen::MatrixXd V(nCV + CE_V.rows(), dim);
-#if EIGEN_VERSION_AT_LEAST(3, 4, 90)
-        V.topRows(nCV) = vertices(mesh.codim_vertices(), Eigen::indexing::all);
-#else
         V.topRows(nCV) = vertices(mesh.codim_vertices(), Eigen::all);
-#endif
         V.bottomRows(CE_V.rows()) = CE_V;
 
         CE.array() += nCV; // Offset indices to account for codim. vertices
@@ -138,13 +125,8 @@ void Candidates::build(
     if (mesh.num_codim_vertices()) {
         broad_phase->clear();
         broad_phase->build(
-#if EIGEN_VERSION_AT_LEAST(3, 4, 90)
-            vertices_t0(mesh.codim_vertices(), Eigen::indexing::all),
-            vertices_t1(mesh.codim_vertices(), Eigen::indexing::all), //
-#else
             vertices_t0(mesh.codim_vertices(), Eigen::all),
             vertices_t1(mesh.codim_vertices(), Eigen::all), //
-#endif
             Eigen::MatrixXi(), Eigen::MatrixXi(), inflation_radius);
 
         broad_phase->detect_vertex_vertex_candidates(vv_candidates);
@@ -166,37 +148,20 @@ void Candidates::build(
             Eigen::VectorXi _I, J;
             igl::remove_unreferenced(
                 vertices_t0,
-#if EIGEN_VERSION_AT_LEAST(3, 4, 90)
-                pad_edges(
-                    mesh.edges()(mesh.codim_edges(), Eigen::indexing::all)),
-                CE_V_t0, CE, _I, J);
-            CE_V_t1 = vertices_t1(J, Eigen::indexing::all);
-#else
                 pad_edges(mesh.edges()(mesh.codim_edges(), Eigen::all)),
                 CE_V_t0, CE, _I, J);
             CE_V_t1 = vertices_t1(J, Eigen::all);
-#endif
             CE = unpad_edges(CE);
         }
 
         const size_t nCV = mesh.num_codim_vertices();
 
         Eigen::MatrixXd V_t0(nCV + CE_V_t0.rows(), dim);
-#if EIGEN_VERSION_AT_LEAST(3, 4, 90)
-        V_t0.topRows(nCV) =
-            vertices_t0(mesh.codim_vertices(), Eigen::indexing::all);
-#else
         V_t0.topRows(nCV) = vertices_t0(mesh.codim_vertices(), Eigen::all);
-#endif
         V_t0.bottomRows(CE_V_t0.rows()) = CE_V_t0;
 
         Eigen::MatrixXd V_t1(nCV + CE_V_t1.rows(), dim);
-#if EIGEN_VERSION_AT_LEAST(3, 4, 90)
-        V_t1.topRows(nCV) =
-            vertices_t1(mesh.codim_vertices(), Eigen::indexing::all);
-#else
         V_t1.topRows(nCV) = vertices_t1(mesh.codim_vertices(), Eigen::all);
-#endif
         V_t1.bottomRows(CE_V_t1.rows()) = CE_V_t1;
 
         CE.array() += nCV; // Offset indices to account for codim. vertices
