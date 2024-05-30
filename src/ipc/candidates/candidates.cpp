@@ -2,6 +2,7 @@
 
 #include <ipc/ipc.hpp>
 #include <ipc/utils/save_obj.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 #include <ipc/config.hpp>
 

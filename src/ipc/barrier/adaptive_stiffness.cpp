@@ -5,6 +5,7 @@
 #include <ipc/barrier/barrier.hpp>
 
 #include <algorithm> // std::min/max
+#include <cassert>
 
 namespace ipc {
 
