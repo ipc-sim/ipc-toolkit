@@ -2,6 +2,7 @@
 
 #include <ipc/ipc.hpp>
 #include <ipc/utils/save_obj.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 #include <ipc/config.hpp>
 
@@ -186,7 +187,7 @@ void Candidates::build(
             vertices_t0(mesh.codim_vertices(), Eigen::indexing::all);
 #else
         V_t0.topRows(nCV) = vertices_t0(mesh.codim_vertices(), Eigen::all);
-#else
+#endif
         V_t0.bottomRows(CE_V_t0.rows()) = CE_V_t0;
 
         Eigen::MatrixXd V_t1(nCV + CE_V_t1.rows(), dim);
