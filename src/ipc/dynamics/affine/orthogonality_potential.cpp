@@ -147,12 +147,13 @@ MatrixMax12d OrthogonalityPotential::hessian(const AffineBody& body) const
             auto hess_aij =
                 hess.block(i * dim + p.size(), j * dim + p.size(), dim, dim);
 
+            // Extra outer product term if i == j
             hess_aij += (int(i == j) + 1) * A.col(j) * A.col(i).transpose()
                 + (A.col(i).dot(A.col(j)) - int(i == j)) * I;
 
             if (i == j) {
                 for (int k = 0; k < A.cols(); k++) {
-                    if (i != k) {
+                    if (i != k) { // Already added the i == k term above
                         hess_aij += A.col(k) * A.col(k).transpose();
                     }
                 }
