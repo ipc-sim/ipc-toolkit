@@ -1,12 +1,5 @@
 set(SOURCES
-  # Tests
-  test_interval.cpp
-  test_sinc.cpp
-  test_utils.cpp
-
-  # Benchmarks
-
-  # Utilities
+  test_orthogonality_potential.cpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})

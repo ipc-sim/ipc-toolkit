@@ -7,4 +7,4 @@ endif()
 message(STATUS "Third-party: creating target 'filib::filib'")
 
 include(CPM)
-CPMAddPackage("gh:zfergus/filib#1cd377a7c833a68dc47217829e333f4886c5c46d")
+CPMAddPackage("gh:zfergus/filib#fe1d1bfa56ef8c00fbcea2deec69a6b4f9da2207")

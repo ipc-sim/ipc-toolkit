@@ -33,6 +33,13 @@ public:
         this->SUP = y;
     }
 
+    static Interval empty()
+    {
+        return Interval(
+            std::numeric_limits<double>::infinity(),
+            -std::numeric_limits<double>::infinity());
+    }
+
     // friend std::ostream& operator<<(std::ostream& out, const Interval& i)
     // {
     //     return out << "[" << i.INF << ", " << i.SUP << "]";
@@ -57,13 +64,13 @@ typedef Matrix3<filib::Interval> Matrix3I;
 typedef MatrixMax3<filib::Interval> MatrixMax3I;
 typedef MatrixX<filib::Interval> MatrixXI;
 
-/// @brief Compute the L2 norm of a 3-dimensional interval
-/// @param v The 3-dimensional interval
+/// @brief Compute the L2 norm of a n-dimensional interval
+/// @param v The n-dimensional interval
 /// @return The L2 norm of the interval
 filib::Interval squared_norm(const Eigen::Ref<const VectorXI>& v); // L2 norm
 
-/// @brief Compute the L2 norm of a 3-dimensional interval
-/// @param v The 3-dimensional interval
+/// @brief Compute the L2 norm of a n-dimensional interval
+/// @param v The n-dimensional interval
 /// @return The L2 norm of the interval
 filib::Interval norm(const Eigen::Ref<const VectorXI>& v); // L2 norm
 
@@ -80,6 +87,7 @@ template <typename BinOp>
 struct ScalarBinaryOpTraits<double, filib::Interval, BinOp> {
     typedef filib::Interval ReturnType;
 };
+
 } // namespace Eigen
 
 #endif
