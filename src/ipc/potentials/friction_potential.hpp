@@ -109,7 +109,7 @@ public:
     MatrixMax12d hessian(
         const FrictionCollision& collision,
         const VectorMax12d& velocities,
-        const ProjectType project_hessian_to_psd = ProjectType::None) const override;
+        const PSDProjectionMethod project_hessian_to_psd = PSDProjectionMethod::NONE) const override;
 
     /// @brief Compute the friction force.
     /// @param collision The collision

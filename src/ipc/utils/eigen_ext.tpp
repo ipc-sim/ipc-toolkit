@@ -63,11 +63,11 @@ template <
     int _MaxCols>
 Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
 project_to_psd(
-    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A, ProjectType type)
+    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A, PSDProjectionMethod type)
 {
     assert(A.isApprox(A.transpose()) && "A must be symmetric");
 
-    if (type == ProjectType::None)
+    if (type == PSDProjectionMethod::NONE)
         return A;
 
     // https://math.stackexchange.com/q/2776803
@@ -87,28 +87,24 @@ project_to_psd(
     }
     Eigen::DiagonalMatrix<double, Eigen::Dynamic> D(eigensolver.eigenvalues());
     // Save a little time and only project the negative values
-    switch (type)
-    {
-    case ProjectType::Clamp:
-    {
-        for (int i = 0; i < A.rows(); i++) {
-            if (D.diagonal()[i] < 0.0) {
+    for (int i = 0; i < A.rows(); i++) {
+        if (D.diagonal()[i] < 0.0) {
+            switch (type)
+            {
+            case PSDProjectionMethod::CLAMP:
                 D.diagonal()[i] = 0.0;
-            } else {
                 break;
+            case PSDProjectionMethod::ABS:
+                D.diagonal()[i] = std::abs(D.diagonal()[i]);
+                break;
+            default:
+                throw std::runtime_error("Invalid type of PSD projection!");
             }
+        } else {
+            break;
         }
-        break;
     }
-    case ProjectType::Abs:
-    {
-        for (int i = 0; i < A.rows(); i++)
-            D.diagonal()[i] = std::abs(D.diagonal()[i]);
-        break;
-    }
-    default:
-        throw std::runtime_error("Invalid type of PSD projection!");
-    }
+
     return eigensolver.eigenvectors() * D
         * eigensolver.eigenvectors().transpose();
 }

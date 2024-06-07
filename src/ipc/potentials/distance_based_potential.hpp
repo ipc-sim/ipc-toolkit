@@ -56,7 +56,7 @@ public:
     MatrixMax12d hessian(
         const Collision& collision,
         const VectorMax12d& positions,
-        const ProjectType project_hessian_to_psd = ProjectType::None) const override;
+        const PSDProjectionMethod project_hessian_to_psd = PSDProjectionMethod::NONE) const override;
 
     /// @brief Compute the shape derivative of the potential for a single collision.
     /// @param[in] collision The collision.

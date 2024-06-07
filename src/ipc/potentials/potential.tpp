@@ -84,7 +84,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const TCollisions& collisions,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& X,
-    const ProjectType project_hessian_to_psd) const
+    const PSDProjectionMethod project_hessian_to_psd) const
 {
     assert(X.rows() == mesh.num_vertices());
 

@@ -507,7 +507,7 @@ TEST_CASE(
     };
     BENCHMARK("Compute barrier potential hessian with PSD projection")
     {
-        return barrier_potential.hessian(collisions, mesh, vertices, ProjectType::Clamp);
+        return barrier_potential.hessian(collisions, mesh, vertices, PSDProjectionMethod::CLAMP);
     };
     BENCHMARK("Compute compute_minimum_distance")
     {

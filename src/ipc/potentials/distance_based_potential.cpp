@@ -89,7 +89,7 @@ VectorMax12d DistanceBasedPotential::gradient(
 MatrixMax12d DistanceBasedPotential::hessian(
     const Collision& collision,
     const VectorMax12d& positions,
-    const ProjectType project_hessian_to_psd) const
+    const PSDProjectionMethod project_hessian_to_psd) const
 {
     // d(x)
     const double d = collision.compute_distance(positions);
@@ -182,7 +182,7 @@ void DistanceBasedPotential::shape_derivative(
     if (!collision.is_mollified()) {
         // w ∇ₓ∇ᵤf = w ∇ᵤ²f
         local_hess =
-            hessian(collision, positions, /*project_hessian_to_psd=*/ProjectType::None);
+            hessian(collision, positions, /*project_hessian_to_psd=*/PSDProjectionMethod::NONE);
     } else {
         // d(x̄+u)
         const double d = collision.compute_distance(positions);
