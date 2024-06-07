@@ -23,6 +23,14 @@ void define_eigen_ext(py::module_& m)
         )ipc_Qu8mg5v7",
         py::arg("A"), py::arg("eps") = 1e-8);
 
+    py::enum_<PSDProjectionMethod>(
+        m, "PSDProjectionMethod",
+        "Enumeration of implemented PSD projection methods.")
+        .value("NONE", PSDProjectionMethod::NONE, "No PSD projection")
+        .value("CLAMP", PSDProjectionMethod::CLAMP, "Clamp negative eigenvalues")
+        .value("ABS", PSDProjectionMethod::ABS, "Flip negative eigenvalues")
+        .export_values();
+
     m.def(
         "project_to_psd",
         &project_to_psd<
@@ -33,9 +41,10 @@ void define_eigen_ext(py::module_& m)
 
         Parameters:
             A: Symmetric matrix to project
+            method: PSD projection method
 
         Returns:
             Projected matrix
         )ipc_Qu8mg5v7",
-        py::arg("A"));
+        py::arg("A"), py::arg("method"));
 }
