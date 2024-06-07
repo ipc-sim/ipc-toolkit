@@ -62,7 +62,7 @@ project(IPCToolkit
         VERSION "1.3.0")
 
 option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
-option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                          ON)
+option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
