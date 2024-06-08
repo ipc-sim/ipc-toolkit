@@ -57,7 +57,8 @@ void define_barrier_potential(py::module_& m)
             "hessian",
             py::overload_cast<
                 const Collisions&, const CollisionMesh&, const Eigen::MatrixXd&,
-                const ipc::PSDProjectionMethod>(&BarrierPotential::Potential::hessian, py::const_),
+                const PSDProjectionMethod>(
+                &BarrierPotential::Potential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the barrier potential.
 
@@ -71,7 +72,7 @@ void define_barrier_potential(py::module_& m)
                 The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|x|vertices|.
             )ipc_Qu8mg5v7",
             py::arg("collisions"), py::arg("mesh"), py::arg("vertices"),
-            py::arg("project_hessian_to_psd") = ipc::PSDProjectionMethod::NONE)
+            py::arg("project_hessian_to_psd") = PSDProjectionMethod::NONE)
         .def(
             "shape_derivative",
             py::overload_cast<
@@ -125,7 +126,8 @@ void define_barrier_potential(py::module_& m)
         .def(
             "hessian",
             py::overload_cast<
-                const Collision&, const VectorMax12d&, const PSDProjectionMethod>(
+                const Collision&, const VectorMax12d&,
+                const PSDProjectionMethod>(
                 &BarrierPotential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the potential for a single collision.
@@ -138,7 +140,7 @@ void define_barrier_potential(py::module_& m)
                 The hessian of the potential.
             )ipc_Qu8mg5v7",
             py::arg("collision"), py::arg("x"),
-            py::arg("project_hessian_to_psd") = ipc::PSDProjectionMethod::NONE)
+            py::arg("project_hessian_to_psd") = PSDProjectionMethod::NONE)
         .def(
             "shape_derivative",
             [](const DistanceBasedPotential& self, const Collision& collision,

@@ -47,7 +47,8 @@ public:
         const TCollisions& collisions,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& X,
-        const PSDProjectionMethod project_hessian_to_psd = PSDProjectionMethod::NONE) const;
+        const PSDProjectionMethod project_hessian_to_psd =
+            PSDProjectionMethod::NONE) const;
 
     // -- Single collision methods ---------------------------------------------
 
@@ -72,7 +73,8 @@ public:
     virtual MatrixMax12d hessian(
         const TCollision& collision,
         const VectorMax12d& x,
-        const PSDProjectionMethod project_hessian_to_psd = PSDProjectionMethod::NONE) const = 0;
+        const PSDProjectionMethod project_hessian_to_psd =
+            PSDProjectionMethod::NONE) const = 0;
 };
 
 } // namespace ipc

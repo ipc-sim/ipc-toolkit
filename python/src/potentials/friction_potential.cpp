@@ -179,7 +179,8 @@ void define_friction_potential(py::module_& m)
         .def(
             "hessian",
             py::overload_cast<
-                const FrictionCollision&, const VectorMax12d&, const PSDProjectionMethod>(
+                const FrictionCollision&, const VectorMax12d&,
+                const PSDProjectionMethod>(
                 &FrictionPotential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the potential for a single collision.

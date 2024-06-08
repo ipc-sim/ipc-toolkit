@@ -63,11 +63,12 @@ template <
     int _MaxCols>
 Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
 project_to_psd(
-    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A, PSDProjectionMethod type)
+    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A,
+    const PSDProjectionMethod method)
 {
     assert(A.isApprox(A.transpose()) && "A must be symmetric");
 
-    if (type == PSDProjectionMethod::NONE)
+    if (method == PSDProjectionMethod::NONE)
         return A;
 
     // https://math.stackexchange.com/q/2776803
@@ -89,8 +90,7 @@ project_to_psd(
     // Save a little time and only project the negative values
     for (int i = 0; i < A.rows(); i++) {
         if (D.diagonal()[i] < 0.0) {
-            switch (type)
-            {
+            switch (method) {
             case PSDProjectionMethod::CLAMP:
                 D.diagonal()[i] = 0.0;
                 break;

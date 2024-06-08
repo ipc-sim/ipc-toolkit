@@ -152,8 +152,8 @@ template <
     int _MaxCols>
 Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
 project_to_psd(
-    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&
-        A, PSDProjectionMethod type = PSDProjectionMethod::CLAMP);
+    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A,
+    const PSDProjectionMethod method = PSDProjectionMethod::CLAMP);
 
 inline Eigen::Vector3d to_3D(const VectorMax3d& v)
 {
