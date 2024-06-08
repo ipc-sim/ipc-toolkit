@@ -20,8 +20,7 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& vertices_t1,
     const BroadPhaseMethod broad_phase_method,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations)
+    const NarrowPhaseCCD& narrow_phase_ccd)
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
@@ -34,8 +33,7 @@ bool is_step_collision_free(
 
     // Narrow phase
     return candidates.is_step_collision_free(
-        mesh, vertices_t0, vertices_t1, min_distance, tolerance,
-        max_iterations);
+        mesh, vertices_t0, vertices_t1, min_distance, narrow_phase_ccd);
 }
 
 // ============================================================================
@@ -46,8 +44,7 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXd& vertices_t1,
     const BroadPhaseMethod broad_phase_method,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations)
+    const NarrowPhaseCCD& narrow_phase_ccd)
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
@@ -80,8 +77,7 @@ double compute_collision_free_stepsize(
 
     // Narrow phase
     return candidates.compute_collision_free_stepsize(
-        mesh, vertices_t0, vertices_t1, min_distance, tolerance,
-        max_iterations);
+        mesh, vertices_t0, vertices_t1, min_distance, narrow_phase_ccd);
 }
 
 // ============================================================================

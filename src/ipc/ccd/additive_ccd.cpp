@@ -26,7 +26,7 @@
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/distance/edge_edge.hpp>
 
-namespace ipc::additive_ccd {
+namespace ipc {
 
 namespace {
     template <typename... Args> void subtract_mean(Args&... args)
@@ -60,7 +60,7 @@ namespace {
     }
 } // namespace
 
-bool additive_ccd(
+bool AdditiveCCD::additive_ccd(
     VectorMax12d x,
     const VectorMax12d& dx,
     const std::function<double(const VectorMax12d&)>& distance_squared,
@@ -108,15 +108,19 @@ bool additive_ccd(
     return true;
 }
 
-bool point_point_ccd(
+AdditiveCCD::AdditiveCCD(const double conservative_rescaling)
+    : conservative_rescaling(conservative_rescaling)
+{
+}
+
+bool AdditiveCCD::point_point_ccd(
     const VectorMax3d& p0_t0,
     const VectorMax3d& p1_t0,
     const VectorMax3d& p0_t1,
     const VectorMax3d& p1_t1,
     double& toi,
     const double min_distance,
-    const double tmax,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     const int dim = p0_t0.size();
     assert(dim == p1_t0.size() && dim == p0_t1.size() && dim == p1_t1.size());
@@ -151,7 +155,7 @@ bool point_point_ccd(
         conservative_rescaling);
 }
 
-bool point_edge_ccd(
+bool AdditiveCCD::point_edge_ccd(
     const VectorMax3d& p_t0,
     const VectorMax3d& e0_t0,
     const VectorMax3d& e1_t0,
@@ -160,8 +164,7 @@ bool point_edge_ccd(
     const VectorMax3d& e1_t1,
     double& toi,
     const double min_distance,
-    const double tmax,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     const int dim = p_t0.size();
     assert(dim == e0_t0.size() && dim == e1_t0.size());
@@ -200,7 +203,7 @@ bool point_edge_ccd(
         conservative_rescaling);
 }
 
-bool point_triangle_ccd(
+bool AdditiveCCD::point_triangle_ccd(
     const Eigen::Vector3d& p_t0,
     const Eigen::Vector3d& t0_t0,
     const Eigen::Vector3d& t1_t0,
@@ -211,8 +214,7 @@ bool point_triangle_ccd(
     const Eigen::Vector3d& t2_t1,
     double& toi,
     const double min_distance,
-    const double tmax,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     const double initial_distance =
         point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0);
@@ -250,7 +252,7 @@ bool point_triangle_ccd(
         conservative_rescaling);
 }
 
-bool edge_edge_ccd(
+bool AdditiveCCD::edge_edge_ccd(
     const Eigen::Vector3d& ea0_t0,
     const Eigen::Vector3d& ea1_t0,
     const Eigen::Vector3d& eb0_t0,
@@ -261,8 +263,7 @@ bool edge_edge_ccd(
     const Eigen::Vector3d& eb1_t1,
     double& toi,
     const double min_distance,
-    const double tmax,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     const double initial_distance =
         edge_edge_distance(ea0_t0, ea1_t0, eb0_t0, eb1_t0);
@@ -313,4 +314,4 @@ bool edge_edge_ccd(
         conservative_rescaling);
 }
 
-} // namespace ipc::additive_ccd
+} // namespace ipc

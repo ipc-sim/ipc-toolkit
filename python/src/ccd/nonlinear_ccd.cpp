@@ -81,11 +81,8 @@ void define_nonlinear_ccd(py::module_& m)
     m.def(
         "point_point_nonlinear_ccd",
         [](const NonlinearTrajectory& p0, const NonlinearTrajectory& p1,
-           const double tmax = 1.0, const double min_distance = 0,
-           const double tolerance = DEFAULT_CCD_TOLERANCE,
-           const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
-           const double conservative_rescaling =
-               DEFAULT_CCD_CONSERVATIVE_RESCALING) {
+           const double tmax, const double min_distance, const double tolerance,
+           const long max_iterations, const double conservative_rescaling) {
             double toi;
             bool r = point_point_nonlinear_ccd(
                 p0, p1, toi, tmax, min_distance, tolerance, max_iterations,
@@ -111,19 +108,17 @@ void define_nonlinear_ccd(py::module_& m)
         )ipc_Qu8mg5v7",
         py::arg("p0"), py::arg("p1"), py::arg("tmax") = 1.0,
         py::arg("min_distance") = 0,
-        py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
-        py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
-        py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
+        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+        py::arg("conservative_rescaling") =
+            TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
     m.def(
         "point_edge_nonlinear_ccd",
         [](const NonlinearTrajectory& p, const NonlinearTrajectory& e0,
-           const NonlinearTrajectory& e1, const double tmax = 1.0,
-           const double min_distance = 0,
-           const double tolerance = DEFAULT_CCD_TOLERANCE,
-           const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
-           const double conservative_rescaling =
-               DEFAULT_CCD_CONSERVATIVE_RESCALING) {
+           const NonlinearTrajectory& e1, const double tmax,
+           const double min_distance, const double tolerance,
+           const long max_iterations, const double conservative_rescaling) {
             double toi;
             bool r = point_edge_nonlinear_ccd(
                 p, e0, e1, toi, tmax, min_distance, tolerance, max_iterations,
@@ -150,19 +145,17 @@ void define_nonlinear_ccd(py::module_& m)
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("e0"), py::arg("e1"), py::arg("tmax") = 1.0,
         py::arg("min_distance") = 0,
-        py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
-        py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
-        py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
+        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+        py::arg("conservative_rescaling") =
+            TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
     m.def(
         "edge_edge_nonlinear_ccd",
         [](const NonlinearTrajectory& ea0, const NonlinearTrajectory& ea1,
            const NonlinearTrajectory& eb0, const NonlinearTrajectory& eb1,
-           const double tmax = 1.0, const double min_distance = 0,
-           const double tolerance = DEFAULT_CCD_TOLERANCE,
-           const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
-           const double conservative_rescaling =
-               DEFAULT_CCD_CONSERVATIVE_RESCALING) {
+           const double tmax, const double min_distance, const double tolerance,
+           const long max_iterations, const double conservative_rescaling) {
             double toi;
             bool r = edge_edge_nonlinear_ccd(
                 ea0, ea1, eb0, eb1, toi, tmax, min_distance, tolerance,
@@ -190,19 +183,17 @@ void define_nonlinear_ccd(py::module_& m)
         )ipc_Qu8mg5v7",
         py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"),
         py::arg("tmax") = 1.0, py::arg("min_distance") = 0,
-        py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
-        py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
-        py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
+        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+        py::arg("conservative_rescaling") =
+            TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
     m.def(
         "point_triangle_nonlinear_ccd",
         [](const NonlinearTrajectory& p, const NonlinearTrajectory& t0,
            const NonlinearTrajectory& t1, const NonlinearTrajectory& t2,
-           const double tmax = 1.0, const double min_distance = 0,
-           const double tolerance = DEFAULT_CCD_TOLERANCE,
-           const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
-           const double conservative_rescaling =
-               DEFAULT_CCD_CONSERVATIVE_RESCALING) {
+           const double tmax, const double min_distance, const double tolerance,
+           const long max_iterations, const double conservative_rescaling) {
             double toi;
             bool r = point_triangle_nonlinear_ccd(
                 p, t0, t1, t2, toi, tmax, min_distance, tolerance,
@@ -230,9 +221,10 @@ void define_nonlinear_ccd(py::module_& m)
         )ipc_Qu8mg5v7",
         py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"),
         py::arg("tmax") = 1.0, py::arg("min_distance") = 0,
-        py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
-        py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
-        py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
+        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+        py::arg("conservative_rescaling") =
+            TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
     m.def(
         "conservative_piecewise_linear_ccd",
@@ -242,9 +234,9 @@ void define_nonlinear_ccd(py::module_& m)
            const std::function<bool(
                const double, const double, const double, const bool, double&)>&
                linear_ccd,
-           const double tmax = 1.0, const double min_distance = 0,
+           const double tmax, const double min_distance,
            const double conservative_rescaling =
-               DEFAULT_CCD_CONSERVATIVE_RESCALING) {
+               TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING) {
             double toi;
             bool r = conservative_piecewise_linear_ccd(
                 distance, max_distance_from_linear, linear_ccd, toi, tmax,
@@ -270,5 +262,6 @@ void define_nonlinear_ccd(py::module_& m)
         py::arg("distance"), py::arg("max_distance_from_linear"),
         py::arg("linear_ccd"), py::arg("tmax") = 1.0,
         py::arg("min_distance") = 0,
-        py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+        py::arg("conservative_rescaling") =
+            TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 }

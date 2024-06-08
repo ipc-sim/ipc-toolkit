@@ -6,8 +6,7 @@
 #include <catch2/generators/catch_generators_random.hpp>
 
 #include <ipc/ipc.hpp>
-#include <ipc/ccd/ccd.hpp>
-#include <ipc/ccd/additive_ccd.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 #include <ipc/ccd/point_static_plane.hpp>
 
 using namespace ipc;
@@ -83,10 +82,12 @@ TEST_CASE("Repeated CCD", "[ccd][repeat][.]")
     candidates.build(mesh, V0, V1, inflation_radius, broadphase_method);
 
     bool has_collisions = !candidates.is_step_collision_free(
-        mesh, V0, V1, MIN_DISTANCE, FIRST_TOL, FIRST_MAX_ITER);
+        mesh, V0, V1, MIN_DISTANCE,
+        TightInclusionCCD(FIRST_TOL, FIRST_MAX_ITER));
 
     double stepsize = candidates.compute_collision_free_stepsize(
-        mesh, V0, V1, MIN_DISTANCE, FIRST_TOL, FIRST_MAX_ITER);
+        mesh, V0, V1, MIN_DISTANCE,
+        TightInclusionCCD(FIRST_TOL, FIRST_MAX_ITER));
 
     if (!has_collisions) {
         CHECK(stepsize == 1.0);
@@ -105,10 +106,12 @@ TEST_CASE("Repeated CCD", "[ccd][repeat][.]")
         }
 
         has_collisions_repeated = !candidates.is_step_collision_free(
-            mesh, V0, Vt, MIN_DISTANCE, SECOND_TOL, SECOND_MAX_ITER);
+            mesh, V0, Vt, MIN_DISTANCE,
+            TightInclusionCCD(SECOND_TOL, SECOND_MAX_ITER));
 
         stepsize_repeated = candidates.compute_collision_free_stepsize(
-            mesh, V0, Vt, MIN_DISTANCE, SECOND_TOL, SECOND_MAX_ITER);
+            mesh, V0, Vt, MIN_DISTANCE,
+            TightInclusionCCD(SECOND_TOL, SECOND_MAX_ITER));
 
         CAPTURE(
             t0_filename, t1_filename, broadphase_method, recompute_candidates,

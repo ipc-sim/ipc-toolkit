@@ -44,17 +44,14 @@ bool VertexVertexCandidate::ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const double tolerance,
-    const long max_iterations,
-    const double conservative_rescaling) const
+    const NarrowPhaseCCD& narrow_phase_ccd) const
 {
     assert(vertices_t0.size() == 4 || vertices_t0.size() == 6);
     assert(vertices_t0.size() == vertices_t1.size());
     const int dim = vertices_t0.size() / 2;
-    return point_point_ccd(
+    return narrow_phase_ccd.point_point_ccd(
         vertices_t0.head(dim), vertices_t0.tail(dim), vertices_t1.head(dim),
-        vertices_t1.tail(dim), toi, min_distance, tmax, tolerance,
-        max_iterations, conservative_rescaling);
+        vertices_t1.tail(dim), toi, min_distance, tmax);
 }
 
 bool VertexVertexCandidate::operator==(const VertexVertexCandidate& other) const

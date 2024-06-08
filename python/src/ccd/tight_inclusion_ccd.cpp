@@ -1,6 +1,6 @@
 #include <common.hpp>
 
-#include <ipc/ccd/ccd.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 
 #include <tight_inclusion/ccd.hpp>
 #include <tight_inclusion/interval_root_finder.hpp>
@@ -73,8 +73,9 @@ void define_tight_inclusion_ccd(py::module_& m)
         py::arg("ea0_t0"), py::arg("ea1_t0"), py::arg("eb0_t0"),
         py::arg("eb1_t0"), py::arg("ea0_t1"), py::arg("ea1_t1"),
         py::arg("eb0_t1"), py::arg("eb1_t1"), py::arg("min_distance") = 0,
-        py::arg("tmax") = 1, py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
-        py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
+        py::arg("tmax") = 1,
+        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
+        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
         py::arg("filter") = ticcd::Array3::Constant(-1),
         py::arg("no_zero_toi") = ticcd::DEFAULT_NO_ZERO_TOI,
         py::arg("ccd_method") =
@@ -127,8 +128,8 @@ void define_tight_inclusion_ccd(py::module_& m)
         py::arg("v_t0"), py::arg("f0_t0"), py::arg("f1_t0"), py::arg("f2_t0"),
         py::arg("v_t1"), py::arg("f0_t1"), py::arg("f1_t1"), py::arg("f2_t1"),
         py::arg("min_distance") = 0, py::arg("tmax") = 1,
-        py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
-        py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
+        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
+        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
         py::arg("filter") = ticcd::Array3::Constant(-1),
         py::arg("no_zero_toi") = ticcd::DEFAULT_NO_ZERO_TOI,
         py::arg("ccd_method") =

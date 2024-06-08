@@ -25,8 +25,7 @@ void define_ipc(py::module_& m)
             vertices_t1: Surface vertex vertices at end as rows of a matrix.
             broad_phase_method: The broad phase method to use.
             min_distance: The minimum distance allowable between any two elements.
-            tolerance: The tolerance for the CCD algorithm.
-            max_iterations: The maximum number of iterations for the CCD algorithm.
+            narrow_phase_ccd: The narrow phase CCD algorithm to use.
 
         Returns:
             True if <b>any</b> collisions occur.
@@ -34,8 +33,7 @@ void define_ipc(py::module_& m)
         py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
         py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD,
         py::arg("min_distance") = 0.0,
-        py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
-        py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS);
+        py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD);
 
     m.def(
         "compute_collision_free_stepsize", &compute_collision_free_stepsize,
@@ -51,8 +49,7 @@ void define_ipc(py::module_& m)
             vertices_t1: Surface vertex vertices at end as rows of a matrix.
             broad_phase_method: The broad phase method to use.
             min_distance: The minimum distance allowable between any two elements.
-            tolerance: The tolerance for the CCD algorithm.
-            max_iterations: The maximum number of iterations for the CCD algorithm.
+            narrow_phase_ccd: The narrow phase CCD algorithm to use.
 
         Returns:
             A step-size :math:`\in [0, 1]` that is collision free. A value of 1.0 if a full step and 0.0 is no step.
@@ -60,8 +57,7 @@ void define_ipc(py::module_& m)
         py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
         py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD,
         py::arg("min_distance") = 0.0,
-        py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
-        py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS);
+        py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD);
 
     m.def(
         "has_intersections", &has_intersections,

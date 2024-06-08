@@ -56,16 +56,15 @@ public:
     /// @param vertices_t0 Surface vertex starting positions (rowwise).
     /// @param vertices_t1 Surface vertex ending positions (rowwise).
     /// @param min_distance The minimum distance allowable between any two elements.
-    /// @param tolerance The tolerance for the CCD algorithm.
-    /// @param max_iterations The maximum number of iterations for the CCD algorithm.
+    /// @param narrow_phase_ccd The narrow phase CCD algorithm to use.
     /// @returns True if <b>any</b> collisions occur.
     bool is_step_collision_free(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
         const double min_distance = 0.0,
-        const double tolerance = DEFAULT_CCD_TOLERANCE,
-        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS) const;
+        const NarrowPhaseCCD& narrow_phase_ccd =
+            DEFAULT_NARROW_PHASE_CCD) const;
 
     /// @brief Computes a maximal step size that is collision free using the set of collision candidates.
     /// @note Assumes the trajectory is linear.
@@ -73,16 +72,15 @@ public:
     /// @param vertices_t0 Surface vertex starting positions (rowwise). Assumed to be intersection free.
     /// @param vertices_t1 Surface vertex ending positions (rowwise).
     /// @param min_distance The minimum distance allowable between any two elements.
-    /// @param tolerance The tolerance for the CCD algorithm.
-    /// @param max_iterations The maximum number of iterations for the CCD algorithm.
+    /// @param narrow_phase_ccd The narrow phase CCD algorithm to use.
     /// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
     double compute_collision_free_stepsize(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
         const double min_distance = 0.0,
-        const double tolerance = DEFAULT_CCD_TOLERANCE,
-        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS) const;
+        const NarrowPhaseCCD& narrow_phase_ccd =
+            DEFAULT_NARROW_PHASE_CCD) const;
 
     /// @brief Computes a conservative bound on the largest-feasible step size for surface primitives not in collision.
     /// @param mesh The collision mesh.
@@ -99,8 +97,7 @@ public:
     /// @param vertices_t1 Surface vertex ending positions (rowwise).
     /// @param dhat Barrier activation distance.
     /// @param min_distance The minimum distance allowable between any two elements.
-    /// @param tolerance The tolerance for the CCD algorithm.
-    /// @param max_iterations The maximum number of iterations for the CCD algorithm.
+    /// @param narrow_phase_ccd The narrow phase CCD algorithm to use.
     double compute_cfl_stepsize(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices_t0,
@@ -108,8 +105,8 @@ public:
         const double dhat,
         const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
         const double min_distance = 0.0,
-        const double tolerance = DEFAULT_CCD_TOLERANCE,
-        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS) const;
+        const NarrowPhaseCCD& narrow_phase_ccd =
+            DEFAULT_NARROW_PHASE_CCD) const;
 
     bool save_obj(
         const std::string& filename,

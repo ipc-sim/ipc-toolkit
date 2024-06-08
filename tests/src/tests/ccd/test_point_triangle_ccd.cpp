@@ -2,7 +2,7 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include <ipc/config.hpp>
-#include <ipc/ccd/ccd.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 #include <ipc/ccd/additive_ccd.hpp>
 
 using namespace ipc;
@@ -94,7 +94,9 @@ TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle]")
     INFO(name);
 
     double toi;
-    bool is_colliding = point_triangle_ccd(
+
+    const TightInclusionCCD tight_inclusion_ccd;
+    bool is_colliding = tight_inclusion_ccd.point_triangle_ccd(
         p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, toi);
 
     if (conservative_check) {
@@ -103,7 +105,8 @@ TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle]")
         CHECK(is_colliding == is_collision_expected);
     }
 
-    is_colliding = additive_ccd::point_triangle_ccd(
+    const AdditiveCCD additive_ccd;
+    is_colliding = additive_ccd.point_triangle_ccd(
         p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, toi);
     if (conservative_check) {
         CHECK((is_colliding || !is_collision_expected));

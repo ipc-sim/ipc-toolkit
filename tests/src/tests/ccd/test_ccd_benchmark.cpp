@@ -3,10 +3,11 @@
 #ifdef IPC_TOOLKIT_TESTS_CCD_BENCHMARK
 #include <catch2/catch_test_macros.hpp>
 
-#include <ipc/ccd/ccd.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 #include <ipc/ccd/additive_ccd.hpp>
-#include <fmt/format.h>
+#include <ipc/ccd/inexact_ccd.hpp>
 
+#include <fmt/format.h>
 #include <igl/Timer.h>
 #include <ccd_io/read_ccd_queries.hpp>
 
@@ -15,27 +16,7 @@
 
 using namespace ipc;
 
-void run_benchmark(
-    const std::function<bool(
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        double&)>& edge_edge_ccd,
-    const std::function<bool(
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        const Eigen::Vector3d&,
-        double&)>& point_triangle_ccd)
+void run_benchmark(const std::shared_ptr<NarrowPhaseCCD> ccd)
 {
     std::locale::global(std::locale("en_US.UTF-8"));
 
@@ -158,11 +139,11 @@ void run_benchmark(
                 double toi;
                 timer.start();
                 if (is_edge_edge) {
-                    result = edge_edge_ccd(
+                    result = ccd->edge_edge_ccd(
                         V.row(0), V.row(1), V.row(2), V.row(3), V.row(4),
                         V.row(5), V.row(6), V.row(7), toi);
                 } else {
-                    result = point_triangle_ccd(
+                    result = ccd->point_triangle_ccd(
                         V.row(0), V.row(1), V.row(2), V.row(3), V.row(4),
                         V.row(5), V.row(6), V.row(7), toi);
                 }
@@ -193,64 +174,36 @@ void run_benchmark(
 }
 
 #ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
-TEST_CASE(
-    "Run CCD Benchmark on FP CCD",
-    "[ccd][benchmark][3D][point-triangle][edge-edge][!mayfail][.]")
-{
-    fmt::print("Floating-Point CCD:\n\n");
+static const std::string BENCHMARK_TAGS =
+    "[ccd][benchmark][3D][point-triangle][edge-edge][!mayfail][.]";
 #else
-TEST_CASE(
-    "Run CCD Benchmark on TI CCD",
-    "[ccd][benchmark][3D][point-triangle][edge-edge][.]")
-{
-    fmt::print("Tight Inclusion CCD:\n\n");
+static const std::string BENCHMARK_TAGS =
+    "[ccd][benchmark][3D][point-triangle][edge-edge][.]";
 #endif
 
-    run_benchmark(
-        [](const Eigen::Vector3d& ea0_t0, const Eigen::Vector3d& ea1_t0,
-           const Eigen::Vector3d& eb0_t0, const Eigen::Vector3d& eb1_t0,
-           const Eigen::Vector3d& ea0_t1, const Eigen::Vector3d& ea1_t1,
-           const Eigen::Vector3d& eb0_t1, const Eigen::Vector3d& eb1_t1,
-           double& toi) -> bool {
-            return edge_edge_ccd(
-                ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
-                toi);
-        },
-        [](const Eigen::Vector3d& p_t0, const Eigen::Vector3d& t0_t0,
-           const Eigen::Vector3d& t1_t0, const Eigen::Vector3d& t2_t0,
-           const Eigen::Vector3d& p_t1, const Eigen::Vector3d& t0_t1,
-           const Eigen::Vector3d& t1_t1, const Eigen::Vector3d& t2_t1,
-           double& toi) -> bool {
-            return point_triangle_ccd(
-                p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, toi);
-        });
-}
-
-TEST_CASE(
-    "Run CCD Benchmark on ACCD",
-    "[ccd][benchmark][3D][point-triangle][edge-edge][.]")
+TEST_CASE("Run CCD Benchmark", BENCHMARK_TAGS)
 {
-    fmt::print("Additive CCD:\n\n");
+    std::shared_ptr<NarrowPhaseCCD> ccd;
 
-    run_benchmark(
-        [](const Eigen::Vector3d& ea0_t0, const Eigen::Vector3d& ea1_t0,
-           const Eigen::Vector3d& eb0_t0, const Eigen::Vector3d& eb1_t0,
-           const Eigen::Vector3d& ea0_t1, const Eigen::Vector3d& ea1_t1,
-           const Eigen::Vector3d& eb0_t1, const Eigen::Vector3d& eb1_t1,
-           double& toi) -> bool {
-            return additive_ccd::edge_edge_ccd(
-                ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1,
-                toi);
-        },
+#ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
+    SECTION("Floating-Point CCD")
+    {
+        fmt::print("Floating-Point CCD:\n\n");
+        ccd = std::make_shared<InexactCCD>();
+    }
+#endif
+    SECTION("Tight Inclusion CCD")
+    {
+        fmt::print("Tight Inclusion CCD:\n\n");
+        ccd = std::make_shared<TightInclusionCCD>();
+    }
+    SECTION("Additive CCD")
+    {
+        fmt::print("Additive CCD:\n\n");
+        ccd = std::make_shared<AdditiveCCD>();
+    }
 
-        [](const Eigen::Vector3d& p_t0, const Eigen::Vector3d& t0_t0,
-           const Eigen::Vector3d& t1_t0, const Eigen::Vector3d& t2_t0,
-           const Eigen::Vector3d& p_t1, const Eigen::Vector3d& t0_t1,
-           const Eigen::Vector3d& t1_t1, const Eigen::Vector3d& t2_t1,
-           double& toi) -> bool {
-            return additive_ccd::point_triangle_ccd(
-                p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, toi);
-        });
+    run_benchmark(ccd);
 }
 
 // TEST_CASE("Failing Benchmark Cases", "[ccd]")

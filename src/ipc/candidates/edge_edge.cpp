@@ -42,12 +42,10 @@ bool EdgeEdgeCandidate::ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const double tolerance,
-    const long max_iterations,
-    const double conservative_rescaling) const
+    const NarrowPhaseCCD& narrow_phase_ccd) const
 {
     assert(vertices_t0.size() == 12 && vertices_t1.size() == 12);
-    return edge_edge_ccd(
+    return narrow_phase_ccd.edge_edge_ccd(
         // Edge 1 at t=0
         vertices_t0.head<3>(), vertices_t0.segment<3>(3),
         // Edge 2 at t=0
@@ -56,8 +54,7 @@ bool EdgeEdgeCandidate::ccd(
         vertices_t1.head<3>(), vertices_t1.segment<3>(3),
         // Edge 2 at t=1
         vertices_t1.segment<3>(6), vertices_t1.tail<3>(), //
-        toi, min_distance, tmax, tolerance, max_iterations,
-        conservative_rescaling);
+        toi, min_distance, tmax);
 }
 
 bool EdgeEdgeCandidate::operator==(const EdgeEdgeCandidate& other) const

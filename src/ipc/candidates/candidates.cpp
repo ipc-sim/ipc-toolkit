@@ -188,8 +188,7 @@ bool Candidates::is_step_collision_free(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations) const
+    const NarrowPhaseCCD& narrow_phase_ccd) const
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
@@ -202,7 +201,7 @@ bool Candidates::is_step_collision_free(
         bool is_collision = candidate.ccd(
             candidate.dof(vertices_t0, mesh.edges(), mesh.faces()),
             candidate.dof(vertices_t1, mesh.edges(), mesh.faces()), //
-            toi, min_distance, /*tmax=*/1.0, tolerance, max_iterations);
+            toi, min_distance, /*tmax=*/1.0, narrow_phase_ccd);
 
         if (is_collision) {
             return false;
@@ -217,8 +216,7 @@ double Candidates::compute_collision_free_stepsize(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations) const
+    const NarrowPhaseCCD& narrow_phase_ccd) const
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
@@ -248,7 +246,7 @@ double Candidates::compute_collision_free_stepsize(
                 const bool are_colliding = candidate.ccd(
                     candidate.dof(vertices_t0, mesh.edges(), mesh.faces()),
                     candidate.dof(vertices_t1, mesh.edges(), mesh.faces()), //
-                    toi, min_distance, tmax, tolerance, max_iterations);
+                    toi, min_distance, tmax, narrow_phase_ccd);
 
                 if (are_colliding) {
                     std::unique_lock lock(earliest_toi_mutex);
@@ -306,15 +304,13 @@ double Candidates::compute_cfl_stepsize(
     const double dhat,
     const BroadPhaseMethod broad_phase_method,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations) const
+    const NarrowPhaseCCD& narrow_phase_ccd) const
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
 
     const double alpha_C = this->compute_collision_free_stepsize(
-        mesh, vertices_t0, vertices_t1, min_distance, tolerance,
-        max_iterations);
+        mesh, vertices_t0, vertices_t1, min_distance, narrow_phase_ccd);
 
     const double alpha_F = this->compute_noncandidate_conservative_stepsize(
         mesh, vertices_t1 - vertices_t0, dhat);
@@ -323,7 +319,7 @@ double Candidates::compute_cfl_stepsize(
     if (alpha_F < 0.5 * alpha_C) {
         return ipc::compute_collision_free_stepsize(
             mesh, vertices_t0, vertices_t1, broad_phase_method, min_distance,
-            tolerance, max_iterations);
+            narrow_phase_ccd);
     }
     return std::min(alpha_C, alpha_F);
 }
