@@ -10,6 +10,9 @@ PYBIND11_MODULE(ipctk, m)
 
     m.doc() = "IPC Toolkit";
 
+    // define these early because they are used in other definitions
+    define_eigen_ext(m);
+
     // barrier
     define_barrier(m);
     define_adaptive_stiffness(m);
@@ -91,7 +94,7 @@ PYBIND11_MODULE(ipctk, m)
 
     // utils
     define_area_gradient(m);
-    define_eigen_ext(m);
+    // define_eigen_ext(m);
     define_interval(m);
     define_intersection(m);
     define_logger(m);

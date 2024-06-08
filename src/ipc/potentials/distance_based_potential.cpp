@@ -181,8 +181,7 @@ void DistanceBasedPotential::shape_derivative(
     MatrixMax12d local_hess;
     if (!collision.is_mollified()) {
         // w ∇ₓ∇ᵤf = w ∇ᵤ²f
-        local_hess =
-            hessian(collision, positions, /*project_hessian_to_psd=*/PSDProjectionMethod::NONE);
+        local_hess = hessian(collision, positions, PSDProjectionMethod::NONE);
     } else {
         // d(x̄+u)
         const double d = collision.compute_distance(positions);

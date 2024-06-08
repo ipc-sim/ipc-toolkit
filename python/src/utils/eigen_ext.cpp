@@ -27,7 +27,8 @@ void define_eigen_ext(py::module_& m)
         m, "PSDProjectionMethod",
         "Enumeration of implemented PSD projection methods.")
         .value("NONE", PSDProjectionMethod::NONE, "No PSD projection")
-        .value("CLAMP", PSDProjectionMethod::CLAMP, "Clamp negative eigenvalues")
+        .value(
+            "CLAMP", PSDProjectionMethod::CLAMP, "Clamp negative eigenvalues")
         .value("ABS", PSDProjectionMethod::ABS, "Flip negative eigenvalues")
         .export_values();
 
