@@ -3,6 +3,17 @@ try:
 except ImportError:
     import sys
     import pathlib
-    sys.path.append(
-        str(pathlib.Path(__file__).parents[2] / "build" / "release" / "python"))
+    repo_root = pathlib.Path(__file__).parents[2]
+    possible_paths = [
+        pathlib.Path("python").resolve(),
+        repo_root / "build" / "python",
+        repo_root / "build" / "release" / "python",
+        repo_root / "build" / "debug" / "python",
+    ]
+    for path in possible_paths:
+        if path.exists():
+            sys.path.append(str(path))
+            break
+    else:
+        raise ImportError("Could not find the ipctk module")
     import ipctk  # Try again
