@@ -183,7 +183,7 @@ VectorMax12d FrictionPotential::gradient(
 MatrixMax12d FrictionPotential::hessian(
     const FrictionCollision& collision,
     const VectorMax12d& velocities,
-    const bool project_hessian_to_psd) const
+    const PSDProjectionMethod project_hessian_to_psd) const
 {
     // ∇ₓ μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u (where u = T(xᵗ)ᵀ v)
     //  = μ N T [(f₁'(‖u‖)‖u‖ − f₁(‖u‖))/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
@@ -215,7 +215,7 @@ MatrixMax12d FrictionPotential::hessian(
         //            = μ N T [-f₁(‖u‖)/‖u‖ uuᵀ/‖u‖² + f₁(‖u‖)/‖u‖ I] Tᵀ
         //            = μ N T [f₁(‖u‖)/‖u‖ (I - uuᵀ/‖u‖²)] Tᵀ
         //  ⟹ no PSD projection needed because f₁(‖u‖)/‖u‖ ≥ 0
-        if (project_hessian_to_psd && scale <= 0) {
+        if (project_hessian_to_psd != PSDProjectionMethod::NONE && scale <= 0) {
             hess.setZero(collision.ndof(), collision.ndof()); // -PSD = NSD ⟹ 0
         } else if (collision.dim() == 2) {
             // I - uuᵀ/‖u‖² = 1 - u²/u² = 0 ⟹ ∇²D(v) = 0
@@ -232,7 +232,7 @@ MatrixMax12d FrictionPotential::hessian(
         // ∇²D = μ N T [(f₁'(‖u‖)‖u‖ − f₁(‖u‖))/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
         // lim_{‖u‖→0} ∇²D = μ N T [f₁(‖u‖)/‖u‖ I] Tᵀ
         // no PSD projection needed because μ N f₁(‖ū‖)/‖ū‖ ≥ 0
-        if (project_hessian_to_psd && scale <= 0) {
+        if (project_hessian_to_psd != PSDProjectionMethod::NONE && scale <= 0) {
             hess.setZero(collision.ndof(), collision.ndof()); // -PSD = NSD ⟹ 0
         } else {
             hess = scale * f1_over_norm_u * T * T.transpose();
@@ -245,9 +245,7 @@ MatrixMax12d FrictionPotential::hessian(
         MatrixMax2d inner_hess = f2 * u * u.transpose();
         inner_hess.diagonal().array() += f1_over_norm_u;
         inner_hess *= scale; // NOTE: negative scaling will be projected out
-        if (project_hessian_to_psd) {
-            inner_hess = project_to_psd(inner_hess);
-        }
+        inner_hess = project_to_psd(inner_hess, project_hessian_to_psd);
 
         hess = T * inner_hess * T.transpose();
     }

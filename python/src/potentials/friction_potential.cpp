@@ -72,7 +72,7 @@ void define_friction_potential(py::module_& m)
             "hessian",
             py::overload_cast<
                 const FrictionCollisions&, const CollisionMesh&,
-                const Eigen::MatrixXd&, const bool>(
+                const Eigen::MatrixXd&, const PSDProjectionMethod>(
                 &FrictionPotential::Potential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the friction dissipative potential.
@@ -87,7 +87,7 @@ void define_friction_potential(py::module_& m)
                 The hessian of all friction dissipative potentials. This will have a size of |velocities|×|velocities|.
             )ipc_Qu8mg5v7",
             py::arg("collisions"), py::arg("mesh"), py::arg("vertices"),
-            py::arg("project_hessian_to_psd") = false)
+            py::arg("project_hessian_to_psd") = PSDProjectionMethod::NONE)
         .def(
             "force",
             py::overload_cast<
@@ -179,7 +179,8 @@ void define_friction_potential(py::module_& m)
         .def(
             "hessian",
             py::overload_cast<
-                const FrictionCollision&, const VectorMax12d&, const bool>(
+                const FrictionCollision&, const VectorMax12d&,
+                const PSDProjectionMethod>(
                 &FrictionPotential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the potential for a single collision.
@@ -192,7 +193,7 @@ void define_friction_potential(py::module_& m)
                 The hessian of the potential.
             )ipc_Qu8mg5v7",
             py::arg("collision"), py::arg("x"),
-            py::arg("project_hessian_to_psd") = false)
+            py::arg("project_hessian_to_psd") = PSDProjectionMethod::NONE)
         .def(
             "force",
             py::overload_cast<
