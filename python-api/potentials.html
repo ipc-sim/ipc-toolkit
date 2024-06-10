@@ -2021,7 +2021,7 @@ x: The collision stencil’s degrees of freedom.</p>
 <span class="sig-name descname"><span class="pre">hessian</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.BarrierPotential.hessian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>hessian(self: ipctk.BarrierPotential, collisions: ipctk.Collisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], project_hessian_to_psd: bool = False) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
+<li><p>hessian(self: ipctk.BarrierPotential, collisions: ipctk.Collisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], project_hessian_to_psd: ipctk.PSDProjectionMethod = &lt;PSDProjectionMethod.NONE: 0&gt;) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
 <blockquote>
 <div><p>Compute the hessian of the barrier potential.</p>
 <dl class="simple">
@@ -2035,7 +2035,7 @@ project_hessian_to_psd: Make sure the hessian is positive semi-definite.</p>
 </dl>
 </div></blockquote>
 </li>
-<li><p>hessian(self: ipctk.BarrierPotential, collision: ipctk.Collision, x: numpy.ndarray[numpy.float64[m, 1]], project_hessian_to_psd: bool = False) -&gt; numpy.ndarray[numpy.float64[m, n]]</p>
+<li><p>hessian(self: ipctk.BarrierPotential, collision: ipctk.Collision, x: numpy.ndarray[numpy.float64[m, 1]], project_hessian_to_psd: ipctk.PSDProjectionMethod = &lt;PSDProjectionMethod.NONE: 0&gt;) -&gt; numpy.ndarray[numpy.float64[m, n]]</p>
 <blockquote>
 <div><p>Compute the hessian of the potential for a single collision.</p>
 <dl class="simple">
@@ -2448,7 +2448,7 @@ x: The collision stencil’s degrees of freedom.</p>
 <span class="sig-name descname"><span class="pre">hessian</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.FrictionPotential.hessian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>hessian(self: ipctk.FrictionPotential, collisions: ipctk.FrictionCollisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], project_hessian_to_psd: bool = False) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
+<li><p>hessian(self: ipctk.FrictionPotential, collisions: ipctk.FrictionCollisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], project_hessian_to_psd: ipctk.PSDProjectionMethod = &lt;PSDProjectionMethod.NONE: 0&gt;) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
 <blockquote>
 <div><p>Compute the hessian of the friction dissipative potential.</p>
 <dl class="simple">
@@ -2462,7 +2462,7 @@ project_hessian_to_psd: Make sure the hessian is positive semi-definite.</p>
 </dl>
 </div></blockquote>
 </li>
-<li><p>hessian(self: ipctk.FrictionPotential, collision: ipctk.FrictionCollision, x: numpy.ndarray[numpy.float64[m, 1]], project_hessian_to_psd: bool = False) -&gt; numpy.ndarray[numpy.float64[m, n]]</p>
+<li><p>hessian(self: ipctk.FrictionPotential, collision: ipctk.FrictionCollision, x: numpy.ndarray[numpy.float64[m, 1]], project_hessian_to_psd: ipctk.PSDProjectionMethod = &lt;PSDProjectionMethod.NONE: 0&gt;) -&gt; numpy.ndarray[numpy.float64[m, n]]</p>
 <blockquote>
 <div><p>Compute the hessian of the potential for a single collision.</p>
 <dl class="simple">
