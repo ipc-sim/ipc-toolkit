@@ -60,6 +60,10 @@ jobs:
         if: runner.os == 'Windows'
         uses: seanmiddleditch/gha-setup-ninja@master
 
+      - name: Get number of CPU cores
+        uses: SimenB/github-actions-cpu-cores@v1
+        id: cpu-cores
+
       - name: Cache Build
         id: cache-build
         uses: actions/cache@v3.0.11
@@ -90,19 +94,22 @@ jobs:
           cmake -G Ninja ^
             -DIPC_TOOLKIT_BUILD_TESTS=ON ^
             -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
+            -DCMAKE_CXX_FLAGS=" /DWIN32 /D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR" ^
             -B build ^
             -S .
 
       - name: Build (Linux/macOS)
         if: runner.os != 'Windows'
-        run: cd build; make -j2; ccache --show-stats
+        run: |
+          cmake --build build -j ${{ steps.cpu-cores.outputs.count }}
+          ccache --show-stats
 
       - name: Build (Windows)
         if: runner.os == 'Windows'
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat" -arch=x64
-          cmake --build build -j2 && ccache --show-stats
+          cmake --build build -j ${{ steps.cpu-cores.outputs.count }} && ccache --show-stats
 
       - name: Tests
-        run: cd build; ctest --verbose -j2
+        run: cd build; ctest --verbose -j ${{ steps.cpu-cores.outputs.count }}
