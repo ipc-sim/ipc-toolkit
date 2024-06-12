@@ -94,7 +94,6 @@ jobs:
           cmake -G Ninja ^
             -DIPC_TOOLKIT_BUILD_TESTS=ON ^
             -DCMAKE_BUILD_TYPE=${{ matrix.config }} ^
-            -DCMAKE_CXX_FLAGS=" /DWIN32 /D_DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR" ^
             -B build ^
             -S .
 
