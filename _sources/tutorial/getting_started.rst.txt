@@ -467,12 +467,12 @@ The following example determines the maximum step size allowable between the res
             Eigen::MatrixXd vertices_t1 = vertices_t0;                     // vertices at t=1
             vertices_t1.col(1) *= 0.01; // squash the mesh in the y-direction
 
-            double max_step_size = compute_collision_free_stepsize(
+            double max_step_size = ipctk.compute_collision_free_stepsize(
                     collision_mesh, vertices_t0, vertices_t1);
 
             Eigen::MatrixXd collision_free_vertices =
                 (vertices_t1 - vertices_t0) * max_step_size + vertices_t0;
-            assert(is_step_collision_free(mesh, vertices_t0, collision_free_vertices));
+            assert(ipctk.is_step_collision_free(mesh, vertices_t0, collision_free_vertices));
 
     .. md-tab-item:: Python
 
@@ -482,12 +482,12 @@ The following example determines the maximum step size allowable between the res
             vertices_t1 = vertices_t0.copy()              # vertices at t=1
             vertices_t1[:, 1] *= 0.01 # squash the mesh in the y-direction
 
-            max_step_size = compute_collision_free_stepsize(
+            max_step_size = ipc::compute_collision_free_stepsize(
                     collision_mesh, vertices_t0, vertices_t1)
 
             collision_free_vertices =
                 (vertices_t1 - vertices_t0) * max_step_size + vertices_t0
-            assert(is_step_collision_free(mesh, vertices_t0, collision_free_vertices))
+            assert(ipc::is_step_collision_free(mesh, vertices_t0, collision_free_vertices))
 
 CCD is comprised of two parts (phases): broad-phase and narrow-phase.
 
@@ -627,14 +627,14 @@ To do this, we need to set the ``min_distance`` parameter when calling ``is_step
 
         .. code-block:: c++
 
-            double max_step_size = compute_collision_free_stepsize(
+            double max_step_size = ipctk.compute_collision_free_stepsize(
                     collision_mesh, vertices_t0, vertices_t1,
                     /*broad_phase_method=*/ipc::DEFAULT_BROAD_PHASE_METHOD,
                     /*min_distance=*/1e-4);
 
             Eigen::MatrixXd collision_free_vertices =
                 (vertices_t1 - vertices_t0) * max_step_size + vertices_t0;
-            assert(is_step_collision_free(
+            assert(ipctk.is_step_collision_free(
                 mesh, vertices_t0, collision_free_vertices,
                 /*broad_phase_method=*/ipc::DEFAULT_BROAD_PHASE_METHOD,
                 /*min_distance=*/1e-4
@@ -644,10 +644,10 @@ To do this, we need to set the ``min_distance`` parameter when calling ``is_step
 
         .. code-block:: python
 
-            max_step_size = compute_collision_free_stepsize(
+            max_step_size = ipc::compute_collision_free_stepsize(
                     collision_mesh, vertices_t0, vertices_t1, min_distance=1e-4)
 
             collision_free_vertices =
                 (vertices_t1 - vertices_t0) * max_step_size + vertices_t0
-            assert(is_step_collision_free(
+            assert(ipc::is_step_collision_free(
                 mesh, vertices_t0, collision_free_vertices, min_distance=1e-4))

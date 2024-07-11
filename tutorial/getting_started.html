@@ -1746,12 +1746,12 @@ Python</label></div>
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">vertices_t1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">;</span><span class="w">                     </span><span class="c1">// vertices at t=1</span>
 <span class="n">vertices_t1</span><span class="p">.</span><span class="n">col</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="mf">0.01</span><span class="p">;</span><span class="w"> </span><span class="c1">// squash the mesh in the y-direction</span>
 
-<span class="kt">double</span><span class="w"> </span><span class="n">max_step_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compute_collision_free_stepsize</span><span class="p">(</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">max_step_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ipctk</span><span class="p">.</span><span class="n">compute_collision_free_stepsize</span><span class="p">(</span>
 <span class="w">        </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t1</span><span class="p">);</span>
 
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">collision_free_vertices</span><span class="w"> </span><span class="o">=</span>
 <span class="w">    </span><span class="p">(</span><span class="n">vertices_t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">max_step_size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">;</span>
-<span class="n">assert</span><span class="p">(</span><span class="n">is_step_collision_free</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">,</span><span class="w"> </span><span class="n">collision_free_vertices</span><span class="p">));</span>
+<span class="n">assert</span><span class="p">(</span><span class="n">ipctk</span><span class="p">.</span><span class="n">is_step_collision_free</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">,</span><span class="w"> </span><span class="n">collision_free_vertices</span><span class="p">));</span>
 </code></pre></div>
 </div>
 </div>
@@ -1760,12 +1760,12 @@ Python</label></div>
 <span class="n">vertices_t1</span> <span class="o">=</span> <span class="n">vertices_t0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>              <span class="c1"># vertices at t=1</span>
 <span class="n">vertices_t1</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="mf">0.01</span> <span class="c1"># squash the mesh in the y-direction</span>
 
-<span class="n">max_step_size</span> <span class="o">=</span> <span class="n">compute_collision_free_stepsize</span><span class="p">(</span>
+<span class="n">max_step_size</span> <span class="o">=</span> <span class="n">ipc</span><span class="p">::</span><span class="n">compute_collision_free_stepsize</span><span class="p">(</span>
         <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">vertices_t1</span><span class="p">)</span>
 
 <span class="n">collision_free_vertices</span> <span class="o">=</span>
     <span class="p">(</span><span class="n">vertices_t1</span> <span class="o">-</span> <span class="n">vertices_t0</span><span class="p">)</span> <span class="o">*</span> <span class="n">max_step_size</span> <span class="o">+</span> <span class="n">vertices_t0</span>
-<span class="k">assert</span><span class="p">(</span><span class="n">is_step_collision_free</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">collision_free_vertices</span><span class="p">))</span>
+<span class="k">assert</span><span class="p">(</span><span class="n">ipc</span><span class="p">::</span><span class="n">is_step_collision_free</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">collision_free_vertices</span><span class="p">))</span>
 </code></pre></div>
 </div>
 </div>
@@ -1900,14 +1900,14 @@ C++</label><label class="tabbed-label" for="__tabbed_15_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="kt">double</span><span class="w"> </span><span class="n">max_step_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compute_collision_free_stepsize</span><span class="p">(</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="kt">double</span><span class="w"> </span><span class="n">max_step_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ipctk</span><span class="p">.</span><span class="n">compute_collision_free_stepsize</span><span class="p">(</span>
 <span class="w">        </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t1</span><span class="p">,</span>
 <span class="w">        </span><span class="cm">/*broad_phase_method=*/</span><span class="n">ipc</span><span class="o">::</span><span class="n">DEFAULT_BROAD_PHASE_METHOD</span><span class="p">,</span>
 <span class="w">        </span><span class="cm">/*min_distance=*/</span><span class="mf">1e-4</span><span class="p">);</span>
 
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">collision_free_vertices</span><span class="w"> </span><span class="o">=</span>
 <span class="w">    </span><span class="p">(</span><span class="n">vertices_t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">max_step_size</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">;</span>
-<span class="n">assert</span><span class="p">(</span><span class="n">is_step_collision_free</span><span class="p">(</span>
+<span class="n">assert</span><span class="p">(</span><span class="n">ipctk</span><span class="p">.</span><span class="n">is_step_collision_free</span><span class="p">(</span>
 <span class="w">    </span><span class="n">mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices_t0</span><span class="p">,</span><span class="w"> </span><span class="n">collision_free_vertices</span><span class="p">,</span>
 <span class="w">    </span><span class="cm">/*broad_phase_method=*/</span><span class="n">ipc</span><span class="o">::</span><span class="n">DEFAULT_BROAD_PHASE_METHOD</span><span class="p">,</span>
 <span class="w">    </span><span class="cm">/*min_distance=*/</span><span class="mf">1e-4</span>
@@ -1916,12 +1916,12 @@ Python</label></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">max_step_size</span> <span class="o">=</span> <span class="n">compute_collision_free_stepsize</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">max_step_size</span> <span class="o">=</span> <span class="n">ipc</span><span class="p">::</span><span class="n">compute_collision_free_stepsize</span><span class="p">(</span>
         <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">vertices_t1</span><span class="p">,</span> <span class="n">min_distance</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
 
 <span class="n">collision_free_vertices</span> <span class="o">=</span>
     <span class="p">(</span><span class="n">vertices_t1</span> <span class="o">-</span> <span class="n">vertices_t0</span><span class="p">)</span> <span class="o">*</span> <span class="n">max_step_size</span> <span class="o">+</span> <span class="n">vertices_t0</span>
-<span class="k">assert</span><span class="p">(</span><span class="n">is_step_collision_free</span><span class="p">(</span>
+<span class="k">assert</span><span class="p">(</span><span class="n">ipc</span><span class="p">::</span><span class="n">is_step_collision_free</span><span class="p">(</span>
     <span class="n">mesh</span><span class="p">,</span> <span class="n">vertices_t0</span><span class="p">,</span> <span class="n">collision_free_vertices</span><span class="p">,</span> <span class="n">min_distance</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">))</span>
 </code></pre></div>
 </div>
@@ -1934,7 +1934,7 @@ Python</label></div>
   <small>
     
       Last update:
-      Jun 12, 2024
+      Jul 11, 2024
     
   </small>
 </div>
