@@ -500,6 +500,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#codimensional-vertices" class="md-nav__link">
+    <span title="/tutorial/simulation.rst#codimensional-vertices (reference label)" class="md-ellipsis">Codimensional Vertices</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#nonlinear-bases-and-curved-meshes" class="md-nav__link">
     <span title="/tutorial/simulation.rst#nonlinear-bases-and-curved-meshes (reference label)" class="md-ellipsis">Nonlinear Bases and Curved Meshes</span>
   </a>
@@ -1105,6 +1112,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#codimensional-vertices" class="md-nav__link">
+    <span title="/tutorial/simulation.rst#codimensional-vertices (reference label)" class="md-ellipsis">Codimensional Vertices</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#nonlinear-bases-and-curved-meshes" class="md-nav__link">
     <span title="/tutorial/simulation.rst#nonlinear-bases-and-curved-meshes (reference label)" class="md-ellipsis">Nonlinear Bases and Curved Meshes</span>
   </a>
@@ -1167,10 +1181,8 @@ Python</label></div>
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="w"> </span><span class="n">edges</span><span class="p">;</span>
 <span class="n">igl</span><span class="o">::</span><span class="n">edges</span><span class="p">(</span><span class="n">faces</span><span class="p">,</span><span class="w"> </span><span class="n">edges</span><span class="p">);</span>
 
-<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span><span class="w"> </span><span class="n">is_on_surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ipc</span><span class="o">::</span><span class="n">CollisionMesh</span><span class="o">::</span><span class="n">construct_is_on_surface</span><span class="p">(</span><span class="n">node_positions</span><span class="p">.</span><span class="n">rows</span><span class="p">(),</span><span class="w"> </span><span class="n">boundary_edges</span><span class="p">);</span>
-
 <span class="n">ipc</span><span class="o">::</span><span class="n">CollisionMesh</span><span class="w"> </span><span class="n">collision_mesh</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="n">CollisionMesh</span><span class="o">::</span><span class="n">build_from_full_mesh</span><span class="p">(</span><span class="n">full_rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">edges</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">);</span>
+<span class="w">    </span><span class="n">ipc</span><span class="o">::</span><span class="n">CollisionMesh</span><span class="o">::</span><span class="n">build_from_full_mesh</span><span class="p">(</span><span class="n">full_rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">edges</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
@@ -1188,11 +1200,75 @@ Python</label></div>
 </div>
 </div>
 </div>
-</div><p>This <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> can then be used just as any other <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code>. However, when computing the gradient and Hessian of the potentials, the derivatives will be with respect to the surface DOF. If you want the derivatives with respect to the full mesh DOF, then we need to apply the chain rule. Fortunately, the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> class provides a function to do this (<code class="docutils literal notranslate"><span class="pre">CollisionMesh::to_full_dof</span></code>):</p>
+</div><p>This <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> can then be used just as any other <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code>. However, when passing the collision mesh to toolkit functions, the vertices have to be the surface vertices. The <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> class provides a function to map the full vertices and velocities to the surface vertices and velocities. These are <code class="docutils literal notranslate"><span class="pre">CollisionMesh::vertices(full_vertices)</span></code> and <code class="docutils literal notranslate"><span class="pre">CollisionMesh::map_displacements(full_displacements)</span></code>, respectively.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:2">
 <input checked type="radio" id="__tabbed_2_1" name="__tabbed_2"><input type="radio" id="__tabbed_2_2" name="__tabbed_2"><div class="tabbed-labels docutils">
 <label class="tabbed-label" for="__tabbed_2_1">
 C++</label><label class="tabbed-label" for="__tabbed_2_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// Convert full vertices to surface vertices</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="n">vertices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">.</span><span class="n">vertices</span><span class="p">(</span><span class="n">full_vertices</span><span class="p">);</span>
+
+<span class="c1">// Construct the set of collisions</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">Collisions</span><span class="w"> </span><span class="n">collisions</span><span class="p">;</span>
+<span class="n">collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">);</span>
+
+<span class="c1">// Construct a barrier potential</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">BarrierPotential</span><span class="w"> </span><span class="nf">B</span><span class="p">(</span><span class="n">dhat</span><span class="p">);</span>
+
+<span class="c1">// Evaluate the potential</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">B</span><span class="p">(</span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">);</span>
+
+<span class="c1">// Convert full velocities to surface velocities</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="n">velocities</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">.</span><span class="n">map_displacements</span><span class="p">(</span><span class="n">full_velocities</span><span class="p">);</span>
+
+<span class="c1">// Construct the set of friction collisions</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">FrictionCollisions</span><span class="w"> </span><span class="n">friction_collisions</span><span class="p">;</span>
+<span class="n">friction_collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">mu</span><span class="p">);</span>
+
+<span class="c1">// Construct a friction dissipative potential</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">FrictionPotential</span><span class="w"> </span><span class="nf">D</span><span class="p">(</span><span class="n">epsv</span><span class="p">);</span>
+
+<span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">D</span><span class="p">(</span><span class="n">friction_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocities</span><span class="p">);</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># Convert full vertices to surface vertices</span>
+<span class="n">vertices</span> <span class="o">=</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">vertices</span><span class="p">(</span><span class="n">full_vertices</span><span class="p">)</span>
+
+<span class="c1"># Construct the set of collisions</span>
+<span class="n">collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">Collisions</span><span class="p">()</span>
+<span class="n">collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">dhat</span><span class="p">)</span>
+
+<span class="c1"># Construct a barrier potential</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">BarrierPotential</span><span class="p">(</span><span class="n">dhat</span><span class="p">)</span>
+
+<span class="c1"># Evaluate the potential</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">B</span><span class="p">(</span><span class="n">collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
+
+<span class="c1"># Convert full velocities to surface velocities</span>
+<span class="n">velocities</span> <span class="o">=</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">map_displacements</span><span class="p">(</span><span class="n">full_velocities</span><span class="p">)</span>
+
+<span class="c1"># Construct the set of friction collisions</span>
+<span class="n">friction_collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">FrictionCollisions</span><span class="p">()</span>
+<span class="n">friction_collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">barrier_stiffness</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
+
+<span class="c1"># Construct a friction dissipative potential</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">FrictionPotential</span><span class="p">(</span><span class="n">epsv</span><span class="p">)</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">D</span><span class="p">(</span><span class="n">friction_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocities</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+</div><p>When computing the gradient and Hessian of the potentials, the derivatives will be with respect to the surface DOF. If you want the derivatives with respect to the full mesh DOF, then we need to apply the chain rule. Fortunately, the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> class provides a function to do this (<code class="docutils literal notranslate"><span class="pre">CollisionMesh::to_full_dof</span></code>):</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2">
+<input checked type="radio" id="__tabbed_3_1" name="__tabbed_3"><input type="radio" id="__tabbed_3_2" name="__tabbed_3"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_3_1">
+C++</label><label class="tabbed-label" for="__tabbed_3_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -1218,12 +1294,49 @@ Python</label></div>
 </div>
 </div>
 </div>
+</div><h3 id="codimensional-vertices">Codimensional Vertices<a class="headerlink" href="#codimensional-vertices" title="Permalink to this heading">¶</a></h3>
+<p>In some cases, the collision mesh vertices are not the same as the surface vertices of the volumetric mesh vertices. One such case is when simulating codimensional vertices in conjunction with shell or volumetric meshes. In this case, simply calling <code class="docutils literal notranslate"><span class="pre">build_from_full_mesh</span></code> will not work as it will ignore the vertices that are not connected to any boundary edge. Instead, you can build a vector of booleans that indicate which vertices are on the surface and pass it to the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> constructor.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2">
+<input checked type="radio" id="__tabbed_4_1" name="__tabbed_4"><input type="radio" id="__tabbed_4_2" name="__tabbed_4"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_4_1">
+C++</label><label class="tabbed-label" for="__tabbed_4_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="c1">// codim_vertices is a vector of indices of the codimensional vertices</span>
+<span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXi</span><span class="w"> </span><span class="n">codim_vertices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...;</span>
+
+<span class="c1">// is_on_surface is a vector of booleans indicating which vertices are on the surface</span>
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;</span><span class="w"> </span><span class="n">is_on_surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ipc</span><span class="o">::</span><span class="n">CollisionMesh</span><span class="o">::</span><span class="n">construct_is_on_surface</span><span class="p">(</span>
+<span class="w">    </span><span class="n">full_rest_positions</span><span class="p">.</span><span class="n">rows</span><span class="p">(),</span><span class="w"> </span><span class="n">boundary_edges</span><span class="p">,</span><span class="w"> </span><span class="n">codim_vertices</span><span class="p">);</span>
+
+<span class="c1">// Construct the collision mesh from the is_on_surface vector and full mesh data</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">CollisionMesh</span><span class="w"> </span><span class="nf">collision_mesh</span><span class="p">(</span>
+<span class="w">    </span><span class="n">is_on_surface</span><span class="p">,</span><span class="w"> </span><span class="n">full_rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">edges</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">);</span>
+</code></pre></div>
+</div>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="c1"># codim_vertices is an array of indices of the codimensional vertices</span>
+<span class="n">codim_vertices</span> <span class="o">=</span> <span class="o">...</span>
+
+<span class="c1"># is_on_surface is a list of booleans indicating which vertices are on the surface</span>
+<span class="n">is_on_surface</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">CollisionMesh</span><span class="o">.</span><span class="n">construct_is_on_surface</span><span class="p">(</span>
+    <span class="nb">len</span><span class="p">(</span><span class="n">full_rest_positions</span><span class="p">),</span> <span class="n">boundary_edges</span><span class="p">,</span> <span class="n">codim_vertices</span><span class="p">)</span>
+
+<span class="c1"># Construct the collision mesh from the is_on_surface vector and full mesh data</span>
+<span class="n">collision_mesh</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">CollisionMesh</span><span class="p">(</span>
+    <span class="n">is_on_surface</span><span class="p">,</span> <span class="n">full_rest_positions</span><span class="p">,</span> <span class="n">edges</span><span class="p">,</span> <span class="n">faces</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
 </div><h3 id="nonlinear-bases-and-curved-meshes">Nonlinear Bases and Curved Meshes<a class="headerlink" href="#nonlinear-bases-and-curved-meshes" title="Permalink to this heading">¶</a></h3>
 <p>While IPC cannot directly handle nonlinear finite element bases and/or curved meshes, <span id="id1">Ferguson <em>et al.</em> [<a class="reference internal" href="references.html#id7" title="Zachary Ferguson, Pranav Jain, Denis Zorin, Teseo Schneider, and Daniele Panozzo. High-order incremental potential contact for elastodynamic simulation on curved meshes. In ACM SIGGRAPH 2023 Conference Proceedings, SIGGRAPH '23. New York, NY, USA, 2023. Association for Computing Machinery. https://zferg.us/research/high-order-ipc/.">2023</a>]</span> show that displacements and forces can be transferred between a finite element mesh and a collision proxy through the use of a linear map. Given this linear map as a matrix, we can use the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> class to map between the full and surface DOF.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="3:2">
-<input checked type="radio" id="__tabbed_3_1" name="__tabbed_3"><input type="radio" id="__tabbed_3_2" name="__tabbed_3"><div class="tabbed-labels docutils">
-<label class="tabbed-label" for="__tabbed_3_1">
-C++</label><label class="tabbed-label" for="__tabbed_3_2">
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2">
+<input checked type="radio" id="__tabbed_5_1" name="__tabbed_5"><input type="radio" id="__tabbed_5_2" name="__tabbed_5"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_5_1">
+C++</label><label class="tabbed-label" for="__tabbed_5_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
@@ -1279,10 +1392,10 @@ Python</label></div>
 <h2 id="positive-semi-definite-projection">Positive Semi-Definite Projection<a class="headerlink" href="#positive-semi-definite-projection" title="Permalink to this heading">¶</a></h2>
 <p>As described by <span id="id2">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>, the Hessian of the potentials can be indefinite. This is problematic when using the Hessian in a Newton step <span id="id3">[<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">Li <em>et al.</em>, 2020</a>]</span>.
 To remedy this, we can project the Hessian onto the positive semidefinite (PSD) cone. To do this set the optional parameter <code class="docutils literal notranslate"><span class="pre">project_hessian_to_psd</span></code> in <code class="docutils literal notranslate"><span class="pre">Potential::hessian</span></code> to one of the following.</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="4:2">
-<input checked type="radio" id="__tabbed_4_1" name="__tabbed_4"><input type="radio" id="__tabbed_4_2" name="__tabbed_4"><div class="tabbed-labels docutils">
-<label class="tabbed-label" for="__tabbed_4_1">
-C++</label><label class="tabbed-label" for="__tabbed_4_2">
+<div class="tabbed-set tabbed-alternate" data-tabs="6:2">
+<input checked type="radio" id="__tabbed_6_1" name="__tabbed_6"><input type="radio" id="__tabbed_6_2" name="__tabbed_6"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_6_1">
+C++</label><label class="tabbed-label" for="__tabbed_6_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
