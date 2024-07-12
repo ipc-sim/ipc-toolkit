@@ -28,7 +28,8 @@ void define_eigen_ext(py::module_& m)
         "Enumeration of implemented PSD projection methods.")
         .value("NONE", PSDProjectionMethod::NONE, "No PSD projection")
         .value(
-            "CLAMP", PSDProjectionMethod::CLAMP, "Clamp negative eigenvalues")
+            "CLAMP", PSDProjectionMethod::CLAMP,
+            "Clamp negative eigenvalues to zero")
         .value("ABS", PSDProjectionMethod::ABS, "Flip negative eigenvalues")
         .export_values();
 
@@ -47,5 +48,5 @@ void define_eigen_ext(py::module_& m)
         Returns:
             Projected matrix
         )ipc_Qu8mg5v7",
-        py::arg("A"), py::arg("method"));
+        py::arg("A"), py::arg("method") = PSDProjectionMethod::CLAMP);
 }

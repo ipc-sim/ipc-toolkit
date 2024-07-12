@@ -138,10 +138,16 @@ project_to_pd(
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A,
     double eps = 1e-8);
 
-enum class PSDProjectionMethod { NONE, CLAMP, ABS };
+/// @brief Enumeration of implemented PSD projection methods
+enum class PSDProjectionMethod {
+    NONE,  ///< No PSD projection
+    CLAMP, ///< Clamp negative eigenvalues to zero
+    ABS    ///< Flip negative eigenvalues to positive
+};
 
 /// @brief Matrix projection onto positive semi-definite cone
 /// @param A Symmetric matrix to project
+/// @param method PSD projection method
 /// @return Projected matrix
 template <
     typename _Scalar,

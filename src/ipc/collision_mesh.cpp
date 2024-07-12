@@ -60,7 +60,7 @@ CollisionMesh::CollisionMesh(
 
     const int dim = full_rest_positions.cols();
 
-    // Selection matrix S ∈ ℝ^{collision×full}
+    // Initializes m_select_vertices and m_select_dof
     init_selection_matrices(dim);
 
     if (displacement_map.size() == 0) {

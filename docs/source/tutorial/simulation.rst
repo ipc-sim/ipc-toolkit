@@ -118,11 +118,11 @@ While IPC cannot directly handle nonlinear finite element bases and/or curved me
 
             # Collision proxy mesh
             # Load the proxy mesh from a file
-            proxy_mesh = meshio.read("proxy.msh")
+            proxy_mesh = meshio.read("proxy.obj")
             proxy_rest_positions = proxy_mesh.points
             proxy_faces = proxy_mesh.cells_dict["triangle"]
             proxy_edges = igl.edges(proxy_faces)
-            # Or build it from the volumetric mesh
+            # or build it from the volumetric mesh ...
 
             # Linear map from the finite element mesh to the collision proxy
             displacement_map = ... # build or load the displacement map
@@ -130,7 +130,7 @@ While IPC cannot directly handle nonlinear finite element bases and/or curved me
             collision_mesh = CollisionMesh(
                 proxy_rest_positions, proxy_edges, proxy_faces, displacement_map)
 
-We can then map the displacements using ``collision_mesh.map_displacement(fe_displacements)`` or directly get the displaced proxy mesh vertices using ``collision_mesh.displace_vertices(fe_displacements)``. Similarly, we can map forces/gradients using ``collision_mesh.to_full_dof(collision_forces)`` or force Jacobians/potential Hessians using ``collision_mesh.to_full_dof(potential_hessian)``.
+We can then map the displacements using ``collision_mesh.map_displacement(fe_displacements)`` or directly get the displaced proxy mesh vertices using ``collision_mesh.displace_vertices(fe_displacements)``. Similarly, we can map forces/potential gradients using ``collision_mesh.to_full_dof(collision_forces)`` or force Jacobians/potential Hessians using ``collision_mesh.to_full_dof(potential_hessian)``.
 
 .. warning::
     The function ``CollisionMesh::vertices(full_positions)`` should not be used in this case because the rest positions used to construct the ``CollisionMesh`` are not the same as the finite element mesh's rest positions. Instead, use ``CollisionMesh::displace_vertices(fe_displacements)`` where ``fe_displacements`` is already the solution of the PDE or can be computed as ``fe_displacements = fe_positions - fe_rest_positions`` from deformed and rest positions.
@@ -138,4 +138,17 @@ We can then map the displacements using ``collision_mesh.map_displacement(fe_dis
 Positive Semi-Definite Projection
 ---------------------------------
 
-As described by :cite:t:`Li2020IPC`, the Hessian of the potentials can be indefinite. This is problematic when using the Hessian in a Newton step :cite:p:`Li2020IPC`. To remedy this, we can project the Hessian onto the positive semidefinite (PSD) cone. To do this set the optional parameter ``project_hessian_to_psd`` of ``compute_potential_hessian`` to true.
+As described by :cite:t:`Li2020IPC`, the Hessian of the potentials can be indefinite. This is problematic when using the Hessian in a Newton step :cite:p:`Li2020IPC`.
+To remedy this, we can project the Hessian onto the positive semidefinite (PSD) cone. To do this set the optional parameter ``project_hessian_to_psd`` in ``Potential::hessian`` to one of the following.
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        - ``ProjectToPSD::CLAMP``: Clamp the negative eigenvalues of the Hessian to 0. This is the same as used by :cite:t:`Li2020IPC`.
+        - ``ProjectToPSD::ABS``: Set the negative eigenvalues of the Hessian to their absolute value. This is the method proposed by :cite:t:`Chen2024Stabler`.
+
+    .. md-tab-item:: Python
+
+        - ``ProjectToPSD.CLAMP``: Clamp the negative eigenvalues of the Hessian to 0. This is the same as used by :cite:t:`Li2020IPC`.
+        - ``ProjectToPSD.ABS``: Set the negative eigenvalues of the Hessian to their absolute value. This is the method proposed by :cite:t:`Chen2024Stabler`.
