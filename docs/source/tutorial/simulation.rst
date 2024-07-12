@@ -30,10 +30,8 @@ From the full (volumetric) mesh vertices and surface edges/faces which index int
             Eigen::MatrixXi edges;
             igl::edges(faces, edges);
 
-            std::vector<bool> is_on_surface = ipc::CollisionMesh::construct_is_on_surface(node_positions.rows(), boundary_edges);
-
             ipc::CollisionMesh collision_mesh =
-                CollisionMesh::build_from_full_mesh(full_rest_positions, edges, faces);
+                ipc::CollisionMesh::build_from_full_mesh(full_rest_positions, edges, faces);
 
     .. md-tab-item:: Python
 
@@ -49,7 +47,69 @@ From the full (volumetric) mesh vertices and surface edges/faces which index int
             collision_mesh = ipctk.CollisionMesh.build_from_full_mesh(
                 full_rest_positions, edges, faces)
 
-This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. However, when computing the gradient and Hessian of the potentials, the derivatives will be with respect to the surface DOF. If you want the derivatives with respect to the full mesh DOF, then we need to apply the chain rule. Fortunately, the ``CollisionMesh`` class provides a function to do this (``CollisionMesh::to_full_dof``):
+This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. However, when passing the collision mesh to toolkit functions, the vertices have to be the surface vertices. The ``CollisionMesh`` class provides a function to map the full vertices and velocities to the surface vertices and velocities. These are ``CollisionMesh::vertices(full_vertices)`` and ``CollisionMesh::map_displacements(full_displacements)``, respectively.
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            // Convert full vertices to surface vertices
+            Eigen::VectorXd vertices = collision_mesh.vertices(full_vertices);
+
+            // Construct the set of collisions
+            ipc::Collisions collisions;
+            collisions.build(collision_mesh, vertices, dhat);
+
+            // Construct a barrier potential
+            ipc::BarrierPotential B(dhat);
+
+            // Evaluate the potential
+            double b = B(collisions, collision_mesh, vertices);
+
+            // Convert full velocities to surface velocities
+            Eigen::VectorXd velocities = collision_mesh.map_displacements(full_velocities);
+
+            // Construct the set of friction collisions
+            ipc::FrictionCollisions friction_collisions;
+            friction_collisions.build(collision_mesh, vertices, collisions, B, barrier_stiffness, mu);
+
+            // Construct a friction dissipative potential
+            ipc::FrictionPotential D(epsv);
+
+            double d = D(friction_collisions, collision_mesh, velocities);
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            # Convert full vertices to surface vertices
+            vertices = collision_mesh.vertices(full_vertices)
+
+            # Construct the set of collisions
+            collisions = ipctk.Collisions()
+            collisions.build(collision_mesh, vertices, dhat)
+
+            # Construct a barrier potential
+            B = ipctk.BarrierPotential(dhat)
+
+            # Evaluate the potential
+            b = B(collisions, collision_mesh, vertices)
+
+            # Convert full velocities to surface velocities
+            velocities = collision_mesh.map_displacements(full_velocities)
+
+            # Construct the set of friction collisions
+            friction_collisions = ipctk.FrictionCollisions()
+            friction_collisions.build(collision_mesh, vertices, collisions, B, barrier_stiffness, mu)
+
+            # Construct a friction dissipative potential
+            D = ipctk.FrictionPotential(epsv)
+
+            d = D(friction_collisions, collision_mesh, velocities)
+
+When computing the gradient and Hessian of the potentials, the derivatives will be with respect to the surface DOF. If you want the derivatives with respect to the full mesh DOF, then we need to apply the chain rule. Fortunately, the ``CollisionMesh`` class provides a function to do this (``CollisionMesh::to_full_dof``):
 
 .. md-tab-set::
 
@@ -76,6 +136,43 @@ This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. How
 
             hess = B.hessian(collision, collision_mesh, vertices)
             hess_full = collision_mesh.to_full_dof(hess)
+
+Codimensional Vertices
+^^^^^^^^^^^^^^^^^^^^^^
+
+In some cases, the collision mesh vertices are not the same as the surface vertices of the volumetric mesh vertices. One such case is when simulating codimensional vertices in conjunction with shell or volumetric meshes. In this case, simply calling ``build_from_full_mesh`` will not work as it will ignore the vertices that are not connected to any boundary edge. Instead, you can build a vector of booleans that indicate which vertices are on the surface and pass it to the ``CollisionMesh`` constructor.
+
+.. md-tab-set::
+
+    .. md-tab-item:: C++
+
+        .. code-block:: c++
+
+            // codim_vertices is a vector of indices of the codimensional vertices
+            Eigen::VectorXi codim_vertices = ...;
+
+            // is_on_surface is a vector of booleans indicating which vertices are on the surface
+            std::vector<bool> is_on_surface = ipc::CollisionMesh::construct_is_on_surface(
+                full_rest_positions.rows(), boundary_edges, codim_vertices);
+
+            // Construct the collision mesh from the is_on_surface vector and full mesh data
+            ipc::CollisionMesh collision_mesh(
+                is_on_surface, full_rest_positions, edges, faces);
+
+    .. md-tab-item:: Python
+
+        .. code-block:: python
+
+            # codim_vertices is an array of indices of the codimensional vertices
+            codim_vertices = ...
+
+            # is_on_surface is a list of booleans indicating which vertices are on the surface
+            is_on_surface = ipctk.CollisionMesh.construct_is_on_surface(
+                len(full_rest_positions), boundary_edges, codim_vertices)
+
+            # Construct the collision mesh from the is_on_surface vector and full mesh data
+            collision_mesh = ipctk.CollisionMesh(
+                is_on_surface, full_rest_positions, edges, faces)
 
 Nonlinear Bases and Curved Meshes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
