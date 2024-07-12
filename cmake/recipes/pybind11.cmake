@@ -26,4 +26,4 @@ find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
 set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
 
 include(CPM)
-CPMAddPackage("gh:pybind/pybind11@2.11.1")
+CPMAddPackage("gh:pybind/pybind11@2.13.1")

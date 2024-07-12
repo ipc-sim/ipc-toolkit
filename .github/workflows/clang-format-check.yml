@@ -1,6 +1,12 @@
 name: clang-format Check
 on:
   push:
+    paths:
+      - '.github/workflows/clang-format-check.yml'
+      - '.clang-format'
+      - 'src/**'
+      - 'tests/src/**'
+      - 'python/src/**'
   pull_request:
     paths:
       - '.github/workflows/clang-format-check.yml'

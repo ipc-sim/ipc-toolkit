@@ -30,7 +30,7 @@ def check_ipc_derivatives(broad_phase_method, use_convergent_formulation, mesh_n
     assert np.linalg.norm(grad_b) > 1e-8
     assert np.allclose(grad_b, fgrad_b)
 
-    hess_b = B.hessian(collisions, mesh, vertices).A
+    hess_b = B.hessian(collisions, mesh, vertices).toarray()
     fhess_b = utils.finite_jacobian(
         vertices.flatten(), lambda x: B.gradient(collisions, mesh, x.reshape(vertices.shape)))
 
