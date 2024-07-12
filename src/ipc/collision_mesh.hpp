@@ -326,13 +326,13 @@ protected:
 
     /// @brief Selection matrix S ∈ ℝ^{collision×full} for vertices
     Eigen::SparseMatrix<double> m_select_vertices;
-    /// @brief Selection matrix S ∈ ℝ^{collision×full} for DOF
+    /// @brief Selection matrix S ∈ ℝ^{(dim*collision)×(dim*full)} for DOF
     Eigen::SparseMatrix<double> m_select_dof;
 
     /// @brief Mapping from full displacements to collision displacements
     /// @note this is premultiplied by m_select_vertices
     Eigen::SparseMatrix<double> m_displacement_map;
-    /// @brief Mapping from full displacements to collision displacements
+    /// @brief Mapping from full displacements DOF to collision displacements DOF
     /// @note this is premultiplied by m_select_dof
     Eigen::SparseMatrix<double> m_displacement_dof_map;
 
