@@ -25,7 +25,8 @@ def check_ipc_derivatives(broad_phase_method, use_convergent_formulation, mesh_n
     assert np.linalg.norm(grad_b) > 1e-8
     assert np.allclose(grad_b, fgrad_b)
 
-    hess_b = collision_constraints.compute_potential_hessian(mesh, V, dhat).A
+    hess_b = collision_constraints.compute_potential_hessian(
+        mesh, V, dhat).toarray()
     fhess_b = finite_jacobian(
         V.flatten(), lambda x: collision_constraints.compute_potential_gradient(mesh, x.reshape(V.shape), dhat))
 
