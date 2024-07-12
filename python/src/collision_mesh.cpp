@@ -21,7 +21,8 @@ void define_collision_mesh(py::module_& m)
                 faces: The faces of the collision mesh (#F × 3).
                 displacement_map: The displacement mapping from displacements on the full mesh to the collision mesh.
             )ipc_Qu8mg5v7",
-            py::arg("rest_positions"), py::arg("edges"), py::arg("faces"),
+            py::arg("rest_positions"), py::arg("edges") = Eigen::MatrixXi(),
+            py::arg("faces") = Eigen::MatrixXi(),
             py::arg("displacement_map") = Eigen::SparseMatrix<double>())
         .def(
             py::init<
@@ -39,7 +40,8 @@ void define_collision_mesh(py::module_& m)
                 displacement_map: The displacement mapping from displacements on the full mesh to the collision mesh.
             )ipc_Qu8mg5v7",
             py::arg("include_vertex"), py::arg("full_rest_positions"),
-            py::arg("edges"), py::arg("faces"),
+            py::arg("edges") = Eigen::MatrixXi(),
+            py::arg("faces") = Eigen::MatrixXi(),
             py::arg("displacement_map") = Eigen::SparseMatrix<double>())
         .def_static(
             "build_from_full_mesh", &CollisionMesh::build_from_full_mesh,
