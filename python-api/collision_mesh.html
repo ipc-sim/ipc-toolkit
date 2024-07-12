@@ -2701,8 +2701,7 @@
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.CollisionMesh.__init__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><dl>
-<dt>__init__(self: ipctk.CollisionMesh, rest_positions: numpy.ndarray[numpy.float64[m, n]], edges: numpy.ndarray[numpy.int32[m, n]], faces: numpy.ndarray[numpy.int32[m, n]], displacement_map: scipy.sparse.csc_matrix[numpy.float64] = &lt;Compressed Sparse Column sparse matrix of dtype ‘float64’</dt><dd><p>with 0 stored elements and shape (0, 0)&gt;) -&gt; None</p>
+<li><p>__init__(self: ipctk.CollisionMesh, rest_positions: numpy.ndarray[numpy.float64[m, n]], edges: numpy.ndarray[numpy.int32[m, n]], faces: numpy.ndarray[numpy.int32[m, n]], displacement_map: scipy.sparse.csc_matrix[numpy.float64] = &lt;Compressed Sparse Column sparse matrix of dtype ‘float64’ with 0 stored elements and shape (0, 0)&gt;) -&gt; None</p>
 <blockquote>
 <div><p>Construct a new Collision Mesh object directly from the collision mesh vertices.</p>
 <dl class="simple">
@@ -2713,11 +2712,8 @@ displacement_map: The displacement mapping from displacements on the full mesh t
 </dd>
 </dl>
 </div></blockquote>
-</dd>
-</dl>
 </li>
-<li><dl>
-<dt>__init__(self: ipctk.CollisionMesh, include_vertex: List[bool], full_rest_positions: numpy.ndarray[numpy.float64[m, n]], edges: numpy.ndarray[numpy.int32[m, n]], faces: numpy.ndarray[numpy.int32[m, n]], displacement_map: scipy.sparse.csc_matrix[numpy.float64] = &lt;Compressed Sparse Column sparse matrix of dtype ‘float64’</dt><dd><p>with 0 stored elements and shape (0, 0)&gt;) -&gt; None</p>
+<li><p>__init__(self: ipctk.CollisionMesh, include_vertex: list[bool], full_rest_positions: numpy.ndarray[numpy.float64[m, n]], edges: numpy.ndarray[numpy.int32[m, n]], faces: numpy.ndarray[numpy.int32[m, n]], displacement_map: scipy.sparse.csc_matrix[numpy.float64] = &lt;Compressed Sparse Column sparse matrix of dtype ‘float64’ with 0 stored elements and shape (0, 0)&gt;) -&gt; None</p>
 <blockquote>
 <div><p>Construct a new Collision Mesh object from a full mesh vertices.</p>
 <dl class="simple">
@@ -2729,8 +2725,6 @@ displacement_map: The displacement mapping from displacements on the full mesh t
 </dd>
 </dl>
 </div></blockquote>
-</dd>
-</dl>
 </li>
 </ol>
 </dd></dl>
@@ -2897,7 +2891,7 @@ displacement_map: The displacement mapping from displacements on the full mesh t
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.edge_vertex_adjacencies">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge_vertex_adjacencies</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">List[tsl::robin_set&lt;int,</span> <span class="pre">absl::lts_20230125::hash_internal::Hash&lt;int&gt;,</span> <span class="pre">std::equal_to&lt;int&gt;,</span> <span class="pre">std::allocator&lt;int&gt;,</span> <span class="pre">false,</span> <span class="pre">tsl::rh::power_of_two_growth_policy&lt;2ul&gt;</span> <span class="pre">&gt;]</span></span><a class="headerlink" href="#ipctk.CollisionMesh.edge_vertex_adjacencies" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">edge_vertex_adjacencies</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">list[tsl::robin_set&lt;int,</span> <span class="pre">absl::lts_20230125::hash_internal::Hash&lt;int&gt;,</span> <span class="pre">std::equal_to&lt;int&gt;,</span> <span class="pre">std::allocator&lt;int&gt;,</span> <span class="pre">false,</span> <span class="pre">tsl::rh::power_of_two_growth_policy&lt;2ul&gt;</span> <span class="pre">&gt;]</span></span><a class="headerlink" href="#ipctk.CollisionMesh.edge_vertex_adjacencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the edge-vertex adjacency matrix.</p>
 </dd></dl>
 
@@ -3110,13 +3104,13 @@ displacement_map: The displacement mapping from displacements on the full mesh t
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.vertex_edge_adjacencies">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex_edge_adjacencies</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">List[tsl::robin_set&lt;int,</span> <span class="pre">absl::lts_20230125::hash_internal::Hash&lt;int&gt;,</span> <span class="pre">std::equal_to&lt;int&gt;,</span> <span class="pre">std::allocator&lt;int&gt;,</span> <span class="pre">false,</span> <span class="pre">tsl::rh::power_of_two_growth_policy&lt;2ul&gt;</span> <span class="pre">&gt;]</span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_edge_adjacencies" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex_edge_adjacencies</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">list[tsl::robin_set&lt;int,</span> <span class="pre">absl::lts_20230125::hash_internal::Hash&lt;int&gt;,</span> <span class="pre">std::equal_to&lt;int&gt;,</span> <span class="pre">std::allocator&lt;int&gt;,</span> <span class="pre">false,</span> <span class="pre">tsl::rh::power_of_two_growth_policy&lt;2ul&gt;</span> <span class="pre">&gt;]</span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_edge_adjacencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the vertex-edge adjacency matrix.</p>
 </dd></dl>
 
 <dl class="py property objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.CollisionMesh.vertex_vertex_adjacencies">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex_vertex_adjacencies</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">List[tsl::robin_set&lt;int,</span> <span class="pre">absl::lts_20230125::hash_internal::Hash&lt;int&gt;,</span> <span class="pre">std::equal_to&lt;int&gt;,</span> <span class="pre">std::allocator&lt;int&gt;,</span> <span class="pre">false,</span> <span class="pre">tsl::rh::power_of_two_growth_policy&lt;2ul&gt;</span> <span class="pre">&gt;]</span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_vertex_adjacencies" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vertex_vertex_adjacencies</span></span><span class="p"> <span class="pre">:</span> </span><span class="desctype"><span class="pre">list[tsl::robin_set&lt;int,</span> <span class="pre">absl::lts_20230125::hash_internal::Hash&lt;int&gt;,</span> <span class="pre">std::equal_to&lt;int&gt;,</span> <span class="pre">std::allocator&lt;int&gt;,</span> <span class="pre">false,</span> <span class="pre">tsl::rh::power_of_two_growth_policy&lt;2ul&gt;</span> <span class="pre">&gt;]</span></span><a class="headerlink" href="#ipctk.CollisionMesh.vertex_vertex_adjacencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the vertex-vertex adjacency matrix.</p>
 </dd></dl>
 
