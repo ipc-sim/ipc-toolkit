@@ -11,9 +11,10 @@ except ImportError:
         repo_root / "build" / "debug" / "python",
     ]
     for path in possible_paths:
-        if path.exists():
+        if path.exists() and len(list(path.glob("ipctk.*"))) > 0:
             sys.path.append(str(path))
             break
     else:
         raise ImportError("Could not find the ipctk module")
+    print(f"Using found ipctk module at {path}")
     import ipctk  # Try again
