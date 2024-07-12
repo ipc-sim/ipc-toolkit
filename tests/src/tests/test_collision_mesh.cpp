@@ -21,7 +21,7 @@ TEST_CASE("Collision mesh", "[collision_mesh]")
     Eigen::SparseMatrix<double> W(4, 3);
     W.setFromTriplets(weights.begin(), weights.end());
 
-    CollisionMesh mesh(V, E, Eigen::MatrixXi(), W);
+    CollisionMesh mesh(V, E, /*F=*/Eigen::MatrixXi(), W);
 
     Eigen::MatrixXd U(3, 2);
     U << 0, 0, 1, 1, 0, 0;
@@ -43,15 +43,7 @@ TEST_CASE("Collision mesh", "[collision_mesh]")
     expected_gf << 1, 1, -2, 0, 0, -2;
     CHECK(gf == expected_gf);
 
-    Eigen::MatrixXd H(8, 8);
-    H << 1, 0, 0, 0, 0, 0, 0, 0, //
-        0, 1, 0, 0, 0, 0, 0, 0,  //
-        0, 0, 1, 0, 0, 0, 0, 0,  //
-        0, 0, 0, 1, 0, 0, 0, 0,  //
-        0, 0, 0, 0, 1, 0, 0, 0,  //
-        0, 0, 0, 0, 0, 1, 0, 0,  //
-        0, 0, 0, 0, 0, 0, 1, 0,  //
-        0, 0, 0, 0, 0, 0, 0, 1;  //
+    Eigen::MatrixXd H = Eigen::MatrixXd::Identity(8, 8);
     Eigen::MatrixXd Hf =
         mesh.to_full_dof(Eigen::SparseMatrix<double>(H.sparseView()));
 
@@ -113,7 +105,7 @@ TEST_CASE("Codim points collision mesh", "[collision_mesh]")
     Eigen::MatrixXd V(4, 2);
     V << 0, 0, 1, 0, 0, 1, 1, 1;
 
-    CollisionMesh mesh(V, Eigen::MatrixXi(), Eigen::MatrixXi());
+    CollisionMesh mesh(V);
 
     Eigen::VectorXi expected_codim_vertices(4);
     expected_codim_vertices << 0, 1, 2, 3;

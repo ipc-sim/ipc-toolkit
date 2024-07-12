@@ -120,7 +120,7 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase][2D]")
     E.row(0) << 1, 0;
     E.row(1) << 2, 3;
 
-    CollisionMesh mesh(V0, E, /*F=*/Eigen::MatrixXi());
+    CollisionMesh mesh(V0, E);
 
     const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
 
@@ -144,8 +144,7 @@ TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D][.]")
     REQUIRE(igl::readCSV((tests::DATA_DIR / "mesh-2D/E.csv").string(), E));
     E.array() -= 1; // NOTE: Convert from OBJ format to index
 
-    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(
-        V0_full, E, /*F=*/Eigen::MatrixXi());
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0_full, E);
 
     const Eigen::MatrixXd V0 = mesh.vertices(V0_full);
     const Eigen::MatrixXd V1 = mesh.vertices(V1_full);

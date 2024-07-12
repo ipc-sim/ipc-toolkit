@@ -24,7 +24,7 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
         1, 1, 1;
     vertices.rowwise() -= vertices.colwise().mean();
 
-    CollisionMesh mesh(vertices, Eigen::MatrixXi(), Eigen::MatrixXi());
+    CollisionMesh mesh(vertices);
     mesh.init_area_jacobians();
 
     CHECK(mesh.num_vertices() == 8);
@@ -112,7 +112,7 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
         0, 3,      //
         0, 4;
 
-    CollisionMesh mesh(vertices, edges, Eigen::MatrixXi());
+    CollisionMesh mesh(vertices, edges);
     mesh.init_area_jacobians();
 
     CHECK(mesh.num_vertices() == 8);

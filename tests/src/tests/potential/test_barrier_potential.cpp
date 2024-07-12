@@ -416,8 +416,7 @@ TEST_CASE(
     Eigen::MatrixXd X = data["boundary_nodes_pos"];
     Eigen::MatrixXd vertices = data["displaced"];
 
-    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(
-        X, edges, /*faces=*/Eigen::MatrixXi());
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(X, edges);
     mesh.init_area_jacobians();
     REQUIRE(mesh.are_area_jacobians_initialized());
 
@@ -537,8 +536,7 @@ TEST_CASE(
     Eigen::MatrixXd X = data["boundary_nodes_pos"];
     Eigen::MatrixXd vertices = data["displaced"];
 
-    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(
-        X, edges, /*faces=*/Eigen::MatrixXi());
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(X, edges);
     mesh.init_area_jacobians();
     REQUIRE(mesh.are_area_jacobians_initialized());
 
