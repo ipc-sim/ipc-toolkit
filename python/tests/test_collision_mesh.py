@@ -30,7 +30,7 @@ def test_collision_mesh():
     assert (gf == expected_gf).all()
 
     H = np.eye(8)
-    Hf = mesh.to_full_dof(scipy.sparse.csc_matrix(H)).A
+    Hf = mesh.to_full_dof(scipy.sparse.csc_matrix(H)).toarray()
     expected_Hf = np.array([
         [1, 0, 0, 0, 0, 0],
         [0, 1, 0, 0, 0, 0],
