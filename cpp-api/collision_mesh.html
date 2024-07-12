@@ -1642,7 +1642,7 @@
         
           <li class="md-nav__item">
   <a href="#_CPPv4N3ipc13CollisionMesh12m_select_dofE" class="md-nav__link">
-    <span aria-label="C++ member" class="objinfo-icon objinfo-icon__alias" title="C++ member">V</span><span title="ipc::CollisionMesh::m_select_dof (C++ member) — Selection matrix S ∈ ℝ^{collision×full} for DOF." class="md-ellipsis">m_<wbr>select_<wbr>dof</span>
+    <span aria-label="C++ member" class="objinfo-icon objinfo-icon__alias" title="C++ member">V</span><span title="ipc::CollisionMesh::m_select_dof (C++ member) — Selection matrix S ∈ ℝ^{(dim*collision)×(dim*full)} for DOF." class="md-ellipsis">m_<wbr>select_<wbr>dof</span>
   </a>
   
 </li>
@@ -1656,7 +1656,7 @@
         
           <li class="md-nav__item">
   <a href="#_CPPv4N3ipc13CollisionMesh22m_displacement_dof_mapE" class="md-nav__link">
-    <span aria-label="C++ member" class="objinfo-icon objinfo-icon__alias" title="C++ member">V</span><span title="ipc::CollisionMesh::m_displacement_dof_map (C++ member) — Mapping from full displacements to collision displacements." class="md-ellipsis">m_<wbr>displacement_<wbr>dof_<wbr>map</span>
+    <span aria-label="C++ member" class="objinfo-icon objinfo-icon__alias" title="C++ member">V</span><span title="ipc::CollisionMesh::m_displacement_dof_map (C++ member) — Mapping from full displacements DOF to collision displacements DOF." class="md-ellipsis">m_<wbr>displacement_<wbr>dof_<wbr>map</span>
   </a>
   
 </li>
@@ -3261,7 +3261,7 @@
         
           <li class="md-nav__item">
   <a href="#_CPPv4N3ipc13CollisionMesh12m_select_dofE" class="md-nav__link">
-    <span aria-label="C++ member" class="objinfo-icon objinfo-icon__alias" title="C++ member">V</span><span title="ipc::CollisionMesh::m_select_dof (C++ member) — Selection matrix S ∈ ℝ^{collision×full} for DOF." class="md-ellipsis">m_<wbr>select_<wbr>dof</span>
+    <span aria-label="C++ member" class="objinfo-icon objinfo-icon__alias" title="C++ member">V</span><span title="ipc::CollisionMesh::m_select_dof (C++ member) — Selection matrix S ∈ ℝ^{(dim*collision)×(dim*full)} for DOF." class="md-ellipsis">m_<wbr>select_<wbr>dof</span>
   </a>
   
 </li>
@@ -3275,7 +3275,7 @@
         
           <li class="md-nav__item">
   <a href="#_CPPv4N3ipc13CollisionMesh22m_displacement_dof_mapE" class="md-nav__link">
-    <span aria-label="C++ member" class="objinfo-icon objinfo-icon__alias" title="C++ member">V</span><span title="ipc::CollisionMesh::m_displacement_dof_map (C++ member) — Mapping from full displacements to collision displacements." class="md-ellipsis">m_<wbr>displacement_<wbr>dof_<wbr>map</span>
+    <span aria-label="C++ member" class="objinfo-icon objinfo-icon__alias" title="C++ member">V</span><span title="ipc::CollisionMesh::m_displacement_dof_map (C++ member) — Mapping from full displacements DOF to collision displacements DOF." class="md-ellipsis">m_<wbr>displacement_<wbr>dof_<wbr>map</span>
   </a>
   
 </li>
@@ -3952,7 +3952,7 @@
 <dl class="cpp var objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh12m_select_dofE">
 <span class="target" id="classipc_1_1_collision_mesh_1a6df32db6158ab8f338c59c9e63e5ef42"></span><span class="n">Eigen</span><span class="p">::</span><span class="n">SparseMatrix</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">m_select_dof</span></span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh12m_select_dofE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Selection matrix S ∈ ℝ^{collision×full} for DOF. </p>
+<dd><p>Selection matrix S ∈ ℝ^{(dim*collision)×(dim*full)} for DOF. </p>
 </dd></dl>
 
 <dl class="cpp var objdesc">
@@ -3968,7 +3968,7 @@
 <dl class="cpp var objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh22m_displacement_dof_mapE">
 <span class="target" id="classipc_1_1_collision_mesh_1a9751f301e1b2bae6c75bc9f3367ce6e0"></span><span class="n">Eigen</span><span class="p">::</span><span class="n">SparseMatrix</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">m_displacement_dof_map</span></span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh22m_displacement_dof_mapE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Mapping from full displacements to collision displacements. </p>
+<dd><p>Mapping from full displacements DOF to collision displacements DOF. </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>this is premultiplied by m_select_dof </p>
@@ -4051,7 +4051,7 @@
   <small>
     
       Last update:
-      Jul 11, 2024
+      Jul 12, 2024
     
   </small>
 </div>
@@ -4122,7 +4122,7 @@
       <div class="md-copyright">
   
     <div class="md-footer-copyright__highlight">
-        &#169; Copyright 2020-2023, IPC-Sim Organization; MIT License.
+        &#169; Copyright 2020-2024, IPC-Sim Organization; MIT License.
         
     </div>
   

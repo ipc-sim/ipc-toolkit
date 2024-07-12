@@ -1256,11 +1256,11 @@ Python</label></div>
 
 <span class="c1"># Collision proxy mesh</span>
 <span class="c1"># Load the proxy mesh from a file</span>
-<span class="n">proxy_mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;proxy.msh&quot;</span><span class="p">)</span>
+<span class="n">proxy_mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;proxy.obj&quot;</span><span class="p">)</span>
 <span class="n">proxy_rest_positions</span> <span class="o">=</span> <span class="n">proxy_mesh</span><span class="o">.</span><span class="n">points</span>
 <span class="n">proxy_faces</span> <span class="o">=</span> <span class="n">proxy_mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;triangle&quot;</span><span class="p">]</span>
 <span class="n">proxy_edges</span> <span class="o">=</span> <span class="n">igl</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">proxy_faces</span><span class="p">)</span>
-<span class="c1"># Or build it from the volumetric mesh</span>
+<span class="c1"># or build it from the volumetric mesh ...</span>
 
 <span class="c1"># Linear map from the finite element mesh to the collision proxy</span>
 <span class="n">displacement_map</span> <span class="o">=</span> <span class="o">...</span> <span class="c1"># build or load the displacement map</span>
@@ -1271,21 +1271,41 @@ Python</label></div>
 </div>
 </div>
 </div>
-</div><p>We can then map the displacements using <code class="docutils literal notranslate"><span class="pre">collision_mesh.map_displacement(fe_displacements)</span></code> or directly get the displaced proxy mesh vertices using <code class="docutils literal notranslate"><span class="pre">collision_mesh.displace_vertices(fe_displacements)</span></code>. Similarly, we can map forces/gradients using <code class="docutils literal notranslate"><span class="pre">collision_mesh.to_full_dof(collision_forces)</span></code> or force Jacobians/potential Hessians using <code class="docutils literal notranslate"><span class="pre">collision_mesh.to_full_dof(potential_hessian)</span></code>.</p>
+</div><p>We can then map the displacements using <code class="docutils literal notranslate"><span class="pre">collision_mesh.map_displacement(fe_displacements)</span></code> or directly get the displaced proxy mesh vertices using <code class="docutils literal notranslate"><span class="pre">collision_mesh.displace_vertices(fe_displacements)</span></code>. Similarly, we can map forces/potential gradients using <code class="docutils literal notranslate"><span class="pre">collision_mesh.to_full_dof(collision_forces)</span></code> or force Jacobians/potential Hessians using <code class="docutils literal notranslate"><span class="pre">collision_mesh.to_full_dof(potential_hessian)</span></code>.</p>
 <div class="warning admonition">
 <p class="admonition-title">Warning</p>
 <p>The function <code class="docutils literal notranslate"><span class="pre">CollisionMesh::vertices(full_positions)</span></code> should not be used in this case because the rest positions used to construct the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> are not the same as the finite element mesh’s rest positions. Instead, use <code class="docutils literal notranslate"><span class="pre">CollisionMesh::displace_vertices(fe_displacements)</span></code> where <code class="docutils literal notranslate"><span class="pre">fe_displacements</span></code> is already the solution of the PDE or can be computed as <code class="docutils literal notranslate"><span class="pre">fe_displacements</span> <span class="pre">=</span> <span class="pre">fe_positions</span> <span class="pre">-</span> <span class="pre">fe_rest_positions</span></code> from deformed and rest positions.</p>
 </div>
 <h2 id="positive-semi-definite-projection">Positive Semi-Definite Projection<a class="headerlink" href="#positive-semi-definite-projection" title="Permalink to this heading">¶</a></h2>
-<p>As described by <span id="id2">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>, the Hessian of the potentials can be indefinite. This is problematic when using the Hessian in a Newton step <span id="id3">[<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">Li <em>et al.</em>, 2020</a>]</span>. To remedy this, we can project the Hessian onto the positive semidefinite (PSD) cone. To do this set the optional parameter <code class="docutils literal notranslate"><span class="pre">project_hessian_to_psd</span></code> of <code class="docutils literal notranslate"><span class="pre">compute_potential_hessian</span></code> to true.</p>
-
+<p>As described by <span id="id2">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>, the Hessian of the potentials can be indefinite. This is problematic when using the Hessian in a Newton step <span id="id3">[<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">Li <em>et al.</em>, 2020</a>]</span>.
+To remedy this, we can project the Hessian onto the positive semidefinite (PSD) cone. To do this set the optional parameter <code class="docutils literal notranslate"><span class="pre">project_hessian_to_psd</span></code> in <code class="docutils literal notranslate"><span class="pre">Potential::hessian</span></code> to one of the following.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2">
+<input checked type="radio" id="__tabbed_4_1" name="__tabbed_4"><input type="radio" id="__tabbed_4_2" name="__tabbed_4"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_4_1">
+C++</label><label class="tabbed-label" for="__tabbed_4_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ProjectToPSD::CLAMP</span></code>: Clamp the negative eigenvalues of the Hessian to 0. This is the same as used by <span id="id4">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ProjectToPSD::ABS</span></code>: Set the negative eigenvalues of the Hessian to their absolute value. This is the method proposed by <span id="id5">Chen <em>et al.</em> [<a class="reference internal" href="references.html#id9" title="Honglin Chen, Hsueh-Ti Derek Liu, David I.W. Levin, Changxi Zheng, and Alec Jacobson. Stabler neo-hookean simulation: absolute eigenvalue filtering for projected newton. In ACM SIGGRAPH 2024 Conference Proceedings. 2024. https://www.cs.columbia.edu/cg/abs-psd/.">2024</a>]</span>.</p></li>
+</ul>
+</div>
+<div class="tabbed-block docutils">
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ProjectToPSD.CLAMP</span></code>: Clamp the negative eigenvalues of the Hessian to 0. This is the same as used by <span id="id6">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ProjectToPSD.ABS</span></code>: Set the negative eigenvalues of the Hessian to their absolute value. This is the method proposed by <span id="id7">Chen <em>et al.</em> [<a class="reference internal" href="references.html#id9" title="Honglin Chen, Hsueh-Ti Derek Liu, David I.W. Levin, Changxi Zheng, and Alec Jacobson. Stabler neo-hookean simulation: absolute eigenvalue filtering for projected newton. In ACM SIGGRAPH 2024 Conference Proceedings. 2024. https://www.cs.columbia.edu/cg/abs-psd/.">2024</a>]</span>.</p></li>
+</ul>
+</div>
+</div>
+</div>
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      Jul 11, 2024
+      Jul 12, 2024
     
   </small>
 </div>
@@ -1356,7 +1376,7 @@ Python</label></div>
       <div class="md-copyright">
   
     <div class="md-footer-copyright__highlight">
-        &#169; Copyright 2020-2023, IPC-Sim Organization; MIT License.
+        &#169; Copyright 2020-2024, IPC-Sim Organization; MIT License.
         
     </div>
   
