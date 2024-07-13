@@ -1,0 +1,80 @@
+span.colon {
+    margin-left: -1em;
+}
+
+dl.cpp.objdesc, dl.py.objdesc {
+    /* border: 0.05rem solid var(--md-primary-fg-color); */
+    border: 0.05rem solid rgb(68, 138, 255);
+    box-shadow: var(--md-shadow-z1);
+    border-radius: 0.4rem;
+    overflow: hidden;
+}
+
+dl.cpp.objdesc > dt, dl.py.objdesc > dt {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+dl.cpp.objdesc > dd, dl.py.objdesc > dd {
+    margin: 0 1.875em;
+}
+
+dl.py.objdesc > dd > details.toggle-details {
+    border: 0.05rem solid var(--md-primary-fg-color);
+    box-shadow: var(--md-shadow-z1);
+    border-radius: 0.4rem;
+    overflow: hidden;
+}
+
+dl.py.objdesc > dd > details.toggle-details > summary {
+    border: 0;
+    font-size: 0.8rem;
+}
+
+dl.py.objdesc > dd > details.toggle-details > summary::before,
+dl.py.objdesc > dd > details.toggle-details > summary::after {
+    background-color: var(--md-primary-fg-color--light);
+    /* background-color: currentcolor; */
+    top: auto;
+}
+
+dl.py.objdesc > dd > details.toggle-details > summary > svg.tb-icon {
+    display: none;
+}
+
+table.autosummary {
+    font-size: 0.75rem !important;
+}
+
+/* .breatheparameterlist li tt + p {
+    display: inline;
+  }
+
+dd.field-odd {
+    padding: 0 !important;;
+    margin: 0 !important;;
+}
+
+dl.api-field {
+width: 100%;
+overflow: hidden;
+}
+
+dl.api-field > dt {
+float: left;
+width: 60%;
+padding: 0;
+margin: 10px;
+}
+
+dl.api-field > dd {
+float: left;
+width: calc(40%-10px);
+padding: 0 !important;
+margin: 0 !important;
+}
+
+dl.api-field > dd > p {
+padding: 0 !important;
+margin: 0 !important;
+} */
