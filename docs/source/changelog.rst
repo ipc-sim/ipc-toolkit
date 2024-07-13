@@ -6,6 +6,13 @@ Changelog
 .. role:: cmake(code)
    :language: cmake
 
+v1.2.1 (Jul 12, 2024)
+---------------------
+
+*Bug fixes |:bug:|:*
+
+- Update Pybind11 to support Numpy 2.0. Fixes segmentation fault as described in #102.
+
 v1.2.0 (Dec 11, 2023)
 ---------------------
 
