@@ -9,9 +9,9 @@ Changelog
 v1.2.1 (Jul 12, 2024)
 ---------------------
 
-*Bug fixes |:bug:|:*
+Bug fixes |:bug:| :
 
-- Update Pybind11 to support Numpy 2.0. Fixes segmentation fault as described in #102.
+- Update Pybind11 to support Numpy 2.0. Fixes segmentation fault as described in `#102 <https://github.com/ipc-sim/ipc-toolkit/issues/102>`__.
 
 v1.2.0 (Dec 11, 2023)
 ---------------------
