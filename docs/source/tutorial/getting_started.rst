@@ -77,7 +77,7 @@ To start we need the current positions of the ``vertices``. For this tutorial, l
 
         .. code-block:: python
 
-            vertices = collision_mesh.rest_positions()
+            vertices = collision_mesh.rest_positions.copy()
             vertices[:, 1] *= 0.01  # Squash the bunny in the y-direction
 
 Using these deformed positions, we can build the set of active collisions.
