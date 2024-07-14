@@ -249,7 +249,7 @@ Adaptive Barrier Stiffness
 
 The last piece of the barrier potential is the barrier stiffness. This is a weight that is multiplied by the barrier potential to better scale it relative to the energy potential. This can be a fixed value or adaptive.
 
-To compute the adaptive barrier stiffness, we can use two functions: ``initial_barrier_stiffness`` and ``update_barrier_stiffness``. The function ``initial_barrier_stiffness``computes the initial value from the current energy and barrier potential gradients. This function also provides a minimum and maximum value for the barrier stiffness. The function ``update_barrier_stiffness`` updates the barrier stiffness if the minimum distance has become too small.
+To compute the adaptive barrier stiffness, we can use two functions: ``initial_barrier_stiffness`` and ``update_barrier_stiffness``. The function ``initial_barrier_stiffness`` computes the initial value from the current energy and barrier potential gradients. This function also provides a minimum and maximum value for the barrier stiffness. The function ``update_barrier_stiffness`` updates the barrier stiffness if the minimum distance has become too small.
 
 .. md-tab-set::
 
