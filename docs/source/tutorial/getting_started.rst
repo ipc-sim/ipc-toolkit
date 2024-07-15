@@ -266,8 +266,8 @@ To compute the adaptive barrier stiffness, we can use two functions: ``initial_b
 
             double max_barrier_stiffness; // output of initial_barrier_stiffness
             double barrier_stiffness = ipc::initial_barrier_stiffness(
-                bbox_diagonal, dhat, avg_mass, grad_energy, grad_barrier,
-                max_barrier_stiffness);
+                bbox_diagonal, B.barrier(), dhat, avg_mass, grad_energy,
+                grad_barrier, max_barrier_stiffness);
 
             double prev_distance = collisions.compute_minimum_distance(
                 collision_mesh, vertices);
@@ -299,7 +299,7 @@ To compute the adaptive barrier stiffness, we can use two functions: ``initial_b
             bbox_diagonal = ipctk.world_bbox_diagonal_length(vertices)
 
             barrier_stiffness, max_barrier_stiffness = ipctk.initial_barrier_stiffness(
-                bbox_diagonal, dhat, avg_mass, grad_energy, grad_barrier,
+                bbox_diagonal, B.barrier, dhat, avg_mass, grad_energy, grad_barrier,
                 max_barrier_stiffness)
 
             prev_distance = collisions.compute_minimum_distance(collision_mesh, vertices)
