@@ -1378,7 +1378,7 @@ Python</label></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">vertices</span> <span class="o">=</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">rest_positions</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">vertices</span> <span class="o">=</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">rest_positions</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 <span class="n">vertices</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*=</span> <span class="mf">0.01</span>  <span class="c1"># Squash the bunny in the y-direction</span>
 </code></pre></div>
 </div>
@@ -1541,7 +1541,7 @@ x_n &amp; y_n &amp; z_n \\
 \end{bmatrix}.\end{split}\]</div>
 <h3 id="adaptive-barrier-stiffness">Adaptive Barrier Stiffness<a class="headerlink" href="#adaptive-barrier-stiffness" title="Permalink to this heading">¶</a></h3>
 <p>The last piece of the barrier potential is the barrier stiffness. This is a weight that is multiplied by the barrier potential to better scale it relative to the energy potential. This can be a fixed value or adaptive.</p>
-<p>To compute the adaptive barrier stiffness, we can use two functions: <code class="docutils literal notranslate"><span class="pre">initial_barrier_stiffness</span></code> and <code class="docutils literal notranslate"><span class="pre">update_barrier_stiffness</span></code>. The function <code class="docutils literal notranslate"><span class="pre">initial_barrier_stiffness``computes</span> <span class="pre">the</span> <span class="pre">initial</span> <span class="pre">value</span> <span class="pre">from</span> <span class="pre">the</span> <span class="pre">current</span> <span class="pre">energy</span> <span class="pre">and</span> <span class="pre">barrier</span> <span class="pre">potential</span> <span class="pre">gradients.</span> <span class="pre">This</span> <span class="pre">function</span> <span class="pre">also</span> <span class="pre">provides</span> <span class="pre">a</span> <span class="pre">minimum</span> <span class="pre">and</span> <span class="pre">maximum</span> <span class="pre">value</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">barrier</span> <span class="pre">stiffness.</span> <span class="pre">The</span> <span class="pre">function</span> <span class="pre">``update_barrier_stiffness</span></code> updates the barrier stiffness if the minimum distance has become too small.</p>
+<p>To compute the adaptive barrier stiffness, we can use two functions: <code class="docutils literal notranslate"><span class="pre">initial_barrier_stiffness</span></code> and <code class="docutils literal notranslate"><span class="pre">update_barrier_stiffness</span></code>. The function <code class="docutils literal notranslate"><span class="pre">initial_barrier_stiffness</span></code> computes the initial value from the current energy and barrier potential gradients. This function also provides a minimum and maximum value for the barrier stiffness. The function <code class="docutils literal notranslate"><span class="pre">update_barrier_stiffness</span></code> updates the barrier stiffness if the minimum distance has become too small.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="6:2">
 <input checked type="radio" id="__tabbed_6_1" name="__tabbed_6"><input type="radio" id="__tabbed_6_2" name="__tabbed_6"><div class="tabbed-labels docutils">
 <label class="tabbed-label" for="__tabbed_6_1">
@@ -1934,7 +1934,7 @@ Python</label></div>
   <small>
     
       Last update:
-      Jul 13, 2024
+      Jul 15, 2024
     
   </small>
 </div>
