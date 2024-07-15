@@ -1558,8 +1558,8 @@ Python</label></div>
 
 <span class="kt">double</span><span class="w"> </span><span class="n">max_barrier_stiffness</span><span class="p">;</span><span class="w"> </span><span class="c1">// output of initial_barrier_stiffness</span>
 <span class="kt">double</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ipc</span><span class="o">::</span><span class="n">initial_barrier_stiffness</span><span class="p">(</span>
-<span class="w">    </span><span class="n">bbox_diagonal</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">avg_mass</span><span class="p">,</span><span class="w"> </span><span class="n">grad_energy</span><span class="p">,</span><span class="w"> </span><span class="n">grad_barrier</span><span class="p">,</span>
-<span class="w">    </span><span class="n">max_barrier_stiffness</span><span class="p">);</span>
+<span class="w">    </span><span class="n">bbox_diagonal</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">.</span><span class="n">barrier</span><span class="p">(),</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">avg_mass</span><span class="p">,</span><span class="w"> </span><span class="n">grad_energy</span><span class="p">,</span>
+<span class="w">    </span><span class="n">grad_barrier</span><span class="p">,</span><span class="w"> </span><span class="n">max_barrier_stiffness</span><span class="p">);</span>
 
 <span class="kt">double</span><span class="w"> </span><span class="n">prev_distance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">collisions</span><span class="p">.</span><span class="n">compute_minimum_distance</span><span class="p">(</span>
 <span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">);</span>
@@ -1590,7 +1590,7 @@ Python</label></div>
 <span class="n">bbox_diagonal</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">world_bbox_diagonal_length</span><span class="p">(</span><span class="n">vertices</span><span class="p">)</span>
 
 <span class="n">barrier_stiffness</span><span class="p">,</span> <span class="n">max_barrier_stiffness</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">initial_barrier_stiffness</span><span class="p">(</span>
-    <span class="n">bbox_diagonal</span><span class="p">,</span> <span class="n">dhat</span><span class="p">,</span> <span class="n">avg_mass</span><span class="p">,</span> <span class="n">grad_energy</span><span class="p">,</span> <span class="n">grad_barrier</span><span class="p">,</span>
+    <span class="n">bbox_diagonal</span><span class="p">,</span> <span class="n">B</span><span class="o">.</span><span class="n">barrier</span><span class="p">,</span> <span class="n">dhat</span><span class="p">,</span> <span class="n">avg_mass</span><span class="p">,</span> <span class="n">grad_energy</span><span class="p">,</span> <span class="n">grad_barrier</span><span class="p">,</span>
     <span class="n">max_barrier_stiffness</span><span class="p">)</span>
 
 <span class="n">prev_distance</span> <span class="o">=</span> <span class="n">collisions</span><span class="o">.</span><span class="n">compute_minimum_distance</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
