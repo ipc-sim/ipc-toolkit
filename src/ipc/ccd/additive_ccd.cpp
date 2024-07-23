@@ -60,6 +60,11 @@ namespace {
     }
 } // namespace
 
+AdditiveCCD::AdditiveCCD(const double conservative_rescaling)
+    : conservative_rescaling(conservative_rescaling)
+{
+}
+
 bool AdditiveCCD::additive_ccd(
     VectorMax12d x,
     const VectorMax12d& dx,
@@ -106,11 +111,6 @@ bool AdditiveCCD::additive_ccd(
     }
 
     return true;
-}
-
-AdditiveCCD::AdditiveCCD(const double conservative_rescaling)
-    : conservative_rescaling(conservative_rescaling)
-{
 }
 
 bool AdditiveCCD::point_point_ccd(

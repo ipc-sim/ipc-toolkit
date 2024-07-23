@@ -18,8 +18,8 @@ bool is_step_collision_free(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
-    const BroadPhaseMethod broad_phase_method,
     const double min_distance,
+    const BroadPhaseMethod broad_phase_method,
     const NarrowPhaseCCD& narrow_phase_ccd)
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
@@ -42,8 +42,8 @@ double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
-    const BroadPhaseMethod broad_phase_method,
     const double min_distance,
+    const BroadPhaseMethod broad_phase_method,
     const NarrowPhaseCCD& narrow_phase_ccd)
 {
     assert(vertices_t0.rows() == mesh.num_vertices());

@@ -139,6 +139,7 @@ public:
         const double tmax = 1.0,
         const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING);
 
+    /// @brief The conservative rescaling value used to avoid taking steps exactly to impact.
     double conservative_rescaling;
 };
 

@@ -235,8 +235,7 @@ void define_nonlinear_ccd(py::module_& m)
                const double, const double, const double, const bool, double&)>&
                linear_ccd,
            const double tmax, const double min_distance,
-           const double conservative_rescaling =
-               TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING) {
+           const double conservative_rescaling) {
             double toi;
             bool r = conservative_piecewise_linear_ccd(
                 distance, max_distance_from_linear, linear_ccd, toi, tmax,

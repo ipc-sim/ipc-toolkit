@@ -10,10 +10,12 @@
 
 #include <CTCD.h>
 
-#include <algorithm> // std::min/max
-#include <array>
-
 namespace ipc {
+
+InexactCCD::InexactCCD(const double conservative_rescaling)
+    : conservative_rescaling(conservative_rescaling)
+{
+}
 
 bool InexactCCD::ccd_strategy(
     const std::function<bool(double /*min_distance*/, double& /*toi*/)>& ccd,

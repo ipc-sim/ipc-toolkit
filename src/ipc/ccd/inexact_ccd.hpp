@@ -181,12 +181,6 @@ public:
         const double conservative_rescaling,
         double& toi);
 
-    /// @brief Solver tolerance.
-    double tolerance;
-
-    /// @brief Maximum number of iterations.
-    long max_iterations;
-
     /// @brief Conservative rescaling of the time of impact.
     double conservative_rescaling;
 };

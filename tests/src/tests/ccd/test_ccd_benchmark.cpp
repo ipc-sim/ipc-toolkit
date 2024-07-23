@@ -18,6 +18,10 @@ using namespace ipc;
 
 void run_benchmark(const std::shared_ptr<NarrowPhaseCCD> ccd)
 {
+    if (ccd == nullptr) {
+        return;
+    }
+
     std::locale::global(std::locale("en_US.UTF-8"));
 
     logger().set_level(spdlog::level::err);
