@@ -10,6 +10,12 @@ void define_additive_ccd(py::module_& m)
     py::class_<AdditiveCCD, NarrowPhaseCCD>(m, "AdditiveCCD")
         .def(
             py::init<const double>(),
+            R"ipc_Qu8mg5v7(
+            Construct a new AdditiveCCD object.
+
+            Parameters:
+                conservative_rescaling: The conservative rescaling of the time of impact.
+            )ipc_Qu8mg5v7",
             py::arg("conservative_rescaling") =
                 AdditiveCCD::DEFAULT_CONSERVATIVE_RESCALING)
         .def_static(
@@ -20,7 +26,7 @@ void define_additive_ccd(py::module_& m)
                const double max_disp_mag, const double min_distance,
                const double tmax, const double conservative_rescaling) {
                 double toi;
-                bool r = ipc::AdditiveCCD::additive_ccd(
+                bool r = AdditiveCCD::additive_ccd(
                     x, dx, distance_squared, max_disp_mag, toi, min_distance,
                     tmax, conservative_rescaling);
                 return std::make_tuple(r, toi);
@@ -44,6 +50,11 @@ void define_additive_ccd(py::module_& m)
             py::arg("tmax") = 1.0,
             py::arg("conservative_rescaling") =
                 AdditiveCCD::DEFAULT_CONSERVATIVE_RESCALING)
+        .def_readonly_static(
+            "DEFAULT_CONSERVATIVE_RESCALING",
+            &AdditiveCCD::DEFAULT_CONSERVATIVE_RESCALING,
+            "The default conservative rescaling value used to avoid taking steps exactly to impact. Value choosen to based on [Li et al. 2021].")
         .def_readwrite(
-            "conservative_rescaling", &AdditiveCCD::conservative_rescaling);
+            "conservative_rescaling", &AdditiveCCD::conservative_rescaling,
+            "The conservative rescaling value used to avoid taking steps exactly to impact.");
 }

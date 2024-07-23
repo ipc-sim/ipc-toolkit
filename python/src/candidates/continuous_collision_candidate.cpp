@@ -27,7 +27,6 @@ void define_continuous_collision_candidate(py::module_& m)
             Parameters:
                 vertices_t0: Stencil vertices at the start of the time step.
                 vertices_t1: Stencil vertices at the end of the time step.
-                toi: Computed time of impact (normalized).
                 min_distance: Minimum separation distance between primitives.
                 tmax: Maximum time (normalized) to look for collisions. Should be in [0, 1].
                 narrow_phase_ccd: The narrow phase CCD algorithm to use.
@@ -51,7 +50,7 @@ void define_continuous_collision_candidate(py::module_& m)
             Print the CCD query to cout.
 
             Parameters:
-                vertices_t0: Stencil vertices at the start of the time step.
+                                vertices_t0: Stencil vertices at the start of the time step.
                 vertices_t1: Stencil vertices at the end of the time step.
             )ipc_Qu8mg5v7",
             py::arg("vertices_t0"), py::arg("vertices_t1"));

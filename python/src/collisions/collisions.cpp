@@ -104,7 +104,7 @@ void define_collisions(py::module_& m)
             Get if the collision at i is an edge-edge collision.
 
             Parameters:
-                i: The index of the collision.nose
+                i: The index of the collision.
 
             Returns:
                 If the collision at i is an edge-edge collision.

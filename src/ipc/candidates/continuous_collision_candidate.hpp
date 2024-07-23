@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/ccd/default_narrow_phase.hpp>
+#include <ipc/ccd/default_narrow_phase_ccd.hpp>
 #include <ipc/candidates/collision_stencil.hpp>
 
 #include <vector>

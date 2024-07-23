@@ -105,6 +105,15 @@ void define_aabb(py::module_& m)
                 vertices_t0, vertices_t1, vertex_boxes, inflation_radius);
             return vertex_boxes;
         },
+        R"ipc_Qu8mg5v7(
+        Build one AABB per vertex position moving linearly from t=0 to t=1.
+
+        Parameters:
+            vertices_t0: Vertex positions at t=0 (rowwise).
+            vertices_t1: Vertex positions at t=1 (rowwise).
+            vertex_boxes: Vertex AABBs.
+            inflation_radius: Radius of a capsule around the temporal edges which the AABBs enclose.
+        )ipc_Qu8mg5v7",
         py::arg("vertices_t0"), py::arg("vertices_t1"),
         py::arg("inflation_radius") = 0);
 
@@ -116,6 +125,14 @@ void define_aabb(py::module_& m)
             build_edge_boxes(vertex_boxes, edges, edge_boxes);
             return edge_boxes;
         },
+        R"ipc_Qu8mg5v7(
+        Build one AABB per edge.
+
+        Parameters:
+            vertex_boxes: Vertex AABBs.
+            edges: Edges (rowwise).
+            edge_boxes: Edge AABBs.
+        )ipc_Qu8mg5v7",
         py::arg("vertex_boxes"), py::arg("edges"));
 
     m.def(
@@ -126,5 +143,13 @@ void define_aabb(py::module_& m)
             build_face_boxes(vertex_boxes, faces, face_boxes);
             return face_boxes;
         },
+        R"ipc_Qu8mg5v7(
+        Build one AABB per face.
+
+        Parameters:
+            vertex_boxes: Vertex AABBs.
+            faces: Faces (rowwise).
+            face_boxes: Face AABBs.
+        )ipc_Qu8mg5v7",
         py::arg("vertex_boxes"), py::arg("faces"));
 }
