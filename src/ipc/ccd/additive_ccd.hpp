@@ -122,6 +122,10 @@ public:
         const double min_distance = 0.0,
         const double tmax = 1.0) const override;
 
+    /// @brief The conservative rescaling value used to avoid taking steps exactly to impact.
+    double conservative_rescaling;
+
+private:
     /// @brief Computes the time of impact between two objects using additive continuous collision detection.
     /// @param distance_squared A function that computes the squared distance between the two objects at a given time.
     /// @param[out] toi The time of impact between the two objects.
@@ -138,9 +142,6 @@ public:
         const double min_distance = 0.0,
         const double tmax = 1.0,
         const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING);
-
-    /// @brief The conservative rescaling value used to avoid taking steps exactly to impact.
-    double conservative_rescaling;
 };
 
 } // namespace ipc

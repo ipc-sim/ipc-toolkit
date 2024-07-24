@@ -111,8 +111,10 @@ void define_aabb(py::module_& m)
         Parameters:
             vertices_t0: Vertex positions at t=0 (rowwise).
             vertices_t1: Vertex positions at t=1 (rowwise).
-            vertex_boxes: Vertex AABBs.
             inflation_radius: Radius of a capsule around the temporal edges which the AABBs enclose.
+
+        Returns:
+            Vertex AABBs.
         )ipc_Qu8mg5v7",
         py::arg("vertices_t0"), py::arg("vertices_t1"),
         py::arg("inflation_radius") = 0);
@@ -131,6 +133,8 @@ void define_aabb(py::module_& m)
         Parameters:
             vertex_boxes: Vertex AABBs.
             edges: Edges (rowwise).
+
+        Returns:
             edge_boxes: Edge AABBs.
         )ipc_Qu8mg5v7",
         py::arg("vertex_boxes"), py::arg("edges"));
@@ -149,6 +153,8 @@ void define_aabb(py::module_& m)
         Parameters:
             vertex_boxes: Vertex AABBs.
             faces: Faces (rowwise).
+
+        Returns:
             face_boxes: Face AABBs.
         )ipc_Qu8mg5v7",
         py::arg("vertex_boxes"), py::arg("faces"));

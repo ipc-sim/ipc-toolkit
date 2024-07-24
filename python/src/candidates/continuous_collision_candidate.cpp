@@ -12,9 +12,8 @@ void define_continuous_collision_candidate(py::module_& m)
             "ccd",
             [](const ContinuousCollisionCandidate& self,
                const VectorMax12d& vertices_t0, const VectorMax12d& vertices_t1,
-               const double min_distance = 0.0, const double tmax = 1.0,
-               const NarrowPhaseCCD& narrow_phase_ccd =
-                   DEFAULT_NARROW_PHASE_CCD) {
+               const double min_distance, const double tmax,
+               const NarrowPhaseCCD& narrow_phase_ccd) {
                 double toi;
                 bool r = self.ccd(
                     vertices_t0, vertices_t1, toi, min_distance, tmax,

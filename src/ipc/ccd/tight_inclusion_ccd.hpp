@@ -24,24 +24,6 @@ public:
         const long max_iterations = DEFAULT_MAX_ITERATIONS,
         const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING);
 
-    /// @brief Computes the time of impact between two points in 3D using continuous collision detection.
-    /// @param[in] p0_t0 The initial position of the first point.
-    /// @param[in] p1_t0 The initial position of the second point.
-    /// @param[in] p0_t1 The final position of the first point.
-    /// @param[in] p1_t1 The final position of the second point.
-    /// @param[out] toi The time of impact between the two points.
-    /// @param[in] min_distance The minimum distance between the objects.
-    /// @param[in] tmax The maximum time to check for collisions.
-    /// @return True if a collision was detected, false otherwise.
-    bool point_point_ccd_3D(
-        const Eigen::Vector3d& p0_t0,
-        const Eigen::Vector3d& p1_t0,
-        const Eigen::Vector3d& p0_t1,
-        const Eigen::Vector3d& p1_t1,
-        double& toi,
-        const double min_distance = 0.0,
-        const double tmax = 1.0) const;
-
     /// @brief Computes the time of impact between two points using continuous collision detection.
     /// @param[in] p0_t0 The initial position of the first point.
     /// @param[in] p1_t0 The initial position of the second point.
@@ -59,31 +41,6 @@ public:
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0) const override;
-
-    /// @brief Computes the time of impact between a point and an edge in 3D using continuous collision detection.
-    /// @param[in] p_t0 The initial position of the point.
-    /// @param[in] e0_t0 The initial position of the first endpoint of the edge.
-    /// @param[in] e1_t0 The initial position of the second endpoint of the edge.
-    /// @param[in] p_t1 The final position of the point.
-    /// @param[in] e0_t1 The final position of the first endpoint of the edge.
-    /// @param[in] e1_t1 The final position of the second endpoint of the edge.
-    /// @param[out] toi The time of impact between the point and the edge.
-    /// @param[in] min_distance The minimum distance between the objects.
-    /// @param[in] tmax The maximum time to check for collisions.
-    /// @param[in] tolerance The error tolerance for the time of impact.
-    /// @param[in] max_iterations The maximum number of iterations to perform.
-    /// @param[in] conservative_rescaling The conservative rescaling of the time of impact.
-    /// @return True if a collision was detected, false otherwise.
-    bool point_edge_ccd_3D(
-        const Eigen::Vector3d& p_t0,
-        const Eigen::Vector3d& e0_t0,
-        const Eigen::Vector3d& e1_t0,
-        const Eigen::Vector3d& p_t1,
-        const Eigen::Vector3d& e0_t1,
-        const Eigen::Vector3d& e1_t1,
-        double& toi,
-        const double min_distance = 0.0,
-        const double tmax = 1.0) const;
 
     /// @brief Computes the time of impact between a point and an edge using continuous collision detection.
     /// @param[in] p_t0 The initial position of the point.
@@ -168,6 +125,59 @@ public:
         const double min_distance = 0.0,
         const double tmax = 1.0) const override;
 
+    /// @brief Solver tolerance.
+    double tolerance;
+
+    /// @brief Maximum number of iterations.
+    long max_iterations;
+
+    /// @brief Conservative rescaling of the time of impact.
+    double conservative_rescaling;
+
+private:
+    /// @brief Computes the time of impact between two points in 3D using continuous collision detection.
+    /// @param[in] p0_t0 The initial position of the first point.
+    /// @param[in] p1_t0 The initial position of the second point.
+    /// @param[in] p0_t1 The final position of the first point.
+    /// @param[in] p1_t1 The final position of the second point.
+    /// @param[out] toi The time of impact between the two points.
+    /// @param[in] min_distance The minimum distance between the objects.
+    /// @param[in] tmax The maximum time to check for collisions.
+    /// @return True if a collision was detected, false otherwise.
+    bool point_point_ccd_3D(
+        const Eigen::Vector3d& p0_t0,
+        const Eigen::Vector3d& p1_t0,
+        const Eigen::Vector3d& p0_t1,
+        const Eigen::Vector3d& p1_t1,
+        double& toi,
+        const double min_distance = 0.0,
+        const double tmax = 1.0) const;
+
+    /// @brief Computes the time of impact between a point and an edge in 3D using continuous collision detection.
+    /// @param[in] p_t0 The initial position of the point.
+    /// @param[in] e0_t0 The initial position of the first endpoint of the edge.
+    /// @param[in] e1_t0 The initial position of the second endpoint of the edge.
+    /// @param[in] p_t1 The final position of the point.
+    /// @param[in] e0_t1 The final position of the first endpoint of the edge.
+    /// @param[in] e1_t1 The final position of the second endpoint of the edge.
+    /// @param[out] toi The time of impact between the point and the edge.
+    /// @param[in] min_distance The minimum distance between the objects.
+    /// @param[in] tmax The maximum time to check for collisions.
+    /// @param[in] tolerance The error tolerance for the time of impact.
+    /// @param[in] max_iterations The maximum number of iterations to perform.
+    /// @param[in] conservative_rescaling The conservative rescaling of the time of impact.
+    /// @return True if a collision was detected, false otherwise.
+    bool point_edge_ccd_3D(
+        const Eigen::Vector3d& p_t0,
+        const Eigen::Vector3d& e0_t0,
+        const Eigen::Vector3d& e1_t0,
+        const Eigen::Vector3d& p_t1,
+        const Eigen::Vector3d& e0_t1,
+        const Eigen::Vector3d& e1_t1,
+        double& toi,
+        const double min_distance = 0.0,
+        const double tmax = 1.0) const;
+
     /// @brief Perform the CCD strategy outlined by Li et al. [2020].
     /// @param[in] ccd The continuous collision detection function.
     /// @param[in] min_distance The minimum distance between the objects.
@@ -183,15 +193,6 @@ public:
         const double initial_distance,
         const double conservative_rescaling,
         double& toi);
-
-    /// @brief Solver tolerance.
-    double tolerance;
-
-    /// @brief Maximum number of iterations.
-    long max_iterations;
-
-    /// @brief Conservative rescaling of the time of impact.
-    double conservative_rescaling;
 };
 
 } // namespace ipc

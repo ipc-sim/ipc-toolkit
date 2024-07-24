@@ -14,14 +14,14 @@ void define_edge_edge_candidate(py::module_& m)
         .def("known_dtype", &EdgeEdgeCandidate::known_dtype)
         .def(
             "__str__",
-            [](const EdgeEdgeCandidate& ev) {
-                return fmt::format("[{:d}, {:d}]", ev.edge0_id, ev.edge1_id);
+            [](const EdgeEdgeCandidate& ee) {
+                return fmt::format("[{:d}, {:d}]", ee.edge0_id, ee.edge1_id);
             })
         .def(
             "__repr__",
-            [](const EdgeEdgeCandidate& ev) {
+            [](const EdgeEdgeCandidate& ee) {
                 return fmt::format(
-                    "EdgeEdgeCandidate({:d}, {:d})", ev.edge0_id, ev.edge1_id);
+                    "EdgeEdgeCandidate({:d}, {:d})", ee.edge0_id, ee.edge1_id);
             })
         .def("__eq__", &EdgeEdgeCandidate::operator==, py::arg("other"))
         .def("__ne__", &EdgeEdgeCandidate::operator!=, py::arg("other"))

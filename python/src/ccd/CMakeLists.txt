@@ -1,7 +1,6 @@
 set(SOURCES
   aabb.cpp
   additive_ccd.cpp
-  ccd.cpp
   check_initial_distance.cpp
   inexact_ccd.cpp
   inexact_point_edge.cpp
