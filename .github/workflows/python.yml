@@ -38,7 +38,7 @@ jobs:
           fetch-depth: 10
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4.3.0
+        uses: actions/setup-python@v5.1.1
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -62,7 +62,7 @@ jobs:
 
       - name: Cache Build
         id: cache-build
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v4.0.2
         with:
           path: ${{ env.CACHE_PATH }}
           key: ${{ runner.os }}-Python${{ matrix.python-version }}-cache

@@ -43,13 +43,13 @@ jobs:
         uses: pypa/cibuildwheel@v2.19.2
         # to supply options, put them in 'env', like:
         env:
-          MACOSX_DEPLOYMENT_TARGET: "10.14"
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
           CIBW_ARCHS: auto64
           CIBW_ARCHS_MACOS: ${{ matrix.arch }}
           CIBW_BUILD: ${{ matrix.python-version }}-*
           CIBW_SKIP: "cp36-* cp37-* pp* *musllinux* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4.3.4
         with:
           path: ./wheelhouse/*.whl
 
@@ -62,7 +62,7 @@ jobs:
       - name: Build sdist
         run: pipx run build --sdist
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4.3.4
         with:
           path: dist/*.tar.gz
 
