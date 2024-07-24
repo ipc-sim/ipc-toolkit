@@ -18,6 +18,16 @@ void define_barrier_potential(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("dhat"))
         .def(
+            py::init<const std::shared_ptr<Barrier>, const double>(),
+            R"ipc_Qu8mg5v7(
+            Construct a barrier potential.
+
+            Parameters:
+                barrier: The barrier function.
+                dhat: The activation distance of the barrier.
+            )ipc_Qu8mg5v7",
+            py::arg("barrier"), py::arg("dhat"))
+        .def(
             "__call__",
             py::overload_cast<
                 const Collisions&, const CollisionMesh&,

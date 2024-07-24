@@ -5,6 +5,7 @@
 #include <catch2/benchmark/catch_benchmark.hpp>
 
 #include <ipc/ipc.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 
 using namespace ipc;
 
@@ -45,8 +46,7 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
     V0 = mesh.vertices(V0);
     V1 = mesh.vertices(V1);
 
-    double tolerance = 1e-6;
-    int max_iterations = 1e7;
+    TightInclusionCCD ccd(/*tolerance=*/1e-6, /*max_iterations=*/1e7);
 
     Candidates candidates;
     candidates.build(mesh, V0, V1);
@@ -55,6 +55,6 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
     BENCHMARK("Earliest ToI Narrow-Phase")
     {
         toi = candidates.compute_collision_free_stepsize(
-            mesh, V0, V1, tolerance, max_iterations);
+            mesh, V0, V1, /*min_distance=*/0, ccd);
     };
 }

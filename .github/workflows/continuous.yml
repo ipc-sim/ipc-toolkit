@@ -61,12 +61,12 @@ jobs:
         uses: seanmiddleditch/gha-setup-ninja@master
 
       - name: Get number of CPU cores
-        uses: SimenB/github-actions-cpu-cores@v1
+        uses: SimenB/github-actions-cpu-cores@v2.0.0
         id: cpu-cores
 
       - name: Cache Build
         id: cache-build
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v4.0.2
         with:
           path: ${{ env.CACHE_PATH }}
           key: ${{ runner.os }}-${{ matrix.config }}-cache

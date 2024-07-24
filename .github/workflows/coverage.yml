@@ -30,7 +30,7 @@ jobs:
 
       - name: Cache Build
         id: cache-build
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v4.0.2
         with:
           path: ${{ env.CACHE_PATH }}
           key: coverage-cache
@@ -61,7 +61,7 @@ jobs:
           lcov --remove coverage.info '/usr/*' "${HOME}"'/.cache/*' '*tests/*' --output-file coverage.info
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4.5.0
         env:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.info

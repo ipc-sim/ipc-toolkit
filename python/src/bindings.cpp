@@ -12,6 +12,8 @@ PYBIND11_MODULE(ipctk, m)
 
     // define these early because they are used in other definitions
     define_eigen_ext(m);
+    define_narrow_phase_ccd(m);
+    define_tight_inclusion_ccd(m);
 
     // barrier
     define_barrier(m);
@@ -35,17 +37,18 @@ PYBIND11_MODULE(ipctk, m)
     define_edge_edge_candidate(m);
     define_edge_face_candidate(m);
     define_edge_vertex_candidate(m);
+    define_face_face_candidate(m);
     define_face_vertex_candidate(m);
     define_vertex_vertex_candidate(m);
 
     // ccd
     define_ccd_aabb(m);
-    define_ccd(m);
-    define_additive_ccd(m);
+    define_check_initial_distance(m);
     define_inexact_point_edge(m);
-    define_nonlinear_ccd(m);
     define_point_static_plane(m);
-    define_tight_inclusion_ccd(m);
+    define_inexact_ccd(m);
+    define_additive_ccd(m);
+    define_nonlinear_ccd(m);
 
     // collisions
     define_distance_type(m); // define early because it is used next

@@ -44,12 +44,12 @@ void define_friction_potential(py::module_& m)
             Parameters:
                 collisions: The set of collisions.
                 mesh: The collision mesh.
-                vertices: Vertices of the collision mesh.
+                velocities: Velocities of the collision mesh.
 
             Returns:
                 The sum of all friction dissipative potentials.
             )ipc_Qu8mg5v7",
-            py::arg("collisions"), py::arg("mesh"), py::arg("vertices"))
+            py::arg("collisions"), py::arg("mesh"), py::arg("velocities"))
         .def(
             "gradient",
             py::overload_cast<
@@ -62,12 +62,12 @@ void define_friction_potential(py::module_& m)
             Parameters:
                 collisions: The set of collisions.
                 mesh: The collision mesh.
-                vertices: Vertices of the collision mesh.
+                velocities: Velocities of the collision mesh.
 
             Returns:
                 The gradient of all friction dissipative potentials. This will have a size of |velocities|.
             )ipc_Qu8mg5v7",
-            py::arg("collisions"), py::arg("mesh"), py::arg("vertices"))
+            py::arg("collisions"), py::arg("mesh"), py::arg("velocities"))
         .def(
             "hessian",
             py::overload_cast<
@@ -80,13 +80,13 @@ void define_friction_potential(py::module_& m)
             Parameters:
                 collisions: The set of collisions.
                 mesh: The collision mesh.
-                vertices: Vertices of the collision mesh.
+                velocities: Velocities of the collision mesh.
                 project_hessian_to_psd: Make sure the hessian is positive semi-definite.
 
             Returns:
                 The hessian of all friction dissipative potentials. This will have a size of |velocities|×|velocities|.
             )ipc_Qu8mg5v7",
-            py::arg("collisions"), py::arg("mesh"), py::arg("vertices"),
+            py::arg("collisions"), py::arg("mesh"), py::arg("velocities"),
             py::arg("project_hessian_to_psd") = PSDProjectionMethod::NONE)
         .def(
             "force",
@@ -104,7 +104,7 @@ void define_friction_potential(py::module_& m)
                 mesh: The collision mesh.
                 rest_positions: Rest positions of the vertices (rowwise).
                 lagged_displacements: Previous displacements of the vertices (rowwise).
-                velocities: Current displacements of the vertices (rowwise).
+                velocities: Current velocities of the vertices (rowwise).
                 barrier_potential: Barrier potential (used for normal force magnitude).
                 barrier_stiffness: Barrier stiffness (used for normal force magnitude).
                 dmin: Minimum distance (used for normal force magnitude).

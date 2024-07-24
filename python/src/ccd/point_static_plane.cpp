@@ -11,8 +11,7 @@ void define_point_static_plane(py::module_& m)
         "point_static_plane_ccd",
         [](const VectorMax3d& p_t0, const VectorMax3d& p_t1,
            const VectorMax3d& plane_origin, const VectorMax3d& plane_normal,
-           const double conservative_rescaling =
-               DEFAULT_CCD_CONSERVATIVE_RESCALING) {
+           const double conservative_rescaling) {
             double toi;
             bool r = point_static_plane_ccd(
                 p_t0, p_t1, plane_origin, plane_normal, toi,
@@ -21,5 +20,6 @@ void define_point_static_plane(py::module_& m)
         },
         py::arg("p_t0"), py::arg("p_t1"), py::arg("plane_origin"),
         py::arg("plane_normal"),
-        py::arg("conservative_rescaling") = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+        py::arg("conservative_rescaling") =
+            TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 }

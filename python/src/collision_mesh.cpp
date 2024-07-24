@@ -56,7 +56,8 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 Constructed CollisionMesh.
             )ipc_Qu8mg5v7",
-            py::arg("full_rest_positions"), py::arg("edges"), py::arg("faces"))
+            py::arg("full_rest_positions"), py::arg("edges"),
+            py::arg("faces") = Eigen::MatrixXi())
         .def(
             "init_adjacencies", &CollisionMesh::init_adjacencies,
             "Initialize vertex-vertex and edge-vertex adjacencies.")
