@@ -1342,8 +1342,9 @@ Python</label></div>
 
 <span class="kt">double</span><span class="w"> </span><span class="n">toi</span><span class="p">;</span>
 <span class="kt">bool</span><span class="w"> </span><span class="n">collision</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ipc</span><span class="o">::</span><span class="n">point_edge_nonlinear_ccd</span><span class="p">(</span>
-<span class="w">    </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">e0</span><span class="p">,</span><span class="w"> </span><span class="n">e1</span><span class="p">,</span><span class="w"> </span><span class="n">toi</span><span class="p">,</span><span class="w"> </span><span class="cm">/*tmax=*/</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="cm">/*min_distance=*/</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">DEFAULT_CCD_TOLERANCE</span><span class="p">,</span>
-<span class="w">    </span><span class="n">DEFAULT_CCD_MAX_ITERATIONS</span><span class="p">,</span>
+<span class="w">    </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">e0</span><span class="p">,</span><span class="w"> </span><span class="n">e1</span><span class="p">,</span><span class="w"> </span><span class="n">toi</span><span class="p">,</span><span class="w"> </span><span class="cm">/*tmax=*/</span><span class="mf">1.0</span><span class="p">,</span><span class="w"> </span><span class="cm">/*min_distance=*/</span><span class="mi">0</span><span class="p">,</span>
+<span class="w">    </span><span class="n">TightInclusionCCD</span><span class="o">::</span><span class="n">DEFAULT_TOLERANCE</span><span class="p">,</span>
+<span class="w">    </span><span class="n">TightInclusionCCD</span><span class="o">::</span><span class="n">DEFAULT_MAX_ITERATIONS</span><span class="p">,</span>
 <span class="w">    </span><span class="c1">// increase the conservative_rescaling from 0.8 to 0.9 to get a more</span>
 <span class="w">    </span><span class="c1">// accurate estimate</span>
 <span class="w">    </span><span class="cm">/*conservative_rescaling=*/</span><span class="mf">0.9</span><span class="p">);</span>
@@ -1382,7 +1383,7 @@ Python</label></div>
   <small>
     
       Last update:
-      Jul 15, 2024
+      Jul 25, 2024
     
   </small>
 </div>
