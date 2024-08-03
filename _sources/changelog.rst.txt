@@ -6,6 +6,102 @@ Changelog
 .. role:: cmake(code)
    :language: cmake
 
+v1.3.0 (Aug 03, 2024)
+---------------------
+
+-  Separated the collision set and potential computations. This allows us to more easily add new potentials in the future. This will require updating calls to ``compute_potential_*``. See the `tutorial <https://ipctk.xyz/tutorial/getting_started.html>`__ for details.
+-  Add a ``Barrier`` class to enable dynamic selection of barrier function.
+-  Add a ``NarrowPhaseCCD`` class to enable dynamic selection of narrow-phase CCD method.
+
+.. _details-4:
+
+Details
+~~~~~~~
+
+-  Refactor potentials in `#83 <https://github.com/ipc-sim/ipc-toolkit/pull/83>`__
+
+   -  Replace "constraint" and "contact" names with "collision"
+   -  Removed ``compute_potential_*`` from ``Collision`` and ``Collisions``
+   -  Add a new class hierarchy ``Potential`` which represents computing the sum of individual potentials per collision
+
+      -  Implement the barrier potential and friction dissipative potential as Potentials: ``BarrierPotential`` and ``FrictionPotential``
+
+   -  Now, ``Collisions`` serve solely as the set of active collisions
+   -  Add the distance mollifier to all collisions with a ``is_mollified()`` function
+
+      -  The default mollifier is $m(x) = 1$, and only ``EdgeEdgeCollision`` overrides this
+
+   -  Remove versions of ``compute_distance`` and ``ccd`` from ``CollisionStencil`` which take the full mesh as input
+
+      -  Instead, expose the versions that take the collision stencil's vertex positions directly
+
+-  Polymorphic barrier in `#84 <https://github.com/ipc-sim/ipc-toolkit/pull/84>`__
+
+   -  Make the barrier function an object so it can be changed at runtime
+   -  Add a virtual class ``Barrier`` as an interface for generic barriers
+   -  Add ``ClampedLogBarrier`` class which implements the smoothly clamped log barrier functions from [Li et al. 2020]
+   -  ``barrier_gradient`` and ``barrier_hessian`` renamed to ``barrier_first_derivative`` and ``barrier_second_derivative`` respectively
+   -  Co-authored by `@arvigj <https://github.com/arvigj>`__
+
+-  Update compiler warnings in `#88 <https://github.com/ipc-sim/ipc-toolkit/pull/88>`__
+
+   -  Add ``-Werror=enum-conversion`` and ``-Wfloat-conversion``
+
+-  Fix 🐛 hash when not using Abseil in `#90 <https://github.com/ipc-sim/ipc-toolkit/pull/90>`__
+-  Clean-up SpatialHash Broad Phase in `#91 <https://github.com/ipc-sim/ipc-toolkit/pull/91>`__
+
+   -  Replace ``IPC_TOOLKIT_WITH_CORRECT_CCD`` with ``IPC_TOOLKIT_WITH_INEXACT_CCD``
+
+      -  Always include Tight Inclusion CCD because it is used by Nonlinear CCD
+
+   -  Add support for face-face collision (not used anywhere but for completeness and future-proof nonlinear face-face)
+   -  Add and use generic functions to ``SpatialHash``
+   -  Replace ``camelCase`` with ``snake_case`` in ``SpatialHash`` and ``HashGrid``
+
+-  Update Scalable CCD in `#92 <https://github.com/ipc-sim/ipc-toolkit/pull/92>`__
+
+   -  Updated Scalable CCD (i.e., Sweep and Tiniest Queue and CUDA Tight Inclusion CCD) to the `unified repository <https://github.com/Continuous-Collision-Detection/Scalable-CCD>`__ with support for generic collision pairs.
+   -  Renamed ``SWEEP_AND_TINIEST_QUEUE`` to ``SWEEP_AND_PRUNE`` to reflect that it is a standard implementation of the sweep and prune algorithm (see, e.g., "Real-Time Collision Detection" [Ericson 2004])
+   -  Renamed ``SWEEP_AND_TINIEST_QUEUE_GPU`` to ``SWEEP_AND_TINIEST_QUEUE`` to reflect that it is the only existing implementation of the sweep and tiniest queue algorithm
+
+-  Mark single argument constructors explicit in `#93 <https://github.com/ipc-sim/ipc-toolkit/pull/93>`__
+
+   -  Mark ``BarrierPotential(double)`` and ``FrictionPotential(double)`` as explicit constructors to avoid implicit conversions from double
+
+-  Fix compatibility with the latest Eigen by `@teseoch <https://github.com/teseoch>`__ in `#94 <https://github.com/ipc-sim/ipc-toolkit/pull/94>`__
+-  Add clang-format check action in `#96 <https://github.com/ipc-sim/ipc-toolkit/pull/96>`__
+-  Add new project PSD option by `@Huangzizhou <https://github.com/Huangzizhou>`__ in `#95 <https://github.com/ipc-sim/ipc-toolkit/pull/95>`__
+
+   -  Instead of clamping the negative eigenvalues to zero, add the option to flips the sign of negative eigenvalues according to `[Chen et al. 2024] <https://github.com/honglin-c/abs-psd>`__
+
+-  Fix 🐛 Python bindings for Numpy 2 in `#100 <https://github.com/ipc-sim/ipc-toolkit/pull/100>`__
+-  Make faces an optional parameter to ``CollisionMesh`` in `#105 <https://github.com/ipc-sim/ipc-toolkit/pull/105>`__
+-  Fix Python documentation by @rc in `#108 <https://github.com/ipc-sim/ipc-toolkit/pull/108>`__
+-  Polymorphic CCD in `#110 <https://github.com/ipc-sim/ipc-toolkit/pull/110>`__
+
+   -  Add narrow phase CCD parent class; pass CCD object to choose method
+   -  Replace ``tolerance`` and ``max_iterations`` parameters with ``const NarrowPhaseCCD& narrow_phase_ccd`` parameter
+   -  ``NarrowPhaseCCD`` is a virtual class containing the CCD methods for point-point, point-edge, edge-edge, and point-triangle CCD
+   -  ``NarrowPhaseCCD`` is implemented by ``InexactCCD``, ``TightInclusionCCD``, and ``AdditiveCCD`` classes
+   -  **[Breaking]** The optional parameter order to ``is_step_collision_free`` and ``compute_collision_free_stepsize`` is changed from
+
+      .. code:: cpp
+
+         const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
+         const double min_distance = 0.0,
+         const double tolerance = DEFAULT_CCD_TOLERANCE,
+         const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS);
+
+      to
+
+      .. code:: cpp
+
+         const double min_distance = 0.0,
+         const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
+         const NarrowPhaseCCD& narrow_phase_ccd = DEFAULT_NARROW_PHASE_CCD);
+
+   -  The inexact floating-point CCD can be enabled beside the Tight Inclusion CCD rather than replacing it
+
 v1.2.1 (Jul 12, 2024)
 ---------------------
 
@@ -94,7 +190,7 @@ Details
 v1.1.1 (Aug 18, 2023)
 ---------------------
 
-* Logo by @zfergus in `#52 <https://github.com/ipc-sim/ipc-toolkit/pull/52>`__
+* Logo by `@zfergus <https://github.com/zfergus>`__ in `#52 <https://github.com/ipc-sim/ipc-toolkit/pull/52>`__
 * Fix vertex-vertex :cpp:`==` and :cpp:`<` functions to be order independent
 
   * This allows vertex-vertex constraints merge correctly
