@@ -49,7 +49,7 @@ jobs:
           CIBW_BUILD: ${{ matrix.python-version }}-*
           CIBW_SKIP: "cp36-* cp37-* pp* *musllinux* *manylinux1* *-win32 *linux_i686 *linux_aarch64 *linux_ppc64le *linux_s390x"
 
-      - uses: actions/upload-artifact@v4.3.4
+      - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
 
@@ -62,7 +62,7 @@ jobs:
       - name: Build sdist
         run: pipx run build --sdist
 
-      - uses: actions/upload-artifact@v4.3.4
+      - uses: actions/upload-artifact@v3
         with:
           path: dist/*.tar.gz
 
