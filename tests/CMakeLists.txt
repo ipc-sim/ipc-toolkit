@@ -18,9 +18,6 @@ endif()
 set(IPC_TOOLKIT_TESTS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/tests")
 set(IPC_TOOLKIT_TESTS_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-### Data directory
-cmake_path(APPEND IPC_TOOLKIT_TESTS_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}" "data")
-
 ################################################################################
 # IPC Toolkit Tests Executable
 ################################################################################
@@ -29,6 +26,7 @@ cmake_path(APPEND IPC_TOOLKIT_TESTS_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}" "data
 add_executable(ipc_toolkit_tests)
 
 # Fill in configuration options
+include(ipc_toolkit_test_data)
 configure_file(
   "${IPC_TOOLKIT_TESTS_SOURCE_DIR}/config.hpp.in"
   "${IPC_TOOLKIT_TESTS_SOURCE_DIR}/config.hpp")
@@ -44,6 +42,7 @@ target_include_directories(ipc_toolkit_tests PUBLIC "${IPC_TOOLKIT_TESTS_INCLUDE
 ################################################################################
 
 target_link_libraries(ipc_toolkit_tests PUBLIC ipc::toolkit)
+target_link_libraries(ipc_toolkit_tests PUBLIC ipc::toolkit::test_data)
 
 include(catch2)
 target_link_libraries(ipc_toolkit_tests PUBLIC Catch2::Catch2)

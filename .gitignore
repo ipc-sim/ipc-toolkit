@@ -243,12 +243,6 @@ core*
 docs/source/doxyoutput
 docs/source/api
 !docs/Makefile
-# Private data
-tests/data/private
-# Git repo of sample CCD queries
-tests/data/ccd-queries
-# Too large to store in git
-tests/data/friction/chain
 logo
 ipctk
 
@@ -265,5 +259,7 @@ tests/src/tests/config.hpp
 docs/_doxygen
 
 notebooks/*.[ch]pp
-tests/data/cloth_ball_bf_ccd_candidates.json
 python/update_bindings.py
+
+# External test data
+tests/data
