@@ -217,7 +217,7 @@ TEST_CASE("Compare BP against brute force", "[broad_phase]")
     }
     SECTION("Complex")
     {
-        REQUIRE(tests::load_mesh("cube.obj", V0, E, F));
+        REQUIRE(tests::load_mesh("cube.ply", V0, E, F));
         U = Eigen::MatrixXd::Zero(V0.rows(), V0.cols());
         U.col(1).setOnes();
     }

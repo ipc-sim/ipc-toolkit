@@ -8,8 +8,8 @@ from utils import load_mesh
 
 
 def test_ccd():
-    V0, E, F = load_mesh("two-cubes-close.obj")
-    V1, E, F = load_mesh("two-cubes-intersecting.obj")
+    V0, E, F = load_mesh("two-cubes-close.ply")
+    V1, E, F = load_mesh("two-cubes-intersecting.ply")
 
     mesh = ipctk.CollisionMesh(V0, E, F)
 

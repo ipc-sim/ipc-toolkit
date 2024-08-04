@@ -15,8 +15,8 @@ TEST_CASE("Compute CFL stepsize", "[ccd][cfl]")
     SECTION("Cube-Cube")
     {
         Eigen::MatrixXi E1, F1;
-        const bool success = tests::load_mesh("two-cubes-close.obj", V0, E, F)
-            && tests::load_mesh("two-cubes-intersecting.obj", V1, E1, F1);
+        const bool success = tests::load_mesh("two-cubes-close.ply", V0, E, F)
+            && tests::load_mesh("two-cubes-intersecting.ply", V1, E1, F1);
         REQUIRE(success);
     }
 #ifdef NDEBUG

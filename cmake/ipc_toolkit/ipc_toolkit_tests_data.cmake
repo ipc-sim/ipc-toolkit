@@ -30,7 +30,7 @@ else()
         SOURCE_DIR ${IPC_TOOLKIT_TESTS_DATA_DIR}
 
         GIT_REPOSITORY https://github.com/ipc-sim/ipc-toolkit-tests-data.git
-        GIT_TAG a4fe14a4fd689a013ae25b72e50bdccac3bf2d04
+        GIT_TAG f26442c42d10f463a8ae58bb0865785c36f3b8ee
 
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""
