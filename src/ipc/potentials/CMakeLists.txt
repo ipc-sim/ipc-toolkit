@@ -5,6 +5,8 @@ set(SOURCES
   distance_based_potential.hpp
   friction_potential.cpp
   friction_potential.hpp
+  normal_adhesion_potential.cpp
+  normal_adhesion_potential.hpp
   potential.hpp
   potential.tpp
   tangential_potential.cpp

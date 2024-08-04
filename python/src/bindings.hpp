@@ -1,5 +1,6 @@
 #pragma once
 
+#include <adhesion/bindings.hpp>
 #include <barrier/bindings.hpp>
 #include <broad_phase/bindings.hpp>
 #include <candidates/bindings.hpp>

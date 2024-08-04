@@ -15,6 +15,9 @@ PYBIND11_MODULE(ipctk, m)
     define_narrow_phase_ccd(m);
     define_tight_inclusion_ccd(m);
 
+    // adhesion
+    define_adhesion(m);
+
     // barrier
     define_barrier(m);
     define_adaptive_stiffness(m);

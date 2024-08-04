@@ -9,6 +9,8 @@ namespace ipc {
 
 /// @brief The barrier collision potential.
 class BarrierPotential : public DistanceBasedPotential {
+    using Super = DistanceBasedPotential;
+
 public:
     /// @brief Construct a barrier potential.
     /// @param dhat The activation distance of the barrier.
@@ -44,27 +46,31 @@ public:
         m_barrier = barrier;
     }
 
+    using Super::operator();
+    using Super::gradient;
+    using Super::hessian;
+
 protected:
     /// @brief Compute the barrier potential for a collision.
     /// @param distance_sqr The distance (squared) between the two objects.
     /// @param dmin The minimum distance (unsquared) between the two objects.
     /// @return The barrier potential.
-    double distance_based_potential(
-        const double distance_sqr, const double dmin = 0) const override;
+    double
+    operator()(const double distance_sqr, const double dmin = 0) const override;
 
     /// @brief Compute the gradient of the barrier potential for a collision.
     /// @param distance_sqr The distance (squared) between the two objects.
     /// @param dmin The minimum distance (unsquared) between the two objects.
     /// @return The gradient of the barrier potential.
-    double distance_based_potential_gradient(
-        const double distance_sqr, const double dmin = 0) const override;
+    double
+    gradient(const double distance_sqr, const double dmin = 0) const override;
 
     /// @brief Compute the hessian of the barrier potential for a collision.
     /// @param distance_sqr The distance (squared) between the two objects.
     /// @param dmin The minimum distance (unsquared) between the two objects.
     /// @return The hessian of the barrier potential.
-    double distance_based_potential_hessian(
-        const double distance_sqr, const double dmin = 0) const override;
+    double
+    hessian(const double distance_sqr, const double dmin = 0) const override;
 
     /// @brief The activation distance of the barrier.
     double m_dhat;

@@ -28,7 +28,7 @@ double normal_adhesion_potential(
     }
 }
 
-double normal_adhesion_potential_gradient(
+double normal_adhesion_potential_first_derivative(
     const double d, const double dhat_p, const double dhat_a, const double a2)
 {
     assert(d >= 0);
@@ -45,7 +45,7 @@ double normal_adhesion_potential_gradient(
     }
 }
 
-double normal_adhesion_potential_hessian(
+double normal_adhesion_potential_second_derivative(
     const double d, const double dhat_p, const double dhat_a, const double a2)
 {
     assert(d >= 0);
@@ -71,7 +71,7 @@ double f0_t(const double y, const double eps_a)
     } else if (y >= 2 * eps_a) {
         return 4 * eps_a / 3;
     }
-    return y * y / eps_a * (1 + y / (3 * eps_a)); // -y³/(3ϵ²) + y²/ϵ
+    return y * y / eps_a * (1 - y / (3 * eps_a)); // -y³/(3ϵ²) + y²/ϵ
 }
 
 double f1_t(const double y, const double eps_a)

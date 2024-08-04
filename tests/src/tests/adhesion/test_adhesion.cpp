@@ -52,7 +52,7 @@ TEST_CASE("Test normal adhesion derivatives", "[adhesion]")
         fgrad);
 
     Eigen::VectorXd grad(1);
-    grad << normal_adhesion_potential_gradient(d, dhat_p, dhat_a, a2);
+    grad << normal_adhesion_potential_first_derivative(d, dhat_p, dhat_a, a2);
 
     CAPTURE(dhat_p, dhat_a, d, fgrad(0), grad(0), use_dist_sqr);
     CHECK(fd::compare_gradient(fgrad, grad));
@@ -67,11 +67,12 @@ TEST_CASE("Test normal adhesion derivatives", "[adhesion]")
         d_vec,
         [&](const Eigen::VectorXd& d) {
             REQUIRE(d[0] >= 0);
-            return normal_adhesion_potential_gradient(d[0], dhat_p, dhat_a, a2);
+            return normal_adhesion_potential_first_derivative(
+                d[0], dhat_p, dhat_a, a2);
         },
         fgrad);
 
-    grad << normal_adhesion_potential_hessian(d, dhat_p, dhat_a, a2);
+    grad << normal_adhesion_potential_second_derivative(d, dhat_p, dhat_a, a2);
 
     CAPTURE(dhat_p, dhat_a, d, fgrad(0), grad(0), use_dist_sqr);
     CHECK(fd::compare_gradient(fgrad, grad));
