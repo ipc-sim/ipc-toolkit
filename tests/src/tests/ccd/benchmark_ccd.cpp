@@ -17,13 +17,13 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
     std::string mesh_name_t0, mesh_name_t1;
     SECTION("Data 0")
     {
-        mesh_name_t0 = "private/slow-broadphase-ccd/0.obj";
-        mesh_name_t1 = "private/slow-broadphase-ccd/1.obj";
+        mesh_name_t0 = "private/slow-broadphase-ccd/0.ply";
+        mesh_name_t1 = "private/slow-broadphase-ccd/1.ply";
     }
     SECTION("Data 1")
     {
-        mesh_name_t0 = "private/slow-broadphase-ccd/s0.obj";
-        mesh_name_t1 = "private/slow-broadphase-ccd/s1.obj";
+        mesh_name_t0 = "private/slow-broadphase-ccd/s0.ply";
+        mesh_name_t1 = "private/slow-broadphase-ccd/s1.ply";
     }
     SECTION("Cloth-ball")
     {

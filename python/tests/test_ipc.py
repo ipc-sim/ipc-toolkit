@@ -41,7 +41,7 @@ def check_ipc_derivatives(broad_phase_method, use_convergent_formulation, mesh_n
 def test_ipc():
     for method in utils.broad_phase_methods():
         for use_convergent_formulation in (True, False):
-            yield check_ipc_derivatives, method, use_convergent_formulation, "cube.obj", np.sqrt(2.0), True
-            yield check_ipc_derivatives, method, use_convergent_formulation, "two-cubes-far.obj", 1e-1, False
-            yield check_ipc_derivatives, method, use_convergent_formulation, "two-cubes-close.obj", 1e-1, False
-            yield check_ipc_derivatives, method, use_convergent_formulation, "bunny.obj", 5e-3, True
+            yield check_ipc_derivatives, method, use_convergent_formulation, "cube.ply", np.sqrt(2.0), True
+            yield check_ipc_derivatives, method, use_convergent_formulation, "two-cubes-far.ply", 1e-1, False
+            yield check_ipc_derivatives, method, use_convergent_formulation, "two-cubes-close.ply", 1e-1, False
+            yield check_ipc_derivatives, method, use_convergent_formulation, "bunny.ply", 5e-3, True

@@ -29,25 +29,25 @@ TEST_CASE(
     SECTION("cube")
     {
         dhat = sqrt(2.0);
-        mesh_name = "cube.obj";
+        mesh_name = "cube.ply";
     }
     SECTION("two cubes far")
     {
         dhat = 1e-1;
-        mesh_name = "two-cubes-far.obj";
+        mesh_name = "two-cubes-far.ply";
         all_vertices_on_surface = false;
     }
     SECTION("two cubes close")
     {
         dhat = 1e-1;
-        mesh_name = "two-cubes-close.obj";
+        mesh_name = "two-cubes-close.ply";
         all_vertices_on_surface = false;
     }
     // WARNING: The bunny takes too long in debug.
     // SECTION("bunny")
     // {
     //     dhat = 1e-2;
-    //     mesh_name = "bunny.obj";
+    //     mesh_name = "bunny.ply";
     // }
 
     Eigen::MatrixXd vertices;
@@ -252,7 +252,7 @@ TEST_CASE(
 {
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
-    tests::load_mesh("cube.obj", vertices, edges, faces);
+    tests::load_mesh("cube.ply", vertices, edges, faces);
 
     const bool use_convergent_formulation = GENERATE(false);
     const double dhat = 1e-1;
@@ -469,12 +469,12 @@ TEST_CASE(
     SECTION("cube")
     {
         dhat = sqrt(2.0);
-        mesh_name = "cube.obj";
+        mesh_name = "cube.ply";
     }
     SECTION("bunny")
     {
         dhat = 1e-2;
-        mesh_name = "bunny.obj";
+        mesh_name = "bunny.ply";
     }
 
     Eigen::MatrixXd vertices;

@@ -4,9 +4,11 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators_adapters.hpp>
 #include <catch2/generators/catch_generators_random.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 
 #include <ipc/ipc.hpp>
 #include <ipc/ccd/tight_inclusion_ccd.hpp>
+#include <ipc/ccd/additive_ccd.hpp>
 #include <ipc/ccd/point_static_plane.hpp>
 
 using namespace ipc;
@@ -30,33 +32,33 @@ TEST_CASE("Repeated CCD", "[ccd][repeat][.]")
     std::string t0_filename, t1_filename;
     SECTION("tooth")
     {
-        t0_filename = "private/ccd-failure/repeated_toi_tooth_0.obj";
-        t1_filename = "private/ccd-failure/repeated_toi_tooth_1.obj";
+        t0_filename = "private/ccd-failure/repeated_toi_tooth_0.ply";
+        t1_filename = "private/ccd-failure/repeated_toi_tooth_1.ply";
     }
     SECTION("hip")
     {
-        t0_filename = "private/ccd-failure/repeated_toi_hip_0.obj";
-        t1_filename = "private/ccd-failure/repeated_toi_hip_1.obj";
+        t0_filename = "private/ccd-failure/repeated_toi_hip_0.ply";
+        t1_filename = "private/ccd-failure/repeated_toi_hip_1.ply";
     }
     SECTION("hip small repeated toi")
     {
-        t0_filename = "private/ccd-failure/small_repeated_toi_hip_0.obj";
-        t1_filename = "private/ccd-failure/small_repeated_toi_hip_1.obj";
+        t0_filename = "private/ccd-failure/small_repeated_toi_hip_0.ply";
+        t1_filename = "private/ccd-failure/small_repeated_toi_hip_1.ply";
     }
     SECTION("hip inf-repeat 0")
     {
-        t0_filename = "private/ccd-failure/inf_repeated_toi_hip_0.obj";
-        t1_filename = "private/ccd-failure/inf_repeated_toi_hip_1.obj";
+        t0_filename = "private/ccd-failure/inf_repeated_toi_hip_0.ply";
+        t1_filename = "private/ccd-failure/inf_repeated_toi_hip_1.ply";
     }
     SECTION("hip inf-repeat 1")
     {
-        t0_filename = "private/ccd-failure/s0121.obj";
-        t1_filename = "private/ccd-failure/s1121.obj";
+        t0_filename = "private/ccd-failure/s0121.ply";
+        t1_filename = "private/ccd-failure/s1121.ply";
     }
     SECTION("hip inf-repeat 2")
     {
-        t0_filename = "private/ccd-failure/s0110.obj";
-        t1_filename = "private/ccd-failure/s1110.obj";
+        t0_filename = "private/ccd-failure/s0110.ply";
+        t1_filename = "private/ccd-failure/s1110.ply";
     }
     SECTION("cloth-ball")
     {
@@ -204,4 +206,45 @@ TEST_CASE("Degenerate tolerance", "[ccd]")
     const double t0 = ipc::compute_collision_free_stepsize(mesh, V, V);
 
     CHECK(t0 == 1.0);
+}
+
+TEST_CASE("Slow CCD", "[CCD]")
+{
+    Eigen::MatrixXd V0, V1;
+    Eigen::MatrixXi E, F;
+    REQUIRE(tests::load_mesh("thick-cloth/t0.ply", V0, E, F));
+    REQUIRE(tests::load_mesh("thick-cloth/t1.ply", V1, E, F));
+
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0, E, F);
+
+    const double min_distance = 1e-3;
+    const BroadPhaseMethod broad_phase_method =
+        BroadPhaseMethod::SWEEP_AND_PRUNE;
+
+    // Broad phase
+    Candidates candidates;
+    candidates.build(mesh, V0, V1, min_distance / 2, broad_phase_method);
+
+    const TightInclusionCCD tight_inclusion(
+        /*tolerance=*/100 * TightInclusionCCD::DEFAULT_TOLERANCE);
+
+    // Narrow phase
+    BENCHMARK("Tight Inclusion")
+    {
+        candidates.compute_collision_free_stepsize(
+            mesh, V0, V1, min_distance, tight_inclusion);
+    };
+
+    BENCHMARK("Additive")
+    {
+        candidates.compute_collision_free_stepsize(
+            mesh, V0, V1, min_distance, AdditiveCCD());
+    };
+
+    logger().critical(
+        "ti_toi={} additive_toi={}",
+        candidates.compute_collision_free_stepsize(
+            mesh, V0, V1, min_distance, tight_inclusion),
+        candidates.compute_collision_free_stepsize(
+            mesh, V0, V1, min_distance, AdditiveCCD()));
 }
