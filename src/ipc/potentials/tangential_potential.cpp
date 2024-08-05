@@ -178,7 +178,7 @@ VectorMax12d TangentialPotential::gradient(
 MatrixMax12d TangentialPotential::hessian(
     const FrictionCollision& collision,
     const VectorMax12d& velocities,
-    const bool project_hessian_to_psd) const
+    const PSDProjectionMethod project_hessian_to_psd) const
 {
     // ∇ₓ μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u (where u = T(xᵗ)ᵀ v)
     //  = μ N T [(f₁'(‖u‖)‖u‖ − f₁(‖u‖))/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
@@ -210,7 +210,7 @@ MatrixMax12d TangentialPotential::hessian(
         //            = μ N T [-f₁(‖u‖)/‖u‖ uuᵀ/‖u‖² + f₁(‖u‖)/‖u‖ I] Tᵀ
         //            = μ N T [f₁(‖u‖)/‖u‖ (I - uuᵀ/‖u‖²)] Tᵀ
         //  ⟹ no PSD projection needed because f₁(‖u‖)/‖u‖ ≥ 0
-        if (project_hessian_to_psd && scale <= 0) {
+        if (project_hessian_to_psd != PSDProjectionMethod::NONE && scale <= 0) {
             hess.setZero(collision.ndof(), collision.ndof()); // -PSD = NSD ⟹ 0
         } else if (collision.dim() == 2) {
             // I - uuᵀ/‖u‖² = 1 - u²/u² = 0 ⟹ ∇²D(v) = 0
@@ -227,7 +227,7 @@ MatrixMax12d TangentialPotential::hessian(
         // ∇²D = μ N T [(f₁'(‖u‖)‖u‖ − f₁(‖u‖))/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
         // lim_{‖u‖→0} ∇²D = μ N T [f₁(‖u‖)/‖u‖ I] Tᵀ
         // no PSD projection needed because μ N f₁(‖ū‖)/‖ū‖ ≥ 0
-        if (project_hessian_to_psd && scale <= 0) {
+        if (project_hessian_to_psd != PSDProjectionMethod::NONE && scale <= 0) {
             hess.setZero(collision.ndof(), collision.ndof()); // -PSD = NSD ⟹ 0
         } else {
             hess = scale * f1_over_norm_u * T * T.transpose();
@@ -240,9 +240,7 @@ MatrixMax12d TangentialPotential::hessian(
         MatrixMax2d inner_hess = f2 * u * u.transpose();
         inner_hess.diagonal().array() += f1_over_norm_u;
         inner_hess *= scale; // NOTE: negative scaling will be projected out
-        if (project_hessian_to_psd) {
-            inner_hess = project_to_psd(inner_hess);
-        }
+        inner_hess = project_to_psd(inner_hess, project_hessian_to_psd);
 
         hess = T * inner_hess * T.transpose();
     }
@@ -260,15 +258,20 @@ VectorMax12d TangentialPotential::force(
     const double dmin,
     const bool no_mu) const
 {
-    // x are the rest positions
-    // u are the displacements at the beginning of the lagged solve
-    // v are the current velocities
+    // x is the rest position
+    // u is the displacment at the begginging of the lagged solve
+    // v is the current velocity
     //
     // τ = T(x + u)ᵀv is the tangential sliding velocity
     // F(x, u, v) = -μ N(x + u) f₁(‖τ‖)/‖τ‖ T(x + u) τ
     assert(rest_positions.size() == lagged_displacements.size());
     assert(rest_positions.size() == velocities.size());
 
+    // const VectorMax12d x = dof(rest_positions, edges, faces);
+    // const VectorMax12d u = dof(lagged_displacements, edges, faces);
+    // const VectorMax12d v = dof(velocities, edges, faces);
+
+    // x:
     const VectorMax12d lagged_positions = rest_positions + lagged_displacements;
 
     // Compute N(x + u)
@@ -311,9 +314,9 @@ MatrixMax12d TangentialPotential::force_jacobian(
     const DiffWRT wrt,
     const double dmin) const
 {
-    // x are the rest positions
-    // u are the displacements at the beginning of the lagged solve
-    // v are the current velocities
+    // x is the rest position
+    // u is the displacment at the begginging of the lagged solve
+    // v is the current velocity
     //
     // τ = T(x + u)ᵀv is the tangential sliding velocity
     // F(x, u, v) = -μ N(x + u) f₁(‖τ‖)/‖τ‖ T(x + u) τ
@@ -325,6 +328,11 @@ MatrixMax12d TangentialPotential::force_jacobian(
     const int dim = n / collision.num_vertices();
     assert(n % collision.num_vertices() == 0);
 
+    // const VectorMax12d x = dof(rest_positions, edges, faces);
+    // const VectorMax12d u = dof(lagged_displacements, edges, faces);
+    // const VectorMax12d v = dof(velocities, edges, faces);
+
+    // x + u:
     const VectorMax12d lagged_positions = rest_positions + lagged_displacements;
     const bool need_jac_N_or_T = wrt != DiffWRT::VELOCITIES;
 
