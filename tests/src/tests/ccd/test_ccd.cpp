@@ -212,8 +212,8 @@ TEST_CASE("Slow CCD", "[CCD]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
-    REQUIRE(tests::load_mesh("private/daoming/x.ply", V0, E, F));
-    REQUIRE(tests::load_mesh("private/daoming/x_next.ply", V1, E, F));
+    REQUIRE(tests::load_mesh("thick-cloth/t0.ply", V0, E, F));
+    REQUIRE(tests::load_mesh("thick-cloth/t1.ply", V1, E, F));
 
     CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0, E, F);
 
