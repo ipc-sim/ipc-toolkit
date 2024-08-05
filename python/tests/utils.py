@@ -11,6 +11,7 @@ def download_test_data_if_needed(directory):
         return
 
     # Clone the test data repository
+    print(f"Downloading test data to {directory}")
     import subprocess
     subprocess.run([
         'git', 'clone', 'https://github.com/ipc-sim/ipc-toolkit-tests-data',
