@@ -5,11 +5,27 @@ import meshio
 import find_ipctk
 import ipctk
 
-TEST_DATA_DIR = pathlib.Path(__file__).parents[2] / 'tests' / 'data'
+
+def download_test_data_if_needed(directory):
+    if directory.exists():
+        return
+
+    # Clone the test data repository
+    import subprocess
+    subprocess.run([
+        'git', 'clone', 'https://github.com/ipc-sim/ipc-toolkit-tests-data',
+        str(directory)
+    ])
+
+
+def test_data_dir():
+    _test_data_dir = pathlib.Path(__file__).parents[2] / 'tests' / 'data'
+    download_test_data_if_needed(_test_data_dir)
+    return _test_data_dir
 
 
 def load_mesh(mesh_name):
-    mesh = meshio.read(TEST_DATA_DIR / mesh_name)
+    mesh = meshio.read(test_data_dir() / mesh_name)
     return mesh.points, ipctk.edges(mesh.cells_dict['triangle']), mesh.cells_dict['triangle']
 
 
