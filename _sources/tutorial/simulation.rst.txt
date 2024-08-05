@@ -194,7 +194,7 @@ While IPC cannot directly handle nonlinear finite element bases and/or curved me
             Eigen::MatrixXd proxy_rest_positions;
             Eigen::MatrixXi proxy_edges, proxy_faces;
             // Load the proxy mesh from a file
-            igl::readOBJ("proxy.obj", rest_positions, faces);
+            igl::read_triangle_mesh("proxy.ply", rest_positions, faces);
             igl::edges(faces, edges);
             // Or build it from the volumetric mesh
 
@@ -215,7 +215,7 @@ While IPC cannot directly handle nonlinear finite element bases and/or curved me
 
             # Collision proxy mesh
             # Load the proxy mesh from a file
-            proxy_mesh = meshio.read("proxy.obj")
+            proxy_mesh = meshio.read("proxy.ply")
             proxy_rest_positions = proxy_mesh.points
             proxy_faces = proxy_mesh.cells_dict["triangle"]
             proxy_edges = igl.edges(proxy_faces)

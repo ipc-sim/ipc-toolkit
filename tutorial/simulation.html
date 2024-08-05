@@ -1349,7 +1349,7 @@ Python</label></div>
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">proxy_rest_positions</span><span class="p">;</span>
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="w"> </span><span class="n">proxy_edges</span><span class="p">,</span><span class="w"> </span><span class="n">proxy_faces</span><span class="p">;</span>
 <span class="c1">// Load the proxy mesh from a file</span>
-<span class="n">igl</span><span class="o">::</span><span class="n">readOBJ</span><span class="p">(</span><span class="s">&quot;proxy.obj&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">);</span>
+<span class="n">igl</span><span class="o">::</span><span class="n">read_triangle_mesh</span><span class="p">(</span><span class="s">&quot;proxy.ply&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">);</span>
 <span class="n">igl</span><span class="o">::</span><span class="n">edges</span><span class="p">(</span><span class="n">faces</span><span class="p">,</span><span class="w"> </span><span class="n">edges</span><span class="p">);</span>
 <span class="c1">// Or build it from the volumetric mesh</span>
 
@@ -1369,7 +1369,7 @@ Python</label></div>
 
 <span class="c1"># Collision proxy mesh</span>
 <span class="c1"># Load the proxy mesh from a file</span>
-<span class="n">proxy_mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;proxy.obj&quot;</span><span class="p">)</span>
+<span class="n">proxy_mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;proxy.ply&quot;</span><span class="p">)</span>
 <span class="n">proxy_rest_positions</span> <span class="o">=</span> <span class="n">proxy_mesh</span><span class="o">.</span><span class="n">points</span>
 <span class="n">proxy_faces</span> <span class="o">=</span> <span class="n">proxy_mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;triangle&quot;</span><span class="p">]</span>
 <span class="n">proxy_edges</span> <span class="o">=</span> <span class="n">igl</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">proxy_faces</span><span class="p">)</span>
@@ -1418,7 +1418,7 @@ Python</label></div>
   <small>
     
       Last update:
-      Aug 04, 2024
+      Aug 05, 2024
     
   </small>
 </div>

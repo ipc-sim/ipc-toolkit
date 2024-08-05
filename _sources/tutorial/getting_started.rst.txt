@@ -8,7 +8,7 @@ Collision Mesh
 
 First, we need to create a collision mesh. The ``CollisionMesh`` data structure represents the surface geometry used for collision processing.
 
-We will start by creating a collision mesh from a ``bunny.obj`` mesh file (you can find the mesh `here <https://github.com/ipc-sim/ipc-toolkit/blob/main/tests/data/bunny.obj>`_):
+We will start by creating a collision mesh from a ``bunny.ply`` mesh file (you can find the mesh `here <https://github.com/ipc-sim/ipc-toolkit-tests-data/blob/main/bunny.ply>`_):
 
 .. md-tab-set::
 
@@ -20,14 +20,14 @@ We will start by creating a collision mesh from a ``bunny.obj`` mesh file (you c
 
             #include <Eigen/Core>
             #include <Eigen/Sparse>
-            #include <igl/readOBJ.h>
+            #include <igl/read_triangle_mesh.h>
             #include <igl/edges.h>
 
             // ...
 
             Eigen::MatrixXd rest_positions;
             Eigen::MatrixXi edges, faces;
-            igl::readOBJ("bunny.obj", rest_positions, faces);
+            igl::read_triangle_mesh("bunny.ply", rest_positions, faces);
             igl::edges(faces, edges);
 
             ipc::CollisionMesh collision_mesh(rest_positions, edges, faces);
@@ -40,7 +40,7 @@ We will start by creating a collision mesh from a ``bunny.obj`` mesh file (you c
 
             import meshio
 
-            mesh = meshio.read("bunny.obj")
+            mesh = meshio.read("bunny.ply")
             rest_positions = mesh.points
             faces = mesh.cells_dict["triangle"]
             edges = ipctk.edges(faces)

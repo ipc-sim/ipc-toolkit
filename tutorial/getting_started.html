@@ -1310,7 +1310,7 @@
 <p>This tutorial will walk you through the basics of using the IPC Toolkit.</p>
 <h2 id="collision-mesh">Collision Mesh<a class="headerlink" href="#collision-mesh" title="Permalink to this heading">¶</a></h2>
 <p>First, we need to create a collision mesh. The <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> data structure represents the surface geometry used for collision processing.</p>
-<p>We will start by creating a collision mesh from a <code class="docutils literal notranslate"><span class="pre">bunny.obj</span></code> mesh file (you can find the mesh <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/blob/main/tests/data/bunny.obj">here</a>):</p>
+<p>We will start by creating a collision mesh from a <code class="docutils literal notranslate"><span class="pre">bunny.ply</span></code> mesh file (you can find the mesh <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit-tests-data/blob/main/bunny.ply">here</a>):</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2">
 <input checked type="radio" id="__tabbed_1_1" name="__tabbed_1"><input type="radio" id="__tabbed_1_2" name="__tabbed_1"><div class="tabbed-labels docutils">
 <label class="tabbed-label" for="__tabbed_1_1">
@@ -1322,14 +1322,14 @@ Python</label></div>
 
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Eigen/Core&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Eigen/Sparse&gt;</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;igl/readOBJ.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;igl/read_triangle_mesh.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;igl/edges.h&gt;</span>
 
 <span class="c1">// ...</span>
 
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXd</span><span class="w"> </span><span class="n">rest_positions</span><span class="p">;</span>
 <span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXi</span><span class="w"> </span><span class="n">edges</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">;</span>
-<span class="n">igl</span><span class="o">::</span><span class="n">readOBJ</span><span class="p">(</span><span class="s">&quot;bunny.obj&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">);</span>
+<span class="n">igl</span><span class="o">::</span><span class="n">read_triangle_mesh</span><span class="p">(</span><span class="s">&quot;bunny.ply&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">);</span>
 <span class="n">igl</span><span class="o">::</span><span class="n">edges</span><span class="p">(</span><span class="n">faces</span><span class="p">,</span><span class="w"> </span><span class="n">edges</span><span class="p">);</span>
 
 <span class="n">ipc</span><span class="o">::</span><span class="n">CollisionMesh</span><span class="w"> </span><span class="nf">collision_mesh</span><span class="p">(</span><span class="n">rest_positions</span><span class="p">,</span><span class="w"> </span><span class="n">edges</span><span class="p">,</span><span class="w"> </span><span class="n">faces</span><span class="p">);</span>
@@ -1341,7 +1341,7 @@ Python</label></div>
 
 <span class="kn">import</span> <span class="nn">meshio</span>
 
-<span class="n">mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;bunny.obj&quot;</span><span class="p">)</span>
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">meshio</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s2">&quot;bunny.ply&quot;</span><span class="p">)</span>
 <span class="n">rest_positions</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">points</span>
 <span class="n">faces</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">cells_dict</span><span class="p">[</span><span class="s2">&quot;triangle&quot;</span><span class="p">]</span>
 <span class="n">edges</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">faces</span><span class="p">)</span>
@@ -1934,7 +1934,7 @@ Python</label></div>
   <small>
     
       Last update:
-      Aug 04, 2024
+      Aug 05, 2024
     
   </small>
 </div>
