@@ -8,58 +8,66 @@
 
 using namespace ipc;
 
-TEST_CASE("Smooth friction gradient", "[friction][mollifier]")
+TEST_CASE("Smooth friction mollifier", "[friction][mollifier]")
 {
 
     static constexpr double EPSILON = 2e-2;
     static constexpr double MARGIN = 1e-6;
-    const double epsv_times_h = std::pow(10, GENERATE(range(-8, 0, 1)));
+    const double eps_v = std::pow(10, GENERATE(range(-8, 0, 1)));
     double x;
     // SECTION("x=0") { x = 0; }
     // SECTION("x=gen") {
     x = std::pow(10, GENERATE(range(-8, 0, 1)));
     // }
 
-    if (x == 1e-8 && epsv_times_h == 1e-8) {
+    if (x == 1e-8 && eps_v == 1e-8) {
         return;
     }
 
-    CAPTURE(x, epsv_times_h);
+    CAPTURE(x, eps_v);
 
     Eigen::Matrix<double, 1, 1> X;
     X << x;
 
     // Check gradient
 
-    Eigen::VectorXd fd_f1_over_x(1);
+    Eigen::VectorXd fd_f1(1);
     fd::finite_gradient(
         X,
         [&](const Eigen::VectorXd& _X) {
-            return smooth_friction_f0(_X[0], epsv_times_h);
+            return smooth_friction_f0(_X[0], eps_v);
         },
-        fd_f1_over_x);
-    // fd_f1_over_x /= x;
-
-    double f1_over_x = smooth_friction_f1_over_x(x, epsv_times_h);
+        fd_f1);
 
     CHECK(
-        f1_over_x * x
-        == Catch::Approx(fd_f1_over_x[0]).margin(MARGIN).epsilon(EPSILON));
+        smooth_friction_f1(x, eps_v)
+        == Catch::Approx(fd_f1[0]).margin(MARGIN).epsilon(EPSILON));
+
+    CHECK(
+        smooth_friction_f1_over_x(x, eps_v) * x
+        == Catch::Approx(fd_f1[0]).margin(MARGIN).epsilon(EPSILON));
 
     // Check hessian
-    if (x == epsv_times_h) {
+    if (x == eps_v) {
         return;
     }
+
     Eigen::VectorXd fd_f2(1);
     fd::finite_gradient(
         X,
         [&](const Eigen::VectorXd& _X) {
-            return smooth_friction_f1_over_x(_X[0], epsv_times_h);
+            return smooth_friction_f1(_X[0], eps_v);
         },
         fd_f2);
-    // fd_f2 /= x;
 
-    double f2 = smooth_friction_f2_x_minus_f1_over_x3(x, epsv_times_h);
+    CHECK(
+        smooth_friction_f2(x, eps_v)
+        == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
 
-    CHECK(f2 * x == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
+    double f2 = smooth_friction_f2_x_minus_f1_over_x3(x, eps_v);
+    f2 *= x * x * x;
+    f2 += smooth_friction_f1(x, eps_v);
+    f2 /= x;
+
+    CHECK(f2 == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
 }

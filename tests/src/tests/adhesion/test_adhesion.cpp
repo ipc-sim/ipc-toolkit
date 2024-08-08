@@ -9,7 +9,7 @@
 
 using namespace ipc;
 
-TEST_CASE("Test normal adhesion derivatives", "[adhesion]")
+TEST_CASE("Normal adhesion derivatives", "[adhesion][normal]")
 {
     bool use_dist_sqr = GENERATE(false, true);
     double dhat_p = GENERATE_COPY(range(use_dist_sqr ? -2 : -5, 0));
@@ -76,4 +76,67 @@ TEST_CASE("Test normal adhesion derivatives", "[adhesion]")
 
     CAPTURE(dhat_p, dhat_a, d, fgrad(0), grad(0), use_dist_sqr);
     CHECK(fd::compare_gradient(fgrad, grad));
+}
+
+TEST_CASE("Tangential adhesion mollifier", "[adhesion][tangential]")
+{
+    static constexpr double EPSILON = 2e-2;
+    static constexpr double MARGIN = 1e-6;
+    const double eps_a = std::pow(10, GENERATE(range(-8, 0, 1)));
+    double x;
+    // SECTION("x=0") { x = 0; }
+    // SECTION("x=gen") {
+    x = std::pow(10, GENERATE(range(-8, 0, 1)));
+    // }
+
+    if (x == 1e-8 && eps_a == 1e-8) {
+        return;
+    }
+
+    CAPTURE(x, eps_a);
+
+    Eigen::Matrix<double, 1, 1> X;
+    X << x;
+
+    // Check gradient
+
+    Eigen::VectorXd fd_f1(1);
+    fd::finite_gradient(
+        X,
+        [&](const Eigen::VectorXd& _X) {
+            return tangential_adhession_f0(_X[0], eps_a);
+        },
+        fd_f1);
+
+    CHECK(
+        tangential_adhession_f1(x, eps_a)
+        == Catch::Approx(fd_f1[0]).margin(MARGIN).epsilon(EPSILON));
+
+    CHECK(
+        tangential_adhession_f1_over_x(x, eps_a) * x
+        == Catch::Approx(fd_f1[0]).margin(MARGIN).epsilon(EPSILON));
+
+    // Check hessian
+    if (x == eps_a) {
+        return;
+    }
+
+    Eigen::VectorXd fd_f2(1);
+    fd::finite_gradient(
+        X,
+        [&](const Eigen::VectorXd& _X) {
+            return tangential_adhession_f1(_X[0], eps_a);
+        },
+        fd_f2);
+
+    CHECK(
+        tangential_adhession_f2(x, eps_a)
+        == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
+
+    double f2 = tangential_adhession_f2_x_minus_f1_over_x3(x, eps_a);
+    f2 *= x * x * x;
+    f2 += tangential_adhession_f1(x, eps_a);
+    f2 /= x;
+
+    CHECK(f2 == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
 }

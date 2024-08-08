@@ -5,32 +5,49 @@
 
 namespace ipc {
 
-double smooth_friction_f0(const double s, const double epsv)
+double smooth_friction_f0(const double y, const double eps_v)
 {
-    assert(epsv > 0);
-    if (std::abs(s) >= epsv) {
-        return s;
+    assert(eps_v > 0);
+    if (std::abs(y) >= eps_v) {
+        return y;
     }
-    return s * s * (1 - s / (3 * epsv)) / epsv + epsv / 3;
+    return y * y * (1 - y / (3 * eps_v)) / eps_v + eps_v / 3;
 }
 
-double smooth_friction_f1_over_x(const double s, const double epsv)
+double smooth_friction_f1(const double y, const double eps_v)
 {
-    assert(epsv > 0);
-    if (std::abs(s) >= epsv) {
-        return 1 / s;
+    assert(eps_v > 0);
+    if (std::abs(y) >= eps_v) {
+        return 1;
     }
-    return (2 - s / epsv) / epsv;
+    return y * (2 - y / eps_v) / eps_v;
 }
 
-double
-smooth_friction_f2_x_minus_f1_over_x3(const double s, const double epsv)
+double smooth_friction_f2(const double y, const double eps_v)
 {
-    assert(epsv > 0);
-    if (std::abs(s) >= epsv) {
-        return -1 / (s * s * s);
+    assert(eps_v > 0);
+    if (std::abs(y) >= eps_v) {
+        return 0;
     }
-    return -1 / (s * epsv * epsv);
+    return (2 - 2 * y / eps_v) / eps_v;
+}
+
+double smooth_friction_f1_over_x(const double y, const double eps_v)
+{
+    assert(eps_v > 0);
+    if (std::abs(y) >= eps_v) {
+        return 1 / y;
+    }
+    return (2 - y / eps_v) / eps_v;
+}
+
+double smooth_friction_f2_x_minus_f1_over_x3(const double y, const double eps_v)
+{
+    assert(eps_v > 0);
+    if (std::abs(y) >= eps_v) {
+        return -1 / (y * y * y);
+    }
+    return -1 / (y * eps_v * eps_v);
 }
 
 } // namespace ipc
