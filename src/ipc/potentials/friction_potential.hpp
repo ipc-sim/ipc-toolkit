@@ -27,7 +27,7 @@ public:
 protected:
     double f0(const double x) const override;
     double f1_over_x(const double x) const override;
-    double df1_x_minus_f1_over_x3(const double x) const override;
+    double f2_x_minus_f1_over_x3(const double x) const override;
 
     bool is_dynamic(const double speed) const override
     {

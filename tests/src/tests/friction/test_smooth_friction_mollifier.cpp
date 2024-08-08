@@ -6,8 +6,11 @@
 
 #include <finitediff.hpp>
 
+using namespace ipc;
+
 TEST_CASE("Smooth friction gradient", "[friction][mollifier]")
 {
+
     static constexpr double EPSILON = 2e-2;
     static constexpr double MARGIN = 1e-6;
     const double epsv_times_h = std::pow(10, GENERATE(range(-8, 0, 1)));
@@ -32,12 +35,12 @@ TEST_CASE("Smooth friction gradient", "[friction][mollifier]")
     fd::finite_gradient(
         X,
         [&](const Eigen::VectorXd& _X) {
-            return ipc::f0_SF(_X[0], epsv_times_h);
+            return smooth_friction_f0(_X[0], epsv_times_h);
         },
         fd_f1_over_x);
     // fd_f1_over_x /= x;
 
-    double f1_over_x = ipc::f1_SF_over_x(x, epsv_times_h);
+    double f1_over_x = smooth_friction_f1_over_x(x, epsv_times_h);
 
     CHECK(
         f1_over_x * x
@@ -51,12 +54,12 @@ TEST_CASE("Smooth friction gradient", "[friction][mollifier]")
     fd::finite_gradient(
         X,
         [&](const Eigen::VectorXd& _X) {
-            return ipc::f1_SF_over_x(_X[0], epsv_times_h);
+            return smooth_friction_f1_over_x(_X[0], epsv_times_h);
         },
         fd_f2);
     // fd_f2 /= x;
 
-    double f2 = ipc::df1_SF_x_minus_f1_SF_over_x3(x, epsv_times_h);
+    double f2 = smooth_friction_f2_x_minus_f1_over_x3(x, epsv_times_h);
 
     CHECK(f2 * x == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
 }

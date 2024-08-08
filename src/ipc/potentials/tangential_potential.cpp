@@ -181,7 +181,7 @@ MatrixMax12d TangentialPotential::hessian(
     const PSDProjectionMethod project_hessian_to_psd) const
 {
     // ∇ₓ μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u (where u = T(xᵗ)ᵀ v)
-    //  = μ N T [(f₁'(‖u‖)‖u‖ − f₁(‖u‖))/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
+    //  = μ N T [(f₂(‖u‖)‖u‖ − f₁(‖u‖))/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
     //  = μ N T [f₂(‖u‖) uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
 
     // Compute u = PᵀΓv
@@ -205,7 +205,7 @@ MatrixMax12d TangentialPotential::hessian(
 
     MatrixMax12d hess;
     if (is_dynamic(norm_u)) {
-        // f₁(‖u‖) = 1 ⟹ f₁'(‖u‖) = 0
+        // f₁(‖u‖) = 1 ⟹ f₂(‖u‖) = 0
         //  ⟹ ∇²D(v) = μ N T [-f₁(‖u‖)/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
         //            = μ N T [-f₁(‖u‖)/‖u‖ uuᵀ/‖u‖² + f₁(‖u‖)/‖u‖ I] Tᵀ
         //            = μ N T [f₁(‖u‖)/‖u‖ (I - uuᵀ/‖u‖²)] Tᵀ
@@ -224,7 +224,7 @@ MatrixMax12d TangentialPotential::hessian(
                 * (u_perp.transpose() * T.transpose());
         }
     } else if (norm_u == 0) {
-        // ∇²D = μ N T [(f₁'(‖u‖)‖u‖ − f₁(‖u‖))/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
+        // ∇²D = μ N T [(f₂(‖u‖)‖u‖ − f₁(‖u‖))/‖u‖³ uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
         // lim_{‖u‖→0} ∇²D = μ N T [f₁(‖u‖)/‖u‖ I] Tᵀ
         // no PSD projection needed because μ N f₁(‖ū‖)/‖ū‖ ≥ 0
         if (project_hessian_to_psd != PSDProjectionMethod::NONE && scale <= 0) {
@@ -235,7 +235,7 @@ MatrixMax12d TangentialPotential::hessian(
     } else {
         // ∇²D(v) = μ N T [f₂(‖u‖) uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
         //  ⟹ only need to project the inner 2x2 matrix to PSD
-        const double f2 = df1_x_minus_f1_over_x3(norm_u);
+        const double f2 = f2_x_minus_f1_over_x3(norm_u);
 
         MatrixMax2d inner_hess = f2 * u * u.transpose();
         inner_hess.diagonal().array() += f1_over_norm_u;
@@ -420,8 +420,8 @@ MatrixMax12d TangentialPotential::force_jacobian(
         // lim_{x→0} f₂(x)x² = 0
         grad_f1_over_norm_tau.setZero(n);
     } else {
-        // ∇ (f₁(‖τ‖)/‖τ‖) = (f₁'(‖τ‖)‖τ‖ - f₁(‖τ‖)) / ‖τ‖³ τᵀ ∇τ
-        double f2 = df1_x_minus_f1_over_x3(tau_norm);
+        // ∇ (f₁(‖τ‖)/‖τ‖) = (f₂(‖τ‖)‖τ‖ - f₁(‖τ‖)) / ‖τ‖³ τᵀ ∇τ
+        double f2 = f2_x_minus_f1_over_x3(tau_norm);
         assert(std::isfinite(f2));
         grad_f1_over_norm_tau = f2 * tau.transpose() * jac_tau;
     }

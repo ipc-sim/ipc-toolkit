@@ -16,9 +16,9 @@ namespace ipc {
 /// @param s The tangential relative speed.
 /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
 /// @return The value of the mollifier function at s.
-double f0_SF(const double s, const double epsv);
+double smooth_friction_f0(const double s, const double epsv);
 
-/// @brief Compute the derivative of f0_SF divided by s (\f$\frac{f_0'(s)}{s}\f$).
+/// @brief Compute the derivative of the smooth friction mollifier divided by s (\f$\frac{f_0'(s)}{s}\f$).
 ///
 /// \f\[
 ///     f_1(s) = f_0'(s) = \begin{cases}
@@ -36,8 +36,8 @@ double f0_SF(const double s, const double epsv);
 ///
 /// @param s The tangential relative speed.
 /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
-/// @return The value of the derivative of f0_SF divided by s.
-double f1_SF_over_x(const double s, const double epsv);
+/// @return The value of the derivative of smooth_friction_f0 divided by s.
+double smooth_friction_f1_over_x(const double s, const double epsv);
 
 /// @brief The derivative of f1 times s minus f1 all divided by s cubed.
 ///
@@ -51,6 +51,7 @@ double f1_SF_over_x(const double s, const double epsv);
 /// @param s The tangential relative speed.
 /// @param epsv Mollifier parameter \f$\epsilon_v\f$.
 /// @return The derivative of f1 times s minus f1 all divided by s cubed.
-double df1_SF_x_minus_f1_SF_over_x3(const double s, const double epsv);
+double
+smooth_friction_f2_x_minus_f1_over_x3(const double s, const double epsv);
 
 } // namespace ipc

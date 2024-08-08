@@ -142,7 +142,7 @@ public:
 protected:
     virtual double f0(const double x) const = 0;
     virtual double f1_over_x(const double x) const = 0;
-    virtual double df1_x_minus_f1_over_x3(const double x) const = 0;
+    virtual double f2_x_minus_f1_over_x3(const double x) const = 0;
     virtual bool is_dynamic(const double speed) const = 0;
 };
 
