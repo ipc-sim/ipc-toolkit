@@ -67,6 +67,5 @@ jobs:
           files: coverage.info
           flags: unittests
           name: ipc-toolkit
+          token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
