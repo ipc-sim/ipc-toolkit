@@ -106,7 +106,7 @@ void define_barrier_potential(py::module_& m)
         .def(
             "__call__",
             py::overload_cast<const Collision&, const VectorMax12d&>(
-                &BarrierPotential::operator(), py::const_),
+                &BarrierPotential::Potential::operator(), py::const_),
             R"ipc_Qu8mg5v7(
             Compute the potential for a single collision.
 
@@ -121,7 +121,7 @@ void define_barrier_potential(py::module_& m)
         .def(
             "gradient",
             py::overload_cast<const Collision&, const VectorMax12d&>(
-                &BarrierPotential::gradient, py::const_),
+                &BarrierPotential::Potential::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the potential for a single collision.
 
@@ -138,7 +138,7 @@ void define_barrier_potential(py::module_& m)
             py::overload_cast<
                 const Collision&, const VectorMax12d&,
                 const PSDProjectionMethod>(
-                &BarrierPotential::hessian, py::const_),
+                &BarrierPotential::Potential::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the potential for a single collision.
 
