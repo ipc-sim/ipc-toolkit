@@ -37,33 +37,33 @@ double normal_adhesion_potential_second_derivative(
 
 /// @brief The tangential adhesion mollifier function.
 /// @param y The tangential relative speed.
-/// @param eps_a Velocity threshold below which static adhession force is applied.
+/// @param eps_a Velocity threshold below which static adhesion force is applied.
 /// @return The tangential adhesion mollifier function at y.
-double tangential_adhession_f0(const double y, const double eps_a);
+double tangential_adhesion_f0(const double y, const double eps_a);
 
 /// @brief The first derivative of the tangential adhesion mollifier function.
 /// @param y The tangential relative speed.
-/// @param eps_a Velocity threshold below which static adhession force is applied.
+/// @param eps_a Velocity threshold below which static adhesion force is applied.
 /// @return The first derivative of the tangential adhesion mollifier function at y.
-double tangential_adhession_f1(const double y, const double eps_a);
+double tangential_adhesion_f1(const double y, const double eps_a);
 
 /// @brief The second derivative of the tangential adhesion mollifier function.
 /// @param y The tangential relative speed.
-/// @param eps_a Velocity threshold below which static adhession force is applied.
+/// @param eps_a Velocity threshold below which static adhesion force is applied.
 /// @return The second derivative of the tangential adhesion mollifier function at y.
-double tangential_adhession_f2(const double y, const double eps_a);
+double tangential_adhesion_f2(const double y, const double eps_a);
 
 /// @brief The first derivative of the tangential adhesion mollifier function divided by y.
 /// @param y The tangential relative speed.
-/// @param eps_a Velocity threshold below which static adhession force is applied.
+/// @param eps_a Velocity threshold below which static adhesion force is applied.
 /// @return The first derivative of the tangential adhesion mollifier function divided by y.
-double tangential_adhession_f1_over_x(const double y, const double eps_a);
+double tangential_adhesion_f1_over_x(const double y, const double eps_a);
 
 /// @brief The second derivative of the tangential adhesion mollifier function times y minus the first derivative all divided by y cubed.
 /// @param y The tangential relative speed.
-/// @param eps_a Velocity threshold below which static adhession force is applied.
+/// @param eps_a Velocity threshold below which static adhesion force is applied.
 /// @return The second derivative of the tangential adhesion mollifier function times y minus the first derivative all divided by y cubed.
 double
-tangential_adhession_f2_x_minus_f1_over_x3(const double y, const double eps_a);
+tangential_adhesion_f2_x_minus_f1_over_x3(const double y, const double eps_a);
 
 } // namespace ipc

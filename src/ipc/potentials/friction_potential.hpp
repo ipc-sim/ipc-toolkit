@@ -10,18 +10,18 @@ class FrictionPotential : public TangentialPotential {
 
 public:
     /// @brief Construct a friction potential.
-    /// @param epsv The smooth friction mollifier parameter \f$\epsilon_v\f$.
-    explicit FrictionPotential(const double epsv);
+    /// @param eps_v The smooth friction mollifier parameter \f$\epsilon_v\f$.
+    explicit FrictionPotential(const double eps_v);
 
     /// @brief Get the smooth friction mollifier parameter \f$\epsilon_v\f$.
-    double epsv() const { return m_epsv; }
+    double eps_v() const { return m_eps_v; }
 
     /// @brief Set the smooth friction mollifier parameter \f$\epsilon_v\f$.
-    /// @param epsv The smooth friction mollifier parameter \f$\epsilon_v\f$.
-    void set_epsv(const double epsv)
+    /// @param eps_v The smooth friction mollifier parameter \f$\epsilon_v\f$.
+    void set_eps_v(const double eps_v)
     {
-        assert(epsv > 0);
-        m_epsv = epsv;
+        assert(eps_v > 0);
+        m_eps_v = eps_v;
     }
 
 protected:
@@ -31,11 +31,11 @@ protected:
 
     bool is_dynamic(const double speed) const override
     {
-        return speed > epsv();
+        return speed > eps_v();
     }
 
     /// @brief The smooth friction mollifier parameter \f$\epsilon_v\f$.
-    double m_epsv;
+    double m_eps_v;
 };
 
 } // namespace ipc

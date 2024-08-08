@@ -29,9 +29,9 @@ void define_friction_potential(py::module_& m)
             Construct a friction potential.
 
             Parameters:
-                epsv: The smooth friction mollifier parameter :math:`\\epsilon_{v}`.
+                eps_v: The smooth friction mollifier parameter :math:`\\epsilon_{v}`.
             )ipc_Qu8mg5v7",
-            py::arg("epsv"))
+            py::arg("eps_v"))
         .def(
             "__call__",
             py::overload_cast<
@@ -250,6 +250,6 @@ void define_friction_potential(py::module_& m)
             py::arg("barrier_potential"), py::arg("barrier_stiffness"),
             py::arg("wrt"), py::arg("dmin") = 0)
         .def_property(
-            "epsv", &FrictionPotential::epsv, &FrictionPotential::set_epsv,
+            "eps_v", &FrictionPotential::eps_v, &FrictionPotential::set_eps_v,
             "The smooth friction mollifier parameter :math:`\\epsilon_{v}`.");
 }

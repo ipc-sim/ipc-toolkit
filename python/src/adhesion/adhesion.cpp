@@ -58,13 +58,13 @@ void define_adhesion(py::module_& m)
         py::arg("d"), py::arg("dhat_p"), py::arg("dhat_a"), py::arg("a2"));
 
     m.def(
-        "tangential_adhession_f0", &tangential_adhession_f0,
+        "tangential_adhesion_f0", &tangential_adhesion_f0,
         R"ipc_Qu8mg5v7(
         The tangential adhesion mollifier function.
 
         Parameters:
             y: The tangential relative speed.
-            eps_a: Velocity threshold below which static adhession force is applied.
+            eps_a: Velocity threshold below which static adhesion force is applied.
 
         Returns:
             The tangential adhesion mollifier function at y.
@@ -72,13 +72,13 @@ void define_adhesion(py::module_& m)
         py::arg("y"), py::arg("eps_a"));
 
     m.def(
-        "tangential_adhession_f1", &tangential_adhession_f1,
+        "tangential_adhesion_f1", &tangential_adhesion_f1,
         R"ipc_Qu8mg5v7(
         The first derivative of the tangential adhesion mollifier function.
 
         Parameters:
             y: The tangential relative speed.
-            eps_a: Velocity threshold below which static adhession force is applied.
+            eps_a: Velocity threshold below which static adhesion force is applied.
 
         Returns:
             The first derivative of the tangential adhesion mollifier function at y.
@@ -86,13 +86,13 @@ void define_adhesion(py::module_& m)
         py::arg("y"), py::arg("eps_a"));
 
     m.def(
-        "tangential_adhession_f2", &tangential_adhession_f2,
+        "tangential_adhesion_f2", &tangential_adhesion_f2,
         R"ipc_Qu8mg5v7(
         The second derivative of the tangential adhesion mollifier function.
 
         Parameters:
             y: The tangential relative speed.
-            eps_a: Velocity threshold below which static adhession force is applied.
+            eps_a: Velocity threshold below which static adhesion force is applied.
 
         Returns:
             The second derivative of the tangential adhesion mollifier function at y.
@@ -100,13 +100,13 @@ void define_adhesion(py::module_& m)
         py::arg("y"), py::arg("eps_a"));
 
     m.def(
-        "tangential_adhession_f1_over_x", &tangential_adhession_f1_over_x,
+        "tangential_adhesion_f1_over_x", &tangential_adhesion_f1_over_x,
         R"ipc_Qu8mg5v7(
         The first derivative of the tangential adhesion mollifier function divided by y.
 
         Parameters:
             y: The tangential relative speed.
-            eps_a: Velocity threshold below which static adhession force is applied.
+            eps_a: Velocity threshold below which static adhesion force is applied.
 
         Returns:
             The first derivative of the tangential adhesion mollifier function divided by y.
@@ -114,14 +114,14 @@ void define_adhesion(py::module_& m)
         py::arg("y"), py::arg("eps_a"));
 
     m.def(
-        "tangential_adhession_f2_x_minus_f1_over_x3",
-        &tangential_adhession_f2_x_minus_f1_over_x3,
+        "tangential_adhesion_f2_x_minus_f1_over_x3",
+        &tangential_adhesion_f2_x_minus_f1_over_x3,
         R"ipc_Qu8mg5v7(
         The second derivative of the tangential adhesion mollifier function times y minus the first derivative all divided by y cubed.
 
         Parameters:
             y: The tangential relative speed.
-            eps_a: Velocity threshold below which static adhession force is applied.
+            eps_a: Velocity threshold below which static adhesion force is applied.
 
         Returns:
             The second derivative of the tangential adhesion mollifier function times y minus the first derivative all divided by y cubed.

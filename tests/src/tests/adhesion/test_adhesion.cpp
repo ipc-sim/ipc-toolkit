@@ -104,16 +104,16 @@ TEST_CASE("Tangential adhesion mollifier", "[adhesion][tangential]")
     fd::finite_gradient(
         X,
         [&](const Eigen::VectorXd& _X) {
-            return tangential_adhession_f0(_X[0], eps_a);
+            return tangential_adhesion_f0(_X[0], eps_a);
         },
         fd_f1);
 
     CHECK(
-        tangential_adhession_f1(x, eps_a)
+        tangential_adhesion_f1(x, eps_a)
         == Catch::Approx(fd_f1[0]).margin(MARGIN).epsilon(EPSILON));
 
     CHECK(
-        tangential_adhession_f1_over_x(x, eps_a) * x
+        tangential_adhesion_f1_over_x(x, eps_a) * x
         == Catch::Approx(fd_f1[0]).margin(MARGIN).epsilon(EPSILON));
 
     // Check hessian
@@ -125,17 +125,17 @@ TEST_CASE("Tangential adhesion mollifier", "[adhesion][tangential]")
     fd::finite_gradient(
         X,
         [&](const Eigen::VectorXd& _X) {
-            return tangential_adhession_f1(_X[0], eps_a);
+            return tangential_adhesion_f1(_X[0], eps_a);
         },
         fd_f2);
 
     CHECK(
-        tangential_adhession_f2(x, eps_a)
+        tangential_adhesion_f2(x, eps_a)
         == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
 
-    double f2 = tangential_adhession_f2_x_minus_f1_over_x3(x, eps_a);
+    double f2 = tangential_adhesion_f2_x_minus_f1_over_x3(x, eps_a);
     f2 *= x * x * x;
-    f2 += tangential_adhession_f1(x, eps_a);
+    f2 += tangential_adhesion_f1(x, eps_a);
     f2 /= x;
 
     CHECK(f2 == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));

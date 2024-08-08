@@ -63,7 +63,7 @@ double normal_adhesion_potential_second_derivative(
 
 // -- Tangential Adhesion ------------------------------------------------------
 
-double tangential_adhession_f0(const double y, const double eps_a)
+double tangential_adhesion_f0(const double y, const double eps_a)
 {
     assert(eps_a > 0);
     if (y <= 0) {
@@ -74,7 +74,7 @@ double tangential_adhession_f0(const double y, const double eps_a)
     return y * y / eps_a * (1 - y / (3 * eps_a)); // -y³/(3ϵ²) + y²/ϵ
 }
 
-double tangential_adhession_f1(const double y, const double eps_a)
+double tangential_adhesion_f1(const double y, const double eps_a)
 {
     assert(eps_a > 0);
     if (y >= 2 * eps_a || y <= 0) {
@@ -84,7 +84,7 @@ double tangential_adhession_f1(const double y, const double eps_a)
     return y / eps_a * (2 - y / eps_a); // -y²/ϵ² + 2y/ϵ
 }
 
-double tangential_adhession_f2(const double y, const double eps_a)
+double tangential_adhesion_f2(const double y, const double eps_a)
 {
     assert(eps_a > 0);
     if (y >= 2 * eps_a || y <= 0) {
@@ -94,7 +94,7 @@ double tangential_adhession_f2(const double y, const double eps_a)
     return (-y / eps_a + 1) * 2 / eps_a; // -2y/ϵ² + 2/ϵ
 }
 
-double tangential_adhession_f1_over_x(const double y, const double eps_a)
+double tangential_adhesion_f1_over_x(const double y, const double eps_a)
 {
     assert(eps_a > 0);
     if (y >= 2 * eps_a || y <= 0) {
@@ -105,7 +105,7 @@ double tangential_adhession_f1_over_x(const double y, const double eps_a)
 }
 
 double
-tangential_adhession_f2_x_minus_f1_over_x3(const double y, const double eps_a)
+tangential_adhesion_f2_x_minus_f1_over_x3(const double y, const double eps_a)
 {
     assert(eps_a > 0);
     assert(y >= 0);
