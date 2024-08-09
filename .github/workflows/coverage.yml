@@ -10,6 +10,7 @@ on:
       - 'src/**'
       - 'tests/**'
       - 'CMakeLists.txt'
+      - 'codecov.yml'
 
 jobs:
   Coverage:
@@ -64,7 +65,7 @@ jobs:
           cd build
           ctest --verbose -j ${{ steps.cpu-cores.outputs.count }}
           lcov --directory . --capture --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' "${HOME}"'/.cache/*' './tests/*' --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' "${HOME}"'/.cache/*' 'tests/CMakeFiles/ipc_toolkit_tests.dir/src/tests/*' --output-file coverage.info
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.5.0
