@@ -76,7 +76,7 @@ This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. How
             friction_collisions.build(collision_mesh, vertices, collisions, B, barrier_stiffness, mu);
 
             // Construct a friction dissipative potential
-            ipc::FrictionPotential D(epsv);
+            ipc::FrictionPotential D(eps_v);
 
             double d = D(friction_collisions, collision_mesh, velocities);
 
@@ -105,7 +105,7 @@ This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. How
             friction_collisions.build(collision_mesh, vertices, collisions, B, barrier_stiffness, mu)
 
             # Construct a friction dissipative potential
-            D = ipctk.FrictionPotential(epsv)
+            D = ipctk.FrictionPotential(eps_v)
 
             d = D(friction_collisions, collision_mesh, velocities)
 

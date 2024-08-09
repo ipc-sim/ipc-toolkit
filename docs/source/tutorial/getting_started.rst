@@ -392,17 +392,17 @@ Now we can compute the friction dissipative potential using the ``FrictionPotent
 
         .. code-block:: c++
 
-            const FrictionPotential D(epsv);
+            const FrictionPotential D(eps_v);
             double friction_potential = D(friction_collisions, collision_mesh, velocity);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            D = FrictionPotential(epsv)
+            D = FrictionPotential(eps_v)
             friction_potential = D(friction_collisions, collision_mesh, velocity)
 
-Here ``epsv`` (:math:`\epsilon_v`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
+Here ``eps_v`` (:math:`\epsilon_v`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
 
 .. important::
    The friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is
