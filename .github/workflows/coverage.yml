@@ -74,6 +74,8 @@ jobs:
           handle_no_reports_found: true
           file: build/coverage.info
           disable_search: true
+          plugin: null
+          plugins: null
           flags: unittests
           name: ipc-toolkit
           token: ${{ secrets.CODECOV_TOKEN }}
