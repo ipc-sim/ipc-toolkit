@@ -38,8 +38,8 @@ double normal_adhesion_potential_first_derivative(
         const double a1 = a2 * (1 - dhat_a / dhat_p);
         return 2 * a1 * d;
     } else if (d < dhat_a) {
-        const double b2 = -2 * a2 * dhat_a;
-        return 2 * a2 * d + b2;
+        // const double b2 = -2 * a2 * dhat_a;
+        return 2 * a2 * (d - dhat_a);
     } else {
         return 0;
     }
@@ -59,6 +59,15 @@ double normal_adhesion_potential_second_derivative(
     } else {
         return 0;
     }
+}
+
+double max_normal_adhesion_force_magnitude(
+    const double dhat_p, const double dhat_a, const double a2)
+{
+    assert(dhat_p < dhat_a);
+    assert(a2 < 0);
+    // max_d a' = a'(d̂ₚ) = 2a₂ (d̂ₚ - d̂ₐ)
+    return 2 * a2 * (dhat_p - dhat_a);
 }
 
 // -- Tangential Adhesion ------------------------------------------------------

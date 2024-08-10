@@ -71,7 +71,9 @@ jobs:
         uses: codecov/codecov-action@v4.5.0
         with:
           fail_ci_if_error: true
-          files: coverage.info
+          handle_no_reports_found: true
+          file: build/coverage.info
+          disable_search: true
           flags: unittests
           name: ipc-toolkit
           token: ${{ secrets.CODECOV_TOKEN }}
