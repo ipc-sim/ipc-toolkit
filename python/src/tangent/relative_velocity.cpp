@@ -25,7 +25,7 @@ void define_relative_velocity(py::module_& m)
         "point_point_relative_velocity_matrix",
         &point_point_relative_velocity_matrix,
         R"ipc_Qu8mg5v7(
-        Compute the relative velocity premultiplier matrix
+        Compute the point-point relative velocity premultiplier matrix
 
         Parameters:
             dim: Dimension (2 or 3)
@@ -39,13 +39,13 @@ void define_relative_velocity(py::module_& m)
         "point_point_relative_velocity_matrix_jacobian",
         &point_point_relative_velocity_matrix_jacobian,
         R"ipc_Qu8mg5v7(
-        Compute the jacobian of the relative velocity premultiplier matrix
+        Compute the Jacobian of the relative velocity premultiplier matrix
 
         Parameters:
             dim: Dimension (2 or 3)
 
         Returns:
-            The jacobian of the relative velocity premultiplier matrix
+            The Jacobian of the relative velocity premultiplier matrix
         )ipc_Qu8mg5v7",
         py::arg("dim"));
 
@@ -67,12 +67,33 @@ void define_relative_velocity(py::module_& m)
 
     m.def(
         "point_edge_relative_velocity_matrix",
-        &point_edge_relative_velocity_matrix, py::arg("dim"), py::arg("alpha"));
+        &point_edge_relative_velocity_matrix,
+        R"ipc_Qu8mg5v7(
+        Compute the point-edge relative velocity premultiplier matrix
+
+        Parameters:
+            dim: Dimension (2 or 3)
+            alpha: Parametric coordinate of the closest point on the edge
+
+        Returns:
+            The relative velocity premultiplier matrix
+        )ipc_Qu8mg5v7",
+        py::arg("dim"), py::arg("alpha"));
 
     m.def(
         "point_edge_relative_velocity_matrix_jacobian",
-        &point_edge_relative_velocity_matrix_jacobian, py::arg("dim"),
-        py::arg("alpha"));
+        &point_edge_relative_velocity_matrix_jacobian,
+        R"ipc_Qu8mg5v7(
+        Compute the Jacobian of the relative velocity premultiplier matrix
+
+        Parameters:
+            dim: Dimension (2 or 3)
+            alpha: Parametric coordinate of the closest point on the edge
+
+        Returns:
+            The Jacobian of the relative velocity premultiplier matrix
+        )ipc_Qu8mg5v7",
+        py::arg("dim"), py::arg("alpha"));
 
     m.def(
         "edge_edge_relative_velocity", &edge_edge_relative_velocity,
@@ -94,12 +115,33 @@ void define_relative_velocity(py::module_& m)
 
     m.def(
         "edge_edge_relative_velocity_matrix",
-        &edge_edge_relative_velocity_matrix, py::arg("dim"), py::arg("coords"));
+        &edge_edge_relative_velocity_matrix,
+        R"ipc_Qu8mg5v7(
+        Compute the edge-edge relative velocity matrix.
+
+        Parameters:
+            dim: Dimension (2 or 3)
+            coords: Two parametric coordinates of the closest points on the edges
+
+        Returns:
+            The relative velocity matrix
+        )ipc_Qu8mg5v7",
+        py::arg("dim"), py::arg("coords"));
 
     m.def(
         "edge_edge_relative_velocity_matrix_jacobian",
-        &edge_edge_relative_velocity_matrix_jacobian, py::arg("dim"),
-        py::arg("coords"));
+        &edge_edge_relative_velocity_matrix_jacobian,
+        R"ipc_Qu8mg5v7(
+        Compute the Jacobian of the edge-edge relative velocity matrix.
+
+        Parameters:
+            dim: Dimension (2 or 3)
+            coords: Two parametric coordinates of the closest points on the edges
+
+        Returns:
+            The Jacobian of the relative velocity matrix
+        )ipc_Qu8mg5v7",
+        py::arg("dim"), py::arg("coords"));
 
     m.def(
         "point_triangle_relative_velocity", &point_triangle_relative_velocity,
@@ -121,11 +163,31 @@ void define_relative_velocity(py::module_& m)
 
     m.def(
         "point_triangle_relative_velocity_matrix",
-        &point_triangle_relative_velocity_matrix, py::arg("dim"),
-        py::arg("coords"));
+        &point_triangle_relative_velocity_matrix,
+        R"ipc_Qu8mg5v7(
+        Compute the point-triangle relative velocity matrix.
+
+        Parameters:
+            dim: Dimension (2 or 3)
+            coords: Baricentric coordinates of the closest point on the triangle
+
+        Returns:
+            The relative velocity matrix
+        )ipc_Qu8mg5v7",
+        py::arg("dim"), py::arg("coords"));
 
     m.def(
         "point_triangle_relative_velocity_matrix_jacobian",
-        &point_triangle_relative_velocity_matrix_jacobian, py::arg("dim"),
-        py::arg("coords"));
+        &point_triangle_relative_velocity_matrix_jacobian,
+        R"ipc_Qu8mg5v7(
+        Compute the Jacobian of the point-triangle relative velocity matrix.
+
+        Parameters:
+            dim: Dimension (2 or 3)
+            coords: Baricentric coordinates of the closest point on the triangle
+
+        Returns:
+            The Jacobian of the relative velocity matrix
+        )ipc_Qu8mg5v7",
+        py::arg("dim"), py::arg("coords"));
 }

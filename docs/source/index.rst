@@ -45,12 +45,15 @@
     python-api/potentials.rst
     python-api/collision_mesh.rst
     python-api/candidates.rst
-    python-api/collisions.rst
+    python-api/normal_collisions.rst
+    python-api/tangential_collisions.rst
     python-api/friction.rst
     python-api/broad_phase.rst
     python-api/ccd.rst
     python-api/distance.rst
+    python-api/tangent.rst
     python-api/barrier.rst
+    python-api/adhesion.rst
     python-api/intersections.rst
     python-api/utils.rst
 

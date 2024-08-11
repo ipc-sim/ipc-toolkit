@@ -14,9 +14,9 @@ void define_adhesion(py::module_& m)
 
         Parameters:
             d: distance
-            dhat_p: distance of largest adhesion force (\f(\hat{d}_p\f)) (\f(0 < \hat{d}_p < \hat{d}_a\f))
-            dhat_a: adhesion activation distance (\f(\hat{d}_a\f))
-            a2: adjustable parameter relating to the maximum derivative of a (\f(a_2\f))
+            dhat_p: distance of largest adhesion force (:math:`\hat{d}_p`) where :math:`0 < \hat{d}_p < \hat{d}_a`
+            dhat_a: adhesion activation distance (:math:`\hat{d}_a`)
+            a2: adjustable parameter relating to the maximum derivative of a (:math:`a_2`)
 
         Returns:
             The normal adhesion potential.
@@ -31,9 +31,9 @@ void define_adhesion(py::module_& m)
 
         Parameters:
             d: distance
-            dhat_p: distance of largest adhesion force (\f(\hat{d}_p\f)) (\f(0 < \hat{d}_p < \hat{d}_a\f))
-            dhat_a: adhesion activation distance (\f(\hat{d}_a\f))
-            a2: adjustable parameter relating to the maximum derivative of a (\f(a_2\f))
+            dhat_p: distance of largest adhesion force (:math:`\hat{d}_p`) where :math:`0 < \hat{d}_p < \hat{d}_a`
+            dhat_a: adhesion activation distance (:math:`\hat{d}_a`)
+            a2: adjustable parameter relating to the maximum derivative of a (:math:`a_2`)
 
         Returns:
             The first derivative of the normal adhesion potential wrt d.
@@ -48,14 +48,30 @@ void define_adhesion(py::module_& m)
 
         Parameters:
             d: distance
-            dhat_p: distance of largest adhesion force (\f(\hat{d}_p\f)) (\f(0 < \hat{d}_p < \hat{d}_a\f))
-            dhat_a: adhesion activation distance (\f(\hat{d}_a\f))
-            a2: adjustable parameter relating to the maximum derivative of a (\f(a_2\f))
+            dhat_p: distance of largest adhesion force (:math:`\hat{d}_p`) where :math:`0 < \hat{d}_p < \hat{d}_a`
+            dhat_a: adhesion activation distance (:math:`\hat{d}_a`)
+            a2: adjustable parameter relating to the maximum derivative of a (:math:`a_2`)
 
         Returns:
             The second derivative of the normal adhesion potential wrt d.
         )ipc_Qu8mg5v7",
         py::arg("d"), py::arg("dhat_p"), py::arg("dhat_a"), py::arg("a2"));
+
+    m.def(
+        "max_normal_adhesion_force_magnitude",
+        &max_normal_adhesion_force_magnitude,
+        R"ipc_Qu8mg5v7(
+        The maximum normal adhesion force magnitude.
+
+        Parameters:
+            dhat_p: distance of largest adhesion force (:math:`\hat{d}_p`) where :math:`0 < \hat{d}_p < \hat{d}_a`
+            dhat_a: adhesion activation distance (:math:`\hat{d}_a`)
+            a2: adjustable parameter relating to the maximum derivative of a (:math:`a_2`)
+
+        Returns:
+            The maximum normal adhesion force magnitude.
+        )ipc_Qu8mg5v7",
+        py::arg("dhat_p"), py::arg("dhat_a"), py::arg("a2"));
 
     m.def(
         "tangential_adhesion_f0", &tangential_adhesion_f0,
