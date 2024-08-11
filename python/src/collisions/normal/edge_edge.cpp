@@ -43,4 +43,3 @@ void define_edge_edge_normal_collision(py::module_& m)
             Some EE collisions are mollified EV or VV collisions.
             )ipc_Qu8mg5v7");
 }
-}
