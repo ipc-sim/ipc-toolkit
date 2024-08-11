@@ -60,7 +60,7 @@ The sizes of ``edges`` and ``faces`` are ``#E x 2`` and ``#F x 3`` respectively 
 Collisions
 ----------
 
-Now that we have a collision mesh, we can compute the collision barrier potential. To do this we first need to build the set of active collisions (``Collisions``).
+Now that we have a collision mesh, we can compute the collision barrier potential. To do this we first need to build the set of active collisions (``NormalCollisions``).
 
 To start we need the current positions of the ``vertices``. For this tutorial, let us use squash the bunny has to 1% of its original height.
 
@@ -92,7 +92,7 @@ We will use a value of :math:`\hat{d} = 10^{-3}`.
 
             const double dhat = 1e-3;
 
-            ipc::Collisions collisions;
+            ipc::NormalCollisions collisions;
             collisions.build(collision_mesh, vertices, dhat);
 
     .. md-tab-item:: Python
@@ -101,7 +101,7 @@ We will use a value of :math:`\hat{d} = 10^{-3}`.
 
             dhat = 1e-3
 
-            collisions = ipctk.Collisions()
+            collisions = ipctk.NormalCollisions()
             collisions.build(collision_mesh, vertices, dhat)
 
 This will automatically use a spatial data structure to perform a broad-phase culling and then perform a narrow-phase culling by computing distances (discarding any collision candidates with a distance :math:`> \hat{d}`).
