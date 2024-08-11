@@ -7,11 +7,21 @@ namespace ipc {
 // ============================================================================
 // Point - Edge
 
+/// @brief Compute the baricentric coordinate of the closest point on the edge.
+/// @param p Point
+/// @param e0 First edge point
+/// @param e1 Second edge point
+/// @return barycentric coordinates of the closest point
 double point_edge_closest_point(
     const Eigen::Ref<const VectorMax3d>& p,
     const Eigen::Ref<const VectorMax3d>& e0,
     const Eigen::Ref<const VectorMax3d>& e1);
 
+/// @brief Compute the Jacobian of the closest point on the edge.
+/// @param p Point
+/// @param e0 First edge point
+/// @param e1 Second edge point
+/// @return Jacobian of the closest point
 VectorMax9d point_edge_closest_point_jacobian(
     const Eigen::Ref<const VectorMax3d>& p,
     const Eigen::Ref<const VectorMax3d>& e0,
@@ -20,13 +30,24 @@ VectorMax9d point_edge_closest_point_jacobian(
 // ============================================================================
 // Edge - Edge
 
-/// Compute the barycentric coordinates of the closest points
+/// @brief Compute the barycentric coordinates of the closest points between two edges.
+/// @param ea0 First point of the first edge
+/// @param ea1 Second point of the first edge
+/// @param eb0 First point of the second edge
+/// @param eb1 Second point of the second edge
+/// @return Barycentric coordinates of the closest points
 Eigen::Vector2d edge_edge_closest_point(
     const Eigen::Ref<const Eigen::Vector3d>& ea0,
     const Eigen::Ref<const Eigen::Vector3d>& ea1,
     const Eigen::Ref<const Eigen::Vector3d>& eb0,
     const Eigen::Ref<const Eigen::Vector3d>& eb1);
 
+/// @brief Compute the Jacobian of the closest points between two edges.
+/// @param ea0 First point of the first edge
+/// @param ea1 Second point of the first edge
+/// @param eb0 First point of the second edge
+/// @param eb1 Second point of the second edge
+/// @return Jacobian of the closest points
 Eigen::Matrix<double, 2, 12> edge_edge_closest_point_jacobian(
     const Eigen::Ref<const Eigen::Vector3d>& ea0,
     const Eigen::Ref<const Eigen::Vector3d>& ea1,
@@ -36,13 +57,24 @@ Eigen::Matrix<double, 2, 12> edge_edge_closest_point_jacobian(
 // ============================================================================
 // Point - Triangle
 
-/// Compute the barycentric coordinates of the closest point on the triangle.
+/// @brief Compute the barycentric coordinates of the closest point on the triangle.
+/// @param p Point
+/// @param t0 Triangle's first vertex
+/// @param t1 Triangle's second vertex
+/// @param t2 Triangle's third vertex
+/// @return Barycentric coordinates of the closest point
 Eigen::Vector2d point_triangle_closest_point(
     const Eigen::Ref<const Eigen::Vector3d>& p,
     const Eigen::Ref<const Eigen::Vector3d>& t0,
     const Eigen::Ref<const Eigen::Vector3d>& t1,
     const Eigen::Ref<const Eigen::Vector3d>& t2);
 
+/// @brief Compute the Jacobian of the closest point on the triangle.
+/// @param p Point
+/// @param t0 Triangle's first vertex
+/// @param t1 Triangle's second vertex
+/// @param t2 Triangle's third vertex
+/// @return Jacobian of the closest point
 Eigen::Matrix<double, 2, 12> point_triangle_closest_point_jacobian(
     const Eigen::Ref<const Eigen::Vector3d>& p,
     const Eigen::Ref<const Eigen::Vector3d>& t0,

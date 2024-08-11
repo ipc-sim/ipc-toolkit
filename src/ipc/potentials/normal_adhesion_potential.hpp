@@ -41,13 +41,13 @@ public:
         const double dmin,
         const double barrier_stiffness) const override;
 
-    /// @brief The distance of largest adhesion force (\f(\hat{d}_p\f)) (\f(0 < \hat{d}_p < \hat{d}_a\f)).
+    /// @brief The distance of largest adhesion force (\f$\hat{d}_p\f$) (\f$0 < \hat{d}_p < \hat{d}_a\f$).
     double dhat_p;
-    /// @brief The adhesion activation distance (\f(\hat{d}_a\f)).
+    /// @brief The adhesion activation distance (\f$\hat{d}_a\f$).
     double dhat_a;
-    /// @brief The Young's modulus (\f(Y\f)).
+    /// @brief The Young's modulus (\f$Y\f$).
     double Y;
-    /// @brief The critical strain (\f(\varepsilon_c\f)).
+    /// @brief The critical strain (\f$\varepsilon_c\f$).
     double eps_c;
 
 protected:

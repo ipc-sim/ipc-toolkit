@@ -15,14 +15,14 @@ VectorMax3d point_point_relative_velocity(
     const Eigen::Ref<const VectorMax3d>& dp0,
     const Eigen::Ref<const VectorMax3d>& dp1);
 
-/// @brief Compute the relative velocity premultiplier matrix
+/// @brief Compute the point-point relative velocity premultiplier matrix
 /// @param dim Dimension (2 or 3)
 /// @return The relative velocity premultiplier matrix
 MatrixMax<double, 3, 6> point_point_relative_velocity_matrix(const int dim);
 
-/// @brief Compute the jacobian of the relative velocity premultiplier matrix
+/// @brief Compute the Jacobian of the relative velocity premultiplier matrix
 /// @param dim Dimension (2 or 3)
-/// @return The jacobian of the relative velocity premultiplier matrix
+/// @return The Jacobian of the relative velocity premultiplier matrix
 MatrixMax<double, 3, 6>
 point_point_relative_velocity_matrix_jacobian(const int dim);
 
@@ -41,9 +41,17 @@ VectorMax3d point_edge_relative_velocity(
     const Eigen::Ref<const VectorMax3d>& de1,
     const double alpha);
 
+/// @brief Compute the point-edge relative velocity premultiplier matrix
+/// @param dim Dimension (2 or 3)
+/// @param alpha Parametric coordinate of the closest point on the edge
+/// @return The relative velocity premultiplier matrix
 MatrixMax<double, 3, 9>
 point_edge_relative_velocity_matrix(const int dim, const double alpha);
 
+/// @brief Compute the Jacobian of the relative velocity premultiplier matrix
+/// @param dim Dimension (2 or 3)
+/// @param alpha Parametric coordinate of the closest point on the edge
+/// @return The Jacobian of the relative velocity premultiplier matrix
 MatrixMax<double, 3, 9>
 point_edge_relative_velocity_matrix_jacobian(const int dim, const double alpha);
 
@@ -64,9 +72,17 @@ Eigen::Vector3d edge_edge_relative_velocity(
     const Eigen::Ref<const Eigen::Vector3d>& deb1,
     const Eigen::Ref<const Eigen::Vector2d>& coords);
 
+/// @brief Compute the edge-edge relative velocity matrix.
+/// @param dim Dimension (2 or 3)
+/// @param coords Two parametric coordinates of the closest points on the edges
+/// @return The relative velocity matrix
 MatrixMax<double, 3, 12> edge_edge_relative_velocity_matrix(
     const int dim, const Eigen::Ref<const Eigen::Vector2d>& coords);
 
+/// @brief Compute the Jacobian of the edge-edge relative velocity matrix.
+/// @param dim Dimension (2 or 3)
+/// @param coords Two parametric coordinates of the closest points on the edges
+/// @return The Jacobian of the relative velocity matrix
 MatrixMax<double, 6, 12> edge_edge_relative_velocity_matrix_jacobian(
     const int dim, const Eigen::Ref<const Eigen::Vector2d>& coords);
 
@@ -87,9 +103,17 @@ Eigen::Vector3d point_triangle_relative_velocity(
     const Eigen::Ref<const Eigen::Vector3d>& dt2,
     const Eigen::Ref<const Eigen::Vector2d>& coords);
 
+/// @brief Compute the point-triangle relative velocity matrix.
+/// @param dim Dimension (2 or 3)
+/// @param coords Baricentric coordinates of the closest point on the triangle
+/// @return The relative velocity matrix
 MatrixMax<double, 3, 12> point_triangle_relative_velocity_matrix(
     const int dim, const Eigen::Ref<const Eigen::Vector2d>& coords);
 
+/// @brief Compute the Jacobian of the point-triangle relative velocity matrix.
+/// @param dim Dimension (2 or 3)
+/// @param coords Baricentric coordinates of the closest point on the triangle
+/// @return The Jacobian of the relative velocity matrix
 MatrixMax<double, 6, 12> point_triangle_relative_velocity_matrix_jacobian(
     const int dim, const Eigen::Ref<const Eigen::Vector2d>& coords);
 

@@ -336,7 +336,7 @@ To add a collision offset, we need to set the ``dmin`` variable. For example, we
             const double dhat = 1e-4;
             const double dmin = 1e-3;
 
-            ipc::Collisions collisions;
+            ipc::NormalCollisions collisions;
             collisions.build(collision_mesh, vertices, dhat, dmin);
 
     .. md-tab-item:: Python

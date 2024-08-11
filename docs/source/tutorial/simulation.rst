@@ -59,7 +59,7 @@ This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. How
             Eigen::VectorXd vertices = collision_mesh.vertices(full_vertices);
 
             // Construct the set of collisions
-            ipc::Collisions collisions;
+            ipc::NormalCollisions collisions;
             collisions.build(collision_mesh, vertices, dhat);
 
             // Construct a barrier potential

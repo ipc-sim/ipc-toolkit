@@ -25,12 +25,15 @@
     cpp-api/potentials.rst
     cpp-api/collision_mesh.rst
     cpp-api/candidates.rst
-    cpp-api/collisions.rst
+    cpp-api/normal_collisions.rst
+    cpp-api/tangential_collisions.rst
     cpp-api/friction.rst
     cpp-api/broad_phase.rst
     cpp-api/ccd.rst
     cpp-api/distance.rst
+    cpp-api/tangent.rst
     cpp-api/barrier.rst
+    cpp-api/adhesion.rst
     cpp-api/intersections.rst
     cpp-api/utils.rst
 
