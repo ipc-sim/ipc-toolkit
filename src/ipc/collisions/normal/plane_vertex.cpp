@@ -14,21 +14,22 @@ PlaneVertexNormalCollision::PlaneVertexNormalCollision(
 {
 }
 
-double PlaneVertexNormalCollision::compute_distance(const VectorMax12d& point) const
+double
+PlaneVertexNormalCollision::compute_distance(const VectorMax12d& point) const
 {
     assert(point.size() == plane_origin.size());
     return point_plane_distance(point, plane_origin, plane_normal);
 }
 
-VectorMax12d
-PlaneVertexNormalCollision::compute_distance_gradient(const VectorMax12d& point) const
+VectorMax12d PlaneVertexNormalCollision::compute_distance_gradient(
+    const VectorMax12d& point) const
 {
     assert(point.size() == plane_origin.size());
     return point_plane_distance_gradient(point, plane_origin, plane_normal);
 }
 
-MatrixMax12d
-PlaneVertexNormalCollision::compute_distance_hessian(const VectorMax12d& point) const
+MatrixMax12d PlaneVertexNormalCollision::compute_distance_hessian(
+    const VectorMax12d& point) const
 {
     assert(point.size() == plane_origin.size());
     return point_plane_distance_hessian(point, plane_origin, plane_normal);
