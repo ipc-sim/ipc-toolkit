@@ -21,24 +21,20 @@ void define_edge_edge_normal_collision(py::module_& m)
                 const EdgeEdgeDistanceType>(),
             py::arg("candidate"), py::arg("eps_x"),
             py::arg("dtype") = EdgeEdgeDistanceType::AUTO)
-        .def(
-            py::init<
-                const long, const long, const double, const double,
-                const Eigen::SparseVector<double>&,
-                const EdgeEdgeDistanceType>(),
-            py::arg("edge0_id"), py::arg("edge1_id"), py::arg("eps_x"),
-            py::arg("weight"), py::arg("weight_gradient"),
-            py::arg("dtype") = EdgeEdgeDistanceType::AUTO)
+        // .def(
+        //     py::init<
+        //         const long, const long, const double, const double,
+        //         const Eigen::SparseVector<double>&,
+        //         const EdgeEdgeDistanceType>(),
+        //     py::arg("edge0_id"), py::arg("edge1_id"), py::arg("eps_x"),
+        //     py::arg("weight"), py::arg("weight_gradient"),
+        //     py::arg("dtype") = EdgeEdgeDistanceType::AUTO)
         .def("__eq__", &EdgeEdgeNormalCollision::operator==, py::arg("other"))
         .def("__ne__", &EdgeEdgeNormalCollision::operator!=, py::arg("other"))
         .def("__lt__", &EdgeEdgeNormalCollision::operator<, py::arg("other"))
         .def_readwrite(
             "eps_x", &EdgeEdgeNormalCollision::eps_x,
-            R"ipc_Qu8mg5v7(
-            Mollifier activation threshold.
-
-            edge_edge_mollifier
-            )ipc_Qu8mg5v7")
+            "Mollifier activation threshold.")
         .def_readwrite(
             "dtype", &EdgeEdgeNormalCollision::dtype,
             R"ipc_Qu8mg5v7(
@@ -46,4 +42,5 @@ void define_edge_edge_normal_collision(py::module_& m)
 
             Some EE collisions are mollified EV or VV collisions.
             )ipc_Qu8mg5v7");
+}
 }

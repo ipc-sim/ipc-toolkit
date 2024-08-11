@@ -168,8 +168,8 @@ void NormalCollisions::build(
     // Cull the candidates by measuring the distance and dropping those that are
     // greater than dhat.
     const double offset_sqr = (dmin + dhat) * (dmin + dhat);
-    auto is_active = [&](double distance_squared) {
-        return distance_squared < offset_sqr;
+    auto is_active = [&](double distance_sqr) {
+        return distance_sqr < offset_sqr;
     };
 
     tbb::enumerable_thread_specific<NormalCollisionsBuilder> storage(
