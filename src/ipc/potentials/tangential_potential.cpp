@@ -5,7 +5,7 @@ namespace ipc {
 // -- Cumulative methods -------------------------------------------------------
 
 Eigen::VectorXd TangentialPotential::force(
-    const FrictionCollisions& collisions,
+    const TangentialCollisions& collisions,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& rest_positions,
     const Eigen::MatrixXd& lagged_displacements,
@@ -52,7 +52,7 @@ Eigen::VectorXd TangentialPotential::force(
 }
 
 Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
-    const FrictionCollisions& collisions,
+    const TangentialCollisions& collisions,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& rest_positions,
     const Eigen::MatrixXd& lagged_displacements,
@@ -80,7 +80,7 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
             auto& jac_triplets = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-                const FrictionCollision& collision = collisions[i];
+                const TangentialCollision& collision = collisions[i];
 
                 const MatrixMax12d local_force_jacobian = force_jacobian(
                     collision, collision.dof(rest_positions, edges, faces),
@@ -108,7 +108,7 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
     // if wrt == X then compute ∇ₓ w(x)
     if (wrt == DiffWRT::REST_POSITIONS) {
         for (int i = 0; i < collisions.size(); i++) {
-            const FrictionCollision& collision = collisions[i];
+            const TangentialCollision& collision = collisions[i];
             assert(collision.weight_gradient.size() == rest_positions.size());
             if (collision.weight_gradient.size() != rest_positions.size()) {
                 throw std::runtime_error(
@@ -137,7 +137,7 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
 // -- Single collision methods -------------------------------------------------
 
 double TangentialPotential::operator()(
-    const FrictionCollision& collision, const VectorMax12d& velocities) const
+    const TangentialCollision& collision, const VectorMax12d& velocities) const
 {
     // μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
 
@@ -150,7 +150,7 @@ double TangentialPotential::operator()(
 }
 
 VectorMax12d TangentialPotential::gradient(
-    const FrictionCollision& collision, const VectorMax12d& velocities) const
+    const TangentialCollision& collision, const VectorMax12d& velocities) const
 {
     // ∇ₓ μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
     //  = μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u
@@ -176,7 +176,7 @@ VectorMax12d TangentialPotential::gradient(
 }
 
 MatrixMax12d TangentialPotential::hessian(
-    const FrictionCollision& collision,
+    const TangentialCollision& collision,
     const VectorMax12d& velocities,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
@@ -249,7 +249,7 @@ MatrixMax12d TangentialPotential::hessian(
 }
 
 VectorMax12d TangentialPotential::force(
-    const FrictionCollision& collision,
+    const TangentialCollision& collision,
     const VectorMax12d& rest_positions,       // = x
     const VectorMax12d& lagged_displacements, // = u
     const VectorMax12d& velocities,           // = v
@@ -275,8 +275,8 @@ VectorMax12d TangentialPotential::force(
     const VectorMax12d lagged_positions = rest_positions + lagged_displacements;
 
     // Compute N(x + u)
-    const double N = collision.compute_normal_force_magnitude(
-        lagged_positions, barrier_potential, barrier_stiffness, dmin);
+    const double N = barrier_potential.force_magnitude(
+        collision.compute_distance(lagged_positions), dmin, barrier_stiffness);
 
     // Compute P
     const MatrixMax<double, 3, 2> P =
@@ -305,7 +305,7 @@ VectorMax12d TangentialPotential::force(
 }
 
 MatrixMax12d TangentialPotential::force_jacobian(
-    const FrictionCollision& collision,
+    const TangentialCollision& collision,
     const VectorMax12d& rest_positions,       // = x
     const VectorMax12d& lagged_displacements, // = u
     const VectorMax12d& velocities,           // = v
@@ -337,15 +337,17 @@ MatrixMax12d TangentialPotential::force_jacobian(
     const bool need_jac_N_or_T = wrt != DiffWRT::VELOCITIES;
 
     // Compute N
-    const double N = collision.compute_normal_force_magnitude(
-        lagged_positions, barrier_potential, barrier_stiffness, dmin);
+    const double N = barrier_potential.force_magnitude(
+        collision.compute_distance(lagged_positions), dmin, barrier_stiffness);
 
     // Compute ∇N
     VectorMax12d grad_N;
     if (need_jac_N_or_T) {
         // ∇ₓN = ∇ᵤN
-        grad_N = collision.compute_normal_force_magnitude_gradient(
-            lagged_positions, barrier_potential, barrier_stiffness, dmin);
+        grad_N = barrier_potential.force_magnitude_gradient(
+            collision.compute_distance(lagged_positions),
+            collision.compute_distance_gradient(lagged_positions), dmin,
+            barrier_stiffness);
         assert(grad_N.array().isFinite().all());
     }
 

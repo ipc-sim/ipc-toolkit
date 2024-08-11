@@ -2,7 +2,7 @@
 
 #include <catch2/generators/catch_generators_range.hpp>
 
-#include <ipc/collisions/collisions.hpp>
+#include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -36,7 +36,7 @@ void mmcvids_to_collisions(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Eigen::MatrixXi& mmcvids,
-    ipc::Collisions& collisions);
+    ipc::NormalCollisions& collisions);
 
 // ============================================================================
 // Rotation generator

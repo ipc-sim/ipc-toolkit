@@ -58,7 +58,7 @@ TEST_CASE(
 
     CollisionMesh mesh;
 
-    Collisions collisions;
+    NormalCollisions collisions;
     collisions.set_use_convergent_formulation(use_convergent_formulation);
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(vertices, edges, faces);
@@ -205,7 +205,7 @@ TEST_CASE(
 
     const CollisionMesh mesh(vertices, edges, faces);
 
-    Collisions collisions;
+    NormalCollisions collisions;
     collisions.set_use_convergent_formulation(use_convergent_formulation);
 
     collisions.build(mesh, vertices, dhat);
@@ -232,7 +232,7 @@ TEST_CASE(
     auto f = [&](const Eigen::VectorXd& x) {
         const Eigen::MatrixXd fd_V = fd::unflatten(x, mesh.dim());
 
-        Collisions fd_collisions;
+        NormalCollisions fd_collisions;
         fd_collisions.set_use_convergent_formulation(
             use_convergent_formulation);
 
@@ -288,7 +288,7 @@ TEST_CASE(
     Candidates candidates;
     candidates.build(mesh, vertices, dhat);
 
-    Collisions collisions;
+    NormalCollisions collisions;
     collisions.set_use_convergent_formulation(use_convergent_formulation);
     collisions.set_are_shape_derivatives_enabled(true);
     collisions.build(candidates, mesh, vertices, dhat);
@@ -315,8 +315,8 @@ TEST_CASE(
             // Recompute eps_x based on x
             double prev_eps_x = -1;
             if (collisions.is_edge_edge(i)) {
-                EdgeEdgeCollision& c =
-                    dynamic_cast<EdgeEdgeCollision&>(collisions[i]);
+                EdgeEdgeNormalCollision& c =
+                    dynamic_cast<EdgeEdgeNormalCollision&>(collisions[i]);
                 prev_eps_x = c.eps_x;
                 c.eps_x = edge_edge_mollifier_threshold(
                     x.segment<3>(3 * edges(c.edge0_id, 0)),
@@ -337,7 +337,7 @@ TEST_CASE(
             // Restore eps_x
             if (collisions.is_edge_edge(i)) {
                 REQUIRE(prev_eps_x >= 0);
-                dynamic_cast<EdgeEdgeCollision&>(collisions[i]).eps_x =
+                dynamic_cast<EdgeEdgeNormalCollision&>(collisions[i]).eps_x =
                     prev_eps_x;
             }
 
@@ -379,7 +379,7 @@ TEST_CASE(
 
         // WARNING: This breaks the tests because EE distances are C0 when edges
         // are parallel
-        // Collisions fd_collisions;
+        // NormalCollisions fd_collisions;
         // fd_collisions.set_use_convergent_formulation(
         //     collisions.use_convergent_formulation());
         // fd_collisions.build(fd_mesh, fd_V, dhat);
@@ -424,7 +424,7 @@ TEST_CASE(
     vertices = mesh.vertices(vertices);
     const Eigen::MatrixXd U = vertices - X;
 
-    Collisions collisions;
+    NormalCollisions collisions;
     const bool use_convergent_formulation = GENERATE(true, false);
     collisions.set_use_convergent_formulation(use_convergent_formulation);
     collisions.set_are_shape_derivatives_enabled(true);
@@ -441,7 +441,7 @@ TEST_CASE(
 
         CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
 
-        Collisions fd_collision_set;
+        NormalCollisions fd_collision_set;
         fd_collision_set.set_use_convergent_formulation(
             collisions.use_convergent_formulation());
         fd_collision_set.build(fd_mesh, fd_V, dhat);
@@ -484,7 +484,7 @@ TEST_CASE(
 
     const CollisionMesh mesh(vertices, edges, faces);
 
-    Collisions collisions;
+    NormalCollisions collisions;
     collisions.set_use_convergent_formulation(use_convergent_formulation);
     collisions.build(mesh, vertices, dhat);
     CAPTURE(mesh_name, dhat);
@@ -544,7 +544,7 @@ TEST_CASE(
     vertices = mesh.vertices(vertices);
     const Eigen::MatrixXd U = vertices - X;
 
-    Collisions collisions;
+    NormalCollisions collisions;
     const bool use_convergent_formulation = GENERATE(true, false);
     collisions.set_use_convergent_formulation(use_convergent_formulation);
     collisions.set_are_shape_derivatives_enabled(true);

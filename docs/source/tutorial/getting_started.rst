@@ -367,16 +367,16 @@ Computing the friction dissipative potential is similar to the barrier potential
 
         .. code-block:: c++
 
-            ipc::FrictionCollisions friction_collisions;
-            friction_collisions.build(
+            ipc::TangentialCollisions tangential_collisions;
+            tangential_collisions.build(
                 collision_mesh, vertices, collisions, dhat, barrier_stiffness, mu);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            friction_collisions = ipctk.FrictionCollisions()
-            friction_collisions.build(
+            tangential_collisions = ipctk.TangentialCollisions()
+            tangential_collisions.build(
                 collision_mesh, vertices, collisions, dhat, barrier_stiffness, mu)
 
 Here ``mu`` (:math:`\mu`) is the (global) coefficient of friction, and ``barrier_stiffness`` (:math:`\kappa`) is the barrier stiffness.
@@ -393,14 +393,14 @@ Now we can compute the friction dissipative potential using the ``FrictionPotent
         .. code-block:: c++
 
             const FrictionPotential D(eps_v);
-            double friction_potential = D(friction_collisions, collision_mesh, velocity);
+            double friction_potential = D(tangential_collisions, collision_mesh, velocity);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
             D = FrictionPotential(eps_v)
-            friction_potential = D(friction_collisions, collision_mesh, velocity)
+            friction_potential = D(tangential_collisions, collision_mesh, velocity)
 
 Here ``eps_v`` (:math:`\epsilon_v`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
 
@@ -433,20 +433,20 @@ We can also compute the first and second derivatives of the friction dissipative
         .. code-block:: c++
 
             Eigen::VectorXd friction_potential_grad =
-                D.gradient(friction_collisions, collision_mesh, velocity);
+                D.gradient(tangential_collisions, collision_mesh, velocity);
 
             Eigen::SparseMatrix<double> friction_potential_hess =
-                D.hessian(friction_collisions, collision_mesh, velocity);
+                D.hessian(tangential_collisions, collision_mesh, velocity);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
             friction_potential_grad = D.gradient(
-                friction_collisions, collision_mesh, velocity)
+                tangential_collisions, collision_mesh, velocity)
 
             friction_potential_hess = D.hessian(
-                friction_collisions, collision_mesh, velocity)
+                tangential_collisions, collision_mesh, velocity)
 
 Continuous Collision Detection
 ------------------------------

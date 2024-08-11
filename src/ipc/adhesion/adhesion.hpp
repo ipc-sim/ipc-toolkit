@@ -33,6 +33,14 @@ double normal_adhesion_potential_first_derivative(
 double normal_adhesion_potential_second_derivative(
     const double d, const double dhat_p, const double dhat_a, const double a2);
 
+/// @brief The maximum normal adhesion force magnitude.
+/// @param dhat_p distance of largest adhesion force (\f(\hat{d}_p\f)) (\f(0 < \hat{d}_p < \hat{d}_a\f))
+/// @param dhat_a adhesion activation distance (\f(\hat{d}_a\f))
+/// @param a2 adjustable parameter relating to the maximum derivative of a (\f(a_2\f))
+/// @return The maximum normal adhesion force magnitude.
+double max_normal_adhesion_force_magnitude(
+    const double dhat_p, const double dhat_a, const double a2);
+
 // -- Tangential Adhesion ------------------------------------------------------
 
 /// @brief The tangential adhesion mollifier function.

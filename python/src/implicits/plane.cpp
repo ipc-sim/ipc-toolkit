@@ -12,7 +12,7 @@ void define_plane_implicit(py::module_& m)
         [](const Eigen::MatrixXd& points, const Eigen::MatrixXd& plane_origins,
            const Eigen::MatrixXd& plane_normals, const double dhat,
            const double dmin = 0) {
-            std::vector<PlaneVertexCollision> pv_collisions;
+            std::vector<PlaneVertexNormalCollision> pv_collisions;
             construct_point_plane_collisions(
                 points, plane_origins, plane_normals, dhat, pv_collisions,
                 dmin);
@@ -45,7 +45,7 @@ void define_plane_implicit(py::module_& m)
            const Eigen::MatrixXd& plane_normals, const double dhat,
            const double dmin,
            const std::function<bool(size_t, size_t)>& can_collide) {
-            std::vector<PlaneVertexCollision> pv_collisions;
+            std::vector<PlaneVertexNormalCollision> pv_collisions;
             construct_point_plane_collisions(
                 points, plane_origins, plane_normals, dhat, pv_collisions, dmin,
                 can_collide);

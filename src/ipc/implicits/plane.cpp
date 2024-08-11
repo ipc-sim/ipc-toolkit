@@ -14,7 +14,7 @@ void construct_point_plane_collisions(
     const Eigen::MatrixXd& plane_origins,
     const Eigen::MatrixXd& plane_normals,
     const double dhat,
-    std::vector<PlaneVertexCollision>& pv_collisions,
+    std::vector<PlaneVertexNormalCollision>& pv_collisions,
     const double dmin,
     const std::function<bool(size_t, size_t)>& can_collide)
 {
@@ -38,10 +38,11 @@ void construct_point_plane_collisions(
             const auto& plane_origin = plane_origins.row(pi);
             const auto& plane_normal = plane_normals.row(pi);
 
-            double distance_sqr = point_plane_distance(
+            double distance_squared = point_plane_distance(
                 points.row(vi), plane_origin, plane_normal);
 
-            if (distance_sqr - dmin_squared < 2 * dmin * dhat + dhat_squared) {
+            if (distance_squared - dmin_squared
+                < 2 * dmin * dhat + dhat_squared) {
                 pv_collisions.emplace_back(plane_origin, plane_normal, vi);
                 pv_collisions.back().dmin = dmin;
             }

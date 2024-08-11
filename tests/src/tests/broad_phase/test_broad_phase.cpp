@@ -175,7 +175,7 @@ TEST_CASE(
 
     const Candidates candidates = test_broad_phase(mesh, V, method, dhat);
 
-    Collisions collisions;
+    NormalCollisions collisions;
     collisions.build(candidates, mesh, V, dhat);
     CHECK(collisions.size() != 0);
 }

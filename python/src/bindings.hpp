@@ -10,6 +10,7 @@
 #include <friction/bindings.hpp>
 #include <implicits/bindings.hpp>
 #include <potentials/bindings.hpp>
+#include <tangent/bindings.hpp>
 #include <utils/bindings.hpp>
 
 #include <pybind11/pybind11.h>

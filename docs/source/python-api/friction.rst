@@ -4,42 +4,42 @@ Friction
 Friction Collisions
 -------------------
 
-.. autoclass:: ipctk.FrictionCollisions
+.. autoclass:: ipctk.TangentialCollisions
 
     .. autoclasstoc::
 
 Friction Collision
 ^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ipctk.FrictionCollision
+.. autoclass:: ipctk.TangentialCollision
 
     .. autoclasstoc::
 
 Vertex-Vertex Friction Collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ipctk.VertexVertexFrictionCollision
+.. autoclass:: ipctk.VertexVertexTangentialCollision
 
     .. autoclasstoc::
 
 Edge-Vertex Friction Collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ipctk.EdgeVertexFrictionCollision
+.. autoclass:: ipctk.EdgeVertexTangentialCollision
 
     .. autoclasstoc::
 
 Edge-Edge Friction Collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ipctk.EdgeEdgeFrictionCollision
+.. autoclass:: ipctk.EdgeEdgeTangentialCollision
 
     .. autoclasstoc::
 
 Triangle-Vertex Friction Collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autoclass:: ipctk.FaceVertexFrictionCollision
+.. autoclass:: ipctk.FaceVertexTangentialCollision
 
     .. autoclasstoc::
 

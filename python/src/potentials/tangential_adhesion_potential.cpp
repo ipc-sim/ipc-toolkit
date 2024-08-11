@@ -1,0 +1,25 @@
+#include <common.hpp>
+
+#include <ipc/potentials/tangential_adhesion_potential.hpp>
+
+namespace py = pybind11;
+using namespace ipc;
+
+void define_tangential_adhesion_potential(py::module_& m)
+{
+    py::class_<TangentialadhesionPotential, TangentialPotential>(
+        m, "TangentialadhesionPotential")
+        .def(
+            py::init<const double>(),
+            R"ipc_Qu8mg5v7(
+            Construct a tangential adhesion potential.
+
+            Parameters:
+                eps_a: The tangential adhesion mollifier parameter :math:`\epsilon_a`.
+            )ipc_Qu8mg5v7",
+            py::arg("eps_a"))
+        .def_property(
+            "eps_a", &TangentialadhesionPotential::eps_a,
+            &TangentialadhesionPotential::set_eps_a,
+            "Get the tangential adhesion mollifier parameter :math:`\epsilon_a`.");
+}

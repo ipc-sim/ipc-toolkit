@@ -72,13 +72,13 @@ This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. How
             Eigen::VectorXd velocities = collision_mesh.map_displacements(full_velocities);
 
             // Construct the set of friction collisions
-            ipc::FrictionCollisions friction_collisions;
-            friction_collisions.build(collision_mesh, vertices, collisions, B, barrier_stiffness, mu);
+            ipc::TangentialCollisions tangential_collisions;
+            tangential_collisions.build(collision_mesh, vertices, collisions, B, barrier_stiffness, mu);
 
             // Construct a friction dissipative potential
             ipc::FrictionPotential D(eps_v);
 
-            double d = D(friction_collisions, collision_mesh, velocities);
+            double d = D(tangential_collisions, collision_mesh, velocities);
 
     .. md-tab-item:: Python
 
@@ -101,13 +101,13 @@ This ``CollisionMesh`` can then be used just as any other ``CollisionMesh``. How
             velocities = collision_mesh.map_displacements(full_velocities)
 
             # Construct the set of friction collisions
-            friction_collisions = ipctk.FrictionCollisions()
-            friction_collisions.build(collision_mesh, vertices, collisions, B, barrier_stiffness, mu)
+            tangential_collisions = ipctk.TangentialCollisions()
+            tangential_collisions.build(collision_mesh, vertices, collisions, B, barrier_stiffness, mu)
 
             # Construct a friction dissipative potential
             D = ipctk.FrictionPotential(eps_v)
 
-            d = D(friction_collisions, collision_mesh, velocities)
+            d = D(tangential_collisions, collision_mesh, velocities)
 
 When computing the gradient and Hessian of the potentials, the derivatives will be with respect to the surface DOF. If you want the derivatives with respect to the full mesh DOF, then we need to apply the chain rule. Fortunately, the ``CollisionMesh`` class provides a function to do this (``CollisionMesh::to_full_dof``):
 

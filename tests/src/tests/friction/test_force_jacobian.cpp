@@ -5,7 +5,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <ipc/ipc.hpp>
-#include <ipc/friction/friction_collisions.hpp>
+#include <ipc/collisions/tangential/tangential_collisions.hpp>
 #include <ipc/potentials/friction_potential.hpp>
 
 #include <finitediff.hpp>
@@ -17,7 +17,7 @@ void check_friction_force_jacobian(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& Ut,
     const Eigen::MatrixXd& U,
-    const Collisions& collisions,
+    const NormalCollisions& collisions,
     const double mu,
     const double epsv_times_h,
     const double dhat,
@@ -41,11 +41,11 @@ void check_friction_force_jacobian(
         collisions.vv_collisions.size(), collisions.ev_collisions.size(),
         collisions.ee_collisions.size(), collisions.fv_collisions.size());
 
-    FrictionCollisions friction_collisions;
-    friction_collisions.build(
+    TangentialCollisions tangential_collisions;
+    tangential_collisions.build(
         mesh, X + Ut, collisions, BarrierPotential(dhat), barrier_stiffness,
         mu);
-    CHECK(friction_collisions.size());
+    CHECK(tangential_collisions.size());
 
     const FrictionPotential D(epsv_times_h);
 
@@ -90,7 +90,7 @@ void check_friction_force_jacobian(
     ///////////////////////////////////////////////////////////////////////////
 
     Eigen::MatrixXd JF_wrt_X = D.force_jacobian(
-        friction_collisions, mesh, X, Ut, velocities, BarrierPotential(dhat),
+        tangential_collisions, mesh, X, Ut, velocities, BarrierPotential(dhat),
         barrier_stiffness, FrictionPotential::DiffWRT::REST_POSITIONS);
 
     auto F_X = [&](const Eigen::VectorXd& x) {
@@ -99,9 +99,9 @@ void check_friction_force_jacobian(
         CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
         fd_mesh.init_area_jacobians();
 
-        FrictionCollisions fd_friction_collisions;
+        TangentialCollisions fd_friction_collisions;
         if (recompute_collisions) {
-            Collisions fd_collisions;
+            NormalCollisions fd_collisions;
             fd_collisions.set_use_convergent_formulation(
                 collisions.use_convergent_formulation());
             fd_collisions.set_are_shape_derivatives_enabled(true);
@@ -111,7 +111,7 @@ void check_friction_force_jacobian(
                 fd_mesh, fd_X + Ut, fd_collisions, BarrierPotential(dhat),
                 barrier_stiffness, mu);
         } else {
-            fd_friction_collisions = friction_collisions;
+            fd_friction_collisions = tangential_collisions;
         }
 
         return D.force(
@@ -129,15 +129,15 @@ void check_friction_force_jacobian(
     ///////////////////////////////////////////////////////////////////////////
 
     Eigen::MatrixXd JF_wrt_Ut = D.force_jacobian(
-        friction_collisions, mesh, X, Ut, velocities, BarrierPotential(dhat),
+        tangential_collisions, mesh, X, Ut, velocities, BarrierPotential(dhat),
         barrier_stiffness, FrictionPotential::DiffWRT::LAGGED_DISPLACEMENTS);
 
     auto F_Ut = [&](const Eigen::VectorXd& ut) {
         Eigen::MatrixXd fd_Ut = fd::unflatten(ut, Ut.cols());
 
-        FrictionCollisions fd_friction_collisions;
+        TangentialCollisions fd_friction_collisions;
         if (recompute_collisions) {
-            Collisions fd_collisions;
+            NormalCollisions fd_collisions;
             fd_collisions.set_use_convergent_formulation(
                 collisions.use_convergent_formulation());
             fd_collisions.set_are_shape_derivatives_enabled(true);
@@ -147,11 +147,11 @@ void check_friction_force_jacobian(
                 mesh, X + fd_Ut, fd_collisions, BarrierPotential(dhat),
                 barrier_stiffness, mu);
         } else {
-            fd_friction_collisions = friction_collisions;
+            fd_friction_collisions = tangential_collisions;
         }
 
         return D.force(
-            friction_collisions, mesh, X, fd_Ut, velocities,
+            tangential_collisions, mesh, X, fd_Ut, velocities,
             BarrierPotential(dhat), barrier_stiffness);
     };
     Eigen::MatrixXd fd_JF_wrt_Ut;
@@ -165,12 +165,12 @@ void check_friction_force_jacobian(
     ///////////////////////////////////////////////////////////////////////////
 
     Eigen::MatrixXd JF_wrt_V = D.force_jacobian(
-        friction_collisions, mesh, X, Ut, velocities, BarrierPotential(dhat),
+        tangential_collisions, mesh, X, Ut, velocities, BarrierPotential(dhat),
         barrier_stiffness, FrictionPotential::DiffWRT::VELOCITIES);
 
     auto F_V = [&](const Eigen::VectorXd& v) {
         return D.force(
-            friction_collisions, mesh, X, Ut,
+            tangential_collisions, mesh, X, Ut,
             fd::unflatten(v, velocities.cols()), BarrierPotential(dhat),
             barrier_stiffness);
     };
@@ -185,11 +185,11 @@ void check_friction_force_jacobian(
     ///////////////////////////////////////////////////////////////////////////
 
     const Eigen::MatrixXd hess_D =
-        D.hessian(friction_collisions, mesh, velocities);
+        D.hessian(tangential_collisions, mesh, velocities);
 
     auto grad = [&](const Eigen::VectorXd& v) {
         return D.gradient(
-            friction_collisions, mesh, fd::unflatten(v, velocities.cols()));
+            tangential_collisions, mesh, fd::unflatten(v, velocities.cols()));
     };
     Eigen::MatrixXd fd_hessian;
     fd::finite_jacobian(fd::flatten(velocities), grad, fd_hessian);
@@ -202,16 +202,16 @@ void check_friction_force_jacobian(
     ///////////////////////////////////////////////////////////////////////////
 
     const Eigen::VectorXd force = D.force(
-        friction_collisions, mesh, X, Ut, velocities, BarrierPotential(dhat),
+        tangential_collisions, mesh, X, Ut, velocities, BarrierPotential(dhat),
         barrier_stiffness);
     const Eigen::VectorXd grad_D =
-        D.gradient(friction_collisions, mesh, velocities);
+        D.gradient(tangential_collisions, mesh, velocities);
     CHECK(fd::compare_gradient(-force, grad_D));
 
     ///////////////////////////////////////////////////////////////////////////
 
     Eigen::MatrixXd jac_force = D.force_jacobian(
-        friction_collisions, mesh, X, Ut, velocities, BarrierPotential(dhat),
+        tangential_collisions, mesh, X, Ut, velocities, BarrierPotential(dhat),
         barrier_stiffness, FrictionPotential::DiffWRT::VELOCITIES);
     CHECK(fd::compare_jacobian(-jac_force, hess_D));
 }
@@ -320,7 +320,7 @@ TEST_CASE(
         U = mesh.vertices(U);
     }
 
-    Collisions collisions;
+    NormalCollisions collisions;
     collisions.set_use_convergent_formulation(use_convergent_formulation);
     collisions.set_are_shape_derivatives_enabled(true);
     collisions.build(mesh, X + Ut, dhat);

@@ -3,7 +3,7 @@ import ipctk
 
 
 def test_collisions():
-    c = ipctk.VertexVertexCollision(0, 1)
+    c = ipctk.VertexVertexNormalCollision(0, 1)
     c.weight = 10
     assert c.weight == 10
 

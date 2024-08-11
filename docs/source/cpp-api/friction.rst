@@ -4,32 +4,32 @@ Friction
 Friction Collisions
 -------------------
 
-.. doxygenclass:: ipc::FrictionCollisions
+.. doxygenclass:: ipc::TangentialCollisions
 
 Friction Collision
 ^^^^^^^^^^^^^^^^^^
 
-.. doxygenclass:: ipc::FrictionCollision
+.. doxygenclass:: ipc::TangentialCollision
 
 Vertex-Vertex Friction Collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. doxygenclass:: ipc::VertexVertexFrictionCollision
+.. doxygenclass:: ipc::VertexVertexTangentialCollision
 
 Edge-Vertex Friction Collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. doxygenclass:: ipc::EdgeVertexFrictionCollision
+.. doxygenclass:: ipc::EdgeVertexTangentialCollision
 
 Edge-Edge Friction Collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. doxygenclass:: ipc::EdgeEdgeFrictionCollision
+.. doxygenclass:: ipc::EdgeEdgeTangentialCollision
 
 Triangle-Vertex Friction Collision
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. doxygenclass:: ipc::FaceVertexFrictionCollision
+.. doxygenclass:: ipc::FaceVertexTangentialCollision
 
 Smooth Mollifier
 ----------------

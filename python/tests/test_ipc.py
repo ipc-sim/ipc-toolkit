@@ -15,7 +15,7 @@ def check_ipc_derivatives(broad_phase_method, use_convergent_formulation, mesh_n
         mesh = ipctk.CollisionMesh.build_from_full_mesh(vertices, edges, faces)
         vertices = mesh.vertices(vertices)
 
-    collisions = ipctk.Collisions()
+    collisions = ipctk.NormalCollisions()
     collisions.use_convergent_formulation = use_convergent_formulation
     collisions.build(mesh, vertices, dhat,
                      broad_phase_method=broad_phase_method)

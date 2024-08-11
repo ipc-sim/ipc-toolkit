@@ -1,12 +1,12 @@
 #pragma once
 
 #include <ipc/potentials/potential.hpp>
-#include <ipc/friction/friction_collisions.hpp>
+#include <ipc/collisions/tangential/tangential_collisions.hpp>
 
 namespace ipc {
 
 /// @brief A tangential dissipative potential.
-class TangentialPotential : public Potential<FrictionCollisions> {
+class TangentialPotential : public Potential<TangentialCollisions> {
     using Super = Potential;
 
 public:
@@ -39,7 +39,7 @@ public:
     /// @param no_mu whether to not multiply by mu
     /// @return The friction force.
     Eigen::VectorXd force(
-        const FrictionCollisions& collisions,
+        const TangentialCollisions& collisions,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& rest_positions,
         const Eigen::MatrixXd& lagged_displacements,
@@ -61,7 +61,7 @@ public:
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @return The Jacobian of the friction force wrt the velocities.
     Eigen::SparseMatrix<double> force_jacobian(
-        const FrictionCollisions& collisions,
+        const TangentialCollisions& collisions,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& rest_positions,
         const Eigen::MatrixXd& lagged_displacements,
@@ -78,7 +78,7 @@ public:
     /// @param velocities The collision stencil's velocities.
     /// @return The potential.
     double operator()(
-        const FrictionCollision& collision,
+        const TangentialCollision& collision,
         const VectorMax12d& velocities) const override;
 
     /// @brief Compute the gradient of the potential for a single collision.
@@ -86,7 +86,7 @@ public:
     /// @param velocities The collision stencil's velocities.
     /// @return The gradient of the potential.
     VectorMax12d gradient(
-        const FrictionCollision& collision,
+        const TangentialCollision& collision,
         const VectorMax12d& velocities) const override;
 
     /// @brief Compute the hessian of the potential for a single collision.
@@ -94,7 +94,7 @@ public:
     /// @param velocities The collision stencil's velocities.
     /// @return The hessian of the potential.
     MatrixMax12d hessian(
-        const FrictionCollision& collision,
+        const TangentialCollision& collision,
         const VectorMax12d& velocities,
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const override;
@@ -110,7 +110,7 @@ public:
     /// @param no_mu Whether to not multiply by mu
     /// @return Friction force
     VectorMax12d force(
-        const FrictionCollision& collision,
+        const TangentialCollision& collision,
         const VectorMax12d& rest_positions,
         const VectorMax12d& lagged_displacements,
         const VectorMax12d& velocities,
@@ -130,7 +130,7 @@ public:
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @return Friction force Jacobian
     MatrixMax12d force_jacobian(
-        const FrictionCollision& collision,
+        const TangentialCollision& collision,
         const VectorMax12d& rest_positions,
         const VectorMax12d& lagged_displacements,
         const VectorMax12d& velocities,
