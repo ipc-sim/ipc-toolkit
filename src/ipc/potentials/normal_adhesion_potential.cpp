@@ -68,7 +68,7 @@ NormalAdhesionPotential::normal_adhesion_potential_args(const double dmin) const
     const double arg_dhat_a = 2 * dmin * dhat_a + dhat_a * dhat_a;
     const double a2 =
         Y * eps_c / (4 * (dhat_p + dmin) * (arg_dhat_p - arg_dhat_a));
-    return { arg_dhat_p, arg_dhat_a, a2 };
+    return { { arg_dhat_p, arg_dhat_a, a2 } };
 }
 
 } // namespace ipc
