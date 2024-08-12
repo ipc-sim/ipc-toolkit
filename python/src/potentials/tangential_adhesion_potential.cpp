@@ -7,8 +7,8 @@ using namespace ipc;
 
 void define_tangential_adhesion_potential(py::module_& m)
 {
-    py::class_<TangentialadhesionPotential, TangentialPotential>(
-        m, "TangentialadhesionPotential")
+    py::class_<TangentialAdhesionPotential, TangentialPotential>(
+        m, "TangentialAdhesionPotential")
         .def(
             py::init<const double>(),
             R"ipc_Qu8mg5v7(
@@ -19,7 +19,7 @@ void define_tangential_adhesion_potential(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("eps_a"))
         .def_property(
-            "eps_a", &TangentialadhesionPotential::eps_a,
-            &TangentialadhesionPotential::set_eps_a,
+            "eps_a", &TangentialAdhesionPotential::eps_a,
+            &TangentialAdhesionPotential::set_eps_a,
             "Get the tangential adhesion mollifier parameter :math:`\epsilon_a`.");
 }

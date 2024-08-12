@@ -5,13 +5,13 @@
 namespace ipc {
 
 /// @brief The tangential adhesion potential.
-class TangentialadhesionPotential : public TangentialPotential {
+class TangentialAdhesionPotential : public TangentialPotential {
     using Super = TangentialPotential;
 
 public:
     /// @brief Construct a tangential adhesion potential.
     /// @param eps_a The tangential adhesion mollifier parameter \f$\epsilon_a\f$.
-    explicit TangentialadhesionPotential(const double eps_a);
+    explicit TangentialAdhesionPotential(const double eps_a);
 
     /// @brief Get the tangential adhesion mollifier parameter \f$\epsilon_a\f$.
     double eps_a() const { return m_eps_a; }
