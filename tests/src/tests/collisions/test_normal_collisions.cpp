@@ -6,6 +6,8 @@
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/potentials/barrier_potential.hpp>
 
+#include <igl/edges.h>
+
 using namespace ipc;
 
 TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
@@ -298,4 +300,53 @@ TEST_CASE("NormalCollisions::is_*", "[collisions]")
         CHECK(collisions.is_face_vertex(i) == (i == 3));
         CHECK(collisions.is_plane_vertex(i) == (i == 4));
     }
+}
+
+TEST_CASE("NormalCollisions::to_string", "[collisions]")
+{
+    const double dhat = 1e-1;
+
+    Eigen::MatrixXd vertices;
+    Eigen::MatrixXi edges, faces;
+    const bool success =
+        tests::load_mesh("two-cubes-close.ply", vertices, edges, faces);
+    REQUIRE(success);
+
+    CollisionMesh mesh(vertices, edges, faces);
+
+    NormalCollisions collisions;
+    collisions.set_use_convergent_formulation(true);
+    collisions.build(mesh, vertices, dhat);
+
+    std::sort(collisions.vv_collisions.begin(), collisions.vv_collisions.end());
+    collisions.vv_collisions.erase(
+        collisions.vv_collisions.begin() + 1,
+        collisions.vv_collisions.end() - 1);
+
+    std::sort(collisions.ev_collisions.begin(), collisions.ev_collisions.end());
+    collisions.ev_collisions.erase(
+        collisions.ev_collisions.begin() + 1,
+        collisions.ev_collisions.end() - 1);
+
+    std::sort(collisions.ee_collisions.begin(), collisions.ee_collisions.end());
+    collisions.ee_collisions.erase(
+        collisions.ee_collisions.begin() + 1,
+        collisions.ee_collisions.end() - 1);
+
+    std::sort(collisions.fv_collisions.begin(), collisions.fv_collisions.end());
+    collisions.fv_collisions.erase(
+        collisions.fv_collisions.begin() + 1,
+        collisions.fv_collisions.end() - 1);
+
+    std::string s = collisions.to_string(mesh, vertices);
+
+    CHECK(s == R"ipc_Qu8mg5v7(
+vv: 1 5, w: 1000, d: 0.000913492
+vv: 160 163, w: 1000, d: 0.000277936
+ev: 14=(24, 46) 205, w: 14.0559, d: 0.00500364
+ev: 719=(237, 261) 128, w: 12.2856, d: 0.00727213
+ee: 14=(24, 46) 456=(161, 205), w: -2.97853, dtype: 0, d: 0.00538125
+ee: 346=(76, 128) 718=(236, 261), w: -3.28539, dtype: 5, d: 0.00717647
+fv: 17=(46, 24, 72) 205, w: 13.7957, d: 0.00500269
+fv: 471=(155, 238, 259) 64, w: 16.0469, d: 0.00639199)ipc_Qu8mg5v7");
 }
