@@ -33,7 +33,7 @@ void construct_point_plane_collisions(
         default_can_point_plane_collide);
 
 // ============================================================================
-// NormalCollision detection
+// Collision detection
 
 /// @brief Determine if the step is collision free.
 ///

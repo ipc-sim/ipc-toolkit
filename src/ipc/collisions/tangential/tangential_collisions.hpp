@@ -76,9 +76,13 @@ public:
     }
 
 public:
+    /// @brief Vertex-vertex tangential collisions.
     std::vector<VertexVertexTangentialCollision> vv_collisions;
+    /// @brief Edge-vertex tangential collisions.
     std::vector<EdgeVertexTangentialCollision> ev_collisions;
+    /// @brief Edge-edge tangential collisions.
     std::vector<EdgeEdgeTangentialCollision> ee_collisions;
+    /// @brief Face-vertex tangential collisions.
     std::vector<FaceVertexTangentialCollision> fv_collisions;
 };
 

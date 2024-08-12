@@ -38,11 +38,10 @@ void construct_point_plane_collisions(
             const auto& plane_origin = plane_origins.row(pi);
             const auto& plane_normal = plane_normals.row(pi);
 
-            double distance_squared = point_plane_distance(
+            double distance_sqr = point_plane_distance(
                 points.row(vi), plane_origin, plane_normal);
 
-            if (distance_squared - dmin_squared
-                < 2 * dmin * dhat + dhat_squared) {
+            if (distance_sqr - dmin_squared < 2 * dmin * dhat + dhat_squared) {
                 pv_collisions.emplace_back(plane_origin, plane_normal, vi);
                 pv_collisions.back().dmin = dmin;
             }

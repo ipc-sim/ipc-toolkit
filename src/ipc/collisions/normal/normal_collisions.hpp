@@ -136,10 +136,15 @@ public:
     to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
 
 public:
+    /// @brief Vertex-vertex normal collisions.
     std::vector<VertexVertexNormalCollision> vv_collisions;
+    /// @brief Edge-vertex normal collisions.
     std::vector<EdgeVertexNormalCollision> ev_collisions;
+    /// @brief Edge-edge normal collisions.
     std::vector<EdgeEdgeNormalCollision> ee_collisions;
+    /// @brief Face-vertex normal collisions.
     std::vector<FaceVertexNormalCollision> fv_collisions;
+    /// @brief Plane-vertex normal collisions.
     std::vector<PlaneVertexNormalCollision> pv_collisions;
 
 protected:
