@@ -19,5 +19,5 @@ void define_friction_potential(py::module_& m)
             py::arg("eps_v"))
         .def_property(
             "eps_v", &FrictionPotential::eps_v, &FrictionPotential::set_eps_v,
-            "Get the smooth friction mollifier parameter :math:`\epsilon_v`.");
+            "The smooth friction mollifier parameter :math:`\\epsilon_{v}`.");
 }

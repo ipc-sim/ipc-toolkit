@@ -14,7 +14,7 @@ class TangentialCollision : virtual public CollisionStencil {
 protected:
     /// @brief Initialize the collision.
     /// @param collision NormalCollision stencil.
-    /// @param positions NormalCollision stencil's vertex positions.
+    /// @param positions Collision stencil's vertex positions.
     /// @param normal_potential Barrier potential used for normal force.
     /// @param barrier_stiffness Barrier potential stiffness.
     void init(
@@ -35,31 +35,31 @@ public:
     // -- Abstract methods -----------------------------------------------------
 
     /// @brief Compute the tangent basis of the collision.
-    /// @param positions NormalCollision stencil's vertex positions.
+    /// @param positions Collision stencil's vertex positions.
     /// @return Tangent basis of the collision.
     virtual MatrixMax<double, 3, 2>
     compute_tangent_basis(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the Jacobian of the tangent basis of the collision.
-    /// @param positions NormalCollision stencil's vertex positions.
+    /// @param positions Collision stencil's vertex positions.
     /// @return Jacobian of the tangent basis of the collision.
     virtual MatrixMax<double, 36, 2>
     compute_tangent_basis_jacobian(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the barycentric coordinates of the closest point.
-    /// @param positions NormalCollision stencil's vertex positions.
+    /// @param positions Collision stencil's vertex positions.
     /// @return Barycentric coordinates of the closest point.
     virtual VectorMax2d
     compute_closest_point(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the Jacobian of the barycentric coordinates of the closest point.
-    /// @param positions NormalCollision stencil's vertex positions.
+    /// @param positions Collision stencil's vertex positions.
     /// @return Jacobian of the barycentric coordinates of the closest point.
     virtual MatrixMax<double, 2, 12>
     compute_closest_point_jacobian(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the relative velocity of the collision.
-    /// @param positions NormalCollision stencil's vertex velocities.
+    /// @param positions Collision stencil's vertex velocities.
     /// @return Relative velocity of the collision.
     virtual VectorMax3d
     relative_velocity(const VectorMax12d& velocities) const = 0;
@@ -85,10 +85,10 @@ public:
         const VectorMax2d& closest_point) const = 0;
 
 public:
-    /// @brief NormalCollision force magnitude
+    /// @brief Normal force magnitude
     double normal_force_magnitude;
 
-    /// @brief Coefficient of friction
+    /// @brief Ratio between normal and tangential forces (e.g., friction coefficient)
     double mu;
 
     /// @brief Weight

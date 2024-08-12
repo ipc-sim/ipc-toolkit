@@ -5,6 +5,10 @@
 namespace py = pybind11;
 using namespace ipc;
 
+/// @brief Define the methods of the templated generic Potential class.
+/// @tparam TCollisions Type of the collisions.
+/// @tparam PyClass The pybind11 class to define the methods on.
+/// @param potential The pybind11 class to define the methods on.
 template <typename TCollisions, typename PyClass>
 void define_potential_methods(PyClass& potential)
 {

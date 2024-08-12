@@ -21,7 +21,7 @@ void define_tangential_collision(py::module_& m)
             Compute the tangent basis of the collision.
 
             Parameters:
-                positions: NormalCollision stencil's vertex positions.
+                positions: Collision stencil's vertex positions.
 
             Returns:
                 Tangent basis of the collision.
@@ -34,7 +34,7 @@ void define_tangential_collision(py::module_& m)
             Compute the Jacobian of the tangent basis of the collision.
 
             Parameters:
-                positions: NormalCollision stencil's vertex positions.
+                positions: Collision stencil's vertex positions.
 
             Returns:
                 Jacobian of the tangent basis of the collision.
@@ -47,7 +47,7 @@ void define_tangential_collision(py::module_& m)
             Compute the barycentric coordinates of the closest point.
 
             Parameters:
-                positions: NormalCollision stencil's vertex positions.
+                positions: Collision stencil's vertex positions.
 
             Returns:
                 Barycentric coordinates of the closest point.
@@ -60,7 +60,7 @@ void define_tangential_collision(py::module_& m)
             Compute the Jacobian of the barycentric coordinates of the closest point.
 
             Parameters:
-                positions: NormalCollision stencil's vertex positions.
+                positions: Collision stencil's vertex positions.
 
             Returns:
                 Jacobian of the barycentric coordinates of the closest point.
@@ -72,7 +72,7 @@ void define_tangential_collision(py::module_& m)
             Compute the relative velocity of the collision.
 
             Parameters:
-                positions: NormalCollision stencil's vertex velocities.
+                positions: Collision stencil's vertex velocities.
 
             Returns:
                 Relative velocity of the collision.
@@ -121,9 +121,10 @@ void define_tangential_collision(py::module_& m)
         .def_readwrite(
             "normal_force_magnitude",
             &TangentialCollision::normal_force_magnitude,
-            "NormalCollision force magnitude")
+            "Normal force magnitude")
         .def_readwrite(
-            "mu", &TangentialCollision::mu, "Coefficient of friction")
+            "mu", &TangentialCollision::mu,
+            "Ratio between normal and tangential forces (e.g., friction coefficient)")
         .def_readwrite("weight", &TangentialCollision::weight, "Weight")
         .def_property(
             "weight_gradient",
