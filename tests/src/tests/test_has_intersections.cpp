@@ -74,8 +74,8 @@ bool combine_meshes(
 
 TEST_CASE("Has intersections", "[intersection]")
 {
-    std::string mesh1_name = GENERATE("cube.obj", "bunny.obj");
-    std::string mesh2_name = GENERATE("cube.obj", "bunny.obj");
+    std::string mesh1_name = GENERATE("cube.ply", "bunny.ply");
+    std::string mesh2_name = GENERATE("cube.ply", "bunny.ply");
     int dim = GENERATE(2, 3);
 
 #ifdef NDEBUG

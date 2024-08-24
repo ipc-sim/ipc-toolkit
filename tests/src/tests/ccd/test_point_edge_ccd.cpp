@@ -3,7 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <ipc/config.hpp>
-#include <ipc/ccd/ccd.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 #include <ipc/ccd/additive_ccd.hpp>
 
 using namespace ipc;
@@ -21,16 +21,17 @@ void check_toi(
     const double toi_expected)
 {
     double toi;
-    bool is_colliding = point_edge_ccd(
-        p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi,
-        /*min_distance=*/0.0, /*tmax=*/1.0, DEFAULT_CCD_TOLERANCE,
-        DEFAULT_CCD_MAX_ITERATIONS, /*conservative_rescaling=*/1.0);
+
+    TightInclusionCCD tight_inclusion_ccd;
+    tight_inclusion_ccd.conservative_rescaling = 1.0;
+    bool is_colliding = tight_inclusion_ccd.point_edge_ccd(
+        p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi);
     CHECK(is_colliding);
     CHECK(toi <= toi_expected);
 
-    is_colliding = additive_ccd::point_edge_ccd(
-        p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi,
-        /*min_distance=*/0.0, /*tmax=*/1.0, /*conservative_rescaling=*/0.99);
+    const AdditiveCCD additive_ccd(/*conservative_rescaling=*/0.99);
+    is_colliding = additive_ccd.point_edge_ccd(
+        p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi);
     CHECK(is_colliding);
     CHECK(toi <= toi_expected);
 }
@@ -169,9 +170,9 @@ TEST_CASE("Point-edge CCD", "[ccd][point-edge]")
     //     CHECK(toi <= toi_expected);
     // }
 
-    is_colliding = additive_ccd::point_edge_ccd(
-        p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi,
-        /*min_distance=*/0.0, /*tmax=*/1.0, /*conservative_rescaling=*/0.99);
+    const AdditiveCCD additive_ccd(/*conservative_rescaling=*/0.99);
+    is_colliding = additive_ccd.point_edge_ccd(
+        p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi);
     REQUIRE(is_colliding == is_collision_expected);
     if (is_collision_expected) {
         CHECK(toi <= toi_expected);

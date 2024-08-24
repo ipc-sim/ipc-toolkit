@@ -10,6 +10,7 @@ on:
       - 'src/**'
       - 'tests/**'
       - 'CMakeLists.txt'
+      - 'codecov.yml'
 
 jobs:
   Coverage:
@@ -28,9 +29,13 @@ jobs:
           sudo apt-get install ccache lcov
           echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
 
+      - name: Get number of CPU cores
+        uses: SimenB/github-actions-cpu-cores@v2.0.0
+        id: cpu-cores
+
       - name: Cache Build
         id: cache-build
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v4.0.2
         with:
           path: ${{ env.CACHE_PATH }}
           key: coverage-cache
@@ -51,21 +56,23 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
 
       - name: Build
-        run: cd build; make -j2; ccache --show-stats
+        run: |
+          cmake --build build -j ${{ steps.cpu-cores.outputs.count }}
+          ccache --show-stats
 
       - name: Run Coverage
         run: |
           cd build
-          ctest --verbose --output-on-failure
+          ctest --verbose -j ${{ steps.cpu-cores.outputs.count }}
           lcov --directory . --capture --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' "${HOME}"'/.cache/*' '*tests/*' --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' "$HOME/.cache/*" "*tests/*" --output-file coverage.info
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        env:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.info
+        uses: codecov/codecov-action@v3.1.6
+        with:
+          fail_ci_if_error: true
+          files: build/coverage.info
           flags: unittests
           name: ipc-toolkit
-          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true

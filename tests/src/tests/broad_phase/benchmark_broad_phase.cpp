@@ -19,9 +19,9 @@ TEST_CASE("Benchmark broad phase", "[!benchmark][broad_phase]")
 
 #ifdef NDEBUG
     std::string filename =
-        GENERATE(std::string("cube.obj"), std::string("bunny.obj"));
+        GENERATE(std::string("cube.ply"), std::string("bunny.ply"));
 #else
-    std::string filename = "cube.obj";
+    std::string filename = "cube.ply";
 #endif
     REQUIRE(tests::load_mesh(filename, V0, E, F));
 
@@ -98,13 +98,13 @@ TEST_CASE(
     std::string mesh_name_t0, mesh_name_t1;
     SECTION("Data 0")
     {
-        mesh_name_t0 = "private/slow-broadphase-ccd/0.obj";
-        mesh_name_t1 = "private/slow-broadphase-ccd/1.obj";
+        mesh_name_t0 = "private/slow-broadphase-ccd/0.ply";
+        mesh_name_t1 = "private/slow-broadphase-ccd/1.ply";
     }
     SECTION("Data 1")
     {
-        mesh_name_t0 = "private/slow-broadphase-ccd/s0.obj";
-        mesh_name_t1 = "private/slow-broadphase-ccd/s1.obj";
+        mesh_name_t0 = "private/slow-broadphase-ccd/s0.ply";
+        mesh_name_t1 = "private/slow-broadphase-ccd/s1.ply";
     }
     SECTION("Cloth-Ball")
     {

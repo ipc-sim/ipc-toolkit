@@ -48,14 +48,12 @@ bool EdgeVertexCandidate::ccd(
     double& toi,
     const double min_distance,
     const double tmax,
-    const double tolerance,
-    const long max_iterations,
-    const double conservative_rescaling) const
+    const NarrowPhaseCCD& narrow_phase_ccd) const
 {
     assert(vertices_t0.size() == 6 || vertices_t0.size() == 9);
     assert(vertices_t0.size() == vertices_t1.size());
     const int dim = vertices_t0.size() / 3;
-    return point_edge_ccd(
+    return narrow_phase_ccd.point_edge_ccd(
         // Point at t=0
         vertices_t0.head(dim),
         // Edge at t=0
@@ -64,8 +62,7 @@ bool EdgeVertexCandidate::ccd(
         vertices_t1.head(dim),
         // Edge at t=1
         vertices_t1.segment(dim, dim), vertices_t1.tail(dim), //
-        toi, min_distance, tmax, tolerance, max_iterations,
-        conservative_rescaling);
+        toi, min_distance, tmax);
 }
 
 bool EdgeVertexCandidate::operator==(const EdgeVertexCandidate& other) const

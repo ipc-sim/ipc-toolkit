@@ -1,6 +1,6 @@
 sphinx
 sphinx-sitemap
-sphinx-immaterial
+sphinx-immaterial==0.11.14
 autoclasstoc
 # sphinx-autodoc-toolbox
 breathe
