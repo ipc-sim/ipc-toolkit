@@ -30,7 +30,7 @@ protected:
 
 public:
     constexpr static int max_size = Collision<max_vert>::max_size;
-    virtual ~SmoothCollision() { }
+    virtual ~SmoothCollision() = default;
 
     bool is_active() const { return is_active_; }
 
@@ -138,7 +138,7 @@ public:
         const ParameterType& param,
         const double& dhat,
         const Eigen::MatrixXd& V);
-    virtual ~SmoothCollisionTemplate();
+    virtual ~SmoothCollisionTemplate() = default;
 
     inline int n_dofs() const override { return pA->n_dofs() + pB->n_dofs(); }
     CollisionType type() const override;
@@ -183,9 +183,9 @@ public:
     MatrixMax<double, max_size, max_size> compute_distance_hessian(
         const Vector<double, -1, max_size>& positions) const override;
 
-protected:
-    std::shared_ptr<PrimitiveA> pA;
-    std::shared_ptr<PrimitiveB> pB;
+private:
+    std::unique_ptr<PrimitiveA> pA;
+    std::unique_ptr<PrimitiveB> pB;
 };
 
 } // namespace ipc

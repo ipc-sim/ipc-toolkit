@@ -21,6 +21,7 @@ public:
         const long& id,
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices);
+    virtual ~Point3() = default;
 
     int n_vertices() const override;
     int n_dofs() const override { return n_vertices() * dim; }

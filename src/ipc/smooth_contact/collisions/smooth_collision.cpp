@@ -46,10 +46,16 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
     VectorMax3d d =
         PrimitiveDistance<PrimitiveA, PrimitiveB>::compute_closest_direction(
             mesh, V, primitive0_, primitive1_, dtype);
-    pA = std::make_shared<PrimitiveA>(
+    pA = std::make_unique<PrimitiveA>(
         primitive0_, mesh, V, d, param);
-    pB = std::make_shared<PrimitiveB>(
+    pB = std::make_unique<PrimitiveB>(
         primitive1_, mesh, V, -d, param);
+    
+    if (pA->n_vertices() + pB->n_vertices() > max_vert)
+        logger().error(
+            "Too many neighbors for collision pair! {} > {}! Increase max_vert_3d in common.hpp",
+            pA->n_vertices() + pB->n_vertices(), max_vert);
+
     int i = 0;
     for (auto& v : pA->vertex_ids())
         Super::vertices[i++] = v;
@@ -62,12 +68,6 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
     if (d.norm() < 1e-12)
         logger().warn("pair distance {}, id {} and {}, dtype {}, active {}", d.norm(), primitive0_,
                         primitive1_, PrimitiveDistType<PrimitiveA, PrimitiveB>::name, Super::is_active_);
-}
-
-template <int max_vert, typename PrimitiveA, typename PrimitiveB>
-SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
-    ~SmoothCollisionTemplate()
-{
 }
 
 template <int max_vert, typename PrimitiveA, typename PrimitiveB>
