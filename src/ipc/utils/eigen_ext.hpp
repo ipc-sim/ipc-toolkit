@@ -189,4 +189,12 @@ static const Eigen::IOFormat OBJ_VERTEX_FORMAT = Eigen::IOFormat(
 
 } // namespace ipc
 
+// The current head of the Eigen library moved all into the indexing namespace.
+#if EIGEN_VERSION_AT_LEAST(3, 4, 90)
+namespace Eigen {
+// Move all back to the root namespace for compatibility with older versions
+static const Eigen::internal::all_t all = indexing::all;
+} // namespace Eigen
+#endif
+
 #include "eigen_ext.tpp"
