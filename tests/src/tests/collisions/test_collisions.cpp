@@ -65,21 +65,24 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
 
     SECTION("Collisions")
     {
-        const bool use_convergent_formulation = GENERATE(false, true);
-        const bool are_shape_derivatives_enabled = GENERATE(false, true);
+        const bool use_area_weighting = GENERATE(false, true);
+        const bool use_improved_max_approximator = GENERATE(false, true);
+        const bool use_physical_barrier = GENERATE(false, true);
+        const bool enable_shape_derivatives = GENERATE(false, true);
         const double dhat = 0.25;
 
         Collisions collisions;
-        collisions.set_use_convergent_formulation(use_convergent_formulation);
-        collisions.set_are_shape_derivatives_enabled(
-            are_shape_derivatives_enabled);
+        collisions.set_use_area_weighting(use_area_weighting);
+        collisions.set_use_improved_max_approximator(
+            use_improved_max_approximator);
+        collisions.set_enable_shape_derivatives(enable_shape_derivatives);
 
         collisions.build(mesh, vertices, dhat, min_distance, method);
 
         CHECK(collisions.size() == 12);
         CHECK(collisions.vv_collisions.size() == 12);
 
-        BarrierPotential barrier_potential(dhat);
+        BarrierPotential barrier_potential(dhat, use_physical_barrier);
 
         CHECK(barrier_potential(collisions, mesh, vertices) > 0.0);
         const Eigen::VectorXd grad =
@@ -157,20 +160,24 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
 
     SECTION("Collisions")
     {
-        const bool use_convergent_formulation = GENERATE(false, true);
-        const bool are_shape_derivatives_enabled = GENERATE(false, true);
+        const bool use_area_weighting = GENERATE(false, true);
+        const bool use_improved_max_approximator = GENERATE(false, true);
+        const bool use_physical_barrier = GENERATE(false, true);
+        const bool enable_shape_derivatives = GENERATE(false, true);
 
         Collisions collisions;
-        collisions.set_use_convergent_formulation(use_convergent_formulation);
-        collisions.set_are_shape_derivatives_enabled(
-            are_shape_derivatives_enabled);
+        collisions.set_use_area_weighting(use_area_weighting);
+        collisions.set_use_improved_max_approximator(
+            use_improved_max_approximator);
+        collisions.set_enable_shape_derivatives(enable_shape_derivatives);
 
         const double dhat = 0.25;
         collisions.build(mesh, vertices, dhat, /*min_distance=*/0.8, method);
 
-        const int expected_num_collisions = 6 + int(use_convergent_formulation);
+        const int expected_num_collisions =
+            6 + int(use_improved_max_approximator);
         const int expected_num_vv_collisions =
-            2 + int(use_convergent_formulation);
+            2 + int(use_improved_max_approximator);
 
         CHECK(collisions.size() == expected_num_collisions);
         CHECK(collisions.vv_collisions.size() == expected_num_vv_collisions);
@@ -178,7 +185,10 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
         CHECK(collisions.ee_collisions.size() == 0);
         CHECK(collisions.fv_collisions.size() == 0);
 
-        CHECK(BarrierPotential(dhat)(collisions, mesh, vertices) > 0.0);
+        CHECK(
+            BarrierPotential(dhat, use_physical_barrier)(
+                collisions, mesh, vertices)
+            > 0.0);
     }
 }
 

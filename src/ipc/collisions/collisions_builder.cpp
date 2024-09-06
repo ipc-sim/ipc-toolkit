@@ -10,10 +10,9 @@
 namespace ipc {
 
 CollisionsBuilder::CollisionsBuilder(
-    const bool _use_convergent_formulation,
-    const bool _should_compute_weight_gradient)
-    : use_convergent_formulation(_use_convergent_formulation)
-    , should_compute_weight_gradient(_should_compute_weight_gradient)
+    const bool _use_area_weighting, const bool _enable_shape_derivatives)
+    : use_area_weighting(_use_area_weighting)
+    , enable_shape_derivatives(_enable_shape_derivatives)
 {
 }
 
@@ -39,13 +38,13 @@ void CollisionsBuilder::add_vertex_vertex_collisions(
 
         // ÷ 2 to handle double counting. Sum vertex areas because duplicate
         // vertex-vertex candidates were removed.
-        const double weight = use_convergent_formulation
+        const double weight = use_area_weighting
             ? ((mesh.vertex_area(vi) + mesh.vertex_area(vj)) / 2)
             : 1;
 
         Eigen::SparseVector<double> weight_gradient;
-        if (should_compute_weight_gradient) {
-            weight_gradient = use_convergent_formulation
+        if (enable_shape_derivatives) {
+            weight_gradient = use_area_weighting
                 ? ((mesh.vertex_area_gradient(vi)
                     + mesh.vertex_area_gradient(vj))
                    / 2)
@@ -78,11 +77,11 @@ void CollisionsBuilder::add_edge_vertex_collisions(
 
         // ÷ 2 to handle double counting for correct integration
         const double weight =
-            use_convergent_formulation ? (mesh.vertex_area(vi) / 2) : 1;
+            use_area_weighting ? (mesh.vertex_area(vi) / 2) : 1;
 
         Eigen::SparseVector<double> weight_gradient;
-        if (should_compute_weight_gradient) {
-            weight_gradient = use_convergent_formulation
+        if (enable_shape_derivatives) {
+            weight_gradient = use_area_weighting
                 ? (mesh.vertex_area_gradient(vi) / 2)
                 : Eigen::SparseVector<double>(vertices.size());
         }
@@ -164,13 +163,13 @@ void CollisionsBuilder::add_edge_edge_collisions(
 
         // ÷ 4 to handle double counting and PT + EE for correct integration.
         // Sum edge areas because duplicate edge candidates were removed.
-        const double weight = use_convergent_formulation
+        const double weight = use_area_weighting
             ? ((mesh.edge_area(eai) + mesh.edge_area(ebi)) / 4)
             : 1;
 
         Eigen::SparseVector<double> weight_gradient;
-        if (should_compute_weight_gradient) {
-            weight_gradient = use_convergent_formulation
+        if (enable_shape_derivatives) {
+            weight_gradient = use_area_weighting
                 ? ((mesh.edge_area_gradient(eai) + mesh.edge_area_gradient(ebi))
                    / 4)
                 : Eigen::SparseVector<double>(vertices.size());
@@ -250,11 +249,11 @@ void CollisionsBuilder::add_face_vertex_collisions(
 
         // ÷ 4 to handle double counting and PT + EE for correct integration
         const double weight =
-            use_convergent_formulation ? (mesh.vertex_area(vi) / 4) : 1;
+            use_area_weighting ? (mesh.vertex_area(vi) / 4) : 1;
 
         Eigen::SparseVector<double> weight_gradient;
-        if (should_compute_weight_gradient) {
-            weight_gradient = use_convergent_formulation
+        if (enable_shape_derivatives) {
+            weight_gradient = use_area_weighting
                 ? (mesh.vertex_area_gradient(vi) / 4)
                 : Eigen::SparseVector<double>(vertices.size());
         }
@@ -318,9 +317,9 @@ void CollisionsBuilder::add_edge_vertex_negative_vertex_vertex_collisions(
         if (incident_edge_amt > 1) {
             // ÷ 2 to handle double counting for correct integration
             weight += (1 - incident_edge_amt)
-                * (use_convergent_formulation ? (mesh.vertex_area(vi) / 2) : 1);
+                * (use_area_weighting ? (mesh.vertex_area(vi) / 2) : 1);
 
-            if (should_compute_weight_gradient && use_convergent_formulation) {
+            if (enable_shape_derivatives && use_area_weighting) {
                 weight_gradient += (1 - incident_edge_amt) / 2.0
                     * mesh.vertex_area_gradient(vi);
             }
@@ -333,7 +332,7 @@ void CollisionsBuilder::add_edge_vertex_negative_vertex_vertex_collisions(
 
         double weight = 0;
         Eigen::SparseVector<double> weight_gradient;
-        if (should_compute_weight_gradient) {
+        if (enable_shape_derivatives) {
             weight_gradient = Eigen::SparseVector<double>(vertices.size());
         }
 
@@ -363,9 +362,9 @@ void CollisionsBuilder::add_face_vertex_positive_vertex_vertex_collisions(
         }
 
         // ÷ 4 to handle double counting and PT + EE for correct integration.
-        weight += use_convergent_formulation ? (mesh.vertex_area(vi) / 4) : 1;
+        weight += use_area_weighting ? (mesh.vertex_area(vi) / 4) : 1;
 
-        if (should_compute_weight_gradient && use_convergent_formulation) {
+        if (enable_shape_derivatives && use_area_weighting) {
             weight_gradient += mesh.vertex_area_gradient(vi) / 4;
         }
     };
@@ -376,7 +375,7 @@ void CollisionsBuilder::add_face_vertex_positive_vertex_vertex_collisions(
 
         double weight = 0;
         Eigen::SparseVector<double> weight_gradient;
-        if (should_compute_weight_gradient) {
+        if (enable_shape_derivatives) {
             weight_gradient = Eigen::SparseVector<double>(vertices.size());
         }
 
@@ -407,11 +406,11 @@ void CollisionsBuilder::add_face_vertex_negative_edge_vertex_collisions(
         if (incident_triangle_amt > 1) {
             // ÷ 4 to handle double counting and PT + EE for correct integration
             const double weight = (1 - incident_triangle_amt)
-                * (use_convergent_formulation ? (mesh.vertex_area(vi) / 4) : 1);
+                * (use_area_weighting ? (mesh.vertex_area(vi) / 4) : 1);
 
             Eigen::SparseVector<double> weight_gradient;
-            if (should_compute_weight_gradient) {
-                weight_gradient = use_convergent_formulation
+            if (enable_shape_derivatives) {
+                weight_gradient = use_area_weighting
                     ? ((1 - incident_triangle_amt) / 4.0
                        * mesh.vertex_area_gradient(vi))
                     : Eigen::SparseVector<double>(vertices.size());
@@ -443,10 +442,10 @@ void CollisionsBuilder::add_edge_edge_negative_edge_vertex_collisions(
 
         // ÷ 4 to handle double counting and PT + EE for correct integration
         const double weight =
-            use_convergent_formulation ? (-0.25 * mesh.edge_area(ea)) : -1;
+            use_area_weighting ? (-0.25 * mesh.edge_area(ea)) : -1;
         Eigen::SparseVector<double> weight_gradient;
-        if (should_compute_weight_gradient) {
-            weight_gradient = use_convergent_formulation
+        if (enable_shape_derivatives) {
+            weight_gradient = use_area_weighting
                 ? (-0.25 * mesh.edge_area_gradient(ea))
                 : Eigen::SparseVector<double>(vertices.size());
         }

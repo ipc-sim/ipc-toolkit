@@ -105,40 +105,39 @@ public:
     /// @return If the collision at i is an plane-vertex collision.
     bool is_plane_vertex(size_t i) const;
 
-    /// @brief Get if the collision set should use the convergent formulation.
+    /// @brief Get if the collision set should use area weighting.
     /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
-    /// @return If the collision set should use the convergent formulation.
-    bool use_convergent_formulation() const
-    {
-        return m_use_convergent_formulation;
-    }
+    /// @return If the collision set should use area weighting.
+    bool use_area_weighting() const { return m_use_area_weighting; }
 
-    /// @brief Set if the collision set should use the convergent formulation.
+    /// @brief Set if the collision set should use area weighting.
     /// @warning This must be set before the collisions are built.
-    /// @param use_convergent_formulation If the collision set should use the convergent formulation.
-    void set_use_convergent_formulation(const bool use_convergent_formulation);
+    /// @param use_area_weighting If the collision set should use area weighting.
+    void set_use_area_weighting(const bool use_area_weighting);
 
+    /// @brief Get if the collision set should use the improved max approximator.
+    /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
+    /// @return If the collision set should use the improved max approximator.
     bool use_improved_max_approximator() const
     {
         return m_use_improved_max_approximator;
     }
 
+    /// @brief Set if the collision set should use the improved max approximator.
+    /// @warning This must be set before the collisions are built.
+    /// @param use_improved_max_approximator If the collision set should use the improved max approximator.
     void
     set_use_improved_max_approximator(const bool use_improved_max_approximator);
 
     /// @brief Get if the collision set are using the convergent formulation.
     /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
     /// @return If the collision set are using the convergent formulation.
-    bool are_shape_derivatives_enabled() const
-    {
-        return m_are_shape_derivatives_enabled;
-    }
+    bool enable_shape_derivatives() const { return m_enable_shape_derivatives; }
 
     /// @brief Set if the collision set should enable shape derivative computation.
     /// @warning This must be set before the collisions are built.
-    /// @param are_shape_derivatives_enabled If the collision set should enable shape derivative computation.
-    void
-    set_are_shape_derivatives_enabled(const bool are_shape_derivatives_enabled);
+    /// @param enable_shape_derivatives If the collision set should enable shape derivative computation.
+    void set_enable_shape_derivatives(const bool enable_shape_derivatives);
 
     std::string
     to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
@@ -151,9 +150,9 @@ public:
     std::vector<PlaneVertexCollision> pv_collisions;
 
 protected:
-    bool m_use_convergent_formulation = false;
+    bool m_use_area_weighting = false;
     bool m_use_improved_max_approximator = false;
-    bool m_are_shape_derivatives_enabled = false;
+    bool m_enable_shape_derivatives = false;
 };
 
 } // namespace ipc

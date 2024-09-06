@@ -173,7 +173,7 @@ void Collisions::build(
     };
 
     tbb::enumerable_thread_specific<CollisionsBuilder> storage(
-        use_convergent_formulation(), are_shape_derivatives_enabled());
+        use_area_weighting(), enable_shape_derivatives());
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), candidates.vv_candidates.size()),
@@ -276,38 +276,16 @@ void Collisions::build(
         Collision& collision = (*this)[ci];
         collision.dmin = dmin;
     }
-
-    if (use_convergent_formulation()) {
-        // NOTE: When using the convergent formulation we want the barrier to
-        // have units of Pa⋅m, so κ gets units of Pa and the barrier function
-        // should have units of m. See notebooks/physical_barrier.ipynb for more
-        // details.
-        const double barrier_to_physical_barrier_divisor =
-            dhat * std::pow(dhat + 2 * dmin, 2);
-
-        for (size_t ci = 0; ci < size(); ci++) {
-            Collision& collision = (*this)[ci];
-            collision.weight /= barrier_to_physical_barrier_divisor;
-            if (are_shape_derivatives_enabled()) {
-                collision.weight_gradient /=
-                    barrier_to_physical_barrier_divisor;
-            }
-        }
-    }
 }
 
-void Collisions::set_use_convergent_formulation(
-    const bool use_convergent_formulation)
+void Collisions::set_use_area_weighting(const bool use_area_weighting)
 {
-    if (!empty()
-        && use_convergent_formulation != m_use_convergent_formulation) {
-        logger().warn(
-            "Setting use_convergent_formulation after building collisions. "
-            "Re-build collisions for this to have an effect.");
+    if (!empty() && use_area_weighting != m_use_area_weighting) {
+        logger().warn("Setting use_area_weighting after building collisions. "
+                      "Re-build collisions for this to have an effect.");
     }
 
-    m_use_convergent_formulation = use_convergent_formulation;
-    m_use_improved_max_approximator = use_convergent_formulation;
+    m_use_area_weighting = use_area_weighting;
 }
 
 void Collisions::set_use_improved_max_approximator(
@@ -323,17 +301,16 @@ void Collisions::set_use_improved_max_approximator(
     m_use_improved_max_approximator = use_improved_max_approximator;
 }
 
-void Collisions::set_are_shape_derivatives_enabled(
-    const bool are_shape_derivatives_enabled)
+void Collisions::set_enable_shape_derivatives(
+    const bool enable_shape_derivatives)
 {
-    if (!empty()
-        && are_shape_derivatives_enabled != m_are_shape_derivatives_enabled) {
+    if (!empty() && enable_shape_derivatives != m_enable_shape_derivatives) {
         logger().warn(
             "Setting enable_shape_derivatives after building collisions. "
             "Re-build collisions for this to have an effect.");
     }
 
-    m_are_shape_derivatives_enabled = are_shape_derivatives_enabled;
+    m_enable_shape_derivatives = enable_shape_derivatives;
 }
 
 // ============================================================================

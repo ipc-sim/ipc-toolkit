@@ -138,9 +138,8 @@ void define_collisions(py::module_& m)
             "to_string", &Collisions::to_string, "", py::arg("mesh"),
             py::arg("vertices"))
         .def_property(
-            "use_convergent_formulation",
-            &Collisions::use_convergent_formulation,
-            &Collisions::set_use_convergent_formulation,
+            "use_area_weighting", &Collisions::use_area_weighting,
+            &Collisions::set_use_area_weighting,
             "If the Collisions should use the convergent formulation.")
         .def_property(
             "use_improved_max_approximator",
@@ -148,9 +147,8 @@ void define_collisions(py::module_& m)
             &Collisions::set_use_improved_max_approximator,
             "If the Collisions should use the improved max approximator.")
         .def_property(
-            "are_shape_derivatives_enabled",
-            &Collisions::are_shape_derivatives_enabled,
-            &Collisions::set_are_shape_derivatives_enabled,
+            "enable_shape_derivatives", &Collisions::enable_shape_derivatives,
+            &Collisions::set_enable_shape_derivatives,
             "If the Collisions are using the convergent formulation.")
         .def(
             "to_string", &Collisions::to_string, py::arg("mesh"),
