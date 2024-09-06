@@ -8,6 +8,8 @@
 
 #include <finitediff.hpp>
 
+#include <memory>
+
 namespace ipc {
 
 class NormalizedClampedLogBarrier : public ipc::Barrier {
