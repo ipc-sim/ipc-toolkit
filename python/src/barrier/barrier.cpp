@@ -12,6 +12,7 @@ public:
     double operator()(const double d, const double dhat) const override { PYBIND11_OVERRIDE_PURE_NAME(double, Barrier, "__call__", operator(), d, dhat); }
     double first_derivative(const double d, const double dhat) const override { PYBIND11_OVERRIDE_PURE(double, Barrier, first_derivative, d, dhat); }
     double second_derivative(const double d, const double dhat) const override { PYBIND11_OVERRIDE_PURE(double, Barrier, second_derivative, d, dhat); }
+    double units(const double dhat) const override { PYBIND11_OVERRIDE_PURE(double, Barrier, units, dhat); }
     // clang-format on
 };
 
@@ -25,7 +26,8 @@ void define_barrier(py::module_& m)
             py::arg("dhat"))
         .def(
             "second_derivative", &Barrier::second_derivative, py::arg("d"),
-            py::arg("dhat"));
+            py::arg("dhat"))
+        .def("units", &Barrier::units, py::arg("dhat"));
 
     py::class_<ClampedLogBarrier, Barrier, std::shared_ptr<ClampedLogBarrier>>(
         m, "ClampedLogBarrier")

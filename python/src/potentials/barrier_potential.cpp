@@ -9,16 +9,17 @@ void define_barrier_potential(py::module_& m)
 {
     py::class_<BarrierPotential, NormalPotential>(m, "BarrierPotential")
         .def(
-            py::init<const double>(),
+            py::init<const double, const bool>(),
             R"ipc_Qu8mg5v7(
             Construct a barrier potential.
 
             Parameters:
                 dhat: The activation distance of the barrier.
             )ipc_Qu8mg5v7",
-            py::arg("dhat"))
+            py::arg("dhat"), py::arg("use_physical_barrier") = false)
         .def(
-            py::init<const std::shared_ptr<Barrier>, const double>(),
+            py::init<
+                const std::shared_ptr<Barrier>, const double, const bool>(),
             R"ipc_Qu8mg5v7(
             Construct a barrier potential.
 
@@ -26,7 +27,8 @@ void define_barrier_potential(py::module_& m)
                 barrier: The barrier function.
                 dhat: The activation distance of the barrier.
             )ipc_Qu8mg5v7",
-            py::arg("barrier"), py::arg("dhat"))
+            py::arg("barrier"), py::arg("dhat"),
+            py::arg("use_physical_barrier") = false)
         .def_property(
             "dhat", &BarrierPotential::dhat, &BarrierPotential::set_dhat,
             "Barrier activation distance.")

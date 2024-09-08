@@ -10,7 +10,7 @@ double barrier_force_magnitude(
     const double dmin)
 {
     double grad_b = barrier.first_derivative(
-        distance_squared - dmin * dmin, 2 * dmin * dhat + dhat * dhat);
+        distance_squared - dmin * dmin, (2 * dmin + dhat) * dhat);
     return -barrier_stiffness * grad_b * 2 * sqrt(distance_squared);
 }
 
@@ -23,7 +23,7 @@ VectorMax12d barrier_force_magnitude_gradient(
     const double dmin)
 {
     double arg_d = distance_squared - dmin * dmin;
-    double arg_dhat = 2 * dmin * dhat + dhat * dhat;
+    double arg_dhat = (2 * dmin + dhat) * dhat;
     double distance = sqrt(distance_squared);
     assert(distance > 0);
 

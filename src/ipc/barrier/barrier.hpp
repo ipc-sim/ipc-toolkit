@@ -12,11 +12,30 @@ public:
     Barrier() = default;
     virtual ~Barrier() = default;
 
+    /// @brief Evaluate the barrier function.
+    /// @param d Distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The value of the barrier function at d.
     virtual double operator()(const double d, const double dhat) const = 0;
+
+    /// @brief Evaluate the first derivative of the barrier function wrt d.
+    /// @param d Distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @retur The value of the first derivative of the barrier function at d.
     virtual double
     first_derivative(const double d, const double dhat) const = 0;
+
+    /// @brief Evaluate the second derivative of the barrier function wrt d.
+    /// @param d Distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The value of the second derivative of the barrier function at d.
     virtual double
     second_derivative(const double d, const double dhat) const = 0;
+
+    /// @brief Get the units of the barrier function.
+    /// @param dhat The activation distance of the barrier.
+    /// @return The units of the barrier function.
+    virtual double units(const double dhat) const = 0;
 };
 
 // ============================================================================
@@ -105,6 +124,15 @@ public:
     double second_derivative(const double d, const double dhat) const override
     {
         return barrier_second_derivative(d, dhat);
+    }
+
+    /// @brief Get the units of the barrier function.
+    /// @param dhat The activation distance of the barrier.
+    /// @return The units of the barrier function.
+    double units(const double dhat) const override
+    {
+        // (d - d̂)² = d̂² (d/d̂ - 1)²
+        return dhat * dhat;
     }
 };
 

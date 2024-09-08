@@ -14,11 +14,11 @@ CollisionMesh::CollisionMesh(
     const Eigen::MatrixXi& faces,
     const Eigen::SparseMatrix<double>& displacement_map)
     : CollisionMesh(
-        std::vector<bool>(rest_positions.rows(), true),
-        rest_positions,
-        edges,
-        faces,
-        displacement_map)
+          std::vector<bool>(rest_positions.rows(), true),
+          rest_positions,
+          edges,
+          faces,
+          displacement_map)
 {
 }
 

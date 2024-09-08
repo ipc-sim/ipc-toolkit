@@ -16,12 +16,14 @@ def check_ipc_derivatives(broad_phase_method, use_convergent_formulation, mesh_n
         vertices = mesh.vertices(vertices)
 
     collisions = ipctk.NormalCollisions()
-    collisions.use_convergent_formulation = use_convergent_formulation
+    collisions.use_area_weighting = use_convergent_formulation
+    collisions.use_improved_max_approximator = use_convergent_formulation
     collisions.build(mesh, vertices, dhat,
                      broad_phase_method=broad_phase_method)
     assert len(collisions) > 0
 
-    B = ipctk.BarrierPotential(dhat)
+    B = ipctk.BarrierPotential(
+        dhat, use_physical_barrier=use_convergent_formulation)
 
     grad_b = B.gradient(collisions, mesh, vertices)
     fgrad_b = utils.finite_gradient(

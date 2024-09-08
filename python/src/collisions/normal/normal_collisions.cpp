@@ -141,18 +141,22 @@ void define_normal_collisions(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("i"))
         .def(
-            "to_string", &NormalCollisions::to_string, py::arg("mesh"),
+            "__str__", &NormalCollisions::to_string, py::arg("mesh"),
             py::arg("vertices"))
         .def_property(
-            "use_convergent_formulation",
-            &NormalCollisions::use_convergent_formulation,
-            &NormalCollisions::set_use_convergent_formulation,
-            "If the collisions should use the convergent formulation.")
+            "use_area_weighting", &NormalCollisions::use_area_weighting,
+            &NormalCollisions::set_use_area_weighting,
+            "If the NormalCollisions should use the convergent formulation.")
         .def_property(
-            "are_shape_derivatives_enabled",
-            &NormalCollisions::are_shape_derivatives_enabled,
-            &NormalCollisions::set_are_shape_derivatives_enabled,
-            "If the collisions are using the convergent formulation.")
+            "use_improved_max_approximator",
+            &NormalCollisions::use_improved_max_approximator,
+            &NormalCollisions::set_use_improved_max_approximator,
+            "If the NormalCollisions should use the improved max approximator.")
+        .def_property(
+            "enable_shape_derivatives",
+            &NormalCollisions::enable_shape_derivatives,
+            &NormalCollisions::set_enable_shape_derivatives,
+            "If the NormalCollisions are using the convergent formulation.")
         .def_readwrite("vv_collisions", &NormalCollisions::vv_collisions)
         .def_readwrite("ev_collisions", &NormalCollisions::ev_collisions)
         .def_readwrite("ee_collisions", &NormalCollisions::ee_collisions)

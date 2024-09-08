@@ -12,8 +12,7 @@ namespace ipc {
 class NormalCollisionsBuilder {
 public:
     NormalCollisionsBuilder(
-        const bool use_convergent_formulation,
-        const bool are_shape_derivatives_enabled);
+        const bool use_area_weighting, const bool enable_shape_derivatives);
 
     void add_vertex_vertex_collisions(
         const CollisionMesh& mesh,
@@ -165,8 +164,8 @@ protected:
     std::vector<FaceVertexNormalCollision> fv_collisions;
     // std::vector<PlaneVertexNormalCollision> pv_collisions;
 
-    const bool use_convergent_formulation;
-    const bool should_compute_weight_gradient;
+    const bool use_area_weighting;
+    const bool enable_shape_derivatives;
 };
 
 } // namespace ipc
