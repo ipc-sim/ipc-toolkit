@@ -31,8 +31,8 @@ double BarrierPotential::force_magnitude(
     double N = barrier_force_magnitude(
         distance_squared, barrier(), dhat(), barrier_stiffness, dmin);
 
-    if (barrier_potential.use_physical_barrier()) {
-        N *= dhat / barrier_potential.barrier().units((2 * dmin + dhat) * dhat);
+    if (use_physical_barrier()) {
+        N *= dhat() / barrier().units((2 * dmin + dhat()) * dhat());
     }
 
     return N;
@@ -48,9 +48,8 @@ VectorMax12d BarrierPotential::force_magnitude_gradient(
         distance_squared, distance_squared_gradient, barrier(), dhat(),
         barrier_stiffness, dmin);
 
-    if (barrier_potential.use_physical_barrier()) {
-        grad_N *=
-            dhat / barrier_potential.barrier().units((2 * dmin + dhat) * dhat);
+    if (use_physical_barrier()) {
+        grad_N *= dhat() / barrier().units((2 * dmin + dhat()) * dhat());
     }
 
     return grad_N;
