@@ -48,8 +48,7 @@ double initial_barrier_stiffness(
         assert(std::isfinite(kappa));
     }
 
-    return std::min(
-        max_barrier_stiffness, std::max(min_barrier_stiffness, kappa));
+    return std::clamp(kappa, min_barrier_stiffness, max_barrier_stiffness);
 }
 
 // Adaptive κ

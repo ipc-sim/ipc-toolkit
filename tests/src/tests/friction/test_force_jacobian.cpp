@@ -24,7 +24,7 @@ void check_friction_force_jacobian(
     const double barrier_stiffness,
     const bool recompute_collisions)
 {
-    REQUIRE(collisions.are_shape_derivatives_enabled());
+    REQUIRE(collisions.enable_shape_derivatives());
 
     const Eigen::MatrixXd& X = mesh.rest_positions();
     double distance_t0 = collisions.compute_minimum_distance(mesh, X + Ut);
@@ -102,9 +102,11 @@ void check_friction_force_jacobian(
         FrictionCollisions fd_friction_collisions;
         if (recompute_collisions) {
             Collisions fd_collisions;
-            fd_collisions.set_use_convergent_formulation(
-                collisions.use_convergent_formulation());
-            fd_collisions.set_are_shape_derivatives_enabled(true);
+            fd_collisions.set_use_area_weighting(
+                collisions.use_area_weighting());
+            fd_collisions.set_use_improved_max_approximator(
+                collisions.use_improved_max_approximator());
+            fd_collisions.set_enable_shape_derivatives(true);
             fd_collisions.build(fd_mesh, fd_X + Ut, dhat);
 
             fd_friction_collisions.build(
@@ -138,9 +140,11 @@ void check_friction_force_jacobian(
         FrictionCollisions fd_friction_collisions;
         if (recompute_collisions) {
             Collisions fd_collisions;
-            fd_collisions.set_use_convergent_formulation(
-                collisions.use_convergent_formulation());
-            fd_collisions.set_are_shape_derivatives_enabled(true);
+            fd_collisions.set_use_area_weighting(
+                collisions.use_area_weighting());
+            fd_collisions.set_use_improved_max_approximator(
+                collisions.use_improved_max_approximator());
+            fd_collisions.set_enable_shape_derivatives(true);
             fd_collisions.build(mesh, X + fd_Ut, dhat);
 
             fd_friction_collisions.build(
@@ -222,7 +226,7 @@ TEST_CASE("Friction force jacobian", "[friction][force-jacobian]")
     FrictionData data = friction_data_generator();
     const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, dhat, barrier_stiffness] =
         data;
-    REQUIRE(collisions.are_shape_derivatives_enabled());
+    REQUIRE(collisions.enable_shape_derivatives());
 
     Eigen::MatrixXd X, Ut, U;
     switch (x_case) {
@@ -249,7 +253,8 @@ TEST_CASE(
     "Friction force jacobian on real data",
     "[friction][force-jacobian][real-data]")
 {
-    bool use_convergent_formulation = GENERATE(true, false);
+    bool use_area_weighting = GENERATE(true, false);
+    bool use_improved_max_approximator = GENERATE(true, false);
 
     std::string scene;
     bool is_2D = true;
@@ -288,7 +293,9 @@ TEST_CASE(
     //     epsv_dt = 5e-6;
     // }
 
-    CAPTURE(scene, mu, dhat, kappa, epsv_dt, use_convergent_formulation);
+    CAPTURE(
+        scene, mu, dhat, kappa, epsv_dt, use_area_weighting,
+        use_improved_max_approximator);
 
     Eigen::MatrixXd X, Ut, U;
     Eigen::MatrixXi E, F;
@@ -321,11 +328,12 @@ TEST_CASE(
     }
 
     Collisions collisions;
-    collisions.set_use_convergent_formulation(use_convergent_formulation);
-    collisions.set_are_shape_derivatives_enabled(true);
+    collisions.set_use_area_weighting(use_area_weighting);
+    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
+    collisions.set_enable_shape_derivatives(true);
     collisions.build(mesh, X + Ut, dhat);
 
-    REQUIRE(collisions.are_shape_derivatives_enabled());
+    REQUIRE(collisions.enable_shape_derivatives());
 
     CHECK(collisions.compute_minimum_distance(mesh, X + Ut) != 0);
     CHECK(collisions.compute_minimum_distance(mesh, X + U) != 0);

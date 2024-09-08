@@ -30,9 +30,16 @@ double FrictionCollision::compute_normal_force_magnitude(
     const double barrier_stiffness,
     const double dmin) const
 {
-    return ipc::compute_normal_force_magnitude(
-        compute_distance(positions), barrier_potential.barrier(),
-        barrier_potential.dhat(), barrier_stiffness, dmin);
+    const double dhat = barrier_potential.dhat();
+    double N = ipc::compute_normal_force_magnitude(
+        compute_distance(positions), barrier_potential.barrier(), dhat,
+        barrier_stiffness, dmin);
+
+    if (barrier_potential.use_physical_barrier()) {
+        N *= dhat / barrier_potential.barrier().units((2 * dmin + dhat) * dhat);
+    }
+
+    return N;
 }
 
 VectorMax12d FrictionCollision::compute_normal_force_magnitude_gradient(
@@ -41,10 +48,17 @@ VectorMax12d FrictionCollision::compute_normal_force_magnitude_gradient(
     const double barrier_stiffness,
     const double dmin) const
 {
-    return ipc::compute_normal_force_magnitude_gradient(
+    const double dhat = barrier_potential.dhat();
+    VectorMax12d grad_N = ipc::compute_normal_force_magnitude_gradient(
         compute_distance(positions), compute_distance_gradient(positions),
-        barrier_potential.barrier(), barrier_potential.dhat(),
-        barrier_stiffness, dmin);
+        barrier_potential.barrier(), dhat, barrier_stiffness, dmin);
+
+    if (barrier_potential.use_physical_barrier()) {
+        grad_N *=
+            dhat / barrier_potential.barrier().units((2 * dmin + dhat) * dhat);
+    }
+
+    return grad_N;
 }
 
 } // namespace ipc
