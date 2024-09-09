@@ -28,7 +28,7 @@ Eigen::VectorXd FrictionPotential::force(
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
 
-    tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
+    tbb::combinable<Eigen::VectorXd> storage(
         Eigen::VectorXd::Zero(velocities.size()));
 
     tbb::parallel_for(
@@ -52,8 +52,7 @@ Eigen::VectorXd FrictionPotential::force(
             }
         });
 
-    return storage.combine([](const Eigen::VectorXd& a,
-                              const Eigen::VectorXd& b) { return a + b; });
+    return storage.combine(std::plus<const Eigen::VectorXd&>());
 }
 
 Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
