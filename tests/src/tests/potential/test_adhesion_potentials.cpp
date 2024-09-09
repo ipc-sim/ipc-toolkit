@@ -46,16 +46,20 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
     REQUIRE(!has_intersections(mesh, vertices));
 
     NormalCollisions collisions;
-    // const bool convergent = GENERATE(true, false);
-    const bool convergent = false; // TODO: Fix convergent formulation
-    collisions.set_use_convergent_formulation(convergent);
+    const bool use_area_weighting = GENERATE(false, true);
+    // TODO: Debug why the improved max approx. does not work for adhesion
+    const bool use_improved_max_approximator = false; // GENERATE(false, true);
+    collisions.set_use_area_weighting(use_area_weighting);
+    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
     collisions.build(mesh, vertices, dhat_a);
 
     REQUIRE(
         collisions.compute_minimum_distance(mesh, vertices)
         == Catch::Approx(gap * gap));
 
-    CAPTURE(convergent, dhat_a, dhat_p, Y, eps_c, gap);
+    CAPTURE(
+        use_area_weighting, use_improved_max_approximator, dhat_a, dhat_p, Y,
+        eps_c, gap);
 
     // --- Check the potential gradients ---------------------------------------
 

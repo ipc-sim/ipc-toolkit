@@ -325,7 +325,8 @@ TEST_CASE("NormalCollisions::to_string", "[collisions]")
     CollisionMesh mesh(vertices, edges, faces);
 
     NormalCollisions collisions;
-    collisions.set_use_convergent_formulation(true);
+    collisions.set_use_area_weighting(true);
+    collisions.set_use_improved_max_approximator(true);
     collisions.build(mesh, vertices, dhat);
 
     std::sort(collisions.vv_collisions.begin(), collisions.vv_collisions.end());
@@ -351,12 +352,12 @@ TEST_CASE("NormalCollisions::to_string", "[collisions]")
     std::string s = collisions.to_string(mesh, vertices);
 
     CHECK(s == R"ipc_Qu8mg5v7(
-vv: 1 5, w: 1000, d: 0.000913492
-vv: 160 163, w: 1000, d: 0.000277936
-ev: 14=(24, 46) 205, w: 14.0559, d: 0.00500364
-ev: 719=(237, 261) 128, w: 12.2856, d: 0.00727213
-ee: 14=(24, 46) 456=(161, 205), w: -2.97853, dtype: 0, d: 0.00538125
-ee: 346=(76, 128) 718=(236, 261), w: -3.28539, dtype: 5, d: 0.00717647
-fv: 17=(46, 24, 72) 205, w: 13.7957, d: 0.00500269
-fv: 471=(155, 238, 259) 64, w: 16.0469, d: 0.00639199)ipc_Qu8mg5v7");
+vv: 1 5, w: 1, d: 0.000913492
+vv: 160 163, w: 1, d: 0.000277936
+ev: 14=(24, 46) 205, w: 0.0140559, d: 0.00500364
+ev: 719=(237, 261) 128, w: 0.0122856, d: 0.00727213
+ee: 14=(24, 46) 456=(161, 205), w: -0.00297853, dtype: 0, d: 0.00538125
+ee: 346=(76, 128) 718=(236, 261), w: -0.00328539, dtype: 5, d: 0.00717647
+fv: 17=(46, 24, 72) 205, w: 0.0137957, d: 0.00500269
+fv: 471=(155, 238, 259) 64, w: 0.0160469, d: 0.00639199)ipc_Qu8mg5v7");
 }

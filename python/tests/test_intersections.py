@@ -1,7 +1,6 @@
 import numpy as np
 
-import find_ipctk
-import ipctk
+from find_ipctk import ipctk
 
 
 def test_segment_segment_intersect():

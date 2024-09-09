@@ -1,5 +1,4 @@
-import find_ipctk
-import ipctk
+from find_ipctk import ipctk
 
 
 def test_collisions():

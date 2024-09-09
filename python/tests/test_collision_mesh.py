@@ -1,8 +1,7 @@
 import numpy as np
 import scipy
 
-import find_ipctk
-from ipctk import CollisionMesh
+import find_ipctk import ipctk.CollisionMesh
 
 
 def test_collision_mesh():
