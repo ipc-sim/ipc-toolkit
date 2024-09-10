@@ -330,8 +330,8 @@ double Collisions::compute_minimum_distance(
     const Eigen::MatrixXi& faces = mesh.faces();
 
     return tbb::parallel_reduce(
-        /*range=*/tbb::blocked_range<size_t>(0, size()),
-        /*initial_min_distance=*/std::numeric_limits<double>::infinity(),
+        tbb::blocked_range<size_t>(0, size()),
+        std::numeric_limits<double>::infinity(),
         [&](tbb::blocked_range<size_t> r, double partial_min_dist) -> double {
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const double dist = (*this)[i].compute_distance(
@@ -343,7 +343,7 @@ double Collisions::compute_minimum_distance(
             }
             return partial_min_dist;
         },
-        /*combine=*/[](double a, double b) { return std::min(a, b); });
+        [](double a, double b) { return std::min(a, b); });
 }
 
 // ============================================================================
