@@ -31,7 +31,7 @@ double Potential<TCollisions>::operator()(
             }
             return partial_sum;
         },
-        std::plus<double>());
+        [](double a, double b) { return a + b; });
 }
 
 template <class TCollisions>
@@ -67,7 +67,9 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
             }
         });
 
-    return grad.combine(std::plus<const Eigen::VectorXd&>());
+    return grad.combine([](const Eigen::VectorXd& a, const Eigen::VectorXd& b) {
+        return a + b;
+    });
 }
 
 template <class TCollisions>
@@ -127,7 +129,9 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
             }
         });
 
-    return hess.combine(std::plus<const Eigen::SparseMatrix<double>&>());
+    return hess.combine(
+        [](const Eigen::SparseMatrix<double>& a,
+           const Eigen::SparseMatrix<double>& b) { return a + b; });
 }
 
 } // namespace ipc

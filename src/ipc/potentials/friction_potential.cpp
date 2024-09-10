@@ -52,7 +52,8 @@ Eigen::VectorXd FrictionPotential::force(
             }
         });
 
-    return storage.combine(std::plus<const Eigen::VectorXd&>());
+    return storage.combine([](const Eigen::VectorXd& a,
+                              const Eigen::VectorXd& b) { return a + b; });
 }
 
 Eigen::SparseMatrix<double> FrictionPotential::force_jacobian(
