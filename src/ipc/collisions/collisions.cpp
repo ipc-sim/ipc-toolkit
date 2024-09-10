@@ -9,6 +9,7 @@
 #include <ipc/utils/local_to_global.hpp>
 
 #include <tbb/parallel_for.h>
+#include <tbb/parallel_reduce.h>
 #include <tbb/parallel_sort.h>
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
@@ -328,25 +329,21 @@ double Collisions::compute_minimum_distance(
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
 
-    tbb::enumerable_thread_specific<double> storage(
-        std::numeric_limits<double>::infinity());
-
-    tbb::parallel_for(
+    return tbb::parallel_reduce(
         tbb::blocked_range<size_t>(0, size()),
-        [&](tbb::blocked_range<size_t> r) {
-            double& local_min_dist = storage.local();
-
+        std::numeric_limits<double>::infinity(),
+        [&](tbb::blocked_range<size_t> r, double partial_min_dist) -> double {
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const double dist = (*this)[i].compute_distance(
                     (*this)[i].dof(vertices, edges, faces));
 
-                if (dist < local_min_dist) {
-                    local_min_dist = dist;
+                if (dist < partial_min_dist) {
+                    partial_min_dist = dist;
                 }
             }
-        });
-
-    return storage.combine([](double a, double b) { return std::min(a, b); });
+            return partial_min_dist;
+        },
+        [](double a, double b) { return std::min(a, b); });
 }
 
 // ============================================================================
