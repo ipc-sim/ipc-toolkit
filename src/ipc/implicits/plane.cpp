@@ -3,9 +3,8 @@
 #include <ipc/distance/point_plane.hpp>
 #include <ipc/ccd/point_static_plane.hpp>
 
-#include <tbb/parallel_for.h>
+#include <tbb/parallel_reduce.h>
 #include <tbb/blocked_range.h>
-#include <tbb/enumerable_thread_specific.h>
 
 namespace ipc {
 
@@ -98,13 +97,10 @@ double compute_point_plane_collision_free_stepsize(
     assert(plane_normals.rows() == n_planes);
     assert(points_t0.rows() == points_t1.rows());
 
-    tbb::enumerable_thread_specific<double> storage(1);
-
-    tbb::parallel_for(
+    const double earliest_toi = tbb::parallel_reduce(
         tbb::blocked_range<size_t>(0, points_t0.rows()),
-        [&](tbb::blocked_range<size_t> r) {
-            double& earliest_toi = storage.local();
-
+        /*inital_step_size=*/1.0,
+        [&](tbb::blocked_range<size_t> r, double earliest_toi) {
             for (size_t vi = r.begin(); vi < r.end(); vi++) {
                 for (size_t pi = 0; pi < n_planes; pi++) {
                     if (!can_collide(vi, pi)) {
@@ -126,10 +122,10 @@ double compute_point_plane_collision_free_stepsize(
                     }
                 }
             }
-        });
+            return earliest_toi;
+        },
+        [&](double a, double b) { return std::min(a, b); });
 
-    const double earliest_toi =
-        storage.combine([](double a, double b) { return std::min(a, b); });
     assert(earliest_toi >= 0 && earliest_toi <= 1.0);
     return earliest_toi;
 }
