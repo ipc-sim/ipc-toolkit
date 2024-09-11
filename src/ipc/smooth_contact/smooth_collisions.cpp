@@ -302,7 +302,7 @@ double SmoothCollisions<dim>::compute_active_minimum_distance(
                 const double dist = collisions[i]->compute_distance(
                     collisions[i]->dof(vertices, edges, faces));
 
-                if (dist < local_min_dist) {
+                if (collisions[i]->is_active() && dist < local_min_dist) {
                     local_min_dist = dist;
                 }
             }
