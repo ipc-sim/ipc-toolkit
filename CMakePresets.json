@@ -52,15 +52,15 @@
             "binaryDir": "${sourceDir}/build-all-opt",
             "inherits": "default",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "RelWithDebInfo", // Optimized build with debug info
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
                 "IPC_TOOLKIT_WITH_CUDA": "ON",
                 "IPC_TOOLKIT_WITH_SIMD": "ON",
                 "IPC_TOOLKIT_WITH_ROBIN_MAP": "ON",
                 "IPC_TOOLKIT_WITH_ABSEIL": "ON",
                 "IPC_TOOLKIT_WITH_FILIB": "ON",
                 "IPC_TOOLKIT_WITH_INEXACT_CCD": "ON",
-                "IPC_TOOLKIT_WITH_CODE_COVERAGE": "OFF", // Disabling code coverage for performance
-                "CMAKE_CXX_FLAGS": "-march=native -O3" // Using native architecture and maximum optimization
+                "IPC_TOOLKIT_WITH_CODE_COVERAGE": "OFF",
+                "CMAKE_CXX_FLAGS": "-march=native -O3"
             },
             "description": "Profile with all optimizations for maximum performance."
         }
