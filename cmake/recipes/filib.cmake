@@ -10,4 +10,4 @@ message(STATUS "Third-party: creating target 'filib::filib'")
 set(FILIB_BUILD_SHARED_LIB ON CACHE BOOL "Build shared library" FORCE)
 
 include(CPM)
-CPMAddPackage("gh:zfergus/filib#5b9cbc73790585b391da1624c1f1ea52eaaeb5ac")
+CPMAddPackage("gh:zfergus/filib#03e4eb0fc59399bd0003f8efd3179078195df49f")
