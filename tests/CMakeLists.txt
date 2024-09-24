@@ -73,6 +73,15 @@ target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)
 
 target_compile_definitions(ipc_toolkit_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
 
+if (WIN32)
+  # Copy DLLs to the output directory
+  add_custom_command(
+    TARGET ipc_toolkit_tests POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:ipc_toolkit_tests> $<TARGET_FILE_DIR:ipc_toolkit_tests>
+    COMMAND_EXPAND_LISTS
+  )
+endif()
+
 ################################################################################
 # Register tests
 ################################################################################
