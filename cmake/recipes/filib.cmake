@@ -6,8 +6,17 @@ endif()
 
 message(STATUS "Third-party: creating target 'filib::filib'")
 
-# This has to be set to ON to avoid licensing IPC Toolkit under LGPL
-set(FILIB_BUILD_SHARED_LIB ON CACHE BOOL "Build shared library" FORCE)
+# filib should be built as a shared library to avoid licensing IPC Toolkit under LGPL
+if(WIN32 AND NOT IPC_TOOLKIT_TOPLEVEL_PROJECT)
+  # Setting up proper linkage on Windows is a bit tricky, so we'll just use a
+  # static library by default and provide instructions on how to build as a
+  # shared library in the README.
+  option(FILIB_BUILD_SHARED_LIB "Build shared library" OFF)
+else()
+  # NOTE: Our Windows CMake is properly configured to build shared libraries for
+  #       OUR applications and python bindings.
+  option(FILIB_BUILD_SHARED_LIB "Build shared library" ON)
+endif()
 
 include(CPM)
 CPMAddPackage("gh:zfergus/filib#03e4eb0fc59399bd0003f8efd3179078195df49f")
