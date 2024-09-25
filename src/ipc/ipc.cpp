@@ -56,8 +56,8 @@ double compute_collision_free_stepsize(
                 "Sweep and Tiniest Queue is only supported in 3D!");
         }
         // TODO: Use correct min_distance
-        const int max_iterations = 100;
-        const double tolerance = 1e-6;
+        const double tolerance = TightInclusionCCD::DEFAULT_TOLERANCE;
+        const long max_iterations = TightInclusionCCD::DEFAULT_MAX_ITERATIONS;
         const double step_size = scalable_ccd::cuda::ipc_ccd_strategy(
             vertices_t0, vertices_t1, mesh.edges(), mesh.faces(),
             /*min_distance=*/0.0, max_iterations, tolerance);
