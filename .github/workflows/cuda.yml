@@ -25,7 +25,7 @@ jobs:
       matrix:
         config:
           - Debug
-          # - Release # cannot run multiple cuda-toolkit jobs in parallel
+          - Release
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.0.0
