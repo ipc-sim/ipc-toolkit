@@ -41,6 +41,8 @@ jobs:
         id: cuda-toolkit
         with:
           cuda: '12.4.0'
+          sub-packages: '["nvcc"]'
+          method: 'network'
 
       - name: Get number of CPU cores
         uses: SimenB/github-actions-cpu-cores@v2.0.0
