@@ -212,6 +212,30 @@ endif()
 target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
 
 ################################################################################
+# CUDA
+################################################################################
+
+if(IPC_TOOLKIT_WITH_CUDA)
+  include(CheckLanguage)
+  check_language(CUDA)
+
+  if(CMAKE_CUDA_COMPILER)
+    enable_language(CUDA)
+  else()
+    message(FATAL_ERROR "No CUDA support found!")
+  endif()
+
+  # We need to explicitly state that we need all CUDA files in the particle
+  # library to be built with -dc as the member functions could be called by
+  # other libraries and executables.
+  set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+  # Use the same CUDA architectures Scalable CCD
+  get_target_property(CMAKE_CUDA_ARCHITECTURES scalable_ccd CUDA_ARCHITECTURES)
+  set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
+endif()
+
+################################################################################
 # Tests
 ################################################################################
 
