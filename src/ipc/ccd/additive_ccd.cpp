@@ -60,8 +60,8 @@ namespace {
     }
 } // namespace
 
-AdditiveCCD::AdditiveCCD(const double conservative_rescaling)
-    : conservative_rescaling(conservative_rescaling)
+AdditiveCCD::AdditiveCCD(const double _conservative_rescaling)
+    : conservative_rescaling(_conservative_rescaling)
 {
 }
 
