@@ -218,6 +218,7 @@ target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
 if(IPC_TOOLKIT_WITH_CUDA)
   include(CheckLanguage)
   check_language(CUDA)
+
   if(CMAKE_CUDA_COMPILER)
     enable_language(CUDA)
   else()
@@ -229,17 +230,9 @@ if(IPC_TOOLKIT_WITH_CUDA)
   # other libraries and executables.
   set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
-  if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
-    set(CMAKE_CUDA_ARCHITECTURES "native")
-  else()
-    include(FindCUDA/select_compute_arch)
-    CUDA_DETECT_INSTALLED_GPUS(CUDA_ARCH_LIST)
-    string(STRIP "${CUDA_ARCH_LIST}" CUDA_ARCH_LIST)
-    string(REPLACE " " ";" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
-    string(REPLACE "." "" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
-    set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
-  endif()
-  set_target_properties(scalable_ccd PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
+  # Use the same CUDA architectures Scalable CCD
+  get_target_property(CMAKE_CUDA_ARCHITECTURES scalable_ccd CUDA_ARCHITECTURES)
+  set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
 endif()
 
 ################################################################################
