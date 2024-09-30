@@ -73,7 +73,7 @@ target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)
 
 target_compile_definitions(ipc_toolkit_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
 
-if (WIN32)
+if (FILIB_BUILD_SHARED_LIB AND WIN32)
   # Copy DLLs to the output directory
   add_custom_command(
     TARGET ipc_toolkit_tests POST_BUILD

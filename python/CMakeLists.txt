@@ -9,7 +9,7 @@ target_include_directories(ipctk PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 target_link_libraries(ipctk PRIVATE ipc::toolkit)
 
-if (WIN32)
+if (FILIB_BUILD_SHARED_LIB AND WIN32)
   # Copy DLLs to the output directory
   add_custom_command(
     TARGET ipctk POST_BUILD
