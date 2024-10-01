@@ -613,8 +613,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#id1" class="md-nav__link">
-    <span title="/cpp.rst#id1 (reference label)" class="md-ellipsis">Dependencies</span>
+  <a href="#dependencies" class="md-nav__link">
+    <span title="/cpp.rst#dependencies (reference label)" class="md-ellipsis">Dependencies</span>
   </a>
   
 </li>
@@ -1166,8 +1166,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#id1" class="md-nav__link">
-    <span title="/cpp.rst#id1 (reference label)" class="md-ellipsis">Dependencies</span>
+  <a href="#dependencies" class="md-nav__link">
+    <span title="/cpp.rst#dependencies (reference label)" class="md-ellipsis">Dependencies</span>
   </a>
   
 </li>
@@ -1271,12 +1271,26 @@ We use a very similar process to download all external dependencies (using <a cl
 </ul>
 </li>
 </ul>
+<div class="warning admonition">
+<p class="admonition-title">Warning</p>
+<p><code class="docutils literal notranslate"><span class="pre">filib</span></code> is licensed under <a class="reference external" href="https://github.com/zfergus/filib/blob/main/LICENSE">LGPL-2.1</a> and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynaic linkage requires copying the <code class="docutils literal notranslate"><span class="pre">.so</span></code>/<code class="docutils literal notranslate"><span class="pre">.dylib</span></code>/<code class="docutils literal notranslate"><span class="pre">.dll</span></code> file to the binary directory or system path. To enable this, set the CMake option <code class="code highlight cmake docutils literal highlight-cmake">FILIB_BUILD_SHARED_LIBS</code> to <code class="code highlight cmake docutils literal highlight-cmake">ON</code> and add this CMake code to copy the shared libaray object to the binary directory:</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><code><span class="c"># Copy shared lib to the output directory</span>
+<span class="nb">add_custom_command</span><span class="p">(</span>
+<span class="w">    </span><span class="s">TARGET</span><span class="w"> </span><span class="o">${</span><span class="nv">MY_EXE_TARGET</span><span class="o">}</span><span class="w"> </span><span class="s">POST_BUILD</span>
+<span class="w">    </span><span class="s">COMMAND</span><span class="w"> </span><span class="o">${</span><span class="nv">CMAKE_COMMAND</span><span class="o">}</span><span class="w"> </span><span class="s">-E</span><span class="w"> </span><span class="s">copy_if_different</span><span class="w"> </span><span class="o">$&lt;</span><span class="nv">TARGET_RUNTIME_DLLS:${MY_EXE_TARGET}</span><span class="o">&gt;</span><span class="w"> </span><span class="o">$&lt;</span><span class="nv">TARGET_FILE_DIR:${MY_EXE_TARGET}</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="s">COMMAND_EXPAND_LISTS</span>
+<span class="p">)</span>
+</code></pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">${MY_EXE_TARGET}</span></code> is the name of your executable target. If you know a better way to handle this, please <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/discussions">let us know</a>!</p>
+<p>If you would rather avoid LGPL code entirely, you can disable filib by setting <code class="code highlight cmake docutils literal highlight-cmake">IPC_TOOLKIT_WITH_FILIB</code> to <code class="code highlight cmake docutils literal highlight-cmake">OFF</code>. With this option disabled, CMake will not download or use any of filib’s code.</p>
+</div>
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h2>
 <p>See the <a class="reference external" href="https://ipctk.xyz/tutorial/getting_started.html">tutorial</a> for a quick introduction to the toolkit, or the <a class="reference external" href="https://ipctk.xyz/cpp.html">documentation</a> for a full reference.</p>
 <h2 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Permalink to this heading">¶</a></h2>
 <p>We provide unit tests to ensure the correctness of our algorithmic pieces.
 To enable the unit tests use the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_TESTS</span></code>.</p>
-<h3 id="id1">Dependencies<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
+<h3 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h3>
 <p>The following are downloaded when unit tests are enabled:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/catchorg/Catch2.git">Catch2</a>: testing framework</p></li>
@@ -1290,7 +1304,7 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
   <small>
     
       Last update:
-      Sep 27, 2024
+      Oct 01, 2024
     
   </small>
 </div>
