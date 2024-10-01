@@ -21,7 +21,7 @@ public:
         this->SUP = 0;
     }
 
-    Interval(double x)
+    explicit Interval(double x)
     {
         this->INF = x;
         this->SUP = x;

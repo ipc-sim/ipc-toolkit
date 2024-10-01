@@ -91,6 +91,8 @@ The following dependencies are optionally used based on CMake options:
     * Included for comparison with the original IPC library
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_INEXACT_CCD`
 
+<!--- FILIB DEPENDENCY NOTE --->
+
 ## Usage
 
 See the [tutorial](https://ipctk.xyz/tutorial/getting_started.html) for a quick introduction to the toolkit, or the [documentation](https://ipctk.xyz/cpp.html) for a full reference.
