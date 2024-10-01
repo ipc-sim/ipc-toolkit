@@ -84,23 +84,14 @@ The following dependencies are optionally used based on CMake options:
 * [filib](https://github.com/zfergus/filib): interval arithmetic for nonlinear trajectories/CCD
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_FILIB`
     * Enabled by default
-    * NOTE: filib is licensed under LGPL-2.1 and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynaic linkage requires copying the `.so`/`.dylib`/`.dll` file to the binary directory or system path. To enable this, set the CMake option `FILIB_BUILD_SHARED_LIBS` to `ON` and add this CMake code to copy the shared libaray object to the binary directory:
-    ```cmake
-    # Copy shared lib to the output directory
-    add_custom_command(
-      TARGET ${MY_EXE_TARGET} POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:${MY_EXE_TARGET}> $<TARGET_FILE_DIR:${MY_EXE_TARGET}>
-      COMMAND_EXPAND_LISTS
-    )
-    ```
-    * where `${MY_EXE_TARGET}` is the name of your executable target. If you know a better way to handle this, please [let us know](https://github.com/ipc-sim/ipc-toolkit/discussions)!
-    * If you would rather avoid LGPL code entirely, you can disable filib by setting `IPC_TOOLKIT_WITH_FILIB` to `OFF`. With this option disabled, CMake will not download or use any of filib's code.
 * [rational-cpp](https://github.io/zfergus/rational-cpp): rational arithmetic used for exact intersection checks
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION`
     * Requires [GMP](https://gmplib.org/) to be installed at a system level
 * [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection): inexact CCD
     * Included for comparison with the original IPC library
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_INEXACT_CCD`
+
+<!--- FILIB DEPENDENCY NOTE --->
 
 ## Usage
 
