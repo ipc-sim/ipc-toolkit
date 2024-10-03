@@ -17,7 +17,7 @@ IPC Toolkit is a set of reusable functions to integrate Incremental Potential Co
 ### Features
 
 * IPC barrier function and its derivatives and adaptive barrier stiffness algorithm
-* Broad-phase and narrow-phase continuous collision detection (CCD)
+* Broad- and narrow-phase continuous collision detection (CCD) of linear and nonlinear trajectories
 * Distance computation and derivatives between edges in 2D and triangles in 3D
 * Distance barrier potential and its derivatives
 * Smooth and lagged dissipative friction potential and its derivatives
@@ -32,7 +32,7 @@ This is not a full simulation library. As such it does not include any physics o
 
 The easiest way to add the toolkit to an existing CMake project is to download it through CMake.
 CMake provides functionality for doing this called [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html) (requires CMake ≥ 3.14).
-We use this same process to download all external dependencies.
+We use a very similar process to download all external dependencies (using [CPM](https://github.com/cpm-cmake/CPM.cmake)).
 
 For example,
 
@@ -66,11 +66,14 @@ The following libraries are used in this project:
 * [Eigen](https://eigen.tuxfamily.org/): linear algebra
 * [libigl](https://github.com/libigl/libigl): basic geometry functions and predicates
 * [oneTBB](https://github.com/oneapi-src/oneTBB): parallelism
-* [Tight-Inclusion](https://github.com/Continuous-Collision-Detection/Tight-Inclusion): correct (conservative) CCD
+* [Tight-Inclusion](https://github.com/Continuous-Collision-Detection/Tight-Inclusion): provably conservative CCD of [Wang and Ferguson et al. 2021]
 * [SimpleBVH](https://github.com/ipc-sim/SimpleBVH): a simple bounding volume hierarchy data structure
+* [Scalable-CCD](https://github.com/Continuous-Collision-Detection/Scalable-CCD): scalable (GPU) CCD of [Belgrod et al. 2023]
 * [spdlog](https://github.com/gabime/spdlog): logging information
 
 #### Optional
+
+The following dependencies are optionally used based on CMake options:
 
 * [robin-map](https://github.com/Tessil/robin-map): faster hash set/map than `std::unordered_set`/`std::unordered_map`
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_ROBIN_MAP`
@@ -86,7 +89,7 @@ The following libraries are used in this project:
     * Requires [GMP](https://gmplib.org/) to be installed at a system level
 * [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection): inexact CCD
     * Included for comparison with the original IPC library
-    * Enable by disabling the CMake option `IPC_TOOLKIT_WITH_CORRECT_CCD`
+    * Enable by using the CMake option `IPC_TOOLKIT_WITH_INEXACT_CCD`
     * Replaces the default Tight-Inclusion CCD
 
 ## Usage
@@ -96,11 +99,11 @@ See the [tutorial](https://ipctk.xyz/tutorial/getting_started.html) for a quick 
 ## Unit Tests
 
 We provide unit tests to ensure the correctness of our algorithmic pieces.
-To enable the unit tests use the CMake option `IPC_TOOLKIT_BUILD_UNIT_TESTS`.
+To enable the unit tests use the CMake option `IPC_TOOLKIT_BUILD_TESTS`.
 
 ### Dependencies
 
-The following are downloaded when unit tests are enabled (`IPC_TOOLKIT_BUILD_TESTS`)
+The following are downloaded when unit tests are enabled:
 
 * [Catch2](https://github.com/catchorg/Catch2.git): testing framework
 * [finite-diff](https://github.com/zfergus/finite-diff): finite-difference comparisons

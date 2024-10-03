@@ -99,7 +99,7 @@ public:
     using value_type = Collision<4>;
 
 public:
-    Collisions() { }
+    Collisions() = default;
 
     std::shared_ptr<CollisionsBase> deepcopy() const override
     {

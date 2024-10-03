@@ -18,7 +18,7 @@ def broad_phase_methods():
     yield ipctk.BroadPhaseMethod.HASH_GRID
     yield ipctk.BroadPhaseMethod.SPATIAL_HASH
     yield ipctk.BroadPhaseMethod.BOUNDING_VOLUME_HIERARCHY
-    yield ipctk.BroadPhaseMethod.SWEEP_AND_TINIEST_QUEUE
+    yield ipctk.BroadPhaseMethod.SWEEP_AND_PRUNE
 
 
 def finite_jacobian(x, f, h=1e-8):

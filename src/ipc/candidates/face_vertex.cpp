@@ -1,7 +1,6 @@
 #include "face_vertex.hpp"
 
 #include <ipc/distance/point_triangle.hpp>
-#include <ipc/utils/save_obj.hpp>
 
 #include <iostream>
 

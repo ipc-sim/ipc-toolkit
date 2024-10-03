@@ -12,8 +12,8 @@ protected:
     using TCollision = typename TCollisions::value_type;
 
 public:
-    Potential() { }
-    virtual ~Potential() { }
+    Potential() = default;
+    virtual ~Potential() = default;
 
     constexpr static int element_size = 3 * TCollision::element_size;
 

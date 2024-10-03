@@ -58,7 +58,7 @@ public:
     /// @param positions The stencil's vertex positions.
     /// @param eps_x The mollifier's tolerance.
     /// @return The mollifier gradient.
-    virtual VectorMax12d mollifier_gradient(
+    VectorMax12d mollifier_gradient(
         const VectorMax12d& positions, double eps_x) const override;
 
     /// @brief Compute the Hessian of the mollifier for the distance w.r.t. positions.
@@ -71,7 +71,7 @@ public:
     /// @param positions The stencil's vertex positions.
     /// @param eps_x The mollifier's tolerance.
     /// @return The mollifier Hessian.
-    virtual MatrixMax12d mollifier_hessian(
+    MatrixMax12d mollifier_hessian(
         const VectorMax12d& positions, double eps_x) const override;
 
     /// @brief Compute the gradient of the mollifier for the distance w.r.t. rest positions.
@@ -92,7 +92,7 @@ public:
 
     // ------------------------------------------------------------------------
 
-    virtual EdgeEdgeDistanceType known_dtype() const override { return dtype; }
+    EdgeEdgeDistanceType known_dtype() const override { return dtype; }
 
     // ------------------------------------------------------------------------
 

@@ -3,6 +3,8 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
+#include <cassert>
+
 namespace ipc {
 
 // Boolean scalar

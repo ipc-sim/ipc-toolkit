@@ -30,7 +30,7 @@ protected:
         const double _normal_force_magnitude);
 
 public:
-    virtual ~FrictionCollision() { }
+    virtual ~FrictionCollision() = default;
 
     /// @brief Get the dimension of the collision.
     int dim() const { return tangent_basis.rows(); }

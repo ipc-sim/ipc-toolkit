@@ -111,6 +111,11 @@ TEST_CASE(
         mesh_name_t0 = "cloth_ball92.ply";
         mesh_name_t1 = "cloth_ball93.ply";
     }
+    // SECTION("Squishy-Ball")
+    // {
+    //     mesh_name_t0 = "private/puffer-ball/20.ply";
+    //     mesh_name_t1 = "private/puffer-ball/21.ply";
+    // }
 
     if (!tests::load_mesh(mesh_name_t0, V0, E, F)
         || !tests::load_mesh(mesh_name_t1, V1, E, F)) {
@@ -127,9 +132,7 @@ TEST_CASE(
     const static std::vector<std::string> BP_names = {
         "BF", "HG", "SH", "BVH", "STQ", "GPU_STQ",
     };
-    for (int i = 0; i < NUM_BROAD_PHASE_METHODS; i++) {
-        // if (i < 3)
-        //     continue; // Skip HG, SH, BF
+    for (int i = 1; i < NUM_BROAD_PHASE_METHODS; i++) {
         BroadPhaseMethod method = static_cast<BroadPhaseMethod>(i);
         BENCHMARK(fmt::format("BP Real Data ({})", BP_names[i]))
         {

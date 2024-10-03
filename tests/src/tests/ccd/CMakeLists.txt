@@ -1,6 +1,7 @@
 set(SOURCES
   # Tests
   test_ccd.cpp
+  test_gpu_ccd.cpp
   test_ccd_benchmark.cpp
   test_edge_edge_ccd.cpp
   test_nonlinear_ccd.cpp

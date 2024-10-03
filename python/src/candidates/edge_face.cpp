@@ -1,6 +1,7 @@
 #include <common.hpp>
 
 #include <ipc/candidates/edge_face.hpp>
+#include <ipc/utils/logger.hpp>
 
 namespace py = pybind11;
 using namespace ipc;

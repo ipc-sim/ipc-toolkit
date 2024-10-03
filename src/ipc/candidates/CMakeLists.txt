@@ -10,6 +10,8 @@ set(SOURCES
   edge_face.hpp
   edge_vertex.cpp
   edge_vertex.hpp
+  face_face.cpp
+  face_face.hpp
   face_vertex.cpp
   face_vertex.hpp
   # plane_vertex.cpp

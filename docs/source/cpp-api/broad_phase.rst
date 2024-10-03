@@ -30,10 +30,13 @@ BVH
 
 .. doxygenclass:: ipc::BVH
 
-Sweep and Tiniest Queue
+Sweep and Prune
 -----------------------
 
-.. doxygenclass:: ipc::SweepAndTiniestQueue
+.. doxygenclass:: ipc::SweepAndPrune
+
+Sweep and Tiniest Queue
+-----------------------
 
 .. .. doxygenclass:: ipc::SweepAndTiniestQueueGPU
 

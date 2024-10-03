@@ -8,7 +8,7 @@ namespace ipc {
 
 template <>
 Hash<std::pair<int, int>>
-AbslHashValue(Hash<std::pair<int, int>> h, std::pair<int, int> p)
+AbslHashValue(Hash<std::pair<int, int>> h, const std::pair<int, int> p)
 {
     return Hash<std::pair<int, int>>::combine(std::move(h), p.first, p.second);
 }

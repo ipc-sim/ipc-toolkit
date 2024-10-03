@@ -96,7 +96,7 @@ TEST_CASE(
     std::string mesh_name = "";
     SECTION("debug")
     {
-        mesh_name = ("/home/zizhou/polyfem/result/smooth-ipc/examples/visualize-contact/3D/cusp/2-cubes/2-cubes.obj");
+        mesh_name = ("2-cubes.obj");
         dhat = 0.25;
     }
 

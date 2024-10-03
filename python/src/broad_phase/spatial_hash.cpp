@@ -62,7 +62,8 @@ void define_spatial_hash(py::module_& m)
         .def_readwrite("voxel_count_0x1", &SpatialHash::voxel_count_0x1)
         .def_readwrite("edge_start_ind", &SpatialHash::edge_start_ind)
         .def_readwrite("tri_start_ind", &SpatialHash::tri_start_ind)
-        .def_readwrite("voxel", &SpatialHash::voxel)
-        .def_readwrite(
-            "point_and_edge_occupancy", &SpatialHash::point_and_edge_occupancy);
+        .def_readwrite("voxel", &SpatialHash::voxel_to_primitives)
+        .def_readwrite("point_to_voxels", &SpatialHash::point_to_voxels)
+        .def_readwrite("edge_to_voxels", &SpatialHash::edge_to_voxels)
+        .def_readwrite("face_to_voxels", &SpatialHash::face_to_voxels);
 }

@@ -8,7 +8,8 @@ namespace ipc {
 
 class BVH : public BroadPhase {
 public:
-    using BroadPhase::BroadPhase;
+    BVH() = default;
+
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
     /// @param edges Collision mesh edges
@@ -61,9 +62,25 @@ public:
     void detect_edge_face_candidates(
         std::vector<EdgeFaceCandidate>& candidates) const override;
 
+    /// @brief Find the candidate face-face collisions.
+    /// @param[out] candidates The candidate face-face collisions.
+    void detect_face_face_candidates(
+        std::vector<FaceFaceCandidate>& candidates) const override;
+
 protected:
+    /// @brief Initialize a BVH from a set of boxes.
+    /// @param[in] boxes Set of boxes to initialize the BVH with.
+    /// @param[out] bvh The BVH to initialize.
     static void init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh);
 
+    /// @brief Detect candidate collisions between a BVH and a sets of boxes.
+    /// @tparam Candidate Type of candidate collision.
+    /// @tparam swap_order Whether to swap the order of box id with the BVH id when adding to the candidates.
+    /// @tparam triangular Whether to consider (i, j) and (j, i) as the same.
+    /// @param[in] boxes The boxes to detect collisions with.
+    /// @param[in] bvh The BVH to detect collisions with.
+    /// @param[in] can_collide Function to determine if two primitives can collide given their ids.
+    /// @param[out] candidates The candidate collisions.
     template <
         typename Candidate,
         bool swap_order = false,
@@ -74,8 +91,11 @@ protected:
         const std::function<bool(size_t, size_t)>& can_collide,
         std::vector<Candidate>& candidates);
 
+    /// @brief BVH containing the vertices.
     SimpleBVH::BVH vertex_bvh;
+    /// @brief BVH containing the edges.
     SimpleBVH::BVH edge_bvh;
+    /// @brief BVH containing the faces.
     SimpleBVH::BVH face_bvh;
 };
 

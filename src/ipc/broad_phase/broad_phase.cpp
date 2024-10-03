@@ -4,6 +4,7 @@
 #include <ipc/broad_phase/bvh.hpp>
 #include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>
+#include <ipc/broad_phase/sweep_and_prune.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 #include <ipc/candidates/candidates.hpp>
 
@@ -75,11 +76,11 @@ BroadPhase::make_broad_phase(const BroadPhaseMethod method)
         return std::make_shared<HashGrid>();
     case BroadPhaseMethod::SPATIAL_HASH:
         return std::make_shared<SpatialHash>();
+    case BroadPhaseMethod::SWEEP_AND_PRUNE:
+        return std::make_shared<SweepAndPrune>();
     case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
-        return std::make_shared<SweepAndTiniestQueue>();
-    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU:
 #ifdef IPC_TOOLKIT_WITH_CUDA
-        return std::make_shared<SweepAndTiniestQueueGPU>();
+        return std::make_shared<SweepAndTiniestQueue>();
 #else
         throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
                                  "because CUDA is disabled!");
@@ -139,20 +140,25 @@ bool BroadPhase::can_edge_face_collide(size_t ei, size_t fi) const
             || can_vertices_collide(e1i, f2i));
 }
 
-bool BroadPhase::can_face_face_collide(size_t fj, size_t fi) const
+bool BroadPhase::can_faces_collide(size_t fai, size_t fbi) const
 {
-    const auto& [f0j, f1j, f2j] = face_boxes[fj].vertex_ids;
-    const auto& [f0i, f1i, f2i] = face_boxes[fi].vertex_ids;
+    const auto& [fa0i, fa1i, fa2i] = face_boxes[fai].vertex_ids;
+    const auto& [fb0i, fb1i, fb2i] = face_boxes[fbi].vertex_ids;
 
-    std::set<long> s = { f0j, f1j, f2j, f0i, f1i, f2i };
-    const bool share_endpoint = s.size() < 6;
+    const bool share_endpoint = fa0i == fb0i || fa0i == fb1i || fa0i == fb2i
+        || fa1i == fb0i || fa1i == fb1i || fa1i == fb2i || fa2i == fb0i
+        || fa2i == fb1i || fa2i == fb2i;
 
     return !share_endpoint
-        && (can_vertices_collide(f0j, f0i) || can_vertices_collide(f0j, f1i)
-            || can_vertices_collide(f0j, f2i) || can_vertices_collide(f1j, f0i)
-            || can_vertices_collide(f1j, f1i) || can_vertices_collide(f1j, f2i)
-            || can_vertices_collide(f2j, f0i) || can_vertices_collide(f2j, f1i)
-            || can_vertices_collide(f2j, f2i));
+        && (can_vertices_collide(fa0i, fb0i) //
+            || can_vertices_collide(fa0i, fb1i)
+            || can_vertices_collide(fa0i, fb2i)
+            || can_vertices_collide(fa1i, fb0i)
+            || can_vertices_collide(fa1i, fb1i)
+            || can_vertices_collide(fa1i, fb2i)
+            || can_vertices_collide(fa2i, fb0i)
+            || can_vertices_collide(fa2i, fb1i)
+            || can_vertices_collide(fa2i, fb2i));
 }
 
 } // namespace ipc

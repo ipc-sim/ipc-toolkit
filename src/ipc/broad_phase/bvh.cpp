@@ -6,7 +6,10 @@
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
 
+using namespace std::placeholders;
+
 namespace ipc {
+
 void BVH::build(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& edges,
@@ -66,12 +69,11 @@ void BVH::detect_candidates(
     tbb::enumerable_thread_specific<std::vector<Candidate>> storage;
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(0ul, boxes.size()),
+        tbb::blocked_range<size_t>(size_t(0), boxes.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             auto& local_candidates = storage.local();
 
             for (size_t i = r.begin(); i < r.end(); i++) {
-
                 std::vector<unsigned int> js;
                 bvh.intersect_box(boxes[i].min, boxes[i].max, js);
 
@@ -122,8 +124,7 @@ void BVH::detect_edge_vertex_candidates(
     // vertices than edges, so we want to iterate over the edges.
     detect_candidates(
         edge_boxes, vertex_bvh,
-        [&](size_t ei, size_t vi) { return can_edge_vertex_collide(ei, vi); },
-        candidates);
+        std::bind(&BVH::can_edge_vertex_collide, this, _1, _2), candidates);
 }
 
 void BVH::detect_edge_edge_candidates(
@@ -135,8 +136,7 @@ void BVH::detect_edge_edge_candidates(
 
     detect_candidates<
         EdgeEdgeCandidate, /*swap_order=*/false, /*triangular=*/true>(
-        edge_boxes, edge_bvh,
-        [&](size_t eai, size_t ebi) { return can_edges_collide(eai, ebi); },
+        edge_boxes, edge_bvh, std::bind(&BVH::can_edges_collide, this, _1, _2),
         candidates);
 }
 
@@ -150,8 +150,7 @@ void BVH::detect_face_vertex_candidates(
     // The ratio vertices:faces is 1:2, so we want to iterate over the vertices.
     detect_candidates<FaceVertexCandidate, /*swap_order=*/true>(
         vertex_boxes, face_bvh,
-        [&](size_t fi, size_t vi) { return can_face_vertex_collide(fi, vi); },
-        candidates);
+        std::bind(&BVH::can_face_vertex_collide, this, _1, _2), candidates);
 }
 
 void BVH::detect_edge_face_candidates(
@@ -164,7 +163,19 @@ void BVH::detect_edge_face_candidates(
     // The ratio edges:faces is 3:2, so we want to iterate over the faces.
     detect_candidates<EdgeFaceCandidate, /*swap_order=*/true>(
         face_boxes, edge_bvh,
-        [&](size_t ei, size_t fi) { return can_edge_face_collide(ei, fi); },
+        std::bind(&BVH::can_edge_face_collide, this, _1, _2), candidates);
+}
+
+void BVH::detect_face_face_candidates(
+    std::vector<FaceFaceCandidate>& candidates) const
+{
+    if (face_boxes.size() == 0) {
+        return;
+    }
+
+    detect_candidates<
+        FaceFaceCandidate, /*swap_order=*/false, /*triangular=*/true>(
+        face_boxes, face_bvh, std::bind(&BVH::can_faces_collide, this, _1, _2),
         candidates);
 }
 

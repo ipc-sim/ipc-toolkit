@@ -80,6 +80,7 @@ TEST_CASE("Vertex-Vertex Candidate", "[candidates][vertex-vertex]")
     CHECK(VertexVertexCandidate(0, 1) != VertexVertexCandidate(2, 0));
     CHECK(VertexVertexCandidate(0, 1) < VertexVertexCandidate(0, 2));
     CHECK(VertexVertexCandidate(0, 1) < VertexVertexCandidate(2, 0));
+    CHECK(!(VertexVertexCandidate(1, 1) < VertexVertexCandidate(0, 2)));
 }
 
 TEST_CASE("Edge-Vertex Candidate", "[candidates][edge-vertex]")
@@ -89,8 +90,8 @@ TEST_CASE("Edge-Vertex Candidate", "[candidates][edge-vertex]")
     CHECK(EdgeVertexCandidate(0, 1) != EdgeVertexCandidate(0, 2));
     CHECK(EdgeVertexCandidate(0, 1) != EdgeVertexCandidate(2, 0));
     CHECK(EdgeVertexCandidate(0, 1) < EdgeVertexCandidate(0, 2));
-    CHECK(!(EdgeVertexCandidate(1, 1) < EdgeVertexCandidate(0, 2)));
     CHECK(EdgeVertexCandidate(0, 1) < EdgeVertexCandidate(2, 0));
+    CHECK(!(EdgeVertexCandidate(1, 1) < EdgeVertexCandidate(0, 2)));
 }
 
 TEST_CASE("Edge-Edge Candidate", "[candidates][edge-edge]")
@@ -101,6 +102,7 @@ TEST_CASE("Edge-Edge Candidate", "[candidates][edge-edge]")
     CHECK(EdgeEdgeCandidate(0, 1) != EdgeEdgeCandidate(2, 0));
     CHECK(EdgeEdgeCandidate(0, 1) < EdgeEdgeCandidate(0, 2));
     CHECK(EdgeEdgeCandidate(0, 1) < EdgeEdgeCandidate(2, 0));
+    CHECK(!(EdgeEdgeCandidate(1, 1) < EdgeEdgeCandidate(0, 2)));
 }
 
 TEST_CASE("Face-Vertex Candidate", "[candidates][face-vertex]")
@@ -110,8 +112,8 @@ TEST_CASE("Face-Vertex Candidate", "[candidates][face-vertex]")
     CHECK(FaceVertexCandidate(0, 1) != FaceVertexCandidate(0, 2));
     CHECK(FaceVertexCandidate(0, 1) != FaceVertexCandidate(2, 0));
     CHECK(FaceVertexCandidate(0, 1) < FaceVertexCandidate(0, 2));
-    CHECK(!(FaceVertexCandidate(1, 1) < FaceVertexCandidate(0, 2)));
     CHECK(FaceVertexCandidate(0, 1) < FaceVertexCandidate(2, 0));
+    CHECK(!(FaceVertexCandidate(1, 1) < FaceVertexCandidate(0, 2)));
 }
 
 TEST_CASE("Edge-Face Candidate", "[candidates][edge-face]")
@@ -121,6 +123,17 @@ TEST_CASE("Edge-Face Candidate", "[candidates][edge-face]")
     CHECK(EdgeFaceCandidate(0, 1) != EdgeFaceCandidate(0, 2));
     CHECK(EdgeFaceCandidate(0, 1) != EdgeFaceCandidate(2, 0));
     CHECK(EdgeFaceCandidate(0, 1) < EdgeFaceCandidate(0, 2));
-    CHECK(!(EdgeFaceCandidate(1, 1) < EdgeFaceCandidate(0, 2)));
     CHECK(EdgeFaceCandidate(0, 1) < EdgeFaceCandidate(2, 0));
+    CHECK(!(EdgeFaceCandidate(1, 1) < EdgeFaceCandidate(0, 2)));
+}
+
+TEST_CASE("Face-Face Candidate", "[candidates][face-face]")
+{
+    CHECK(FaceFaceCandidate(0, 1) == FaceFaceCandidate(0, 1));
+    CHECK(FaceFaceCandidate(0, 1) == FaceFaceCandidate(1, 0));
+    CHECK(FaceFaceCandidate(0, 1) != FaceFaceCandidate(0, 2));
+    CHECK(FaceFaceCandidate(0, 1) != FaceFaceCandidate(2, 0));
+    CHECK(FaceFaceCandidate(0, 1) < FaceFaceCandidate(0, 2));
+    CHECK(FaceFaceCandidate(0, 1) < FaceFaceCandidate(2, 0));
+    CHECK(!(FaceFaceCandidate(1, 1) < FaceFaceCandidate(0, 2)));
 }

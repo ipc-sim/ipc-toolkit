@@ -9,10 +9,10 @@ using namespace ipc;
 
 static const double EPSILON = std::numeric_limits<float>::epsilon();
 
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge]")
-#else
+#ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
 TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
+#else
+TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge]")
 #endif
 {
     Eigen::Vector3d ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1,
@@ -140,7 +140,7 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge][!mayfail]")
         is_collision_expected = dy >= d0 / 2;
         conservative_check = false;
     }
-    CAPTURE(int(is_collision_expected));
+    CAPTURE(is_collision_expected);
 
     double toi;
     bool is_colliding = edge_edge_ccd(

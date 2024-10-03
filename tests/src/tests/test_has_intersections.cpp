@@ -87,11 +87,6 @@ TEST_CASE("Has intersections", "[intersection]")
 #endif
 
     const BroadPhaseMethod broad_phase_method = GENERATE_BROAD_PHASE_METHODS();
-    if (broad_phase_method == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE
-        || broad_phase_method
-            == BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE_GPU) {
-        return;
-    }
 
     Eigen::MatrixXd V;
     Eigen::MatrixXi E, F;

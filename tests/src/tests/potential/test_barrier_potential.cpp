@@ -348,8 +348,9 @@ TEST_CASE(
 
         Eigen::MatrixXd fd_JF_wrt_X;
         fd::finite_jacobian(fd::flatten(rest_positions), F_X, fd_JF_wrt_X);
-        CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
-        if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
+
+        CHECKED_ELSE(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X))
+        {
             tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
         }
     }
@@ -389,8 +390,9 @@ TEST_CASE(
     };
     Eigen::MatrixXd fd_JF_wrt_X;
     fd::finite_jacobian(fd::flatten(rest_positions), F_X, fd_JF_wrt_X);
-    CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
-    if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
+
+    CHECKED_ELSE(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X))
+    {
         tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
     }
 }
@@ -451,8 +453,9 @@ TEST_CASE(
     };
     Eigen::MatrixXd fd_JF_wrt_X;
     fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
-    CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
-    if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
+
+    CHECKED_ELSE(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X))
+    {
         tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
     }
 }

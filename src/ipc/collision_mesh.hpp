@@ -12,7 +12,7 @@ class CollisionMesh {
 public:
     /// @brief Construct a new Collision Mesh object.
     /// Collision Mesh objects are immutable, so use the other constructors.
-    CollisionMesh() { }
+    CollisionMesh() = default;
 
     /// @brief Construct a new Collision Mesh object directly from the collision mesh vertices.
     /// @param rest_positions The vertices of the collision mesh at rest (#V × dim).
@@ -64,7 +64,7 @@ public:
     void init_area_jacobians();
 
     /// @brief Destroy the Collision Mesh object
-    ~CollisionMesh() { }
+    ~CollisionMesh() = default;
 
     /// @brief Get the number of vertices in the collision mesh.
     size_t num_vertices() const { return m_vertex_to_full_vertex.size(); }

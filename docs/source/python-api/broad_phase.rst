@@ -42,12 +42,15 @@ BVH
 
     .. autoclasstoc::
 
-Sweep and Tiniest Queue
------------------------
+Sweep and Prune
+---------------
 
-.. autoclass:: ipctk.SweepAndTiniestQueue
+.. autoclass:: ipctk.SweepAndPrune
 
     .. autoclasstoc::
+
+Sweep and Tiniest Queue
+-----------------------
 
 .. .. autoclass:: ipctk.SweepAndTiniestQueueGPU
 ..     :members:

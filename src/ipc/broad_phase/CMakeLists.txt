@@ -11,6 +11,8 @@ set(SOURCES
   hash_grid.hpp
   spatial_hash.cpp
   spatial_hash.hpp
+  sweep_and_prune.cpp
+  sweep_and_prune.hpp
   sweep_and_tiniest_queue.cpp
   sweep_and_tiniest_queue.hpp
   voxel_size_heuristic.cpp

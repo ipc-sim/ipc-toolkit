@@ -26,20 +26,31 @@ void brute_force_comparison(
             mesh, V0, V1, inflation_radius, BroadPhaseMethod::BRUTE_FORCE);
         if (!cached_bf_candidates.empty()) {
             save_candidates(cached_bf_candidates, bf_candidates);
-        };
+        }
     }
 
     CAPTURE(candidates.size(), bf_candidates.size());
 
-    CAPTURE("EV");
-    brute_force_comparison(
-        mesh, V0, V1, candidates.ev_candidates, bf_candidates.ev_candidates);
-    CAPTURE("EE");
-    brute_force_comparison(
-        mesh, V0, V1, candidates.ee_candidates, bf_candidates.ee_candidates);
-    CAPTURE("FV");
-    brute_force_comparison(
-        mesh, V0, V1, candidates.fv_candidates, bf_candidates.fv_candidates);
+    {
+        INFO("EV");
+        brute_force_comparison(
+            mesh, V0, V1, candidates.ev_candidates,
+            bf_candidates.ev_candidates);
+    }
+
+    {
+        INFO("EE");
+        brute_force_comparison(
+            mesh, V0, V1, candidates.ee_candidates,
+            bf_candidates.ee_candidates);
+    }
+
+    {
+        INFO("FV");
+        brute_force_comparison(
+            mesh, V0, V1, candidates.fv_candidates,
+            bf_candidates.fv_candidates);
+    }
 }
 
 void save_candidates(
@@ -113,26 +124,23 @@ void brute_force_comparison(
     CHECK(candidates.size() <= bf_candidates.size());
 
     tbb::parallel_sort(candidates.begin(), candidates.end());
-    tbb::parallel_sort(bf_candidates.begin(), bf_candidates.end());
 
-    int ci = 0;
-    for (int bf_ci = 0; bf_ci < bf_candidates.size(); bf_ci++) {
-        if (candidates.size() <= ci || bf_candidates[bf_ci] != candidates[ci]) {
+    for (const Candidate& bf_candidate : bf_candidates) {
+        CAPTURE(bf_candidate);
+        const bool found = std::binary_search(
+            candidates.begin(), candidates.end(), bf_candidate);
+        if (!found) {
             // Perform CCD to make sure the candidate is not a collision
             double toi;
-            bool hit = bf_candidates[bf_ci].ccd(
-                bf_candidates[bf_ci].dof(V0, mesh.edges(), mesh.faces()),
-                bf_candidates[bf_ci].dof(V1, mesh.edges(), mesh.faces()), //
+            const bool hit = bf_candidate.ccd(
+                bf_candidate.dof(V0, mesh.edges(), mesh.faces()),
+                bf_candidate.dof(V1, mesh.edges(), mesh.faces()), //
                 toi, /*min_distance=*/0, /*tmax=*/1.0,
                 ipc::DEFAULT_CCD_TOLERANCE, ipc::DEFAULT_CCD_MAX_ITERATIONS,
                 /*conservative_rescaling=*/1.0);
             CHECK(!hit); // Check for FN
-        } else {
-            ci++;
         }
     }
-
-    CHECK(ci >= candidates.size());
 }
 
 template void brute_force_comparison<ipc::EdgeVertexCandidate>(

@@ -1,7 +1,6 @@
 #include "edge_edge.hpp"
 
 #include <ipc/distance/edge_edge.hpp>
-#include <ipc/utils/save_obj.hpp>
 
 namespace ipc {
 

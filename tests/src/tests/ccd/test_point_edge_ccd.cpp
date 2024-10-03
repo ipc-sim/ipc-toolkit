@@ -178,10 +178,10 @@ TEST_CASE("Point-edge CCD", "[ccd][point-edge]")
     }
 }
 
-#ifdef IPC_TOOLKIT_WITH_CORRECT_CCD
-TEST_CASE("Point-edge ToI", "[ccd][point-edge][toi]")
-#else
+#ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
 TEST_CASE("Point-edge ToI", "[ccd][point-edge][toi][!mayfail]")
+#else
+TEST_CASE("Point-edge ToI", "[ccd][point-edge][toi]")
 #endif
 {
     const int dim = GENERATE(2, 3);

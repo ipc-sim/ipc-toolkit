@@ -14,13 +14,14 @@ CPMAddPackage(
     NAME nlohmann_json
     URL "https://github.com/nlohmann/json/releases/download/${NLOHMANNJSON_VERSION}/include.zip"
     URL_HASH SHA256=e5c7a9f49a16814be27e4ed0ee900ecd0092bfb7dbfca65b5a421b774dccaaed
+    DOWNLOAD_ONLY YES
 )
 
 add_library(nlohmann_json INTERFACE)
 add_library(nlohmann_json::nlohmann_json ALIAS nlohmann_json)
 
 include(GNUInstallDirs)
-target_include_directories(nlohmann_json INTERFACE
+target_include_directories(nlohmann_json SYSTEM INTERFACE
     "$<BUILD_INTERFACE:${nlohmann_json_SOURCE_DIR}>/include"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
 )

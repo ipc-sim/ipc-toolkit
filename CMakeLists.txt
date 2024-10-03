@@ -63,16 +63,21 @@ project(IPCToolkit
 
 option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
 option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
-option(IPC_TOOLKIT_WITH_CORRECT_CCD           "Use Tight Inclusion CCD"                        ON)
-option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
 option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic"              ON)
+
+# Advanced options
+option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
+option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
 option(IPC_TOOLKIT_WITH_AUTODIFF              "Enable AutoDiff for computing derivatives"     OFF)
-mark_as_advanced(IPC_TOOLKIT_WITH_CODE_COVERAGE)
+
+mark_as_advanced(IPC_TOOLKIT_WITH_INEXACT_CCD)   # This is only for comparison purposes
+mark_as_advanced(IPC_TOOLKIT_WITH_SIMD)          # This does not work reliably
+mark_as_advanced(IPC_TOOLKIT_WITH_CODE_COVERAGE) # This is used in GitHub Actions
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
@@ -126,14 +131,13 @@ target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
 # Dependencies
 ################################################################################
 
-# libigl
+# Eigen
 include(eigen)
+target_link_libraries(ipc_toolkit PUBLIC Eigen3::Eigen)
+
+# libigl
 include(libigl)
-target_link_libraries(ipc_toolkit PUBLIC
-  Eigen3::Eigen
-  igl::core
-  igl::predicates
-)
+target_link_libraries(ipc_toolkit PUBLIC igl::core igl::predicates)
 
 # autodiff
 include(autodiff)
@@ -142,12 +146,16 @@ include(autodiff)
 include(onetbb)
 target_link_libraries(ipc_toolkit PUBLIC TBB::tbb)
 
+# Provably conservative CCD of [Wang and Ferguson et al. 2021]
+include(tight_inclusion)
+target_link_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
+
+# Scalable CCD (STQ broad phase and GPU Tight Inclusion)
+include(scalable_ccd)
+target_link_libraries(ipc_toolkit PUBLIC scalable_ccd::scalable_ccd)
+
 # CCD
-if(IPC_TOOLKIT_WITH_CORRECT_CCD)
-  # Provably conservative CCD of [Wang and Ferguson et al. 2021]
-  include(tight_inclusion)
-  target_link_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
-else()
+if(IPC_TOOLKIT_WITH_INEXACT_CCD)
   # Etienne Vouga's CTCD Library for the floating point root finding algorithm
   include(evouga_ccd)
   target_link_libraries(ipc_toolkit PUBLIC evouga::ccd)
@@ -165,17 +173,6 @@ target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   include(rational_cpp)
   target_link_libraries(ipc_toolkit PUBLIC rational::rational)
-endif()
-
-# Sweep and Tiniest Queue and CCD
-if(IPC_TOOLKIT_WITH_CUDA)
-  include(gpu_ccd)
-  target_link_libraries(ipc_toolkit PUBLIC gpu_ccd::gpu_ccd)
-  target_link_libraries(ipc_toolkit PUBLIC STQ::CPU)
-else()
-  set(STQ_WITH_CUDA OFF CACHE BOOL "Enable CUDA Implementation" FORCE)
-  include(sweep_and_tiniest_queue)
-  target_link_libraries(ipc_toolkit PUBLIC STQ::CPU)
 endif()
 
 # Faster unordered map
@@ -239,7 +236,6 @@ if(IPC_TOOLKIT_WITH_CUDA)
 
   if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
     set(CMAKE_CUDA_ARCHITECTURES "native")
-    set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "native")
   else()
     include(FindCUDA/select_compute_arch)
     CUDA_DETECT_INSTALLED_GPUS(CUDA_ARCH_LIST)
@@ -247,19 +243,8 @@ if(IPC_TOOLKIT_WITH_CUDA)
     string(REPLACE " " ";" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
     string(REPLACE "." "" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
     set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
-    set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}")
   endif()
-
-  if(APPLE)
-    # We need to add the path to the driver (libcuda.dylib) as an rpath,
-    # so that the static cuda runtime can find it at runtime.
-    set_property(TARGET ipc_toolkit
-                 PROPERTY
-                 BUILD_RPATH ${CMAKE_CUDA_IMPLICIT_LINK_DIRECTORIES})
-  endif()
-
-  find_package(CUDAToolkit)
-  target_link_libraries(ipc_toolkit PRIVATE CUDA::cudart)
+  set_target_properties(scalable_ccd PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
 endif()
 
 ################################################################################

@@ -1,7 +1,6 @@
 #include "edge_vertex.hpp"
 
 #include <ipc/distance/point_edge.hpp>
-#include <ipc/utils/save_obj.hpp>
 
 #include <iostream>
 

@@ -7,7 +7,7 @@
 
 using namespace ipc;
 
-TEST_CASE("Build SpatialHash", "[spatial_hash][build]")
+TEST_CASE("Build SpatialHash", "[broad_phase][spatial_hash][build]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
@@ -22,6 +22,12 @@ TEST_CASE("Build SpatialHash", "[spatial_hash][build]")
 
     Candidates candidates;
     sh.detect_collision_candidates(V0.cols(), candidates);
+
+    CHECK(candidates.size() == 6'852'873);
+    CHECK(candidates.vv_candidates.size() == 0);
+    CHECK(candidates.ev_candidates.size() == 0);
+    CHECK(candidates.ee_candidates.size() == 5'197'332);
+    CHECK(candidates.fv_candidates.size() == 1'655'541);
 
     sh.clear();
 }
