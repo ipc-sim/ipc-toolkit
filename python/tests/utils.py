@@ -2,8 +2,7 @@ import pathlib
 import numpy as np
 import meshio
 
-import find_ipctk
-import ipctk
+from find_ipctk import ipctk
 
 
 def download_test_data_if_needed(directory):

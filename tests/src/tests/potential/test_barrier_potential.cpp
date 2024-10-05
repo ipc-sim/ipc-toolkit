@@ -60,7 +60,7 @@ TEST_CASE(
 
     CollisionMesh mesh;
 
-    Collisions collisions;
+    NormalCollisions collisions;
     collisions.set_use_area_weighting(use_area_weighting);
     collisions.set_use_improved_max_approximator(use_improved_max_approximator);
     if (all_vertices_on_surface) {
@@ -212,7 +212,7 @@ TEST_CASE(
 
     const CollisionMesh mesh(vertices, edges, faces);
 
-    Collisions collisions;
+    NormalCollisions collisions;
     collisions.set_use_area_weighting(use_area_weighting);
     collisions.set_use_improved_max_approximator(use_improved_max_approximator);
 
@@ -228,7 +228,7 @@ TEST_CASE(
     auto f = [&](const Eigen::VectorXd& x) {
         const Eigen::MatrixXd fd_V = fd::unflatten(x, mesh.dim());
 
-        Collisions fd_collisions;
+        NormalCollisions fd_collisions;
         fd_collisions.set_use_area_weighting(use_area_weighting);
         fd_collisions.set_use_improved_max_approximator(
             use_improved_max_approximator);
@@ -287,7 +287,7 @@ TEST_CASE(
     Candidates candidates;
     candidates.build(mesh, vertices, dhat);
 
-    Collisions collisions;
+    NormalCollisions collisions;
     collisions.set_use_area_weighting(use_area_weighting);
     collisions.set_use_improved_max_approximator(use_improved_max_approximator);
     collisions.set_enable_shape_derivatives(true);
@@ -312,8 +312,8 @@ TEST_CASE(
             // Recompute eps_x based on x
             double prev_eps_x = -1;
             if (collisions.is_edge_edge(i)) {
-                EdgeEdgeCollision& c =
-                    dynamic_cast<EdgeEdgeCollision&>(collisions[i]);
+                EdgeEdgeNormalCollision& c =
+                    dynamic_cast<EdgeEdgeNormalCollision&>(collisions[i]);
                 prev_eps_x = c.eps_x;
                 c.eps_x = edge_edge_mollifier_threshold(
                     x.segment<3>(3 * edges(c.edge0_id, 0)),
@@ -334,7 +334,7 @@ TEST_CASE(
             // Restore eps_x
             if (collisions.is_edge_edge(i)) {
                 REQUIRE(prev_eps_x >= 0);
-                dynamic_cast<EdgeEdgeCollision&>(collisions[i]).eps_x =
+                dynamic_cast<EdgeEdgeNormalCollision&>(collisions[i]).eps_x =
                     prev_eps_x;
             }
 
@@ -376,7 +376,7 @@ TEST_CASE(
 
         // WARNING: This breaks the tests because EE distances are C0 when edges
         // are parallel
-        // Collisions fd_collisions;
+        // NormalCollisions fd_collisions;
         // fd_collisions.set_use_area_weighting(use_area_weighting);
         // fd_collisions.set_use_improved_max_approximator(
         //     use_improved_max_approximator);
@@ -422,7 +422,7 @@ TEST_CASE(
     vertices = mesh.vertices(vertices);
     const Eigen::MatrixXd U = vertices - X;
 
-    Collisions collisions;
+    NormalCollisions collisions;
     const bool use_area_weighting = GENERATE(true, false);
     const bool use_improved_max_approximator = GENERATE(true, false);
     const bool use_physical_barrier = GENERATE(true, false);
@@ -442,7 +442,7 @@ TEST_CASE(
 
         CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
 
-        Collisions fd_collisions;
+        NormalCollisions fd_collisions;
         fd_collisions.set_use_area_weighting(use_area_weighting);
         fd_collisions.set_use_improved_max_approximator(
             use_improved_max_approximator);
@@ -488,7 +488,7 @@ TEST_CASE(
 
     const CollisionMesh mesh(vertices, edges, faces);
 
-    Collisions collisions;
+    NormalCollisions collisions;
     collisions.set_use_area_weighting(use_area_weighting);
     collisions.set_use_improved_max_approximator(use_improved_max_approximator);
     collisions.build(mesh, vertices, dhat);
@@ -549,7 +549,7 @@ TEST_CASE(
     vertices = mesh.vertices(vertices);
     const Eigen::MatrixXd U = vertices - X;
 
-    Collisions collisions;
+    NormalCollisions collisions;
     const bool use_area_weighting = GENERATE(true, false);
     const bool use_improved_max_approximator = GENERATE(true, false);
     const bool use_physical_barrier = GENERATE(true, false);
