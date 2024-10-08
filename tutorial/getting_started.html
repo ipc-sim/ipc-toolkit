@@ -1672,14 +1672,14 @@ Python</label></div>
 <div class="tabbed-block docutils">
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipc</span><span class="o">::</span><span class="n">FrictionCollisions</span><span class="w"> </span><span class="n">friction_collisions</span><span class="p">;</span>
 <span class="n">friction_collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span>
-<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">mu</span><span class="p">);</span>
+<span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">mu</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">friction_collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">FrictionCollisions</span><span class="p">()</span>
 <span class="n">friction_collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
-    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">dhat</span><span class="p">,</span> <span class="n">barrier_stiffness</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
+    <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">barrier_stiffness</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -1949,7 +1949,7 @@ Python</label></div>
   <small>
     
       Last update:
-      Oct 05, 2024
+      Oct 08, 2024
     
   </small>
 </div>
