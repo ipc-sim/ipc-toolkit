@@ -54,8 +54,7 @@ public:
         const double barrier_stiffness,
         const double static_mu,
         const double kinetic_mu,
-        const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction)
-    {
+        const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction);
 
     // ------------------------------------------------------------------------
 
@@ -68,12 +67,12 @@ public:
     /// @brief Clear the friction collisions.
     void clear();
 
-    /// @brief Get a reference to collision at index i.
+    /// @brief Get a reference to the collision at index i.
     /// @param i The index of the collision.
     /// @return A reference to the collision.
     FrictionCollision& operator[](const size_t i);
 
-    /// @brief Get a const reference to collision at index i.
+    /// @brief Get a const reference to the collision at index i.
     /// @param i The index of the collision.
     /// @return A const reference to the collision.
     const FrictionCollision& operator[](const size_t i) const;

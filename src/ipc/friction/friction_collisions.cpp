@@ -27,14 +27,13 @@ void FrictionCollisions::build(
 
     clear();
 
-    const auto& C_vv = collisions.vv_collisions;
-    const auto& C_ev = collisions.ev_collisions;
-    const auto& C_ee = collisions.ee_collisions;
-    const auto& C_fv = collisions.fv_collisions;
-    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
+    auto& FC_vv = vv_collisions;
+    auto& FC_ev = ev_collisions;
+    auto& FC_ee = ee_collisions;
+    auto& FC_fv = fv_collisions;
 
-    FC_vv.reserve(C_vv.size());
-    for (const auto& c_vv : C_vv) {
+    FC_vv.reserve(collisions.vv_collisions.size());
+    for (const auto& c_vv : collisions.vv_collisions) {
         FC_vv.emplace_back(
             c_vv, c_vv.dof(vertices, edges, faces), barrier_potential,
             barrier_stiffness);
@@ -43,8 +42,8 @@ void FrictionCollisions::build(
         FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
     }
 
-    FC_ev.reserve(C_ev.size());
-    for (const auto& c_ev : C_ev) {
+    FC_ev.reserve(collisions.ev_collisions.size());
+    for (const auto& c_ev : collisions.ev_collisions) {
         FC_ev.emplace_back(
             c_ev, c_ev.dof(vertices, edges, faces), barrier_potential,
             barrier_stiffness);
@@ -55,8 +54,8 @@ void FrictionCollisions::build(
         FC_ev.back().mu = blend_mu(edge_mu, mus(vi));
     }
 
-    FC_ee.reserve(C_ee.size());
-    for (const auto& c_ee : C_ee) {
+    FC_ee.reserve(collisions.ee_collisions.size());
+    for (const auto& c_ee : collisions.ee_collisions) {
         const auto& [ea0i, ea1i, eb0i, eb1i] = c_ee.vertex_ids(edges, faces);
         const Eigen::Vector3d ea0 = vertices.row(ea0i);
         const Eigen::Vector3d ea1 = vertices.row(ea1i);
@@ -79,8 +78,8 @@ void FrictionCollisions::build(
         FC_ee.back().mu = blend_mu(ea_mu, eb_mu);
     }
 
-    FC_fv.reserve(C_fv.size());
-    for (const auto& c_fv : C_fv) {
+    FC_fv.reserve(collisions.fv_collisions.size());
+    for (const auto& c_fv : collisions.fv_collisions) {
         FC_fv.emplace_back(
             c_fv, c_fv.dof(vertices, edges, faces), barrier_potential,
             barrier_stiffness);
@@ -108,11 +107,6 @@ void FrictionCollisions::build(
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
 
-    const auto& C_vv = collisions.vv_collisions;
-    const auto& C_ev = collisions.ev_collisions;
-    const auto& C_ee = collisions.ee_collisions;
-    const auto& C_fv = collisions.fv_collisions;
-
     auto get_pairwise_friction = [&](int mat1, int mat2) -> std::pair<double, double> {
         auto it = pairwise_friction.find(std::make_tuple(mat1, mat2));
         if (it != pairwise_friction.end()) {
@@ -122,7 +116,7 @@ void FrictionCollisions::build(
         }
     };
 
-    for (const auto& c_vv : C_vv) {
+    for (const auto& c_vv : collisions.vv_collisions) {
         int v0i = c_vv.vertex_ids(edges, faces)[0];
         int v1i = c_vv.vertex_ids(edges, faces)[1];
         auto [static_mu, kinetic_mu] = get_pairwise_friction(v0i, v1i);
@@ -132,7 +126,7 @@ void FrictionCollisions::build(
             barrier_stiffness, static_mu, kinetic_mu);
     }
 
-    for (const auto& c_ev : C_ev) {
+    for (const auto& c_ev : collisions.ev_collisions) {
         int vi = c_ev.vertex_ids(edges, faces)[0];
         int e0i = c_ev.vertex_ids(edges, faces)[1];
         int e1i = c_ev.vertex_ids(edges, faces)[2];
@@ -144,7 +138,7 @@ void FrictionCollisions::build(
             barrier_stiffness, static_mu, kinetic_mu);
     }
 
-    for (const auto& c_ee : C_ee) {
+    for (const auto& c_ee : collisions.ee_collisions) {
         int ea0i = c_ee.vertex_ids(edges, faces)[0];
         int ea1i = c_ee.vertex_ids(edges, faces)[1];
         int eb0i = c_ee.vertex_ids(edges, faces)[2];
@@ -157,7 +151,7 @@ void FrictionCollisions::build(
             barrier_stiffness, static_mu, kinetic_mu);
     }
 
-    for (const auto& c_fv : C_fv) {
+    for (const auto& c_fv : collisions.fv_collisions) {
         int vi = c_fv.vertex_ids(edges, faces)[0];
         int f0i = c_fv.vertex_ids(edges, faces)[1];
         int f1i = c_fv.vertex_ids(edges, faces)[2];
