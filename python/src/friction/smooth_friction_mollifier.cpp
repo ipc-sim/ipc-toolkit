@@ -157,4 +157,53 @@ void define_smooth_friction_mollifier(py::module_& m)
             The derivative of f1 times s minus f1 all divided by s cubed, using blended mu.
         )ipc_Qu8mg5v7",
         py::arg("s"), py::arg("epsv"), py::arg("mu1"), py::arg("mu2"));
+
+    // New pairwise transition functions
+    m.def(
+        "f0_SF_pairwise_transition", &f0_SF_pairwise__transition,
+        R"ipc_Qu8mg5v7(
+        Smooth friction mollifier function for pairwise materials with transition between static and kinetic friction.
+
+        Parameters:
+            s: The tangential relative speed.
+            epsv: Mollifier parameter :math:`\epsilon_v`.
+            static_mu: Static friction coefficient.
+            kinetic_mu: Kinetic friction coefficient.
+
+        Returns:
+            The value of the mollifier function at s, using the appropriate mu (static or kinetic).
+        )ipc_Qu8mg5v7",
+        py::arg("s"), py::arg("epsv"), py::arg("static_mu"), py::arg("kinetic_mu"));
+
+    m.def(
+        "f1_SF_over_x_pairwise_transition", &f1_SF_over_x_pairwise__transition,
+        R"ipc_Qu8mg5v7(
+        Compute the derivative of f0_SF_pairwise_transition divided by s (:math:`\frac{f_0'(s)}{s}`).
+
+        Parameters:
+            s: The tangential relative speed.
+            epsv: Mollifier parameter :math:`\epsilon_v`.
+            static_mu: Static friction coefficient.
+            kinetic_mu: Kinetic friction coefficient.
+
+        Returns:
+            The value of the derivative of f0_SF divided by s, using the appropriate mu (static or kinetic).
+        )ipc_Qu8mg5v7",
+        py::arg("s"), py::arg("epsv"), py::arg("static_mu"), py::arg("kinetic_mu"));
+
+    m.def(
+        "df1_x_minus_f1_over_x3_pairwise_transition", &df1_x_minus_f1_over_x3_pairwise__transition,
+        R"ipc_Qu8mg5v7(
+        The derivative of f1 times s minus f1 all divided by s cubed, using the appropriate mu (static or kinetic).
+
+        Parameters:
+            s: The tangential relative speed.
+            epsv: Mollifier parameter :math:`\epsilon_v`.
+            static_mu: Static friction coefficient.
+            kinetic_mu: Kinetic friction coefficient.
+
+        Returns:
+            The derivative of f1 times s minus f1 all divided by s cubed, using the appropriate mu (static or kinetic).
+        )ipc_Qu8mg5v7",
+        py::arg("s"), py::arg("epsv"), py::arg("static_mu"), py::arg("kinetic_mu"));
 }
