@@ -19,17 +19,19 @@ void check_friction_force_jacobian(
     const Eigen::MatrixXd& U,
     const Collisions& collisions,
     const double mu,
+    const double static_mu,
+    const double kinetic_mu,
     const double epsv_times_h,
     const double dhat,
     const double barrier_stiffness,
-    const bool recompute_collisions)
+    const bool recompute_collisions,
+    const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction = {})
 {
     REQUIRE(collisions.enable_shape_derivatives());
 
     const Eigen::MatrixXd& X = mesh.rest_positions();
     double distance_t0 = collisions.compute_minimum_distance(mesh, X + Ut);
     double distance_t1 = collisions.compute_minimum_distance(mesh, X + U);
-    // CHECK((distance_t0 < dhat || distance_t1 < dhat));
     if (distance_t0 == 0 || distance_t1 == 0) {
         return;
     }
@@ -37,14 +39,14 @@ void check_friction_force_jacobian(
     const Eigen::MatrixXd velocities = U - Ut;
 
     CAPTURE(
-        mu, epsv_times_h, dhat, barrier_stiffness,
+        static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness,
         collisions.vv_collisions.size(), collisions.ev_collisions.size(),
         collisions.ee_collisions.size(), collisions.fv_collisions.size());
 
     FrictionCollisions friction_collisions;
     friction_collisions.build(
         mesh, X + Ut, collisions, BarrierPotential(dhat), barrier_stiffness,
-        mu);
+        static_mu, kinetic_mu, pairwise_friction);  // Pass pairwise friction here
     CHECK(friction_collisions.size());
 
     const FrictionPotential D(epsv_times_h);
@@ -340,4 +342,35 @@ TEST_CASE(
 
     check_friction_force_jacobian(
         mesh, Ut, U, collisions, mu, epsv_dt, dhat, kappa, true);
+}
+
+TEST_CASE("Friction force jacobian with pairwise friction", "[friction][force-jacobian][pairwise]")
+{
+    const int x_case = GENERATE(0, 1);
+    FrictionData data = friction_data_generator();  // Use the updated generator if needed
+    const auto& [V0, V1, E, F, collisions, static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness, pairwise_friction] =
+        data;
+
+    REQUIRE(collisions.enable_shape_derivatives());
+
+    Eigen::MatrixXd X, Ut, U;
+    switch (x_case) {
+    case 0:
+        X = V0;
+        break;
+    case 1:
+    default:
+        X = V0 - (V1 - V0);
+        break;
+    }
+    Ut = V0 - X;
+    U = V1 - X;
+
+    CollisionMesh mesh(X, E, F);
+    mesh.init_area_jacobians();
+
+    // Check friction force jacobian with pairwise friction coefficients
+    check_friction_force_jacobian(
+        mesh, Ut, U, collisions, static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness,
+        false, pairwise_friction);  // Pass the pairwise friction map
 }

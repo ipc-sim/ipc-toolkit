@@ -46,6 +46,17 @@ public:
         const std::function<double(double, double)>& blend_mu =
             default_blend_mu);
 
+    void build(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const Collisions& collisions,
+        const BarrierPotential& barrier_potential,
+        const double barrier_stiffness,
+        const double static_mu,
+        const double kinetic_mu,
+        const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction)
+    {
+
     // ------------------------------------------------------------------------
 
     /// @brief Get the number of friction collisions.

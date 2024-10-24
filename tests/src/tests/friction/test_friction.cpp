@@ -152,6 +152,95 @@ bool read_ipc_friction_data(
     return true;
 }
 
+bool read_ipc_friction_data_pairwise(
+    const std::string& filename,
+    Eigen::MatrixXd& V_start,
+    Eigen::MatrixXd& V_lagged,
+    Eigen::MatrixXd& V_end,
+    Eigen::MatrixXi& E,
+    Eigen::MatrixXi& F,
+    Collisions& collisions,
+    FrictionCollisions& friction_collisions,
+    double& dhat,
+    double& barrier_stiffness,
+    double& epsv_times_h,
+    double& static_mu,
+    double& kinetic_mu,
+    double& potential,
+    Eigen::VectorXd& grad,
+    Eigen::SparseMatrix<double>& hess,
+    std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction)
+{
+    nlohmann::json data;
+
+    std::ifstream input(filename);
+    if (input.good()) {
+        data = nlohmann::json::parse(input, nullptr, false);
+    } else {
+        logger().error("Unable to open IPC friction data file: {}", filename);
+        return false;
+    }
+
+    if (data.is_discarded()) {
+        logger().error("IPC friction data JSON is invalid: {}", filename);
+        return false;
+    }
+
+    // Parameters
+    dhat = sqrt(data["dhat_squared"].get<double>());
+    barrier_stiffness = data["barrier_stiffness"];
+    epsv_times_h = sqrt(data["epsv_times_h_squared"].get<double>());
+    static_mu = data["static_mu"];
+    kinetic_mu = data["kinetic_mu"];
+
+    // Dissipative potential value
+    potential = data["energy"];
+
+    // Potential gradient
+    grad = data["gradient"];
+
+    // Potential hessian
+    std::vector<Eigen::Triplet<double>> hessian_triplets;
+    hessian_triplets.reserve(data["hessian_triplets"].size());
+    for (std::tuple<long, long, double> triplet : data["hessian_triplets"]) {
+        hessian_triplets.emplace_back(
+            std::get<0>(triplet), std::get<1>(triplet), std::get<2>(triplet));
+    }
+    hess.resize(grad.size(), grad.size());
+    hess.setFromTriplets(hessian_triplets.begin(), hessian_triplets.end());
+
+    // Mesh
+    V_start = data["V_start"];
+    V_lagged = data["V_lagged"];
+    V_end = data["V_end"];
+
+    // MMVCIDs
+    const Eigen::MatrixXi mmcvids = data["mmcvids"];
+    const Eigen::VectorXd lambda = data["normal_force_magnitudes"];
+    const Eigen::MatrixXd coords = data["closest_point_coordinates"];
+    const Eigen::MatrixXd bases = data["tangent_bases"];
+
+    mmcvids_to_friction_collisions(
+        E, F, mmcvids, lambda, coords, bases, friction_collisions);
+    tests::mmcvids_to_collisions(E, F, mmcvids, collisions);
+
+    // Read pairwise friction coefficients from JSON (if present)
+    if (data.contains("pairwise_friction")) {
+        for (const auto& entry : data["pairwise_friction"].items()) {
+            auto ids = entry.key();
+            auto pair = entry.value();
+            int id1 = std::stoi(ids.substr(0, ids.find("_")));
+            int id2 = std::stoi(ids.substr(ids.find("_") + 1));
+            pairwise_friction[std::make_tuple(id1, id2)] = {
+                pair["static_mu"].get<double>(),
+                pair["kinetic_mu"].get<double>()};
+        }
+    }
+
+    return true;
+}
+
+
 TEST_CASE(
     "Compare IPC friction derivatives", "[friction][gradient][hessian][data]")
 {
@@ -197,6 +286,100 @@ TEST_CASE(
     friction_collisions.build(
         mesh, V_lagged, collisions, BarrierPotential(dhat), barrier_stiffness,
         mu);
+    REQUIRE(friction_collisions.size() == collisions.size());
+    REQUIRE(friction_collisions.size() == expected_friction_collisions.size());
+
+    const FrictionPotential D(epsv_times_h);
+
+    REQUIRE(V_start.size() == V_lagged.size());
+    REQUIRE(V_start.size() == V_end.size());
+    REQUIRE(V_start.size() == expected_grad.size());
+
+    for (int i = 0; i < friction_collisions.size(); i++) {
+        CAPTURE(i);
+        const FrictionCollision& collision = friction_collisions[i];
+        const FrictionCollision& expected_collision =
+            expected_friction_collisions[i];
+        if (collision.closest_point.size() == 1) {
+            CHECK(
+                collision.closest_point[0]
+                == Catch::Approx(expected_collision.closest_point[0]));
+        } else {
+            CHECK(collision.closest_point.isApprox(
+                expected_collision.closest_point, 1e-12));
+        }
+        CHECK(collision.tangent_basis.isApprox(
+            expected_collision.tangent_basis, 1e-12));
+        CHECK(
+            collision.normal_force_magnitude
+            == Catch::Approx(expected_collision.normal_force_magnitude));
+        CHECK(collision.mu == Catch::Approx(expected_collision.mu));
+
+        CHECK(
+            collision.vertex_ids(E, F) == expected_collision.vertex_ids(E, F));
+    }
+
+    const Eigen::MatrixXd velocity = V_end - V_start;
+
+    double potential = D(friction_collisions, mesh, velocity);
+
+    CHECK(potential == Catch::Approx(expected_potential));
+
+    Eigen::VectorXd grad = D.gradient(friction_collisions, mesh, velocity);
+
+    CHECK(grad.isApprox(expected_grad));
+
+    Eigen::SparseMatrix<double> hess =
+        D.hessian(friction_collisions, mesh, velocity);
+
+    CHECK(hess.isApprox(expected_hess));
+}
+
+
+TEST_CASE("Compare IPC friction derivatives with pairwise friction", "[friction][gradient][hessian][data][pairwise]")
+{
+    Eigen::MatrixXd V_start, V_lagged, V_end;
+    Eigen::MatrixXi E, F;
+    Collisions collisions;
+    FrictionCollisions expected_friction_collisions;
+    double dhat, barrier_stiffness, epsv_times_h, static_mu, kinetic_mu;
+    double expected_potential;
+    Eigen::VectorXd expected_grad;
+    Eigen::SparseMatrix<double> expected_hess;
+    std::map<std::tuple<int, int>, std::pair<double, double>> pairwise_friction;
+
+    std::string scene_folder;
+    int file_number = 0;
+    SECTION("cube_cube with pairwise friction")
+    {
+        scene_folder = "friction/cube_cube";
+        file_number = GENERATE(range(0, 446));
+    }
+    CAPTURE(scene_folder, file_number);
+
+    bool success = read_ipc_friction_data_pairwise(
+        (tests::DATA_DIR / scene_folder
+         / fmt::format("friction_data_{:d}.json", file_number))
+            .string(),
+        V_start, V_lagged, V_end, E, F, collisions,
+        expected_friction_collisions, dhat, barrier_stiffness, epsv_times_h,
+        static_mu, kinetic_mu, expected_potential, expected_grad, expected_hess,
+        pairwise_friction); // Add pairwise friction support
+    REQUIRE(success);
+
+    Eigen::MatrixXi face_edges;
+    igl::edges(F, face_edges);
+    E.conservativeResize(E.rows() + face_edges.rows(), E.cols());
+    E.bottomRows(face_edges.rows()) = face_edges;
+    CollisionMesh mesh(V_start, E, F);
+
+    FrictionCollisions friction_collisions;
+
+    // Pass static, kinetic, and pairwise friction coefficients
+    friction_collisions.build(
+        mesh, V_lagged, collisions, BarrierPotential(dhat), barrier_stiffness,
+        static_mu, kinetic_mu, pairwise_friction);
+
     REQUIRE(friction_collisions.size() == collisions.size());
     REQUIRE(friction_collisions.size() == expected_friction_collisions.size());
 

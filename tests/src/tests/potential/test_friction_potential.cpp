@@ -43,3 +43,41 @@ TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
     fd::finite_hessian(fd::flatten(V1), f, fhess);
     CHECK(fd::compare_hessian(hess, fhess, 1e-3));
 }
+
+TEST_CASE("Friction gradient and hessian with pairwise friction", "[friction][gradient][hessian][pairwise]")
+{
+    FrictionData data = friction_data_generator_with_pairwise();
+    const auto& [V0, V1, E, F, collisions, static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness, pairwise_friction] =
+        data;
+
+    const Eigen::MatrixXd U = V1 - V0;
+
+    const CollisionMesh mesh(V0, E, F);
+
+    FrictionCollisions friction_collisions;
+
+    friction_collisions.build(
+        mesh, V0, collisions, BarrierPotential(dhat), barrier_stiffness,
+        static_mu, kinetic_mu, pairwise_friction);
+
+    const FrictionPotential D(epsv_times_h);
+
+    const Eigen::VectorXd grad = D.gradient(friction_collisions, mesh, U);
+
+    auto f = [&](const Eigen::VectorXd& x) {
+        const Eigen::MatrixXd fd_U = fd::unflatten(x, data.V1.cols()) - data.V0;
+        return D(friction_collisions, mesh, fd_U);
+    };
+    Eigen::VectorXd fgrad;
+    fd::finite_gradient(fd::flatten(V1), f, fgrad);
+
+    CHECK(fd::compare_gradient(grad, fgrad));
+
+    // Hessian Calculation
+    const Eigen::MatrixXd hess = D.hessian(friction_collisions, mesh, U);
+
+    Eigen::MatrixXd fhess;
+    fd::finite_hessian(fd::flatten(V1), f, fhess);
+
+    CHECK(fd::compare_hessian(hess, fhess, 1e-3));
+}
