@@ -2,11 +2,6 @@
 
 namespace ipc {
 
-FrictionPotential::FrictionPotential(const double epsv) : Super()
-{
-    set_epsv(epsv);
-}
-
 // -- Cumulative methods -------------------------------------------------------
 
 Eigen::VectorXd FrictionPotential::force(

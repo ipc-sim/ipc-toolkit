@@ -16,9 +16,9 @@ Eigen::VectorXd GeomSpaced(int num, double start, double stop)
     return LogSpaced(num, log10(start), log10(stop), /*base=*/10);
 }
 
-FrictionData friction_data_generator()
+FrictionSimpleData friction_data_generator()
 {
-    FrictionData data;
+    FrictionSimpleData data;
 
     auto& [V0, V1, E, F, collisions, mu, epsv_times_h, dhat, barrier_stiffness] =
         data;
@@ -144,21 +144,9 @@ FrictionData friction_data_generator()
     return data;
 }
 
-// Helper functions for logarithmic and geometric spacing
-Eigen::VectorXd LogSpaced(int num, double start, double stop, double base)
+FrictionComplexData friction_data_generator_with_pairwise()
 {
-    return pow(base, Eigen::VectorXd::LinSpaced(num, start, stop).array());
-}
-
-Eigen::VectorXd GeomSpaced(int num, double start, double stop)
-{
-    return LogSpaced(num, log10(start), log10(stop), /*base=*/10);
-}
-
-// Function to generate friction data with pairwise friction coefficients
-FrictionData friction_data_generator_with_pairwise()
-{
-    FrictionData data;
+    FrictionComplexData data;
 
     auto& [V0, V1, E, F, collisions, static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness, pairwise_friction] = data;
 
