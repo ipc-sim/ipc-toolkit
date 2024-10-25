@@ -89,7 +89,7 @@ inline double select_mu(const double s, const double epsv, const double static_m
     return (std::abs(s) < epsv) ? kinetic_mu : static_mu;
 }
 
-double f0_SF_pairwise__transition(
+double f0_SF_pairwise_transition(
     const double s, const double epsv, const double static_mu, const double kinetic_mu)
 {
     assert(epsv > 0);
@@ -101,7 +101,7 @@ double f0_SF_pairwise__transition(
     return (s * s * (-s / (3 * epsv) + 1) / epsv + epsv / 3) * mu;
 }
 
-double f1_SF_over_x_pairwise__transition(
+double f1_SF_over_x_pairwise_transition(
     const double s, const double epsv, const double static_mu, const double kinetic_mu)
 {
     assert(epsv > 0);
@@ -113,7 +113,7 @@ double f1_SF_over_x_pairwise__transition(
     return (-s / epsv + 2) / epsv * mu;
 }
 
-double df1_x_minus_f1_over_x3_pairwise__transition(
+double df1_x_minus_f1_over_x3_pairwise_transition(
     const double s, const double epsv, const double static_mu, const double kinetic_mu)
 {
     assert(epsv > 0);

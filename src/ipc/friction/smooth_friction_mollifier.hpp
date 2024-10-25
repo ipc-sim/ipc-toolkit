@@ -143,10 +143,10 @@ double df1_x_minus_f1_over_x3_pairwise(
 /// @param static_mu Static friction coefficient.
 /// @param kinetic_mu Kinetic friction coefficient.
 /// @return The value of the mollifier function at s, using the correct friction coefficient.
-double f0_SF_pairwise__transition(
+double f0_SF_pairwise_transition(
     const double s, const double epsv, const double static_mu, const double kinetic_mu);
 
-/// @brief Compute the derivative of f0_SF_pairwise__transition divided by s (\f$\frac{f_0'(s)}{s}\f$).
+/// @brief Compute the derivative of f0_SF_pairwise_transition divided by s (\f$\frac{f_0'(s)}{s}\f$).
 /// Uses kinetic friction before transition (i.e., when \f$s < \epsilon_v\f$),
 /// and static friction after the transition.
 ///
@@ -155,7 +155,7 @@ double f0_SF_pairwise__transition(
 /// @param static_mu Static friction coefficient.
 /// @param kinetic_mu Kinetic friction coefficient.
 /// @return The value of the derivative of f0_SF divided by s, using the correct friction coefficient.
-double f1_SF_over_x_pairwise__transition(
+double f1_SF_over_x_pairwise_transition(
     const double s, const double epsv, const double static_mu, const double kinetic_mu);
 
 /// @brief The derivative of f1 times s minus f1 all divided by s cubed,
@@ -166,7 +166,7 @@ double f1_SF_over_x_pairwise__transition(
 /// @param static_mu Static friction coefficient.
 /// @param kinetic_mu Kinetic friction coefficient.
 /// @return The derivative of f1 times s minus f1 all divided by s cubed.
-double df1_x_minus_f1_over_x3_pairwise__transition(
+double df1_x_minus_f1_over_x3_pairwise_transition(
     const double s, const double epsv, const double static_mu, const double kinetic_mu);
 
 } // namespace ipc

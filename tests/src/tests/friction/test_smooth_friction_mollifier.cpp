@@ -85,11 +85,11 @@ TEST_CASE("Pairwise friction transition gradient", "[friction][mollifier][pairwi
     fd::finite_gradient(
         X,
         [&](const Eigen::VectorXd& _X) {
-            return ipc::f0_SF_pairwise__transition(_X[0], epsv_times_h, static_mu, kinetic_mu);
+            return ipc::f0_SF_pairwise_transition(_X[0], epsv_times_h, static_mu, kinetic_mu);
         },
         fd_f1_over_x);
 
-    double f1_over_x = ipc::f1_SF_over_x_pairwise__transition(x, epsv_times_h, static_mu, kinetic_mu);
+    double f1_over_x = ipc::f1_SF_over_x_pairwise_transition(x, epsv_times_h, static_mu, kinetic_mu);
 
     CHECK(
         f1_over_x * x == Catch::Approx(fd_f1_over_x[0]).margin(MARGIN).epsilon(EPSILON));
@@ -103,11 +103,11 @@ TEST_CASE("Pairwise friction transition gradient", "[friction][mollifier][pairwi
     fd::finite_gradient(
         X,
         [&](const Eigen::VectorXd& _X) {
-            return ipc::f1_SF_over_x_pairwise__transition(_X[0], epsv_times_h, static_mu, kinetic_mu);
+            return ipc::f1_SF_over_x_pairwise_transition(_X[0], epsv_times_h, static_mu, kinetic_mu);
         },
         fd_f2);
 
-    double f2 = ipc::df1_x_minus_f1_over_x3_pairwise__transition(x, epsv_times_h, static_mu, kinetic_mu);
+    double f2 = ipc::df1_x_minus_f1_over_x3_pairwise_transition(x, epsv_times_h, static_mu, kinetic_mu);
 
     CHECK(f2 * x == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
 }
@@ -139,11 +139,11 @@ TEST_CASE("Pairwise friction transition edge cases", "[friction][mollifier][pair
     fd::finite_gradient(
         X,
         [&](const Eigen::VectorXd& _X) {
-            return ipc::f0_SF_pairwise__transition(_X[0], epsv_times_h, static_mu, kinetic_mu);
+            return ipc::f0_SF_pairwise_transition(_X[0], epsv_times_h, static_mu, kinetic_mu);
         },
         fd_f1_over_x);
 
-    double f1_over_x = ipc::f1_SF_over_x_pairwise__transition(x, epsv_times_h, static_mu, kinetic_mu);
+    double f1_over_x = ipc::f1_SF_over_x_pairwise_transition(x, epsv_times_h, static_mu, kinetic_mu);
 
     CHECK(
         f1_over_x * x == Catch::Approx(fd_f1_over_x[0]).margin(MARGIN).epsilon(EPSILON));
@@ -157,11 +157,11 @@ TEST_CASE("Pairwise friction transition edge cases", "[friction][mollifier][pair
     fd::finite_gradient(
         X,
         [&](const Eigen::VectorXd& _X) {
-            return ipc::f1_SF_over_x_pairwise__transition(_X[0], epsv_times_h, static_mu, kinetic_mu);
+            return ipc::f1_SF_over_x_pairwise_transition(_X[0], epsv_times_h, static_mu, kinetic_mu);
         },
         fd_f2);
 
-    double f2 = ipc::df1_x_minus_f1_over_x3_pairwise__transition(x, epsv_times_h, static_mu, kinetic_mu);
+    double f2 = ipc::df1_x_minus_f1_over_x3_pairwise_transition(x, epsv_times_h, static_mu, kinetic_mu);
 
     CHECK(f2 * x == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
 }
