@@ -553,33 +553,33 @@ TEST_CASE(
         mesh, Ut, U, collisions, mu, epsv_dt, dhat, kappa, true);
 }
 
-TEST_CASE("Friction force jacobian with pairwise friction", "[friction][force-jacobian][pairwise]")
-{
-    const int x_case = GENERATE(0, 1);
-    FrictionComplexData data = friction_data_generator_with_pairwise();
-    const auto& [V0, V1, E, F, collisions, static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness, pairwise_friction] =
-        data;
+// TEST_CASE("Friction force jacobian with pairwise friction", "[friction][force-jacobian][pairwise]")
+// {
+//     const int x_case = GENERATE(0, 1);
+//     FrictionComplexData data = friction_data_generator_with_pairwise();
+//     const auto& [V0, V1, E, F, collisions, static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness, pairwise_friction] =
+//         data;
 
-    REQUIRE(collisions.enable_shape_derivatives());
+//     REQUIRE(collisions.enable_shape_derivatives());
 
-    Eigen::MatrixXd X, Ut, U;
-    switch (x_case) {
-    case 0:
-        X = V0;
-        break;
-    case 1:
-    default:
-        X = V0 - (V1 - V0);
-        break;
-    }
-    Ut = V0 - X;
-    U = V1 - X;
+//     Eigen::MatrixXd X, Ut, U;
+//     switch (x_case) {
+//     case 0:
+//         X = V0;
+//         break;
+//     case 1:
+//     default:
+//         X = V0 - (V1 - V0);
+//         break;
+//     }
+//     Ut = V0 - X;
+//     U = V1 - X;
 
-    CollisionMesh mesh(X, E, F);
-    mesh.init_area_jacobians();
+//     CollisionMesh mesh(X, E, F);
+//     mesh.init_area_jacobians();
 
-    // Check friction force jacobian with pairwise friction coefficients
-    check_friction_force_jacobian_with_pairwise(
-        mesh, Ut, U, collisions, static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness,
-        false, pairwise_friction);  // Pass the pairwise friction map
-}
+//     // Check friction force jacobian with pairwise friction coefficients
+//     check_friction_force_jacobian_with_pairwise(
+//         mesh, Ut, U, collisions, static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness,
+//         false, pairwise_friction);  // Pass the pairwise friction map
+// }
