@@ -17,6 +17,12 @@ public:
         const EdgeVertexCollision& collision,
         const VectorMax12d& positions,
         const BarrierPotential& barrier_potential,
+        const double barrier_stiffness);
+
+    EdgeVertexFrictionCollision(
+        const EdgeVertexCollision& collision,
+        const VectorMax12d& positions,
+        const BarrierPotential& barrier_potential,
         const double barrier_stiffness,
         const double static_mu,
         const double kinetic_mu);

@@ -12,6 +12,32 @@ namespace ipc {
 
 class FrictionCollision : virtual public CollisionStencil {
 protected:
+
+    /// @brief Initialize the collision.
+    /// @param collision Collision stencil.
+    /// @param positions Collision stencil's vertex positions.
+    /// @param barrier_potential Barrier potential used for normal force.
+    /// @param barrier_stiffness Barrier potential stiffness.
+    void init(
+        const Collision& collision,
+        const VectorMax12d& positions,
+        const BarrierPotential& barrier_potential,
+        const double barrier_stiffness);
+
+
+    /// @brief Initialize the collision.
+    /// @param collision Collision stencil.
+    /// @param positions Collision stencil's vertex positions.
+    /// @param barrier_potential Barrier potential used for normal force.
+    /// @param barrier_stiffness Barrier potential stiffness.
+    /// @param mu Static friction coefficient.
+    void init(
+        const Collision& collision,
+        const VectorMax12d& positions,
+        const BarrierPotential& barrier_potential,
+        const double barrier_stiffness,
+        double mu);
+
     /// @brief Initialize the collision.
     /// @param collision Collision stencil.
     /// @param positions Collision stencil's vertex positions.

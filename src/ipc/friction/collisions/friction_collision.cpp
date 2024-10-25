@@ -8,6 +8,31 @@
 
 namespace ipc {
 
+
+void FrictionCollision::init(
+    const Collision& collision,
+    const VectorMax12d& positions,
+    const BarrierPotential& barrier_potential,
+    const double barrier_stiffness)
+{
+
+    // Initialize dimension and tangent_basis based on the collision dimension
+    const int dim = collision.dim(positions.size());
+    tangent_basis.resize(dim, dim - 1);
+
+    // Set the static and kinetic friction coefficients
+    static_mu = 0.5;
+    kinetic_mu = 0.5;
+
+    closest_point = compute_closest_point(positions);
+    tangent_basis = compute_tangent_basis(positions);
+
+    // Compute the normal force magnitude based on barrier potential and stiffness
+    normal_force_magnitude = this->compute_normal_force_magnitude(
+        positions, barrier_potential, barrier_stiffness, collision.dmin);
+
+}
+
 void FrictionCollision::init(
     const Collision& collision,
     const VectorMax12d& positions,
