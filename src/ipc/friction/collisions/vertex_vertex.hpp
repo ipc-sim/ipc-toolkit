@@ -17,7 +17,9 @@ public:
         const VertexVertexCollision& collision,
         const VectorMax12d& positions,
         const BarrierPotential& barrier_potential,
-        const double barrier_stiffness);
+        const double barrier_stiffness,
+        const double static_mu,
+        const double kinetic_mu);
 
 protected:
     MatrixMax<double, 3, 2>

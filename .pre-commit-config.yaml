@@ -37,7 +37,7 @@ repos:
           cmake -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DIPC_TOOLKIT_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release -DIPC_TOOLKIT_WITH_CODE_COVERAGE=ON ..
 
           # Build with progress bar
-          make -j$(nproc) --verbose
+          make -j$(nproc)
 
           # Show ccache stats after building
           ccache --show-stats

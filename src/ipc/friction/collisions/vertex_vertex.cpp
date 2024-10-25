@@ -19,11 +19,13 @@ VertexVertexFrictionCollision::VertexVertexFrictionCollision(
     const VertexVertexCollision& collision,
     const VectorMax12d& positions,
     const BarrierPotential& barrier_potential,
-    const double barrier_stiffness)
+    const double barrier_stiffness,
+    const double static_mu,
+    const double kinetic_mu)
     : VertexVertexFrictionCollision(collision)
 {
     FrictionCollision::init(
-        collision, positions, barrier_potential, barrier_stiffness);
+        collision, positions, barrier_potential, barrier_stiffness, static_mu, kinetic_mu);
 }
 
 // ============================================================================

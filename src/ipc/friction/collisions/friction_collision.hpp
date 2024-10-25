@@ -17,11 +17,15 @@ protected:
     /// @param positions Collision stencil's vertex positions.
     /// @param barrier_potential Barrier potential used for normal force.
     /// @param barrier_stiffness Barrier potential stiffness.
+    /// @param static_mu Static friction coefficient.
+    /// @param kinetic_mu Kinetic friction coefficient.
     void init(
         const Collision& collision,
         const VectorMax12d& positions,
         const BarrierPotential& barrier_potential,
-        const double barrier_stiffness);
+        const double barrier_stiffness,
+        double static_mu,
+        double kinetic_mu);
 
 public:
     virtual ~FrictionCollision() = default;
@@ -126,6 +130,12 @@ public:
 
     /// @brief Tangent basis of the collision (max size 3×2)
     MatrixMax<double, 3, 2> tangent_basis;
+
+    /// @brief Static friction coefficient
+    double static_mu;
+
+    /// @brief Kinetic friction coefficient
+    double kinetic_mu;
 };
 
 } // namespace ipc

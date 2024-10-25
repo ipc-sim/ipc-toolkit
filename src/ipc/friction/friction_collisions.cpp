@@ -116,52 +116,76 @@ void FrictionCollisions::build(
         }
     };
 
+    // Handle Vertex-Vertex Collisions
     for (const auto& c_vv : collisions.vv_collisions) {
         int v0i = c_vv.vertex_ids(edges, faces)[0];
         int v1i = c_vv.vertex_ids(edges, faces)[1];
-        auto [static_mu, kinetic_mu] = get_pairwise_friction(v0i, v1i);
+        auto [pair_static_mu, pair_kinetic_mu] = get_pairwise_friction(v0i, v1i);
 
         vv_collisions.emplace_back(
-            c_vv, c_vv.dof(vertices, edges, faces), barrier_potential,
-            barrier_stiffness, static_mu, kinetic_mu);
+            c_vv,
+            c_vv.dof(vertices, edges, faces),
+            barrier_potential,
+            barrier_stiffness,
+            pair_static_mu,
+            pair_kinetic_mu
+        );
     }
 
+    // Handle Edge-Vertex Collisions
     for (const auto& c_ev : collisions.ev_collisions) {
         int vi = c_ev.vertex_ids(edges, faces)[0];
         int e0i = c_ev.vertex_ids(edges, faces)[1];
         int e1i = c_ev.vertex_ids(edges, faces)[2];
 
-        auto [static_mu, kinetic_mu] = get_pairwise_friction(vi, std::min(e0i, e1i));
+        auto [pair_static_mu, pair_kinetic_mu] = get_pairwise_friction(vi, std::min(e0i, e1i));
 
         ev_collisions.emplace_back(
-            c_ev, c_ev.dof(vertices, edges, faces), barrier_potential,
-            barrier_stiffness, static_mu, kinetic_mu);
+            c_ev,
+            c_ev.dof(vertices, edges, faces),
+            barrier_potential,
+            barrier_stiffness,
+            pair_static_mu,
+            pair_kinetic_mu
+        );
     }
 
+    // Handle Edge-Edge Collisions
     for (const auto& c_ee : collisions.ee_collisions) {
         int ea0i = c_ee.vertex_ids(edges, faces)[0];
         int ea1i = c_ee.vertex_ids(edges, faces)[1];
         int eb0i = c_ee.vertex_ids(edges, faces)[2];
         int eb1i = c_ee.vertex_ids(edges, faces)[3];
 
-        auto [static_mu, kinetic_mu] = get_pairwise_friction(std::min(ea0i, ea1i), std::min(eb0i, eb1i));
+        auto [pair_static_mu, pair_kinetic_mu] = get_pairwise_friction(std::min(ea0i, ea1i), std::min(eb0i, eb1i));
 
         ee_collisions.emplace_back(
-            c_ee, c_ee.dof(vertices, edges, faces), barrier_potential,
-            barrier_stiffness, static_mu, kinetic_mu);
+            c_ee,
+            c_ee.dof(vertices, edges, faces),
+            barrier_potential,
+            barrier_stiffness,
+            pair_static_mu,
+            pair_kinetic_mu
+        );
     }
 
+    // Handle Face-Vertex Collisions
     for (const auto& c_fv : collisions.fv_collisions) {
         int vi = c_fv.vertex_ids(edges, faces)[0];
         int f0i = c_fv.vertex_ids(edges, faces)[1];
         int f1i = c_fv.vertex_ids(edges, faces)[2];
         int f2i = c_fv.vertex_ids(edges, faces)[3];
 
-        auto [static_mu, kinetic_mu] = get_pairwise_friction(vi, std::min({f0i, f1i, f2i}));
+        auto [pair_static_mu, pair_kinetic_mu] = get_pairwise_friction(vi, std::min({f0i, f1i, f2i}));
 
         fv_collisions.emplace_back(
-            c_fv, c_fv.dof(vertices, edges, faces), barrier_potential,
-            barrier_stiffness, static_mu, kinetic_mu);
+            c_fv,
+            c_fv.dof(vertices, edges, faces),
+            barrier_potential,
+            barrier_stiffness,
+            pair_static_mu,
+            pair_kinetic_mu
+        );
     }
 }
 
