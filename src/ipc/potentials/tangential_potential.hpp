@@ -33,8 +33,8 @@ public:
     /// @param rest_positions Rest positions of the vertices (rowwise).
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
-    /// @param barrier_potential Barrier potential (used for normal force magnitude).
-    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param normal_potential Normal potential (used for normal force magnitude).
+    /// @param normal_stiffness Normal stiffness (used for normal force magnitude).
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @param no_mu whether to not multiply by mu
     /// @return The friction force.
@@ -44,8 +44,8 @@ public:
         const Eigen::MatrixXd& rest_positions,
         const Eigen::MatrixXd& lagged_displacements,
         const Eigen::MatrixXd& velocities,
-        const BarrierPotential& barrier_potential,
-        const double barrier_stiffness,
+        const NormalPotential& normal_potential,
+        const double normal_stiffness,
         const double dmin = 0,
         const bool no_mu = false) const;
 
@@ -55,8 +55,8 @@ public:
     /// @param rest_positions Rest positions of the vertices (rowwise).
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
-    /// @param barrier_potential Barrier potential (used for normal force magnitude).
-    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param normal_potential Normal potential (used for normal force magnitude).
+    /// @param normal_stiffness Normal stiffness (used for normal force magnitude).
     /// @param wrt The variable to take the derivative with respect to.
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @return The Jacobian of the friction force wrt the velocities.
@@ -66,8 +66,8 @@ public:
         const Eigen::MatrixXd& rest_positions,
         const Eigen::MatrixXd& lagged_displacements,
         const Eigen::MatrixXd& velocities,
-        const BarrierPotential& barrier_potential,
-        const double barrier_stiffness,
+        const NormalPotential& normal_potential,
+        const double normal_stiffness,
         const DiffWRT wrt,
         const double dmin = 0) const;
 
@@ -104,8 +104,8 @@ public:
     /// @param rest_positions Rest positions of the vertices (rowwise).
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
-    /// @param barrier_potential Barrier potential (used for normal force magnitude).
-    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param normal_potential Normal potential (used for normal force magnitude).
+    /// @param normal_stiffness Normal stiffness (used for normal force magnitude).
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @param no_mu Whether to not multiply by mu
     /// @return Friction force
@@ -114,8 +114,8 @@ public:
         const VectorMax12d& rest_positions,
         const VectorMax12d& lagged_displacements,
         const VectorMax12d& velocities,
-        const BarrierPotential& barrier_potential,
-        const double barrier_stiffness,
+        const NormalPotential& normal_potential,
+        const double normal_stiffness,
         const double dmin = 0,
         const bool no_mu = false) const; //< whether to not multiply by mu
 
@@ -124,8 +124,8 @@ public:
     /// @param rest_positions Rest positions of the vertices (rowwise).
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
-    /// @param barrier_potential Barrier potential (used for normal force magnitude).
-    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param normal_potential Normal potential (used for normal force magnitude).
+    /// @param normal_stiffness Normal stiffness (used for normal force magnitude).
     /// @param wrt Variable to differentiate the friction force with respect to.
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @return Friction force Jacobian
@@ -134,8 +134,8 @@ public:
         const VectorMax12d& rest_positions,
         const VectorMax12d& lagged_displacements,
         const VectorMax12d& velocities,
-        const BarrierPotential& barrier_potential,
-        const double barrier_stiffness,
+        const NormalPotential& normal_potential,
+        const double normal_stiffness,
         const DiffWRT wrt,
         const double dmin = 0) const;
 
