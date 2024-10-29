@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/potentials/barrier_potential.hpp>
+#include <ipc/potentials/normal_potential.hpp>
 #include <ipc/tangent/relative_velocity.hpp>
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 #include <ipc/utils/eigen_ext.hpp>
@@ -15,13 +15,13 @@ protected:
     /// @brief Initialize the collision.
     /// @param collision NormalCollision stencil.
     /// @param positions Collision stencil's vertex positions.
-    /// @param normal_potential Barrier potential used for normal force.
-    /// @param barrier_stiffness Barrier potential stiffness.
+    /// @param normal_potential Normal potential used for normal force.
+    /// @param normal_stiffness Normal potential stiffness.
     void init(
         const NormalCollision& collision,
         const VectorMax12d& positions,
         const NormalPotential& normal_potential,
-        const double barrier_stiffness);
+        const double normal_stiffness);
 
 public:
     virtual ~TangentialCollision() = default;

@@ -18,12 +18,12 @@ EdgeVertexTangentialCollision::EdgeVertexTangentialCollision(
 EdgeVertexTangentialCollision::EdgeVertexTangentialCollision(
     const EdgeVertexNormalCollision& collision,
     const VectorMax12d& positions,
-    const BarrierPotential& barrier_potential,
-    const double barrier_stiffness)
+    const NormalPotential& normal_potential,
+    const double normal_stiffness)
     : EdgeVertexTangentialCollision(collision)
 {
     TangentialCollision::init(
-        collision, positions, barrier_potential, barrier_stiffness);
+        collision, positions, normal_potential, normal_stiffness);
 }
 
 // ============================================================================

@@ -10,7 +10,7 @@ void TangentialCollision::init(
     const NormalCollision& collision,
     const VectorMax12d& positions,
     const NormalPotential& normal_potential,
-    const double barrier_stiffness)
+    const double normal_stiffness)
 {
     // do this to initialize dim()
     const int dim = collision.dim(positions.size());
@@ -19,7 +19,7 @@ void TangentialCollision::init(
     closest_point = compute_closest_point(positions);
     tangent_basis = compute_tangent_basis(positions);
     normal_force_magnitude = normal_potential.force_magnitude(
-        compute_distance(positions), collision.dmin, barrier_stiffness);
+        compute_distance(positions), collision.dmin, normal_stiffness);
 }
 
 } // namespace ipc

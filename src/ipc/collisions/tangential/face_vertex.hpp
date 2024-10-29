@@ -16,8 +16,8 @@ public:
     FaceVertexTangentialCollision(
         const FaceVertexNormalCollision& collision,
         const VectorMax12d& positions,
-        const BarrierPotential& barrier_potential,
-        const double barrier_stiffness);
+        const NormalPotential& normal_potential,
+        const double normal_stiffness);
 
 protected:
     MatrixMax<double, 3, 2>
