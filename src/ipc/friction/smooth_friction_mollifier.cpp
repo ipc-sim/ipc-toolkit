@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <algorithm>
+#include <optional>
 
 namespace ipc {
 
@@ -38,9 +39,20 @@ double df1_x_minus_f1_over_x3(const double s, const double epsv)
 
 // ----------------------------------------------------------------------------
 // Pairwise friction mollifier functions
-
-double blend_mu(const double mu1, const double mu2)
+double blend_mu(const double mu1, const double mu2, const std::optional<BlendType> type)
 {
+    if (!type.has_value()) {
+        return (mu1 + mu2) / 2;
+    }
+    if (type == BlendType::AVG) {
+        return (mu1 + mu2) / 2;
+    }
+    if (type == BlendType::MIN) {
+        return std::min(mu1, mu2);
+    }
+    if (type == BlendType::MAX) {
+        return std::max(mu1, mu2);
+    }
     return (mu1 + mu2) / 2;
 }
 

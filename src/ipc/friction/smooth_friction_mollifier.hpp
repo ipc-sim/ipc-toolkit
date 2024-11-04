@@ -1,6 +1,13 @@
 #pragma once
+#include <optional>
 
 namespace ipc {
+
+enum class BlendType {
+    AVG,
+    MIN,
+    MAX
+};
 
 /// @brief Smooth friction mollifier function.
 ///
@@ -59,8 +66,9 @@ double df1_x_minus_f1_over_x3(const double s, const double epsv);
 /// @brief Blending function for pairwise friction coefficients.
 /// @param mu1 Friction coefficient for material 1.
 /// @param mu2 Friction coefficient for material 2.
+/// @param type The type of blending to use.
 /// @return The blended friction coefficient (default is the average of mu1 and mu2).
-double blend_mu(const double mu1, const double mu2);
+double blend_mu(const double mu1, const double mu2, const std::optional<BlendType> type = std::nullopt);
 
 /// @brief Pairwise smooth friction mollifier function.
 ///

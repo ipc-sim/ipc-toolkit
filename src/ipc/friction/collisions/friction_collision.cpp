@@ -5,6 +5,7 @@
 #include <ipc/config.hpp>
 
 #include <stdexcept> // std::out_of_range
+#include <optional>
 
 namespace ipc {
 
@@ -20,9 +21,8 @@ void FrictionCollision::init(
     const int dim = collision.dim(positions.size());
     tangent_basis.resize(dim, dim - 1);
 
-    // Set the static and kinetic friction coefficients
-    static_mu = 0.5;
-    kinetic_mu = 0.5;
+    this->static_mu = 0;
+    this->kinetic_mu = 0;
 
     closest_point = compute_closest_point(positions);
     tangent_basis = compute_tangent_basis(positions);
@@ -46,8 +46,8 @@ void FrictionCollision::init(
     tangent_basis.resize(dim, dim - 1);
 
     // Set the static and kinetic friction coefficients
-    this->static_mu = static_mu;
-    this->kinetic_mu = kinetic_mu;
+    static_mu = static_mu;
+    kinetic_mu = kinetic_mu;
 
     closest_point = compute_closest_point(positions);
     tangent_basis = compute_tangent_basis(positions);

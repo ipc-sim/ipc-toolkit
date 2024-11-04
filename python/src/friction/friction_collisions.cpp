@@ -36,7 +36,7 @@ void define_friction_collisions(py::module_& m)
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&, const Collisions&,
                 const BarrierPotential&, const double, const Eigen::VectorXd&,
-                const std::function<double(double, double)>&>(
+                const std::function<double(double, double, std::optional<BlendType>)>&>(
                 &FrictionCollisions::build),
             py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
             py::arg("barrier_potential"), py::arg("barrier_stiffness"),
@@ -88,7 +88,7 @@ void define_friction_collisions(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("i"))
         .def_static("default_blend_mu", &FrictionCollisions::default_blend_mu,
-            py::arg("mu0"), py::arg("mu1"))
+            py::arg("mu0"), py::arg("mu1"), py::arg("type") = std::nullopt)
         .def_readwrite("vv_collisions", &FrictionCollisions::vv_collisions)
         .def_readwrite("ev_collisions", &FrictionCollisions::ev_collisions)
         .def_readwrite("ee_collisions", &FrictionCollisions::ee_collisions)

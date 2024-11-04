@@ -8,6 +8,7 @@
 #include <tbb/enumerable_thread_specific.h>
 
 #include <stdexcept> // std::out_of_range
+#include <optional>
 
 namespace ipc {
 
@@ -18,7 +19,7 @@ void FrictionCollisions::build(
     const BarrierPotential& barrier_potential,
     const double barrier_stiffness,
     const Eigen::VectorXd& mus,
-    const std::function<double(double, double)>& blend_mu)
+    const std::function<double(double, double, std::optional<BlendType>)>& blend_mu)
 {
     assert(mus.size() == vertices.rows());
 
@@ -39,7 +40,7 @@ void FrictionCollisions::build(
             barrier_stiffness);
         const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
 
-        FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
+        FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i), std::nullopt);
     }
 
     FC_ev.reserve(collisions.ev_collisions.size());
@@ -51,7 +52,7 @@ void FrictionCollisions::build(
 
         const double edge_mu =
             (mus(e1i) - mus(e0i)) * FC_ev.back().closest_point[0] + mus(e0i);
-        FC_ev.back().mu = blend_mu(edge_mu, mus(vi));
+        FC_ev.back().mu = blend_mu(edge_mu, mus(vi), std::nullopt);
     }
 
     FC_ee.reserve(collisions.ee_collisions.size());
@@ -75,7 +76,7 @@ void FrictionCollisions::build(
             (mus(ea1i) - mus(ea0i)) * FC_ee.back().closest_point[0] + mus(ea0i);
         double eb_mu =
             (mus(eb1i) - mus(eb0i)) * FC_ee.back().closest_point[1] + mus(eb0i);
-        FC_ee.back().mu = blend_mu(ea_mu, eb_mu);
+        FC_ee.back().mu = blend_mu(ea_mu, eb_mu, std::nullopt);
     }
 
     FC_fv.reserve(collisions.fv_collisions.size());
@@ -88,7 +89,7 @@ void FrictionCollisions::build(
         double face_mu = mus(f0i)
             + FC_fv.back().closest_point[0] * (mus(f1i) - mus(f0i))
             + FC_fv.back().closest_point[1] * (mus(f2i) - mus(f0i));
-        FC_fv.back().mu = blend_mu(face_mu, mus(vi));
+        FC_fv.back().mu = blend_mu(face_mu, mus(vi), std::nullopt);
     }
 }
 
@@ -250,5 +251,21 @@ const FrictionCollision& FrictionCollisions::operator[](size_t i) const
     }
     throw std::out_of_range("Friction collision index is out of range!");
 }
+
+std::pair<double, double> FrictionCollisions::retrieve_friction_coefficients(
+    int id1, int id2, 
+    const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction, 
+    std::optional<double> static_mu, std::optional<double> kinetic_mu) const
+{
+    auto it = pairwise_friction.find(std::make_tuple(id1, id2));
+    if (it != pairwise_friction.end()) {
+        return it->second;
+    }
+    if (static_mu && kinetic_mu) {
+        return {static_mu.value(), kinetic_mu.value()};
+    }
+    throw std::runtime_error("No friction coefficients available for the given pair.");
+}
+
 
 } // namespace ipc

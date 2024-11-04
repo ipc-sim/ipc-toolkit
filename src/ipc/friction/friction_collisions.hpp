@@ -9,6 +9,7 @@
 #include <ipc/collision_mesh.hpp>
 #include <ipc/collisions/collisions.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/friction/smooth_friction_mollifier.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/Sparse>
@@ -43,8 +44,7 @@ public:
         const BarrierPotential& barrier_potential,
         const double barrier_stiffness,
         const Eigen::VectorXd& mus,
-        const std::function<double(double, double)>& blend_mu =
-            default_blend_mu);
+        const std::function<double(double, double, std::optional<BlendType>)>& blend_mu = default_blend_mu);
 
     void build(
         const CollisionMesh& mesh,
@@ -77,11 +77,20 @@ public:
     /// @return A const reference to the collision.
     const FrictionCollision& operator[](const size_t i) const;
 
-    static double default_blend_mu(double mu0, double mu1)
+    static double default_blend_mu(double mu0, double mu1, std::optional<BlendType> type = std::nullopt)
     {
-        // return mu0 * mu1;
-        // return std::min(mu0, mu1);
-        // return std::max(mu0, mu1);
+        if (!type.has_value()) {
+            return (mu0 + mu1) / 2;
+        }
+        if (type == BlendType::AVG) {
+            return (mu0 + mu1) / 2;
+        }
+        if (type == BlendType::MIN) {
+            return std::min(mu0, mu1);
+        }
+        if (type == BlendType::MAX) {
+            return std::max(mu0, mu1);
+        }
         return (mu0 + mu1) / 2;
     }
 
@@ -90,6 +99,12 @@ public:
     std::vector<EdgeVertexFrictionCollision> ev_collisions;
     std::vector<EdgeEdgeFrictionCollision> ee_collisions;
     std::vector<FaceVertexFrictionCollision> fv_collisions;
+
+private:
+    std::pair<double, double> retrieve_friction_coefficients(
+        int id1, int id2, 
+        const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction, 
+        std::optional<double> static_mu, std::optional<double> kinetic_mu) const;
 };
 
 } // namespace ipc
