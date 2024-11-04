@@ -10,3 +10,4 @@ myst_parser==1.0.0
 sphinxcontrib-bibtex
 sphinxemoji
 sphinx-last-updated-by-git
+sphinx-autobuild

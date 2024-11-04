@@ -44,6 +44,15 @@ if(EIGEN_WITH_MKL)
         EIGEN_USE_MKL_ALL
         EIGEN_USE_LAPACKE_STRICT
     )
+elseif(APPLE)
+    target_link_libraries(Eigen3_Eigen INTERFACE
+        "-framework Accelerate"
+        "/opt/homebrew/opt/lapack/lib/liblapacke.dylib"
+    )
+    target_compile_definitions(Eigen3_Eigen INTERFACE
+        EIGEN_USE_BLAS
+        EIGEN_USE_LAPACKE_STRICT
+    )
 endif()
 
 # On Windows, enable natvis files to improve debugging experience
