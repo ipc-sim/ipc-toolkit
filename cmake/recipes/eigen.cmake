@@ -44,6 +44,27 @@ if(EIGEN_WITH_MKL)
         EIGEN_USE_MKL_ALL
         EIGEN_USE_LAPACKE_STRICT
     )
+elseif(APPLE)
+    find_package(BLAS REQUIRED)
+    find_library(LAPACKE lapacke PATHS
+        "/opt/local/lib/lapack"
+        "/opt/homebrew/opt/lapack/lib"
+    )
+    if (NOT LAPACKE)
+        # BLAS should be available on macOS, but LAPACKE might not be
+        message(WARNING "LAPACKE library not found (required for EIGEN_USE_LAPACKE on macOS)! "
+            "Perhaps you need to install it (e.g., brew install lapack). "
+            "Eigen will be built without LAPACKE support.")
+    else()
+        message(STATUS "Found BLAS and LAPACKE. Enabling Eigen LAPACKE support.")
+        target_link_libraries(Eigen3_Eigen INTERFACE
+            ${BLAS_LIBRARIES} ${LAPACKE}
+        )
+        target_compile_definitions(Eigen3_Eigen INTERFACE
+            EIGEN_USE_BLAS
+            EIGEN_USE_LAPACKE_STRICT
+        )
+    endif()
 endif()
 
 # On Windows, enable natvis files to improve debugging experience
