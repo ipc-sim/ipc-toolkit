@@ -1,0 +1,54 @@
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v14.0.0
+    hooks:
+      - id: clang-format
+        args:
+          - --style=file
+          - --verbose
+        files: \.(c|h)$
+
+  - repo: local
+    hooks:
+      - id: build-and-test
+        name: Build and Run Unit Tests with ccache and Progress Bar
+        entry: |
+          bash -c '
+          # Check if ccache is installed
+          if ! command -v ccache &> /dev/null
+          then
+              echo "ccache could not be found, please install it."
+              exit 1
+          fi
+
+          # Ensure ccache is enabled
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+
+          # Prepare build directory
+          mkdir -p build && cd build
+
+          # Set up ccache
+          ccache --max-size=1.0G
+          ccache -V && ccache --show-config
+          ccache --show-stats && ccache --zero-stats
+
+          # Run cmake with ccache enabled
+          cmake -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DIPC_TOOLKIT_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release -DIPC_TOOLKIT_WITH_CODE_COVERAGE=ON ..
+
+          # Build with progress bar
+          make -j$(nproc)
+
+          # Show ccache stats after building
+          ccache --show-stats
+
+          # Run unit tests with parallel execution
+          ctest --output-on-failure -j$(nproc)
+
+          # Final ccache stats after tests
+          ccache --show-stats
+          '
+        language: system
+        always_run: true
+        pass_filenames: false
+        verbose: true

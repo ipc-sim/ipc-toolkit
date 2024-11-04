@@ -26,6 +26,19 @@ FaceVertexFrictionCollision::FaceVertexFrictionCollision(
         collision, positions, barrier_potential, barrier_stiffness);
 }
 
+FaceVertexFrictionCollision::FaceVertexFrictionCollision(
+    const FaceVertexCollision& collision,
+    const VectorMax12d& positions,
+    const BarrierPotential& barrier_potential,
+    const double barrier_stiffness,
+    const double static_mu,
+    const double kinetic_mu)
+    : FaceVertexFrictionCollision(collision)
+{
+    FrictionCollision::init(
+        collision, positions, barrier_potential, barrier_stiffness, static_mu, kinetic_mu);
+}
+
 // ============================================================================
 
 MatrixMax<double, 3, 2> FaceVertexFrictionCollision::compute_tangent_basis(

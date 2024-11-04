@@ -21,6 +21,7 @@ IPC Toolkit is a set of reusable functions to integrate Incremental Potential Co
 * Distance computation and derivatives between edges in 2D and triangles in 3D
 * Distance barrier potential and its derivatives
 * Smooth and lagged dissipative friction potential and its derivatives
+* Pairwise friction handling with transitions between static and kinetic friction based on velocity thresholds
 
 ### Limitations
 

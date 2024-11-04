@@ -172,5 +172,12 @@ void define_friction_collision(py::module_& m)
             "Barycentric coordinates of the closest point(s)")
         .def_readwrite(
             "tangent_basis", &FrictionCollision::tangent_basis,
-            "Tangent basis of the collision (max size 3×2)");
+            "Tangent basis of the collision (max size 3×2)")
+        // Exposing static_mu and kinetic_mu
+        .def_readwrite(
+            "static_mu", &FrictionCollision::static_mu,
+            "Static friction coefficient")
+        .def_readwrite(
+            "kinetic_mu", &FrictionCollision::kinetic_mu,
+            "Kinetic friction coefficient");
 }

@@ -2,11 +2,6 @@
 
 namespace ipc {
 
-FrictionPotential::FrictionPotential(const double epsv) : Super()
-{
-    set_epsv(epsv);
-}
-
 // -- Cumulative methods -------------------------------------------------------
 
 Eigen::VectorXd FrictionPotential::force(
@@ -466,5 +461,180 @@ MatrixMax12d FrictionPotential::force_jacobian(
 
     return J;
 }
+
+/// Compute the friction force using pairwise static and kinetic friction coefficients.
+VectorMax12d FrictionPotential::pairwise_force(
+    const FrictionCollision& collision,
+    const VectorMax12d& rest_positions,
+    const VectorMax12d& lagged_displacements,
+    const VectorMax12d& velocities,
+    const BarrierPotential& barrier_potential,
+    const double barrier_stiffness,
+    const double dmin,
+    const double static_mu,
+    const double kinetic_mu) const
+{
+    const VectorMax12d lagged_positions = rest_positions + lagged_displacements;
+
+    // Compute the normal force magnitude, N(x + u), based on the barrier potential and stiffness.
+    const double N = collision.compute_normal_force_magnitude(
+        lagged_positions, barrier_potential, barrier_stiffness, dmin);
+
+    // Compute the tangent basis, P, which defines the tangential direction at the point of contact.
+    const MatrixMax<double, 3, 2> P = collision.compute_tangent_basis(lagged_positions);
+
+    // Compute the closest point, β, on the face or edge, used to construct the relative velocity matrix.
+    const VectorMax2d beta = collision.compute_closest_point(lagged_positions);
+
+    // Compute the relative velocity matrix, Γ, which transforms vertex velocities to relative contact velocities.
+    const MatrixMax<double, 3, 12> Gamma = collision.relative_velocity_matrix(beta);
+
+    // Compute T = ΓᵀP, the projection of the relative velocity onto the tangential basis.
+    const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
+
+    // Compute τ, the tangential sliding velocity (τ = Tᵀv), which gives the speed of sliding along the surface.
+    const VectorMax2d tau = T.transpose() * velocities;
+
+    // Compute the mollified derivative f₁(‖τ‖)/‖τ‖, using different static and kinetic friction coefficients.
+    const double f1_over_norm_tau = f1_SF_over_x_pairwise_transition(
+        tau.norm(), epsv(), static_mu, kinetic_mu);
+
+    // The friction force is computed as F = -μ N f₁(‖τ‖)/‖τ‖ T τ, which resists the sliding motion.
+    return -collision.weight * N * f1_over_norm_tau * T * tau;
+}
+
+/// Compute the Jacobian (derivative) of the friction force using pairwise static and kinetic friction coefficients.
+MatrixMax12d FrictionPotential::pairwise_force_jacobian(
+    const FrictionCollision& collision,
+    const VectorMax12d& rest_positions,
+    const VectorMax12d& lagged_displacements,
+    const VectorMax12d& velocities,
+    const BarrierPotential& barrier_potential,
+    const double barrier_stiffness,
+    const DiffWRT wrt,
+    const double dmin,
+    const double static_mu,
+    const double kinetic_mu) const
+{
+    // Get the current positions (x + u) by summing rest positions and lagged displacements.
+    const VectorMax12d lagged_positions = rest_positions + lagged_displacements;
+
+    // Compute the normal force, N(x + u), based on the barrier potential and stiffness.
+    const double N = collision.compute_normal_force_magnitude(
+        lagged_positions, barrier_potential, barrier_stiffness, dmin);
+
+    // Compute the tangent basis, P, which defines the tangential direction at the point of contact.
+    const MatrixMax<double, 3, 2> P = collision.compute_tangent_basis(lagged_positions);
+
+    // Compute the closest point, β, used in constructing the relative velocity matrix.
+    const VectorMax2d beta = collision.compute_closest_point(lagged_positions);
+
+    // Compute the relative velocity matrix, Γ, which transforms vertex velocities to relative contact velocities.
+    const MatrixMax<double, 3, 12> Gamma = collision.relative_velocity_matrix(beta);
+
+    // Compute T = ΓᵀP, the projection of the relative velocity onto the tangential basis.
+    const MatrixMax<double, 12, 2> T = Gamma.transpose() * P;
+
+    // Compute τ, the tangential sliding velocity (τ = Tᵀv), which gives the speed of sliding along the surface.
+    const VectorMax2d tau = T.transpose() * velocities;
+
+    // Get the magnitude of the sliding velocity, ‖τ‖, and compute the mollified derivative f₁(‖τ‖)/‖τ‖.
+    const double tau_norm = tau.norm();
+    const double f1_over_norm_tau = f1_SF_over_x_pairwise_transition(
+        tau_norm, epsv(), static_mu, kinetic_mu);
+
+    // T * τ is used multiple times, so we compute it once for efficiency.
+    const VectorMax12d T_times_tau = T * tau;
+
+    // Initialize the Jacobian matrix J to zero.
+    MatrixMax12d J = MatrixMax12d::Zero(T.rows(), T.rows());
+
+    if (tau_norm == 0) {
+        // If there is no sliding velocity (‖τ‖ == 0), the force and Jacobian are zero.
+        return J;
+    }
+
+    // Compute the second derivative, f₂, for the mollified transition between static and kinetic friction.
+    const double f2 = df1_x_minus_f1_over_x3_pairwise_transition(
+        tau_norm, epsv(), static_mu, kinetic_mu);
+
+    // Compute the gradient of f₁(‖τ‖)/‖τ‖, which involves the sliding velocity τ and its derivative.
+    const VectorMax12d grad_f1_over_norm_tau = f2 * T_times_tau / tau_norm;
+
+    // Add the contribution of the first term: N * T * τ * ∇(f₁(‖τ‖)/‖τ‖).
+    J += N * T_times_tau * grad_f1_over_norm_tau.transpose();
+
+    // Add the contribution of the second term: N * f₁(‖τ‖)/‖τ‖ * T * Tᵀ.
+    J += N * f1_over_norm_tau * T * T.transpose();
+
+    // Return the computed Jacobian, scaled by the collision weight and negative sign for force.
+    return -collision.weight * J;
+}
+
+/// Compute the Hessian of the friction potential using pairwise static and kinetic friction coefficients.
+MatrixMax12d FrictionPotential::pairwise_hessian(
+    const FrictionCollision& collision,
+    const VectorMax12d& velocities,
+    const PSDProjectionMethod project_hessian_to_psd,
+    const double static_mu,
+    const double kinetic_mu) const
+{
+    // Compute the relative velocity in the tangential space, u = PᵀΓv.
+    const VectorMax2d u = collision.tangent_basis.transpose()
+        * collision.relative_velocity(velocities);
+
+    // Compute the projection matrix T = ΓᵀP, which relates the velocity to the contact surface.
+    const MatrixMax<double, 12, 2> T = collision.relative_velocity_matrix().transpose()
+        * collision.tangent_basis;
+
+    // Get the norm of the tangential velocity, ‖u‖.
+    const double norm_u = u.norm();
+
+    // Compute the mollified derivative f₁(‖u‖)/‖u‖, using pairwise static and kinetic friction coefficients.
+    const double f1_over_norm_u = f1_SF_over_x_pairwise_transition(norm_u, epsv(), static_mu, kinetic_mu);
+
+    // Compute the scaling factor, μ N(xᵗ), based on the friction coefficient and normal force.
+    const double scale = collision.weight * collision.mu * collision.normal_force_magnitude;
+
+    MatrixMax12d hess;
+
+    // If ‖u‖ is greater than the threshold epsilon, compute the Hessian without projection.
+    if (norm_u >= epsv()) {
+        if (project_hessian_to_psd != PSDProjectionMethod::NONE && scale <= 0) {
+            // If needed, project the Hessian to PSD when scale is negative.
+            hess.setZero(collision.ndof(), collision.ndof());
+        } else if (collision.dim() == 2) {
+            // In 2D, if ‖u‖ is large, the Hessian is zero.
+            hess.setZero(collision.ndof(), collision.ndof());
+        } else {
+            // Compute the perpendicular vector to u in 3D, and use it to construct the Hessian.
+            const Eigen::Vector2d u_perp(-u[1], u[0]);
+            hess = (T * ((scale * f1_over_norm_u / (norm_u * norm_u)) * u_perp))
+                * (u_perp.transpose() * T.transpose());
+        }
+    } else if (norm_u == 0) {
+        // If ‖u‖ is zero, the Hessian simplifies to the identity.
+        if (project_hessian_to_psd != PSDProjectionMethod::NONE && scale <= 0) {
+            hess.setZero(collision.ndof(), collision.ndof());
+        } else {
+            hess = scale * f1_over_norm_u * T * T.transpose();
+        }
+    } else {
+        // If ‖u‖ is small, use the second derivative, f₂, for the Hessian.
+        const double f2 = df1_x_minus_f1_over_x3_pairwise_transition(norm_u, epsv(), static_mu, kinetic_mu);
+
+        // Compute the inner Hessian for f₂ and f₁ and project it to PSD if needed.
+        MatrixMax2d inner_hess = f2 * u * u.transpose();
+        inner_hess.diagonal().array() += f1_over_norm_u;
+        inner_hess *= scale;
+        inner_hess = project_to_psd(inner_hess, project_hessian_to_psd);
+
+        // Compute the final Hessian using T * inner_hess * Tᵀ.
+        hess = T * inner_hess * T.transpose();
+    }
+
+    return hess;
+}
+
 
 } // namespace ipc

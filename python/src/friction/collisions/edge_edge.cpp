@@ -1,5 +1,4 @@
 #include <common.hpp>
-
 #include <ipc/friction/collisions/edge_edge.hpp>
 
 namespace py = pybind11;
@@ -13,7 +12,8 @@ void define_edge_edge_friction_collision(py::module_& m)
         .def(
             py::init<
                 const EdgeEdgeCollision&, const VectorMax12d&,
-                const BarrierPotential&, const double>(),
+                const BarrierPotential&, const double, const double, const double>(),
             py::arg("collision"), py::arg("positions"),
-            py::arg("barrier_potential"), py::arg("barrier_stiffness"));
+            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("static_mu"), py::arg("kinetic_mu"));
 }
