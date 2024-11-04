@@ -21,7 +21,7 @@ public:
     /// @brief Evaluate the first derivative of the barrier function wrt d.
     /// @param d Distance.
     /// @param dhat Activation distance of the barrier.
-    /// @retur The value of the first derivative of the barrier function at d.
+    /// @return The value of the first derivative of the barrier function at d.
     virtual double
     first_derivative(const double d, const double dhat) const = 0;
 
@@ -34,7 +34,7 @@ public:
 
     /// @brief Get the units of the barrier function.
     /// @param dhat The activation distance of the barrier.
-    /// @return The units of the barrier function.
+    /// @return
     virtual double units(const double dhat) const = 0;
 };
 
