@@ -43,15 +43,15 @@ TEST_CASE("GPU CCD", "[ccd][gpu]")
     const double min_distance = 0;
 
     const double toi_cpu = compute_collision_free_stepsize(
-        mesh, V0, V1, BroadPhaseMethod::SWEEP_AND_PRUNE, min_distance,
-        tolerance, max_iterations);
+        mesh, V0, V1, min_distance, BroadPhaseMethod::SWEEP_AND_PRUNE,
+        TightInclusionCCD(tolerance, max_iterations));
 
     // Got this value from running the code
     CHECK(toi_cpu == Catch::Approx(4.76837158203125000e-06));
 
     const double toi_gpu = compute_collision_free_stepsize(
-        mesh, V0, V1, BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE, min_distance,
-        tolerance, max_iterations);
+        mesh, V0, V1, min_distance, BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE,
+        TightInclusionCCD(tolerance, max_iterations));
 
     // Got this value from running the code
     CHECK(toi_gpu == Catch::Approx(3.05175781250000017e-6));

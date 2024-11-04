@@ -369,7 +369,7 @@ Computing the friction dissipative potential is similar to the barrier potential
 
             ipc::FrictionCollisions friction_collisions;
             friction_collisions.build(
-                collision_mesh, vertices, collisions, dhat, barrier_stiffness, mu);
+                collision_mesh, vertices, collisions, B, barrier_stiffness, mu);
 
     .. md-tab-item:: Python
 
@@ -377,7 +377,7 @@ Computing the friction dissipative potential is similar to the barrier potential
 
             friction_collisions = ipctk.FrictionCollisions()
             friction_collisions.build(
-                collision_mesh, vertices, collisions, dhat, barrier_stiffness, mu)
+                collision_mesh, vertices, collisions, B, barrier_stiffness, mu)
 
 Here ``mu`` (:math:`\mu`) is the (global) coefficient of friction, and ``barrier_stiffness`` (:math:`\kappa`) is the barrier stiffness.
 

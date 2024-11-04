@@ -21,6 +21,7 @@ IPC Toolkit is a set of reusable functions to integrate Incremental Potential Co
 * Distance computation and derivatives between edges in 2D and triangles in 3D
 * Distance barrier potential and its derivatives
 * Smooth and lagged dissipative friction potential and its derivatives
+* Pairwise friction handling with transitions between static and kinetic friction based on velocity thresholds
 
 ### Limitations
 
@@ -90,6 +91,8 @@ The following dependencies are optionally used based on CMake options:
 * [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection): inexact CCD
     * Included for comparison with the original IPC library
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_INEXACT_CCD`
+
+<!--- FILIB DEPENDENCY NOTE --->
 
 ## Usage
 

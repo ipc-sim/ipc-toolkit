@@ -26,12 +26,24 @@ EdgeEdgeFrictionCollision::EdgeEdgeFrictionCollision(
         collision, positions, barrier_potential, barrier_stiffness);
 }
 
+EdgeEdgeFrictionCollision::EdgeEdgeFrictionCollision(
+    const EdgeEdgeCollision& collision,
+    const VectorMax12d& positions,
+    const BarrierPotential& barrier_potential,
+    const double barrier_stiffness,
+    const double static_mu,
+    const double kinetic_mu)
+    : EdgeEdgeFrictionCollision(collision)
+{
+    FrictionCollision::init(
+        collision, positions, barrier_potential, barrier_stiffness, static_mu, kinetic_mu);
+}
+
 // ============================================================================
 
 MatrixMax<double, 3, 2> EdgeEdgeFrictionCollision::compute_tangent_basis(
     const VectorMax12d& positions) const
 {
-
     assert(positions.size() == ndof());
     return edge_edge_tangent_basis(
         positions.head(dim()), positions.segment(dim(), dim()),

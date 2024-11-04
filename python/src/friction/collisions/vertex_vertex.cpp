@@ -14,7 +14,8 @@ void define_vertex_vertex_friction_collision(py::module_& m)
         .def(
             py::init<
                 const VertexVertexCollision&, const VectorMax12d&,
-                const BarrierPotential&, const double>(),
+                const BarrierPotential&, const double, const double, const double>(),
             py::arg("collision"), py::arg("positions"),
-            py::arg("barrier_potential"), py::arg("barrier_stiffness"));
+            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("static_mu"), py::arg("kinetic_mu"));
 }

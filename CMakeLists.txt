@@ -215,6 +215,7 @@ target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
 if(IPC_TOOLKIT_WITH_CUDA)
   include(CheckLanguage)
   check_language(CUDA)
+
   if(CMAKE_CUDA_COMPILER)
     enable_language(CUDA)
     # Explicitly ensure -fPIC is not passed to nvcc

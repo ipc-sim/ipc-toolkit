@@ -1,5 +1,4 @@
 #include <common.hpp>
-
 #include <ipc/potentials/friction_potential.hpp>
 
 namespace py = pybind11;
@@ -34,7 +33,7 @@ void define_friction_potential(py::module_& m)
             py::arg("epsv"))
         .def(
             "__call__",
-            py::overload_cast<
+            py::overload_cast< 
                 const FrictionCollisions&, const CollisionMesh&,
                 const Eigen::MatrixXd&>(
                 &FrictionPotential::Potential::operator(), py::const_),
@@ -146,110 +145,74 @@ void define_friction_potential(py::module_& m)
             py::arg("lagged_displacements"), py::arg("velocities"),
             py::arg("barrier_potential"), py::arg("barrier_stiffness"),
             py::arg("wrt"), py::arg("dmin") = 0)
+        // Adding pairwise friction functions
         .def(
-            "__call__",
-            py::overload_cast<const FrictionCollision&, const VectorMax12d&>(
-                &FrictionPotential::operator(), py::const_),
+            "pairwise_force",
+            &FrictionPotential::pairwise_force,
             R"ipc_Qu8mg5v7(
-            Compute the potential for a single collision.
+            Compute the pairwise friction force for a collision.
 
             Parameters:
                 collision: The collision.
-                x: The collision stencil's degrees of freedom.
-
-            Returns:
-                The potential.
-            )ipc_Qu8mg5v7",
-            py::arg("collision"), py::arg("x"))
-        .def(
-            "gradient",
-            py::overload_cast<const FrictionCollision&, const VectorMax12d&>(
-                &FrictionPotential::gradient, py::const_),
-            R"ipc_Qu8mg5v7(
-            Compute the gradient of the potential for a single collision.
-
-            Parameters:
-                collision: The collision.
-                x: The collision stencil's degrees of freedom.
-
-            Returns:
-                The gradient of the potential.
-            )ipc_Qu8mg5v7",
-            py::arg("collision"), py::arg("x"))
-        .def(
-            "hessian",
-            py::overload_cast<
-                const FrictionCollision&, const VectorMax12d&,
-                const PSDProjectionMethod>(
-                &FrictionPotential::hessian, py::const_),
-            R"ipc_Qu8mg5v7(
-            Compute the hessian of the potential for a single collision.
-
-            Parameters:
-                collision: The collision.
-                x: The collision stencil's degrees of freedom.
-
-            Returns:
-                The hessian of the potential.
-            )ipc_Qu8mg5v7",
-            py::arg("collision"), py::arg("x"),
-            py::arg("project_hessian_to_psd") = PSDProjectionMethod::NONE)
-        .def(
-            "force",
-            py::overload_cast<
-                const FrictionCollision&, const VectorMax12d&,
-                const VectorMax12d&, const VectorMax12d&,
-                const BarrierPotential&, const double, const double,
-                const bool>(&FrictionPotential::force, py::const_),
-            R"ipc_Qu8mg5v7(
-            Compute the friction force for a single collision.
-
-            Parameters:
-                collision: The collision
                 rest_positions: Rest positions of the vertices (rowwise).
                 lagged_displacements: Previous displacements of the vertices (rowwise).
-                velocities: Current displacements of the vertices (rowwise).
+                velocities: Current velocities of the vertices (rowwise).
                 barrier_potential: Barrier potential (used for normal force magnitude).
                 barrier_stiffness: Barrier stiffness (used for normal force magnitude).
                 dmin: Minimum distance (used for normal force magnitude).
-                no_mu: Whether to not multiply by mu
+                static_mu: Static friction coefficient.
+                kinetic_mu: Kinetic friction coefficient.
 
             Returns:
-                Friction force
+                The friction force with static and kinetic friction.
             )ipc_Qu8mg5v7",
             py::arg("collision"), py::arg("rest_positions"),
             py::arg("lagged_displacements"), py::arg("velocities"),
             py::arg("barrier_potential"), py::arg("barrier_stiffness"),
-            py::arg("dmin") = 0, py::arg("no_mu") = false)
+            py::arg("dmin") = 0, py::arg("static_mu"), py::arg("kinetic_mu"))
         .def(
-            "force_jacobian",
-            py::overload_cast<
-                const FrictionCollision&, const VectorMax12d&,
-                const VectorMax12d&, const VectorMax12d&,
-                const BarrierPotential&, const double,
-                const FrictionPotential::DiffWRT, const double>(
-                &FrictionPotential::force_jacobian, py::const_),
+            "pairwise_force_jacobian",
+            &FrictionPotential::pairwise_force_jacobian,
             R"ipc_Qu8mg5v7(
-            Compute the friction force Jacobian.
+            Compute the pairwise friction force Jacobian for a collision.
 
             Parameters:
-                collision: The collision
+                collision: The collision.
                 rest_positions: Rest positions of the vertices (rowwise).
                 lagged_displacements: Previous displacements of the vertices (rowwise).
-                velocities: Current displacements of the vertices (rowwise).
+                velocities: Current velocities of the vertices (rowwise).
                 barrier_potential: Barrier potential (used for normal force magnitude).
                 barrier_stiffness: Barrier stiffness (used for normal force magnitude).
-                wrt: Variable to differentiate the friction force with respect to.
+                wrt: The variable to take the derivative with respect to.
                 dmin: Minimum distance (used for normal force magnitude).
+                static_mu: Static friction coefficient.
+                kinetic_mu: Kinetic friction coefficient.
 
             Returns:
-                Friction force Jacobian
+                The friction force Jacobian with static and kinetic friction.
             )ipc_Qu8mg5v7",
             py::arg("collision"), py::arg("rest_positions"),
             py::arg("lagged_displacements"), py::arg("velocities"),
             py::arg("barrier_potential"), py::arg("barrier_stiffness"),
-            py::arg("wrt"), py::arg("dmin") = 0)
-        .def_property(
-            "epsv", &FrictionPotential::epsv, &FrictionPotential::set_epsv,
-            "The smooth friction mollifier parameter :math:`\\epsilon_{v}`.");
+            py::arg("wrt"), py::arg("dmin") = 0, py::arg("static_mu"),
+            py::arg("kinetic_mu"))
+        .def(
+            "pairwise_hessian",
+            &FrictionPotential::pairwise_hessian,
+            R"ipc_Qu8mg5v7(
+            Compute the Hessian of the pairwise friction potential.
+
+            Parameters:
+                collision: The collision.
+                velocities: Current velocities of the vertices (rowwise).
+                project_hessian_to_psd: Whether to project Hessian to PSD.
+                static_mu: Static friction coefficient.
+                kinetic_mu: Kinetic friction coefficient.
+
+            Returns:
+                The Hessian of the friction potential with static and kinetic friction.
+            )ipc_Qu8mg5v7",
+            py::arg("collision"), py::arg("velocities"),
+            py::arg("project_hessian_to_psd") = PSDProjectionMethod::NONE,
+            py::arg("static_mu"), py::arg("kinetic_mu"));
 }
