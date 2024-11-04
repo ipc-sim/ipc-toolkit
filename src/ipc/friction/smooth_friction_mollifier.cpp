@@ -39,7 +39,8 @@ double df1_x_minus_f1_over_x3(const double s, const double epsv)
 
 // ----------------------------------------------------------------------------
 // Pairwise friction mollifier functions
-double blend_mu(const double mu1, const double mu2, const std::optional<BlendType> type)
+double blend_mu(
+    const double mu1, const double mu2, const std::optional<BlendType> type)
 {
     if (!type.has_value()) {
         return (mu1 + mu2) / 2;
@@ -95,14 +96,22 @@ double df1_x_minus_f1_over_x3_pairwise(
 // ----------------------------------------------------------------------------
 // Pairwise friction mollifier functions with transition (no blending)
 
-inline double select_mu(const double s, const double epsv, const double static_mu, const double kinetic_mu)
+inline double select_mu(
+    const double s,
+    const double epsv,
+    const double static_mu,
+    const double kinetic_mu)
 {
-    // Use kinetic friction before transition (i.e., s < epsv), static friction after
+    // Use kinetic friction before transition (i.e., s < epsv), static friction
+    // after
     return (std::abs(s) < epsv) ? kinetic_mu : static_mu;
 }
 
 double f0_SF_pairwise_transition(
-    const double s, const double epsv, const double static_mu, const double kinetic_mu)
+    const double s,
+    const double epsv,
+    const double static_mu,
+    const double kinetic_mu)
 {
     assert(epsv > 0);
     double mu = select_mu(s, epsv, static_mu, kinetic_mu);
@@ -114,7 +123,10 @@ double f0_SF_pairwise_transition(
 }
 
 double f1_SF_over_x_pairwise_transition(
-    const double s, const double epsv, const double static_mu, const double kinetic_mu)
+    const double s,
+    const double epsv,
+    const double static_mu,
+    const double kinetic_mu)
 {
     assert(epsv > 0);
     double mu = select_mu(s, epsv, static_mu, kinetic_mu);
@@ -126,7 +138,10 @@ double f1_SF_over_x_pairwise_transition(
 }
 
 double df1_x_minus_f1_over_x3_pairwise_transition(
-    const double s, const double epsv, const double static_mu, const double kinetic_mu)
+    const double s,
+    const double epsv,
+    const double static_mu,
+    const double kinetic_mu)
 {
     assert(epsv > 0);
     double mu = select_mu(s, epsv, static_mu, kinetic_mu);

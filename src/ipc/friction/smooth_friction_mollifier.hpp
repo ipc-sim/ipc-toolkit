@@ -3,11 +3,7 @@
 
 namespace ipc {
 
-enum class BlendType {
-    AVG,
-    MIN,
-    MAX
-};
+enum class BlendType { AVG, MIN, MAX };
 
 /// @brief Smooth friction mollifier function.
 ///
@@ -68,7 +64,10 @@ double df1_x_minus_f1_over_x3(const double s, const double epsv);
 /// @param mu2 Friction coefficient for material 2.
 /// @param type The type of blending to use.
 /// @return The blended friction coefficient (default is the average of mu1 and mu2).
-double blend_mu(const double mu1, const double mu2, const std::optional<BlendType> type = std::nullopt);
+double blend_mu(
+    const double mu1,
+    const double mu2,
+    const std::optional<BlendType> type = std::nullopt);
 
 /// @brief Pairwise smooth friction mollifier function.
 ///
@@ -131,11 +130,12 @@ double df1_x_minus_f1_over_x3_pairwise(
     const double s, const double epsv, const double mu1, const double mu2);
 
 // --------------------------------------------------------------------------
-// Pairwise friction mollifier functions without blending, with kinetic/static transition.
+// Pairwise friction mollifier functions without blending, with kinetic/static
+// transition.
 
 /// @brief Pairwise smooth friction mollifier function without blending.
-/// The function uses kinetic friction before transition (i.e., when \f$s < \epsilon_v\f$),
-/// and static friction after the transition.
+/// The function uses kinetic friction before transition (i.e., when \f$s <
+/// \epsilon_v\f$), and static friction after the transition.
 ///
 /// \f[
 ///     f_0(s)= \mu \begin{cases}
@@ -152,7 +152,10 @@ double df1_x_minus_f1_over_x3_pairwise(
 /// @param kinetic_mu Kinetic friction coefficient.
 /// @return The value of the mollifier function at s, using the correct friction coefficient.
 double f0_SF_pairwise_transition(
-    const double s, const double epsv, const double static_mu, const double kinetic_mu);
+    const double s,
+    const double epsv,
+    const double static_mu,
+    const double kinetic_mu);
 
 /// @brief Compute the derivative of f0_SF_pairwise_transition divided by s (\f$\frac{f_0'(s)}{s}\f$).
 /// Uses kinetic friction before transition (i.e., when \f$s < \epsilon_v\f$),
@@ -164,7 +167,10 @@ double f0_SF_pairwise_transition(
 /// @param kinetic_mu Kinetic friction coefficient.
 /// @return The value of the derivative of f0_SF divided by s, using the correct friction coefficient.
 double f1_SF_over_x_pairwise_transition(
-    const double s, const double epsv, const double static_mu, const double kinetic_mu);
+    const double s,
+    const double epsv,
+    const double static_mu,
+    const double kinetic_mu);
 
 /// @brief The derivative of f1 times s minus f1 all divided by s cubed,
 /// using kinetic/static friction transition.
@@ -175,6 +181,9 @@ double f1_SF_over_x_pairwise_transition(
 /// @param kinetic_mu Kinetic friction coefficient.
 /// @return The derivative of f1 times s minus f1 all divided by s cubed.
 double df1_x_minus_f1_over_x3_pairwise_transition(
-    const double s, const double epsv, const double static_mu, const double kinetic_mu);
+    const double s,
+    const double epsv,
+    const double static_mu,
+    const double kinetic_mu);
 
 } // namespace ipc

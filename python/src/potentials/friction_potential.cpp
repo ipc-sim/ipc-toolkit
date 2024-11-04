@@ -33,7 +33,7 @@ void define_friction_potential(py::module_& m)
             py::arg("epsv"))
         .def(
             "__call__",
-            py::overload_cast< 
+            py::overload_cast<
                 const FrictionCollisions&, const CollisionMesh&,
                 const Eigen::MatrixXd&>(
                 &FrictionPotential::Potential::operator(), py::const_),
@@ -147,8 +147,7 @@ void define_friction_potential(py::module_& m)
             py::arg("wrt"), py::arg("dmin") = 0)
         // Adding pairwise friction functions
         .def(
-            "pairwise_force",
-            &FrictionPotential::pairwise_force,
+            "pairwise_force", &FrictionPotential::pairwise_force,
             R"ipc_Qu8mg5v7(
             Compute the pairwise friction force for a collision.
 
@@ -197,8 +196,7 @@ void define_friction_potential(py::module_& m)
             py::arg("wrt"), py::arg("dmin") = 0, py::arg("static_mu"),
             py::arg("kinetic_mu"))
         .def(
-            "pairwise_hessian",
-            &FrictionPotential::pairwise_hessian,
+            "pairwise_hessian", &FrictionPotential::pairwise_hessian,
             R"ipc_Qu8mg5v7(
             Compute the Hessian of the pairwise friction potential.
 

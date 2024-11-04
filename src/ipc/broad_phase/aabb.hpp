@@ -20,8 +20,8 @@ public:
 
     AABB(const AABB& aabb1, const AABB& aabb2, const AABB& aabb3)
         : AABB(
-              aabb1.min.min(aabb2.min).min(aabb3.min),
-              aabb1.max.max(aabb2.max).max(aabb3.max))
+            aabb1.min.min(aabb2.min).min(aabb3.min),
+            aabb1.max.max(aabb2.max).max(aabb3.max))
     {
     }
 

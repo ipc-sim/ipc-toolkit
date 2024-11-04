@@ -44,7 +44,8 @@ public:
         const BarrierPotential& barrier_potential,
         const double barrier_stiffness,
         const Eigen::VectorXd& mus,
-        const std::function<double(double, double, std::optional<BlendType>)>& blend_mu = default_blend_mu);
+        const std::function<double(double, double, std::optional<BlendType>)>&
+            blend_mu = default_blend_mu);
 
     void build(
         const CollisionMesh& mesh,
@@ -54,7 +55,8 @@ public:
         const double barrier_stiffness,
         const double static_mu,
         const double kinetic_mu,
-        const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction);
+        const std::map<std::tuple<int, int>, std::pair<double, double>>&
+            pairwise_friction);
 
     // ------------------------------------------------------------------------
 
@@ -77,7 +79,8 @@ public:
     /// @return A const reference to the collision.
     const FrictionCollision& operator[](const size_t i) const;
 
-    static double default_blend_mu(double mu0, double mu1, std::optional<BlendType> type = std::nullopt)
+    static double default_blend_mu(
+        double mu0, double mu1, std::optional<BlendType> type = std::nullopt)
     {
         if (!type.has_value()) {
             return (mu0 + mu1) / 2;
@@ -102,9 +105,12 @@ public:
 
 private:
     std::pair<double, double> retrieve_friction_coefficients(
-        int id1, int id2, 
-        const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction, 
-        std::optional<double> static_mu, std::optional<double> kinetic_mu) const;
+        int id1,
+        int id2,
+        const std::map<std::tuple<int, int>, std::pair<double, double>>&
+            pairwise_friction,
+        std::optional<double> static_mu,
+        std::optional<double> kinetic_mu) const;
 };
 
 } // namespace ipc

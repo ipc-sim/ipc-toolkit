@@ -36,7 +36,8 @@ EdgeEdgeFrictionCollision::EdgeEdgeFrictionCollision(
     : EdgeEdgeFrictionCollision(collision)
 {
     FrictionCollision::init(
-        collision, positions, barrier_potential, barrier_stiffness, static_mu, kinetic_mu);
+        collision, positions, barrier_potential, barrier_stiffness, static_mu,
+        kinetic_mu);
 }
 
 // ============================================================================

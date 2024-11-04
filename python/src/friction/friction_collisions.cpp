@@ -36,7 +36,8 @@ void define_friction_collisions(py::module_& m)
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&, const Collisions&,
                 const BarrierPotential&, const double, const Eigen::VectorXd&,
-                const std::function<double(double, double, std::optional<BlendType>)>&>(
+                const std::function<double(
+                    double, double, std::optional<BlendType>)>&>(
                 &FrictionCollisions::build),
             py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
             py::arg("barrier_potential"), py::arg("barrier_stiffness"),
@@ -45,8 +46,10 @@ void define_friction_collisions(py::module_& m)
             "build",
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&, const Collisions&,
-                const BarrierPotential&, const double, const double, const double,
-                const std::map<std::tuple<int, int>, std::pair<double, double>>&>(
+                const BarrierPotential&, const double, const double,
+                const double,
+                const std::map<
+                    std::tuple<int, int>, std::pair<double, double>>&>(
                 &FrictionCollisions::build),
             py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
             py::arg("barrier_potential"), py::arg("barrier_stiffness"),
@@ -65,11 +68,14 @@ void define_friction_collisions(py::module_& m)
                 kinetic_mu: Global kinetic friction coefficient.
                 pairwise_friction: Pairwise static and kinetic friction coefficients.
             )ipc_Qu8mg5v7")
-        .def("__len__", &FrictionCollisions::size,
+        .def(
+            "__len__", &FrictionCollisions::size,
             "Get the number of friction collisions.")
-        .def("empty", &FrictionCollisions::empty,
+        .def(
+            "empty", &FrictionCollisions::empty,
             "Get if the friction collisions are empty.")
-        .def("clear", &FrictionCollisions::clear,
+        .def(
+            "clear", &FrictionCollisions::clear,
             "Clear the friction collisions.")
         .def(
             "__getitem__",
@@ -87,7 +93,8 @@ void define_friction_collisions(py::module_& m)
                 A reference to the collision.
             )ipc_Qu8mg5v7",
             py::arg("i"))
-        .def_static("default_blend_mu", &FrictionCollisions::default_blend_mu,
+        .def_static(
+            "default_blend_mu", &FrictionCollisions::default_blend_mu,
             py::arg("mu0"), py::arg("mu1"), py::arg("type") = std::nullopt)
         .def_readwrite("vv_collisions", &FrictionCollisions::vv_collisions)
         .def_readwrite("ev_collisions", &FrictionCollisions::ev_collisions)

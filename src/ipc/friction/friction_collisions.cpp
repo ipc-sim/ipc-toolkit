@@ -19,7 +19,8 @@ void FrictionCollisions::build(
     const BarrierPotential& barrier_potential,
     const double barrier_stiffness,
     const Eigen::VectorXd& mus,
-    const std::function<double(double, double, std::optional<BlendType>)>& blend_mu)
+    const std::function<double(double, double, std::optional<BlendType>)>&
+        blend_mu)
 {
     assert(mus.size() == vertices.rows());
 
@@ -101,19 +102,21 @@ void FrictionCollisions::build(
     const double barrier_stiffness,
     const double static_mu,
     const double kinetic_mu,
-    const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction)
+    const std::map<std::tuple<int, int>, std::pair<double, double>>&
+        pairwise_friction)
 {
-    clear();  // Clear any existing collisions
+    clear(); // Clear any existing collisions
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
 
-    auto get_pairwise_friction = [&](int mat1, int mat2) -> std::pair<double, double> {
+    auto get_pairwise_friction = [&](int mat1,
+                                     int mat2) -> std::pair<double, double> {
         auto it = pairwise_friction.find(std::make_tuple(mat1, mat2));
         if (it != pairwise_friction.end()) {
             return it->second;
         } else {
-            return {static_mu, kinetic_mu};
+            return { static_mu, kinetic_mu };
         }
     };
 
@@ -121,16 +124,12 @@ void FrictionCollisions::build(
     for (const auto& c_vv : collisions.vv_collisions) {
         int v0i = c_vv.vertex_ids(edges, faces)[0];
         int v1i = c_vv.vertex_ids(edges, faces)[1];
-        auto [pair_static_mu, pair_kinetic_mu] = get_pairwise_friction(v0i, v1i);
+        auto [pair_static_mu, pair_kinetic_mu] =
+            get_pairwise_friction(v0i, v1i);
 
         vv_collisions.emplace_back(
-            c_vv,
-            c_vv.dof(vertices, edges, faces),
-            barrier_potential,
-            barrier_stiffness,
-            pair_static_mu,
-            pair_kinetic_mu
-        );
+            c_vv, c_vv.dof(vertices, edges, faces), barrier_potential,
+            barrier_stiffness, pair_static_mu, pair_kinetic_mu);
     }
 
     // Handle Edge-Vertex Collisions
@@ -139,16 +138,12 @@ void FrictionCollisions::build(
         int e0i = c_ev.vertex_ids(edges, faces)[1];
         int e1i = c_ev.vertex_ids(edges, faces)[2];
 
-        auto [pair_static_mu, pair_kinetic_mu] = get_pairwise_friction(vi, std::min(e0i, e1i));
+        auto [pair_static_mu, pair_kinetic_mu] =
+            get_pairwise_friction(vi, std::min(e0i, e1i));
 
         ev_collisions.emplace_back(
-            c_ev,
-            c_ev.dof(vertices, edges, faces),
-            barrier_potential,
-            barrier_stiffness,
-            pair_static_mu,
-            pair_kinetic_mu
-        );
+            c_ev, c_ev.dof(vertices, edges, faces), barrier_potential,
+            barrier_stiffness, pair_static_mu, pair_kinetic_mu);
     }
 
     // Handle Edge-Edge Collisions
@@ -158,16 +153,12 @@ void FrictionCollisions::build(
         int eb0i = c_ee.vertex_ids(edges, faces)[2];
         int eb1i = c_ee.vertex_ids(edges, faces)[3];
 
-        auto [pair_static_mu, pair_kinetic_mu] = get_pairwise_friction(std::min(ea0i, ea1i), std::min(eb0i, eb1i));
+        auto [pair_static_mu, pair_kinetic_mu] =
+            get_pairwise_friction(std::min(ea0i, ea1i), std::min(eb0i, eb1i));
 
         ee_collisions.emplace_back(
-            c_ee,
-            c_ee.dof(vertices, edges, faces),
-            barrier_potential,
-            barrier_stiffness,
-            pair_static_mu,
-            pair_kinetic_mu
-        );
+            c_ee, c_ee.dof(vertices, edges, faces), barrier_potential,
+            barrier_stiffness, pair_static_mu, pair_kinetic_mu);
     }
 
     // Handle Face-Vertex Collisions
@@ -177,16 +168,12 @@ void FrictionCollisions::build(
         int f1i = c_fv.vertex_ids(edges, faces)[2];
         int f2i = c_fv.vertex_ids(edges, faces)[3];
 
-        auto [pair_static_mu, pair_kinetic_mu] = get_pairwise_friction(vi, std::min({f0i, f1i, f2i}));
+        auto [pair_static_mu, pair_kinetic_mu] =
+            get_pairwise_friction(vi, std::min({ f0i, f1i, f2i }));
 
         fv_collisions.emplace_back(
-            c_fv,
-            c_fv.dof(vertices, edges, faces),
-            barrier_potential,
-            barrier_stiffness,
-            pair_static_mu,
-            pair_kinetic_mu
-        );
+            c_fv, c_fv.dof(vertices, edges, faces), barrier_potential,
+            barrier_stiffness, pair_static_mu, pair_kinetic_mu);
     }
 }
 
@@ -253,19 +240,22 @@ const FrictionCollision& FrictionCollisions::operator[](size_t i) const
 }
 
 std::pair<double, double> FrictionCollisions::retrieve_friction_coefficients(
-    int id1, int id2, 
-    const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction, 
-    std::optional<double> static_mu, std::optional<double> kinetic_mu) const
+    int id1,
+    int id2,
+    const std::map<std::tuple<int, int>, std::pair<double, double>>&
+        pairwise_friction,
+    std::optional<double> static_mu,
+    std::optional<double> kinetic_mu) const
 {
     auto it = pairwise_friction.find(std::make_tuple(id1, id2));
     if (it != pairwise_friction.end()) {
         return it->second;
     }
     if (static_mu && kinetic_mu) {
-        return {static_mu.value(), kinetic_mu.value()};
+        return { static_mu.value(), kinetic_mu.value() };
     }
-    throw std::runtime_error("No friction coefficients available for the given pair.");
+    throw std::runtime_error(
+        "No friction coefficients available for the given pair.");
 }
-
 
 } // namespace ipc

@@ -20,7 +20,8 @@ Eigen::VectorXd GeomSpaced(int num, double start, double stop)
 FrictionSimpleData friction_data_generator()
 {
     FrictionSimpleData data;
-    auto& [V0, V1, E, F, collisions, mu, epsv_times_h, dhat, barrier_stiffness] = data;
+    auto& [V0, V1, E, F, collisions, mu, epsv_times_h, dhat, barrier_stiffness] =
+        data;
 
     collisions.set_enable_shape_derivatives(true);
 
@@ -43,10 +44,10 @@ FrictionSimpleData friction_data_generator()
     SECTION("point-triangle")
     {
         V0.resize(4, 3);
-        V0 << 0, d, 0,    // Point at t=0
-              -1, 0, 1,   // Triangle vertex 0 at t=0
-              2, 0, 0,    // Triangle vertex 1 at t=0
-              -1, 0, -1;  // Triangle vertex 2 at t=0
+        V0 << 0, d, 0, // Point at t=0
+            -1, 0, 1,  // Triangle vertex 0 at t=0
+            2, 0, 0,   // Triangle vertex 1 at t=0
+            -1, 0, -1; // Triangle vertex 2 at t=0
 
         V1 = V0;
         double dy = GENERATE(-1, 1, 1e-1);
@@ -65,17 +66,16 @@ FrictionSimpleData friction_data_generator()
     {
         V0.resize(4, 3);
         V0 << -1, d, 0, // Edge A vertex 0 at t=0
-              1, d, 0,  // Edge A vertex 1 at t=0
-              0, 0, -1, // Edge B vertex 0 at t=0
-              0, 0, 1;  // Edge B vertex 1 at t=0
+            1, d, 0,    // Edge A vertex 1 at t=0
+            0, 0, -1,   // Edge B vertex 0 at t=0
+            0, 0, 1;    // Edge B vertex 1 at t=0
 
         V1 = V0;
         V1.row(0) << 0.5, d, 0; // Edge A vertex 0 at t=1
         V1.row(1) << 2.5, d, 0; // Edge A vertex 1 at t=1
 
         E.resize(2, 2);
-        E << 0, 1,
-             2, 3;
+        E << 0, 1, 2, 3;
 
         collisions.ee_collisions.emplace_back(0, 1, 0.0);
         collisions.ee_collisions.back().weight_gradient.resize(V0.size());
@@ -85,8 +85,8 @@ FrictionSimpleData friction_data_generator()
     {
         V0.resize(3, 3);
         V0 << -0.5, d, 0, // Point at t=0
-              0, 0, -1,   // Edge vertex 0 at t=0
-              0, 0, 1;    // Edge vertex 1 at t=0
+            0, 0, -1,     // Edge vertex 0 at t=0
+            0, 0, 1;      // Edge vertex 1 at t=0
 
         V1 = V0;
         V1.row(0) << 0.5, d, 0; // Point at t=1
@@ -102,11 +102,11 @@ FrictionSimpleData friction_data_generator()
     {
         V0.resize(2, 3);
         V0 << -1, d, 0, // Point 0 at t=0
-              1, d, 0;  // Point 1 at t=0
+            1, d, 0;    // Point 1 at t=0
 
         V1 = V0;
-        V1 << 0.5, d, 0,   // Point 0 at t=1
-              -0.5, d, 0; // Point 1 at t=1
+        V1 << 0.5, d, 0, // Point 0 at t=1
+            -0.5, d, 0;  // Point 1 at t=1
 
         collisions.vv_collisions.emplace_back(0, 1);
         collisions.vv_collisions.back().weight_gradient.resize(V0.size());
@@ -116,8 +116,8 @@ FrictionSimpleData friction_data_generator()
     {
         V0.resize(3, 2);
         V0 << -0.5, d, // Point at t=0
-              -1, 0,   // Edge vertex 0 at t=0
-              1, 0;    // Edge vertex 1 at t=0
+            -1, 0,     // Edge vertex 0 at t=0
+            1, 0;      // Edge vertex 1 at t=0
 
         V1 = V0;
         V1.row(0) << 0.5, d; // Point at t=1
@@ -133,11 +133,11 @@ FrictionSimpleData friction_data_generator()
     {
         V0.resize(2, 2);
         V0 << -1, d, // Point 0 at t=0
-              1, d;  // Point 1 at t=0
+            1, d;    // Point 1 at t=0
 
         V1 = V0;
-        V1 << 0.5, d,  // Point 0 at t=1
-              -0.5, d; // Point 1 at t=1
+        V1 << 0.5, d, // Point 0 at t=1
+            -0.5, d;  // Point 1 at t=1
 
         collisions.vv_collisions.emplace_back(0, 1);
         collisions.vv_collisions.back().weight_gradient.resize(V0.size());
@@ -150,7 +150,8 @@ FrictionSimpleData friction_data_generator()
 // FrictionComplexData friction_data_generator_with_pairwise()
 // {
 //     FrictionComplexData data;
-//     auto& [V0, V1, E, F, collisions, static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness, pairwise_friction] = data;
+//     auto& [V0, V1, E, F, collisions, static_mu, kinetic_mu, epsv_times_h,
+//     dhat, barrier_stiffness, pairwise_friction] = data;
 
 //     collisions.set_enable_shape_derivatives(true);
 
@@ -169,15 +170,19 @@ FrictionSimpleData friction_data_generator()
 // #endif
 
 //     // Define pairwise friction values for different material pairs
-//     pairwise_friction[std::make_tuple(1, 2)] = {0.6, 0.4};  // Pairwise static/kinetic friction for material 1-2
-//     pairwise_friction[std::make_tuple(2, 3)] = {0.8, 0.6};  // Pairwise static/kinetic friction for material 2-3
-//     pairwise_friction[std::make_tuple(1, 3)] = {0.9, 0.7};  // Pairwise static/kinetic friction for material 1-3
+//     pairwise_friction[std::make_tuple(1, 2)] = {0.6, 0.4};  // Pairwise
+//     static/kinetic friction for material 1-2
+//     pairwise_friction[std::make_tuple(2, 3)] = {0.8, 0.6};  // Pairwise
+//     static/kinetic friction for material 2-3
+//     pairwise_friction[std::make_tuple(1, 3)] = {0.9, 0.7};  // Pairwise
+//     static/kinetic friction for material 1-3
 
 //     const double max_d = dhat - 2e-8;
 //     const double d = GENERATE_COPY(range(0.0, max_d, max_d / 10));
 
 //     // Utility lambda to configure collisions
-//     auto configure_collisions = [&](const std::vector<std::pair<int, int>>& edges, const Eigen::MatrixXi& faces) {
+//     auto configure_collisions = [&](const std::vector<std::pair<int, int>>&
+//     edges, const Eigen::MatrixXi& faces) {
 //         if (!edges.empty()) {
 //             E.resize(edges.size(), 2);
 //             for (size_t i = 0; i < edges.size(); ++i) {

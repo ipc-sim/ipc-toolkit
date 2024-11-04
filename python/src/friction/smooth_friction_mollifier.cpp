@@ -173,7 +173,8 @@ void define_smooth_friction_mollifier(py::module_& m)
         Returns:
             The value of the mollifier function at s, using the appropriate mu (static or kinetic).
         )ipc_Qu8mg5v7",
-        py::arg("s"), py::arg("epsv"), py::arg("static_mu"), py::arg("kinetic_mu"));
+        py::arg("s"), py::arg("epsv"), py::arg("static_mu"),
+        py::arg("kinetic_mu"));
 
     m.def(
         "f1_SF_over_x_pairwise_transition", &f1_SF_over_x_pairwise_transition,
@@ -189,10 +190,12 @@ void define_smooth_friction_mollifier(py::module_& m)
         Returns:
             The value of the derivative of f0_SF divided by s, using the appropriate mu (static or kinetic).
         )ipc_Qu8mg5v7",
-        py::arg("s"), py::arg("epsv"), py::arg("static_mu"), py::arg("kinetic_mu"));
+        py::arg("s"), py::arg("epsv"), py::arg("static_mu"),
+        py::arg("kinetic_mu"));
 
     m.def(
-        "df1_x_minus_f1_over_x3_pairwise_transition", &df1_x_minus_f1_over_x3_pairwise_transition,
+        "df1_x_minus_f1_over_x3_pairwise_transition",
+        &df1_x_minus_f1_over_x3_pairwise_transition,
         R"ipc_Qu8mg5v7(
         The derivative of f1 times s minus f1 all divided by s cubed, using the appropriate mu (static or kinetic).
 
@@ -205,5 +208,6 @@ void define_smooth_friction_mollifier(py::module_& m)
         Returns:
             The derivative of f1 times s minus f1 all divided by s cubed, using the appropriate mu (static or kinetic).
         )ipc_Qu8mg5v7",
-        py::arg("s"), py::arg("epsv"), py::arg("static_mu"), py::arg("kinetic_mu"));
+        py::arg("s"), py::arg("epsv"), py::arg("static_mu"),
+        py::arg("kinetic_mu"));
 }

@@ -169,7 +169,8 @@ bool read_ipc_friction_data_pairwise(
     double& potential,
     Eigen::VectorXd& grad,
     Eigen::SparseMatrix<double>& hess,
-    std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction)
+    std::map<std::tuple<int, int>, std::pair<double, double>>&
+        pairwise_friction)
 {
     nlohmann::json data;
 
@@ -233,13 +234,13 @@ bool read_ipc_friction_data_pairwise(
             int id2 = std::stoi(ids.substr(ids.find("_") + 1));
             pairwise_friction[std::make_tuple(id1, id2)] = {
                 pair["static_mu"].get<double>(),
-                pair["kinetic_mu"].get<double>()};
+                pair["kinetic_mu"].get<double>()
+            };
         }
     }
 
     return true;
 }
-
 
 TEST_CASE(
     "Compare IPC friction derivatives", "[friction][gradient][hessian][data]")
@@ -335,8 +336,9 @@ TEST_CASE(
     CHECK(hess.isApprox(expected_hess));
 }
 
-
-TEST_CASE("Compare IPC friction derivatives with pairwise friction", "[friction][gradient][hessian][data][pairwise]")
+TEST_CASE(
+    "Compare IPC friction derivatives with pairwise friction",
+    "[friction][gradient][hessian][data][pairwise]")
 {
     Eigen::MatrixXd V_start, V_lagged, V_end;
     Eigen::MatrixXi E, F;

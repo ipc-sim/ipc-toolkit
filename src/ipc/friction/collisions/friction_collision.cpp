@@ -9,7 +9,6 @@
 
 namespace ipc {
 
-
 void FrictionCollision::init(
     const Collision& collision,
     const VectorMax12d& positions,
@@ -27,10 +26,10 @@ void FrictionCollision::init(
     closest_point = compute_closest_point(positions);
     tangent_basis = compute_tangent_basis(positions);
 
-    // Compute the normal force magnitude based on barrier potential and stiffness
+    // Compute the normal force magnitude based on barrier potential and
+    // stiffness
     normal_force_magnitude = this->compute_normal_force_magnitude(
         positions, barrier_potential, barrier_stiffness, collision.dmin);
-
 }
 
 void FrictionCollision::init(
@@ -52,7 +51,8 @@ void FrictionCollision::init(
     closest_point = compute_closest_point(positions);
     tangent_basis = compute_tangent_basis(positions);
 
-    // Compute the normal force magnitude based on barrier potential and stiffness
+    // Compute the normal force magnitude based on barrier potential and
+    // stiffness
     normal_force_magnitude = this->compute_normal_force_magnitude(
         positions, barrier_potential, barrier_stiffness, collision.dmin);
 }
@@ -89,11 +89,11 @@ VectorMax12d FrictionCollision::compute_normal_force_magnitude_gradient(
 
     // Adjust gradient of the normal force magnitude if physical barrier is used
     if (barrier_potential.use_physical_barrier()) {
-        grad_N *= dhat / barrier_potential.barrier().units((2 * dmin + dhat) * dhat);
+        grad_N *=
+            dhat / barrier_potential.barrier().units((2 * dmin + dhat) * dhat);
     }
 
     return grad_N;
 }
-
 
 } // namespace ipc

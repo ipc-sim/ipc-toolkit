@@ -7,7 +7,7 @@ namespace ipc {
 BarrierPotential::BarrierPotential(
     const double dhat, const bool use_physical_barrier)
     : BarrierPotential(
-          std::make_shared<ClampedLogBarrier>(), dhat, use_physical_barrier)
+        std::make_shared<ClampedLogBarrier>(), dhat, use_physical_barrier)
 {
 }
 

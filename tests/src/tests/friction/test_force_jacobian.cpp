@@ -13,7 +13,6 @@
 
 using namespace ipc;
 
-
 void check_friction_force_jacobian(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& Ut,
@@ -221,7 +220,6 @@ void check_friction_force_jacobian(
     CHECK(fd::compare_jacobian(-jac_force, hess_D));
 }
 
-
 void check_friction_force_jacobian_with_pairwise(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& Ut,
@@ -234,7 +232,8 @@ void check_friction_force_jacobian_with_pairwise(
     const double dhat,
     const double barrier_stiffness,
     const bool recompute_collisions,
-    const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction = {})
+    const std::map<std::tuple<int, int>, std::pair<double, double>>&
+        pairwise_friction = {})
 {
     REQUIRE(collisions.enable_shape_derivatives());
 
@@ -255,7 +254,8 @@ void check_friction_force_jacobian_with_pairwise(
     FrictionCollisions friction_collisions;
     friction_collisions.build(
         mesh, X + Ut, collisions, BarrierPotential(dhat), barrier_stiffness,
-        static_mu, kinetic_mu, pairwise_friction);  // Pass pairwise friction here
+        static_mu, kinetic_mu,
+        pairwise_friction); // Pass pairwise friction here
     CHECK(friction_collisions.size());
 
     const FrictionPotential D(epsv_times_h);
@@ -553,11 +553,13 @@ TEST_CASE(
         mesh, Ut, U, collisions, mu, epsv_dt, dhat, kappa, true);
 }
 
-// TEST_CASE("Friction force jacobian with pairwise friction", "[friction][force-jacobian][pairwise]")
+// TEST_CASE("Friction force jacobian with pairwise friction",
+// "[friction][force-jacobian][pairwise]")
 // {
 //     const int x_case = GENERATE(0, 1);
 //     FrictionComplexData data = friction_data_generator_with_pairwise();
-//     const auto& [V0, V1, E, F, collisions, static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness, pairwise_friction] =
+//     const auto& [V0, V1, E, F, collisions, static_mu, kinetic_mu,
+//     epsv_times_h, dhat, barrier_stiffness, pairwise_friction] =
 //         data;
 
 //     REQUIRE(collisions.enable_shape_derivatives());
@@ -580,6 +582,7 @@ TEST_CASE(
 
 //     // Check friction force jacobian with pairwise friction coefficients
 //     check_friction_force_jacobian_with_pairwise(
-//         mesh, Ut, U, collisions, static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness,
-//         false, pairwise_friction);  // Pass the pairwise friction map
+//         mesh, Ut, U, collisions, static_mu, kinetic_mu, epsv_times_h, dhat,
+//         barrier_stiffness, false, pairwise_friction);  // Pass the pairwise
+//         friction map
 // }

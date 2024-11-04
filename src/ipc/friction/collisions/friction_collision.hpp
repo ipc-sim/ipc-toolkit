@@ -12,7 +12,6 @@ namespace ipc {
 
 class FrictionCollision : virtual public CollisionStencil {
 protected:
-
     /// @brief Initialize the collision.
     /// @param collision Collision stencil.
     /// @param positions Collision stencil's vertex positions.
@@ -23,7 +22,6 @@ protected:
         const VectorMax12d& positions,
         const BarrierPotential& barrier_potential,
         const double barrier_stiffness);
-
 
     /// @brief Initialize the collision.
     /// @param collision Collision stencil.
