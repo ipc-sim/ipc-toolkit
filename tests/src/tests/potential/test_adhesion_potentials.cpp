@@ -48,7 +48,7 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
     NormalCollisions collisions;
     const bool use_area_weighting = GENERATE(false, true);
     // TODO: Debug why the improved max approx. does not work for adhesion
-    const bool use_improved_max_approximator = false; // GENERATE(false, true);
+    const bool use_improved_max_approximator = GENERATE(false, true);
     collisions.set_use_area_weighting(use_area_weighting);
     collisions.set_use_improved_max_approximator(use_improved_max_approximator);
     collisions.build(mesh, vertices, dhat_a);
