@@ -2,9 +2,9 @@
 
 #include <Eigen/Core>
 
-#include <vector>
-#include <ostream>
 #include <fstream>
+#include <ostream>
+#include <vector>
 
 namespace ipc {
 

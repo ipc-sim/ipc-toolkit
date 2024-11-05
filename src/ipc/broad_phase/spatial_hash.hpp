@@ -3,8 +3,8 @@
 #pragma once
 
 #include <ipc/broad_phase/broad_phase.hpp>
-#include <ipc/utils/unordered_map_and_set.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <vector>
 

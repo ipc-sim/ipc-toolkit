@@ -1,10 +1,9 @@
 #include "ipc.hpp"
 
+#include <ipc/config.hpp>
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/utils/intersection.hpp>
 #include <ipc/utils/world_bbox_diagonal_length.hpp>
-
-#include <ipc/config.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
 #include <scalable_ccd/cuda/ipc_ccd_strategy.hpp>

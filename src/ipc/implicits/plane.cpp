@@ -1,10 +1,10 @@
 #include "plane.hpp"
 
-#include <ipc/distance/point_plane.hpp>
 #include <ipc/ccd/point_static_plane.hpp>
+#include <ipc/distance/point_plane.hpp>
 
-#include <tbb/parallel_reduce.h>
 #include <tbb/blocked_range.h>
+#include <tbb/parallel_reduce.h>
 
 namespace ipc {
 

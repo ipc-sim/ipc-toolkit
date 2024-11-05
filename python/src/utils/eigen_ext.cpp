@@ -9,9 +9,11 @@ void define_eigen_ext(py::module_& m)
 {
     m.def(
         "project_to_pd",
+        // clang-format off
         &project_to_pd<
             double, Eigen::Dynamic, Eigen::Dynamic,
             Eigen::ColMajor | Eigen::AutoAlign, Eigen::Dynamic, Eigen::Dynamic>,
+        // clang-format on
         R"ipc_Qu8mg5v7(
         Matrix projection onto positive definite cone
 
@@ -35,9 +37,11 @@ void define_eigen_ext(py::module_& m)
 
     m.def(
         "project_to_psd",
+        // clang-format off
         &project_to_psd<
             double, Eigen::Dynamic, Eigen::Dynamic,
             Eigen::ColMajor | Eigen::AutoAlign, Eigen::Dynamic, Eigen::Dynamic>,
+        // clang-format on
         R"ipc_Qu8mg5v7(
         Matrix projection onto positive semi-definite cone
 

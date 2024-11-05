@@ -1,7 +1,7 @@
 #include "closest_point.hpp"
 
-#include <Eigen/Core>
 #include <Eigen/Cholesky>
+#include <Eigen/Core>
 
 namespace ipc {
 
