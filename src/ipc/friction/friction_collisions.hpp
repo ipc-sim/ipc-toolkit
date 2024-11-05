@@ -47,7 +47,6 @@ public:
         const std::function<double(double, double, std::optional<BlendType>)>&
             blend_mu = default_blend_mu);
 
-
     void build(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
@@ -105,14 +104,5 @@ public:
     std::vector<EdgeEdgeFrictionCollision> ee_collisions;
     std::vector<FaceVertexFrictionCollision> fv_collisions;
 
-private:
-    std::pair<double, double> retrieve_friction_coefficients(
-        int id1,
-        int id2,
-        const std::map<std::tuple<int, int>, std::pair<double, double>>&
-            pairwise_friction,
-        std::optional<double> static_mu,
-        std::optional<double> kinetic_mu) const;
 };
-
 } // namespace ipc
