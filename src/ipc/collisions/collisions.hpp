@@ -159,6 +159,7 @@ protected:
     bool m_use_area_weighting = false;
     bool m_use_improved_max_approximator = false;
     bool m_enable_shape_derivatives = false;
+    bool m_use_convergent_formulation = true;
 };
 
 } // namespace ipc
