@@ -302,6 +302,17 @@ void Collisions::set_use_improved_max_approximator(
     m_use_improved_max_approximator = use_improved_max_approximator;
 }
 
+void Collisions::set_use_convergent_formulation(const bool use_convergent_formulation) {
+    if (!empty() && use_convergent_formulation != m_use_convergent_formulation) {
+        logger().warn(
+            "Setting use_convergent_formulation after building collisions. "
+            "Re-build collisions for this to have an effect.");
+    }
+
+    m_use_improved_max_approximator = use_improved_max_approximator;
+    m_use_area_weighting = use_area_weighting;
+}
+
 void Collisions::set_enable_shape_derivatives(
     const bool enable_shape_derivatives)
 {
