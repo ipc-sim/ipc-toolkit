@@ -53,6 +53,18 @@ public:
         const Collisions& collisions,
         const BarrierPotential& barrier_potential,
         const double barrier_stiffness,
+        double mu,
+        const double static_mu,
+        const double kinetic_mu,
+        const std::map<std::tuple<int, int>, std::pair<double, double>>&
+            pairwise_friction);
+
+    void build(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const Collisions& collisions,
+        const BarrierPotential& barrier_potential,
+        const double barrier_stiffness,
         const double static_mu,
         const double kinetic_mu,
         const std::map<std::tuple<int, int>, std::pair<double, double>>&

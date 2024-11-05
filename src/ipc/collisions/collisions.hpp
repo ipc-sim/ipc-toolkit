@@ -129,12 +129,6 @@ public:
     void
     set_use_improved_max_approximator(const bool use_improved_max_approximator);
 
-    /// @brief Set if the collision set should use the improved max approximator.
-    /// @warning This must be set before the collisions are built.
-    /// @param use_improved_max_approximator If the collision set should use the improved max approximator.
-    void 
-    set_use_convergent_formulation(const bool use_convergent_formulation);
-
     /// @brief Get if the collision set are using the convergent formulation.
     /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
     /// @return If the collision set are using the convergent formulation.
@@ -159,7 +153,6 @@ protected:
     bool m_use_area_weighting = false;
     bool m_use_improved_max_approximator = false;
     bool m_enable_shape_derivatives = false;
-    bool m_use_convergent_formulation = true;
 };
 
 } // namespace ipc

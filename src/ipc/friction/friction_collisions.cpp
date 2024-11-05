@@ -100,6 +100,7 @@ void FrictionCollisions::build(
     const Collisions& collisions,
     const BarrierPotential& barrier_potential,
     const double barrier_stiffness,
+    const double mu,
     const double static_mu,
     const double kinetic_mu,
     const std::map<std::tuple<int, int>, std::pair<double, double>>&
@@ -109,6 +110,16 @@ void FrictionCollisions::build(
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
+
+    if (mu < 0 || static_mu < 0 || kinetic_mu < 0) {
+        throw std::invalid_argument(
+            "Friction coefficient must be non-negative.");
+    }
+
+    if (static_mu == 0 && kinetic_mu == 0 && mu != 0) {
+        static_mu = mu;
+        kinetic_mu = mu;
+    }
 
     auto get_pairwise_friction = [&](int mat1,
                                      int mat2) -> std::pair<double, double> {
