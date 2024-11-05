@@ -13,7 +13,7 @@ template <typename H, typename T> H AbslHashValue(H h, T t);
 
 template <class T> struct Hash {
     Hash() = default;
-    Hash(size_t h) : hash(h) {};
+    Hash(size_t h) : hash(h) { };
 
     template <typename Value>
     static Hash combine(const Hash& h, const Value value)

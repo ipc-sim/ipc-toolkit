@@ -1,6 +1,7 @@
 #include "point_plane.hpp"
 
 #include <ipc/utils/eigen_ext.hpp>
+
 #include <Eigen/Geometry>
 
 namespace ipc {

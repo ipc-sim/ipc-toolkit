@@ -1,17 +1,16 @@
 #include "candidates.hpp"
 
-#include <ipc/ipc.hpp>
-#include <ipc/utils/save_obj.hpp>
-#include <ipc/utils/eigen_ext.hpp>
-
 #include <ipc/config.hpp>
+#include <ipc/ipc.hpp>
+#include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/save_obj.hpp>
 
 #include <igl/remove_unreferenced.h>
-#include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
-#include <shared_mutex>
+#include <tbb/parallel_for.h>
 
 #include <fstream>
+#include <shared_mutex>
 
 namespace ipc {
 

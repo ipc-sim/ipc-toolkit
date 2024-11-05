@@ -1,12 +1,11 @@
 #pragma once
 
-#include <ipc/potentials/barrier_potential.hpp>
+#include <ipc/config.hpp>
+#include <ipc/barrier/barrier.hpp>
 #include <ipc/friction/relative_velocity.hpp>
 #include <ipc/friction/smooth_friction_mollifier.hpp>
+#include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/utils/eigen_ext.hpp>
-#include <ipc/barrier/barrier.hpp>
-
-#include <ipc/config.hpp>
 
 namespace ipc {
 
