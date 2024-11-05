@@ -59,7 +59,7 @@ public:
 /// @warning This implementation will not work with dmin > 0
 class PhysicalBarrier : public ipc::NormalizedClampedLogBarrier {
 public:
-    PhysicalBarrier(const bool use_dist_sqr) : use_dist_sqr(use_dist_sqr) { }
+    PhysicalBarrier(const bool _use_dist_sqr) : use_dist_sqr(_use_dist_sqr) { }
 
     double operator()(const double d, const double dhat) const override
     {
