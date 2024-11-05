@@ -309,8 +309,8 @@ void Collisions::set_use_convergent_formulation(const bool use_convergent_formul
             "Re-build collisions for this to have an effect.");
     }
 
-    m_use_improved_max_approximator = use_improved_max_approximator;
-    m_use_area_weighting = use_area_weighting;
+    m_use_improved_max_approximator = use_convergent_formulation;
+    m_use_area_weighting = use_convergent_formulation;
 }
 
 void Collisions::set_enable_shape_derivatives(
