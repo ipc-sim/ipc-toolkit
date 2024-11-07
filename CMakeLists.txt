@@ -74,10 +74,8 @@ option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD meth
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
 
-mark_as_advanced(
-    IPC_TOOLKIT_WITH_SIMD
-    IPC_TOOLKIT_WITH_CODE_COVERAGE
-)
+mark_as_advanced(IPC_TOOLKIT_WITH_SIMD)          # This does not work reliably
+mark_as_advanced(IPC_TOOLKIT_WITH_CODE_COVERAGE) # This is used in GitHub Actions
 
 # Set default minimum C++ standard
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
@@ -98,10 +96,8 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/find/")
 include(ipc_toolkit_cpm_cache)
 include(ipc_toolkit_use_colors)
 
-# Generate position-independent code by default for non-MSVC compilers
-if(NOT MSVC)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif()
+# Generate position-independent code by default
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ################################################################################
 # IPC Toolkit Library
@@ -133,45 +129,60 @@ target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
 # Dependencies
 ################################################################################
 
-# Include dependencies
+# Eigen
 include(eigen)
-include(libigl)
-include(onetbb)
-include(tight_inclusion)
-include(scalable_ccd)
-include(simple_bvh)
-include(spdlog)
-
-# Link dependencies
 target_link_libraries(ipc_toolkit PUBLIC Eigen3::Eigen)
-target_link_libraries(ipc_toolkit PUBLIC igl::core igl::predicates)
-target_link_libraries(ipc_toolkit PUBLIC TBB::tbb)
-target_link_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
-target_link_libraries(ipc_toolkit PUBLIC scalable_ccd::scalable_ccd)
-target_link_libraries(ipc_toolkit PUBLIC simple_bvh::simple_bvh)
-target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
 
-# Optional dependencies
+# libigl
+include(libigl)
+target_link_libraries(ipc_toolkit PUBLIC igl::core igl::predicates)
+
+# TBB
+include(onetbb)
+target_link_libraries(ipc_toolkit PUBLIC TBB::tbb)
+
+# Provably conservative CCD of [Wang and Ferguson et al. 2021]
+include(tight_inclusion)
+target_link_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
+
+# Scalable CCD (STQ broad phase and GPU Tight Inclusion)
+include(scalable_ccd)
+target_link_libraries(ipc_toolkit PUBLIC scalable_ccd::scalable_ccd)
+
+# CCD
 if(IPC_TOOLKIT_WITH_INEXACT_CCD)
+  # Etienne Vouga's CTCD Library for the floating point root finding algorithm
   include(evouga_ccd)
   target_link_libraries(ipc_toolkit PUBLIC evouga::ccd)
 endif()
 
+# SimpleBVH
+include(simple_bvh)
+target_link_libraries(ipc_toolkit PUBLIC simple_bvh::simple_bvh)
+
+# Logger
+include(spdlog)
+target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
+
+# rational-cpp (requires GMP)
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)
   include(rational_cpp)
   target_link_libraries(ipc_toolkit PUBLIC rational::rational)
 endif()
 
+# Faster unordered map
 if(IPC_TOOLKIT_WITH_ROBIN_MAP)
   include(robin_map)
   target_link_libraries(ipc_toolkit PUBLIC tsl::robin_map)
 endif()
 
+# Hashes
 if(IPC_TOOLKIT_WITH_ABSEIL)
   include(abseil)
   target_link_libraries(ipc_toolkit PUBLIC absl::hash)
 endif()
 
+# Intervals
 if(IPC_TOOLKIT_WITH_FILIB)
   include(filib)
   target_link_libraries(ipc_toolkit PUBLIC filib::filib)
@@ -197,14 +208,6 @@ else()
   message(STATUS "SIMD support disabled")
 endif()
 
-# Compiler options for different platforms and compilers
-if(MSVC)
-    target_compile_options(ipc_toolkit PRIVATE /W4 /MP)
-    target_compile_definitions(ipc_toolkit PRIVATE NOMINMAX)
-else()
-    target_compile_options(ipc_toolkit PRIVATE -Wall -Wextra -Wpedantic)
-endif()
-
 # Use C++17
 target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
 
@@ -218,24 +221,18 @@ if(IPC_TOOLKIT_WITH_CUDA)
 
   if(CMAKE_CUDA_COMPILER)
     enable_language(CUDA)
-    # Explicitly ensure -fPIC is not passed to nvcc
-    set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --compiler-options -fno-PIC") # Ensure `-fPIC` is excluded
-
-    # Set CUDA architectures based on the detected GPU
-    if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
-      set(CMAKE_CUDA_ARCHITECTURES "native")
-    else()
-      include(FindCUDA/select_compute_arch)
-      CUDA_DETECT_INSTALLED_GPUS(CUDA_ARCH_LIST)
-      string(STRIP "${CUDA_ARCH_LIST}" CUDA_ARCH_LIST)
-      string(REPLACE " " ";" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
-      string(REPLACE "." "" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
-      set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
-    endif()
   else()
-    message(FATAL_ERROR "CUDA support is required but not found! Please install CUDA or disable IPC_TOOLKIT_WITH_CUDA.")
+    message(FATAL_ERROR "No CUDA support found!")
   endif()
+
+  # We need to explicitly state that we need all CUDA files in the particle
+  # library to be built with -dc as the member functions could be called by
+  # other libraries and executables.
+  set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+  # Use the same CUDA architectures Scalable CCD
+  get_target_property(CMAKE_CUDA_ARCHITECTURES scalable_ccd CUDA_ARCHITECTURES)
+  set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
 endif()
 
 ################################################################################
@@ -269,10 +266,3 @@ endif()
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_PYTHON)
   add_subdirectory(python)
 endif()
-
-# Inform users about configuration choices
-message(STATUS "Building IPC Toolkit with the following options:")
-message(STATUS "  - CUDA support: ${IPC_TOOLKIT_WITH_CUDA}")
-message(STATUS "  - SIMD support: ${IPC_TOOLKIT_WITH_SIMD}")
-message(STATUS "  - Rational intersection: ${IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION}")
-message(STATUS "  - Robin map support: ${IPC_TOOLKIT_WITH_ROBIN_MAP}")
