@@ -3,7 +3,11 @@
 
 namespace ipc {
 
-enum class BlendType { AVG, MIN, MAX };
+enum class BlendType {
+    AVG = 0, // Average
+    MIN = 1, // Minimum
+    MAX = 2, // Maximum
+};
 
 /// @brief Smooth friction mollifier function.
 ///
