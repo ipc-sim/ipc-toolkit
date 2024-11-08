@@ -25,7 +25,7 @@ classifiers = [
 ]
 requires-python = ">=3.6"
 dependencies = ["numpy", "scipy"]
-keywords = ["IPC", "simulation", "physics", "science", "reserch"]
+keywords = ["IPC", "simulation", "physics", "science", "research"]
 
 [project.urls]
 "Homepage" = "https://ipctk.xyz"
