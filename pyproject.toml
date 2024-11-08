@@ -10,7 +10,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ipctk"
 version = "1.3.1"
-authors = [{ name = "Zachary Ferguson", email = "zfergus@nyu.edu" }]
+authors = [{ name = "Zachary Ferguson", email = "zy.fergus@gmail.edu" }]
 description = "A set of reusable functions to integrate Incremental Potential Contact (IPC) into a simulation."
 readme = "docs/PYPI_README.md"
 license = { file = "LICENSE" }
