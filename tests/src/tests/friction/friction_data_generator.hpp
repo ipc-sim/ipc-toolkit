@@ -1,10 +1,12 @@
 #pragma once
 
 #include <catch2/catch_test_macros.hpp>
-
 #include <ipc/friction/collisions/friction_collision.hpp>
+#include <functional>
+#include <map>
+#include <tuple>
 
-struct FrictionData {
+struct FrictionSimpleData {
     Eigen::MatrixXd V0;
     Eigen::MatrixXd V1;
     Eigen::MatrixXi E;
@@ -16,7 +18,24 @@ struct FrictionData {
     double barrier_stiffness;
 };
 
+struct FrictionComplexData {
+    Eigen::MatrixXd V0;
+    Eigen::MatrixXd V1;
+    Eigen::MatrixXi E;
+    Eigen::MatrixXi F;
+    ipc::Collisions collisions;
+    double mu;
+    double static_mu;
+    double kinetic_mu;
+    double epsv_times_h;
+    double p;
+    double barrier_stiffness;
+    std::map<std::tuple<int, int>, std::pair<double, double>> pairwise_friction;
+    std::function<double(double, double, std::optional<ipc::BlendType>)> blend_mu;
+};
+
 Eigen::VectorXd LogSpaced(int num, double start, double stop, double base = 10);
 Eigen::VectorXd GeomSpaced(int num, double start, double stop);
 
-FrictionData friction_data_generator();
+FrictionSimpleData friction_data_generator();
+FrictionComplexData friction_data_generator_with_pairwise();

@@ -2,11 +2,6 @@
 
 namespace ipc {
 
-FrictionPotential::FrictionPotential(const double epsv) : Super()
-{
-    set_epsv(epsv);
-}
-
 // -- Cumulative methods -------------------------------------------------------
 
 Eigen::VectorXd FrictionPotential::force(
@@ -151,7 +146,7 @@ double FrictionPotential::operator()(
         * collision.relative_velocity(velocities);
 
     return collision.weight * collision.mu * collision.normal_force_magnitude
-        * f0_SF(u.norm(), epsv());
+        * f0_SF(u.norm(), epsv(), collision.s_mu, collision.k_mu);
 }
 
 VectorMax12d FrictionPotential::gradient(
@@ -170,7 +165,8 @@ VectorMax12d FrictionPotential::gradient(
         * collision.tangent_basis;
 
     // Compute f₁(‖u‖)/‖u‖
-    const double f1_over_norm_u = f1_SF_over_x(u.norm(), epsv());
+    const double f1_over_norm_u =
+        f1_SF_over_x(u.norm(), epsv(), collision.s_mu, collision.k_mu);
 
     // μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u ∈ ℝⁿ
     // (n×2)(2×1) = (n×1)
@@ -202,7 +198,8 @@ MatrixMax12d FrictionPotential::hessian(
     const double norm_u = u.norm();
 
     // Compute f₁(‖u‖)/‖u‖
-    const double f1_over_norm_u = f1_SF_over_x(norm_u, epsv());
+    const double f1_over_norm_u =
+        f1_SF_over_x(norm_u, epsv(), collision.s_mu, collision.k_mu);
 
     // Compute μ N(xᵗ)
     const double scale =
@@ -240,7 +237,8 @@ MatrixMax12d FrictionPotential::hessian(
     } else {
         // ∇²D(v) = μ N T [f₂(‖u‖) uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
         //  ⟹ only need to project the inner 2x2 matrix to PSD
-        const double f2 = df1_x_minus_f1_over_x3(norm_u, epsv());
+        const double f2 = df1_x_minus_f1_over_x3(
+            norm_u, epsv(), collision.s_mu, collision.k_mu);
 
         MatrixMax2d inner_hess = f2 * u * u.transpose();
         inner_hess.diagonal().array() += f1_over_norm_u;

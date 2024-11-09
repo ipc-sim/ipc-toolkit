@@ -13,6 +13,10 @@
 
 using namespace ipc;
 
+// auto default_blend_mu = [](double mu1, double mu2, std::optional<BlendType>) {
+//     return ipc::blend_mu(mu1, mu2, BlendType::TRANSITION);
+// };
+
 void check_friction_force_jacobian(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& Ut,
@@ -223,7 +227,7 @@ void check_friction_force_jacobian(
 TEST_CASE("Friction force jacobian", "[friction][force-jacobian]")
 {
     const int x_case = GENERATE(0, 1);
-    FrictionData data = friction_data_generator();
+    FrictionSimpleData data = friction_data_generator();
     const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, dhat, barrier_stiffness] =
         data;
     REQUIRE(collisions.enable_shape_derivatives());

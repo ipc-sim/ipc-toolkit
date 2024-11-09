@@ -3,6 +3,8 @@
 #include <ipc/friction/friction_collisions.hpp>
 #include <ipc/potentials/potential.hpp>
 
+#include <optional>
+
 namespace ipc {
 
 /// @brief The friction dissipative potential.
@@ -12,7 +14,10 @@ class FrictionPotential : public Potential<FrictionCollisions> {
 public:
     /// @brief Construct a friction potential.
     /// @param epsv The smooth friction mollifier parameter \f$\epsilon_v\f$.
-    explicit FrictionPotential(const double epsv);
+    explicit FrictionPotential(const double epsv) : m_epsv(epsv)
+    {
+        assert(epsv > 0);
+    }
 
     /// @brief Get the smooth friction mollifier parameter \f$\epsilon_v\f$.
     double epsv() const { return m_epsv; }
@@ -45,11 +50,11 @@ public:
     /// @param mesh The collision mesh.
     /// @param rest_positions Rest positions of the vertices (rowwise).
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
-    /// @param velocities Current displacements of the vertices (rowwise).
+    /// @param velocities Current velocities of the vertices (rowwise).
     /// @param barrier_potential Barrier potential (used for normal force magnitude).
     /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
     /// @param dmin Minimum distance (used for normal force magnitude).
-    /// @param no_mu whether to not multiply by mu
+    /// @param no_mu Whether to exclude the coefficient of friction.
     /// @return The friction force.
     Eigen::VectorXd force(
         const FrictionCollisions& collisions,
@@ -62,12 +67,12 @@ public:
         const double dmin = 0,
         const bool no_mu = false) const;
 
-    /// @brief Compute the Jacobian of the friction force wrt the velocities.
+    /// @brief Compute the Jacobian of the friction force with respect to the velocities.
     /// @param collisions The set of collisions.
     /// @param mesh The collision mesh.
     /// @param rest_positions Rest positions of the vertices (rowwise).
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
-    /// @param velocities Current displacements of the vertices (rowwise).
+    /// @param velocities Current velocities of the vertices (rowwise).
     /// @param barrier_potential Barrier potential (used for normal force magnitude).
     /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
     /// @param wrt The variable to take the derivative with respect to.
@@ -102,10 +107,11 @@ public:
         const FrictionCollision& collision,
         const VectorMax12d& velocities) const override;
 
-    /// @brief Compute the hessian of the potential for a single collision.
+    /// @brief Compute the Hessian of the potential for a single collision.
     /// @param collision The collision
     /// @param velocities The collision stencil's velocities.
-    /// @return The hessian of the potential.
+    /// @param project_hessian_to_psd Whether to project the Hessian to PSD.
+    /// @return The Hessian of the potential.
     MatrixMax12d hessian(
         const FrictionCollision& collision,
         const VectorMax12d& velocities,
@@ -116,12 +122,12 @@ public:
     /// @param collision The collision
     /// @param rest_positions Rest positions of the vertices (rowwise).
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
-    /// @param velocities Current displacements of the vertices (rowwise).
+    /// @param velocities Current velocities of the vertices (rowwise).
     /// @param barrier_potential Barrier potential (used for normal force magnitude).
     /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
     /// @param dmin Minimum distance (used for normal force magnitude).
-    /// @param no_mu Whether to not multiply by mu
-    /// @return Friction force
+    /// @param no_mu Whether to exclude the coefficient of friction.
+    /// @return The friction force.
     VectorMax12d force(
         const FrictionCollision& collision,
         const VectorMax12d& rest_positions,
@@ -130,18 +136,18 @@ public:
         const BarrierPotential& barrier_potential,
         const double barrier_stiffness,
         const double dmin = 0,
-        const bool no_mu = false) const; //< whether to not multiply by mu
+        const bool no_mu = false) const;
 
     /// @brief Compute the friction force Jacobian.
     /// @param collision The collision
     /// @param rest_positions Rest positions of the vertices (rowwise).
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
-    /// @param velocities Current displacements of the vertices (rowwise).
+    /// @param velocities Current velocities of the vertices (rowwise).
     /// @param barrier_potential Barrier potential (used for normal force magnitude).
     /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
     /// @param wrt Variable to differentiate the friction force with respect to.
     /// @param dmin Minimum distance (used for normal force magnitude).
-    /// @return Friction force Jacobian
+    /// @return The friction force Jacobian.
     MatrixMax12d force_jacobian(
         const FrictionCollision& collision,
         const VectorMax12d& rest_positions,

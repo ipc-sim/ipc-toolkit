@@ -36,11 +36,38 @@ void define_friction_collisions(py::module_& m)
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&, const Collisions&,
                 const BarrierPotential&, const double, const Eigen::VectorXd&,
-                const std::function<double(double, double)>&>(
+                const std::function<double(
+                    double, double, std::optional<BlendType>)>&>(
                 &FrictionCollisions::build),
             py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
             py::arg("barrier_potential"), py::arg("barrier_stiffness"),
             py::arg("mus"), py::arg("blend_mu"))
+        .def(
+            "build",
+            py::overload_cast<
+                const CollisionMesh&, const Eigen::MatrixXd&, const Collisions&,
+                const BarrierPotential&, const double, const double,
+                const double,
+                const std::map<
+                    std::tuple<int, int>, std::pair<double, double>>&>(
+                &FrictionCollisions::build),
+            py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
+            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("static_mu"), py::arg("kinetic_mu"),
+            py::arg("pairwise_friction"),
+            R"ipc_Qu8mg5v7(
+            Build the friction collisions with static, kinetic, and pairwise friction coefficients.
+
+            Parameters:
+                mesh: The collision mesh.
+                vertices: Vertex positions.
+                collisions: Collision data.
+                barrier_potential: The barrier potential used for normal force.
+                barrier_stiffness: Barrier stiffness.
+                static_mu: Global static friction coefficient.
+                kinetic_mu: Global kinetic friction coefficient.
+                pairwise_friction: Pairwise static and kinetic friction coefficients.
+            )ipc_Qu8mg5v7")
         .def(
             "__len__", &FrictionCollisions::size,
             "Get the number of friction collisions.")
@@ -68,7 +95,7 @@ void define_friction_collisions(py::module_& m)
             py::arg("i"))
         .def_static(
             "default_blend_mu", &FrictionCollisions::default_blend_mu,
-            py::arg("mu0"), py::arg("mu1"))
+            py::arg("mu0"), py::arg("mu1"), py::arg("type") = std::nullopt)
         .def_readwrite("vv_collisions", &FrictionCollisions::vv_collisions)
         .def_readwrite("ev_collisions", &FrictionCollisions::ev_collisions)
         .def_readwrite("ee_collisions", &FrictionCollisions::ee_collisions)
