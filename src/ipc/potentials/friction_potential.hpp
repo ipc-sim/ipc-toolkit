@@ -3,6 +3,8 @@
 #include <ipc/potentials/potential.hpp>
 #include <ipc/friction/friction_collisions.hpp>
 
+#include <optional>
+
 namespace ipc {
 
 /// @brief The friction dissipative potential.
@@ -155,42 +157,6 @@ public:
         const double barrier_stiffness,
         const DiffWRT wrt,
         const double dmin = 0) const;
-
-    // -------------------------------------------------------------------------
-    // Pairwise Friction Methods
-
-    /// @brief Compute the pairwise friction force (without blending, static and kinetic).
-    VectorMax12d pairwise_force(
-        const FrictionCollision& collision,
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& lagged_displacements,
-        const VectorMax12d& velocities,
-        const BarrierPotential& barrier_potential,
-        const double barrier_stiffness,
-        const double dmin,
-        const double static_mu,
-        const double kinetic_mu) const;
-
-    /// @brief Compute the Jacobian of the pairwise friction force.
-    MatrixMax12d pairwise_force_jacobian(
-        const FrictionCollision& collision,
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& lagged_displacements,
-        const VectorMax12d& velocities,
-        const BarrierPotential& barrier_potential,
-        const double barrier_stiffness,
-        const DiffWRT wrt,
-        const double dmin,
-        const double static_mu,
-        const double kinetic_mu) const;
-
-    /// @brief Compute the Hessian of the pairwise friction force.
-    MatrixMax12d pairwise_hessian(
-        const FrictionCollision& collision,
-        const VectorMax12d& velocities,
-        const PSDProjectionMethod project_hessian_to_psd,
-        const double static_mu,
-        const double kinetic_mu) const;
 
 protected:
     /// @brief The smooth friction mollifier parameter \f$\epsilon_v\f$.

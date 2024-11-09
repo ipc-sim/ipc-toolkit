@@ -13,6 +13,10 @@
 
 #include <Eigen/Core>
 #include <Eigen/Sparse>
+#include <optional>
+#include <functional>
+#include <map>
+#include <tuple>
 
 namespace ipc {
 
@@ -56,8 +60,8 @@ public:
         double mu,
         const double static_mu,
         const double kinetic_mu,
-        const std::map<std::tuple<int, int>, std::pair<double, double>>&
-            pairwise_friction);
+        const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction,
+        const std::function<double(double, double, std::optional<BlendType>)>& blend_mu = default_blend_mu);
 
     // ------------------------------------------------------------------------
 
@@ -80,29 +84,48 @@ public:
     /// @return A const reference to the collision.
     const FrictionCollision& operator[](const size_t i) const;
 
+    /// @brief Default blend function for friction coefficients.
+    /// Uses the specified blending type or defaults to average blending.
     static double default_blend_mu(
-        double mu0, double mu1, std::optional<BlendType> type = std::nullopt)
+        double mu0, double mu1, std::optional<BlendType> type = BlendType::AVG)
     {
-        if (!type.has_value()) {
-            return (mu0 + mu1) / 2;
-        }
-        if (type == BlendType::AVG) {
-            return (mu0 + mu1) / 2;
-        }
-        if (type == BlendType::MIN) {
-            return std::min(mu0, mu1);
-        }
-        if (type == BlendType::MAX) {
-            return std::max(mu0, mu1);
-        }
-        return (mu0 + mu1) / 2;
+        return blend_mu(mu0, mu1, type);
     }
+
+    /// @brief Retrieve the friction coefficients for a pair of vertices.
+    /// @param id1 The ID of the first vertex.
+    /// @param id2 The ID of the second vertex.
+    /// @param pairwise_friction The map containing pairwise friction coefficients.
+    /// @param static_mu The default static friction coefficient.
+    /// @param kinetic_mu The default kinetic friction coefficient.
+    /// @return The static and kinetic friction coefficients.
+    std::pair<double, double> retrieve_friction_coefficients(
+        int id1, int id2,
+        const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction_map,
+        std::optional<double> static_mu = std::nullopt,
+        std::optional<double> kinetic_mu = std::nullopt) const;
+
+    /// @brief Retrieves the static and kinetic friction coefficients for a pair of vertices.
+    /// @param mesh Reference to the collision mesh to access material IDs.
+    /// @param vertex1 Index of the first vertex.
+    /// @param vertex2 Index of the second vertex.
+    /// @param pairwise_friction Map containing pairwise friction coefficients.
+    /// @param default_static_mu Default static friction coefficient.
+    /// @param default_kinetic_mu Default kinetic friction coefficient.
+    /// @return std::pair<double, double> Pair containing {static_mu, kinetic_mu}.
+    std::pair<double, double> get_pairwise_friction_coefficients(
+        const CollisionMesh& mesh,
+        int vertex1,
+        int vertex2,
+        const std::map<std::tuple<int, int>, std::pair<double, double>>&
+            pairwise_friction,
+        double default_static_mu,
+        double default_kinetic_mu) const;
 
 public:
     std::vector<VertexVertexFrictionCollision> vv_collisions;
     std::vector<EdgeVertexFrictionCollision> ev_collisions;
     std::vector<EdgeEdgeFrictionCollision> ee_collisions;
     std::vector<FaceVertexFrictionCollision> fv_collisions;
-
 };
 } // namespace ipc

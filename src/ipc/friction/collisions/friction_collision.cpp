@@ -20,8 +20,8 @@ void FrictionCollision::init(
     const int dim = collision.dim(positions.size());
     tangent_basis.resize(dim, dim - 1);
 
-    this->static_mu = 0;
-    this->kinetic_mu = 0;
+    this->s_mu = 0;
+    this->k_mu = 0;
 
     closest_point = compute_closest_point(positions);
     tangent_basis = compute_tangent_basis(positions);

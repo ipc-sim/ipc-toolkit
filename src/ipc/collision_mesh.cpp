@@ -14,11 +14,11 @@ CollisionMesh::CollisionMesh(
     const Eigen::MatrixXi& faces,
     const Eigen::SparseMatrix<double>& displacement_map)
     : CollisionMesh(
-        std::vector<bool>(rest_positions.rows(), true),
-        rest_positions,
-        edges,
-        faces,
-        displacement_map)
+          std::vector<bool>(rest_positions.rows(), true),
+          rest_positions,
+          edges,
+          faces,
+          displacement_map)
 {
 }
 
@@ -27,7 +27,8 @@ CollisionMesh::CollisionMesh(
     const Eigen::MatrixXd& full_rest_positions,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    const Eigen::SparseMatrix<double>& displacement_map)
+    const Eigen::SparseMatrix<double>& displacement_map,
+    const std::optional<std::vector<int>>& vertex_material_ids)
     : m_full_rest_positions(full_rest_positions)
     , m_edges(edges)
     , m_faces(faces)
@@ -111,6 +112,11 @@ CollisionMesh::CollisionMesh(
     init_adjacencies();
     // Compute these manually if needed.
     // init_area_jacobian();
+
+    // Initialize vertex_material_ids
+    if (!vertex_material_ids.has_value()) {
+        assert(vertex_material_ids.size() == full_rest_positions.rows());
+    }
 }
 
 // ============================================================================

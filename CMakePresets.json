@@ -4,20 +4,6 @@
         {
             "name": "default",
             "binaryDir": "${sourceDir}/build",
-            "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": {
-                    "type": "FILEPATH",
-                    "value": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-                },
-                "CMAKE_BUILD_TYPE": "Release",
-                "IPC_TOOLKIT_BUILD_PYTHON": "ON",
-                "IPC_TOOLKIT_WITH_CUDA": "ON",
-                "IPC_TOOLKIT_WITH_SIMD": "ON",
-                "IPC_TOOLKIT_WITH_ROBIN_MAP": "ON",
-                "IPC_TOOLKIT_WITH_ABSEIL": "ON",
-                "IPC_TOOLKIT_WITH_FILIB": "ON",
-                "IPC_TOOLKIT_WITH_INEXACT_CCD": "ON"
-            },
             "description": "Default profile with all speed-up options enabled."
         },
         {
@@ -25,7 +11,10 @@
             "binaryDir": "${sourceDir}/build-dev",
             "inherits": "default",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "IPC_TOOLKIT_WITH_CODE_COVERAGE": "ON",
+                "IPC_TOOLKIT_BUILD_TESTS": "ON",
+                "IPC_TOOLKIT_BUILD_PYTHON": "ON"
             },
             "description": "Development profile with debug settings."
         },
@@ -58,9 +47,7 @@
                 "IPC_TOOLKIT_WITH_ROBIN_MAP": "ON",
                 "IPC_TOOLKIT_WITH_ABSEIL": "ON",
                 "IPC_TOOLKIT_WITH_FILIB": "ON",
-                "IPC_TOOLKIT_WITH_INEXACT_CCD": "ON",
-                "IPC_TOOLKIT_WITH_CODE_COVERAGE": "OFF",
-                "CMAKE_CXX_FLAGS": "-march=native -O3"
+                "IPC_TOOLKIT_WITH_INEXACT_CCD": "ON"
             },
             "description": "Profile with all optimizations for maximum performance."
         }

@@ -2,6 +2,8 @@
 
 #include <ipc/collision_mesh.hpp>
 
+#include <optional>
+
 using namespace ipc;
 
 TEST_CASE("Collision mesh", "[collision_mesh]")
@@ -110,4 +112,17 @@ TEST_CASE("Codim points collision mesh", "[collision_mesh]")
     Eigen::VectorXi expected_codim_vertices(4);
     expected_codim_vertices << 0, 1, 2, 3;
     CHECK(mesh.codim_vertices() == expected_codim_vertices);
+}
+
+TEST_CASE("Material ID handling", "[collision_mesh][materials]") {
+    Eigen::MatrixXd V(4, 2);
+    V << 0, 0, 1, 0, 0, 1, 1, 1;
+    Eigen::MatrixXi E(4, 2);
+    E << 0, 1, 1, 3, 3, 2, 2, 0;
+    std::optional<std::vector<int>> material_ids = std::vector<int>{0, 1, 2, 3};
+
+    CollisionMesh mesh(V, E, Eigen::MatrixXi(), Eigen::SparseMatrix<double>(), material_ids);
+
+    CHECK(mesh.has_material_ids() == true);
+    CHECK(mesh.vertex_material_ids() == material_ids);
 }

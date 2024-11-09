@@ -3,15 +3,19 @@ repos:
     rev: v14.0.0
     hooks:
       - id: clang-format
+        name: clang-format
+        description: "Use clang-format to format C/C++ code"
+        entry: clang-format-18
         args:
           - --style=file
           - --verbose
-        files: \.(c|h)$
+        files: '\.(c|cc|cpp|h|hpp|cxx|hh|inl|ipp)$'
 
   - repo: local
     hooks:
       - id: build-and-test
-        name: Build and Run Unit Tests with ccache and Progress Bar
+        name: Build and Run Unit Tests with ccache
+        description: "Build and Run Unit Tests with ccache"
         entry: |
           bash -c '
           # Check if ccache is installed
@@ -30,8 +34,6 @@ repos:
 
           # Set up ccache
           ccache --max-size=1.0G
-          ccache -V && ccache --show-config
-          ccache --show-stats && ccache --zero-stats
 
           # Run cmake with ccache enabled
           cmake -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache -DIPC_TOOLKIT_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release -DIPC_TOOLKIT_WITH_CODE_COVERAGE=ON ..
@@ -39,14 +41,8 @@ repos:
           # Build with progress bar
           make -j$(nproc)
 
-          # Show ccache stats after building
-          ccache --show-stats
-
           # Run unit tests with parallel execution
           ctest --output-on-failure -j$(nproc)
-
-          # Final ccache stats after tests
-          ccache --show-stats
           '
         language: system
         always_run: true

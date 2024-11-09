@@ -7,6 +7,8 @@
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
 
+#include <ipc/friction/smooth_friction_mollifier.hpp>
+
 #include <stdexcept> // std::out_of_range
 #include <optional>
 
@@ -103,10 +105,19 @@ void FrictionCollisions::build(
     const double mu,
     const double static_mu,
     const double kinetic_mu,
-    const std::map<std::tuple<int, int>, std::pair<double, double>>&
-        pairwise_friction)
+    const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction,
+    const std::function<double(double, double, std::optional<BlendType>)>& blend_mu)
 {
-    clear(); // Clear any existing collisions
+    // Clear any existing collisions
+    clear();
+
+    // Default blend_mu to transition behavior if not provided
+    auto effective_blend_mu = blend_mu;
+    if (!effective_blend_mu) {
+        effective_blend_mu = [static_mu, kinetic_mu](double mu1, double mu2, std::optional<BlendType>) {
+            return ipc::blend_mu(mu1, mu2, BlendType::TRANSITION);
+        };
+    }
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();
@@ -116,27 +127,13 @@ void FrictionCollisions::build(
             "Friction coefficient must be non-negative.");
     }
 
-    if (static_mu == 0 && kinetic_mu == 0 && mu != 0) {
-        static_mu = mu;
-        kinetic_mu = mu;
-    }
-
-    auto get_pairwise_friction = [&](int mat1,
-                                     int mat2) -> std::pair<double, double> {
-        auto it = pairwise_friction.find(std::make_tuple(mat1, mat2));
-        if (it != pairwise_friction.end()) {
-            return it->second;
-        } else {
-            return { static_mu, kinetic_mu };
-        }
-    };
-
     // Handle Vertex-Vertex Collisions
     for (const auto& c_vv : collisions.vv_collisions) {
         int v0i = c_vv.vertex_ids(edges, faces)[0];
         int v1i = c_vv.vertex_ids(edges, faces)[1];
         auto [pair_static_mu, pair_kinetic_mu] =
-            get_pairwise_friction(v0i, v1i);
+            get_pairwise_friction_coefficients(
+                mesh, v0i, v1i, pairwise_friction, static_mu, kinetic_mu);
 
         vv_collisions.emplace_back(
             c_vv, c_vv.dof(vertices, edges, faces), barrier_potential,
@@ -149,8 +146,21 @@ void FrictionCollisions::build(
         int e0i = c_ev.vertex_ids(edges, faces)[1];
         int e1i = c_ev.vertex_ids(edges, faces)[2];
 
+        // Determine material IDs for the edge vertices
+        int mat_e0 = (mesh.vertex_material_ids().empty())
+            ? 0
+            : mesh.vertex_material_ids()[e0i];
+        int mat_e1 = (mesh.vertex_material_ids().empty())
+            ? 0
+            : mesh.vertex_material_ids()[e1i];
+
+        // Choose a representative material ID for the edge (e.g., minimum)
+        int mat_edge = std::min(mat_e0, mat_e1);
+
+        // Retrieve friction coefficients between vertex and edge
         auto [pair_static_mu, pair_kinetic_mu] =
-            get_pairwise_friction(vi, std::min(e0i, e1i));
+            get_pairwise_friction_coefficients(
+                mesh, vi, mat_edge, pairwise_friction, static_mu, kinetic_mu);
 
         ev_collisions.emplace_back(
             c_ev, c_ev.dof(vertices, edges, faces), barrier_potential,
@@ -164,8 +174,29 @@ void FrictionCollisions::build(
         int eb0i = c_ee.vertex_ids(edges, faces)[2];
         int eb1i = c_ee.vertex_ids(edges, faces)[3];
 
+        // Determine material IDs for both edges
+        int mat_ea0 = (mesh.vertex_material_ids().empty())
+            ? 0
+            : mesh.vertex_material_ids()[ea0i];
+        int mat_ea1 = (mesh.vertex_material_ids().empty())
+            ? 0
+            : mesh.vertex_material_ids()[ea1i];
+        int mat_eb0 = (mesh.vertex_material_ids().empty())
+            ? 0
+            : mesh.vertex_material_ids()[eb0i];
+        int mat_eb1 = (mesh.vertex_material_ids().empty())
+            ? 0
+            : mesh.vertex_material_ids()[eb1i];
+
+        // Choose representative material IDs for each edge (e.g., minimum)
+        int mat_edge_a = std::min(mat_ea0, mat_ea1);
+        int mat_edge_b = std::min(mat_eb0, mat_eb1);
+
+        // Retrieve friction coefficients between the two edges
         auto [pair_static_mu, pair_kinetic_mu] =
-            get_pairwise_friction(std::min(ea0i, ea1i), std::min(eb0i, eb1i));
+            get_pairwise_friction_coefficients(
+                mesh, mat_edge_a, mat_edge_b, pairwise_friction, static_mu,
+                kinetic_mu);
 
         ee_collisions.emplace_back(
             c_ee, c_ee.dof(vertices, edges, faces), barrier_potential,
@@ -179,8 +210,24 @@ void FrictionCollisions::build(
         int f1i = c_fv.vertex_ids(edges, faces)[2];
         int f2i = c_fv.vertex_ids(edges, faces)[3];
 
+        // Determine material IDs for the face vertices
+        int mat_f0 = (mesh.vertex_material_ids().empty())
+            ? 0
+            : mesh.vertex_material_ids()[f0i];
+        int mat_f1 = (mesh.vertex_material_ids().empty())
+            ? 0
+            : mesh.vertex_material_ids()[f1i];
+        int mat_f2 = (mesh.vertex_material_ids().empty())
+            ? 0
+            : mesh.vertex_material_ids()[f2i];
+
+        // Choose a representative material ID for the face (e.g., minimum)
+        int mat_face = std::min({ mat_f0, mat_f1, mat_f2 });
+
+        // Retrieve friction coefficients between vertex and face
         auto [pair_static_mu, pair_kinetic_mu] =
-            get_pairwise_friction(vi, std::min({ f0i, f1i, f2i }));
+            get_pairwise_friction_coefficients(
+                mesh, vi, mat_face, pairwise_friction, static_mu, kinetic_mu);
 
         fv_collisions.emplace_back(
             c_fv, c_fv.dof(vertices, edges, faces), barrier_potential,
@@ -267,6 +314,40 @@ std::pair<double, double> FrictionCollisions::retrieve_friction_coefficients(
     }
     throw std::runtime_error(
         "No friction coefficients available for the given pair.");
+}
+
+std::pair<double, double>
+FrictionCollisions::get_pairwise_friction_coefficients(
+    const CollisionMesh& mesh,
+    int vertex1,
+    int vertex2,
+    const std::map<std::tuple<int, int>, std::pair<double, double>>&
+        pairwise_friction,
+    double default_static_mu,
+    double default_kinetic_mu) const
+{
+    // Retrieve material IDs for the vertices
+    int mat1 = (mesh.vertex_material_ids().empty())
+        ? 0
+        : mesh.vertex_material_ids()[vertex1];
+    int mat2 = (mesh.vertex_material_ids().empty())
+        ? 0
+        : mesh.vertex_material_ids()[vertex2];
+
+    // Order the material pair consistently
+    std::tuple<int, int> ordered_material_pair = { mat1, mat2 };
+    if (mat1 < mat2) {
+        ordered_material_pair = { mat2, mat1 };
+    } else {
+        ordered_material_pair = { mat1, mat2 };
+    }
+
+    auto it = pairwise_friction.find(ordered_material_pair);
+    if (it != pairwise_friction.end()) {
+        return it->second;
+    } else {
+        return { default_static_mu, default_kinetic_mu };
+    }
 }
 
 } // namespace ipc

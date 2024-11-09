@@ -1,5 +1,4 @@
 #include "smooth_friction_mollifier.hpp"
-
 #include <cassert>
 #include <cmath>
 #include <algorithm>
@@ -7,114 +6,41 @@
 
 namespace ipc {
 
-// ----------------------------------------------------------------------------
-// Original friction mollifier functions
-
-double f0_SF(const double s, const double epsv)
+// Helper function to select the friction coefficient based on blend type
+double select_mu(
+    const double s,
+    const double epsv,
+    const double mu1,
+    const double mu2,
+    const std::optional<BlendType>& blend_type)
 {
-    assert(epsv > 0);
-    if (std::abs(s) >= epsv) {
-        return s;
-    }
-    return s * s * (-s / (3 * epsv) + 1) / epsv + epsv / 3;
-}
-
-double f1_SF_over_x(const double s, const double epsv)
-{
-    assert(epsv > 0);
-    if (std::abs(s) >= epsv) {
-        return 1 / s;
-    }
-    return (-s / epsv + 2) / epsv;
-}
-
-double df1_x_minus_f1_over_x3(const double s, const double epsv)
-{
-    assert(epsv > 0);
-    if (std::abs(s) >= epsv) {
-        return -1 / (s * s * s);
-    }
-    return -1 / (s * epsv * epsv);
-}
-
-// ----------------------------------------------------------------------------
-// Pairwise friction mollifier functions
-double blend_mu(
-    const double mu1, const double mu2, const std::optional<BlendType> type)
-{
-    if (!type.has_value()) {
-        return (mu1 + mu2) / 2;
-    }
-    if (type == BlendType::AVG) {
-        return (mu1 + mu2) / 2;
-    }
-    if (type == BlendType::MIN) {
+    switch (blend_type.value_or(BlendType::TRANSITION)) {
+    case BlendType::MIN:
         return std::min(mu1, mu2);
-    }
-    if (type == BlendType::MAX) {
+    case BlendType::MAX:
         return std::max(mu1, mu2);
+    case BlendType::AVG:
+        return 0.5 * (mu1 + mu2);
+    case BlendType::TRANSITION:
+        return (std::abs(s) < epsv) ? mu2 : mu1;
+    default:
+        assert(false);
+        return 0.0;
     }
-    return (mu1 + mu2) / 2;
 }
 
-double f0_SF_pairwise(
-    const double s, const double epsv, const double mu1, const double mu2)
-{
-    assert(epsv > 0);
-    double blended_mu = blend_mu(mu1, mu2);
-
-    if (std::abs(s) >= epsv) {
-        return s * blended_mu;
-    }
-    return (s * s * (-s / (3 * epsv) + 1) / epsv + epsv / 3) * blended_mu;
-}
-
-double f1_SF_over_x_pairwise(
-    const double s, const double epsv, const double mu1, const double mu2)
-{
-    assert(epsv > 0);
-    double blended_mu = blend_mu(mu1, mu2);
-
-    if (std::abs(s) >= epsv) {
-        return blended_mu / s;
-    }
-    return (-s / epsv + 2) / epsv * blended_mu;
-}
-
-double df1_x_minus_f1_over_x3_pairwise(
-    const double s, const double epsv, const double mu1, const double mu2)
-{
-    assert(epsv > 0);
-    double blended_mu = blend_mu(mu1, mu2);
-
-    if (std::abs(s) >= epsv) {
-        return -blended_mu / (s * s * s);
-    }
-    return -blended_mu / (s * epsv * epsv);
-}
-
-// ----------------------------------------------------------------------------
-// Pairwise friction mollifier functions with transition (no blending)
-
-inline double select_mu(
+// Main mollifier function
+double f0_SF(
     const double s,
     const double epsv,
-    const double static_mu,
-    const double kinetic_mu)
-{
-    // Use kinetic friction before transition (i.e., s < epsv), static friction
-    // after
-    return (std::abs(s) < epsv) ? kinetic_mu : static_mu;
-}
-
-double f0_SF_pairwise_transition(
-    const double s,
-    const double epsv,
-    const double static_mu,
-    const double kinetic_mu)
+    const std::optional<double>& static_mu,
+    const std::optional<double>& kinetic_mu,
+    const std::optional<BlendType>& blend_type)
 {
     assert(epsv > 0);
-    double mu = select_mu(s, epsv, static_mu, kinetic_mu);
+    double mu = (static_mu && kinetic_mu)
+        ? select_mu(s, epsv, *static_mu, *kinetic_mu, blend_type)
+        : 1.0;
 
     if (std::abs(s) >= epsv) {
         return s * mu;
@@ -122,14 +48,18 @@ double f0_SF_pairwise_transition(
     return (s * s * (-s / (3 * epsv) + 1) / epsv + epsv / 3) * mu;
 }
 
-double f1_SF_over_x_pairwise_transition(
+// Derivative of mollifier function divided by s
+double f1_SF_over_x(
     const double s,
     const double epsv,
-    const double static_mu,
-    const double kinetic_mu)
+    const std::optional<double>& static_mu,
+    const std::optional<double>& kinetic_mu,
+    const std::optional<BlendType>& blend_type)
 {
     assert(epsv > 0);
-    double mu = select_mu(s, epsv, static_mu, kinetic_mu);
+    double mu = (static_mu && kinetic_mu)
+        ? select_mu(s, epsv, *static_mu, *kinetic_mu, blend_type)
+        : 1.0;
 
     if (std::abs(s) >= epsv) {
         return mu / s;
@@ -137,14 +67,18 @@ double f1_SF_over_x_pairwise_transition(
     return (-s / epsv + 2) / epsv * mu;
 }
 
-double df1_x_minus_f1_over_x3_pairwise_transition(
+// Derivative of f1 times s minus f1 all divided by s cubed
+double df1_x_minus_f1_over_x3(
     const double s,
     const double epsv,
-    const double static_mu,
-    const double kinetic_mu)
+    const std::optional<double>& static_mu,
+    const std::optional<double>& kinetic_mu,
+    const std::optional<BlendType>& blend_type)
 {
     assert(epsv > 0);
-    double mu = select_mu(s, epsv, static_mu, kinetic_mu);
+    double mu = (static_mu && kinetic_mu)
+        ? select_mu(s, epsv, *static_mu, *kinetic_mu, blend_type)
+        : 1.0;
 
     if (std::abs(s) >= epsv) {
         return -mu / (s * s * s);

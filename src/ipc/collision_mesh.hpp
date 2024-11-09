@@ -2,6 +2,8 @@
 
 #include <ipc/utils/unordered_map_and_set.hpp>
 
+#include <optional>
+
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
@@ -32,13 +34,16 @@ public:
     /// @param edges The edges of the collision mesh indexed into the full mesh vertices (#E × 2).
     /// @param faces The faces of the collision mesh indexed into the full mesh vertices (#F × 3).
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
+    /// @param vertex_material_ids The material ID of each vertex in the full mesh. (Optional)
     CollisionMesh(
         const std::vector<bool>& include_vertex,
         const Eigen::MatrixXd& full_rest_positions,
         const Eigen::MatrixXi& edges = Eigen::MatrixXi(),
         const Eigen::MatrixXi& faces = Eigen::MatrixXi(),
         const Eigen::SparseMatrix<double>& displacement_map =
-            Eigen::SparseMatrix<double>());
+            Eigen::SparseMatrix<double>(),
+        const std::optional<std::vector<int>>& vertex_material_ids =
+            std::nullopt);
 
     /// @brief Helper function that automatically builds include_vertex using construct_is_on_surface.
     /// @param full_rest_positions The full vertices at rest (#FV × dim).
@@ -284,6 +289,21 @@ public:
     /// primitives can collide with all other primitives.
     std::function<bool(size_t, size_t)> can_collide = default_can_collide;
 
+    /// @brief Determine if the mesh has material IDs.
+    /// @return True if the mesh has material IDs.
+    bool has_material_ids() const { return !m_vertex_material_ids.empty(); }
+
+
+    /// @brief Get the vertex material IDs.
+    /// @return The vertex material IDs.
+    const std::vector<int>& vertex_material_ids() const {
+        if (!has_material_ids()) {
+            throw std::runtime_error("Material IDs not set.");
+        }
+        return m_vertex_material_ids;
+    }
+
+
 protected:
     // -----------------------------------------------------------------------
     // Helper initialization functions
@@ -366,6 +386,9 @@ protected:
 private:
     /// @brief By default all primitives can collide with all other primitives.
     static int default_can_collide(size_t, size_t) { return true; }
+
+    /// @brief The material IDs for each vertex (#V × 1).
+    std::vector<int> m_vertex_material_ids;
 };
 
 } // namespace ipc

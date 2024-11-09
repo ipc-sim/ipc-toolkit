@@ -143,6 +143,12 @@ public:
     /// @brief Coefficient of friction
     double mu;
 
+    /// @brief Static friction coefficient
+    double s_mu;
+
+    /// @brief Kinetic friction coefficient
+    double k_mu;
+
     /// @brief Weight
     double weight = 1;
 
@@ -154,12 +160,6 @@ public:
 
     /// @brief Tangent basis of the collision (max size 3×2)
     MatrixMax<double, 3, 2> tangent_basis;
-
-    /// @brief Static friction coefficient
-    double static_mu;
-
-    /// @brief Kinetic friction coefficient
-    double kinetic_mu;
 };
 
 } // namespace ipc
