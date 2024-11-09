@@ -262,7 +262,7 @@ void CollisionMesh::init_areas()
             if (vertex_edge_areas[m_edges(i, j)] < 0) {
                 vertex_edge_areas[m_edges(i, j)] = 0;
             }
-            vertex_edge_areas[m_edges(i, j)] += edge_len / 2;
+            vertex_edge_areas[m_edges(i, j)] += 0.5 * edge_len;
         }
     }
 
@@ -275,18 +275,18 @@ void CollisionMesh::init_areas()
             const Eigen::Vector3d f0 = m_rest_positions.row(m_faces(i, 0));
             const Eigen::Vector3d f1 = m_rest_positions.row(m_faces(i, 1));
             const Eigen::Vector3d f2 = m_rest_positions.row(m_faces(i, 2));
-            double face_area = (f1 - f0).cross(f2 - f0).norm() / 2;
+            double face_area = 0.5 * (f1 - f0).cross(f2 - f0).norm();
 
             for (int j = 0; j < m_faces.cols(); ++j) {
                 if (vertex_face_areas[m_faces(i, j)] < 0) {
                     vertex_face_areas[m_faces(i, j)] = 0;
                 }
-                vertex_face_areas[m_faces(i, j)] += face_area / 3;
+                vertex_face_areas[m_faces(i, j)] += face_area / 3.0;
 
                 if (m_edge_areas[m_faces_to_edges(i, j)] < 0) {
                     m_edge_areas[m_faces_to_edges(i, j)] = 0;
                 }
-                m_edge_areas[m_faces_to_edges(i, j)] += face_area / 3;
+                m_edge_areas[m_faces_to_edges(i, j)] += face_area / 3.0;
             }
         }
     }
@@ -360,7 +360,7 @@ void CollisionMesh::init_area_jacobians()
         if (!was_vertex_visited[e0i]) {
             for (int j = 0; j < m_edges.cols(); j++) {
                 local_gradient_to_global_gradient(
-                    edge_len_gradient / 2, m_edges.row(i), dim(),
+                    0.5 * edge_len_gradient, m_edges.row(i), dim(),
                     m_vertex_area_jacobian[m_edges(i, j)]);
             }
         }

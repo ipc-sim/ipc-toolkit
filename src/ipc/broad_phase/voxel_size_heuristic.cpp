@@ -9,6 +9,9 @@ namespace ipc {
 namespace {
     // Avoid unused variable warnings
     inline void check_success(bool success) { assert(success); }
+
+    // Faster than std::pow(x, 2)
+    inline double sqr(double x) { return x * x; }
 } // namespace
 
 double suggest_good_voxel_size(
@@ -96,10 +99,10 @@ double mean_edge_length(
     std_deviation = 0;
     for (int i = 0; i < edges.rows(); i++) {
         const int e0i = edges(i, 0), e1i = edges(i, 1);
-        std_deviation += std::pow(
-            (vertices_t0.row(e0i) - vertices_t0.row(e1i)).norm() - mean, 2);
-        std_deviation += std::pow(
-            (vertices_t1.row(e0i) - vertices_t1.row(e1i)).norm() - mean, 2);
+        std_deviation +=
+            sqr((vertices_t0.row(e0i) - vertices_t0.row(e1i)).norm() - mean);
+        std_deviation +=
+            sqr((vertices_t1.row(e0i) - vertices_t1.row(e1i)).norm() - mean);
     }
     std_deviation = sqrt(std_deviation / (2 * edges.rows()));
 

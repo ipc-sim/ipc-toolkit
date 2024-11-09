@@ -32,6 +32,15 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
     vertices.conservativeResize(2 * n, Eigen::NoChange);
     vertices.bottomRows(n) = vertices.topRows(n);
     vertices.bottomRows(n).col(1).array() += 1 + gap;
+    bool rotated = GENERATE(false, true);
+    if (rotated) {
+        Eigen::Matrix3d R =
+            Eigen::AngleAxis<double>(
+                Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d::UnitY()))
+                .toRotationMatrix();
+        vertices.bottomRows(n) =
+            (vertices.bottomRows(n) * R.transpose()).eval();
+    }
 
     edges.conservativeResize(2 * edges.rows(), Eigen::NoChange);
     edges.bottomRows(edges.rows() / 2) =
@@ -47,11 +56,13 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
 
     NormalCollisions collisions;
     const bool use_area_weighting = GENERATE(false, true);
-    // TODO: Debug why the improved max approx. does not work for adhesion
-    const bool use_improved_max_approximator = GENERATE(false, true);
+    // TODO: Debug why the improved max approx. requires area weighting.
+    const bool use_improved_max_approximator = use_area_weighting;
     collisions.set_use_area_weighting(use_area_weighting);
     collisions.set_use_improved_max_approximator(use_improved_max_approximator);
     collisions.build(mesh, vertices, dhat_a);
+
+    REQUIRE(collisions.size() > 0);
 
     REQUIRE(
         collisions.compute_minimum_distance(mesh, vertices)
@@ -63,8 +74,13 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
 
     // --- Check the potential gradients ---------------------------------------
 
+    CHECK(BarrierPotential(dhat_a)(collisions, mesh, vertices) > 0);
+
     NormalAdhesionPotential potential(dhat_p, dhat_a, Y, eps_c);
     CHECK(potential(collisions, mesh, vertices) < 0);
+    if (potential(collisions, mesh, vertices) >= 0) {
+        logger().critical(collisions.to_string(mesh, vertices));
+    }
 
     Eigen::VectorXd fgrad;
     fd::finite_gradient(

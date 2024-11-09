@@ -90,7 +90,8 @@ double tangential_adhesion_f1(const double y, const double eps_a)
         return 0;
     }
 
-    return y / eps_a * (2 - y / eps_a); // -y²/ϵ² + 2y/ϵ
+    const double y_over_eps_a = y / eps_a;
+    return y_over_eps_a * (2 - y_over_eps_a); // -y²/ϵ² + 2y/ϵ
 }
 
 double tangential_adhesion_f2(const double y, const double eps_a)

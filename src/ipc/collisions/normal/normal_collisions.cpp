@@ -286,6 +286,11 @@ void NormalCollisions::set_use_area_weighting(const bool use_area_weighting)
                       "Re-build collisions for this to have an effect.");
     }
 
+    if (!use_area_weighting && use_improved_max_approximator()) {
+        logger().warn(
+            "Disabling area weighting while using the improved max approximator may lead to incorrect results.");
+    }
+
     m_use_area_weighting = use_area_weighting;
 }
 
@@ -297,6 +302,11 @@ void NormalCollisions::set_use_improved_max_approximator(
         logger().warn(
             "Setting use_improved_max_approximator after building collisions. "
             "Re-build collisions for this to have an effect.");
+    }
+
+    if (!use_area_weighting() && use_improved_max_approximator) {
+        logger().warn(
+            "Enabling the improved max approximator while not using area weighting may lead to incorrect results.");
     }
 
     m_use_improved_max_approximator = use_improved_max_approximator;
@@ -460,8 +470,9 @@ std::string NormalCollisions::to_string(
     for (const auto& vv : vv_collisions) {
         ss << "\n"
            << fmt::format(
-                  "vv: {} {}, w: {:g}, d: {:g}", vv.vertex0_id, vv.vertex1_id,
-                  vv.weight,
+                  "vv: {} {}, w: {:g}, d: {:g}",
+                  std::min(vv.vertex0_id, vv.vertex1_id),
+                  std::max(vv.vertex0_id, vv.vertex1_id), vv.weight,
                   vv.compute_distance(
                       vv.dof(vertices, mesh.edges(), mesh.faces())));
     }
@@ -475,12 +486,13 @@ std::string NormalCollisions::to_string(
                       ev.dof(vertices, mesh.edges(), mesh.faces())));
     }
     for (const auto& ee : ee_collisions) {
+        const long min_ei = std::min(ee.edge0_id, ee.edge1_id);
+        const long max_ei = std::max(ee.edge0_id, ee.edge1_id);
         ss << "\n"
            << fmt::format(
                   "ee: {}=({}, {}) {}=({}, {}), w: {:g}, dtype: {}, d: {:g}",
-                  ee.edge0_id, mesh.edges()(ee.edge0_id, 0),
-                  mesh.edges()(ee.edge0_id, 1), ee.edge1_id,
-                  mesh.edges()(ee.edge1_id, 0), mesh.edges()(ee.edge1_id, 1),
+                  min_ei, mesh.edges()(min_ei, 0), mesh.edges()(min_ei, 1),
+                  max_ei, mesh.edges()(max_ei, 0), mesh.edges()(max_ei, 1),
                   ee.weight, int(ee.dtype),
                   ee.compute_distance(
                       ee.dof(vertices, mesh.edges(), mesh.faces())));
