@@ -1,10 +1,10 @@
 #include "normal_collisions_builder.hpp"
 
 #include <ipc/distance/distance_type.hpp>
-#include <ipc/distance/point_point.hpp>
-#include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/edge_edge.hpp>
 #include <ipc/distance/edge_edge_mollifier.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
 namespace ipc {

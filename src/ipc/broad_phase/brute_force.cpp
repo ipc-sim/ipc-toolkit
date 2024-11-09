@@ -2,9 +2,9 @@
 
 #include <ipc/utils/merge_thread_local.hpp>
 
+#include <tbb/blocked_range2d.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
-#include <tbb/blocked_range2d.h>
 
 #include <algorithm> // std::min/max
 

@@ -1,9 +1,9 @@
 #include "vertex_vertex.hpp"
 
+#include <ipc/distance/point_point.hpp>
 #include <ipc/tangent/closest_point.hpp>
 #include <ipc/tangent/relative_velocity.hpp>
 #include <ipc/tangent/tangent_basis.hpp>
-#include <ipc/distance/point_point.hpp>
 
 namespace ipc {
 

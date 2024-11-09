@@ -2,9 +2,9 @@
 
 #include "edge_edge.hpp"
 
-#include <ipc/distance/point_point.hpp>
-#include <ipc/distance/point_line.hpp>
 #include <ipc/distance/line_line.hpp>
+#include <ipc/distance/point_line.hpp>
+#include <ipc/distance/point_point.hpp>
 
 #include <stdexcept> // std::invalid_argument
 
