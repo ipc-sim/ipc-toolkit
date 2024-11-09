@@ -1,7 +1,7 @@
 #pragma once
 
-#include <ipc/potentials/potential.hpp>
 #include <ipc/collisions/tangential/tangential_collisions.hpp>
+#include <ipc/potentials/potential.hpp>
 
 namespace ipc {
 
