@@ -3,18 +3,12 @@
 #include <ipc/collision_mesh.hpp>
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/candidates/candidates.hpp>
-#include <ipc/collisions/collision.hpp>
-#include <ipc/collisions/edge_edge.hpp>
-#include <ipc/collisions/edge_vertex.hpp>
-#include <ipc/collisions/face_vertex.hpp>
 #include <ipc/collisions/normal/edge_edge.hpp>
 #include <ipc/collisions/normal/edge_vertex.hpp>
 #include <ipc/collisions/normal/face_vertex.hpp>
 #include <ipc/collisions/normal/normal_collision.hpp>
 #include <ipc/collisions/normal/plane_vertex.hpp>
 #include <ipc/collisions/normal/vertex_vertex.hpp>
-#include <ipc/collisions/plane_vertex.hpp>
-#include <ipc/collisions/vertex_vertex.hpp>
 
 #include <Eigen/Core>
 

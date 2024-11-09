@@ -2,7 +2,6 @@
 
 #include <ipc/candidates/edge_edge.hpp>
 #include <ipc/collisions/tangential/tangential_collision.hpp>
-#include <ipc/friction/collisions/friction_collision.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
