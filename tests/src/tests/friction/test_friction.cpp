@@ -4,7 +4,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/catch_approx.hpp>
 
-#include <ipc/friction/friction_collisions.hpp>
+#include <ipc/collisions/tangential/tangential_collisions.hpp>
 #include <ipc/potentials/friction_potential.hpp>
 #include <ipc/utils/logger.hpp>
 
@@ -19,13 +19,13 @@ void mmcvids_to_friction_collisions(
     Eigen::VectorXd normal_force_magnitudes,
     const Eigen::MatrixXd& closest_points,
     const Eigen::MatrixXd& tangent_bases,
-    FrictionCollisions& collisions)
+    TangentialCollisions& collisions)
 {
     std::vector<Eigen::Vector2i> edges;
     std::vector<Eigen::Vector3i> faces;
     for (int i = 0; i < mmcvids.rows(); i++) {
         const auto mmcvid = mmcvids.row(i);
-        FrictionCollision* collision;
+        TangentialCollision* collision;
 
         if (mmcvid[0] >= 0) { // Is EE?
             edges.emplace_back(mmcvid[0], mmcvid[1]);
@@ -81,8 +81,8 @@ bool read_ipc_friction_data(
     Eigen::MatrixXd& V_end,
     Eigen::MatrixXi& E,
     Eigen::MatrixXi& F,
-    Collisions& collisions,
-    FrictionCollisions& friction_collisions,
+    NormalCollisions& collisions,
+    TangentialCollisions& tangential_collisions,
     double& dhat,
     double& barrier_stiffness,
     double& epsv_times_h,
@@ -143,10 +143,10 @@ bool read_ipc_friction_data(
     const Eigen::MatrixXd bases = data["tangent_bases"];
 
     mmcvids_to_friction_collisions(
-        E, F, mmcvids, lambda, coords, bases, friction_collisions);
+        E, F, mmcvids, lambda, coords, bases, tangential_collisions);
     tests::mmcvids_to_collisions(E, F, mmcvids, collisions);
-    for (int i = 0; i < friction_collisions.size(); i++) {
-        friction_collisions[i].mu = mu;
+    for (int i = 0; i < tangential_collisions.size(); i++) {
+        tangential_collisions[i].mu = mu;
     }
 
     return true;
@@ -157,8 +157,8 @@ TEST_CASE(
 {
     Eigen::MatrixXd V_start, V_lagged, V_end;
     Eigen::MatrixXi E, F;
-    Collisions collisions;
-    FrictionCollisions expected_friction_collisions;
+    NormalCollisions collisions;
+    TangentialCollisions expected_friction_collisions;
     double dhat, barrier_stiffness, epsv_times_h, mu;
     double expected_potential;
     Eigen::VectorXd expected_grad;
@@ -193,12 +193,13 @@ TEST_CASE(
     E.bottomRows(face_edges.rows()) = face_edges;
     CollisionMesh mesh(V_start, E, F);
 
-    FrictionCollisions friction_collisions;
-    friction_collisions.build(
+    TangentialCollisions tangential_collisions;
+    tangential_collisions.build(
         mesh, V_lagged, collisions, BarrierPotential(dhat), barrier_stiffness,
         mu);
-    REQUIRE(friction_collisions.size() == collisions.size());
-    REQUIRE(friction_collisions.size() == expected_friction_collisions.size());
+    REQUIRE(tangential_collisions.size() == collisions.size());
+    REQUIRE(
+        tangential_collisions.size() == expected_friction_collisions.size());
 
     const FrictionPotential D(epsv_times_h);
 
@@ -206,10 +207,10 @@ TEST_CASE(
     REQUIRE(V_start.size() == V_end.size());
     REQUIRE(V_start.size() == expected_grad.size());
 
-    for (int i = 0; i < friction_collisions.size(); i++) {
+    for (int i = 0; i < tangential_collisions.size(); i++) {
         CAPTURE(i);
-        const FrictionCollision& collision = friction_collisions[i];
-        const FrictionCollision& expected_collision =
+        const TangentialCollision& collision = tangential_collisions[i];
+        const TangentialCollision& expected_collision =
             expected_friction_collisions[i];
         if (collision.closest_point.size() == 1) {
             CHECK(
@@ -232,16 +233,16 @@ TEST_CASE(
 
     const Eigen::MatrixXd velocity = V_end - V_start;
 
-    double potential = D(friction_collisions, mesh, velocity);
+    double potential = D(tangential_collisions, mesh, velocity);
 
     CHECK(potential == Catch::Approx(expected_potential));
 
-    Eigen::VectorXd grad = D.gradient(friction_collisions, mesh, velocity);
+    Eigen::VectorXd grad = D.gradient(tangential_collisions, mesh, velocity);
 
     CHECK(grad.isApprox(expected_grad));
 
     Eigen::SparseMatrix<double> hess =
-        D.hessian(friction_collisions, mesh, velocity);
+        D.hessian(tangential_collisions, mesh, velocity);
 
     CHECK(hess.isApprox(expected_hess));
 }

@@ -1,9 +1,15 @@
 Barrier
 =======
 
-.. doxygenfunction:: ipc::barrier
-.. doxygenfunction:: ipc::barrier_first_derivative
-.. doxygenfunction:: ipc::barrier_second_derivative
+.. doxygenfunction:: barrier(const double, const double)
+.. doxygenfunction:: barrier_first_derivative
+.. doxygenfunction:: barrier_second_derivative
+
+Barrier Force Magnitude
+-----------------------
+
+.. doxygenfunction:: barrier_force_magnitude
+.. doxygenfunction:: barrier_force_magnitude_gradient
 
 Adaptive Barrier Stiffness
 --------------------------
@@ -15,8 +21,10 @@ Barrier Class
 -------------
 
 .. doxygenclass:: ipc::Barrier
+    :allow-dot-graphs:
 
 Clamped Log Barrier
 ~~~~~~~~~~~~~~~~~~~
 
 .. doxygenclass:: ipc::ClampedLogBarrier
+    :allow-dot-graphs:

@@ -1,7 +1,6 @@
 import numpy as np
 
-import find_ipctk
-import ipctk
+from find_ipctk import ipctk
 from ipctk.filib import Interval
 
 from utils import load_mesh

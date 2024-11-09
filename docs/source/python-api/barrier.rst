@@ -5,6 +5,12 @@ Barrier
 .. autofunction:: ipctk.barrier_first_derivative
 .. autofunction:: ipctk.barrier_second_derivative
 
+Barrier Force Magnitude
+-----------------------
+
+.. autofunction:: ipctk.barrier_force_magnitude
+.. autofunction:: ipctk.barrier_force_magnitude_gradient
+
 Adaptive Barrier Stiffness
 --------------------------
 
