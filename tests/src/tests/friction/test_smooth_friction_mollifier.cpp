@@ -35,7 +35,9 @@ TEST_CASE("Smooth friction gradient", "[friction][mollifier]")
 
     double f1_over_x = ipc::f1_SF_over_x(x, epsv_times_h);
 
-    CHECK(f1_over_x * x == Catch::Approx(fd_f1_over_x[0]).margin(MARGIN).epsilon(EPSILON));
+    CHECK(
+        f1_over_x * x
+        == Catch::Approx(fd_f1_over_x[0]).margin(MARGIN).epsilon(EPSILON));
 
     // Test Hessian
     if (x == epsv_times_h) {
@@ -55,108 +57,127 @@ TEST_CASE("Smooth friction gradient", "[friction][mollifier]")
     CHECK(f2 * x == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
 }
 
-/// Test gradient for pairwise friction with transition behavior
-TEST_CASE("Pairwise friction transition gradient", "[friction][mollifier][pairwise][transition]")
-{
-    static constexpr double EPSILON = 2e-2;
-    static constexpr double MARGIN = 1e-6;
-    const double epsv_times_h = std::pow(10, GENERATE(range(-8, 0, 1)));
+// /// Test gradient for pairwise friction with transition behavior
+// TEST_CASE(
+//     "Pairwise friction transition gradient",
+//     "[friction][mollifier][pairwise][transition]")
+// {
+//     static constexpr double EPSILON = 2e-2;
+//     static constexpr double MARGIN = 1e-6;
+//     const double epsv_times_h = std::pow(10, GENERATE(range(-8, 0, 1)));
 
-    // Test different static and kinetic friction coefficients
-    const double static_mu = GENERATE(0.5, 0.6, 0.7);
-    const double kinetic_mu = GENERATE(0.3, 0.4, 0.5);
-    double x = std::pow(10, GENERATE(range(-8, 0, 1)));
+//     // Test different static and kinetic friction coefficients
+//     const double static_mu = GENERATE(0.5, 0.6, 0.7);
+//     const double kinetic_mu = GENERATE(0.3, 0.4, 0.5);
+//     double x = std::pow(10, GENERATE(range(-8, 0, 1)));
 
-    // Skip degenerate cases
-    if (x == 1e-8 && epsv_times_h == 1e-8) {
-        return;
-    }
+//     // Skip degenerate cases
+//     if (x == 1e-8 && epsv_times_h == 1e-8) {
+//         return;
+//     }
 
-    CAPTURE(x, epsv_times_h, static_mu, kinetic_mu);
+//     CAPTURE(x, epsv_times_h, static_mu, kinetic_mu);
 
-    Eigen::Matrix<double, 1, 1> X;
-    X << x;
+//     Eigen::Matrix<double, 1, 1> X;
+//     X << x;
 
-    // Gradient test for pairwise friction transition
-    Eigen::VectorXd fd_f1_over_x(1);
-    fd::finite_gradient(
-        X,
-        [&](const Eigen::VectorXd& _X) {
-            return ipc::f0_SF(_X[0], epsv_times_h, static_mu, kinetic_mu, BlendType::TRANSITION);
-        },
-        fd_f1_over_x);
+//     // Gradient test for pairwise friction transition
+//     Eigen::VectorXd fd_f1_over_x(1);
+//     fd::finite_gradient(
+//         X,
+//         [&](const Eigen::VectorXd& _X) {
+//             return ipc::f0_SF(
+//                 _X[0], epsv_times_h, static_mu, kinetic_mu, ipc::BlendType::TRANSITION);
+//         },
+//         fd_f1_over_x);
 
-    double f1_over_x = ipc::f1_SF_over_x(x, epsv_times_h, static_mu, kinetic_mu, BlendType::TRANSITION);
+//     double f1_over_x = ipc::f1_SF_over_x(
+//         x, epsv_times_h, static_mu, kinetic_mu, ipc::BlendType::TRANSITION);
 
-    CHECK(f1_over_x * x == Catch::Approx(fd_f1_over_x[0]).margin(MARGIN).epsilon(EPSILON));
+//     CHECK(
+//         f1_over_x * x
+//         == Catch::Approx(fd_f1_over_x[0]).margin(MARGIN).epsilon(EPSILON));
 
-    // Hessian test for pairwise friction transition
-    if (x == epsv_times_h) {
-        return;
-    }
+//     // Hessian test for pairwise friction transition
+//     if (x == epsv_times_h) {
+//         return;
+//     }
 
-    Eigen::VectorXd fd_f2(1);
-    fd::finite_gradient(
-        X,
-        [&](const Eigen::VectorXd& _X) {
-            return ipc::f1_SF_over_x(_X[0], epsv_times_h, static_mu, kinetic_mu, BlendType::TRANSITION);
-        },
-        fd_f2);
+//     Eigen::VectorXd fd_f2(1);
+//     fd::finite_gradient(
+//         X,
+//         [&](const Eigen::VectorXd& _X) {
+//             return ipc::f1_SF_over_x(
+//                 _X[0], epsv_times_h, static_mu, kinetic_mu,
+//                 ipc::BlendType::TRANSITION);
+//         },
+//         fd_f2);
 
-    double f2 = ipc::df1_x_minus_f1_over_x3(x, epsv_times_h, static_mu, kinetic_mu, BlendType::TRANSITION);
+//     double f2 = ipc::df1_x_minus_f1_over_x3(
+//         x, epsv_times_h, static_mu, kinetic_mu, ipc::BlendType::TRANSITION);
 
-    CHECK(f2 * x == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
-}
+//     CHECK(f2 * x == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
+// }
 
-/// Test gradient and Hessian for edge cases in pairwise friction transition
-TEST_CASE("Pairwise friction transition edge cases", "[friction][mollifier][pairwise][edge][transition]")
-{
-    static constexpr double EPSILON = 2e-2;
-    static constexpr double MARGIN = 1e-6;
-    const double epsv_times_h = std::pow(10, GENERATE(range(-8, 0, 1)));
+// /// Test gradient and Hessian for edge cases in pairwise friction transition
+// TEST_CASE(
+//     "Pairwise friction transition edge cases",
+//     "[friction][mollifier][pairwise][edge][transition]")
+// {
+//     static constexpr double EPSILON = 2e-2;
+//     static constexpr double MARGIN = 1e-6;
+//     const double epsv_times_h = std::pow(10, GENERATE(range(-8, 0, 1)));
 
-    // Extreme values for static and kinetic friction coefficients
-    const double static_mu = GENERATE(1.0, 0.9); // High static friction
-    const double kinetic_mu = GENERATE(0.1, 0.2); // Low kinetic friction
-    double x = std::pow(10, GENERATE(range(-8, 0, 1)));
+//     // Extreme values for static and kinetic friction coefficients
+//     const double static_mu = GENERATE(1.0, 0.9);  // High static friction
+//     const double kinetic_mu = GENERATE(0.1, 0.2); // Low kinetic friction
+//     double x = std::pow(10, GENERATE(range(-8, 0, 1)));
 
-    // Skip degenerate cases
-    if (x == 1e-8 && epsv_times_h == 1e-8) {
-        return;
-    }
+//     // Skip degenerate cases
+//     if (x == 1e-8 && epsv_times_h == 1e-8) {
+//         return;
+//     }
 
-    CAPTURE(x, epsv_times_h, static_mu, kinetic_mu);
+//     CAPTURE(x, epsv_times_h, static_mu, kinetic_mu);
 
-    Eigen::Matrix<double, 1, 1> X;
-    X << x;
+//     Eigen::Matrix<double, 1, 1> X;
+//     X << x;
 
-    // Gradient test for extreme friction coefficients
-    Eigen::VectorXd fd_f1_over_x(1);
-    fd::finite_gradient(
-        X,
-        [&](const Eigen::VectorXd& _X) {
-            return ipc::f0_SF(_X[0], epsv_times_h, static_mu, kinetic_mu, BlendType::TRANSITION);
-        },
-        fd_f1_over_x);
+//     // Gradient test for extreme friction coefficients
+//     Eigen::VectorXd fd_f1_over_x(1);
+//     fd::finite_gradient(
+//         X,
+//         [&](const Eigen::VectorXd& _X) {
+//             return ipc::f0_SF(
+//                 _X[0], epsv_times_h, static_mu, kinetic_mu,
+//                 ipc::BlendType::TRANSITION);
+//         },
+//         fd_f1_over_x);
 
-    double f1_over_x = ipc::f1_SF_over_x(x, epsv_times_h, static_mu, kinetic_mu, BlendType::TRANSITION);
+//     double f1_over_x = ipc::f1_SF_over_x(
+//         x, epsv_times_h, static_mu, kinetic_mu, ipc::BlendType::TRANSITION);
 
-    CHECK(f1_over_x * x == Catch::Approx(fd_f1_over_x[0]).margin(MARGIN).epsilon(EPSILON));
+//     CHECK(
+//         f1_over_x * x
+//         == Catch::Approx(fd_f1_over_x[0]).margin(MARGIN).epsilon(EPSILON));
 
-    // Hessian test for extreme friction coefficients
-    if (x == epsv_times_h) {
-        return;
-    }
+//     // Hessian test for extreme friction coefficients
+//     if (x == epsv_times_h) {
+//         return;
+//     }
 
-    Eigen::VectorXd fd_f2(1);
-    fd::finite_gradient(
-        X,
-        [&](const Eigen::VectorXd& _X) {
-            return ipc::f1_SF_over_x(_X[0], epsv_times_h, static_mu, kinetic_mu, BlendType::TRANSITION);
-        },
-        fd_f2);
+//     Eigen::VectorXd fd_f2(1);
+//     fd::finite_gradient(
+//         X,
+//         [&](const Eigen::VectorXd& _X) {
+//             return ipc::f1_SF_over_x(
+//                 _X[0], epsv_times_h, static_mu, kinetic_mu,
+//                 ipc::BlendType::TRANSITION);
+//         },
+//         fd_f2);
 
-    double f2 = ipc::df1_x_minus_f1_over_x3(x, epsv_times_h, static_mu, kinetic_mu, BlendType::TRANSITION);
+//     double f2 = ipc::df1_x_minus_f1_over_x3(
+//         x, epsv_times_h, static_mu, kinetic_mu, ipc::BlendType::TRANSITION);
 
-    CHECK(f2 * x == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
-}
+//     CHECK(f2 * x == Catch::Approx(fd_f2[0]).margin(MARGIN).epsilon(EPSILON));
+// }

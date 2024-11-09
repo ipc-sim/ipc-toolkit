@@ -1,16 +1,15 @@
 #include "friction_collisions.hpp"
 
 #include <ipc/distance/edge_edge_mollifier.hpp>
+#include <ipc/friction/smooth_friction_mollifier.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 
-#include <ipc/friction/smooth_friction_mollifier.hpp>
-
-#include <stdexcept> // std::out_of_range
 #include <optional>
+#include <stdexcept> // std::out_of_range
 
 namespace ipc {
 
@@ -105,19 +104,17 @@ void FrictionCollisions::build(
     const double mu,
     const double static_mu,
     const double kinetic_mu,
-    const std::map<std::tuple<int, int>, std::pair<double, double>>& pairwise_friction,
-    const std::function<double(double, double, std::optional<BlendType>)>& blend_mu)
+    const std::map<std::tuple<int, int>, std::pair<double, double>>&
+        pairwise_friction,
+    const std::function<double(double, double, std::optional<BlendType>)>&
+        blend_mu)
 {
     // Clear any existing collisions
     clear();
 
     // Default blend_mu to transition behavior if not provided
-    auto effective_blend_mu = blend_mu;
-    if (!effective_blend_mu) {
-        effective_blend_mu = [static_mu, kinetic_mu](double mu1, double mu2, std::optional<BlendType>) {
-            return ipc::blend_mu(mu1, mu2, BlendType::TRANSITION);
-        };
-    }
+    auto effective_blend_mu = blend_mu(
+        static_mu, kinetic_mu, std::optional<BlendType>(BlendType::TRANSITION));
 
     const Eigen::MatrixXi& edges = mesh.edges();
     const Eigen::MatrixXi& faces = mesh.faces();

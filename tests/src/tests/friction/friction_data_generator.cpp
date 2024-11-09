@@ -150,7 +150,7 @@ FrictionSimpleData friction_data_generator()
 FrictionComplexData friction_data_generator_with_pairwise()
 {
     FrictionComplexData data;
-    auto& [V0, V1, E, F, collisions, static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness, pairwise_friction, blend_mu] =
+    auto& [V0, V1, E, F, collisions, mu, static_mu, kinetic_mu, epsv_times_h, dhat, barrier_stiffness, pairwise_friction, blend_mu] =
         data;
 
     collisions.set_enable_shape_derivatives(true);
@@ -238,6 +238,8 @@ FrictionComplexData friction_data_generator_with_pairwise()
     }
 
     // Other scenarios like point-edge, point-point can be added similarly
+
+    
 
     return data;
 }

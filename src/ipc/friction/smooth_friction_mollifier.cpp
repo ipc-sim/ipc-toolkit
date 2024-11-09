@@ -1,7 +1,8 @@
 #include "smooth_friction_mollifier.hpp"
+
+#include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <algorithm>
 #include <optional>
 
 namespace ipc {

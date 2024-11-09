@@ -3,8 +3,8 @@
 #include <ipc/config.hpp>
 #include <ipc/friction/normal_force_magnitude.hpp>
 
-#include <stdexcept> // std::out_of_range
 #include <optional>
+#include <stdexcept> // std::out_of_range
 
 namespace ipc {
 

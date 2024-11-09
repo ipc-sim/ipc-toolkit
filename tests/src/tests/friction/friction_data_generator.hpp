@@ -24,6 +24,7 @@ struct FrictionComplexData {
     Eigen::MatrixXi E;
     Eigen::MatrixXi F;
     ipc::Collisions collisions;
+    double mu;
     double static_mu;
     double kinetic_mu;
     double epsv_times_h;
