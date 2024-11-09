@@ -611,8 +611,23 @@
   
   
     <li class="md-nav__item">
-      <a href="../cpp-api/collisions.html" class="md-nav__link">
-        <span title="/cpp-api/collisions.rst (reference label)" class="md-ellipsis">Collisions</span>
+      <a href="../cpp-api/normal_collisions.html" class="md-nav__link">
+        <span title="/cpp-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/tangential_collisions.html" class="md-nav__link">
+        <span title="/cpp-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
       </a>
     </li>
   
@@ -686,8 +701,38 @@
   
   
     <li class="md-nav__item">
+      <a href="../cpp-api/tangent.html" class="md-nav__link">
+        <span title="/cpp-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../cpp-api/barrier.html" class="md-nav__link">
         <span title="/cpp-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/adhesion.html" class="md-nav__link">
+        <span title="/cpp-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
       </a>
     </li>
   
@@ -827,8 +872,23 @@
   
   
     <li class="md-nav__item">
-      <a href="collisions.html" class="md-nav__link">
-        <span title="/python-api/collisions.rst (reference label)" class="md-ellipsis">Collisions</span>
+      <a href="normal_collisions.html" class="md-nav__link">
+        <span title="/python-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tangential_collisions.html" class="md-nav__link">
+        <span title="/python-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
       </a>
     </li>
   
@@ -1832,8 +1892,38 @@
   
   
     <li class="md-nav__item">
+      <a href="tangent.html" class="md-nav__link">
+        <span title="/python-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="barrier.html" class="md-nav__link">
         <span title="/python-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="adhesion.html" class="md-nav__link">
+        <span title="/python-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
       </a>
     </li>
   
@@ -2900,7 +2990,7 @@
 <h1 id="continuous-collision-detection">Continuous Collision Detection<a class="headerlink" href="#continuous-collision-detection" title="Permalink to this heading">¶</a></h1>
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.is_step_collision_free">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">is_step_collision_free</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n]],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n]],</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">broad_phase_method:</span> <span class="pre">ipctk.BroadPhaseMethod</span> <span class="pre">=</span> <span class="pre">&lt;BroadPhaseMethod.HASH_GRID:</span> <span class="pre">1&gt;,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f18f6551d30&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.is_step_collision_free" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">is_step_collision_free</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n]],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n]],</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">broad_phase_method:</span> <span class="pre">ipctk.BroadPhaseMethod</span> <span class="pre">=</span> <span class="pre">&lt;BroadPhaseMethod.HASH_GRID:</span> <span class="pre">1&gt;,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f74af357670&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.is_step_collision_free" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine if the step is collision free.</p>
 <div class="note admonition">
 <p class="admonition-title">Note</p>
@@ -2931,7 +3021,7 @@
 
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.compute_collision_free_stepsize">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">compute_collision_free_stepsize</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n]],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n]],</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">broad_phase_method:</span> <span class="pre">ipctk.BroadPhaseMethod</span> <span class="pre">=</span> <span class="pre">&lt;BroadPhaseMethod.HASH_GRID:</span> <span class="pre">1&gt;,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f18f6551eb0&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.compute_collision_free_stepsize" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">compute_collision_free_stepsize</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">vertices_t0:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n]],</span> <span class="pre">vertices_t1:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n]],</span> <span class="pre">min_distance:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0.0,</span> <span class="pre">broad_phase_method:</span> <span class="pre">ipctk.BroadPhaseMethod</span> <span class="pre">=</span> <span class="pre">&lt;BroadPhaseMethod.HASH_GRID:</span> <span class="pre">1&gt;,</span> <span class="pre">narrow_phase_ccd:</span> <span class="pre">ipctk.NarrowPhaseCCD</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.TightInclusionCCD</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7f74bd20f8b0&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.compute_collision_free_stepsize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes a maximal step size that is collision free.</p>
 <div class="note admonition">
 <p class="admonition-title">Note</p>

@@ -667,8 +667,23 @@
   
   
     <li class="md-nav__item">
-      <a href="../cpp-api/collisions.html" class="md-nav__link">
-        <span title="/cpp-api/collisions.rst (reference label)" class="md-ellipsis">Collisions</span>
+      <a href="../cpp-api/normal_collisions.html" class="md-nav__link">
+        <span title="/cpp-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/tangential_collisions.html" class="md-nav__link">
+        <span title="/cpp-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
       </a>
     </li>
   
@@ -742,8 +757,38 @@
   
   
     <li class="md-nav__item">
+      <a href="../cpp-api/tangent.html" class="md-nav__link">
+        <span title="/cpp-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../cpp-api/barrier.html" class="md-nav__link">
         <span title="/cpp-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/adhesion.html" class="md-nav__link">
+        <span title="/cpp-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
       </a>
     </li>
   
@@ -881,8 +926,23 @@
   
   
     <li class="md-nav__item">
-      <a href="../python-api/collisions.html" class="md-nav__link">
-        <span title="/python-api/collisions.rst (reference label)" class="md-ellipsis">Collisions</span>
+      <a href="../python-api/normal_collisions.html" class="md-nav__link">
+        <span title="/python-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/tangential_collisions.html" class="md-nav__link">
+        <span title="/python-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
       </a>
     </li>
   
@@ -956,8 +1016,38 @@
   
   
     <li class="md-nav__item">
+      <a href="../python-api/tangent.html" class="md-nav__link">
+        <span title="/python-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../python-api/barrier.html" class="md-nav__link">
         <span title="/python-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/adhesion.html" class="md-nav__link">
+        <span title="/python-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
       </a>
     </li>
   
@@ -1277,11 +1367,11 @@ Python</label></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_rotation</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code>    <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_rotation</span>
     <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)],</span>
                   <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)]])</span>
     <span class="k">return</span> <span class="n">R</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">translation</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_translation</span>
+
 </code></pre></div>
 </div>
 </div>
@@ -1315,13 +1405,13 @@ Python</label></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">max_distance_from_linear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">):</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_rotation</span> <span class="o">*</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_rotation</span> <span class="o">*</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
         <span class="c1"># This is the most conservative estimate</span>
         <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>  <span class="c1"># 2 * radius</span>
     <span class="n">p_t0</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
     <span class="n">p_t1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="p">((</span><span class="n">t0</span> <span class="o">+</span> <span class="n">t1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="p">((</span><span class="n">p_t1</span> <span class="o">-</span> <span class="n">p_t0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">p_t0</span><span class="p">))</span>
+<span class="n">D_RIGID_2D_TRAJECTORY</span>
 </code></pre></div>
 </div>
 </div>

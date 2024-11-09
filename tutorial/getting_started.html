@@ -755,8 +755,23 @@
   
   
     <li class="md-nav__item">
-      <a href="../cpp-api/collisions.html" class="md-nav__link">
-        <span title="/cpp-api/collisions.rst (reference label)" class="md-ellipsis">Collisions</span>
+      <a href="../cpp-api/normal_collisions.html" class="md-nav__link">
+        <span title="/cpp-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/tangential_collisions.html" class="md-nav__link">
+        <span title="/cpp-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
       </a>
     </li>
   
@@ -830,8 +845,38 @@
   
   
     <li class="md-nav__item">
+      <a href="../cpp-api/tangent.html" class="md-nav__link">
+        <span title="/cpp-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../cpp-api/barrier.html" class="md-nav__link">
         <span title="/cpp-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/adhesion.html" class="md-nav__link">
+        <span title="/cpp-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
       </a>
     </li>
   
@@ -969,8 +1014,23 @@
   
   
     <li class="md-nav__item">
-      <a href="../python-api/collisions.html" class="md-nav__link">
-        <span title="/python-api/collisions.rst (reference label)" class="md-ellipsis">Collisions</span>
+      <a href="../python-api/normal_collisions.html" class="md-nav__link">
+        <span title="/python-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/tangential_collisions.html" class="md-nav__link">
+        <span title="/python-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
       </a>
     </li>
   
@@ -1044,8 +1104,38 @@
   
   
     <li class="md-nav__item">
+      <a href="../python-api/tangent.html" class="md-nav__link">
+        <span title="/python-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../python-api/barrier.html" class="md-nav__link">
         <span title="/python-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/adhesion.html" class="md-nav__link">
+        <span title="/python-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
       </a>
     </li>
   
@@ -1378,7 +1468,7 @@ The sizes of <code class="docutils literal notranslate"><span class="pre">edges<
 <p>In 2D only the <code class="docutils literal notranslate"><span class="pre">edges</span></code> matrix is required. In 3D both <code class="docutils literal notranslate"><span class="pre">edges</span></code> and <code class="docutils literal notranslate"><span class="pre">faces</span></code> are required.</p>
 </div>
 <h2 id="collisions">Collisions<a class="headerlink" href="#collisions" title="Permalink to this heading">¶</a></h2>
-<p>Now that we have a collision mesh, we can compute the collision barrier potential. To do this we first need to build the set of active collisions (<code class="docutils literal notranslate"><span class="pre">Collisions</span></code>).</p>
+<p>Now that we have a collision mesh, we can compute the collision barrier potential. To do this we first need to build the set of active collisions (<code class="docutils literal notranslate"><span class="pre">NormalCollisions</span></code>).</p>
 <p>To start we need the current positions of the <code class="docutils literal notranslate"><span class="pre">vertices</span></code>. For this tutorial, let us use squash the bunny has to 1% of its original height.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:2">
 <input checked type="radio" id="__tabbed_2_1" name="__tabbed_2"><input type="radio" id="__tabbed_2_2" name="__tabbed_2"><div class="tabbed-labels docutils">
@@ -1411,7 +1501,7 @@ Python</label></div>
 <div class="tabbed-block docutils">
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">dhat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e-3</span><span class="p">;</span>
 
-<span class="n">ipc</span><span class="o">::</span><span class="n">Collisions</span><span class="w"> </span><span class="n">collisions</span><span class="p">;</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">NormalCollisions</span><span class="w"> </span><span class="n">collisions</span><span class="p">;</span>
 <span class="n">collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">);</span>
 </code></pre></div>
 </div>
@@ -1419,7 +1509,7 @@ Python</label></div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">dhat</span> <span class="o">=</span> <span class="mf">1e-3</span>
 
-<span class="n">collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">Collisions</span><span class="p">()</span>
+<span class="n">collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">NormalCollisions</span><span class="p">()</span>
 <span class="n">collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">dhat</span><span class="p">)</span>
 </code></pre></div>
 </div>
@@ -1640,7 +1730,7 @@ Python</label></div>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">dhat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e-4</span><span class="p">;</span>
 <span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">dmin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e-3</span><span class="p">;</span>
 
-<span class="n">ipc</span><span class="o">::</span><span class="n">Collisions</span><span class="w"> </span><span class="n">collisions</span><span class="p">;</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">NormalCollisions</span><span class="w"> </span><span class="n">collisions</span><span class="p">;</span>
 <span class="n">collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">,</span><span class="w"> </span><span class="n">dmin</span><span class="p">);</span>
 </code></pre></div>
 </div>
@@ -1670,15 +1760,15 @@ C++</label><label class="tabbed-label" for="__tabbed_8_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipc</span><span class="o">::</span><span class="n">FrictionCollisions</span><span class="w"> </span><span class="n">friction_collisions</span><span class="p">;</span>
-<span class="n">friction_collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">ipc</span><span class="o">::</span><span class="n">TangentialCollisions</span><span class="w"> </span><span class="n">tangential_collisions</span><span class="p">;</span>
+<span class="n">tangential_collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span>
 <span class="w">    </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">mu</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">friction_collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">FrictionCollisions</span><span class="p">()</span>
-<span class="n">friction_collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">tangential_collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">TangentialCollisions</span><span class="p">()</span>
+<span class="n">tangential_collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
     <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">barrier_stiffness</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
 </code></pre></div>
 </div>
@@ -1694,19 +1784,19 @@ C++</label><label class="tabbed-label" for="__tabbed_9_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="k">const</span><span class="w"> </span><span class="n">FrictionPotential</span><span class="w"> </span><span class="nf">D</span><span class="p">(</span><span class="n">epsv</span><span class="p">);</span>
-<span class="kt">double</span><span class="w"> </span><span class="n">friction_potential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">D</span><span class="p">(</span><span class="n">friction_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocity</span><span class="p">);</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="k">const</span><span class="w"> </span><span class="n">FrictionPotential</span><span class="w"> </span><span class="nf">D</span><span class="p">(</span><span class="n">eps_v</span><span class="p">);</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">friction_potential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">D</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocity</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">D</span> <span class="o">=</span> <span class="n">FrictionPotential</span><span class="p">(</span><span class="n">epsv</span><span class="p">)</span>
-<span class="n">friction_potential</span> <span class="o">=</span> <span class="n">D</span><span class="p">(</span><span class="n">friction_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocity</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">D</span> <span class="o">=</span> <span class="n">FrictionPotential</span><span class="p">(</span><span class="n">eps_v</span><span class="p">)</span>
+<span class="n">friction_potential</span> <span class="o">=</span> <span class="n">D</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocity</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
 </div>
-</div><p>Here <code class="docutils literal notranslate"><span class="pre">epsv</span></code> (<span class="math notranslate nohighlight">\(\epsilon_v\)</span>) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.</p>
+</div><p>Here <code class="docutils literal notranslate"><span class="pre">eps_v</span></code> (<span class="math notranslate nohighlight">\(\epsilon_v\)</span>) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.</p>
 <div class="important admonition">
 <p class="admonition-title">Important</p>
 <p>The friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is</p>
@@ -1729,19 +1819,19 @@ Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="n">friction_potential_grad</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="n">D</span><span class="p">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">friction_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocity</span><span class="p">);</span>
+<span class="w">    </span><span class="n">D</span><span class="p">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocity</span><span class="p">);</span>
 
 <span class="n">Eigen</span><span class="o">::</span><span class="n">SparseMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">friction_potential_hess</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="n">D</span><span class="p">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">friction_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocity</span><span class="p">);</span>
+<span class="w">    </span><span class="n">D</span><span class="p">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocity</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">friction_potential_grad</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span>
-    <span class="n">friction_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocity</span><span class="p">)</span>
+    <span class="n">tangential_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocity</span><span class="p">)</span>
 
 <span class="n">friction_potential_hess</span> <span class="o">=</span> <span class="n">D</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span>
-    <span class="n">friction_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocity</span><span class="p">)</span>
+    <span class="n">tangential_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocity</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>

@@ -680,8 +680,23 @@
   
   
     <li class="md-nav__item">
-      <a href="../cpp-api/collisions.html" class="md-nav__link">
-        <span title="/cpp-api/collisions.rst (reference label)" class="md-ellipsis">Collisions</span>
+      <a href="../cpp-api/normal_collisions.html" class="md-nav__link">
+        <span title="/cpp-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/tangential_collisions.html" class="md-nav__link">
+        <span title="/cpp-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
       </a>
     </li>
   
@@ -755,8 +770,38 @@
   
   
     <li class="md-nav__item">
+      <a href="../cpp-api/tangent.html" class="md-nav__link">
+        <span title="/cpp-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../cpp-api/barrier.html" class="md-nav__link">
         <span title="/cpp-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp-api/adhesion.html" class="md-nav__link">
+        <span title="/cpp-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
       </a>
     </li>
   
@@ -894,8 +939,23 @@
   
   
     <li class="md-nav__item">
-      <a href="../python-api/collisions.html" class="md-nav__link">
-        <span title="/python-api/collisions.rst (reference label)" class="md-ellipsis">Collisions</span>
+      <a href="../python-api/normal_collisions.html" class="md-nav__link">
+        <span title="/python-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/tangential_collisions.html" class="md-nav__link">
+        <span title="/python-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
       </a>
     </li>
   
@@ -969,8 +1029,38 @@
   
   
     <li class="md-nav__item">
+      <a href="../python-api/tangent.html" class="md-nav__link">
+        <span title="/python-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../python-api/barrier.html" class="md-nav__link">
         <span title="/python-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/adhesion.html" class="md-nav__link">
+        <span title="/python-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
       </a>
     </li>
   
@@ -1227,7 +1317,7 @@ Python</label></div>
 <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="n">vertices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">.</span><span class="n">vertices</span><span class="p">(</span><span class="n">full_vertices</span><span class="p">);</span>
 
 <span class="c1">// Construct the set of collisions</span>
-<span class="n">ipc</span><span class="o">::</span><span class="n">Collisions</span><span class="w"> </span><span class="n">collisions</span><span class="p">;</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">NormalCollisions</span><span class="w"> </span><span class="n">collisions</span><span class="p">;</span>
 <span class="n">collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">dhat</span><span class="p">);</span>
 
 <span class="c1">// Construct a barrier potential</span>
@@ -1240,13 +1330,13 @@ Python</label></div>
 <span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="n">velocities</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">.</span><span class="n">map_displacements</span><span class="p">(</span><span class="n">full_velocities</span><span class="p">);</span>
 
 <span class="c1">// Construct the set of friction collisions</span>
-<span class="n">ipc</span><span class="o">::</span><span class="n">FrictionCollisions</span><span class="w"> </span><span class="n">friction_collisions</span><span class="p">;</span>
-<span class="n">friction_collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">mu</span><span class="p">);</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">TangentialCollisions</span><span class="w"> </span><span class="n">tangential_collisions</span><span class="p">;</span>
+<span class="n">tangential_collisions</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">,</span><span class="w"> </span><span class="n">collisions</span><span class="p">,</span><span class="w"> </span><span class="n">B</span><span class="p">,</span><span class="w"> </span><span class="n">barrier_stiffness</span><span class="p">,</span><span class="w"> </span><span class="n">mu</span><span class="p">);</span>
 
 <span class="c1">// Construct a friction dissipative potential</span>
-<span class="n">ipc</span><span class="o">::</span><span class="n">FrictionPotential</span><span class="w"> </span><span class="nf">D</span><span class="p">(</span><span class="n">epsv</span><span class="p">);</span>
+<span class="n">ipc</span><span class="o">::</span><span class="n">FrictionPotential</span><span class="w"> </span><span class="nf">D</span><span class="p">(</span><span class="n">eps_v</span><span class="p">);</span>
 
-<span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">D</span><span class="p">(</span><span class="n">friction_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocities</span><span class="p">);</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">D</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocities</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
@@ -1268,13 +1358,13 @@ Python</label></div>
 <span class="n">velocities</span> <span class="o">=</span> <span class="n">collision_mesh</span><span class="o">.</span><span class="n">map_displacements</span><span class="p">(</span><span class="n">full_velocities</span><span class="p">)</span>
 
 <span class="c1"># Construct the set of friction collisions</span>
-<span class="n">friction_collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">FrictionCollisions</span><span class="p">()</span>
-<span class="n">friction_collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">barrier_stiffness</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
+<span class="n">tangential_collisions</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">TangentialCollisions</span><span class="p">()</span>
+<span class="n">tangential_collisions</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">,</span> <span class="n">collisions</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">barrier_stiffness</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
 
 <span class="c1"># Construct a friction dissipative potential</span>
-<span class="n">D</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">FrictionPotential</span><span class="p">(</span><span class="n">epsv</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">FrictionPotential</span><span class="p">(</span><span class="n">eps_v</span><span class="p">)</span>
 
-<span class="n">d</span> <span class="o">=</span> <span class="n">D</span><span class="p">(</span><span class="n">friction_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocities</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">D</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocities</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>

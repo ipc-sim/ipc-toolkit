@@ -1796,8 +1796,23 @@
   
   
     <li class="md-nav__item">
-      <a href="collisions.html" class="md-nav__link">
-        <span title="/cpp-api/collisions.rst (reference label)" class="md-ellipsis">Collisions</span>
+      <a href="normal_collisions.html" class="md-nav__link">
+        <span title="/cpp-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tangential_collisions.html" class="md-nav__link">
+        <span title="/cpp-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
       </a>
     </li>
   
@@ -1871,8 +1886,38 @@
   
   
     <li class="md-nav__item">
+      <a href="tangent.html" class="md-nav__link">
+        <span title="/cpp-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="barrier.html" class="md-nav__link">
         <span title="/cpp-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="adhesion.html" class="md-nav__link">
+        <span title="/cpp-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
       </a>
     </li>
   
@@ -2010,8 +2055,23 @@
   
   
     <li class="md-nav__item">
-      <a href="../python-api/collisions.html" class="md-nav__link">
-        <span title="/python-api/collisions.rst (reference label)" class="md-ellipsis">Collisions</span>
+      <a href="../python-api/normal_collisions.html" class="md-nav__link">
+        <span title="/python-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/tangential_collisions.html" class="md-nav__link">
+        <span title="/python-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
       </a>
     </li>
   
@@ -2085,8 +2145,38 @@
   
   
     <li class="md-nav__item">
+      <a href="../python-api/tangent.html" class="md-nav__link">
+        <span title="/python-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../python-api/barrier.html" class="md-nav__link">
         <span title="/python-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/adhesion.html" class="md-nav__link">
+        <span title="/python-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
       </a>
     </li>
   
@@ -3413,14 +3503,14 @@
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh13CollisionMeshEv">
 <span class="target" id="classipc_1_1_collision_mesh_1a64c1c6312788dd28cbe54d735468b728"></span><span class="sig-name descname"><span class="n">CollisionMesh</span></span><span><span class="p">(</span><span class="p">)</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="k">default</span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshEv" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct a new <a class="reference internal" href="collisions.html#classipc_1_1_collision"><span class="std std-ref">Collision</span></a> Mesh object. </p>
-<p><a class="reference internal" href="collisions.html#classipc_1_1_collision"><span class="std std-ref">Collision</span></a> Mesh objects are immutable, so use the other constructors. </p>
+<dd><p>Construct a new Collision Mesh object. </p>
+<p>Collision Mesh objects are immutable, so use the other constructors. </p>
 </dd></dl>
 
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh13CollisionMeshERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE">
 <span class="target" id="classipc_1_1_collision_mesh_1a4574864766249c5fb5dcc6f4dfed2244"></span><span class="sig-name descname"><span class="n">CollisionMesh</span></span><span><span class="p">(</span><span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXd</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE-p-rest_positions" title="ipc::CollisionMesh::CollisionMesh::rest_positions (C++ function parameter) — The vertices of the collision mesh at rest (#V × dim)."><span class="n sig-param">&nbsp;rest_positions</span></a></span><span class="p">,</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE-p-edges" title="ipc::CollisionMesh::CollisionMesh::edges (C++ function parameter) — The edges of the collision mesh (#E × 2)."><span class="n sig-param">&nbsp;edges</span></a><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="p">(</span><span class="p">)</span></span><span class="p">,</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE-p-faces" title="ipc::CollisionMesh::CollisionMesh::faces (C++ function parameter) — The faces of the collision mesh (#F × 3)."><span class="n sig-param">&nbsp;faces</span></a><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="p">(</span><span class="p">)</span></span><span class="p">,</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">SparseMatrix</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE-p-displacement_map" title="ipc::CollisionMesh::CollisionMesh::displacement_map (C++ function parameter) — The displacement mapping from displacements on the full mesh to the collision mesh."><span class="n sig-param">&nbsp;displacement_map</span></a><span class="w"><br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">SparseMatrix</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span><span class="p">(</span><span class="p">)</span></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct a new <a class="reference internal" href="collisions.html#classipc_1_1_collision"><span class="std std-ref">Collision</span></a> Mesh object directly from the collision mesh vertices. </p>
+<dd><p>Construct a new Collision Mesh object directly from the collision mesh vertices. </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4N3ipc13CollisionMesh13CollisionMeshERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE-parameters" title="Permalink to this headline">¶</a></dt>
 <dd class="field-odd"><dl class="simple api-field highlight">
@@ -3440,7 +3530,7 @@
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh13CollisionMeshERKNSt6vectorIbEERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE">
 <span class="target" id="classipc_1_1_collision_mesh_1a4d1ad2518eecb1f25a7a91f00f06ff3c"></span><span class="sig-name descname"><span class="n">CollisionMesh</span></span><span><span class="p">(</span><span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="p">&lt;</span><span class="kt">bool</span><span class="p">&gt;</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshERKNSt6vectorIbEERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE-p-include_vertex" title="ipc::CollisionMesh::CollisionMesh::include_vertex (C++ function parameter) — Vector of bools indicating whether each vertex should be included in the collision mesh."><span class="n sig-param">&nbsp;include_vertex</span></a></span><span class="p">,</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXd</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshERKNSt6vectorIbEERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE-p-full_rest_positions" title="ipc::CollisionMesh::CollisionMesh::full_rest_positions (C++ function parameter) — The vertices of the full mesh at rest (#V × dim)."><span class="n sig-param">&nbsp;full_rest_positions</span></a></span><span class="p">,</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshERKNSt6vectorIbEERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE-p-edges" title="ipc::CollisionMesh::CollisionMesh::edges (C++ function parameter) — The edges of the collision mesh indexed into the full mesh vertices (#E × 2)."><span class="n sig-param">&nbsp;edges</span></a><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="p">(</span><span class="p">)</span></span><span class="p">,</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshERKNSt6vectorIbEERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE-p-faces" title="ipc::CollisionMesh::CollisionMesh::faces (C++ function parameter) — The faces of the collision mesh indexed into the full mesh vertices (#F × 3)."><span class="n sig-param">&nbsp;faces</span></a><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="p">(</span><span class="p">)</span></span><span class="p">,</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">SparseMatrix</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshERKNSt6vectorIbEERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE-p-displacement_map" title="ipc::CollisionMesh::CollisionMesh::displacement_map (C++ function parameter) — The displacement mapping from displacements on the full mesh to the collision mesh."><span class="n sig-param">&nbsp;displacement_map</span></a><span class="w"><br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">SparseMatrix</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span><span class="p">(</span><span class="p">)</span></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshERKNSt6vectorIbEERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Construct a new <a class="reference internal" href="collisions.html#classipc_1_1_collision"><span class="std std-ref">Collision</span></a> Mesh object from a full mesh vertices. </p>
+<dd><p>Construct a new Collision Mesh object from a full mesh vertices. </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4N3ipc13CollisionMesh13CollisionMeshERKNSt6vectorIbEERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshERKNSt6vectorIbEERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiERKN5Eigen12SparseMatrixIdEE-parameters" title="Permalink to this headline">¶</a></dt>
 <dd class="field-odd"><dl class="simple api-field highlight">
@@ -3474,7 +3564,7 @@
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMeshD0Ev">
 <span class="target" id="classipc_1_1_collision_mesh_1a4f983c163d64bfc4dd00493da16e031d"></span><span class="sig-name descname"><span class="n">~CollisionMesh</span></span><span><span class="p">(</span><span class="p">)</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="k">default</span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMeshD0Ev" title="Permalink to this definition">¶</a></dt>
-<dd><p>Destroy the <a class="reference internal" href="collisions.html#classipc_1_1_collision"><span class="std std-ref">Collision</span></a> Mesh object. </p>
+<dd><p>Destroy the Collision Mesh object. </p>
 </dd></dl>
 
 <dl class="cpp function objdesc">

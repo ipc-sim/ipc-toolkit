@@ -125,4 +125,4 @@ Friction
 
 Just as with the :ref:`collisions <convergent-collision-formulation>`, we implement both the original friction formulation of :cite:t:`Li2020IPC` and the convergent formulation of :cite:t:`Li2023Convergent`.
 
-The choice of formulation is dependent on how the fixed set of ``collisions`` given to ``FrictionCollisions::build`` was built. If the ``collisions`` were built using the convergent formulation, then the friction collisions will also use the convergent formulation. Otherwise, the original formulation will be used.
+The choice of formulation is dependent on how the fixed set of ``collisions`` given to ``TangentialCollisions::build`` was built. If the ``collisions`` were built using the convergent formulation, then the friction collisions will also use the convergent formulation. Otherwise, the original formulation will be used.
