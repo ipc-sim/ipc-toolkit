@@ -1,7 +1,6 @@
 import numpy as np
 
-import find_ipctk
-import ipctk
+from find_ipctk import ipctk
 
 import utils
 
@@ -15,7 +14,7 @@ def check_ipc_derivatives(broad_phase_method, use_convergent_formulation, mesh_n
         mesh = ipctk.CollisionMesh.build_from_full_mesh(vertices, edges, faces)
         vertices = mesh.vertices(vertices)
 
-    collisions = ipctk.Collisions()
+    collisions = ipctk.NormalCollisions()
     collisions.use_area_weighting = use_convergent_formulation
     collisions.use_improved_max_approximator = use_convergent_formulation
     collisions.build(mesh, vertices, dhat,

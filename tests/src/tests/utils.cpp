@@ -29,7 +29,7 @@ void mmcvids_to_collisions(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Eigen::MatrixXi& mmcvids,
-    ipc::Collisions& collisions)
+    ipc::NormalCollisions& collisions)
 {
     for (int mmcvid_i = 0; mmcvid_i < mmcvids.rows(); mmcvid_i++) {
         const auto mmcvid = mmcvids.row(mmcvid_i);

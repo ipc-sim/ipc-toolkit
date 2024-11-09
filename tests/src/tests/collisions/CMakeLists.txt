@@ -1,6 +1,6 @@
 set(SOURCES
   # Tests
-  test_collisions.cpp
+  test_normal_collisions.cpp
 
   # Benchmarks
 

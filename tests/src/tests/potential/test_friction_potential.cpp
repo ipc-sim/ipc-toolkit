@@ -4,7 +4,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <ipc/friction/friction_collisions.hpp>
+#include <ipc/collisions/tangential/tangential_collisions.hpp>
 #include <ipc/potentials/friction_potential.hpp>
 
 #include <finitediff.hpp>
@@ -21,24 +21,24 @@ TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
 
     const CollisionMesh mesh(V0, E, F);
 
-    FrictionCollisions friction_collisions;
-    friction_collisions.build(
+    TangentialCollisions tangential_collisions;
+    tangential_collisions.build(
         mesh, V0, collisions, BarrierPotential(dhat), barrier_stiffness, mu);
 
     const FrictionPotential D(epsv_times_h);
 
-    const Eigen::VectorXd grad = D.gradient(friction_collisions, mesh, U);
+    const Eigen::VectorXd grad = D.gradient(tangential_collisions, mesh, U);
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
         const Eigen::MatrixXd fd_U = fd::unflatten(x, data.V1.cols()) - data.V0;
-        return D(friction_collisions, mesh, fd_U);
+        return D(tangential_collisions, mesh, fd_U);
     };
     Eigen::VectorXd fgrad;
     fd::finite_gradient(fd::flatten(V1), f, fgrad);
     CHECK(fd::compare_gradient(grad, fgrad));
 
-    const Eigen::MatrixXd hess = D.hessian(friction_collisions, mesh, U);
+    const Eigen::MatrixXd hess = D.hessian(tangential_collisions, mesh, U);
     Eigen::MatrixXd fhess;
     fd::finite_hessian(fd::flatten(V1), f, fhess);
     CHECK(fd::compare_hessian(hess, fhess, 1e-3));
