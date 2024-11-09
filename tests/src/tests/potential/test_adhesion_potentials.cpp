@@ -9,6 +9,7 @@
 #include <ipc/potentials/tangential_adhesion_potential.hpp>
 
 #include <finitediff.hpp>
+#include <igl/PI.h>
 
 using namespace ipc;
 
@@ -36,7 +37,7 @@ TEST_CASE("Normal adhesion potential", "[potential][adhesion]")
     if (rotated) {
         Eigen::Matrix3d R =
             Eigen::AngleAxis<double>(
-                Eigen::AngleAxisd(M_PI / 4, Eigen::Vector3d::UnitY()))
+                Eigen::AngleAxisd(igl::PI / 4, Eigen::Vector3d::UnitY()))
                 .toRotationMatrix();
         vertices.bottomRows(n) =
             (vertices.bottomRows(n) * R.transpose()).eval();
