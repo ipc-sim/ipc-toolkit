@@ -3,9 +3,9 @@
 #ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
 
 #include <ipc/ccd/check_initial_distance.hpp>
-#include <ipc/distance/point_point.hpp>
-#include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
 #include <CTCD.h>

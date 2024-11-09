@@ -3,9 +3,8 @@
 #include <ipc/collision_mesh.hpp>
 #include <ipc/collisions/collisions.hpp>
 
-#include <tbb/enumerable_thread_specific.h>
-
 #include <Eigen/Core>
+#include <tbb/enumerable_thread_specific.h>
 
 namespace ipc {
 

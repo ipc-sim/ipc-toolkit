@@ -1,18 +1,18 @@
 #include "collisions.hpp"
 
 #include <ipc/collisions/collisions_builder.hpp>
-#include <ipc/distance/point_point.hpp>
-#include <ipc/distance/point_line.hpp>
-#include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_plane.hpp>
+#include <ipc/distance/point_point.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
+#include <tbb/blocked_range.h>
+#include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_reduce.h>
 #include <tbb/parallel_sort.h>
-#include <tbb/blocked_range.h>
-#include <tbb/enumerable_thread_specific.h>
 
 #include <stdexcept> // std::out_of_range
 

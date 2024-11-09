@@ -1,9 +1,9 @@
 #include "edge_edge.hpp"
 
+#include <ipc/distance/edge_edge.hpp>
 #include <ipc/friction/closest_point.hpp>
 #include <ipc/friction/relative_velocity.hpp>
 #include <ipc/friction/tangent_basis.hpp>
-#include <ipc/distance/edge_edge.hpp>
 
 namespace ipc {
 

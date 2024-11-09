@@ -1,13 +1,12 @@
 #pragma once
 
-#include <ipc/friction/collisions/friction_collision.hpp>
-#include <ipc/friction/collisions/vertex_vertex.hpp>
-#include <ipc/friction/collisions/edge_vertex.hpp>
-#include <ipc/friction/collisions/edge_edge.hpp>
-#include <ipc/friction/collisions/face_vertex.hpp>
-
 #include <ipc/collision_mesh.hpp>
 #include <ipc/collisions/collisions.hpp>
+#include <ipc/friction/collisions/edge_edge.hpp>
+#include <ipc/friction/collisions/edge_vertex.hpp>
+#include <ipc/friction/collisions/face_vertex.hpp>
+#include <ipc/friction/collisions/friction_collision.hpp>
+#include <ipc/friction/collisions/vertex_vertex.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 

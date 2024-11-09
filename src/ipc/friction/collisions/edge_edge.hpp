@@ -1,7 +1,7 @@
 #pragma once
 
-#include <ipc/friction/collisions/friction_collision.hpp>
 #include <ipc/candidates/edge_edge.hpp>
+#include <ipc/friction/collisions/friction_collision.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {

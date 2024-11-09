@@ -1,7 +1,7 @@
 #pragma once
 
-#include <ipc/potentials/distance_based_potential.hpp>
 #include <ipc/barrier/barrier.hpp>
+#include <ipc/potentials/distance_based_potential.hpp>
 
 #include <memory>
 
