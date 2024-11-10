@@ -119,13 +119,6 @@ add_subdirectory("${IPC_TOOLKIT_SOURCE_DIR}")
 target_include_directories(ipc_toolkit PUBLIC "${IPC_TOOLKIT_INCLUDE_DIR}")
 
 ################################################################################
-# Optional Definitions
-################################################################################
-
-# For MSVC, do not use the min and max macros.
-target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
-
-################################################################################
 # Dependencies
 ################################################################################
 
@@ -206,6 +199,11 @@ if(IPC_TOOLKIT_WITH_SIMD)
   target_compile_options(ipc_toolkit PRIVATE ${SIMD_FLAGS})
 else()
   message(STATUS "SIMD support disabled")
+endif()
+
+# For MSVC, do not use the min and max macros.
+if(MSVC)
+  target_compile_definitions(ipc_toolkit PRIVATE NOMINMAX)
 endif()
 
 # Use C++17
