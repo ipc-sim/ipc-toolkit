@@ -44,9 +44,6 @@ if(IPC_TOOLKIT_WITH_CCACHE AND CCACHE_PROGRAM)
   endforeach()
 endif()
 
-include(CheckLanguage)
-check_language(CUDA)
-
 ################################################################################
 # CMake Policies
 ################################################################################
@@ -63,6 +60,9 @@ project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
         LANGUAGES CXX
         VERSION "1.4.0")
+
+include(CheckLanguage)
+check_language(CUDA)
 
 option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests" ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
 option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings"                        OFF)
