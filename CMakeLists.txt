@@ -44,6 +44,9 @@ if(IPC_TOOLKIT_WITH_CCACHE AND CCACHE_PROGRAM)
   endforeach()
 endif()
 
+include(CheckLanguage)
+check_language(CUDA)
+
 ################################################################################
 # CMake Policies
 ################################################################################
@@ -61,9 +64,13 @@ project(IPCToolkit
         LANGUAGES CXX
         VERSION "1.4.0")
 
-option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
-option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
-option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
+option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests" ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
+option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings"                        OFF)
+if(CMAKE_CUDA_COMPILER)
+  option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" ON)
+else()
+  option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" OFF)
+endif()
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
@@ -214,14 +221,12 @@ target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
 ################################################################################
 
 if(IPC_TOOLKIT_WITH_CUDA)
-  include(CheckLanguage)
-  check_language(CUDA)
-
-  if(CMAKE_CUDA_COMPILER)
-    enable_language(CUDA)
-  else()
-    message(FATAL_ERROR "No CUDA support found!")
+  if(NOT CMAKE_CUDA_COMPILER)
+    message(FATAL_ERROR "CUDA support requested but no CUDA compiler found!")
   endif()
+
+  # Enable CUDA support
+  enable_language(CUDA)
 
   # We need to explicitly state that we need all CUDA files in the particle
   # library to be built with -dc as the member functions could be called by
