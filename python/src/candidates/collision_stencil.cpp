@@ -12,6 +12,18 @@ void define_collision_stencil(py::module_& m)
             "num_vertices", &CollisionStencil::num_vertices,
             "Get the number of vertices in the collision stencil.")
         .def(
+            "dim", &CollisionStencil::dim,
+            R"ipc_Qu8mg5v7(
+            Get the dimension of the collision stencil.
+
+            Parameters:
+                ndof: Number of degrees of freedom in the stencil.
+
+            Returns:
+                The dimension of the collision stencil.
+            )ipc_Qu8mg5v7",
+            py::arg("ndof"))
+        .def(
             "vertex_ids", &CollisionStencil::vertex_ids,
             R"ipc_Qu8mg5v7(
             Get the vertex IDs of the collision stencil.

@@ -12,3 +12,5 @@ Positive Semi-Definite Projection
 
 .. doxygenfunction:: ipc::project_to_psd
 .. doxygenfunction:: ipc::project_to_pd
+
+.. doxygenenum:: ipc::PSDProjectionMethod

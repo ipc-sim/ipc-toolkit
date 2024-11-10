@@ -2,11 +2,10 @@
 // Originally created by Minchen Li.
 #include "spatial_hash.hpp"
 
-#include <ipc/ccd/aabb.hpp>
-#include <ipc/broad_phase/voxel_size_heuristic.hpp>
-#include <ipc/utils/merge_thread_local.hpp>
-
 #include <ipc/config.hpp>
+#include <ipc/broad_phase/voxel_size_heuristic.hpp>
+#include <ipc/ccd/aabb.hpp>
+#include <ipc/utils/merge_thread_local.hpp>
 
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>

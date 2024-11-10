@@ -1,11 +1,10 @@
 #include "plane.hpp"
 
-#include <ipc/distance/point_plane.hpp>
 #include <ipc/ccd/point_static_plane.hpp>
+#include <ipc/distance/point_plane.hpp>
 
-#include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
-#include <tbb/enumerable_thread_specific.h>
+#include <tbb/parallel_reduce.h>
 
 namespace ipc {
 
@@ -14,7 +13,7 @@ void construct_point_plane_collisions(
     const Eigen::MatrixXd& plane_origins,
     const Eigen::MatrixXd& plane_normals,
     const double dhat,
-    std::vector<PlaneVertexCollision>& pv_collisions,
+    std::vector<PlaneVertexNormalCollision>& pv_collisions,
     const double dmin,
     const std::function<bool(size_t, size_t)>& can_collide)
 {
@@ -98,13 +97,10 @@ double compute_point_plane_collision_free_stepsize(
     assert(plane_normals.rows() == n_planes);
     assert(points_t0.rows() == points_t1.rows());
 
-    tbb::enumerable_thread_specific<double> storage(1);
-
-    tbb::parallel_for(
+    const double earliest_toi = tbb::parallel_reduce(
         tbb::blocked_range<size_t>(0, points_t0.rows()),
-        [&](tbb::blocked_range<size_t> r) {
-            double& earliest_toi = storage.local();
-
+        /*inital_step_size=*/1.0,
+        [&](tbb::blocked_range<size_t> r, double current_toi) {
             for (size_t vi = r.begin(); vi < r.end(); vi++) {
                 for (size_t pi = 0; pi < n_planes; pi++) {
                     if (!can_collide(vi, pi)) {
@@ -120,16 +116,16 @@ double compute_point_plane_collision_free_stepsize(
                         plane_normal, toi);
 
                     if (are_colliding) {
-                        if (toi < earliest_toi) {
-                            earliest_toi = toi;
+                        if (toi < current_toi) {
+                            current_toi = toi;
                         }
                     }
                 }
             }
-        });
+            return current_toi;
+        },
+        [&](double a, double b) { return std::min(a, b); });
 
-    const double earliest_toi =
-        storage.combine([](double a, double b) { return std::min(a, b); });
     assert(earliest_toi >= 0 && earliest_toi <= 1.0);
     return earliest_toi;
 }

@@ -140,6 +140,19 @@ void define_broad_phase(py::module_& m)
                 The candidate edge-face intersections.
             )ipc_Qu8mg5v7")
         .def(
+            "detect_face_face_candidates",
+            [](const BroadPhase& self) {
+                std::vector<FaceFaceCandidate> candidates;
+                self.detect_face_face_candidates(candidates);
+                return candidates;
+            },
+            R"ipc_Qu8mg5v7(
+            Find the candidate face-face collisions.
+
+            Returns:
+                The candidate face-face collisions.
+            )ipc_Qu8mg5v7")
+        .def(
             "detect_collision_candidates",
             [](const BroadPhase& self, int dim) {
                 Candidates candidates;

@@ -138,8 +138,16 @@ project_to_pd(
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A,
     double eps = 1e-8);
 
+/// @brief Enumeration of implemented PSD projection methods
+enum class PSDProjectionMethod {
+    NONE,  ///< No PSD projection
+    CLAMP, ///< Clamp negative eigenvalues to zero
+    ABS    ///< Flip negative eigenvalues to positive
+};
+
 /// @brief Matrix projection onto positive semi-definite cone
 /// @param A Symmetric matrix to project
+/// @param method PSD projection method
 /// @return Projected matrix
 template <
     typename _Scalar,
@@ -150,8 +158,8 @@ template <
     int _MaxCols>
 Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>
 project_to_psd(
-    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&
-        A);
+    const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A,
+    const PSDProjectionMethod method = PSDProjectionMethod::CLAMP);
 
 inline Eigen::Vector3d to_3D(const VectorMax3d& v)
 {

@@ -21,8 +21,8 @@ public:
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
     CollisionMesh(
         const Eigen::MatrixXd& rest_positions,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        const Eigen::MatrixXi& edges = Eigen::MatrixXi(),
+        const Eigen::MatrixXi& faces = Eigen::MatrixXi(),
         const Eigen::SparseMatrix<double>& displacement_map =
             Eigen::SparseMatrix<double>());
 
@@ -35,8 +35,8 @@ public:
     CollisionMesh(
         const std::vector<bool>& include_vertex,
         const Eigen::MatrixXd& full_rest_positions,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        const Eigen::MatrixXi& edges = Eigen::MatrixXi(),
+        const Eigen::MatrixXi& faces = Eigen::MatrixXi(),
         const Eigen::SparseMatrix<double>& displacement_map =
             Eigen::SparseMatrix<double>());
 
@@ -48,7 +48,7 @@ public:
     static CollisionMesh build_from_full_mesh(
         const Eigen::MatrixXd& full_rest_positions,
         const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces)
+        const Eigen::MatrixXi& faces = Eigen::MatrixXi())
     {
         return CollisionMesh(
             construct_is_on_surface(full_rest_positions.rows(), edges),
@@ -326,13 +326,13 @@ protected:
 
     /// @brief Selection matrix S ∈ ℝ^{collision×full} for vertices
     Eigen::SparseMatrix<double> m_select_vertices;
-    /// @brief Selection matrix S ∈ ℝ^{collision×full} for DOF
+    /// @brief Selection matrix S ∈ ℝ^{(dim*collision)×(dim*full)} for DOF
     Eigen::SparseMatrix<double> m_select_dof;
 
     /// @brief Mapping from full displacements to collision displacements
     /// @note this is premultiplied by m_select_vertices
     Eigen::SparseMatrix<double> m_displacement_map;
-    /// @brief Mapping from full displacements to collision displacements
+    /// @brief Mapping from full displacements DOF to collision displacements DOF
     /// @note this is premultiplied by m_select_dof
     Eigen::SparseMatrix<double> m_displacement_dof_map;
 

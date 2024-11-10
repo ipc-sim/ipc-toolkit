@@ -1,10 +1,9 @@
 #include "ipc.hpp"
 
+#include <ipc/config.hpp>
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/utils/intersection.hpp>
 #include <ipc/utils/world_bbox_diagonal_length.hpp>
-
-#include <ipc/config.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
 #include <scalable_ccd/cuda/ipc_ccd_strategy.hpp>
@@ -18,10 +17,9 @@ bool is_step_collision_free(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
-    const BroadPhaseMethod broad_phase_method,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations)
+    const BroadPhaseMethod broad_phase_method,
+    const NarrowPhaseCCD& narrow_phase_ccd)
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
@@ -30,12 +28,11 @@ bool is_step_collision_free(
     Candidates candidates;
     candidates.build(
         mesh, vertices_t0, vertices_t1,
-        /*inflation_radius=*/min_distance / 2, broad_phase_method);
+        /*inflation_radius=*/0.5 * min_distance, broad_phase_method);
 
     // Narrow phase
     return candidates.is_step_collision_free(
-        mesh, vertices_t0, vertices_t1, min_distance, tolerance,
-        max_iterations);
+        mesh, vertices_t0, vertices_t1, min_distance, narrow_phase_ccd);
 }
 
 // ============================================================================
@@ -44,10 +41,9 @@ double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
-    const BroadPhaseMethod broad_phase_method,
     const double min_distance,
-    const double tolerance,
-    const long max_iterations)
+    const BroadPhaseMethod broad_phase_method,
+    const NarrowPhaseCCD& narrow_phase_ccd)
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
     assert(vertices_t1.rows() == mesh.num_vertices());
@@ -59,6 +55,10 @@ double compute_collision_free_stepsize(
                 "Sweep and Tiniest Queue is only supported in 3D!");
         }
         // TODO: Use correct min_distance
+        // TODO: Expose tolerance and max_iterations
+        constexpr double tolerance = TightInclusionCCD::DEFAULT_TOLERANCE;
+        constexpr long max_iterations =
+            TightInclusionCCD::DEFAULT_MAX_ITERATIONS;
         const double step_size = scalable_ccd::cuda::ipc_ccd_strategy(
             vertices_t0, vertices_t1, mesh.edges(), mesh.faces(),
             /*min_distance=*/0.0, max_iterations, tolerance);
@@ -75,13 +75,12 @@ double compute_collision_free_stepsize(
     // Broad phase
     Candidates candidates;
     candidates.build(
-        mesh, vertices_t0, vertices_t1, /*inflation_radius=*/min_distance / 2,
+        mesh, vertices_t0, vertices_t1, /*inflation_radius=*/0.5 * min_distance,
         broad_phase_method);
 
     // Narrow phase
     return candidates.compute_collision_free_stepsize(
-        mesh, vertices_t0, vertices_t1, min_distance, tolerance,
-        max_iterations);
+        mesh, vertices_t0, vertices_t1, min_distance, narrow_phase_ccd);
 }
 
 // ============================================================================

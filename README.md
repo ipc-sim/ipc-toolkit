@@ -90,7 +90,8 @@ The following dependencies are optionally used based on CMake options:
 * [Etienne Vouga's Collision Detection Library](https://github.com/evouga/collisiondetection): inexact CCD
     * Included for comparison with the original IPC library
     * Enable by using the CMake option `IPC_TOOLKIT_WITH_INEXACT_CCD`
-    * Replaces the default Tight-Inclusion CCD
+
+<!--- FILIB DEPENDENCY NOTE --->
 
 ## Usage
 

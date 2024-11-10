@@ -18,9 +18,6 @@ endif()
 set(IPC_TOOLKIT_TESTS_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/tests")
 set(IPC_TOOLKIT_TESTS_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
-### Data directory
-cmake_path(APPEND IPC_TOOLKIT_TESTS_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}" "data")
-
 ################################################################################
 # IPC Toolkit Tests Executable
 ################################################################################
@@ -29,6 +26,7 @@ cmake_path(APPEND IPC_TOOLKIT_TESTS_DATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}" "data
 add_executable(ipc_toolkit_tests)
 
 # Fill in configuration options
+include(ipc_toolkit_tests_data)
 configure_file(
   "${IPC_TOOLKIT_TESTS_SOURCE_DIR}/config.hpp.in"
   "${IPC_TOOLKIT_TESTS_SOURCE_DIR}/config.hpp")
@@ -74,6 +72,15 @@ target_link_libraries(ipc_toolkit_tests PRIVATE ipc::toolkit::warnings)
 ################################################################################
 
 target_compile_definitions(ipc_toolkit_tests PUBLIC CATCH_CONFIG_ENABLE_BENCHMARKING)
+
+if (FILIB_BUILD_SHARED_LIB AND WIN32)
+  # Copy DLLs to the output directory
+  add_custom_command(
+    TARGET ipc_toolkit_tests POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:ipc_toolkit_tests> $<TARGET_FILE_DIR:ipc_toolkit_tests>
+    COMMAND_EXPAND_LISTS
+  )
+endif()
 
 ################################################################################
 # Register tests

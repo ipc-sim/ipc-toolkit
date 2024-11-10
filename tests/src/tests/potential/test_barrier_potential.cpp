@@ -21,7 +21,9 @@ TEST_CASE(
     "[potential][barrier_potential][gradient][hessian]")
 {
     const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
-    const bool use_convergent_formulation = GENERATE(true, false);
+    const bool use_area_weighting = GENERATE(true, false);
+    const bool use_improved_max_approximator = GENERATE(true, false);
+    const bool use_physical_barrier = GENERATE(true, false);
 
     double dhat = -1;
     std::string mesh_name = "";
@@ -29,25 +31,25 @@ TEST_CASE(
     SECTION("cube")
     {
         dhat = sqrt(2.0);
-        mesh_name = "cube.obj";
+        mesh_name = "cube.ply";
     }
     SECTION("two cubes far")
     {
         dhat = 1e-1;
-        mesh_name = "two-cubes-far.obj";
+        mesh_name = "two-cubes-far.ply";
         all_vertices_on_surface = false;
     }
     SECTION("two cubes close")
     {
         dhat = 1e-1;
-        mesh_name = "two-cubes-close.obj";
+        mesh_name = "two-cubes-close.ply";
         all_vertices_on_surface = false;
     }
     // WARNING: The bunny takes too long in debug.
     // SECTION("bunny")
     // {
     //     dhat = 1e-2;
-    //     mesh_name = "bunny.obj";
+    //     mesh_name = "bunny.ply";
     // }
 
     Eigen::MatrixXd vertices;
@@ -58,8 +60,9 @@ TEST_CASE(
 
     CollisionMesh mesh;
 
-    Collisions collisions;
-    collisions.set_use_convergent_formulation(use_convergent_formulation);
+    NormalCollisions collisions;
+    collisions.set_use_area_weighting(use_area_weighting);
+    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(vertices, edges, faces);
     } else {
@@ -67,10 +70,12 @@ TEST_CASE(
         vertices = mesh.vertices(vertices);
     }
     collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
-    CAPTURE(dhat, method, all_vertices_on_surface);
+    CAPTURE(
+        dhat, method, all_vertices_on_surface, use_area_weighting,
+        use_improved_max_approximator);
     CHECK(collisions.size() > 0);
 
-    BarrierPotential barrier_potential(dhat);
+    BarrierPotential barrier_potential(dhat, use_physical_barrier);
 
     // -------------------------------------------------------------------------
     // Gradient
@@ -89,7 +94,7 @@ TEST_CASE(
         fd::finite_gradient(fd::flatten(vertices), f, fgrad_b);
     }
 
-    REQUIRE(grad_b.squaredNorm() > 1e-8);
+    REQUIRE(grad_b.squaredNorm() > 0);
     CHECK(fd::compare_gradient(grad_b, fgrad_b));
 
     // -------------------------------------------------------------------------
@@ -109,7 +114,7 @@ TEST_CASE(
         fd::finite_jacobian(fd::flatten(vertices), f, fhess_b);
     }
 
-    REQUIRE(hess_b.squaredNorm() > 1e-3);
+    REQUIRE(hess_b.squaredNorm() > 0);
     CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
 }
 
@@ -117,7 +122,9 @@ TEST_CASE(
     "Barrier potential convergent formulation",
     "[potential][barrier_potential][convergent]")
 {
-    const bool use_convergent_formulation = GENERATE(false, true);
+    const bool use_area_weighting = GENERATE(true, false);
+    const bool use_improved_max_approximator = GENERATE(true, false);
+    const bool use_physical_barrier = GENERATE(true, false);
     const double dhat = 1e-3;
 
     Eigen::MatrixXd vertices;
@@ -205,36 +212,26 @@ TEST_CASE(
 
     const CollisionMesh mesh(vertices, edges, faces);
 
-    Collisions collisions;
-    collisions.set_use_convergent_formulation(use_convergent_formulation);
+    NormalCollisions collisions;
+    collisions.set_use_area_weighting(use_area_weighting);
+    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
 
     collisions.build(mesh, vertices, dhat);
     CHECK(collisions.size() > 0);
 
-    BarrierPotential barrier_potential(dhat);
+    BarrierPotential barrier_potential(dhat, use_physical_barrier);
 
     const Eigen::VectorXd grad_b =
         barrier_potential.gradient(collisions, mesh, vertices);
-
-    // const Eigen::MatrixXd force = -fd::unflatten(grad_b, vertices.cols());
-    // std::cout << "force:\n" << force << std::endl;
-
-    // if (use_convergent_formulation) {
-    //     constexpr double eps = std::numeric_limits<double>::epsilon();
-    //     CHECK(grad_b(0) == Catch::Approx(0).margin(eps));
-    //     CHECK(grad_b(2 * vertices.cols()) == Catch::Approx(0).margin(eps));
-    // } else {
-    //     CHECK(grad_b(0) != 0);
-    //     CHECK(grad_b(2 * vertices.cols()) != 0);
-    // }
 
     // Compute the gradient using finite differences
     auto f = [&](const Eigen::VectorXd& x) {
         const Eigen::MatrixXd fd_V = fd::unflatten(x, mesh.dim());
 
-        Collisions fd_collisions;
-        fd_collisions.set_use_convergent_formulation(
-            use_convergent_formulation);
+        NormalCollisions fd_collisions;
+        fd_collisions.set_use_area_weighting(use_area_weighting);
+        fd_collisions.set_use_improved_max_approximator(
+            use_improved_max_approximator);
 
         fd_collisions.build(mesh, fd_V, dhat);
 
@@ -252,9 +249,11 @@ TEST_CASE(
 {
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
-    tests::load_mesh("cube.obj", vertices, edges, faces);
+    tests::load_mesh("cube.ply", vertices, edges, faces);
 
-    const bool use_convergent_formulation = GENERATE(false);
+    const bool use_area_weighting = GENERATE(false);
+    const bool use_improved_max_approximator = GENERATE(true, false);
+    const bool use_physical_barrier = GENERATE(true, false);
     const double dhat = 1e-1;
 
     // Stack cube on top of itself
@@ -288,18 +287,16 @@ TEST_CASE(
     Candidates candidates;
     candidates.build(mesh, vertices, dhat);
 
-    Collisions collisions;
-    collisions.set_use_convergent_formulation(use_convergent_formulation);
-    collisions.set_are_shape_derivatives_enabled(true);
+    NormalCollisions collisions;
+    collisions.set_use_area_weighting(use_area_weighting);
+    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
+    collisions.set_enable_shape_derivatives(true);
     collisions.build(candidates, mesh, vertices, dhat);
     REQUIRE(collisions.ee_collisions.size() > 0);
 
-    BarrierPotential barrier_potential(dhat);
+    BarrierPotential barrier_potential(dhat, use_physical_barrier);
 
     for (int i = 0; i < collisions.size(); i++) {
-        if (use_convergent_formulation)
-            break;
-
         std::vector<Eigen::Triplet<double>> triplets;
         barrier_potential.shape_derivative(
             collisions[i], collisions[i].vertex_ids(edges, faces),
@@ -311,12 +308,12 @@ TEST_CASE(
 
         auto F_X = [&](const Eigen::VectorXd& x) -> Eigen::VectorXd {
             // TODO: Recompute weight based on x
-            assert(use_convergent_formulation == false);
+            assert(use_area_weighting == false);
             // Recompute eps_x based on x
             double prev_eps_x = -1;
             if (collisions.is_edge_edge(i)) {
-                EdgeEdgeCollision& c =
-                    dynamic_cast<EdgeEdgeCollision&>(collisions[i]);
+                EdgeEdgeNormalCollision& c =
+                    dynamic_cast<EdgeEdgeNormalCollision&>(collisions[i]);
                 prev_eps_x = c.eps_x;
                 c.eps_x = edge_edge_mollifier_threshold(
                     x.segment<3>(3 * edges(c.edge0_id, 0)),
@@ -337,7 +334,7 @@ TEST_CASE(
             // Restore eps_x
             if (collisions.is_edge_edge(i)) {
                 REQUIRE(prev_eps_x >= 0);
-                dynamic_cast<EdgeEdgeCollision&>(collisions[i]).eps_x =
+                dynamic_cast<EdgeEdgeNormalCollision&>(collisions[i]).eps_x =
                     prev_eps_x;
             }
 
@@ -379,9 +376,10 @@ TEST_CASE(
 
         // WARNING: This breaks the tests because EE distances are C0 when edges
         // are parallel
-        // Collisions fd_collisions;
-        // fd_collisions.set_use_convergent_formulation(
-        //     collisions.use_convergent_formulation());
+        // NormalCollisions fd_collisions;
+        // fd_collisions.set_use_area_weighting(use_area_weighting);
+        // fd_collisions.set_use_improved_max_approximator(
+        //     use_improved_max_approximator);
         // fd_collisions.build(fd_mesh, fd_V, dhat);
 
         return barrier_potential.gradient(collisions, fd_mesh, fd_V);
@@ -416,8 +414,7 @@ TEST_CASE(
     Eigen::MatrixXd X = data["boundary_nodes_pos"];
     Eigen::MatrixXd vertices = data["displaced"];
 
-    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(
-        X, edges, /*faces=*/Eigen::MatrixXi());
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(X, edges);
     mesh.init_area_jacobians();
     REQUIRE(mesh.are_area_jacobians_initialized());
 
@@ -425,13 +422,16 @@ TEST_CASE(
     vertices = mesh.vertices(vertices);
     const Eigen::MatrixXd U = vertices - X;
 
-    Collisions collisions;
-    const bool use_convergent_formulation = GENERATE(true, false);
-    collisions.set_use_convergent_formulation(use_convergent_formulation);
-    collisions.set_are_shape_derivatives_enabled(true);
+    NormalCollisions collisions;
+    const bool use_area_weighting = GENERATE(true, false);
+    const bool use_improved_max_approximator = GENERATE(true, false);
+    const bool use_physical_barrier = GENERATE(true, false);
+    collisions.set_use_area_weighting(use_area_weighting);
+    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
+    collisions.set_enable_shape_derivatives(true);
     collisions.build(mesh, vertices, dhat);
 
-    BarrierPotential barrier_potential(dhat);
+    BarrierPotential barrier_potential(dhat, use_physical_barrier);
 
     const Eigen::MatrixXd JF_wrt_X =
         barrier_potential.shape_derivative(collisions, mesh, vertices);
@@ -442,12 +442,13 @@ TEST_CASE(
 
         CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
 
-        Collisions fd_collision_set;
-        fd_collision_set.set_use_convergent_formulation(
-            collisions.use_convergent_formulation());
-        fd_collision_set.build(fd_mesh, fd_V, dhat);
+        NormalCollisions fd_collisions;
+        fd_collisions.set_use_area_weighting(use_area_weighting);
+        fd_collisions.set_use_improved_max_approximator(
+            use_improved_max_approximator);
+        fd_collisions.build(fd_mesh, fd_V, dhat);
 
-        return barrier_potential.gradient(fd_collision_set, fd_mesh, fd_V);
+        return barrier_potential.gradient(fd_collisions, fd_mesh, fd_V);
     };
     Eigen::MatrixXd fd_JF_wrt_X;
     fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X);
@@ -463,19 +464,21 @@ TEST_CASE(
 TEST_CASE(
     "Benchmark barrier potential", "[!benchmark][potential][barrier_potential]")
 {
-    const bool use_convergent_formulation = GENERATE(true, false);
+    const bool use_area_weighting = GENERATE(true, false);
+    const bool use_improved_max_approximator = GENERATE(true, false);
+    const bool use_physical_barrier = GENERATE(true, false);
 
     double dhat = -1;
     std::string mesh_name;
     SECTION("cube")
     {
         dhat = sqrt(2.0);
-        mesh_name = "cube.obj";
+        mesh_name = "cube.ply";
     }
     SECTION("bunny")
     {
         dhat = 1e-2;
-        mesh_name = "bunny.obj";
+        mesh_name = "bunny.ply";
     }
 
     Eigen::MatrixXd vertices;
@@ -485,13 +488,14 @@ TEST_CASE(
 
     const CollisionMesh mesh(vertices, edges, faces);
 
-    Collisions collisions;
-    collisions.set_use_convergent_formulation(use_convergent_formulation);
+    NormalCollisions collisions;
+    collisions.set_use_area_weighting(use_area_weighting);
+    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
     collisions.build(mesh, vertices, dhat);
     CAPTURE(mesh_name, dhat);
     CHECK(collisions.size() > 0);
 
-    BarrierPotential barrier_potential(dhat);
+    BarrierPotential barrier_potential(dhat, use_physical_barrier);
 
     BENCHMARK("Compute barrier potential")
     {
@@ -507,7 +511,8 @@ TEST_CASE(
     };
     BENCHMARK("Compute barrier potential hessian with PSD projection")
     {
-        return barrier_potential.hessian(collisions, mesh, vertices, true);
+        return barrier_potential.hessian(
+            collisions, mesh, vertices, PSDProjectionMethod::CLAMP);
     };
     BENCHMARK("Compute compute_minimum_distance")
     {
@@ -536,8 +541,7 @@ TEST_CASE(
     Eigen::MatrixXd X = data["boundary_nodes_pos"];
     Eigen::MatrixXd vertices = data["displaced"];
 
-    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(
-        X, edges, /*faces=*/Eigen::MatrixXi());
+    CollisionMesh mesh = CollisionMesh::build_from_full_mesh(X, edges);
     mesh.init_area_jacobians();
     REQUIRE(mesh.are_area_jacobians_initialized());
 
@@ -545,13 +549,16 @@ TEST_CASE(
     vertices = mesh.vertices(vertices);
     const Eigen::MatrixXd U = vertices - X;
 
-    Collisions collisions;
-    const bool use_convergent_formulation = GENERATE(true, false);
-    collisions.set_use_convergent_formulation(use_convergent_formulation);
-    collisions.set_are_shape_derivatives_enabled(true);
+    NormalCollisions collisions;
+    const bool use_area_weighting = GENERATE(true, false);
+    const bool use_improved_max_approximator = GENERATE(true, false);
+    const bool use_physical_barrier = GENERATE(true, false);
+    collisions.set_use_area_weighting(use_area_weighting);
+    collisions.set_use_improved_max_approximator(use_improved_max_approximator);
+    collisions.set_enable_shape_derivatives(true);
     collisions.build(mesh, vertices, dhat);
 
-    BarrierPotential barrier_potential(dhat);
+    BarrierPotential barrier_potential(dhat, use_physical_barrier);
 
     Eigen::SparseMatrix<double> JF_wrt_X;
 

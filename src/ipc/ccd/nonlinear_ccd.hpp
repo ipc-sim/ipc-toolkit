@@ -1,8 +1,7 @@
 #pragma once
 
 #include <ipc/config.hpp>
-
-#include <ipc/ccd/ccd.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 #ifdef IPC_TOOLKIT_WITH_FILIB
 #include <ipc/utils/interval.hpp>
 #endif
@@ -62,9 +61,10 @@ bool point_point_nonlinear_ccd(
     double& toi,
     const double tmax = 1.0,
     const double min_distance = 0,
-    const double tolerance = DEFAULT_CCD_TOLERANCE,
-    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
-    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+    const double tolerance = TightInclusionCCD::DEFAULT_TOLERANCE,
+    const long max_iterations = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+    const double conservative_rescaling =
+        TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
 /// @brief Perform nonlinear CCD between a point and a linear edge moving along nonlinear trajectories.
 /// @param[in] p Point's trajectory
@@ -84,9 +84,10 @@ bool point_edge_nonlinear_ccd(
     double& toi,
     const double tmax = 1.0,
     const double min_distance = 0,
-    const double tolerance = DEFAULT_CCD_TOLERANCE,
-    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
-    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+    const double tolerance = TightInclusionCCD::DEFAULT_TOLERANCE,
+    const long max_iterations = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+    const double conservative_rescaling =
+        TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
 /// @brief Perform nonlinear CCD between two linear edges moving along nonlinear trajectories.
 /// @param[in] ea0 First edge's first endpoint's trajectory
@@ -108,9 +109,10 @@ bool edge_edge_nonlinear_ccd(
     double& toi,
     const double tmax = 1.0,
     const double min_distance = 0,
-    const double tolerance = DEFAULT_CCD_TOLERANCE,
-    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
-    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+    const double tolerance = TightInclusionCCD::DEFAULT_TOLERANCE,
+    const long max_iterations = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+    const double conservative_rescaling =
+        TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
 /// @brief Perform nonlinear CCD between a point and a linear triangle moving along nonlinear trajectories.
 /// @param[in] p Point's trajectory
@@ -132,9 +134,10 @@ bool point_triangle_nonlinear_ccd(
     double& toi,
     const double tmax = 1.0,
     const double min_distance = 0,
-    const double tolerance = DEFAULT_CCD_TOLERANCE,
-    const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
-    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+    const double tolerance = TightInclusionCCD::DEFAULT_TOLERANCE,
+    const long max_iterations = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+    const double conservative_rescaling =
+        TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
 /// @brief Perform conservative piecewise linear CCD of a nonlinear trajectories.
 /// @param[in] distance Return the distance for a given time in [0, 1].
@@ -158,6 +161,7 @@ bool conservative_piecewise_linear_ccd(
     double& toi,
     const double tmax = 1.0,
     const double min_distance = 0,
-    const double conservative_rescaling = DEFAULT_CCD_CONSERVATIVE_RESCALING);
+    const double conservative_rescaling =
+        TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
 } // namespace ipc

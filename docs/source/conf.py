@@ -20,10 +20,11 @@ import pathlib
 
 # -- Project information -----------------------------------------------------
 
+from datetime import datetime
 import ipctk
 
 project = "IPC Toolkit"
-copyright = '2020-2023, IPC-Sim Organization; MIT License'
+copyright = f'2020-{datetime.now().year}, IPC-Sim Organization; MIT License'
 author = "Zachary Ferguson"
 version = ipctk.__version__
 

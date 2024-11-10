@@ -1,11 +1,10 @@
 #include "intersection.hpp"
 
-#include <ipc/utils/eigen_ext.hpp>
 #include <ipc/config.hpp>
-
-#include <igl/predicates/predicates.h>
+#include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Geometry>
+#include <igl/predicates/predicates.h>
 
 #ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
 #include <rational/rational.hpp>

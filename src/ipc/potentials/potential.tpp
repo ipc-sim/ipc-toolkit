@@ -4,9 +4,11 @@
 
 #include <ipc/utils/local_to_global.hpp>
 
-#include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
+#include <tbb/combinable.h>
 #include <tbb/enumerable_thread_specific.h>
+#include <tbb/parallel_for.h>
+#include <tbb/parallel_reduce.h>
 
 namespace ipc {
 
@@ -18,25 +20,18 @@ double Potential<TCollisions>::operator()(
 {
     assert(X.rows() == mesh.num_vertices());
 
-    if (collisions.empty()) {
-        return 0;
-    }
-
-    tbb::enumerable_thread_specific<double> storage(0);
-
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            auto& local_potential = storage.local();
+    return tbb::parallel_reduce(
+        tbb::blocked_range<size_t>(size_t(0), collisions.size()), 0.0,
+        [&](const tbb::blocked_range<size_t>& r, double partial_sum) {
             for (size_t i = r.begin(); i < r.end(); i++) {
                 // Quadrature weight is premultiplied by local potential
-                local_potential += (*this)(
+                partial_sum += (*this)(
                     collisions[i],
                     collisions[i].dof(X, mesh.edges(), mesh.faces()));
             }
-        });
-
-    return storage.combine([](double a, double b) { return a + b; });
+            return partial_sum;
+        },
+        [](double a, double b) { return a + b; });
 }
 
 template <class TCollisions>
@@ -53,14 +48,11 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
 
     const int dim = X.cols();
 
-    tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
-        Eigen::VectorXd::Zero(X.size()));
+    tbb::combinable<Eigen::VectorXd> grad(Eigen::VectorXd::Zero(X.size()));
 
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), collisions.size()),
         [&](const tbb::blocked_range<size_t>& r) {
-            auto& global_grad = storage.local();
-
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const TCollision& collision = collisions[i];
 
@@ -71,12 +63,13 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
                     collision.vertex_ids(mesh.edges(), mesh.faces());
 
                 local_gradient_to_global_gradient(
-                    local_grad, vids, dim, global_grad);
+                    local_grad, vids, dim, grad.local());
             }
         });
 
-    return storage.combine([](const Eigen::VectorXd& a,
-                              const Eigen::VectorXd& b) { return a + b; });
+    return grad.combine([](const Eigen::VectorXd& a, const Eigen::VectorXd& b) {
+        return a + b;
+    });
 }
 
 template <class TCollisions>
@@ -84,7 +77,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const TCollisions& collisions,
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& X,
-    const bool project_hessian_to_psd) const
+    const PSDProjectionMethod project_hessian_to_psd) const
 {
     assert(X.rows() == mesh.num_vertices());
 
@@ -121,14 +114,24 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
             }
         });
 
-    Eigen::SparseMatrix<double> hess(ndof, ndof);
-    for (const auto& local_hess_triplets : storage) {
-        Eigen::SparseMatrix<double> local_hess(ndof, ndof);
-        local_hess.setFromTriplets(
-            local_hess_triplets.begin(), local_hess_triplets.end());
-        hess += local_hess;
-    }
-    return hess;
+    // Combine the local hessians
+    tbb::combinable<Eigen::SparseMatrix<double>> hess(
+        Eigen::SparseMatrix<double>(ndof, ndof));
+
+    tbb::parallel_for(
+        tbb::blocked_range<decltype(storage)::iterator>(
+            storage.begin(), storage.end()),
+        [&](const tbb::blocked_range<decltype(storage)::iterator>& r) {
+            for (auto it = r.begin(); it != r.end(); ++it) {
+                Eigen::SparseMatrix<double> local_hess(ndof, ndof);
+                local_hess.setFromTriplets(it->begin(), it->end());
+                hess.local() += local_hess;
+            }
+        });
+
+    return hess.combine(
+        [](const Eigen::SparseMatrix<double>& a,
+           const Eigen::SparseMatrix<double>& b) { return a + b; });
 }
 
 } // namespace ipc

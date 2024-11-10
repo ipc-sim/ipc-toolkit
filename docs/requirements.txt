@@ -1,6 +1,6 @@
 sphinx
 sphinx-sitemap
-sphinx-immaterial
+sphinx-immaterial==0.11.14
 autoclasstoc
 # sphinx-autodoc-toolbox
 breathe
@@ -10,3 +10,4 @@ myst_parser==1.0.0
 sphinxcontrib-bibtex
 sphinxemoji
 sphinx-last-updated-by-git
+sphinx-autobuild

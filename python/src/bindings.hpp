@@ -1,5 +1,6 @@
 #pragma once
 
+#include <adhesion/bindings.hpp>
 #include <barrier/bindings.hpp>
 #include <broad_phase/bindings.hpp>
 #include <candidates/bindings.hpp>
@@ -9,6 +10,7 @@
 #include <friction/bindings.hpp>
 #include <implicits/bindings.hpp>
 #include <potentials/bindings.hpp>
+#include <tangent/bindings.hpp>
 #include <utils/bindings.hpp>
 
 #include <pybind11/pybind11.h>

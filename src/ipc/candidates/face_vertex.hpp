@@ -43,10 +43,8 @@ public:
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
-        const double tolerance = DEFAULT_CCD_TOLERANCE,
-        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
-        const double conservative_rescaling =
-            DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
+        const NarrowPhaseCCD& narrow_phase_ccd =
+            DEFAULT_NARROW_PHASE_CCD) const override;
 
     // ------------------------------------------------------------------------
 

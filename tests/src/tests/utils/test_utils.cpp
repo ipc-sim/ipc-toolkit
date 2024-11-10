@@ -29,17 +29,21 @@ TEST_CASE("Project to PSD", "[utils][project_to_psd]")
     Eigen::MatrixXd A, A_psd;
 
     A.setIdentity(3, 3);
-    A_psd = ipc::project_to_psd(A);
+    A_psd = ipc::project_to_psd(A, ipc::PSDProjectionMethod::CLAMP);
+    CHECK(A_psd.isApprox(A));
+    A_psd = ipc::project_to_psd(A, ipc::PSDProjectionMethod::ABS);
     CHECK(A_psd.isApprox(A));
 
     A *= -1;
-    A_psd = ipc::project_to_psd(A);
+    A_psd = ipc::project_to_psd(A, ipc::PSDProjectionMethod::CLAMP);
     CHECK(A_psd.isZero());
 
     A.resize(2, 2);
     A.row(0) << 2, 1;
     A.row(1) << 1, 2;
-    A_psd = ipc::project_to_psd(A);
+    A_psd = ipc::project_to_psd(A, ipc::PSDProjectionMethod::CLAMP);
+    CHECK(A_psd.isApprox(A));
+    A_psd = ipc::project_to_psd(A, ipc::PSDProjectionMethod::ABS);
     CHECK(A_psd.isApprox(A));
 }
 

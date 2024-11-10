@@ -12,13 +12,13 @@ Static intersection checks are not a core part of the IPC algorithm, but they ar
 
         .. code-block:: c++
 
-            bool is_intersecting = ipc::has_intersections(collision_mesh, displaced);
+            bool is_intersecting = ipc::has_intersections(collision_mesh, vertices);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            is_intersecting = ipctk.has_intersections(collision_mesh, displaced)
+            is_intersecting = ipctk.has_intersections(collision_mesh, vertices)
 
 
 
