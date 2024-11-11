@@ -1,0 +1,56 @@
+{
+    "name": "IPCToolkit Development Container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "settings": {
+        // Terminal settings
+        "terminal.integrated.shell.linux": "/bin/bash",
+
+        // C++ Extension Settings
+        "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+        "C_Cpp.default.intelliSenseMode": "gcc-x64",
+        "C_Cpp.default.compilerPath": "/usr/local/bin/clang++",
+        "C_Cpp.clang_format_path": "/usr/local/bin/clang-format",
+        "C_Cpp.clang_format_style": "file", // Use .clang-format file in project
+
+        // CMake Settings
+        "cmake.configureOnOpen": true,
+        "cmake.generator": "Ninja",
+        "cmake.buildDirectory": "${workspaceFolder}/build",
+
+        // Python Settings
+        "python.pythonPath": "/usr/bin/python3",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        "python.formatting.provider": "black",
+
+        // Prettier Settings
+        "prettier.requireConfig": true
+    },
+    "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "xaver.clang-format",
+        "ms-python.python",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens",
+        "esbenp.prettier-vscode",
+        "mhutchie.git-graph"
+    ],
+    "postCreateCommand": "pre-commit install",
+    "remoteUser": "devuser",
+    "mounts": [
+        "source=${localWorkspaceFolder}/.ccache,target=/home/devuser/.ccache,type=bind,consistency=cached"
+    ],
+    "forwardPorts": [],
+    "remoteEnv": {
+        "CCACHE_DIR": "/home/devuser/.ccache",
+        "CCACHE_MAXSIZE": "1G"
+    },
+    "features": {},
+    "containerEnv": {},
+    "workspaceFolder": "/home/devuser",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/devuser,type=bind,consistency=cached"
+}
