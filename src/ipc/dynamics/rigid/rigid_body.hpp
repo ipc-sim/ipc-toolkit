@@ -5,7 +5,7 @@
 namespace ipc::rigid {
 
 struct RigidBody {
-    VectorMax3d rotation_vector; // Affine matrix
+    VectorMax3d rotation_vector; // Rotation vector
     VectorMax3d position;        // Translation vector
 
     RigidBody() = default;
