@@ -1,2 +1,3 @@
 # These files should be ignored from GitHub's language statistics.
 python/example.ipynb linguist-vendored
+notebooks/*.ipynb linguist-vendored
