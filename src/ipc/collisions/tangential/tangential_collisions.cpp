@@ -3,10 +3,6 @@
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
-#include <tbb/blocked_range.h>
-#include <tbb/enumerable_thread_specific.h>
-#include <tbb/parallel_for.h>
-
 #include <stdexcept> // std::out_of_range
 
 namespace ipc {
@@ -20,7 +16,6 @@ void TangentialCollisions::build(
     const Eigen::VectorXd& mus,
     const std::function<double(double, double, BlendType)>& blend_mu,
     const BlendType blend_type)
-
 {
     assert(mus.size() == vertices.rows());
 
@@ -33,9 +28,8 @@ void TangentialCollisions::build(
     const auto& C_ev = collisions.ev_collisions;
     const auto& C_ee = collisions.ee_collisions;
     const auto& C_fv = collisions.fv_collisions;
-    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
 
-    FC_vv.reserve(C_vv.size());
+    vv_collisions.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
         FC_vv.emplace_back(
             c_vv, c_vv.dof(vertices, edges, faces), normal_potential,
@@ -47,7 +41,7 @@ void TangentialCollisions::build(
         FC_vv.back().k_mu = -1;
     }
 
-    FC_ev.reserve(C_ev.size());
+    ev_collisions.reserve(C_ev.size());
     for (const auto& c_ev : C_ev) {
         FC_ev.emplace_back(
             c_ev, c_ev.dof(vertices, edges, faces), normal_potential,
@@ -61,7 +55,7 @@ void TangentialCollisions::build(
         FC_ev.back().k_mu = -1;
     }
 
-    FC_ee.reserve(C_ee.size());
+    ee_collisions.reserve(C_ee.size());
     for (const auto& c_ee : C_ee) {
         const auto& [ea0i, ea1i, eb0i, eb1i] = c_ee.vertex_ids(edges, faces);
         const Eigen::Vector3d ea0 = vertices.row(ea0i);
@@ -79,7 +73,7 @@ void TangentialCollisions::build(
             normal_stiffness);
 
         double ea_mu =
-            (mus(ea1i) - mus(ea0i)) * FC_ee.back().closest_point[0] + mus(ea0i);
+            (mus(ea1i) - mus(ea0i)) * ee_collisions.back().closest_point[0] + mus(ea0i);
         double eb_mu =
             (mus(eb1i) - mus(eb0i)) * FC_ee.back().closest_point[1] + mus(eb0i);
         FC_ee.back().mu = blend_mu(ea_mu, eb_mu, blend_type);
@@ -87,7 +81,7 @@ void TangentialCollisions::build(
         FC_ee.back().k_mu = -1;
     }
 
-    FC_fv.reserve(C_fv.size());
+    fv_collisions.reserve(C_fv.size());
     for (const auto& c_fv : C_fv) {
         FC_fv.emplace_back(
             c_fv, c_fv.dof(vertices, edges, faces), normal_potential,
@@ -278,7 +272,7 @@ void TangentialCollisions::build(
     }
 }
 
-// ============================================================================
+// The other build functions go here as previously defined
 
 size_t TangentialCollisions::size() const
 {
