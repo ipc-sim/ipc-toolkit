@@ -2,8 +2,8 @@ FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV CMAKE_VERSION=3.31.0
-ENV LLVM_VERSION=18.0.0
 
+# Basic dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     git \
@@ -27,6 +27,13 @@ RUN apt-get update && apt-get install -y \
     sudo \
     && rm -rf /var/lib/apt/lists/*
 
+# Create a new user with sudo privileges
+RUN useradd -m devuser && echo "devuser:password" | chpasswd && usermod -aG sudo devuser
+
+# Configure passwordless sudo for convenience
+RUN echo "devuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Set up Python tools
 RUN pip3 install --upgrade pip setuptools wheel pre-commit
 
 ENV CCACHE_DIR=/root/.ccache
@@ -34,8 +41,6 @@ ENV CCACHE_MAXSIZE=1G
 RUN mkdir -p $CCACHE_DIR
 
 ENV CXX_STANDARD=17
-
-WORKDIR /root
 
 # Install CMake
 RUN mkdir -p /root/src && \
@@ -51,25 +56,22 @@ RUN mkdir -p /root/src && \
 
 RUN cmake --version
 
-# Install LLVM
-RUN mkdir -p /root/src && \
-    cd /root/src && \
-    wget https://github.com/llvm/llvm-project/releases/download/llvmorg-${LLVM_VERSION}/llvm-project-${LLVM_VERSION}.src.tar.xz && \
-    tar -xf llvm-project-${LLVM_VERSION}.src.tar.xz && \
-    mkdir -p llvm-project-${LLVM_VERSION}.src/build && \
-    cd llvm-project-${LLVM_VERSION}.src/build && \
-    cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS=clang -DCMAKE_INSTALL_PREFIX=/usr/local ../llvm && \
-    ninja && \
-    ninja install && \
-    cd /root && \
-    rm -rf /root/src/llvm-project-${LLVM_VERSION}.src /root/src/llvm-project-${LLVM_VERSION}.src.tar.xz
+# Install LLVM/Clang and Clang-Format version 18
+RUN wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 18 && \
+    apt-get install -y clang-format-18
 
-RUN clang++ --version
-RUN clang-format --version
+# Create an alias for clang-format to clang-format-18
+RUN ln -s /usr/bin/clang-format-18 /usr/bin/clang-format
+
+RUN clang-18 --version && clang-format --version
 
 # Cleanup to reduce image size
 RUN apt-get remove -y build-essential git wget curl && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* /root/src
+
+# Set the default user and working directory
+USER devuser
+WORKDIR /home/devuser
 
 CMD ["bash"]
