@@ -34,23 +34,23 @@
         "ms-vscode.cmake-tools",
         "xaver.clang-format",
         "ms-python.python",
-        "ms-azuretools.vscode-docker",
+        "ms-azuretools.vscode-docker",  // Docker extension
         "eamodio.gitlens",
         "esbenp.prettier-vscode",
         "mhutchie.git-graph"
     ],
     "postCreateCommand": "pre-commit install",
-    "remoteUser": "devuser",
+    "remoteUser": "root",
     "mounts": [
-        "source=${localWorkspaceFolder}/.ccache,target=/home/devuser/.ccache,type=bind,consistency=cached"
+        "source=${localWorkspaceFolder}/.ccache,target=/root/.ccache,type=bind,consistency=cached"
     ],
     "forwardPorts": [],
     "remoteEnv": {
-        "CCACHE_DIR": "/home/devuser/.ccache",
+        "CCACHE_DIR": "/root/.ccache",
         "CCACHE_MAXSIZE": "1G"
     },
     "features": {},
     "containerEnv": {},
-    "workspaceFolder": "/home/devuser",
-    "workspaceMount": "source=${localWorkspaceFolder},target=/home/devuser,type=bind,consistency=cached"
+    "workspaceFolder": "/root",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/root,type=bind,consistency=cached"
 }
