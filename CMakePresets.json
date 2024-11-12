@@ -1,0 +1,202 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 18
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default Configuration",
+      "description": "Default build configuration",
+      "binaryDir": "${sourceDir}/build/default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_STANDARD": "17",
+        "IPC_TOOLKIT_BUILD_TESTS": "OFF",
+        "IPC_TOOLKIT_BUILD_PYTHON": "OFF",
+        "IPC_TOOLKIT_WITH_CUDA": "OFF",
+        "IPC_TOOLKIT_WITH_SIMD": "OFF"
+      }
+    },
+    {
+      "name": "cuda",
+      "displayName": "CUDA Enabled",
+      "description": "Build with CUDA support",
+      "binaryDir": "${sourceDir}/build/cuda",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_STANDARD": "17",
+        "IPC_TOOLKIT_WITH_CUDA": "ON",
+        "IPC_TOOLKIT_WITH_SIMD": "OFF",
+        "IPC_TOOLKIT_BUILD_TESTS": "OFF"
+      }
+    },
+    {
+      "name": "simd",
+      "displayName": "SIMD Enabled",
+      "description": "Build with SIMD optimizations",
+      "binaryDir": "${sourceDir}/build/simd",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_STANDARD": "17",
+        "IPC_TOOLKIT_WITH_SIMD": "ON",
+        "IPC_TOOLKIT_BUILD_TESTS": "OFF"
+      }
+    },
+    {
+      "name": "test",
+      "displayName": "Build for Testing",
+      "description": "Build with unit tests enabled",
+      "binaryDir": "${sourceDir}/build/test",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_STANDARD": "17",
+        "IPC_TOOLKIT_WITH_CUDA": "ON",
+        "IPC_TOOLKIT_BUILD_TESTS": "ON",
+        "IPC_TOOLKIT_BUILD_PYTHON": "OFF"
+      }
+    },
+    {
+      "name": "python",
+      "displayName": "Python Bindings",
+      "description": "Build with Python bindings enabled",
+      "binaryDir": "${sourceDir}/build/python",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_STANDARD": "17",
+        "IPC_TOOLKIT_BUILD_PYTHON": "ON",
+        "IPC_TOOLKIT_BUILD_TESTS": "OFF",
+        "IPC_TOOLKIT_WITH_SIMD": "OFF",
+        "IPC_TOOLKIT_WITH_CUDA": "OFF"
+      }
+    },
+    {
+      "name": "coverage",
+      "displayName": "Code Coverage",
+      "description": "Build for code coverage",
+      "binaryDir": "${sourceDir}/build/coverage",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_STANDARD": "17",
+        "IPC_TOOLKIT_WITH_CODE_COVERAGE": "ON",
+        "IPC_TOOLKIT_BUILD_TESTS": "ON",
+        "IPC_TOOLKIT_WITH_SIMD": "OFF"
+      }
+    },
+    {
+      "name": "windows",
+      "displayName": "Windows Build",
+      "description": "Windows-specific build configuration",
+      "binaryDir": "${sourceDir}/build/windows",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_STANDARD": "17",
+        "IPC_TOOLKIT_WITH_SIMD": "OFF",
+        "IPC_TOOLKIT_WITH_CUDA": "OFF"
+      },
+      "conditions": [
+        {
+          "type": "equals",
+          "lhs": "${hostSystemName}",
+          "rhs": "Windows"
+        }
+      ]
+    },
+    {
+      "name": "macos",
+      "displayName": "macOS Build",
+      "description": "macOS-specific build configuration",
+      "binaryDir": "${sourceDir}/build/macos",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_STANDARD": "17",
+        "IPC_TOOLKIT_WITH_SIMD": "OFF",
+        "IPC_TOOLKIT_WITH_CUDA": "OFF"
+      },
+      "conditions": [
+        {
+          "type": "equals",
+          "lhs": "${hostSystemName}",
+          "rhs": "Darwin"
+        }
+      ]
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default-build",
+      "configurePreset": "default",
+      "description": "Build using default configuration"
+    },
+    {
+      "name": "cuda-build",
+      "configurePreset": "cuda",
+      "description": "Build with CUDA support"
+    },
+    {
+      "name": "simd-build",
+      "configurePreset": "simd",
+      "description": "Build with SIMD optimizations"
+    },
+    {
+      "name": "test-build",
+      "configurePreset": "test",
+      "description": "Build for running tests"
+    },
+    {
+      "name": "python-build",
+      "configurePreset": "python",
+      "description": "Build with Python bindings enabled"
+    },
+    {
+      "name": "coverage-build",
+      "configurePreset": "coverage",
+      "description": "Build with code coverage enabled"
+    },
+    {
+      "name": "windows-build",
+      "configurePreset": "windows",
+      "description": "Windows-specific build configuration"
+    },
+    {
+      "name": "macos-build",
+      "configurePreset": "macos",
+      "description": "macOS-specific build configuration"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "default-tests",
+      "description": "Run default tests",
+      "configurePreset": "test",
+      "execution": {
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "cuda-tests",
+      "description": "Run tests with CUDA enabled",
+      "configurePreset": "cuda",
+      "execution": {
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "simd-tests",
+      "description": "Run tests with SIMD optimizations enabled",
+      "configurePreset": "simd",
+      "execution": {
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "coverage-tests",
+      "description": "Run tests with code coverage enabled",
+      "configurePreset": "coverage",
+      "execution": {
+        "stopOnFailure": true
+      }
+    }
+  ]
+}
