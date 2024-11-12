@@ -85,8 +85,14 @@ public:
     /// @brief Normal force magnitude
     double normal_force_magnitude;
 
-    /// @brief Ratio between normal and tangential forces (e.g., friction coefficient)
+    /// @brief Ratio between normal and tangential forces (e.g., global friction coefficient)
     double mu;
+
+    /// @brief Ratio between normal and tangential forces (e.g., static friction coefficient)
+    double s_mu = -1;
+
+    /// @brief Ratio between normal and tangential forces (e.g., kinetic friction coefficient)
+    double k_mu = -1;
 
     /// @brief Weight
     double weight = 1;

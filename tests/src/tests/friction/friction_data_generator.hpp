@@ -11,6 +11,8 @@ struct FrictionData {
     Eigen::MatrixXi F;
     ipc::NormalCollisions collisions;
     double mu;
+    double s_mu;
+    double k_mu;
     double epsv_times_h;
     double p;
     double barrier_stiffness;

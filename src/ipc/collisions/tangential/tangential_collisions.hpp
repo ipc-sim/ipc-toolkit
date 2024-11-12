@@ -11,6 +11,8 @@
 
 #include <Eigen/Core>
 #include <Eigen/Sparse>
+#include <map>
+#include <functional>
 
 namespace ipc {
 
@@ -18,6 +20,22 @@ class TangentialCollisions {
 public:
     /// @brief The type of the collisions.
     using value_type = TangentialCollision;
+
+    /// @brief Blend type enum for selecting the method of blending friction coefficients.
+    enum class BlendType {
+        AVG,
+        MIN,
+        MAX,
+        PRODUCT,
+        HARMONIC_MEAN,
+        GEOMETRIC_MEAN
+    };
+
+    /// @brief The friction coefficients for a pair of materials.
+    struct MaterialPairFriction {
+        double s_mu;
+        double k_mu;
+    };
 
 public:
     TangentialCollisions() = default;
@@ -42,8 +60,29 @@ public:
         const BarrierPotential& barrier_potential,
         const double barrier_stiffness,
         const Eigen::VectorXd& mus,
-        const std::function<double(double, double)>& blend_mu =
-            default_blend_mu);
+        const std::function<double(double, double, BlendType)>& blend_mu = default_blend_mu,
+        const BlendType blend_type = BlendType::AVG);
+
+    void build(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const NormalCollisions& collisions,
+        const BarrierPotential& barrier_potential,
+        double barrier_stiffness,
+        double mu,
+        double s_mu,
+        double k_mu);
+
+    void build(
+        const CollisionMesh& mesh,
+        const Eigen::MatrixXd& vertices,
+        const NormalCollisions& collisions,
+        const BarrierPotential& barrier_potential,
+        double barrier_stiffness,
+        double mu,
+        double s_mu,
+        double k_mu,
+        const std::map<std::pair<int, int>, MaterialPairFriction>& material_pair_friction);
 
     // ------------------------------------------------------------------------
 
@@ -57,21 +96,28 @@ public:
     void clear();
 
     /// @brief Get a reference to collision at index i.
-    /// @param i The index of the collision.
-    /// @return A reference to the collision.
     TangentialCollision& operator[](const size_t i);
 
     /// @brief Get a const reference to collision at index i.
-    /// @param i The index of the collision.
-    /// @return A const reference to the collision.
     const TangentialCollision& operator[](const size_t i) const;
 
-    static double default_blend_mu(double mu0, double mu1)
+    static double default_blend_mu(double mu0, double mu1, BlendType type)
     {
-        // return mu0 * mu1;
-        // return std::min(mu0, mu1);
-        // return std::max(mu0, mu1);
-        return (mu0 + mu1) / 2;
+        switch (type) {
+            case BlendType::MIN:
+                return std::min(mu0, mu1);
+            case BlendType::MAX:
+                return std::max(mu0, mu1);
+            case BlendType::PRODUCT:
+                return mu0 * mu1;
+            case BlendType::HARMONIC_MEAN:
+                return 2 * (mu0 * mu1) / (mu0 + mu1);
+            case BlendType::GEOMETRIC_MEAN:
+                return std::sqrt(mu0 * mu1);
+            case BlendType::AVG:
+            default:
+                return (mu0 + mu1) / 2;
+        }
     }
 
 public:

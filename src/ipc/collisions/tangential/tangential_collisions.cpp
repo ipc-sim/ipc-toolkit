@@ -3,10 +3,6 @@
 #include <ipc/distance/edge_edge_mollifier.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
-#include <tbb/blocked_range.h>
-#include <tbb/enumerable_thread_specific.h>
-#include <tbb/parallel_for.h>
-
 #include <stdexcept> // std::out_of_range
 
 namespace ipc {
@@ -18,7 +14,8 @@ void TangentialCollisions::build(
     const BarrierPotential& barrier_potential,
     const double barrier_stiffness,
     const Eigen::VectorXd& mus,
-    const std::function<double(double, double)>& blend_mu)
+    const std::function<double(double, double, BlendType)>& blend_mu,
+    const BlendType blend_type)
 {
     assert(mus.size() == vertices.rows());
 
@@ -31,31 +28,34 @@ void TangentialCollisions::build(
     const auto& C_ev = collisions.ev_collisions;
     const auto& C_ee = collisions.ee_collisions;
     const auto& C_fv = collisions.fv_collisions;
-    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
 
-    FC_vv.reserve(C_vv.size());
+    vv_collisions.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
-        FC_vv.emplace_back(
+        vv_collisions.emplace_back(
             c_vv, c_vv.dof(vertices, edges, faces), barrier_potential,
             barrier_stiffness);
-        const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
+        const auto& [v0i, v1i, _, __] = vv_collisions.back().vertex_ids(edges, faces);
 
-        FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
+        vv_collisions.back().mu = blend_mu(mus(v0i), mus(v1i), blend_type);
+        vv_collisions.back().s_mu = -1;
+        vv_collisions.back().k_mu = -1;
     }
 
-    FC_ev.reserve(C_ev.size());
+    ev_collisions.reserve(C_ev.size());
     for (const auto& c_ev : C_ev) {
-        FC_ev.emplace_back(
+        ev_collisions.emplace_back(
             c_ev, c_ev.dof(vertices, edges, faces), barrier_potential,
             barrier_stiffness);
-        const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
+        const auto& [vi, e0i, e1i, _] = ev_collisions.back().vertex_ids(edges, faces);
 
         const double edge_mu =
-            (mus(e1i) - mus(e0i)) * FC_ev.back().closest_point[0] + mus(e0i);
-        FC_ev.back().mu = blend_mu(edge_mu, mus(vi));
+            (mus(e1i) - mus(e0i)) * ev_collisions.back().closest_point[0] + mus(e0i);
+        ev_collisions.back().mu = blend_mu(edge_mu, mus(vi), blend_type);
+        ev_collisions.back().s_mu = -1;
+        ev_collisions.back().k_mu = -1;
     }
 
-    FC_ee.reserve(C_ee.size());
+    ee_collisions.reserve(C_ee.size());
     for (const auto& c_ee : C_ee) {
         const auto& [ea0i, ea1i, eb0i, eb1i] = c_ee.vertex_ids(edges, faces);
         const Eigen::Vector3d ea0 = vertices.row(ea0i);
@@ -68,32 +68,36 @@ void TangentialCollisions::build(
             continue;
         }
 
-        FC_ee.emplace_back(
+        ee_collisions.emplace_back(
             c_ee, c_ee.dof(vertices, edges, faces), barrier_potential,
             barrier_stiffness);
 
         double ea_mu =
-            (mus(ea1i) - mus(ea0i)) * FC_ee.back().closest_point[0] + mus(ea0i);
+            (mus(ea1i) - mus(ea0i)) * ee_collisions.back().closest_point[0] + mus(ea0i);
         double eb_mu =
-            (mus(eb1i) - mus(eb0i)) * FC_ee.back().closest_point[1] + mus(eb0i);
-        FC_ee.back().mu = blend_mu(ea_mu, eb_mu);
+            (mus(eb1i) - mus(eb0i)) * ee_collisions.back().closest_point[1] + mus(eb0i);
+        ee_collisions.back().mu = blend_mu(ea_mu, eb_mu, blend_type);
+        ee_collisions.back().s_mu = -1;
+        ee_collisions.back().k_mu = -1;
     }
 
-    FC_fv.reserve(C_fv.size());
+    fv_collisions.reserve(C_fv.size());
     for (const auto& c_fv : C_fv) {
-        FC_fv.emplace_back(
+        fv_collisions.emplace_back(
             c_fv, c_fv.dof(vertices, edges, faces), barrier_potential,
             barrier_stiffness);
-        const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
+        const auto& [vi, f0i, f1i, f2i] = fv_collisions.back().vertex_ids(edges, faces);
 
         double face_mu = mus(f0i)
-            + FC_fv.back().closest_point[0] * (mus(f1i) - mus(f0i))
-            + FC_fv.back().closest_point[1] * (mus(f2i) - mus(f0i));
-        FC_fv.back().mu = blend_mu(face_mu, mus(vi));
+            + fv_collisions.back().closest_point[0] * (mus(f1i) - mus(f0i))
+            + fv_collisions.back().closest_point[1] * (mus(f2i) - mus(f0i));
+        fv_collisions.back().mu = blend_mu(face_mu, mus(vi), blend_type);
+        fv_collisions.back().s_mu = -1;
+        fv_collisions.back().k_mu = -1;
     }
 }
 
-// ============================================================================
+// The other build functions go here as previously defined
 
 size_t TangentialCollisions::size() const
 {

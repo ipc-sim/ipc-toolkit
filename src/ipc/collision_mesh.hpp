@@ -2,6 +2,8 @@
 
 #include <ipc/utils/unordered_map_and_set.hpp>
 
+#include <optional>
+
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
@@ -19,12 +21,14 @@ public:
     /// @param edges The edges of the collision mesh (#E × 2).
     /// @param faces The faces of the collision mesh (#F × 3).
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
+    /// @param mat_id The material ID of the collision mesh (optional).
     CollisionMesh(
         const Eigen::MatrixXd& rest_positions,
         const Eigen::MatrixXi& edges = Eigen::MatrixXi(),
         const Eigen::MatrixXi& faces = Eigen::MatrixXi(),
         const Eigen::SparseMatrix<double>& displacement_map =
-            Eigen::SparseMatrix<double>());
+            Eigen::SparseMatrix<double>(),
+        std::optional<int> material_id = 0);
 
     /// @brief Construct a new Collision Mesh object from a full mesh vertices.
     /// @param include_vertex Vector of bools indicating whether each vertex should be included in the collision mesh.
@@ -32,13 +36,15 @@ public:
     /// @param edges The edges of the collision mesh indexed into the full mesh vertices (#E × 2).
     /// @param faces The faces of the collision mesh indexed into the full mesh vertices (#F × 3).
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
+    /// @param mat_id The material ID of the collision mesh (optional).
     CollisionMesh(
         const std::vector<bool>& include_vertex,
         const Eigen::MatrixXd& full_rest_positions,
         const Eigen::MatrixXi& edges = Eigen::MatrixXi(),
         const Eigen::MatrixXi& faces = Eigen::MatrixXi(),
         const Eigen::SparseMatrix<double>& displacement_map =
-            Eigen::SparseMatrix<double>());
+            Eigen::SparseMatrix<double>(),
+        std::optional<int> material_id = 0);
 
     /// @brief Helper function that automatically builds include_vertex using construct_is_on_surface.
     /// @param full_rest_positions The full vertices at rest (#FV × dim).
@@ -284,6 +290,10 @@ public:
     /// primitives can collide with all other primitives.
     std::function<bool(size_t, size_t)> can_collide = default_can_collide;
 
+    /// @brief Get the material IDs of the vertices in the collision mesh.
+    /// @return A reference to the vector of material IDs.
+    const Eigen::VectorXi& get_material_ids() const { return m_material_ids; }
+
 protected:
     // -----------------------------------------------------------------------
     // Helper initialization functions
@@ -362,6 +372,12 @@ protected:
     std::vector<Eigen::SparseVector<double>> m_vertex_area_jacobian;
     /// @brief The rows of the Jacobian of the edge areas vector.
     std::vector<Eigen::SparseVector<double>> m_edge_area_jacobian;
+
+    /// @brief The material ID of the collision mesh.
+    int m_material_id = -1;
+
+    /// @brief The material IDs of the collision mesh.
+    Eigen::VectorXi m_material_ids;
 
 private:
     /// @brief By default all primitives can collide with all other primitives.

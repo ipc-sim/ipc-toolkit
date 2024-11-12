@@ -87,6 +87,8 @@ bool read_ipc_friction_data(
     double& barrier_stiffness,
     double& epsv_times_h,
     double& mu,
+    double& s_mu,
+    double& k_mu,
     double& potential,
     Eigen::VectorXd& grad,
     Eigen::SparseMatrix<double>& hess)
@@ -111,6 +113,8 @@ bool read_ipc_friction_data(
     barrier_stiffness = data["barrier_stiffness"];
     epsv_times_h = sqrt(data["epsv_times_h_squared"].get<double>());
     mu = data["mu"];
+    s_mu = data["s_mu"];
+    k_mu = data["k_mu"];
 
     // Dissipative potential value
     potential = data["energy"];
@@ -147,6 +151,8 @@ bool read_ipc_friction_data(
     tests::mmcvids_to_collisions(E, F, mmcvids, collisions);
     for (int i = 0; i < tangential_collisions.size(); i++) {
         tangential_collisions[i].mu = mu;
+        tangential_collisions[i].s_mu = s_mu;
+        tangential_collisions[i].k_mu = k_mu;
     }
 
     return true;
@@ -159,7 +165,7 @@ TEST_CASE(
     Eigen::MatrixXi E, F;
     NormalCollisions collisions;
     TangentialCollisions expected_friction_collisions;
-    double dhat, barrier_stiffness, epsv_times_h, mu;
+    double dhat, barrier_stiffness, epsv_times_h, mu, s_mu, k_mu;
     double expected_potential;
     Eigen::VectorXd expected_grad;
     Eigen::SparseMatrix<double> expected_hess;
@@ -183,8 +189,7 @@ TEST_CASE(
          / fmt::format("friction_data_{:d}.json", file_number))
             .string(),
         V_start, V_lagged, V_end, E, F, collisions,
-        expected_friction_collisions, dhat, barrier_stiffness, epsv_times_h, mu,
-        expected_potential, expected_grad, expected_hess);
+        expected_friction_collisions, dhat, barrier_stiffness, epsv_times_h, mu, s_mu, k_mu, expected_potential, expected_grad, expected_hess);
     REQUIRE(success);
 
     Eigen::MatrixXi face_edges;
@@ -196,7 +201,7 @@ TEST_CASE(
     TangentialCollisions tangential_collisions;
     tangential_collisions.build(
         mesh, V_lagged, collisions, BarrierPotential(dhat), barrier_stiffness,
-        mu);
+        mu, s_mu, k_mu);
     REQUIRE(tangential_collisions.size() == collisions.size());
     REQUIRE(
         tangential_collisions.size() == expected_friction_collisions.size());
@@ -226,6 +231,8 @@ TEST_CASE(
             collision.normal_force_magnitude
             == Catch::Approx(expected_collision.normal_force_magnitude));
         CHECK(collision.mu == Catch::Approx(expected_collision.mu));
+        CHECK(collision.s_mu == Catch::Approx(expected_collision.s_mu));
+        CHECK(collision.k_mu == Catch::Approx(expected_collision.k_mu));
 
         CHECK(
             collision.vertex_ids(E, F) == expected_collision.vertex_ids(E, F));
