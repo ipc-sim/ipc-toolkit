@@ -56,7 +56,7 @@ public:
     compute_closest_point_jacobian(const VectorMax12d& positions) const = 0;
 
     /// @brief Compute the relative velocity of the collision.
-    /// @param positions Collision stencil's vertex velocities.
+    /// @param velocities Collision stencil's vertex velocities.
     /// @return Relative velocity of the collision.
     virtual VectorMax3d
     relative_velocity(const VectorMax12d& velocities) const = 0;

@@ -19,6 +19,23 @@ void define_inexact_point_edge(py::module_& m)
                 conservative_rescaling);
             return std::make_tuple(r, toi);
         },
+        R"ipc_Qu8mg5v7(
+        Inexact continuous collision detection between a point and an edge in 2D.
+
+        Parameters:
+            p_t0: Initial position of the point
+            e0_t0: Initial position of the first endpoint of the edge
+            e1_t0: Initial position of the second endpoint of the edge
+            p_t1: Final position of the point
+            e0_t1: Final position of the first endpoint of the edge
+            e1_t1: Final position of the second endpoint of the edge
+            conservative_rescaling: Conservative rescaling of the time of impact
+
+        Returns:
+            Tuple of:
+            True if a collision was detected, false otherwise.
+            Output time of impact
+        )ipc_Qu8mg5v7",
         py::arg("p_t0"), py::arg("e0_t0"), py::arg("e1_t0"), py::arg("p_t1"),
         py::arg("e0_t1"), py::arg("e1_t1"), py::arg("conservative_rescaling"));
 }
