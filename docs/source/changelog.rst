@@ -6,6 +6,30 @@ Changelog
 .. role:: cmake(code)
    :language: cmake
 
+v1.3.1 (Nov 08, 2024)
+---------------------
+
+-  Move test data to an external repository in `#113 <https://github.com/ipc-sim/ipc-toolkit/pull/113>`__
+
+   -  Download test data at compile time as needed using CMake
+
+-  Individual convergent formulation flags in `#120 <https://github.com/ipc-sim/ipc-toolkit/pull/120>`__
+
+   -  Replace the ``use_convergent_formulation`` flag in ``Collisions`` with two flags: ``use_area_weighting`` and ``use_improved_max_approximator``.
+   -  Move the physical barrier rescaling from collision weights into the ``BarrierPotential`` using a flag ``use_physcial_barrier``.
+
+-  Replace scalar ``tbb::enumerable_thread_specific`` with ``tbb::parallel_reduce`` in `#121 <https://github.com/ipc-sim/ipc-toolkit/pull/121>`__
+-  Fix missing ``max_iterations`` and ``tolerance`` variables in ``compute_collision_free_stepsize`` when using ``SWEEP_AND_TINIEST_QUEUE`` by `@antoinebou12 <https://github.com/antoinebou12>`__ in `#123 <https://github.com/ipc-sim/ipc-toolkit/pull/123>`__
+-  Add ``cuda.yml`` to test if the code compile with CUDA enabled in `#125 <https://github.com/ipc-sim/ipc-toolkit/pull/125>`__
+-  Update filib to allow shared library build in `#122 <https://github.com/ipc-sim/ipc-toolkit/pull/122>`__
+-  Fix ``friction_collisions.build`` tutorial (Issue `#126 <https://github.com/ipc-sim/ipc-toolkit/pull/126>`__) in `#127 <https://github.com/ipc-sim/ipc-toolkit/pull/127>`__
+-  Sort includes using clang-format in `#129 <https://github.com/ipc-sim/ipc-toolkit/pull/129>`__
+-  Add frequently asked questions page to the tutorial documentation
+-  Fix barrier API documentation
+-  On Apple, link Eigen against Accelerate as a BLAS/LAPACK backend
+
+   -  Requires ``brew install lapack`` to install LAPACKE headers
+
 v1.3.0 (Aug 03, 2024)
 ---------------------
 

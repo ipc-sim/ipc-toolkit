@@ -1,11 +1,11 @@
 #include "hash_grid.hpp"
 
 #include <ipc/broad_phase/voxel_size_heuristic.hpp>
-#include <ipc/utils/merge_thread_local.hpp>
 #include <ipc/utils/logger.hpp>
+#include <ipc/utils/merge_thread_local.hpp>
 
-#include <tbb/enumerable_thread_specific.h>
 #include <tbb/blocked_range2d.h>
+#include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 

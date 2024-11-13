@@ -2,14 +2,14 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <ipc/friction/collisions/friction_collision.hpp>
+#include <ipc/collisions/tangential/tangential_collision.hpp>
 
 struct FrictionData {
     Eigen::MatrixXd V0;
     Eigen::MatrixXd V1;
     Eigen::MatrixXi E;
     Eigen::MatrixXi F;
-    ipc::Collisions collisions;
+    ipc::NormalCollisions collisions;
     double mu;
     double epsv_times_h;
     double p;

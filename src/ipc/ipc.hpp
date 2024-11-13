@@ -1,7 +1,7 @@
 #pragma once
 
-#include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/collision_mesh.hpp>
+#include <ipc/broad_phase/broad_phase.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/Sparse>

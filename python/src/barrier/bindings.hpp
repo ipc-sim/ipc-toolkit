@@ -5,4 +5,5 @@
 namespace py = pybind11;
 
 void define_adaptive_stiffness(py::module_& m);
+void define_barrier_force_magnitude(py::module_& m);
 void define_barrier(py::module_& m);

@@ -7,7 +7,6 @@
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <filib/interval.hpp>
-
 #include <spdlog/fmt/bundled/ostream.h>
 
 namespace filib {

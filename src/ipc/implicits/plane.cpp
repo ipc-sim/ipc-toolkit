@@ -1,10 +1,10 @@
 #include "plane.hpp"
 
-#include <ipc/distance/point_plane.hpp>
 #include <ipc/ccd/point_static_plane.hpp>
+#include <ipc/distance/point_plane.hpp>
 
-#include <tbb/parallel_reduce.h>
 #include <tbb/blocked_range.h>
+#include <tbb/parallel_reduce.h>
 
 namespace ipc {
 
@@ -13,7 +13,7 @@ void construct_point_plane_collisions(
     const Eigen::MatrixXd& plane_origins,
     const Eigen::MatrixXd& plane_normals,
     const double dhat,
-    std::vector<PlaneVertexCollision>& pv_collisions,
+    std::vector<PlaneVertexNormalCollision>& pv_collisions,
     const double dmin,
     const std::function<bool(size_t, size_t)>& can_collide)
 {

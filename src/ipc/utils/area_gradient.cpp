@@ -60,8 +60,7 @@ namespace autogen {
         const auto t11 = t0_z - t1_z;
         const auto t12 = t10 * t2 - t11 * t5;
         const auto t13 = t10 * t6 - t11 * t3;
-        const auto t14 =
-            (1.0 / 2.0) / std::sqrt(t12 * t12 + t13 * t13 + t7 * t7);
+        const auto t14 = 0.5 / std::sqrt(t12 * t12 + t13 * t13 + t7 * t7);
         const auto t15 = t1_x + t4;
         dA[0] = t14 * (t1 * t7 + t12 * t9);
         dA[1] = -t14 * (-t13 * t9 + t15 * t7);

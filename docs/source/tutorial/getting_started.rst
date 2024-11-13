@@ -60,7 +60,7 @@ The sizes of ``edges`` and ``faces`` are ``#E x 2`` and ``#F x 3`` respectively 
 Collisions
 ----------
 
-Now that we have a collision mesh, we can compute the collision barrier potential. To do this we first need to build the set of active collisions (``Collisions``).
+Now that we have a collision mesh, we can compute the collision barrier potential. To do this we first need to build the set of active collisions (``NormalCollisions``).
 
 To start we need the current positions of the ``vertices``. For this tutorial, let us use squash the bunny has to 1% of its original height.
 
@@ -92,7 +92,7 @@ We will use a value of :math:`\hat{d} = 10^{-3}`.
 
             const double dhat = 1e-3;
 
-            ipc::Collisions collisions;
+            ipc::NormalCollisions collisions;
             collisions.build(collision_mesh, vertices, dhat);
 
     .. md-tab-item:: Python
@@ -101,7 +101,7 @@ We will use a value of :math:`\hat{d} = 10^{-3}`.
 
             dhat = 1e-3
 
-            collisions = ipctk.Collisions()
+            collisions = ipctk.NormalCollisions()
             collisions.build(collision_mesh, vertices, dhat)
 
 This will automatically use a spatial data structure to perform a broad-phase culling and then perform a narrow-phase culling by computing distances (discarding any collision candidates with a distance :math:`> \hat{d}`).
@@ -336,7 +336,7 @@ To add a collision offset, we need to set the ``dmin`` variable. For example, we
             const double dhat = 1e-4;
             const double dmin = 1e-3;
 
-            ipc::Collisions collisions;
+            ipc::NormalCollisions collisions;
             collisions.build(collision_mesh, vertices, dhat, dmin);
 
     .. md-tab-item:: Python
@@ -367,16 +367,16 @@ Computing the friction dissipative potential is similar to the barrier potential
 
         .. code-block:: c++
 
-            ipc::FrictionCollisions friction_collisions;
-            friction_collisions.build(
+            ipc::TangentialCollisions tangential_collisions;
+            tangential_collisions.build(
                 collision_mesh, vertices, collisions, B, barrier_stiffness, mu);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            friction_collisions = ipctk.FrictionCollisions()
-            friction_collisions.build(
+            tangential_collisions = ipctk.TangentialCollisions()
+            tangential_collisions.build(
                 collision_mesh, vertices, collisions, B, barrier_stiffness, mu)
 
 Here ``mu`` (:math:`\mu`) is the (global) coefficient of friction, and ``barrier_stiffness`` (:math:`\kappa`) is the barrier stiffness.
@@ -392,17 +392,17 @@ Now we can compute the friction dissipative potential using the ``FrictionPotent
 
         .. code-block:: c++
 
-            const FrictionPotential D(epsv);
-            double friction_potential = D(friction_collisions, collision_mesh, velocity);
+            const FrictionPotential D(eps_v);
+            double friction_potential = D(tangential_collisions, collision_mesh, velocity);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            D = FrictionPotential(epsv)
-            friction_potential = D(friction_collisions, collision_mesh, velocity)
+            D = FrictionPotential(eps_v)
+            friction_potential = D(tangential_collisions, collision_mesh, velocity)
 
-Here ``epsv`` (:math:`\epsilon_v`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
+Here ``eps_v`` (:math:`\epsilon_v`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
 
 .. important::
    The friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is
@@ -433,20 +433,20 @@ We can also compute the first and second derivatives of the friction dissipative
         .. code-block:: c++
 
             Eigen::VectorXd friction_potential_grad =
-                D.gradient(friction_collisions, collision_mesh, velocity);
+                D.gradient(tangential_collisions, collision_mesh, velocity);
 
             Eigen::SparseMatrix<double> friction_potential_hess =
-                D.hessian(friction_collisions, collision_mesh, velocity);
+                D.hessian(tangential_collisions, collision_mesh, velocity);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
             friction_potential_grad = D.gradient(
-                friction_collisions, collision_mesh, velocity)
+                tangential_collisions, collision_mesh, velocity)
 
             friction_potential_hess = D.hessian(
-                friction_collisions, collision_mesh, velocity)
+                tangential_collisions, collision_mesh, velocity)
 
 Continuous Collision Detection
 ------------------------------

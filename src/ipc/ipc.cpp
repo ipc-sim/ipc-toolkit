@@ -1,10 +1,9 @@
 #include "ipc.hpp"
 
+#include <ipc/config.hpp>
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/utils/intersection.hpp>
 #include <ipc/utils/world_bbox_diagonal_length.hpp>
-
-#include <ipc/config.hpp>
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
 #include <scalable_ccd/cuda/ipc_ccd_strategy.hpp>
@@ -29,7 +28,7 @@ bool is_step_collision_free(
     Candidates candidates;
     candidates.build(
         mesh, vertices_t0, vertices_t1,
-        /*inflation_radius=*/min_distance / 2, broad_phase_method);
+        /*inflation_radius=*/0.5 * min_distance, broad_phase_method);
 
     // Narrow phase
     return candidates.is_step_collision_free(
@@ -76,7 +75,7 @@ double compute_collision_free_stepsize(
     // Broad phase
     Candidates candidates;
     candidates.build(
-        mesh, vertices_t0, vertices_t1, /*inflation_radius=*/min_distance / 2,
+        mesh, vertices_t0, vertices_t1, /*inflation_radius=*/0.5 * min_distance,
         broad_phase_method);
 
     // Narrow phase
