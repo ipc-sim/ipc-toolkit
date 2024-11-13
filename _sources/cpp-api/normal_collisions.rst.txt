@@ -14,25 +14,25 @@ Normal Collision
     :allow-dot-graphs:
 
 Vertex-Vertex Normal Collision
------------------------------
+------------------------------
 
 .. doxygenclass:: ipc::VertexVertexNormalCollision
     :allow-dot-graphs:
 
 Edge-Vertex Normal Collision
------------------------------
+----------------------------
 
 .. doxygenclass:: ipc::EdgeVertexNormalCollision
     :allow-dot-graphs:
 
 Edge-Edge Normal Collision
------------------------------
+--------------------------
 
 .. doxygenclass:: ipc::EdgeEdgeNormalCollision
     :allow-dot-graphs:
 
 Face-Vertex Normal Collision
------------------------------
+----------------------------
 
 .. doxygenclass:: ipc::FaceVertexNormalCollision
     :allow-dot-graphs:
