@@ -15,6 +15,7 @@
     tutorial/nonlinear_ccd.rst
     tutorial/simulation.rst
     tutorial/misc.rst
+    tutorial/faq.rst
     tutorial/references.rst
 
 .. toctree::

@@ -21,10 +21,10 @@
 
 #include "additive_ccd.hpp"
 
-#include <ipc/distance/point_point.hpp>
-#include <ipc/distance/point_edge.hpp>
-#include <ipc/distance/point_triangle.hpp>
 #include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_point.hpp>
+#include <ipc/distance/point_triangle.hpp>
 
 namespace ipc {
 
@@ -60,8 +60,8 @@ namespace {
     }
 } // namespace
 
-AdditiveCCD::AdditiveCCD(const double conservative_rescaling)
-    : conservative_rescaling(conservative_rescaling)
+AdditiveCCD::AdditiveCCD(const double _conservative_rescaling)
+    : conservative_rescaling(_conservative_rescaling)
 {
 }
 

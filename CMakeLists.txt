@@ -59,11 +59,18 @@ endif()
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
         LANGUAGES CXX
-        VERSION "1.3.1")
+        VERSION "1.4.0")
 
-option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
-option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
-option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
+include(CheckLanguage)
+check_language(CUDA)
+
+option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests" ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
+option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings"                        OFF)
+if(CMAKE_CUDA_COMPILER)
+  option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" ON)
+else()
+  option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" OFF)
+endif()
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
@@ -117,13 +124,6 @@ add_subdirectory("${IPC_TOOLKIT_SOURCE_DIR}")
 
 # Public include directory for IPC Toolkit
 target_include_directories(ipc_toolkit PUBLIC "${IPC_TOOLKIT_INCLUDE_DIR}")
-
-################################################################################
-# Optional Definitions
-################################################################################
-
-# For MSVC, do not use the min and max macros.
-target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
 
 ################################################################################
 # Dependencies
@@ -208,6 +208,11 @@ else()
   message(STATUS "SIMD support disabled")
 endif()
 
+# For MSVC, do not use the min and max macros.
+if(MSVC)
+  target_compile_definitions(ipc_toolkit PRIVATE NOMINMAX)
+endif()
+
 # Use C++17
 target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
 
@@ -216,30 +221,21 @@ target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
 ################################################################################
 
 if(IPC_TOOLKIT_WITH_CUDA)
-  include(CheckLanguage)
-  check_language(CUDA)
-  if(CMAKE_CUDA_COMPILER)
-    enable_language(CUDA)
-  else()
-    message(FATAL_ERROR "No CUDA support found!")
+  if(NOT CMAKE_CUDA_COMPILER)
+    message(FATAL_ERROR "CUDA support requested but no CUDA compiler found!")
   endif()
+
+  # Enable CUDA support
+  enable_language(CUDA)
 
   # We need to explicitly state that we need all CUDA files in the particle
   # library to be built with -dc as the member functions could be called by
   # other libraries and executables.
   set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
-  if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
-    set(CMAKE_CUDA_ARCHITECTURES "native")
-  else()
-    include(FindCUDA/select_compute_arch)
-    CUDA_DETECT_INSTALLED_GPUS(CUDA_ARCH_LIST)
-    string(STRIP "${CUDA_ARCH_LIST}" CUDA_ARCH_LIST)
-    string(REPLACE " " ";" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
-    string(REPLACE "." "" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
-    set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
-  endif()
-  set_target_properties(scalable_ccd PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
+  # Use the same CUDA architectures Scalable CCD
+  get_target_property(CMAKE_CUDA_ARCHITECTURES scalable_ccd CUDA_ARCHITECTURES)
+  set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
 endif()
 
 ################################################################################

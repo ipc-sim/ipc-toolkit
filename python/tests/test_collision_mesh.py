@@ -1,8 +1,9 @@
+import time
 import numpy as np
 import scipy
 
 import find_ipctk
-from ipctk import CollisionMesh
+from ipctk import CollisionMesh, SparseCanCollide, VertexPatchesCanCollide
 
 
 def test_collision_mesh():
@@ -85,3 +86,42 @@ def test_collision_mesh_does_not_segfault():
     assert (mesh.rest_positions == points).all()
     assert (mesh.edges == edges).all()
     assert (mesh.faces == faces).all()
+
+
+def test_can_collide():
+    V = np.array([[0, 0], [1, 0], [0, 1], [1, 1]], dtype=float)
+    E = np.array([[0, 1], [1, 3], [3, 2], [2, 0]], dtype=int)
+
+    V = np.vstack([V, V + 1.001])
+    E = np.vstack([E, E + V.shape[0] // 2])
+
+    mesh = CollisionMesh(V, E)
+
+    def default_can_collide(i, j): return True
+
+    patches = np.concatenate([np.zeros(4, dtype=int), np.ones(4, dtype=int)])
+    print(patches.size)
+
+    def patches_can_collide(i, j):
+        return patches[i] != patches[j]
+
+    dict_can_collide = {}
+    for i in range(V.shape[0]):
+        for j in range(V.shape[0]):
+            if i < j and not patches_can_collide(i, j):
+                dict_can_collide[(i, j)] = False
+
+    can_collides = [
+        default_can_collide,
+        patches_can_collide,
+        SparseCanCollide(dict_can_collide, True),
+        VertexPatchesCanCollide(patches),
+    ]
+
+    for can_collide in can_collides:
+        if can_collide != default_can_collide:
+            mesh.can_collide = can_collide
+
+        for i in range(V.shape[0]):
+            for j in range(V.shape[0]):
+                assert mesh.can_collide(i, j) == can_collide(i, j)

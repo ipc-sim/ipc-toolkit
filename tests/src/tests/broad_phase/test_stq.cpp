@@ -7,8 +7,11 @@
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 
 using namespace ipc;
-
+#ifdef IPC_TOOLKIT_WITH_CUDA
+TEST_CASE("STQ All Cases", "[broad_phase][stq][cuda]")
+#else
 TEST_CASE("STQ All Cases", "[broad_phase][stq]")
+#endif
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
@@ -58,7 +61,7 @@ TEST_CASE("STQ All Cases", "[broad_phase][stq]")
 }
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
-TEST_CASE("Puffer-Ball", "[ccd][broad_phase][stq]")
+TEST_CASE("Puffer-Ball", "[ccd][broad_phase][stq][cuda]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;

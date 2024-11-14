@@ -1,13 +1,12 @@
 #pragma once
 
-#include <ipc/collisions/tangential/tangential_collision.hpp>
-#include <ipc/collisions/tangential/vertex_vertex.hpp>
-#include <ipc/collisions/tangential/edge_vertex.hpp>
-#include <ipc/collisions/tangential/edge_edge.hpp>
-#include <ipc/collisions/tangential/face_vertex.hpp>
-
 #include <ipc/collision_mesh.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
+#include <ipc/collisions/tangential/edge_edge.hpp>
+#include <ipc/collisions/tangential/edge_vertex.hpp>
+#include <ipc/collisions/tangential/face_vertex.hpp>
+#include <ipc/collisions/tangential/tangential_collision.hpp>
+#include <ipc/collisions/tangential/vertex_vertex.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Core>

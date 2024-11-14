@@ -1,7 +1,7 @@
 #pragma once
 
-#include <ipc/potentials/normal_potential.hpp>
 #include <ipc/barrier/barrier.hpp>
+#include <ipc/potentials/normal_potential.hpp>
 
 #include <memory>
 

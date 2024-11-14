@@ -7,7 +7,6 @@
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <filib/interval.hpp>
-
 #include <spdlog/fmt/bundled/ostream.h>
 
 namespace filib {
@@ -21,7 +20,7 @@ public:
         this->SUP = 0;
     }
 
-    Interval(double x)
+    explicit Interval(double x)
     {
         this->INF = x;
         this->SUP = x;

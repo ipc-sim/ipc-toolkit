@@ -1,10 +1,10 @@
 #pragma once
 
 #include <ipc/broad_phase/broad_phase.hpp>
-#include <ipc/candidates/vertex_vertex.hpp>
-#include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/edge_edge.hpp>
+#include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/face_vertex.hpp>
+#include <ipc/candidates/vertex_vertex.hpp>
 
 #include <Eigen/Core>
 

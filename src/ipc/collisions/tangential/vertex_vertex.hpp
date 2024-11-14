@@ -1,7 +1,7 @@
 #pragma once
 
-#include <ipc/collisions/tangential/tangential_collision.hpp>
 #include <ipc/candidates/vertex_vertex.hpp>
+#include <ipc/collisions/tangential/tangential_collision.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {

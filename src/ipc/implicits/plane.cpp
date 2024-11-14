@@ -1,10 +1,10 @@
 #include "plane.hpp"
 
-#include <ipc/distance/point_plane.hpp>
 #include <ipc/ccd/point_static_plane.hpp>
+#include <ipc/distance/point_plane.hpp>
 
-#include <tbb/parallel_reduce.h>
 #include <tbb/blocked_range.h>
+#include <tbb/parallel_reduce.h>
 
 namespace ipc {
 
@@ -100,7 +100,7 @@ double compute_point_plane_collision_free_stepsize(
     const double earliest_toi = tbb::parallel_reduce(
         tbb::blocked_range<size_t>(0, points_t0.rows()),
         /*inital_step_size=*/1.0,
-        [&](tbb::blocked_range<size_t> r, double earliest_toi) {
+        [&](tbb::blocked_range<size_t> r, double current_toi) {
             for (size_t vi = r.begin(); vi < r.end(); vi++) {
                 for (size_t pi = 0; pi < n_planes; pi++) {
                     if (!can_collide(vi, pi)) {
@@ -116,13 +116,13 @@ double compute_point_plane_collision_free_stepsize(
                         plane_normal, toi);
 
                     if (are_colliding) {
-                        if (toi < earliest_toi) {
-                            earliest_toi = toi;
+                        if (toi < current_toi) {
+                            current_toi = toi;
                         }
                     }
                 }
             }
-            return earliest_toi;
+            return current_toi;
         },
         [&](double a, double b) { return std::min(a, b); });
 

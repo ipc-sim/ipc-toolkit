@@ -1,9 +1,9 @@
 #include "tight_inclusion_ccd.hpp"
 
 #include <ipc/ccd/check_initial_distance.hpp>
-#include <ipc/distance/point_point.hpp>
-#include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
 #include <tight_inclusion/ccd.hpp>
@@ -21,12 +21,12 @@ static constexpr double INITIAL_DISTANCE_TOLERANCE_SCALE = 0.5;
 static constexpr long TIGHT_INCLUSION_UNLIMITED_ITERATIONS = -1;
 
 TightInclusionCCD::TightInclusionCCD(
-    const double tolerance,
-    const long max_iterations,
-    const double conservative_rescaling)
-    : tolerance(tolerance)
-    , max_iterations(max_iterations)
-    , conservative_rescaling(conservative_rescaling)
+    const double _tolerance,
+    const long _max_iterations,
+    const double _conservative_rescaling)
+    : tolerance(_tolerance)
+    , max_iterations(_max_iterations)
+    , conservative_rescaling(_conservative_rescaling)
 {
 }
 

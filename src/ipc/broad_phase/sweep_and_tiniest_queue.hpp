@@ -5,6 +5,7 @@
 #ifdef IPC_TOOLKIT_WITH_CUDA
 
 #include <ipc/broad_phase/broad_phase.hpp>
+
 #include <scalable_ccd/cuda/broad_phase/broad_phase.cuh>
 
 namespace ipc {
