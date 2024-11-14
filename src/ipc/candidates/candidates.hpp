@@ -10,6 +10,7 @@
 
 #include <vector>
 
+
 namespace ipc {
 
 class Candidates {

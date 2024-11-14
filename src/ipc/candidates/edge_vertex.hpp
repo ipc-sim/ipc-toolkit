@@ -67,6 +67,8 @@ public:
     long edge_id;
     /// @brief ID of the vertex
     long vertex_id;
+    /// @brief Set the mat pair of the candidate
+    std::pair<int, int> mat_pair = {-1, -1};
 };
 
 } // namespace ipc

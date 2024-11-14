@@ -95,4 +95,8 @@ EdgeEdgeTangentialCollision::relative_velocity_matrix_jacobian(
     return edge_edge_relative_velocity_matrix_jacobian(dim(), _closest_point);
 }
 
+std::pair<int, int> EdgeEdgeTangentialCollision::material_pair_ids() const override { 
+    return this->m_pair_ids;
+}
+
 } // namespace ipc

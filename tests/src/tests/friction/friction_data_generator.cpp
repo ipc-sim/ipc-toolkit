@@ -23,8 +23,8 @@ FrictionData friction_data_generator()
     collisions.set_enable_shape_derivatives(true);
 
     mu = GENERATE(range(0.0, 1.0, 0.2));
-    s_mu = mu;                   // Static friction set to mu
-    k_mu = 0.8 * s_mu;           // Kinetic friction set to 0.8 * s_mu
+    s_mu = GENERATE(range(0.0, 1.0, 0.2));
+    k_mu = GENERATE(range(0.0, 1.0, 0.2));
 
 #ifdef NDEBUG
     epsv_times_h = pow(10, GENERATE(range(-6, 0)));

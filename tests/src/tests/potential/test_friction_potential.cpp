@@ -14,7 +14,7 @@ using namespace ipc;
 TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
 {
     FrictionData data = friction_data_generator();
-    const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, dhat, barrier_stiffness] =
+    const auto& [V0, V1, E, F, collisions, mu, s_mu, k_mu, epsv_times_h, dhat, barrier_stiffness] =
         data;
 
     const Eigen::MatrixXd U = V1 - V0;
@@ -48,20 +48,14 @@ TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
 TEST_CASE("Friction gradient and hessian with s_mu and k_mu", "[friction][gradient][hessian][s_mu][k_mu]")
 {
     FrictionData data = friction_data_generator();
-    const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, dhat, barrier_stiffness] =
-        data;
+    const auto& [V0, V1, E, F, collisions, mu, s_mu, k_mu, epsv_times_h, dhat, barrier_stiffness] = data;
 
     const Eigen::MatrixXd U = V1 - V0;
 
     const CollisionMesh mesh(V0, E, F);
 
-    // Define specific values for static and kinetic friction coefficients
-    const double s_mu = 1.0; // Static friction coefficient
-    const double k_mu = 0.8; // Kinetic friction coefficient
-
     TangentialCollisions tangential_collisions;
-    tangential_collisions.build(
-        mesh, V0, collisions, BarrierPotential(dhat), barrier_stiffness, s_mu, k_mu);
+    tangential_collisions.build(mesh, V0, collisions, BarrierPotential(dhat), barrier_stiffness, mu, s_mu, k_mu);
 
     const FrictionPotential D(epsv_times_h);
 

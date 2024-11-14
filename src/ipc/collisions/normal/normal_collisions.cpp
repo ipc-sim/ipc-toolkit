@@ -34,7 +34,7 @@ namespace {
         const std::function<bool(double)>& is_active)
     {
         std::vector<VertexVertexCandidate> vv_candidates;
-        for (const auto& [ei, vi] : candidates) {
+        for (const auto& [ei, vi, mat_pair] : candidates) {
             for (int j = 0; j < elements.cols(); j++) {
                 const int vj = elements(ei, j);
                 if (is_active(point_point_distance(
@@ -80,7 +80,7 @@ namespace {
         const std::function<bool(double)>& is_active)
     {
         std::vector<EdgeVertexCandidate> ev_candidates;
-        for (const auto& [fi, vi] : fv_candidates) {
+        for (const auto& [fi, vi, mat_pair] : fv_candidates) {
             for (int j = 0; j < 3; j++) {
                 const int ei = mesh.faces_to_edges()(fi, j);
                 const int vj = mesh.edges()(ei, 0);

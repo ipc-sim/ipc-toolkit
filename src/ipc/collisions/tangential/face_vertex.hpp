@@ -42,6 +42,7 @@ protected:
 
     MatrixMax<double, 6, 12> relative_velocity_matrix_jacobian(
         const VectorMax2d& closest_point) const override;
+
 };
 
 } // namespace ipc

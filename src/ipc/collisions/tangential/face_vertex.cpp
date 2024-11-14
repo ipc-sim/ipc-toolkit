@@ -96,4 +96,8 @@ FaceVertexTangentialCollision::relative_velocity_matrix_jacobian(
         dim(), _closest_point);
 }
 
+std::pair<int, int> FaceVertexTangentialCollision::material_pair_ids() const override { 
+    return this->m_pair_ids;
+}
+
 } // namespace ipc

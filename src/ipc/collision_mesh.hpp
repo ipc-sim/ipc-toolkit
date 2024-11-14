@@ -28,7 +28,7 @@ public:
         const Eigen::MatrixXi& faces = Eigen::MatrixXi(),
         const Eigen::SparseMatrix<double>& displacement_map =
             Eigen::SparseMatrix<double>(),
-        std::optional<int> material_id = 0);
+        const std::vector<int>& material_ids = {});
 
     /// @brief Construct a new Collision Mesh object from a full mesh vertices.
     /// @param include_vertex Vector of bools indicating whether each vertex should be included in the collision mesh.
@@ -44,7 +44,7 @@ public:
         const Eigen::MatrixXi& faces = Eigen::MatrixXi(),
         const Eigen::SparseMatrix<double>& displacement_map =
             Eigen::SparseMatrix<double>(),
-        std::optional<int> material_id = 0);
+        const std::vector<int>& material_ids = {});
 
     /// @brief Helper function that automatically builds include_vertex using construct_is_on_surface.
     /// @param full_rest_positions The full vertices at rest (#FV × dim).
@@ -290,9 +290,19 @@ public:
     /// primitives can collide with all other primitives.
     std::function<bool(size_t, size_t)> can_collide = default_can_collide;
 
-    /// @brief Get the material IDs of the vertices in the collision mesh.
+    /// @brief Get the material ID of the mesh.
     /// @return A reference to the vector of material IDs.
-    const Eigen::VectorXi& get_material_ids() const { return m_material_ids; }
+    const std::vector<int>& mat_ids() const { return m_mat_ids; }
+
+    /// @brief Get the material ID associated with a specific face or component.
+    /// @param index Index of the face or component.
+    /// @return Material ID for the specified component.
+    int mat_id(size_t index) const {
+        if (index < m_mat_ids.size()) {
+            return m_mat_ids[index];
+        }
+        throw std::out_of_range("Material ID index out of range!");
+    }
 
 protected:
     // -----------------------------------------------------------------------
@@ -373,11 +383,8 @@ protected:
     /// @brief The rows of the Jacobian of the edge areas vector.
     std::vector<Eigen::SparseVector<double>> m_edge_area_jacobian;
 
-    /// @brief The material ID of the collision mesh.
-    int m_material_id = -1;
-
-    /// @brief The material IDs of the collision mesh.
-    Eigen::VectorXi m_material_ids;
+    /// @brief The material ID of the mesh.
+    std::vector<int> m_mat_ids;
 
 private:
     /// @brief By default all primitives can collide with all other primitives.
