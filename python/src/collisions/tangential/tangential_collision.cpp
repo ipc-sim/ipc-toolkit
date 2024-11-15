@@ -72,7 +72,7 @@ void define_tangential_collision(py::module_& m)
             Compute the relative velocity of the collision.
 
             Parameters:
-                positions: Collision stencil's vertex velocities.
+                velocities: Collision stencil's vertex velocities.
 
             Returns:
                 Relative velocity of the collision.
