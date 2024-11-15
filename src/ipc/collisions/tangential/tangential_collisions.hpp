@@ -26,12 +26,12 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const NormalCollisions& collisions,
-        const BarrierPotential& barrier_potential,
-        double barrier_stiffness,
+        const NormalPotential& normal_potential,
+        double normal_stiffness,
         double mu)
     {
         this->build(
-            mesh, vertices, collisions, barrier_potential, barrier_stiffness,
+            mesh, vertices, collisions, normal_potential, normal_stiffness,
             Eigen::VectorXd::Constant(vertices.rows(), mu));
     }
 
@@ -39,8 +39,8 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const NormalCollisions& collisions,
-        const BarrierPotential& barrier_potential,
-        const double barrier_stiffness,
+        const NormalPotential& normal_potential,
+        const double normal_stiffness,
         const Eigen::VectorXd& mus,
         const std::function<double(double, double)>& blend_mu =
             default_blend_mu);
