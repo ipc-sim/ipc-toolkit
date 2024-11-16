@@ -1589,7 +1589,7 @@ x_n &amp; y_n &amp; z_n \\
 \frac{\partial B}{\partial x_n} &amp;
 \frac{\partial B}{\partial y_n} &amp;
 \frac{\partial B}{\partial z_n}
-\end{bmatrix}^T,\]</div>
+\end{bmatrix}^\top,\]</div>
 <p>and the Hessian of size <span class="math notranslate nohighlight">\(|V|d \times |V|d\)</span> with the order</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\nabla^2 B = \begin{bmatrix}
@@ -1807,7 +1807,7 @@ Python</label></div>
 <p>This returns a scalar value <code class="docutils literal notranslate"><span class="pre">friction_potential</span></code> which is the sum of the individual friction potentials.</p>
 <p>Mathematically this is defined as</p>
 <div class="math notranslate nohighlight">
-\[D(x) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|T_k^Tv\|, \epsilon_v\right),\]</div>
+\[D(v) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|T_k^\top v\|, \epsilon_v\right),\]</div>
 <p>where <span class="math notranslate nohighlight">\(C\)</span> is the lagged collisions, <span class="math notranslate nohighlight">\(\lambda_k^n\)</span> is the normal force magnitude for the <span class="math notranslate nohighlight">\(k\)</span>-th collision, <span class="math notranslate nohighlight">\(T_k\)</span> is the tangential basis for the <span class="math notranslate nohighlight">\(k\)</span>-th collision, and <span class="math notranslate nohighlight">\(f_0\)</span> is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.</p>
 <h3 id="derivatives">Derivatives<a class="headerlink" href="#derivatives" title="Permalink to this heading">¶</a></h3>
 <p>We can also compute the first and second derivatives of the friction dissipative potential with respect to the velocities.</p>
