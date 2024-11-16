@@ -90,8 +90,8 @@ void define_tangential_potential(py::module_& m)
             py::overload_cast<
                 const TangentialCollision&, const VectorMax12d&,
                 const VectorMax12d&, const VectorMax12d&,
-                const NormalPotential&, const double, const double,
-                const bool>(&TangentialPotential::force, py::const_),
+                const NormalPotential&, const double, const double, const bool>(
+                &TangentialPotential::force, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the friction force.
 
