@@ -28,3 +28,9 @@ Clamped Log Barrier
 
 .. doxygenclass:: ipc::ClampedLogBarrier
     :allow-dot-graphs:
+
+Normalized Clamped Log Barrier
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenclass:: ipc::NormalizedClampedLogBarrier
+    :allow-dot-graphs:
