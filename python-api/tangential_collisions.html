@@ -2643,9 +2643,9 @@
 <span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.TangentialCollisions.build" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic simple">
-<li><p>build(self: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], collisions: ipctk.NormalCollisions, barrier_potential: ipc::BarrierPotential, barrier_stiffness: float, mu: float) -&gt; None</p></li>
-<li><p>build(self: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], collisions: ipctk.NormalCollisions, barrier_potential: ipc::BarrierPotential, barrier_stiffness: float, mus: numpy.ndarray[numpy.float64[m, 1]]) -&gt; None</p></li>
-<li><p>build(self: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], collisions: ipctk.NormalCollisions, barrier_potential: ipc::BarrierPotential, barrier_stiffness: float, mus: numpy.ndarray[numpy.float64[m, 1]], blend_mu: Callable[[float, float], float]) -&gt; None</p></li>
+<li><p>build(self: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], collisions: ipctk.NormalCollisions, normal_potential: ipc::NormalPotential, normal_stiffness: float, mu: float) -&gt; None</p></li>
+<li><p>build(self: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], collisions: ipctk.NormalCollisions, normal_potential: ipc::NormalPotential, normal_stiffness: float, mus: numpy.ndarray[numpy.float64[m, 1]]) -&gt; None</p></li>
+<li><p>build(self: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], collisions: ipctk.NormalCollisions, normal_potential: ipc::NormalPotential, normal_stiffness: float, mus: numpy.ndarray[numpy.float64[m, 1]], blend_mu: Callable[[float, float], float]) -&gt; None</p></li>
 </ol>
 </dd></dl>
 
@@ -3154,7 +3154,7 @@
 <dd><p>Overloaded function.</p>
 <ol class="arabic simple">
 <li><p>__init__(self: ipctk.VertexVertexTangentialCollision, collision: ipctk.VertexVertexNormalCollision) -&gt; None</p></li>
-<li><p>__init__(self: ipctk.VertexVertexTangentialCollision, collision: ipctk.VertexVertexNormalCollision, positions: numpy.ndarray[numpy.float64[m, 1]], barrier_potential: ipc::BarrierPotential, barrier_stiffness: float) -&gt; None</p></li>
+<li><p>__init__(self: ipctk.VertexVertexTangentialCollision, collision: ipctk.VertexVertexNormalCollision, positions: numpy.ndarray[numpy.float64[m, 1]], normal_potential: ipc::NormalPotential, normal_stiffness: float) -&gt; None</p></li>
 </ol>
 </dd></dl>
 
@@ -3334,7 +3334,7 @@
 <dd><p>Overloaded function.</p>
 <ol class="arabic simple">
 <li><p>__init__(self: ipctk.EdgeVertexTangentialCollision, collision: ipctk.EdgeVertexNormalCollision) -&gt; None</p></li>
-<li><p>__init__(self: ipctk.EdgeVertexTangentialCollision, collision: ipctk.EdgeVertexNormalCollision, positions: numpy.ndarray[numpy.float64[m, 1]], barrier_potential: ipc::BarrierPotential, barrier_stiffness: float) -&gt; None</p></li>
+<li><p>__init__(self: ipctk.EdgeVertexTangentialCollision, collision: ipctk.EdgeVertexNormalCollision, positions: numpy.ndarray[numpy.float64[m, 1]], normal_potential: ipc::NormalPotential, normal_stiffness: float) -&gt; None</p></li>
 </ol>
 </dd></dl>
 
@@ -3514,7 +3514,7 @@
 <dd><p>Overloaded function.</p>
 <ol class="arabic simple">
 <li><p>__init__(self: ipctk.EdgeEdgeTangentialCollision, collision: ipctk.EdgeEdgeNormalCollision) -&gt; None</p></li>
-<li><p>__init__(self: ipctk.EdgeEdgeTangentialCollision, collision: ipctk.EdgeEdgeNormalCollision, positions: numpy.ndarray[numpy.float64[m, 1]], barrier_potential: ipc::BarrierPotential, barrier_stiffness: float) -&gt; None</p></li>
+<li><p>__init__(self: ipctk.EdgeEdgeTangentialCollision, collision: ipctk.EdgeEdgeNormalCollision, positions: numpy.ndarray[numpy.float64[m, 1]], normal_potential: ipc::NormalPotential, normal_stiffness: float) -&gt; None</p></li>
 </ol>
 </dd></dl>
 
@@ -3694,7 +3694,7 @@
 <dd><p>Overloaded function.</p>
 <ol class="arabic simple">
 <li><p>__init__(self: ipctk.FaceVertexTangentialCollision, collision: ipctk.FaceVertexNormalCollision) -&gt; None</p></li>
-<li><p>__init__(self: ipctk.FaceVertexTangentialCollision, collision: ipctk.FaceVertexNormalCollision, positions: numpy.ndarray[numpy.float64[m, 1]], barrier_potential: ipc::BarrierPotential, barrier_stiffness: float) -&gt; None</p></li>
+<li><p>__init__(self: ipctk.FaceVertexTangentialCollision, collision: ipctk.FaceVertexNormalCollision, positions: numpy.ndarray[numpy.float64[m, 1]], normal_potential: ipc::NormalPotential, normal_stiffness: float) -&gt; None</p></li>
 </ol>
 </dd></dl>
 
@@ -3712,7 +3712,7 @@
   <small>
     
       Last update:
-      Nov 14, 2024
+      Nov 16, 2024
     
   </small>
 </div>

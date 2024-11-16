@@ -3317,7 +3317,7 @@ x: The collision stencil’s degrees of freedom.</p>
 <span class="sig-name descname"><span class="pre">force</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.TangentialPotential.force" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>force(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, rest_positions: numpy.ndarray[numpy.float64[m, n]], lagged_displacements: numpy.ndarray[numpy.float64[m, n]], velocities: numpy.ndarray[numpy.float64[m, n]], barrier_potential: ipctk.BarrierPotential, barrier_stiffness: float, dmin: float = 0, no_mu: bool = False) -&gt; numpy.ndarray[numpy.float64[m, 1]]</p>
+<li><p>force(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, rest_positions: numpy.ndarray[numpy.float64[m, n]], lagged_displacements: numpy.ndarray[numpy.float64[m, n]], velocities: numpy.ndarray[numpy.float64[m, n]], normal_potential: ipctk.NormalPotential, normal_stiffness: float, dmin: float = 0, no_mu: bool = False) -&gt; numpy.ndarray[numpy.float64[m, 1]]</p>
 <blockquote>
 <div><p>Compute the friction force from the given velocities.</p>
 <dl class="simple">
@@ -3326,8 +3326,8 @@ mesh: The collision mesh.
 rest_positions: Rest positions of the vertices (rowwise).
 lagged_displacements: Previous displacements of the vertices (rowwise).
 velocities: Current displacements of the vertices (rowwise).
-barrier_potential: Barrier potential (used for normal force magnitude).
-barrier_stiffness: Barrier stiffness (used for normal force magnitude).
+normal_potential: Normal potential (used for normal force magnitude).
+normal_stiffness: Normal stiffness (used for normal force magnitude).
 dmin: Minimum distance (used for normal force magnitude).
 no_mu: whether to not multiply by mu</p>
 </dd>
@@ -3336,7 +3336,7 @@ no_mu: whether to not multiply by mu</p>
 </dl>
 </div></blockquote>
 </li>
-<li><p>force(self: ipctk.TangentialPotential, collision: ipctk.TangentialCollision, rest_positions: numpy.ndarray[numpy.float64[m, 1]], lagged_displacements: numpy.ndarray[numpy.float64[m, 1]], velocities: numpy.ndarray[numpy.float64[m, 1]], barrier_potential: ipctk.BarrierPotential, barrier_stiffness: float, dmin: float = 0, no_mu: bool = False) -&gt; numpy.ndarray[numpy.float64[m, 1]]</p>
+<li><p>force(self: ipctk.TangentialPotential, collision: ipctk.TangentialCollision, rest_positions: numpy.ndarray[numpy.float64[m, 1]], lagged_displacements: numpy.ndarray[numpy.float64[m, 1]], velocities: numpy.ndarray[numpy.float64[m, 1]], normal_potential: ipctk.NormalPotential, normal_stiffness: float, dmin: float = 0, no_mu: bool = False) -&gt; numpy.ndarray[numpy.float64[m, 1]]</p>
 <blockquote>
 <div><p>Compute the friction force.</p>
 <dl class="simple">
@@ -3344,8 +3344,8 @@ no_mu: whether to not multiply by mu</p>
 rest_positions: Rest positions of the vertices (rowwise).
 lagged_displacements: Previous displacements of the vertices (rowwise).
 velocities: Current displacements of the vertices (rowwise).
-barrier_potential: Barrier potential (used for normal force magnitude).
-barrier_stiffness: Barrier stiffness (used for normal force magnitude).
+normal_potential: Normal potential (used for normal force magnitude).
+normal_stiffness: Normal stiffness (used for normal force magnitude).
 dmin: Minimum distance (used for normal force magnitude).
 no_mu: Whether to not multiply by mu</p>
 </dd>
@@ -3362,7 +3362,7 @@ no_mu: Whether to not multiply by mu</p>
 <span class="sig-name descname"><span class="pre">force_jacobian</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.TangentialPotential.force_jacobian" title="Permalink to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>force_jacobian(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, rest_positions: numpy.ndarray[numpy.float64[m, n]], lagged_displacements: numpy.ndarray[numpy.float64[m, n]], velocities: numpy.ndarray[numpy.float64[m, n]], barrier_potential: ipctk.BarrierPotential, barrier_stiffness: float, wrt: ipctk.TangentialPotential.DiffWRT, dmin: float = 0) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
+<li><p>force_jacobian(self: ipctk.TangentialPotential, collisions: ipctk.TangentialCollisions, mesh: ipc::CollisionMesh, rest_positions: numpy.ndarray[numpy.float64[m, n]], lagged_displacements: numpy.ndarray[numpy.float64[m, n]], velocities: numpy.ndarray[numpy.float64[m, n]], normal_potential: ipctk.NormalPotential, normal_stiffness: float, wrt: ipctk.TangentialPotential.DiffWRT, dmin: float = 0) -&gt; scipy.sparse.csc_matrix[numpy.float64]</p>
 <blockquote>
 <div><p>Compute the Jacobian of the friction force wrt the velocities.</p>
 <dl class="simple">
@@ -3371,8 +3371,8 @@ mesh: The collision mesh.
 rest_positions: Rest positions of the vertices (rowwise).
 lagged_displacements: Previous displacements of the vertices (rowwise).
 velocities: Current displacements of the vertices (rowwise).
-barrier_potential: Barrier potential (used for normal force magnitude).
-barrier_stiffness: Barrier stiffness (used for normal force magnitude).
+normal_potential: Normal potential (used for normal force magnitude).
+normal_stiffness: Normal stiffness (used for normal force magnitude).
 wrt: The variable to take the derivative with respect to.
 dmin: Minimum distance (used for normal force magnitude).</p>
 </dd>
@@ -3381,7 +3381,7 @@ dmin: Minimum distance (used for normal force magnitude).</p>
 </dl>
 </div></blockquote>
 </li>
-<li><p>force_jacobian(self: ipctk.TangentialPotential, collision: ipctk.TangentialCollision, rest_positions: numpy.ndarray[numpy.float64[m, 1]], lagged_displacements: numpy.ndarray[numpy.float64[m, 1]], velocities: numpy.ndarray[numpy.float64[m, 1]], barrier_potential: ipctk.BarrierPotential, barrier_stiffness: float, wrt: ipctk.TangentialPotential.DiffWRT, dmin: float = 0) -&gt; numpy.ndarray[numpy.float64[m, n]]</p>
+<li><p>force_jacobian(self: ipctk.TangentialPotential, collision: ipctk.TangentialCollision, rest_positions: numpy.ndarray[numpy.float64[m, 1]], lagged_displacements: numpy.ndarray[numpy.float64[m, 1]], velocities: numpy.ndarray[numpy.float64[m, 1]], normal_potential: ipctk.NormalPotential, normal_stiffness: float, wrt: ipctk.TangentialPotential.DiffWRT, dmin: float = 0) -&gt; numpy.ndarray[numpy.float64[m, n]]</p>
 <blockquote>
 <div><p>Compute the friction force Jacobian.</p>
 <dl class="simple">
@@ -3389,8 +3389,8 @@ dmin: Minimum distance (used for normal force magnitude).</p>
 rest_positions: Rest positions of the vertices (rowwise).
 lagged_displacements: Previous displacements of the vertices (rowwise).
 velocities: Current displacements of the vertices (rowwise).
-barrier_potential: Barrier potential (used for normal force magnitude).
-barrier_stiffness: Barrier stiffness (used for normal force magnitude).
+normal_potential: Normal potential (used for normal force magnitude).
+normal_stiffness: Normal stiffness (used for normal force magnitude).
 wrt: Variable to differentiate the friction force with respect to.
 dmin: Minimum distance (used for normal force magnitude).</p>
 </dd>
@@ -3672,7 +3672,7 @@ x: The collision stencil’s degrees of freedom.</p>
   <small>
     
       Last update:
-      Nov 14, 2024
+      Nov 16, 2024
     
   </small>
 </div>
