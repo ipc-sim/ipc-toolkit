@@ -14,7 +14,7 @@ void define_edge_vertex_tangential_collision(py::module_& m)
         .def(
             py::init<
                 const EdgeVertexNormalCollision&, const VectorMax12d&,
-                const BarrierPotential&, const double>(),
+                const NormalPotential&, const double>(),
             py::arg("collision"), py::arg("positions"),
-            py::arg("barrier_potential"), py::arg("barrier_stiffness"));
+            py::arg("normal_potential"), py::arg("normal_stiffness"));
 }
