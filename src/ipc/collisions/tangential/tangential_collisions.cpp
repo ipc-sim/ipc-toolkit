@@ -15,8 +15,8 @@ void TangentialCollisions::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const NormalCollisions& collisions,
-    const BarrierPotential& barrier_potential,
-    const double barrier_stiffness,
+    const NormalPotential& normal_potential,
+    const double normal_stiffness,
     const Eigen::VectorXd& mus,
     const std::function<double(double, double)>& blend_mu)
 {
@@ -36,8 +36,8 @@ void TangentialCollisions::build(
     FC_vv.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
         FC_vv.emplace_back(
-            c_vv, c_vv.dof(vertices, edges, faces), barrier_potential,
-            barrier_stiffness);
+            c_vv, c_vv.dof(vertices, edges, faces), normal_potential,
+            normal_stiffness);
         const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
 
         FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
@@ -46,8 +46,8 @@ void TangentialCollisions::build(
     FC_ev.reserve(C_ev.size());
     for (const auto& c_ev : C_ev) {
         FC_ev.emplace_back(
-            c_ev, c_ev.dof(vertices, edges, faces), barrier_potential,
-            barrier_stiffness);
+            c_ev, c_ev.dof(vertices, edges, faces), normal_potential,
+            normal_stiffness);
         const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
 
         const double edge_mu =
@@ -69,8 +69,8 @@ void TangentialCollisions::build(
         }
 
         FC_ee.emplace_back(
-            c_ee, c_ee.dof(vertices, edges, faces), barrier_potential,
-            barrier_stiffness);
+            c_ee, c_ee.dof(vertices, edges, faces), normal_potential,
+            normal_stiffness);
 
         double ea_mu =
             (mus(ea1i) - mus(ea0i)) * FC_ee.back().closest_point[0] + mus(ea0i);
@@ -82,8 +82,8 @@ void TangentialCollisions::build(
     FC_fv.reserve(C_fv.size());
     for (const auto& c_fv : C_fv) {
         FC_fv.emplace_back(
-            c_fv, c_fv.dof(vertices, edges, faces), barrier_potential,
-            barrier_stiffness);
+            c_fv, c_fv.dof(vertices, edges, faces), normal_potential,
+            normal_stiffness);
         const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
 
         double face_mu = mus(f0i)
