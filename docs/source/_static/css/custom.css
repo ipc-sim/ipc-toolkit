@@ -53,6 +53,10 @@ table.autosummary {
     font-size: 0.75rem !important;
 }
 
+div.nbinput.container div.input_area {
+    border: none !important
+}
+
 /* .breatheparameterlist li tt + p {
     display: inline;
   }

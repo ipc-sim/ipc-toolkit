@@ -662,9 +662,11 @@ src/ipc/config.hpp
 tests/src/tests/config.hpp
 
 docs/_doxygen
+docs/source/tutorial/1D/media
 
 notebooks/*.[ch]pp
 python/update_bindings.py
 
 # External test data
 tests/data
+docs/source/_static/media

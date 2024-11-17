@@ -16,6 +16,7 @@
     tutorial/simulation.rst
     tutorial/misc.rst
     tutorial/faq.rst
+    tutorial/1D/spring.ipynb
     tutorial/references.rst
 
 .. toctree::

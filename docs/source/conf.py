@@ -108,7 +108,18 @@ autodoc_default_options = {
     'show-inheritance': True,
 }
 
-# -- GraphViz configuration ----------------------------------
+# -- nbspinx configuration ----------------------------------------------------
+
+nbsphinx_prolog = r"""
+.. raw:: html
+
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>re=require;</script>
+
+
+"""
+
+# -- GraphViz configuration ---------------------------------------------------
 graphviz_output_format = 'svg'
 
 graphviz_dot_args = ["-Ecolor=#CE93D8", "-Kdot"]
