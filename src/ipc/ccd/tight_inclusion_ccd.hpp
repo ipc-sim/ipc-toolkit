@@ -52,9 +52,6 @@ public:
     /// @param[out] toi The time of impact between the point and the edge.
     /// @param[in] min_distance The minimum distance between the objects.
     /// @param[in] tmax The maximum time to check for collisions.
-    /// @param[in] tolerance The error tolerance for the time of impact.
-    /// @param[in] max_iterations The maximum number of iterations to perform.
-    /// @param[in] conservative_rescaling The conservative rescaling of the time of impact.
     /// @return True if a collision was detected, false otherwise.
     bool point_edge_ccd(
         const VectorMax3d& p_t0,
@@ -79,9 +76,6 @@ public:
     /// @param[out] toi The time of impact between the two edges.
     /// @param[in] min_distance The minimum distance between the objects.
     /// @param[in] tmax The maximum time to check for collisions.
-    /// @param[in] tolerance The error tolerance for the time of impact.
-    /// @param[in] max_iterations The maximum number of iterations to perform.
-    /// @param[in] conservative_rescaling The conservative rescaling of the time of impact.
     /// @return True if a collision was detected, false otherwise.
     bool edge_edge_ccd(
         const Eigen::Vector3d& ea0_t0,
@@ -108,9 +102,6 @@ public:
     /// @param[out] toi The time of impact between the point and the triangle.
     /// @param[in] min_distance The minimum distance between the objects.
     /// @param[in] tmax The maximum time to check for collisions.
-    /// @param[in] tolerance The error tolerance for the time of impact.
-    /// @param[in] max_iterations The maximum number of iterations to perform.
-    /// @param[in] conservative_rescaling The conservative rescaling of the time of impact.
     /// @return True if a collision was detected, false otherwise.
     bool point_triangle_ccd(
         const Eigen::Vector3d& p_t0,
@@ -163,9 +154,6 @@ private:
     /// @param[out] toi The time of impact between the point and the edge.
     /// @param[in] min_distance The minimum distance between the objects.
     /// @param[in] tmax The maximum time to check for collisions.
-    /// @param[in] tolerance The error tolerance for the time of impact.
-    /// @param[in] max_iterations The maximum number of iterations to perform.
-    /// @param[in] conservative_rescaling The conservative rescaling of the time of impact.
     /// @return True if a collision was detected, false otherwise.
     bool point_edge_ccd_3D(
         const Eigen::Vector3d& p_t0,

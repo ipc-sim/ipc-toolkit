@@ -22,10 +22,10 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 - [ ] Test B
 
 **Test Configuration**:
-* OS and version:
-* Compile and version:
+* OS and Version:
+* Compiler and Version:
 
-# Checklist:
+# Checklist
 
 - [ ] I have followed the project [style guide](https://ipctk.xyz/style_guide.html)
 - [ ] My code follows the clang-format style guidelines of this project
@@ -36,4 +36,3 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 - [ ] I have added tests that prove my fix is effective or that my feature works
 - [ ] New and existing unit tests pass locally with my changes
 - [ ] Any dependent changes have been merged and published in downstream modules
-

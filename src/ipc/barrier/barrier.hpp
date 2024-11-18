@@ -136,4 +136,66 @@ public:
     }
 };
 
+// ============================================================================
+// Normalized Barrier functions from [Li et al. 2023]
+// ============================================================================
+
+/// @brief Normalized barrier function from [Li et al. 2023].
+class NormalizedClampedLogBarrier : public ClampedLogBarrier {
+public:
+    NormalizedClampedLogBarrier() = default;
+
+    /// @brief Function that grows to infinity as d approaches 0 from the right.
+    ///
+    /// \f\[
+    ///     b(d) =
+    ///     -\left(\frac{d}{\hat{d}}-1\right)^2\ln\left(\frac{d}{\hat{d}}\right)
+    /// \f\]
+    ///
+    /// @param d The distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The value of the barrier function at d.
+    double operator()(const double d, const double dhat) const override
+    {
+        return ClampedLogBarrier::operator()(d / dhat, 1.0);
+    }
+
+    /// @brief Derivative of the barrier function.
+    ///
+    /// \f\[
+    ///     b'(d) =
+    ///     2\frac{1}{\hat{d}}\left(1-\frac{d}{\hat{d}}\right)\ln\left(\frac{d}{\hat{d}}\right)
+    ///             + \left(1-\frac{d}{\hat{d}}\right)^2 \frac{1}{d}
+    /// \f\]
+    ///
+    /// @param d The distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The derivative of the barrier wrt d.
+    double first_derivative(const double d, const double dhat) const override
+    {
+        return ClampedLogBarrier::first_derivative(d / dhat, 1.0) / dhat;
+    }
+
+    /// @brief Second derivative of the barrier function.
+    ///
+    /// \f\[
+    ///     b''(d) = \frac{\hat{d}^2-2 d^2 \ln \left(\frac{d}{\hat{d}}\right)+2
+    ///     \hat{d} d-3 d^2}{\hat{d}^2 d^2}
+    /// \f\]
+    ///
+    /// @param d The distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The second derivative of the barrier wrt d.
+    double second_derivative(const double d, const double dhat) const override
+    {
+        return ClampedLogBarrier::second_derivative(d / dhat, 1.0)
+            / (dhat * dhat);
+    }
+
+    /// @brief Get the units of the barrier function.
+    /// @param dhat The activation distance of the barrier.
+    /// @return The units of the barrier function.
+    double units(const double dhat) const override { return 1.0; }
+};
+
 } // namespace ipc
