@@ -186,7 +186,7 @@ you will get the gradient of size :math:`|V|d \times 1` with the order
     \frac{\partial B}{\partial x_n} &
     \frac{\partial B}{\partial y_n} &
     \frac{\partial B}{\partial z_n}
-    \end{bmatrix}^T,
+    \end{bmatrix}^\top,
 
 and the Hessian of size :math:`|V|d \times |V|d` with the order
 
@@ -417,7 +417,7 @@ This returns a scalar value ``friction_potential`` which is the sum of the indiv
 Mathematically this is defined as
 
 .. math::
-   D(x) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|T_k^Tv\|, \epsilon_v\right),
+   D(v) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|T_k^\top v\|, \epsilon_v\right),
 
 where :math:`C` is the lagged collisions, :math:`\lambda_k^n` is the normal force magnitude for the :math:`k`-th collision, :math:`T_k` is the tangential basis for the :math:`k`-th collision, and :math:`f_0` is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.
 

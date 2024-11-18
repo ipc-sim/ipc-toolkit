@@ -5,6 +5,7 @@
 
 #include <ipc/ipc.hpp>
 #include <ipc/adhesion/adhesion.hpp>
+#include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/potentials/normal_adhesion_potential.hpp>
 #include <ipc/potentials/tangential_adhesion_potential.hpp>
 

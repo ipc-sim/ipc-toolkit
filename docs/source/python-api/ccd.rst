@@ -5,43 +5,37 @@ Continuous Collision Detection
 
 .. autofunction:: ipctk.compute_collision_free_stepsize
 
-Individual CCD Functions
-------------------------
+Narrow Phase CCD
+----------------
 
-.. .. autovariable:: ipctk.DEFAULT_CCD_TOLERANCE
-.. .. autovariable:: ipctk.DEFAULT_CCD_MAX_ITERATIONS
-.. .. autovariable:: ipctk.DEFAULT_CCD_CONSERVATIVE_RESCALING
+.. autoclass:: ipctk.NarrowPhaseCCD
 
-.. autofunction:: ipctk.point_point_ccd
-.. autofunction:: ipctk.point_edge_ccd
-.. autofunction:: ipctk.edge_edge_ccd
-.. autofunction:: ipctk.point_triangle_ccd
-
-Generic Interface
-^^^^^^^^^^^^^^^^^
-
-.. autofunction:: ipctk.ccd_strategy
+   .. autoclasstoc::
 
 Tight Inclusion CCD
--------------------
+^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: ipctk.tight_inclusion.edge_edge_ccd
-.. autofunction:: ipctk.tight_inclusion.point_triangle_ccd
+.. autoclass:: ipctk.TightInclusionCCD
 
-.. autofunction:: ipctk.tight_inclusion.compute_ccd_filters
+   .. autoclasstoc::
 
 Additive CCD
-------------
+^^^^^^^^^^^^
 
-.. autofunction:: ipctk.additive_ccd.point_point_ccd
-.. autofunction:: ipctk.additive_ccd.point_edge_ccd
-.. autofunction:: ipctk.additive_ccd.edge_edge_ccd
-.. autofunction:: ipctk.additive_ccd.point_triangle_ccd
+.. autoclass:: ipctk.AdditiveCCD
 
-Generic Interface
-^^^^^^^^^^^^^^^^^
+   .. autoclasstoc::
 
-.. autofunction:: ipctk.additive_ccd.additive_ccd
+Inexact CCD
+^^^^^^^^^^^
+
+.. note::
+    This method is disabled by default. To enable it, set the
+    ``IPC_TOOLKIT_WITH_INEXACT_CCD`` CMake option to ``ON``.
+
+.. .. autoclass:: ipctk.InexactCCD
+
+.. autofunction:: ipctk.inexact_point_edge_ccd_2D
 
 Nonlinear CCD
 -------------
@@ -59,7 +53,7 @@ Nonlinear CCD
 .. autofunction:: ipctk.edge_edge_nonlinear_ccd
 .. autofunction:: ipctk.point_triangle_nonlinear_ccd
 
-Generic Interface
-^^^^^^^^^^^^^^^^^
+Miscellaneous
+-------------
 
-.. autofunction:: ipctk.conservative_piecewise_linear_ccd
+.. autofunction:: ipctk.point_static_plane_ccd

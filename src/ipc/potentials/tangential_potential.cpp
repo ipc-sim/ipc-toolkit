@@ -10,8 +10,8 @@ Eigen::VectorXd TangentialPotential::force(
     const Eigen::MatrixXd& rest_positions,
     const Eigen::MatrixXd& lagged_displacements,
     const Eigen::MatrixXd& velocities,
-    const BarrierPotential& barrier_potential,
-    const double barrier_stiffness,
+    const NormalPotential& normal_potential,
+    const double normal_stiffness,
     const double dmin,
     const bool no_mu) const
 {
@@ -37,7 +37,7 @@ Eigen::VectorXd TangentialPotential::force(
                     collision, collision.dof(rest_positions, edges, faces),
                     collision.dof(lagged_displacements, edges, faces),
                     collision.dof(velocities, edges, faces), //
-                    barrier_potential, barrier_stiffness, dmin, no_mu);
+                    normal_potential, normal_stiffness, dmin, no_mu);
 
                 const std::array<long, 4> vis =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
@@ -57,8 +57,8 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
     const Eigen::MatrixXd& rest_positions,
     const Eigen::MatrixXd& lagged_displacements,
     const Eigen::MatrixXd& velocities,
-    const BarrierPotential& barrier_potential,
-    const double barrier_stiffness,
+    const NormalPotential& normal_potential,
+    const double normal_stiffness,
     const DiffWRT wrt,
     const double dmin) const
 {
@@ -86,7 +86,7 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
                     collision, collision.dof(rest_positions, edges, faces),
                     collision.dof(lagged_displacements, edges, faces),
                     collision.dof(velocities, edges, faces), //
-                    barrier_potential, barrier_stiffness, wrt, dmin);
+                    normal_potential, normal_stiffness, wrt, dmin);
 
                 const std::array<long, 4> vis =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
@@ -119,7 +119,7 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
                 collision, collision.dof(rest_positions, edges, faces),
                 collision.dof(lagged_displacements, edges, faces),
                 collision.dof(velocities, edges, faces), //
-                barrier_potential, barrier_stiffness, dmin);
+                normal_potential, normal_stiffness, dmin);
             assert(collision.weight != 0);
             local_force /= collision.weight;
 
@@ -253,8 +253,8 @@ VectorMax12d TangentialPotential::force(
     const VectorMax12d& rest_positions,       // = x
     const VectorMax12d& lagged_displacements, // = u
     const VectorMax12d& velocities,           // = v
-    const BarrierPotential& barrier_potential,
-    const double barrier_stiffness,
+    const NormalPotential& normal_potential,
+    const double normal_stiffness,
     const double dmin,
     const bool no_mu) const
 {
@@ -275,8 +275,8 @@ VectorMax12d TangentialPotential::force(
     const VectorMax12d lagged_positions = rest_positions + lagged_displacements;
 
     // Compute N(x + u)
-    const double N = barrier_potential.force_magnitude(
-        collision.compute_distance(lagged_positions), dmin, barrier_stiffness);
+    const double N = normal_potential.force_magnitude(
+        collision.compute_distance(lagged_positions), dmin, normal_stiffness);
 
     // Compute P
     const MatrixMax<double, 3, 2> P =
@@ -309,8 +309,8 @@ MatrixMax12d TangentialPotential::force_jacobian(
     const VectorMax12d& rest_positions,       // = x
     const VectorMax12d& lagged_displacements, // = u
     const VectorMax12d& velocities,           // = v
-    const BarrierPotential& barrier_potential,
-    const double barrier_stiffness,
+    const NormalPotential& normal_potential,
+    const double normal_stiffness,
     const DiffWRT wrt,
     const double dmin) const
 {
@@ -337,17 +337,17 @@ MatrixMax12d TangentialPotential::force_jacobian(
     const bool need_jac_N_or_T = wrt != DiffWRT::VELOCITIES;
 
     // Compute N
-    const double N = barrier_potential.force_magnitude(
-        collision.compute_distance(lagged_positions), dmin, barrier_stiffness);
+    const double N = normal_potential.force_magnitude(
+        collision.compute_distance(lagged_positions), dmin, normal_stiffness);
 
     // Compute ∇N
     VectorMax12d grad_N;
     if (need_jac_N_or_T) {
         // ∇ₓN = ∇ᵤN
-        grad_N = barrier_potential.force_magnitude_gradient(
+        grad_N = normal_potential.force_magnitude_gradient(
             collision.compute_distance(lagged_positions),
             collision.compute_distance_gradient(lagged_positions), dmin,
-            barrier_stiffness);
+            normal_stiffness);
         assert(grad_N.array().isFinite().all());
     }
 
