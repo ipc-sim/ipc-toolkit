@@ -1,54 +1,51 @@
 {
-    "name": "IPCToolkit Development Container",
+    "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
+    "name": "IPCToolkit C++ Development Container",
     "build": {
         "dockerfile": "Dockerfile",
         "context": ".."
     },
-    "settings": {
-        "terminal.integrated.shell.linux": "/bin/bash",
-
-        // C++ Extension Settings
-        "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-        "C_Cpp.default.intelliSenseMode": "gcc-x64",
-        "C_Cpp.default.compilerPath": "/usr/local/bin/clang++",
-        "C_Cpp.clang_format_path": "/usr/bin/clang-format",
-        "C_Cpp.clang_format_style": "file", // Use .clang-format file in project
-
-        // CMake Settings
-        "cmake.configureOnOpen": true,
-        "cmake.generator": "Ninja",
-        "cmake.buildDirectory": "${workspaceFolder}/build",
-
-        // Python Settings
-        "python.pythonPath": "/usr/bin/python3",
-        "python.linting.enabled": true,
-        "python.linting.pylintEnabled": true,
-        "python.formatting.provider": "black",
-
-        // Prettier Settings
-        "prettier.requireConfig": true
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/fish",
+                "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+                "C_Cpp.default.intelliSenseMode": "gcc-x64",
+                "C_Cpp.default.compilerPath": "/usr/bin/clang++-18",
+                "C_Cpp.clang_format_path": "/usr/bin/clang-format",
+                "C_Cpp.clang_format_style": "file",
+                "cmake.configureOnOpen": true,
+                "cmake.generator": "Ninja",
+                "cmake.buildDirectory": "${workspaceFolder}/build",
+                "python.pythonPath": "/usr/bin/python3",
+                "python.linting.enabled": true,
+                "python.linting.pylintEnabled": true,
+                "python.formatting.provider": "black",
+                "prettier.requireConfig": true
+            },
+            "extensions": [
+                "ms-vscode.cpptools",
+                "ms-vscode.cmake-tools",
+                "xaver.clang-format",
+                "ms-python.python",
+                "ms-azuretools.vscode-docker",
+                "eamodio.gitlens",
+                "esbenp.prettier-vscode",
+                "mhutchie.git-graph",
+                "twxs.cmake",
+                "jeff-hykin.better-cpp-syntax",
+                "vadimcn.vscode-lldb",
+                "cschlosser.doxdocgen",
+                "ms-python.vscode-pylance",
+                "streetsidesoftware.code-spell-checker",
+                "mutantdino.resourcemonitor",
+                "randomfractalsinc.vscode-data-preview",
+                "oderwat.indent-rainbow",
+                "formulahendry.code-runner",
+                "donjayamanne.git-extension-pack"
+            ]
+        }
     },
-    "extensions": [
-        "ms-vscode.cpptools",              // C++ IntelliSense and debugging
-        "ms-vscode.cmake-tools",            // CMake support
-        "xaver.clang-format",               // Clang-Format integration
-        "ms-python.python",                 // Python support
-        "ms-azuretools.vscode-docker",      // Docker integration
-        "eamodio.gitlens",                  // GitLens for Git insights
-        "esbenp.prettier-vscode",           // Prettier for code formatting
-        "mhutchie.git-graph",               // Git Graph visualization
-        "twxs.cmake",                       // CMake language support
-        "jeff-hykin.better-cpp-syntax",     // Improved C++ syntax highlighting
-        "vadimcn.vscode-lldb",              // LLDB Debugger for C++ (macOS and Linux)
-        "cschlosser.doxdocgen",             // Doxygen documentation generation for C++
-        "ms-python.vscode-pylance",         // Pylance for Python language support
-        "streetsidesoftware.code-spell-checker",  // Spell checker for code comments
-        "mutantdino.resourcemonitor",       // Resource Monitor for tracking container resources
-        "randomfractalsinc.vscode-data-preview", // Data preview for CSV and JSON files
-        "oderwat.indent-rainbow",           // Indentation highlighting
-        "formulahendry.code-runner",        // Code Runner for testing scripts
-        "donjayamanne.git-extension-pack"   // Additional Git tools
-    ],
     "postCreateCommand": "pre-commit install",
     "remoteUser": "devuser",
     "mounts": [
@@ -59,8 +56,6 @@
         "CCACHE_DIR": "/home/devuser/.ccache",
         "CCACHE_MAXSIZE": "1G"
     },
-    "features": {},
-    "containerEnv": {},
     "workspaceFolder": "/home/devuser/workspace",
     "workspaceMount": "source=${localWorkspaceFolder},target=/home/devuser/workspace,type=bind,consistency=cached"
 }
