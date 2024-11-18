@@ -1,8 +1,7 @@
 FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV CMAKE_VERSION=3.31.0
-ENV CCACHE_DIR=/root/.ccache
+ENV CCACHE_DIR=/home/devuser/.ccache
 ENV CCACHE_MAXSIZE=1G
 ENV CXX_STANDARD=17
 
@@ -12,6 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     wget \
     curl \
+    fish \
     ninja-build \
     ccache \
     libeigen3-dev \
@@ -31,17 +31,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common \
     lsb-release \
     gnupg \
+    lldb-18 \
+    fish \
+    zsh \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a new user with sudo privileges
 RUN useradd -m devuser && echo "devuser:password" | chpasswd && usermod -aG sudo devuser && \
-    echo "devuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+    echo "devuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    mkdir -p $CCACHE_DIR && chown devuser:devuser $CCACHE_DIR
 
 # Set up Python tools
 RUN pip3 install --upgrade pip setuptools wheel pre-commit
-
-# Prepare CCache directory
-RUN mkdir -p $CCACHE_DIR
 
 # Install CMake from Kitware APT repository
 RUN wget -qO- https://apt.kitware.com/keys/kitware-archive-latest.asc | \
@@ -58,20 +59,21 @@ RUN wget -q https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh && \
     /tmp/llvm.sh 18 || ( \
         echo "llvm.sh script failed, attempting manual installation." && \
         apt-get update && \
-        apt-get install -y clang-18 clang-format-18 \
-    )
-
-# Create an alias for clang-format to clang-format-18
-RUN ln -s /usr/bin/clang-format-18 /usr/bin/clang-format && \
-    clang-18 --version && clang-format --version
+        apt-get install -y clang-18 clang-format-18 || { \
+            echo "Manual LLVM installation failed." && exit 1; \
+        } \
+    ) && \
+    ln -s /usr/bin/clang-format-18 /usr/bin/clang-format && \
+    ln -s /usr/bin/clang++-18 /usr/bin/clang++ && \
+    clang-18 --version && clang-format --version && clang++ --version
 
 # Cleanup to reduce image size
-RUN apt-get remove -y build-essential git wget curl && \
+RUN apt-get remove -y git wget curl && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* /root/src
 
 # Set the default user and working directory
 USER devuser
-WORKDIR /home/devuser
+WORKDIR /home/devuser/workspace
 
 CMD ["bash"]
