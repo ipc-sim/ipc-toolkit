@@ -58,10 +58,11 @@ RUN wget -q https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh && \
     /tmp/llvm.sh 18 || ( \
         echo "llvm.sh script failed, attempting manual installation." && \
         apt-get update && \
-        apt-get install -y clang-18 clang-format-18 || { \
+        apt-get install -y clang-18 clang-tools-18 clang-format-18 || { \
             echo "Manual LLVM installation failed." && exit 1; \
         } \
     ) && \
+    ls -l /usr/bin/clang-format* && ls -l /usr/bin/clang* && \
     ln -s /usr/bin/clang-format-18 /usr/bin/clang-format && \
     ln -s /usr/bin/clang++-18 /usr/bin/clang++ && \
     clang-18 --version && clang-format --version && clang++ --version
