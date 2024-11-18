@@ -31,7 +31,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common \
     lsb-release \
     gnupg \
-    lldb-18 \
     fish \
     zsh \
     && rm -rf /var/lib/apt/lists/*
