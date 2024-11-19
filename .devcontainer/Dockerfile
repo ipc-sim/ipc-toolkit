@@ -80,7 +80,7 @@ RUN if [ ! -f /usr/bin/clang-format-18 ]; then \
         }; \
     fi
     
-RUN clang-18--version
+RUN clang-18 --version
 RUN clang++-18 --version
 RUN clang-format-18 --version
 
