@@ -81,14 +81,9 @@ RUN if [ ! -f /usr/bin/clang-format-18 ]; then \
         }; \
     fi
 
-# 8. Verify installation of clang-format-18 and clang-18
-RUN ls -l /usr/bin/clang* /usr/bin/clang-format*
-
 # 9. Create symbolic links for clang, clang++, and clang-format
 RUN ln -sf /usr/bin/clang-18 /usr/bin/clang
-
 RUN ln -sf /usr/bin/clang++-18 /usr/bin/clang++
-
 RUN ln -sf /usr/bin/clang-format-18 /usr/bin/clang-format
 
 # 10. Verify versions to ensure symlinks work correctly
