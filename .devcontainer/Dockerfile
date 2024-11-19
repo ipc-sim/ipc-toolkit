@@ -64,21 +64,11 @@ RUN apt-get install -y cmake
 RUN cmake --version
 
 # Install LLVM/Clang and Clang-Format version 18
-# Download and execute the LLVM installation script
 RUN wget -q https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh
-
 RUN chmod +x /tmp/llvm.sh
-
 RUN /tmp/llvm.sh 18 || true
 
-# Check if clang-format-18 exists; if not, attempt manual installation
-RUN if [ ! -f /usr/bin/clang-format-18 ]; then \
-        echo "llvm.sh script failed or clang-format-18 not found, attempting manual installation." && \
-        apt-get update && \
-        apt-get install -y clang-18 clang-tools-18 || { \
-            echo "Manual LLVM installation failed." && exit 1; \
-        }; \
-    fi
+RUN apt-get update && apt-get install -y clang-18 clang-tools-18 clang-format-18
     
 RUN clang-18 --version
 RUN clang++-18 --version
