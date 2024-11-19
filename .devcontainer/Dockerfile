@@ -1,17 +1,22 @@
 FROM ubuntu:22.04
 
+# Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV CCACHE_DIR=/home/devuser/.ccache
 ENV CCACHE_MAXSIZE=1G
 ENV CXX_STANDARD=17
 
-# Update and install basic dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# 1. Update package lists
+RUN apt-get update
+
+# 2. Install essential packages
+RUN apt-get install -y --no-install-recommends \
     build-essential \
     git \
     wget \
     curl \
     fish \
+    zsh \
     ninja-build \
     ccache \
     libeigen3-dev \
@@ -31,49 +36,76 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common \
     lsb-release \
     gnupg \
-    fish \
-    zsh \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a new user with sudo privileges
-RUN useradd -m devuser && echo "devuser:password" | chpasswd && usermod -aG sudo devuser && \
-    echo "devuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
-    mkdir -p $CCACHE_DIR && chown devuser:devuser $CCACHE_DIR
+# 3. Create a new user with sudo privileges
+RUN useradd -m devuser \
+    && echo "devuser:password" | chpasswd \
+    && usermod -aG sudo devuser \
+    && echo "devuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers \
+    && mkdir -p $CCACHE_DIR \
+    && chown devuser:devuser $CCACHE_DIR
 
-# Set up Python tools
+# 4. Set up Python tools
 RUN pip3 install --upgrade pip setuptools wheel pre-commit
 
-# Install CMake from Kitware APT repository
+# 5. Add Kitware APT repository for CMake
 RUN wget -qO- https://apt.kitware.com/keys/kitware-archive-latest.asc | \
-    gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main" | \
-    tee /etc/apt/sources.list.d/kitware.list > /dev/null && \
-    apt-get update && \
-    apt-get install -y cmake && \
-    cmake --version
+    gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg
 
-# Install LLVM/Clang and Clang-Format version 18
-RUN wget -q https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh && \
-    chmod +x /tmp/llvm.sh && \
-    /tmp/llvm.sh 18 || ( \
-        echo "llvm.sh script failed, attempting manual installation." && \
+RUN echo "deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ $(lsb_release -cs) main" | \
+    tee /etc/apt/sources.list.d/kitware.list > /dev/null
+
+# 6. Update package lists and install CMake
+RUN apt-get update
+
+RUN apt-get install -y cmake
+
+# Verify CMake installation
+RUN cmake --version
+
+# 7. Install LLVM/Clang and Clang-Format version 18
+# Download and execute the LLVM installation script
+RUN wget -q https://apt.llvm.org/llvm.sh -O /tmp/llvm.sh
+
+RUN chmod +x /tmp/llvm.sh
+
+RUN /tmp/llvm.sh 18 || true
+
+# Check if clang-format-18 exists; if not, attempt manual installation
+RUN if [ ! -f /usr/bin/clang-format-18 ]; then \
+        echo "llvm.sh script failed or clang-format-18 not found, attempting manual installation." && \
         apt-get update && \
-        apt-get install -y clang-18 clang-tools-18 clang-format-18 || { \
+        apt-get install -y clang-18 clang-tools-18 || { \
             echo "Manual LLVM installation failed." && exit 1; \
-        } \
-    ) && \
-    ln -s /usr/bin/clang-format-18 /usr/bin/clang-format && \
-    ln -s /usr/bin/clang-18 /usr/bin/clang && \
-    ln -s /usr/bin/clang++-18 /usr/bin/clang++ && \
-    clang-18 --version && clang-format --version && clang++ --version
+        }; \
+    fi
 
-# Cleanup to reduce image size
-RUN apt-get remove -y git wget curl && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/* /root/src
+# 8. Verify installation of clang-format-18 and clang-18
+RUN ls -l /usr/bin/clang* /usr/bin/clang-format*
 
-# Set the default user and working directory
+# 9. Create symbolic links for clang, clang++, and clang-format
+RUN ln -sf /usr/bin/clang-18 /usr/bin/clang
+
+RUN ln -sf /usr/bin/clang++-18 /usr/bin/clang++
+
+RUN ln -sf /usr/bin/clang-format-18 /usr/bin/clang-format
+
+# 10. Verify versions to ensure symlinks work correctly
+RUN clang --version
+
+RUN clang++ --version
+
+RUN clang-format --version
+
+# 11. Cleanup to reduce image size
+RUN apt-get remove -y git wget curl \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* /root/src
+
+# 12. Set the default user and working directory
 USER devuser
+
 WORKDIR /home/devuser/workspace
 
 CMD ["bash"]
