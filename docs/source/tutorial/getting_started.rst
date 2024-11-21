@@ -474,16 +474,28 @@ For a given distance :math:`d`:
 
 The normal adhesion potential models the attraction force based on the distance between two surfaces.
 
+Here dhat_p (:math:\hat{d}_p) is the threshold distance for adhesion (in units of distance) where the largest adhesion force is applied.
+Here dhat_a (:math:\hat{d}_a) is the adhesion activation distance (in units of distance), representing the maximum range where adhesion forces are active.
+Here Y (:math:Y) is the adhesion stiffness (in units of stress, such as Young's modulus), controlling the intensity of adhesion forces.
+Here eps_c (:math:\epsilon_c) is the adhesion coefficient (unitless, critical strain) that defines the critical strain at which adhesion forces decrease.
+
 .. md-tab-set::
     .. md-tab-item:: C++
-    
         .. code-block:: c++
+                const double dhat_p = 1e-3;  // Threshold distance for adhesion (distance of largest adhesion force)
+                const double dhat_a = 2 * dhat_p; // Adhesion activation distance
+                const double Y = 1e3;       // Adhesion stiffness (Young’s modulus)
+                const double eps_c = 0.5;   // Adhesion coefficient (critical strain)
 
-    
+                ipc::NormalAdhesionPotential adhesion_potential(dhat_p, dhat_a, Y, eps_c);
     .. md-tab-item:: Python
-    
         .. code-block:: python
+                dhat_p = 1e-3  # Threshold distance for adhesion (distance of largest adhesion force)
+                dhat_a = 2 * dhat_p  # Adhesion activation distance
+                Y = 1e3  # Adhesion stiffness (Young’s modulus)
+                eps_c = 0.5  # Adhesion coefficient (critical strain)
 
+                adhesion_potential = NormalAdhesionPotential(dhat_p, dhat_a, Y, eps_c)
 
 Tangential Adhesion
 ^^^^^^^^^^^^^^^
@@ -502,21 +514,18 @@ For velocity :math:`y`:
   .. math::
      A_t(y) = \frac{4 \varepsilon_a}{3}
 
-**Derivatives**:
+Here ``eps_a`` (:math:`\epsilon_a`) is the adhesion threshold (in units of velocity) used to smoothly transition.
 
 .. md-tab-set::
-
-.. md-tab-item:: C++
-
-    .. code-block:: c++
-
-        const double eps_a = 0.01; // Adhesion velocity threshold
-
-.. md-tab-item:: Python
-
-    .. code-block:: python
-
-        eps_a = 0.01  # Adhesion velocity threshold
+    .. md-tab-item:: C++
+        .. code-block:: c++
+            const double eps_a = 0.01;
+            ipc::TangentialAdhesionPotential adhesion_potential(eps_a);
+    
+    .. md-tab-item:: Python
+        .. code-block:: python
+            eps_a = 0.01
+            adhesion_potential = TangentialAdhesionPotential(eps_a)
 
 Continuous Collision Detection
 ------------------------------
