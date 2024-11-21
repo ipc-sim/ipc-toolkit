@@ -25,9 +25,16 @@ public:
     }
 
 protected:
+    // Friction global mu
     double f0(const double x) const override;
     double f1_over_x(const double x) const override;
     double f2_x_minus_f1_over_x3(const double x) const override;
+
+    // Friction with mu_s and mu_k
+    double f0_mus(const double x, const double s_mu, const double k_mu) const override;
+    double f1_over_x_mus(const double x, const double s_mu, const double k_mu) const override;
+    double f2_x_minus_f1_over_x3_mus(const double x, const double s_mu, const double k_mu) const override;
+
 
     bool is_dynamic(const double speed) const override
     {

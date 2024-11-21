@@ -225,7 +225,7 @@ TEST_CASE("Friction force jacobian", "[friction][force-jacobian]")
 {
     const int x_case = GENERATE(0, 1);
     FrictionData data = friction_data_generator();
-    const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, dhat, barrier_stiffness] =
+    const auto& [V0, V1, E, F, collisions, mu, s_mu, k_mu,epsv_times_h, dhat, barrier_stiffness] =
         data;
     REQUIRE(collisions.enable_shape_derivatives());
 

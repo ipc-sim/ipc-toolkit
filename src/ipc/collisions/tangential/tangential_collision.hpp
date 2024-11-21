@@ -81,15 +81,29 @@ public:
     virtual MatrixMax<double, 6, 12> relative_velocity_matrix_jacobian(
         const VectorMax2d& closest_point) const = 0;
 
+    /// @brief Get the material pair IDs of the collision.
+    /// @return Material pair IDs of the collision.
+    virtual std::pair<int, int> material_pair_ids() const = 0;
+
 public:
+
     /// @brief Normal force magnitude
     double normal_force_magnitude;
 
-    /// @brief Ratio between normal and tangential forces (e.g., friction coefficient)
+    /// @brief Ratio between normal and tangential forces (e.g., global friction coefficient)
     double mu;
+
+    /// @brief Ratio between normal and tangential forces (e.g., static friction coefficient)
+    double s_mu = -1;
+
+    /// @brief Ratio between normal and tangential forces (e.g., kinetic friction coefficient)
+    double k_mu = -1;
 
     /// @brief Weight
     double weight = 1;
+
+    /// @brief Material pair IDs
+    std::pair<int, int> m_pair_ids = {-1, -1};
 
     /// @brief Gradient of weight with respect to all DOF
     Eigen::SparseVector<double> weight_gradient;

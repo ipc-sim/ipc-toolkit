@@ -1,9 +1,7 @@
 #include "friction_data_generator.hpp"
 
 #include <catch2/generators/catch_generators_range.hpp>
-
 #include <ipc/config.hpp>
-
 #include <igl/edges.h>
 
 Eigen::VectorXd LogSpaced(int num, double start, double stop, double base)
@@ -20,12 +18,14 @@ FrictionData friction_data_generator()
 {
     FrictionData data;
 
-    auto& [V0, V1, E, F, collisions, mu, epsv_times_h, dhat, barrier_stiffness] =
-        data;
+    auto& [V0, V1, E, F, collisions, mu, s_mu, k_mu, epsv_times_h, dhat, barrier_stiffness] = data;
 
     collisions.set_enable_shape_derivatives(true);
 
     mu = GENERATE(range(0.0, 1.0, 0.2));
+    s_mu = GENERATE(range(0.0, 1.0, 0.2));
+    k_mu = GENERATE(range(0.0, 1.0, 0.2));
+
 #ifdef NDEBUG
     epsv_times_h = pow(10, GENERATE(range(-6, 0)));
     dhat = pow(10, GENERATE(range(-4, 0)));
@@ -67,7 +67,6 @@ FrictionData friction_data_generator()
         V0.row(3) << 0, 0, 1;  // edge b vertex 1 at t=0
 
         V1 = V0;
-        // double dy = GENERATE(-1, 1, 1e-1);
         V1.row(0) << 0.5, d, 0; // edge a vertex 0 at t=1
         V1.row(1) << 2.5, d, 0; // edge a vertex 1 at t=1
 
@@ -86,7 +85,6 @@ FrictionData friction_data_generator()
         V0.row(2) << 0, 0, 1;    // edge vertex 1 at t=0
 
         V1 = V0;
-        // double dy = GENERATE(-1, 1, 1e-1);
         V1.row(0) << 0.5, d, 0; // point at t=1
 
         E.resize(1, 2);
@@ -102,9 +100,8 @@ FrictionData friction_data_generator()
         V0.row(1) << 1, d, 0;  // point 1 at t=0
 
         V1 = V0;
-        // double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 0.5, d, 0;  // edge a vertex 0 at t=1
-        V1.row(1) << -0.5, d, 0; // edge a vertex 1 at t=1
+        V1.row(0) << 0.5, d, 0;  // point 0 at t=1
+        V1.row(1) << -0.5, d, 0; // point 1 at t=1
 
         collisions.vv_collisions.emplace_back(0, 1);
         collisions.vv_collisions.back().weight_gradient.resize(V0.size());
@@ -117,7 +114,6 @@ FrictionData friction_data_generator()
         V0.row(2) << 1, 0;    // edge vertex 1 at t=0
 
         V1 = V0;
-        // double dy = GENERATE(-1, 1, 1e-1);
         V1.row(0) << 0.5, d; // point at t=1
 
         E.resize(1, 2);
@@ -133,9 +129,8 @@ FrictionData friction_data_generator()
         V0.row(1) << 1, d;  // point 1 at t=0
 
         V1 = V0;
-        // double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 0.5, d;  // edge a vertex 0 at t=1
-        V1.row(1) << -0.5, d; // edge a vertex 1 at t=1
+        V1.row(0) << 0.5, d;  // point 0 at t=1
+        V1.row(1) << -0.5, d; // point 1 at t=1
 
         collisions.vv_collisions.emplace_back(0, 1);
         collisions.vv_collisions.back().weight_gradient.resize(V0.size());
