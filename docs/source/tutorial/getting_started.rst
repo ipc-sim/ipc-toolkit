@@ -448,6 +448,110 @@ We can also compute the first and second derivatives of the friction dissipative
             friction_potential_hess = D.hessian(
                 tangential_collisions, collision_mesh, velocity)
 
+Adhesion
+--------
+Adhesion simulates the sticking interaction between surfaces, such as glue bonding or material contact. The IPC Toolkit provides functionality to compute normal adhesion (perpendicular forces) and tangential adhesion (parallel forces).
+
+Normal Adhesion
+^^^^^^^^^^^^^^^
+
+For a given distance :math:`d`:
+
+- If :math:`d < \hat{d}_p`:
+  
+  .. math::
+     A_n(d) = a_1 \cdot d^2 + c_1, \quad \text{where } a_1 = a_2 \left(1 - \frac{\hat{d}_a}{\hat{d}_p}\right)
+
+- If :math:`\hat{d}_p \leq d < \hat{d}_a`:
+
+  .. math::
+     A_n(d) = (a_2 \cdot d + b_2) \cdot d + c_2, \quad \text{where } b_2 = -2 a_2 \hat{d}_a, \, c_2 = a_2 \hat{d}_a^2
+
+- If :math:`d \geq \hat{d}_a`:
+
+  .. math::
+     A_n(d) = 0
+
+The normal adhesion potential models the attraction force based on the distance between two surfaces.
+
+.. md-tab-set::
+    .. md-tab-item:: C++
+    
+        .. code-block:: c++
+    
+            const double dhat_p = 1e-3; // Peak adhesion distance
+            const double dhat_a = 2e-3; // Adhesion activation distance
+            const double a2 = -1.0;    // Adjustable parameter
+    
+            double potential = ipc::normal_adhesion_potential(d, dhat_p, dhat_a, a2);
+    
+            Eigen::VectorXd grad = ipc::normal_adhesion_potential_first_derivative(
+                d, dhat_p, dhat_a, a2);
+    
+            Eigen::SparseMatrix<double> hess = ipc::normal_adhesion_potential_second_derivative(
+                d, dhat_p, dhat_a, a2);
+    
+    .. md-tab-item:: Python
+    
+        .. code-block:: python
+    
+            dhat_p = 1e-3  # Peak adhesion distance
+            dhat_a = 2e-3  # Adhesion activation distance
+            a2 = -1.0      # Adjustable parameter
+    
+            potential = ipctk.normal_adhesion_potential(d, dhat_p, dhat_a, a2)
+    
+            grad = ipctk.normal_adhesion_potential_first_derivative(d, dhat_p, dhat_a, a2)
+    
+            hess = ipctk.normal_adhesion_potential_second_derivative(d, dhat_p, dhat_a, a2)
+
+Tangential Adhesion
+^^^^^^^^^^^^^^^
+
+The tangential adhesion potential models resistance to sliding (parallel to surfaces).
+
+For velocity :math:`y`:
+
+- If :math:`0 \leq y < 2 \varepsilon_a`:
+
+  .. math::
+     A_t(y) = \frac{y^2}{\varepsilon_a} \left(1 - \frac{y}{3 \varepsilon_a}\right)
+
+- If :math:`y \geq 2 \varepsilon_a`:
+
+  .. math::
+     A_t(y) = \frac{4 \varepsilon_a}{3}
+
+**Derivatives**:
+
+.. md-tab-set::
+
+.. md-tab-item:: C++
+
+    .. code-block:: c++
+
+        const double eps_a = 0.01; // Adhesion velocity threshold
+        ipc::TangentialAdhesionPotential tangential_adhesion(eps_a);
+
+        double potential = tangential_adhesion.evaluate(velocity);
+
+        Eigen::VectorXd grad = tangential_adhesion.gradient(velocity);
+
+        Eigen::SparseMatrix<double> hess = tangential_adhesion.hessian(velocity);
+
+.. md-tab-item:: Python
+
+    .. code-block:: python
+
+        eps_a = 0.01  # Adhesion velocity threshold
+        tangential_adhesion = ipctk.TangentialAdhesionPotential(eps_a)
+
+        potential = tangential_adhesion.evaluate(velocity)
+
+        grad = tangential_adhesion.gradient(velocity)
+
+        hess = tangential_adhesion.hessian(velocity)
+
 Continuous Collision Detection
 ------------------------------
 
