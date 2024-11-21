@@ -108,7 +108,7 @@ void TangentialCollisions::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const NormalCollisions& collisions,
-    const BarrierPotential& barrier_potential,
+    const NormalPotential& normal_potential,
     double barrier_stiffness,
     double mu,
     double s_mu,
@@ -130,10 +130,10 @@ void TangentialCollisions::build(
     const auto& C_fv = collisions.fv_collisions;
     auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
 
-     FC_vv.reserve(C_vv.size());
+    FC_vv.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
         FC_vv.emplace_back(
-            c_vv, c_vv.dof(vertices, edges, faces), barrier_potential,
+            c_vv, c_vv.dof(vertices, edges, faces), normal_potential,
             barrier_stiffness);
         const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
         setFrictionParams(FC_vv.back(), mu, s_mu, k_mu);
@@ -142,7 +142,7 @@ void TangentialCollisions::build(
     FC_ev.reserve(C_ev.size());
     for (const auto& c_ev : C_ev) {
         FC_ev.emplace_back(
-            c_ev, c_ev.dof(vertices, edges, faces), barrier_potential,
+            c_ev, c_ev.dof(vertices, edges, faces), normal_potential,
             barrier_stiffness);
         const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
         setFrictionParams(FC_ev.back(), mu, s_mu, k_mu);
@@ -162,7 +162,7 @@ void TangentialCollisions::build(
         }
 
         FC_ee.emplace_back(
-            c_ee, c_ee.dof(vertices, edges, faces), barrier_potential,
+            c_ee, c_ee.dof(vertices, edges, faces), normal_potential,
             barrier_stiffness);
 
         setFrictionParams(FC_ee.back(), mu, s_mu, k_mu);
@@ -171,7 +171,7 @@ void TangentialCollisions::build(
     FC_fv.reserve(C_fv.size());
     for (const auto& c_fv : C_fv) {
         FC_fv.emplace_back(
-            c_fv, c_fv.dof(vertices, edges, faces), barrier_potential,
+            c_fv, c_fv.dof(vertices, edges, faces), normal_potential,
             barrier_stiffness);
         const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
 
@@ -183,7 +183,7 @@ void TangentialCollisions::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const NormalCollisions& collisions,
-    const BarrierPotential& barrier_potential,
+    const NormalPotential& normal_potential,
     double barrier_stiffness,
     double mu,
     double s_mu,
@@ -215,7 +215,7 @@ void TangentialCollisions::build(
     FC_vv.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
         FC_vv.emplace_back(
-            c_vv, c_vv.dof(vertices, edges, faces), barrier_potential,
+            c_vv, c_vv.dof(vertices, edges, faces), normal_potential,
             barrier_stiffness);
         const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
 
@@ -230,7 +230,7 @@ void TangentialCollisions::build(
     FC_ev.reserve(C_ev.size());
     for (const auto& c_ev : C_ev) {
         FC_ev.emplace_back(
-            c_ev, c_ev.dof(vertices, edges, faces), barrier_potential,
+            c_ev, c_ev.dof(vertices, edges, faces), normal_potential,
             barrier_stiffness);
         const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
 
@@ -251,7 +251,7 @@ void TangentialCollisions::build(
         }
 
         FC_ee.emplace_back(
-            c_ee, c_ee.dof(vertices, edges, faces), barrier_potential,
+            c_ee, c_ee.dof(vertices, edges, faces), normal_potential,
             barrier_stiffness);
 
         const MaterialPairFriction* friction = getMaterialFriction(mat_ids[ea0i], mat_ids[eb0i]);
@@ -265,7 +265,7 @@ void TangentialCollisions::build(
     FC_fv.reserve(C_fv.size());
     for (const auto& c_fv : C_fv) {
         FC_fv.emplace_back(
-            c_fv, c_fv.dof(vertices, edges, faces), barrier_potential,
+            c_fv, c_fv.dof(vertices, edges, faces), normal_potential,
             barrier_stiffness);
         const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
 

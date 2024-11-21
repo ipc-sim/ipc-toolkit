@@ -143,6 +143,9 @@ protected:
     virtual double f0(const double x) const = 0;
     virtual double f1_over_x(const double x) const = 0;
     virtual double f2_x_minus_f1_over_x3(const double x) const = 0;
+    virtual double f0_mus(const double x, const double mu_s, const double mu_k) const = 0;
+    virtual double f1_over_x_mus(const double x, const double mu_s, const double mu_k) const = 0;
+    virtual double f2_x_minus_f1_over_x3_mus(const double x, const double mu_s, const double mu_k) const = 0;
     virtual bool is_dynamic(const double speed) const = 0;
 };
 
