@@ -478,32 +478,12 @@ The normal adhesion potential models the attraction force based on the distance 
     .. md-tab-item:: C++
     
         .. code-block:: c++
-    
-            const double dhat_p = 1e-3; // Peak adhesion distance
-            const double dhat_a = 2e-3; // Adhesion activation distance
-            const double a2 = -1.0;    // Adjustable parameter
-    
-            double potential = ipc::normal_adhesion_potential(d, dhat_p, dhat_a, a2);
-    
-            Eigen::VectorXd grad = ipc::normal_adhesion_potential_first_derivative(
-                d, dhat_p, dhat_a, a2);
-    
-            Eigen::SparseMatrix<double> hess = ipc::normal_adhesion_potential_second_derivative(
-                d, dhat_p, dhat_a, a2);
+
     
     .. md-tab-item:: Python
     
         .. code-block:: python
-    
-            dhat_p = 1e-3  # Peak adhesion distance
-            dhat_a = 2e-3  # Adhesion activation distance
-            a2 = -1.0      # Adjustable parameter
-    
-            potential = ipctk.normal_adhesion_potential(d, dhat_p, dhat_a, a2)
-    
-            grad = ipctk.normal_adhesion_potential_first_derivative(d, dhat_p, dhat_a, a2)
-    
-            hess = ipctk.normal_adhesion_potential_second_derivative(d, dhat_p, dhat_a, a2)
+
 
 Tangential Adhesion
 ^^^^^^^^^^^^^^^
@@ -531,26 +511,12 @@ For velocity :math:`y`:
     .. code-block:: c++
 
         const double eps_a = 0.01; // Adhesion velocity threshold
-        ipc::TangentialAdhesionPotential tangential_adhesion(eps_a);
-
-        double potential = tangential_adhesion.evaluate(velocity);
-
-        Eigen::VectorXd grad = tangential_adhesion.gradient(velocity);
-
-        Eigen::SparseMatrix<double> hess = tangential_adhesion.hessian(velocity);
 
 .. md-tab-item:: Python
 
     .. code-block:: python
 
         eps_a = 0.01  # Adhesion velocity threshold
-        tangential_adhesion = ipctk.TangentialAdhesionPotential(eps_a)
-
-        potential = tangential_adhesion.evaluate(velocity)
-
-        grad = tangential_adhesion.gradient(velocity)
-
-        hess = tangential_adhesion.hessian(velocity)
 
 Continuous Collision Detection
 ------------------------------
