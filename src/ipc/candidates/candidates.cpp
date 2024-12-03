@@ -318,8 +318,8 @@ double Candidates::compute_cfl_stepsize(
     // If alpha_F < 0.5 * alpha_C, then we should do full CCD.
     if (alpha_F < 0.5 * alpha_C) {
         return ipc::compute_collision_free_stepsize(
-            mesh, vertices_t0, vertices_t1, min_distance, //
-            broad_phase_method, narrow_phase_ccd);
+            mesh, vertices_t0, vertices_t1, min_distance, broad_phase_method,
+            narrow_phase_ccd);
     }
     return std::min(alpha_C, alpha_F);
 }
