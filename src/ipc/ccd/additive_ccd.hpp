@@ -17,6 +17,10 @@ namespace ipc {
 /// @brief Additive Continuous Collision Detection (CCD) from [Li et al. 2021].
 class AdditiveCCD : public NarrowPhaseCCD {
 public:
+    /// The default maximum number of iterations used with Tight-Inclusion CCD.
+    static constexpr long DEFAULT_MAX_ITERATIONS = 10'000'000l;
+    /// Unlimitted number of iterations.
+    static constexpr long UNLIMITTED_ITERATIONS = -1;
     /// The default conservative rescaling value used to avoid taking steps
     /// exactly to impact. Value choosen to based on [Li et al. 2021].
     static constexpr double DEFAULT_CONSERVATIVE_RESCALING = 0.9;
@@ -24,6 +28,7 @@ public:
     /// @brief Construct a new AdditiveCCD object.
     /// @param conservative_rescaling The conservative rescaling of the time of impact.
     AdditiveCCD(
+        const long max_iterations = UNLIMITTED_ITERATIONS,
         const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING);
 
     /// @brief Computes the time of impact between two points using continuous collision detection.
@@ -122,6 +127,9 @@ public:
         const double min_distance = 0.0,
         const double tmax = 1.0) const override;
 
+    /// @brief Maximum number of iterations.
+    long max_iterations;
+
     /// @brief The conservative rescaling value used to avoid taking steps exactly to impact.
     double conservative_rescaling;
 
@@ -133,15 +141,14 @@ private:
     /// @param tmax The maximum time to check for collisions.
     /// @param conservative_rescaling The amount to rescale the objects by to ensure conservative advancement.
     /// @return True if a collision was detected, false otherwise.
-    static bool additive_ccd(
+    bool additive_ccd(
         VectorMax12d x,
         const VectorMax12d& dx,
         const std::function<double(const VectorMax12d&)>& distance_squared,
         const double max_disp_mag,
         double& toi,
         const double min_distance = 0.0,
-        const double tmax = 1.0,
-        const double conservative_rescaling = DEFAULT_CONSERVATIVE_RESCALING);
+        const double tmax = 1.0) const;
 };
 
 } // namespace ipc
