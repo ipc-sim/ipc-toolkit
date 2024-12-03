@@ -9,13 +9,14 @@ void define_additive_ccd(py::module_& m)
 {
     py::class_<AdditiveCCD, NarrowPhaseCCD>(m, "AdditiveCCD")
         .def(
-            py::init<const double>(),
+            py::init<const double, const double>(),
             R"ipc_Qu8mg5v7(
             Construct a new AdditiveCCD object.
 
             Parameters:
                 conservative_rescaling: The conservative rescaling of the time of impact.
             )ipc_Qu8mg5v7",
+            py::arg("max_iterations") = AdditiveCCD::DEFAULT_MAX_ITERATIONS,
             py::arg("conservative_rescaling") =
                 AdditiveCCD::DEFAULT_CONSERVATIVE_RESCALING)
         .def_readonly_static(
