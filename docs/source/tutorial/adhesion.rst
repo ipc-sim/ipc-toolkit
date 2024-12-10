@@ -28,7 +28,7 @@ The normal adhesion potential models the attraction force based on the distance 
 Here dhat_p (:math:\hat{d}_p) is the threshold distance for adhesion (in units of distance) where the largest adhesion force is applied.
 Here dhat_a (:math:\hat{d}_a) is the adhesion activation distance (in units of distance), representing the maximum range where adhesion forces are active.
 Here Y (:math:Y) is the adhesion stiffness (in units of stress, such as Young's modulus), controlling the intensity of adhesion forces.
-Here eps_c (:math:\epsilon_c) is the adhesion coefficient (unitless, critical strain) that defines the critical strain at which adhesion forces decrease.
+Here eps_c (:math:\epsilon_c) is the adhesion coefficient (unitless) that defines the critical strain at which adhesion forces decrease.
 
 .. md-tab-set::
 
@@ -42,7 +42,7 @@ Here eps_c (:math:\epsilon_c) is the adhesion coefficient (unitless, critical st
                 const double eps_c = 0.5;
 
                 const NormalAdhesionPotential A(dhat_p, dhat_a, Y, eps_c)
-                double adhesion_potential = A(normal_collisions, collision_mesh, velocity);
+                double adhesion_potential = A(normal_collisions, collision_mesh, displacement);
 
     .. md-tab-item:: Python
 
@@ -54,12 +54,12 @@ Here eps_c (:math:\epsilon_c) is the adhesion coefficient (unitless, critical st
                 eps_c = 0.5
 
                 A = NormalAdhesionPotential(dhat_p, dhat_a, Y, eps_c)
-                adhesion_potential = A(normal_collisions, collision_mesh, velocity)
+                adhesion_potential = A(normal_collisions, collision_mesh, displacement)
 
 Normal Derivatives
 ^^^^^^^^^^^
 
-We can also compute the first and second derivatives of the normal adhesion potential with respect to the velocities.
+We can also compute the first and second derivatives of the normal adhesion potential with respect to the displacement.
 
 .. md-tab-set::
 
@@ -68,27 +68,27 @@ We can also compute the first and second derivatives of the normal adhesion pote
         .. code-block:: c++
 
             Eigen::VectorXd adhesion_potential_grad =
-                A.gradient(normal_collisions, collision_mesh, velocity);
+                A.gradient(normal_collisions, collision_mesh, displacement);
 
             Eigen::SparseMatrix<double> adhesion_potential_hess =
-                A.hessian(normal_collisions, collision_mesh, velocity);
+                A.hessian(normal_collisions, collision_mesh, displacement);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
             adhesion_potential_grad = A.gradient(
-                normal_collisions, collision_mesh, velocity)
+                normal_collisions, collision_mesh, displacement)
 
             adhesion_potential_hess = A.hessian(
-                normal_collisions, collision_mesh, velocity)
+                normal_collisions, collision_mesh, displacement)
 
 Tangential Adhesion
 ^^^^^^^^^^^^^^^
 
 The tangential adhesion potential models resistance to sliding (parallel to surfaces).
 
-For velocity :math:`y`:
+For displacement :math:`y`:
 
 - If :math:`0 \leq y < 2 \varepsilon_a`:
 
@@ -100,7 +100,7 @@ For velocity :math:`y`:
   .. math::
      A_t(y) = \frac{4 \varepsilon_a}{3}
 
-Here ``eps_a`` (:math:`\epsilon_a`) is the adhesion threshold (in units of velocity) used to smoothly transition.
+Here ``eps_a`` (:math:`\epsilon_a`) is the adhesion threshold (in units of displacement) used to smoothly transition.
 
 .. md-tab-set::
 
@@ -110,7 +110,7 @@ Here ``eps_a`` (:math:`\epsilon_a`) is the adhesion threshold (in units of veloc
 
             const double eps_a = 0.01;
             const TangentialAdhesionPotential A(eps_a);
-            double adhesion_potential = A(tangential_collisions, collision_mesh, velocity);
+            double adhesion_potential = A(tangential_collisions, collision_mesh, displacement);
     
     .. md-tab-item:: Python
 
@@ -118,12 +118,12 @@ Here ``eps_a`` (:math:`\epsilon_a`) is the adhesion threshold (in units of veloc
 
             eps_a = 0.01
             A = TangentialAdhesionPotential(eps_a)
-            adhesion_potential = A(tangential_collisions, collision_mesh, velocity);
+            adhesion_potential = A(tangential_collisions, collision_mesh, displacement);
 
 Derivatives
 ^^^^^^^^^^^
 
-We can also compute the first and second derivatives of the tangential adhesion potential with respect to the velocities.
+We can also compute the first and second derivatives of the tangential adhesion potential with respect to the displacement.
 
 .. md-tab-set::
 
@@ -132,17 +132,17 @@ We can also compute the first and second derivatives of the tangential adhesion 
         .. code-block:: c++
 
             Eigen::VectorXd adhesion_potential_grad =
-                A.gradient(tangential_collisions, collision_mesh, velocity);
+                A.gradient(tangential_collisions, collision_mesh, displacement);
 
             Eigen::SparseMatrix<double> adhesion_potential_hess =
-                A.hessian(tangential_collisions, collision_mesh, velocity);
+                A.hessian(tangential_collisions, collision_mesh, displacement);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
             adhesion_potential_grad = A.gradient(
-                tangential_collisions, collision_mesh, velocity)
+                tangential_collisions, collision_mesh, displacement)
 
             adhesion_potential_hess = A.hessian(
-                tangential_collisions, collision_mesh, velocity)
+                tangential_collisions, collision_mesh, displacement)
