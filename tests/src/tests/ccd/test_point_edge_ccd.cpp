@@ -29,7 +29,8 @@ void check_toi(
     CHECK(is_colliding);
     CHECK(toi <= toi_expected);
 
-    const AdditiveCCD additive_ccd(/*conservative_rescaling=*/0.99);
+    const AdditiveCCD additive_ccd(
+        AdditiveCCD::UNLIMITTED_ITERATIONS, /*conservative_rescaling=*/0.99);
     is_colliding = additive_ccd.point_edge_ccd(
         p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi);
     CHECK(is_colliding);
@@ -170,7 +171,8 @@ TEST_CASE("Point-edge CCD", "[ccd][point-edge]")
     //     CHECK(toi <= toi_expected);
     // }
 
-    const AdditiveCCD additive_ccd(/*conservative_rescaling=*/0.99);
+    const AdditiveCCD additive_ccd(
+        AdditiveCCD::DEFAULT_MAX_ITERATIONS, /*conservative_rescaling=*/0.99);
     is_colliding = additive_ccd.point_edge_ccd(
         p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, toi);
     REQUIRE(is_colliding == is_collision_expected);

@@ -173,8 +173,12 @@ VectorMax12d TangentialPotential::gradient(
 
     // μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u ∈ ℝⁿ
     // (n×2)(2×1) = (n×1)
+    double mu = (is_dynamic(u.norm()) && collision.k_mu != -1)
+                    ? collision.k_mu
+                    : (collision.s_mu != -1 ? collision.s_mu : collision.mu);
+
     return T
-        * ((collision.weight * collision.mu * collision.normal_force_magnitude
+        * ((collision.weight * mu * collision.normal_force_magnitude
             * f1_over_norm_u)
            * u);
 }
@@ -206,8 +210,12 @@ MatrixMax12d TangentialPotential::hessian(
                                 f1_over_x(norm_u);
 
     // Compute μ N(xᵗ)
+    double mu = (is_dynamic(u.norm()) && collision.k_mu != -1)
+                    ? collision.k_mu
+                    : (collision.s_mu != -1 ? collision.s_mu : collision.mu);
+
     const double scale =
-        collision.weight * collision.mu * collision.normal_force_magnitude;
+        collision.weight * mu * collision.normal_force_magnitude;
 
     MatrixMax12d hess;
     if (is_dynamic(norm_u)) {

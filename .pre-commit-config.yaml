@@ -9,4 +9,4 @@ repos:
         args:
           - --style=file
           - --verbose
-        files: '\.(c|cc|cpp|h|hpp|cxx|hh|inl|ipp)$'
+        files: '\.(c|cc|cpp|h|hpp|tpp|cxx|hh|inl|ipp)$'

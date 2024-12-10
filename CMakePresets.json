@@ -1,0 +1,151 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 
+  },
+  "configurePresets": [
+    {
+      "name": "base-release",
+      "hidden": true,
+      "description": "Base preset for release builds",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_STANDARD": "17"
+      }
+    },
+    {
+      "name": "base-debug",
+      "hidden": true,
+      "description": "Base preset for debug builds",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_STANDARD": "17"
+      }
+    },
+    {
+      "name": "default",
+      "inherits": "base-release",
+      "displayName": "Default Configuration",
+      "description": "Default build configuration",
+      "binaryDir": "${sourceDir}/build/default"
+    },
+    {
+      "name": "cuda",
+      "inherits": "base-release",
+      "displayName": "CUDA Enabled",
+      "description": "Build with CUDA support",
+      "binaryDir": "${sourceDir}/build/cuda",
+      "cacheVariables": {
+        "IPC_TOOLKIT_WITH_CUDA": "ON"
+      }
+    },
+    {
+      "name": "simd",
+      "inherits": "base-release",
+      "displayName": "SIMD Enabled",
+      "description": "Build with SIMD optimizations",
+      "binaryDir": "${sourceDir}/build/simd",
+      "cacheVariables": {
+        "IPC_TOOLKIT_WITH_SIMD": "ON"
+      }
+    },
+    {
+      "name": "test",
+      "inherits": "base-debug",
+      "displayName": "Build for Testing",
+      "description": "Build with unit tests enabled",
+      "binaryDir": "${sourceDir}/build/test",
+      "cacheVariables": {
+        "IPC_TOOLKIT_WITH_CUDA": "ON",
+        "IPC_TOOLKIT_BUILD_TESTS": "ON",
+        "IPC_TOOLKIT_BUILD_PYTHON": "OFF"
+      }
+    },
+    {
+      "name": "python",
+      "inherits": "base-release",
+      "displayName": "Python Bindings",
+      "description": "Build with Python bindings enabled",
+      "binaryDir": "${sourceDir}/build/python",
+      "cacheVariables": {
+        "IPC_TOOLKIT_BUILD_PYTHON": "ON",
+        "IPC_TOOLKIT_BUILD_TESTS": "OFF",
+        "IPC_TOOLKIT_WITH_SIMD": "OFF",
+        "IPC_TOOLKIT_WITH_CUDA": "OFF"
+      }
+    },
+    {
+      "name": "coverage",
+      "inherits": "base-debug",
+      "displayName": "Code Coverage",
+      "description": "Build for code coverage",
+      "binaryDir": "${sourceDir}/build/coverage",
+      "cacheVariables": {
+        "IPC_TOOLKIT_WITH_CODE_COVERAGE": "ON",
+        "IPC_TOOLKIT_BUILD_TESTS": "ON",
+
+      }
+    },
+    {
+      "name": "debug-cuda",
+      "inherits": [ "base-debug", "cuda" ],
+      "displayName": "CUDA Debug",
+      "description": "Debug build with CUDA support",
+      "binaryDir": "${sourceDir}/build/debug-cuda"
+    },
+  ],
+  "buildPresets": [
+    {
+      "name": "default-build",
+      "configurePreset": "default",
+      "description": "Build using default configuration"
+    },
+    {
+      "name": "cuda-build",
+      "configurePreset": "cuda",
+      "description": "Build with CUDA support"
+    },
+    {
+      "name": "test-build",
+      "configurePreset": "test",
+      "description": "Build for running tests"
+    },
+    {
+      "name": "python-build",
+      "configurePreset": "python",
+      "description": "Build with Python bindings enabled"
+    },
+    {
+      "name": "debug-cuda-build",
+      "configurePreset": "debug-cuda",
+      "description": "Debug build with CUDA support"
+    },
+  ],
+  "testPresets": [
+    {
+      "name": "default-tests",
+      "description": "Run default tests",
+      "configurePreset": "test",
+      "execution": {
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "cuda-tests",
+      "description": "Run tests with CUDA enabled",
+      "configurePreset": "cuda",
+      "execution": {
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "debug-cuda-tests",
+      "description": "Run tests with CUDA Debug configuration",
+      "configurePreset": "debug-cuda",
+      "execution": {
+        "stopOnFailure": true
+      }
+    }
+  ]
+}

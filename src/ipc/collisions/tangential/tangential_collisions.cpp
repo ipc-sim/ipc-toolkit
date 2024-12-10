@@ -278,6 +278,181 @@ void TangentialCollisions::build(
     }
 }
 
+
+void TangentialCollisions::build(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const NormalCollisions& collisions,
+    const BarrierPotential& barrier_potential,
+    double barrier_stiffness,
+    double mu,
+    double s_mu,
+    double k_mu)
+{
+    const Eigen::MatrixXi& edges = mesh.edges();
+    const Eigen::MatrixXi& faces = mesh.faces();
+    clear();
+
+    auto setFrictionParams = [](auto& collision, double g_mu, double g_s_mu, double g_k_mu) {
+        collision.mu = g_mu;
+        collision.s_mu = g_s_mu;
+        collision.k_mu = g_k_mu;
+    };
+
+    const auto& C_vv = collisions.vv_collisions;
+    const auto& C_ev = collisions.ev_collisions;
+    const auto& C_ee = collisions.ee_collisions;
+    const auto& C_fv = collisions.fv_collisions;
+    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
+
+     FC_vv.reserve(C_vv.size());
+    for (const auto& c_vv : C_vv) {
+        FC_vv.emplace_back(
+            c_vv, c_vv.dof(vertices, edges, faces), barrier_potential,
+            barrier_stiffness);
+        const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
+        setFrictionParams(FC_vv.back(), mu, s_mu, k_mu);
+    }
+
+    FC_ev.reserve(C_ev.size());
+    for (const auto& c_ev : C_ev) {
+        FC_ev.emplace_back(
+            c_ev, c_ev.dof(vertices, edges, faces), barrier_potential,
+            barrier_stiffness);
+        const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
+        setFrictionParams(FC_ev.back(), mu, s_mu, k_mu);
+    }
+
+    FC_ee.reserve(C_ee.size());
+    for (const auto& c_ee : C_ee) {
+        const auto& [ea0i, ea1i, eb0i, eb1i] = c_ee.vertex_ids(edges, faces);
+        const Eigen::Vector3d ea0 = vertices.row(ea0i);
+        const Eigen::Vector3d ea1 = vertices.row(ea1i);
+        const Eigen::Vector3d eb0 = vertices.row(eb0i);
+        const Eigen::Vector3d eb1 = vertices.row(eb1i);
+
+        // Skip EE collisions that are close to parallel
+        if (edge_edge_cross_squarednorm(ea0, ea1, eb0, eb1) < c_ee.eps_x) {
+            continue;
+        }
+
+        FC_ee.emplace_back(
+            c_ee, c_ee.dof(vertices, edges, faces), barrier_potential,
+            barrier_stiffness);
+
+        setFrictionParams(FC_ee.back(), mu, s_mu, k_mu);
+    }
+
+    FC_fv.reserve(C_fv.size());
+    for (const auto& c_fv : C_fv) {
+        FC_fv.emplace_back(
+            c_fv, c_fv.dof(vertices, edges, faces), barrier_potential,
+            barrier_stiffness);
+        const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
+
+        setFrictionParams(FC_fv.back(), mu, s_mu, k_mu);
+    }
+}
+
+void TangentialCollisions::build(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const NormalCollisions& collisions,
+    const BarrierPotential& barrier_potential,
+    double barrier_stiffness,
+    double mu,
+    double s_mu,
+    double k_mu,
+    const std::map<std::pair<int, int>, MaterialPairFriction>& material_pair_friction)
+{
+    const Eigen::MatrixXi& edges = mesh.edges();
+    const Eigen::MatrixXi& faces = mesh.faces();
+    const std::vector<int>& mat_ids = mesh.mat_ids();
+    clear();
+
+    auto getMaterialFriction = [&](int mat_id1, int mat_id2) -> const MaterialPairFriction* {
+        auto pair_key = std::make_pair(std::min(mat_id1, mat_id2), std::max(mat_id1, mat_id2));
+        return material_pair_friction.count(pair_key) ? &material_pair_friction.at(pair_key) : nullptr;
+    };
+
+    auto setFrictionParams = [](auto& collision, double mu, double s_mu, double k_mu) {
+        collision.mu = mu;
+        collision.s_mu = s_mu;
+        collision.k_mu = k_mu;
+    };
+
+    const auto& C_vv = collisions.vv_collisions;
+    const auto& C_ev = collisions.ev_collisions;
+    const auto& C_ee = collisions.ee_collisions;
+    const auto& C_fv = collisions.fv_collisions;
+    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
+
+    FC_vv.reserve(C_vv.size());
+    for (const auto& c_vv : C_vv) {
+        FC_vv.emplace_back(
+            c_vv, c_vv.dof(vertices, edges, faces), barrier_potential,
+            barrier_stiffness);
+        const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
+
+        const MaterialPairFriction* friction = getMaterialFriction(mat_ids[v0i], mat_ids[v1i]);
+        if (friction) {
+            setFrictionParams(FC_vv.back(), mu, friction->s_mu, friction->k_mu);
+        } else {
+            setFrictionParams(FC_vv.back(), mu, s_mu, k_mu);
+        }
+    }
+
+    FC_ev.reserve(C_ev.size());
+    for (const auto& c_ev : C_ev) {
+        FC_ev.emplace_back(
+            c_ev, c_ev.dof(vertices, edges, faces), barrier_potential,
+            barrier_stiffness);
+        const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
+
+        const MaterialPairFriction* friction = getMaterialFriction(mat_ids[vi], mat_ids[e0i]);
+        if (friction) {
+            setFrictionParams(FC_ev.back(), mu, friction->s_mu, friction->k_mu);
+        } else {
+            setFrictionParams(FC_ev.back(), mu, s_mu, k_mu);
+        }
+    }
+
+    FC_ee.reserve(C_ee.size());
+    for (const auto& c_ee : C_ee) {
+        const auto& [ea0i, ea1i, eb0i, eb1i] = c_ee.vertex_ids(edges, faces);
+
+        if (edge_edge_cross_squarednorm(vertices.row(ea0i), vertices.row(ea1i), vertices.row(eb0i), vertices.row(eb1i)) < c_ee.eps_x) {
+            continue;
+        }
+
+        FC_ee.emplace_back(
+            c_ee, c_ee.dof(vertices, edges, faces), barrier_potential,
+            barrier_stiffness);
+
+        const MaterialPairFriction* friction = getMaterialFriction(mat_ids[ea0i], mat_ids[eb0i]);
+        if (friction) {
+            setFrictionParams(FC_ee.back(), mu, friction->s_mu, friction->k_mu);
+        } else {
+            setFrictionParams(FC_ee.back(), mu, s_mu, k_mu);
+        }
+    }
+
+    FC_fv.reserve(C_fv.size());
+    for (const auto& c_fv : C_fv) {
+        FC_fv.emplace_back(
+            c_fv, c_fv.dof(vertices, edges, faces), barrier_potential,
+            barrier_stiffness);
+        const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
+
+        const MaterialPairFriction* friction = getMaterialFriction(mat_ids[vi], mat_ids[f0i]);
+        if (friction) {
+            setFrictionParams(FC_fv.back(), mu, friction->s_mu, friction->k_mu);
+        } else {
+            setFrictionParams(FC_fv.back(), mu, s_mu, k_mu);
+        }
+    }
+}
+
 // ============================================================================
 
 size_t TangentialCollisions::size() const
