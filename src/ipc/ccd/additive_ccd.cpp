@@ -9,6 +9,7 @@
 //  • return true if the initial distance is less than the minimum distance
 //  • add an explicit tmax parameter rather than relying on the initial value of
 //    toi
+//  • add a maximum number of iterations to limit the computation time
 //
 // NOTE: These methods are provided for reference comparison with [Li et al.
 // 2021] and is not utilized by the high-level functionality. In compairson to
@@ -60,8 +61,10 @@ namespace {
     }
 } // namespace
 
-AdditiveCCD::AdditiveCCD(const double _conservative_rescaling)
-    : conservative_rescaling(_conservative_rescaling)
+AdditiveCCD::AdditiveCCD(
+    const long _max_iterations, const double _conservative_rescaling)
+    : max_iterations(_max_iterations)
+    , conservative_rescaling(_conservative_rescaling)
 {
 }
 
@@ -72,8 +75,7 @@ bool AdditiveCCD::additive_ccd(
     const double max_disp_mag,
     double& toi,
     const double min_distance,
-    const double tmax,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     assert(conservative_rescaling > 0 && conservative_rescaling <= 1);
 
@@ -87,9 +89,14 @@ bool AdditiveCCD::additive_ccd(
     assert(d_func > 0);
     const double gap = // (d - ξ) = (d² - ξ²) / (d + ξ)
         (1 - conservative_rescaling) * d_func / (d + min_distance);
+    if (gap < std::numeric_limits<double>::epsilon()) {
+        logger().warn(
+            "Small gap {:g} ≤ ε in Additive CCD can lead to missed collisions",
+            gap);
+    }
 
     toi = 0;
-    while (true) {
+    for (long i = 0; max_iterations < 0 || i < max_iterations; ++i) {
         // tₗ = η ⋅ (d - ξ) / lₚ = η ⋅ (d² - ξ²) / (lₚ ⋅ (d + ξ))
         const double toi_lower_bound = conservative_rescaling * d_func
             / ((d + min_distance) * max_disp_mag);
@@ -107,6 +114,12 @@ bool AdditiveCCD::additive_ccd(
         toi += toi_lower_bound;
         if (toi > tmax) {
             return false; // collision occurs after tmax
+        }
+
+        if (max_iterations < 0 && i == DEFAULT_MAX_ITERATIONS) {
+            logger().warn(
+                "Slow convergence in Additive CCD. Perhaps the gap is too small (gap={:g})?",
+                gap);
         }
     }
 
@@ -151,8 +164,7 @@ bool AdditiveCCD::point_point_ccd(
     const VectorMax12d dx = stack(dp0, dp1);
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
-        conservative_rescaling);
+        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax);
 }
 
 bool AdditiveCCD::point_edge_ccd(
@@ -199,8 +211,7 @@ bool AdditiveCCD::point_edge_ccd(
     const VectorMax12d dx = stack(dp, de0, de1);
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
-        conservative_rescaling);
+        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax);
 }
 
 bool AdditiveCCD::point_triangle_ccd(
@@ -248,8 +259,7 @@ bool AdditiveCCD::point_triangle_ccd(
     const VectorMax12d dx = stack(dp, dt0, dt1, dt2);
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
-        conservative_rescaling);
+        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax);
 }
 
 bool AdditiveCCD::edge_edge_ccd(
@@ -310,8 +320,7 @@ bool AdditiveCCD::edge_edge_ccd(
     const VectorMax12d dx = stack(dea0, dea1, deb0, deb1);
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
-        conservative_rescaling);
+        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax);
 }
 
 } // namespace ipc

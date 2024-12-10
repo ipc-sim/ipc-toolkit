@@ -28,7 +28,8 @@ TEST_CASE("Point-point CCD", "[ccd][point-point]")
     CHECK(is_colliding);
     CHECK(toi == Catch::Approx(0.5).margin(1e-3));
 
-    const AdditiveCCD additive_ccd(/*conservative_rescaling=*/0.999);
+    const AdditiveCCD additive_ccd(
+        AdditiveCCD::UNLIMITTED_ITERATIONS, /*conservative_rescaling=*/0.999);
     is_colliding = additive_ccd.point_point_ccd(
         p0_t0, p1_t0, p0_t1, p1_t1, toi, min_distance);
 
