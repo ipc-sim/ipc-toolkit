@@ -88,17 +88,17 @@ Tangential Adhesion
 
 The tangential adhesion potential models resistance to sliding (parallel to surfaces).
 
-For displacement :math:`y`:
+For displacement :math:`x`:
 
-- If :math:`0 \leq y < 2 \varepsilon_a`:
-
-  .. math::
-     A_t(y) = \frac{y^2}{\varepsilon_a} \left(1 - \frac{y}{3 \varepsilon_a}\right)
-
-- If :math:`y \geq 2 \varepsilon_a`:
+- If :math:`0 \leq x < 2 \varepsilon_a`:
 
   .. math::
-     A_t(y) = \frac{4 \varepsilon_a}{3}
+     A_t(x) = \frac{x^2}{\varepsilon_a} \left(1 - \frac{y}{3 \varepsilon_a}\right)
+
+- If :math:`x \geq 2 \varepsilon_a`:
+
+  .. math::
+     A_t(x) = \frac{4 \varepsilon_a}{3}
 
 Here ``eps_a`` (:math:`\epsilon_a`) is the adhesion threshold (in units of displacement) used to smoothly transition.
 
