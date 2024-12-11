@@ -68,6 +68,8 @@ public:
     long vertex0_id;
     /// @brief ID of the second vertex
     long vertex1_id;
+    /// @brief Set the mat pair of the candidate
+    std::pair<int, int> mat_pair = {-1, -1};
 };
 
 } // namespace ipc

@@ -111,7 +111,7 @@ bool has_intersections(
 
         // narrow-phase using igl
         igl::predicates::exactinit();
-        for (const auto& [ea_id, eb_id] : ee_candidates) {
+        for (const auto& [ea_id, eb_id, mat_pair] : ee_candidates) {
             if (igl::predicates::segment_segment_intersect(
                     vertices.row(mesh.edges()(ea_id, 0)).head<2>(),
                     vertices.row(mesh.edges()(ea_id, 1)).head<2>(),
@@ -128,7 +128,7 @@ bool has_intersections(
         broad_phase->detect_edge_face_candidates(ef_candidates);
         broad_phase->clear();
 
-        for (const auto& [e_id, f_id] : ef_candidates) {
+        for (const auto& [e_id, f_id, mat_pair] : ef_candidates) {
             if (is_edge_intersecting_triangle(
                     vertices.row(mesh.edges()(e_id, 0)),
                     vertices.row(mesh.edges()(e_id, 1)),
