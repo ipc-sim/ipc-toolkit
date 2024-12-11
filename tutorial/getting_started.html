@@ -601,6 +601,21 @@
   
   
     <li class="md-nav__item">
+      <a href="adhesion.html" class="md-nav__link">
+        <span title="/tutorial/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="simulation.html" class="md-nav__link">
         <span title="/tutorial/simulation.rst (reference label)" class="md-ellipsis">Physical Simulation</span>
       </a>
@@ -1540,8 +1555,8 @@ Python</label></div>
 </div><p>This returns a scalar value <code class="docutils literal notranslate"><span class="pre">barrier_potential</span></code> which is the sum of the barrier potentials for each active collision.</p>
 <p>Mathematically this is defined as</p>
 <div class="math notranslate nohighlight">
-\[B(x) = \sum_{k \in C} b(d_k(x), \hat{d}),\]</div>
-<p>where <span class="math notranslate nohighlight">\(x\)</span> is our deformed vertex positions, <span class="math notranslate nohighlight">\(C\)</span> is the active collisions, <span class="math notranslate nohighlight">\(d_k\)</span> is the distance (squared) of the <span class="math notranslate nohighlight">\(k\)</span>-th active collision, and <span class="math notranslate nohighlight">\(b\)</span> is IPC’s C2-clamped log-barrier function.</p>
+\[B(\mathbf{x}) = \sum_{k \in C} b(d_k(\mathbf{x}); \hat{d}),\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> is our deformed vertex positions, <span class="math notranslate nohighlight">\(C\)</span> is the active collisions, <span class="math notranslate nohighlight">\(d_k\)</span> is the distance (squared) of the <span class="math notranslate nohighlight">\(k\)</span>-th active collision, and <span class="math notranslate nohighlight">\(b\)</span> is IPC’s C2-clamped log-barrier function.</p>
 <div class="note admonition">
 <p class="admonition-title">Note</p>
 <p>This is <strong>not</strong> premultiplied by the barrier stiffness <span class="math notranslate nohighlight">\(\kappa\)</span>.</p>
@@ -1784,13 +1799,13 @@ C++</label><label class="tabbed-label" for="__tabbed_9_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="k">const</span><span class="w"> </span><span class="n">FrictionPotential</span><span class="w"> </span><span class="nf">D</span><span class="p">(</span><span class="n">eps_v</span><span class="p">);</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="k">const</span><span class="w"> </span><span class="n">ipc</span><span class="o">::</span><span class="n">FrictionPotential</span><span class="w"> </span><span class="nf">D</span><span class="p">(</span><span class="n">eps_v</span><span class="p">);</span>
 <span class="kt">double</span><span class="w"> </span><span class="n">friction_potential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">D</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">velocity</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">D</span> <span class="o">=</span> <span class="n">FrictionPotential</span><span class="p">(</span><span class="n">eps_v</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">D</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">FrictionPotential</span><span class="p">(</span><span class="n">eps_v</span><span class="p">)</span>
 <span class="n">friction_potential</span> <span class="o">=</span> <span class="n">D</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">velocity</span><span class="p">)</span>
 </code></pre></div>
 </div>
@@ -1801,14 +1816,14 @@ Python</label></div>
 <p class="admonition-title">Important</p>
 <p>The friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is</p>
 <div class="math notranslate nohighlight">
-\[v = \frac{x - x^t}{h},\]</div>
-<p>where <span class="math notranslate nohighlight">\(x\)</span> is the current position, <span class="math notranslate nohighlight">\(x^t\)</span> is the previous position, and <span class="math notranslate nohighlight">\(h\)</span> is the time step size.</p>
+\[\mathbf{v} = \frac{\mathbf{x} - \mathbf{x}^t}{h},\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{x}\)</span> is the current position, <span class="math notranslate nohighlight">\(\mathbf{x}^t\)</span> is the previous position, and <span class="math notranslate nohighlight">\(h\)</span> is the time step size.</p>
 </div>
 <p>This returns a scalar value <code class="docutils literal notranslate"><span class="pre">friction_potential</span></code> which is the sum of the individual friction potentials.</p>
 <p>Mathematically this is defined as</p>
 <div class="math notranslate nohighlight">
-\[D(v) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|T_k^\top v\|, \epsilon_v\right),\]</div>
-<p>where <span class="math notranslate nohighlight">\(C\)</span> is the lagged collisions, <span class="math notranslate nohighlight">\(\lambda_k^n\)</span> is the normal force magnitude for the <span class="math notranslate nohighlight">\(k\)</span>-th collision, <span class="math notranslate nohighlight">\(T_k\)</span> is the tangential basis for the <span class="math notranslate nohighlight">\(k\)</span>-th collision, and <span class="math notranslate nohighlight">\(f_0\)</span> is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.</p>
+\[D(\mathbf{v}) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|\mathbf{T}_k^\top \mathbf{v}\|; \epsilon_v\right),\]</div>
+<p>where <span class="math notranslate nohighlight">\(C\)</span> is the lagged collisions, <span class="math notranslate nohighlight">\(\lambda_k^n\)</span> is the normal force magnitude for the <span class="math notranslate nohighlight">\(k\)</span>-th collision, <span class="math notranslate nohighlight">\(\mathbf{T}_k\)</span> is the tangential basis for the <span class="math notranslate nohighlight">\(k\)</span>-th collision, and <span class="math notranslate nohighlight">\(f_0\)</span> is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.</p>
 <h3 id="derivatives">Derivatives<a class="headerlink" href="#derivatives" title="Permalink to this heading">¶</a></h3>
 <p>We can also compute the first and second derivatives of the friction dissipative potential with respect to the velocities.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="10:2">

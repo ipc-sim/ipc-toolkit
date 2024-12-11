@@ -64,6 +64,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#normal-adhesion" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -206,10 +211,12 @@
         
   
   
+    
+  
 
 
   <li class="md-tabs__item">
-    <a href="getting_started.html" class="md-tabs__link">
+    <a href="getting_started.html" class="md-tabs__link md-tabs__link--active">
       <span class="md-ellipsis">Tutorial</span>
     </a>
   </li>
@@ -377,12 +384,14 @@
 
   
   
+    
+  
   
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
       
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
       
       
       
@@ -438,6 +447,94 @@
       <a href="nonlinear_ccd.html" class="md-nav__link">
         <span title="/tutorial/nonlinear_ccd.rst (reference label)" class="md-ellipsis">Nonlinear CCD</span>
       </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          <span title="/tutorial/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
+        <span title="/tutorial/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#normal-adhesion" class="md-nav__link">
+    <span title="/tutorial/adhesion.rst#normal-adhesion (reference label)" class="md-ellipsis">Normal Adhesion</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Normal Adhesion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#derivatives" class="md-nav__link">
+    <span title="/tutorial/adhesion.rst#derivatives (reference label)" class="md-ellipsis">Derivatives</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tangential-adhesion" class="md-nav__link">
+    <span title="/tutorial/adhesion.rst#tangential-adhesion (reference label)" class="md-ellipsis">Tangential Adhesion</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tangential Adhesion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id2" class="md-nav__link">
+    <span title="/tutorial/adhesion.rst#id2 (reference label)" class="md-ellipsis">Derivatives</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1126,6 +1223,54 @@
   
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#normal-adhesion" class="md-nav__link">
+    <span title="/tutorial/adhesion.rst#normal-adhesion (reference label)" class="md-ellipsis">Normal Adhesion</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Normal Adhesion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#derivatives" class="md-nav__link">
+    <span title="/tutorial/adhesion.rst#derivatives (reference label)" class="md-ellipsis">Derivatives</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tangential-adhesion" class="md-nav__link">
+    <span title="/tutorial/adhesion.rst#tangential-adhesion (reference label)" class="md-ellipsis">Tangential Adhesion</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tangential Adhesion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#id2" class="md-nav__link">
+    <span title="/tutorial/adhesion.rst#id2 (reference label)" class="md-ellipsis">Derivatives</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1144,29 +1289,30 @@
   </a>
 
 <h1 id="adhesion">Adhesion<a class="headerlink" href="#adhesion" title="Permalink to this heading">¶</a></h1>
-<p>Adhesion simulates the sticking interaction between surfaces, such as glue bonding or material contact.
-Provides functionality to compute normal adhesion (perpendicular forces) and tangential adhesion (parallel forces).</p>
+<p>Adhesion simulates the sticking interaction between surfaces, such as glue bonding or material contact.</p>
+<p>We provide functionality to compute normal adhesion (perpendicular forces) and tangential adhesion (parallel forces) using the model of <span id="id1">[<a class="reference internal" href="references.html#id10" title="Yu Fang, Minchen Li, Yadi Cao, Xuan Li, Joshuah Wolper, Yin Yang, and Chenfanfu Jiang. Augmented incremental potential contact for sticky interactions. IEEE Transactions on Visualization and Computer Graphics, 30(8):5596-5608, 2024. doi:10.1109/TVCG.2023.3295656.">Fang <em>et al.</em>, 2024</a>]</span>.</p>
 <h2 id="normal-adhesion">Normal Adhesion<a class="headerlink" href="#normal-adhesion" title="Permalink to this heading">¶</a></h2>
-<p>For a given distance <span class="math notranslate nohighlight">\(d\)</span>:</p>
-<ul>
-<li><p>If <span class="math notranslate nohighlight">\(d &lt; \hat{d}_p\)</span>:</p>
-<div class="math notranslate nohighlight">
-\[A_n(d) = a_1 \cdot d^2 + c_1, \quad \text{where } a_1 = a_2 \left(1 - \frac{\hat{d}_a}{\hat{d}_p}\right)\]</div>
-</li>
-<li><p>If <span class="math notranslate nohighlight">\(\hat{d}_p \leq d &lt; \hat{d}_a\)</span>:</p>
-<div class="math notranslate nohighlight">
-\[A_n(d) = (a_2 \cdot d + b_2) \cdot d + c_2, \quad \text{where } b_2 = -2 a_2 \hat{d}_a, \, c_2 = a_2 \hat{d}_a^2\]</div>
-</li>
-<li><p>If <span class="math notranslate nohighlight">\(d \geq \hat{d}_a\)</span>:</p>
-<div class="math notranslate nohighlight">
-\[A_n(d) = 0\]</div>
-</li>
-</ul>
 <p>The normal adhesion potential models the attraction force based on the distance between two surfaces.</p>
-<p>Here dhat_p (:math:hat{d}_p) is the threshold distance for adhesion (in units of distance) where the largest adhesion force is applied.
-Here dhat_a (:math:hat{d}_a) is the adhesion activation distance (in units of distance), representing the maximum range where adhesion forces are active.
-Here Y (:math:Y) is the adhesion stiffness (in units of stress, such as Young’s modulus), controlling the intensity of adhesion forces.
-Here eps_c (:math:epsilon_c) is the adhesion coefficient (unitless) that defines the critical strain at which adhesion forces decrease.</p>
+<div class="math notranslate nohighlight">
+\[A_n(\mathbf{x}) = \sum_{k \in C} a(d_k(\mathbf{x}); \hat{d}_p, \hat{d}_a, Y, \epsilon_c)\]</div>
+<p>For a given distance <span class="math notranslate nohighlight">\(d\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}a(d)= \begin{cases}
+a_2\left(1-\frac{\hat{d}_a}{\hat{d}_p}\right) d^2+a_2\left(\hat{d}_a-\hat{d}_p\right)^2-d_p^2 a_1 &amp; 0&lt;d&lt;\hat{d}_p \\
+a_2 d^2 - 2 a_2 \hat{d}_a d+a_2 \hat{d}_a^2 &amp; \hat{d}_p \leq d&lt;\hat{d}_a \\
+0 &amp; \hat{d}_a \leq d
+\end{cases}\end{split}\]</div>
+<p>and</p>
+<div class="math notranslate nohighlight">
+\[a_2=\frac{Y \varepsilon_c}{2\left(\hat{d}_p-\hat{d}_a\right)}.\]</div>
+<p>The parameters are:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\hat{d}_p\)</span> (<code class="docutils literal notranslate"><span class="pre">dhat_p</span></code>) is the threshold distance for adhesion (in units of distance) where the largest adhesion force is applied</p></li>
+<li><p><span class="math notranslate nohighlight">\(\hat{d}_a\)</span> (<code class="docutils literal notranslate"><span class="pre">dhat_a</span></code>) is the adhesion activation distance (in units of distance), representing the maximum range where adhesion forces are active</p></li>
+<li><p><span class="math notranslate nohighlight">\(Y\)</span> (<code class="docutils literal notranslate"><span class="pre">Y</span></code>) is the adhesion stiffness (in units of stress, such as Young’s modulus), controlling the intensity of adhesion forces</p></li>
+<li><p><span class="math notranslate nohighlight">\(\epsilon_c\)</span> (<code class="docutils literal notranslate"><span class="pre">eps_c</span></code>) is the adhesion coefficient (unitless) that defines the critical strain at which adhesion forces decrease</p></li>
+</ul>
+<p>We can build a normal adhesion potential object and compute the adhesion potential for a given set of normal collisions.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2">
 <input checked type="radio" id="__tabbed_1_1" name="__tabbed_1"><input type="radio" id="__tabbed_1_2" name="__tabbed_1"><div class="tabbed-labels docutils">
 <label class="tabbed-label" for="__tabbed_1_1">
@@ -1179,8 +1325,8 @@ Python</label></div>
 <span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">Y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e3</span><span class="p">;</span>
 <span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">eps_c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span>
 
-<span class="k">const</span><span class="w"> </span><span class="n">NormalAdhesionPotential</span><span class="w"> </span><span class="nf">A</span><span class="p">(</span><span class="n">dhat_p</span><span class="p">,</span><span class="w"> </span><span class="n">dhat_a</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">eps_c</span><span class="p">)</span>
-<span class="kt">double</span><span class="w"> </span><span class="n">adhesion_potential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A</span><span class="p">(</span><span class="n">normal_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">displacement</span><span class="p">);</span>
+<span class="k">const</span><span class="w"> </span><span class="n">ipc</span><span class="o">::</span><span class="n">NormalAdhesionPotential</span><span class="w"> </span><span class="nf">A_n</span><span class="p">(</span><span class="n">dhat_p</span><span class="p">,</span><span class="w"> </span><span class="n">dhat_a</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="n">eps_c</span><span class="p">)</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">adhesion_potential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A_n</span><span class="p">(</span><span class="n">normal_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
@@ -1190,14 +1336,14 @@ Python</label></div>
 <span class="n">Y</span> <span class="o">=</span> <span class="mf">1e3</span>
 <span class="n">eps_c</span> <span class="o">=</span> <span class="mf">0.5</span>
 
-<span class="n">A</span> <span class="o">=</span> <span class="n">NormalAdhesionPotential</span><span class="p">(</span><span class="n">dhat_p</span><span class="p">,</span> <span class="n">dhat_a</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">eps_c</span><span class="p">)</span>
-<span class="n">adhesion_potential</span> <span class="o">=</span> <span class="n">A</span><span class="p">(</span><span class="n">normal_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">displacement</span><span class="p">)</span>
+<span class="n">A_n</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">NormalAdhesionPotential</span><span class="p">(</span><span class="n">dhat_p</span><span class="p">,</span> <span class="n">dhat_a</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">eps_c</span><span class="p">)</span>
+<span class="n">adhesion_potential</span> <span class="o">=</span> <span class="n">A_n</span><span class="p">(</span><span class="n">normal_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
 </div>
-</div><h2 id="normal-derivatives">Normal Derivatives<a class="headerlink" href="#normal-derivatives" title="Permalink to this heading">¶</a></h2>
-<p>We can also compute the first and second derivatives of the normal adhesion potential with respect to the displacement.</p>
+</div><h3 id="derivatives">Derivatives<a class="headerlink" href="#derivatives" title="Permalink to this heading">¶</a></h3>
+<p>We can also compute the first and second derivatives of the normal adhesion potential with respect to the vertex positions.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:2">
 <input checked type="radio" id="__tabbed_2_1" name="__tabbed_2"><input type="radio" id="__tabbed_2_2" name="__tabbed_2"><div class="tabbed-labels docutils">
 <label class="tabbed-label" for="__tabbed_2_1">
@@ -1206,37 +1352,35 @@ Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="n">adhesion_potential_grad</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="n">A</span><span class="p">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">normal_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">displacement</span><span class="p">);</span>
+<span class="w">    </span><span class="n">A_n</span><span class="p">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">normal_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">);</span>
 
 <span class="n">Eigen</span><span class="o">::</span><span class="n">SparseMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">adhesion_potential_hess</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="n">A</span><span class="p">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">normal_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">displacement</span><span class="p">);</span>
+<span class="w">    </span><span class="n">A_n</span><span class="p">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">normal_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">vertices</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">adhesion_potential_grad</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span>
-    <span class="n">normal_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">displacement</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">adhesion_potential_grad</span> <span class="o">=</span> <span class="n">A_n</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">normal_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
 
-<span class="n">adhesion_potential_hess</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span>
-    <span class="n">normal_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">displacement</span><span class="p">)</span>
+<span class="n">adhesion_potential_hess</span> <span class="o">=</span> <span class="n">A_n</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">normal_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">vertices</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
 </div>
 </div><h2 id="tangential-adhesion">Tangential Adhesion<a class="headerlink" href="#tangential-adhesion" title="Permalink to this heading">¶</a></h2>
 <p>The tangential adhesion potential models resistance to sliding (parallel to surfaces).</p>
-<p>For displacement <span class="math notranslate nohighlight">\(x\)</span>:</p>
-<ul>
-<li><p>If <span class="math notranslate nohighlight">\(0 \leq x &lt; 2 \varepsilon_a\)</span>:</p>
+<p>It is structured similar to the friction model with a smooth transition between sticking and sliding and lagged normal forces and tangential bases.</p>
 <div class="math notranslate nohighlight">
-\[A_t(x) = \frac{x^2}{\varepsilon_a} \left(1 - \frac{y}{3 \varepsilon_a}\right)\]</div>
-</li>
-<li><p>If <span class="math notranslate nohighlight">\(x \geq 2 \varepsilon_a\)</span>:</p>
+\[A_{t}(\mathbf{u}) = \sum_{k \in C} \mu_a \lambda_{k}^a f_{0}^a(\|\mathbf{T}_k^⊤ \mathbf{u}\|; \epsilon_a)\]</div>
+<p>where <span class="math notranslate nohighlight">\(C\)</span> is the lagged collisions, <span class="math notranslate nohighlight">\(\lambda_k^a\)</span> is the normal adhesion force magnitude for the <span class="math notranslate nohighlight">\(k\)</span>-th collision, <span class="math notranslate nohighlight">\(\mathbf{T}_k\)</span> is the tangential basis for the <span class="math notranslate nohighlight">\(k\)</span>-th collision, and <span class="math notranslate nohighlight">\(f_0^a\)</span> is the smooth tangential adhesion function used to approximate the non-smooth transition from sticking to sliding.</p>
+<p>For relative displacement magnitude <span class="math notranslate nohighlight">\(y\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[A_t(x) = \frac{4 \varepsilon_a}{3}\]</div>
-</li>
-</ul>
-<p>Here <code class="docutils literal notranslate"><span class="pre">eps_a</span></code> (<span class="math notranslate nohighlight">\(\epsilon_a\)</span>) is the adhesion threshold (in units of displacement) used to smoothly transition.</p>
+\[\begin{split}f_0^a(y) = \begin{cases}
+-\frac{y^3}{3\epsilon_a^2} + \frac{y^2}{\epsilon_a} &amp; 0 &lt; y &lt; 2 \epsilon_a \\
+\frac{4 \epsilon_a}{3} &amp; 2 \epsilon_a \leq y
+\end{cases}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\epsilon_a\)</span> (<code class="docutils literal notranslate"><span class="pre">eps_a</span></code>) is the adhesion threshold (in units of displacement) used to smoothly transition from sticking to sliding.</p>
+<p>We can build a tangential adhesion potential object and compute the adhesion potential for a given set of tangential collisions.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="3:2">
 <input checked type="radio" id="__tabbed_3_1" name="__tabbed_3"><input type="radio" id="__tabbed_3_2" name="__tabbed_3"><div class="tabbed-labels docutils">
 <label class="tabbed-label" for="__tabbed_3_1">
@@ -1245,20 +1389,20 @@ Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">eps_a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.01</span><span class="p">;</span>
-<span class="k">const</span><span class="w"> </span><span class="n">TangentialAdhesionPotential</span><span class="w"> </span><span class="nf">A</span><span class="p">(</span><span class="n">eps_a</span><span class="p">);</span>
-<span class="kt">double</span><span class="w"> </span><span class="n">adhesion_potential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">displacement</span><span class="p">);</span>
+<span class="k">const</span><span class="w"> </span><span class="n">ipc</span><span class="o">::</span><span class="n">TangentialAdhesionPotential</span><span class="w"> </span><span class="nf">A_t</span><span class="p">(</span><span class="n">eps_a</span><span class="p">);</span>
+<span class="kt">double</span><span class="w"> </span><span class="n">adhesion_potential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A_t</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">displacement</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">eps_a</span> <span class="o">=</span> <span class="mf">0.01</span>
-<span class="n">A</span> <span class="o">=</span> <span class="n">TangentialAdhesionPotential</span><span class="p">(</span><span class="n">eps_a</span><span class="p">)</span>
-<span class="n">adhesion_potential</span> <span class="o">=</span> <span class="n">A</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">displacement</span><span class="p">);</span>
+<span class="n">A_t</span> <span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">TangentialAdhesionPotential</span><span class="p">(</span><span class="n">eps_a</span><span class="p">)</span>
+<span class="n">adhesion_potential</span> <span class="o">=</span> <span class="n">A_t</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">displacement</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 </div>
-</div><h2 id="derivatives">Derivatives<a class="headerlink" href="#derivatives" title="Permalink to this heading">¶</a></h2>
+</div><h3 id="id2">Derivatives<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h3>
 <p>We can also compute the first and second derivatives of the tangential adhesion potential with respect to the displacement.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="4:2">
 <input checked type="radio" id="__tabbed_4_1" name="__tabbed_4"><input type="radio" id="__tabbed_4_2" name="__tabbed_4"><div class="tabbed-labels docutils">
@@ -1268,19 +1412,17 @@ Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">Eigen</span><span class="o">::</span><span class="n">VectorXd</span><span class="w"> </span><span class="n">adhesion_potential_grad</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="n">A</span><span class="p">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">displacement</span><span class="p">);</span>
+<span class="w">    </span><span class="n">A_t</span><span class="p">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">displacement</span><span class="p">);</span>
 
 <span class="n">Eigen</span><span class="o">::</span><span class="n">SparseMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="w"> </span><span class="n">adhesion_potential_hess</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="n">A</span><span class="p">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">displacement</span><span class="p">);</span>
+<span class="w">    </span><span class="n">A_t</span><span class="p">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span><span class="w"> </span><span class="n">collision_mesh</span><span class="p">,</span><span class="w"> </span><span class="n">displacement</span><span class="p">);</span>
 </code></pre></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">adhesion_potential_grad</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span>
-    <span class="n">tangential_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">displacement</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="n">adhesion_potential_grad</span> <span class="o">=</span> <span class="n">A_t</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">displacement</span><span class="p">)</span>
 
-<span class="n">adhesion_potential_hess</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span>
-    <span class="n">tangential_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">displacement</span><span class="p">)</span>
+<span class="n">adhesion_potential_hess</span> <span class="o">=</span> <span class="n">A_t</span><span class="o">.</span><span class="n">hessian</span><span class="p">(</span><span class="n">tangential_collisions</span><span class="p">,</span> <span class="n">collision_mesh</span><span class="p">,</span> <span class="n">displacement</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -1318,6 +1460,42 @@ Python</label></div>
       </main>
       
         <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="nonlinear_ccd.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Nonlinear CCD" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Nonlinear CCD
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="simulation.html" class="md-footer__link md-footer__link--next" aria-label="Next: Physical Simulation" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Physical Simulation
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
   
   
   
