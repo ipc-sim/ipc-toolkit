@@ -497,6 +497,33 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#interval-based-nonlinear-ccd" class="md-nav__link">
+    <span title="/tutorial/nonlinear_ccd.rst#interval-based-nonlinear-ccd (reference label)" class="md-ellipsis">Interval-<wbr>Based Nonlinear CCD</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interval-Based Nonlinear CCD">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conservative-envelope" class="md-nav__link">
+    <span title="/tutorial/nonlinear_ccd.rst#conservative-envelope (reference label)" class="md-ellipsis">Conservative Envelope</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interval-arithmetic" class="md-nav__link">
+    <span title="/tutorial/nonlinear_ccd.rst#interval-arithmetic (reference label)" class="md-ellipsis">Interval Arithmetic</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -832,6 +859,21 @@
   
   
     <li class="md-nav__item">
+      <a href="../cpp-api/interval.html" class="md-nav__link">
+        <span title="/cpp-api/interval.rst (reference label)" class="md-ellipsis">Interval Arithmetic</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../cpp-api/utils.html" class="md-nav__link">
         <span title="/cpp-api/utils.rst (reference label)" class="md-ellipsis">Utils</span>
       </a>
@@ -1091,6 +1133,21 @@
   
   
     <li class="md-nav__item">
+      <a href="../python-api/interval.html" class="md-nav__link">
+        <span title="/python-api/interval.rst (reference label)" class="md-ellipsis">Interval Arithmetic</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../python-api/utils.html" class="md-nav__link">
         <span title="/python-api/utils.rst (reference label)" class="md-ellipsis">Utils</span>
       </a>
@@ -1231,6 +1288,33 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#interval-based-nonlinear-ccd" class="md-nav__link">
+    <span title="/tutorial/nonlinear_ccd.rst#interval-based-nonlinear-ccd (reference label)" class="md-ellipsis">Interval-<wbr>Based Nonlinear CCD</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interval-Based Nonlinear CCD">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#conservative-envelope" class="md-nav__link">
+    <span title="/tutorial/nonlinear_ccd.rst#conservative-envelope (reference label)" class="md-ellipsis">Conservative Envelope</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interval-arithmetic" class="md-nav__link">
+    <span title="/tutorial/nonlinear_ccd.rst#interval-arithmetic (reference label)" class="md-ellipsis">Interval Arithmetic</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1251,7 +1335,8 @@
   </a>
 
 <h1 id="nonlinear-ccd">Nonlinear CCD<a class="headerlink" href="#nonlinear-ccd" title="Permalink to this heading">¶</a></h1>
-<p>We can also perform CCD of nonlinear trajectories (of linear geometry) using the method of <span id="id1">Ferguson <em>et al.</em> [<a class="reference internal" href="references.html#id8" title="Zachary Ferguson, Minchen Li, Teseo Schneider, Francisca Gil-Ureta, Timothy Langlois, Chenfanfu Jiang, Denis Zorin, Danny M. Kaufman, and Daniele Panozzo. Intersection-free rigid body dynamics. ACM Transactions on Graphics (SIGGRAPH), 2021. https://ipc-sim.github.io/rigid-ipc.">2021</a>]</span>. While <span id="id2">Ferguson <em>et al.</em> [<a class="reference internal" href="references.html#id8" title="Zachary Ferguson, Minchen Li, Teseo Schneider, Francisca Gil-Ureta, Timothy Langlois, Chenfanfu Jiang, Denis Zorin, Danny M. Kaufman, and Daniele Panozzo. Intersection-free rigid body dynamics. ACM Transactions on Graphics (SIGGRAPH), 2021. https://ipc-sim.github.io/rigid-ipc.">2021</a>]</span> introduce their method in the context of rigid bodies, it can be applied to any nonlinear trajectory of linear geometry. The method works by transforming the nonlinear trajectories into (adaptive) piecewise linear trajectories with an envelope/minimum separation around each piece, enclosing the nonlinear trajectory. The method then performs CCD on the piecewise linear trajectories to find the earliest time of impact.</p>
+<p>We also implement CCD of nonlinear trajectories (of linear geometry) using the method of <span id="id1">Ferguson <em>et al.</em> [<a class="reference internal" href="references.html#id8" title="Zachary Ferguson, Minchen Li, Teseo Schneider, Francisca Gil-Ureta, Timothy Langlois, Chenfanfu Jiang, Denis Zorin, Danny M. Kaufman, and Daniele Panozzo. Intersection-free rigid body dynamics. ACM Transactions on Graphics (SIGGRAPH), 2021. https://ipc-sim.github.io/rigid-ipc.">2021</a>]</span>. While <span id="id2">Ferguson <em>et al.</em> [<a class="reference internal" href="references.html#id8" title="Zachary Ferguson, Minchen Li, Teseo Schneider, Francisca Gil-Ureta, Timothy Langlois, Chenfanfu Jiang, Denis Zorin, Danny M. Kaufman, and Daniele Panozzo. Intersection-free rigid body dynamics. ACM Transactions on Graphics (SIGGRAPH), 2021. https://ipc-sim.github.io/rigid-ipc.">2021</a>]</span> introduce their method in the context of rigid bodies, it can be applied to any nonlinear trajectory of linear geometry.</p>
+<p>The method works by transforming the nonlinear trajectories into (adaptive) piecewise linear trajectories with an envelope/minimum separation around each piece, enclosing the nonlinear trajectory. The method then performs CCD on the piecewise linear trajectories to find the earliest time of impact.</p>
 <p>We provide the following functions to perform nonlinear CCD:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2">
 <input checked type="radio" id="__tabbed_1_1" name="__tabbed_1"><input type="radio" id="__tabbed_1_2" name="__tabbed_1"><div class="tabbed-labels docutils">
@@ -1266,7 +1351,7 @@ Python</label></div>
 <li><p><a class="reference internal" href="../cpp-api/ccd.html#_CPPv4N3ipc23edge_edge_nonlinear_ccdERK19NonlinearTrajectoryRK19NonlinearTrajectoryRK19NonlinearTrajectoryRK19NonlinearTrajectoryRdKdKdKdKlKd" title="ipc::edge_edge_nonlinear_ccd (C++ function) — Perform nonlinear CCD between two linear edges moving along nonlinear trajectories."><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ipc::edge_edge_nonlinear_ccd()</span></code></a>, and</p></li>
 <li><p><a class="reference internal" href="../cpp-api/ccd.html#_CPPv4N3ipc28point_triangle_nonlinear_ccdERK19NonlinearTrajectoryRK19NonlinearTrajectoryRK19NonlinearTrajectoryRK19NonlinearTrajectoryRdKdKdKdKlKd" title="ipc::point_triangle_nonlinear_ccd (C++ function) — Perform nonlinear CCD between a point and a linear triangle moving along nonlinear trajectories."><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ipc::point_triangle_nonlinear_ccd()</span></code></a>.</p></li>
 </ul>
-<p>Each of these functions take as input a <a class="desctype reference internal" href="../cpp-api/ccd.html#_CPPv4N3ipc19NonlinearTrajectoryE" title="ipc::NonlinearTrajectory (C++ class) — Inheritence diagram for ipc::NonlinearTrajectory:"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ipc::NonlinearTrajectory()</span></code></a> object for the endpoints of the linear geometry.</p>
+<p>Each of these functions take as input a <a class="desctype reference internal" href="../cpp-api/ccd.html#_CPPv4N3ipc19NonlinearTrajectoryE" title="ipc::NonlinearTrajectory (C++ class) — Inheritence diagram for ipc::NonlinearTrajectory:"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ipc::NonlinearTrajectory</span></code></a> object for the endpoints of the linear geometry.</p>
 </div>
 <div class="tabbed-block docutils">
 <ul class="simple">
@@ -1275,7 +1360,7 @@ Python</label></div>
 <li><p><a class="reference internal" href="../python-api/ccd.html#ipctk.edge_edge_nonlinear_ccd" title="ipctk.edge_edge_nonlinear_ccd (Python function) — Perform nonlinear CCD between two linear edges moving along nonlinear trajectories."><code class="xref py py-func docutils literal notranslate"><span class="pre">ipctk.edge_edge_nonlinear_ccd()</span></code></a>, and</p></li>
 <li><p><a class="reference internal" href="../python-api/ccd.html#ipctk.point_triangle_nonlinear_ccd" title="ipctk.point_triangle_nonlinear_ccd (Python function) — Perform nonlinear CCD between a point and a linear triangle moving along nonlinear trajectories."><code class="xref py py-func docutils literal notranslate"><span class="pre">ipctk.point_triangle_nonlinear_ccd()</span></code></a>.</p></li>
 </ul>
-<p>Each of these functions take as input a <a class="reference internal" href="../python-api/ccd.html#ipctk.NonlinearTrajectory" title="ipctk.NonlinearTrajectory (Python class) — Bases: pybind11_object"><code class="xref py py-func docutils literal notranslate"><span class="pre">ipctk.NonlinearTrajectory()</span></code></a> object for the endpoints of the linear geometry.</p>
+<p>Each of these functions take as input a <a class="reference internal" href="../python-api/ccd.html#ipctk.NonlinearTrajectory" title="ipctk.NonlinearTrajectory (Python class) — Bases: pybind11_object"><code class="xref py py-class docutils literal notranslate"><span class="pre">ipctk.NonlinearTrajectory</span></code></a> object for the endpoints of the linear geometry.</p>
 </div>
 </div>
 </div><p>For example, the following code defines a rigid trajectory in 2D in order to perform nonlinear CCD between a point and edge:</p>
@@ -1362,7 +1447,7 @@ Python</label></div>
 </div>
 </div>
 </div><h2 id="defining-the-trajectory">Defining the Trajectory<a class="headerlink" href="#defining-the-trajectory" title="Permalink to this heading">¶</a></h2>
-<p>Let’s dive deeper by breaking down the implementation of Rigid2DTrajectory. The first function we need to implement is the call operator:</p>
+<p>Let’s dive deeper by breaking down the implementation of <code class="docutils literal notranslate"><span class="pre">Rigid2DTrajectory</span></code>. The first function we need to implement is the call operator:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="3:2">
 <input checked type="radio" id="__tabbed_3_1" name="__tabbed_3"><input type="radio" id="__tabbed_3_2" name="__tabbed_3"><div class="tabbed-labels docutils">
 <label class="tabbed-label" for="__tabbed_3_1">
@@ -1382,11 +1467,11 @@ Python</label></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code>    <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_rotation</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_rotation</span>
     <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)],</span>
                   <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)]])</span>
     <span class="k">return</span> <span class="n">R</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">translation</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_translation</span>
-
 </code></pre></div>
 </div>
 </div>
@@ -1420,13 +1505,13 @@ Python</label></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code>    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_rotation</span> <span class="o">*</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">max_distance_from_linear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_rotation</span> <span class="o">*</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
         <span class="c1"># This is the most conservative estimate</span>
         <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>  <span class="c1"># 2 * radius</span>
     <span class="n">p_t0</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
     <span class="n">p_t1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="p">((</span><span class="n">t0</span> <span class="o">+</span> <span class="n">t1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="p">((</span><span class="n">p_t1</span> <span class="o">-</span> <span class="n">p_t0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">p_t0</span><span class="p">))</span>
-<span class="n">D_RIGID_2D_TRAJECTORY</span>
 </code></pre></div>
 </div>
 </div>
@@ -1496,14 +1581,96 @@ Python</label></div>
 <p class="admonition-title">Note</p>
 <p>We adjust the <code class="docutils literal notranslate"><span class="pre">conservative_rescaling</span></code> parameter to get a more accurate time of impact (TOI), but in practice, this is not needed as a more conservative estimate of the TOI is sufficient to avoid penetrations.</p>
 </div>
+<h2 id="interval-based-nonlinear-ccd">Interval-Based Nonlinear CCD<a class="headerlink" href="#interval-based-nonlinear-ccd" title="Permalink to this heading">¶</a></h2>
+<div class="warning admonition">
+<p class="admonition-title">Warning</p>
+<p>The following section requires enabling the <code class="docutils literal notranslate"><span class="pre">filib</span></code> interval arithmetic library. <code class="docutils literal notranslate"><span class="pre">filib</span></code> is licensed under L-GPL 2.1, so special care must be taken when using it. See the <a class="reference external" href="../../cpp.html#filib-dependency-note">filib dependency note</a> for more information.</p>
+</div>
+<p>If an analytic expression for the <code class="docutils literal notranslate"><span class="pre">max_distance_from_linear</span></code> function is not available, we can use interval arithmetic to compute a conservative envelope.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:2">
+<input checked type="radio" id="__tabbed_6_1" name="__tabbed_6"><input type="radio" id="__tabbed_6_2" name="__tabbed_6"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_6_1">
+C++</label><label class="tabbed-label" for="__tabbed_6_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<p>The <a class="desctype reference internal" href="../cpp-api/ccd.html#_CPPv4N3ipc27IntervalNonlinearTrajectoryE" title="ipc::IntervalNonlinearTrajectory (C++ class) — Inheritence diagram for ipc::IntervalNonlinearTrajectory:"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">ipc::IntervalNonlinearTrajectory</span></code></a> class does this for us and all we need to provide is a function to compute the point’s position over a time interval.</p>
+</div>
+<div class="tabbed-block docutils">
+<p>The <a class="reference internal" href="../python-api/ccd.html#ipctk.IntervalNonlinearTrajectory" title="ipctk.IntervalNonlinearTrajectory (Python class) — Bases: NonlinearTrajectory"><code class="xref py py-class docutils literal notranslate"><span class="pre">ipctk.IntervalNonlinearTrajectory</span></code></a> class does this for us and all we need to provide is a function to compute the point’s position over a time interval.</p>
+</div>
+</div>
+</div><h3 id="conservative-envelope">Conservative Envelope<a class="headerlink" href="#conservative-envelope" title="Permalink to this heading">¶</a></h3>
+<p>Our implementation of the <code class="docutils literal notranslate"><span class="pre">max_distance_from_linear</span></code> function is as follows.</p>
+<p>Start by defining a linear interpolation function:</p>
+<div class="math notranslate nohighlight">
+\[\operatorname{lerp}(a, b, t) := (b - a) t + a,\]</div>
+<p>which interpolates between two points <span class="math notranslate nohighlight">\(a\)</span> and <span class="math notranslate nohighlight">\(b\)</span> at time <span class="math notranslate nohighlight">\(t\)</span>.</p>
+<p>The exact envelope from above is bounded by a interval approximation:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align}
+&amp;\max_{t \in [0, 1]} \| p(\operatorname{lerp}(t_0, t_1, t)) - \operatorname{lerp}(p(t_0), p(t_1), t) \|_2\\
+&amp;\leq \sup(\| p_{\Box}([t_0, t_1]) - ((p(t_1) - p(t_0)) \cdot [0, 1] + p(t_0)) \|_2).
+\end{align}\end{split}\]</div>
+<p>Therefore, we can compute the a conservative estimate of the envelope by implementing <span class="math notranslate nohighlight">\(p_{\Box}([t_0, t_1])\)</span> and <span class="math notranslate nohighlight">\(p(t)\)</span>.</p>
+<div class="note admonition">
+<p class="admonition-title">Note</p>
+<p>In practice we subdivide the interval into smaller intervals and compute the envelope over each subinterval. This is done to create a more accurate estimate.</p>
+</div>
+<h3 id="interval-arithmetic">Interval Arithmetic<a class="headerlink" href="#interval-arithmetic" title="Permalink to this heading">¶</a></h3>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Interval_arithmetic">Interval arithmetic</a> is a method to compute bounds on the range of a function over an interval. We can construct a vector of intervals to represent the position of the point over a time interval.</p>
+<p>The following code snippet shows an example of how to use interval arithmetic to compute the position of a point over a time interval:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2">
+<input checked type="radio" id="__tabbed_7_1" name="__tabbed_7"><input type="radio" id="__tabbed_7_2" name="__tabbed_7"><div class="tabbed-labels docutils">
+<label class="tabbed-label" for="__tabbed_7_1">
+C++</label><label class="tabbed-label" for="__tabbed_7_2">
+Python</label></div>
+<div class="tabbed-content docutils">
+<div class="tabbed-block docutils">
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><code><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/utils/interval.hpp&gt;</span>
 
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ipc</span><span class="p">;</span>
+
+<span class="n">Vector2I</span><span class="w"> </span><span class="nf">position</span><span class="p">(</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">VectorMax3d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">center</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">VectorMax3d</span><span class="o">&amp;</span><span class="w"> </span><span class="n">point</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">omega</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Interval</span><span class="o">&amp;</span><span class="w"> </span><span class="n">t</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// 2×2 matrix of intervals representing the rotation matrix</span>
+<span class="w">    </span><span class="n">Matrix2I</span><span class="w"> </span><span class="n">R</span><span class="p">;</span>
+<span class="w">    </span><span class="n">R</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">cos</span><span class="p">(</span><span class="n">omega</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="p">),</span><span class="w"> </span><span class="o">-</span><span class="n">sin</span><span class="p">(</span><span class="n">omega</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="p">),</span>
+<span class="w">         </span><span class="n">sin</span><span class="p">(</span><span class="n">omega</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="p">),</span><span class="w">  </span><span class="n">cos</span><span class="p">(</span><span class="n">omega</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">t</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">R</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">point</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">center</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">center</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+</div>
+<p>The full documentation for the <code class="docutils literal notranslate"><span class="pre">Interval</span></code> class can be found <a class="reference external" href="../../cpp-api/interval.html">here</a>.</p>
+</div>
+<div class="tabbed-block docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">ipctk.filib</span> <span class="kn">import</span> <span class="n">Interval</span><span class="p">,</span> <span class="n">sin</span><span class="p">,</span> <span class="n">cos</span>
+
+<span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">t</span> <span class="p">:</span> <span class="n">Interval</span><span class="p">):</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="p">[</span><span class="n">cos</span><span class="p">(</span><span class="n">omega</span> <span class="o">*</span> <span class="n">t</span><span class="p">),</span> <span class="o">-</span><span class="n">sin</span><span class="p">(</span><span class="n">omega</span> <span class="o">*</span> <span class="n">t</span><span class="p">)],</span>
+        <span class="p">[</span><span class="n">sin</span><span class="p">(</span><span class="n">omega</span> <span class="o">*</span> <span class="n">t</span><span class="p">),</span>  <span class="n">cos</span><span class="p">(</span><span class="n">omega</span> <span class="o">*</span> <span class="n">t</span><span class="p">)]</span>
+    <span class="p">])</span>
+    <span class="k">return</span> <span class="n">R</span> <span class="o">@</span> <span class="p">(</span><span class="n">point</span> <span class="o">-</span> <span class="n">center</span><span class="p">)</span> <span class="o">+</span> <span class="n">center</span>
+</code></pre></div>
+</div>
+<p>The full documentation for the filib python bindings can be found <a class="reference external" href="../python-api/interval.html">here</a>.</p>
+</div>
+</div>
+</div>
 
   <hr>
 <div class="md-source-file">
   <small>
     
       Last update:
-      Dec 11, 2024
+      Dec 12, 2024
     
   </small>
 </div>

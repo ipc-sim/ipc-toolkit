@@ -1,0 +1,2171 @@
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      <link rel="icon" href="../_static/favicon.ico">
+    
+    
+      
+        <title>Interval Arithmetic - IPC Toolkit</title>
+      
+    
+    
+      
+        
+        
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.b454d0e296e565629.min.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_CPPv4N5filib8IntervalE" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../index.html" title="IPC Toolkit" class="md-header__button md-logo" aria-label="IPC Toolkit" data-md-component="logo">
+      <img src="../_static/hammer-wrench.svg" alt="logo">
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IPC Toolkit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Interval Arithmetic
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7 0-.24-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91 1.61 0 2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08Z"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/ipc-sim/ipc-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ipc-sim/ipc-toolkit
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../index.html" class="md-tabs__link">
+      <span class="md-ellipsis">General</span>
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../tutorial/getting_started.html" class="md-tabs__link">
+      <span class="md-ellipsis">Tutorial</span>
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../cpp.html" class="md-tabs__link md-tabs__link--active">
+      <span class="md-ellipsis">C++</span>
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../python.html" class="md-tabs__link">
+      <span class="md-ellipsis">Python</span>
+    </a>
+  </li>
+
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../contributing.html" class="md-tabs__link">
+      <span class="md-ellipsis">Developers</span>
+    </a>
+  </li>
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../index.html" title="IPC Toolkit" class="md-nav__button md-logo" aria-label="IPC Toolkit" data-md-component="logo">
+      <img src="../_static/hammer-wrench.svg" alt="logo">
+    </a>
+    IPC Toolkit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/ipc-sim/ipc-toolkit" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    ipc-sim/ipc-toolkit
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_1">
+          <span class="md-ellipsis">General</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="General" data-md-level="1">
+        <label class="md-nav__title" for="__nav_1">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">General</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../index.html" class="md-nav__link">
+        <span title="/index.rst (reference label)" class="md-ellipsis">Home</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog.html" class="md-nav__link">
+        <span title="/changelog.rst (reference label)" class="md-ellipsis">Changelog</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../license.html" class="md-nav__link">
+        <span title="/license.rst (reference label)" class="md-ellipsis">License</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2">
+          <span class="md-ellipsis">Tutorial</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Tutorial" data-md-level="1">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Tutorial</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/getting_started.html" class="md-nav__link">
+        <span title="/tutorial/getting_started.rst (reference label)" class="md-ellipsis">Getting Started</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/convergent.html" class="md-nav__link">
+        <span title="/tutorial/convergent.rst (reference label)" class="md-ellipsis">Convergent Formulation</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/nonlinear_ccd.html" class="md-nav__link">
+        <span title="/tutorial/nonlinear_ccd.rst (reference label)" class="md-ellipsis">Nonlinear CCD</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/adhesion.html" class="md-nav__link">
+        <span title="/tutorial/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/simulation.html" class="md-nav__link">
+        <span title="/tutorial/simulation.rst (reference label)" class="md-ellipsis">Physical Simulation</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/misc.html" class="md-nav__link">
+        <span title="/tutorial/misc.rst (reference label)" class="md-ellipsis">Miscellaneous</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/faq.html" class="md-nav__link">
+        <span title="/tutorial/faq.rst (reference label)" class="md-ellipsis">Frequently Asked Questions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial/references.html" class="md-nav__link">
+        <span title="/tutorial/references.rst (reference label)" class="md-ellipsis">References</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3">
+          <span class="md-ellipsis">C++</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="C++" data-md-level="1">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">C++</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cpp.html" class="md-nav__link">
+        <span title="/cpp.rst (reference label)" class="md-ellipsis">Getting Started</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="potentials.html" class="md-nav__link">
+        <span title="/cpp-api/potentials.rst (reference label)" class="md-ellipsis">Potentials</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="collision_mesh.html" class="md-nav__link">
+        <span title="/cpp-api/collision_mesh.rst (reference label)" class="md-ellipsis">Collision Mesh</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="candidates.html" class="md-nav__link">
+        <span title="/cpp-api/candidates.rst (reference label)" class="md-ellipsis">Candidates</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="normal_collisions.html" class="md-nav__link">
+        <span title="/cpp-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tangential_collisions.html" class="md-nav__link">
+        <span title="/cpp-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="friction.html" class="md-nav__link">
+        <span title="/cpp-api/friction.rst (reference label)" class="md-ellipsis">Friction</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="broad_phase.html" class="md-nav__link">
+        <span title="/cpp-api/broad_phase.rst (reference label)" class="md-ellipsis">Broad Phase</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ccd.html" class="md-nav__link">
+        <span title="/cpp-api/ccd.rst (reference label)" class="md-ellipsis">Continuous Collision Detection</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="distance.html" class="md-nav__link">
+        <span title="/cpp-api/distance.rst (reference label)" class="md-ellipsis">Distance</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tangent.html" class="md-nav__link">
+        <span title="/cpp-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="barrier.html" class="md-nav__link">
+        <span title="/cpp-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="adhesion.html" class="md-nav__link">
+        <span title="/cpp-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="intersections.html" class="md-nav__link">
+        <span title="/cpp-api/intersections.rst (reference label)" class="md-ellipsis">Intersections</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          <span title="/cpp-api/interval.rst (reference label)" class="md-ellipsis">Interval Arithmetic</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="#" class="md-nav__link md-nav__link--active">
+        <span title="/cpp-api/interval.rst (reference label)" class="md-ellipsis">Interval Arithmetic</span>
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8IntervalE" class="md-nav__link">
+    <span aria-label="C++ class" class="objinfo-icon objinfo-icon__data" title="C++ class">C</span><span title="filib::Interval (C++ class) — Interval type." class="md-ellipsis">Interval</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interval">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#breathe-section-title-public-functions" class="md-nav__link">
+    <span class="md-ellipsis">Public Functions</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalERK8interval" class="md-nav__link">
+    <span aria-label="C++ function" class="objinfo-icon objinfo-icon__procedure" title="C++ function">F</span><span title="filib::Interval::Interval (C++ function) — Construct an Interval from a filib interval." class="md-ellipsis">Interval</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interval">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalERK8interval-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalERK8interval-p-i" class="md-nav__link">
+    <span aria-label="C++ function parameter" class="objinfo-icon objinfo-icon__sub-data" title="C++ function parameter">p</span><span title="filib::Interval::Interval::i (C++ function parameter) — The filib interval" class="md-ellipsis">i</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEv" class="md-nav__link">
+    <span aria-label="C++ function" class="objinfo-icon objinfo-icon__procedure" title="C++ function">F</span><span title="filib::Interval::Interval (C++ function) — Construct an empty Interval." class="md-ellipsis">Interval</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEd" class="md-nav__link">
+    <span aria-label="C++ function" class="objinfo-icon objinfo-icon__procedure" title="C++ function">F</span><span title="filib::Interval::Interval (C++ function) — Construct an Interval from a single value." class="md-ellipsis">Interval</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interval">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEd-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEd-p-x" class="md-nav__link">
+    <span aria-label="C++ function parameter" class="objinfo-icon objinfo-icon__sub-data" title="C++ function parameter">p</span><span title="filib::Interval::Interval::x (C++ function parameter) — The value" class="md-ellipsis">x</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEdd" class="md-nav__link">
+    <span aria-label="C++ function" class="objinfo-icon objinfo-icon__procedure" title="C++ function">F</span><span title="filib::Interval::Interval (C++ function) — Construct an Interval from two values." class="md-ellipsis">Interval</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interval">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEdd-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEdd-p-x" class="md-nav__link">
+    <span aria-label="C++ function parameter" class="objinfo-icon objinfo-icon__sub-data" title="C++ function parameter">p</span><span title="filib::Interval::Interval::x (C++ function parameter) — The infimum value" class="md-ellipsis">x</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEdd-p-y" class="md-nav__link">
+    <span aria-label="C++ function parameter" class="objinfo-icon objinfo-icon__sub-data" title="C++ function parameter">p</span><span title="filib::Interval::Interval::y (C++ function parameter) — The supremum value" class="md-ellipsis">y</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#helper-functions" class="md-nav__link">
+    <span title="/cpp-api/interval.rst#helper-functions (reference label)" class="md-ellipsis">Helper Functions</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Helper Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE" class="md-nav__link">
+    <span aria-label="C++ function" class="objinfo-icon objinfo-icon__procedure" title="C++ function">F</span><span title="ipc::norm (C++ function) — Compute the L2 norm of a n-dimensional interval." class="md-ellipsis">ipc::<wbr>norm</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipc::norm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE-p-v" class="md-nav__link">
+    <span aria-label="C++ function parameter" class="objinfo-icon objinfo-icon__sub-data" title="C++ function parameter">p</span><span title="ipc::norm::v (C++ function parameter) — The n-dimensional interval" class="md-ellipsis">v</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE" class="md-nav__link">
+    <span aria-label="C++ function" class="objinfo-icon objinfo-icon__procedure" title="C++ function">F</span><span title="ipc::squared_norm (C++ function) — Compute the squared L2 norm of an n-dimensional interval." class="md-ellipsis">ipc::<wbr>squared_<wbr>norm</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipc::squared_norm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE-p-v" class="md-nav__link">
+    <span aria-label="C++ function parameter" class="objinfo-icon objinfo-icon__sub-data" title="C++ function parameter">p</span><span title="ipc::squared_norm::v (C++ function parameter) — The n-dimensional interval" class="md-ellipsis">v</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-definitions" class="md-nav__link">
+    <span title="/cpp-api/interval.rst#type-definitions (reference label)" class="md-ellipsis">Type Definitions</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc8Vector2IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::Vector2I (C++ type) — 2D vector of intervals" class="md-ellipsis">ipc::<wbr>Vector2I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc8Vector3IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::Vector3I (C++ type) — 3D vector of intervals" class="md-ellipsis">ipc::<wbr>Vector3I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc8VectorXIE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::VectorXI (C++ type) — Dynamic vector of intervals." class="md-ellipsis">ipc::<wbr>Vector<wbr>XI</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc11RowVector2IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::RowVector2I (C++ type) — 2D row vector of intervals" class="md-ellipsis">ipc::<wbr>Row<wbr>Vector2I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc11RowVector3IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::RowVector3I (C++ type) — 3D row vector of intervals" class="md-ellipsis">ipc::<wbr>Row<wbr>Vector3I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc11RowVectorXIE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::RowVectorXI (C++ type) — Dynamic row vector of intervals." class="md-ellipsis">ipc::<wbr>Row<wbr>Vector<wbr>XI</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc8Matrix2IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::Matrix2I (C++ type) — 2x2 matrix of intervals" class="md-ellipsis">ipc::<wbr>Matrix2I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc8Matrix3IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::Matrix3I (C++ type) — 3x3 matrix of intervals" class="md-ellipsis">ipc::<wbr>Matrix3I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc8MatrixXIE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::MatrixXI (C++ type) — Dynamic matrix of intervals." class="md-ellipsis">ipc::<wbr>Matrix<wbr>XI</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc11VectorMax3IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::VectorMax3I (C++ type) — Dynamic vector of intervals with a maximum size of 3." class="md-ellipsis">ipc::<wbr>Vector<wbr>Max3I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc14RowVectorMax3IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::RowVectorMax3I (C++ type) — Dynamic row vector of intervals with a maximum size of 3." class="md-ellipsis">ipc::<wbr>Row<wbr>Vector<wbr>Max3I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc11MatrixMax3IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::MatrixMax3I (C++ type) — Dynamic matrix of intervals with a maximum size of 3x3." class="md-ellipsis">ipc::<wbr>Matrix<wbr>Max3I</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="utils.html" class="md-nav__link">
+        <span title="/cpp-api/utils.rst (reference label)" class="md-ellipsis">Utils</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4">
+          <span class="md-ellipsis">Python</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Python" data-md-level="1">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Python</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python.html" class="md-nav__link">
+        <span title="/python.rst (reference label)" class="md-ellipsis">Getting Started</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/potentials.html" class="md-nav__link">
+        <span title="/python-api/potentials.rst (reference label)" class="md-ellipsis">Potentials</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/collision_mesh.html" class="md-nav__link">
+        <span title="/python-api/collision_mesh.rst (reference label)" class="md-ellipsis">Collision Mesh</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/candidates.html" class="md-nav__link">
+        <span title="/python-api/candidates.rst (reference label)" class="md-ellipsis">Candidates</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/normal_collisions.html" class="md-nav__link">
+        <span title="/python-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/tangential_collisions.html" class="md-nav__link">
+        <span title="/python-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/friction.html" class="md-nav__link">
+        <span title="/python-api/friction.rst (reference label)" class="md-ellipsis">Friction</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/broad_phase.html" class="md-nav__link">
+        <span title="/python-api/broad_phase.rst (reference label)" class="md-ellipsis">Broad Phase</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/ccd.html" class="md-nav__link">
+        <span title="/python-api/ccd.rst (reference label)" class="md-ellipsis">Continuous Collision Detection</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/distance.html" class="md-nav__link">
+        <span title="/python-api/distance.rst (reference label)" class="md-ellipsis">Distance</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/tangent.html" class="md-nav__link">
+        <span title="/python-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/barrier.html" class="md-nav__link">
+        <span title="/python-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/adhesion.html" class="md-nav__link">
+        <span title="/python-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/intersections.html" class="md-nav__link">
+        <span title="/python-api/intersections.rst (reference label)" class="md-ellipsis">Intersections</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/interval.html" class="md-nav__link">
+        <span title="/python-api/interval.rst (reference label)" class="md-ellipsis">Interval Arithmetic</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/utils.html" class="md-nav__link">
+        <span title="/python-api/utils.rst (reference label)" class="md-ellipsis">Utils</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5">
+          <span class="md-ellipsis">Developers</span>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Developers" data-md-level="1">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          <span class="md-ellipsis">Developers</span>
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing.html" class="md-nav__link">
+        <span title="/contributing.rst (reference label)" class="md-ellipsis">Contributing</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../style_guide.html" class="md-nav__link">
+        <span title="/style_guide.rst (reference label)" class="md-ellipsis">Style Guide</span>
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../code_of_conduct.html" class="md-nav__link">
+        <span title="/code_of_conduct.rst (reference label)" class="md-ellipsis">Code of Conduct</span>
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8IntervalE" class="md-nav__link">
+    <span aria-label="C++ class" class="objinfo-icon objinfo-icon__data" title="C++ class">C</span><span title="filib::Interval (C++ class) — Interval type." class="md-ellipsis">Interval</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interval">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#breathe-section-title-public-functions" class="md-nav__link">
+    <span class="md-ellipsis">Public Functions</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalERK8interval" class="md-nav__link">
+    <span aria-label="C++ function" class="objinfo-icon objinfo-icon__procedure" title="C++ function">F</span><span title="filib::Interval::Interval (C++ function) — Construct an Interval from a filib interval." class="md-ellipsis">Interval</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interval">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalERK8interval-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalERK8interval-p-i" class="md-nav__link">
+    <span aria-label="C++ function parameter" class="objinfo-icon objinfo-icon__sub-data" title="C++ function parameter">p</span><span title="filib::Interval::Interval::i (C++ function parameter) — The filib interval" class="md-ellipsis">i</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEv" class="md-nav__link">
+    <span aria-label="C++ function" class="objinfo-icon objinfo-icon__procedure" title="C++ function">F</span><span title="filib::Interval::Interval (C++ function) — Construct an empty Interval." class="md-ellipsis">Interval</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEd" class="md-nav__link">
+    <span aria-label="C++ function" class="objinfo-icon objinfo-icon__procedure" title="C++ function">F</span><span title="filib::Interval::Interval (C++ function) — Construct an Interval from a single value." class="md-ellipsis">Interval</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interval">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEd-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEd-p-x" class="md-nav__link">
+    <span aria-label="C++ function parameter" class="objinfo-icon objinfo-icon__sub-data" title="C++ function parameter">p</span><span title="filib::Interval::Interval::x (C++ function parameter) — The value" class="md-ellipsis">x</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEdd" class="md-nav__link">
+    <span aria-label="C++ function" class="objinfo-icon objinfo-icon__procedure" title="C++ function">F</span><span title="filib::Interval::Interval (C++ function) — Construct an Interval from two values." class="md-ellipsis">Interval</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interval">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEdd-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEdd-p-x" class="md-nav__link">
+    <span aria-label="C++ function parameter" class="objinfo-icon objinfo-icon__sub-data" title="C++ function parameter">p</span><span title="filib::Interval::Interval::x (C++ function parameter) — The infimum value" class="md-ellipsis">x</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N5filib8Interval8IntervalEdd-p-y" class="md-nav__link">
+    <span aria-label="C++ function parameter" class="objinfo-icon objinfo-icon__sub-data" title="C++ function parameter">p</span><span title="filib::Interval::Interval::y (C++ function parameter) — The supremum value" class="md-ellipsis">y</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#helper-functions" class="md-nav__link">
+    <span title="/cpp-api/interval.rst#helper-functions (reference label)" class="md-ellipsis">Helper Functions</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Helper Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE" class="md-nav__link">
+    <span aria-label="C++ function" class="objinfo-icon objinfo-icon__procedure" title="C++ function">F</span><span title="ipc::norm (C++ function) — Compute the L2 norm of a n-dimensional interval." class="md-ellipsis">ipc::<wbr>norm</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipc::norm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE-p-v" class="md-nav__link">
+    <span aria-label="C++ function parameter" class="objinfo-icon objinfo-icon__sub-data" title="C++ function parameter">p</span><span title="ipc::norm::v (C++ function parameter) — The n-dimensional interval" class="md-ellipsis">v</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE" class="md-nav__link">
+    <span aria-label="C++ function" class="objinfo-icon objinfo-icon__procedure" title="C++ function">F</span><span title="ipc::squared_norm (C++ function) — Compute the squared L2 norm of an n-dimensional interval." class="md-ellipsis">ipc::<wbr>squared_<wbr>norm</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ipc::squared_norm">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE-parameters" class="md-nav__link">
+    <span class="md-ellipsis">Parameters</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE-p-v" class="md-nav__link">
+    <span aria-label="C++ function parameter" class="objinfo-icon objinfo-icon__sub-data" title="C++ function parameter">p</span><span title="ipc::squared_norm::v (C++ function parameter) — The n-dimensional interval" class="md-ellipsis">v</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE-returns" class="md-nav__link">
+    <span class="md-ellipsis">Returns</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-definitions" class="md-nav__link">
+    <span title="/cpp-api/interval.rst#type-definitions (reference label)" class="md-ellipsis">Type Definitions</span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type Definitions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc8Vector2IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::Vector2I (C++ type) — 2D vector of intervals" class="md-ellipsis">ipc::<wbr>Vector2I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc8Vector3IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::Vector3I (C++ type) — 3D vector of intervals" class="md-ellipsis">ipc::<wbr>Vector3I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc8VectorXIE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::VectorXI (C++ type) — Dynamic vector of intervals." class="md-ellipsis">ipc::<wbr>Vector<wbr>XI</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc11RowVector2IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::RowVector2I (C++ type) — 2D row vector of intervals" class="md-ellipsis">ipc::<wbr>Row<wbr>Vector2I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc11RowVector3IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::RowVector3I (C++ type) — 3D row vector of intervals" class="md-ellipsis">ipc::<wbr>Row<wbr>Vector3I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc11RowVectorXIE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::RowVectorXI (C++ type) — Dynamic row vector of intervals." class="md-ellipsis">ipc::<wbr>Row<wbr>Vector<wbr>XI</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc8Matrix2IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::Matrix2I (C++ type) — 2x2 matrix of intervals" class="md-ellipsis">ipc::<wbr>Matrix2I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc8Matrix3IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::Matrix3I (C++ type) — 3x3 matrix of intervals" class="md-ellipsis">ipc::<wbr>Matrix3I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc8MatrixXIE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::MatrixXI (C++ type) — Dynamic matrix of intervals." class="md-ellipsis">ipc::<wbr>Matrix<wbr>XI</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc11VectorMax3IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::VectorMax3I (C++ type) — Dynamic vector of intervals with a maximum size of 3." class="md-ellipsis">ipc::<wbr>Vector<wbr>Max3I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc14RowVectorMax3IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::RowVectorMax3I (C++ type) — Dynamic row vector of intervals with a maximum size of 3." class="md-ellipsis">ipc::<wbr>Row<wbr>Vector<wbr>Max3I</span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_CPPv4N3ipc11MatrixMax3IE" class="md-nav__link">
+    <span aria-label="C++ type" class="objinfo-icon objinfo-icon__alias" title="C++ type">T</span><span title="ipc::MatrixMax3I (C++ type) — Dynamic matrix of intervals with a maximum size of 3x3." class="md-ellipsis">ipc::<wbr>Matrix<wbr>Max3I</span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset" role="main">
+                  
+
+
+  <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/docs/source/cpp-api/interval.rst" title="Edit this page" class="md-content__button md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
+  </a>
+
+<h1 id="interval-arithmetic">Interval Arithmetic<a class="headerlink" href="#interval-arithmetic" title="Permalink to this heading">¶</a></h1>
+<p>For interval arithmetic, we use the <a class="reference external" href="https://github.com/zfergus/filib">Filib</a> library.</p>
+<dl class="cpp class objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N5filib8IntervalE">
+<span class="target" id="classfilib_1_1_interval"></span><span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">Interval</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">interval</span><a class="headerlink" href="#_CPPv4N5filib8IntervalE" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#classfilib_1_1_interval"><span class="std std-ref">Interval</span></a> type. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N5filib8Interval8IntervalERK8interval">
+<span class="target" id="classfilib_1_1_interval_1a87517b4cd433bff94a6a4424916e376e"></span><span class="k">inline</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">Interval</span></span><span><span class="p">(</span><span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">interval</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N5filib8Interval8IntervalERK8interval-p-i" title="filib::Interval::Interval::i (C++ function parameter) — The filib interval"><span class="n sig-param">&nbsp;i</span></a></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N5filib8Interval8IntervalERK8interval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct an <a class="reference internal" href="#classfilib_1_1_interval"><span class="std std-ref">Interval</span></a> from a filib interval. </p>
+<dl class="field-list simple">
+<dt class="field-odd" id="_CPPv4N5filib8Interval8IntervalERK8interval-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N5filib8Interval8IntervalERK8interval-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="_CPPv4N5filib8Interval8IntervalERK8interval-p-i"><span class="k">const</span><span class="w">   </span><span class="n">interval</span><span class="w">   </span><span class="p">&amp;</span><span class="n sig-param sig-name">i</span><a class="headerlink" href="#_CPPv4N5filib8Interval8IntervalERK8interval-p-i" title="Permalink to this definition">¶</a></dt><dd><p>The filib interval </p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N5filib8Interval8IntervalEv">
+<span class="target" id="classfilib_1_1_interval_1a101edfaff748b5f3f2860399c181912d"></span><span class="k">inline</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">Interval</span></span><span><span class="p">(</span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N5filib8Interval8IntervalEv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct an empty <a class="reference internal" href="#classfilib_1_1_interval"><span class="std std-ref">Interval</span></a>. </p>
+</dd></dl>
+
+<dl class="cpp function objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N5filib8Interval8IntervalEd">
+<span class="target" id="classfilib_1_1_interval_1a99af557d82db30896bbe282293112173"></span><span class="k">inline</span><span class="w">&nbsp;</span><span><span class="k">explicit</span></span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">Interval</span></span><span><span class="p">(</span><span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N5filib8Interval8IntervalEd-p-x" title="filib::Interval::Interval::x (C++ function parameter) — The value"><span class="n sig-param">x</span></a></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N5filib8Interval8IntervalEd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct an <a class="reference internal" href="#classfilib_1_1_interval"><span class="std std-ref">Interval</span></a> from a single value. </p>
+<dl class="field-list simple">
+<dt class="field-odd" id="_CPPv4N5filib8Interval8IntervalEd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N5filib8Interval8IntervalEd-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="_CPPv4N5filib8Interval8IntervalEd-p-x"><span class="kt">double</span><span class="w">   </span><span class="n sig-param sig-name">x</span><a class="headerlink" href="#_CPPv4N5filib8Interval8IntervalEd-p-x" title="Permalink to this definition">¶</a></dt><dd><p>The value </p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N5filib8Interval8IntervalEdd">
+<span class="target" id="classfilib_1_1_interval_1a1f912254cc7847210d9ef0e540a3e95d"></span><span class="k">inline</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">Interval</span></span><span><span class="p">(</span><span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N5filib8Interval8IntervalEdd-p-x" title="filib::Interval::Interval::x (C++ function parameter) — The infimum value"><span class="n sig-param">x</span></a></span><span class="p">,</span><span><span class="kt">&nbsp;double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N5filib8Interval8IntervalEdd-p-y" title="filib::Interval::Interval::y (C++ function parameter) — The supremum value"><span class="n sig-param">y</span></a></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N5filib8Interval8IntervalEdd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct an <a class="reference internal" href="#classfilib_1_1_interval"><span class="std std-ref">Interval</span></a> from two values. </p>
+<dl class="field-list simple">
+<dt class="field-odd" id="_CPPv4N5filib8Interval8IntervalEdd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N5filib8Interval8IntervalEdd-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="_CPPv4N5filib8Interval8IntervalEdd-p-x"><span class="kt">double</span><span class="w">   </span><span class="n sig-param sig-name">x</span><a class="headerlink" href="#_CPPv4N5filib8Interval8IntervalEdd-p-x" title="Permalink to this definition">¶</a></dt><dd><p>The infimum value </p>
+</dd>
+<dt id="_CPPv4N5filib8Interval8IntervalEdd-p-y"><span class="kt">double</span><span class="w">   </span><span class="n sig-param sig-name">y</span><a class="headerlink" href="#_CPPv4N5filib8Interval8IntervalEdd-p-y" title="Permalink to this definition">¶</a></dt><dd><p>The supremum value </p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<h2 id="helper-functions">Helper Functions<a class="headerlink" href="#helper-functions" title="Permalink to this heading">¶</a></h2>
+<dl class="cpp function objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE">
+<span class="target" id="namespaceipc_1a125a619d421da38e2c59d29e671d274c"></span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">norm</span></span><span><span class="p">(</span><span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Ref</span><span class="p">&lt;</span><span class="k">const</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc8VectorXIE" title="ipc::VectorXI (C++ type) — Dynamic vector of intervals."><span class="n">VectorXI</span></a><span class="p">&gt;</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE-p-v" title="ipc::norm::v (C++ function parameter) — The n-dimensional interval"><span class="n sig-param">&nbsp;v</span></a></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the L2 norm of a n-dimensional interval. </p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This should be used instead of the .<a class="reference internal" href="#namespaceipc_1a125a619d421da38e2c59d29e671d274c"><span class="std std-ref">norm()</span></a> method of Eigen because it avoids negative values in intermediate computations. </p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd" id="_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE-p-v"><span class="k">const</span><span class="w">   </span><span class="n">Eigen</span><span class="p">::</span><span class="n">Ref</span><span class="p">&lt;</span><span class="k">const</span><span class="w">   </span><a class="desctype reference internal" href="#_CPPv4N3ipc8VectorXIE" title="ipc::VectorXI (C++ type) — Dynamic vector of intervals."><span class="n">VectorXI</span></a><span class="p">&gt;</span><span class="w">   </span><span class="p">&amp;</span><span class="n sig-param sig-name">v</span><a class="headerlink" href="#_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE-p-v" title="Permalink to this definition">¶</a></dt><dd><p>The n-dimensional interval </p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE-returns">Returns<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc4normERKN5Eigen3RefIK8VectorXIEE-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>The L2 norm of the interval </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE">
+<span class="target" id="namespaceipc_1a368db73fca6f0ee86e5890136f45abf5"></span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">squared_norm</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Ref</span><span class="p">&lt;</span><span class="k">const</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc8VectorXIE" title="ipc::VectorXI (C++ type) — Dynamic vector of intervals."><span class="n">VectorXI</span></a><span class="p">&gt;</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE-p-v" title="ipc::squared_norm::v (C++ function parameter) — The n-dimensional interval"><span class="n sig-param">&nbsp;v</span></a></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the squared L2 norm of an n-dimensional interval. </p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This should be used instead of the .squaredNorm() method of Eigen because it avoids negative values in intermediate computations. </p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd" id="_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE-parameters" title="Permalink to this headline">¶</a></dt>
+<dd class="field-odd"><dl class="simple api-field highlight">
+<dt id="_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE-p-v"><span class="k">const</span><span class="w">   </span><span class="n">Eigen</span><span class="p">::</span><span class="n">Ref</span><span class="p">&lt;</span><span class="k">const</span><span class="w">   </span><a class="desctype reference internal" href="#_CPPv4N3ipc8VectorXIE" title="ipc::VectorXI (C++ type) — Dynamic vector of intervals."><span class="n">VectorXI</span></a><span class="p">&gt;</span><span class="w">   </span><span class="p">&amp;</span><span class="n sig-param sig-name">v</span><a class="headerlink" href="#_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE-p-v" title="Permalink to this definition">¶</a></dt><dd><p>The n-dimensional interval </p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even" id="_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE-returns">Returns<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc12squared_normERKN5Eigen3RefIK8VectorXIEE-returns" title="Permalink to this headline">¶</a></dt>
+<dd class="field-even"><p>The squared L2 norm of the interval </p>
+</dd>
+</dl>
+</dd></dl>
+
+<h2 id="type-definitions">Type Definitions<a class="headerlink" href="#type-definitions" title="Permalink to this heading">¶</a></h2>
+<dl class="cpp type objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc8Vector2IE">
+<span class="target" id="namespaceipc_1a0fff25bd2f3dfdd488b1fcad38891269"></span><span class="k">using</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">Vector2I</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Vector2</span><span class="p">&lt;</span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="p">&gt;</span><a class="headerlink" href="#_CPPv4N3ipc8Vector2IE" title="Permalink to this definition">¶</a></dt>
+<dd><p>2D vector of intervals </p>
+</dd></dl>
+
+<dl class="cpp type objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc8Vector3IE">
+<span class="target" id="namespaceipc_1a893356b0aec35765e3939f96cec49188"></span><span class="k">using</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">Vector3I</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Vector3</span><span class="p">&lt;</span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="p">&gt;</span><a class="headerlink" href="#_CPPv4N3ipc8Vector3IE" title="Permalink to this definition">¶</a></dt>
+<dd><p>3D vector of intervals </p>
+</dd></dl>
+
+<dl class="cpp type objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc8VectorXIE">
+<span class="target" id="namespaceipc_1a65e87a3d0447958dfe433ad37a7ce0ac"></span><span class="k">using</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">VectorXI</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">VectorX</span><span class="p">&lt;</span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="p">&gt;</span><a class="headerlink" href="#_CPPv4N3ipc8VectorXIE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dynamic vector of intervals. </p>
+</dd></dl>
+
+<dl class="cpp type objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc11RowVector2IE">
+<span class="target" id="namespaceipc_1ac67a025598777344fa09949fc845da38"></span><span class="k">using</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">RowVector2I</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">RowVector2</span><span class="p">&lt;</span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="p">&gt;</span><a class="headerlink" href="#_CPPv4N3ipc11RowVector2IE" title="Permalink to this definition">¶</a></dt>
+<dd><p>2D row vector of intervals </p>
+</dd></dl>
+
+<dl class="cpp type objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc11RowVector3IE">
+<span class="target" id="namespaceipc_1a8d776e028dae7339b4f09172f03c4747"></span><span class="k">using</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">RowVector3I</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">RowVector3</span><span class="p">&lt;</span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="p">&gt;</span><a class="headerlink" href="#_CPPv4N3ipc11RowVector3IE" title="Permalink to this definition">¶</a></dt>
+<dd><p>3D row vector of intervals </p>
+</dd></dl>
+
+<dl class="cpp type objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc11RowVectorXIE">
+<span class="target" id="namespaceipc_1afca60aa0d9fe8c4fb2a76f47820483a5"></span><span class="k">using</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">RowVectorXI</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">RowVectorX</span><span class="p">&lt;</span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="p">&gt;</span><a class="headerlink" href="#_CPPv4N3ipc11RowVectorXIE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dynamic row vector of intervals. </p>
+</dd></dl>
+
+<dl class="cpp type objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc8Matrix2IE">
+<span class="target" id="namespaceipc_1a448c687bee33ca4ca8b58a62ebdd9e33"></span><span class="k">using</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">Matrix2I</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Matrix2</span><span class="p">&lt;</span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="p">&gt;</span><a class="headerlink" href="#_CPPv4N3ipc8Matrix2IE" title="Permalink to this definition">¶</a></dt>
+<dd><p>2x2 matrix of intervals </p>
+</dd></dl>
+
+<dl class="cpp type objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc8Matrix3IE">
+<span class="target" id="namespaceipc_1a52a83f1fdb443f0782ea9412fed8f5d0"></span><span class="k">using</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">Matrix3I</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Matrix3</span><span class="p">&lt;</span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="p">&gt;</span><a class="headerlink" href="#_CPPv4N3ipc8Matrix3IE" title="Permalink to this definition">¶</a></dt>
+<dd><p>3x3 matrix of intervals </p>
+</dd></dl>
+
+<dl class="cpp type objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc8MatrixXIE">
+<span class="target" id="namespaceipc_1a001d0d6217a57a975f4b8093bcc934b4"></span><span class="k">using</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">MatrixXI</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixX</span><span class="p">&lt;</span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="p">&gt;</span><a class="headerlink" href="#_CPPv4N3ipc8MatrixXIE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dynamic matrix of intervals. </p>
+</dd></dl>
+
+<dl class="cpp type objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc11VectorMax3IE">
+<span class="target" id="namespaceipc_1a758175d8f442b4498f092b6f578a45d9"></span><span class="k">using</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">VectorMax3I</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">VectorMax3</span><span class="p">&lt;</span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="p">&gt;</span><a class="headerlink" href="#_CPPv4N3ipc11VectorMax3IE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dynamic vector of intervals with a maximum size of 3. </p>
+</dd></dl>
+
+<dl class="cpp type objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc14RowVectorMax3IE">
+<span class="target" id="namespaceipc_1ad16cb1acc1a6bd3268782417f673be2e"></span><span class="k">using</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">RowVectorMax3I</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">RowVectorMax3</span><span class="p">&lt;</span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="p">&gt;</span><a class="headerlink" href="#_CPPv4N3ipc14RowVectorMax3IE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dynamic row vector of intervals with a maximum size of 3. </p>
+</dd></dl>
+
+<dl class="cpp type objdesc">
+<dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc11MatrixMax3IE">
+<span class="target" id="namespaceipc_1a3fd97becf70b26bccc27c47f7ab2b64a"></span><span class="k">using</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">MatrixMax3I</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">MatrixMax3</span><span class="p">&lt;</span><span class="n">filib</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N5filib8IntervalE" title="filib::Interval (C++ class) — Interval type."><span class="n">Interval</span></a><span class="p">&gt;</span><a class="headerlink" href="#_CPPv4N3ipc11MatrixMax3IE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dynamic matrix of intervals with a maximum size of 3x3. </p>
+</dd></dl>
+
+
+
+  <hr>
+<div class="md-source-file">
+  <small>
+    
+      Last update:
+      Dec 12, 2024
+    
+  </small>
+</div>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+            Back to top
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+    <nav class="md-footer__inner md-grid" aria-label="Footer" >
+      
+        
+        <a href="intersections.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Intersections" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              Intersections
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="utils.html" class="md-footer__link md-footer__link--next" aria-label="Next: Utils" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              Utils
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  
+  
+  <div class="md-footer-meta md-typeset">
+    
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-footer-copyright__highlight">
+        &#169; Copyright 2020-2024, IPC-Sim Organization; MIT License.
+        
+    </div>
+  
+    Created using
+    <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
+    6.2.1.
+     and
+    <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
+  
+</div>
+      
+    </div>
+    
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow", "content.tabs.link"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
+    
+      
+        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+  </body>
+</html>
