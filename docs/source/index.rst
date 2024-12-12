@@ -37,6 +37,7 @@
     cpp-api/barrier.rst
     cpp-api/adhesion.rst
     cpp-api/intersections.rst
+    cpp-api/interval.rst
     cpp-api/utils.rst
 
 .. toctree::
@@ -57,6 +58,7 @@
     python-api/barrier.rst
     python-api/adhesion.rst
     python-api/intersections.rst
+    python-api/interval.rst
     python-api/utils.rst
 
 .. toctree::
