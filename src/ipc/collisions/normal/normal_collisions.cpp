@@ -136,6 +136,8 @@ namespace {
 
         return ev_candidates;
     }
+
+    inline double sqr(double x) { return x * x; }
 } // namespace
 
 void NormalCollisions::build(
@@ -147,7 +149,7 @@ void NormalCollisions::build(
 {
     assert(vertices.rows() == mesh.num_vertices());
 
-    double inflation_radius = (dhat + dmin) / 2;
+    const double inflation_radius = 0.5 * (dhat + dmin);
 
     Candidates candidates;
     candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
@@ -168,8 +170,7 @@ void NormalCollisions::build(
 
     // Cull the candidates by measuring the distance and dropping those that are
     // greater than dhat.
-    const double offset_sqr = (dmin + dhat) * (dmin + dhat);
-    auto is_active = [&](double distance_sqr) {
+    auto is_active = [offset_sqr = sqr(dmin + dhat)](double distance_sqr) {
         return distance_sqr < offset_sqr;
     };
 

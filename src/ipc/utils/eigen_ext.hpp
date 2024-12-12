@@ -8,31 +8,20 @@
 namespace ipc {
 
 // Boolean scalar
-typedef Eigen::Array<bool, Eigen::Dynamic, 1> ArrayXb;
-typedef Eigen::Matrix<bool, Eigen::Dynamic, 1> VectorXb;
-typedef Eigen::Matrix<bool, 3, 1> Vector3b;
-typedef Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic> MatrixXb;
+using ArrayXb = Eigen::Array<bool, Eigen::Dynamic, 1>;
+using VectorXb = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
+using Vector3b = Eigen::Matrix<bool, 3, 1>;
+using MatrixXb = Eigen::Matrix<bool, Eigen::Dynamic, Eigen::Dynamic>;
 
 template <typename T, int dim, int max_dim = dim>
 using Vector = Eigen::Matrix<T, dim, 1, Eigen::ColMajor, max_dim, 1>;
 template <typename T, int dim, int max_dim = dim>
 using RowVector = Eigen::Matrix<T, 1, dim, Eigen::RowMajor, 1, max_dim>;
-template <typename T> using Vector1 = Vector<T, 1>;
-template <typename T> using Vector2 = Vector<T, 2>;
-template <typename T> using Vector3 = Vector<T, 3>;
-template <typename T> using VectorX = Vector<T, Eigen::Dynamic>;
-template <typename T> using RowVector2 = RowVector<T, 2>;
-template <typename T> using RowVector3 = RowVector<T, 3>;
-template <typename T> using RowVectorX = RowVector<T, Eigen::Dynamic>;
-template <typename T> using Matrix2 = Eigen::Matrix<T, 2, 2>;
-template <typename T> using Matrix3 = Eigen::Matrix<T, 3, 3>;
-template <typename T>
-using MatrixX = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
-using Vector1d = Vector1<double>;
-using Vector6d = Vector<double, 6>;
-using Vector9d = Vector<double, 9>;
-using Vector12d = Vector<double, 12>;
+using Vector1d = Eigen::Vector<double, 1>;
+using Vector6d = Eigen::Vector<double, 6>;
+using Vector9d = Eigen::Vector<double, 9>;
+using Vector12d = Eigen::Vector<double, 12>;
 using Matrix6d = Eigen::Matrix<double, 6, 6>;
 using Matrix9d = Eigen::Matrix<double, 9, 9>;
 using Matrix12d = Eigen::Matrix<double, 12, 12>;

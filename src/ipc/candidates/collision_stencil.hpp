@@ -39,7 +39,7 @@ public:
     /// @return The vertex positions of the collision stencil. Size is always 4, but elements i > num_vertices() are NaN.
     template <typename T>
     std::array<VectorMax3<T>, 4> vertices(
-        const MatrixX<T>& vertices,
+        const Eigen::MatrixX<T>& vertices,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const
     {
@@ -67,7 +67,7 @@ public:
     /// @return This stencil's DOF.
     template <typename T>
     VectorMax12<T>
-    dof(const MatrixX<T>& X,
+    dof(const Eigen::MatrixX<T>& X,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const
     {

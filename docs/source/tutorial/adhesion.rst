@@ -3,7 +3,7 @@ Adhesion
 
 Adhesion simulates the sticking interaction between surfaces, such as glue bonding or material contact.
 
-We provide functionality to compute normal adhesion (perpendicular forces) and tangential adhesion (parallel forces) using the model of :cite:`Fang2023AugmentedStickyInteractions`.
+We provide functionality to compute normal adhesion (perpendicular forces) and tangential adhesion (parallel forces) using the model of :cite:t:`Fang2023AugmentedStickyInteractions`.
 
 Normal Adhesion
 ---------------
