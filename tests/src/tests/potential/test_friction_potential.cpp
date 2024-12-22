@@ -45,7 +45,6 @@ TEST_CASE("Friction gradient and hessian", "[friction][gradient][hessian]")
     CHECK(fd::compare_hessian(hess, fhess, 1e-3));
 }
 
-
 TEST_CASE("Friction gradient and hessian with s_mu and k_mu", "[friction][gradient][hessian][s_mu][k_mu]")
 {
     FrictionData data = friction_data_generator();

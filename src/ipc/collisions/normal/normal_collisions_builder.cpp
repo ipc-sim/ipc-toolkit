@@ -27,7 +27,7 @@ void NormalCollisionsBuilder::add_vertex_vertex_collisions(
     const size_t end_i)
 {
     for (size_t i = start_i; i < end_i; i++) {
-        const auto& [vi, vj, mat_pair] = candidates[i];
+        const auto& [vi, vj] = candidates[i];
 
         const double distance =
             point_point_distance(vertices.row(vi), vertices.row(vj));
@@ -66,7 +66,7 @@ void NormalCollisionsBuilder::add_edge_vertex_collisions(
     const size_t end_i)
 {
     for (size_t i = start_i; i < end_i; i++) {
-        const auto& [ei, vi, mat_pair] = candidates[i];
+        const auto& [ei, vi] = candidates[i];
         const auto [v, e0, e1, _] =
             candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
         const PointEdgeDistanceType dtype = point_edge_distance_type(v, e0, e1);
@@ -98,7 +98,7 @@ void NormalCollisionsBuilder::add_edge_vertex_collision(
     const double weight,
     const Eigen::SparseVector<double>& weight_gradient)
 {
-    const auto& [ei, vi, mat_pair] = candidate;
+    const auto& [ei, vi] = candidate;
 
     switch (dtype) {
     case PointEdgeDistanceType::P_E0:
@@ -131,7 +131,7 @@ void NormalCollisionsBuilder::add_edge_edge_collisions(
     const size_t end_i)
 {
     for (size_t i = start_i; i < end_i; i++) {
-        const auto& [eai, ebi, mat_pair] = candidates[i];
+        const auto& [eai, ebi] = candidates[i];
 
         const auto [ea0i, ea1i, eb0i, eb1i] =
             candidates[i].vertex_ids(mesh.edges(), mesh.faces());
@@ -232,7 +232,7 @@ void NormalCollisionsBuilder::add_face_vertex_collisions(
     const size_t end_i)
 {
     for (size_t i = start_i; i < end_i; i++) {
-        const auto& [fi, vi, mat_pair] = candidates[i];
+        const auto& [fi, vi] = candidates[i];
         const long f0i = mesh.faces()(fi, 0), f1i = mesh.faces()(fi, 1),
                    f2i = mesh.faces()(fi, 2);
 
@@ -328,7 +328,7 @@ void NormalCollisionsBuilder::add_edge_vertex_negative_vertex_vertex_collisions(
     };
 
     for (size_t i = start_i; i < end_i; i++) {
-        const auto& [vi, vj, mat_pair] = candidates[i];
+        const auto& [vi, vj] = candidates[i];
         assert(vi != vj);
 
         double weight = 0;
@@ -371,7 +371,7 @@ void NormalCollisionsBuilder::add_face_vertex_positive_vertex_vertex_collisions(
     };
 
     for (size_t i = start_i; i < end_i; i++) {
-        const auto& [vi, vj, mat_pair] = candidates[i];
+        const auto& [vi, vj] = candidates[i];
         assert(vi != vj);
 
         double weight = 0;
@@ -397,7 +397,7 @@ void NormalCollisionsBuilder::add_face_vertex_negative_edge_vertex_collisions(
     const size_t end_i)
 {
     for (size_t i = start_i; i < end_i; i++) {
-        const auto& [ei, vi, mat_pair] = candidates[i];
+        const auto& [ei, vi] = candidates[i];
         assert(vi != mesh.edges()(ei, 0) && vi != mesh.edges()(ei, 1));
 
         const auto& incident_vertices = mesh.edge_vertex_adjacencies()[ei];
@@ -437,7 +437,7 @@ void NormalCollisionsBuilder::add_edge_edge_negative_edge_vertex_collisions(
     // Notation: (ea, p) ∈ C, ea = (ea0, ea1) ∈ E, p ∈ eb = (p, q) ∈ E
 
     for (size_t i = start_i; i < end_i; i++) {
-        const auto& [ea, p, mat_pair] = candidates[i];
+        const auto& [ea, p] = candidates[i];
         const int ea0 = mesh.edges()(ea, 0), ea1 = mesh.edges()(ea, 1);
         assert(p != ea0 && p != ea1);
 

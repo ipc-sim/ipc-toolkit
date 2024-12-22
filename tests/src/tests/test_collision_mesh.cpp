@@ -85,7 +85,7 @@ TEST_CASE("Faces to edges", "[collision_mesh][faces_to_edges]")
 
         CHECK(CollisionMesh::construct_faces_to_edges(F, E) == expected_F2E);
     }
-    SECTION("Shouldnt work")
+    SECTION("Shouldn't work")
     {
         E << 0, 1, 1, 2, 0, 3;
         try {
@@ -95,77 +95,7 @@ TEST_CASE("Faces to edges", "[collision_mesh][faces_to_edges]")
             SUCCEED("Should have thrown");
             CHECK(e.what() == std::string("Unable to find edge!"));
         } catch (...) {
-            FAIL("Uknown exception thrown");
+            FAIL("Unknown exception thrown");
         }
     }
 }
-
-// TEST_CASE("Collision mesh with material ID", "[collision_mesh]") {
-//     Eigen::MatrixXd V(4, 2);
-//     V << 0, 0, 1, 0, 0, 1, 1, 1;
-//     Eigen::MatrixXi E(4, 2);
-//     E << 0, 1, 1, 3, 3, 2, 2, 0;
-
-//     std::vector<Eigen::Triplet<double>> weights;
-//     weights.emplace_back(0, 0, 1);
-//     weights.emplace_back(1, 1, 1);
-//     weights.emplace_back(2, 2, 1);
-//     weights.emplace_back(3, 1, 1);
-//     weights.emplace_back(3, 2, 1);
-
-//     Eigen::SparseMatrix<double> W(4, 3);
-//     W.setFromTriplets(weights.begin(), weights.end());
-
-//     // Test case with specified material ID
-//     std::vector<int> material_id = 
-//     CollisionMesh mesh(V, E, /*F=*/Eigen::MatrixXi(), W, material_id);
-
-//     // Verifying material_id is set correctly
-//     CHECK(mesh.get_material_ids().size() == 4);
-
-//     Eigen::MatrixXd U(3, 2);
-//     U << 0, 0, 1, 1, 0, 0;
-
-//     Eigen::MatrixXd Uc = mesh.map_displacements(U);
-//     Eigen::MatrixXd expected_Uc(4, 2);
-//     expected_Uc << 0, 0, 1, 1, 0, 0, 1, 1;
-//     CHECK(Uc == expected_Uc);
-
-//     Eigen::MatrixXd Vc = mesh.displace_vertices(U);
-//     Eigen::MatrixXd expected_Vc(4, 2);
-//     expected_Vc << 0, 0, 2, 1, 0, 1, 2, 2;
-//     CHECK(Vc == expected_Vc);
-
-//     Eigen::VectorXd g(8);
-//     g << 1, 1, -1, 1, 1, -1, -1, -1;
-//     Eigen::VectorXd gf = mesh.to_full_dof(g);
-//     Eigen::VectorXd expected_gf(6);
-//     expected_gf << 1, 1, -2, 0, 0, -2;
-//     CHECK(gf == expected_gf);
-
-//     Eigen::MatrixXd H = Eigen::MatrixXd::Identity(8, 8);
-//     Eigen::MatrixXd Hf =
-//         mesh.to_full_dof(Eigen::SparseMatrix<double>(H.sparseView()));
-
-//     Eigen::MatrixXd expected_Hf(6, 6);
-//     expected_Hf << 1, 0, 0, 0, 0, 0, //
-//         0, 1, 0, 0, 0, 0,            //
-//         0, 0, 2, 0, 1, 0,            //
-//         0, 0, 0, 2, 0, 1,            //
-//         0, 0, 1, 0, 2, 0,            //
-//         0, 0, 0, 1, 0, 2;            //
-
-//     CHECK(Hf == expected_Hf);
-// }
-
-// TEST_CASE("Codim points collision mesh", "[collision_mesh]")
-// {
-//     Eigen::MatrixXd V(4, 2);
-//     V << 0, 0, 1, 0, 0, 1, 1, 1;
-
-//     CollisionMesh mesh(V);
-
-//     Eigen::VectorXi expected_codim_vertices(4);
-//     expected_codim_vertices << 0, 1, 2, 3;
-//     CHECK(mesh.codim_vertices() == expected_codim_vertices);
-// }

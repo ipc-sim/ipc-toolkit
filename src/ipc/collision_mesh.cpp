@@ -12,15 +12,13 @@ CollisionMesh::CollisionMesh(
     const Eigen::MatrixXd& rest_positions,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    const Eigen::SparseMatrix<double>& displacement_map,
-    const std::vector<int>& mat_ids)
+    const Eigen::SparseMatrix<double>& displacement_map)
     : CollisionMesh(
           std::vector<bool>(rest_positions.rows(), true),
           rest_positions,
           edges,
           faces,
-          displacement_map,
-          mat_ids)
+          displacement_map)
 {
 }
 
@@ -29,16 +27,11 @@ CollisionMesh::CollisionMesh(
     const Eigen::MatrixXd& full_rest_positions,
     const Eigen::MatrixXi& edges,
     const Eigen::MatrixXi& faces,
-    const Eigen::SparseMatrix<double>& displacement_map,
-    const std::vector<int>& mat_ids)
+    const Eigen::SparseMatrix<double>& displacement_map)
     : m_full_rest_positions(full_rest_positions)
     , m_edges(edges)
-    , m_faces(faces),
-      m_mat_ids(mat_ids.empty() ? std::vector<int>(faces.rows(), 0) : mat_ids)
+    , m_faces(faces)
 {
-
-    assert(include_vertex.size() == full_rest_positions.rows());
-    assert(mat_ids.empty() || mat_ids.size() == faces.rows());
 
     const bool include_all_vertices = std::all_of(
         include_vertex.begin(), include_vertex.end(), [](bool b) { return b; });

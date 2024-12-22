@@ -34,7 +34,7 @@ namespace {
         const std::function<bool(double)>& is_active)
     {
         std::vector<VertexVertexCandidate> vv_candidates;
-        for (const auto& [ei, vi, mat_pair] : candidates) {
+        for (const auto& [ei, vi] : candidates) {
             for (int j = 0; j < elements.cols(); j++) {
                 const int vj = elements(ei, j);
                 if (is_active(point_point_distance(
@@ -80,7 +80,7 @@ namespace {
         const std::function<bool(double)>& is_active)
     {
         std::vector<EdgeVertexCandidate> ev_candidates;
-        for (const auto& [fi, vi, mat_pair] : fv_candidates) {
+        for (const auto& [fi, vi] : fv_candidates) {
             for (int j = 0; j < 3; j++) {
                 const int ei = mesh.faces_to_edges()(fi, j);
                 const int vj = mesh.edges()(ei, 0);
@@ -136,6 +136,8 @@ namespace {
 
         return ev_candidates;
     }
+
+    inline double sqr(double x) { return x * x; }
 } // namespace
 
 void NormalCollisions::build(
@@ -147,7 +149,7 @@ void NormalCollisions::build(
 {
     assert(vertices.rows() == mesh.num_vertices());
 
-    double inflation_radius = (dhat + dmin) / 2;
+    const double inflation_radius = 0.5 * (dhat + dmin);
 
     Candidates candidates;
     candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
@@ -168,8 +170,7 @@ void NormalCollisions::build(
 
     // Cull the candidates by measuring the distance and dropping those that are
     // greater than dhat.
-    const double offset_sqr = (dmin + dhat) * (dmin + dhat);
-    auto is_active = [&](double distance_sqr) {
+    auto is_active = [offset_sqr = sqr(dmin + dhat)](double distance_sqr) {
         return distance_sqr < offset_sqr;
     };
 
@@ -177,7 +178,7 @@ void NormalCollisions::build(
         use_area_weighting(), enable_shape_derivatives());
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), candidates.vv_candidates.size()),
+        tbb::blocked_range<size_t>(0, candidates.vv_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_vertex_vertex_collisions(
                 mesh, vertices, candidates.vv_candidates, is_active, r.begin(),
@@ -185,7 +186,7 @@ void NormalCollisions::build(
         });
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), candidates.ev_candidates.size()),
+        tbb::blocked_range<size_t>(0, candidates.ev_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_edge_vertex_collisions(
                 mesh, vertices, candidates.ev_candidates, is_active, r.begin(),
@@ -193,7 +194,7 @@ void NormalCollisions::build(
         });
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), candidates.ee_candidates.size()),
+        tbb::blocked_range<size_t>(0, candidates.ee_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_edge_edge_collisions(
                 mesh, vertices, candidates.ee_candidates, is_active, r.begin(),
@@ -201,7 +202,7 @@ void NormalCollisions::build(
         });
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), candidates.fv_candidates.size()),
+        tbb::blocked_range<size_t>(0, candidates.fv_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_face_vertex_collisions(
                 mesh, vertices, candidates.fv_candidates, is_active, r.begin(),
@@ -216,7 +217,7 @@ void NormalCollisions::build(
                     mesh, vertices, candidates.ev_candidates, is_active);
 
             tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
+                tbb::blocked_range<size_t>(0, vv_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local()
                         .add_edge_vertex_negative_vertex_vertex_collisions(
@@ -230,7 +231,7 @@ void NormalCollisions::build(
                 mesh, vertices, candidates.ee_candidates, is_active);
 
             tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
+                tbb::blocked_range<size_t>(0, ev_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local()
                         .add_edge_edge_negative_edge_vertex_collisions(
@@ -245,7 +246,7 @@ void NormalCollisions::build(
                     mesh, vertices, candidates.fv_candidates, is_active);
 
             tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
+                tbb::blocked_range<size_t>(0, ev_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local()
                         .add_face_vertex_negative_edge_vertex_collisions(
@@ -258,7 +259,7 @@ void NormalCollisions::build(
                     mesh, vertices, candidates.fv_candidates, is_active);
 
             tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
+                tbb::blocked_range<size_t>(0, vv_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local()
                         .add_face_vertex_positive_vertex_vertex_collisions(
@@ -345,7 +346,7 @@ double NormalCollisions::compute_minimum_distance(
         [&](tbb::blocked_range<size_t> r, double partial_min_dist) -> double {
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const double dist = (*this)[i].compute_distance(
-                    (*this)[i].dof(vertices, edges, faces));
+                    (*this)[i].dof(vertices, mesh.edges(), mesh.faces()));
 
                 if (dist < partial_min_dist) {
                     partial_min_dist = dist;

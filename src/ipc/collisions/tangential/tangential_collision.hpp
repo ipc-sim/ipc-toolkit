@@ -102,9 +102,6 @@ public:
     /// @brief Weight
     double weight = 1;
 
-    /// @brief Material pair IDs
-    std::pair<int, int> m_pair_ids = {-1, -1};
-
     /// @brief Gradient of weight with respect to all DOF
     Eigen::SparseVector<double> weight_gradient;
 

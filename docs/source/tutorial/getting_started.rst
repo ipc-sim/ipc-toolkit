@@ -132,9 +132,9 @@ This returns a scalar value ``barrier_potential`` which is the sum of the barrie
 Mathematically this is defined as
 
 .. math::
-   B(x) = \sum_{k \in C} b(d_k(x), \hat{d}),
+   B(\mathbf{x}) = \sum_{k \in C} b(d_k(\mathbf{x}); \hat{d}),
 
-where :math:`x` is our deformed vertex positions, :math:`C` is the active collisions, :math:`d_k` is the distance (squared) of the :math:`k`-th active collision, and :math:`b` is IPC's C2-clamped log-barrier function.
+where :math:`\mathbf{x}` is our deformed vertex positions, :math:`C` is the active collisions, :math:`d_k` is the distance (squared) of the :math:`k`-th active collision, and :math:`b` is IPC's C2-clamped log-barrier function.
 
 .. note::
    This is **not** premultiplied by the barrier stiffness :math:`\kappa`.
@@ -392,14 +392,14 @@ Now we can compute the friction dissipative potential using the ``FrictionPotent
 
         .. code-block:: c++
 
-            const FrictionPotential D(eps_v);
+            const ipc::FrictionPotential D(eps_v);
             double friction_potential = D(tangential_collisions, collision_mesh, velocity);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            D = FrictionPotential(eps_v)
+            D = ipctk.FrictionPotential(eps_v)
             friction_potential = D(tangential_collisions, collision_mesh, velocity)
 
 Here ``eps_v`` (:math:`\epsilon_v`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
@@ -408,18 +408,18 @@ Here ``eps_v`` (:math:`\epsilon_v`) is the static friction threshold (in units o
    The friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is
 
    .. math::
-      v = \frac{x - x^t}{h},
+      \mathbf{v} = \frac{\mathbf{x} - \mathbf{x}^t}{h},
 
-   where :math:`x` is the current position, :math:`x^t` is the previous position, and :math:`h` is the time step size.
+   where :math:`\mathbf{x}` is the current position, :math:`\mathbf{x}^t` is the previous position, and :math:`h` is the time step size.
 
 This returns a scalar value ``friction_potential`` which is the sum of the individual friction potentials.
 
 Mathematically this is defined as
 
 .. math::
-   D(v) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|T_k^\top v\|, \epsilon_v\right),
+   D(\mathbf{v}) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|\mathbf{T}_k^\top \mathbf{v}\|; \epsilon_v\right),
 
-where :math:`C` is the lagged collisions, :math:`\lambda_k^n` is the normal force magnitude for the :math:`k`-th collision, :math:`T_k` is the tangential basis for the :math:`k`-th collision, and :math:`f_0` is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.
+where :math:`C` is the lagged collisions, :math:`\lambda_k^n` is the normal force magnitude for the :math:`k`-th collision, :math:`\mathbf{T}_k` is the tangential basis for the :math:`k`-th collision, and :math:`f_0` is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.
 
 Derivatives
 ^^^^^^^^^^^

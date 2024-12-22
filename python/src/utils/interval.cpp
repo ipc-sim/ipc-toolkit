@@ -36,7 +36,9 @@ using namespace filib;
 void define_interval(py::module_& m)
 {
 #ifdef IPC_TOOLKIT_WITH_FILIB
-    auto m_filib = m.def_submodule("filib", "Fast Interval Library");
+    auto m_filib = m.def_submodule(
+        "filib",
+        "Python bindings for the `Fast Interval Library (Filib) <https://github.com/zfergus/filib>`_ by Werner Hofschuster and Walter Kraemer.");
 
     py::class_<Interval>(m_filib, "Interval")
         .def(py::init())

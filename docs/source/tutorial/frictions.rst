@@ -30,7 +30,7 @@ The material ID is an integer value used to identify the material of each vertex
     // Assign material IDs to vertices
     std::vector<int> mat_id(rest_positions.rows(), 1);
 
-    ipc::CollisionMesh collision_mesh(rest_positions, edges, faces, mat_ids);
+    ipc::CollisionMesh collision_mesh(rest_positions, edges, faces);
 
 In Python:
 

@@ -31,6 +31,8 @@ C++
     :start-after: <!--- BEGIN C++ README 2 --->
     :end-before: <!--- FILIB DEPENDENCY NOTE --->
 
+.. _filib_dependency_note:
+
 .. warning::
     ``filib`` is licensed under `LGPL-2.1 <https://github.com/zfergus/filib/blob/main/LICENSE>`_ and as such it is required to be dynamically linked. Doing so automatically is a challenge, so by default we use static linkage. Enabling dynaic linkage requires copying the ``.so``/``.dylib``/``.dll`` file to the binary directory or system path. To enable this, set the CMake option :cmake:`FILIB_BUILD_SHARED_LIBS` to :cmake:`ON` and add this CMake code to copy the shared libaray object to the binary directory:
 
