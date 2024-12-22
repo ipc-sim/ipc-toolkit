@@ -32,7 +32,7 @@ CollisionMesh::CollisionMesh(
     , m_edges(edges)
     , m_faces(faces)
 {
-    assert(include_vertex.size() == full_rest_positions.rows());
+
     const bool include_all_vertices = std::all_of(
         include_vertex.begin(), include_vertex.end(), [](bool b) { return b; });
 

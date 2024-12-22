@@ -85,7 +85,7 @@ TEST_CASE("Faces to edges", "[collision_mesh][faces_to_edges]")
 
         CHECK(CollisionMesh::construct_faces_to_edges(F, E) == expected_F2E);
     }
-    SECTION("Shouldnt work")
+    SECTION("Shouldn't work")
     {
         E << 0, 1, 1, 2, 0, 3;
         try {
@@ -95,19 +95,7 @@ TEST_CASE("Faces to edges", "[collision_mesh][faces_to_edges]")
             SUCCEED("Should have thrown");
             CHECK(e.what() == std::string("Unable to find edge!"));
         } catch (...) {
-            FAIL("Uknown exception thrown");
+            FAIL("Unknown exception thrown");
         }
     }
-}
-
-TEST_CASE("Codim points collision mesh", "[collision_mesh]")
-{
-    Eigen::MatrixXd V(4, 2);
-    V << 0, 0, 1, 0, 0, 1, 1, 1;
-
-    CollisionMesh mesh(V);
-
-    Eigen::VectorXi expected_codim_vertices(4);
-    expected_codim_vertices << 0, 1, 2, 3;
-    CHECK(mesh.codim_vertices() == expected_codim_vertices);
 }

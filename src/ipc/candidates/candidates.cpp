@@ -100,6 +100,7 @@ void Candidates::build(
             vi = mesh.codim_vertices()[vi]; // Map back to vertices
         }
     }
+
 }
 
 void Candidates::build(
@@ -179,7 +180,7 @@ void Candidates::build(
             ei = mesh.codim_edges()[ei];    // Map back to mesh.edges
             vi = mesh.codim_vertices()[vi]; // Map back to vertices
         }
-    }
+    }  
 }
 
 bool Candidates::is_step_collision_free(
@@ -405,3 +406,5 @@ bool Candidates::save_obj(
 }
 
 } // namespace ipc
+
+

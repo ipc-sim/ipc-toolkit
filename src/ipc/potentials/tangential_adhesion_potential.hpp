@@ -28,6 +28,19 @@ protected:
     double f0(const double x) const override;
     double f1_over_x(const double x) const override;
     double f2_x_minus_f1_over_x3(const double x) const override;
+    double f0_mus(const double x, const double mu_s, const double mu_k) const override
+    {
+        return 0;
+    }
+    double f1_over_x_mus(const double x, const double mu_s, const double mu_k) const override
+    {
+        return 0;
+    }
+    double f2_x_minus_f1_over_x3_mus(const double x, const double mu_s, const double mu_k) const override
+    {
+        return 0;
+    }
+
 
     bool is_dynamic(const double speed) const override
     {

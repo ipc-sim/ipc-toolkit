@@ -2,6 +2,8 @@
 
 #include <ipc/utils/unordered_map_and_set.hpp>
 
+#include <optional>
+
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
@@ -19,6 +21,7 @@ public:
     /// @param edges The edges of the collision mesh (#E × 2).
     /// @param faces The faces of the collision mesh (#F × 3).
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
+    /// @param mat_id The material ID of the collision mesh (optional).
     CollisionMesh(
         const Eigen::MatrixXd& rest_positions,
         const Eigen::MatrixXi& edges = Eigen::MatrixXi(),
@@ -32,6 +35,7 @@ public:
     /// @param edges The edges of the collision mesh indexed into the full mesh vertices (#E × 2).
     /// @param faces The faces of the collision mesh indexed into the full mesh vertices (#F × 3).
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
+    /// @param mat_id The material ID of the collision mesh (optional).
     CollisionMesh(
         const std::vector<bool>& include_vertex,
         const Eigen::MatrixXd& full_rest_positions,
