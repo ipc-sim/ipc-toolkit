@@ -81,10 +81,6 @@ public:
     virtual MatrixMax<double, 6, 12> relative_velocity_matrix_jacobian(
         const VectorMax2d& closest_point) const = 0;
 
-    /// @brief Get the material pair IDs of the collision.
-    /// @return Material pair IDs of the collision.
-    virtual std::pair<int, int> material_pair_ids() const = 0;
-
 public:
 
     /// @brief Normal force magnitude

@@ -96,6 +96,4 @@ FaceVertexTangentialCollision::relative_velocity_matrix_jacobian(
         dim(), _closest_point);
 }
 
-}
-
 } // namespace ipc

@@ -79,7 +79,7 @@ smooth_friction_f2_x_minus_f1_over_x3(const double y, const double eps_v);
 /// 
 /// \f\[
 ///     \mu(y) = \begin{cases}
-///         \mu_k, & |y| \geq \epsilon_v \
+///         \mu_k, & |y| \geq \epsilon_v 
 ///         \newline
 ///         (\mu_k - \mu_s)(3 \left(\frac{|y|}{\epsilon_v}\right)^2 - 2 \left(\frac{|y|}{\epsilon_v}\right)^3) + \mu_s, & |y| < \epsilon_v
 ///     \end{cases}

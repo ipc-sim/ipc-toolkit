@@ -86,8 +86,4 @@ VertexVertexTangentialCollision::relative_velocity_matrix_jacobian(
     return point_point_relative_velocity_matrix_jacobian(dim());
 }
 
-std::pair<int, int> VertexVertexTangentialCollision::material_pair_ids() const { 
-    return this->m_pair_ids;
-}
-
 } // namespace ipc

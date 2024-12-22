@@ -43,8 +43,6 @@ protected:
 
     MatrixMax<double, 6, 12> relative_velocity_matrix_jacobian(
         const VectorMax2d& closest_point) const override;
-
-    std::pair<int, int> material_pair_ids() const override;
 };
 
 } // namespace ipc
