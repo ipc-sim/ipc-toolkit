@@ -32,7 +32,7 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.b454d0e296e565629.min.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css" />
         <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
@@ -1163,7 +1163,7 @@
 <h2 id="how-do-i-include-ipc-toolkit-in-my-project">How do I include IPC Toolkit in my project?<a class="headerlink" href="#how-do-i-include-ipc-toolkit-in-my-project" title="Permalink to this heading">¶</a></h2>
 <p>If you are using CMake, the public include directory is added to the <code class="code highlight cmake docutils literal highlight-cmake">ipc::toolkit</code> cmake target which means that any lib/bin that includes <code class="code highlight cmake docutils literal highlight-cmake">ipc::toolkit</code> as a dependency also adds those include directories too.</p>
 <p>If you are not using CMake, the include path is <code class="docutils literal notranslate"><span class="pre">src</span></code>.</p>
-<p>Files are included with the prefix <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/...&gt;</span></code> in C++ and <code class="code highlight python docutils literal highlight-python"><span class="kn">import</span> <span class="nn">ipctk</span></code> in Python.</p>
+<p>Files are included with the prefix <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/...&gt;</span></code> in C++ and <code class="code highlight python docutils literal highlight-python"><span class="kn">import</span><span class="w"> </span><span class="nn">ipctk</span></code> in Python.</p>
 <h2 id="how-do-i-determine-which-edges-intersect">How do I determine which edges intersect?<a class="headerlink" href="#how-do-i-determine-which-edges-intersect" title="Permalink to this heading">¶</a></h2>
 <p>We do not provide an edge-edge intersection function in 3D, but you can approximate it by computing the distance between the two edges and checking if it is less than a threshold.</p>
 <p>Inside any <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">BroadPhase</span></code> classes, the function <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">detect_edge_edge_candidates</span></code> determines which edges intersect based on their bounding boxes. You can then use <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">edge_edge_distance</span></code> to check if they approximatly intersect by computing the distance.</p>
@@ -1178,7 +1178,7 @@
   <small>
     
       Last update:
-      Dec 12, 2024
+      Jan 21, 2025
     
   </small>
 </div>
@@ -1249,7 +1249,7 @@
       <div class="md-copyright">
   
     <div class="md-footer-copyright__highlight">
-        &#169; Copyright 2020-2024, IPC-Sim Organization; MIT License.
+        &#169; Copyright 2020-2025, IPC-Sim Organization; MIT License.
         
     </div>
   

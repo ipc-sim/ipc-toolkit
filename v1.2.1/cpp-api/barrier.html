@@ -32,7 +32,7 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.b454d0e296e565629.min.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css" />
         <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
@@ -1714,7 +1714,9 @@
 <span class="target" id="namespaceipc_1a4d59f70261df62e4f6d955020d37ed1c"></span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">barrier</span></span><span><span class="p">(</span><span><span class="k">const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc7barrierEKdKd-p-d" title="ipc::barrier::d (C++ function parameter) — The distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc7barrierEKdKd-p-dhat" title="ipc::barrier::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N3ipc7barrierEKdKd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function that grows to infinity as d approaches 0 from the right. </p>
 <p><div class="math notranslate nohighlight">
-\[ b(d) = -(d-\hat{d})^2\ln\left(\frac{d}{\hat{d}}\right) \]</div>
+\[
+    b(d) = -(d-\hat{d})^2\ln\left(\frac{d}{\hat{d}}\right)
+\]</div>
 </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4N3ipc7barrierEKdKd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc7barrierEKdKd-parameters" title="Permalink to this headline">¶</a></dt>
@@ -1736,7 +1738,10 @@
 <span class="target" id="namespaceipc_1ad074ab342fb6e7638abcb1b0292cca58"></span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">barrier_gradient</span></span><span><span class="p">(</span><span><span class="k">const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc16barrier_gradientEKdKd-p-d" title="ipc::barrier_gradient::d (C++ function parameter) — The distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc16barrier_gradientEKdKd-p-dhat" title="ipc::barrier_gradient::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N3ipc16barrier_gradientEKdKd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Derivative of the barrier function. </p>
 <p><div class="math notranslate nohighlight">
-\[ b'(d) = (\hat{d}-d) \left( 2\ln\left( \frac{d}{\hat{d}} \right) - \frac{\hat{d}}{d} + 1\right) \]</div>
+\[
+    b'(d) = (\hat{d}-d) \left( 2\ln\left( \frac{d}{\hat{d}} \right) -
+    \frac{\hat{d}}{d} + 1\right)
+\]</div>
 </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4N3ipc16barrier_gradientEKdKd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc16barrier_gradientEKdKd-parameters" title="Permalink to this headline">¶</a></dt>
@@ -1758,7 +1763,10 @@
 <span class="target" id="namespaceipc_1a0342013d855cd4b2998e65c97211753c"></span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">barrier_hessian</span></span><span><span class="p">(</span><span><span class="k">const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc15barrier_hessianEKdKd-p-d" title="ipc::barrier_hessian::d (C++ function parameter) — The distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc15barrier_hessianEKdKd-p-dhat" title="ipc::barrier_hessian::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N3ipc15barrier_hessianEKdKd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Second derivative of the barrier function. </p>
 <p><div class="math notranslate nohighlight">
-\[ b''(d) = \left( \frac{\hat{d}}{d} + 2 \right) \frac{\hat{d}}{d} - 2\ln\left( \frac{d}{\hat{d}} \right) - 3 \]</div>
+\[
+    b''(d) = \left( \frac{\hat{d}}{d} + 2 \right) \frac{\hat{d}}{d} -
+    2\ln\left( \frac{d}{\hat{d}} \right) - 3
+\]</div>
 </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4N3ipc15barrier_hessianEKdKd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc15barrier_hessianEKdKd-parameters" title="Permalink to this headline">¶</a></dt>
@@ -1843,7 +1851,7 @@
   <small>
     
       Last update:
-      Dec 12, 2024
+      Jan 21, 2025
     
   </small>
 </div>

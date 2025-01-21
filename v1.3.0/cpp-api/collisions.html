@@ -32,7 +32,7 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.b454d0e296e565629.min.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css" />
         <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
@@ -5756,24 +5756,24 @@
 <span class="target" id="classipc_1_1_collision"></span><span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">Collision</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="k">virtual</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="candidates.html#_CPPv4N3ipc16CollisionStencilE" title="ipc::CollisionStencil (C++ class) — A stencil representing a collision between at most four vertices."><span class="n">CollisionStencil</span></a><a class="headerlink" href="#_CPPv4N3ipc9CollisionE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inheritence diagram for ipc::Collision:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-18f3b4a068e329cac254062dc368192e2c64f487.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-eeab7bed76042974ffef6fa5066d579e586a7a8f.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
-    &quot;7&quot; [label=&quot;ipc::VertexVertexCollision&quot; tooltip=&quot;ipc::VertexVertexCollision&quot;]
     &quot;1&quot; [label=&quot;ipc::Collision&quot; tooltip=&quot;ipc::Collision&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;2&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
-    &quot;4&quot; [label=&quot;ipc::EdgeVertexCollision&quot; tooltip=&quot;ipc::EdgeVertexCollision&quot;]
     &quot;3&quot; [label=&quot;ipc::EdgeEdgeCollision&quot; tooltip=&quot;ipc::EdgeEdgeCollision&quot;]
+    &quot;4&quot; [label=&quot;ipc::EdgeVertexCollision&quot; tooltip=&quot;ipc::EdgeVertexCollision&quot;]
     &quot;5&quot; [label=&quot;ipc::FaceVertexCollision&quot; tooltip=&quot;ipc::FaceVertexCollision&quot;]
     &quot;6&quot; [label=&quot;ipc::PlaneVertexCollision&quot; tooltip=&quot;ipc::PlaneVertexCollision&quot;]
-    &quot;7&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;7&quot; [label=&quot;ipc::VertexVertexCollision&quot; tooltip=&quot;ipc::VertexVertexCollision&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-    &quot;4&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;3&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;4&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;5&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;6&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;7&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
 </figure>
@@ -6009,41 +6009,41 @@
 <span class="target" id="classipc_1_1_vertex_vertex_collision"></span><span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">VertexVertexCollision</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="candidates.html#_CPPv4N3ipc21VertexVertexCandidateE" title="ipc::VertexVertexCandidate (C++ class) — Subclassed by ipc::VertexVertexCollision, ipc::VertexVertexFrictionCollision"><span class="n">VertexVertexCandidate</span></a><span class="p">,</span><span class="w"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N3ipc9CollisionE" title="ipc::Collision (C++ class) — Inheritence diagram for ipc::Collision:"><span class="n">Collision</span></a><a class="headerlink" href="#_CPPv4N3ipc21VertexVertexCollisionE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inheritence diagram for ipc::VertexVertexCollision:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-b27ae993091208120813dc39ee8c12ca7ed7184b.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-10445ca23be09ff2eb4ba4559cdc575d8fc6a04f.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;5&quot; [label=&quot;ipc::Collision&quot; tooltip=&quot;ipc::Collision&quot;]
-    &quot;1&quot; [label=&quot;ipc::VertexVertexCollision&quot; tooltip=&quot;ipc::VertexVertexCollision&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;4&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
+    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;2&quot; [label=&quot;ipc::VertexVertexCandidate&quot; tooltip=&quot;ipc::VertexVertexCandidate&quot;]
+    &quot;1&quot; [label=&quot;ipc::VertexVertexCollision&quot; tooltip=&quot;ipc::VertexVertexCollision&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;5&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-    &quot;1&quot; -&gt; &quot;5&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;1&quot; -&gt; &quot;5&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
 </figure>
 <p>Collaboration diagram for ipc::VertexVertexCollision:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-b27ae993091208120813dc39ee8c12ca7ed7184b.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-10445ca23be09ff2eb4ba4559cdc575d8fc6a04f.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;5&quot; [label=&quot;ipc::Collision&quot; tooltip=&quot;ipc::Collision&quot;]
-    &quot;1&quot; [label=&quot;ipc::VertexVertexCollision&quot; tooltip=&quot;ipc::VertexVertexCollision&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;4&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
+    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;2&quot; [label=&quot;ipc::VertexVertexCandidate&quot; tooltip=&quot;ipc::VertexVertexCandidate&quot;]
+    &quot;1&quot; [label=&quot;ipc::VertexVertexCollision&quot; tooltip=&quot;ipc::VertexVertexCollision&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;5&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-    &quot;1&quot; -&gt; &quot;5&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;1&quot; -&gt; &quot;5&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
 </figure>
@@ -6081,14 +6081,14 @@
 <span class="target" id="classipc_1_1_edge_vertex_collision"></span><span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">EdgeVertexCollision</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="candidates.html#_CPPv4N3ipc19EdgeVertexCandidateE" title="ipc::EdgeVertexCandidate (C++ class) — Subclassed by ipc::EdgeVertexCollision, ipc::EdgeVertexFrictionCollision"><span class="n">EdgeVertexCandidate</span></a><span class="p">,</span><span class="w"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N3ipc9CollisionE" title="ipc::Collision (C++ class) — Inheritence diagram for ipc::Collision:"><span class="n">Collision</span></a><a class="headerlink" href="#_CPPv4N3ipc19EdgeVertexCollisionE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inheritence diagram for ipc::EdgeVertexCollision:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-f94343dc5b0d988cac47104e3d120aac7d25e38e.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-a1ef7c8e1c55e36c5459bf187302eb58a4e03ff2.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;5&quot; [label=&quot;ipc::Collision&quot; tooltip=&quot;ipc::Collision&quot;]
-    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;4&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
+    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;2&quot; [label=&quot;ipc::EdgeVertexCandidate&quot; tooltip=&quot;ipc::EdgeVertexCandidate&quot;]
     &quot;1&quot; [label=&quot;ipc::EdgeVertexCollision&quot; tooltip=&quot;ipc::EdgeVertexCollision&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;5&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
@@ -6101,14 +6101,14 @@
 </figure>
 <p>Collaboration diagram for ipc::EdgeVertexCollision:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-f94343dc5b0d988cac47104e3d120aac7d25e38e.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-a1ef7c8e1c55e36c5459bf187302eb58a4e03ff2.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;5&quot; [label=&quot;ipc::Collision&quot; tooltip=&quot;ipc::Collision&quot;]
-    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;4&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
+    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;2&quot; [label=&quot;ipc::EdgeVertexCandidate&quot; tooltip=&quot;ipc::EdgeVertexCandidate&quot;]
     &quot;1&quot; [label=&quot;ipc::EdgeVertexCollision&quot; tooltip=&quot;ipc::EdgeVertexCollision&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;5&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
@@ -6158,41 +6158,41 @@
 <span class="target" id="classipc_1_1_edge_edge_collision"></span><span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">EdgeEdgeCollision</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="candidates.html#_CPPv4N3ipc17EdgeEdgeCandidateE" title="ipc::EdgeEdgeCandidate (C++ class) — Subclassed by ipc::EdgeEdgeCollision, ipc::EdgeEdgeFrictionCollision"><span class="n">EdgeEdgeCandidate</span></a><span class="p">,</span><span class="w"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N3ipc9CollisionE" title="ipc::Collision (C++ class) — Inheritence diagram for ipc::Collision:"><span class="n">Collision</span></a><a class="headerlink" href="#_CPPv4N3ipc17EdgeEdgeCollisionE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inheritence diagram for ipc::EdgeEdgeCollision:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-9d0b78d6117d8c2df8628fc2631afdb9c06aa654.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-ff6460a80be3825988a0144baa4858b13dfc2703.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;5&quot; [label=&quot;ipc::Collision&quot; tooltip=&quot;ipc::Collision&quot;]
-    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;4&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
-    &quot;1&quot; [label=&quot;ipc::EdgeEdgeCollision&quot; tooltip=&quot;ipc::EdgeEdgeCollision&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;2&quot; [label=&quot;ipc::EdgeEdgeCandidate&quot; tooltip=&quot;ipc::EdgeEdgeCandidate&quot;]
+    &quot;1&quot; [label=&quot;ipc::EdgeEdgeCollision&quot; tooltip=&quot;ipc::EdgeEdgeCollision&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;5&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;1&quot; -&gt; &quot;5&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
 </figure>
 <p>Collaboration diagram for ipc::EdgeEdgeCollision:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-9d0b78d6117d8c2df8628fc2631afdb9c06aa654.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-ff6460a80be3825988a0144baa4858b13dfc2703.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;5&quot; [label=&quot;ipc::Collision&quot; tooltip=&quot;ipc::Collision&quot;]
-    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;4&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
-    &quot;1&quot; [label=&quot;ipc::EdgeEdgeCollision&quot; tooltip=&quot;ipc::EdgeEdgeCollision&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;2&quot; [label=&quot;ipc::EdgeEdgeCandidate&quot; tooltip=&quot;ipc::EdgeEdgeCandidate&quot;]
+    &quot;1&quot; [label=&quot;ipc::EdgeEdgeCollision&quot; tooltip=&quot;ipc::EdgeEdgeCollision&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;5&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;1&quot; -&gt; &quot;5&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
-    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
 </figure>
@@ -6444,15 +6444,15 @@
 <span class="target" id="classipc_1_1_face_vertex_collision"></span><span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">FaceVertexCollision</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="candidates.html#_CPPv4N3ipc19FaceVertexCandidateE" title="ipc::FaceVertexCandidate (C++ class) — Subclassed by ipc::FaceVertexCollision, ipc::FaceVertexFrictionCollision"><span class="n">FaceVertexCandidate</span></a><span class="p">,</span><span class="w"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N3ipc9CollisionE" title="ipc::Collision (C++ class) — Inheritence diagram for ipc::Collision:"><span class="n">Collision</span></a><a class="headerlink" href="#_CPPv4N3ipc19FaceVertexCollisionE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inheritence diagram for ipc::FaceVertexCollision:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-a5a64fa00bf3d2e735798bab40217b369f7dd523.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-ace3a4a5329589fee20cdca3c04e8670585af637.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;5&quot; [label=&quot;ipc::Collision&quot; tooltip=&quot;ipc::Collision&quot;]
+    &quot;4&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
     &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;2&quot; [label=&quot;ipc::FaceVertexCandidate&quot; tooltip=&quot;ipc::FaceVertexCandidate&quot;]
-    &quot;4&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
     &quot;1&quot; [label=&quot;ipc::FaceVertexCollision&quot; tooltip=&quot;ipc::FaceVertexCollision&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;5&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
@@ -6464,15 +6464,15 @@
 </figure>
 <p>Collaboration diagram for ipc::FaceVertexCollision:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-a5a64fa00bf3d2e735798bab40217b369f7dd523.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-ace3a4a5329589fee20cdca3c04e8670585af637.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;5&quot; [label=&quot;ipc::Collision&quot; tooltip=&quot;ipc::Collision&quot;]
+    &quot;4&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
     &quot;3&quot; [label=&quot;ipc::ContinuousCollisionCandidate&quot; tooltip=&quot;ipc::ContinuousCollisionCandidate&quot;]
     &quot;2&quot; [label=&quot;ipc::FaceVertexCandidate&quot; tooltip=&quot;ipc::FaceVertexCandidate&quot;]
-    &quot;4&quot; [label=&quot;ipc::CollisionStencil&quot; tooltip=&quot;ipc::CollisionStencil&quot;]
     &quot;1&quot; [label=&quot;ipc::FaceVertexCollision&quot; tooltip=&quot;ipc::FaceVertexCollision&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;5&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
@@ -6564,7 +6564,7 @@
 
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4NK3ipc20PlaneVertexCollision10vertex_idsERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
-<span class="target" id="classipc_1_1_plane_vertex_collision_1a03b927f1b4f4dc23ff99f059ce168b36"></span><span class="k">inline</span><span class="w">&nbsp;</span><span class="k">virtual</span><span class="w">&nbsp;</span><span class="n">std</span><span class="p">::</span><span class="n">array</span><span class="p">&lt;</span><span class="kt">long</span><span class="p">,</span><span class="w">&nbsp;</span><span class="m">4</span><span class="p">&gt;</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">vertex_ids</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc20PlaneVertexCollision10vertex_idsERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE-p-edges" title="ipc::PlaneVertexCollision::vertex_ids::edges (C++ function parameter) — Collision mesh edges"><span class="n sig-param">&nbsp;edges</span></a></span><span class="p">,</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc20PlaneVertexCollision10vertex_idsERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE-p-faces" title="ipc::PlaneVertexCollision::vertex_ids::faces (C++ function parameter) — Collision mesh faces"><span class="n sig-param">&nbsp;faces</span></a></span><span class="p">)</span></span><span class="w">&nbsp;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="k">override</span><a class="headerlink" href="#_CPPv4NK3ipc20PlaneVertexCollision10vertex_idsERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="classipc_1_1_plane_vertex_collision_1a34633113656a7d947705d0f7f4049bc5"></span><span class="k">inline</span><span class="w">&nbsp;</span><span class="k">virtual</span><span class="w">&nbsp;</span><span class="n">std</span><span class="p">::</span><span class="n">array</span><span class="p">&lt;</span><span class="kt">long</span><span class="p">,</span><span class="w">&nbsp;</span><span class="m">4</span><span class="p">&gt;</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">vertex_ids</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc20PlaneVertexCollision10vertex_idsERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE-p-edges" title="ipc::PlaneVertexCollision::vertex_ids::edges (C++ function parameter) — Collision mesh edges"><span class="n sig-param">&nbsp;edges</span></a></span><span class="p">,</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc20PlaneVertexCollision10vertex_idsERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE-p-faces" title="ipc::PlaneVertexCollision::vertex_ids::faces (C++ function parameter) — Collision mesh faces"><span class="n sig-param">&nbsp;faces</span></a></span><span class="p">)</span></span><span class="w">&nbsp;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="k">override</span><a class="headerlink" href="#_CPPv4NK3ipc20PlaneVertexCollision10vertex_idsERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the vertex IDs of the collision stencil. </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4NK3ipc20PlaneVertexCollision10vertex_idsERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4NK3ipc20PlaneVertexCollision10vertex_idsERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE-parameters" title="Permalink to this headline">¶</a></dt>
@@ -6665,7 +6665,7 @@
   <small>
     
       Last update:
-      Dec 12, 2024
+      Jan 21, 2025
     
   </small>
 </div>
@@ -6736,7 +6736,7 @@
       <div class="md-copyright">
   
     <div class="md-footer-copyright__highlight">
-        &#169; Copyright 2020-2024, IPC-Sim Organization; MIT License.
+        &#169; Copyright 2020-2025, IPC-Sim Organization; MIT License.
         
     </div>
   

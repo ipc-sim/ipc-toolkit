@@ -32,7 +32,7 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.b454d0e296e565629.min.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css" />
         <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
@@ -2671,7 +2671,9 @@
 <span class="target" id="namespaceipc_1a4d59f70261df62e4f6d955020d37ed1c"></span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">barrier</span></span><span><span class="p">(</span><span><span class="k">const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc7barrierEKdKd-p-d" title="ipc::barrier::d (C++ function parameter) — The distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc7barrierEKdKd-p-dhat" title="ipc::barrier::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N3ipc7barrierEKdKd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function that grows to infinity as d approaches 0 from the right. </p>
 <p><div class="math notranslate nohighlight">
-\[ b(d) = -(d-\hat{d})^2\ln\left(\frac{d}{\hat{d}}\right) \]</div>
+\[
+    b(d) = -(d-\hat{d})^2\ln\left(\frac{d}{\hat{d}}\right)
+\]</div>
 </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4N3ipc7barrierEKdKd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc7barrierEKdKd-parameters" title="Permalink to this headline">¶</a></dt>
@@ -2693,7 +2695,10 @@
 <span class="target" id="namespaceipc_1a2f02b1f89f54c63c0cb8efa3309dc18c"></span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">barrier_first_derivative</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc24barrier_first_derivativeEKdKd-p-d" title="ipc::barrier_first_derivative::d (C++ function parameter) — The distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc24barrier_first_derivativeEKdKd-p-dhat" title="ipc::barrier_first_derivative::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N3ipc24barrier_first_derivativeEKdKd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Derivative of the barrier function. </p>
 <p><div class="math notranslate nohighlight">
-\[ b'(d) = (\hat{d}-d) \left( 2\ln\left( \frac{d}{\hat{d}} \right) - \frac{\hat{d}}{d} + 1\right) \]</div>
+\[
+    b'(d) = (\hat{d}-d) \left( 2\ln\left( \frac{d}{\hat{d}} \right) -
+    \frac{\hat{d}}{d} + 1\right)
+\]</div>
 </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4N3ipc24barrier_first_derivativeEKdKd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc24barrier_first_derivativeEKdKd-parameters" title="Permalink to this headline">¶</a></dt>
@@ -2715,7 +2720,10 @@
 <span class="target" id="namespaceipc_1acd6c3ba05d4b8babee08de0bf4a9b00c"></span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">barrier_second_derivative</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc25barrier_second_derivativeEKdKd-p-d" title="ipc::barrier_second_derivative::d (C++ function parameter) — The distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc25barrier_second_derivativeEKdKd-p-dhat" title="ipc::barrier_second_derivative::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N3ipc25barrier_second_derivativeEKdKd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Second derivative of the barrier function. </p>
 <p><div class="math notranslate nohighlight">
-\[ b''(d) = \left( \frac{\hat{d}}{d} + 2 \right) \frac{\hat{d}}{d} - 2\ln\left( \frac{d}{\hat{d}} \right) - 3 \]</div>
+\[
+    b''(d) = \left( \frac{\hat{d}}{d} + 2 \right) \frac{\hat{d}}{d} -
+    2\ln\left( \frac{d}{\hat{d}} \right) - 3
+\]</div>
 </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4N3ipc25barrier_second_derivativeEKdKd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc25barrier_second_derivativeEKdKd-parameters" title="Permalink to this headline">¶</a></dt>
@@ -2815,7 +2823,7 @@
 
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4NK3ipc7BarrierclEKdKd">
-<span class="target" id="classipc_1_1_barrier_1a1d131f281f6d2a89451ee4b2ea20227e"></span><span class="k">virtual</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="k">operator</span><span class="o">()</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc7BarrierclEKdKd-p-d" title="ipc::Barrier::operator()::d (C++ function parameter) — Distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc7BarrierclEKdKd-p-dhat" title="ipc::Barrier::operator()::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><span class="w">&nbsp;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="m">0</span><a class="headerlink" href="#_CPPv4NK3ipc7BarrierclEKdKd" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="classipc_1_1_barrier_1a1d131f281f6d2a89451ee4b2ea20227e"></span><span class="k">virtual</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="k">operator</span><span class="o">()</span></span><span><span class="p">(</span><span><span class="k">const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc7BarrierclEKdKd-p-d" title="ipc::Barrier::operator()::d (C++ function parameter) — Distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc7BarrierclEKdKd-p-dhat" title="ipc::Barrier::operator()::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><span class="w">&nbsp;</span><span class="k">const</span><span class="w"><br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="m">0</span><a class="headerlink" href="#_CPPv4NK3ipc7BarrierclEKdKd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the barrier function. </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4NK3ipc7BarrierclEKdKd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4NK3ipc7BarrierclEKdKd-parameters" title="Permalink to this headline">¶</a></dt>
@@ -2834,7 +2842,7 @@
 
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4NK3ipc7Barrier16first_derivativeEKdKd">
-<span class="target" id="classipc_1_1_barrier_1a8a8f92d500438b1be342e428d7fe21f6"></span><span class="k">virtual</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">first_derivative</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc7Barrier16first_derivativeEKdKd-p-d" title="ipc::Barrier::first_derivative::d (C++ function parameter) — Distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc7Barrier16first_derivativeEKdKd-p-dhat" title="ipc::Barrier::first_derivative::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><span class="w">&nbsp;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="m">0</span><a class="headerlink" href="#_CPPv4NK3ipc7Barrier16first_derivativeEKdKd" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="classipc_1_1_barrier_1a8a8f92d500438b1be342e428d7fe21f6"></span><span class="k">virtual</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">first_derivative</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc7Barrier16first_derivativeEKdKd-p-d" title="ipc::Barrier::first_derivative::d (C++ function parameter) — Distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc7Barrier16first_derivativeEKdKd-p-dhat" title="ipc::Barrier::first_derivative::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><span class="w">&nbsp;</span><span class="k">const</span><span class="w"><br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="m">0</span><a class="headerlink" href="#_CPPv4NK3ipc7Barrier16first_derivativeEKdKd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the first derivative of the barrier function wrt d. </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4NK3ipc7Barrier16first_derivativeEKdKd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4NK3ipc7Barrier16first_derivativeEKdKd-parameters" title="Permalink to this headline">¶</a></dt>
@@ -2853,7 +2861,7 @@
 
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4NK3ipc7Barrier17second_derivativeEKdKd">
-<span class="target" id="classipc_1_1_barrier_1a57311ba10a405b6883f94ff69275b6ea"></span><span class="k">virtual</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">second_derivative</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc7Barrier17second_derivativeEKdKd-p-d" title="ipc::Barrier::second_derivative::d (C++ function parameter) — Distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc7Barrier17second_derivativeEKdKd-p-dhat" title="ipc::Barrier::second_derivative::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><span class="w">&nbsp;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="m">0</span><a class="headerlink" href="#_CPPv4NK3ipc7Barrier17second_derivativeEKdKd" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="classipc_1_1_barrier_1a57311ba10a405b6883f94ff69275b6ea"></span><span class="k">virtual</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">second_derivative</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc7Barrier17second_derivativeEKdKd-p-d" title="ipc::Barrier::second_derivative::d (C++ function parameter) — Distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc7Barrier17second_derivativeEKdKd-p-dhat" title="ipc::Barrier::second_derivative::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><span class="w">&nbsp;</span><span class="k">const</span><span class="w"><br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="m">0</span><a class="headerlink" href="#_CPPv4NK3ipc7Barrier17second_derivativeEKdKd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate the second derivative of the barrier function wrt d. </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4NK3ipc7Barrier17second_derivativeEKdKd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4NK3ipc7Barrier17second_derivativeEKdKd-parameters" title="Permalink to this headline">¶</a></dt>
@@ -2907,7 +2915,9 @@
 <span class="target" id="classipc_1_1_clamped_log_barrier_1ac613dc434dbfa3a237e3322541ed34ee"></span><span class="k">inline</span><span class="w">&nbsp;</span><span class="k">virtual</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="k">operator</span><span class="o">()</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc17ClampedLogBarrierclEKdKd-p-d" title="ipc::ClampedLogBarrier::operator()::d (C++ function parameter) — The distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc17ClampedLogBarrierclEKdKd-p-dhat" title="ipc::ClampedLogBarrier::operator()::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><span class="w">&nbsp;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="k">override</span><a class="headerlink" href="#_CPPv4NK3ipc17ClampedLogBarrierclEKdKd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function that grows to infinity as d approaches 0 from the right. </p>
 <p><div class="math notranslate nohighlight">
-\[ b(d) = -(d-\hat{d})^2\ln\left(\frac{d}{\hat{d}}\right) \]</div>
+\[
+    b(d) = -(d-\hat{d})^2\ln\left(\frac{d}{\hat{d}}\right)
+\]</div>
 </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4NK3ipc17ClampedLogBarrierclEKdKd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4NK3ipc17ClampedLogBarrierclEKdKd-parameters" title="Permalink to this headline">¶</a></dt>
@@ -2929,7 +2939,10 @@
 <span class="target" id="classipc_1_1_clamped_log_barrier_1ab48d6d34bf1369fa645131f384978b2d"></span><span class="k">inline</span><span class="w">&nbsp;</span><span class="k">virtual</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">first_derivative</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc17ClampedLogBarrier16first_derivativeEKdKd-p-d" title="ipc::ClampedLogBarrier::first_derivative::d (C++ function parameter) — The distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc17ClampedLogBarrier16first_derivativeEKdKd-p-dhat" title="ipc::ClampedLogBarrier::first_derivative::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><span class="w">&nbsp;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="k">override</span><a class="headerlink" href="#_CPPv4NK3ipc17ClampedLogBarrier16first_derivativeEKdKd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Derivative of the barrier function. </p>
 <p><div class="math notranslate nohighlight">
-\[ b'(d) = (\hat{d}-d) \left( 2\ln\left( \frac{d}{\hat{d}} \right) - \frac{\hat{d}}{d} + 1\right) \]</div>
+\[
+    b'(d) = (\hat{d}-d) \left( 2\ln\left( \frac{d}{\hat{d}} \right) -
+    \frac{\hat{d}}{d} + 1\right)
+\]</div>
 </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4NK3ipc17ClampedLogBarrier16first_derivativeEKdKd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4NK3ipc17ClampedLogBarrier16first_derivativeEKdKd-parameters" title="Permalink to this headline">¶</a></dt>
@@ -2951,7 +2964,10 @@
 <span class="target" id="classipc_1_1_clamped_log_barrier_1a9ea01be096c46e334e5b301e34d6243a"></span><span class="k">inline</span><span class="w">&nbsp;</span><span class="k">virtual</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">second_derivative</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc17ClampedLogBarrier17second_derivativeEKdKd-p-d" title="ipc::ClampedLogBarrier::second_derivative::d (C++ function parameter) — The distance."><span class="n sig-param">d</span></a></span><span class="p">,</span><span><span class="k">&nbsp;const</span><span class="w">&nbsp;</span><span class="kt">double</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4NK3ipc17ClampedLogBarrier17second_derivativeEKdKd-p-dhat" title="ipc::ClampedLogBarrier::second_derivative::dhat (C++ function parameter) — Activation distance of the barrier."><span class="n sig-param">dhat</span></a></span><span class="p">)</span></span><span class="w">&nbsp;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="k">override</span><a class="headerlink" href="#_CPPv4NK3ipc17ClampedLogBarrier17second_derivativeEKdKd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Second derivative of the barrier function. </p>
 <p><div class="math notranslate nohighlight">
-\[ b''(d) = \left( \frac{\hat{d}}{d} + 2 \right) \frac{\hat{d}}{d} - 2\ln\left( \frac{d}{\hat{d}} \right) - 3 \]</div>
+\[
+    b''(d) = \left( \frac{\hat{d}}{d} + 2 \right) \frac{\hat{d}}{d} -
+    2\ln\left( \frac{d}{\hat{d}} \right) - 3
+\]</div>
 </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4NK3ipc17ClampedLogBarrier17second_derivativeEKdKd-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4NK3ipc17ClampedLogBarrier17second_derivativeEKdKd-parameters" title="Permalink to this headline">¶</a></dt>
@@ -2995,7 +3011,7 @@
   <small>
     
       Last update:
-      Dec 12, 2024
+      Jan 21, 2025
     
   </small>
 </div>
@@ -3066,7 +3082,7 @@
       <div class="md-copyright">
   
     <div class="md-footer-copyright__highlight">
-        &#169; Copyright 2020-2024, IPC-Sim Organization; MIT License.
+        &#169; Copyright 2020-2025, IPC-Sim Organization; MIT License.
         
     </div>
   

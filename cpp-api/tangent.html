@@ -32,7 +32,7 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.b454d0e296e565629.min.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css" />
         <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
@@ -4298,7 +4298,12 @@
 <span class="target" id="namespaceipc_1a2be698b5f06211cf8cdb8e55734ac4f2"></span><span class="n">Eigen</span><span class="p">::</span><span class="n">Matrix</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">,</span><span class="w">&nbsp;</span><span class="m">3</span><span class="p">,</span><span class="w">&nbsp;</span><span class="m">2</span><span class="p">&gt;</span><span class="w">&nbsp;</span><span class="sig-prename descclassname"><span class="n">ipc</span><span class="p">::</span></span><span class="sig-name descname"><span class="n">point_triangle_tangent_basis</span></span><span><span class="p">(</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Ref</span><span class="p">&lt;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Vector3d</span><span class="p">&gt;</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc28point_triangle_tangent_basisERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEE-p-p" title="ipc::point_triangle_tangent_basis::p (C++ function parameter) — Point"><span class="n sig-param">&nbsp;p</span></a></span><span class="p">,</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Ref</span><span class="p">&lt;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Vector3d</span><span class="p">&gt;</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc28point_triangle_tangent_basisERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEE-p-t0" title="ipc::point_triangle_tangent_basis::t0 (C++ function parameter) — Triangle's first vertex"><span class="n sig-param">&nbsp;t0</span></a></span><span class="p">,</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Ref</span><span class="p">&lt;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Vector3d</span><span class="p">&gt;</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc28point_triangle_tangent_basisERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEE-p-t1" title="ipc::point_triangle_tangent_basis::t1 (C++ function parameter) — Triangle's second vertex"><span class="n sig-param">&nbsp;t1</span></a></span><span class="p">,</span><span><span class="k"><br>&nbsp;&nbsp;&nbsp;&nbsp;const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Ref</span><span class="p">&lt;</span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">Vector3d</span><span class="p">&gt;</span><span class="w"></span><span class="p">&amp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc28point_triangle_tangent_basisERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEE-p-t2" title="ipc::point_triangle_tangent_basis::t2 (C++ function parameter) — Triangle's third vertex"><span class="n sig-param">&nbsp;t2</span></a></span><span class="p">)</span></span><a class="headerlink" href="#_CPPv4N3ipc28point_triangle_tangent_basisERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute a basis for the space tangent to the point-triangle pair. </p>
 <p><div class="math notranslate nohighlight">
-\[ \begin{bmatrix} \frac{t_1 - t_0}{\|t_1 - t_0\|} &amp; \frac{((t_1 - t_0)\times(t_2 - t_0)) \times(t_1 - t_0)}{\|((t_1 - t_0)\times(t_2 - t_0))\times(t_1 - t_0)\|} \end{bmatrix} \]</div>
+\[
+    \begin{bmatrix}
+    \frac{t_1 - t_0}{\|t_1 - t_0\|} &amp; \frac{((t_1 - t_0)\times(t_2 - t_0))
+ \times(t_1 - t_0)}{\|((t_1 - t_0)\times(t_2 - t_0))\times(t_1 - t_0)\|}
+    \end{bmatrix}
+\]</div>
 </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4N3ipc28point_triangle_tangent_basisERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEE-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4N3ipc28point_triangle_tangent_basisERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEERKN5Eigen3RefIKN5Eigen8Vector3dEEE-parameters" title="Permalink to this headline">¶</a></dt>
@@ -4792,7 +4797,7 @@
   <small>
     
       Last update:
-      Dec 12, 2024
+      Jan 21, 2025
     
   </small>
 </div>
@@ -4863,7 +4868,7 @@
       <div class="md-copyright">
   
     <div class="md-footer-copyright__highlight">
-        &#169; Copyright 2020-2024, IPC-Sim Organization; MIT License.
+        &#169; Copyright 2020-2025, IPC-Sim Organization; MIT License.
         
     </div>
   
