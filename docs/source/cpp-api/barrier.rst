@@ -34,3 +34,15 @@ Normalized Clamped Log Barrier
 
 .. doxygenclass:: ipc::NormalizedClampedLogBarrier
     :allow-dot-graphs:
+
+Clamped Log Squared Barrier
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. doxygenclass:: ipc::ClampedLogSqBarrier
+    :allow-dot-graphs:
+
+Cubic Barrier
+~~~~~~~~~~~~~
+
+.. doxygenclass:: ipc::CubicBarrier
+    :allow-dot-graphs:

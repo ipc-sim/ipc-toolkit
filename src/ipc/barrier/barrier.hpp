@@ -131,7 +131,7 @@ public:
     /// @return The units of the barrier function.
     double units(const double dhat) const override
     {
-        // (d - d̂)² = d̂² (d/d̂ - 1)²
+        // (d - \hat{d})² = d̂² (d/\hat{d} - 1)²
         return dhat * dhat;
     }
 };
@@ -196,6 +196,115 @@ public:
     /// @param dhat The activation distance of the barrier.
     /// @return The units of the barrier function.
     double units(const double dhat) const override { return 1.0; }
+};
+
+// ============================================================================
+// Quadratic log barrier functions from [Huang et al. 2024]
+// ============================================================================
+
+/// @brief Clamped log barrier with a quadratic log term from [Huang et al. 2024].
+class ClampedLogSqBarrier : public Barrier {
+public:
+    ClampedLogSqBarrier() = default;
+
+    /// @brief Function that grows to infinity as d approaches 0 from the right.
+    ///
+    /// \f\[
+    ///     b(d) = (d-\hat{d})^2\ln^2\left(\frac{d}{\hat{d}}\right)
+    /// \f\]
+    ///
+    /// @param d The distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The value of the barrier function at d.
+    double operator()(const double d, const double dhat) const override;
+
+    /// @brief Derivative of the barrier function.
+    ///
+    /// \f\[
+    ///     b'(d) = 2 (d - \hat{d}) \ln\left(\frac{d}{\hat{d}}\right)
+    ///     \left[\ln\left(\frac{d}{\hat{d}}\right) + \frac{d -
+    ///     \hat{d}}{d}\right]
+    /// \f\]
+    ///
+    /// @param d The distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The derivative of the barrier wrt d.
+    double first_derivative(const double d, const double dhat) const override;
+
+    /// @brief Second derivative of the barrier function.
+    ///
+    /// \f\[
+    ///     b''(d) = 2 \left(\ln^2\left(\frac{d}{\hat{d}}\right) - \left(
+    ///     \ln\left(\frac{d}{\hat{d}}\right) - 1\right) \frac{(\hat{d} -
+    ///     d)^2}{d^2} - 4 \ln\left(\frac{d}{\hat{d}}\right) \frac{\hat{d} -
+    ///     d}{d}\right)
+    /// \f\]
+    ///
+    /// @param d The distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The second derivative of the barrier wrt d.
+    double second_derivative(const double d, const double dhat) const override;
+
+    /// @brief Get the units of the barrier function.
+    /// @param dhat The activation distance of the barrier.
+    /// @return The units of the barrier function.
+    double units(const double dhat) const override
+    {
+        // (d - \hat{d})² = d̂² (d/\hat{d} - 1)²
+        return dhat * dhat;
+    }
+};
+
+// ============================================================================
+// Cubic barrier from [Ando 2024]
+// ============================================================================
+
+/// @brief Cubic barrier function from [Ando 2024].
+class CubicBarrier : public Barrier {
+public:
+    CubicBarrier() = default;
+
+    /// @brief Weak barrier function.
+    ///
+    /// \f\[
+    ///     b(d) = -\frac{2}{3\hat{d}} (d - \hat{d})^3
+    /// \f\]
+    ///
+    /// @param d The distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The value of the barrier function at d.
+    double operator()(const double d, const double dhat) const override;
+
+    /// @brief Derivative of the barrier function.
+    ///
+    /// \f\[
+    ///     b'(d) = -2 (d - \hat{d})^2
+    /// \f\]
+    ///
+    /// @param d The distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The derivative of the barrier wrt d.
+    double first_derivative(const double d, const double dhat) const override;
+
+    /// @brief Second derivative of the barrier function.
+    ///
+    /// \f\[
+    ///     b''(d) = -4 (d - \hat{d})
+    /// \f\]
+    ///
+    /// @param d The distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The second derivative of the barrier wrt d.
+    double second_derivative(const double d, const double dhat) const override;
+
+    /// @brief Get the units of the barrier function.
+    /// @param dhat The activation distance of the barrier.
+    /// @return The units of the barrier function.
+    double units(const double dhat) const override
+    {
+        // (d - \hat{d})² = d̂² (d/\hat{d} - 1)²
+        return dhat * dhat;
+    }
 };
 
 } // namespace ipc

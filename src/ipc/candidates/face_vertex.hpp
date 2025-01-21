@@ -26,6 +26,10 @@ public:
                    faces(face_id, 2) } };
     }
 
+    using CollisionStencil::compute_distance;
+    using CollisionStencil::compute_distance_gradient;
+    using CollisionStencil::compute_distance_hessian;
+
     double compute_distance(const VectorMax12d& positions) const override;
 
     VectorMax12d

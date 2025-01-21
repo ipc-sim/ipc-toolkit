@@ -25,6 +25,10 @@ public:
         return { { vertex_id, edges(edge_id, 0), edges(edge_id, 1), -1 } };
     }
 
+    using CollisionStencil::compute_distance;
+    using CollisionStencil::compute_distance_gradient;
+    using CollisionStencil::compute_distance_hessian;
+
     double compute_distance(const VectorMax12d& positions) const override;
 
     VectorMax12d

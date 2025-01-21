@@ -161,9 +161,9 @@ void NormalPotential::shape_derivative(
     }
 
     if (collision.weight_gradient.nonZeros()) {
-        VectorMax12d grad_b = gradient(collision, positions);
+        VectorMax12d grad_f = gradient(collision, positions);
         assert(collision.weight != 0);
-        grad_b.array() /= collision.weight; // remove weight
+        grad_f.array() /= collision.weight; // remove weight
 
         for (int i = 0; i < collision.num_vertices(); i++) {
             for (int d = 0; d < dim; d++) {
@@ -171,7 +171,7 @@ void NormalPotential::shape_derivative(
                 for (Itr j(collision.weight_gradient); j; ++j) {
                     out.emplace_back(
                         vertex_ids[i] * dim + d, j.index(),
-                        grad_b[dim * i + d] * j.value());
+                        grad_f[dim * i + d] * j.value());
                 }
             }
         }

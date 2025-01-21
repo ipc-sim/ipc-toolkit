@@ -26,3 +26,18 @@ Clamped Log Barrier
 ~~~~~~~~~~~~~~~~~~~
 
 .. autoclass:: ipctk.ClampedLogBarrier
+
+Normalized Clamped Log Barrier
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: ipctk.NormalizedClampedLogBarrier
+
+Clamped Log Squared Barrier
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autoclass:: ipctk.ClampedLogSqBarrier
+
+Cubic Barrier
+~~~~~~~~~~~~~
+
+.. autoclass:: ipctk.CubicBarrier
