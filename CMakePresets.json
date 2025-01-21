@@ -2,22 +2,24 @@
   "version": 3,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 
+    "minor": 18
   },
   "configurePresets": [
     {
-      "name": "base-release",
-      "hidden": true,
+      "name": "release",
+      "displayName": "Release Build",
       "description": "Base preset for release builds",
+      "binaryDir": "${sourceDir}/build/release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_CXX_STANDARD": "17"
       }
     },
     {
-      "name": "base-debug",
-      "hidden": true,
+      "name": "debug",
+      "displayName": "Debug Build",
       "description": "Base preset for debug builds",
+      "binaryDir": "${sourceDir}/build/debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_CXX_STANDARD": "17"
@@ -25,14 +27,14 @@
     },
     {
       "name": "default",
-      "inherits": "base-release",
+      "inherits": "release",
       "displayName": "Default Configuration",
       "description": "Default build configuration",
       "binaryDir": "${sourceDir}/build/default"
     },
     {
       "name": "cuda",
-      "inherits": "base-release",
+      "inherits": "release",
       "displayName": "CUDA Enabled",
       "description": "Build with CUDA support",
       "binaryDir": "${sourceDir}/build/cuda",
@@ -42,7 +44,7 @@
     },
     {
       "name": "simd",
-      "inherits": "base-release",
+      "inherits": "release",
       "displayName": "SIMD Enabled",
       "description": "Build with SIMD optimizations",
       "binaryDir": "${sourceDir}/build/simd",
@@ -52,7 +54,7 @@
     },
     {
       "name": "test",
-      "inherits": "base-debug",
+      "inherits": "debug",
       "displayName": "Build for Testing",
       "description": "Build with unit tests enabled",
       "binaryDir": "${sourceDir}/build/test",
@@ -64,7 +66,7 @@
     },
     {
       "name": "python",
-      "inherits": "base-release",
+      "inherits": "release",
       "displayName": "Python Bindings",
       "description": "Build with Python bindings enabled",
       "binaryDir": "${sourceDir}/build/python",
@@ -77,23 +79,22 @@
     },
     {
       "name": "coverage",
-      "inherits": "base-debug",
+      "inherits": "debug",
       "displayName": "Code Coverage",
       "description": "Build for code coverage",
       "binaryDir": "${sourceDir}/build/coverage",
       "cacheVariables": {
         "IPC_TOOLKIT_WITH_CODE_COVERAGE": "ON",
-        "IPC_TOOLKIT_BUILD_TESTS": "ON",
-
+        "IPC_TOOLKIT_BUILD_TESTS": "ON"
       }
     },
     {
       "name": "debug-cuda",
-      "inherits": [ "base-debug", "cuda" ],
+      "inherits": [ "debug", "cuda" ],
       "displayName": "CUDA Debug",
       "description": "Debug build with CUDA support",
       "binaryDir": "${sourceDir}/build/debug-cuda"
-    },
+    }
   ],
   "buildPresets": [
     {
@@ -120,7 +121,7 @@
       "name": "debug-cuda-build",
       "configurePreset": "debug-cuda",
       "description": "Debug build with CUDA support"
-    },
+    }
   ],
   "testPresets": [
     {
