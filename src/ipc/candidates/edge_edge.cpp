@@ -1,6 +1,7 @@
 #include "edge_edge.hpp"
 
 #include <ipc/distance/edge_edge.hpp>
+#include <ipc/tangent/closest_point.hpp>
 
 namespace ipc {
 
@@ -34,6 +35,63 @@ EdgeEdgeCandidate::compute_distance_hessian(const VectorMax12d& positions) const
     return edge_edge_distance_hessian(
         positions.head<3>(), positions.segment<3>(3), positions.segment<3>(6),
         positions.tail<3>(), known_dtype());
+}
+
+VectorMax4d
+EdgeEdgeCandidate::compute_coefficients(const VectorMax12d& positions) const
+{
+    assert(positions.size() == 12);
+    const Eigen::Ref<const Eigen::Vector3d> ea0 = positions.head<3>();
+    const Eigen::Ref<const Eigen::Vector3d> ea1 = positions.segment<3>(3);
+    const Eigen::Ref<const Eigen::Vector3d> eb0 = positions.segment<3>(6);
+    const Eigen::Ref<const Eigen::Vector3d> eb1 = positions.tail<3>();
+
+    // Project the point inside the triangle
+    auto dtype = known_dtype();
+    if (dtype == EdgeEdgeDistanceType::AUTO) {
+        dtype = edge_edge_distance_type(ea0, ea1, eb0, eb1);
+    }
+
+    VectorMax4d coeffs(4);
+    switch (dtype) {
+    case EdgeEdgeDistanceType::EA0_EB0:
+        coeffs << 1.0, 0.0, -1.0, 0.0;
+        break;
+    case EdgeEdgeDistanceType::EA0_EB1:
+        coeffs << 1.0, 0.0, 0.0, -1.0;
+        break;
+    case EdgeEdgeDistanceType::EA1_EB0:
+        coeffs << 0.0, 1.0, -1.0, 0.0;
+        break;
+    case EdgeEdgeDistanceType::EA1_EB1:
+        coeffs << 0.0, 1.0, 0.0, -1.0;
+        break;
+    case EdgeEdgeDistanceType::EA_EB0: {
+        const double alpha = point_edge_closest_point(eb0, ea0, ea1);
+        coeffs << 1.0 - alpha, alpha, -1.0, 0;
+    } break;
+    case EdgeEdgeDistanceType::EA_EB1: {
+        const double alpha = point_edge_closest_point(eb1, ea0, ea1);
+        coeffs << 1.0 - alpha, alpha, 0, -1.0;
+    } break;
+    case EdgeEdgeDistanceType::EA0_EB: {
+        const double alpha = point_edge_closest_point(ea0, eb0, eb1);
+        coeffs << 1.0, 0, -1.0 + alpha, -alpha;
+    } break;
+    case EdgeEdgeDistanceType::EA1_EB: {
+        const double alpha = point_edge_closest_point(ea1, eb0, eb1);
+        coeffs << 0, 1.0, -1.0 + alpha, -alpha;
+    } break;
+    case EdgeEdgeDistanceType::EA_EB: {
+        const Eigen::Vector2d ab = edge_edge_closest_point(ea0, ea1, eb0, eb1);
+        coeffs << 1.0 - ab[0], ab[0], -1.0 + ab[1], -ab[1];
+    } break;
+    default:
+        assert(false);
+        break;
+    }
+
+    return coeffs;
 }
 
 bool EdgeEdgeCandidate::ccd(

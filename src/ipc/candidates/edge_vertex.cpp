@@ -1,6 +1,7 @@
 #include "edge_vertex.hpp"
 
 #include <ipc/distance/point_edge.hpp>
+#include <ipc/tangent/closest_point.hpp>
 
 #include <iostream>
 
@@ -40,6 +41,40 @@ MatrixMax12d EdgeVertexCandidate::compute_distance_hessian(
     return point_edge_distance_hessian(
         positions.head(dim), positions.segment(dim, dim), positions.tail(dim),
         known_dtype());
+}
+
+VectorMax4d
+EdgeVertexCandidate::compute_coefficients(const VectorMax12d& positions) const
+{
+    assert(positions.size() == 6 || positions.size() == 9);
+    const int dim = this->dim(positions.size());
+    const Eigen::Ref<const VectorMax3d> p = positions.head(dim);
+    const Eigen::Ref<const VectorMax3d> t0 = positions.segment(dim, dim);
+    const Eigen::Ref<const VectorMax3d> t1 = positions.tail(dim);
+
+    auto dtype = known_dtype();
+    if (dtype == PointEdgeDistanceType::AUTO) {
+        dtype = point_edge_distance_type(p, t0, t1);
+    }
+
+    VectorMax4d coeffs(3);
+    switch (dtype) {
+    case PointEdgeDistanceType::P_E0:
+        coeffs << 1.0, -1.0, 0.0;
+        break;
+    case PointEdgeDistanceType::P_E1:
+        coeffs << 1.0, 0.0, -1.0;
+        break;
+    case PointEdgeDistanceType::P_E: {
+        const double alpha = point_edge_closest_point(p, t0, t1);
+        coeffs << 1.0, -1.0 + alpha, -alpha;
+    } break;
+    default:
+        assert(false);
+        break;
+    }
+
+    return coeffs;
 }
 
 bool EdgeVertexCandidate::ccd(

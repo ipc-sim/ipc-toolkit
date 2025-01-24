@@ -25,6 +25,7 @@ public:
         return { { vertex_id, edges(edge_id, 0), edges(edge_id, 1), -1 } };
     }
 
+    using CollisionStencil::compute_coefficients;
     using CollisionStencil::compute_distance;
     using CollisionStencil::compute_distance_gradient;
     using CollisionStencil::compute_distance_hessian;
@@ -36,6 +37,9 @@ public:
 
     MatrixMax12d
     compute_distance_hessian(const VectorMax12d& positions) const override;
+
+    VectorMax4d
+    compute_coefficients(const VectorMax12d& positions) const override;
 
     // ------------------------------------------------------------------------
     // ContinuousCollisionCandidate

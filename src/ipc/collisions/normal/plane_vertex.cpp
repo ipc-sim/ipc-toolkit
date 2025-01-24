@@ -35,4 +35,12 @@ MatrixMax12d PlaneVertexNormalCollision::compute_distance_hessian(
     return point_plane_distance_hessian(point, plane_origin, plane_normal);
 }
 
+VectorMax4d PlaneVertexNormalCollision::compute_coefficients(
+    const VectorMax12d& positions) const
+{
+    VectorMax4d coeffs(1);
+    coeffs << 1.0;
+    return coeffs;
+}
+
 } // namespace ipc

@@ -38,6 +38,14 @@ MatrixMax12d VertexVertexCandidate::compute_distance_hessian(
         positions.head(dim), positions.tail(dim));
 }
 
+VectorMax4d
+VertexVertexCandidate::compute_coefficients(const VectorMax12d& positions) const
+{
+    VectorMax4d coeffs(2);
+    coeffs << 1.0, -1.0;
+    return coeffs;
+}
+
 bool VertexVertexCandidate::ccd(
     const VectorMax12d& vertices_t0,
     const VectorMax12d& vertices_t1,

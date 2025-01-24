@@ -38,6 +38,12 @@ public:
     MatrixMax12d
     compute_distance_hessian(const VectorMax12d& point) const override;
 
+    /// @brief Compute the coefficients of the stencil.
+    /// @param positions Vertex positions.
+    /// @return Coefficients of the stencil.
+    VectorMax4d
+    compute_coefficients(const VectorMax12d& positions) const override;
+
     /// @brief The plane's origin.
     VectorMax3d plane_origin;
 

@@ -66,6 +66,7 @@ protected:
     }
 };
 
+#ifdef IPC_TOOLKIT_WITH_FILIB
 class IntervalRotationalTrajectory : public RotationalTrajectory,
                                      public IntervalNonlinearTrajectory {
 public:
@@ -90,6 +91,7 @@ public:
         return IntervalNonlinearTrajectory::max_distance_from_linear(t0, t1);
     }
 };
+#endif
 
 class StaticTrajectory : public NonlinearTrajectory {
 public:
@@ -165,11 +167,13 @@ TEST_CASE("Nonlinear Point-Point CCD", "[ccd][nonlinear][point-point]")
         p1 = std::make_unique<RotationalTrajectory>(
             Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), igl::PI);
     }
+#ifdef IPC_TOOLKIT_WITH_FILIB
     SECTION("Interval max")
     {
         p1 = std::make_unique<IntervalRotationalTrajectory>(
             Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), igl::PI);
     }
+#endif
 
     double toi;
     bool collision = point_point_nonlinear_ccd(

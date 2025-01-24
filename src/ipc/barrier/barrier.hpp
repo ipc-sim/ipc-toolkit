@@ -141,9 +141,9 @@ public:
 // ============================================================================
 
 /// @brief Normalized barrier function from [Li et al. 2023].
-class NormalizedClampedLogBarrier : public ClampedLogBarrier {
+template <typename BarrierT> class NormalizedBarrier : public BarrierT {
 public:
-    NormalizedClampedLogBarrier() = default;
+    NormalizedBarrier() = default;
 
     /// @brief Function that grows to infinity as d approaches 0 from the right.
     ///
@@ -157,7 +157,7 @@ public:
     /// @return The value of the barrier function at d.
     double operator()(const double d, const double dhat) const override
     {
-        return ClampedLogBarrier::operator()(d / dhat, 1.0);
+        return BarrierT::operator()(d / dhat, 1.0);
     }
 
     /// @brief Derivative of the barrier function.
@@ -173,7 +173,7 @@ public:
     /// @return The derivative of the barrier wrt d.
     double first_derivative(const double d, const double dhat) const override
     {
-        return ClampedLogBarrier::first_derivative(d / dhat, 1.0) / dhat;
+        return BarrierT::first_derivative(d / dhat, 1.0) / dhat;
     }
 
     /// @brief Second derivative of the barrier function.
@@ -188,8 +188,7 @@ public:
     /// @return The second derivative of the barrier wrt d.
     double second_derivative(const double d, const double dhat) const override
     {
-        return ClampedLogBarrier::second_derivative(d / dhat, 1.0)
-            / (dhat * dhat);
+        return BarrierT::second_derivative(d / dhat, 1.0) / (dhat * dhat);
     }
 
     /// @brief Get the units of the barrier function.
@@ -197,6 +196,8 @@ public:
     /// @return The units of the barrier function.
     double units(const double dhat) const override { return 1.0; }
 };
+
+using NormalizedClampedLogBarrier = NormalizedBarrier<ClampedLogBarrier>;
 
 // ============================================================================
 // Quadratic log barrier functions from [Huang et al. 2024]
