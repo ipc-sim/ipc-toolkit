@@ -80,5 +80,4 @@ TEST_CASE("Edge-edge collision stencil coeffs.", "[ee][stencil][coeffs]")
     }
 
     CHECK(n.squaredNorm() == Catch::Approx(ee.compute_distance(V, E, F)));
-    logger().critical("{}", coeffs.transpose());
 }

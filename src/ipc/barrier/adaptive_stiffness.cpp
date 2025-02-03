@@ -3,6 +3,8 @@
 #include "adaptive_stiffness.hpp"
 
 #include <ipc/barrier/barrier.hpp>
+#include <ipc/candidates/candidates.hpp>
+#include <ipc/collisions/normal/normal_collisions.hpp>
 
 #include <algorithm> // std::min/max
 #include <cassert>
@@ -71,5 +73,116 @@ double update_barrier_stiffness(
     }
     return barrier_stiffness;
 }
+
+// -----------------------------------------------------------------------------
+//
+// Based on `compute_stiffness()` in `src/cpp/barrier/barrier.cu` of
+// (ppf-contact-solver)[https://github.com/st-tech/ppf-contact-solver]
+//
+// Original license:
+// File: barrier.cu
+// Author: Ryoichi Ando (ryoichi.ando@zozo.com)
+// License: Apache v2.0
+//
+
+double semi_implicit_stiffness(
+    const CollisionStencil& stencil,
+    const std::array<long, 4>& vertex_ids,
+    const VectorMax12d& vertices,
+    const VectorMax4d& mass,
+    const Eigen::SparseMatrix<double>& hess,
+    const double dmin)
+{
+    unsigned N = stencil.num_vertices();
+    assert(vertices.size() % N == 0);
+    unsigned dim = vertices.size() / N;
+
+    const VectorMax4d value = stencil.compute_coefficients(vertices);
+
+    // Compute the contact normal (i.e., the vector from the )
+    VectorMax3d normal = VectorMax3d::Zero(dim);
+    for (unsigned i = 0; i < N; ++i) {
+        normal += value[i] * vertices.segment(dim * i, dim);
+    }
+
+    MatrixMax12d local_hess = MatrixMax12d::Zero(dim * N, dim * N);
+
+    // H
+    for (unsigned i = 0; i < N; ++i) {
+        for (unsigned j = 0; j < N; ++j) {
+            for (unsigned k = 0; k < dim; ++k) {
+                for (unsigned l = 0; l < dim; ++l) {
+                    local_hess(dim * i + k, dim * j + l) = hess.coeff(
+                        dim * vertex_ids[i] + k, dim * vertex_ids[j] + l);
+                }
+            }
+        }
+    }
+
+    // mᵢ / d²
+    const double distance = normal.norm() - dmin;
+    const double distance_sqr = distance * distance;
+    for (unsigned i = 0; i < N; ++i) {
+        local_hess.diagonal().segment(dim * i, dim).array() +=
+            mass[i] / distance_sqr;
+    }
+
+    VectorMax12d w = VectorMax12d::Zero(dim * N);
+    for (unsigned i = 0; i < N; ++i) {
+        w.segment(dim * i, dim) = value[i] * normal;
+    }
+    w.normalize();
+
+    return (local_hess * w).dot(w);
+}
+
+template <typename StencilsT>
+Eigen::VectorXd semi_implicit_stiffness(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const StencilsT& collisions,
+    const Eigen::VectorXd& vertex_masses,
+    const Eigen::SparseMatrix<double>& hess,
+    const double dmin)
+{
+    Eigen::VectorXd stiffnesses(collisions.size());
+
+    for (size_t i = 0; i < collisions.size(); i++) {
+        const CollisionStencil& collision = collisions[i];
+
+        const std::array<long, 4> vertex_ids =
+            collision.vertex_ids(mesh.edges(), mesh.faces());
+        const VectorMax12d positions =
+            collision.dof(vertices, mesh.edges(), mesh.faces());
+
+        VectorMax4d mass(collision.num_vertices());
+        for (unsigned j = 0; j < collision.num_vertices(); j++) {
+            mass[j] = vertex_masses[vertex_ids[j]];
+        }
+
+        stiffnesses[i] = semi_implicit_stiffness(
+            collision, vertex_ids, positions, mass, hess, dmin);
+    }
+
+    return stiffnesses;
+}
+
+template Eigen::VectorXd semi_implicit_stiffness<NormalCollisions>(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const NormalCollisions& collisions,
+    const Eigen::VectorXd& vertex_masses,
+    const Eigen::SparseMatrix<double>& hess,
+    const double dmin);
+
+template Eigen::VectorXd semi_implicit_stiffness<Candidates>(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const Candidates& collisions,
+    const Eigen::VectorXd& vertex_masses,
+    const Eigen::SparseMatrix<double>& hess,
+    const double dmin);
+
+// -----------------------------------------------------------------------------
 
 } // namespace ipc
