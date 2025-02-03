@@ -131,7 +131,7 @@ public:
     /// @return The units of the barrier function.
     double units(const double dhat) const override
     {
-        // (d - \hat{d})² = d̂² (d/\hat{d} - 1)²
+        // (d - d̂)² = d̂² (d/d̂ - 1)²
         return dhat * dhat;
     }
 };
@@ -251,7 +251,7 @@ public:
     /// @return The units of the barrier function.
     double units(const double dhat) const override
     {
-        // (d - \hat{d})² = d̂² (d/\hat{d} - 1)²
+        // (d - d̂)² = d̂² (d/d̂ - 1)²
         return dhat * dhat;
     }
 };
@@ -303,7 +303,7 @@ public:
     /// @return The units of the barrier function.
     double units(const double dhat) const override
     {
-        // (d - \hat{d})² = d̂² (d/\hat{d} - 1)²
+        // (d - d̂)² = d̂² (d/d̂ - 1)²
         return dhat * dhat;
     }
 };
