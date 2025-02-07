@@ -68,15 +68,15 @@ FaceVertexCandidate::compute_coefficients(const VectorMax12d& positions) const
         break;
     case PointTriangleDistanceType::P_E0: {
         const double alpha = point_edge_closest_point(p, t0, t1);
-        coeffs << 1.0, -alpha, -1 + alpha, 0.0;
+        coeffs << 1.0, -1 + alpha, -alpha, 0.0;
     } break;
     case PointTriangleDistanceType::P_E1: {
         const double alpha = point_edge_closest_point(p, t1, t2);
-        coeffs << 1.0, 0.0, -alpha, -1 + alpha;
+        coeffs << 1.0, 0.0, -1 + alpha, -alpha;
     } break;
     case PointTriangleDistanceType::P_E2: {
         const double alpha = point_edge_closest_point(p, t2, t0);
-        coeffs << 1.0, -1 + alpha, 0.0, -alpha;
+        coeffs << 1.0, -alpha, 0.0, -1 + alpha;
     } break;
     case PointTriangleDistanceType::P_T: {
         const Eigen::Vector2d uv = point_triangle_closest_point(p, t0, t1, t2);

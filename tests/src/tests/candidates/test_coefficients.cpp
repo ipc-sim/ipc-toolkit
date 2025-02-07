@@ -22,6 +22,8 @@ TEST_CASE("Face-Vertex collision stencil coeffs.", "[fv][stencil][coeffs]")
     SECTION("off triangle 5") { V.row(3) << -1, -1, 1; }
     SECTION("off triangle 6") { V.row(3) << 0.5, -1, 1; }
     SECTION("off triangle 7") { V.row(3) << 2, -0.5, 1; }
+    SECTION("failure case 1") { V.row(3) << 0.680375, -0.211234, 0.566198; }
+    SECTION("failure case 1") { V.row(3) << -0.997497, 0.127171, -0.613392; }
 
     Eigen::MatrixXi F(1, 3);
     F << 0, 1, 2;
@@ -32,6 +34,8 @@ TEST_CASE("Face-Vertex collision stencil coeffs.", "[fv][stencil][coeffs]")
     FaceVertexCandidate fv(0, 3);
 
     VectorMax4d coeffs = fv.compute_coefficients(V, E, F);
+    CAPTURE(
+        point_triangle_distance_type(V.row(3), V.row(0), V.row(1), V.row(2)));
     CAPTURE(V.row(3), coeffs.transpose());
 
     CHECK(-coeffs[1] == Catch::Approx(1 + coeffs[2] + coeffs[3]));
@@ -41,6 +45,7 @@ TEST_CASE("Face-Vertex collision stencil coeffs.", "[fv][stencil][coeffs]")
     for (int i = 0; i < fv.num_vertices(); i++) {
         n += coeffs[i] * vertices[i];
     }
+    CAPTURE(n.transpose());
 
     CHECK(n.squaredNorm() == Catch::Approx(fv.compute_distance(V, E, F)));
 }
