@@ -90,12 +90,12 @@ double semi_implicit_stiffness(
     const std::array<long, 4>& vertex_ids,
     const VectorMax12d& vertices,
     const VectorMax4d& mass,
-    const Eigen::SparseMatrix<double>& hess,
+    const MatrixMax12d& local_hess,
     const double dmin)
 {
-    unsigned N = stencil.num_vertices();
+    const unsigned N = stencil.num_vertices();
     assert(vertices.size() % N == 0);
-    unsigned dim = vertices.size() / N;
+    const unsigned dim = stencil.dim(vertices.size());
 
     const VectorMax4d value = stencil.compute_coefficients(vertices);
 
@@ -105,27 +105,13 @@ double semi_implicit_stiffness(
         normal += value[i] * vertices.segment(dim * i, dim);
     }
 
-    MatrixMax12d local_hess = MatrixMax12d::Zero(dim * N, dim * N);
-
-    // H
-    for (unsigned i = 0; i < N; ++i) {
-        for (unsigned j = 0; j < N; ++j) {
-            for (unsigned k = 0; k < dim; ++k) {
-                for (unsigned l = 0; l < dim; ++l) {
-                    local_hess(dim * i + k, dim * j + l) = hess.coeff(
-                        dim * vertex_ids[i] + k, dim * vertex_ids[j] + l);
-                }
-            }
-        }
-    }
-
-    // mᵢ / d²
+    // d²
     const double distance = normal.norm() - dmin;
     const double distance_sqr = distance * distance;
-    for (unsigned i = 0; i < N; ++i) {
-        local_hess.diagonal().segment(dim * i, dim).array() +=
-            mass[i] / distance_sqr;
-    }
+
+    // average mass: mᵢ = cᵀMc / ‖c‖²
+    const double avg_mass =
+        value.dot(mass.asDiagonal() * value) / value.squaredNorm();
 
     VectorMax12d w = VectorMax12d::Zero(dim * N);
     for (unsigned i = 0; i < N; ++i) {
@@ -133,7 +119,7 @@ double semi_implicit_stiffness(
     }
     w.normalize();
 
-    return (local_hess * w).dot(w);
+    return avg_mass / distance_sqr + w.dot(local_hess * w);
 }
 
 template <typename StencilsT>
@@ -145,23 +131,51 @@ Eigen::VectorXd semi_implicit_stiffness(
     const Eigen::SparseMatrix<double>& hess,
     const double dmin)
 {
+    const int dim = mesh.dim();
+    assert(vertices.cols() == dim);     // Vertex positions must be 3D
+    assert(hess.rows() == hess.cols()); // Hessian must be square
+    // Hess and vertex_masses must have the same number of rows
+    assert(hess.rows() == vertex_masses.size() * dim);
+    // Hess can be either for the reduced or full mesh
+    assert(hess.rows() == mesh.ndof() || hess.rows() == mesh.full_ndof());
+
     Eigen::VectorXd stiffnesses(collisions.size());
 
-    for (size_t i = 0; i < collisions.size(); i++) {
-        const CollisionStencil& collision = collisions[i];
+    for (size_t ci = 0; ci < collisions.size(); ci++) {
+        const CollisionStencil& collision = collisions[ci];
+        const unsigned N = collision.num_vertices();
 
-        const std::array<long, 4> vertex_ids =
-            collision.vertex_ids(mesh.edges(), mesh.faces());
         const VectorMax12d positions =
             collision.dof(vertices, mesh.edges(), mesh.faces());
 
-        VectorMax4d mass(collision.num_vertices());
-        for (unsigned j = 0; j < collision.num_vertices(); j++) {
-            mass[j] = vertex_masses[vertex_ids[j]];
+        std::array<long, 4> vertex_ids =
+            collision.vertex_ids(mesh.edges(), mesh.faces());
+        if (hess.rows() == mesh.full_ndof()) {
+            for (int i = 0; i < N; i++) {
+                vertex_ids[i] = mesh.to_full_vertex_id(vertex_ids[i]);
+            }
         }
 
-        stiffnesses[i] = semi_implicit_stiffness(
-            collision, vertex_ids, positions, mass, hess, dmin);
+        VectorMax4d local_mass(collision.num_vertices());
+        for (unsigned i = 0; i < collision.num_vertices(); i++) {
+            local_mass[i] = vertex_masses[vertex_ids[i]];
+        }
+
+        MatrixMax12d local_hess = MatrixMax12d::Zero(dim * N, dim * N);
+        for (unsigned i = 0; i < N; ++i) {
+            for (unsigned j = 0; j < N; ++j) {
+                for (unsigned k = 0; k < dim; ++k) {
+                    for (unsigned l = 0; l < dim; ++l) {
+                        // NOTE: Assumes DOF are flattened in row-major order
+                        local_hess(dim * i + k, dim * j + l) = hess.coeff(
+                            dim * vertex_ids[i] + k, dim * vertex_ids[j] + l);
+                    }
+                }
+            }
+        }
+
+        stiffnesses[ci] = semi_implicit_stiffness(
+            collision, vertex_ids, positions, local_mass, local_hess, dmin);
     }
 
     return stiffnesses;

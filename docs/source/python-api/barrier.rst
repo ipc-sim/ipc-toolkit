@@ -17,6 +17,12 @@ Adaptive Barrier Stiffness
 .. autofunction:: ipctk.initial_barrier_stiffness
 .. autofunction:: ipctk.update_barrier_stiffness
 
+
+Semi-Implicit Stiffness
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: ipctk.semi_implicit_stiffness
+
 Barrier Class
 -------------
 
