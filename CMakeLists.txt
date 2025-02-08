@@ -255,7 +255,7 @@ endif()
 
 if(IPC_TOOLKIT_WITH_CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   # Add required flags (GCC & LLVM/Clang)
-  target_compile_options(ipc_toolkit PUBLIC
+  target_compile_options(ipc_toolkit PRIVATE
     -g         # generate debug info
     --coverage # sets all required flags
     -fprofile-update=atomic
