@@ -1431,7 +1431,7 @@
 <h1 id="intersections">Intersections<a class="headerlink" href="#intersections" title="Link to this heading">¶</a></h1>
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.has_intersections">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">has_intersections</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">vertices:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n]],</span> <span class="pre">broad_phase_method:</span> <span class="pre">ipctk.BroadPhaseMethod</span> <span class="pre">=</span> <span class="pre">&lt;BroadPhaseMethod.HASH_GRID:</span> <span class="pre">1&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.has_intersections" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">has_intersections</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">vertices:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n]],</span> <span class="pre">broad_phase:</span> <span class="pre">ipctk.BroadPhase</span> <span class="pre">=</span> <span class="pre">&lt;ipctk.HashGrid</span> <span class="pre">object</span> <span class="pre">at</span> <span class="pre">0x7fb78b34ec30&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.has_intersections" title="Link to this definition">¶</a></dt>
 <dd><p>Determine if the mesh has self intersections.</p>
 <dl class="field-list simple">
 <dt class="field-odd" id="ipctk.has_intersections-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.has_intersections-parameters" title="Permalink to this headline">¶</a></dt>
@@ -1440,7 +1440,7 @@
 </dd>
 <dt><span class="sig-name descname">vertices</span></dt><dd><p>Vertices of the collision mesh.</p>
 </dd>
-<dt><span class="sig-name descname">broad_phase_method</span></dt><dd><p>The broad phase method to use.</p>
+<dt><span class="sig-name descname">broad_phase</span></dt><dd><p>Broad phase to use.</p>
 </dd>
 </dl>
 </dd>
