@@ -69,7 +69,63 @@ void define_collision_stencil(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("X"), py::arg("edges"), py::arg("faces"))
         .def(
-            "compute_distance", &CollisionStencil::compute_distance,
+            "compute_distance",
+            py::overload_cast<
+                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
+                const Eigen::MatrixXi&>(
+                &CollisionStencil::compute_distance, py::const_),
+            R"ipc_Qu8mg5v7(
+            Compute the distance of the stencil.
+
+            Parameters:
+                vertices: Collision mesh vertices.
+                edges: Collision mesh edges.
+                faces: Collision mesh faces.
+
+            Returns:
+                Distance of the stencil.
+            )ipc_Qu8mg5v7",
+            py::arg("vertices"), py::arg("edges"), py::arg("faces"))
+        .def(
+            "compute_distance_gradient",
+            py::overload_cast<
+                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
+                const Eigen::MatrixXi&>(
+                &CollisionStencil::compute_distance_gradient, py::const_),
+            R"ipc_Qu8mg5v7(
+            Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
+
+            Parameters:
+                vertices: Collision mesh vertices.
+                edges: Collision mesh edges.
+                faces: Collision mesh faces.
+
+            Returns:
+                Distance gradient of the stencil w.r.t. the stencil's vertex positions.
+            )ipc_Qu8mg5v7",
+            py::arg("vertices"), py::arg("edges"), py::arg("faces"))
+        .def(
+            "compute_distance_hessian",
+            py::overload_cast<
+                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
+                const Eigen::MatrixXi&>(
+                &CollisionStencil::compute_distance_hessian, py::const_),
+            R"ipc_Qu8mg5v7(
+            Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
+
+            Parameters:
+                vertices: Collision mesh vertices.
+                edges: Collision mesh edges.
+                faces: Collision mesh faces.
+
+            Returns:
+                Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
+            )ipc_Qu8mg5v7",
+            py::arg("vertices"), py::arg("edges"), py::arg("faces"))
+        .def(
+            "compute_distance",
+            py::overload_cast<const VectorMax12d&>(
+                &CollisionStencil::compute_distance, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the distance of the stencil.
 
@@ -85,7 +141,8 @@ void define_collision_stencil(py::module_& m)
             py::arg("positions"))
         .def(
             "compute_distance_gradient",
-            &CollisionStencil::compute_distance_gradient,
+            py::overload_cast<const VectorMax12d&>(
+                &CollisionStencil::compute_distance_gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
 
@@ -101,7 +158,8 @@ void define_collision_stencil(py::module_& m)
             py::arg("positions"))
         .def(
             "compute_distance_hessian",
-            &CollisionStencil::compute_distance_hessian,
+            py::overload_cast<const VectorMax12d&>(
+                &CollisionStencil::compute_distance_hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
 

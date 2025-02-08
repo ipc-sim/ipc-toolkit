@@ -2,7 +2,9 @@
 
 #pragma once
 
+#include <ipc/collision_mesh.hpp>
 #include <ipc/barrier/barrier.hpp>
+#include <ipc/candidates/collision_stencil.hpp>
 
 #include <Eigen/Core>
 
@@ -47,5 +49,40 @@ double update_barrier_stiffness(
     const double bbox_diagonal,
     const double dhat_epsilon_scale = 1e-9,
     const double dmin = 0);
+
+/// @brief Compute the semi-implicit stiffness for a single collision.
+/// See [Ando 2024] for details.
+/// @param stencil Collision stencil.
+/// @param vertex_ids Vertex indices of the collision.
+/// @param vertices Vertex positions.
+/// @param mass Vertex masses.
+/// @param local_hess Local hessian of the elasticity energy function.
+/// @param dmin Minimum distance between elements.
+/// @return The semi-implicit stiffness.
+double semi_implicit_stiffness(
+    const CollisionStencil& stencil,
+    const std::array<long, 4>& vertex_ids,
+    const VectorMax12d& vertices,
+    const VectorMax4d& mass,
+    const MatrixMax12d& local_hess,
+    const double dmin);
+
+/// @brief Compute the semi-implicit stiffness's for all collisions.
+/// See [Ando 2024] for details.
+/// @param mesh Collision mesh.
+/// @param vertices Vertex positions.
+/// @param collisions Normal collisions or collision candidates.
+/// @param vertex_masses Lumped vertex masses.
+/// @param hess Hessian of the elasticity energy function.
+/// @param dmin Minimum distance between elements.
+/// @return The semi-implicit stiffness's.
+template <typename StencilsT>
+Eigen::VectorXd semi_implicit_stiffness(
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const StencilsT& collisions,
+    const Eigen::VectorXd& vertex_masses,
+    const Eigen::SparseMatrix<double>& hess,
+    const double dmin);
 
 } // namespace ipc

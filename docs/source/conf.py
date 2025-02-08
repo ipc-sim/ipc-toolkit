@@ -64,7 +64,7 @@ extensions = [
     "sphinx_last_updated_by_git",
 ]
 
-bibtex_bibfiles = ['refs.bib']
+bibtex_bibfiles = ['references.bib']
 bibtex_reference_style = 'author_year'
 bibtex_default_style = 'plain'
 

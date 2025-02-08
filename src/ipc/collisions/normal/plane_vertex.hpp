@@ -21,6 +21,11 @@ public:
         return { { vertex_id, -1, -1, -1 } };
     }
 
+    using NormalCollision::compute_coefficients;
+    using NormalCollision::compute_distance;
+    using NormalCollision::compute_distance_gradient;
+    using NormalCollision::compute_distance_hessian;
+
     /// @brief Compute the distance between the point and plane.
     /// @param point Point's position.
     /// @return Distance of the stencil.
@@ -37,6 +42,12 @@ public:
     /// @return Distance Hessian w.r.t. the point's positions.
     MatrixMax12d
     compute_distance_hessian(const VectorMax12d& point) const override;
+
+    /// @brief Compute the coefficients of the stencil.
+    /// @param positions Vertex positions.
+    /// @return Coefficients of the stencil.
+    VectorMax4d
+    compute_coefficients(const VectorMax12d& positions) const override;
 
     /// @brief The plane's origin.
     VectorMax3d plane_origin;

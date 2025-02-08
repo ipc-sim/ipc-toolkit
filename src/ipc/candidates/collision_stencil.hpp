@@ -80,6 +80,58 @@ public:
         return x;
     }
 
+    /// @brief Compute the distance of the stencil.
+    /// @param vertices Collision mesh vertices
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @return Distance of the stencil.
+    double compute_distance(
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const
+    {
+        return compute_distance(dof(vertices, edges, faces));
+    }
+
+    /// @brief Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
+    /// @param vertices Collision mesh vertices
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @return Distance gradient of the stencil w.r.t. the stencil's vertex positions.
+    VectorMax12d compute_distance_gradient(
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const
+    {
+        return compute_distance_gradient(dof(vertices, edges, faces));
+    }
+
+    /// @brief Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
+    /// @param vertices Collision mesh vertices
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @return Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
+    MatrixMax12d compute_distance_hessian(
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const
+    {
+        return compute_distance_hessian(dof(vertices, edges, faces));
+    }
+
+    /// @brief Compute the coefficients of the stencil s.t. d(x) = ‖∑ cᵢ xᵢ‖².
+    /// @param vertices Collision mesh vertices
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @return Coefficients of the stencil.
+    VectorMax4d compute_coefficients(
+        const Eigen::MatrixXd& vertices,
+        const Eigen::MatrixXi& edges,
+        const Eigen::MatrixXi& faces) const
+    {
+        return compute_coefficients(dof(vertices, edges, faces));
+    }
+
     // ----------------------------------------------------------------------
     // NOTE: The following functions take stencil vertices as output by dof()
     // ----------------------------------------------------------------------
@@ -103,6 +155,12 @@ public:
     /// @return Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
     virtual MatrixMax12d
     compute_distance_hessian(const VectorMax12d& positions) const = 0;
+
+    /// @brief Compute the coefficients of the stencil s.t. d(x) = ‖∑ cᵢ xᵢ‖².
+    /// @param positions Stencil's vertex positions.
+    /// @return Coefficients of the stencil.
+    virtual VectorMax4d
+    compute_coefficients(const VectorMax12d& positions) const = 0;
 };
 
 } // namespace ipc
