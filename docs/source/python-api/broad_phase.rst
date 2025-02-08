@@ -1,12 +1,6 @@
 Broad Phase
 ===========
 
-.. autoclass:: ipctk.BroadPhaseMethod
-
-    .. autoclasstoc::
-
-.. .. autovariable:: ipctk.DEFAULT_BROAD_PHASE_METHOD
-
 Broad Phase
 -----------
 

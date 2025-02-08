@@ -74,6 +74,10 @@ public: // constructor
             voxel_size);
     }
 
+    /// @brief Get the name of the broad phase method.
+    /// @return The name of the broad phase method.
+    std::string name() const override { return "SpatialHash"; }
+
 public: // API
     void build(
         const Eigen::MatrixXd& vertices,

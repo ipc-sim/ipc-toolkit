@@ -8,6 +8,10 @@ class BruteForce : public BroadPhase {
 public:
     BruteForce() = default;
 
+    /// @brief Get the name of the broad phase method.
+    /// @return The name of the broad phase method.
+    std::string name() const override { return "BruteForce"; }
+
     /// @brief Find the candidate vertex-vertex collisions.
     /// @param[out] candidates The candidate vertex-vertex collisions.
     void detect_vertex_vertex_candidates(

@@ -5,7 +5,7 @@ from find_ipctk import ipctk
 import utils
 
 
-def check_ipc_derivatives(broad_phase_method, use_convergent_formulation, mesh_name, dhat, all_vertices_on_surface):
+def check_ipc_derivatives(broad_phase, use_convergent_formulation, mesh_name, dhat, all_vertices_on_surface):
     vertices, edges, faces = utils.load_mesh(mesh_name)
 
     if all_vertices_on_surface:
@@ -17,8 +17,7 @@ def check_ipc_derivatives(broad_phase_method, use_convergent_formulation, mesh_n
     collisions = ipctk.NormalCollisions()
     collisions.use_area_weighting = use_convergent_formulation
     collisions.use_improved_max_approximator = use_convergent_formulation
-    collisions.build(mesh, vertices, dhat,
-                     broad_phase_method=broad_phase_method)
+    collisions.build(mesh, vertices, dhat, broad_phase=broad_phase)
     assert len(collisions) > 0
 
     B = ipctk.BarrierPotential(
@@ -40,7 +39,7 @@ def check_ipc_derivatives(broad_phase_method, use_convergent_formulation, mesh_n
 
 
 def test_ipc():
-    for method in utils.broad_phase_methods():
+    for method in utils.broad_phases():
         for use_convergent_formulation in (True, False):
             yield check_ipc_derivatives, method, use_convergent_formulation, "cube.ply", np.sqrt(2.0), True
             yield check_ipc_derivatives, method, use_convergent_formulation, "two-cubes-far.ply", 1e-1, False

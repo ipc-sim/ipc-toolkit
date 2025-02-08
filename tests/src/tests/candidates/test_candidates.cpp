@@ -1,6 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <ipc/candidates/candidates.hpp>
+#include <ipc/candidates/edge_face.hpp>
+#include <ipc/candidates/face_face.hpp>
 
 using namespace ipc;
 

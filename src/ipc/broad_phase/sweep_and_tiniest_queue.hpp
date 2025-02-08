@@ -14,6 +14,10 @@ class SweepAndTiniestQueue : public BroadPhase {
 public:
     SweepAndTiniestQueue() = default;
 
+    /// @brief Get the name of the broad phase method.
+    /// @return The name of the broad phase method.
+    std::string name() const override { return "SweepAndTiniestQueue"; }
+
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
     /// @param edges Collision mesh edges

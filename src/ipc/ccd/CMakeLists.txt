@@ -4,6 +4,7 @@ set(SOURCES
   additive_ccd.cpp
   additive_ccd.hpp
   check_initial_distance.hpp
+  default_narrow_phase_ccd.cpp
   default_narrow_phase_ccd.hpp
   inexact_ccd.cpp
   inexact_ccd.hpp

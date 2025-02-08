@@ -10,6 +10,10 @@ class BVH : public BroadPhase {
 public:
     BVH() = default;
 
+    /// @brief Get the name of the broad phase method.
+    /// @return The name of the broad phase method.
+    std::string name() const override { return "BVH"; }
+
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
     /// @param edges Collision mesh edges

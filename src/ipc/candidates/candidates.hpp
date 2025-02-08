@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/broad_phase/broad_phase.hpp>
+#include <ipc/broad_phase/default_broad_phase.hpp>
 #include <ipc/candidates/edge_edge.hpp>
 #include <ipc/candidates/edge_vertex.hpp>
 #include <ipc/candidates/face_vertex.hpp>
@@ -25,7 +25,8 @@ public:
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const double inflation_radius = 0,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
+        const std::shared_ptr<BroadPhase> broad_phase =
+            make_default_broad_phase());
 
     /// @brief Initialize the set of continuous collision detection candidates.
     /// @note Assumes the trajectory is linear.
@@ -39,7 +40,8 @@ public:
         const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
         const double inflation_radius = 0,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
+        const std::shared_ptr<BroadPhase> broad_phase =
+            make_default_broad_phase());
 
     size_t size() const;
 
@@ -103,8 +105,9 @@ public:
         const Eigen::MatrixXd& vertices_t0,
         const Eigen::MatrixXd& vertices_t1,
         const double dhat,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
         const double min_distance = 0.0,
+        const std::shared_ptr<BroadPhase> broad_phase =
+            make_default_broad_phase(),
         const NarrowPhaseCCD& narrow_phase_ccd =
             DEFAULT_NARROW_PHASE_CCD) const;
 

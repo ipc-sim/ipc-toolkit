@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ipc/collision_mesh.hpp>
-#include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/collisions/normal/edge_edge.hpp>
 #include <ipc/collisions/normal/edge_vertex.hpp>
@@ -35,7 +34,8 @@ public:
         const Eigen::MatrixXd& vertices,
         const double dhat,
         const double dmin = 0,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
+        const std::shared_ptr<BroadPhase> broad_phase =
+            make_default_broad_phase());
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param candidates Distance candidates from which the collision set is built.

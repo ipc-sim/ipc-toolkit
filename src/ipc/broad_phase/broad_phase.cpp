@@ -64,34 +64,6 @@ void BroadPhase::detect_collision_candidates(
 
 // ============================================================================
 
-std::shared_ptr<BroadPhase>
-BroadPhase::make_broad_phase(const BroadPhaseMethod method)
-{
-    switch (method) {
-    case BroadPhaseMethod::BRUTE_FORCE:
-        return std::make_shared<BruteForce>();
-    case BroadPhaseMethod::HASH_GRID:
-        return std::make_shared<HashGrid>();
-    case BroadPhaseMethod::SPATIAL_HASH:
-        return std::make_shared<SpatialHash>();
-    case BroadPhaseMethod::SWEEP_AND_PRUNE:
-        return std::make_shared<SweepAndPrune>();
-    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
-#ifdef IPC_TOOLKIT_WITH_CUDA
-        return std::make_shared<SweepAndTiniestQueue>();
-#else
-        throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
-                                 "because CUDA is disabled!");
-#endif
-    case BroadPhaseMethod::BVH:
-        return std::make_shared<BVH>();
-    default:
-        throw std::runtime_error("Invalid BroadPhaseMethod!");
-    }
-}
-
-// ============================================================================
-
 bool BroadPhase::can_edge_vertex_collide(size_t ei, size_t vi) const
 {
     const auto& [e0i, e1i, _] = edge_boxes[ei].vertex_ids;

@@ -10,6 +10,8 @@
 #include <ipc/ccd/tight_inclusion_ccd.hpp>
 #include <ipc/ccd/additive_ccd.hpp>
 #include <ipc/ccd/point_static_plane.hpp>
+#include <ipc/broad_phase/hash_grid.hpp>
+#include <ipc/broad_phase/sweep_and_prune.hpp>
 
 using namespace ipc;
 
@@ -23,8 +25,7 @@ TEST_CASE("Repeated CCD", "[ccd][repeat][.]")
     constexpr long FIRST_MAX_ITER = 1'000'000, SECOND_MAX_ITER = 1'000'000;
     constexpr double MIN_DISTANCE = 0.0;
 
-    // BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
-    BroadPhaseMethod broadphase_method = BroadPhaseMethod::HASH_GRID;
+    auto broad_phase = std::make_shared<HashGrid>();
     double inflation_radius = 0;
 
     bool recompute_candidates = GENERATE(false, true);
@@ -81,7 +82,7 @@ TEST_CASE("Repeated CCD", "[ccd][repeat][.]")
     V1 = mesh.vertices(V1);
 
     Candidates candidates;
-    candidates.build(mesh, V0, V1, inflation_radius, broadphase_method);
+    candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
 
     bool has_collisions = !candidates.is_step_collision_free(
         mesh, V0, V1, MIN_DISTANCE,
@@ -104,7 +105,7 @@ TEST_CASE("Repeated CCD", "[ccd][repeat][.]")
         // CHECK(!has_intersections(Vt, E, F));
 
         if (recompute_candidates) {
-            candidates.build(mesh, V0, Vt, inflation_radius, broadphase_method);
+            candidates.build(mesh, V0, Vt, inflation_radius, broad_phase);
         }
 
         has_collisions_repeated = !candidates.is_step_collision_free(
@@ -116,7 +117,7 @@ TEST_CASE("Repeated CCD", "[ccd][repeat][.]")
             TightInclusionCCD(SECOND_TOL, SECOND_MAX_ITER));
 
         CAPTURE(
-            t0_filename, t1_filename, broadphase_method, recompute_candidates,
+            t0_filename, t1_filename, broad_phase->name(), recompute_candidates,
             has_collisions, collision_free_step_size, has_collisions_repeated,
             stepsize_repeated);
         CHECK(!has_collisions_repeated);
@@ -218,12 +219,11 @@ TEST_CASE("Slow CCD", "[CCD]")
     CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0, E, F);
 
     const double min_distance = 1e-3;
-    const BroadPhaseMethod broad_phase_method =
-        BroadPhaseMethod::SWEEP_AND_PRUNE;
+    auto broad_phase = std::make_shared<SweepAndPrune>();
 
     // Broad phase
     Candidates candidates;
-    candidates.build(mesh, V0, V1, min_distance / 2, broad_phase_method);
+    candidates.build(mesh, V0, V1, min_distance / 2, broad_phase);
 
     const TightInclusionCCD tight_inclusion(
         /*tolerance=*/100 * TightInclusionCCD::DEFAULT_TOLERANCE);

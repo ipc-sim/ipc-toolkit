@@ -508,9 +508,8 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
 
             ipc::Candidates candidates;
             candidates.build(
-                mesh, vertices_t0, vertices_t1,
-                /*inflation_radius=*/0.0,
-                /*broad_phase_method=*/ipc::BroadPhaseMethod::HASH_GRID);
+                mesh, vertices_t0, vertices_t1, /*inflation_radius=*/0.0,
+                /*broad_phase=*/std::make_shared<ipc::HashGrid>());
 
     .. md-tab-item:: Python
 
@@ -518,11 +517,10 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
 
             candidates = ipctk.Candidates()
             candidates.build(
-                mesh, vertices_t0, vertices_t1,
-                broad_phase_method=ipctk.BroadPhaseMethod.HASH_GRID)
+                mesh, vertices_t0, vertices_t1, broad_phase=ipctk.HashGrid())
 
-Possible values for ``broad_phase_method`` are: ``BRUTE_FORCE`` (parallel brute force culling), ``HASH_GRID`` (default), ``SPATIAL_HASH`` (implementation from the original IPC codebase),
-``BVH`` (`SimpleBVH <https://github.com/geometryprocessing/SimpleBVH>`_), ``SWEEP_AND_PRUNE`` (method of :cite:t:`Belgrod2023Time`), or ``SWEEP_AND_TINIEST_QUEUE`` (requires CUDA).
+Possible values for ``broad_phase`` are: ``BruteForce`` (parallel brute force culling), ``HashGrid`` (default), ``SpatialHash`` (implementation from the original IPC codebase),
+``BVH`` (`SimpleBVH <https://github.com/geometryprocessing/SimpleBVH>`_), ``SweepAndPrune`` (method of :cite:t:`Belgrod2023Time`), or ``SweepAndTiniestQueue`` (requires CUDA).
 
 Narrow-Phase
 ^^^^^^^^^^^^
@@ -628,17 +626,12 @@ To do this, we need to set the ``min_distance`` parameter when calling ``is_step
         .. code-block:: c++
 
             double max_step_size = ipc::compute_collision_free_stepsize(
-                    collision_mesh, vertices_t0, vertices_t1,
-                    /*broad_phase_method=*/ipc::DEFAULT_BROAD_PHASE_METHOD,
-                    /*min_distance=*/1e-4);
+                    collision_mesh, vertices_t0, vertices_t1, /*min_distance=*/1e-4);
 
             Eigen::MatrixXd collision_free_vertices =
                 (vertices_t1 - vertices_t0) * max_step_size + vertices_t0;
             assert(ipc::is_step_collision_free(
-                mesh, vertices_t0, collision_free_vertices,
-                /*broad_phase_method=*/ipc::DEFAULT_BROAD_PHASE_METHOD,
-                /*min_distance=*/1e-4
-            ));
+                mesh, vertices_t0, collision_free_vertices, /*min_distance=*/1e-4));
 
     .. md-tab-item:: Python
 

@@ -145,14 +145,14 @@ void NormalCollisions::build(
     const Eigen::MatrixXd& vertices,
     const double dhat,
     const double dmin,
-    const BroadPhaseMethod broad_phase_method)
+    const std::shared_ptr<BroadPhase> broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
     const double inflation_radius = 0.5 * (dhat + dmin);
 
     Candidates candidates;
-    candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
+    candidates.build(mesh, vertices, inflation_radius, broad_phase);
 
     this->build(candidates, mesh, vertices, dhat, dmin);
 }
