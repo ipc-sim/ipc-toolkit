@@ -1,6 +1,7 @@
 #include <common.hpp>
 
 #include <ipc/candidates/candidates.hpp>
+#include <ipc/broad_phase/broad_phase.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
@@ -13,7 +14,7 @@ void define_candidates(py::module_& m)
             "build",
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&, const double,
-                const BroadPhaseMethod>(&Candidates::build),
+                std::shared_ptr<BroadPhase>>(&Candidates::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of discrete collision detection candidates.
 
@@ -21,17 +22,16 @@ void define_candidates(py::module_& m)
                 mesh: The surface of the collision mesh.
                 vertices: Surface vertex positions (rowwise).
                 inflation_radius: Amount to inflate the bounding boxes.
-                broad_phase_method: Broad phase method to use.
+                broad_phase: Broad phase to use.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"),
-            py::arg("inflation_radius") = 0,
-            py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD)
+            py::arg("inflation_radius") = 0, py::arg("broad_phase") = nullptr)
         .def(
             "build",
             py::overload_cast<
                 const CollisionMesh&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const double, const BroadPhaseMethod>(
-                &Candidates::build),
+                const Eigen::MatrixXd&, const double,
+                std::shared_ptr<BroadPhase>>(&Candidates::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of continuous collision detection candidates.
 
@@ -43,11 +43,10 @@ void define_candidates(py::module_& m)
                 vertices_t0: Surface vertex starting positions (rowwise).
                 vertices_t1: Surface vertex ending positions (rowwise).
                 inflation_radius: Amount to inflate the bounding boxes.
-                broad_phase_method: Broad phase method to use.
+                broad_phase: Broad phase to use.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("inflation_radius") = 0,
-            py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD)
+            py::arg("inflation_radius") = 0, py::arg("broad_phase") = nullptr)
         .def("__len__", &Candidates::size)
         .def("empty", &Candidates::empty)
         .def("clear", &Candidates::clear)
@@ -122,13 +121,13 @@ void define_candidates(py::module_& m)
                 vertices_t0: Surface vertex starting positions (rowwise).
                 vertices_t1: Surface vertex ending positions (rowwise).
                 dhat: Barrier activation distance.
-                min_distance: The minimum distance allowable between any two elements.
-                narrow_phase_ccd: The narrow phase CCD algorithm to use.
+                min_distance: Minimum distance allowable between any two elements.
+                broad_phase: Broad phase algorithm to use.
+                narrow_phase_ccd: Narrow phase CCD algorithm to use.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("dhat"),
-            py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD,
-            py::arg("min_distance") = 0.0,
+            py::arg("dhat"), py::arg("min_distance") = 0.0,
+            py::arg("broad_phase") = nullptr,
             py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD)
         .def(
             "save_obj", &Candidates::save_obj, py::arg("filename"),

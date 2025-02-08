@@ -8,37 +8,8 @@ using namespace ipc;
 
 void define_broad_phase(py::module_& m)
 {
-    py::enum_<BroadPhaseMethod>(
-        m, "BroadPhaseMethod",
-        "Enumeration of implemented broad phase methods.")
-        .value("BRUTE_FORCE", BroadPhaseMethod::BRUTE_FORCE, "Brute force")
-        .value("HASH_GRID", BroadPhaseMethod::HASH_GRID, "Hash grid")
-        .value("SPATIAL_HASH", BroadPhaseMethod::SPATIAL_HASH, "Spatial hash")
-        .value(
-            "BOUNDING_VOLUME_HIERARCHY", BroadPhaseMethod::BVH,
-            "Bounding volume hierarchy")
-        .value(
-            "SWEEP_AND_PRUNE", BroadPhaseMethod::SWEEP_AND_PRUNE,
-            "Sweep and prune")
-        .value(
-            "SWEEP_AND_TINIEST_QUEUE",
-            BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE,
-            "Sweep and tiniest queue (GPU)")
-        .export_values();
-
-    py::class_<BroadPhase>(m, "BroadPhase")
-        .def_static(
-            "make_broad_phase", &BroadPhase::make_broad_phase,
-            R"ipc_Qu8mg5v7(
-            Construct a registered broad phase object.
-
-            Parameters:
-                method: The broad phase method to use.
-
-            Returns:
-                The constructed broad phase object.
-            )ipc_Qu8mg5v7",
-            py::arg("method"))
+    py::class_<BroadPhase, std::shared_ptr<BroadPhase>>(m, "BroadPhase")
+        .def("name", &BroadPhase::name, "Get the name of the broad phase.")
         .def(
             "build",
             py::overload_cast<

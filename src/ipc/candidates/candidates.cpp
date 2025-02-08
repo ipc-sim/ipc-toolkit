@@ -2,6 +2,7 @@
 
 #include <ipc/config.hpp>
 #include <ipc/ipc.hpp>
+#include <ipc/broad_phase/default_broad_phase.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/save_obj.hpp>
 
@@ -35,14 +36,14 @@ void Candidates::build(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const double inflation_radius,
-    const BroadPhaseMethod broad_phase_method)
+    const std::shared_ptr<BroadPhase> broad_phase)
 {
+    assert(broad_phase != nullptr);
+
     const int dim = vertices.cols();
 
     clear();
 
-    std::shared_ptr<BroadPhase> broad_phase =
-        BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this);
@@ -107,14 +108,14 @@ void Candidates::build(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const double inflation_radius,
-    const BroadPhaseMethod broad_phase_method)
+    const std::shared_ptr<BroadPhase> broad_phase)
 {
+    assert(broad_phase != nullptr);
+
     const int dim = vertices_t0.cols();
 
     clear();
 
-    std::shared_ptr<BroadPhase> broad_phase =
-        BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(
         vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), inflation_radius);
@@ -301,8 +302,8 @@ double Candidates::compute_cfl_stepsize(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const double dhat,
-    const BroadPhaseMethod broad_phase_method,
     const double min_distance,
+    const std::shared_ptr<BroadPhase> broad_phase,
     const NarrowPhaseCCD& narrow_phase_ccd) const
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
@@ -317,7 +318,7 @@ double Candidates::compute_cfl_stepsize(
     // If alpha_F < 0.5 * alpha_C, then we should do full CCD.
     if (alpha_F < 0.5 * alpha_C) {
         return ipc::compute_collision_free_stepsize(
-            mesh, vertices_t0, vertices_t1, min_distance, broad_phase_method,
+            mesh, vertices_t0, vertices_t1, min_distance, broad_phase,
             narrow_phase_ccd);
     }
     return std::min(alpha_C, alpha_F);

@@ -1,7 +1,8 @@
 #pragma once
 
 #include <ipc/collision_mesh.hpp>
-#include <ipc/broad_phase/broad_phase.hpp>
+#include <ipc/broad_phase/default_broad_phase.hpp>
+#include <ipc/ccd/default_narrow_phase_ccd.hpp>
 
 #include <Eigen/Core>
 #include <Eigen/Sparse>
@@ -26,7 +27,7 @@ bool is_step_collision_free(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const double min_distance = 0.0,
-    const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
+    const std::shared_ptr<BroadPhase> broad_phase = make_default_broad_phase(),
     const NarrowPhaseCCD& narrow_phase_ccd = DEFAULT_NARROW_PHASE_CCD);
 
 /// @brief Computes a maximal step size that is collision free.
@@ -43,7 +44,7 @@ double compute_collision_free_stepsize(
     const Eigen::MatrixXd& vertices_t0,
     const Eigen::MatrixXd& vertices_t1,
     const double min_distance = 0.0,
-    const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD,
+    const std::shared_ptr<BroadPhase> broad_phase = make_default_broad_phase(),
     const NarrowPhaseCCD& narrow_phase_ccd = DEFAULT_NARROW_PHASE_CCD);
 
 // ============================================================================
@@ -57,6 +58,6 @@ double compute_collision_free_stepsize(
 bool has_intersections(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
-    const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
+    const std::shared_ptr<BroadPhase> broad_phase = make_default_broad_phase());
 
 } // namespace ipc

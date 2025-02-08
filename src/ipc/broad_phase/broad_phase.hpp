@@ -13,31 +13,15 @@
 
 namespace ipc {
 
-/// Enumeration of implemented broad phase methods.
-enum class BroadPhaseMethod {
-    BRUTE_FORCE = 0,
-    HASH_GRID,
-    SPATIAL_HASH,
-    BVH,
-    SWEEP_AND_PRUNE,
-    SWEEP_AND_TINIEST_QUEUE, // Requires CUDA
-    NUM_METHODS
-};
-
-static constexpr BroadPhaseMethod DEFAULT_BROAD_PHASE_METHOD =
-    BroadPhaseMethod::HASH_GRID;
-
 class Candidates; // Forward declaration
 
 class BroadPhase {
 public:
     virtual ~BroadPhase() { clear(); }
 
-    /// @brief Construct a registered broad phase object.
-    /// @param method The broad phase method to use.
-    /// @return The constructed broad phase object.
-    static std::shared_ptr<BroadPhase>
-    make_broad_phase(const BroadPhaseMethod method);
+    /// @brief Get the name of the broad phase method.
+    /// @return The name of the broad phase method.
+    virtual std::string name() const = 0;
 
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions

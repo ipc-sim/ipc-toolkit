@@ -1,7 +1,9 @@
 #include <common.hpp>
 
 #include <ipc/ipc.hpp>
+#include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/config.hpp>
+
 #include <igl/edges.h>
 
 namespace py = pybind11;
@@ -24,15 +26,14 @@ void define_ipc(py::module_& m)
             vertices_t0: Surface vertex vertices at start as rows of a matrix.
             vertices_t1: Surface vertex vertices at end as rows of a matrix.
             min_distance: The minimum distance allowable between any two elements.
-            broad_phase_method: The broad phase method to use.
+            broad_phase: Broad phase to use.
             narrow_phase_ccd: The narrow phase CCD algorithm to use.
 
         Returns:
             True if <b>any</b> collisions occur.
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-        py::arg("min_distance") = 0.0,
-        py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD,
+        py::arg("min_distance") = 0.0, py::arg("broad_phase") = nullptr,
         py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD);
 
     m.def(
@@ -48,15 +49,14 @@ void define_ipc(py::module_& m)
             vertices_t0: Vertex vertices at start as rows of a matrix. Assumes vertices_t0 is intersection free.
             vertices_t1: Surface vertex vertices at end as rows of a matrix.
             min_distance: The minimum distance allowable between any two elements.
-            broad_phase_method: The broad phase method to use.
+            broad_phase: Broad phase to use.
             narrow_phase_ccd: The narrow phase CCD algorithm to use.
 
         Returns:
             A step-size :math:`\in [0, 1]` that is collision free. A value of 1.0 if a full step and 0.0 is no step.
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-        py::arg("min_distance") = 0.0,
-        py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD,
+        py::arg("min_distance") = 0.0, py::arg("broad_phase") = nullptr,
         py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD);
 
     m.def(
@@ -67,13 +67,12 @@ void define_ipc(py::module_& m)
         Parameters:
             mesh: The collision mesh.
             vertices: Vertices of the collision mesh.
-            broad_phase_method: The broad phase method to use.
+            broad_phase: Broad phase to use.
 
         Returns:
             A boolean for if the mesh has intersections.
         )ipc_Qu8mg5v7",
-        py::arg("mesh"), py::arg("vertices"),
-        py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD);
+        py::arg("mesh"), py::arg("vertices"), py::arg("broad_phase") = nullptr);
 
     m.def(
         "edges",
