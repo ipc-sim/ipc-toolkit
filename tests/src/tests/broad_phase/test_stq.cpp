@@ -5,6 +5,7 @@
 
 #include <ipc/broad_phase/sweep_and_prune.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
+#include <ipc/broad_phase/bvh.hpp>
 
 using namespace ipc;
 #ifdef IPC_TOOLKIT_WITH_CUDA
@@ -23,8 +24,9 @@ TEST_CASE("STQ All Cases", "[broad_phase][stq]")
 
 #ifdef IPC_TOOLKIT_WITH_CUDA
     const std::shared_ptr<BroadPhase> broad_phase = GENERATE(
-        std::make_shared<SweepAndPrune>(),
-        std::make_shared<SweepAndTiniestQueue>());
+        std::static_pointer_cast<BroadPhase>(std::make_shared<SweepAndPrune>()),
+        std::static_pointer_cast<BroadPhase>(
+            std::make_shared<SweepAndTiniestQueue>()));
 #else
     const std::shared_ptr<BroadPhase> broad_phase =
         std::make_shared<SweepAndPrune>();
@@ -73,8 +75,7 @@ TEST_CASE("Puffer-Ball", "[ccd][broad_phase][stq][cuda]")
 
     CollisionMesh mesh(V0, E, F);
 
-    const std::shared_ptr<BroadPhase> stq =
-        std::make_shared<SweepAndTiniestQueue>();
+    const auto stq = std::make_shared<SweepAndTiniestQueue>();
 
     Candidates candidates;
     candidates.build(mesh, V0, V1, /*inflation_radius=*/0, stq);
