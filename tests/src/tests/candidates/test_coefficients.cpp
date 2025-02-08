@@ -37,8 +37,8 @@ TEST_CASE("Edge-vertex collision stencil coeffs.", "[ev][stencil][coeffs]")
 
     SECTION("default") { }
     SECTION("random") { V.row(2).setRandom(); }
-    SECTION("e0") { V(0, 2) = -2; }
-    SECTION("e1") { V(0, 2) = 2; }
+    SECTION("e0") { V(2, 0) = -2; }
+    SECTION("e1") { V(2, 0) = 2; }
 
     Eigen::MatrixXi E(1, 2), F;
     E << 0, 1;
