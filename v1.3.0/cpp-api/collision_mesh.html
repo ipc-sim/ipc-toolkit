@@ -33,7 +33,7 @@
       
     
         <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.02cb18745d09eea51.min.css?v=ff456132" />
-        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
         <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=95c45c06" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
@@ -3394,7 +3394,7 @@
 <span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">CollisionMesh;</span></span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMeshE" title="Link to this definition">¶</a></dt>
 <dd><p>A class for encapsolating the transformation/selections needed to go from a volumetric FE mesh to a surface collision mesh. </p>
 <div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions<a class="headerlink" href="#breathe-section-title-public-functions" title="Permalink to this headline">¶</a></p>
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh13CollisionMeshEv">
 <span class="sig-name descname"><span class="n">CollisionMesh</span></span><span class="p">(</span><span class="p">)</span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="k">default;</span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh13CollisionMeshEv" title="Link to this definition">¶</a></dt>
@@ -3785,7 +3785,7 @@
 
 </div>
 <div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members<a class="headerlink" href="#breathe-section-title-public-members" title="Permalink to this headline">¶</a></p>
 <dl class="cpp var objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh11can_collideE">
 <span class="n">std</span><span class="p">::</span><span class="n">function</span><span class="p">&lt;</span><span class="kt">bool</span><span class="p">(</span><span class="n">size_t</span><span class="p">,</span><span class="w">&nbsp;</span><span class="n">size_t</span><span class="p">)</span><span class="p">&gt;</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">can_collide<br>&nbsp;&nbsp;&nbsp;</span></span><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><a class="reference internal" href="#_CPPv4N3ipc13CollisionMesh19default_can_collideE6size_t6size_t" title="ipc::CollisionMesh::default_can_collide (C++ function) — By default all primitives can collide with all other primitives."><span class="n">default_can_collide;</span></a><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh11can_collideE" title="Link to this definition">¶</a></dt>
@@ -3795,7 +3795,7 @@
 
 </div>
 <div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions</p>
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions<a class="headerlink" href="#breathe-section-title-public-static-functions" title="Permalink to this headline">¶</a></p>
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh20build_from_full_meshERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE">
 <span class="k">static</span><span class="w">&nbsp;</span><span class="k">inline</span><span class="w">&nbsp;</span><a class="desctype reference internal" href="#_CPPv4N3ipc13CollisionMeshE" title="ipc::CollisionMesh (C++ class) — A class for encapsolating the transformation/selections needed to go from a volumetric FE mesh to a surface collision mesh."><span class="n">CollisionMesh</span></a><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">build_from_full_mesh</span></span><span class="p">(<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXd</span><span class="p">&amp;&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh20build_from_full_meshERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE-p-full_rest_positions" title="ipc::CollisionMesh::build_from_full_mesh::full_rest_positions (C++ function parameter) — The full vertices at rest (#FV × dim)."><span class="n sig-param">full_rest_positions</span></a></span><span class="p">,<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="p">&amp;&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh20build_from_full_meshERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE-p-edges" title="ipc::CollisionMesh::build_from_full_mesh::edges (C++ function parameter) — The edge matrix of mesh (#E × 2)."><span class="n sig-param">edges</span></a></span><span class="p">,<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="p">&amp;&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh20build_from_full_meshERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE-p-faces" title="ipc::CollisionMesh::build_from_full_mesh::faces (C++ function parameter) — The face matrix of mesh (#F × 3)."><span class="n sig-param">faces</span></a><span class="w">&nbsp;</span><span class="p">=</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXi</span><span class="p">(</span><span class="p">)</span></span><span class="p">);</span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh20build_from_full_meshERKN5Eigen8MatrixXdERKN5Eigen8MatrixXiERKN5Eigen8MatrixXiE" title="Link to this definition">¶</a></dt>
@@ -3859,7 +3859,7 @@
 
 </div>
 <div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-functions">Protected Functions</p>
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-functions">Protected Functions<a class="headerlink" href="#breathe-section-title-protected-functions" title="Permalink to this headline">¶</a></p>
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh19init_codim_verticesEv">
 <span class="kt">void</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">init_codim_vertices</span></span><span class="p">(</span><span class="p">);</span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh19init_codim_verticesEv" title="Link to this definition">¶</a></dt>
@@ -3884,7 +3884,7 @@
 
 </div>
 <div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-attributes">Protected Attributes</p>
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-attributes">Protected Attributes<a class="headerlink" href="#breathe-section-title-protected-attributes" title="Permalink to this headline">¶</a></p>
 <dl class="cpp var objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh21m_full_rest_positionsE">
 <span class="n">Eigen</span><span class="p">::</span><span class="n">MatrixXd</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">m_full_rest_positions;</span></span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh21m_full_rest_positionsE" title="Link to this definition">¶</a></dt>
@@ -4025,7 +4025,7 @@
 
 </div>
 <div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-static-functions">Protected Static Functions</p>
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-static-functions">Protected Static Functions<a class="headerlink" href="#breathe-section-title-protected-static-functions" title="Permalink to this headline">¶</a></p>
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh27vertex_matrix_to_dof_matrixERKN5Eigen12SparseMatrixIdEEi">
 <span class="k">static</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">SparseMatrix</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">vertex_matrix_to_dof_matrix</span></span><span class="p">(<br>&nbsp;&nbsp;&nbsp;&nbsp;</span><span><span class="k">const</span><span class="w">&nbsp;</span><span class="n">Eigen</span><span class="p">::</span><span class="n">SparseMatrix</span><span class="p">&lt;</span><span class="kt">double</span><span class="p">&gt;</span><span class="p">&amp;&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh27vertex_matrix_to_dof_matrixERKN5Eigen12SparseMatrixIdEEi" title="ipc::CollisionMesh::vertex_matrix_to_dof_matrix::M_V (C++ function parameter)"><span class="n sig-param">M_V</span></a></span><span class="p">,&nbsp;</span><span><span class="kt">int</span><span class="w">&nbsp;</span><a class="n sig-param reference internal" href="#_CPPv4N3ipc13CollisionMesh27vertex_matrix_to_dof_matrixERKN5Eigen12SparseMatrixIdEEi" title="ipc::CollisionMesh::vertex_matrix_to_dof_matrix::dim (C++ function parameter)"><span class="n sig-param">dim</span></a></span><span class="p">);</span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh27vertex_matrix_to_dof_matrixERKN5Eigen12SparseMatrixIdEEi" title="Link to this definition">¶</a></dt>
@@ -4034,7 +4034,7 @@
 
 </div>
 <div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-static-functions">Private Static Functions</p>
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-private-static-functions">Private Static Functions<a class="headerlink" href="#breathe-section-title-private-static-functions" title="Permalink to this headline">¶</a></p>
 <dl class="cpp function objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc13CollisionMesh19default_can_collideE6size_t6size_t">
 <span class="k">static</span><span class="w">&nbsp;</span><span class="k">inline</span><span class="w">&nbsp;</span><span class="kt">int</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">default_can_collide</span></span><span class="p">(</span><span><span class="n">size_t</span></span><span class="p">,&nbsp;</span><span><span class="n">size_t</span></span><span class="p">);</span><a class="headerlink" href="#_CPPv4N3ipc13CollisionMesh19default_can_collideE6size_t6size_t" title="Link to this definition">¶</a></dt>
@@ -4128,7 +4128,7 @@
   
     Created using
     <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
-    7.3.7.
+    8.1.3.
      and
     <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
   
