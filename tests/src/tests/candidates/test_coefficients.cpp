@@ -2,6 +2,7 @@
 #include <catch2/catch_approx.hpp>
 
 #include <ipc/candidates/candidates.hpp>
+#include <ipc/collisions/normal/plane_vertex.hpp>
 
 #include <igl/edges.h>
 
@@ -92,7 +93,7 @@ TEST_CASE("Edge-edge collision stencil coeffs.", "[ee][stencil][coeffs]")
     CHECK(n.squaredNorm() == Catch::Approx(ee.compute_distance(V, E, F)));
 }
 
-TEST_CASE("Face-Vertex collision stencil coeffs.", "[fv][stencil][coeffs]")
+TEST_CASE("Face-vertex collision stencil coeffs.", "[fv][stencil][coeffs]")
 {
     Eigen::MatrixXd V(4, 3);
     V << 0, 0, 0, /**/ 1, 0, 0, /**/ 0, 1, 0, /**/ 0.333, 0.333, 1;
@@ -133,4 +134,21 @@ TEST_CASE("Face-Vertex collision stencil coeffs.", "[fv][stencil][coeffs]")
     CAPTURE(n.transpose());
 
     CHECK(n.squaredNorm() == Catch::Approx(fv.compute_distance(V, E, F)));
+}
+
+TEST_CASE("Plane-vertex collision stencil coeffs.", "[pv][stencil][coeffs]")
+{
+    Eigen::MatrixXd V(1, 3);
+    V << 0, 1, 0;
+
+    Eigen::Vector3d n(0, 1, 0), o(0, 0, 0);
+
+    Eigen::MatrixXi E, F;
+
+    PlaneVertexNormalCollision pv(o, n, 0);
+
+    VectorMax4d coeffs = pv.compute_coefficients(V, E, F);
+
+    CHECK(coeffs.size() == 1);
+    CHECK(coeffs[0] == 1);
 }

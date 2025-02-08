@@ -21,6 +21,11 @@ public:
         return { { vertex_id, -1, -1, -1 } };
     }
 
+    using NormalCollision::compute_coefficients;
+    using NormalCollision::compute_distance;
+    using NormalCollision::compute_distance_gradient;
+    using NormalCollision::compute_distance_hessian;
+
     /// @brief Compute the distance between the point and plane.
     /// @param point Point's position.
     /// @return Distance of the stencil.
