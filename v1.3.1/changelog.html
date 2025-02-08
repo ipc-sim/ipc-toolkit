@@ -32,10 +32,10 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
-        <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-        <link rel="stylesheet" type="text/css" href="_static/autoclasstoc.css" />
-        <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.02cb18745d09eea51.min.css?v=ff456132" />
+        <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+        <link rel="stylesheet" type="text/css" href="_static/autoclasstoc.css?v=08871587" />
+        <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=95c45c06" />
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -3111,8 +3111,8 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
-<h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permalink to this heading">¶</a></h1>
-<h2 id="v1-3-1-nov-08-2024">v1.3.1 (Nov 08, 2024)<a class="headerlink" href="#v1-3-1-nov-08-2024" title="Permalink to this heading">¶</a></h2>
+<h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Link to this heading">¶</a></h1>
+<h2 id="v1-3-1-nov-08-2024">v1.3.1 (Nov 08, 2024)<a class="headerlink" href="#v1-3-1-nov-08-2024" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Move test data to an external repository in <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/pull/113">#113</a></p>
 <ul>
@@ -3139,13 +3139,13 @@
 </ul>
 </li>
 </ul>
-<h2 id="v1-3-0-aug-03-2024">v1.3.0 (Aug 03, 2024)<a class="headerlink" href="#v1-3-0-aug-03-2024" title="Permalink to this heading">¶</a></h2>
+<h2 id="v1-3-0-aug-03-2024">v1.3.0 (Aug 03, 2024)<a class="headerlink" href="#v1-3-0-aug-03-2024" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Separated the collision set and potential computations. This allows us to more easily add new potentials in the future. This will require updating calls to <code class="docutils literal notranslate"><span class="pre">compute_potential_*</span></code>. See the <a class="reference external" href="https://ipctk.xyz/tutorial/getting_started.html">tutorial</a> for details.</p></li>
 <li><p>Add a <code class="docutils literal notranslate"><span class="pre">Barrier</span></code> class to enable dynamic selection of barrier function.</p></li>
 <li><p>Add a <code class="docutils literal notranslate"><span class="pre">NarrowPhaseCCD</span></code> class to enable dynamic selection of narrow-phase CCD method.</p></li>
 </ul>
-<h3 id="details"><span id="details-4"></span>Details<a class="headerlink" href="#details" title="Permalink to this heading">¶</a></h3>
+<h3 id="details"><span id="details-4"></span>Details<a class="headerlink" href="#details" title="Link to this heading">¶</a></h3>
 <ul>
 <li><p>Refactor potentials in <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/pull/83">#83</a></p>
 <ul class="simple">
@@ -3242,12 +3242,12 @@
 </ul>
 </li>
 </ul>
-<h2 id="v1-2-1-jul-12-2024">v1.2.1 (Jul 12, 2024)<a class="headerlink" href="#v1-2-1-jul-12-2024" title="Permalink to this heading">¶</a></h2>
+<h2 id="v1-2-1-jul-12-2024">v1.2.1 (Jul 12, 2024)<a class="headerlink" href="#v1-2-1-jul-12-2024" title="Link to this heading">¶</a></h2>
 <p>Bug fixes 🐛 :</p>
 <ul class="simple">
 <li><p>Update Pybind11 to support Numpy 2.0. Fixes segmentation fault as described in <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/issues/102">#102</a>.</p></li>
 </ul>
-<h2 id="v1-2-0-dec-11-2023">v1.2.0 (Dec 11, 2023)<a class="headerlink" href="#v1-2-0-dec-11-2023" title="Permalink to this heading">¶</a></h2>
+<h2 id="v1-2-0-dec-11-2023">v1.2.0 (Dec 11, 2023)<a class="headerlink" href="#v1-2-0-dec-11-2023" title="Link to this heading">¶</a></h2>
 <p>Various new features 🚀 and some bug fixes 🐛.</p>
 <ul class="simple">
 <li><p>Implement the improved max approximator as described in <a class="reference external" href="https://arxiv.org/abs/2307.15908">[Li et al. 2023]</a></p></li>
@@ -3255,7 +3255,7 @@
 <li><p>Add a generic implementation of the nonlinear CCD (of linear geometry) algorithm from <a class="reference external" href="https://ipc-sim.github.io/rigid-ipc/">[Ferguson et al. 2021]</a></p></li>
 <li><p>Add missing codimensional collision support (point-point and point-edge)</p></li>
 </ul>
-<h3 id="details-3"><span id="id1"></span>Details<a class="headerlink" href="#details-3" title="Permalink to this heading">¶</a></h3>
+<h3 id="details-3"><span id="id1"></span>Details<a class="headerlink" href="#details-3" title="Link to this heading">¶</a></h3>
 <ul>
 <li><p>Update website URL to <a class="reference external" href="https://ipctk.xyz">ipctk.xyz</a> in <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/pull/54">#54</a></p></li>
 <li><p>Simplify tangential basis Jacobian calculation thanks to <a class="reference external" href="https://github.com/halehOssadat">&#64;halehOssadat</a> and <a class="reference external" href="https://github.com/jpanetta">&#64;jpanetta</a> in <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/pull/56">#56</a></p></li>
@@ -3328,7 +3328,7 @@
 </ul>
 </li>
 </ul>
-<h2 id="v1-1-1-aug-18-2023">v1.1.1 (Aug 18, 2023)<a class="headerlink" href="#v1-1-1-aug-18-2023" title="Permalink to this heading">¶</a></h2>
+<h2 id="v1-1-1-aug-18-2023">v1.1.1 (Aug 18, 2023)<a class="headerlink" href="#v1-1-1-aug-18-2023" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>Logo by <a class="reference external" href="https://github.com/zfergus">&#64;zfergus</a> in <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/pull/52">#52</a></p></li>
 <li><p>Fix vertex-vertex <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="o">==</span></code> and <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="o">&lt;</span></code> functions to be order independent</p>
@@ -3338,9 +3338,9 @@
 </li>
 <li><p>Update Tight Inclusion CCD</p></li>
 </ul>
-<h2 id="v1-1-0-jul-25-2023">v1.1.0 (Jul 25, 2023)<a class="headerlink" href="#v1-1-0-jul-25-2023" title="Permalink to this heading">¶</a></h2>
+<h2 id="v1-1-0-jul-25-2023">v1.1.0 (Jul 25, 2023)<a class="headerlink" href="#v1-1-0-jul-25-2023" title="Link to this heading">¶</a></h2>
 <p>Large refactoring to make the code more object-oriented rather than passing objects to functions. Other changes include the friction potential now being a function of velocity, bug fixes, and a new tutorial.</p>
-<h3 id="details-2"><span id="id2"></span>Details<a class="headerlink" href="#details-2" title="Permalink to this heading">¶</a></h3>
+<h3 id="details-2"><span id="id2"></span>Details<a class="headerlink" href="#details-2" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>Large Refactor in <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/pull/25">#25</a></p>
 <ul>
@@ -3374,10 +3374,10 @@
 <li><p>Switched from FetchContent to CPM in <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/pull/48">#48</a>. This provides better caching between builds. Additionally, made robin-map and Abseil optional dependencies.</p></li>
 <li><p>Add the CFL-Inspired Culling of CCD as described in Section 3 of the Technical Supplement to IPC in <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/pull/50">#50</a></p></li>
 </ul>
-<h2 id="v1-0-0-feb-21-2023">v1.0.0 (Feb 21, 2023)<a class="headerlink" href="#v1-0-0-feb-21-2023" title="Permalink to this heading">¶</a></h2>
+<h2 id="v1-0-0-feb-21-2023">v1.0.0 (Feb 21, 2023)<a class="headerlink" href="#v1-0-0-feb-21-2023" title="Link to this heading">¶</a></h2>
 <p>This is the first official release. 🚀</p>
 <p>This is a stable release of the toolkit prior to refactoring the code and making updates to the API.</p>
-<h3 id="details-1"><span id="id3"></span>Details<a class="headerlink" href="#details-1" title="Permalink to this heading">¶</a></h3>
+<h3 id="details-1"><span id="id3"></span>Details<a class="headerlink" href="#details-1" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>Added a minimum distance optional parameter to all CCD functions (<code class="code highlight cpp c++ docutils literal highlight-c++"><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">min_distance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span></code>) in <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/pull/22">#22</a>. This is placed as the first optional argument which can break calling code if optional parameters were previously used.</p></li>
 <li><p>Added <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">CollisionMesh</span></code> in <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/pull/7">#7</a> to wrap up face and edges into a single data structure.</p>
@@ -3387,74 +3387,74 @@
 </ul>
 </li>
 </ul>
-<h2 id="pre-v1-0-0">Pre-v1.0.0<a class="headerlink" href="#pre-v1-0-0" title="Permalink to this heading">¶</a></h2>
-<h3 id="e2cc2a">2021-10-05 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/574f7577daa5e0b51bf5baf20998994b8371216e">9e2cc2a</a>)<a class="headerlink" href="#e2cc2a" title="Permalink to this heading">¶</a></h3>
-<h4 id="added">Added<a class="headerlink" href="#added" title="Permalink to this heading">¶</a></h4>
+<h2 id="pre-v1-0-0">Pre-v1.0.0<a class="headerlink" href="#pre-v1-0-0" title="Link to this heading">¶</a></h2>
+<h3 id="e2cc2a">2021-10-05 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/574f7577daa5e0b51bf5baf20998994b8371216e">9e2cc2a</a>)<a class="headerlink" href="#e2cc2a" title="Link to this heading">¶</a></h3>
+<h4 id="added">Added<a class="headerlink" href="#added" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Added implicits source folder to organize point-plane collisions</p></li>
 </ul>
-<h3 id="e2cc2a-1"><span id="id4"></span>2021-09-05 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9e22cc2a5f7e7ca048a579f2c94d2241782ecf17">9e2cc2a</a>)<a class="headerlink" href="#e2cc2a-1" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-1"><span id="id5"></span>Added<a class="headerlink" href="#added-1" title="Permalink to this heading">¶</a></h4>
+<h3 id="e2cc2a-1"><span id="id4"></span>2021-09-05 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9e22cc2a5f7e7ca048a579f2c94d2241782ecf17">9e2cc2a</a>)<a class="headerlink" href="#e2cc2a-1" title="Link to this heading">¶</a></h3>
+<h4 id="added-1"><span id="id5"></span>Added<a class="headerlink" href="#added-1" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Added support for point vs. (static) analytical plane contact</p></li>
 </ul>
-<h3 id="acf2a80">2021-08-21 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/acf2a80544ebe27dc5e440602a3a89243e575e8a">acf2a80</a>)<a class="headerlink" href="#acf2a80" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed">Changed<a class="headerlink" href="#changed" title="Permalink to this heading">¶</a></h4>
+<h3 id="acf2a80">2021-08-21 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/acf2a80544ebe27dc5e440602a3a89243e575e8a">acf2a80</a>)<a class="headerlink" href="#acf2a80" title="Link to this heading">¶</a></h3>
+<h4 id="changed">Changed<a class="headerlink" href="#changed" title="Link to this heading">¶</a></h4>
 <ul class="simple">
-<li><p>Changed CMake target name to <code class="code highlight cmake docutils literal highlight-cmake">ipc::toolkit</code></p></li>
+<li><p>Changed CMake target name to <code class="code highlight cmake docutils literal highlight-cmake"><span class="err">ipc::toolkit</span></code></p></li>
 </ul>
-<h3 id="aae">2021-07-26 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/1479aaea958daaa4e963529493e4169dc7757913">1479aae</a>)<a class="headerlink" href="#aae" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed-1"><span id="id6"></span>Changed<a class="headerlink" href="#changed-1" title="Permalink to this heading">¶</a></h4>
+<h3 id="aae">2021-07-26 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/1479aaea958daaa4e963529493e4169dc7757913">1479aae</a>)<a class="headerlink" href="#aae" title="Link to this heading">¶</a></h3>
+<h4 id="changed-1"><span id="id6"></span>Changed<a class="headerlink" href="#changed-1" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Updated the CMake system to use modern <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">FetchContent</span></code> to download externals</p></li>
 </ul>
-<h3 id="e24c76d">2021-07-22 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/e24c76ddc818fb9efc4d522ef72a581a15abf751">e24c76d</a>)<a class="headerlink" href="#e24c76d" title="Permalink to this heading">¶</a></h3>
-<h4 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permalink to this heading">¶</a></h4>
+<h3 id="e24c76d">2021-07-22 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/e24c76ddc818fb9efc4d522ef72a581a15abf751">e24c76d</a>)<a class="headerlink" href="#e24c76d" title="Link to this heading">¶</a></h3>
+<h4 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Updated CCD strategy when using Tight Inclusion to only perform <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">no_zero_toi</span><span class="o">=</span><span class="nb">true</span></code> when there is no minimum distance</p></li>
 </ul>
-<h3 id="a20f7a2">2021-07-17 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/a20f7a2dfea5a04c67ef71d0cd523f69391f2f54">a20f7a2</a>)<a class="headerlink" href="#a20f7a2" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-2"><span id="id7"></span>Added<a class="headerlink" href="#added-2" title="Permalink to this heading">¶</a></h4>
+<h3 id="a20f7a2">2021-07-17 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/a20f7a2dfea5a04c67ef71d0cd523f69391f2f54">a20f7a2</a>)<a class="headerlink" href="#a20f7a2" title="Link to this heading">¶</a></h3>
+<h4 id="added-2"><span id="id7"></span>Added<a class="headerlink" href="#added-2" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Added <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">detect_edge_face_collision_candidates_brute_force</span></code> for 3D intersection broad-phase</p></li>
 <li><p>Added ability to save an obj of collision candidates</p></li>
 <li><p>Added tests for has_intersection (all pass after fixes)</p></li>
 </ul>
-<h4 id="fixed-1"><span id="id8"></span>Fixed<a class="headerlink" href="#fixed-1" title="Permalink to this heading">¶</a></h4>
+<h4 id="fixed-1"><span id="id8"></span>Fixed<a class="headerlink" href="#fixed-1" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Fixed possible numerical rounding problems in HashGrid <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">AABB</span><span class="o">::</span><span class="n">are_overlapping</span></code></p></li>
 <li><p>Fixed HashGrid’s function for getting edge-face intersection candidates</p></li>
 </ul>
-<h3 id="b42">2021-07-15 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/7301b422a9b9a90c76d9e7abf2f9127bf6d0dbd6">7301b42</a>)<a class="headerlink" href="#b42" title="Permalink to this heading">¶</a></h3>
-<h4 id="fixed-2"><span id="id9"></span>Fixed<a class="headerlink" href="#fixed-2" title="Permalink to this heading">¶</a></h4>
+<h3 id="b42">2021-07-15 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/7301b422a9b9a90c76d9e7abf2f9127bf6d0dbd6">7301b42</a>)<a class="headerlink" href="#b42" title="Link to this heading">¶</a></h3>
+<h4 id="fixed-2"><span id="id9"></span>Fixed<a class="headerlink" href="#fixed-2" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Use <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">ignore_codimensional_vertices</span></code> in the brute force broad-phase method</p></li>
 <li><p>Fixed AABB inflation in brute force and SpatialHash methods</p></li>
 </ul>
-<h3 id="ae4e5">2021-07-08 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/86ae4e5f87eb2c65585920ad3ca0bbb3b57702f6">86ae4e5</a>)<a class="headerlink" href="#ae4e5" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed-2"><span id="id10"></span>Changed<a class="headerlink" href="#changed-2" title="Permalink to this heading">¶</a></h4>
+<h3 id="ae4e5">2021-07-08 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/86ae4e5f87eb2c65585920ad3ca0bbb3b57702f6">86ae4e5</a>)<a class="headerlink" href="#ae4e5" title="Link to this heading">¶</a></h3>
+<h4 id="changed-2"><span id="id10"></span>Changed<a class="headerlink" href="#changed-2" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Replaced vertex group ids with more powerful can_collide function. By default everything can collide with everything (same as before)</p></li>
 <li><p>Reordered parameters in <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">construct_constraint_set</span><span class="p">()</span></code>, <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">is_collision_free</span><span class="p">()</span></code>, and <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">compute_collision_free_stepsize</span><span class="p">()</span></code></p></li>
 <li><p><code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">update_barrier_stiffness</span></code> now requires the <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">constraint_set</span></code> rather than building it</p></li>
 <li><p><code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">update_barrier_stiffness</span></code> dropped dhat parameter</p></li>
 </ul>
-<h4 id="fixed-3"><span id="id11"></span>Fixed<a class="headerlink" href="#fixed-3" title="Permalink to this heading">¶</a></h4>
+<h4 id="fixed-3"><span id="id11"></span>Fixed<a class="headerlink" href="#fixed-3" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>SpatialHash for 2D</p></li>
 </ul>
-<h4 id="removed">Removed<a class="headerlink" href="#removed" title="Permalink to this heading">¶</a></h4>
+<h4 id="removed">Removed<a class="headerlink" href="#removed" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Verison of <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">initial_barrier_stiffness</span></code> that computes the constraint set and barrier gradient because there are a lot of parameters to these functions</p></li>
 </ul>
-<h3 id="d16954">2021-07-05 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/4d16954012570b3a15346b99b5aedea77266fe86">4d16954</a>)<a class="headerlink" href="#d16954" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed-3"><span id="id12"></span>Changed<a class="headerlink" href="#changed-3" title="Permalink to this heading">¶</a></h4>
+<h3 id="d16954">2021-07-05 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/4d16954012570b3a15346b99b5aedea77266fe86">4d16954</a>)<a class="headerlink" href="#d16954" title="Link to this heading">¶</a></h3>
+<h4 id="changed-3"><span id="id12"></span>Changed<a class="headerlink" href="#changed-3" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Renamed directory <code class="docutils literal notranslate"><span class="pre">src/spatial_hash/</span></code> → <code class="docutils literal notranslate"><span class="pre">src/broad_phase/</span></code></p></li>
 <li><p>Renamed files <code class="docutils literal notranslate"><span class="pre">src/ccd/broad_phase.*</span></code> → <code class="docutils literal notranslate"><span class="pre">src/ccd/aabb.*</span></code></p></li>
 </ul>
-<h3 id="b3808e1">2021-07-05 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/b3808e15bdbaba9a6efd4b731db3070e85bcc4b7">b3808e1</a>)<a class="headerlink" href="#b3808e1" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-3"><span id="id13"></span>Added<a class="headerlink" href="#added-3" title="Permalink to this heading">¶</a></h4>
+<h3 id="b3808e1">2021-07-05 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/b3808e15bdbaba9a6efd4b731db3070e85bcc4b7">b3808e1</a>)<a class="headerlink" href="#b3808e1" title="Link to this heading">¶</a></h3>
+<h4 id="added-3"><span id="id13"></span>Added<a class="headerlink" href="#added-3" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Select the broad-phase method for CCD and distance constraints</p>
 <ul>
@@ -3463,28 +3463,28 @@
 </li>
 <li><p>CCD parameters for Tight Inclusion’s tolerance and maximum iterations</p></li>
 </ul>
-<h4 id="changed-4"><span id="id14"></span>Changed<a class="headerlink" href="#changed-4" title="Permalink to this heading">¶</a></h4>
+<h4 id="changed-4"><span id="id14"></span>Changed<a class="headerlink" href="#changed-4" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">ignore_codimensional_vertices</span></code> to <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="nb">false</span></code> by default</p></li>
-<li><p>CMake option <code class="code highlight cmake docutils literal highlight-cmake">TIGHT_INCLUSION_WITH_NO_ZERO_TOI=ON</code> as default</p></li>
+<li><p>CMake option <code class="code highlight cmake docutils literal highlight-cmake"><span class="err">TIGHT_INCLUSION_WITH_NO_ZERO_TOI=ON</span></code> as default</p></li>
 </ul>
-<h3 id="aa59aeb">2021-06-18 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/aa59aeb0634af981a8f1cfbb6d2ff2b76a04d610">aa59aeb</a>)<a class="headerlink" href="#aa59aeb" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed-5"><span id="id15"></span>Changed<a class="headerlink" href="#changed-5" title="Permalink to this heading">¶</a></h4>
+<h3 id="aa59aeb">2021-06-18 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/aa59aeb0634af981a8f1cfbb6d2ff2b76a04d610">aa59aeb</a>)<a class="headerlink" href="#aa59aeb" title="Link to this heading">¶</a></h3>
+<h4 id="changed-5"><span id="id15"></span>Changed<a class="headerlink" href="#changed-5" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">construct_friction_constraint_set</span></code> now clears the given <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">friction_constraint_set</span></code></p></li>
 </ul>
-<h3 id="b13b">2021-05-18 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/245b13bcc5e99ed52850ae865aaa0ad4e71a43a8">245b13b</a>)<a class="headerlink" href="#b13b" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed-6"><span id="id16"></span>Changed<a class="headerlink" href="#changed-6" title="Permalink to this heading">¶</a></h4>
+<h3 id="b13b">2021-05-18 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/245b13bcc5e99ed52850ae865aaa0ad4e71a43a8">245b13b</a>)<a class="headerlink" href="#b13b" title="Link to this heading">¶</a></h3>
+<h4 id="changed-6"><span id="id16"></span>Changed<a class="headerlink" href="#changed-6" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Use TightInclusion degenerate edge-edge for point-point and point-edge CCD</p></li>
 </ul>
-<h3 id="c34dcd">2021-05-11 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/5c34dcdf226d46ada962204585fa386eb9b67859">5c34dcd</a>)<a class="headerlink" href="#c34dcd" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed-7"><span id="id17"></span>Changed<a class="headerlink" href="#changed-7" title="Permalink to this heading">¶</a></h4>
+<h3 id="c34dcd">2021-05-11 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/5c34dcdf226d46ada962204585fa386eb9b67859">5c34dcd</a>)<a class="headerlink" href="#c34dcd" title="Link to this heading">¶</a></h3>
+<h4 id="changed-7"><span id="id17"></span>Changed<a class="headerlink" href="#changed-7" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="code highlight cpp c++ docutils literal highlight-c++"><span class="kt">char</span><span class="o">*</span></code> exceptions to <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">std</span><span class="o">::</span><span class="n">exceptions</span></code></p></li>
 </ul>
-<h3 id="cc">2021-05-06 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/24056ccb2ca0a03bdef8141bc5011c41547f06b5">24056cc</a>)<a class="headerlink" href="#cc" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed-8"><span id="id18"></span>Changed<a class="headerlink" href="#changed-8" title="Permalink to this heading">¶</a></h4>
+<h3 id="cc">2021-05-06 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/24056ccb2ca0a03bdef8141bc5011c41547f06b5">24056cc</a>)<a class="headerlink" href="#cc" title="Link to this heading">¶</a></h3>
+<h4 id="changed-8"><span id="id18"></span>Changed<a class="headerlink" href="#changed-8" title="Link to this heading">¶</a></h4>
 <ul>
 <li><p>Gave <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">dhat_epsilon_scale</span></code> a default value of <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="mf">1e-9</span></code> in <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">update_barrier_stiffness</span></code></p></li>
 <li><dl class="field-list simple">
@@ -3497,13 +3497,13 @@
 </ul>
 </li>
 </ul>
-<h3 id="d65f3">2021-05-06 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/81d65f32e479fea32d0acc29c8a7a532fa55518b">81d65f3</a>)<a class="headerlink" href="#d65f3" title="Permalink to this heading">¶</a></h3>
-<h4 id="fixed-4"><span id="id19"></span>Fixed<a class="headerlink" href="#fixed-4" title="Permalink to this heading">¶</a></h4>
+<h3 id="d65f3">2021-05-06 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/81d65f32e479fea32d0acc29c8a7a532fa55518b">81d65f3</a>)<a class="headerlink" href="#d65f3" title="Link to this heading">¶</a></h3>
+<h4 id="fixed-4"><span id="id19"></span>Fixed<a class="headerlink" href="#fixed-4" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Bug in output min distance of <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">update_barrier_stiffness</span></code></p></li>
 </ul>
-<h3 id="ec167">2021-05-04 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/59ec167b85eaf56095a2d0333bdd96146d658ebf">59ec167</a>)<a class="headerlink" href="#ec167" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed-9"><span id="id20"></span>Changed<a class="headerlink" href="#changed-9" title="Permalink to this heading">¶</a></h4>
+<h3 id="ec167">2021-05-04 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/59ec167b85eaf56095a2d0333bdd96146d658ebf">59ec167</a>)<a class="headerlink" href="#ec167" title="Link to this heading">¶</a></h3>
+<h4 id="changed-9"><span id="id20"></span>Changed<a class="headerlink" href="#changed-9" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Moved eigen_ext functions into ipc namespace</p></li>
 <li><p>Renamed max size matrices with <code class="docutils literal notranslate"><span class="pre">Max</span></code></p>
@@ -3514,37 +3514,37 @@
 </ul>
 </li>
 </ul>
-<h3 id="d65f">2021-05-03 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/664d65fd70dbd350b6bfe5f8a311a89ff4fef3bd">664d65f</a>)<a class="headerlink" href="#d65f" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-4"><span id="id21"></span>Added<a class="headerlink" href="#added-4" title="Permalink to this heading">¶</a></h4>
+<h3 id="d65f">2021-05-03 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/664d65fd70dbd350b6bfe5f8a311a89ff4fef3bd">664d65f</a>)<a class="headerlink" href="#d65f" title="Link to this heading">¶</a></h3>
+<h4 id="added-4"><span id="id21"></span>Added<a class="headerlink" href="#added-4" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Added utility function to check for edge-edge intersection in 2D and edge-triangle intersection in 3D.</p></li>
 <li><p>Optionally: use GMP for exact edge-triangle intersection checks</p></li>
 </ul>
-<h3 id="b4ebfc">2021-05-03 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9b4ebfc0f458645cf33eeebf8211607f45ad9cb4">9b4ebfc</a>)<a class="headerlink" href="#b4ebfc" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-5"><span id="id22"></span>Added<a class="headerlink" href="#added-5" title="Permalink to this heading">¶</a></h4>
+<h3 id="b4ebfc">2021-05-03 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9b4ebfc0f458645cf33eeebf8211607f45ad9cb4">9b4ebfc</a>)<a class="headerlink" href="#b4ebfc" title="Link to this heading">¶</a></h3>
+<h4 id="added-5"><span id="id22"></span>Added<a class="headerlink" href="#added-5" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>voxel_size_heuristic.cpp which suggests a good voxel size for the <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">SpatialHash</span></code> and <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">HashGrid</span></code></p></li>
 </ul>
-<h4 id="changed-10"><span id="id23"></span>Changed<a class="headerlink" href="#changed-10" title="Permalink to this heading">¶</a></h4>
+<h4 id="changed-10"><span id="id23"></span>Changed<a class="headerlink" href="#changed-10" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Changed HashGrid voxel size to be the average edge length not considering displacement length. This results in better performance, but can result in large memory usage.</p></li>
 </ul>
-<h3 id="d0ad">2021-04-29 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/293d0ad992c01df561e25c286043c9ae9b901ff0">293d0ad</a>)<a class="headerlink" href="#d0ad" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-6"><span id="id24"></span>Added<a class="headerlink" href="#added-6" title="Permalink to this heading">¶</a></h4>
+<h3 id="d0ad">2021-04-29 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/293d0ad992c01df561e25c286043c9ae9b901ff0">293d0ad</a>)<a class="headerlink" href="#d0ad" title="Link to this heading">¶</a></h3>
+<h4 id="added-6"><span id="id24"></span>Added<a class="headerlink" href="#added-6" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Added TBB parallel loops to the main function (<code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">compute_potential</span></code>, <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">compute_friction_potential</span></code>, <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">compute_collision_free_stepsize</span></code>, etc.)</p></li>
 <li><p>Added function <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">addVerticesFromEdges</span></code> that adds the vertices connected to edges in parallel and avoids duplicates</p></li>
 </ul>
-<h4 id="changed-11"><span id="id25"></span>Changed<a class="headerlink" href="#changed-11" title="Permalink to this heading">¶</a></h4>
+<h4 id="changed-11"><span id="id25"></span>Changed<a class="headerlink" href="#changed-11" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Changed the HashGrid to use <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">ArrayMax3</span></code> over <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">VectorX3</span></code> to simplify the code</p></li>
 </ul>
-<h4 id="fixed-5"><span id="id26"></span>Fixed<a class="headerlink" href="#fixed-5" title="Permalink to this heading">¶</a></h4>
+<h4 id="fixed-5"><span id="id26"></span>Fixed<a class="headerlink" href="#fixed-5" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Fixed some parameters that were not by reference</p></li>
 </ul>
-<h3 id="c8a6d5">2021-04-21 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/c8a6d56823793e7be5e89238c3793e25bc45ffa0">c8a6d5</a>)<a class="headerlink" href="#c8a6d5" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-7"><span id="id27"></span>Added<a class="headerlink" href="#added-7" title="Permalink to this heading">¶</a></h4>
+<h3 id="c8a6d5">2021-04-21 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/c8a6d56823793e7be5e89238c3793e25bc45ffa0">c8a6d5</a>)<a class="headerlink" href="#c8a6d5" title="Link to this heading">¶</a></h3>
+<h4 id="added-7"><span id="id27"></span>Added<a class="headerlink" href="#added-7" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Added the SpatialHash from the original IPC code base with some modification to get all candidates in parallel</p>
 <ul>
@@ -3553,8 +3553,8 @@
 </ul>
 </li>
 </ul>
-<h3 id="c7493">2021-02-11 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9c74938fefa691db6b79c73489c8c661638019c6">9c7493</a>)<a class="headerlink" href="#c7493" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed-12"><span id="id28"></span>Changed<a class="headerlink" href="#changed-12" title="Permalink to this heading">¶</a></h4>
+<h3 id="c7493">2021-02-11 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9c74938fefa691db6b79c73489c8c661638019c6">9c7493</a>)<a class="headerlink" href="#c7493" title="Link to this heading">¶</a></h3>
+<h4 id="changed-12"><span id="id28"></span>Changed<a class="headerlink" href="#changed-12" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Switched to the correct (conservative) CCD of <span id="id29">Wang <em>et al.</em> [<a class="reference internal" href="tutorial/references.html#id5" title="Bolun Wang, Zachary Ferguson, Teseo Schneider, Xin Jiang, Marco Attene, and Daniele Panozzo. A large scale benchmark and an inclusion-based algorithm for continuous collision detection. ACM Transactions on Graphics, October 2021. https://continuous-collision-detection.github.io/tight_inclusion/.">2021</a>]</span></p>
 <ul>
@@ -3562,8 +3562,8 @@
 </ul>
 </li>
 </ul>
-<h3 id="b510253">2021-02-01 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/b51025310223b487e7c39858265d8d5c3e8b1e8a">b510253</a>)<a class="headerlink" href="#b510253" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-8"><span id="id30"></span>Added<a class="headerlink" href="#added-8" title="Permalink to this heading">¶</a></h4>
+<h3 id="b510253">2021-02-01 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/b51025310223b487e7c39858265d8d5c3e8b1e8a">b510253</a>)<a class="headerlink" href="#b510253" title="Link to this heading">¶</a></h3>
+<h4 id="added-8"><span id="id30"></span>Added<a class="headerlink" href="#added-8" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Added minimum seperation distance (thickness) to distance constraints</p>
 <ul>
@@ -3571,8 +3571,8 @@
 </ul>
 </li>
 </ul>
-<h3 id="a395175">2021-02-01 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/a3951750ca5f167ab1d546ae1dadd87d0a9e2497">a395175</a>)<a class="headerlink" href="#a395175" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-9"><span id="id32"></span>Added<a class="headerlink" href="#added-9" title="Permalink to this heading">¶</a></h4>
+<h3 id="a395175">2021-02-01 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/a3951750ca5f167ab1d546ae1dadd87d0a9e2497">a395175</a>)<a class="headerlink" href="#a395175" title="Link to this heading">¶</a></h3>
+<h4 id="added-9"><span id="id32"></span>Added<a class="headerlink" href="#added-9" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Added 2D friction model based on the 3D formulation.</p>
 <ul>
@@ -3580,8 +3580,8 @@
 </ul>
 </li>
 </ul>
-<h3 id="deee6d0">2021-01-12 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/deee6d0f9802910c5565f800492f9a995e65cf7e">deee6d0</a>)<a class="headerlink" href="#deee6d0" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-10"><span id="id33"></span>Added<a class="headerlink" href="#added-10" title="Permalink to this heading">¶</a></h4>
+<h3 id="deee6d0">2021-01-12 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/deee6d0f9802910c5565f800492f9a995e65cf7e">deee6d0</a>)<a class="headerlink" href="#deee6d0" title="Link to this heading">¶</a></h3>
+<h4 id="added-10"><span id="id33"></span>Added<a class="headerlink" href="#added-10" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Added and optional parameter <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">F2E</span></code> to <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">construct_constraint_set</span><span class="p">()</span></code>. This is similar to <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">F</span></code> (which maps faces to vertices), but maps faces to edges. This is optional, but recommended for better performance. If not provided a simple linear search will be done per face edge!</p>
 <ul>
@@ -3589,13 +3589,13 @@
 </ul>
 </li>
 </ul>
-<h3 id="deee6d0-1"><span id="id34"></span>2021-01-09 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/deee6d0f9802910c5565f800492f9a995e65cf7e">deee6d0</a>)<a class="headerlink" href="#deee6d0-1" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed-13"><span id="id35"></span>Changed<a class="headerlink" href="#changed-13" title="Permalink to this heading">¶</a></h4>
+<h3 id="deee6d0-1"><span id="id34"></span>2021-01-09 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/deee6d0f9802910c5565f800492f9a995e65cf7e">deee6d0</a>)<a class="headerlink" href="#deee6d0-1" title="Link to this heading">¶</a></h3>
+<h4 id="changed-13"><span id="id35"></span>Changed<a class="headerlink" href="#changed-13" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Replaced VectorXd and MatrixXd with static size versions for local gradient and hessians</p></li>
 </ul>
-<h3 id="ad">2020-11-20 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/93143ad9b31030cde7324a83354268021e1cb9da">93143ad</a>)<a class="headerlink" href="#ad" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed-14"><span id="id36"></span>Changed<a class="headerlink" href="#changed-14" title="Permalink to this heading">¶</a></h4>
+<h3 id="ad">2020-11-20 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/93143ad9b31030cde7324a83354268021e1cb9da">93143ad</a>)<a class="headerlink" href="#ad" title="Link to this heading">¶</a></h3>
+<h4 id="changed-14"><span id="id36"></span>Changed<a class="headerlink" href="#changed-14" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Removed TBB parallelization form the hash grid because we get better performance without it.</p>
 <ul>
@@ -3603,18 +3603,18 @@
 </ul>
 </li>
 </ul>
-<h3 id="id37">2020-11-06 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/4553509fe6a4e6b78c041018cd6db3fdf23b4730">4553509</a>)<a class="headerlink" href="#id37" title="Permalink to this heading">¶</a></h3>
-<h4 id="fixed-6"><span id="id38"></span>Fixed<a class="headerlink" href="#fixed-6" title="Permalink to this heading">¶</a></h4>
+<h3 id="id37">2020-11-06 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/4553509fe6a4e6b78c041018cd6db3fdf23b4730">4553509</a>)<a class="headerlink" href="#id37" title="Link to this heading">¶</a></h3>
+<h4 id="fixed-6"><span id="id38"></span>Fixed<a class="headerlink" href="#fixed-6" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Fixed multiplicity for point-triangle distance computation to avoid duplicate point-point and point-edge pairs.</p></li>
 </ul>
-<h3 id="f4903">2020-10-22 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/51f49030dbeec15a6a7544826f5531811a779402">51f4903</a>)<a class="headerlink" href="#f4903" title="Permalink to this heading">¶</a></h3>
-<h4 id="fixed-7"><span id="id39"></span>Fixed<a class="headerlink" href="#fixed-7" title="Permalink to this heading">¶</a></h4>
+<h3 id="f4903">2020-10-22 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/51f49030dbeec15a6a7544826f5531811a779402">51f4903</a>)<a class="headerlink" href="#f4903" title="Link to this heading">¶</a></h3>
+<h4 id="fixed-7"><span id="id39"></span>Fixed<a class="headerlink" href="#fixed-7" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Projection of the hessian to PSD. This was completely broken as the projected matrix was never used.</p></li>
 </ul>
-<h3 id="be6c0f">2020-10-22 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9be6c0f7e2534e426e3f09f4c547406d50d5cf9c">9be6c0f</a>)<a class="headerlink" href="#be6c0f" title="Permalink to this heading">¶</a></h3>
-<h4 id="fixed-8"><span id="id40"></span>Fixed<a class="headerlink" href="#fixed-8" title="Permalink to this heading">¶</a></h4>
+<h3 id="be6c0f">2020-10-22 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9be6c0f7e2534e426e3f09f4c547406d50d5cf9c">9be6c0f</a>)<a class="headerlink" href="#be6c0f" title="Link to this heading">¶</a></h3>
+<h4 id="fixed-8"><span id="id40"></span>Fixed<a class="headerlink" href="#fixed-8" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Mollification of EE constraints that have a distance type of PP or PE</p></li>
 <li><p>If there is no mollification needed then the PP and PE constraints are stored with multiplicity</p></li>
@@ -3624,33 +3624,33 @@
 </ul>
 </li>
 </ul>
-<h3 id="cb8b53f">2020-10-10 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/cb8b53fb098598ba5e8c95d4bdb4730e8df9382e">cb8b53f</a>)<a class="headerlink" href="#cb8b53f" title="Permalink to this heading">¶</a></h3>
-<h4 id="fixed-9"><span id="id41"></span>Fixed<a class="headerlink" href="#fixed-9" title="Permalink to this heading">¶</a></h4>
+<h3 id="cb8b53f">2020-10-10 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/cb8b53fb098598ba5e8c95d4bdb4730e8df9382e">cb8b53f</a>)<a class="headerlink" href="#cb8b53f" title="Link to this heading">¶</a></h3>
+<h4 id="fixed-9"><span id="id41"></span>Fixed<a class="headerlink" href="#fixed-9" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Assertions in <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">compute_collision_free_stepsize</span></code></p></li>
 </ul>
-<h3 id="a5f84f">2020-10-10 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/4a5f84f1177bdae1a265dc15a84603bbc389936d">4a5f84f</a>)<a class="headerlink" href="#a5f84f" title="Permalink to this heading">¶</a></h3>
-<h4 id="fixed-10"><span id="id42"></span>Fixed<a class="headerlink" href="#fixed-10" title="Permalink to this heading">¶</a></h4>
+<h3 id="a5f84f">2020-10-10 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/4a5f84f1177bdae1a265dc15a84603bbc389936d">4a5f84f</a>)<a class="headerlink" href="#a5f84f" title="Link to this heading">¶</a></h3>
+<h4 id="fixed-10"><span id="id42"></span>Fixed<a class="headerlink" href="#fixed-10" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Point-triangle distance type by replacing it with the one used in the original IPC code</p></li>
 </ul>
-<h3 id="d51a61">2020-10-10 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/1d51a61d60bb25e08c9937285ff9e44459a2223f">1d51a61</a>)<a class="headerlink" href="#d51a61" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-11"><span id="id43"></span>Added<a class="headerlink" href="#added-11" title="Permalink to this heading">¶</a></h4>
+<h3 id="d51a61">2020-10-10 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/1d51a61d60bb25e08c9937285ff9e44459a2223f">1d51a61</a>)<a class="headerlink" href="#d51a61" title="Link to this heading">¶</a></h3>
+<h4 id="added-11"><span id="id43"></span>Added<a class="headerlink" href="#added-11" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Boolean parameter in <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">compute_friction_potential_hessian</span></code> that controls if the hessian is projected to PSD</p></li>
 </ul>
-<h3 id="b737fb0">2020-10-09 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/b737fb0e708eac5a7775766f162a5d2067db2fa4">b737fb0</a>)<a class="headerlink" href="#b737fb0" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-12"><span id="id44"></span>Added<a class="headerlink" href="#added-12" title="Permalink to this heading">¶</a></h4>
+<h3 id="b737fb0">2020-10-09 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/b737fb0e708eac5a7775766f162a5d2067db2fa4">b737fb0</a>)<a class="headerlink" href="#b737fb0" title="Link to this heading">¶</a></h3>
+<h4 id="added-12"><span id="id44"></span>Added<a class="headerlink" href="#added-12" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Parameter for vertex group IDs to exclude some collisions (e.g., self collisions)</p></li>
 </ul>
-<h3 id="ee60ae">2020-10-08 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/6ee60aeaef6d7f88013ee2ee3d544e7403282527">6ee60ae</a>)<a class="headerlink" href="#ee60ae" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-13"><span id="id45"></span>Added<a class="headerlink" href="#added-13" title="Permalink to this heading">¶</a></h4>
+<h3 id="ee60ae">2020-10-08 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/6ee60aeaef6d7f88013ee2ee3d544e7403282527">6ee60ae</a>)<a class="headerlink" href="#ee60ae" title="Link to this heading">¶</a></h3>
+<h4 id="added-13"><span id="id45"></span>Added<a class="headerlink" href="#added-13" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Second version of <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">update_barrier_stiffness</span><span class="p">()</span></code> that takes an already computed minimum distance and world bounding box diagonal</p></li>
 </ul>
-<h3 id="cc3947d">2020-10-08 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/cc3947d48bc069488f6a773424e30fe67eb4b5f1">cc3947d</a>)<a class="headerlink" href="#cc3947d" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-14"><span id="id46"></span>Added<a class="headerlink" href="#added-14" title="Permalink to this heading">¶</a></h4>
+<h3 id="cc3947d">2020-10-08 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/cc3947d48bc069488f6a773424e30fe67eb4b5f1">cc3947d</a>)<a class="headerlink" href="#cc3947d" title="Link to this heading">¶</a></h3>
+<h4 id="added-14"><span id="id46"></span>Added<a class="headerlink" href="#added-14" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Second version of <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">initial_barrier_stiffness</span><span class="p">()</span></code> that takes an already computed barrier gradient</p></li>
 <li><p>Assertions on <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">initial_barrier_stiffness</span><span class="p">()</span></code> input</p>
@@ -3659,17 +3659,17 @@
 </ul>
 </li>
 </ul>
-<h4 id="changed-15"><span id="id47"></span>Changed<a class="headerlink" href="#changed-15" title="Permalink to this heading">¶</a></h4>
+<h4 id="changed-15"><span id="id47"></span>Changed<a class="headerlink" href="#changed-15" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Fixed typo in <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">initial_barrier_stiffness</span><span class="p">()</span></code> name (was <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">intial_barrier_stiffness</span><span class="p">()</span></code>)</p></li>
 </ul>
-<h3 id="section-1"><span id="id48"></span>2020-10-07 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/5582582bc2f54464bfcee4ba0ec2b7e6975f596f">5582582</a>)<a class="headerlink" href="#section-1" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-15"><span id="id49"></span>Added<a class="headerlink" href="#added-15" title="Permalink to this heading">¶</a></h4>
+<h3 id="section-1"><span id="id48"></span>2020-10-07 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/5582582bc2f54464bfcee4ba0ec2b7e6975f596f">5582582</a>)<a class="headerlink" href="#section-1" title="Link to this heading">¶</a></h3>
+<h4 id="added-15"><span id="id49"></span>Added<a class="headerlink" href="#added-15" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">FrictionConstraint</span></code> structures to store friction information (i.e., tangent basis, normal force magnitude, closest points, and coefficient of friction)</p></li>
 <li><p>Unit test that compares the original IPC code’s friction components with the toolkit’s</p></li>
 </ul>
-<h4 id="changed-16"><span id="id50"></span>Changed<a class="headerlink" href="#changed-16" title="Permalink to this heading">¶</a></h4>
+<h4 id="changed-16"><span id="id50"></span>Changed<a class="headerlink" href="#changed-16" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">compute_friction_bases</span><span class="p">()</span></code> is now <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">construct_friction_constraint_set</span><span class="p">()</span></code></p>
 <ul>
@@ -3678,8 +3678,8 @@
 </ul>
 </li>
 </ul>
-<h3 id="b48ba0e">2020-10-06 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/b48ba0ec9d60754e7670e28fd1987b0c78cd809f">b48ba0e</a>)<a class="headerlink" href="#b48ba0e" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed-17"><span id="id51"></span>Changed<a class="headerlink" href="#changed-17" title="Permalink to this heading">¶</a></h4>
+<h3 id="b48ba0e">2020-10-06 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/b48ba0ec9d60754e7670e28fd1987b0c78cd809f">b48ba0e</a>)<a class="headerlink" href="#b48ba0e" title="Link to this heading">¶</a></h3>
+<h4 id="changed-17"><span id="id51"></span>Changed<a class="headerlink" href="#changed-17" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>During <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">construct_constraint_set</span><span class="p">()</span></code> the constraints are added based on distance type</p>
 <ul>
@@ -3689,19 +3689,19 @@
 </ul>
 </li>
 </ul>
-<h3 id="a4576b">2020-10-05 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9a4576b209302c79296593ac213ed8ce85510f3b">9a4576b</a>)<a class="headerlink" href="#a4576b" title="Permalink to this heading">¶</a></h3>
-<h4 id="fixed-11"><span id="id52"></span>Fixed<a class="headerlink" href="#fixed-11" title="Permalink to this heading">¶</a></h4>
+<h3 id="a4576b">2020-10-05 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/9a4576b209302c79296593ac213ed8ce85510f3b">9a4576b</a>)<a class="headerlink" href="#a4576b" title="Link to this heading">¶</a></h3>
+<h4 id="fixed-11"><span id="id52"></span>Fixed<a class="headerlink" href="#fixed-11" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Fixed a bug in the point-triangle closest points and tangent basis computed in <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">compute_friction_bases</span><span class="p">()</span></code></p></li>
 <li><p>Fixed a bug in <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">edge_edge_tangent_basis</span><span class="p">()</span></code> used to compute the tangent basis for friction</p></li>
 </ul>
-<h3 id="a37e0">2020-09-19 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/31a37e04abc9ecec325e00be97fd42b89c895b45">31a37e0</a>)<a class="headerlink" href="#a37e0" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-16"><span id="id53"></span>Added<a class="headerlink" href="#added-16" title="Permalink to this heading">¶</a></h4>
+<h3 id="a37e0">2020-09-19 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/31a37e04abc9ecec325e00be97fd42b89c895b45">31a37e0</a>)<a class="headerlink" href="#a37e0" title="Link to this heading">¶</a></h3>
+<h4 id="added-16"><span id="id53"></span>Added<a class="headerlink" href="#added-16" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>spdlog for logging information</p></li>
 </ul>
-<h3 id="acb7664">2020-09-19 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/acb7664792982685f6de28468ba126f5e531834f">acb7664</a>)<a class="headerlink" href="#acb7664" title="Permalink to this heading">¶</a></h3>
-<h4 id="changed-18"><span id="id54"></span>Changed<a class="headerlink" href="#changed-18" title="Permalink to this heading">¶</a></h4>
+<h3 id="acb7664">2020-09-19 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/acb7664792982685f6de28468ba126f5e531834f">acb7664</a>)<a class="headerlink" href="#acb7664" title="Link to this heading">¶</a></h3>
+<h4 id="changed-18"><span id="id54"></span>Changed<a class="headerlink" href="#changed-18" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Headers are now include with the prefix <code class="docutils literal notranslate"><span class="pre">ipc/</span></code></p>
 <ul>
@@ -3709,8 +3709,8 @@
 </ul>
 </li>
 </ul>
-<h3 id="dd2ab7">2020-09-04 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/7dd2ab7a255ffd23ccdfe5aee08bca6a142f75a7">7dd2ab7</a>)<a class="headerlink" href="#dd2ab7" title="Permalink to this heading">¶</a></h3>
-<h4 id="added-17"><span id="id55"></span>Added<a class="headerlink" href="#added-17" title="Permalink to this heading">¶</a></h4>
+<h3 id="dd2ab7">2020-09-04 (<a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/commit/7dd2ab7a255ffd23ccdfe5aee08bca6a142f75a7">7dd2ab7</a>)<a class="headerlink" href="#dd2ab7" title="Link to this heading">¶</a></h3>
+<h4 id="added-17"><span id="id55"></span>Added<a class="headerlink" href="#added-17" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Collision constraint to store distance constraint pairs</p>
 <ul>
@@ -3718,7 +3718,7 @@
 </ul>
 </li>
 </ul>
-<h4 id="changed-19"><span id="id56"></span>Changed<a class="headerlink" href="#changed-19" title="Permalink to this heading">¶</a></h4>
+<h4 id="changed-19"><span id="id56"></span>Changed<a class="headerlink" href="#changed-19" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p>Input parameter <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">dhat_squared</span></code> is now <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">dhat</span></code> (i.e., non-squared value)</p></li>
 <li><p>Input parameter <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">epsv_times_h_squared</span></code> is now <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">epsv_times_h</span></code> (i.e., non-squared value)</p></li>
@@ -3810,7 +3810,7 @@
   
     Created using
     <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
-    6.2.1.
+    7.3.7.
      and
     <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
   
@@ -3829,10 +3829,10 @@
     <script id="__config" type="application/json">{"base": ".", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow", "content.tabs.link"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
     
       
-        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js"></script>
+        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script id="MathJax-script" src="_static/mathjax/tex-mml-chtml.js"></script>
+        <script id="MathJax-script" src="_static/mathjax/tex-mml-chtml.js?v=cadf963e"></script>
     
   </body>
 </html>

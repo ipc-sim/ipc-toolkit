@@ -32,10 +32,10 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.02cb18745d09eea51.min.css?v=ff456132" />
+        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=b388d4a6" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -1734,11 +1734,11 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
-<h1 id="friction">Friction<a class="headerlink" href="#friction" title="Permalink to this heading">¶</a></h1>
-<h2 id="smooth-mollifier">Smooth Mollifier<a class="headerlink" href="#smooth-mollifier" title="Permalink to this heading">¶</a></h2>
+<h1 id="friction">Friction<a class="headerlink" href="#friction" title="Link to this heading">¶</a></h1>
+<h2 id="smooth-mollifier">Smooth Mollifier<a class="headerlink" href="#smooth-mollifier" title="Link to this heading">¶</a></h2>
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.smooth_friction_f0">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">smooth_friction_f0</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f0.y" title="ipctk.smooth_friction_f0.y (Python parameter) — The tangential relative speed."><span class="n"><span class="pre">y</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f0.eps_v" title="ipctk.smooth_friction_f0.eps_v (Python parameter) — Velocity threshold below which static friction force is applied."><span class="n"><span class="pre">eps_v</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.smooth_friction_f0" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">smooth_friction_f0</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f0.y" title="ipctk.smooth_friction_f0.y (Python parameter) — The tangential relative speed."><span class="n"><span class="pre">y</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f0.eps_v" title="ipctk.smooth_friction_f0.eps_v (Python parameter) — Velocity threshold below which static friction force is applied."><span class="n"><span class="pre">eps_v</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.smooth_friction_f0" title="Link to this definition">¶</a></dt>
 <dd><p>Smooth friction mollifier function.</p>
 <div class="math notranslate nohighlight">
 \[f_0(y)= \begin{cases}
@@ -1750,9 +1750,9 @@ y, &amp; |y| \geq \epsilon_v
 <dl class="field-list simple">
 <dt class="field-odd" id="ipctk.smooth_friction_f0-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.smooth_friction_f0-parameters" title="Permalink to this headline">¶</a></dt>
 <dd class="field-odd"><dl class="simple api-field highlight">
-<dt id="ipctk.smooth_friction_f0.y"><span class="n sig-name">y</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f0.y" title="Permalink to this definition">¶</a></dt><dd><p>The tangential relative speed.</p>
+<dt id="ipctk.smooth_friction_f0.y"><span class="n sig-name">y</span><span class="p">:</span><span class="w"> </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f0.y" title="Permalink to this definition">¶</a></dt><dd><p>The tangential relative speed.</p>
 </dd>
-<dt id="ipctk.smooth_friction_f0.eps_v"><span class="n sig-name">eps_v</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f0.eps_v" title="Permalink to this definition">¶</a></dt><dd><p>Velocity threshold below which static friction force is applied.</p>
+<dt id="ipctk.smooth_friction_f0.eps_v"><span class="n sig-name">eps_v</span><span class="p">:</span><span class="w"> </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f0.eps_v" title="Permalink to this definition">¶</a></dt><dd><p>Velocity threshold below which static friction force is applied.</p>
 </dd>
 </dl>
 </dd>
@@ -1764,7 +1764,7 @@ y, &amp; |y| \geq \epsilon_v
 
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.smooth_friction_f1">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">smooth_friction_f1</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f1.y" title="ipctk.smooth_friction_f1.y (Python parameter) — The tangential relative speed."><span class="n"><span class="pre">y</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f1.eps_v" title="ipctk.smooth_friction_f1.eps_v (Python parameter) — Velocity threshold below which static friction force is applied."><span class="n"><span class="pre">eps_v</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.smooth_friction_f1" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">smooth_friction_f1</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f1.y" title="ipctk.smooth_friction_f1.y (Python parameter) — The tangential relative speed."><span class="n"><span class="pre">y</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f1.eps_v" title="ipctk.smooth_friction_f1.eps_v (Python parameter) — Velocity threshold below which static friction force is applied."><span class="n"><span class="pre">eps_v</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.smooth_friction_f1" title="Link to this definition">¶</a></dt>
 <dd><p>The first derivative of the smooth friction mollifier.</p>
 <div class="math notranslate nohighlight">
 \[f_1(y) = f_0'(y) = \begin{cases}
@@ -1774,9 +1774,9 @@ y, &amp; |y| \geq \epsilon_v
 <dl class="field-list simple">
 <dt class="field-odd" id="ipctk.smooth_friction_f1-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.smooth_friction_f1-parameters" title="Permalink to this headline">¶</a></dt>
 <dd class="field-odd"><dl class="simple api-field highlight">
-<dt id="ipctk.smooth_friction_f1.y"><span class="n sig-name">y</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f1.y" title="Permalink to this definition">¶</a></dt><dd><p>The tangential relative speed.</p>
+<dt id="ipctk.smooth_friction_f1.y"><span class="n sig-name">y</span><span class="p">:</span><span class="w"> </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f1.y" title="Permalink to this definition">¶</a></dt><dd><p>The tangential relative speed.</p>
 </dd>
-<dt id="ipctk.smooth_friction_f1.eps_v"><span class="n sig-name">eps_v</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f1.eps_v" title="Permalink to this definition">¶</a></dt><dd><p>Velocity threshold below which static friction force is applied.</p>
+<dt id="ipctk.smooth_friction_f1.eps_v"><span class="n sig-name">eps_v</span><span class="p">:</span><span class="w"> </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f1.eps_v" title="Permalink to this definition">¶</a></dt><dd><p>Velocity threshold below which static friction force is applied.</p>
 </dd>
 </dl>
 </dd>
@@ -1788,7 +1788,7 @@ y, &amp; |y| \geq \epsilon_v
 
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.smooth_friction_f2">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">smooth_friction_f2</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f2.y" title="ipctk.smooth_friction_f2.y (Python parameter) — The tangential relative speed."><span class="n"><span class="pre">y</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f2.eps_v" title="ipctk.smooth_friction_f2.eps_v (Python parameter) — Velocity threshold below which static friction force is applied."><span class="n"><span class="pre">eps_v</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.smooth_friction_f2" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">smooth_friction_f2</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f2.y" title="ipctk.smooth_friction_f2.y (Python parameter) — The tangential relative speed."><span class="n"><span class="pre">y</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f2.eps_v" title="ipctk.smooth_friction_f2.eps_v (Python parameter) — Velocity threshold below which static friction force is applied."><span class="n"><span class="pre">eps_v</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.smooth_friction_f2" title="Link to this definition">¶</a></dt>
 <dd><p>The second derivative of the smooth friction mollifier.</p>
 <div class="math notranslate nohighlight">
 \[f_2(y) = f_0''(y) = \begin{cases}
@@ -1798,9 +1798,9 @@ y, &amp; |y| \geq \epsilon_v
 <dl class="field-list simple">
 <dt class="field-odd" id="ipctk.smooth_friction_f2-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.smooth_friction_f2-parameters" title="Permalink to this headline">¶</a></dt>
 <dd class="field-odd"><dl class="simple api-field highlight">
-<dt id="ipctk.smooth_friction_f2.y"><span class="n sig-name">y</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f2.y" title="Permalink to this definition">¶</a></dt><dd><p>The tangential relative speed.</p>
+<dt id="ipctk.smooth_friction_f2.y"><span class="n sig-name">y</span><span class="p">:</span><span class="w"> </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f2.y" title="Permalink to this definition">¶</a></dt><dd><p>The tangential relative speed.</p>
 </dd>
-<dt id="ipctk.smooth_friction_f2.eps_v"><span class="n sig-name">eps_v</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f2.eps_v" title="Permalink to this definition">¶</a></dt><dd><p>Velocity threshold below which static friction force is applied.</p>
+<dt id="ipctk.smooth_friction_f2.eps_v"><span class="n sig-name">eps_v</span><span class="p">:</span><span class="w"> </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f2.eps_v" title="Permalink to this definition">¶</a></dt><dd><p>Velocity threshold below which static friction force is applied.</p>
 </dd>
 </dl>
 </dd>
@@ -1812,7 +1812,7 @@ y, &amp; |y| \geq \epsilon_v
 
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.smooth_friction_f1_over_x">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">smooth_friction_f1_over_x</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f1_over_x.y" title="ipctk.smooth_friction_f1_over_x.y (Python parameter) — The tangential relative speed."><span class="n"><span class="pre">y</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f1_over_x.eps_v" title="ipctk.smooth_friction_f1_over_x.eps_v (Python parameter) — Velocity threshold below which static friction force is applied."><span class="n"><span class="pre">eps_v</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.smooth_friction_f1_over_x" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">smooth_friction_f1_over_x</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f1_over_x.y" title="ipctk.smooth_friction_f1_over_x.y (Python parameter) — The tangential relative speed."><span class="n"><span class="pre">y</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f1_over_x.eps_v" title="ipctk.smooth_friction_f1_over_x.eps_v (Python parameter) — Velocity threshold below which static friction force is applied."><span class="n"><span class="pre">eps_v</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.smooth_friction_f1_over_x" title="Link to this definition">¶</a></dt>
 <dd><p>Compute the derivative of the smooth friction mollifier divided by y (<span class="math notranslate nohighlight">\(\frac{f_0'(y)}{y}\)</span>).</p>
 <div class="math notranslate nohighlight">
 \[\frac{f_1(y)}{y} = \begin{cases}
@@ -1822,9 +1822,9 @@ y, &amp; |y| \geq \epsilon_v
 <dl class="field-list simple">
 <dt class="field-odd" id="ipctk.smooth_friction_f1_over_x-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.smooth_friction_f1_over_x-parameters" title="Permalink to this headline">¶</a></dt>
 <dd class="field-odd"><dl class="simple api-field highlight">
-<dt id="ipctk.smooth_friction_f1_over_x.y"><span class="n sig-name">y</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f1_over_x.y" title="Permalink to this definition">¶</a></dt><dd><p>The tangential relative speed.</p>
+<dt id="ipctk.smooth_friction_f1_over_x.y"><span class="n sig-name">y</span><span class="p">:</span><span class="w"> </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f1_over_x.y" title="Permalink to this definition">¶</a></dt><dd><p>The tangential relative speed.</p>
 </dd>
-<dt id="ipctk.smooth_friction_f1_over_x.eps_v"><span class="n sig-name">eps_v</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f1_over_x.eps_v" title="Permalink to this definition">¶</a></dt><dd><p>Velocity threshold below which static friction force is applied.</p>
+<dt id="ipctk.smooth_friction_f1_over_x.eps_v"><span class="n sig-name">eps_v</span><span class="p">:</span><span class="w"> </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f1_over_x.eps_v" title="Permalink to this definition">¶</a></dt><dd><p>Velocity threshold below which static friction force is applied.</p>
 </dd>
 </dl>
 </dd>
@@ -1836,7 +1836,7 @@ y, &amp; |y| \geq \epsilon_v
 
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.smooth_friction_f2_x_minus_f1_over_x3">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">smooth_friction_f2_x_minus_f1_over_x3</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f2_x_minus_f1_over_x3.y" title="ipctk.smooth_friction_f2_x_minus_f1_over_x3.y (Python parameter) — The tangential relative speed."><span class="n"><span class="pre">y</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f2_x_minus_f1_over_x3.eps_v" title="ipctk.smooth_friction_f2_x_minus_f1_over_x3.eps_v (Python parameter) — Velocity threshold below which static friction force is applied."><span class="n"><span class="pre">eps_v</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.smooth_friction_f2_x_minus_f1_over_x3" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">smooth_friction_f2_x_minus_f1_over_x3</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f2_x_minus_f1_over_x3.y" title="ipctk.smooth_friction_f2_x_minus_f1_over_x3.y (Python parameter) — The tangential relative speed."><span class="n"><span class="pre">y</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.smooth_friction_f2_x_minus_f1_over_x3.eps_v" title="ipctk.smooth_friction_f2_x_minus_f1_over_x3.eps_v (Python parameter) — Velocity threshold below which static friction force is applied."><span class="n"><span class="pre">eps_v</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">float</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.smooth_friction_f2_x_minus_f1_over_x3" title="Link to this definition">¶</a></dt>
 <dd><p>The derivative of f1 times y minus f1 all divided by y cubed.</p>
 <div class="math notranslate nohighlight">
 \[\frac{f_1'(y) y - f_1(y)}{y^3} = \begin{cases}
@@ -1846,9 +1846,9 @@ y, &amp; |y| \geq \epsilon_v
 <dl class="field-list simple">
 <dt class="field-odd" id="ipctk.smooth_friction_f2_x_minus_f1_over_x3-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.smooth_friction_f2_x_minus_f1_over_x3-parameters" title="Permalink to this headline">¶</a></dt>
 <dd class="field-odd"><dl class="simple api-field highlight">
-<dt id="ipctk.smooth_friction_f2_x_minus_f1_over_x3.y"><span class="n sig-name">y</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f2_x_minus_f1_over_x3.y" title="Permalink to this definition">¶</a></dt><dd><p>The tangential relative speed.</p>
+<dt id="ipctk.smooth_friction_f2_x_minus_f1_over_x3.y"><span class="n sig-name">y</span><span class="p">:</span><span class="w"> </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f2_x_minus_f1_over_x3.y" title="Permalink to this definition">¶</a></dt><dd><p>The tangential relative speed.</p>
 </dd>
-<dt id="ipctk.smooth_friction_f2_x_minus_f1_over_x3.eps_v"><span class="n sig-name">eps_v</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f2_x_minus_f1_over_x3.eps_v" title="Permalink to this definition">¶</a></dt><dd><p>Velocity threshold below which static friction force is applied.</p>
+<dt id="ipctk.smooth_friction_f2_x_minus_f1_over_x3.eps_v"><span class="n sig-name">eps_v</span><span class="p">:</span><span class="w"> </span><span class="n"><span class="desctype">float</span></span><a class="headerlink" href="#ipctk.smooth_friction_f2_x_minus_f1_over_x3.eps_v" title="Permalink to this definition">¶</a></dt><dd><p>Velocity threshold below which static friction force is applied.</p>
 </dd>
 </dl>
 </dd>
@@ -1942,7 +1942,7 @@ y, &amp; |y| \geq \epsilon_v
   
     Created using
     <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
-    6.2.1.
+    7.3.7.
      and
     <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
   
@@ -1961,10 +1961,10 @@ y, &amp; |y| \geq \epsilon_v
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow", "content.tabs.link"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
     
       
-        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js"></script>
+        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script id="MathJax-script" src="../_static/mathjax/tex-mml-chtml.js"></script>
+        <script id="MathJax-script" src="../_static/mathjax/tex-mml-chtml.js?v=cadf963e"></script>
     
   </body>
 </html>

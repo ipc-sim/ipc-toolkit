@@ -32,10 +32,10 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.02cb18745d09eea51.min.css?v=ff456132" />
+        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=95c45c06" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -1130,8 +1130,8 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
-<h1 id="miscellaneous">Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this heading">¶</a></h1>
-<h2 id="static-intersection-checks">Static Intersection Checks<a class="headerlink" href="#static-intersection-checks" title="Permalink to this heading">¶</a></h2>
+<h1 id="miscellaneous">Miscellaneous<a class="headerlink" href="#miscellaneous" title="Link to this heading">¶</a></h1>
+<h2 id="static-intersection-checks">Static Intersection Checks<a class="headerlink" href="#static-intersection-checks" title="Link to this heading">¶</a></h2>
 <p>Static intersection checks are not a core part of the IPC algorithm, but they are useful for debugging and verifying your input is intersection-free. The IPC Toolkit provides a function for checking if a mesh is intersection-free:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2">
 <input checked type="radio" id="__tabbed_1_1" name="__tabbed_1"><input type="radio" id="__tabbed_1_2" name="__tabbed_1"><div class="tabbed-labels docutils">
@@ -1150,7 +1150,7 @@ Python</label></div>
 </div>
 </div>
 </div>
-</div><h2 id="logger">Logger<a class="headerlink" href="#logger" title="Permalink to this heading">¶</a></h2>
+</div><h2 id="logger">Logger<a class="headerlink" href="#logger" title="Link to this heading">¶</a></h2>
 <p>The IPC Toolkit uses the <a class="reference external" href="https://github.com/gabime/spdlog">spdlog</a> library for logging. By default, the IPC Toolkit will log to <code class="docutils literal notranslate"><span class="pre">stdout</span></code>. To change this behavior, you can set the logger using the <code class="docutils literal notranslate"><span class="pre">ipc::set_logger</span></code> function. For example, to additionally log to a file, you can do the following:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:2">
 <input checked type="radio" id="__tabbed_2_1" name="__tabbed_2"><input type="radio" id="__tabbed_2_2" name="__tabbed_2"><div class="tabbed-labels docutils">
@@ -1193,7 +1193,7 @@ Python</label></div>
 </div>
 </div>
 </div>
-</div><h2 id="multi-threading">Multi-threading<a class="headerlink" href="#multi-threading" title="Permalink to this heading">¶</a></h2>
+</div><h2 id="multi-threading">Multi-threading<a class="headerlink" href="#multi-threading" title="Link to this heading">¶</a></h2>
 <p>The IPC Toolkit utilizes <a class="reference external" href="https://oneapi-src.github.io/oneTBB">oneTBB</a> to enable multi-threading functionality. This is enabled by default, and significantly improves performance.
 However, with multi-threading enabled, it is expected that the results can be non-deterministic because of rounding differences when adding numbers in different orders. To make the results deterministic you can limit TBB’s maximum number of threads to one. The following code shows how to do this:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="4:2">
@@ -1353,7 +1353,7 @@ Python</label></div>
   
     Created using
     <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
-    6.2.1.
+    7.3.7.
      and
     <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
   
@@ -1372,7 +1372,7 @@ Python</label></div>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow", "content.tabs.link"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
     
       
-        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js"></script>
+        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     
   </body>

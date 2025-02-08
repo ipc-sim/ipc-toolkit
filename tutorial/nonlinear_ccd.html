@@ -32,10 +32,10 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.02cb18745d09eea51.min.css?v=ff456132" />
+        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=b388d4a6" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -1334,7 +1334,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
-<h1 id="nonlinear-ccd">Nonlinear CCD<a class="headerlink" href="#nonlinear-ccd" title="Permalink to this heading">¶</a></h1>
+<h1 id="nonlinear-ccd">Nonlinear CCD<a class="headerlink" href="#nonlinear-ccd" title="Link to this heading">¶</a></h1>
 <p>We also implement CCD of nonlinear trajectories (of linear geometry) using the method of <span id="id1">Ferguson <em>et al.</em> [<a class="reference internal" href="references.html#id8" title="Zachary Ferguson, Minchen Li, Teseo Schneider, Francisca Gil-Ureta, Timothy Langlois, Chenfanfu Jiang, Denis Zorin, Danny M. Kaufman, and Daniele Panozzo. Intersection-free rigid body dynamics. ACM Transactions on Graphics (SIGGRAPH), 2021. https://ipc-sim.github.io/rigid-ipc.">2021</a>]</span>. While <span id="id2">Ferguson <em>et al.</em> [<a class="reference internal" href="references.html#id8" title="Zachary Ferguson, Minchen Li, Teseo Schneider, Francisca Gil-Ureta, Timothy Langlois, Chenfanfu Jiang, Denis Zorin, Danny M. Kaufman, and Daniele Panozzo. Intersection-free rigid body dynamics. ACM Transactions on Graphics (SIGGRAPH), 2021. https://ipc-sim.github.io/rigid-ipc.">2021</a>]</span> introduce their method in the context of rigid bodies, it can be applied to any nonlinear trajectory of linear geometry.</p>
 <p>The method works by transforming the nonlinear trajectories into (adaptive) piecewise linear trajectories with an envelope/minimum separation around each piece, enclosing the nonlinear trajectory. The method then performs CCD on the piecewise linear trajectories to find the earliest time of impact.</p>
 <p>We provide the following functions to perform nonlinear CCD:</p>
@@ -1446,7 +1446,7 @@ Python</label></div>
 </div>
 </div>
 </div>
-</div><h2 id="defining-the-trajectory">Defining the Trajectory<a class="headerlink" href="#defining-the-trajectory" title="Permalink to this heading">¶</a></h2>
+</div><h2 id="defining-the-trajectory">Defining the Trajectory<a class="headerlink" href="#defining-the-trajectory" title="Link to this heading">¶</a></h2>
 <p>Let’s dive deeper by breaking down the implementation of <code class="docutils literal notranslate"><span class="pre">Rigid2DTrajectory</span></code>. The first function we need to implement is the call operator:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="3:2">
 <input checked type="radio" id="__tabbed_3_1" name="__tabbed_3"><input type="radio" id="__tabbed_3_2" name="__tabbed_3"><div class="tabbed-labels docutils">
@@ -1455,14 +1455,13 @@ C++</label><label class="tabbed-label" for="__tabbed_3_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="n">VectorMax3d</span><span class="w"> </span><span class="nf">operator</span><span class="p">()(</span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="p">}</span>
+
+<span class="n">VectorMax3d</span><span class="w"> </span><span class="k">operator</span><span class="p">()(</span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">t</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span>
 <span class="p">{</span>
 <span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix2d</span><span class="w"> </span><span class="n">R</span><span class="w"> </span><span class="o">=</span>
 <span class="w">        </span><span class="n">Eigen</span><span class="o">::</span><span class="n">Rotation2D</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="n">rotation</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">delta_rotation</span><span class="p">)</span>
 <span class="w">            </span><span class="p">.</span><span class="n">toRotationMatrix</span><span class="p">();</span>
-
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">R</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">position</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">translation</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">delta_translation</span><span class="p">;</span>
-<span class="p">}</span>
 </code></pre></div>
 </div>
 </div>
@@ -1480,7 +1479,7 @@ Python</label></div>
 <div class="math notranslate nohighlight">
 \[x(t) := R(\theta + t \Delta \theta) \bar{x} + T + t \Delta T\]</div>
 <p>where <span class="math notranslate nohighlight">\(\theta\)</span> is the angle of rotation about the COM, <span class="math notranslate nohighlight">\(T\)</span> is the translation of the COM, <span class="math notranslate nohighlight">\(\Delta \theta\)</span> and <span class="math notranslate nohighlight">\(\Delta T\)</span> are the updates to <span class="math notranslate nohighlight">\(\theta\)</span> and <span class="math notranslate nohighlight">\(T\)</span>, respectively, and <span class="math notranslate nohighlight">\(\bar{x}\)</span> is the position of the point in the interial frame.</p>
-<h2 id="computing-a-conservative-envelope">Computing a Conservative Envelope<a class="headerlink" href="#computing-a-conservative-envelope" title="Permalink to this heading">¶</a></h2>
+<h2 id="computing-a-conservative-envelope">Computing a Conservative Envelope<a class="headerlink" href="#computing-a-conservative-envelope" title="Link to this heading">¶</a></h2>
 <p>The second function we need to implement is <code class="docutils literal notranslate"><span class="pre">max_distance_from_linear</span></code>.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="4:2">
 <input checked type="radio" id="__tabbed_4_1" name="__tabbed_4"><input type="radio" id="__tabbed_4_2" name="__tabbed_4"><div class="tabbed-labels docutils">
@@ -1489,8 +1488,10 @@ C++</label><label class="tabbed-label" for="__tabbed_4_2">
 Python</label></div>
 <div class="tabbed-content docutils">
 <div class="tabbed-block docutils">
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="kt">double</span>
-<span class="nf">max_distance_from_linear</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">t0</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">t1</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><code><span class="p">}</span>
+
+<span class="kt">double</span>
+<span class="n">max_distance_from_linear</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">t0</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">t1</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span>
 <span class="p">{</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">delta_rotation</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">igl</span><span class="o">::</span><span class="n">PI</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// This is the most conservative estimate</span>
@@ -1499,8 +1500,6 @@ Python</label></div>
 
 <span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">VectorMax3d</span><span class="w"> </span><span class="n">p_t0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)(</span><span class="n">t0</span><span class="p">);</span>
 <span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">VectorMax3d</span><span class="w"> </span><span class="n">p_t1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)(</span><span class="n">t1</span><span class="p">);</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">((</span><span class="o">*</span><span class="k">this</span><span class="p">)((</span><span class="n">t0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">t1</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">((</span><span class="n">p_t1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">p_t0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">p_t0</span><span class="p">)).</span><span class="n">norm</span><span class="p">();</span>
-<span class="p">}</span>
 </code></pre></div>
 </div>
 </div>
@@ -1524,7 +1523,7 @@ Python</label></div>
 <div class="math notranslate nohighlight">
 \[\underset{t\in[0, 1]}{\arg\!\min} \|x((t_1 - t_0) t + t_0) - ((x(t_1) - x(t_0))t + x(t_0))\| = 0.5,\]</div>
 <p>for <span class="math notranslate nohighlight">\((t_1 - t_0) \Delta \theta \leq \pi/2\)</span>, otherwise we can use the most conservative envelope radius of <span class="math notranslate nohighlight">\(2 \|\bar{x}\|\)</span>.</p>
-<h2 id="performing-nonlinear-ccd">Performing Nonlinear CCD<a class="headerlink" href="#performing-nonlinear-ccd" title="Permalink to this heading">¶</a></h2>
+<h2 id="performing-nonlinear-ccd">Performing Nonlinear CCD<a class="headerlink" href="#performing-nonlinear-ccd" title="Link to this heading">¶</a></h2>
 <p>Last, we use the <code class="docutils literal notranslate"><span class="pre">Rigid2DTrajectory</span></code> to perform nonlinear CCD between a point and edge:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="5:2">
 <input checked type="radio" id="__tabbed_5_1" name="__tabbed_5"><input type="radio" id="__tabbed_5_2" name="__tabbed_5"><div class="tabbed-labels docutils">
@@ -1581,7 +1580,7 @@ Python</label></div>
 <p class="admonition-title">Note</p>
 <p>We adjust the <code class="docutils literal notranslate"><span class="pre">conservative_rescaling</span></code> parameter to get a more accurate time of impact (TOI), but in practice, this is not needed as a more conservative estimate of the TOI is sufficient to avoid penetrations.</p>
 </div>
-<h2 id="interval-based-nonlinear-ccd">Interval-Based Nonlinear CCD<a class="headerlink" href="#interval-based-nonlinear-ccd" title="Permalink to this heading">¶</a></h2>
+<h2 id="interval-based-nonlinear-ccd">Interval-Based Nonlinear CCD<a class="headerlink" href="#interval-based-nonlinear-ccd" title="Link to this heading">¶</a></h2>
 <div class="warning admonition">
 <p class="admonition-title">Warning</p>
 <p>The following section requires enabling the <code class="docutils literal notranslate"><span class="pre">filib</span></code> interval arithmetic library. <code class="docutils literal notranslate"><span class="pre">filib</span></code> is licensed under L-GPL 2.1, so special care must be taken when using it. See the <a class="reference external" href="../../cpp.html#filib-dependency-note">filib dependency note</a> for more information.</p>
@@ -1600,7 +1599,7 @@ Python</label></div>
 <p>The <a class="reference internal" href="../python-api/ccd.html#ipctk.IntervalNonlinearTrajectory" title="ipctk.IntervalNonlinearTrajectory (Python class) — Bases: NonlinearTrajectory"><code class="xref py py-class docutils literal notranslate"><span class="pre">ipctk.IntervalNonlinearTrajectory</span></code></a> class does this for us and all we need to provide is a function to compute the point’s position over a time interval.</p>
 </div>
 </div>
-</div><h3 id="conservative-envelope">Conservative Envelope<a class="headerlink" href="#conservative-envelope" title="Permalink to this heading">¶</a></h3>
+</div><h3 id="conservative-envelope">Conservative Envelope<a class="headerlink" href="#conservative-envelope" title="Link to this heading">¶</a></h3>
 <p>Our implementation of the <code class="docutils literal notranslate"><span class="pre">max_distance_from_linear</span></code> function is as follows.</p>
 <p>Start by defining a linear interpolation function:</p>
 <div class="math notranslate nohighlight">
@@ -1617,7 +1616,7 @@ Python</label></div>
 <p class="admonition-title">Note</p>
 <p>In practice we subdivide the interval into smaller intervals and compute the envelope over each subinterval. This is done to create a more accurate estimate.</p>
 </div>
-<h3 id="interval-arithmetic">Interval Arithmetic<a class="headerlink" href="#interval-arithmetic" title="Permalink to this heading">¶</a></h3>
+<h3 id="interval-arithmetic">Interval Arithmetic<a class="headerlink" href="#interval-arithmetic" title="Link to this heading">¶</a></h3>
 <p><a class="reference external" href="https://en.wikipedia.org/wiki/Interval_arithmetic">Interval arithmetic</a> is a method to compute bounds on the range of a function over an interval. We can construct a vector of intervals to represent the position of the point over a time interval.</p>
 <p>The following code snippet shows an example of how to use interval arithmetic to compute the position of a point over a time interval:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="7:2">
@@ -1747,7 +1746,7 @@ Python</label></div>
   
     Created using
     <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
-    6.2.1.
+    7.3.7.
      and
     <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
   
@@ -1766,10 +1765,10 @@ Python</label></div>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow", "content.tabs.link"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
     
       
-        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js"></script>
+        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script id="MathJax-script" src="../_static/mathjax/tex-mml-chtml.js"></script>
+        <script id="MathJax-script" src="../_static/mathjax/tex-mml-chtml.js?v=cadf963e"></script>
     
   </body>
 </html>

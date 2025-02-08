@@ -32,10 +32,10 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.02cb18745d09eea51.min.css?v=ff456132" />
+        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=95c45c06" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -1156,10 +1156,10 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
-<h1 id="physical-simulation">Physical Simulation<a class="headerlink" href="#physical-simulation" title="Permalink to this heading">¶</a></h1>
+<h1 id="physical-simulation">Physical Simulation<a class="headerlink" href="#physical-simulation" title="Link to this heading">¶</a></h1>
 <p>While the IPC Toolkit provides all the principle components of the IPC algorithm, it does not provide a complete simulation framework. Instead, it provides building blocks that can be used to integrate the IPC algorithm into a physical simulation. If all you want is a complete simulation framework using the IPC algorithm, then you should check out our other project <a class="reference external" href="https://polyfem.github.io/">PolyFEM</a> which uses the IPC Toolkit for its collision handling.</p>
 <p>We provide several helper functions to make your job easier. The following examples show how to use these functions.</p>
-<h2 id="volumetric-meshes">Volumetric Meshes<a class="headerlink" href="#volumetric-meshes" title="Permalink to this heading">¶</a></h2>
+<h2 id="volumetric-meshes">Volumetric Meshes<a class="headerlink" href="#volumetric-meshes" title="Link to this heading">¶</a></h2>
 <p>The IPC Toolkit only handles surface meshes (through the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code>). However, the finite element method often relies on volumetric discretization. In this case, the computed gradients and Hessians need to be mapped back to the full volumetric mesh. The <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> class provides this functionality.</p>
 <p>From the full (volumetric) mesh vertices and surface edges/faces which index into the full mesh vertices, you can build a <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> using the function <code class="docutils literal notranslate"><span class="pre">CollisionMesh::build_from_full_mesh</span></code>. This will internally build and store a selection matrix that goes from the full to surface vertices as well as map the edge/faces entries accordingly.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2">
@@ -1294,7 +1294,7 @@ Python</label></div>
 </div>
 </div>
 </div>
-</div><h3 id="codimensional-vertices">Codimensional Vertices<a class="headerlink" href="#codimensional-vertices" title="Permalink to this heading">¶</a></h3>
+</div><h3 id="codimensional-vertices">Codimensional Vertices<a class="headerlink" href="#codimensional-vertices" title="Link to this heading">¶</a></h3>
 <p>In some cases, the collision mesh vertices are not the same as the surface vertices of the volumetric mesh vertices. One such case is when simulating codimensional vertices in conjunction with shell or volumetric meshes. In this case, simply calling <code class="docutils literal notranslate"><span class="pre">build_from_full_mesh</span></code> will not work as it will ignore the vertices that are not connected to any boundary edge. Instead, you can build a vector of booleans that indicate which vertices are on the surface and pass it to the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> constructor.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="4:2">
 <input checked type="radio" id="__tabbed_4_1" name="__tabbed_4"><input type="radio" id="__tabbed_4_2" name="__tabbed_4"><div class="tabbed-labels docutils">
@@ -1331,7 +1331,7 @@ Python</label></div>
 </div>
 </div>
 </div>
-</div><h3 id="nonlinear-bases-and-curved-meshes">Nonlinear Bases and Curved Meshes<a class="headerlink" href="#nonlinear-bases-and-curved-meshes" title="Permalink to this heading">¶</a></h3>
+</div><h3 id="nonlinear-bases-and-curved-meshes">Nonlinear Bases and Curved Meshes<a class="headerlink" href="#nonlinear-bases-and-curved-meshes" title="Link to this heading">¶</a></h3>
 <p>While IPC cannot directly handle nonlinear finite element bases and/or curved meshes, <span id="id1">Ferguson <em>et al.</em> [<a class="reference internal" href="references.html#id7" title="Zachary Ferguson, Pranav Jain, Denis Zorin, Teseo Schneider, and Daniele Panozzo. High-order incremental potential contact for elastodynamic simulation on curved meshes. In ACM SIGGRAPH 2023 Conference Proceedings, SIGGRAPH '23. New York, NY, USA, 2023. Association for Computing Machinery. https://zferg.us/research/high-order-ipc/.">2023</a>]</span> show that displacements and forces can be transferred between a finite element mesh and a collision proxy through the use of a linear map. Given this linear map as a matrix, we can use the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> class to map between the full and surface DOF.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="5:2">
 <input checked type="radio" id="__tabbed_5_1" name="__tabbed_5"><input type="radio" id="__tabbed_5_2" name="__tabbed_5"><div class="tabbed-labels docutils">
@@ -1389,7 +1389,7 @@ Python</label></div>
 <p class="admonition-title">Warning</p>
 <p>The function <code class="docutils literal notranslate"><span class="pre">CollisionMesh::vertices(full_positions)</span></code> should not be used in this case because the rest positions used to construct the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> are not the same as the finite element mesh’s rest positions. Instead, use <code class="docutils literal notranslate"><span class="pre">CollisionMesh::displace_vertices(fe_displacements)</span></code> where <code class="docutils literal notranslate"><span class="pre">fe_displacements</span></code> is already the solution of the PDE or can be computed as <code class="docutils literal notranslate"><span class="pre">fe_displacements</span> <span class="pre">=</span> <span class="pre">fe_positions</span> <span class="pre">-</span> <span class="pre">fe_rest_positions</span></code> from deformed and rest positions.</p>
 </div>
-<h2 id="positive-semi-definite-projection">Positive Semi-Definite Projection<a class="headerlink" href="#positive-semi-definite-projection" title="Permalink to this heading">¶</a></h2>
+<h2 id="positive-semi-definite-projection">Positive Semi-Definite Projection<a class="headerlink" href="#positive-semi-definite-projection" title="Link to this heading">¶</a></h2>
 <p>As described by <span id="id2">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>, the Hessian of the potentials can be indefinite. This is problematic when using the Hessian in a Newton step <span id="id3">[<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">Li <em>et al.</em>, 2020</a>]</span>.
 To remedy this, we can project the Hessian onto the positive semidefinite (PSD) cone. To do this set the optional parameter <code class="docutils literal notranslate"><span class="pre">project_hessian_to_psd</span></code> in <code class="docutils literal notranslate"><span class="pre">Potential::hessian</span></code> to one of the following.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="6:2">
@@ -1495,7 +1495,7 @@ Python</label></div>
   
     Created using
     <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
-    6.2.1.
+    7.3.7.
      and
     <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
   
@@ -1514,7 +1514,7 @@ Python</label></div>
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow", "content.tabs.link"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
     
       
-        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js"></script>
+        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     
   </body>

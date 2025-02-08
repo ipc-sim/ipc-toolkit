@@ -32,10 +32,10 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
-        <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-        <link rel="stylesheet" type="text/css" href="_static/autoclasstoc.css" />
-        <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.02cb18745d09eea51.min.css?v=ff456132" />
+        <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+        <link rel="stylesheet" type="text/css" href="_static/autoclasstoc.css?v=08871587" />
+        <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=95c45c06" />
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -1158,7 +1158,7 @@
 </div>
 <div class="toctree-wrapper compound">
 </div>
-<h1 id="home">Home<a class="headerlink" href="#home" title="Permalink to this heading">¶</a></h1>
+<h1 id="home">Home<a class="headerlink" href="#home" title="Link to this heading">¶</a></h1>
 <img alt="IPC Toolkit" src="_images/logo.png" />
 <p align="center">
 <a href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml"><img src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg"></a>
@@ -1167,9 +1167,9 @@
 <a href="https://codecov.io/github/ipc-sim/ipc-toolkit"><img src="https://codecov.io/github/ipc-sim/ipc-toolkit/graph/badge.svg?token=9BR6GPKRY8"/></a>
 <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue"></a>
 </p>
-<h2 id="description">Description<a class="headerlink" href="#description" title="Permalink to this heading">¶</a></h2>
+<h2 id="description">Description<a class="headerlink" href="#description" title="Link to this heading">¶</a></h2>
 <p>IPC Toolkit is a set of reusable functions to integrate Incremental Potential Contact (IPC) into a simulation.</p>
-<h3 id="features">Features<a class="headerlink" href="#features" title="Permalink to this heading">¶</a></h3>
+<h3 id="features">Features<a class="headerlink" href="#features" title="Link to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>IPC barrier function and its derivatives and adaptive barrier stiffness algorithm</p></li>
 <li><p>Broad-phase and narrow-phase continuous collision detection (CCD)</p></li>
@@ -1177,10 +1177,10 @@
 <li><p>Distance barrier potential and its derivatives</p></li>
 <li><p>Smooth and lagged dissipative friction potential and its derivatives</p></li>
 </ul>
-<h3 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permalink to this heading">¶</a></h3>
+<h3 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Link to this heading">¶</a></h3>
 <p>This is not a full simulation library. As such it does not include any physics or solvers. For a full simulation implementation, we recommend <a class="reference external" href="https://polyfem.github.io/">PolyFEM</a> (a finite element library) or <a class="reference external" href="https://github.com/ipc-sim/rigid-ipc">Rigid IPC</a> (rigid-body dynamics) both of which utilize the IPC Toolkit.</p>
 <!--- BEGIN C++ README 1 --->
-<h2 id="build">Build<a class="headerlink" href="#build" title="Permalink to this heading">¶</a></h2>
+<h2 id="build">Build<a class="headerlink" href="#build" title="Link to this heading">¶</a></h2>
 <p>The easiest way to add the toolkit to an existing CMake project is to download it through CMake.
 CMake provides functionality for doing this called <a class="reference external" href="https://cmake.org/cmake/help/latest/module/FetchContent.html">FetchContent</a> (requires CMake ≥ 3.14).
 We use this same process to download all external dependencies.</p>
@@ -1201,7 +1201,7 @@ We use this same process to download all external dependencies.</p>
 </div>
 <p>where <code class="docutils literal notranslate"><span class="pre">PROJECT_NAME</span></code> is the name of your library/binary.</p>
 <!--- BEGIN C++ README 2 --->
-<h3 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h3>
+<h3 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">¶</a></h3>
 <p><strong>All required dependencies are downloaded through CMake</strong> depending on the build options.</p>
 <p>The following libraries are used in this project:</p>
 <ul class="simple">
@@ -1212,7 +1212,7 @@ We use this same process to download all external dependencies.</p>
 <li><p><a class="reference external" href="https://github.com/ipc-sim/SimpleBVH">SimpleBVH</a>: a simple bounding volume hierarchy data structure</p></li>
 <li><p><a class="reference external" href="https://github.com/gabime/spdlog">spdlog</a>: logging information</p></li>
 </ul>
-<h4 id="optional">Optional<a class="headerlink" href="#optional" title="Permalink to this heading">¶</a></h4>
+<h4 id="optional">Optional<a class="headerlink" href="#optional" title="Link to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/Tessil/robin-map">robin-map</a>: faster hash set/map than <code class="docutils literal notranslate"><span class="pre">std::unordered_set</span></code>/<code class="docutils literal notranslate"><span class="pre">std::unordered_map</span></code></p>
 <ul>
@@ -1246,12 +1246,12 @@ We use this same process to download all external dependencies.</p>
 </ul>
 </li>
 </ul>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h2>
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
 <p>See the <a class="reference external" href="https://ipctk.xyz/tutorial/getting_started.html">tutorial</a> for a quick introduction to the toolkit, or the <a class="reference external" href="https://ipctk.xyz/cpp.html">documentation</a> for a full reference.</p>
-<h2 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Permalink to this heading">¶</a></h2>
+<h2 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Link to this heading">¶</a></h2>
 <p>We provide unit tests to ensure the correctness of our algorithmic pieces.
 To enable the unit tests use the CMake option <code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_UNIT_TESTS</span></code>.</p>
-<h3 id="id1">Dependencies<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
+<h3 id="id1">Dependencies<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
 <p>The following are downloaded when unit tests are enabled (<code class="docutils literal notranslate"><span class="pre">IPC_TOOLKIT_BUILD_TESTS</span></code>)</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/catchorg/Catch2.git">Catch2</a>: testing framework</p></li>
@@ -1259,10 +1259,10 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
 <li><p><a class="reference external" href="https://github.com/nlohmann/json">Nlohman’s JSON library</a>: loading test data from JSON files</p></li>
 </ul>
 <!--- END C++ README --->
-<h2 id="python-bindings">Python Bindings<a class="headerlink" href="#python-bindings" title="Permalink to this heading">¶</a></h2>
+<h2 id="python-bindings">Python Bindings<a class="headerlink" href="#python-bindings" title="Link to this heading">¶</a></h2>
 <p>We provide Python bindings for functions in the toolkit using <a class="reference external" href="https://github.com/pybind/pybind11">pybind11</a>.</p>
 <p>For more information see the <a class="reference external" href="https://ipctk.xyz/python.html">Python documentation</a>.</p>
-<h2 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permalink to this heading">¶</a></h2>
+<h2 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Link to this heading">¶</a></h2>
 <p>This project is open to contributors! Contributions can come in the form of feature requests, bug fixes, documentation, tutorials, and the like. We highly recommend filing an Issue first before submitting a Pull Request.</p>
 <p>Simply fork this repository and make a Pull Request! We would appreciate:</p>
 <ul class="simple">
@@ -1271,7 +1271,7 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
 <li><p>Documentation</p></li>
 <li><p>Testing</p></li>
 </ul>
-<h2 id="citation">Citation<a class="headerlink" href="#citation" title="Permalink to this heading">¶</a></h2>
+<h2 id="citation">Citation<a class="headerlink" href="#citation" title="Link to this heading">¶</a></h2>
 <p>If you use the IPC Toolkit in your project, please consider citing our work:</p>
 <div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><code><span class="nc">@software</span><span class="p">{</span><span class="nl">ipc_toolkit</span><span class="p">,</span>
 <span class="w">  </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Zachary Ferguson and others}</span><span class="p">,</span>
@@ -1294,7 +1294,7 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
 <span class="p">}</span>
 </code></pre></div>
 </div>
-<h2 id="license">License<a class="headerlink" href="#license" title="Permalink to this heading">¶</a></h2>
+<h2 id="license">License<a class="headerlink" href="#license" title="Link to this heading">¶</a></h2>
 <p>MIT License © 2020, the IPC-Sim organization (See <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><code>LICENSE</code></a> for details).</p>
 
 
@@ -1365,7 +1365,7 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
   
     Created using
     <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
-    6.2.1.
+    7.3.7.
      and
     <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
   
@@ -1384,8 +1384,10 @@ To enable the unit tests use the CMake option <code class="docutils literal notr
     <script id="__config" type="application/json">{"base": ".", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow", "content.tabs.link"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
     
       
-        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js"></script>
+        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script id="MathJax-script" src="_static/mathjax/tex-mml-chtml.js?v=cadf963e"></script>
     
   </body>
 </html>

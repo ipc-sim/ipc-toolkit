@@ -32,10 +32,10 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.02cb18745d09eea51.min.css?v=ff456132" />
+        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+        <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=95c45c06" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -1145,7 +1145,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
-<h1 id="convergent-formulation"><span id="convergent-collision-formulation"></span>Convergent Formulation<a class="headerlink" href="#convergent-formulation" title="Permalink to this heading">¶</a></h1>
+<h1 id="convergent-formulation"><span id="convergent-collision-formulation"></span>Convergent Formulation<a class="headerlink" href="#convergent-formulation" title="Link to this heading">¶</a></h1>
 <p>In addition to the original implementation of <span id="id1">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span>, we also implement the convergent formulation of <span id="id2">Li <em>et al.</em> [<a class="reference internal" href="references.html#id4" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Convergent incremental potential contact. 2023. arXiv:2307.15908.">2023</a>]</span>.</p>
 <p>Fully enabling the convergent formulation requires to set three flags: <code class="docutils literal notranslate"><span class="pre">use_area_weighting</span></code> and <code class="docutils literal notranslate"><span class="pre">use_improved_max_approximator</span></code> in <code class="docutils literal notranslate"><span class="pre">Collisions</span></code> (before calling <code class="docutils literal notranslate"><span class="pre">build</span></code>) and <code class="docutils literal notranslate"><span class="pre">use_physical_barrier</span></code> in <code class="docutils literal notranslate"><span class="pre">BarrierPotential</span></code>.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2">
@@ -1179,7 +1179,7 @@ Python</label></div>
 <p class="admonition-title">Important</p>
 <p>The flags <code class="docutils literal notranslate"><span class="pre">use_area_weighting</span></code> and <code class="docutils literal notranslate"><span class="pre">use_improved_max_approximator</span></code> should be set before calling <code class="docutils literal notranslate"><span class="pre">build</span></code> for them to take effect. By default, they are <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p>
 </div>
-<h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Permalink to this heading">¶</a></h2>
+<h2 id="technical-details">Technical Details<a class="headerlink" href="#technical-details" title="Link to this heading">¶</a></h2>
 <p><em>We briefly summarize the convergent formulation here for convenience.</em></p>
 <p>In order to derive a convergent formulation, we first define a continuous form of our barrier potential <span class="math notranslate nohighlight">\(P\)</span>. For a surface <span class="math notranslate nohighlight">\(\mathcal{S}\)</span> embedded in 3D space, we parameterize the surfaces by common (possibly discontinuous) coordinates <span class="math notranslate nohighlight">\(u \in \tilde{M} \subset \mathbb{R}^2\)</span>, so that <span class="math notranslate nohighlight">\(\mathcal{S}(u)\)</span> traverses the material points across all surfaces contiguously. The total barrier potential is then</p>
 <div class="math notranslate nohighlight">
@@ -1217,7 +1217,7 @@ Python</label></div>
 <p>where we simplify with <span class="math notranslate nohighlight">\(w_x = w_{\bar{x}}\)</span> defined appropriately, per domain, as covered above.</p>
 <p>Please, see the <a class="reference external" href="https://arxiv.org/abs/2307.15908">paper</a> for more details (including the formulation for 2D curves and edge-edge collisions) and evaluation.</p>
 <p>The key difference between the original and the convergent formulations is that we (1) include area weights in the barrier potential and (2) include additional (negative) terms to cancel out the duplicate distance pairs. While this requires minor algorithmic changes, it produces considerably better results.</p>
-<h2 id="physical-barrier">Physical Barrier<a class="headerlink" href="#physical-barrier" title="Permalink to this heading">¶</a></h2>
+<h2 id="physical-barrier">Physical Barrier<a class="headerlink" href="#physical-barrier" title="Link to this heading">¶</a></h2>
 <p>We want our barrier potential to have the same units as our elastic potential (e.g., <span class="math notranslate nohighlight">\(\text{J}\)</span>). Together with the area weighting (discussed above), this means the barrier should have units of pressure times distance (e.g., <span class="math notranslate nohighlight">\(\text{Pa} \cdot \text{m}\)</span>). That is,</p>
 <div class="math notranslate nohighlight">
 \[\text{Pa} \cdot \text{m} \cdot \text{m}^2 = \frac{\text{N}}{\text{m}^2} \cdot \text{m} \cdot \text{m}^2 = \text{N} \cdot \text{m} = \text{J}.\]</div>
@@ -1238,7 +1238,7 @@ The intention is to treat the barrier as a thin elastic region around the mesh, 
 <p class="admonition-title">Note</p>
 <p>The physical barrier is enabled by setting <code class="docutils literal notranslate"><span class="pre">use_physical_barrier</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code> in <code class="docutils literal notranslate"><span class="pre">BarrierPotential</span></code>.</p>
 </div>
-<h2 id="friction"><span id="convergent-friction-formulation"></span>Friction<a class="headerlink" href="#friction" title="Permalink to this heading">¶</a></h2>
+<h2 id="friction"><span id="convergent-friction-formulation"></span>Friction<a class="headerlink" href="#friction" title="Link to this heading">¶</a></h2>
 <p>Just as with the <a class="reference internal" href="#convergent-collision-formulation"><span class="std std-ref">collisions</span></a>, we implement both the original friction formulation of <span id="id4">Li <em>et al.</em> [<a class="reference internal" href="references.html#id2" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Incremental potential contact: intersection- and inversion-free large deformation dynamics. ACM Transactions on Graphics (SIGGRAPH), 2020. https://ipc-sim.github.io.">2020</a>]</span> and the convergent formulation of <span id="id5">Li <em>et al.</em> [<a class="reference internal" href="references.html#id4" title="Minchen Li, Zachary Ferguson, Teseo Schneider, Timothy Langlois, Denis Zorin, Daniele Panozzo, Chenfanfu Jiang, and Danny M. Kaufman. Convergent incremental potential contact. 2023. arXiv:2307.15908.">2023</a>]</span>.</p>
 <p>The choice of formulation is dependent on how the fixed set of <code class="docutils literal notranslate"><span class="pre">collisions</span></code> given to <code class="docutils literal notranslate"><span class="pre">FrictionCollisions::build</span></code> was built. If the <code class="docutils literal notranslate"><span class="pre">collisions</span></code> were built using the convergent formulation, then the friction collisions will also use the convergent formulation. Otherwise, the original formulation will be used.</p>
 
@@ -1325,7 +1325,7 @@ The intention is to treat the barrier as a thin elastic region around the mesh, 
   
     Created using
     <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
-    6.2.1.
+    7.3.7.
      and
     <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
   
@@ -1344,10 +1344,10 @@ The intention is to treat the barrier as a thin elastic region around the mesh, 
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow", "content.tabs.link"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
     
       
-        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js"></script>
+        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script id="MathJax-script" src="../_static/mathjax/tex-mml-chtml.js"></script>
+        <script id="MathJax-script" src="../_static/mathjax/tex-mml-chtml.js?v=cadf963e"></script>
     
   </body>
 </html>

@@ -32,9 +32,9 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
-        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.02cb18745d09eea51.min.css?v=ff456132" />
+        <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+        <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=09e4d8da" />
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -1102,17 +1102,17 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
-<h1 id="utils">Utils<a class="headerlink" href="#utils" title="Permalink to this heading">¶</a></h1>
+<h1 id="utils">Utils<a class="headerlink" href="#utils" title="Link to this heading">¶</a></h1>
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.compute_minimum_distance">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">compute_minimum_distance</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.compute_minimum_distance.mesh" title="ipctk.compute_minimum_distance.mesh (Python parameter) — The collision mesh."><span class="n"><span class="pre">mesh</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference internal" href="collision_mesh.html#ipctk.CollisionMesh" title="ipctk.CollisionMesh (Python class) — Determine if the adjacencies have been initialized by calling init_adjacencies()."><span class="pre">ipctk.CollisionMesh</span></a></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.compute_minimum_distance.V" title="ipctk.compute_minimum_distance.V (Python parameter) — Vertices of the collision mesh."><span class="n"><span class="pre">V</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">constraint_set</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference internal" href="collision_constraints.html#ipctk.Constraints" title="ipctk.Constraints (Python class) — Overloaded function."><span class="pre">ipctk.Constraints</span></a></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.compute_minimum_distance" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">compute_minimum_distance</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.compute_minimum_distance.mesh" title="ipctk.compute_minimum_distance.mesh (Python parameter) — The collision mesh."><span class="n"><span class="pre">mesh</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference internal" href="collision_mesh.html#ipctk.CollisionMesh" title="ipctk.CollisionMesh (Python class) — Determine if the adjacencies have been initialized by calling init_adjacencies()."><span class="pre">ipctk.CollisionMesh</span></a></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.compute_minimum_distance.V" title="ipctk.compute_minimum_distance.V (Python parameter) — Vertices of the collision mesh."><span class="n"><span class="pre">V</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">numpy.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">numpy.float64</span><span class="p"><span class="pre">[</span></span><span class="pre">m</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">n</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span></em>, </span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.compute_minimum_distance" title="ipctk.compute_minimum_distance.constraint_set (Python parameter)"><span class="n"><span class="pre">constraint_set</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference internal" href="collision_constraints.html#ipctk.Constraints" title="ipctk.Constraints (Python class) — Overloaded function."><span class="pre">ipctk.Constraints</span></a></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">float</span></span></span></span><a class="headerlink" href="#ipctk.compute_minimum_distance" title="Link to this definition">¶</a></dt>
 <dd><p>Computes the minimum distance between any non-adjacent elements.</p>
 <dl class="field-list simple">
 <dt class="field-odd" id="ipctk.compute_minimum_distance-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.compute_minimum_distance-parameters" title="Permalink to this headline">¶</a></dt>
 <dd class="field-odd"><dl class="simple api-field highlight">
-<dt id="ipctk.compute_minimum_distance.mesh"><span class="n sig-name">mesh</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype"><a class="reference internal" href="collision_mesh.html#ipctk.CollisionMesh" title="ipctk.CollisionMesh (Python class) — Determine if the adjacencies have been initialized by calling init_adjacencies().">ipctk.CollisionMesh</a></span></span><a class="headerlink" href="#ipctk.compute_minimum_distance.mesh" title="Permalink to this definition">¶</a></dt><dd><p>The collision mesh.</p>
+<dt id="ipctk.compute_minimum_distance.mesh"><span class="n sig-name">mesh</span><span class="p">:</span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference internal" href="collision_mesh.html#ipctk.CollisionMesh" title="ipctk.CollisionMesh (Python class) — Determine if the adjacencies have been initialized by calling init_adjacencies().">ipctk.CollisionMesh</a></span></span><a class="headerlink" href="#ipctk.compute_minimum_distance.mesh" title="Permalink to this definition">¶</a></dt><dd><p>The collision mesh.</p>
 </dd>
-<dt id="ipctk.compute_minimum_distance.V"><span class="n sig-name">V</span><span class="p">:</span><span class="w">   </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.float64<span class="p">[</span>m<span class="p">,</span><span class="w">   </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.compute_minimum_distance.V" title="Permalink to this definition">¶</a></dt><dd><p>Vertices of the collision mesh.</p>
+<dt id="ipctk.compute_minimum_distance.V"><span class="n sig-name">V</span><span class="p">:</span><span class="w"> </span><span class="n"><span class="desctype">numpy.ndarray<span class="p">[</span>numpy.float64<span class="p">[</span>m<span class="p">,</span><span class="w"> </span>n<span class="p">]</span><span class="p">]</span></span></span><a class="headerlink" href="#ipctk.compute_minimum_distance.V" title="Permalink to this definition">¶</a></dt><dd><p>Vertices of the collision mesh.</p>
 </dd>
 </dl>
 </dd>
@@ -1124,7 +1124,7 @@
 
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight sig-wrap py" id="ipctk.has_intersections">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">has_intersections</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">V:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n]],</span> <span class="pre">method:</span> <span class="pre">ipctk.BroadPhaseMethod</span> <span class="pre">=</span> <span class="pre">&lt;BroadPhaseMethod.HASH_GRID:</span> <span class="pre">1&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.has_intersections" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">has_intersections</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="pre">mesh:</span> <span class="pre">ipctk.CollisionMesh,</span> <span class="pre">V:</span> <span class="pre">numpy.ndarray[numpy.float64[m,</span> <span class="pre">n]],</span> <span class="pre">method:</span> <span class="pre">ipctk.BroadPhaseMethod</span> <span class="pre">=</span> <span class="pre">&lt;BroadPhaseMethod.HASH_GRID:</span> <span class="pre">1&gt;</span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">bool</span></span></span></span><a class="headerlink" href="#ipctk.has_intersections" title="Link to this definition">¶</a></dt>
 <dd><p>Determine if the mesh has self intersections.</p>
 <dl class="field-list simple">
 <dt class="field-odd" id="ipctk.has_intersections-parameters">Parameters<span class="colon">:</span><a class="headerlink" href="#ipctk.has_intersections-parameters" title="Permalink to this headline">¶</a></dt>
@@ -1143,10 +1143,10 @@
 </dl>
 </dd></dl>
 
-<h2 id="logger">Logger<a class="headerlink" href="#logger" title="Permalink to this heading">¶</a></h2>
+<h2 id="logger">Logger<a class="headerlink" href="#logger" title="Link to this heading">¶</a></h2>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.LoggerLevel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">LoggerLevel</span></span><a class="headerlink" href="#ipctk.LoggerLevel" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">LoggerLevel</span></span><a class="headerlink" href="#ipctk.LoggerLevel" title="Link to this definition">¶</a></dt>
 <dd><p>Members:</p>
 <p>trace</p>
 <p>debug</p>
@@ -1159,20 +1159,20 @@
 
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.set_logger_level">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">set_logger_level</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference internal" href="#ipctk.LoggerLevel" title="ipctk.LoggerLevel (Python class) — Members:"><span class="pre">ipctk.LoggerLevel</span></a></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.set_logger_level" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">set_logger_level</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.set_logger_level" title="ipctk.set_logger_level.level (Python parameter)"><span class="n"><span class="pre">level</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><a class="reference internal" href="#ipctk.LoggerLevel" title="ipctk.LoggerLevel (Python class) — Members:"><span class="pre">ipctk.LoggerLevel</span></a></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.set_logger_level" title="Link to this definition">¶</a></dt>
 <dd><p>Set log level</p>
 </dd></dl>
 
-<h2 id="multi-threading">Multi-Threading<a class="headerlink" href="#multi-threading" title="Permalink to this heading">¶</a></h2>
+<h2 id="multi-threading">Multi-Threading<a class="headerlink" href="#multi-threading" title="Link to this heading">¶</a></h2>
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.get_num_threads">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">get_num_threads</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">int</span></span></span></span><a class="headerlink" href="#ipctk.get_num_threads" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">get_num_threads</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">int</span></span></span></span><a class="headerlink" href="#ipctk.get_num_threads" title="Link to this definition">¶</a></dt>
 <dd><p>get maximum number of threads to use</p>
 </dd></dl>
 
 <dl class="py function objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.set_num_threads">
-<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">set_num_threads</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="n"><span class="pre">nthreads</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.set_num_threads" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">set_num_threads</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><a class="n reference internal" href="#ipctk.set_num_threads" title="ipctk.set_num_threads.nthreads (Python parameter)"><span class="n"><span class="pre">nthreads</span></span></a><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="desctype"><span class="pre">int</span></span></span></em></span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="desctype"><span class="pre">None</span></span></span></span><a class="headerlink" href="#ipctk.set_num_threads" title="Link to this definition">¶</a></dt>
 <dd><p>set maximum number of threads to use</p>
 </dd></dl>
 
@@ -1258,7 +1258,7 @@
   
     Created using
     <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
-    6.2.1.
+    7.3.7.
      and
     <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
   
@@ -1277,7 +1277,7 @@
     <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
     
       
-        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js"></script>
+        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     
   </body>

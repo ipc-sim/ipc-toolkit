@@ -32,10 +32,10 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
-        <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-        <link rel="stylesheet" type="text/css" href="_static/autoclasstoc.css" />
-        <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.02cb18745d09eea51.min.css?v=ff456132" />
+        <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+        <link rel="stylesheet" type="text/css" href="_static/autoclasstoc.css?v=08871587" />
+        <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=95c45c06" />
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -1079,11 +1079,12 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
-<h1 id="c">C++<a class="headerlink" href="#c" title="Permalink to this heading">¶</a></h1>
+<h1 id="c">C++<a class="headerlink" href="#c" title="Link to this heading">¶</a></h1>
 <a class="reference external image-reference" href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml"><img alt="Build" src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/continuous.yml/badge.svg" /></a>
 <a class="reference external image-reference" href="https://ipctk.xyz/"><img alt="Docs" src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/docs.yml/badge.svg" /></a>
-<a class="reference external image-reference" href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue" /></a>
-<h2 id="build">Build<a class="headerlink" href="#build" title="Permalink to this heading">¶</a></h2>
+<a class="reference external image-reference" href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue" />
+</a>
+<h2 id="build">Build<a class="headerlink" href="#build" title="Link to this heading">¶</a></h2>
 <p>The easiest way to add the toolkit to an existing CMake project is to download it through CMake.
 CMake provides functionality for doing this called <a class="reference external" href="https://cmake.org/cmake/help/latest/module/FetchContent.html">FetchContent</a> (requires CMake ≥ 3.14).
 We use this same process to download all external dependencies.</p>
@@ -1097,17 +1098,17 @@ We use this same process to download all external dependencies.</p>
 <span class="nb">FetchContent_MakeAvailable</span><span class="p">(</span><span class="s">ipc_toolkit</span><span class="p">)</span>
 </code></pre></div>
 </div>
-<p>where <code class="code highlight cmake docutils literal highlight-cmake">IPC_TOOLKIT_GIT_TAG</code> is set to the version of the toolkit you want to use.  This will download and add the toolkit to CMake. The toolkit can then be linked against using</p>
+<p>where <code class="code highlight cmake docutils literal highlight-cmake"><span class="err">IPC_TOOLKIT_GIT_TAG</span></code> is set to the version of the toolkit you want to use.  This will download and add the toolkit to CMake. The toolkit can then be linked against using</p>
 <div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><code><span class="c"># Link against the IPC Toolkit</span>
 <span class="nb">target_link_libraries</span><span class="p">(</span><span class="o">${</span><span class="nv">PROJECT_NAME</span><span class="o">}</span><span class="w"> </span><span class="s">PUBLIC</span><span class="w"> </span><span class="s">ipc::toolkit</span><span class="p">)</span>
 </code></pre></div>
 </div>
-<p>where <code class="code highlight cmake docutils literal highlight-cmake">PROJECT_NAME</code> is the name of your library/binary.</p>
+<p>where <code class="code highlight cmake docutils literal highlight-cmake"><span class="err">PROJECT_NAME</span></code> is the name of your library/binary.</p>
 <div class="tip admonition">
 <p class="admonition-title">Tip</p>
-<p>If your <code class="code highlight cmake docutils literal highlight-cmake">IPC_TOOLKIT_GIT_TAG</code> is a tag (e.g. <code class="docutils literal notranslate"><span class="pre">v1.1.1</span></code>), then you can use the <code class="code highlight cmake docutils literal highlight-cmake">FetchContent_Declare</code> argument <code class="code highlight cmake docutils literal highlight-cmake">GIT_SHALLOW TRUE</code> to download only a single commit. Otherwise, you should use the default <code class="code highlight cmake docutils literal highlight-cmake">GIT_SHALLOW FALSE</code>.</p>
+<p>If your <code class="code highlight cmake docutils literal highlight-cmake"><span class="err">IPC_TOOLKIT_GIT_TAG</span></code> is a tag (e.g. <code class="docutils literal notranslate"><span class="pre">v1.1.1</span></code>), then you can use the <code class="code highlight cmake docutils literal highlight-cmake"><span class="err">FetchContent_Declare</span></code> argument <code class="code highlight cmake docutils literal highlight-cmake"><span class="err">GIT_SHALLOW</span><span class="w"> </span><span class="err">TRUE</span></code> to download only a single commit. Otherwise, you should use the default <code class="code highlight cmake docutils literal highlight-cmake"><span class="err">GIT_SHALLOW</span><span class="w"> </span><span class="err">FALSE</span></code>.</p>
 </div>
-<h2 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h2>
+<h2 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">¶</a></h2>
 <p><strong>All required dependencies are downloaded through CMake</strong> depending on the build options.</p>
 <p>The following libraries are used in this project:</p>
 <ul class="simple">
@@ -1117,11 +1118,11 @@ We use this same process to download all external dependencies.</p>
 <li><p><a class="reference external" href="https://github.com/Continuous-Collision-Detection/Tight-Inclusion">Tight-Inclusion</a>: correct (conservative) CCD</p></li>
 <li><p><a class="reference external" href="https://github.com/gabime/spdlog">spdlog</a>: logging information</p></li>
 </ul>
-<h2 id="optional">Optional<a class="headerlink" href="#optional" title="Permalink to this heading">¶</a></h2>
+<h2 id="optional">Optional<a class="headerlink" href="#optional" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><dl class="simple">
 <dt><a class="reference external" href="https://github.com/Tessil/robin-map">robin-map</a>: faster hash set/map than <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span></code>/<code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span></code></dt><dd><ul>
-<li><p>Enable by using the CMake option <code class="code highlight cmake docutils literal highlight-cmake">IPC_TOOLKIT_WITH_ROBIN_MAP</code></p></li>
+<li><p>Enable by using the CMake option <code class="code highlight cmake docutils literal highlight-cmake"><span class="err">IPC_TOOLKIT_WITH_ROBIN_MAP</span></code></p></li>
 <li><p>Enabled by default</p></li>
 </ul>
 </dd>
@@ -1129,7 +1130,7 @@ We use this same process to download all external dependencies.</p>
 </li>
 <li><dl class="simple">
 <dt><a class="reference external" href="https://abseil.io/">Abseil</a>: hashing utilities</dt><dd><ul>
-<li><p>Enable by using the CMake option <code class="code highlight cmake docutils literal highlight-cmake">IPC_TOOLKIT_WITH_ABSEIL</code></p></li>
+<li><p>Enable by using the CMake option <code class="code highlight cmake docutils literal highlight-cmake"><span class="err">IPC_TOOLKIT_WITH_ABSEIL</span></code></p></li>
 <li><p>Enabled by default</p></li>
 </ul>
 </dd>
@@ -1137,7 +1138,7 @@ We use this same process to download all external dependencies.</p>
 </li>
 <li><dl class="simple">
 <dt><a class="reference external" href="https://gmplib.org/">GMP</a>: rational arithmetic used for exact intersection checks</dt><dd><ul>
-<li><p>Enable by using the CMake option <code class="code highlight cmake docutils literal highlight-cmake">IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION</code></p></li>
+<li><p>Enable by using the CMake option <code class="code highlight cmake docutils literal highlight-cmake"><span class="err">IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION</span></code></p></li>
 <li><p>GMP must be installed at a system level</p></li>
 </ul>
 </dd>
@@ -1146,19 +1147,19 @@ We use this same process to download all external dependencies.</p>
 <li><dl class="simple">
 <dt><a class="reference external" href="https://github.com/evouga/collisiondetection">Etienne Vouga’s Collision Detection Library</a>: inexact CCD</dt><dd><ul>
 <li><p>Included for comparison with the original IPC library</p></li>
-<li><p>Enable by disabling the CMake option <code class="code highlight cmake docutils literal highlight-cmake">IPC_TOOLKIT_WITH_CORRECT_CCD</code></p></li>
+<li><p>Enable by disabling the CMake option <code class="code highlight cmake docutils literal highlight-cmake"><span class="err">IPC_TOOLKIT_WITH_CORRECT_CCD</span></code></p></li>
 <li><p>Replaces the default Tight-Inclusion CCD</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 </ul>
-<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h2>
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Link to this heading">¶</a></h2>
 <p>The main functionality is provided in the <code class="docutils literal notranslate"><span class="pre">ipc.hpp</span></code> header. Use the prefix directory <code class="docutils literal notranslate"><span class="pre">ipc</span></code> to include all header files (e.g. <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ipc/ipc.hpp&gt;</span></code>).</p>
-<h2 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Permalink to this heading">¶</a></h2>
-<p>We provide unit tests for ensuring the correctness of our algorithmic pieces. To enable the unit tests use the CMake option <code class="code highlight cmake docutils literal highlight-cmake">IPC_TOOLKIT_BUILD_UNIT_TESTS</code>.</p>
-<h3 id="dependencies-1"><span id="id1"></span>Dependencies<a class="headerlink" href="#dependencies-1" title="Permalink to this heading">¶</a></h3>
-<p>The following are downloaded when unit tests are enabled(<code class="code highlight cmake docutils literal highlight-cmake">IPC_TOOLKIT_BUILD_TESTS</code>)</p>
+<h2 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Link to this heading">¶</a></h2>
+<p>We provide unit tests for ensuring the correctness of our algorithmic pieces. To enable the unit tests use the CMake option <code class="code highlight cmake docutils literal highlight-cmake"><span class="err">IPC_TOOLKIT_BUILD_UNIT_TESTS</span></code>.</p>
+<h3 id="dependencies-1"><span id="id1"></span>Dependencies<a class="headerlink" href="#dependencies-1" title="Link to this heading">¶</a></h3>
+<p>The following are downloaded when unit tests are enabled(<code class="code highlight cmake docutils literal highlight-cmake"><span class="err">IPC_TOOLKIT_BUILD_TESTS</span></code>)</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://github.com/catchorg/Catch2.git">Catch2</a>: testing framework</p></li>
 <li><p><a class="reference external" href="https://github.com/zfergus/finite-diff">finite-diff</a>: finite-difference comparisons</p></li>
@@ -1248,7 +1249,7 @@ We use this same process to download all external dependencies.</p>
   
     Created using
     <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
-    6.2.1.
+    7.3.7.
      and
     <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
   
@@ -1267,7 +1268,7 @@ We use this same process to download all external dependencies.</p>
     <script id="__config" type="application/json">{"base": ".", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow", "content.tabs.link"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
     
       
-        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js"></script>
+        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     
   </body>

@@ -32,10 +32,10 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.4643de25d6656007a.min.css" />
-        <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
-        <link rel="stylesheet" type="text/css" href="_static/autoclasstoc.css" />
-        <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+        <link rel="stylesheet" type="text/css" href="_static/sphinx_immaterial_theme.02cb18745d09eea51.min.css?v=ff456132" />
+        <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+        <link rel="stylesheet" type="text/css" href="_static/autoclasstoc.css?v=08871587" />
+        <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=95c45c06" />
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -1126,7 +1126,7 @@
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
-<h1 id="python">Python<a class="headerlink" href="#python" title="Permalink to this heading">¶</a></h1>
+<h1 id="python">Python<a class="headerlink" href="#python" title="Link to this heading">¶</a></h1>
 <p><img alt="PyPI" src="https://img.shields.io/pypi/v/ipctk?color=brightgreen&amp;label=PyPI&amp;logo=python&amp;logoColor=white" />
 <img alt="PyPI - Downloads" src="https://img.shields.io/pypi/dm/ipctk?label=PyPI%20Downloads&amp;logo=python&amp;logoColor=white" />
 <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml"><img alt="Python" src="https://github.com/ipc-sim/ipc-toolkit/actions/workflows/python.yml/badge.svg" /></a>
@@ -1134,7 +1134,7 @@
 <a class="reference external" href="https://codecov.io/github/ipc-sim/ipc-toolkit"><img alt="codecov" src="https://codecov.io/github/ipc-sim/ipc-toolkit/graph/badge.svg?token=9BR6GPKRY8" /></a>
 <a class="reference external" href="https://github.com/ipc-sim/ipc-toolkit/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/ipc-sim/ipc-toolkit.svg?color=blue" /></a></p>
 <p>We provide Python bindings for functions in the toolkit using <a class="reference external" href="https://github.com/pybind/pybind11">pybind11</a>.</p>
-<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h2>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Link to this heading">¶</a></h2>
 <p>To install the latest release, you can use <code class="docutils literal notranslate"><span class="pre">pip</span></code>:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><code><span class="n">pip</span><span class="w"> </span><span class="n">install</span><span class="w"> </span><span class="n">ipctk</span>
 </code></pre></div>
@@ -1143,7 +1143,7 @@
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><code><span class="n">pip</span><span class="w"> </span><span class="n">install</span><span class="w"> </span><span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="o">:</span><span class="c1">//github.com/ipc-sim/ipc-toolkit</span>
 </code></pre></div>
 </div>
-<h2 id="build">Build<a class="headerlink" href="#build" title="Permalink to this heading">¶</a></h2>
+<h2 id="build">Build<a class="headerlink" href="#build" title="Link to this heading">¶</a></h2>
 <p>To manually build the python binding you can either use the <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> script or use <code class="docutils literal notranslate"><span class="pre">cmake</span></code> directly. The easiest way is to use the <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> script which uses <code class="docutils literal notranslate"><span class="pre">setuptools</span></code>. To do this, use the following command from the root of the repository:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>.
 </code></pre></div>
@@ -1153,7 +1153,7 @@
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import ipctk&quot;</span>
 </code></pre></div>
 </div>
-<h3 id="cmake-build">CMake Build<a class="headerlink" href="#cmake-build" title="Permalink to this heading">¶</a></h3>
+<h3 id="cmake-build">CMake Build<a class="headerlink" href="#cmake-build" title="Link to this heading">¶</a></h3>
 <p>Alternatively, you can use <code class="docutils literal notranslate"><span class="pre">cmake</span></code> directly. To do this, use the following commands from the root of the repository:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>build
 <span class="nb">cd</span><span class="w"> </span>build
@@ -1161,7 +1161,7 @@ cmake<span class="w"> </span>-DCMAKE_BUILD_TYPE<span class="o">=</span>Release<s
 make<span class="w"> </span>-j4
 </code></pre></div>
 </div>
-<h2 id="help-documentation">Help/Documentation<a class="headerlink" href="#help-documentation" title="Permalink to this heading">¶</a></h2>
+<h2 id="help-documentation">Help/Documentation<a class="headerlink" href="#help-documentation" title="Link to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>A tutorial on how to use the toolkit can be found <a class="reference external" href="https://ipctk.xyz/tutorial/getting_started.html">here</a>.</p></li>
 <li><p>We provide a Jupyter notebook (<code class="docutils literal notranslate"><span class="pre">python/example.ipynb</span></code>) with some simple examples.</p></li>
@@ -1251,7 +1251,7 @@ make<span class="w"> </span>-j4
   
     Created using
     <a href="https://www.sphinx-doc.org/" target="_blank" rel="noopener">Sphinx</a>
-    6.2.1.
+    7.3.7.
      and
     <a href="https://github.com/jbms/sphinx-immaterial/" target="_blank" rel="noopener">Sphinx-Immaterial</a>
   
@@ -1270,7 +1270,7 @@ make<span class="w"> </span>-j4
     <script id="__config" type="application/json">{"base": ".", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow", "content.tabs.link"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
     
       
-        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js"></script>
+        <script src="_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     
   </body>
