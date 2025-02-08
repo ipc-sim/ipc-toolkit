@@ -1,7 +1,6 @@
 #include <common.hpp>
 
 #include <ipc/ipc.hpp>
-#include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/config.hpp>
 
 #include <igl/edges.h>
@@ -33,7 +32,8 @@ void define_ipc(py::module_& m)
             True if <b>any</b> collisions occur.
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-        py::arg("min_distance") = 0.0, py::arg("broad_phase") = nullptr,
+        py::arg("min_distance") = 0.0,
+        py::arg("broad_phase") = make_default_broad_phase(),
         py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD);
 
     m.def(
@@ -56,7 +56,8 @@ void define_ipc(py::module_& m)
             A step-size :math:`\in [0, 1]` that is collision free. A value of 1.0 if a full step and 0.0 is no step.
         )ipc_Qu8mg5v7",
         py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-        py::arg("min_distance") = 0.0, py::arg("broad_phase") = nullptr,
+        py::arg("min_distance") = 0.0,
+        py::arg("broad_phase") = make_default_broad_phase(),
         py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD);
 
     m.def(
@@ -72,7 +73,8 @@ void define_ipc(py::module_& m)
         Returns:
             A boolean for if the mesh has intersections.
         )ipc_Qu8mg5v7",
-        py::arg("mesh"), py::arg("vertices"), py::arg("broad_phase") = nullptr);
+        py::arg("mesh"), py::arg("vertices"),
+        py::arg("broad_phase") = make_default_broad_phase());
 
     m.def(
         "edges",

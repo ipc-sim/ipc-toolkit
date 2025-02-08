@@ -1,7 +1,6 @@
 #include <common.hpp>
 
 #include <ipc/collisions/normal/normal_collisions.hpp>
-#include <ipc/broad_phase/broad_phase.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
@@ -27,7 +26,8 @@ void define_normal_collisions(py::module_& m)
                 broad_phase: Broad-phase to use.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"), py::arg("dhat"),
-            py::arg("dmin") = 0, py::arg("broad_phase") = nullptr)
+            py::arg("dmin") = 0,
+            py::arg("broad_phase") = make_default_broad_phase())
         .def(
             "build",
             py::overload_cast<

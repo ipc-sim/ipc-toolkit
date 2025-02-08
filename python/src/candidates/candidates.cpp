@@ -1,7 +1,6 @@
 #include <common.hpp>
 
 #include <ipc/candidates/candidates.hpp>
-#include <ipc/broad_phase/broad_phase.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
@@ -25,7 +24,8 @@ void define_candidates(py::module_& m)
                 broad_phase: Broad phase to use.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"),
-            py::arg("inflation_radius") = 0, py::arg("broad_phase") = nullptr)
+            py::arg("inflation_radius") = 0,
+            py::arg("broad_phase") = make_default_broad_phase())
         .def(
             "build",
             py::overload_cast<
@@ -46,7 +46,8 @@ void define_candidates(py::module_& m)
                 broad_phase: Broad phase to use.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("inflation_radius") = 0, py::arg("broad_phase") = nullptr)
+            py::arg("inflation_radius") = 0,
+            py::arg("broad_phase") = make_default_broad_phase())
         .def("__len__", &Candidates::size)
         .def("empty", &Candidates::empty)
         .def("clear", &Candidates::clear)
@@ -127,7 +128,7 @@ void define_candidates(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
             py::arg("dhat"), py::arg("min_distance") = 0.0,
-            py::arg("broad_phase") = nullptr,
+            py::arg("broad_phase") = make_default_broad_phase(),
             py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD)
         .def(
             "save_obj", &Candidates::save_obj, py::arg("filename"),
