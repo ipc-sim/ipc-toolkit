@@ -9,10 +9,12 @@ using namespace ipc;
 class PyBroadPhase : public BroadPhase {
 public:
     using BroadPhase::BroadPhase; // Inherit constructors
+
     std::string name() const override
     {
         PYBIND11_OVERRIDE_PURE(std::string, BroadPhase, name);
     }
+
     void build(
         const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,

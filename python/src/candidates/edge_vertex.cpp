@@ -11,6 +11,12 @@ void define_edge_vertex_candidate(py::module_& m)
         EdgeVertexCandidate, CollisionStencil, ContinuousCollisionCandidate>(
         m, "EdgeVertexCandidate")
         .def(py::init<long, long>(), py::arg("edge_id"), py::arg("vertex_id"))
+        .def(
+            py::init([](std::tuple<long, long> vertex_ids) {
+                return std::make_unique<EdgeVertexCandidate>(
+                    std::get<0>(vertex_ids), std::get<1>(vertex_ids));
+            }),
+            py::arg("edge_and_vertex_id"))
         .def("known_dtype", &EdgeVertexCandidate::known_dtype)
         .def(
             "__str__",
@@ -33,4 +39,6 @@ void define_edge_vertex_candidate(py::module_& m)
             "edge_id", &EdgeVertexCandidate::edge_id, "ID of the edge")
         .def_readwrite(
             "vertex_id", &EdgeVertexCandidate::vertex_id, "ID of the vertex");
+
+    py::implicitly_convertible<std::tuple<long, long>, EdgeVertexCandidate>();
 }

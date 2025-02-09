@@ -14,6 +14,12 @@ void define_vertex_vertex_candidate(py::module_& m)
             py::init<long, long>(), py::arg("vertex0_id"),
             py::arg("vertex1_id"))
         .def(
+            py::init([](std::tuple<long, long> vertex_ids) {
+                return std::make_unique<VertexVertexCandidate>(
+                    std::get<0>(vertex_ids), std::get<1>(vertex_ids));
+            }),
+            py::arg("vertex_ids"))
+        .def(
             "__str__",
             [](const VertexVertexCandidate& ev) {
                 return fmt::format(
@@ -37,4 +43,6 @@ void define_vertex_vertex_candidate(py::module_& m)
         .def_readwrite(
             "vertex1_id", &VertexVertexCandidate::vertex1_id,
             "ID of the second vertex");
+
+    py::implicitly_convertible<std::tuple<long, long>, VertexVertexCandidate>();
 }
