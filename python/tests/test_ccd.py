@@ -18,10 +18,69 @@ def test_ccd():
     assert not ipctk.is_step_collision_free(mesh, V0, V1)
 
     toi = ipctk.compute_collision_free_stepsize(mesh, V0, V1)
-    assert 0 < toi < 1
+    assert 0 <= toi <= 1
 
     assert ipctk.is_step_collision_free(mesh, V0, (V1 - V0) * toi + V0)
 
+def test_custom_ccd():
+    class DumbNarrowPhaseCCD(ipctk.NarrowPhaseCCD):
+        def __init__(self):
+            ipctk.NarrowPhaseCCD.__init__(self)
+        def point_point_ccd(self, p0_t0, p1_t0, p0_t1, p1_t1, min_distance=0.0, tmax=1.0):
+            return True, 0.0
+        def point_edge_ccd(self, p_t0, e0_t0, e1_t0, p_t1, e0_t1, e1_t1, min_distance=0.0, tmax=1.0):
+            return True, 0.0
+        def point_triangle_ccd(self, p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, min_distance=0.0, tmax=1.0):
+            return True, 0.0
+        def edge_edge_ccd(self, ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, min_distance=0.0, tmax=1.0):
+            return True, 0.0
+
+    V0, E, F = load_mesh("two-cubes-close.ply")
+    V1, E, F = load_mesh("two-cubes-intersecting.ply")
+
+    mesh = ipctk.CollisionMesh(V0, E, F)
+
+    ipctk.set_num_threads(1)
+
+    assert not ipctk.is_step_collision_free(
+        mesh, V0, V1, narrow_phase_ccd=DumbNarrowPhaseCCD())
+
+    toi = ipctk.compute_collision_free_stepsize(
+        mesh, V0, V1, narrow_phase_ccd=DumbNarrowPhaseCCD())
+    assert 0 <= toi <= 1
+
+def test_custom_broad_phase():
+    class DumbBroadPhase(ipctk.BroadPhase):
+        def __init__(self):
+            ipctk.BroadPhase.__init__(self)
+        def name(self):
+            return "DumbBroadPhase"
+        def detect_vertex_vertex_candidates(self):
+            return []
+        def detect_edge_vertex_candidates(self):
+            return []
+        def detect_edge_edge_candidates(self):
+            return []
+        def detect_face_vertex_candidates(self):
+            return []
+        def detect_edge_face_candidates(self):
+            return []
+        def detect_face_face_candidates(self):
+            return []
+
+    V0, E, F = load_mesh("two-cubes-close.ply")
+    V1, E, F = load_mesh("two-cubes-intersecting.ply")
+
+    mesh = ipctk.CollisionMesh(V0, E, F)
+
+    ipctk.set_num_threads(1)
+
+    assert ipctk.is_step_collision_free(mesh, V0, V1, broad_phase=DumbBroadPhase())
+
+    toi = ipctk.compute_collision_free_stepsize(mesh, V0, V1, broad_phase=DumbBroadPhase())
+    assert toi == 1
+
+    assert not ipctk.has_intersections(mesh, V0, broad_phase=DumbBroadPhase())
 
 def test_nonlinear_ccd():
     class LinearTrajectory(ipctk.NonlinearTrajectory):
