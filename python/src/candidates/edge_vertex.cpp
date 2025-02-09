@@ -12,9 +12,10 @@ void define_edge_vertex_candidate(py::module_& m)
         m, "EdgeVertexCandidate")
         .def(py::init<long, long>(), py::arg("edge_id"), py::arg("vertex_id"))
         .def(
-            py::init([](std::tuple<long, long> vertex_ids) {
+            py::init([](std::tuple<long, long> edge_and_vertex_id) {
                 return std::make_unique<EdgeVertexCandidate>(
-                    std::get<0>(vertex_ids), std::get<1>(vertex_ids));
+                    std::get<0>(edge_and_vertex_id),
+                    std::get<1>(edge_and_vertex_id));
             }),
             py::arg("edge_and_vertex_id"))
         .def("known_dtype", &EdgeVertexCandidate::known_dtype)

@@ -12,9 +12,10 @@ void define_face_vertex_candidate(py::module_& m)
         m, "FaceVertexCandidate")
         .def(py::init<long, long>(), py::arg("face_id"), py::arg("vertex_id"))
         .def(
-            py::init([](std::tuple<long, long> vertex_ids) {
+            py::init([](std::tuple<long, long> face_and_vertex_id) {
                 return std::make_unique<FaceVertexCandidate>(
-                    std::get<0>(vertex_ids), std::get<1>(vertex_ids));
+                    std::get<0>(face_and_vertex_id),
+                    std::get<1>(face_and_vertex_id));
             }),
             py::arg("face_and_vertex_id"))
         .def("known_dtype", &FaceVertexCandidate::known_dtype)
