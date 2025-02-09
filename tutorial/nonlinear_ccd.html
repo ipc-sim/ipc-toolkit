@@ -1466,11 +1466,11 @@ Python</label></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_rotation</span>
-    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)],</span>
-                  <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)]])</span>
-    <span class="k">return</span> <span class="n">R</span> <span class="o">@</span> <span class="bp">self</span><span class="o">.</span><span class="n">position</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">translation</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_translation</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code>
+<span class="n">rt</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">is_step_collision_free</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">V0</span><span class="p">,</span> <span class="n">V1</span><span class="p">,</span> <span class="n">broad_phase</span><span class="o">=</span><span class="n">broad_phase</span><span class="p">)</span>
+
+<span class="o">=</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">compute_collision_free_stepsize</span><span class="p">(</span>
+<span class="n">mesh</span><span class="p">,</span> <span class="n">V0</span><span class="p">,</span> <span class="n">V1</span><span class="p">,</span> <span class="n">broad_phase</span><span class="o">=</span><span class="n">broad_phase</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -1504,13 +1504,13 @@ Python</label></div>
 </div>
 </div>
 <div class="tabbed-block docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">max_distance_from_linear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">):</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_rotation</span> <span class="o">*</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
-        <span class="c1"># This is the most conservative estimate</span>
-        <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">position</span><span class="p">)</span>  <span class="c1"># 2 * radius</span>
-    <span class="n">p_t0</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
-    <span class="n">p_t1</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="p">((</span><span class="n">t0</span> <span class="o">+</span> <span class="n">t1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="p">((</span><span class="n">p_t1</span> <span class="o">-</span> <span class="n">p_t0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">p_t0</span><span class="p">))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><code>
+<span class="n">rt</span> <span class="ow">not</span> <span class="n">ipctk</span><span class="o">.</span><span class="n">has_intersections</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">V0</span><span class="p">,</span> <span class="n">broad_phase</span><span class="o">=</span><span class="n">broad_phase</span><span class="p">)</span>
+
+
+<span class="n">_nonlinear_ccd</span><span class="p">():</span>
+<span class="n">s</span> <span class="n">LinearTrajectory</span><span class="p">(</span><span class="n">ipctk</span><span class="o">.</span><span class="n">NonlinearTrajectory</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span><span class="p">):</span>
 </code></pre></div>
 </div>
 </div>
@@ -1669,7 +1669,7 @@ Python</label></div>
   <small>
     
       Last update:
-      Feb 08, 2025
+      Feb 09, 2025
     
   </small>
 </div>
