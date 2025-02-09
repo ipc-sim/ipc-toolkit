@@ -11,6 +11,13 @@ void define_edge_face_candidate(py::module_& m)
     py::class_<EdgeFaceCandidate>(m, "EdgeFaceCandidate")
         .def(py::init<long, long>(), py::arg("edge_id"), py::arg("face_id"))
         .def(
+            py::init([](std::tuple<long, long> edge_and_face_id) {
+                return std::make_unique<EdgeFaceCandidate>(
+                    std::get<0>(edge_and_face_id),
+                    std::get<1>(edge_and_face_id));
+            }),
+            py::arg("edge_and_face_id"))
+        .def(
             "__str__",
             [](const EdgeFaceCandidate& ev) {
                 return fmt::format("[{:d}, {:d}]", ev.edge_id, ev.face_id);
@@ -29,4 +36,6 @@ void define_edge_face_candidate(py::module_& m)
         .def_readwrite("edge_id", &EdgeFaceCandidate::edge_id, "ID of the edge")
         .def_readwrite(
             "face_id", &EdgeFaceCandidate::face_id, "ID of the face");
+
+    py::implicitly_convertible<std::tuple<long, long>, EdgeFaceCandidate>();
 }

@@ -11,6 +11,12 @@ void define_face_face_candidate(py::module_& m)
     py::class_<FaceFaceCandidate>(m, "FaceFaceCandidate")
         .def(py::init<long, long>(), py::arg("face0_id"), py::arg("face1_id"))
         .def(
+            py::init([](std::tuple<long, long> face_ids) {
+                return std::make_unique<FaceFaceCandidate>(
+                    std::get<0>(face_ids), std::get<1>(face_ids));
+            }),
+            py::arg("face_ids"))
+        .def(
             "__str__",
             [](const FaceFaceCandidate& ff) {
                 return fmt::format("[{:d}, {:d}]", ff.face0_id, ff.face1_id);
@@ -30,4 +36,6 @@ void define_face_face_candidate(py::module_& m)
             "face0_id", &FaceFaceCandidate::face0_id, "ID of the first face.")
         .def_readwrite(
             "face1_id", &FaceFaceCandidate::face1_id, "ID of the second face.");
+
+    py::implicitly_convertible<std::tuple<long, long>, FaceFaceCandidate>();
 }
