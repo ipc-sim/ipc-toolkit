@@ -14,13 +14,6 @@ Collision Stencil
     :allow-dot-graphs:
 
 
-Continuous Collision Candidate
-------------------------------
-
-.. doxygenclass:: ipc::ContinuousCollisionCandidate
-    :allow-dot-graphs:
-
-
 Vertex-Vertex Candidate
 -----------------------
 

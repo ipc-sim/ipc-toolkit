@@ -3240,7 +3240,7 @@
 <span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.NormalCollisions.build" title="ipctk.NormalCollisions.build.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.NormalCollisions.build" title="ipctk.NormalCollisions.build.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.NormalCollisions.build" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>build(self: ipctk.NormalCollisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], dhat: float, dmin: float = 0, broad_phase: ipctk.BroadPhase = &lt;ipctk.HashGrid object at 0x7f1ef14e4f70&gt;) -&gt; None</p>
+<li><p>build(self: ipctk.NormalCollisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], dhat: float, dmin: float = 0, broad_phase: ipctk.BroadPhase = &lt;ipctk.HashGrid object at 0x7fe1e2576e70&gt;) -&gt; None</p>
 <blockquote>
 <div><p>Initialize the set of collisions used to compute the barrier potential.</p>
 <dl class="simple">
@@ -3510,6 +3510,12 @@ dmin:  Minimum distance.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code>(self, vertices_t0, 1]], vertices_t1, ...)</p></td>
+<td><p>Perform narrow-phase CCD on the candidate.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code>(self, vertices_t0, vertices_t1)</p></td>
+<td><p>Print the CCD query to cout.</p></td>
+</tr>
 </tbody>
 </table>
 </details><details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
@@ -3711,10 +3717,10 @@ eps_x: The mollifier’s threshold.</p>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.VertexVertexNormalCollision">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">VertexVertexNormalCollision</span></span><a class="headerlink" href="#ipctk.VertexVertexNormalCollision" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate" title="ipctk.VertexVertexCandidate (Python class) — Bases: CollisionStencil, ContinuousCollisionCandidate"><code class="xref py py-class docutils literal notranslate"><span class="pre">VertexVertexCandidate</span></code></a>, <a class="reference internal" href="#ipctk.NormalCollision" title="ipctk.NormalCollision (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalCollision</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate" title="ipctk.VertexVertexCandidate (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">VertexVertexCandidate</span></code></a>, <a class="reference internal" href="#ipctk.NormalCollision" title="ipctk.NormalCollision (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalCollision</span></code></a></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Data Attributes:</p>
-<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate" title="ipctk.VertexVertexCandidate (Python class) — Bases: CollisionStencil, ContinuousCollisionCandidate"><code class="xref py py-class docutils literal notranslate"><span class="pre">VertexVertexCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
+<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate" title="ipctk.VertexVertexCandidate (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">VertexVertexCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.vertex0_id" title="ipctk.VertexVertexCandidate.vertex0_id (Python property) — ID of the first vertex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vertex0_id</span></code></a></p></td>
 <td><p>ID of the first vertex</p></td>
@@ -3747,7 +3753,7 @@ eps_x: The mollifier’s threshold.</p>
 </tr>
 </tbody>
 </table>
-<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate" title="ipctk.VertexVertexCandidate (Python class) — Bases: CollisionStencil, ContinuousCollisionCandidate"><code class="xref py py-class docutils literal notranslate"><span class="pre">VertexVertexCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
+<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate" title="ipctk.VertexVertexCandidate (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">VertexVertexCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.VertexVertexCandidate.__init__" title="ipctk.VertexVertexCandidate.__init__ (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
@@ -3826,17 +3832,10 @@ eps_x: The mollifier’s threshold.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-</tbody>
-</table>
-</details><details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate" title="ipctk.ContinuousCollisionCandidate (Python class) — Bases: pybind11_object"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousCollisionCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate.__init__" title="ipctk.ContinuousCollisionCandidate.__init__ (Python method)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*args, **kwargs)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate.ccd" title="ipctk.ContinuousCollisionCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code></a>(self, vertices_t0, 1]], vertices_t1, ...)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code>(self, vertices_t0, 1]], vertices_t1, ...)</p></td>
 <td><p>Perform narrow-phase CCD on the candidate.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate.print_ccd_query" title="ipctk.ContinuousCollisionCandidate.print_ccd_query (Python method) — Print the CCD query to cout."><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code></a>(self, vertices_t0, vertices_t1)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code>(self, vertices_t0, vertices_t1)</p></td>
 <td><p>Print the CCD query to cout.</p></td>
 </tr>
 </tbody>
@@ -3873,10 +3872,10 @@ eps_x: The mollifier’s threshold.</p>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.EdgeVertexNormalCollision">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">EdgeVertexNormalCollision</span></span><a class="headerlink" href="#ipctk.EdgeVertexNormalCollision" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate" title="ipctk.EdgeVertexCandidate (Python class) — Bases: CollisionStencil, ContinuousCollisionCandidate"><code class="xref py py-class docutils literal notranslate"><span class="pre">EdgeVertexCandidate</span></code></a>, <a class="reference internal" href="#ipctk.NormalCollision" title="ipctk.NormalCollision (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalCollision</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate" title="ipctk.EdgeVertexCandidate (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">EdgeVertexCandidate</span></code></a>, <a class="reference internal" href="#ipctk.NormalCollision" title="ipctk.NormalCollision (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalCollision</span></code></a></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Data Attributes:</p>
-<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate" title="ipctk.EdgeVertexCandidate (Python class) — Bases: CollisionStencil, ContinuousCollisionCandidate"><code class="xref py py-class docutils literal notranslate"><span class="pre">EdgeVertexCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
+<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate" title="ipctk.EdgeVertexCandidate (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">EdgeVertexCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.edge_id" title="ipctk.EdgeVertexCandidate.edge_id (Python property) — ID of the edge"><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge_id</span></code></a></p></td>
 <td><p>ID of the edge</p></td>
@@ -3909,7 +3908,7 @@ eps_x: The mollifier’s threshold.</p>
 </tr>
 </tbody>
 </table>
-<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate" title="ipctk.EdgeVertexCandidate (Python class) — Bases: CollisionStencil, ContinuousCollisionCandidate"><code class="xref py py-class docutils literal notranslate"><span class="pre">EdgeVertexCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
+<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate" title="ipctk.EdgeVertexCandidate (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">EdgeVertexCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeVertexCandidate.__init__" title="ipctk.EdgeVertexCandidate.__init__ (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
@@ -3991,17 +3990,10 @@ eps_x: The mollifier’s threshold.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-</tbody>
-</table>
-</details><details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate" title="ipctk.ContinuousCollisionCandidate (Python class) — Bases: pybind11_object"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousCollisionCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate.__init__" title="ipctk.ContinuousCollisionCandidate.__init__ (Python method)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*args, **kwargs)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate.ccd" title="ipctk.ContinuousCollisionCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code></a>(self, vertices_t0, 1]], vertices_t1, ...)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code>(self, vertices_t0, 1]], vertices_t1, ...)</p></td>
 <td><p>Perform narrow-phase CCD on the candidate.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate.print_ccd_query" title="ipctk.ContinuousCollisionCandidate.print_ccd_query (Python method) — Print the CCD query to cout."><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code></a>(self, vertices_t0, vertices_t1)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code>(self, vertices_t0, vertices_t1)</p></td>
 <td><p>Print the CCD query to cout.</p></td>
 </tr>
 </tbody>
@@ -4038,7 +4030,7 @@ eps_x: The mollifier’s threshold.</p>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.EdgeEdgeNormalCollision">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">EdgeEdgeNormalCollision</span></span><a class="headerlink" href="#ipctk.EdgeEdgeNormalCollision" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate" title="ipctk.EdgeEdgeCandidate (Python class) — Bases: CollisionStencil, ContinuousCollisionCandidate"><code class="xref py py-class docutils literal notranslate"><span class="pre">EdgeEdgeCandidate</span></code></a>, <a class="reference internal" href="#ipctk.NormalCollision" title="ipctk.NormalCollision (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalCollision</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate" title="ipctk.EdgeEdgeCandidate (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">EdgeEdgeCandidate</span></code></a>, <a class="reference internal" href="#ipctk.NormalCollision" title="ipctk.NormalCollision (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalCollision</span></code></a></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Data Attributes:</p>
 <table class="autosummary longtable docutils data align-default">
@@ -4051,7 +4043,7 @@ eps_x: The mollifier’s threshold.</p>
 </tr>
 </tbody>
 </table>
-<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate" title="ipctk.EdgeEdgeCandidate (Python class) — Bases: CollisionStencil, ContinuousCollisionCandidate"><code class="xref py py-class docutils literal notranslate"><span class="pre">EdgeEdgeCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
+<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate" title="ipctk.EdgeEdgeCandidate (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">EdgeEdgeCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.edge0_id" title="ipctk.EdgeEdgeCandidate.edge0_id (Python property) — ID of the first edge."><code class="xref py py-obj docutils literal notranslate"><span class="pre">edge0_id</span></code></a></p></td>
 <td><p>ID of the first edge.</p></td>
@@ -4093,7 +4085,7 @@ eps_x: The mollifier’s threshold.</p>
 </tr>
 </tbody>
 </table>
-<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate" title="ipctk.EdgeEdgeCandidate (Python class) — Bases: CollisionStencil, ContinuousCollisionCandidate"><code class="xref py py-class docutils literal notranslate"><span class="pre">EdgeEdgeCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
+<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate" title="ipctk.EdgeEdgeCandidate (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">EdgeEdgeCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.EdgeEdgeCandidate.__init__" title="ipctk.EdgeEdgeCandidate.__init__ (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
@@ -4175,17 +4167,10 @@ eps_x: The mollifier’s threshold.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-</tbody>
-</table>
-</details><details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate" title="ipctk.ContinuousCollisionCandidate (Python class) — Bases: pybind11_object"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousCollisionCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate.__init__" title="ipctk.ContinuousCollisionCandidate.__init__ (Python method)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*args, **kwargs)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate.ccd" title="ipctk.ContinuousCollisionCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code></a>(self, vertices_t0, 1]], vertices_t1, ...)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code>(self, vertices_t0, 1]], vertices_t1, ...)</p></td>
 <td><p>Perform narrow-phase CCD on the candidate.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate.print_ccd_query" title="ipctk.ContinuousCollisionCandidate.print_ccd_query (Python method) — Print the CCD query to cout."><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code></a>(self, vertices_t0, vertices_t1)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code>(self, vertices_t0, vertices_t1)</p></td>
 <td><p>Print the CCD query to cout.</p></td>
 </tr>
 </tbody>
@@ -4255,10 +4240,10 @@ eps_x: The mollifier’s threshold.</p>
 <dl class="py class objdesc">
 <dt class="sig sig-object highlight py" id="ipctk.FaceVertexNormalCollision">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ipctk.</span></span><span class="sig-name descname"><span class="pre">FaceVertexNormalCollision</span></span><a class="headerlink" href="#ipctk.FaceVertexNormalCollision" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate" title="ipctk.FaceVertexCandidate (Python class) — Bases: CollisionStencil, ContinuousCollisionCandidate"><code class="xref py py-class docutils literal notranslate"><span class="pre">FaceVertexCandidate</span></code></a>, <a class="reference internal" href="#ipctk.NormalCollision" title="ipctk.NormalCollision (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalCollision</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate" title="ipctk.FaceVertexCandidate (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">FaceVertexCandidate</span></code></a>, <a class="reference internal" href="#ipctk.NormalCollision" title="ipctk.NormalCollision (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">NormalCollision</span></code></a></p>
 <div class="autoclasstoc docutils container">
 <p class="rubric">Public Data Attributes:</p>
-<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate" title="ipctk.FaceVertexCandidate (Python class) — Bases: CollisionStencil, ContinuousCollisionCandidate"><code class="xref py py-class docutils literal notranslate"><span class="pre">FaceVertexCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
+<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate" title="ipctk.FaceVertexCandidate (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">FaceVertexCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.face_id" title="ipctk.FaceVertexCandidate.face_id (Python property) — ID of the face"><code class="xref py py-obj docutils literal notranslate"><span class="pre">face_id</span></code></a></p></td>
 <td><p>ID of the face</p></td>
@@ -4291,7 +4276,7 @@ eps_x: The mollifier’s threshold.</p>
 </tr>
 </tbody>
 </table>
-<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate" title="ipctk.FaceVertexCandidate (Python class) — Bases: CollisionStencil, ContinuousCollisionCandidate"><code class="xref py py-class docutils literal notranslate"><span class="pre">FaceVertexCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
+<details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate" title="ipctk.FaceVertexCandidate (Python class) — Bases: CollisionStencil"><code class="xref py py-class docutils literal notranslate"><span class="pre">FaceVertexCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.FaceVertexCandidate.__init__" title="ipctk.FaceVertexCandidate.__init__ (Python method) — Overloaded function."><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
@@ -4373,17 +4358,10 @@ eps_x: The mollifier’s threshold.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
-</tbody>
-</table>
-</details><details><summary>Inherited from <a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate" title="ipctk.ContinuousCollisionCandidate (Python class) — Bases: pybind11_object"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousCollisionCandidate</span></code></a></summary><table class="autosummary longtable docutils data align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate.__init__" title="ipctk.ContinuousCollisionCandidate.__init__ (Python method)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(*args, **kwargs)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate.ccd" title="ipctk.ContinuousCollisionCandidate.ccd (Python method) — Perform narrow-phase CCD on the candidate."><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code></a>(self, vertices_t0, 1]], vertices_t1, ...)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code>(self, vertices_t0, 1]], vertices_t1, ...)</p></td>
 <td><p>Perform narrow-phase CCD on the candidate.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="candidates.html#ipctk.ContinuousCollisionCandidate.print_ccd_query" title="ipctk.ContinuousCollisionCandidate.print_ccd_query (Python method) — Print the CCD query to cout."><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code></a>(self, vertices_t0, vertices_t1)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code>(self, vertices_t0, vertices_t1)</p></td>
 <td><p>Print the CCD query to cout.</p></td>
 </tr>
 </tbody>
@@ -4516,6 +4494,12 @@ eps_x: The mollifier’s threshold.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">compute_distance_hessian</span></code>(*args, **kwargs)</p></td>
 <td><p>Overloaded function.</p></td>
 </tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">ccd</span></code>(self, vertices_t0, 1]], vertices_t1, ...)</p></td>
+<td><p>Perform narrow-phase CCD on the candidate.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">print_ccd_query</span></code>(self, vertices_t0, vertices_t1)</p></td>
+<td><p>Print the CCD query to cout.</p></td>
+</tr>
 </tbody>
 </table>
 </details><details><summary>Inherited from <code class="xref py py-class docutils literal notranslate"><span class="pre">pybind11_object</span></code></summary><table class="autosummary longtable docutils data align-default">
@@ -4566,7 +4550,7 @@ eps_x: The mollifier’s threshold.</p>
   <small>
     
       Last update:
-      Feb 09, 2025
+      Feb 13, 2025
     
   </small>
 </div>
