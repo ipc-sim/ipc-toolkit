@@ -195,7 +195,7 @@ bool Candidates::is_step_collision_free(
 
     // Narrow phase
     for (size_t i = 0; i < size(); i++) {
-        const ContinuousCollisionCandidate& candidate = (*this)[i];
+        const CollisionStencil& candidate = (*this)[i];
 
         double toi;
         bool is_collision = candidate.ccd(
@@ -240,7 +240,7 @@ double Candidates::compute_collision_free_stepsize(
                     tmax = earliest_toi;
                 }
 
-                const ContinuousCollisionCandidate& candidate = (*this)[i];
+                const CollisionStencil& candidate = (*this)[i];
 
                 double toi = std::numeric_limits<double>::infinity(); // output
                 const bool are_colliding = candidate.ccd(
@@ -344,7 +344,7 @@ void Candidates::clear()
     fv_candidates.clear();
 }
 
-ContinuousCollisionCandidate& Candidates::operator[](size_t i)
+CollisionStencil& Candidates::operator[](size_t i)
 {
     if (i < vv_candidates.size()) {
         return vv_candidates[i];
@@ -364,7 +364,7 @@ ContinuousCollisionCandidate& Candidates::operator[](size_t i)
     throw std::out_of_range("Candidate index is out of range!");
 }
 
-const ContinuousCollisionCandidate& Candidates::operator[](size_t i) const
+const CollisionStencil& Candidates::operator[](size_t i) const
 {
     if (i < vv_candidates.size()) {
         return vv_candidates[i];

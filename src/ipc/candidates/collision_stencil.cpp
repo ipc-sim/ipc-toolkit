@@ -1,8 +1,8 @@
-#include "continuous_collision_candidate.hpp"
+#include "collision_stencil.hpp"
 
 namespace ipc {
 
-std::ostream& ContinuousCollisionCandidate::write_ccd_query(
+std::ostream& CollisionStencil::write_ccd_query(
     std::ostream& out,
     const VectorMax12d& vertices_t0,
     const VectorMax12d& vertices_t1) const

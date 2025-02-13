@@ -37,7 +37,6 @@ PYBIND11_MODULE(ipctk, m)
     // candidates
     define_candidates(m);
     define_collision_stencil(m);
-    define_continuous_collision_candidate(m);
     define_edge_edge_candidate(m);
     define_edge_face_candidate(m);
     define_edge_vertex_candidate(m);

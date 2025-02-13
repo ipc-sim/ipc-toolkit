@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/candidates/continuous_collision_candidate.hpp>
+#include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/distance/distance_type.hpp>
 
 #include <Eigen/Core>
@@ -9,7 +9,7 @@
 
 namespace ipc {
 
-class FaceVertexCandidate : public ContinuousCollisionCandidate {
+class FaceVertexCandidate : virtual public CollisionStencil {
 public:
     FaceVertexCandidate(long face_id, long vertex_id);
 
@@ -43,7 +43,6 @@ public:
     compute_coefficients(const VectorMax12d& positions) const override;
 
     // ------------------------------------------------------------------------
-    // ContinuousCollisionCandidate
 
     bool
     ccd(const VectorMax12d& vertices_t0,

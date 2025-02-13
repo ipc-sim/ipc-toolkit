@@ -49,8 +49,8 @@ public:
 
     void clear();
 
-    ContinuousCollisionCandidate& operator[](size_t i);
-    const ContinuousCollisionCandidate& operator[](size_t i) const;
+    CollisionStencil& operator[](size_t i);
+    const CollisionStencil& operator[](size_t i) const;
 
     /// @brief Determine if the step is collision free from the set of candidates.
     /// @note Assumes the trajectory is linear.

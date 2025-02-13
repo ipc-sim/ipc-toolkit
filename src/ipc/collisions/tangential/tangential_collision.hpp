@@ -27,7 +27,7 @@ public:
     int dim() const { return tangent_basis.rows(); }
 
     /// @brief Get the number of degrees of freedom for the collision.
-    int ndof() const { return dim() * num_vertices(); };
+    int ndof() const { return dim() * num_vertices(); }
 
     // -- Abstract methods -----------------------------------------------------
 
