@@ -1,6 +1,5 @@
 set(SOURCES
   collision_stencil.cpp
-  continuous_collision_candidate.cpp
   edge_edge.cpp
   edge_face.cpp
   edge_vertex.cpp

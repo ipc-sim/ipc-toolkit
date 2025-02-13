@@ -1,5 +1,6 @@
 #include "plane_vertex.hpp"
 
+#include <ipc/ccd/point_static_plane.hpp>
 #include <ipc/distance/point_plane.hpp>
 
 namespace ipc {
@@ -41,6 +42,19 @@ VectorMax4d PlaneVertexNormalCollision::compute_coefficients(
     VectorMax4d coeffs(1);
     coeffs << 1.0;
     return coeffs;
+}
+
+bool PlaneVertexNormalCollision::ccd(
+    const VectorMax12d& vertices_t0,
+    const VectorMax12d& vertices_t1,
+    double& toi,
+    const double min_distance,
+    const double tmax,
+    const NarrowPhaseCCD& narrow_phase_ccd) const
+{
+    assert(min_distance == 0 && "Not implemented");
+    return point_static_plane_ccd(
+        vertices_t0, vertices_t1, plane_origin, plane_normal, toi);
 }
 
 } // namespace ipc

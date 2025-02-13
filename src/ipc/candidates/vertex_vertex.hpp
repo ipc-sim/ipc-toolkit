@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/candidates/continuous_collision_candidate.hpp>
+#include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Core>
@@ -9,7 +9,7 @@
 
 namespace ipc {
 
-class VertexVertexCandidate : public ContinuousCollisionCandidate {
+class VertexVertexCandidate : virtual public CollisionStencil {
 public:
     VertexVertexCandidate(long vertex0_id, long vertex1_id);
 
@@ -46,7 +46,6 @@ public:
     compute_coefficients(const VectorMax12d& positions) const override;
 
     // ------------------------------------------------------------------------
-    // ContinuousCollisionCandidate
 
     bool
     ccd(const VectorMax12d& vertices_t0,

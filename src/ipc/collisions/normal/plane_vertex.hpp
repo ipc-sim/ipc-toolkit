@@ -5,7 +5,8 @@
 
 namespace ipc {
 
-class PlaneVertexNormalCollision : public NormalCollision {
+class PlaneVertexNormalCollision : virtual public CollisionStencil,
+                                   public NormalCollision {
 public:
     PlaneVertexNormalCollision(
         const VectorMax3d& plane_origin,
@@ -21,10 +22,10 @@ public:
         return { { vertex_id, -1, -1, -1 } };
     }
 
-    using NormalCollision::compute_coefficients;
-    using NormalCollision::compute_distance;
-    using NormalCollision::compute_distance_gradient;
-    using NormalCollision::compute_distance_hessian;
+    using CollisionStencil::compute_coefficients;
+    using CollisionStencil::compute_distance;
+    using CollisionStencil::compute_distance_gradient;
+    using CollisionStencil::compute_distance_hessian;
 
     /// @brief Compute the distance between the point and plane.
     /// @param point Point's position.
@@ -48,6 +49,23 @@ public:
     /// @return Coefficients of the stencil.
     VectorMax4d
     compute_coefficients(const VectorMax12d& positions) const override;
+
+    /// @brief Perform narrow-phase CCD on the candidate.
+    /// @param[in] vertices_t0 Stencil vertices at the start of the time step.
+    /// @param[in] vertices_t1 Stencil vertices at the end of the time step.
+    /// @param[out] toi Computed time of impact (normalized).
+    /// @param[in] min_distance Minimum separation distance between primitives.
+    /// @param[in] tmax Maximum time (normalized) to look for collisions.
+    /// @param[in] narrow_phase_ccd The narrow phase CCD algorithm to use.
+    /// @return If the candidate had a collision over the time interval.
+    bool
+    ccd(const VectorMax12d& vertices_t0,
+        const VectorMax12d& vertices_t1,
+        double& toi,
+        const double min_distance = 0.0,
+        const double tmax = 1.0,
+        const NarrowPhaseCCD& narrow_phase_ccd =
+            DEFAULT_NARROW_PHASE_CCD) const override;
 
     /// @brief The plane's origin.
     VectorMax3d plane_origin;

@@ -7,9 +7,7 @@ using namespace ipc;
 
 void define_edge_vertex_candidate(py::module_& m)
 {
-    py::class_<
-        EdgeVertexCandidate, CollisionStencil, ContinuousCollisionCandidate>(
-        m, "EdgeVertexCandidate")
+    py::class_<EdgeVertexCandidate, CollisionStencil>(m, "EdgeVertexCandidate")
         .def(py::init<long, long>(), py::arg("edge_id"), py::arg("vertex_id"))
         .def(
             py::init([](std::tuple<long, long> edge_and_vertex_id) {
