@@ -8017,7 +8017,34 @@
 <dl class="cpp class objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4I0EN3ipc9PotentialE">
 <span class="k">template&nbsp;</span><span class="p">&lt;</span><span><span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname sig-name-nonprimary"><a class="desctype n reference internal" href="#_CPPv4I0EN3ipc9PotentialE-p-TCollisions" title="ipc::Potential::TCollisions (C++ type template parameter) — The type of the collisions."><span class="n">TCollisions</span></a></span></span><span class="p">&gt;&nbsp;</span><span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">Potential;</span></span><a class="headerlink" href="#_CPPv4I0EN3ipc9PotentialE" title="Link to this definition">¶</a></dt>
-<dd><p>Base class for potentials. </p>
+<dd><p>Inheritence diagram for ipc::Potential:</p>
+<figure class="align-default">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-dbad20fb66a558550f11c0d22fac22b8d273db92.svg" type="image/svg+xml" class="graphviz">
+<p class="warning">digraph {
+    graph [bgcolor=&quot;#00000000&quot;]
+    node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
+    edge [color=&quot;#1414CE&quot;]
+    &quot;2&quot; [label=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot;]
+    &quot;6&quot; [label=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot;]
+    &quot;4&quot; [label=&quot;ipc::BarrierPotential&quot; tooltip=&quot;ipc::BarrierPotential&quot;]
+    &quot;8&quot; [label=&quot;ipc::FrictionPotential&quot; tooltip=&quot;ipc::FrictionPotential&quot;]
+    &quot;5&quot; [label=&quot;ipc::NormalAdhesionPotential&quot; tooltip=&quot;ipc::NormalAdhesionPotential&quot;]
+    &quot;3&quot; [label=&quot;ipc::NormalPotential&quot; tooltip=&quot;ipc::NormalPotential&quot;]
+    &quot;1&quot; [label=&quot;ipc::Potential&lt; TCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TCollisions &gt;&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;9&quot; [label=&quot;ipc::TangentialAdhesionPotential&quot; tooltip=&quot;ipc::TangentialAdhesionPotential&quot;]
+    &quot;7&quot; [label=&quot;ipc::TangentialPotential&quot; tooltip=&quot;ipc::TangentialPotential&quot;]
+    &quot;2&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;template-instance&quot;]
+    &quot;6&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;template-instance&quot;]
+    &quot;4&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;8&quot; -&gt; &quot;7&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;5&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;3&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;9&quot; -&gt; &quot;7&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;7&quot; -&gt; &quot;6&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+}</p></object></div>
+</div>
+</figure>
+<p>Base class for potentials. </p>
 <dl class="field-list simple">
 <dt class="field-odd" id="_CPPv4I0EN3ipc9PotentialE-template-parameters">Template Parameters<span class="colon">:</span><a class="headerlink" href="#_CPPv4I0EN3ipc9PotentialE-template-parameters" title="Permalink to this headline">¶</a></dt>
 <dd class="field-odd"><dl class="simple api-field highlight">
@@ -8174,33 +8201,37 @@
 <h2 id="normal-potentials">Normal Potentials<a class="headerlink" href="#normal-potentials" title="Link to this heading">¶</a></h2>
 <dl class="cpp class objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc15NormalPotentialE">
-<span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">NormalPotential</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4I0EN3ipc9PotentialE" title="ipc::Potential (C++ class) — Base class for potentials."><span class="n">Potential</span></a><span class="p">&lt;</span><a class="desctype reference internal" href="normal_collisions.html#_CPPv4N3ipc16NormalCollisionsE" title="ipc::NormalCollisions (C++ class) — The type of the collisions."><span class="n">NormalCollisions</span></a><span class="p">&gt;;</span><a class="headerlink" href="#_CPPv4N3ipc15NormalPotentialE" title="Link to this definition">¶</a></dt>
+<span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">NormalPotential</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4I0EN3ipc9PotentialE" title="ipc::Potential (C++ class) — Inheritence diagram for ipc::Potential:"><span class="n">Potential</span></a><span class="p">&lt;</span><a class="desctype reference internal" href="normal_collisions.html#_CPPv4N3ipc16NormalCollisionsE" title="ipc::NormalCollisions (C++ class) — The type of the collisions."><span class="n">NormalCollisions</span></a><span class="p">&gt;;</span><a class="headerlink" href="#_CPPv4N3ipc15NormalPotentialE" title="Link to this definition">¶</a></dt>
 <dd><p>Inheritence diagram for ipc::NormalPotential:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-55937842d55ca85cd3db494891cda35429e0832f.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-fabb122c6e40a798d735ebb84d519b9ce60c732a.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot;]
-    &quot;3&quot; [label=&quot;ipc::BarrierPotential&quot; tooltip=&quot;ipc::BarrierPotential&quot;]
-    &quot;4&quot; [label=&quot;ipc::NormalAdhesionPotential&quot; tooltip=&quot;ipc::NormalAdhesionPotential&quot;]
+    &quot;4&quot; [label=&quot;ipc::BarrierPotential&quot; tooltip=&quot;ipc::BarrierPotential&quot;]
+    &quot;5&quot; [label=&quot;ipc::NormalAdhesionPotential&quot; tooltip=&quot;ipc::NormalAdhesionPotential&quot;]
     &quot;1&quot; [label=&quot;ipc::NormalPotential&quot; tooltip=&quot;ipc::NormalPotential&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;3&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;3&quot; [label=&quot;ipc::Potential&lt; TCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TCollisions &gt;&quot;]
+    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;template-instance&quot;]
     &quot;4&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;5&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
 </figure>
 <p>Collaboration diagram for ipc::NormalPotential:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-42b2727aeefedecfa6e0e069e2cac48621d19c4b.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-89e6ed88c15cb6d40cdf2d8b2f63095c1f65c756.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot;]
     &quot;1&quot; [label=&quot;ipc::NormalPotential&quot; tooltip=&quot;ipc::NormalPotential&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;3&quot; [label=&quot;ipc::Potential&lt; TCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TCollisions &gt;&quot;]
+    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;template-instance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
@@ -8443,7 +8474,7 @@
 <span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">BarrierPotential</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N3ipc15NormalPotentialE" title="ipc::NormalPotential (C++ class) — Inheritence diagram for ipc::NormalPotential:"><span class="n">NormalPotential;</span></a><a class="headerlink" href="#_CPPv4N3ipc16BarrierPotentialE" title="Link to this definition">¶</a></dt>
 <dd><p>Inheritence diagram for ipc::BarrierPotential:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-7ca88b375cd91c85cf5fd21cc2d2a3debb910768.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-df6555f5fe85cacd293c9bce8b235f669e2eba0b.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
@@ -8451,6 +8482,8 @@
     &quot;3&quot; [label=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot;]
     &quot;1&quot; [label=&quot;ipc::BarrierPotential&quot; tooltip=&quot;ipc::BarrierPotential&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;2&quot; [label=&quot;ipc::NormalPotential&quot; tooltip=&quot;ipc::NormalPotential&quot;]
+    &quot;4&quot; [label=&quot;ipc::Potential&lt; TCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TCollisions &gt;&quot;]
+    &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;template-instance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
@@ -8458,7 +8491,7 @@
 </figure>
 <p>Collaboration diagram for ipc::BarrierPotential:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-7ca88b375cd91c85cf5fd21cc2d2a3debb910768.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-df6555f5fe85cacd293c9bce8b235f669e2eba0b.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
@@ -8466,6 +8499,8 @@
     &quot;3&quot; [label=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot;]
     &quot;1&quot; [label=&quot;ipc::BarrierPotential&quot; tooltip=&quot;ipc::BarrierPotential&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;2&quot; [label=&quot;ipc::NormalPotential&quot; tooltip=&quot;ipc::NormalPotential&quot;]
+    &quot;4&quot; [label=&quot;ipc::Potential&lt; TCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TCollisions &gt;&quot;]
+    &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;template-instance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
@@ -8794,7 +8829,7 @@
 <span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">NormalAdhesionPotential</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N3ipc15NormalPotentialE" title="ipc::NormalPotential (C++ class) — Inheritence diagram for ipc::NormalPotential:"><span class="n">NormalPotential;</span></a><a class="headerlink" href="#_CPPv4N3ipc23NormalAdhesionPotentialE" title="Link to this definition">¶</a></dt>
 <dd><p>Inheritence diagram for ipc::NormalAdhesionPotential:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-0a2f4f61d59e5c18e7f21d21f80906eb8a253463.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-7323a81c58f37b1d417bb2b239d009f978539ba3.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
@@ -8802,6 +8837,8 @@
     &quot;3&quot; [label=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot;]
     &quot;1&quot; [label=&quot;ipc::NormalAdhesionPotential&quot; tooltip=&quot;ipc::NormalAdhesionPotential&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;2&quot; [label=&quot;ipc::NormalPotential&quot; tooltip=&quot;ipc::NormalPotential&quot;]
+    &quot;4&quot; [label=&quot;ipc::Potential&lt; TCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TCollisions &gt;&quot;]
+    &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;template-instance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
@@ -8809,7 +8846,7 @@
 </figure>
 <p>Collaboration diagram for ipc::NormalAdhesionPotential:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-0a2f4f61d59e5c18e7f21d21f80906eb8a253463.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-7323a81c58f37b1d417bb2b239d009f978539ba3.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
@@ -8817,6 +8854,8 @@
     &quot;3&quot; [label=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; NormalCollisions &gt;&quot;]
     &quot;1&quot; [label=&quot;ipc::NormalAdhesionPotential&quot; tooltip=&quot;ipc::NormalAdhesionPotential&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;2&quot; [label=&quot;ipc::NormalPotential&quot; tooltip=&quot;ipc::NormalPotential&quot;]
+    &quot;4&quot; [label=&quot;ipc::Potential&lt; TCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TCollisions &gt;&quot;]
+    &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;template-instance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
@@ -9059,33 +9098,37 @@
 <h2 id="tangential-potentials">Tangential Potentials<a class="headerlink" href="#tangential-potentials" title="Link to this heading">¶</a></h2>
 <dl class="cpp class objdesc">
 <dt class="sig sig-object highlight cpp" id="_CPPv4N3ipc19TangentialPotentialE">
-<span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">TangentialPotential<br>&nbsp;&nbsp;&nbsp;</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4I0EN3ipc9PotentialE" title="ipc::Potential (C++ class) — Base class for potentials."><span class="n">Potential</span></a><span class="p">&lt;</span><a class="desctype reference internal" href="tangential_collisions.html#_CPPv4N3ipc20TangentialCollisionsE" title="ipc::TangentialCollisions (C++ class) — The type of the collisions."><span class="n">TangentialCollisions</span></a><span class="p">&gt;;</span><a class="headerlink" href="#_CPPv4N3ipc19TangentialPotentialE" title="Link to this definition">¶</a></dt>
+<span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">TangentialPotential<br>&nbsp;&nbsp;&nbsp;</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4I0EN3ipc9PotentialE" title="ipc::Potential (C++ class) — Inheritence diagram for ipc::Potential:"><span class="n">Potential</span></a><span class="p">&lt;</span><a class="desctype reference internal" href="tangential_collisions.html#_CPPv4N3ipc20TangentialCollisionsE" title="ipc::TangentialCollisions (C++ class) — The type of the collisions."><span class="n">TangentialCollisions</span></a><span class="p">&gt;;</span><a class="headerlink" href="#_CPPv4N3ipc19TangentialPotentialE" title="Link to this definition">¶</a></dt>
 <dd><p>Inheritence diagram for ipc::TangentialPotential:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-65846134e8112b27c585917bcf050d4729efca40.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-1da48dffc5ffa7c40a9574446387f19d46ad0723.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot;]
-    &quot;3&quot; [label=&quot;ipc::FrictionPotential&quot; tooltip=&quot;ipc::FrictionPotential&quot;]
-    &quot;4&quot; [label=&quot;ipc::TangentialAdhesionPotential&quot; tooltip=&quot;ipc::TangentialAdhesionPotential&quot;]
+    &quot;4&quot; [label=&quot;ipc::FrictionPotential&quot; tooltip=&quot;ipc::FrictionPotential&quot;]
+    &quot;3&quot; [label=&quot;ipc::Potential&lt; TCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TCollisions &gt;&quot;]
+    &quot;5&quot; [label=&quot;ipc::TangentialAdhesionPotential&quot; tooltip=&quot;ipc::TangentialAdhesionPotential&quot;]
     &quot;1&quot; [label=&quot;ipc::TangentialPotential&quot; tooltip=&quot;ipc::TangentialPotential&quot; fillcolor=&quot;#BFBFBF&quot;]
-    &quot;3&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;template-instance&quot;]
     &quot;4&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
+    &quot;5&quot; -&gt; &quot;1&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
 </figure>
 <p>Collaboration diagram for ipc::TangentialPotential:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-494297b107d127ba8c31d9ce5f01ad2e90ac1961.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-2e0d204a57b61bb5aa276e220894f36108637bde.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;2&quot; [label=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot;]
+    &quot;3&quot; [label=&quot;ipc::Potential&lt; TCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TCollisions &gt;&quot;]
     &quot;1&quot; [label=&quot;ipc::TangentialPotential&quot; tooltip=&quot;ipc::TangentialPotential&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;template-instance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
 </div>
@@ -9434,14 +9477,16 @@
 <span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">FrictionPotential</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N3ipc19TangentialPotentialE" title="ipc::TangentialPotential (C++ class) — Inheritence diagram for ipc::TangentialPotential:"><span class="n">TangentialPotential;</span></a><a class="headerlink" href="#_CPPv4N3ipc17FrictionPotentialE" title="Link to this definition">¶</a></dt>
 <dd><p>Inheritence diagram for ipc::FrictionPotential:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-df8265eee9918a79ecb3e5fafe4de59f78909433.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-cbdd4f395fd4224cde9f8763193cd0660241a25f.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;3&quot; [label=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot;]
     &quot;1&quot; [label=&quot;ipc::FrictionPotential&quot; tooltip=&quot;ipc::FrictionPotential&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;4&quot; [label=&quot;ipc::Potential&lt; TCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TCollisions &gt;&quot;]
     &quot;2&quot; [label=&quot;ipc::TangentialPotential&quot; tooltip=&quot;ipc::TangentialPotential&quot;]
+    &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;template-instance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
@@ -9449,14 +9494,16 @@
 </figure>
 <p>Collaboration diagram for ipc::FrictionPotential:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-df8265eee9918a79ecb3e5fafe4de59f78909433.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-cbdd4f395fd4224cde9f8763193cd0660241a25f.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;3&quot; [label=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot;]
     &quot;1&quot; [label=&quot;ipc::FrictionPotential&quot; tooltip=&quot;ipc::FrictionPotential&quot; fillcolor=&quot;#BFBFBF&quot;]
+    &quot;4&quot; [label=&quot;ipc::Potential&lt; TCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TCollisions &gt;&quot;]
     &quot;2&quot; [label=&quot;ipc::TangentialPotential&quot; tooltip=&quot;ipc::TangentialPotential&quot;]
+    &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;template-instance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
@@ -9548,14 +9595,16 @@
 <span class="k">class</span><span class="w">&nbsp;</span><span class="sig-name descname"><span class="n">TangentialAdhesionPotential</span></span><span class="w">&nbsp;</span><span class="p">:</span><span class="w">&nbsp;</span><span class="k">public</span><span class="w">&nbsp;</span><span class="n">ipc</span><span class="p">::</span><a class="desctype reference internal" href="#_CPPv4N3ipc19TangentialPotentialE" title="ipc::TangentialPotential (C++ class) — Inheritence diagram for ipc::TangentialPotential:"><span class="n">TangentialPotential;</span></a><a class="headerlink" href="#_CPPv4N3ipc27TangentialAdhesionPotentialE" title="Link to this definition">¶</a></dt>
 <dd><p>Inheritence diagram for ipc::TangentialAdhesionPotential:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-d6df40727753db2f0a10adc4b1702d9bcd2baa97.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-ea1700299577772a829b676887a28131d2cf7f26.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;3&quot; [label=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot;]
+    &quot;4&quot; [label=&quot;ipc::Potential&lt; TCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TCollisions &gt;&quot;]
     &quot;1&quot; [label=&quot;ipc::TangentialAdhesionPotential&quot; tooltip=&quot;ipc::TangentialAdhesionPotential&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;2&quot; [label=&quot;ipc::TangentialPotential&quot; tooltip=&quot;ipc::TangentialPotential&quot;]
+    &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;template-instance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
@@ -9563,14 +9612,16 @@
 </figure>
 <p>Collaboration diagram for ipc::TangentialAdhesionPotential:</p>
 <figure class="align-default">
-<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-d6df40727753db2f0a10adc4b1702d9bcd2baa97.svg" type="image/svg+xml" class="graphviz">
+<div align="center" class="align-center"><div class="graphviz"><object data="../_images/graphviz-ea1700299577772a829b676887a28131d2cf7f26.svg" type="image/svg+xml" class="graphviz">
 <p class="warning">digraph {
     graph [bgcolor=&quot;#00000000&quot;]
     node [shape=rectangle style=filled fillcolor=&quot;#FFFFFF&quot; font=Helvetica padding=2]
     edge [color=&quot;#1414CE&quot;]
     &quot;3&quot; [label=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TangentialCollisions &gt;&quot;]
+    &quot;4&quot; [label=&quot;ipc::Potential&lt; TCollisions &gt;&quot; tooltip=&quot;ipc::Potential&lt; TCollisions &gt;&quot;]
     &quot;1&quot; [label=&quot;ipc::TangentialAdhesionPotential&quot; tooltip=&quot;ipc::TangentialAdhesionPotential&quot; fillcolor=&quot;#BFBFBF&quot;]
     &quot;2&quot; [label=&quot;ipc::TangentialPotential&quot; tooltip=&quot;ipc::TangentialPotential&quot;]
+    &quot;3&quot; -&gt; &quot;4&quot; [dir=forward tooltip=&quot;template-instance&quot;]
     &quot;1&quot; -&gt; &quot;2&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
     &quot;2&quot; -&gt; &quot;3&quot; [dir=forward tooltip=&quot;public-inheritance&quot;]
 }</p></object></div>
@@ -9663,7 +9714,7 @@
   <small>
     
       Last update:
-      Feb 13, 2025
+      Feb 16, 2025
     
   </small>
 </div>
