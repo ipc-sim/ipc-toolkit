@@ -5,8 +5,7 @@
 
 namespace ipc {
 
-class PlaneVertexNormalCollision : virtual public CollisionStencil,
-                                   public NormalCollision {
+class PlaneVertexNormalCollision : public NormalCollision {
 public:
     PlaneVertexNormalCollision(
         const VectorMax3d& plane_origin,
