@@ -98,6 +98,16 @@
   ],
   "buildPresets": [
     {
+      "name": "release",
+      "configurePreset": "release",
+      "description": "Base preset for release builds"
+    },
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "description": "Base preset for debug builds"
+    },
+    {
       "name": "default-build",
       "configurePreset": "default",
       "description": "Build using default configuration"
