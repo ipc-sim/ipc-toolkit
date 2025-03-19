@@ -1,5 +1,6 @@
 
 
+
 <!doctype html>
 <html lang="en" class="no-js">
   <head>
@@ -7,6 +8,13 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
+      
+      
+      
+        <link rel="prev" href="candidates.html">
+      
+      
+        <link rel="next" href="tangential_collisions.html">
       
       
       <link rel="icon" href="../_static/favicon.ico">
@@ -19,11 +27,13 @@
     
       
         
-        
       
       
 
+
     
+    
+      
     
     
       
@@ -32,11 +42,11 @@
         <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
       
     
-        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.02cb18745d09eea51.min.css?v=ff456132" />
+        <link rel="stylesheet" type="text/css" href="../_static/sphinx_immaterial_theme.96fe8683ff2bd71e9.min.css?v=13adf062" />
         <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
         <link rel="stylesheet" type="text/css" href="../_static/autoclasstoc.css?v=08871587" />
         <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=b388d4a6" />
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -56,9 +66,6 @@
     <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple">
   
     
-    
-      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
-    
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
@@ -74,7 +81,7 @@
       
     </div>
     
-      <div data-md-component="outdated" hidden>
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
         
       </div>
     
@@ -87,7 +94,8 @@
       <img src="../_static/hammer-wrench.svg" alt="logo">
     </a>
     <label class="md-header__button md-icon" for="__drawer">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
     </label>
     <div class="md-header__title" data-md-component="header-title">
       <div class="md-header__ellipsis">
@@ -106,32 +114,40 @@
       </div>
     </div>
     
-      <form class="md-header__option" data-md-component="palette">
-        
-          
-          
-          <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
-          
-            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
-            </label>
-          
-        
-          
-          
-          <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
-          
-            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
-            </label>
-          
-        
-      </form>
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="deep-purple"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
     
     
     
       <label class="md-header__button md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
       </label>
       <div class="md-search" data-md-component="search" role="dialog">
   <label class="md-search__overlay" for="__search"></label>
@@ -139,28 +155,32 @@
     <form class="md-search__form" name="search">
       <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
       <nav class="md-search__options" aria-label="Search">
         
           <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7 0-.24-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91 1.61 0 2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08Z"/></svg>
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
           </a>
         
         <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </nav>
       
     </form>
     <div class="md-search__output">
-      <div class="md-search__scrollwrap" data-md-scrollfix>
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
             Initializing search
           </div>
-          <ol class="md-search-result__list"></ol>
+          <ol class="md-search-result__list" role="presentation"></ol>
         </div>
       </div>
     </div>
@@ -172,7 +192,7 @@
         <a href="https://github.com/ipc-sim/ipc-toolkit" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
   </div>
   <div class="md-source__repository">
     ipc-sim/ipc-toolkit
@@ -193,43 +213,58 @@
           
             
 <nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
-  <div class="md-tabs__inner md-grid">
+  <div class="md-grid">
     <ul class="md-tabs__list">
       
         
   
   
+  
+    <li class="md-tabs__item">
+      <a href="../index.html" class="md-tabs__link">
+        
+  
+    
+  
+  General
 
-
-  <li class="md-tabs__item">
-    <a href="../index.html" class="md-tabs__link">
-      <span class="md-ellipsis">General</span>
-    </a>
-  </li>
+      </a>
+    </li>
+  
 
       
         
   
   
+  
+    <li class="md-tabs__item">
+      <a href="../tutorial/getting_started.html" class="md-tabs__link">
+        
+  
+    
+  
+  Tutorial
 
-
-  <li class="md-tabs__item">
-    <a href="../tutorial/getting_started.html" class="md-tabs__link">
-      <span class="md-ellipsis">Tutorial</span>
-    </a>
-  </li>
+      </a>
+    </li>
+  
 
       
         
   
   
+  
+    <li class="md-tabs__item">
+      <a href="../cpp.html" class="md-tabs__link">
+        
+  
+    
+  
+  C++
 
-
-  <li class="md-tabs__item">
-    <a href="../cpp.html" class="md-tabs__link">
-      <span class="md-ellipsis">C++</span>
-    </a>
-  </li>
+      </a>
+    </li>
+  
 
       
         
@@ -237,25 +272,35 @@
   
     
   
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="../python.html" class="md-tabs__link">
+        
+  
+    
+  
+  Python
 
-
-  <li class="md-tabs__item">
-    <a href="../python.html" class="md-tabs__link md-tabs__link--active">
-      <span class="md-ellipsis">Python</span>
-    </a>
-  </li>
+      </a>
+    </li>
+  
 
       
         
   
   
+  
+    <li class="md-tabs__item">
+      <a href="../contributing.html" class="md-tabs__link">
+        
+  
+    
+  
+  Developers
 
-
-  <li class="md-tabs__item">
-    <a href="../contributing.html" class="md-tabs__link">
-      <span class="md-ellipsis">Developers</span>
-    </a>
-  </li>
+      </a>
+    </li>
+  
 
       
     </ul>
@@ -274,6 +319,7 @@
                   <div class="md-sidebar__inner">
                     
 
+
   
 
 
@@ -289,7 +335,7 @@
       <a href="https://github.com/ipc-sim/ipc-toolkit" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
   </div>
   <div class="md-source__repository">
     ipc-sim/ipc-toolkit
@@ -301,78 +347,120 @@
     
       
       
-      
-
+  
   
   
   
     
+    
+      
+      
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_1" type="checkbox" id="__nav_1" checked>
-      
-      
-      
-        <label class="md-nav__link" for="__nav_1">
-          <span class="md-ellipsis">General</span>
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="General" data-md-level="1">
-        <label class="md-nav__title" for="__nav_1">
-          <span class="md-nav__icon md-icon"></span>
-          <span class="md-ellipsis">General</span>
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
           
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    General
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            General
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../index.html" class="md-nav__link">
-        <span title="/index.rst (reference label)" class="md-ellipsis">Home</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/index.rst (reference label)">Home</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../changelog.html" class="md-nav__link">
-        <span title="/changelog.rst (reference label)" class="md-ellipsis">Changelog</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/changelog.rst (reference label)">Changelog</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../license.html" class="md-nav__link">
-        <span title="/license.rst (reference label)" class="md-ellipsis">License</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/license.rst (reference label)">License</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
   
@@ -380,153 +468,240 @@
     
       
       
-      
-
+  
   
   
   
     
+    
+      
+      
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_2" type="checkbox" id="__nav_2" checked>
-      
-      
-      
-        <label class="md-nav__link" for="__nav_2">
-          <span class="md-ellipsis">Tutorial</span>
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Tutorial" data-md-level="1">
-        <label class="md-nav__title" for="__nav_2">
-          <span class="md-nav__icon md-icon"></span>
-          <span class="md-ellipsis">Tutorial</span>
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
           
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Tutorial
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            Tutorial
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../tutorial/getting_started.html" class="md-nav__link">
-        <span title="/tutorial/getting_started.rst (reference label)" class="md-ellipsis">Getting Started</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorial/getting_started.rst (reference label)">Getting Started</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../tutorial/convergent.html" class="md-nav__link">
-        <span title="/tutorial/convergent.rst (reference label)" class="md-ellipsis">Convergent Formulation</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorial/convergent.rst (reference label)">Convergent Formulation</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../tutorial/nonlinear_ccd.html" class="md-nav__link">
-        <span title="/tutorial/nonlinear_ccd.rst (reference label)" class="md-ellipsis">Nonlinear CCD</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorial/nonlinear_ccd.rst (reference label)">Nonlinear CCD</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../tutorial/adhesion.html" class="md-nav__link">
-        <span title="/tutorial/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorial/adhesion.rst (reference label)">Adhesion</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../tutorial/simulation.html" class="md-nav__link">
-        <span title="/tutorial/simulation.rst (reference label)" class="md-ellipsis">Physical Simulation</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorial/simulation.rst (reference label)">Physical Simulation</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../tutorial/misc.html" class="md-nav__link">
-        <span title="/tutorial/misc.rst (reference label)" class="md-ellipsis">Miscellaneous</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorial/misc.rst (reference label)">Miscellaneous</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../tutorial/faq.html" class="md-nav__link">
-        <span title="/tutorial/faq.rst (reference label)" class="md-ellipsis">Frequently Asked Questions</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorial/faq.rst (reference label)">Frequently Asked Questions</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../tutorial/references.html" class="md-nav__link">
-        <span title="/tutorial/references.rst (reference label)" class="md-ellipsis">References</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/tutorial/references.rst (reference label)">References</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
   
@@ -534,273 +709,432 @@
     
       
       
-      
-
+  
   
   
   
     
+    
+      
+      
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_3" type="checkbox" id="__nav_3" checked>
-      
-      
-      
-        <label class="md-nav__link" for="__nav_3">
-          <span class="md-ellipsis">C++</span>
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="C++" data-md-level="1">
-        <label class="md-nav__title" for="__nav_3">
-          <span class="md-nav__icon md-icon"></span>
-          <span class="md-ellipsis">C++</span>
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
           
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    C++
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            C++
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp.html" class="md-nav__link">
-        <span title="/cpp.rst (reference label)" class="md-ellipsis">Getting Started</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp.rst (reference label)">Getting Started</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/potentials.html" class="md-nav__link">
-        <span title="/cpp-api/potentials.rst (reference label)" class="md-ellipsis">Potentials</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/potentials.rst (reference label)">Potentials</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/collision_mesh.html" class="md-nav__link">
-        <span title="/cpp-api/collision_mesh.rst (reference label)" class="md-ellipsis">Collision Mesh</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/collision_mesh.rst (reference label)">Collision Mesh</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/candidates.html" class="md-nav__link">
-        <span title="/cpp-api/candidates.rst (reference label)" class="md-ellipsis">Candidates</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/candidates.rst (reference label)">Candidates</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/normal_collisions.html" class="md-nav__link">
-        <span title="/cpp-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/normal_collisions.rst (reference label)">Normal Collisions</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/tangential_collisions.html" class="md-nav__link">
-        <span title="/cpp-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/tangential_collisions.rst (reference label)">Tangential Collisions</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/friction.html" class="md-nav__link">
-        <span title="/cpp-api/friction.rst (reference label)" class="md-ellipsis">Friction</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/friction.rst (reference label)">Friction</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/broad_phase.html" class="md-nav__link">
-        <span title="/cpp-api/broad_phase.rst (reference label)" class="md-ellipsis">Broad Phase</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/broad_phase.rst (reference label)">Broad Phase</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/ccd.html" class="md-nav__link">
-        <span title="/cpp-api/ccd.rst (reference label)" class="md-ellipsis">Continuous Collision Detection</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/ccd.rst (reference label)">Continuous Collision Detection</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/distance.html" class="md-nav__link">
-        <span title="/cpp-api/distance.rst (reference label)" class="md-ellipsis">Distance</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/distance.rst (reference label)">Distance</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/tangent.html" class="md-nav__link">
-        <span title="/cpp-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/tangent.rst (reference label)">Tangent</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/barrier.html" class="md-nav__link">
-        <span title="/cpp-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/barrier.rst (reference label)">Barrier</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/adhesion.html" class="md-nav__link">
-        <span title="/cpp-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/adhesion.rst (reference label)">Adhesion</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/intersections.html" class="md-nav__link">
-        <span title="/cpp-api/intersections.rst (reference label)" class="md-ellipsis">Intersections</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/intersections.rst (reference label)">Intersections</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/interval.html" class="md-nav__link">
-        <span title="/cpp-api/interval.rst (reference label)" class="md-ellipsis">Interval Arithmetic</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/interval.rst (reference label)">Interval Arithmetic</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../cpp-api/utils.html" class="md-nav__link">
-        <span title="/cpp-api/utils.rst (reference label)" class="md-ellipsis">Utils</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/cpp-api/utils.rst (reference label)">Utils</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
   
@@ -808,114 +1142,182 @@
     
       
       
-      
-
   
   
     
   
   
+  
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      
+        
+        
       
       
-        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_4" type="checkbox" id="__nav_4" checked>
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
-      
-      
-        <label class="md-nav__link" for="__nav_4">
-          <span class="md-ellipsis">Python</span>
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Python" data-md-level="1">
-        <label class="md-nav__title" for="__nav_4">
-          <span class="md-nav__icon md-icon"></span>
-          <span class="md-ellipsis">Python</span>
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
           
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    Python
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Python
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../python.html" class="md-nav__link">
-        <span title="/python.rst (reference label)" class="md-ellipsis">Getting Started</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python.rst (reference label)">Getting Started</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="potentials.html" class="md-nav__link">
-        <span title="/python-api/potentials.rst (reference label)" class="md-ellipsis">Potentials</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/potentials.rst (reference label)">Potentials</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="collision_mesh.html" class="md-nav__link">
-        <span title="/python-api/collision_mesh.rst (reference label)" class="md-ellipsis">Collision Mesh</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/collision_mesh.rst (reference label)">Collision Mesh</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="candidates.html" class="md-nav__link">
-        <span title="/python-api/candidates.rst (reference label)" class="md-ellipsis">Candidates</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/candidates.rst (reference label)">Candidates</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
   
   
     
   
     
+  
   
   
     <li class="md-nav__item md-nav__item--active">
       
       
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          <span title="/python-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+          
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/normal_collisions.rst (reference label)">Normal Collisions</span>
+    
+  </span>
+  
+
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="#" class="md-nav__link md-nav__link--active">
-        <span title="/python-api/normal_collisions.rst (reference label)" class="md-ellipsis">Normal Collisions</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/normal_collisions.rst (reference label)">Normal Collisions</span>
+    
+  </span>
+  
+
       </a>
       
         
@@ -936,7 +1338,10 @@
       
         <li class="md-nav__item">
   <a href="#id1" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#id1 (reference label)" class="md-ellipsis">Normal Collisions</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#id1 (reference label)">Normal Collisions</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Normal Collisions">
@@ -944,7 +1349,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.NormalCollisions (Python class) — Bases: pybind11_object" class="md-ellipsis">ipctk.<wbr>Normal<wbr>Collisions</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions (Python class) — Bases: pybind11_object">ipctk.<wbr>Normal<wbr>Collisions</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.NormalCollisions">
@@ -952,14 +1362,24 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.NormalCollisions.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__getitem__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.__getitem__ (Python method) — Get a reference to collision at index i." class="md-ellipsis">__<wbr>getitem__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__getitem__ (Python method) — Get a reference to collision at index i.">__<wbr>getitem__<wbr></span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="__getitem__">
@@ -967,7 +1387,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__getitem__-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -975,7 +1398,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__getitem__.i" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollisions.__getitem__.i (Python parameter) — The index of the collision." class="md-ellipsis">i</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__getitem__.i (Python parameter) — The index of the collision.">i</span>
+    </span>
   </a>
   
 </li>
@@ -987,7 +1415,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__getitem__-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -999,49 +1430,84 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.__init__ (Python method)" class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__init__ (Python method)">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__len__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.__len__ (Python method) — Get the number of collisions." class="md-ellipsis">__<wbr>len__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__len__ (Python method) — Get the number of collisions.">__<wbr>len__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.NormalCollisions.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__str__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.__str__ (Python method)" class="md-ellipsis">__<wbr>str__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__str__ (Python method)">__<wbr>str__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.build" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.build (Python method) — Overloaded function." class="md-ellipsis">build</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.build (Python method) — Overloaded function.">build</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.clear" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.clear (Python method) — Clear the collision set." class="md-ellipsis">clear</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.clear (Python method) — Clear the collision set.">clear</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.compute_minimum_distance" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.compute_minimum_distance (Python method) — Computes the minimum distance between any non-adjacent elements." class="md-ellipsis">compute_<wbr>minimum_<wbr>distance</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.compute_minimum_distance (Python method) — Computes the minimum distance between any non-adjacent elements.">compute_<wbr>minimum_<wbr>distance</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="compute_minimum_distance">
@@ -1049,14 +1515,20 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.compute_minimum_distance-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.compute_minimum_distance-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -1068,42 +1540,72 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.ee_collisions" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.ee_collisions (Python property)" class="md-ellipsis">ee_<wbr>collisions</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.ee_collisions (Python property)">ee_<wbr>collisions</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.empty" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.empty (Python method) — Get if the collision set are empty." class="md-ellipsis">empty</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.empty (Python method) — Get if the collision set are empty.">empty</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.enable_shape_derivatives" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.enable_shape_derivatives (Python property) — If the NormalCollisions are using the convergent formulation." class="md-ellipsis">enable_<wbr>shape_<wbr>derivatives</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.enable_shape_derivatives (Python property) — If the NormalCollisions are using the convergent formulation.">enable_<wbr>shape_<wbr>derivatives</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.ev_collisions" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.ev_collisions (Python property)" class="md-ellipsis">ev_<wbr>collisions</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.ev_collisions (Python property)">ev_<wbr>collisions</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.fv_collisions" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.fv_collisions (Python property)" class="md-ellipsis">fv_<wbr>collisions</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.fv_collisions (Python property)">fv_<wbr>collisions</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_edge" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.is_edge_edge (Python method) — Get if the collision at i is an edge-edge collision." class="md-ellipsis">is_<wbr>edge_<wbr>edge</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_edge_edge (Python method) — Get if the collision at i is an edge-edge collision.">is_<wbr>edge_<wbr>edge</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="is_edge_edge">
@@ -1111,7 +1613,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_edge-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -1119,7 +1624,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_edge.i" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollisions.is_edge_edge.i (Python parameter) — The index of the collision." class="md-ellipsis">i</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_edge_edge.i (Python parameter) — The index of the collision.">i</span>
+    </span>
   </a>
   
 </li>
@@ -1131,7 +1641,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_edge-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -1143,7 +1656,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_vertex" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.is_edge_vertex (Python method) — Get if the collision at i is an edge-vertex collision." class="md-ellipsis">is_<wbr>edge_<wbr>vertex</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_edge_vertex (Python method) — Get if the collision at i is an edge-vertex collision.">is_<wbr>edge_<wbr>vertex</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="is_edge_vertex">
@@ -1151,7 +1669,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_vertex-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -1159,7 +1680,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_vertex.i" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollisions.is_edge_vertex.i (Python parameter) — The index of the collision." class="md-ellipsis">i</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_edge_vertex.i (Python parameter) — The index of the collision.">i</span>
+    </span>
   </a>
   
 </li>
@@ -1171,7 +1697,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_vertex-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -1183,7 +1712,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_face_vertex" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.is_face_vertex (Python method) — Get if the collision at i is an face-vertex collision." class="md-ellipsis">is_<wbr>face_<wbr>vertex</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_face_vertex (Python method) — Get if the collision at i is an face-vertex collision.">is_<wbr>face_<wbr>vertex</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="is_face_vertex">
@@ -1191,7 +1725,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_face_vertex-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -1199,7 +1736,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_face_vertex.i" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollisions.is_face_vertex.i (Python parameter) — The index of the collision." class="md-ellipsis">i</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_face_vertex.i (Python parameter) — The index of the collision.">i</span>
+    </span>
   </a>
   
 </li>
@@ -1211,7 +1753,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_face_vertex-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -1223,7 +1768,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_plane_vertex" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.is_plane_vertex (Python method) — Get if the collision at i is an plane-vertex collision." class="md-ellipsis">is_<wbr>plane_<wbr>vertex</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_plane_vertex (Python method) — Get if the collision at i is an plane-vertex collision.">is_<wbr>plane_<wbr>vertex</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="is_plane_vertex">
@@ -1231,7 +1781,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_plane_vertex-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -1239,7 +1792,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_plane_vertex.i" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollisions.is_plane_vertex.i (Python parameter) — The index of the collision." class="md-ellipsis">i</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_plane_vertex.i (Python parameter) — The index of the collision.">i</span>
+    </span>
   </a>
   
 </li>
@@ -1251,7 +1809,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_plane_vertex-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -1263,7 +1824,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_vertex_vertex" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.is_vertex_vertex (Python method) — Get if the collision at i is a vertex-vertex collision." class="md-ellipsis">is_<wbr>vertex_<wbr>vertex</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_vertex_vertex (Python method) — Get if the collision at i is a vertex-vertex collision.">is_<wbr>vertex_<wbr>vertex</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="is_vertex_vertex">
@@ -1271,7 +1837,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_vertex_vertex-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -1279,7 +1848,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_vertex_vertex.i" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollisions.is_vertex_vertex.i (Python parameter) — The index of the collision." class="md-ellipsis">i</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_vertex_vertex.i (Python parameter) — The index of the collision.">i</span>
+    </span>
   </a>
   
 </li>
@@ -1291,7 +1865,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_vertex_vertex-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -1303,28 +1880,48 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.pv_collisions" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.pv_collisions (Python property)" class="md-ellipsis">pv_<wbr>collisions</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.pv_collisions (Python property)">pv_<wbr>collisions</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.use_area_weighting" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.use_area_weighting (Python property) — If the NormalCollisions should use the convergent formulation." class="md-ellipsis">use_<wbr>area_<wbr>weighting</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.use_area_weighting (Python property) — If the NormalCollisions should use the convergent formulation.">use_<wbr>area_<wbr>weighting</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.use_improved_max_approximator" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.use_improved_max_approximator (Python property) — If the NormalCollisions should use the improved max approximator." class="md-ellipsis">use_<wbr>improved_<wbr>max_<wbr>approximator</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.use_improved_max_approximator (Python property) — If the NormalCollisions should use the improved max approximator.">use_<wbr>improved_<wbr>max_<wbr>approximator</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.vv_collisions" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.vv_collisions (Python property)" class="md-ellipsis">vv_<wbr>collisions</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.vv_collisions (Python property)">vv_<wbr>collisions</span>
+    </span>
   </a>
   
 </li>
@@ -1341,7 +1938,10 @@
       
         <li class="md-nav__item">
   <a href="#normal-collision" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#normal-collision (reference label)" class="md-ellipsis">Normal Collision</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#normal-collision (reference label)">Normal Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Normal Collision">
@@ -1349,7 +1949,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.NormalCollision (Python class) — Bases: CollisionStencil" class="md-ellipsis">ipctk.<wbr>Normal<wbr>Collision</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision (Python class) — Bases: CollisionStencil">ipctk.<wbr>Normal<wbr>Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.NormalCollision">
@@ -1357,56 +1962,96 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.NormalCollision.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.__init__ (Python method)" class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.__init__ (Python method)">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.NormalCollision.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.dmin" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollision.dmin (Python property) — The minimum separation distance." class="md-ellipsis">dmin</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.dmin (Python property) — The minimum separation distance.">dmin</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.is_mollified" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.is_mollified (Python method) — Does the distance potentially have to be mollified?" class="md-ellipsis">is_<wbr>mollified</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.is_mollified (Python method) — Does the distance potentially have to be mollified?">is_<wbr>mollified</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.mollifier (Python method) — Overloaded function." class="md-ellipsis">mollifier</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier (Python method) — Overloaded function.">mollifier</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.mollifier_gradient (Python method) — Overloaded function." class="md-ellipsis">mollifier_<wbr>gradient</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient (Python method) — Overloaded function.">mollifier_<wbr>gradient</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x (Python method) — Compute the jacobian of the distance mollifier&#39;s gradient w.r.t. rest positions." class="md-ellipsis">mollifier_<wbr>gradient_<wbr>jacobian_<wbr>wrt_<wbr>x</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x (Python method) — Compute the jacobian of the distance mollifier&#39;s gradient w.r.t. rest positions.">mollifier_<wbr>gradient_<wbr>jacobian_<wbr>wrt_<wbr>x</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="mollifier_gradient_jacobian_wrt_x">
@@ -1414,7 +2059,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -1422,14 +2070,24 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x.rest_positions" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x.rest_positions (Python parameter) — The stencil&#39;s rest vertex positions." class="md-ellipsis">rest_<wbr>positions</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x.rest_positions (Python parameter) — The stencil&#39;s rest vertex positions.">rest_<wbr>positions</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x.positions" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x.positions (Python parameter) — The stencil&#39;s vertex positions." class="md-ellipsis">positions</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x.positions (Python parameter) — The stencil&#39;s vertex positions.">positions</span>
+    </span>
   </a>
   
 </li>
@@ -1441,7 +2099,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -1453,7 +2114,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_wrt_x" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.mollifier_gradient_wrt_x (Python method) — Compute the gradient of the mollifier for the distance w.r.t. rest positions." class="md-ellipsis">mollifier_<wbr>gradient_<wbr>wrt_<wbr>x</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient_wrt_x (Python method) — Compute the gradient of the mollifier for the distance w.r.t. rest positions.">mollifier_<wbr>gradient_<wbr>wrt_<wbr>x</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="mollifier_gradient_wrt_x">
@@ -1461,7 +2127,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_wrt_x-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -1469,14 +2138,24 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_wrt_x.rest_positions" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollision.mollifier_gradient_wrt_x.rest_positions (Python parameter) — The stencil&#39;s rest vertex positions." class="md-ellipsis">rest_<wbr>positions</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient_wrt_x.rest_positions (Python parameter) — The stencil&#39;s rest vertex positions.">rest_<wbr>positions</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_wrt_x.positions" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollision.mollifier_gradient_wrt_x.positions (Python parameter) — The stencil&#39;s vertex positions." class="md-ellipsis">positions</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient_wrt_x.positions (Python parameter) — The stencil&#39;s vertex positions.">positions</span>
+    </span>
   </a>
   
 </li>
@@ -1488,7 +2167,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_wrt_x-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -1500,14 +2182,24 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_hessian" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.mollifier_hessian (Python method) — Overloaded function." class="md-ellipsis">mollifier_<wbr>hessian</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_hessian (Python method) — Overloaded function.">mollifier_<wbr>hessian</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_threshold" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.mollifier_threshold (Python method) — Compute the mollifier threshold for the distance." class="md-ellipsis">mollifier_<wbr>threshold</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_threshold (Python method) — Compute the mollifier threshold for the distance.">mollifier_<wbr>threshold</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="mollifier_threshold">
@@ -1515,7 +2207,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_threshold-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -1523,7 +2218,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_threshold.rest_positions" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollision.mollifier_threshold.rest_positions (Python parameter) — The stencil&#39;s rest vertex positions." class="md-ellipsis">rest_<wbr>positions</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_threshold.rest_positions (Python parameter) — The stencil&#39;s rest vertex positions.">rest_<wbr>positions</span>
+    </span>
   </a>
   
 </li>
@@ -1535,7 +2235,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_threshold-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -1547,14 +2250,24 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.weight" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollision.weight (Python property) — The term&#39;s weight (e.g., collision area)" class="md-ellipsis">weight</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.weight (Python property) — The term&#39;s weight (e.g., collision area)">weight</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.weight_gradient" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollision.weight_gradient (Python property) — The gradient of the term&#39;s weight wrt the rest positions." class="md-ellipsis">weight_<wbr>gradient</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.weight_gradient (Python property) — The gradient of the term&#39;s weight wrt the rest positions.">weight_<wbr>gradient</span>
+    </span>
   </a>
   
 </li>
@@ -1571,7 +2284,10 @@
       
         <li class="md-nav__item">
   <a href="#vertex-vertex-normal-collision" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#vertex-vertex-normal-collision (reference label)" class="md-ellipsis">Vertex-<wbr>Vertex Normal Collision</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#vertex-vertex-normal-collision (reference label)">Vertex-<wbr>Vertex Normal Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Vertex-Vertex Normal Collision">
@@ -1579,7 +2295,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.VertexVertexNormalCollision" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.VertexVertexNormalCollision (Python class) — Bases: VertexVertexCandidate, NormalCollision" class="md-ellipsis">ipctk.<wbr>Vertex<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.VertexVertexNormalCollision (Python class) — Bases: VertexVertexCandidate, NormalCollision">ipctk.<wbr>Vertex<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.VertexVertexNormalCollision">
@@ -1587,21 +2308,36 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.VertexVertexNormalCollision.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.VertexVertexNormalCollision.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.VertexVertexNormalCollision.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.VertexVertexNormalCollision.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.VertexVertexNormalCollision.__init__ (Python method) — Overloaded function." class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.VertexVertexNormalCollision.__init__ (Python method) — Overloaded function.">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.VertexVertexNormalCollision.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.VertexVertexNormalCollision.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.VertexVertexNormalCollision.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
@@ -1618,7 +2354,10 @@
       
         <li class="md-nav__item">
   <a href="#edge-vertex-normal-collision" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#edge-vertex-normal-collision (reference label)" class="md-ellipsis">Edge-<wbr>Vertex Normal Collision</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#edge-vertex-normal-collision (reference label)">Edge-<wbr>Vertex Normal Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Edge-Vertex Normal Collision">
@@ -1626,7 +2365,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeVertexNormalCollision" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.EdgeVertexNormalCollision (Python class) — Bases: EdgeVertexCandidate, NormalCollision" class="md-ellipsis">ipctk.<wbr>Edge<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeVertexNormalCollision (Python class) — Bases: EdgeVertexCandidate, NormalCollision">ipctk.<wbr>Edge<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.EdgeVertexNormalCollision">
@@ -1634,21 +2378,36 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeVertexNormalCollision.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.EdgeVertexNormalCollision.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeVertexNormalCollision.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeVertexNormalCollision.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeVertexNormalCollision.__init__ (Python method) — Overloaded function." class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeVertexNormalCollision.__init__ (Python method) — Overloaded function.">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeVertexNormalCollision.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.EdgeVertexNormalCollision.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeVertexNormalCollision.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
@@ -1665,7 +2424,10 @@
       
         <li class="md-nav__item">
   <a href="#edge-edge-normal-collision" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#edge-edge-normal-collision (reference label)" class="md-ellipsis">Edge-<wbr>Edge Normal Collision</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#edge-edge-normal-collision (reference label)">Edge-<wbr>Edge Normal Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Edge-Edge Normal Collision">
@@ -1673,7 +2435,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.EdgeEdgeNormalCollision (Python class) — Bases: EdgeEdgeCandidate, NormalCollision" class="md-ellipsis">ipctk.<wbr>Edge<wbr>Edge<wbr>Normal<wbr>Collision</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision (Python class) — Bases: EdgeEdgeCandidate, NormalCollision">ipctk.<wbr>Edge<wbr>Edge<wbr>Normal<wbr>Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.EdgeEdgeNormalCollision">
@@ -1681,63 +2448,108 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.EdgeEdgeNormalCollision.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__eq__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeEdgeNormalCollision.__eq__ (Python method)" class="md-ellipsis">__<wbr>eq__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__eq__ (Python method)">__<wbr>eq__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__hash__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.EdgeEdgeNormalCollision.__hash__ (Python attribute)" class="md-ellipsis">__<wbr>hash__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__hash__ (Python attribute)">__<wbr>hash__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeEdgeNormalCollision.__init__ (Python method) — Overloaded function." class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__init__ (Python method) — Overloaded function.">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__lt__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeEdgeNormalCollision.__lt__ (Python method)" class="md-ellipsis">__<wbr>lt__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__lt__ (Python method)">__<wbr>lt__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.EdgeEdgeNormalCollision.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__ne__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeEdgeNormalCollision.__ne__ (Python method)" class="md-ellipsis">__<wbr>ne__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__ne__ (Python method)">__<wbr>ne__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.dtype" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.EdgeEdgeNormalCollision.dtype (Python property) — Cached distance type." class="md-ellipsis">dtype</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.dtype (Python property) — Cached distance type.">dtype</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.eps_x" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.EdgeEdgeNormalCollision.eps_x (Python property) — Mollifier activation threshold." class="md-ellipsis">eps_<wbr>x</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.eps_x (Python property) — Mollifier activation threshold.">eps_<wbr>x</span>
+    </span>
   </a>
   
 </li>
@@ -1754,7 +2566,10 @@
       
         <li class="md-nav__item">
   <a href="#face-vertex-normal-collision" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#face-vertex-normal-collision (reference label)" class="md-ellipsis">Face-<wbr>Vertex Normal Collision</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#face-vertex-normal-collision (reference label)">Face-<wbr>Vertex Normal Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Face-Vertex Normal Collision">
@@ -1762,7 +2577,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.FaceVertexNormalCollision" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.FaceVertexNormalCollision (Python class) — Bases: FaceVertexCandidate, NormalCollision" class="md-ellipsis">ipctk.<wbr>Face<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.FaceVertexNormalCollision (Python class) — Bases: FaceVertexCandidate, NormalCollision">ipctk.<wbr>Face<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.FaceVertexNormalCollision">
@@ -1770,21 +2590,36 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.FaceVertexNormalCollision.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.FaceVertexNormalCollision.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.FaceVertexNormalCollision.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.FaceVertexNormalCollision.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.FaceVertexNormalCollision.__init__ (Python method) — Overloaded function." class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.FaceVertexNormalCollision.__init__ (Python method) — Overloaded function.">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.FaceVertexNormalCollision.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.FaceVertexNormalCollision.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.FaceVertexNormalCollision.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
@@ -1801,7 +2636,10 @@
       
         <li class="md-nav__item">
   <a href="#plane-vertex-normal-collision" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#plane-vertex-normal-collision (reference label)" class="md-ellipsis">Plane-<wbr>Vertex Normal Collision</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#plane-vertex-normal-collision (reference label)">Plane-<wbr>Vertex Normal Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Plane-Vertex Normal Collision">
@@ -1809,7 +2647,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.PlaneVertexNormalCollision (Python class) — Bases: NormalCollision" class="md-ellipsis">ipctk.<wbr>Plane<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision (Python class) — Bases: NormalCollision">ipctk.<wbr>Plane<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.PlaneVertexNormalCollision">
@@ -1817,42 +2660,72 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.PlaneVertexNormalCollision.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.PlaneVertexNormalCollision.__init__ (Python method)" class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision.__init__ (Python method)">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.PlaneVertexNormalCollision.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision.plane_normal" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.PlaneVertexNormalCollision.plane_normal (Python property) — The plane&#39;s normal." class="md-ellipsis">plane_<wbr>normal</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision.plane_normal (Python property) — The plane&#39;s normal.">plane_<wbr>normal</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision.plane_origin" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.PlaneVertexNormalCollision.plane_origin (Python property) — The plane&#39;s origin." class="md-ellipsis">plane_<wbr>origin</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision.plane_origin (Python property) — The plane&#39;s origin.">plane_<wbr>origin</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision.vertex_id" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.PlaneVertexNormalCollision.vertex_id (Python property) — The vertex&#39;s id." class="md-ellipsis">vertex_<wbr>id</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision.vertex_id (Python property) — The vertex&#39;s id.">vertex_<wbr>id</span>
+    </span>
   </a>
   
 </li>
@@ -1874,175 +2747,275 @@
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="tangential_collisions.html" class="md-nav__link">
-        <span title="/python-api/tangential_collisions.rst (reference label)" class="md-ellipsis">Tangential Collisions</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/tangential_collisions.rst (reference label)">Tangential Collisions</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="friction.html" class="md-nav__link">
-        <span title="/python-api/friction.rst (reference label)" class="md-ellipsis">Friction</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/friction.rst (reference label)">Friction</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="broad_phase.html" class="md-nav__link">
-        <span title="/python-api/broad_phase.rst (reference label)" class="md-ellipsis">Broad Phase</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/broad_phase.rst (reference label)">Broad Phase</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="ccd.html" class="md-nav__link">
-        <span title="/python-api/ccd.rst (reference label)" class="md-ellipsis">Continuous Collision Detection</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/ccd.rst (reference label)">Continuous Collision Detection</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="distance.html" class="md-nav__link">
-        <span title="/python-api/distance.rst (reference label)" class="md-ellipsis">Distance</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/distance.rst (reference label)">Distance</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="tangent.html" class="md-nav__link">
-        <span title="/python-api/tangent.rst (reference label)" class="md-ellipsis">Tangent</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/tangent.rst (reference label)">Tangent</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="barrier.html" class="md-nav__link">
-        <span title="/python-api/barrier.rst (reference label)" class="md-ellipsis">Barrier</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/barrier.rst (reference label)">Barrier</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="adhesion.html" class="md-nav__link">
-        <span title="/python-api/adhesion.rst (reference label)" class="md-ellipsis">Adhesion</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/adhesion.rst (reference label)">Adhesion</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="intersections.html" class="md-nav__link">
-        <span title="/python-api/intersections.rst (reference label)" class="md-ellipsis">Intersections</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/intersections.rst (reference label)">Intersections</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="interval.html" class="md-nav__link">
-        <span title="/python-api/interval.rst (reference label)" class="md-ellipsis">Interval Arithmetic</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/interval.rst (reference label)">Interval Arithmetic</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="utils.html" class="md-nav__link">
-        <span title="/python-api/utils.rst (reference label)" class="md-ellipsis">Utils</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/python-api/utils.rst (reference label)">Utils</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
   
@@ -2050,78 +3023,120 @@
     
       
       
-      
-
+  
   
   
   
     
+    
+      
+      
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
-      
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" data-md-toggle="__nav_5" type="checkbox" id="__nav_5" checked>
-      
-      
-      
-        <label class="md-nav__link" for="__nav_5">
-          <span class="md-ellipsis">Developers</span>
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <nav class="md-nav" aria-label="Developers" data-md-level="1">
-        <label class="md-nav__title" for="__nav_5">
-          <span class="md-nav__icon md-icon"></span>
-          <span class="md-ellipsis">Developers</span>
-        </label>
-        <ul class="md-nav__list" data-md-scrollfix>
+        
+        
           
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    Developers
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Developers
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../contributing.html" class="md-nav__link">
-        <span title="/contributing.rst (reference label)" class="md-ellipsis">Contributing</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/contributing.rst (reference label)">Contributing</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../style_guide.html" class="md-nav__link">
-        <span title="/style_guide.rst (reference label)" class="md-ellipsis">Style Guide</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/style_guide.rst (reference label)">Style Guide</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
-            
-          
+              
             
               
+                
+  
   
   
   
   
     <li class="md-nav__item">
       <a href="../code_of_conduct.html" class="md-nav__link">
-        <span title="/code_of_conduct.rst (reference label)" class="md-ellipsis">Code of Conduct</span>
+        
+  
+  
+  <span class="md-ellipsis">
+    <span title="/code_of_conduct.rst (reference label)">Code of Conduct</span>
+    
+  </span>
+  
+
       </a>
     </li>
   
 
+              
             
-          
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      
     </li>
   
   
@@ -2154,7 +3169,10 @@
       
         <li class="md-nav__item">
   <a href="#id1" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#id1 (reference label)" class="md-ellipsis">Normal Collisions</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#id1 (reference label)">Normal Collisions</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Normal Collisions">
@@ -2162,7 +3180,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.NormalCollisions (Python class) — Bases: pybind11_object" class="md-ellipsis">ipctk.<wbr>Normal<wbr>Collisions</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions (Python class) — Bases: pybind11_object">ipctk.<wbr>Normal<wbr>Collisions</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.NormalCollisions">
@@ -2170,14 +3193,24 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.NormalCollisions.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__getitem__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.__getitem__ (Python method) — Get a reference to collision at index i." class="md-ellipsis">__<wbr>getitem__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__getitem__ (Python method) — Get a reference to collision at index i.">__<wbr>getitem__<wbr></span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="__getitem__">
@@ -2185,7 +3218,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__getitem__-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -2193,7 +3229,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__getitem__.i" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollisions.__getitem__.i (Python parameter) — The index of the collision." class="md-ellipsis">i</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__getitem__.i (Python parameter) — The index of the collision.">i</span>
+    </span>
   </a>
   
 </li>
@@ -2205,7 +3246,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__getitem__-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -2217,49 +3261,84 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.__init__ (Python method)" class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__init__ (Python method)">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__len__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.__len__ (Python method) — Get the number of collisions." class="md-ellipsis">__<wbr>len__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__len__ (Python method) — Get the number of collisions.">__<wbr>len__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.NormalCollisions.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.__str__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.__str__ (Python method)" class="md-ellipsis">__<wbr>str__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.__str__ (Python method)">__<wbr>str__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.build" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.build (Python method) — Overloaded function." class="md-ellipsis">build</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.build (Python method) — Overloaded function.">build</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.clear" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.clear (Python method) — Clear the collision set." class="md-ellipsis">clear</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.clear (Python method) — Clear the collision set.">clear</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.compute_minimum_distance" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.compute_minimum_distance (Python method) — Computes the minimum distance between any non-adjacent elements." class="md-ellipsis">compute_<wbr>minimum_<wbr>distance</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.compute_minimum_distance (Python method) — Computes the minimum distance between any non-adjacent elements.">compute_<wbr>minimum_<wbr>distance</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="compute_minimum_distance">
@@ -2267,14 +3346,20 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.compute_minimum_distance-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.compute_minimum_distance-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -2286,42 +3371,72 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.ee_collisions" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.ee_collisions (Python property)" class="md-ellipsis">ee_<wbr>collisions</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.ee_collisions (Python property)">ee_<wbr>collisions</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.empty" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.empty (Python method) — Get if the collision set are empty." class="md-ellipsis">empty</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.empty (Python method) — Get if the collision set are empty.">empty</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.enable_shape_derivatives" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.enable_shape_derivatives (Python property) — If the NormalCollisions are using the convergent formulation." class="md-ellipsis">enable_<wbr>shape_<wbr>derivatives</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.enable_shape_derivatives (Python property) — If the NormalCollisions are using the convergent formulation.">enable_<wbr>shape_<wbr>derivatives</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.ev_collisions" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.ev_collisions (Python property)" class="md-ellipsis">ev_<wbr>collisions</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.ev_collisions (Python property)">ev_<wbr>collisions</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.fv_collisions" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.fv_collisions (Python property)" class="md-ellipsis">fv_<wbr>collisions</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.fv_collisions (Python property)">fv_<wbr>collisions</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_edge" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.is_edge_edge (Python method) — Get if the collision at i is an edge-edge collision." class="md-ellipsis">is_<wbr>edge_<wbr>edge</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_edge_edge (Python method) — Get if the collision at i is an edge-edge collision.">is_<wbr>edge_<wbr>edge</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="is_edge_edge">
@@ -2329,7 +3444,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_edge-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -2337,7 +3455,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_edge.i" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollisions.is_edge_edge.i (Python parameter) — The index of the collision." class="md-ellipsis">i</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_edge_edge.i (Python parameter) — The index of the collision.">i</span>
+    </span>
   </a>
   
 </li>
@@ -2349,7 +3472,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_edge-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -2361,7 +3487,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_vertex" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.is_edge_vertex (Python method) — Get if the collision at i is an edge-vertex collision." class="md-ellipsis">is_<wbr>edge_<wbr>vertex</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_edge_vertex (Python method) — Get if the collision at i is an edge-vertex collision.">is_<wbr>edge_<wbr>vertex</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="is_edge_vertex">
@@ -2369,7 +3500,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_vertex-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -2377,7 +3511,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_vertex.i" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollisions.is_edge_vertex.i (Python parameter) — The index of the collision." class="md-ellipsis">i</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_edge_vertex.i (Python parameter) — The index of the collision.">i</span>
+    </span>
   </a>
   
 </li>
@@ -2389,7 +3528,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_edge_vertex-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -2401,7 +3543,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_face_vertex" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.is_face_vertex (Python method) — Get if the collision at i is an face-vertex collision." class="md-ellipsis">is_<wbr>face_<wbr>vertex</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_face_vertex (Python method) — Get if the collision at i is an face-vertex collision.">is_<wbr>face_<wbr>vertex</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="is_face_vertex">
@@ -2409,7 +3556,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_face_vertex-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -2417,7 +3567,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_face_vertex.i" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollisions.is_face_vertex.i (Python parameter) — The index of the collision." class="md-ellipsis">i</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_face_vertex.i (Python parameter) — The index of the collision.">i</span>
+    </span>
   </a>
   
 </li>
@@ -2429,7 +3584,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_face_vertex-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -2441,7 +3599,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_plane_vertex" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.is_plane_vertex (Python method) — Get if the collision at i is an plane-vertex collision." class="md-ellipsis">is_<wbr>plane_<wbr>vertex</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_plane_vertex (Python method) — Get if the collision at i is an plane-vertex collision.">is_<wbr>plane_<wbr>vertex</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="is_plane_vertex">
@@ -2449,7 +3612,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_plane_vertex-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -2457,7 +3623,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_plane_vertex.i" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollisions.is_plane_vertex.i (Python parameter) — The index of the collision." class="md-ellipsis">i</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_plane_vertex.i (Python parameter) — The index of the collision.">i</span>
+    </span>
   </a>
   
 </li>
@@ -2469,7 +3640,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_plane_vertex-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -2481,7 +3655,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_vertex_vertex" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollisions.is_vertex_vertex (Python method) — Get if the collision at i is a vertex-vertex collision." class="md-ellipsis">is_<wbr>vertex_<wbr>vertex</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_vertex_vertex (Python method) — Get if the collision at i is a vertex-vertex collision.">is_<wbr>vertex_<wbr>vertex</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="is_vertex_vertex">
@@ -2489,7 +3668,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_vertex_vertex-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -2497,7 +3679,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_vertex_vertex.i" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollisions.is_vertex_vertex.i (Python parameter) — The index of the collision." class="md-ellipsis">i</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.is_vertex_vertex.i (Python parameter) — The index of the collision.">i</span>
+    </span>
   </a>
   
 </li>
@@ -2509,7 +3696,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.is_vertex_vertex-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -2521,28 +3711,48 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.pv_collisions" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.pv_collisions (Python property)" class="md-ellipsis">pv_<wbr>collisions</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.pv_collisions (Python property)">pv_<wbr>collisions</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.use_area_weighting" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.use_area_weighting (Python property) — If the NormalCollisions should use the convergent formulation." class="md-ellipsis">use_<wbr>area_<wbr>weighting</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.use_area_weighting (Python property) — If the NormalCollisions should use the convergent formulation.">use_<wbr>area_<wbr>weighting</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.use_improved_max_approximator" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.use_improved_max_approximator (Python property) — If the NormalCollisions should use the improved max approximator." class="md-ellipsis">use_<wbr>improved_<wbr>max_<wbr>approximator</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.use_improved_max_approximator (Python property) — If the NormalCollisions should use the improved max approximator.">use_<wbr>improved_<wbr>max_<wbr>approximator</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollisions.vv_collisions" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollisions.vv_collisions (Python property)" class="md-ellipsis">vv_<wbr>collisions</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollisions.vv_collisions (Python property)">vv_<wbr>collisions</span>
+    </span>
   </a>
   
 </li>
@@ -2559,7 +3769,10 @@
       
         <li class="md-nav__item">
   <a href="#normal-collision" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#normal-collision (reference label)" class="md-ellipsis">Normal Collision</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#normal-collision (reference label)">Normal Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Normal Collision">
@@ -2567,7 +3780,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.NormalCollision (Python class) — Bases: CollisionStencil" class="md-ellipsis">ipctk.<wbr>Normal<wbr>Collision</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision (Python class) — Bases: CollisionStencil">ipctk.<wbr>Normal<wbr>Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.NormalCollision">
@@ -2575,56 +3793,96 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.NormalCollision.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.__init__ (Python method)" class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.__init__ (Python method)">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.NormalCollision.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.dmin" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollision.dmin (Python property) — The minimum separation distance." class="md-ellipsis">dmin</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.dmin (Python property) — The minimum separation distance.">dmin</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.is_mollified" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.is_mollified (Python method) — Does the distance potentially have to be mollified?" class="md-ellipsis">is_<wbr>mollified</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.is_mollified (Python method) — Does the distance potentially have to be mollified?">is_<wbr>mollified</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.mollifier (Python method) — Overloaded function." class="md-ellipsis">mollifier</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier (Python method) — Overloaded function.">mollifier</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.mollifier_gradient (Python method) — Overloaded function." class="md-ellipsis">mollifier_<wbr>gradient</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient (Python method) — Overloaded function.">mollifier_<wbr>gradient</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x (Python method) — Compute the jacobian of the distance mollifier&#39;s gradient w.r.t. rest positions." class="md-ellipsis">mollifier_<wbr>gradient_<wbr>jacobian_<wbr>wrt_<wbr>x</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x (Python method) — Compute the jacobian of the distance mollifier&#39;s gradient w.r.t. rest positions.">mollifier_<wbr>gradient_<wbr>jacobian_<wbr>wrt_<wbr>x</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="mollifier_gradient_jacobian_wrt_x">
@@ -2632,7 +3890,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -2640,14 +3901,24 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x.rest_positions" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x.rest_positions (Python parameter) — The stencil&#39;s rest vertex positions." class="md-ellipsis">rest_<wbr>positions</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x.rest_positions (Python parameter) — The stencil&#39;s rest vertex positions.">rest_<wbr>positions</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x.positions" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x.positions (Python parameter) — The stencil&#39;s vertex positions." class="md-ellipsis">positions</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x.positions (Python parameter) — The stencil&#39;s vertex positions.">positions</span>
+    </span>
   </a>
   
 </li>
@@ -2659,7 +3930,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_jacobian_wrt_x-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -2671,7 +3945,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_wrt_x" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.mollifier_gradient_wrt_x (Python method) — Compute the gradient of the mollifier for the distance w.r.t. rest positions." class="md-ellipsis">mollifier_<wbr>gradient_<wbr>wrt_<wbr>x</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient_wrt_x (Python method) — Compute the gradient of the mollifier for the distance w.r.t. rest positions.">mollifier_<wbr>gradient_<wbr>wrt_<wbr>x</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="mollifier_gradient_wrt_x">
@@ -2679,7 +3958,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_wrt_x-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -2687,14 +3969,24 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_wrt_x.rest_positions" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollision.mollifier_gradient_wrt_x.rest_positions (Python parameter) — The stencil&#39;s rest vertex positions." class="md-ellipsis">rest_<wbr>positions</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient_wrt_x.rest_positions (Python parameter) — The stencil&#39;s rest vertex positions.">rest_<wbr>positions</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_wrt_x.positions" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollision.mollifier_gradient_wrt_x.positions (Python parameter) — The stencil&#39;s vertex positions." class="md-ellipsis">positions</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_gradient_wrt_x.positions (Python parameter) — The stencil&#39;s vertex positions.">positions</span>
+    </span>
   </a>
   
 </li>
@@ -2706,7 +3998,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_gradient_wrt_x-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -2718,14 +4013,24 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_hessian" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.mollifier_hessian (Python method) — Overloaded function." class="md-ellipsis">mollifier_<wbr>hessian</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_hessian (Python method) — Overloaded function.">mollifier_<wbr>hessian</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_threshold" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.NormalCollision.mollifier_threshold (Python method) — Compute the mollifier threshold for the distance." class="md-ellipsis">mollifier_<wbr>threshold</span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_threshold (Python method) — Compute the mollifier threshold for the distance.">mollifier_<wbr>threshold</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="mollifier_threshold">
@@ -2733,7 +4038,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_threshold-parameters" class="md-nav__link">
-    <span class="md-ellipsis">Parameters</span>
+    
+    <span class="md-ellipsis">
+      Parameters
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Parameters">
@@ -2741,7 +4049,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_threshold.rest_positions" class="md-nav__link">
-    <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span><span title="ipctk.NormalCollision.mollifier_threshold.rest_positions (Python parameter) — The stencil&#39;s rest vertex positions." class="md-ellipsis">rest_<wbr>positions</span>
+    
+      <span aria-label="Python parameter" class="objinfo-icon objinfo-icon__sub-data" title="Python parameter">p</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.mollifier_threshold.rest_positions (Python parameter) — The stencil&#39;s rest vertex positions.">rest_<wbr>positions</span>
+    </span>
   </a>
   
 </li>
@@ -2753,7 +4066,10 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.mollifier_threshold-returns" class="md-nav__link">
-    <span class="md-ellipsis">Returns</span>
+    
+    <span class="md-ellipsis">
+      Returns
+    </span>
   </a>
   
 </li>
@@ -2765,14 +4081,24 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.weight" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollision.weight (Python property) — The term&#39;s weight (e.g., collision area)" class="md-ellipsis">weight</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.weight (Python property) — The term&#39;s weight (e.g., collision area)">weight</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.NormalCollision.weight_gradient" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.NormalCollision.weight_gradient (Python property) — The gradient of the term&#39;s weight wrt the rest positions." class="md-ellipsis">weight_<wbr>gradient</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.NormalCollision.weight_gradient (Python property) — The gradient of the term&#39;s weight wrt the rest positions.">weight_<wbr>gradient</span>
+    </span>
   </a>
   
 </li>
@@ -2789,7 +4115,10 @@
       
         <li class="md-nav__item">
   <a href="#vertex-vertex-normal-collision" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#vertex-vertex-normal-collision (reference label)" class="md-ellipsis">Vertex-<wbr>Vertex Normal Collision</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#vertex-vertex-normal-collision (reference label)">Vertex-<wbr>Vertex Normal Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Vertex-Vertex Normal Collision">
@@ -2797,7 +4126,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.VertexVertexNormalCollision" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.VertexVertexNormalCollision (Python class) — Bases: VertexVertexCandidate, NormalCollision" class="md-ellipsis">ipctk.<wbr>Vertex<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.VertexVertexNormalCollision (Python class) — Bases: VertexVertexCandidate, NormalCollision">ipctk.<wbr>Vertex<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.VertexVertexNormalCollision">
@@ -2805,21 +4139,36 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.VertexVertexNormalCollision.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.VertexVertexNormalCollision.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.VertexVertexNormalCollision.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.VertexVertexNormalCollision.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.VertexVertexNormalCollision.__init__ (Python method) — Overloaded function." class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.VertexVertexNormalCollision.__init__ (Python method) — Overloaded function.">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.VertexVertexNormalCollision.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.VertexVertexNormalCollision.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.VertexVertexNormalCollision.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
@@ -2836,7 +4185,10 @@
       
         <li class="md-nav__item">
   <a href="#edge-vertex-normal-collision" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#edge-vertex-normal-collision (reference label)" class="md-ellipsis">Edge-<wbr>Vertex Normal Collision</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#edge-vertex-normal-collision (reference label)">Edge-<wbr>Vertex Normal Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Edge-Vertex Normal Collision">
@@ -2844,7 +4196,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeVertexNormalCollision" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.EdgeVertexNormalCollision (Python class) — Bases: EdgeVertexCandidate, NormalCollision" class="md-ellipsis">ipctk.<wbr>Edge<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeVertexNormalCollision (Python class) — Bases: EdgeVertexCandidate, NormalCollision">ipctk.<wbr>Edge<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.EdgeVertexNormalCollision">
@@ -2852,21 +4209,36 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeVertexNormalCollision.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.EdgeVertexNormalCollision.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeVertexNormalCollision.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeVertexNormalCollision.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeVertexNormalCollision.__init__ (Python method) — Overloaded function." class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeVertexNormalCollision.__init__ (Python method) — Overloaded function.">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeVertexNormalCollision.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.EdgeVertexNormalCollision.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeVertexNormalCollision.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
@@ -2883,7 +4255,10 @@
       
         <li class="md-nav__item">
   <a href="#edge-edge-normal-collision" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#edge-edge-normal-collision (reference label)" class="md-ellipsis">Edge-<wbr>Edge Normal Collision</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#edge-edge-normal-collision (reference label)">Edge-<wbr>Edge Normal Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Edge-Edge Normal Collision">
@@ -2891,7 +4266,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.EdgeEdgeNormalCollision (Python class) — Bases: EdgeEdgeCandidate, NormalCollision" class="md-ellipsis">ipctk.<wbr>Edge<wbr>Edge<wbr>Normal<wbr>Collision</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision (Python class) — Bases: EdgeEdgeCandidate, NormalCollision">ipctk.<wbr>Edge<wbr>Edge<wbr>Normal<wbr>Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.EdgeEdgeNormalCollision">
@@ -2899,63 +4279,108 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.EdgeEdgeNormalCollision.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__eq__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeEdgeNormalCollision.__eq__ (Python method)" class="md-ellipsis">__<wbr>eq__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__eq__ (Python method)">__<wbr>eq__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__hash__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.EdgeEdgeNormalCollision.__hash__ (Python attribute)" class="md-ellipsis">__<wbr>hash__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__hash__ (Python attribute)">__<wbr>hash__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeEdgeNormalCollision.__init__ (Python method) — Overloaded function." class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__init__ (Python method) — Overloaded function.">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__lt__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeEdgeNormalCollision.__lt__ (Python method)" class="md-ellipsis">__<wbr>lt__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__lt__ (Python method)">__<wbr>lt__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.EdgeEdgeNormalCollision.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.__ne__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.EdgeEdgeNormalCollision.__ne__ (Python method)" class="md-ellipsis">__<wbr>ne__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.__ne__ (Python method)">__<wbr>ne__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.dtype" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.EdgeEdgeNormalCollision.dtype (Python property) — Cached distance type." class="md-ellipsis">dtype</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.dtype (Python property) — Cached distance type.">dtype</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.EdgeEdgeNormalCollision.eps_x" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.EdgeEdgeNormalCollision.eps_x (Python property) — Mollifier activation threshold." class="md-ellipsis">eps_<wbr>x</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.EdgeEdgeNormalCollision.eps_x (Python property) — Mollifier activation threshold.">eps_<wbr>x</span>
+    </span>
   </a>
   
 </li>
@@ -2972,7 +4397,10 @@
       
         <li class="md-nav__item">
   <a href="#face-vertex-normal-collision" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#face-vertex-normal-collision (reference label)" class="md-ellipsis">Face-<wbr>Vertex Normal Collision</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#face-vertex-normal-collision (reference label)">Face-<wbr>Vertex Normal Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Face-Vertex Normal Collision">
@@ -2980,7 +4408,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.FaceVertexNormalCollision" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.FaceVertexNormalCollision (Python class) — Bases: FaceVertexCandidate, NormalCollision" class="md-ellipsis">ipctk.<wbr>Face<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.FaceVertexNormalCollision (Python class) — Bases: FaceVertexCandidate, NormalCollision">ipctk.<wbr>Face<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.FaceVertexNormalCollision">
@@ -2988,21 +4421,36 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.FaceVertexNormalCollision.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.FaceVertexNormalCollision.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.FaceVertexNormalCollision.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.FaceVertexNormalCollision.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.FaceVertexNormalCollision.__init__ (Python method) — Overloaded function." class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.FaceVertexNormalCollision.__init__ (Python method) — Overloaded function.">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.FaceVertexNormalCollision.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.FaceVertexNormalCollision.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.FaceVertexNormalCollision.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
@@ -3019,7 +4467,10 @@
       
         <li class="md-nav__item">
   <a href="#plane-vertex-normal-collision" class="md-nav__link">
-    <span title="/python-api/normal_collisions.rst#plane-vertex-normal-collision (reference label)" class="md-ellipsis">Plane-<wbr>Vertex Normal Collision</span>
+    
+    <span class="md-ellipsis">
+      <span title="/python-api/normal_collisions.rst#plane-vertex-normal-collision (reference label)">Plane-<wbr>Vertex Normal Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="Plane-Vertex Normal Collision">
@@ -3027,7 +4478,12 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision" class="md-nav__link">
-    <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span><span title="ipctk.PlaneVertexNormalCollision (Python class) — Bases: NormalCollision" class="md-ellipsis">ipctk.<wbr>Plane<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    
+      <span aria-label="Python class" class="objinfo-icon objinfo-icon__data" title="Python class">C</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision (Python class) — Bases: NormalCollision">ipctk.<wbr>Plane<wbr>Vertex<wbr>Normal<wbr>Collision</span>
+    </span>
   </a>
   
     <nav class="md-nav" aria-label="ipctk.PlaneVertexNormalCollision">
@@ -3035,42 +4491,72 @@
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision.__annotations__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.PlaneVertexNormalCollision.__annotations__ (Python attribute)" class="md-ellipsis">__<wbr>annotations__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision.__annotations__ (Python attribute)">__<wbr>annotations__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision.__init__" class="md-nav__link">
-    <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span><span title="ipctk.PlaneVertexNormalCollision.__init__ (Python method)" class="md-ellipsis">__<wbr>init__<wbr></span>
+    
+      <span aria-label="Python method" class="objinfo-icon objinfo-icon__procedure" title="Python method">M</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision.__init__ (Python method)">__<wbr>init__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision.__module__" class="md-nav__link">
-    <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span><span title="ipctk.PlaneVertexNormalCollision.__module__ (Python attribute)" class="md-ellipsis">__<wbr>module__<wbr></span>
+    
+      <span aria-label="Python attribute" class="objinfo-icon objinfo-icon__alias" title="Python attribute">A</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision.__module__ (Python attribute)">__<wbr>module__<wbr></span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision.plane_normal" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.PlaneVertexNormalCollision.plane_normal (Python property) — The plane&#39;s normal." class="md-ellipsis">plane_<wbr>normal</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision.plane_normal (Python property) — The plane&#39;s normal.">plane_<wbr>normal</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision.plane_origin" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.PlaneVertexNormalCollision.plane_origin (Python property) — The plane&#39;s origin." class="md-ellipsis">plane_<wbr>origin</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision.plane_origin (Python property) — The plane&#39;s origin.">plane_<wbr>origin</span>
+    </span>
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#ipctk.PlaneVertexNormalCollision.vertex_id" class="md-nav__link">
-    <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span><span title="ipctk.PlaneVertexNormalCollision.vertex_id (Python property) — The vertex&#39;s id." class="md-ellipsis">vertex_<wbr>id</span>
+    
+      <span aria-label="Python property" class="objinfo-icon objinfo-icon__alias" title="Python property">P</span>
+    
+    <span class="md-ellipsis">
+      <span title="ipctk.PlaneVertexNormalCollision.vertex_id (Python property) — The vertex&#39;s id.">vertex_<wbr>id</span>
+    </span>
   </a>
   
 </li>
@@ -3096,13 +4582,13 @@
           
             <div class="md-content" data-md-component="content">
               <article class="md-content__inner md-typeset" role="main">
+                
+                
                   
 
 
-  <a href="https://github.com/ipc-sim/ipc-toolkit/blob/main/docs/source/python-api/normal_collisions.rst" title="Edit this page" class="md-content__button md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
-  </a>
+  
+  
 
 <h1 id="normal-collisions">Normal Collisions<a class="headerlink" href="#normal-collisions" title="Link to this heading">¶</a></h1>
 <h2 id="id1">Normal Collisions<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
@@ -3240,7 +4726,7 @@
 <span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">*</span></span><a class="n reference internal" href="#ipctk.NormalCollisions.build" title="ipctk.NormalCollisions.build.args (Python parameter)"><span class="n"><span class="pre">args</span></span></a></em>, </span><span class="sig-param-decl"><em class="sig-param"><span class="o"><span class="pre">**</span></span><a class="n reference internal" href="#ipctk.NormalCollisions.build" title="ipctk.NormalCollisions.build.kwargs (Python parameter)"><span class="n"><span class="pre">kwargs</span></span></a></em></span><span class="sig-paren">)</span><a class="headerlink" href="#ipctk.NormalCollisions.build" title="Link to this definition">¶</a></dt>
 <dd><p>Overloaded function.</p>
 <ol class="arabic">
-<li><p>build(self: ipctk.NormalCollisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], dhat: float, dmin: float = 0, broad_phase: ipctk.BroadPhase = &lt;ipctk.HashGrid object at 0x7f618d387070&gt;) -&gt; None</p>
+<li><p>build(self: ipctk.NormalCollisions, mesh: ipc::CollisionMesh, vertices: numpy.ndarray[numpy.float64[m, n]], dhat: float, dmin: float = 0, broad_phase: ipctk.BroadPhase = &lt;ipctk.HashGrid object at 0x7f272456f2b0&gt;) -&gt; None</p>
 <blockquote>
 <div><p>Initialize the set of collisions used to compute the barrier potential.</p>
 <dl class="simple">
@@ -4545,15 +6031,31 @@ eps_x: The mollifier’s threshold.</p>
 
 
 
-  <hr>
-<div class="md-source-file">
-  <small>
+
+
+
+
+  
     
-      Last update:
-      Feb 18, 2025
+  
+  
+
+
+  <aside class="md-source-file">
     
-  </small>
-</div>
+      
+  <span class="md-source-file__fact">
+    <span class="md-icon" title="Last update">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
+    </span>
+    Mar 19, 2025
+  </span>
+
+    
+    
+    
+    
+  </aside>
 
 
 
@@ -4564,54 +6066,19 @@ eps_x: The mollifier’s threshold.</p>
             </div>
           
           
-  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
 
         </div>
         
-          <a href="#" class="md-top md-icon" data-md-component="top" hidden>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
-            Back to top
-          </a>
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
         
       </main>
       
         <footer class="md-footer">
-  
-    
-    <nav class="md-footer__inner md-grid" aria-label="Footer" >
-      
-        
-        <a href="candidates.html" class="md-footer__link md-footer__link--prev" aria-label="Previous: Candidates" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              Candidates
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="tangential_collisions.html" class="md-footer__link md-footer__link--next" aria-label="Next: Tangential Collisions" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Tangential Collisions
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   
   
@@ -4643,10 +6110,11 @@ eps_x: The mollifier’s threshold.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow", "content.tabs.link"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.expand", "navigation.tabs", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "toc.follow", "content.tabs.link"], "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike", "staticVersions": null, "versionPath": "https://ipctk.xyz/versions.json"}}</script>
     
       
-        <script src="../_static/sphinx_immaterial_theme.f9d9eeeb247ace16c.min.js?v=8ec58cb5"></script>
+        <script src="../_static/sphinx_immaterial_theme.32136f45f91ae6956.min.js?v=a7a9472a"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     
   </body>
