@@ -49,7 +49,7 @@ public:
             default_blend_mu);
 
     template <int dim>
-    void build(
+    void build_for_smooth_contact(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const SmoothCollisions<dim>& collisions,
@@ -57,13 +57,13 @@ public:
         const double barrier_stiffness,
         double mu)
     {
-        this->build(
+        this->build_for_smooth_contact(
             mesh, vertices, collisions, params, barrier_stiffness,
             Eigen::VectorXd::Constant(vertices.rows(), mu));
     }
 
     template <int dim>
-    void build(
+    void build_for_smooth_contact(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
         const SmoothCollisions<dim>& collisions,

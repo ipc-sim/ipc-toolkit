@@ -76,13 +76,14 @@ void define_barrier_potential(py::module_& m)
         .def(
             "shape_derivative",
             py::overload_cast<
-                const CollisionsBase&, const CollisionMesh&,
+                const Collisions&, const CollisionMesh&,
                 const Eigen::MatrixXd&>(
                 &BarrierPotential::shape_derivative, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the shape derivative of the potential.
 
-            std::runtime_error If the collision collisions were not built with shape derivatives enabled.
+            std::runtime_error If the collision collisions were not built
+            with shape derivatives enabled.
 
             Parameters:
                 collisions: The set of collisions.
@@ -90,7 +91,8 @@ void define_barrier_potential(py::module_& m)
                 vertices: Vertices of the collision mesh.
 
             Returns:
-                The derivative of the force with respect to X, the rest vertices.
+                The derivative of the force with respect to X, the rest
+                vertices.
             )ipc_Qu8mg5v7",
             py::arg("collisions"), py::arg("mesh"), py::arg("vertices"))
         .def(
@@ -142,7 +144,8 @@ void define_barrier_potential(py::module_& m)
             py::arg("project_hessian_to_psd") = false)
         .def(
             "shape_derivative",
-            [](const DistanceBasedPotential& self, const Collision<4>& collision,
+            [](const DistanceBasedPotential& self,
+               const Collision<4>& collision,
                const std::array<long, 4>& vertex_ids,
                const VectorMax12d& rest_positions,
                const VectorMax12d& positions) {
@@ -180,25 +183,27 @@ void define_smooth_potential(py::module_& m)
 {
     py::class_<ParameterType>(m, "ParameterType")
         .def(
-            py::init<const double&,const double&,const double&,const double&,const double&,
-            const int&>(),
+            py::init<
+                const double&, const double&, const double&, const double&,
+                const double&, const int&, const int&>(),
             R"ipc_Qu8mg5v7(
             Construct parameter set for smooth contact.
 
             Parameters:
                 dhat, alpha_t, beta_t, alpha_n, beta_n, r
             )ipc_Qu8mg5v7",
-            py::arg("dhat"), py::arg("alpha_t"), py::arg("beta_t"), py::arg("alpha_n"),
-            py::arg("beta_n"), py::arg("r"))
+            py::arg("dhat"), py::arg("alpha_t"), py::arg("beta_t"),
+            py::arg("alpha_n"), py::arg("beta_n"), py::arg("r"))
         .def(
-            py::init<const double&,const double&,const double&,const int&>(),
+            py::init<const double&, const double&, const double&, const int&>(),
             R"ipc_Qu8mg5v7(
             Construct parameter set for smooth contact.
 
             Parameters:
                 dhat, alpha_t, beta_t, r
             )ipc_Qu8mg5v7",
-            py::arg("dhat"), py::arg("alpha_t"), py::arg("beta_t"), py::arg("r"))
+            py::arg("dhat"), py::arg("alpha_t"), py::arg("beta_t"),
+            py::arg("r"))
         .def_readonly("dhat", &ParameterType::dhat)
         .def_readonly("alpha_t", &ParameterType::alpha_t)
         .def_readonly("beta_t", &ParameterType::beta_t)
@@ -206,7 +211,8 @@ void define_smooth_potential(py::module_& m)
         .def_readonly("beta_n", &ParameterType::beta_n)
         .def_readonly("r", &ParameterType::r);
 
-    py::class_<SmoothContactPotential<SmoothCollisions<2>>>(m, "SmoothPotential")
+    py::class_<SmoothContactPotential<SmoothCollisions<2>>>(
+        m, "SmoothPotential")
         .def(
             py::init<const ParameterType&>(),
             R"ipc_Qu8mg5v7(
@@ -221,7 +227,9 @@ void define_smooth_potential(py::module_& m)
             py::overload_cast<
                 const SmoothCollisions<2>&, const CollisionMesh&,
                 const Eigen::MatrixXd&>(
-                &SmoothContactPotential<SmoothCollisions<2>>::Potential::operator(), py::const_),
+                &SmoothContactPotential<
+                    SmoothCollisions<2>>::Potential::operator(),
+                py::const_),
             R"ipc_Qu8mg5v7(
             Compute the barrier potential for a set of collisions.
 
@@ -239,7 +247,9 @@ void define_smooth_potential(py::module_& m)
             py::overload_cast<
                 const SmoothCollisions<2>&, const CollisionMesh&,
                 const Eigen::MatrixXd&>(
-                &SmoothContactPotential<SmoothCollisions<2>>::Potential::gradient, py::const_),
+                &SmoothContactPotential<
+                    SmoothCollisions<2>>::Potential::gradient,
+                py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the barrier potential.
 
@@ -255,8 +265,11 @@ void define_smooth_potential(py::module_& m)
         .def(
             "hessian",
             py::overload_cast<
-                const SmoothCollisions<2>&, const CollisionMesh&, const Eigen::MatrixXd&,
-                const bool>(&SmoothContactPotential<SmoothCollisions<2>>::Potential::hessian, py::const_),
+                const SmoothCollisions<2>&, const CollisionMesh&,
+                const Eigen::MatrixXd&, const bool>(
+                &SmoothContactPotential<
+                    SmoothCollisions<2>>::Potential::hessian,
+                py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the barrier potential.
 
@@ -273,8 +286,10 @@ void define_smooth_potential(py::module_& m)
             py::arg("project_hessian_to_psd") = false)
         .def(
             "__call__",
-            py::overload_cast<const SmoothCollision<6>&, const Vector<double, -1, 18>&>(
-                &SmoothContactPotential<SmoothCollisions<2>>::operator(), py::const_),
+            py::overload_cast<
+                const SmoothCollision<6>&, const Vector<double, -1, 18>&>(
+                &SmoothContactPotential<SmoothCollisions<2>>::operator(),
+                py::const_),
             R"ipc_Qu8mg5v7(
             Compute the potential for a single collision.
 
@@ -288,8 +303,10 @@ void define_smooth_potential(py::module_& m)
             py::arg("collision"), py::arg("x"))
         .def(
             "gradient",
-            py::overload_cast<const SmoothCollision<6>&, const Vector<double, -1, 18>&>(
-                &SmoothContactPotential<SmoothCollisions<2>>::gradient, py::const_),
+            py::overload_cast<
+                const SmoothCollision<6>&, const Vector<double, -1, 18>&>(
+                &SmoothContactPotential<SmoothCollisions<2>>::gradient,
+                py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the potential for a single collision.
 
@@ -304,8 +321,10 @@ void define_smooth_potential(py::module_& m)
         .def(
             "hessian",
             py::overload_cast<
-                const SmoothCollision<6>&, const Vector<double, -1, 18>&, const bool>(
-                &SmoothContactPotential<SmoothCollisions<2>>::hessian, py::const_),
+                const SmoothCollision<6>&, const Vector<double, -1, 18>&,
+                const bool>(
+                &SmoothContactPotential<SmoothCollisions<2>>::hessian,
+                py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the potential for a single collision.
 

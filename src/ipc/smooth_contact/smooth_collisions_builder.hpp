@@ -12,7 +12,7 @@ template <int dim> class SmoothCollisionsBuilder;
 
 template <> class SmoothCollisionsBuilder<2> {
 public:
-    SmoothCollisionsBuilder() {}
+    SmoothCollisionsBuilder() { }
 
     void add_edge_vertex_collisions(
         const CollisionMesh& mesh,
@@ -25,9 +25,10 @@ public:
         const size_t end_i);
 
     // -------------------------------------------------------------------------
-    
+
     static void merge(
-        const utils::ParallelCacheType<SmoothCollisionsBuilder<2>>& local_storage,
+        const utils::ParallelCacheType<SmoothCollisionsBuilder<2>>&
+            local_storage,
         SmoothCollisions<2>& merged_collisions);
 
     // Constructed collisions
@@ -49,7 +50,7 @@ public:
 
 template <> class SmoothCollisionsBuilder<3> {
 public:
-    SmoothCollisionsBuilder() {}
+    SmoothCollisionsBuilder() { }
 
     void add_edge_edge_collisions(
         const CollisionMesh& mesh,
@@ -75,7 +76,8 @@ public:
     // -------------------------------------------------------------------------
 
     static void merge(
-        const utils::ParallelCacheType<SmoothCollisionsBuilder<3>>& local_storage,
+        const utils::ParallelCacheType<SmoothCollisionsBuilder<3>>&
+            local_storage,
         SmoothCollisions<3>& merged_collisions);
 
     // Constructed collisions
@@ -84,7 +86,8 @@ public:
 
     // -------------------------------------------------------------------------
 
-    // Store the indices to pairs to avoid duplicates, no need for Face-Vertex and Edge-Edge
+    // Store the indices to pairs to avoid duplicates, no need for Face-Vertex
+    // and Edge-Edge
     unordered_map<
         std::pair<long, long>,
         std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>>

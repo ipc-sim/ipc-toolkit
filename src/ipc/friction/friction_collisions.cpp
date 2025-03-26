@@ -12,7 +12,7 @@
 namespace ipc {
 
 template <int dim>
-void FrictionCollisions::build(
+void FrictionCollisions::build_for_smooth_contact(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const SmoothCollisions<dim>& collisions,
@@ -137,7 +137,7 @@ void FrictionCollisions::build(
 }
 
 template
-void FrictionCollisions::build<2>(
+void FrictionCollisions::build_for_smooth_contact<2>(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const SmoothCollisions<2>& collisions,
@@ -147,7 +147,7 @@ void FrictionCollisions::build<2>(
     const std::function<double(double, double)>& blend_mu);
 
 template
-void FrictionCollisions::build<3>(
+void FrictionCollisions::build_for_smooth_contact<3>(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
     const SmoothCollisions<3>& collisions,

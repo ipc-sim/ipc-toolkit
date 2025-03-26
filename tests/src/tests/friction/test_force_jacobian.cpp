@@ -364,7 +364,7 @@ void check_smooth_friction_force_jacobian(
         collisions.size());
 
     FrictionCollisions friction_collisions;
-    friction_collisions.build(
+    friction_collisions.build_for_smooth_contact<dim>(
         mesh, X + Ut, collisions, params, barrier_stiffness, mu);
     CHECK(friction_collisions.size());
 
@@ -484,15 +484,14 @@ void check_smooth_friction_force_jacobian(
             // fd_collisions.build(mesh, X + fd_Ut, params);
             fd_collisions.collisions.push_back(std::make_shared<SmoothCollisionTemplate<max_vert_3d, Face, Point3>>(0, 0, PointTriangleDistanceType::P_T, mesh, params, params.dhat, X + fd_Ut));
 
-            fd_friction_collisions.build(
+            fd_friction_collisions.build_for_smooth_contact(
                 mesh, X + fd_Ut, fd_collisions, params, barrier_stiffness, mu);
         } else {
             fd_friction_collisions = friction_collisions;
         }
 
         return D.smooth_contact_force(
-            friction_collisions, mesh, X, fd_Ut, velocities, dhat,
-            barrier_stiffness);
+            friction_collisions, mesh, X, fd_Ut, velocities);
     };
     Eigen::MatrixXd fd_JF_wrt_Ut;
     fd::finite_jacobian(fd::flatten(Ut), F_Ut, fd_JF_wrt_Ut);
@@ -500,7 +499,7 @@ void check_smooth_friction_force_jacobian(
     // if (!fd::compare_jacobian(JF_wrt_Ut, fd_JF_wrt_Ut)) {
     //     tests::print_compare_nonzero(JF_wrt_Ut, fd_JF_wrt_Ut);
     // }
-    std::cout << std::setprecision(8) << JF_wrt_Ut.transpose() << "\n\n" << fd_JF_wrt_Ut.transpose() << "\n";
+    // std::cout << std::setprecision(8) << JF_wrt_Ut.transpose() << "\n\n" << fd_JF_wrt_Ut.transpose() << "\n";
     CHECK((JF_wrt_Ut - fd_JF_wrt_Ut).norm() <= 1e-7 * JF_wrt_Ut.norm());
 
     // ///////////////////////////////////////////////////////////////////////////
