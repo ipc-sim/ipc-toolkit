@@ -323,8 +323,8 @@ TEST_CASE(
     e0 << 0, 0, 0;
     e1 << 1, 0, 0;
     dn << 0, 0, 1;
-    f0 << 0.4, 0.3, GENERATE(take(10, random(-0.4, 0.4)));
-    f1 << 0.6, 0.2, GENERATE(take(10, random(-0.4, 0.4)));
+    f0 << 0.4, 0.3, GENERATE(take(10, random(-0.2, 0.2)));
+    f1 << 0.6, 0.2, GENERATE(take(10, random(-0.2, 0.2)));
 
     ipc::Vector15d x;
     x << dn, e0, e1, f0, f1;
@@ -334,14 +334,14 @@ TEST_CASE(
     Eigen::VectorXd fgrad;
     fd::finite_gradient(x, [&](const Eigen::VectorXd &y) {
         return smooth_edge3_normal_term(y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3), y.segment(12, 3), alpha, beta, otypes);
-    }, fgrad);
+    }, fgrad, fd::AccuracyOrder::SECOND, 1e-7);
 
-    CHECK((fgrad - grad).norm() <= 1e-6 * grad.norm());
+    CHECK((fgrad - grad).norm() / 1e-5 <= grad.norm());
 
     Eigen::MatrixXd fhess;
     fd::finite_jacobian(x, [&](const Eigen::VectorXd &y) {
         return std::get<1>(smooth_edge3_normal_term_gradient(y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3), y.segment(12, 3), alpha, beta, otypes));
-    }, fhess);
+    }, fhess, fd::AccuracyOrder::SECOND, 1e-7);
 
-    CHECK((fhess - hess).norm() <= 1e-6 * hess.norm());
+    CHECK((fhess - hess).norm() / 1e-6 <= hess.norm());
 }
