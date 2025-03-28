@@ -166,13 +166,14 @@ SmoothFrictionData<3> smooth_friction_data_generator()
     barrier_stiffness = pow(10, GENERATE(range(0, 2)));
 #else
     epsv_times_h = 1.; // pow(10, GENERATE(range(-6, 0, 2)));
-    dhat = 1e-2; // pow(10, GENERATE(range(-4, 0, 2)));
+    dhat = 1e-1; // pow(10, GENERATE(range(-4, 0, 2)));
     barrier_stiffness = 1.; // 100;
 #endif
 
     param = ParameterType(dhat, 0.8, 0, 1, 0, 2);
     const double max_d = dhat * 0.9;
-    const double d = GENERATE_COPY(range(1e-5, max_d, max_d / 10));
+    const double min_d = dhat * 0.1;
+    const double d = GENERATE_COPY(range(min_d, max_d, max_d / 10));
     SECTION("point-triangle")
     {
         V0.resize(8, 3);
@@ -186,8 +187,12 @@ SmoothFrictionData<3> smooth_friction_data_generator()
               0, -2, 0;
 
         V1 = V0;
-        double dy = GENERATE(-1, 1, 1e-1);
-        V1.row(0) << 1, d + dy, 0; // point at t=1
+        Eigen::Vector3d disp;
+        disp << 1, 0, 0;
+        V1.row(0) += disp.transpose();
+        V1.row(4) += disp.transpose();
+        V1.row(5) += disp.transpose();
+        V1.row(6) += disp.transpose();
 
         F.resize(8, 3);
         F << 1, 2, 3,
@@ -201,63 +206,145 @@ SmoothFrictionData<3> smooth_friction_data_generator()
         igl::edges(F, E);
 
         CollisionMesh mesh(V0, E, F);
-    	// igl::writeOBJ(
-    	// 	"collision.obj",
-    	// 	V0, F);
-        // std::terminate();
         collisions.collisions.push_back(std::make_shared<SmoothCollisionTemplate<max_vert_3d, Face, Point3>>(0, 0, PointTriangleDistanceType::P_T, mesh, param, dhat, V0));
     }
-    // SECTION("edge-edge")
-    // {
-    //     V0.resize(4, 3);
-    //     V0.row(0) << -1, d, 0; // edge a vertex 0 at t=0
-    //     V0.row(1) << 1, d, 0;  // edge a vertex 1 at t=0
-    //     V0.row(2) << 0, 0, -1; // edge b vertex 0 at t=0
-    //     V0.row(3) << 0, 0, 1;  // edge b vertex 1 at t=0
+    SECTION("edge-edge")
+    {
+        V0.resize(10, 3);
+        V0.row(0) << -1, d, 0; // edge a vertex 0 at t=0
+        V0.row(1) << 1, d, 0;  // edge a vertex 1 at t=0
+        V0.row(2) << 0, 0, -1; // edge b vertex 0 at t=0
+        V0.row(3) << 0, 0, 1;  // edge b vertex 1 at t=0
+        V0.row(4) << 0, d, -1;
+        V0.row(5) << 0, d, 1;
+        V0.row(6) << 1, 0, 0;
+        V0.row(7) << -1, 0, 0;
+        V0.row(8) << 0, 2 * d, 0;
+        V0.row(9) << 0, -d, 0;
 
-    //     V1 = V0;
-    //     // double dy = GENERATE(-1, 1, 1e-1);
-    //     V1.row(0) << 0.5, d, 0; // edge a vertex 0 at t=1
-    //     V1.row(1) << 2.5, d, 0; // edge a vertex 1 at t=1
+        V1 = V0;
+        Eigen::Vector3d disp;
+        disp << 1.5, 0, 0;
+        V1.row(0) += disp.transpose();
+        V1.row(1) += disp.transpose();
+        V1.row(4) += disp.transpose();
+        V1.row(5) += disp.transpose();
+        V1.row(8) += disp.transpose();
 
-    //     E.resize(2, 2);
-    //     E.row(0) << 0, 1;
-    //     E.row(1) << 2, 3;
+        F.resize(12, 3);
+        F << 1, 0, 4,
+             1, 5, 0,
+             1, 4, 8,
+             4, 0, 8,
+             0, 5, 8,
+             5, 1, 8,
+             2, 7, 3,
+             2, 3, 6,
+             2, 6, 9,
+             6, 3, 9,
+             3, 7, 9,
+             7, 2, 9;
 
-    //     CollisionMesh mesh(V0, E, F);
-    //     collisions.collisions.push_back(std::make_shared<SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>(0, 1, EdgeEdgeDistanceType::EA_EB, mesh, param, dhat, V0));
-    // }
-    // SECTION("point-edge")
-    // {
-    //     V0.resize(3, 3);
-    //     V0.row(0) << -0.5, d, 0; // point at t=0
-    //     V0.row(1) << 0, 0, -1;   // edge vertex 0 at t=0
-    //     V0.row(2) << 0, 0, 1;    // edge vertex 1 at t=0
+        igl::edges(F, E);
 
-    //     V1 = V0;
-    //     // double dy = GENERATE(-1, 1, 1e-1);
-    //     V1.row(0) << 0.5, d, 0; // point at t=1
+        int e0, e1;
+        for (int e = 0; e < E.rows(); e++)
+        {
+            if (std::min(E(e, 0), E(e, 1)) == 0 &&
+                std::max(E(e, 0), E(e, 1)) == 1)
+                e0 = e;
+            else if (std::min(E(e, 0), E(e, 1)) == 2 &&
+                std::max(E(e, 0), E(e, 1)) == 3)
+                e1 = e;
+        }
+        assert(e0 < E.rows());
+        assert(e1 < E.rows());
 
-    //     E.resize(1, 2);
-    //     E.row(0) << 1, 2;
+        CollisionMesh mesh(V0, E, F);
+        collisions.collisions.push_back(std::make_shared<SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>(e0, e1, EdgeEdgeDistanceType::EA_EB, mesh, param, dhat, V0));
+    }
+    SECTION("point-edge")
+    {
+        V0.resize(9, 3);
+        V0 << 0, d, 0, // point at t=0
+        0, 0, -1,   // edge vertex 0 at t=0
+        0, 0, 1,    // edge vertex 1 at t=0
+        -1, d * 2, 1,
+        2, d * 2, 0,
+        -1, d * 2, -1,
+        1, 0, 0,
+        -1, 0, 0,
+        0, -d, 0;
 
-    //     collisions.ev_collisions.emplace_back(0, 1);
-    //     collisions.ev_collisions.back().weight_gradient.resize(V0.size());
-    // }
-    // SECTION("point-point")
-    // {
-    //     V0.resize(2, 3);
-    //     V0.row(0) << -1, d, 0; // point 0 at t=0
-    //     V0.row(1) << 1, d, 0;  // point 1 at t=0
+        V1 = V0;
+        Eigen::Vector3d disp;
+        disp << 1, 0, 0;
+        V1.row(0) += disp.transpose();
+        V1.row(3) += disp.transpose();
+        V1.row(4) += disp.transpose();
+        V1.row(5) += disp.transpose();
 
-    //     V1 = V0;
-    //     // double dy = GENERATE(-1, 1, 1e-1);
-    //     V1.row(0) << 0.5, d, 0;  // edge a vertex 0 at t=1
-    //     V1.row(1) << -0.5, d, 0; // edge a vertex 1 at t=1
+        F.resize(10, 3);
+        F << 3, 0, 4,
+             4, 0, 5,
+             5, 0, 3,
+             3, 4, 5,
+             1, 7, 2,
+             1, 2, 6,
+             2, 7, 8,
+             7, 1, 8,
+             1, 6, 8,
+             6, 2, 8;
 
-    //     collisions.vv_collisions.emplace_back(0, 1);
-    //     collisions.vv_collisions.back().weight_gradient.resize(V0.size());
-    // }
+        igl::edges(F, E);
+
+        int e = 0;
+        for (; e < E.rows(); e++)
+        {
+            if (std::min(E(e, 0), E(e, 1)) == 1 &&
+                std::max(E(e, 0), E(e, 1)) == 2)
+                break;
+        }
+        assert(e < E.rows());
+
+        CollisionMesh mesh(V0, E, F);
+        collisions.collisions.push_back(std::make_shared<SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>(e, 0, PointEdgeDistanceType::AUTO, mesh, param, dhat, V0));
+    }
+    SECTION("point-point")
+    {
+        V0.resize(8, 3);
+
+        V0 << 0, 0, 0,
+            0, d, 0,
+            -1, -d, 1,
+            2, -d, 0,
+            -1, -d, -1,
+            -1, 2 * d, 1,
+            2, 2 * d, 0,
+            -1, 2 * d, -1;
+
+        V1 = V0;
+        Eigen::Vector3d disp;
+        disp << 1, 0, 0;
+        V1.row(0) += disp.transpose();
+        V1.row(2) += disp.transpose();
+        V1.row(3) += disp.transpose();
+        V1.row(4) += disp.transpose();
+
+        F.resize(8, 3);
+        F << 0, 2, 3,
+            0, 3, 4,
+            0, 4, 2,
+            3, 2, 4,
+            1, 6, 5,
+            1, 5, 7,
+            1, 7, 6,
+            5, 6, 7;
+        igl::edges(F, E);
+
+        CollisionMesh mesh(V0, E, F);
+        collisions.collisions.push_back(std::make_shared<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>(0, 1, PointPointDistanceType::AUTO, mesh, param, dhat, V0));
+    }
     // SECTION("point-edge 2D")
     // {
     //     V0.resize(3, 2);

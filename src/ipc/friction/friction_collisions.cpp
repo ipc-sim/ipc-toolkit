@@ -53,7 +53,7 @@ void FrictionCollisions::build_for_smooth_contact(
             else if (const auto cev = dynamic_cast<const SmoothCollisionTemplate<max_vert_3d, Edge3, Point3> *>(&cc))
             {
                 Eigen::VectorXd collision_points = cev->core_dof(vertices, edges, faces);
-                collision_points = collision_points({6,7,8,0,1,2,3,4,5}).eval();
+                collision_points = collision_points({6,7,8,0,1,2,3,4,5}).eval(); // {edge, point} -> {point, edge}
                 FC_ev.emplace_back(
                     EdgeVertexCollision(cc[0], cc[1], 1., Eigen::SparseVector<double>()), collision_points, contact_force);
                 const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
@@ -90,7 +90,7 @@ void FrictionCollisions::build_for_smooth_contact(
             else if (const auto cfv = dynamic_cast<const SmoothCollisionTemplate<max_vert_3d, Face, Point3> *>(&cc))
             {
                 Eigen::VectorXd collision_points = cfv->core_dof(vertices, edges, faces);
-                collision_points = collision_points({9,10,11,0,1,2,3,4,5,6,7,8}).eval();
+                collision_points = collision_points({9,10,11,0,1,2,3,4,5,6,7,8}).eval(); // {face, point} -> {point, face}
                 FC_fv.emplace_back(
                     FaceVertexCollision(cc[0], cc[1], 1., Eigen::SparseVector<double>()), collision_points, contact_force);
                 const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
@@ -120,7 +120,7 @@ void FrictionCollisions::build_for_smooth_contact(
             else if (const auto cev = dynamic_cast<const SmoothCollisionTemplate<max_vert_2d, Edge2, Point2> *>(&cc))
             {
                 Eigen::VectorXd collision_points = cev->core_dof(vertices, edges, faces);
-                collision_points = collision_points({4,5,0,1,2,3}).eval();
+                collision_points = collision_points({4,5,0,1,2,3}).eval(); // {edge, point} -> {point, edge}
                 FC_ev.emplace_back(
                     EdgeVertexCollision(cc[0], cc[1], 1., Eigen::SparseVector<double>()), collision_points, contact_force);
                 const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);

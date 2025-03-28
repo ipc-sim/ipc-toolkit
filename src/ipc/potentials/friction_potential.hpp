@@ -172,6 +172,23 @@ public:
         const double dmin = 0) const;
 
 
+    /// @brief Compute the friction force Jacobian assuming the contact force magnitude being 1.
+    /// @param collision The collision
+    /// @param rest_positions Rest positions of the vertices (rowwise).
+    /// @param lagged_displacements Previous displacements of the vertices (rowwise).
+    /// @param velocities Current displacements of the vertices (rowwise).
+    /// @param barrier_potential Barrier potential (used for normal force magnitude).
+    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param wrt Variable to differentiate the friction force with respect to.
+    /// @param dmin Minimum distance (used for normal force magnitude).
+    /// @return Friction force Jacobian
+    MatrixMax<double, element_size, element_size> force_jacobian_unit(
+        const FrictionCollision& collision,
+        const Vector<double, -1, element_size>& lagged_positions,
+        const Vector<double, -1, element_size>& velocities,
+        const DiffWRT wrt) const;
+
+
     /// @brief Compute the friction force.
     /// @param collision The collision
     /// @param rest_positions Rest positions of the vertices (rowwise).
@@ -186,8 +203,8 @@ public:
         const Vector<double, -1, element_size>& rest_positions,
         const Vector<double, -1, element_size>& lagged_displacements,
         const Vector<double, -1, element_size>& velocities,
-        const double dmin = 0,
-        const bool no_mu = false) const; //< whether to not multiply by mu
+        const bool no_mu = false,
+        const bool no_contact_force_multiplier = false) const; //< whether to not multiply by mu
 
     /// @brief Compute the friction force Jacobian.
     /// @param collision The collision
@@ -203,8 +220,7 @@ public:
         const Vector<double, -1, element_size>& rest_positions,
         const Vector<double, -1, element_size>& lagged_displacements,
         const Vector<double, -1, element_size>& velocities,
-        const DiffWRT wrt,
-        const double dmin = 0) const;
+        const DiffWRT wrt) const;
 
 protected:
     /// @brief The smooth friction mollifier parameter \f$\epsilon_v\f$.

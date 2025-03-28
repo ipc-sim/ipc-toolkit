@@ -164,7 +164,7 @@ Eigen::VectorXd FrictionPotential::smooth_contact_force(
 
     tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
         Eigen::VectorXd::Zero(velocities.size()));
-    
+
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), collisions.size()),
         [&](const tbb::blocked_range<size_t>& r) {
@@ -176,8 +176,8 @@ Eigen::VectorXd FrictionPotential::smooth_contact_force(
                     local_force = smooth_contact_force(
                         collision, collision.dof(rest_positions, edges, faces),
                         collision.dof(lagged_displacements, edges, faces),
-                        collision.dof(velocities, edges, faces), //
-                        dmin, no_mu);
+                        collision.dof(velocities, edges, faces),
+                        no_mu);
 
                 const std::array<long, 4> vis =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
@@ -197,7 +197,7 @@ Eigen::SparseMatrix<double> FrictionPotential::smooth_contact_force_jacobian(
     const Eigen::MatrixXd& rest_positions,
     const Eigen::MatrixXd& lagged_displacements,
     const Eigen::MatrixXd& velocities,
-    const ParameterType &params,
+    const ParameterType& params,
     const DiffWRT wrt,
     const double dmin) const
 {
@@ -213,6 +213,8 @@ Eigen::SparseMatrix<double> FrictionPotential::smooth_contact_force_jacobian(
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
         storage;
 
+    const Eigen::MatrixXd lagged_positions = rest_positions + lagged_displacements;
+
     tbb::parallel_for(
         tbb::blocked_range<size_t>(size_t(0), collisions.size()),
         [&](const tbb::blocked_range<size_t>& r) {
@@ -221,15 +223,22 @@ Eigen::SparseMatrix<double> FrictionPotential::smooth_contact_force_jacobian(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const FrictionCollision& collision = collisions[i];
 
-                // This jacobian doesn't include the derivatives of normal contact force
+                // This jacobian doesn't include the derivatives of normal
+                // contact force
                 const MatrixMax<
                     double, FrictionPotential::element_size,
                     FrictionPotential::element_size>
-                    local_force_jacobian = smooth_contact_force_jacobian(
-                        collision, collision.dof(rest_positions, edges, faces),
-                        collision.dof(lagged_displacements, edges, faces),
-                        collision.dof(velocities, edges, faces), //
-                        wrt, dmin);
+                    local_force_jacobian =
+                        collision.normal_force_magnitude
+                    * force_jacobian_unit(
+                            collision,
+                            collision.dof(lagged_positions, edges, faces),
+                            collision.dof(velocities, edges, faces), wrt);
+                // smooth_contact_force_jacobian(
+                //     collision, collision.dof(rest_positions, edges, faces),
+                //     collision.dof(lagged_displacements, edges, faces),
+                //     collision.dof(velocities, edges, faces), //
+                //     wrt);
 
                 const std::array<long, 4> vis =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
@@ -245,35 +254,42 @@ Eigen::SparseMatrix<double> FrictionPotential::smooth_contact_force_jacobian(
                     local_force = smooth_contact_force(
                         collision, collision.dof(rest_positions, edges, faces),
                         collision.dof(lagged_displacements, edges, faces),
-                        collision.dof(velocities, edges, faces), //
-                        dmin, false);
-                
-                std::cout << "local fric force " << local_force.transpose() << "\n\n";
+                        collision.dof(velocities, edges, faces),
+                        false, true);
 
+                // normal_force_grad is the gradient of contact force norm
                 Eigen::VectorXd normal_force_grad;
                 std::vector<long> cc_vert_ids;
-                Eigen::MatrixXd Xt = rest_positions + lagged_displacements;
-                if (dim == 2)
                 {
-                    auto cc = collision.smooth_collision_2d;
-                    const Eigen::VectorXd contact_grad = cc->gradient(cc->dof(Xt, edges, faces), params);
-                    const Eigen::MatrixXd contact_hess = cc->hessian(cc->dof(Xt, edges, faces), params);
-                    normal_force_grad = (1 / contact_grad.squaredNorm()) * (contact_hess * contact_grad);
-                    auto tmp_ids = cc->vertex_ids(edges, faces);
-                    cc_vert_ids = std::vector(tmp_ids.begin(), tmp_ids.end());
-                }
-                else if (dim == 3)
-                {
-                    auto cc = collision.smooth_collision_3d;
-                    const Eigen::VectorXd contact_grad = cc->gradient(cc->dof(Xt, edges, faces), params);
-                    const Eigen::MatrixXd contact_hess = cc->hessian(cc->dof(Xt, edges, faces), params);
-                    normal_force_grad = (1 / contact_grad.squaredNorm()) * (contact_hess * contact_grad);
-                    auto tmp_ids = cc->vertex_ids(edges, faces);
-                    cc_vert_ids = std::vector(tmp_ids.begin(), tmp_ids.end());
+                    Eigen::MatrixXd Xt = rest_positions + lagged_displacements;
+                    if (dim == 2) {
+                        auto cc = collision.smooth_collision_2d;
+                        const Eigen::VectorXd contact_grad =
+                            cc->gradient(cc->dof(Xt, edges, faces), params);
+                        const Eigen::MatrixXd contact_hess =
+                            cc->hessian(cc->dof(Xt, edges, faces), params);
+                        normal_force_grad = (1 / contact_grad.norm())
+                            * (contact_hess * contact_grad);
+                        auto tmp_ids = cc->vertex_ids(edges, faces);
+                        cc_vert_ids =
+                            std::vector(tmp_ids.begin(), tmp_ids.end());
+                    } else if (dim == 3) {
+                        auto cc = collision.smooth_collision_3d;
+                        const Eigen::VectorXd contact_grad =
+                            cc->gradient(cc->dof(Xt, edges, faces), params);
+                        const Eigen::MatrixXd contact_hess =
+                            cc->hessian(cc->dof(Xt, edges, faces), params);
+                        normal_force_grad = (1 / contact_grad.norm())
+                            * (contact_hess * contact_grad);
+                        auto tmp_ids = cc->vertex_ids(edges, faces);
+                        cc_vert_ids =
+                            std::vector(tmp_ids.begin(), tmp_ids.end());
+                    }
                 }
 
                 local_jacobian_to_global_triplets(
-                    local_force * normal_force_grad.transpose(), vis, cc_vert_ids, dim, jac_triplets);
+                    local_force * normal_force_grad.transpose(), vis,
+                    cc_vert_ids, dim, jac_triplets);
             }
         });
 
@@ -291,10 +307,12 @@ Eigen::SparseMatrix<double> FrictionPotential::smooth_contact_force_jacobian(
     // if (wrt == DiffWRT::REST_POSITIONS) {
     //     for (int i = 0; i < collisions.size(); i++) {
     //         const FrictionCollision& collision = collisions[i];
-    //         assert(collision.weight_gradient.size() == rest_positions.size());
-    //         if (collision.weight_gradient.size() != rest_positions.size()) {
+    //         assert(collision.weight_gradient.size() ==
+    //         rest_positions.size()); if (collision.weight_gradient.size() !=
+    //         rest_positions.size()) {
     //             throw std::runtime_error(
-    //                 "Shape derivative is not computed for friction collision!");
+    //                 "Shape derivative is not computed for friction
+    //                 collision!");
     //         }
 
     //         Vector<double, -1, FrictionPotential::element_size> local_force =
@@ -572,6 +590,87 @@ FrictionPotential::force_jacobian(
     const MatrixMax<double, FrictionPotential::element_size, 2> T =
         Gamma.transpose() * P;
 
+    // Compute τ = PᵀΓv
+    const VectorMax2d tau = P.transpose() * Gamma * velocities;
+
+    // Compute f₁(‖τ‖)/‖τ‖
+    const double tau_norm = tau.norm();
+    const double f1_over_norm_tau = f1_SF_over_x(tau_norm, epsv());
+
+    // Premultiplied values
+    const Vector<double, -1, FrictionPotential::element_size> T_times_tau =
+        T * tau;
+
+    // ------------------------------------------------------------------------
+    // Compute J = ∇F = ∇(-μ N f₁(‖τ‖)/‖τ‖ T τ)
+    MatrixMax<
+        double, FrictionPotential::element_size,
+        FrictionPotential::element_size>
+        J = MatrixMax<
+            double, FrictionPotential::element_size,
+            FrictionPotential::element_size>::Zero(n, n);
+
+    // = -μ f₁(‖τ‖)/‖τ‖ (T τ) [∇N]ᵀ
+    if (need_jac_N_or_T) {
+        J = f1_over_norm_tau * T_times_tau * grad_N.transpose();
+    }
+
+    // NOTE: ∇ₓw(x) is not local to the collision pair (i.e., it involves more
+    // than the 4 collisioning vertices), so we do not have enough information
+    // here to compute the gradient. Instead this should be handled outside of
+    // the function. For a simple multiplicitive model (∑ᵢ wᵢ Fᵢ) this can be
+    // done easily.
+    J *= -collision.weight * collision.mu;
+
+    J += N
+        * force_jacobian_unit(
+             collision, lagged_positions, velocities, wrt);
+
+    return J;
+}
+
+MatrixMax<
+    double,
+    FrictionPotential::element_size,
+    FrictionPotential::element_size>
+FrictionPotential::force_jacobian_unit(
+    const FrictionCollision& collision,
+    const Vector<double, -1, FrictionPotential::element_size>&
+        lagged_positions, // = x + u^t
+    const Vector<double, -1, FrictionPotential::element_size>&
+        velocities, // = v
+    const DiffWRT wrt) const
+{
+    // x is the rest position
+    // u is the displacment at the begginging of the lagged solve
+    // v is the current velocity
+    //
+    // τ = T(x + u)ᵀv is the tangential sliding velocity
+    // F(x, u, v) = -μ f₁(‖τ‖)/‖τ‖ T(x + u) τ
+    //
+    // Compute ∇F
+    assert(lagged_positions.size() == velocities.size());
+    const int n = lagged_positions.size();
+    const int dim = n / collision.num_vertices();
+    assert(n % collision.num_vertices() == 0);
+
+    const bool need_jac_N_or_T = wrt != DiffWRT::VELOCITIES;
+
+    // Compute P
+    const MatrixMax<double, 3, 2> P =
+        collision.compute_tangent_basis(lagged_positions);
+
+    // Compute β
+    const VectorMax2d beta = collision.compute_closest_point(lagged_positions);
+
+    // Compute Γ
+    const MatrixMax<double, 3, FrictionPotential::element_size> Gamma =
+        collision.relative_velocity_matrix(beta);
+
+    // Compute T = ΓᵀP
+    const MatrixMax<double, FrictionPotential::element_size, 2> T =
+        Gamma.transpose() * P;
+
     // Compute ∇T
     MatrixMax<
         double,
@@ -653,17 +752,12 @@ FrictionPotential::force_jacobian(
             double, FrictionPotential::element_size,
             FrictionPotential::element_size>::Zero(n, n);
 
-    // = -μ f₁(‖τ‖)/‖τ‖ (T τ) [∇N]ᵀ
-    if (need_jac_N_or_T) {
-        J = f1_over_norm_tau * T_times_tau * grad_N.transpose();
-    }
-
     // + -μ N T τ [∇(f₁(‖τ‖)/‖τ‖)]
-    J += N * T_times_tau * grad_f1_over_norm_tau.transpose();
+    J += T_times_tau * grad_f1_over_norm_tau.transpose();
 
     // + -μ N f₁(‖τ‖)/‖τ‖ [∇T] τ
     if (need_jac_N_or_T) {
-        const VectorMax2d scaled_tau = N * f1_over_norm_tau * tau;
+        const VectorMax2d scaled_tau = f1_over_norm_tau * tau;
         for (int i = 0; i < n; i++) {
             // ∂J/∂xᵢ = ∂T/∂xᵢ * τ
             J.col(i) += jac_T.middleRows(i * n, n) * scaled_tau;
@@ -671,7 +765,7 @@ FrictionPotential::force_jacobian(
     }
 
     // + -μ N f₁(‖τ‖)/‖τ‖ T [∇τ]
-    J += N * f1_over_norm_tau * T * jac_tau;
+    J += f1_over_norm_tau * T * jac_tau;
 
     // NOTE: ∇ₓw(x) is not local to the collision pair (i.e., it involves more
     // than the 4 collisioning vertices), so we do not have enough information
@@ -683,7 +777,8 @@ FrictionPotential::force_jacobian(
     return J;
 }
 
-Vector<double, -1, FrictionPotential::element_size> FrictionPotential::smooth_contact_force(
+Vector<double, -1, FrictionPotential::element_size>
+FrictionPotential::smooth_contact_force(
     const FrictionCollision& collision,
     const Vector<double, -1, FrictionPotential::element_size>&
         rest_positions, // = x
@@ -691,8 +786,8 @@ Vector<double, -1, FrictionPotential::element_size> FrictionPotential::smooth_co
         lagged_displacements, // = u
     const Vector<double, -1, FrictionPotential::element_size>&
         velocities, // = v
-    const double dmin,
-    const bool no_mu) const
+    const bool no_mu,
+    const bool no_contact_force_multiplier) const
 {
     // x is the rest position
     // u is the displacment at the begginging of the lagged solve
@@ -739,12 +834,11 @@ Vector<double, -1, FrictionPotential::element_size> FrictionPotential::smooth_co
 
     // F = -μ N f₁(‖τ‖)/‖τ‖ T τ
     // NOTE: no_mu -> leave mu out of this function (i.e., assuming mu = 1)
-    return -collision.weight * (no_mu ? 1.0 : collision.mu) * N
-        * f1_over_norm_tau * T * tau;
+    return -collision.weight * (no_mu ? 1.0 : collision.mu)
+        * (no_contact_force_multiplier ? 1.0 : N) * f1_over_norm_tau * T * tau;
 }
 
-Eigen::MatrixXd
-FrictionPotential::smooth_contact_force_jacobian(
+Eigen::MatrixXd FrictionPotential::smooth_contact_force_jacobian(
     const FrictionCollision& collision,
     const Vector<double, -1, FrictionPotential::element_size>&
         rest_positions, // = x
@@ -752,8 +846,7 @@ FrictionPotential::smooth_contact_force_jacobian(
         lagged_displacements, // = u
     const Vector<double, -1, FrictionPotential::element_size>&
         velocities, // = v
-    const DiffWRT wrt,
-    const double dmin) const
+    const DiffWRT wrt) const
 {
     // x is the rest position
     // u is the displacment at the begginging of the lagged solve
@@ -779,7 +872,7 @@ FrictionPotential::smooth_contact_force_jacobian(
         rest_positions + lagged_displacements; // = x + u
     const bool need_jac_N_or_T = wrt != DiffWRT::VELOCITIES;
 
-    // Compute ∇N
+    // Compute ∇N -- commented, compute it outside
     // Vector<double, -1, FrictionPotential::element_size> grad_N;
     // if (need_jac_N_or_T) {
     //     // ∇ₓN = ∇ᵤN
