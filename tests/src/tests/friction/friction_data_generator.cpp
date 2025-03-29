@@ -188,7 +188,7 @@ SmoothFrictionData<3> smooth_friction_data_generator_3d()
 
         V1 = V0;
         Eigen::Vector3d disp;
-        disp << 1, 0, 0;
+        disp << 0.5, 0, 0;
         V1.row(0) += disp.transpose();
         V1.row(4) += disp.transpose();
         V1.row(5) += disp.transpose();
@@ -224,7 +224,7 @@ SmoothFrictionData<3> smooth_friction_data_generator_3d()
 
         V1 = V0;
         Eigen::Vector3d disp;
-        disp << 1.5, 0, 0;
+        disp << 0.5, 0, 0;
         V1.row(0) += disp.transpose();
         V1.row(1) += disp.transpose();
         V1.row(4) += disp.transpose();
@@ -278,7 +278,7 @@ SmoothFrictionData<3> smooth_friction_data_generator_3d()
 
         V1 = V0;
         Eigen::Vector3d disp;
-        disp << 1, 0, 0;
+        disp << 0.5, 0, 0;
         V1.row(0) += disp.transpose();
         V1.row(3) += disp.transpose();
         V1.row(4) += disp.transpose();
@@ -325,7 +325,7 @@ SmoothFrictionData<3> smooth_friction_data_generator_3d()
 
         V1 = V0;
         Eigen::Vector3d disp;
-        disp << 1, 0, 0;
+        disp << 0.5, 0, 0;
         V1.row(0) += disp.transpose();
         V1.row(2) += disp.transpose();
         V1.row(3) += disp.transpose();
@@ -429,13 +429,13 @@ SmoothFrictionData<2> smooth_friction_data_generator_2d()
         V0 << d, 0, // point at t=0
         0, -1,   // edge vertex 0 at t=0
         0,  1,    // edge vertex 1 at t=0
-        2*d, -1,
-        2*d, 1,
+        1 + d, -1,
+        1 + d, 1,
         -1, 0;
 
         V1 = V0;
         Eigen::Vector2d disp;
-        disp << 0, 1;
+        disp << 0, 0.5;
         V1.row(0) += disp.transpose();
         V1.row(3) += disp.transpose();
         V1.row(4) += disp.transpose();
@@ -444,34 +444,52 @@ SmoothFrictionData<2> smooth_friction_data_generator_2d()
         F << 0, 3, 4,
              1, 2, 5;
 
-        igl::edges(F, E);
+        E.resize(6, 2);
+        E << 0, 3,
+             3, 4,
+             4, 0,
+             1, 2,
+             2, 5,
+             5, 1;
+        // igl::edges(F, E);
 
-        int e = 0;
-        for (; e < E.rows(); e++)
-        {
-            if (std::min(E(e, 0), E(e, 1)) == 1 &&
-                std::max(E(e, 0), E(e, 1)) == 2)
-                break;
-        }
-        assert(e < E.rows());
+        int e = 3;
 
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(std::make_shared<SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>(e, 0, PointEdgeDistanceType::AUTO, mesh, param, dhat, V0));
     }
-    // SECTION("point-point 2D")
-    // {
-    //     V0.resize(2, 2);
-    //     V0.row(0) << -1, d; // point 0 at t=0
-    //     V0.row(1) << 1, d;  // point 1 at t=0
+    SECTION("point-point 2D")
+    {
+        V0.resize(6, 2);
+        V0 << d, 0,
+            0,  0,
+            1 + d, -1,
+            1 + d, 1,
+            0, -1,
+            0,  1;
 
-    //     V1 = V0;
-    //     // double dy = GENERATE(-1, 1, 1e-1);
-    //     V1.row(0) << 0.5, d;  // edge a vertex 0 at t=1
-    //     V1.row(1) << -0.5, d; // edge a vertex 1 at t=1
+        V1 = V0;
+        Eigen::Vector2d disp;
+        disp << 0, 0.5;
+        V1.row(0) += disp.transpose();
+        V1.row(2) += disp.transpose();
+        V1.row(3) += disp.transpose();
 
-    //     collisions.vv_collisions.emplace_back(0, 1);
-    //     collisions.vv_collisions.back().weight_gradient.resize(V0.size());
-    // }
+        F.resize(2, 3);
+        F << 0, 2, 3,
+             1, 5, 4;
+
+        E.resize(6, 2);
+        E << 0, 2,
+             2, 3,
+             3, 0,
+             1, 5,
+             5, 4,
+             4, 1;
+
+        CollisionMesh mesh(V0, E, F);
+        collisions.collisions.push_back(std::make_shared<SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(0, 1, PointPointDistanceType::AUTO, mesh, param, dhat, V0));
+     }
 
     return data;
 }

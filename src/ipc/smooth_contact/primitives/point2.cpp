@@ -9,7 +9,7 @@ Point2::Point2(const long &id,
     const ParameterType& param)
 : Primitive(id, param)
 {
-    _vert_ids.resize(3);
+    _vert_ids = {{-1, -1, -1}};
     _vert_ids[0] = id;
 
     if (mesh.vertex_edge_adjacencies()[id].size() != 2)
