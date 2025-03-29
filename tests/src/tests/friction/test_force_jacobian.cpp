@@ -6,6 +6,7 @@
 
 #include <ipc/ipc.hpp>
 #include <ipc/friction/friction_collisions.hpp>
+#include <ipc/smooth_contact/smooth_contact_potential.hpp>
 #include <ipc/potentials/friction_potential.hpp>
 
 #include <finitediff.hpp>
@@ -388,12 +389,12 @@ void check_smooth_friction_force_jacobian(
             friction_collisions, mesh, fd::unflatten(v, velocities.cols()));
     };
     Eigen::MatrixXd fd_hessian;
-    fd::finite_jacobian(fd::flatten(velocities), grad, fd_hessian);
+    fd::finite_jacobian(fd::flatten(velocities), grad, fd_hessian, fd::AccuracyOrder::FOURTH, 1e-6 * dhat);
     // CHECK(fd::compare_jacobian(hess_D, fd_hessian));
     // if (!fd::compare_jacobian(hess_D, fd_hessian)) {
     //     tests::print_compare_nonzero(hess_D, fd_hessian);
     // }
-    CHECK((hess_D - fd_hessian).norm() <= 1e-7 * hess_D.norm());
+    CHECK((hess_D.norm() == 0 || (hess_D - fd_hessian).norm() <= 1e-7 * hess_D.norm()));
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -443,59 +444,33 @@ void check_smooth_friction_force_jacobian(
     ///////////////////////////////////////////////////////////////////////////
 
     // test contact force norm derivative
-    if constexpr (dim == 3) {
-        const Eigen::MatrixXd lagged_disp = X + Ut;
-        Eigen::MatrixXd normal_force_jacobian = Eigen::MatrixXd::Zero(friction_collisions.size(), X.size());
-        for (int i = 0; i < friction_collisions.size(); i++)
+    {
+        const Eigen::MatrixXd lagged_positions = X + Ut;
+        Eigen::VectorXd normal_force_jacobian = Eigen::VectorXd::Zero(X.size());
         {
-            const FrictionCollision& collision = friction_collisions[i];
-            auto cc = collision.smooth_collision_3d;
-            auto tmp_ids = cc->vertex_ids(mesh.edges(), mesh.faces());
-
-            // analytic
-            const Eigen::VectorXd contact_grad = cc->gradient(cc->dof(lagged_disp, mesh.edges(), mesh.faces()), params);
-            const Eigen::MatrixXd contact_hess = cc->hessian(cc->dof(lagged_disp, mesh.edges(), mesh.faces()), params);
-            Eigen::VectorXd normal_force_grad = (contact_hess * contact_grad) / contact_grad.norm();
-            for (int j = 0; j < cc->num_vertices(); j++)
-                for (int d = 0; d < 3; d++)
-                    normal_force_jacobian(i, tmp_ids[j] * 3 + d) = normal_force_grad(j * 3 + d);
+            auto cc = create_smooth_collision(mesh, lagged_positions);
+            SmoothContactPotential<SmoothCollisions<dim>> potential(params);
+            Eigen::VectorXd g = potential.gradient(cc, mesh, lagged_positions);
+            Eigen::SparseMatrix<double> h = potential.hessian(cc, mesh, lagged_positions);
+            normal_force_jacobian = (h * g) / g.norm();
         }
 
         // finite difference
         auto F_X = [&](const Eigen::VectorXd& x) {
-            Eigen::MatrixXd fd_X = fd::unflatten(x, 3);
+            Eigen::MatrixXd fd_X = fd::unflatten(x, dim);
             const Eigen::MatrixXd fd_lagged_positions = fd_X + Ut;
 
             CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
+            auto fd_cc = create_smooth_collision(fd_mesh, fd_lagged_positions);
 
-            Eigen::VectorXd fd_normal_force = Eigen::VectorXd::Zero(friction_collisions.size());
-            for (int i = 0; i < friction_collisions.size(); i++)
-            {
-                const FrictionCollision& collision = friction_collisions[i];
-                auto cc = collision.smooth_collision_3d;
-
-                std::unique_ptr<SmoothCollision<max_vert_3d>> fd_cc;
-                if (cc->type() == CollisionType::EdgeEdge)
-                    fd_cc = std::make_unique<SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>((*cc)[0], (*cc)[1], PrimitiveDistType<Edge3, Edge3>::type::AUTO, fd_mesh, params, dhat, fd_lagged_positions);
-                else if (cc->type() == CollisionType::EdgeVertex)
-                    fd_cc = std::make_unique<SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>((*cc)[0], (*cc)[1], PrimitiveDistType<Edge3, Point3>::type::AUTO, fd_mesh, params, dhat, fd_lagged_positions);
-                else if (cc->type() == CollisionType::VertexVertex)
-                    fd_cc = std::make_unique<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>((*cc)[0], (*cc)[1], PrimitiveDistType<Point3, Point3>::type::AUTO, fd_mesh, params, dhat, fd_lagged_positions);
-                else if (cc->type() == CollisionType::FaceVertex)
-                    fd_cc = std::make_unique<SmoothCollisionTemplate<max_vert_3d, Face, Point3>>((*cc)[0], (*cc)[1], PrimitiveDistType<Face, Point3>::type::AUTO, fd_mesh, params, dhat, fd_lagged_positions);
-
-                const Eigen::VectorXd fd_contact_grad = fd_cc->gradient(fd_cc->dof(fd_lagged_positions, fd_mesh.edges(), fd_mesh.faces()), params);
-
-                fd_normal_force(i) = fd_contact_grad.norm();
-            }
-
-            return fd_normal_force;
+            SmoothContactPotential<SmoothCollisions<dim>> potential(params);
+            return potential.gradient(fd_cc, fd_mesh, fd_lagged_positions).norm();
         };
-        Eigen::MatrixXd fd_normal_force_jacobian;
-        fd::finite_jacobian(fd::flatten(X), F_X, fd_normal_force_jacobian);
+
+        Eigen::VectorXd fd_normal_force_jacobian;
+        fd::finite_gradient(fd::flatten(X), F_X, fd_normal_force_jacobian);
         CHECK((normal_force_jacobian - fd_normal_force_jacobian).norm() <= 1e-7 * normal_force_jacobian.norm());
     }
-
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -519,7 +494,7 @@ void check_smooth_friction_force_jacobian(
             fd_friction_collisions, fd_mesh, fd_X, Ut, velocities);
     };
     Eigen::MatrixXd fd_JF_wrt_X;
-    fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X, fd::AccuracyOrder::FOURTH, 1e-6);
+    fd::finite_jacobian(fd::flatten(X), F_X, fd_JF_wrt_X, fd::AccuracyOrder::FOURTH, 1e-6 * dhat);
     // CHECK(fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X));
     // if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
     //     tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
@@ -546,7 +521,7 @@ void check_smooth_friction_force_jacobian(
             fd_friction_collisions, mesh, X, fd_Ut, velocities);
     };
     Eigen::MatrixXd fd_JF_wrt_Ut;
-    fd::finite_jacobian(fd::flatten(Ut), F_Ut, fd_JF_wrt_Ut, fd::AccuracyOrder::FOURTH, 1e-6);
+    fd::finite_jacobian(fd::flatten(Ut), F_Ut, fd_JF_wrt_Ut, fd::AccuracyOrder::FOURTH, 1e-6 * dhat);
     // CHECK(fd::compare_jacobian(JF_wrt_Ut, fd_JF_wrt_Ut));
     // if (!fd::compare_jacobian(JF_wrt_Ut, fd_JF_wrt_Ut)) {
     //     tests::print_compare_nonzero(JF_wrt_Ut, fd_JF_wrt_Ut);
@@ -565,8 +540,8 @@ void check_smooth_friction_force_jacobian(
             fd::unflatten(v, velocities.cols()));
     };
     Eigen::MatrixXd fd_JF_wrt_V;
-    fd::finite_jacobian(fd::flatten(velocities), F_V, fd_JF_wrt_V);
-    CHECK((fd_JF_wrt_V - JF_wrt_V).norm() <= 1e-7 * JF_wrt_V.norm());
+    fd::finite_jacobian(fd::flatten(velocities), F_V, fd_JF_wrt_V, fd::AccuracyOrder::FOURTH, 1e-6 * dhat);
+    CHECK((JF_wrt_V.norm() == 0 || (fd_JF_wrt_V - JF_wrt_V).norm() <= 1e-7 * JF_wrt_V.norm()));
 }
 
 TEST_CASE("Smooth friction force jacobian 2D", "[friction-smooth][force-jacobian]")

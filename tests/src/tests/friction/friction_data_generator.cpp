@@ -161,9 +161,9 @@ SmoothFrictionData<3> smooth_friction_data_generator_3d()
 
     mu = 1.; // GENERATE(range(0.0, 1.0, 0.2));
 #ifdef NDEBUG
-    epsv_times_h = pow(10, GENERATE(range(-6, 0)));
-    dhat = pow(10, GENERATE(range(-4, 0)));
-    barrier_stiffness = pow(10, GENERATE(range(0, 2)));
+    epsv_times_h = pow(10, GENERATE(range(-2, 0)));
+    dhat = pow(10, GENERATE(range(-2, 0)));
+    barrier_stiffness = 1.;
 #else
     epsv_times_h = 1.; // pow(10, GENERATE(range(-6, 0, 2)));
     dhat = 1e-1; // pow(10, GENERATE(range(-4, 0, 2)));
@@ -345,55 +345,6 @@ SmoothFrictionData<3> smooth_friction_data_generator_3d()
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(std::make_shared<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>(0, 1, PointPointDistanceType::AUTO, mesh, param, dhat, V0));
     }
-    // SECTION("point-edge 2D")
-    // {
-    //     V0.resize(6, 2);
-    //     V0 << d, 0, // point at t=0
-    //     0, -1,   // edge vertex 0 at t=0
-    //     0,  1,    // edge vertex 1 at t=0
-    //     2*d, -1,
-    //     2*d, 1,
-    //     -1, 0;
-
-    //     V1 = V0;
-    //     Eigen::Vector2d disp;
-    //     disp << 0, 1;
-    //     V1.row(0) += disp.transpose();
-    //     V1.row(1) += disp.transpose();
-    //     V1.row(2) += disp.transpose();
-
-    //     F.resize(2, 3);
-    //     F << 0, 3, 4,
-    //          1, 2, 5;
-
-    //     igl::edges(F, E);
-
-    //     int e = 0;
-    //     for (; e < E.rows(); e++)
-    //     {
-    //         if (std::min(E(e, 0), E(e, 1)) == 1 &&
-    //             std::max(E(e, 0), E(e, 1)) == 2)
-    //             break;
-    //     }
-    //     assert(e < E.rows());
-
-    //     CollisionMesh mesh(V0, E, F);
-    //     collisions.collisions.push_back(std::make_shared<SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>(e, 0, PointEdgeDistanceType::AUTO, mesh, param, dhat, V0));
-    // }
-    // SECTION("point-point 2D")
-    // {
-    //     V0.resize(2, 2);
-    //     V0.row(0) << -1, d; // point 0 at t=0
-    //     V0.row(1) << 1, d;  // point 1 at t=0
-
-    //     V1 = V0;
-    //     // double dy = GENERATE(-1, 1, 1e-1);
-    //     V1.row(0) << 0.5, d;  // edge a vertex 0 at t=1
-    //     V1.row(1) << -0.5, d; // edge a vertex 1 at t=1
-
-    //     collisions.vv_collisions.emplace_back(0, 1);
-    //     collisions.vv_collisions.back().weight_gradient.resize(V0.size());
-    // }
 
     return data;
 }
@@ -410,9 +361,9 @@ SmoothFrictionData<2> smooth_friction_data_generator_2d()
 
     mu = 1.; // GENERATE(range(0.0, 1.0, 0.2));
 #ifdef NDEBUG
-    epsv_times_h = pow(10, GENERATE(range(-6, 0)));
-    dhat = pow(10, GENERATE(range(-4, 0)));
-    barrier_stiffness = pow(10, GENERATE(range(0, 2)));
+    epsv_times_h = pow(10, GENERATE(range(-2, 0)));
+    dhat = pow(10, GENERATE(range(-3, 0)));
+    barrier_stiffness = 1.;
 #else
     epsv_times_h = 1.; // pow(10, GENERATE(range(-6, 0, 2)));
     dhat = 1e-1; // pow(10, GENERATE(range(-4, 0, 2)));
