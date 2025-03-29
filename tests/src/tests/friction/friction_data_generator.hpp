@@ -35,4 +35,5 @@ struct SmoothFrictionData {
     double barrier_stiffness;
 };
 
-SmoothFrictionData<3> smooth_friction_data_generator();
+SmoothFrictionData<2> smooth_friction_data_generator_2d();
+SmoothFrictionData<3> smooth_friction_data_generator_3d();
