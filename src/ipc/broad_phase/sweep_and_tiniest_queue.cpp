@@ -7,9 +7,9 @@
 namespace ipc {
 
 void SweepAndTiniestQueue::build(
-    const Eigen::MatrixXd& _vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> _vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
     assert(edges.size() == 0 || edges.cols() == 2);
@@ -34,10 +34,10 @@ void SweepAndTiniestQueue::build(
 }
 
 void SweepAndTiniestQueue::build(
-    const Eigen::MatrixXd& _vertices_t0,
-    const Eigen::MatrixXd& _vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> _vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> _vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
     assert(_vertices_t0.rows() == _vertices_t1.rows());

@@ -30,7 +30,7 @@ public:
     Eigen::SparseMatrix<double> shape_derivative(
         const NormalCollisions& collisions,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices) const;
+        Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
     // -- Single collision methods ---------------------------------------------
 
@@ -40,7 +40,7 @@ public:
     /// @return The potential.
     double operator()(
         const NormalCollision& collision,
-        const VectorMax12d& positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision.
@@ -48,7 +48,7 @@ public:
     /// @return The gradient of the potential.
     VectorMax12d gradient(
         const NormalCollision& collision,
-        const VectorMax12d& positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision.
@@ -56,7 +56,7 @@ public:
     /// @return The hessian of the potential.
     MatrixMax12d hessian(
         const NormalCollision& collision,
-        const VectorMax12d& positions,
+        Eigen::ConstRef<VectorMax12d> positions,
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const override;
 
@@ -69,8 +69,8 @@ public:
     void shape_derivative(
         const NormalCollision& collision,
         const std::array<long, 4>& vertex_ids,
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& positions,
+        Eigen::ConstRef<VectorMax12d> rest_positions,
+        Eigen::ConstRef<VectorMax12d> positions,
         std::vector<Eigen::Triplet<double>>& out) const;
 
     /// @brief Compute the force magnitude for a collision.
@@ -91,7 +91,7 @@ public:
     /// @return The gradient of the force.
     virtual VectorMax12d force_magnitude_gradient(
         const double distance_squared,
-        const VectorMax12d& distance_squared_gradient,
+        Eigen::ConstRef<VectorMax12d> distance_squared_gradient,
         const double dmin,
         const double barrier_stiffness) const = 0;
 

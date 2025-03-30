@@ -7,7 +7,7 @@
 
 namespace ipc {
 
-AABB::AABB(const ArrayMax3d& _min, const ArrayMax3d& _max)
+AABB::AABB(Eigen::ConstRef<ArrayMax3d> _min, Eigen::ConstRef<ArrayMax3d> _max)
     : min(_min)
     , max(_max)
 {
@@ -17,7 +17,8 @@ AABB::AABB(const ArrayMax3d& _min, const ArrayMax3d& _max)
     // center = min() + half_extent();
 }
 
-AABB AABB::from_point(const VectorMax3d& p, const double inflation_radius)
+AABB AABB::from_point(
+    Eigen::ConstRef<VectorMax3d> p, const double inflation_radius)
 {
     ArrayMax3d min = p.array(), max = p.array();
     conservative_inflation(min, max, inflation_radius);
@@ -44,7 +45,9 @@ bool AABB::intersects(const AABB& other) const
 }
 
 void AABB::conservative_inflation(
-    ArrayMax3d& min, ArrayMax3d& max, const double inflation_radius)
+    Eigen::Ref<ArrayMax3d> min,
+    Eigen::Ref<ArrayMax3d> max,
+    const double inflation_radius)
 {
 #pragma STDC FENV_ACCESS ON
     const int current_round = std::fegetround();
@@ -59,7 +62,7 @@ void AABB::conservative_inflation(
 }
 
 void build_vertex_boxes(
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     std::vector<AABB>& vertex_boxes,
     const double inflation_radius)
 {
@@ -77,8 +80,8 @@ void build_vertex_boxes(
 }
 
 void build_vertex_boxes(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     std::vector<AABB>& vertex_boxes,
     const double inflation_radius)
 {
@@ -97,7 +100,7 @@ void build_vertex_boxes(
 
 void build_edge_boxes(
     const std::vector<AABB>& vertex_boxes,
-    const Eigen::MatrixXi& edges,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
     std::vector<AABB>& edge_boxes)
 {
     edge_boxes.resize(edges.rows());
@@ -115,7 +118,7 @@ void build_edge_boxes(
 
 void build_face_boxes(
     const std::vector<AABB>& vertex_boxes,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     std::vector<AABB>& face_boxes)
 {
     face_boxes.resize(faces.rows());

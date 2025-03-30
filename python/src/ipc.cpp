@@ -78,7 +78,7 @@ void define_ipc(py::module_& m)
 
     m.def(
         "edges",
-        [](const Eigen::MatrixXi& F) {
+        [](Eigen::ConstRef<Eigen::MatrixXi> F) {
             Eigen::MatrixXi E;
             igl::edges(F, E);
             return E;

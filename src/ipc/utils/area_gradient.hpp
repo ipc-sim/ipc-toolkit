@@ -9,8 +9,7 @@ namespace ipc {
 /// @param e1 The second vertex of the edge.
 /// @return The gradient of the edge's length wrt e0, and e1.
 VectorMax6d edge_length_gradient(
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1);
+    Eigen::ConstRef<VectorMax3d> e0, Eigen::ConstRef<VectorMax3d> e1);
 
 /// @brief Compute the gradient of the area of a triangle.
 /// @param t0 The first vertex of the triangle.
@@ -18,9 +17,9 @@ VectorMax6d edge_length_gradient(
 /// @param t2 The third vertex of the triangle.
 /// @return The gradient of the triangle's area t0, t1, and t2.
 Vector9d triangle_area_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2);
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2);
 
 namespace autogen {
 

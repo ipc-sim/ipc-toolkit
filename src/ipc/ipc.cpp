@@ -16,8 +16,8 @@ namespace ipc {
 
 bool is_step_collision_free(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double min_distance,
     const std::shared_ptr<BroadPhase> broad_phase,
     const NarrowPhaseCCD& narrow_phase_ccd)
@@ -40,8 +40,8 @@ bool is_step_collision_free(
 
 double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double min_distance,
     const std::shared_ptr<BroadPhase> broad_phase,
     const NarrowPhaseCCD& narrow_phase_ccd)
@@ -90,7 +90,7 @@ double compute_collision_free_stepsize(
 
 bool has_intersections(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::shared_ptr<BroadPhase> broad_phase)
 {
     assert(broad_phase != nullptr);

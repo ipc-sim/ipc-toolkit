@@ -11,7 +11,7 @@ class AABB {
 public:
     AABB() = default;
 
-    AABB(const ArrayMax3d& min, const ArrayMax3d& max);
+    AABB(Eigen::ConstRef<ArrayMax3d> min, Eigen::ConstRef<ArrayMax3d> max);
 
     AABB(const AABB& aabb1, const AABB& aabb2)
         : AABB(aabb1.min.min(aabb2.min), aabb1.max.max(aabb2.max))
@@ -29,8 +29,8 @@ public:
     /// @param p The point's position.
     /// @param inflation_radius Radius of a sphere around the point which the AABB encloses.
     /// @return The constructed AABB.
-    static AABB
-    from_point(const VectorMax3d& p, const double inflation_radius = 0);
+    static AABB from_point(
+        Eigen::ConstRef<VectorMax3d> p, const double inflation_radius = 0);
 
     /// @brief Construct an AABB for a moving point (i.e. temporal edge).
     /// @param p_t0 The point's position at time t=0.
@@ -38,8 +38,8 @@ public:
     /// @param inflation_radius Radius of a capsule around the temporal edge which the AABB encloses.
     /// @return The constructed AABB.
     static AABB from_point(
-        const VectorMax3d& p_t0,
-        const VectorMax3d& p_t1,
+        Eigen::ConstRef<VectorMax3d> p_t0,
+        Eigen::ConstRef<VectorMax3d> p_t1,
         const double inflation_radius = 0)
     {
         return AABB(
@@ -54,7 +54,9 @@ public:
 
     /// @brief Compute a conservative inflation of the AABB.
     static void conservative_inflation(
-        ArrayMax3d& min, ArrayMax3d& max, const double inflation_radius);
+        Eigen::Ref<ArrayMax3d> min,
+        Eigen::Ref<ArrayMax3d> max,
+        const double inflation_radius);
 
 public:
     /// @brief Minimum corner of the AABB.
@@ -70,7 +72,7 @@ public:
 /// @param[out] vertex_boxes Vertex AABBs.
 /// @param[in] inflation_radius Radius of a sphere around the points which the AABBs enclose.
 void build_vertex_boxes(
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     std::vector<AABB>& vertex_boxes,
     const double inflation_radius = 0);
 
@@ -80,8 +82,8 @@ void build_vertex_boxes(
 /// @param vertex_boxes Vertex AABBs.
 /// @param inflation_radius Radius of a capsule around the temporal edges which the AABBs enclose.
 void build_vertex_boxes(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     std::vector<AABB>& vertex_boxes,
     const double inflation_radius = 0);
 
@@ -91,7 +93,7 @@ void build_vertex_boxes(
 /// @param edge_boxes Edge AABBs.
 void build_edge_boxes(
     const std::vector<AABB>& vertex_boxes,
-    const Eigen::MatrixXi& edges,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
     std::vector<AABB>& edge_boxes);
 
 /// @brief Build one AABB per face.
@@ -100,7 +102,7 @@ void build_edge_boxes(
 /// @param face_boxes Face AABBs.
 void build_face_boxes(
     const std::vector<AABB>& vertex_boxes,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     std::vector<AABB>& face_boxes);
 
 } // namespace ipc

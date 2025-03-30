@@ -12,9 +12,9 @@ namespace ipc {
 template <>
 void save_obj(
     std::ostream& out,
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi&,
-    const Eigen::MatrixXi&,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
+    Eigen::ConstRef<Eigen::MatrixXi>,
+    Eigen::ConstRef<Eigen::MatrixXi>,
     const std::vector<VertexVertexCandidate>& vv_candidates,
     const int)
 {
@@ -28,9 +28,9 @@ void save_obj(
 template <>
 void save_obj(
     std::ostream& out,
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
+    Eigen::ConstRef<Eigen::MatrixXi> E,
+    Eigen::ConstRef<Eigen::MatrixXi> F,
     const std::vector<EdgeVertexCandidate>& ev_candidates,
     const int v_offset)
 {
@@ -48,9 +48,9 @@ void save_obj(
 template <>
 void save_obj(
     std::ostream& out,
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
+    Eigen::ConstRef<Eigen::MatrixXi> E,
+    Eigen::ConstRef<Eigen::MatrixXi> F,
     const std::vector<EdgeEdgeCandidate>& ee_candidates,
     const int v_offset)
 {
@@ -70,9 +70,9 @@ void save_obj(
 template <>
 void save_obj(
     std::ostream& out,
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
+    Eigen::ConstRef<Eigen::MatrixXi> E,
+    Eigen::ConstRef<Eigen::MatrixXi> F,
     const std::vector<FaceVertexCandidate>& fv_candidates,
     const int v_offset)
 {
@@ -91,9 +91,9 @@ void save_obj(
 template <>
 void save_obj(
     std::ostream& out,
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
+    Eigen::ConstRef<Eigen::MatrixXi> E,
+    Eigen::ConstRef<Eigen::MatrixXi> F,
     const std::vector<EdgeFaceCandidate>& ef_candidates,
     const int v_offset)
 {

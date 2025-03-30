@@ -3,15 +3,13 @@
 namespace ipc {
 
 double point_point_distance(
-    const Eigen::Ref<const VectorMax3d>& p0,
-    const Eigen::Ref<const VectorMax3d>& p1)
+    Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1)
 {
     return (p1 - p0).squaredNorm();
 }
 
 VectorMax6d point_point_distance_gradient(
-    const Eigen::Ref<const VectorMax3d>& p0,
-    const Eigen::Ref<const VectorMax3d>& p1)
+    Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1)
 {
     int dim = p0.size();
     assert(p1.size() == dim);
@@ -25,8 +23,7 @@ VectorMax6d point_point_distance_gradient(
 }
 
 MatrixMax6d point_point_distance_hessian(
-    const Eigen::Ref<const VectorMax3d>& p0,
-    const Eigen::Ref<const VectorMax3d>& p1)
+    Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1)
 {
     int dim = p0.size();
     assert(p1.size() == dim);

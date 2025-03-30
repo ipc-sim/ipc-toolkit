@@ -10,22 +10,24 @@ void define_voxel_size_heuristic(py::module_& m)
     m.def(
         "suggest_good_voxel_size",
         py::overload_cast<
-            const Eigen::MatrixXd&, const Eigen::MatrixXi&, const double>(
-            &suggest_good_voxel_size),
+            Eigen::ConstRef<Eigen::MatrixXd>, Eigen::ConstRef<Eigen::MatrixXi>,
+            const double>(&suggest_good_voxel_size),
         py::arg("vertices"), py::arg("edges"), py::arg("inflation_radius") = 0);
 
     m.def(
         "suggest_good_voxel_size",
         py::overload_cast<
-            const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-            const Eigen::MatrixXi&, const double>(&suggest_good_voxel_size),
+            Eigen::ConstRef<Eigen::MatrixXd>, Eigen::ConstRef<Eigen::MatrixXd>,
+            Eigen::ConstRef<Eigen::MatrixXi>, const double>(
+            &suggest_good_voxel_size),
         py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
         py::arg("inflation_radius") = 0);
 
     m.def(
         "mean_edge_length",
-        [](const Eigen::MatrixXd& vertices_t0,
-           const Eigen::MatrixXd& vertices_t1, const Eigen::MatrixXi& edges) {
+        [](Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+           Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+           Eigen::ConstRef<Eigen::MatrixXi> edges) {
             double std_deviation;
             double r = mean_edge_length(
                 vertices_t0, vertices_t1, edges, std_deviation);
@@ -36,7 +38,7 @@ void define_voxel_size_heuristic(py::module_& m)
 
     m.def(
         "mean_displacement_length",
-        [](const Eigen::MatrixXd& displacements) {
+        [](Eigen::ConstRef<Eigen::MatrixXd> displacements) {
             double std_deviation;
             double r = mean_displacement_length(displacements, std_deviation);
             return std::make_tuple(r, std_deviation);

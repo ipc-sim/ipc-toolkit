@@ -6,8 +6,7 @@ namespace ipc {
 // Point - Point
 
 VectorMax3d point_point_relative_velocity(
-    const Eigen::Ref<const VectorMax3d>& dp0,
-    const Eigen::Ref<const VectorMax3d>& dp1)
+    Eigen::ConstRef<VectorMax3d> dp0, Eigen::ConstRef<VectorMax3d> dp1)
 {
     return dp0 - dp1;
 }
@@ -30,9 +29,9 @@ point_point_relative_velocity_matrix_jacobian(const int dim)
 // Point - Edge
 
 VectorMax3d point_edge_relative_velocity(
-    const Eigen::Ref<const VectorMax3d>& dp,
-    const Eigen::Ref<const VectorMax3d>& de0,
-    const Eigen::Ref<const VectorMax3d>& de1,
+    Eigen::ConstRef<VectorMax3d> dp,
+    Eigen::ConstRef<VectorMax3d> de0,
+    Eigen::ConstRef<VectorMax3d> de1,
     const double alpha)
 {
     return dp - ((de1 - de0) * alpha + de0);
@@ -61,11 +60,11 @@ point_edge_relative_velocity_matrix_jacobian(const int dim, const double alpha)
 // Edge - Edge
 
 Eigen::Vector3d edge_edge_relative_velocity(
-    const Eigen::Ref<const Eigen::Vector3d>& dea0,
-    const Eigen::Ref<const Eigen::Vector3d>& dea1,
-    const Eigen::Ref<const Eigen::Vector3d>& deb0,
-    const Eigen::Ref<const Eigen::Vector3d>& deb1,
-    const Eigen::Ref<const Eigen::Vector2d>& coords)
+    Eigen::ConstRef<Eigen::Vector3d> dea0,
+    Eigen::ConstRef<Eigen::Vector3d> dea1,
+    Eigen::ConstRef<Eigen::Vector3d> deb0,
+    Eigen::ConstRef<Eigen::Vector3d> deb1,
+    Eigen::ConstRef<Eigen::Vector2d> coords)
 {
     // closest_point_a_velocity - closest_point_b_velocity
     return ((dea1 - dea0) * coords[0] + dea0)
@@ -73,7 +72,7 @@ Eigen::Vector3d edge_edge_relative_velocity(
 }
 
 MatrixMax<double, 3, 12> edge_edge_relative_velocity_matrix(
-    const int dim, const Eigen::Ref<const Eigen::Vector2d>& coords)
+    const int dim, Eigen::ConstRef<Eigen::Vector2d> coords)
 {
     MatrixMax<double, 3, 12> J = MatrixMax<double, 3, 12>::Zero(dim, 4 * dim);
     J.leftCols(dim).diagonal().setConstant(1 - coords[0]);
@@ -84,7 +83,7 @@ MatrixMax<double, 3, 12> edge_edge_relative_velocity_matrix(
 }
 
 MatrixMax<double, 6, 12> edge_edge_relative_velocity_matrix_jacobian(
-    const int dim, const Eigen::Ref<const Eigen::Vector2d>& coords)
+    const int dim, Eigen::ConstRef<Eigen::Vector2d> coords)
 {
     MatrixMax<double, 6, 12> J =
         MatrixMax<double, 6, 12>::Zero(2 * dim, 4 * dim);
@@ -101,11 +100,11 @@ MatrixMax<double, 6, 12> edge_edge_relative_velocity_matrix_jacobian(
 // Point - Triangle
 
 Eigen::Vector3d point_triangle_relative_velocity(
-    const Eigen::Ref<const Eigen::Vector3d>& dp,
-    const Eigen::Ref<const Eigen::Vector3d>& dt0,
-    const Eigen::Ref<const Eigen::Vector3d>& dt1,
-    const Eigen::Ref<const Eigen::Vector3d>& dt2,
-    const Eigen::Ref<const Eigen::Vector2d>& coords)
+    Eigen::ConstRef<Eigen::Vector3d> dp,
+    Eigen::ConstRef<Eigen::Vector3d> dt0,
+    Eigen::ConstRef<Eigen::Vector3d> dt1,
+    Eigen::ConstRef<Eigen::Vector3d> dt2,
+    Eigen::ConstRef<Eigen::Vector2d> coords)
 {
     // Compute the velocity of the closest point and subtract it from the
     // points velocity.
@@ -113,7 +112,7 @@ Eigen::Vector3d point_triangle_relative_velocity(
 }
 
 MatrixMax<double, 3, 12> point_triangle_relative_velocity_matrix(
-    const int dim, const Eigen::Ref<const Eigen::Vector2d>& coords)
+    const int dim, Eigen::ConstRef<Eigen::Vector2d> coords)
 {
     MatrixMax<double, 3, 12> J = MatrixMax<double, 3, 12>::Zero(dim, 4 * dim);
     J.leftCols(dim).diagonal().setOnes();
@@ -124,7 +123,7 @@ MatrixMax<double, 3, 12> point_triangle_relative_velocity_matrix(
 }
 
 MatrixMax<double, 6, 12> point_triangle_relative_velocity_matrix_jacobian(
-    const int dim, const Eigen::Ref<const Eigen::Vector2d>& coords)
+    const int dim, Eigen::ConstRef<Eigen::Vector2d> coords)
 {
     MatrixMax<double, 6, 12> J =
         MatrixMax<double, 6, 12>::Zero(2 * dim, 4 * dim);

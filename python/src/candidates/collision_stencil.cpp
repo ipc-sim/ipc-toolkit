@@ -37,7 +37,7 @@ void define_collision_stencil(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("edges"), py::arg("faces"))
         .def(
-            "vertices", &CollisionStencil::vertices<double>,
+            "vertices", &CollisionStencil::vertices,
             R"ipc_Qu8mg5v7(
             Get the vertex attributes of the collision stencil.
 
@@ -53,7 +53,7 @@ void define_collision_stencil(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("vertices"), py::arg("edges"), py::arg("faces"))
         .def(
-            "dof", &CollisionStencil::dof<double>,
+            "dof", &CollisionStencil::dof,
             R"ipc_Qu8mg5v7(
             Select this stencil's DOF from the full matrix of DOF.
 
@@ -71,8 +71,9 @@ void define_collision_stencil(py::module_& m)
         .def(
             "compute_distance",
             py::overload_cast<
-                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-                const Eigen::MatrixXi&>(
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>>(
                 &CollisionStencil::compute_distance, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the distance of the stencil.
@@ -89,8 +90,9 @@ void define_collision_stencil(py::module_& m)
         .def(
             "compute_distance_gradient",
             py::overload_cast<
-                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-                const Eigen::MatrixXi&>(
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>>(
                 &CollisionStencil::compute_distance_gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
@@ -107,8 +109,9 @@ void define_collision_stencil(py::module_& m)
         .def(
             "compute_distance_hessian",
             py::overload_cast<
-                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-                const Eigen::MatrixXi&>(
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>>(
                 &CollisionStencil::compute_distance_hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
@@ -124,7 +127,7 @@ void define_collision_stencil(py::module_& m)
             py::arg("vertices"), py::arg("edges"), py::arg("faces"))
         .def(
             "compute_distance",
-            py::overload_cast<const VectorMax12d&>(
+            py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
                 &CollisionStencil::compute_distance, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the distance of the stencil.
@@ -141,7 +144,7 @@ void define_collision_stencil(py::module_& m)
             py::arg("positions"))
         .def(
             "compute_distance_gradient",
-            py::overload_cast<const VectorMax12d&>(
+            py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
                 &CollisionStencil::compute_distance_gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
@@ -158,7 +161,7 @@ void define_collision_stencil(py::module_& m)
             py::arg("positions"))
         .def(
             "compute_distance_hessian",
-            py::overload_cast<const VectorMax12d&>(
+            py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
                 &CollisionStencil::compute_distance_hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
@@ -175,9 +178,11 @@ void define_collision_stencil(py::module_& m)
             py::arg("positions"))
         .def(
             "ccd",
-            [](const CollisionStencil& self, const VectorMax12d& vertices_t0,
-               const VectorMax12d& vertices_t1, const double min_distance,
-               const double tmax, const NarrowPhaseCCD& narrow_phase_ccd) {
+            [](const CollisionStencil& self,
+               Eigen::ConstRef<VectorMax12d> vertices_t0,
+               Eigen::ConstRef<VectorMax12d> vertices_t1,
+               const double min_distance, const double tmax,
+               const NarrowPhaseCCD& narrow_phase_ccd) {
                 double toi;
                 bool r = self.ccd(
                     vertices_t0, vertices_t1, toi, min_distance, tmax,
@@ -204,8 +209,9 @@ void define_collision_stencil(py::module_& m)
             py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD)
         .def(
             "print_ccd_query",
-            [](const CollisionStencil& self, const VectorMax12d& vertices_t0,
-               const VectorMax12d& vertices_t1) -> void {
+            [](const CollisionStencil& self,
+               Eigen::ConstRef<VectorMax12d> vertices_t0,
+               Eigen::ConstRef<VectorMax12d> vertices_t1) -> void {
                 self.write_ccd_query(std::cout, vertices_t0, vertices_t1);
             },
             R"ipc_Qu8mg5v7(

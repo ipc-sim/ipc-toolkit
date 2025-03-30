@@ -12,16 +12,14 @@ namespace ipc {
 /// @param p1 Second point
 /// @return A 3x2 matrix whose columns are the basis vectors.
 MatrixMax<double, 3, 2> point_point_tangent_basis(
-    const Eigen::Ref<const VectorMax3d>& p0,
-    const Eigen::Ref<const VectorMax3d>& p1);
+    Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1);
 
 /// @brief Compute the Jacobian of the tangent basis for the point-point pair.
 /// @param p0 First point
 /// @param p1 Second point
 /// @return A 6*3x2 matrix whose columns are the basis vectors.
 MatrixMax<double, 18, 2> point_point_tangent_basis_jacobian(
-    const Eigen::Ref<const VectorMax3d>& p0,
-    const Eigen::Ref<const VectorMax3d>& p1);
+    Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1);
 
 // ============================================================================
 // Point - Edge
@@ -32,9 +30,9 @@ MatrixMax<double, 18, 2> point_point_tangent_basis_jacobian(
 /// @param e1 Second edge point
 /// @return A 3x2 matrix whose columns are the basis vectors.
 MatrixMax<double, 3, 2> point_edge_tangent_basis(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1);
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1);
 
 /// @brief Compute the Jacobian of the tangent basis for the point-edge pair.
 /// @param p Point
@@ -42,9 +40,9 @@ MatrixMax<double, 3, 2> point_edge_tangent_basis(
 /// @param e1 Second edge point
 /// @return A 9*3x2 matrix whose columns are the basis vectors.
 MatrixMax<double, 27, 2> point_edge_tangent_basis_jacobian(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1);
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1);
 
 // ============================================================================
 // Edge - Edge
@@ -56,10 +54,10 @@ MatrixMax<double, 27, 2> point_edge_tangent_basis_jacobian(
 /// @param eb1 Second point of the second edge
 /// @return A 3x2 matrix whose columns are the basis vectors.
 Eigen::Matrix<double, 3, 2> edge_edge_tangent_basis(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1);
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 /// @brief Compute the Jacobian of the tangent basis for the edge-edge pair.
 /// @param ea0 First point of the first edge
@@ -68,10 +66,10 @@ Eigen::Matrix<double, 3, 2> edge_edge_tangent_basis(
 /// @param eb1 Second point of the second edge
 /// @return A 12*3x2 matrix whose columns are the basis vectors.
 Eigen::Matrix<double, 36, 2> edge_edge_tangent_basis_jacobian(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1);
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 // ============================================================================
 // Point - Triangle
@@ -91,10 +89,10 @@ Eigen::Matrix<double, 36, 2> edge_edge_tangent_basis_jacobian(
 /// @param t2 Triangle's third vertex
 /// @return A 3x2 matrix whose columns are the basis vectors.
 Eigen::Matrix<double, 3, 2> point_triangle_tangent_basis(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2);
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2);
 
 /// @brief Compute the Jacobian of the tangent basis for the point-triangle pair.
 /// @param p Point
@@ -103,10 +101,10 @@ Eigen::Matrix<double, 3, 2> point_triangle_tangent_basis(
 /// @param t2 Triangle's third vertex
 /// @return A 12*3x2 matrix whose columns are the basis vectors.
 Eigen::Matrix<double, 36, 2> point_triangle_tangent_basis_jacobian(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2);
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2);
 
 // ============================================================================
 

@@ -19,7 +19,7 @@ void define_potential_methods(PyClass& potential)
             "__call__",
             py::overload_cast<
                 const TCollisions&, const CollisionMesh&,
-                const Eigen::MatrixXd&>(
+                Eigen::ConstRef<Eigen::MatrixXd>>(
                 &Potential<TCollisions>::operator(), py::const_),
             R"ipc_Qu8mg5v7(
             Compute the potential for a set of collisions.
@@ -37,7 +37,7 @@ void define_potential_methods(PyClass& potential)
             "gradient",
             py::overload_cast<
                 const TCollisions&, const CollisionMesh&,
-                const Eigen::MatrixXd&>(
+                Eigen::ConstRef<Eigen::MatrixXd>>(
                 &Potential<TCollisions>::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the potential.
@@ -55,7 +55,7 @@ void define_potential_methods(PyClass& potential)
             "hessian",
             py::overload_cast<
                 const TCollisions&, const CollisionMesh&,
-                const Eigen::MatrixXd&, const PSDProjectionMethod>(
+                Eigen::ConstRef<Eigen::MatrixXd>, const PSDProjectionMethod>(
                 &Potential<TCollisions>::hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the potential.
@@ -73,7 +73,7 @@ void define_potential_methods(PyClass& potential)
             py::arg("project_hessian_to_psd") = PSDProjectionMethod::NONE)
         .def(
             "__call__",
-            py::overload_cast<const TCollision&, const VectorMax12d&>(
+            py::overload_cast<const TCollision&, Eigen::ConstRef<VectorMax12d>>(
                 &Potential<TCollisions>::operator(), py::const_),
             R"ipc_Qu8mg5v7(
             Compute the potential for a single collision.
@@ -88,7 +88,7 @@ void define_potential_methods(PyClass& potential)
             py::arg("collision"), py::arg("x"))
         .def(
             "gradient",
-            py::overload_cast<const TCollision&, const VectorMax12d&>(
+            py::overload_cast<const TCollision&, Eigen::ConstRef<VectorMax12d>>(
                 &Potential<TCollisions>::gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the potential for a single collision.
@@ -104,7 +104,7 @@ void define_potential_methods(PyClass& potential)
         .def(
             "hessian",
             py::overload_cast<
-                const TCollision&, const VectorMax12d&,
+                const TCollision&, Eigen::ConstRef<VectorMax12d>,
                 const PSDProjectionMethod>(
                 &Potential<TCollisions>::hessian, py::const_),
             R"ipc_Qu8mg5v7(

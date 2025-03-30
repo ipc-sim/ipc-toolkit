@@ -13,8 +13,8 @@ EdgeVertexCandidate::EdgeVertexCandidate(long _edge_id, long _vertex_id)
 {
 }
 
-double
-EdgeVertexCandidate::compute_distance(const VectorMax12d& positions) const
+double EdgeVertexCandidate::compute_distance(
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
     const int dim = this->dim(positions.size());
@@ -24,7 +24,7 @@ EdgeVertexCandidate::compute_distance(const VectorMax12d& positions) const
 }
 
 VectorMax12d EdgeVertexCandidate::compute_distance_gradient(
-    const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
     const int dim = this->dim(positions.size());
@@ -34,7 +34,7 @@ VectorMax12d EdgeVertexCandidate::compute_distance_gradient(
 }
 
 MatrixMax12d EdgeVertexCandidate::compute_distance_hessian(
-    const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
     const int dim = this->dim(positions.size());
@@ -43,14 +43,14 @@ MatrixMax12d EdgeVertexCandidate::compute_distance_hessian(
         known_dtype());
 }
 
-VectorMax4d
-EdgeVertexCandidate::compute_coefficients(const VectorMax12d& positions) const
+VectorMax4d EdgeVertexCandidate::compute_coefficients(
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 6 || positions.size() == 9);
     const int dim = this->dim(positions.size());
-    const Eigen::Ref<const VectorMax3d> p = positions.head(dim);
-    const Eigen::Ref<const VectorMax3d> t0 = positions.segment(dim, dim);
-    const Eigen::Ref<const VectorMax3d> t1 = positions.tail(dim);
+    Eigen::ConstRef<VectorMax3d> p = positions.head(dim);
+    Eigen::ConstRef<VectorMax3d> t0 = positions.segment(dim, dim);
+    Eigen::ConstRef<VectorMax3d> t1 = positions.tail(dim);
 
     auto dtype = known_dtype();
     if (dtype == PointEdgeDistanceType::AUTO) {
@@ -78,8 +78,8 @@ EdgeVertexCandidate::compute_coefficients(const VectorMax12d& positions) const
 }
 
 bool EdgeVertexCandidate::ccd(
-    const VectorMax12d& vertices_t0,
-    const VectorMax12d& vertices_t1,
+    Eigen::ConstRef<VectorMax12d> vertices_t0,
+    Eigen::ConstRef<VectorMax12d> vertices_t1,
     double& toi,
     const double min_distance,
     const double tmax,

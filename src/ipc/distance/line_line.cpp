@@ -5,10 +5,10 @@
 namespace ipc {
 
 double line_line_distance(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     const Eigen::Vector3d normal = (ea1 - ea0).cross(eb1 - eb0);
     const double line_to_line = (eb0 - ea0).dot(normal);
@@ -16,10 +16,10 @@ double line_line_distance(
 }
 
 Vector12d line_line_distance_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     Vector12d grad;
     autogen::line_line_distance_gradient(
@@ -29,10 +29,10 @@ Vector12d line_line_distance_gradient(
 }
 
 Matrix12d line_line_distance_hessian(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     Matrix12d hess;
     autogen::line_line_distance_hessian(

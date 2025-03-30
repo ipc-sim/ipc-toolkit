@@ -8,9 +8,9 @@
 namespace ipc {
 
 PointEdgeDistanceType point_edge_distance_type(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1)
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1)
 {
     assert(p.size() == 2 || p.size() == 3);
     assert(e0.size() == 2 || e0.size() == 3);
@@ -34,10 +34,10 @@ PointEdgeDistanceType point_edge_distance_type(
 }
 
 PointTriangleDistanceType point_triangle_distance_type(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     const Eigen::Vector3d normal = (t1 - t0).cross(t2 - t0);
 
@@ -80,10 +80,10 @@ PointTriangleDistanceType point_triangle_distance_type(
 
 // A more robust implementation of http://geomalgorithms.com/a07-_distance.html
 EdgeEdgeDistanceType edge_edge_distance_type(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     constexpr double PARALLEL_THRESHOLD = 1.0e-20;
 
@@ -169,10 +169,10 @@ EdgeEdgeDistanceType edge_edge_distance_type(
 }
 
 EdgeEdgeDistanceType edge_edge_parallel_distance_type(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     const Eigen::Vector3d ea = ea1 - ea0;
     const double alpha = (eb0 - ea0).dot(ea) / ea.squaredNorm();

@@ -4,8 +4,8 @@ namespace ipc {
 
 std::ostream& CollisionStencil::write_ccd_query(
     std::ostream& out,
-    const VectorMax12d& vertices_t0,
-    const VectorMax12d& vertices_t1) const
+    Eigen::ConstRef<VectorMax12d> vertices_t0,
+    Eigen::ConstRef<VectorMax12d> vertices_t1) const
 {
     assert(vertices_t0.size() == vertices_t1.size());
 

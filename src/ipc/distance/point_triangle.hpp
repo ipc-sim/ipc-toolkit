@@ -13,10 +13,10 @@ namespace ipc {
 /// @param dtype The point-triangle distance type to compute.
 /// @return The distance between the point and triangle.
 double point_triangle_distance(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2,
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
     PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO);
 
 /// @brief Compute the gradient of the distance between a points and a triangle.
@@ -28,10 +28,10 @@ double point_triangle_distance(
 /// @param dtype The point-triangle distance type to compute.
 /// @return The gradient of the distance wrt p, t0, t1, and t2.
 Vector12d point_triangle_distance_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2,
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
     PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO);
 
 /// @brief Compute the hessian of the distance between a points and a triangle.
@@ -43,10 +43,10 @@ Vector12d point_triangle_distance_gradient(
 /// @param dtype The point-triangle distance type to compute.
 /// @return The hessian of the distance wrt p, t0, t1, and t2.
 Matrix12d point_triangle_distance_hessian(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2,
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
     PointTriangleDistanceType dtype = PointTriangleDistanceType::AUTO);
 
 } // namespace ipc

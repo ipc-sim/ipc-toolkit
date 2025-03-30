@@ -16,7 +16,7 @@ double barrier_force_magnitude(
 
 VectorMax12d barrier_force_magnitude_gradient(
     const double distance_squared,
-    const VectorMax12d& distance_squared_gradient,
+    Eigen::ConstRef<VectorMax12d> distance_squared_gradient,
     const Barrier& barrier,
     const double dhat,
     const double barrier_stiffness,

@@ -16,9 +16,9 @@ public:
     }
 
     void build(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         const double inflation_radius = 0) override
     {
         PYBIND11_OVERRIDE(
@@ -26,10 +26,10 @@ public:
     }
 
     void build(
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         const double inflation_radius = 0) override
     {
         PYBIND11_OVERRIDE(
@@ -149,8 +149,10 @@ void define_broad_phase(py::module_& m)
         .def(
             "build",
             py::overload_cast<
-                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-                const Eigen::MatrixXi&, const double>(&BroadPhase::build),
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>, const double>(
+                &BroadPhase::build),
             R"ipc_Qu8mg5v7(
             Build the broad phase for static collision detection.
 
@@ -165,8 +167,10 @@ void define_broad_phase(py::module_& m)
         .def(
             "build",
             py::overload_cast<
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double>(
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>, const double>(
                 &BroadPhase::build),
             R"ipc_Qu8mg5v7(
             Build the broad phase for continuous collision detection.

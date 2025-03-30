@@ -28,8 +28,8 @@ namespace {
     template <typename Candidate>
     std::vector<VertexVertexCandidate>
     element_vertex_to_vertex_vertex_candidates(
-        const Eigen::MatrixXi& elements,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> elements,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<Candidate>& candidates,
         const std::function<bool(double)>& is_active)
     {
@@ -55,7 +55,7 @@ namespace {
 
     std::vector<VertexVertexCandidate> edge_vertex_to_vertex_vertex_candidates(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<EdgeVertexCandidate>& ev_candidates,
         const std::function<bool(double)>& is_active)
     {
@@ -65,7 +65,7 @@ namespace {
 
     std::vector<VertexVertexCandidate> face_vertex_to_vertex_vertex_candidates(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<FaceVertexCandidate>& fv_candidates,
         const std::function<bool(double)>& is_active)
     {
@@ -75,7 +75,7 @@ namespace {
 
     std::vector<EdgeVertexCandidate> face_vertex_to_edge_vertex_candidates(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<FaceVertexCandidate>& fv_candidates,
         const std::function<bool(double)>& is_active)
     {
@@ -104,7 +104,7 @@ namespace {
 
     std::vector<EdgeVertexCandidate> edge_edge_to_edge_vertex_candidates(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const std::vector<EdgeEdgeCandidate>& ee_candidates,
         const std::function<bool(double)>& is_active)
     {
@@ -142,7 +142,7 @@ namespace {
 
 void NormalCollisions::build(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const double dhat,
     const double dmin,
     const std::shared_ptr<BroadPhase> broad_phase)
@@ -160,7 +160,7 @@ void NormalCollisions::build(
 void NormalCollisions::build(
     const Candidates& candidates,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const double dhat,
     const double dmin)
 {
@@ -329,7 +329,7 @@ void NormalCollisions::set_enable_shape_derivatives(
 
 // NOTE: Actually distance squared
 double NormalCollisions::compute_minimum_distance(
-    const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
+    const CollisionMesh& mesh, Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());
 
@@ -465,7 +465,7 @@ bool NormalCollisions::is_plane_vertex(size_t i) const
 }
 
 std::string NormalCollisions::to_string(
-    const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
+    const CollisionMesh& mesh, Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     std::stringstream ss;
     for (const auto& vv : vv_collisions) {

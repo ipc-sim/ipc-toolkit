@@ -26,8 +26,8 @@ double initial_barrier_stiffness(
     const Barrier& barrier,
     const double dhat,
     const double average_mass,
-    const Eigen::VectorXd& grad_energy,
-    const Eigen::VectorXd& grad_barrier,
+    Eigen::ConstRef<Eigen::VectorXd> grad_energy,
+    Eigen::ConstRef<Eigen::VectorXd> grad_barrier,
     double& max_barrier_stiffness,
     const double min_barrier_stiffness_scale = 1e11,
     const double dmin = 0);
@@ -62,9 +62,9 @@ double update_barrier_stiffness(
 double semi_implicit_stiffness(
     const CollisionStencil& stencil,
     const std::array<long, 4>& vertex_ids,
-    const VectorMax12d& vertices,
-    const VectorMax4d& mass,
-    const MatrixMax12d& local_hess,
+    Eigen::ConstRef<VectorMax12d> vertices,
+    Eigen::ConstRef<VectorMax4d> mass,
+    Eigen::ConstRef<MatrixMax12d> local_hess,
     const double dmin);
 
 /// @brief Compute the semi-implicit stiffness's for all collisions.
@@ -79,9 +79,9 @@ double semi_implicit_stiffness(
 template <typename StencilsT>
 Eigen::VectorXd semi_implicit_stiffness(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const StencilsT& collisions,
-    const Eigen::VectorXd& vertex_masses,
+    Eigen::ConstRef<Eigen::VectorXd> vertex_masses,
     const Eigen::SparseMatrix<double>& hess,
     const double dmin);
 

@@ -5,8 +5,7 @@
 namespace ipc {
 
 VectorMax6d edge_length_gradient(
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1)
+    Eigen::ConstRef<VectorMax3d> e0, Eigen::ConstRef<VectorMax3d> e1)
 {
     assert(e0.size() == 2 || e0.size() == 3);
     assert(e1.size() == 2 || e1.size() == 3);
@@ -20,9 +19,9 @@ VectorMax6d edge_length_gradient(
 }
 
 Vector9d triangle_area_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2)
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     Vector9d grad;
     autogen::triangle_area_gradient(

@@ -24,8 +24,8 @@ namespace ipc {
 /// @returns True if <b>any</b> collisions occur.
 bool is_step_collision_free(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double min_distance = 0.0,
     const std::shared_ptr<BroadPhase> broad_phase = make_default_broad_phase(),
     const NarrowPhaseCCD& narrow_phase_ccd = DEFAULT_NARROW_PHASE_CCD);
@@ -41,8 +41,8 @@ bool is_step_collision_free(
 /// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
 double compute_collision_free_stepsize(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double min_distance = 0.0,
     const std::shared_ptr<BroadPhase> broad_phase = make_default_broad_phase(),
     const NarrowPhaseCCD& narrow_phase_ccd = DEFAULT_NARROW_PHASE_CCD);
@@ -57,7 +57,7 @@ double compute_collision_free_stepsize(
 /// @return A boolean for if the mesh has intersections.
 bool has_intersections(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::shared_ptr<BroadPhase> broad_phase = make_default_broad_phase());
 
 } // namespace ipc

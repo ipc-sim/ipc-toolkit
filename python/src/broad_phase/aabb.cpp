@@ -10,8 +10,9 @@ void define_aabb(py::module_& m)
     py::class_<AABB>(m, "AABB")
         .def(py::init())
         .def(
-            py::init<const ArrayMax3d&, const ArrayMax3d&>(), py::arg("min"),
-            py::arg("max"))
+            py::init<
+                Eigen::ConstRef<ArrayMax3d>, Eigen::ConstRef<ArrayMax3d>>(),
+            py::arg("min"), py::arg("max"))
         .def(
             py::init<const AABB&, const AABB&>(), py::arg("aabb1"),
             py::arg("aabb2"))
@@ -20,7 +21,7 @@ void define_aabb(py::module_& m)
             py::arg("aabb2"), py::arg("aabb3"))
         .def_static(
             "from_point",
-            py::overload_cast<const VectorMax3d&, const double>(
+            py::overload_cast<Eigen::ConstRef<VectorMax3d>, const double>(
                 &AABB::from_point),
             R"ipc_Qu8mg5v7(
             Construct an AABB for a static point.
@@ -36,8 +37,8 @@ void define_aabb(py::module_& m)
         .def_static(
             "from_point",
             py::overload_cast<
-                const VectorMax3d&, const VectorMax3d&, const double>(
-                &AABB::from_point),
+                Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>,
+                const double>(&AABB::from_point),
             R"ipc_Qu8mg5v7(
             Construct an AABB for a moving point (i.e. temporal edge).
 
@@ -78,7 +79,8 @@ void define_aabb(py::module_& m)
 
     m.def(
         "build_vertex_boxes",
-        [](const Eigen::MatrixXd& vertices, const double inflation_radius = 0) {
+        [](Eigen::ConstRef<Eigen::MatrixXd> vertices,
+           const double inflation_radius = 0) {
             std::vector<AABB> vertex_boxes;
             build_vertex_boxes(vertices, vertex_boxes, inflation_radius);
             return vertex_boxes;
@@ -97,8 +99,8 @@ void define_aabb(py::module_& m)
 
     m.def(
         "build_vertex_boxes",
-        [](const Eigen::MatrixXd& vertices_t0,
-           const Eigen::MatrixXd& vertices_t1,
+        [](Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+           Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
            const double inflation_radius = 0) {
             std::vector<AABB> vertex_boxes;
             build_vertex_boxes(
@@ -122,7 +124,7 @@ void define_aabb(py::module_& m)
     m.def(
         "build_edge_boxes",
         [](const std::vector<AABB>& vertex_boxes,
-           const Eigen::MatrixXi& edges) {
+           Eigen::ConstRef<Eigen::MatrixXi> edges) {
             std::vector<AABB> edge_boxes;
             build_edge_boxes(vertex_boxes, edges, edge_boxes);
             return edge_boxes;
@@ -142,7 +144,7 @@ void define_aabb(py::module_& m)
     m.def(
         "build_face_boxes",
         [](const std::vector<AABB>& vertex_boxes,
-           const Eigen::MatrixXi& faces) {
+           Eigen::ConstRef<Eigen::MatrixXi> faces) {
             std::vector<AABB> face_boxes;
             build_face_boxes(vertex_boxes, faces, face_boxes);
             return face_boxes;

@@ -1,9 +1,15 @@
 #pragma once
 
 #include <Eigen/Core>
-#include <Eigen/SparseCore>
+#include <Eigen/Sparse>
 
 #include <cassert>
+
+namespace Eigen {
+template <typename T> using RowRef = Ref<T, 0, Eigen::InnerStride<>>;
+template <typename T> using ConstRef = const Ref<const T>&;
+template <typename T> using ConstRowRef = const RowRef<const T>&;
+} // namespace Eigen
 
 namespace ipc {
 
@@ -169,7 +175,7 @@ project_to_psd(
     const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& A,
     const PSDProjectionMethod method = PSDProjectionMethod::CLAMP);
 
-inline Eigen::Vector3d to_3D(const VectorMax3d& v)
+inline Eigen::Vector3d to_3D(Eigen::ConstRef<VectorMax3d> v)
 {
     assert(v.size() == 2 || v.size() == 3);
     return v.size() == 2 ? Eigen::Vector3d(v.x(), v.y(), 0) : v.head<3>();

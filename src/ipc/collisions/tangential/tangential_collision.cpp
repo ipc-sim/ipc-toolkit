@@ -8,7 +8,7 @@ namespace ipc {
 
 void TangentialCollision::init(
     const NormalCollision& collision,
-    const VectorMax12d& positions,
+    Eigen::ConstRef<VectorMax12d> positions,
     const NormalPotential& normal_potential,
     const double normal_stiffness)
 {

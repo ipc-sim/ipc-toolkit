@@ -31,9 +31,10 @@ void define_tangential_potential(py::module_& m)
             "force",
             py::overload_cast<
                 const TangentialCollisions&, const CollisionMesh&,
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const NormalPotential&, const double,
-                const double, const bool>(
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXd>, const NormalPotential&,
+                const double, const double, const bool>(
                 &TangentialPotential::force, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the friction force from the given velocities.
@@ -60,9 +61,10 @@ void define_tangential_potential(py::module_& m)
             "force_jacobian",
             py::overload_cast<
                 const TangentialCollisions&, const CollisionMesh&,
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const NormalPotential&, const double,
-                const TangentialPotential::DiffWRT, const double>(
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXd>, const NormalPotential&,
+                const double, const TangentialPotential::DiffWRT, const double>(
                 &TangentialPotential::force_jacobian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the Jacobian of the friction force wrt the velocities.
@@ -88,8 +90,8 @@ void define_tangential_potential(py::module_& m)
         .def(
             "force",
             py::overload_cast<
-                const TangentialCollision&, const VectorMax12d&,
-                const VectorMax12d&, const VectorMax12d&,
+                const TangentialCollision&, Eigen::ConstRef<VectorMax12d>,
+                Eigen::ConstRef<VectorMax12d>, Eigen::ConstRef<VectorMax12d>,
                 const NormalPotential&, const double, const double, const bool>(
                 &TangentialPotential::force, py::const_),
             R"ipc_Qu8mg5v7(
@@ -115,8 +117,8 @@ void define_tangential_potential(py::module_& m)
         .def(
             "force_jacobian",
             py::overload_cast<
-                const TangentialCollision&, const VectorMax12d&,
-                const VectorMax12d&, const VectorMax12d&,
+                const TangentialCollision&, Eigen::ConstRef<VectorMax12d>,
+                Eigen::ConstRef<VectorMax12d>, Eigen::ConstRef<VectorMax12d>,
                 const NormalPotential&, const double,
                 const TangentialPotential::DiffWRT, const double>(
                 &TangentialPotential::force_jacobian, py::const_),
