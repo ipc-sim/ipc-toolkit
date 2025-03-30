@@ -7,9 +7,9 @@ namespace ipc {
 Eigen::VectorXd TangentialPotential::force(
     const TangentialCollisions& collisions,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& rest_positions,
-    const Eigen::MatrixXd& lagged_displacements,
-    const Eigen::MatrixXd& velocities,
+    Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+    Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+    Eigen::ConstRef<Eigen::MatrixXd> velocities,
     const NormalPotential& normal_potential,
     const double normal_stiffness,
     const double dmin,
@@ -54,9 +54,9 @@ Eigen::VectorXd TangentialPotential::force(
 Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
     const TangentialCollisions& collisions,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& rest_positions,
-    const Eigen::MatrixXd& lagged_displacements,
-    const Eigen::MatrixXd& velocities,
+    Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+    Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+    Eigen::ConstRef<Eigen::MatrixXd> velocities,
     const NormalPotential& normal_potential,
     const double normal_stiffness,
     const DiffWRT wrt,
@@ -68,8 +68,8 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
     }
 
     const int dim = velocities.cols();
-    const Eigen::MatrixXi& edges = mesh.edges();
-    const Eigen::MatrixXi& faces = mesh.faces();
+    Eigen::ConstRef<Eigen::MatrixXi> edges = mesh.edges();
+    Eigen::ConstRef<Eigen::MatrixXi> faces = mesh.faces();
 
     tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
         storage;
@@ -137,7 +137,8 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
 // -- Single collision methods -------------------------------------------------
 
 double TangentialPotential::operator()(
-    const TangentialCollision& collision, const VectorMax12d& velocities) const
+    const TangentialCollision& collision,
+    Eigen::ConstRef<VectorMax12d> velocities) const
 {
     // μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
 
@@ -150,7 +151,8 @@ double TangentialPotential::operator()(
 }
 
 VectorMax12d TangentialPotential::gradient(
-    const TangentialCollision& collision, const VectorMax12d& velocities) const
+    const TangentialCollision& collision,
+    Eigen::ConstRef<VectorMax12d> velocities) const
 {
     // ∇ₓ μ N(xᵗ) f₀(‖u‖) (where u = T(xᵗ)ᵀv)
     //  = μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u
@@ -177,7 +179,7 @@ VectorMax12d TangentialPotential::gradient(
 
 MatrixMax12d TangentialPotential::hessian(
     const TangentialCollision& collision,
-    const VectorMax12d& velocities,
+    Eigen::ConstRef<VectorMax12d> velocities,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
     // ∇ₓ μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u (where u = T(xᵗ)ᵀ v)
@@ -250,9 +252,9 @@ MatrixMax12d TangentialPotential::hessian(
 
 VectorMax12d TangentialPotential::force(
     const TangentialCollision& collision,
-    const VectorMax12d& rest_positions,       // = x
-    const VectorMax12d& lagged_displacements, // = u
-    const VectorMax12d& velocities,           // = v
+    Eigen::ConstRef<VectorMax12d> rest_positions,       // = x
+    Eigen::ConstRef<VectorMax12d> lagged_displacements, // = u
+    Eigen::ConstRef<VectorMax12d> velocities,           // = v
     const NormalPotential& normal_potential,
     const double normal_stiffness,
     const double dmin,
@@ -306,9 +308,9 @@ VectorMax12d TangentialPotential::force(
 
 MatrixMax12d TangentialPotential::force_jacobian(
     const TangentialCollision& collision,
-    const VectorMax12d& rest_positions,       // = x
-    const VectorMax12d& lagged_displacements, // = u
-    const VectorMax12d& velocities,           // = v
+    Eigen::ConstRef<VectorMax12d> rest_positions,       // = x
+    Eigen::ConstRef<VectorMax12d> lagged_displacements, // = u
+    Eigen::ConstRef<VectorMax12d> velocities,           // = v
     const NormalPotential& normal_potential,
     const double normal_stiffness,
     const DiffWRT wrt,

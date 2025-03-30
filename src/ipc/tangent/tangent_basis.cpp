@@ -15,8 +15,7 @@ namespace {
 // Point - Point
 
 MatrixMax<double, 3, 2> point_point_tangent_basis(
-    const Eigen::Ref<const VectorMax3d>& p0,
-    const Eigen::Ref<const VectorMax3d>& p1)
+    Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1)
 {
     const int dim = p0.size();
     assert(dim == p1.size());
@@ -48,8 +47,7 @@ MatrixMax<double, 3, 2> point_point_tangent_basis(
 }
 
 MatrixMax<double, 18, 2> point_point_tangent_basis_jacobian(
-    const Eigen::Ref<const VectorMax3d>& p0,
-    const Eigen::Ref<const VectorMax3d>& p1)
+    Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1)
 {
     const int dim = p0.size();
     assert(dim == p1.size());
@@ -72,9 +70,9 @@ MatrixMax<double, 18, 2> point_point_tangent_basis_jacobian(
 // Point - Edge
 
 MatrixMax<double, 3, 2> point_edge_tangent_basis(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1)
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1)
 {
     const int dim = p.size();
     assert(dim == e0.size() && dim == e1.size());
@@ -94,9 +92,9 @@ MatrixMax<double, 3, 2> point_edge_tangent_basis(
 }
 
 MatrixMax<double, 27, 2> point_edge_tangent_basis_jacobian(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1)
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1)
 {
     const int dim = p.size();
     assert(dim == e0.size() && dim == e1.size());
@@ -120,10 +118,10 @@ MatrixMax<double, 27, 2> point_edge_tangent_basis_jacobian(
 // Edge - Edge
 
 Eigen::Matrix<double, 3, 2> edge_edge_tangent_basis(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     const Eigen::Vector3d ea = ea1 - ea0; // Edge A direction
     const Eigen::Vector3d normal = ea.cross(eb1 - eb0);
@@ -140,10 +138,10 @@ Eigen::Matrix<double, 3, 2> edge_edge_tangent_basis(
 }
 
 Eigen::Matrix<double, 36, 2> edge_edge_tangent_basis_jacobian(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     Eigen::Matrix<double, 36, 2> J;
     autogen::edge_edge_tangent_basis_jacobian(
@@ -156,10 +154,10 @@ Eigen::Matrix<double, 36, 2> edge_edge_tangent_basis_jacobian(
 // Point - Triangle
 
 Eigen::Matrix<double, 3, 2> point_triangle_tangent_basis(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     const Eigen::Vector3d e0 = t1 - t0;
     const Eigen::Vector3d normal = e0.cross(t2 - t0);
@@ -177,10 +175,10 @@ Eigen::Matrix<double, 3, 2> point_triangle_tangent_basis(
 }
 
 Eigen::Matrix<double, 36, 2> point_triangle_tangent_basis_jacobian(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     Eigen::Matrix<double, 36, 2> J;
     autogen::point_triangle_tangent_basis_jacobian(

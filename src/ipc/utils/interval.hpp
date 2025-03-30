@@ -84,13 +84,13 @@ using MatrixMax3I = MatrixMax3<filib::Interval>;
 /// @note This should be used instead of the .squaredNorm() method of Eigen because it avoids negative values in intermediate computations.
 /// @param v The n-dimensional interval
 /// @return The squared L2 norm of the interval
-filib::Interval squared_norm(const Eigen::Ref<const VectorXI>& v); // L2 norm
+filib::Interval squared_norm(Eigen::ConstRef<VectorXI> v); // L2 norm
 
 /// @brief Compute the L2 norm of a n-dimensional interval
 /// @note This should be used instead of the .norm() method of Eigen because it avoids negative values in intermediate computations.
 /// @param v The n-dimensional interval
 /// @return The L2 norm of the interval
-filib::Interval norm(const Eigen::Ref<const VectorXI>& v); // L2 norm
+filib::Interval norm(Eigen::ConstRef<VectorXI> v); // L2 norm
 
 } // namespace ipc
 

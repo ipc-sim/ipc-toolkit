@@ -20,7 +20,7 @@ NormalCollisionsBuilder::NormalCollisionsBuilder(
 
 void NormalCollisionsBuilder::add_vertex_vertex_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<VertexVertexCandidate>& candidates,
     const std::function<bool(double)>& is_active,
     const size_t start_i,
@@ -59,7 +59,7 @@ void NormalCollisionsBuilder::add_vertex_vertex_collisions(
 
 void NormalCollisionsBuilder::add_edge_vertex_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<EdgeVertexCandidate>& candidates,
     const std::function<bool(double)>& is_active,
     const size_t start_i,
@@ -124,7 +124,7 @@ void NormalCollisionsBuilder::add_edge_vertex_collision(
 
 void NormalCollisionsBuilder::add_edge_edge_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<EdgeEdgeCandidate>& candidates,
     const std::function<bool(double)>& is_active,
     const size_t start_i,
@@ -225,7 +225,7 @@ void NormalCollisionsBuilder::add_edge_edge_collisions(
 
 void NormalCollisionsBuilder::add_face_vertex_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<FaceVertexCandidate>& candidates,
     const std::function<bool(double)>& is_active,
     const size_t start_i,
@@ -303,7 +303,7 @@ void NormalCollisionsBuilder::add_face_vertex_collisions(
 
 void NormalCollisionsBuilder::add_edge_vertex_negative_vertex_vertex_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<VertexVertexCandidate>& candidates,
     const size_t start_i,
     const size_t end_i)
@@ -348,7 +348,7 @@ void NormalCollisionsBuilder::add_edge_vertex_negative_vertex_vertex_collisions(
 
 void NormalCollisionsBuilder::add_face_vertex_positive_vertex_vertex_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<VertexVertexCandidate>& candidates,
     const size_t start_i,
     const size_t end_i)
@@ -391,7 +391,7 @@ void NormalCollisionsBuilder::add_face_vertex_positive_vertex_vertex_collisions(
 
 void NormalCollisionsBuilder::add_face_vertex_negative_edge_vertex_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<EdgeVertexCandidate>& candidates,
     const size_t start_i,
     const size_t end_i)
@@ -429,7 +429,7 @@ void NormalCollisionsBuilder::add_face_vertex_negative_edge_vertex_collisions(
 
 void NormalCollisionsBuilder::add_edge_edge_negative_edge_vertex_collisions(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::vector<EdgeVertexCandidate>& candidates,
     const size_t start_i,
     const size_t end_i)

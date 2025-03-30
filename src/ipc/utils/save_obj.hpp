@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Eigen/Core>
+#include <ipc/utils/eigen_ext.hpp>
 
 #include <fstream>
 #include <ostream>
@@ -11,18 +11,18 @@ namespace ipc {
 template <typename Candidate>
 void save_obj(
     std::ostream& out,
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
+    Eigen::ConstRef<Eigen::MatrixXi> E,
+    Eigen::ConstRef<Eigen::MatrixXi> F,
     const std::vector<Candidate>& candidates,
     const int v_offset = 0);
 
 template <typename Candidate>
 bool save_obj(
     const std::string& filename,
-    const Eigen::MatrixXd& V,
-    const Eigen::MatrixXi& E,
-    const Eigen::MatrixXi& F,
+    Eigen::ConstRef<Eigen::MatrixXd> V,
+    Eigen::ConstRef<Eigen::MatrixXi> E,
+    Eigen::ConstRef<Eigen::MatrixXi> F,
     const std::vector<Candidate>& candidates)
 {
     std::ofstream obj(filename);

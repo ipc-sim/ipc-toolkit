@@ -25,7 +25,7 @@ public:
     double operator()(
         const TCollisions& collisions,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& X) const;
+        Eigen::ConstRef<Eigen::MatrixXd> X) const;
 
     /// @brief Compute the gradient of the potential.
     /// @param collisions The set of collisions.
@@ -35,7 +35,7 @@ public:
     Eigen::VectorXd gradient(
         const TCollisions& collisions,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& X) const;
+        Eigen::ConstRef<Eigen::MatrixXd> X) const;
 
     /// @brief Compute the hessian of the potential.
     /// @param collisions The set of collisions.
@@ -46,7 +46,7 @@ public:
     Eigen::SparseMatrix<double> hessian(
         const TCollisions& collisions,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& X,
+        Eigen::ConstRef<Eigen::MatrixXd> X,
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const;
 
@@ -56,15 +56,15 @@ public:
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
     /// @return The potential.
-    virtual double
-    operator()(const TCollision& collision, const VectorMax12d& x) const = 0;
+    virtual double operator()(
+        const TCollision& collision, Eigen::ConstRef<VectorMax12d> x) const = 0;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
     /// @return The gradient of the potential.
-    virtual VectorMax12d
-    gradient(const TCollision& collision, const VectorMax12d& x) const = 0;
+    virtual VectorMax12d gradient(
+        const TCollision& collision, Eigen::ConstRef<VectorMax12d> x) const = 0;
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision.
@@ -72,7 +72,7 @@ public:
     /// @return The hessian of the potential.
     virtual MatrixMax12d hessian(
         const TCollision& collision,
-        const VectorMax12d& x,
+        Eigen::ConstRef<VectorMax12d> x,
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const = 0;
 };

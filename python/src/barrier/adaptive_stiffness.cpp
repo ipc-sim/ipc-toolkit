@@ -13,8 +13,8 @@ void define_adaptive_stiffness(py::module_& m)
         "initial_barrier_stiffness",
         [](const double bbox_diagonal, const Barrier& barrier,
            const double dhat, const double average_mass,
-           const Eigen::VectorXd& grad_energy,
-           const Eigen::VectorXd& grad_barrier,
+           Eigen::ConstRef<Eigen::VectorXd> grad_energy,
+           Eigen::ConstRef<Eigen::VectorXd> grad_barrier,
            const double min_barrier_stiffness_scale = 1e11,
            const double dmin = 0) {
             double max_barrier_stiffness;
@@ -73,8 +73,9 @@ void define_adaptive_stiffness(py::module_& m)
         "semi_implicit_stiffness",
         static_cast<double (*)(
             const CollisionStencil&, const std::array<long, 4>&,
-            const VectorMax12d&, const VectorMax4d&, const MatrixMax12d&,
-            const double)>(&semi_implicit_stiffness),
+            Eigen::ConstRef<VectorMax12d>, Eigen::ConstRef<VectorMax4d>,
+            Eigen::ConstRef<MatrixMax12d>, const double)>(
+            &semi_implicit_stiffness),
         R"ipc_Qu8mg5v7(
         Compute the semi-implicit stiffness for a single collision.
 
@@ -97,8 +98,8 @@ void define_adaptive_stiffness(py::module_& m)
     m.def(
         "semi_implicit_stiffness",
         static_cast<Eigen::VectorXd (*)(
-            const CollisionMesh&, const Eigen::MatrixXd&,
-            const NormalCollisions&, const Eigen::VectorXd&,
+            const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+            const NormalCollisions&, Eigen::ConstRef<Eigen::VectorXd>,
             const Eigen::SparseMatrix<double>&, const double)>(
             &semi_implicit_stiffness),
         R"ipc_Qu8mg5v7(
@@ -123,9 +124,10 @@ void define_adaptive_stiffness(py::module_& m)
     m.def(
         "semi_implicit_stiffness",
         static_cast<Eigen::VectorXd (*)(
-            const CollisionMesh&, const Eigen::MatrixXd&, const Candidates&,
-            const Eigen::VectorXd&, const Eigen::SparseMatrix<double>&,
-            const double)>(&semi_implicit_stiffness),
+            const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+            const Candidates&, Eigen::ConstRef<Eigen::VectorXd>,
+            const Eigen::SparseMatrix<double>&, const double)>(
+            &semi_implicit_stiffness),
         R"ipc_Qu8mg5v7(
         Compute the semi-implicit stiffness's for all collisions.
 

@@ -17,7 +17,7 @@ namespace ipc {
 
 namespace {
     // Pad codim_edges because remove_unreferenced requires a N×3 matrix.
-    Eigen::MatrixXi pad_edges(const Eigen::MatrixXi& E)
+    Eigen::MatrixXi pad_edges(Eigen::ConstRef<Eigen::MatrixXi> E)
     {
         assert(E.cols() == 2);
         Eigen::MatrixXi E_padded(E.rows(), 3);
@@ -26,7 +26,7 @@ namespace {
         return E_padded;
     }
 
-    Eigen::MatrixXi unpad_edges(const Eigen::MatrixXi& E_padded)
+    Eigen::MatrixXi unpad_edges(Eigen::ConstRef<Eigen::MatrixXi> E_padded)
     {
         return E_padded.leftCols(2);
     }
@@ -34,7 +34,7 @@ namespace {
 
 void Candidates::build(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const double inflation_radius,
     const std::shared_ptr<BroadPhase> broad_phase)
 {
@@ -105,8 +105,8 @@ void Candidates::build(
 
 void Candidates::build(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double inflation_radius,
     const std::shared_ptr<BroadPhase> broad_phase)
 {
@@ -185,8 +185,8 @@ void Candidates::build(
 
 bool Candidates::is_step_collision_free(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double min_distance,
     const NarrowPhaseCCD& narrow_phase_ccd) const
 {
@@ -213,8 +213,8 @@ bool Candidates::is_step_collision_free(
 
 double Candidates::compute_collision_free_stepsize(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double min_distance,
     const NarrowPhaseCCD& narrow_phase_ccd) const
 {
@@ -263,7 +263,7 @@ double Candidates::compute_collision_free_stepsize(
 
 double Candidates::compute_noncandidate_conservative_stepsize(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& displacements,
+    Eigen::ConstRef<Eigen::MatrixXd> displacements,
     const double dhat) const
 {
     assert(displacements.rows() == mesh.num_vertices());
@@ -272,8 +272,8 @@ double Candidates::compute_noncandidate_conservative_stepsize(
         return 1; // No possible collisions, so can take full step.
     }
 
-    const auto& E = mesh.edges();
-    const auto& F = mesh.faces();
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     std::vector<bool> is_vertex_a_candidates(mesh.num_vertices(), false);
     for (size_t i = 0; i < size(); i++) {
@@ -299,8 +299,8 @@ double Candidates::compute_noncandidate_conservative_stepsize(
 
 double Candidates::compute_cfl_stepsize(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double dhat,
     const double min_distance,
     const std::shared_ptr<BroadPhase> broad_phase,
@@ -386,9 +386,9 @@ const CollisionStencil& Candidates::operator[](size_t i) const
 
 bool Candidates::save_obj(
     const std::string& filename,
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces) const
 {
     std::ofstream obj(filename, std::ios::out);
     if (!obj.is_open()) {

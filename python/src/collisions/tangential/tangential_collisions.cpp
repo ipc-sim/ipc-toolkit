@@ -12,7 +12,7 @@ void define_tangential_collisions(py::module_& m)
         .def(
             "build",
             py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&,
+                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
                 const NormalCollisions&, const NormalPotential&, double,
                 double>(&TangentialCollisions::build),
             py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
@@ -21,10 +21,11 @@ void define_tangential_collisions(py::module_& m)
         .def(
             "build",
             [](TangentialCollisions& self, const CollisionMesh& mesh,
-               const Eigen::MatrixXd& vertices,
+               Eigen::ConstRef<Eigen::MatrixXd> vertices,
                const NormalCollisions& collisions,
                const NormalPotential& normal_potential,
-               const double normal_stiffness, const Eigen::VectorXd& mus) {
+               const double normal_stiffness,
+               Eigen::ConstRef<Eigen::VectorXd> mus) {
                 self.build(
                     mesh, vertices, collisions, normal_potential,
                     normal_stiffness, mus);
@@ -35,9 +36,9 @@ void define_tangential_collisions(py::module_& m)
         .def(
             "build",
             py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&,
+                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
                 const NormalCollisions&, const NormalPotential&, const double,
-                const Eigen::VectorXd&,
+                Eigen::ConstRef<Eigen::VectorXd>,
                 const std::function<double(double, double)>&>(
                 &TangentialCollisions::build),
             py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),

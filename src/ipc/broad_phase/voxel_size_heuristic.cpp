@@ -15,8 +15,8 @@ namespace {
 } // namespace
 
 double suggest_good_voxel_size(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
     const double inflation_radius)
 {
     // double edge_len_std_deviation;
@@ -41,9 +41,9 @@ double suggest_good_voxel_size(
 }
 
 double suggest_good_voxel_size(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
     const double inflation_radius)
 {
     // double edge_len_std_deviation;
@@ -78,9 +78,9 @@ double suggest_good_voxel_size(
 }
 
 double mean_edge_length(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
     double& std_deviation)
 {
     if (edges.rows() == 0) {
@@ -110,7 +110,7 @@ double mean_edge_length(
 }
 
 double mean_displacement_length(
-    const Eigen::MatrixXd& displacements, double& std_deviation)
+    Eigen::ConstRef<Eigen::MatrixXd> displacements, double& std_deviation)
 {
     const double mean = displacements.rowwise().norm().mean();
     std_deviation = sqrt(
@@ -120,9 +120,9 @@ double mean_displacement_length(
 }
 
 double median_edge_length(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges)
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXi> edges)
 {
     if (edges.rows() == 0) {
         return 0;
@@ -142,7 +142,8 @@ double median_edge_length(
     return median;
 }
 
-double median_displacement_length(const Eigen::MatrixXd& displacements)
+double
+median_displacement_length(Eigen::ConstRef<Eigen::MatrixXd> displacements)
 {
     double median = -1;
     check_success(igl::median(displacements.rowwise().norm(), median));
@@ -150,9 +151,9 @@ double median_displacement_length(const Eigen::MatrixXd& displacements)
 }
 
 double max_edge_length(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges)
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXi> edges)
 {
     double max_edge = -std::numeric_limits<double>::infinity();
     for (int i = 0; i < edges.rows(); i++) {
@@ -166,7 +167,7 @@ double max_edge_length(
     return max_edge;
 }
 
-double max_displacement_length(const Eigen::MatrixXd& displacements)
+double max_displacement_length(Eigen::ConstRef<Eigen::MatrixXd> displacements)
 {
     return displacements.rowwise().norm().maxCoeff();
 }

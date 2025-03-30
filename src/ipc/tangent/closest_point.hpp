@@ -13,9 +13,9 @@ namespace ipc {
 /// @param e1 Second edge point
 /// @return barycentric coordinates of the closest point
 double point_edge_closest_point(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1);
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1);
 
 /// @brief Compute the Jacobian of the closest point on the edge.
 /// @param p Point
@@ -23,9 +23,9 @@ double point_edge_closest_point(
 /// @param e1 Second edge point
 /// @return Jacobian of the closest point
 VectorMax9d point_edge_closest_point_jacobian(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1);
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1);
 
 // ============================================================================
 // Edge - Edge
@@ -37,10 +37,10 @@ VectorMax9d point_edge_closest_point_jacobian(
 /// @param eb1 Second point of the second edge
 /// @return Barycentric coordinates of the closest points
 Eigen::Vector2d edge_edge_closest_point(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1);
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 /// @brief Compute the Jacobian of the closest points between two edges.
 /// @param ea0 First point of the first edge
@@ -49,10 +49,10 @@ Eigen::Vector2d edge_edge_closest_point(
 /// @param eb1 Second point of the second edge
 /// @return Jacobian of the closest points
 Eigen::Matrix<double, 2, 12> edge_edge_closest_point_jacobian(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1);
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 // ============================================================================
 // Point - Triangle
@@ -64,10 +64,10 @@ Eigen::Matrix<double, 2, 12> edge_edge_closest_point_jacobian(
 /// @param t2 Triangle's third vertex
 /// @return Barycentric coordinates of the closest point
 Eigen::Vector2d point_triangle_closest_point(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2);
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2);
 
 /// @brief Compute the Jacobian of the closest point on the triangle.
 /// @param p Point
@@ -76,10 +76,10 @@ Eigen::Vector2d point_triangle_closest_point(
 /// @param t2 Triangle's third vertex
 /// @return Jacobian of the closest point
 Eigen::Matrix<double, 2, 12> point_triangle_closest_point_jacobian(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2);
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2);
 // ============================================================================
 
 namespace autogen {

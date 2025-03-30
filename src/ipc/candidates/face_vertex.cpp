@@ -13,8 +13,8 @@ FaceVertexCandidate::FaceVertexCandidate(long _face_id, long _vertex_id)
 {
 }
 
-double
-FaceVertexCandidate::compute_distance(const VectorMax12d& positions) const
+double FaceVertexCandidate::compute_distance(
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 12);
     return point_triangle_distance(
@@ -23,7 +23,7 @@ FaceVertexCandidate::compute_distance(const VectorMax12d& positions) const
 }
 
 VectorMax12d FaceVertexCandidate::compute_distance_gradient(
-    const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 12);
     return point_triangle_distance_gradient(
@@ -32,7 +32,7 @@ VectorMax12d FaceVertexCandidate::compute_distance_gradient(
 }
 
 MatrixMax12d FaceVertexCandidate::compute_distance_hessian(
-    const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 12);
     return point_triangle_distance_hessian(
@@ -40,14 +40,14 @@ MatrixMax12d FaceVertexCandidate::compute_distance_hessian(
         positions.tail<3>(), known_dtype());
 }
 
-VectorMax4d
-FaceVertexCandidate::compute_coefficients(const VectorMax12d& positions) const
+VectorMax4d FaceVertexCandidate::compute_coefficients(
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 12);
-    const Eigen::Ref<const Eigen::Vector3d> p = positions.head<3>();
-    const Eigen::Ref<const Eigen::Vector3d> t0 = positions.segment<3>(3);
-    const Eigen::Ref<const Eigen::Vector3d> t1 = positions.segment<3>(6);
-    const Eigen::Ref<const Eigen::Vector3d> t2 = positions.tail<3>();
+    Eigen::ConstRef<Eigen::Vector3d> p = positions.head<3>();
+    Eigen::ConstRef<Eigen::Vector3d> t0 = positions.segment<3>(3);
+    Eigen::ConstRef<Eigen::Vector3d> t1 = positions.segment<3>(6);
+    Eigen::ConstRef<Eigen::Vector3d> t2 = positions.tail<3>();
 
     // Project the point inside the triangle
     auto dtype = known_dtype();
@@ -91,8 +91,8 @@ FaceVertexCandidate::compute_coefficients(const VectorMax12d& positions) const
 }
 
 bool FaceVertexCandidate::ccd(
-    const VectorMax12d& vertices_t0,
-    const VectorMax12d& vertices_t1,
+    Eigen::ConstRef<VectorMax12d> vertices_t0,
+    Eigen::ConstRef<VectorMax12d> vertices_t1,
     double& toi,
     const double min_distance,
     const double tmax,

@@ -7,7 +7,7 @@ namespace ipc {
 Eigen::SparseMatrix<double> NormalPotential::shape_derivative(
     const NormalCollisions& collisions,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices) const
+    Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());
 
@@ -50,7 +50,8 @@ Eigen::SparseMatrix<double> NormalPotential::shape_derivative(
 // -- Single collision methods -------------------------------------------------
 
 double NormalPotential::operator()(
-    const NormalCollision& collision, const VectorMax12d& positions) const
+    const NormalCollision& collision,
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     // w * m(x) * f(d(x))
     // NOTE: can save a multiplication by checking if !collision.is_mollified()
@@ -60,7 +61,8 @@ double NormalPotential::operator()(
 }
 
 VectorMax12d NormalPotential::gradient(
-    const NormalCollision& collision, const VectorMax12d& positions) const
+    const NormalCollision& collision,
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     // d(x)
     const double d = collision.compute_distance(positions);
@@ -88,7 +90,7 @@ VectorMax12d NormalPotential::gradient(
 
 MatrixMax12d NormalPotential::hessian(
     const NormalCollision& collision,
-    const VectorMax12d& positions,
+    Eigen::ConstRef<VectorMax12d> positions,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
     // d(x)
@@ -141,8 +143,8 @@ MatrixMax12d NormalPotential::hessian(
 void NormalPotential::shape_derivative(
     const NormalCollision& collision,
     const std::array<long, 4>& vertex_ids,
-    const VectorMax12d& rest_positions, // = x̄
-    const VectorMax12d& positions,      // = x̄ + u
+    Eigen::ConstRef<VectorMax12d> rest_positions, // = x̄
+    Eigen::ConstRef<VectorMax12d> positions,      // = x̄ + u
     std::vector<Eigen::Triplet<double>>& out) const
 {
     assert(rest_positions.size() == positions.size());

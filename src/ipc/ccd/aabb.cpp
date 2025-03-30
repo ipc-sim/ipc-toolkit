@@ -5,9 +5,9 @@ namespace ipc {
 // Discrete collision detection
 
 bool point_edge_aabb_cd(
-    const VectorMax3d& p,
-    const VectorMax3d& e0,
-    const VectorMax3d& e1,
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1,
     double dist)
 {
     const ArrayMax3d max_e = e0.array().max(e1.array());
@@ -17,10 +17,10 @@ bool point_edge_aabb_cd(
 }
 
 bool edge_edge_aabb_cd(
-    const VectorMax3d& ea0,
-    const VectorMax3d& ea1,
-    const VectorMax3d& eb0,
-    const VectorMax3d& eb1,
+    Eigen::ConstRef<VectorMax3d> ea0,
+    Eigen::ConstRef<VectorMax3d> ea1,
+    Eigen::ConstRef<VectorMax3d> eb0,
+    Eigen::ConstRef<VectorMax3d> eb1,
     double dist)
 {
     const ArrayMax3d max_a = ea0.array().max(ea1.array());
@@ -31,10 +31,10 @@ bool edge_edge_aabb_cd(
 }
 
 bool point_triangle_aabb_cd(
-    const Eigen::Vector3d& p,
-    const Eigen::Vector3d& t0,
-    const Eigen::Vector3d& t1,
-    const Eigen::Vector3d& t2,
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
     double dist)
 {
     const Eigen::Array3d max_tri = t0.array().max(t1.array()).max(t2.array());
@@ -44,11 +44,11 @@ bool point_triangle_aabb_cd(
 }
 
 bool edge_triangle_aabb_cd(
-    const Eigen::Vector3d& e0,
-    const Eigen::Vector3d& e1,
-    const Eigen::Vector3d& t0,
-    const Eigen::Vector3d& t1,
-    const Eigen::Vector3d& t2,
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2,
     double dist)
 {
     const Eigen::Array3d max_e = e0.array().max(e1.array());
@@ -61,12 +61,12 @@ bool edge_triangle_aabb_cd(
 // Continous collision detection
 
 bool point_edge_aabb_ccd(
-    const VectorMax3d& p_t0,
-    const VectorMax3d& e0_t0,
-    const VectorMax3d& e1_t0,
-    const VectorMax3d& p_t1,
-    const VectorMax3d& e0_t1,
-    const VectorMax3d& e1_t1,
+    Eigen::ConstRef<VectorMax3d> p_t0,
+    Eigen::ConstRef<VectorMax3d> e0_t0,
+    Eigen::ConstRef<VectorMax3d> e1_t0,
+    Eigen::ConstRef<VectorMax3d> p_t1,
+    Eigen::ConstRef<VectorMax3d> e0_t1,
+    Eigen::ConstRef<VectorMax3d> e1_t1,
     double dist)
 {
     const ArrayMax3d max_p = p_t0.array().max(p_t1.array());
@@ -79,14 +79,14 @@ bool point_edge_aabb_ccd(
 }
 
 bool point_triangle_aabb_ccd(
-    const Eigen::Vector3d& p_t0,
-    const Eigen::Vector3d& t0_t0,
-    const Eigen::Vector3d& t1_t0,
-    const Eigen::Vector3d& t2_t0,
-    const Eigen::Vector3d& p_t1,
-    const Eigen::Vector3d& t0_t1,
-    const Eigen::Vector3d& t1_t1,
-    const Eigen::Vector3d& t2_t1,
+    Eigen::ConstRef<Eigen::Vector3d> p_t0,
+    Eigen::ConstRef<Eigen::Vector3d> t0_t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1_t0,
+    Eigen::ConstRef<Eigen::Vector3d> t2_t0,
+    Eigen::ConstRef<Eigen::Vector3d> p_t1,
+    Eigen::ConstRef<Eigen::Vector3d> t0_t1,
+    Eigen::ConstRef<Eigen::Vector3d> t1_t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2_t1,
     double dist)
 {
     const Eigen::Array3d max_p = p_t0.array().max((p_t1).array());
@@ -107,14 +107,14 @@ bool point_triangle_aabb_ccd(
 }
 
 bool edge_edge_aabb_ccd(
-    const Eigen::Vector3d& ea0_t0,
-    const Eigen::Vector3d& ea1_t0,
-    const Eigen::Vector3d& eb0_t0,
-    const Eigen::Vector3d& eb1_t0,
-    const Eigen::Vector3d& ea0_t1,
-    const Eigen::Vector3d& ea1_t1,
-    const Eigen::Vector3d& eb0_t1,
-    const Eigen::Vector3d& eb1_t1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0_t0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_t0,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_t0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_t0,
+    Eigen::ConstRef<Eigen::Vector3d> ea0_t1,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_t1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_t1,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_t1,
     double dist)
 {
     const Eigen::Array3d max_a = ea0_t0.array()

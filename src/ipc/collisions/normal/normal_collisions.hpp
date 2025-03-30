@@ -31,7 +31,7 @@ public:
     /// @param broad_phase_method Broad-phase method to use.
     void build(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const double dhat,
         const double dmin = 0,
         const std::shared_ptr<BroadPhase> broad_phase =
@@ -46,7 +46,7 @@ public:
     void build(
         const Candidates& candidates,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const double dhat,
         const double dmin = 0);
 
@@ -57,7 +57,8 @@ public:
     /// @param vertices Vertices of the collision mesh.
     /// @returns The minimum distance between any non-adjacent elements.
     double compute_minimum_distance(
-        const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
     // ------------------------------------------------------------------------
 
@@ -139,8 +140,9 @@ public:
     /// @param enable_shape_derivatives If the collision set should enable shape derivative computation.
     void set_enable_shape_derivatives(const bool enable_shape_derivatives);
 
-    std::string
-    to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
+    std::string to_string(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
 public:
     /// @brief Vertex-vertex normal collisions.

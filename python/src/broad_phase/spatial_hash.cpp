@@ -12,30 +12,36 @@ void define_spatial_hash(py::module_& m)
         .def(py::init())
         .def(
             py::init<
-                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-                const Eigen::MatrixXi&, double, double>(),
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>, double, double>(),
             py::arg("vertices"), py::arg("edges"), py::arg("faces"),
             py::arg("inflation_radius") = 0, py::arg("voxel_size") = -1)
         .def(
             py::init<
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXi&, const Eigen::MatrixXi&, double,
-                double>(),
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>, double, double>(),
             py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
             py::arg("faces"), py::arg("inflation_radius") = 0,
             py::arg("voxel_size") = -1)
         .def(
             "build",
             py::overload_cast<
-                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-                const Eigen::MatrixXi&, double, double>(&SpatialHash::build),
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>, double, double>(
+                &SpatialHash::build),
             py::arg("vertices"), py::arg("edges"), py::arg("faces"),
             py::arg("inflation_radius") = 0, py::arg("voxel_size") = -1)
         .def(
             "build",
             py::overload_cast<
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXi&, const Eigen::MatrixXi&, double, double>(
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>, double, double>(
                 &SpatialHash::build),
             py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
             py::arg("faces"), py::arg("inflation_radius") = 0,

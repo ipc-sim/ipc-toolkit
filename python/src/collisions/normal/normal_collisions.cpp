@@ -12,8 +12,8 @@ void define_normal_collisions(py::module_& m)
         .def(
             "build",
             py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&, const double,
-                const double, std::shared_ptr<BroadPhase>>(
+                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+                const double, const double, std::shared_ptr<BroadPhase>>(
                 &NormalCollisions::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of collisions used to compute the barrier potential.
@@ -31,8 +31,9 @@ void define_normal_collisions(py::module_& m)
         .def(
             "build",
             py::overload_cast<
-                const Candidates&, const CollisionMesh&, const Eigen::MatrixXd&,
-                const double, const double>(&NormalCollisions::build),
+                const Candidates&, const CollisionMesh&,
+                Eigen::ConstRef<Eigen::MatrixXd>, const double, const double>(
+                &NormalCollisions::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of collisions used to compute the barrier potential.
 

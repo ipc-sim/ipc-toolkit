@@ -3,9 +3,9 @@
 namespace ipc {
 
 double point_line_distance(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1)
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1)
 {
     assert(p.size() == 2 || p.size() == 3);
     assert(e0.size() == 2 || e0.size() == 3);
@@ -23,9 +23,9 @@ double point_line_distance(
 }
 
 VectorMax9d point_line_distance_gradient(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1)
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1)
 {
     const int dim = p.size();
     assert(e0.size() == dim);
@@ -44,9 +44,9 @@ VectorMax9d point_line_distance_gradient(
 }
 
 MatrixMax9d point_line_distance_hessian(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1)
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1)
 {
     const int dim = p.size();
     assert(e0.size() == dim);

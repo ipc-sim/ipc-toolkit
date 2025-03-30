@@ -24,7 +24,7 @@ public:
 
     void build(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const NormalCollisions& collisions,
         const NormalPotential& normal_potential,
         double normal_stiffness,
@@ -37,11 +37,11 @@ public:
 
     void build(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const NormalCollisions& collisions,
         const NormalPotential& normal_potential,
         const double normal_stiffness,
-        const Eigen::VectorXd& mus,
+        Eigen::ConstRef<Eigen::VectorXd> mus,
         const std::function<double(double, double)>& blend_mu =
             default_blend_mu);
 

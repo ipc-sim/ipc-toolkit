@@ -13,10 +13,10 @@ namespace ipc {
 /// @param[in] conservative_rescaling Conservative rescaling of the time of impact.
 /// @return True if a collision was detected, false otherwise.
 bool point_static_plane_ccd(
-    const VectorMax3d& p_t0,
-    const VectorMax3d& p_t1,
-    const VectorMax3d& plane_origin,
-    const VectorMax3d& plane_normal,
+    Eigen::ConstRef<VectorMax3d> p_t0,
+    Eigen::ConstRef<VectorMax3d> p_t1,
+    Eigen::ConstRef<VectorMax3d> plane_origin,
+    Eigen::ConstRef<VectorMax3d> plane_normal,
     double& toi,
     const double conservative_rescaling =
         TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);

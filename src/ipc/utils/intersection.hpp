@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Eigen/Core>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
@@ -12,10 +12,10 @@ namespace ipc {
 /// @param t2 Triangle vertex 2.
 /// @return True if the edge intersects the triangle.
 bool is_edge_intersecting_triangle(
-    const Eigen::Vector3d& e0,
-    const Eigen::Vector3d& e1,
-    const Eigen::Vector3d& t0,
-    const Eigen::Vector3d& t1,
-    const Eigen::Vector3d& t2);
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2);
 
 } // namespace ipc

@@ -23,8 +23,8 @@ public:
     /// @param faces face matrix of mesh
     /// @return List of vertex indices
     std::array<long, 4> vertex_ids(
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const override
     {
         return { { vertex0_id, vertex1_id, -1, -1 } };
     }
@@ -34,22 +34,23 @@ public:
     using CollisionStencil::compute_distance_gradient;
     using CollisionStencil::compute_distance_hessian;
 
-    double compute_distance(const VectorMax12d& positions) const override;
+    double
+    compute_distance(Eigen::ConstRef<VectorMax12d> positions) const override;
 
-    VectorMax12d
-    compute_distance_gradient(const VectorMax12d& positions) const override;
+    VectorMax12d compute_distance_gradient(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 
-    MatrixMax12d
-    compute_distance_hessian(const VectorMax12d& positions) const override;
+    MatrixMax12d compute_distance_hessian(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 
-    VectorMax4d
-    compute_coefficients(const VectorMax12d& positions) const override;
+    VectorMax4d compute_coefficients(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 
     // ------------------------------------------------------------------------
 
     bool
-    ccd(const VectorMax12d& vertices_t0,
-        const VectorMax12d& vertices_t1,
+    ccd(Eigen::ConstRef<VectorMax12d> vertices_t0,
+        Eigen::ConstRef<VectorMax12d> vertices_t1,
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,

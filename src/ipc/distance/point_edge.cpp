@@ -8,9 +8,9 @@
 namespace ipc {
 
 double point_edge_distance(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1,
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1,
     PointEdgeDistanceType dtype)
 {
     assert(p.size() == 2 || p.size() == 3);
@@ -38,9 +38,9 @@ double point_edge_distance(
 }
 
 VectorMax9d point_edge_distance_gradient(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1,
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1,
     PointEdgeDistanceType dtype)
 {
     const int dim = p.size();
@@ -78,9 +78,9 @@ VectorMax9d point_edge_distance_gradient(
 }
 
 MatrixMax9d point_edge_distance_hessian(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1,
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1,
     PointEdgeDistanceType dtype)
 {
     const int dim = p.size();

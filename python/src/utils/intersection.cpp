@@ -16,8 +16,10 @@ void define_intersection(py::module_& m)
 
     m.def(
         "segment_segment_intersect",
-        [](const Eigen::Vector2d& A, const Eigen::Vector2d& B,
-           const Eigen::Vector2d& C, const Eigen::Vector2d& D) -> bool {
+        [](Eigen::ConstRef<Eigen::Vector2d> A,
+           Eigen::ConstRef<Eigen::Vector2d> B,
+           Eigen::ConstRef<Eigen::Vector2d> C,
+           Eigen::ConstRef<Eigen::Vector2d> D) -> bool {
             igl::predicates::exactinit();
             return igl::predicates::segment_segment_intersect(A, B, C, D);
         },

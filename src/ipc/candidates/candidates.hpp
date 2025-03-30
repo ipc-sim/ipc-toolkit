@@ -23,7 +23,7 @@ public:
     /// @param broad_phase_method Broad phase method to use.
     void build(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const double inflation_radius = 0,
         const std::shared_ptr<BroadPhase> broad_phase =
             make_default_broad_phase());
@@ -37,8 +37,8 @@ public:
     /// @param broad_phase_method Broad phase method to use.
     void build(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
         const double inflation_radius = 0,
         const std::shared_ptr<BroadPhase> broad_phase =
             make_default_broad_phase());
@@ -62,8 +62,8 @@ public:
     /// @returns True if <b>any</b> collisions occur.
     bool is_step_collision_free(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
         const double min_distance = 0.0,
         const NarrowPhaseCCD& narrow_phase_ccd =
             DEFAULT_NARROW_PHASE_CCD) const;
@@ -78,8 +78,8 @@ public:
     /// @returns A step-size \f$\in [0, 1]\f$ that is collision free. A value of 1.0 if a full step and 0.0 is no step.
     double compute_collision_free_stepsize(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
         const double min_distance = 0.0,
         const NarrowPhaseCCD& narrow_phase_ccd =
             DEFAULT_NARROW_PHASE_CCD) const;
@@ -90,7 +90,7 @@ public:
     /// @param dhat Barrier activation distance.
     double compute_noncandidate_conservative_stepsize(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& displacements,
+        Eigen::ConstRef<Eigen::MatrixXd> displacements,
         const double dhat) const;
 
     /// @brief Computes a CFL-inspired CCD maximum step step size.
@@ -102,8 +102,8 @@ public:
     /// @param narrow_phase_ccd The narrow phase CCD algorithm to use.
     double compute_cfl_stepsize(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
         const double dhat,
         const double min_distance = 0.0,
         const std::shared_ptr<BroadPhase> broad_phase =
@@ -113,9 +113,9 @@ public:
 
     bool save_obj(
         const std::string& filename,
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const;
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const;
 
 public:
     std::vector<VertexVertexCandidate> vv_candidates;
