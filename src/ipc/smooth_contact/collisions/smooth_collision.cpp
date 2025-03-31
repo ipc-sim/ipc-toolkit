@@ -375,7 +375,8 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::hessian(
     gOrient(core_indices) += gBarrier * orient;
     orient *= barrier;
 
-    return hOrient;
+    // return hOrient
+    return (hOrient + hOrient.transpose()) / 2.;
 }
 
 // ---- distance ----

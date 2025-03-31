@@ -549,7 +549,6 @@ FrictionPotential::force_jacobian(
     assert(rest_positions.size() == lagged_displacements.size());
     assert(lagged_displacements.size() == velocities.size());
     const int n = rest_positions.size();
-    const int dim = n / collision.num_vertices();
     assert(n % collision.num_vertices() == 0);
 
     // const Vector<double, -1, FrictionPotential::element_size> x =
