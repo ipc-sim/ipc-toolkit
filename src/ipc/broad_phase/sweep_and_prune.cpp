@@ -5,9 +5,9 @@
 namespace ipc {
 
 void SweepAndPrune::build(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
     assert(edges.size() == 0 || edges.cols() == 2);
@@ -21,10 +21,10 @@ void SweepAndPrune::build(
 }
 
 void SweepAndPrune::build(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
     assert(edges.size() == 0 || edges.cols() == 2);

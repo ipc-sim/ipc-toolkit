@@ -1,12 +1,12 @@
 sphinx
 sphinx-sitemap
-sphinx-immaterial==0.11.14
+sphinx-immaterial
 autoclasstoc
 # sphinx-autodoc-toolbox
 breathe
 nbsphinx
 pandoc
-myst_parser==1.0.0
+myst_parser
 sphinxcontrib-bibtex
 sphinxemoji
 sphinx-last-updated-by-git

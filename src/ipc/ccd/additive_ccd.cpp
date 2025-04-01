@@ -49,10 +49,10 @@ namespace {
         }
     }
 
-    VectorMax12d stack(const VectorMax3d& x) { return x; }
+    VectorMax12d stack(Eigen::ConstRef<VectorMax3d> x) { return x; }
 
     template <typename... Args>
-    VectorMax12d stack(const VectorMax3d& x0, const Args&... args)
+    VectorMax12d stack(Eigen::ConstRef<VectorMax3d> x0, const Args&... args)
     {
         VectorMax12d x(x0.size() * (1 + sizeof...(args)));
         x.head(x0.size()) = x0;
@@ -69,9 +69,9 @@ AdditiveCCD::AdditiveCCD(
 }
 
 bool AdditiveCCD::additive_ccd(
-    VectorMax12d x,
-    const VectorMax12d& dx,
-    const std::function<double(const VectorMax12d&)>& distance_squared,
+    VectorMax12d x, // mutable copy
+    Eigen::ConstRef<VectorMax12d> dx,
+    const std::function<double(Eigen::ConstRef<VectorMax12d>)> distance_squared,
     const double max_disp_mag,
     double& toi,
     const double min_distance,
@@ -127,10 +127,10 @@ bool AdditiveCCD::additive_ccd(
 }
 
 bool AdditiveCCD::point_point_ccd(
-    const VectorMax3d& p0_t0,
-    const VectorMax3d& p1_t0,
-    const VectorMax3d& p0_t1,
-    const VectorMax3d& p1_t1,
+    Eigen::ConstRef<VectorMax3d> p0_t0,
+    Eigen::ConstRef<VectorMax3d> p1_t0,
+    Eigen::ConstRef<VectorMax3d> p0_t1,
+    Eigen::ConstRef<VectorMax3d> p1_t1,
     double& toi,
     const double min_distance,
     const double tmax) const
@@ -156,7 +156,7 @@ bool AdditiveCCD::point_point_ccd(
         return false;
     }
 
-    auto distance_squared = [dim](const VectorMax12d& x) {
+    auto distance_squared = [dim](Eigen::ConstRef<VectorMax12d> x) {
         return point_point_distance(x.head(dim), x.tail(dim));
     };
 
@@ -168,12 +168,12 @@ bool AdditiveCCD::point_point_ccd(
 }
 
 bool AdditiveCCD::point_edge_ccd(
-    const VectorMax3d& p_t0,
-    const VectorMax3d& e0_t0,
-    const VectorMax3d& e1_t0,
-    const VectorMax3d& p_t1,
-    const VectorMax3d& e0_t1,
-    const VectorMax3d& e1_t1,
+    Eigen::ConstRef<VectorMax3d> p_t0,
+    Eigen::ConstRef<VectorMax3d> e0_t0,
+    Eigen::ConstRef<VectorMax3d> e1_t0,
+    Eigen::ConstRef<VectorMax3d> p_t1,
+    Eigen::ConstRef<VectorMax3d> e0_t1,
+    Eigen::ConstRef<VectorMax3d> e1_t1,
     double& toi,
     const double min_distance,
     const double tmax) const
@@ -202,7 +202,7 @@ bool AdditiveCCD::point_edge_ccd(
         return false;
     }
 
-    auto distance_squared = [dim](const VectorMax12d& x) {
+    auto distance_squared = [dim](Eigen::ConstRef<VectorMax12d> x) {
         return point_edge_distance(
             x.head(dim), x.segment(dim, dim), x.tail(dim));
     };
@@ -215,14 +215,14 @@ bool AdditiveCCD::point_edge_ccd(
 }
 
 bool AdditiveCCD::point_triangle_ccd(
-    const Eigen::Vector3d& p_t0,
-    const Eigen::Vector3d& t0_t0,
-    const Eigen::Vector3d& t1_t0,
-    const Eigen::Vector3d& t2_t0,
-    const Eigen::Vector3d& p_t1,
-    const Eigen::Vector3d& t0_t1,
-    const Eigen::Vector3d& t1_t1,
-    const Eigen::Vector3d& t2_t1,
+    Eigen::ConstRef<Eigen::Vector3d> p_t0,
+    Eigen::ConstRef<Eigen::Vector3d> t0_t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1_t0,
+    Eigen::ConstRef<Eigen::Vector3d> t2_t0,
+    Eigen::ConstRef<Eigen::Vector3d> p_t1,
+    Eigen::ConstRef<Eigen::Vector3d> t0_t1,
+    Eigen::ConstRef<Eigen::Vector3d> t1_t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2_t1,
     double& toi,
     const double min_distance,
     const double tmax) const
@@ -250,7 +250,7 @@ bool AdditiveCCD::point_triangle_ccd(
         return false;
     }
 
-    auto distance_squared = [](const VectorMax12d& x) {
+    auto distance_squared = [](Eigen::ConstRef<VectorMax12d> x) {
         return point_triangle_distance(
             x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
     };
@@ -263,14 +263,14 @@ bool AdditiveCCD::point_triangle_ccd(
 }
 
 bool AdditiveCCD::edge_edge_ccd(
-    const Eigen::Vector3d& ea0_t0,
-    const Eigen::Vector3d& ea1_t0,
-    const Eigen::Vector3d& eb0_t0,
-    const Eigen::Vector3d& eb1_t0,
-    const Eigen::Vector3d& ea0_t1,
-    const Eigen::Vector3d& ea1_t1,
-    const Eigen::Vector3d& eb0_t1,
-    const Eigen::Vector3d& eb1_t1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0_t0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_t0,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_t0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_t0,
+    Eigen::ConstRef<Eigen::Vector3d> ea0_t1,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_t1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_t1,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_t1,
     double& toi,
     const double min_distance,
     const double tmax) const
@@ -299,7 +299,7 @@ bool AdditiveCCD::edge_edge_ccd(
     }
 
     const double min_distance_sq = min_distance * min_distance;
-    auto distance_squared = [min_distance_sq](const VectorMax12d& x) {
+    auto distance_squared = [min_distance_sq](Eigen::ConstRef<VectorMax12d> x) {
         const auto& ea0 = x.head<3>();
         const auto& ea1 = x.segment<3>(3);
         const auto& eb0 = x.segment<3>(6);

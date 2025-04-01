@@ -10,15 +10,19 @@ class BVH : public BroadPhase {
 public:
     BVH() = default;
 
+    /// @brief Get the name of the broad phase method.
+    /// @return The name of the broad phase method.
+    std::string name() const override { return "BVH"; }
+
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
     void build(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         const double inflation_radius = 0) override;
 
     /// @brief Build the broad phase for continuous collision detection.
@@ -28,10 +32,10 @@ public:
     /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
     void build(
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         const double inflation_radius = 0) override;
 
     /// @brief Clear any built data.

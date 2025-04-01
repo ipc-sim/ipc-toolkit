@@ -1,11 +1,7 @@
 #pragma once
 
+#include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/unordered_map_and_set.hpp>
-
-#include <optional>
-
-#include <Eigen/Core>
-#include <Eigen/Sparse>
 
 namespace ipc {
 
@@ -23,9 +19,9 @@ public:
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
     /// @param mat_id The material ID of the collision mesh (optional).
     CollisionMesh(
-        const Eigen::MatrixXd& rest_positions,
-        const Eigen::MatrixXi& edges = Eigen::MatrixXi(),
-        const Eigen::MatrixXi& faces = Eigen::MatrixXi(),
+        Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXi> edges = Eigen::MatrixXi(),
+        Eigen::ConstRef<Eigen::MatrixXi> faces = Eigen::MatrixXi(),
         const Eigen::SparseMatrix<double>& displacement_map =
             Eigen::SparseMatrix<double>());
 
@@ -38,9 +34,9 @@ public:
     /// @param mat_id The material ID of the collision mesh (optional).
     CollisionMesh(
         const std::vector<bool>& include_vertex,
-        const Eigen::MatrixXd& full_rest_positions,
-        const Eigen::MatrixXi& edges = Eigen::MatrixXi(),
-        const Eigen::MatrixXi& faces = Eigen::MatrixXi(),
+        Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXi> edges = Eigen::MatrixXi(),
+        Eigen::ConstRef<Eigen::MatrixXi> faces = Eigen::MatrixXi(),
         const Eigen::SparseMatrix<double>& displacement_map =
             Eigen::SparseMatrix<double>());
 
@@ -50,9 +46,9 @@ public:
     /// @param faces The face matrix of mesh (#F × 3).
     /// @return Constructed CollisionMesh.
     static CollisionMesh build_from_full_mesh(
-        const Eigen::MatrixXd& full_rest_positions,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces = Eigen::MatrixXi())
+        Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces = Eigen::MatrixXi())
     {
         return CollisionMesh(
             construct_is_on_surface(full_rest_positions.rows(), edges),
@@ -130,19 +126,20 @@ public:
     /// @brief Compute the vertex positions from the positions of the full mesh.
     /// @param full_positions The vertex positions of the full mesh (#FV × dim).
     /// @return The vertex positions of the collision mesh (#V × dim).
-    Eigen::MatrixXd vertices(const Eigen::MatrixXd& full_positions) const;
+    Eigen::MatrixXd
+    vertices(Eigen::ConstRef<Eigen::MatrixXd> full_positions) const;
 
     /// @brief Compute the vertex positions from vertex displacements on the full mesh.
     /// @param full_displacements The vertex displacements on the full mesh (#FV × dim).
     /// @return The vertex positions of the collision mesh (#V × dim).
-    Eigen::MatrixXd
-    displace_vertices(const Eigen::MatrixXd& full_displacements) const;
+    Eigen::MatrixXd displace_vertices(
+        Eigen::ConstRef<Eigen::MatrixXd> full_displacements) const;
 
     /// @brief Map vertex displacements on the full mesh to vertex displacements on the collision mesh.
     /// @param full_displacements The vertex displacements on the full mesh (#FV × dim).
     /// @return The vertex displacements on the collision mesh (#V × dim).
-    Eigen::MatrixXd
-    map_displacements(const Eigen::MatrixXd& full_displacements) const;
+    Eigen::MatrixXd map_displacements(
+        Eigen::ConstRef<Eigen::MatrixXd> full_displacements) const;
 
     /// @brief Map a vertex ID to the corresponding vertex ID in the full mesh.
     /// @param id Vertex ID in the collision mesh.
@@ -158,7 +155,7 @@ public:
     /// mesh (i.e., applies the chain-rule).
     /// @param x Vector quantity on the collision mesh with size equal to ndof().
     /// @return Vector quantity on the full mesh with size equal to full_ndof().
-    Eigen::VectorXd to_full_dof(const Eigen::VectorXd& x) const;
+    Eigen::VectorXd to_full_dof(Eigen::ConstRef<Eigen::VectorXd> x) const;
 
     /// @brief Map a matrix quantity on the collision mesh to the full mesh.
     /// This is useful for mapping Hessians from the collision mesh to the full
@@ -273,15 +270,16 @@ public:
     /// @return A vector of bools indicating whether each vertex is on the surface.
     static std::vector<bool> construct_is_on_surface(
         const long num_vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::VectorXi& codim_vertices = Eigen::VectorXi());
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::VectorXi> codim_vertices = Eigen::VectorXi());
 
     /// @brief Construct a matrix that maps from the faces' edges to rows in the edges matrix.
     /// @param faces The face matrix of mesh (#F × 3).
     /// @param edges The edge matrix of mesh (#E × 2).
     /// @return Matrix that maps from the faces' edges to rows in the edges matrix.
     static Eigen::MatrixXi construct_faces_to_edges(
-        const Eigen::MatrixXi& faces, const Eigen::MatrixXi& edges);
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
+        Eigen::ConstRef<Eigen::MatrixXi> edges);
 
     /// A function that takes two vertex IDs and returns true if the vertices
     /// (and faces or edges containing the vertices) can collide. By default all

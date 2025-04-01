@@ -16,13 +16,6 @@ Collision Stencil
 
 .. .. autoclass:: ipctk.CollisionStencil
 
-Continuous Collision Candidate
-------------------------------
-
-.. autoclass:: ipctk.ContinuousCollisionCandidate
-
-    .. autoclasstoc::
-
 Vertex-Vertex Candidate
 -----------------------
 

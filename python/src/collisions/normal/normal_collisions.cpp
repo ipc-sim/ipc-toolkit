@@ -12,8 +12,9 @@ void define_normal_collisions(py::module_& m)
         .def(
             "build",
             py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&, const double,
-                const double, const BroadPhaseMethod>(&NormalCollisions::build),
+                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+                const double, const double, std::shared_ptr<BroadPhase>>(
+                &NormalCollisions::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of collisions used to compute the barrier potential.
 
@@ -22,16 +23,17 @@ void define_normal_collisions(py::module_& m)
                 vertices: Vertices of the collision mesh.
                 dhat: The activation distance of the barrier.
                 dmin: Minimum distance.
-                broad_phase_method: Broad-phase method to use.
+                broad_phase: Broad-phase to use.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"), py::arg("dhat"),
             py::arg("dmin") = 0,
-            py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD)
+            py::arg("broad_phase") = make_default_broad_phase())
         .def(
             "build",
             py::overload_cast<
-                const Candidates&, const CollisionMesh&, const Eigen::MatrixXd&,
-                const double, const double>(&NormalCollisions::build),
+                const Candidates&, const CollisionMesh&,
+                Eigen::ConstRef<Eigen::MatrixXd>, const double, const double>(
+                &NormalCollisions::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of collisions used to compute the barrier potential.
 

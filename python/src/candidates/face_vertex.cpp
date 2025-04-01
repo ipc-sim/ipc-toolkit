@@ -7,10 +7,15 @@ using namespace ipc;
 
 void define_face_vertex_candidate(py::module_& m)
 {
-    py::class_<
-        FaceVertexCandidate, CollisionStencil, ContinuousCollisionCandidate>(
-        m, "FaceVertexCandidate")
+    py::class_<FaceVertexCandidate, CollisionStencil>(m, "FaceVertexCandidate")
         .def(py::init<long, long>(), py::arg("face_id"), py::arg("vertex_id"))
+        .def(
+            py::init([](std::tuple<long, long> face_and_vertex_id) {
+                return std::make_unique<FaceVertexCandidate>(
+                    std::get<0>(face_and_vertex_id),
+                    std::get<1>(face_and_vertex_id));
+            }),
+            py::arg("face_and_vertex_id"))
         .def("known_dtype", &FaceVertexCandidate::known_dtype)
         .def(
             "__str__",
@@ -33,4 +38,6 @@ void define_face_vertex_candidate(py::module_& m)
             "face_id", &FaceVertexCandidate::face_id, "ID of the face")
         .def_readwrite(
             "vertex_id", &FaceVertexCandidate::vertex_id, "ID of the vertex");
+
+    py::implicitly_convertible<std::tuple<long, long>, FaceVertexCandidate>();
 }

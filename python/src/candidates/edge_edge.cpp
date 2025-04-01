@@ -7,10 +7,14 @@ using namespace ipc;
 
 void define_edge_edge_candidate(py::module_& m)
 {
-    py::class_<
-        EdgeEdgeCandidate, CollisionStencil, ContinuousCollisionCandidate>(
-        m, "EdgeEdgeCandidate")
+    py::class_<EdgeEdgeCandidate, CollisionStencil>(m, "EdgeEdgeCandidate")
         .def(py::init<long, long>(), py::arg("edge0_id"), py::arg("edge1_id"))
+        .def(
+            py::init([](std::tuple<long, long> edge_ids) {
+                return std::make_unique<EdgeEdgeCandidate>(
+                    std::get<0>(edge_ids), std::get<1>(edge_ids));
+            }),
+            py::arg("edge_ids"))
         .def("known_dtype", &EdgeEdgeCandidate::known_dtype)
         .def(
             "__str__",
@@ -32,4 +36,6 @@ void define_edge_edge_candidate(py::module_& m)
             "edge0_id", &EdgeEdgeCandidate::edge0_id, "ID of the first edge.")
         .def_readwrite(
             "edge1_id", &EdgeEdgeCandidate::edge1_id, "ID of the second edge.");
+
+    py::implicitly_convertible<std::tuple<long, long>, EdgeEdgeCandidate>();
 }

@@ -57,7 +57,7 @@ class VertexPatchesCanCollide {
 public:
     /// @brief Construct a new Vertex Patches Can Collide object.
     /// @param vertex_patches Vector of patches labels for each vertex.
-    VertexPatchesCanCollide(const Eigen::VectorXi& vertex_patches)
+    VertexPatchesCanCollide(Eigen::ConstRef<Eigen::VectorXi> vertex_patches)
         : m_vertex_patches(vertex_patches)
     {
     }
@@ -111,7 +111,8 @@ void define_collision_mesh(py::module_& m)
         m, "VertexPatchesCanCollide",
         "A functor which returns true if the vertices are in different patches.")
         .def(
-            py::init<const Eigen::VectorXi&>(), py::arg("vertex_patches"),
+            py::init<Eigen::ConstRef<Eigen::VectorXi>>(),
+            py::arg("vertex_patches"),
             R"ipc_Qu8mg5v7(
             Construct a new Vertex Patches Can Collide object.
 
@@ -134,8 +135,10 @@ void define_collision_mesh(py::module_& m)
     py::class_<CollisionMesh>(m, "CollisionMesh")
         .def(
             py::init<
-                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-                const Eigen::MatrixXi&, const Eigen::SparseMatrix<double>&>(),
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                const Eigen::SparseMatrix<double>&>(),
             R"ipc_Qu8mg5v7(
             Construct a new Collision Mesh object directly from the collision mesh vertices.
 
@@ -150,8 +153,9 @@ void define_collision_mesh(py::module_& m)
             py::arg("displacement_map") = Eigen::SparseMatrix<double>())
         .def(
             py::init<
-                const std::vector<bool>&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXi&, const Eigen::MatrixXi&,
+                const std::vector<bool>&, Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
                 const Eigen::SparseMatrix<double>&>(),
             R"ipc_Qu8mg5v7(
             Construct a new Collision Mesh object from a full mesh vertices.
@@ -282,7 +286,7 @@ void define_collision_mesh(py::module_& m)
             py::arg("id"))
         .def(
             "to_full_dof",
-            py::overload_cast<const Eigen::VectorXd&>(
+            py::overload_cast<Eigen::ConstRef<Eigen::VectorXd>>(
                 &CollisionMesh::to_full_dof, py::const_),
             R"ipc_Qu8mg5v7(
             Map a vector quantity on the collision mesh to the full mesh.

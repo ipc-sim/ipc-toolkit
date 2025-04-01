@@ -1,6 +1,8 @@
 #include <common.hpp>
 
 #include <ipc/barrier/adaptive_stiffness.hpp>
+#include <ipc/candidates/candidates.hpp>
+#include <ipc/collisions/normal/normal_collisions.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
@@ -11,8 +13,8 @@ void define_adaptive_stiffness(py::module_& m)
         "initial_barrier_stiffness",
         [](const double bbox_diagonal, const Barrier& barrier,
            const double dhat, const double average_mass,
-           const Eigen::VectorXd& grad_energy,
-           const Eigen::VectorXd& grad_barrier,
+           Eigen::ConstRef<Eigen::VectorXd> grad_energy,
+           Eigen::ConstRef<Eigen::VectorXd> grad_barrier,
            const double min_barrier_stiffness_scale = 1e11,
            const double dmin = 0) {
             double max_barrier_stiffness;
@@ -66,4 +68,82 @@ void define_adaptive_stiffness(py::module_& m)
         py::arg("max_barrier_stiffness"), py::arg("barrier_stiffness"),
         py::arg("bbox_diagonal"), py::arg("dhat_epsilon_scale") = 1e-9,
         py::arg("dmin") = 0);
+
+    m.def(
+        "semi_implicit_stiffness",
+        static_cast<double (*)(
+            const CollisionStencil&, const std::array<long, 4>&,
+            Eigen::ConstRef<VectorMax12d>, Eigen::ConstRef<VectorMax4d>,
+            Eigen::ConstRef<MatrixMax12d>, const double)>(
+            &semi_implicit_stiffness),
+        R"ipc_Qu8mg5v7(
+        Compute the semi-implicit stiffness for a single collision.
+
+        See [Ando 2024] for details.
+
+        Parameters:
+            stencil: Collision stencil.
+            vertex_ids: Vertex indices of the collision.
+            vertices: Vertex positions.
+            mass: Vertex masses.
+            local_hess: Local hessian of the elasticity energy function.
+            dmin: Minimum distance between elements.
+
+        Returns:
+            The semi-implicit stiffness.
+        )ipc_Qu8mg5v7",
+        py::arg("stencil"), py::arg("vertex_ids"), py::arg("vertices"),
+        py::arg("mass"), py::arg("local_hess"), py::arg("dmin"));
+
+    m.def(
+        "semi_implicit_stiffness",
+        static_cast<Eigen::VectorXd (*)(
+            const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+            const NormalCollisions&, Eigen::ConstRef<Eigen::VectorXd>,
+            const Eigen::SparseMatrix<double>&, const double)>(
+            &semi_implicit_stiffness),
+        R"ipc_Qu8mg5v7(
+        Compute the semi-implicit stiffness's for all collisions.
+
+        See [Ando 2024] for details.
+
+        Parameters:
+            mesh: Collision mesh.
+            vertices: Vertex positions.
+            collisions: Normal collisions.
+            vertex_masses: Lumped vertex masses.
+            hess: Hessian of the elasticity energy function.
+            dmin: Minimum distance between elements.
+
+        Returns:
+            The semi-implicit stiffness's.
+        )ipc_Qu8mg5v7",
+        py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
+        py::arg("vertex_masses"), py::arg("hess"), py::arg("dmin"));
+
+    m.def(
+        "semi_implicit_stiffness",
+        static_cast<Eigen::VectorXd (*)(
+            const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+            const Candidates&, Eigen::ConstRef<Eigen::VectorXd>,
+            const Eigen::SparseMatrix<double>&, const double)>(
+            &semi_implicit_stiffness),
+        R"ipc_Qu8mg5v7(
+        Compute the semi-implicit stiffness's for all collisions.
+
+        See [Ando 2024] for details.
+
+        Parameters:
+            mesh: Collision mesh.
+            vertices: Vertex positions.
+            collisions: Collisions candidates.
+            vertex_masses: Lumped vertex masses.
+            hess: Hessian of the elasticity energy function.
+            dmin: Minimum distance between elements.
+
+        Returns:
+            The semi-implicit stiffness's.
+        )ipc_Qu8mg5v7",
+        py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
+        py::arg("vertex_masses"), py::arg("hess"), py::arg("dmin"));
 }

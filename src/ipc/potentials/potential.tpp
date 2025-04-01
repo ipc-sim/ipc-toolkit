@@ -16,7 +16,7 @@ template <class TCollisions>
 double Potential<TCollisions>::operator()(
     const TCollisions& collisions,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& X) const
+    Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
     assert(X.rows() == mesh.num_vertices());
 
@@ -38,7 +38,7 @@ template <class TCollisions>
 Eigen::VectorXd Potential<TCollisions>::gradient(
     const TCollisions& collisions,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& X) const
+    Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
     assert(X.rows() == mesh.num_vertices());
 
@@ -76,7 +76,7 @@ template <class TCollisions>
 Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const TCollisions& collisions,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& X,
+    Eigen::ConstRef<Eigen::MatrixXd> X,
     const PSDProjectionMethod project_hessian_to_psd) const
 {
     assert(X.rows() == mesh.num_vertices());

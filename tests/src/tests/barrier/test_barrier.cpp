@@ -67,6 +67,11 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     {
         barrier = std::make_unique<ipc::PhysicalBarrier>(use_dist_sqr);
     }
+    SECTION("ClampedLogSq")
+    {
+        barrier = std::make_unique<ipc::ClampedLogSqBarrier>();
+    }
+    SECTION("Cubic") { barrier = std::make_unique<ipc::CubicBarrier>(); }
 
     if (use_dist_sqr) {
         d_vec *= d;

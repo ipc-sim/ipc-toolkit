@@ -41,9 +41,9 @@ public:
     Eigen::VectorXd force(
         const TangentialCollisions& collisions,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& rest_positions,
-        const Eigen::MatrixXd& lagged_displacements,
-        const Eigen::MatrixXd& velocities,
+        Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+        Eigen::ConstRef<Eigen::MatrixXd> velocities,
         const NormalPotential& normal_potential,
         const double normal_stiffness,
         const double dmin = 0,
@@ -63,9 +63,9 @@ public:
     Eigen::SparseMatrix<double> force_jacobian(
         const TangentialCollisions& collisions,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& rest_positions,
-        const Eigen::MatrixXd& lagged_displacements,
-        const Eigen::MatrixXd& velocities,
+        Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+        Eigen::ConstRef<Eigen::MatrixXd> velocities,
         const NormalPotential& normal_potential,
         const double normal_stiffness,
         const DiffWRT wrt,
@@ -79,7 +79,7 @@ public:
     /// @return The potential.
     double operator()(
         const TangentialCollision& collision,
-        const VectorMax12d& velocities) const override;
+        Eigen::ConstRef<VectorMax12d> velocities) const override;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision
@@ -87,7 +87,7 @@ public:
     /// @return The gradient of the potential.
     VectorMax12d gradient(
         const TangentialCollision& collision,
-        const VectorMax12d& velocities) const override;
+        Eigen::ConstRef<VectorMax12d> velocities) const override;
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision
@@ -95,7 +95,7 @@ public:
     /// @return The hessian of the potential.
     MatrixMax12d hessian(
         const TangentialCollision& collision,
-        const VectorMax12d& velocities,
+        Eigen::ConstRef<VectorMax12d> velocities,
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const override;
 
@@ -111,9 +111,9 @@ public:
     /// @return Friction force
     VectorMax12d force(
         const TangentialCollision& collision,
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& lagged_displacements,
-        const VectorMax12d& velocities,
+        Eigen::ConstRef<VectorMax12d> rest_positions,
+        Eigen::ConstRef<VectorMax12d> lagged_displacements,
+        Eigen::ConstRef<VectorMax12d> velocities,
         const NormalPotential& normal_potential,
         const double normal_stiffness,
         const double dmin = 0,
@@ -131,9 +131,9 @@ public:
     /// @return Friction force Jacobian
     MatrixMax12d force_jacobian(
         const TangentialCollision& collision,
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& lagged_displacements,
-        const VectorMax12d& velocities,
+        Eigen::ConstRef<VectorMax12d> rest_positions,
+        Eigen::ConstRef<VectorMax12d> lagged_displacements,
+        Eigen::ConstRef<VectorMax12d> velocities,
         const NormalPotential& normal_potential,
         const double normal_stiffness,
         const DiffWRT wrt,

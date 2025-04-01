@@ -72,7 +72,52 @@ void define_barrier(py::module_& m)
 
     py::class_<ClampedLogBarrier, Barrier, std::shared_ptr<ClampedLogBarrier>>(
         m, "ClampedLogBarrier",
-        "Smoothly clamped log barrier functions from [Li et al. 2020].")
+        R"ipc_Qu8mg5v7(
+        Smoothly clamped log barrier functions from [Li et al. 2020].
+
+        .. math::
+
+            b(d) = -(d-\hat{d})^2\ln\left(\frac{d}{\hat{d}}\right)
+
+        )ipc_Qu8mg5v7")
+        .def(py::init());
+
+    py::class_<
+        NormalizedClampedLogBarrier, ClampedLogBarrier,
+        std::shared_ptr<NormalizedClampedLogBarrier>>(
+        m, "NormalizedClampedLogBarrier",
+        R"ipc_Qu8mg5v7(
+        Normalized barrier function from [Li et al. 2023].
+
+        .. math::
+
+            b(d) = -\left(\frac{d}{\hat{d}}-1\right)^2\ln\left(\frac{d}{\hat{d}}\right)
+
+        )ipc_Qu8mg5v7")
+        .def(py::init());
+
+    py::class_<
+        ClampedLogSqBarrier, Barrier, std::shared_ptr<ClampedLogSqBarrier>>(
+        m, "ClampedLogSqBarrier",
+        R"ipc_Qu8mg5v7(
+        Clamped log barrier with a quadratic log term from [Huang et al. 2024].
+
+        .. math::
+
+            b(d) = (d-\hat{d})^2\ln^2\left(\frac{d}{\hat{d}}\right)
+
+        )ipc_Qu8mg5v7")
+        .def(py::init());
+
+    py::class_<CubicBarrier, Barrier, std::shared_ptr<CubicBarrier>>(
+        m, "CubicBarrier", R"ipc_Qu8mg5v7(
+        Cubic barrier function from [Ando 2024].
+
+        .. math::
+
+            b(d) = -\frac{2}{3\hat{d}} (d - \hat{d})^3
+
+        )ipc_Qu8mg5v7")
         .def(py::init());
 
     m.def(

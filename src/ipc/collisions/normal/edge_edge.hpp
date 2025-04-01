@@ -34,62 +34,62 @@ public:
     /// @brief Compute the mollifier threshold for the distance.
     /// @param rest_positions The stencil's rest vertex positions.
     /// @return The mollifier threshold.
-    double
-    mollifier_threshold(const VectorMax12d& rest_positions) const override;
+    double mollifier_threshold(
+        Eigen::ConstRef<VectorMax12d> rest_positions) const override;
 
     /// @brief Compute the mollifier for the distance.
     /// @param positions The stencil's vertex positions.
     /// @return The mollifier value.
-    double mollifier(const VectorMax12d& positions) const override;
+    double mollifier(Eigen::ConstRef<VectorMax12d> positions) const override;
 
     /// @brief Compute the mollifier for the distance.
     /// @param positions The stencil's vertex positions.
     /// @param eps_x The mollifier's tolerance.
     /// @return The mollifier value.
-    double
-    mollifier(const VectorMax12d& positions, double eps_x) const override;
+    double mollifier(
+        Eigen::ConstRef<VectorMax12d> positions, double eps_x) const override;
 
     /// @brief Compute the gradient of the mollifier for the distance w.r.t. positions.
     /// @param positions The stencil's vertex positions.
     /// @return The mollifier gradient.
     VectorMax12d
-    mollifier_gradient(const VectorMax12d& positions) const override;
+    mollifier_gradient(Eigen::ConstRef<VectorMax12d> positions) const override;
 
     /// @brief Compute the gradient of the mollifier for the distance wrt the positions.
     /// @param positions The stencil's vertex positions.
     /// @param eps_x The mollifier's tolerance.
     /// @return The mollifier gradient.
     VectorMax12d mollifier_gradient(
-        const VectorMax12d& positions, double eps_x) const override;
+        Eigen::ConstRef<VectorMax12d> positions, double eps_x) const override;
 
     /// @brief Compute the Hessian of the mollifier for the distance w.r.t. positions.
     /// @param positions The stencil's vertex positions.
     /// @return The mollifier Hessian.
     MatrixMax12d
-    mollifier_hessian(const VectorMax12d& positions) const override;
+    mollifier_hessian(Eigen::ConstRef<VectorMax12d> positions) const override;
 
     /// @brief Compute the Hessian of the mollifier for the distance wrt the positions.
     /// @param positions The stencil's vertex positions.
     /// @param eps_x The mollifier's tolerance.
     /// @return The mollifier Hessian.
     MatrixMax12d mollifier_hessian(
-        const VectorMax12d& positions, double eps_x) const override;
+        Eigen::ConstRef<VectorMax12d> positions, double eps_x) const override;
 
     /// @brief Compute the gradient of the mollifier for the distance w.r.t. rest positions.
     /// @param rest_positions The stencil's rest vertex positions.
     /// @param positions The stencil's vertex positions.
     /// @return The mollifier gradient w.r.t. rest positions.
     Vector12d mollifier_gradient_wrt_x(
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& positions) const override;
+        Eigen::ConstRef<VectorMax12d> rest_positions,
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 
     /// @brief Compute the jacobian of the distance mollifier's gradient w.r.t. rest positions.
     /// @param rest_positions The stencil's rest vertex positions.
     /// @param positions The stencil's vertex positions.
     /// @return The jacobian of the mollifier's gradient w.r.t. rest positions.
     Matrix12d mollifier_gradient_jacobian_wrt_x(
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& positions) const override;
+        Eigen::ConstRef<VectorMax12d> rest_positions,
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 
     // ------------------------------------------------------------------------
 

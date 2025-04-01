@@ -9,8 +9,9 @@ void define_point_static_plane(py::module_& m)
 {
     m.def(
         "point_static_plane_ccd",
-        [](const VectorMax3d& p_t0, const VectorMax3d& p_t1,
-           const VectorMax3d& plane_origin, const VectorMax3d& plane_normal,
+        [](Eigen::ConstRef<VectorMax3d> p_t0, Eigen::ConstRef<VectorMax3d> p_t1,
+           Eigen::ConstRef<VectorMax3d> plane_origin,
+           Eigen::ConstRef<VectorMax3d> plane_normal,
            const double conservative_rescaling) {
             double toi;
             bool r = point_static_plane_ccd(

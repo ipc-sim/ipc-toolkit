@@ -13,14 +13,12 @@ namespace ipc {
 
 void TangentialCollisions::build(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const NormalCollisions& collisions,
     const NormalPotential& normal_potential,
     const double normal_stiffness,
-    const Eigen::VectorXd& mus,
-    const std::function<double(double, double, BlendType)>& blend_mu,
-    const BlendType blend_type)
-
+    Eigen::ConstRef<Eigen::VectorXd> mus,
+    const std::function<double(double, double)>& blend_mu)
 {
     assert(mus.size() == vertices.rows());
 

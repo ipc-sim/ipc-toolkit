@@ -12,8 +12,8 @@ VertexVertexCandidate::VertexVertexCandidate(long _vertex0_id, long _vertex1_id)
 {
 }
 
-double
-VertexVertexCandidate::compute_distance(const VectorMax12d& positions) const
+double VertexVertexCandidate::compute_distance(
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 4 || positions.size() == 6);
     const int dim = this->dim(positions.size());
@@ -21,7 +21,7 @@ VertexVertexCandidate::compute_distance(const VectorMax12d& positions) const
 }
 
 VectorMax12d VertexVertexCandidate::compute_distance_gradient(
-    const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 4 || positions.size() == 6);
     const int dim = this->dim(positions.size());
@@ -30,7 +30,7 @@ VectorMax12d VertexVertexCandidate::compute_distance_gradient(
 }
 
 MatrixMax12d VertexVertexCandidate::compute_distance_hessian(
-    const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 4 || positions.size() == 6);
     const int dim = this->dim(positions.size());
@@ -38,9 +38,17 @@ MatrixMax12d VertexVertexCandidate::compute_distance_hessian(
         positions.head(dim), positions.tail(dim));
 }
 
+VectorMax4d VertexVertexCandidate::compute_coefficients(
+    Eigen::ConstRef<VectorMax12d> positions) const
+{
+    VectorMax4d coeffs(2);
+    coeffs << 1.0, -1.0;
+    return coeffs;
+}
+
 bool VertexVertexCandidate::ccd(
-    const VectorMax12d& vertices_t0,
-    const VectorMax12d& vertices_t1,
+    Eigen::ConstRef<VectorMax12d> vertices_t0,
+    Eigen::ConstRef<VectorMax12d> vertices_t1,
     double& toi,
     const double min_distance,
     const double tmax,

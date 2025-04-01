@@ -1,10 +1,6 @@
 Broad Phase
 ===========
 
-.. doxygenenum:: ipc::BroadPhaseMethod
-
-.. doxygenvariable:: ipc::DEFAULT_BROAD_PHASE_METHOD
-
 Broad Phase
 -----------
 

@@ -9,9 +9,9 @@
 namespace ipc {
 
 CollisionMesh::CollisionMesh(
-    const Eigen::MatrixXd& rest_positions,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const Eigen::SparseMatrix<double>& displacement_map)
     : CollisionMesh(
           std::vector<bool>(rest_positions.rows(), true),
@@ -24,9 +24,9 @@ CollisionMesh::CollisionMesh(
 
 CollisionMesh::CollisionMesh(
     const std::vector<bool>& include_vertex,
-    const Eigen::MatrixXd& full_rest_positions,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const Eigen::SparseMatrix<double>& displacement_map)
     : m_full_rest_positions(full_rest_positions)
     , m_edges(edges)
@@ -376,7 +376,7 @@ void CollisionMesh::init_area_jacobians()
 // ============================================================================/
 
 Eigen::MatrixXd
-CollisionMesh::vertices(const Eigen::MatrixXd& full_positions) const
+CollisionMesh::vertices(Eigen::ConstRef<Eigen::MatrixXd> full_positions) const
 {
     // full_U = full_V - full_V_rest
     assert(full_positions.rows() == full_num_vertices());
@@ -385,14 +385,14 @@ CollisionMesh::vertices(const Eigen::MatrixXd& full_positions) const
 }
 
 Eigen::MatrixXd CollisionMesh::displace_vertices(
-    const Eigen::MatrixXd& full_displacements) const
+    Eigen::ConstRef<Eigen::MatrixXd> full_displacements) const
 {
     // V_rest + S * T * full_U; m_displacement_map = S * T
     return m_rest_positions + map_displacements(full_displacements);
 }
 
 Eigen::MatrixXd CollisionMesh::map_displacements(
-    const Eigen::MatrixXd& full_displacements) const
+    Eigen::ConstRef<Eigen::MatrixXd> full_displacements) const
 {
     assert(m_displacement_map.cols() == full_displacements.rows());
     assert(full_displacements.cols() == dim());
@@ -401,7 +401,8 @@ Eigen::MatrixXd CollisionMesh::map_displacements(
 
 // ============================================================================/
 
-Eigen::VectorXd CollisionMesh::to_full_dof(const Eigen::VectorXd& x) const
+Eigen::VectorXd
+CollisionMesh::to_full_dof(Eigen::ConstRef<Eigen::VectorXd> x) const
 {
     // ∇_{full} f(S * T * x_full) = Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
     // x = ∇_{collision} f(S * T * x_full); m_displacement_dof_map = S * T
@@ -421,8 +422,8 @@ CollisionMesh::to_full_dof(const Eigen::SparseMatrix<double>& X) const
 
 std::vector<bool> CollisionMesh::construct_is_on_surface(
     const long num_vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::VectorXi& codim_vertices)
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::VectorXi> codim_vertices)
 {
     std::vector<bool> is_on_surface(num_vertices, false);
     for (int i = 0; i < codim_vertices.size(); i++) {
@@ -442,7 +443,8 @@ std::vector<bool> CollisionMesh::construct_is_on_surface(
 // ============================================================================/
 
 Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
-    const Eigen::MatrixXi& faces, const Eigen::MatrixXi& edges)
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
+    Eigen::ConstRef<Eigen::MatrixXi> edges)
 {
     if (faces.size() == 0) {
         return Eigen::MatrixXi(faces.rows(), faces.cols());

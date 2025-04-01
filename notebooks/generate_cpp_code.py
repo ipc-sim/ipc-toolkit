@@ -80,13 +80,11 @@ def generate_hpp_file(code_generators, file_name, transformer=None):
     newline = "\n"
     with open(file_name, 'w') as f:
         f.write(f"""\
-#include <{file_name[:-4]}.hpp>
+#pragma once
 
-namespace ipc{{
-namespace autogen{{
+namespace ipc::autogen{{
     {newline.join(code_generator.signature()
                   for code_generator in code_generators)}
-}}
 }}
 """)
     subprocess.run(["clang-format", str(file_name), "-i"])
@@ -98,10 +96,8 @@ def generate_cpp_file(code_generators, file_name):
         f.write(f"""\
 #include <{file_name[:-4]}.hpp>
 
-namespace ipc{{
-namespace autogen{{
+namespace ipc::autogen{{
     {newline.join(code_generator() for code_generator in code_generators)}
-}}
 }}
 """)
     subprocess.run(["clang-format", str(file_name), "-i"])

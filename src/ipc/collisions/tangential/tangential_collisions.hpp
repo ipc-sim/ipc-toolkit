@@ -42,7 +42,7 @@ public:
 
     void build(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const NormalCollisions& collisions,
         const NormalPotential& normal_potential,
         double normal_stiffness,
@@ -55,34 +55,13 @@ public:
 
     void build(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const NormalCollisions& collisions,
         const NormalPotential& normal_potential,
         const double normal_stiffness,
-        const Eigen::VectorXd& mus,
-        const std::function<double(double, double, BlendType)>& blend_mu = default_blend_mu,
-        const BlendType blend_type = BlendType::AVG);
-
-    void build(
-        const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
-        const NormalCollisions& collisions,
-        const NormalPotential& normal_potential,
-        double barrier_stiffness,
-        double mu,
-        double s_mu,
-        double k_mu);
-
-    void build(
-        const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
-        const NormalCollisions& collisions,
-        const NormalPotential& normal_potential,
-        double barrier_stiffness,
-        double mu,
-        double s_mu,
-        double k_mu,
-        const std::map<std::pair<int, int>, MaterialPairFriction>& material_pair_friction);
+        Eigen::ConstRef<Eigen::VectorXd> mus,
+        const std::function<double(double, double)>& blend_mu =
+            default_blend_mu);
 
     // ------------------------------------------------------------------------
 

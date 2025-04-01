@@ -9,9 +9,9 @@
 namespace ipc {
 
 void construct_point_plane_collisions(
-    const Eigen::MatrixXd& points,
-    const Eigen::MatrixXd& plane_origins,
-    const Eigen::MatrixXd& plane_normals,
+    Eigen::ConstRef<Eigen::MatrixXd> points,
+    Eigen::ConstRef<Eigen::MatrixXd> plane_origins,
+    Eigen::ConstRef<Eigen::MatrixXd> plane_normals,
     const double dhat,
     std::vector<PlaneVertexNormalCollision>& pv_collisions,
     const double dmin,
@@ -51,10 +51,10 @@ void construct_point_plane_collisions(
 // ============================================================================
 
 bool is_step_point_plane_collision_free(
-    const Eigen::MatrixXd& points_t0,
-    const Eigen::MatrixXd& points_t1,
-    const Eigen::MatrixXd& plane_origins,
-    const Eigen::MatrixXd& plane_normals,
+    Eigen::ConstRef<Eigen::MatrixXd> points_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> points_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> plane_origins,
+    Eigen::ConstRef<Eigen::MatrixXd> plane_normals,
     const std::function<bool(size_t, size_t)>& can_collide)
 {
     size_t n_planes = plane_origins.rows();
@@ -87,10 +87,10 @@ bool is_step_point_plane_collision_free(
 // ============================================================================
 
 double compute_point_plane_collision_free_stepsize(
-    const Eigen::MatrixXd& points_t0,
-    const Eigen::MatrixXd& points_t1,
-    const Eigen::MatrixXd& plane_origins,
-    const Eigen::MatrixXd& plane_normals,
+    Eigen::ConstRef<Eigen::MatrixXd> points_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> points_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> plane_origins,
+    Eigen::ConstRef<Eigen::MatrixXd> plane_normals,
     const std::function<bool(size_t, size_t)>& can_collide)
 {
     size_t n_planes = plane_origins.rows();

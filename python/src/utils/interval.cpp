@@ -4,7 +4,9 @@
 #include <ipc/utils/interval.hpp>
 
 namespace py = pybind11;
+#ifdef IPC_TOOLKIT_WITH_FILIB
 using namespace filib;
+#endif
 
 // ============================================================================
 

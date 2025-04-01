@@ -26,7 +26,7 @@ double NormalAdhesionPotential::force_magnitude(
 
 VectorMax12d NormalAdhesionPotential::force_magnitude_gradient(
     const double,
-    const VectorMax12d& distance_squared_gradient,
+    Eigen::ConstRef<VectorMax12d> distance_squared_gradient,
     const double,
     const double) const
 {
