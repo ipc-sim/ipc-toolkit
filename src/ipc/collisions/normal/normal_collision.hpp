@@ -2,6 +2,7 @@
 
 #include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/collision_mesh.hpp>
 
 #include <Eigen/Core>
 
@@ -97,6 +98,34 @@ public:
 
     /// @brief The gradient of the term's weight wrt the rest positions.
     Eigen::SparseVector<double> weight_gradient;
+
+    /// @brief Material ID for the first object in the collision.
+    /// Set to NO_MATERIAL_ID if material-specific friction is not needed.
+    int material_id1 = NO_MATERIAL_ID;
+
+    /// @brief Material ID for the second object in the collision.
+    /// Set to NO_MATERIAL_ID if material-specific friction is not needed.
+    int material_id2 = NO_MATERIAL_ID;
+
+    /// @brief Check if material IDs are being used for this collision
+    /// @return true if material IDs are being used, false otherwise
+    bool has_material_ids() const { return material_id1 != NO_MATERIAL_ID && material_id2 != NO_MATERIAL_ID; }
+    
+    /// @brief Set the material IDs for this collision
+    /// @param mat_id1 Material ID for the first object
+    /// @param mat_id2 Material ID for the second object
+    void set_material_ids(int mat_id1, int mat_id2) 
+    {
+        material_id1 = mat_id1;
+        material_id2 = mat_id2;
+    }
+
+    /// @brief Get the material IDs involved in this collision
+    /// @return Pair of material IDs (first, second)
+    std::pair<int, int> get_material_ids() const
+    {
+        return {material_id1, material_id2};
+    }
 };
 
 } // namespace ipc

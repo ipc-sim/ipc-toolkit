@@ -11,14 +11,43 @@ class VertexVertexTangentialCollision : public VertexVertexCandidate,
 public:
     using VertexVertexCandidate::VertexVertexCandidate;
 
-    VertexVertexTangentialCollision(
-        const VertexVertexNormalCollision& collision);
+    VertexVertexTangentialCollision(const VertexVertexNormalCollision& collision);
 
     VertexVertexTangentialCollision(
         const VertexVertexNormalCollision& collision,
         Eigen::ConstRef<VectorMax12d> positions,
         const NormalPotential& normal_potential,
         const double normal_stiffness);
+        
+    int dim() const override { return 3; }
+    int ndof() const override { return 6; } // 2 vertices * 3 coordinates each
+    int num_vertices() const override { return 2; } // Vertex-vertex has 2 vertices
+    
+    std::array<long, 4> vertex_ids(
+        Eigen::ConstRef<Eigen::MatrixXi> edges, 
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const override
+    {
+        return VertexVertexCandidate::vertex_ids(edges, faces);
+    }
+    
+    VectorMax12d dof(
+        Eigen::ConstRef<Eigen::MatrixXd> dof,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const override 
+    {
+        return VertexVertexCandidate::dof(dof, edges, faces);
+    }
+    
+    double compute_distance(Eigen::ConstRef<VectorMax12d> positions) const override
+    {
+        return VertexVertexCandidate::compute_distance(positions);
+    }
+    
+    VectorMax12d compute_distance_gradient(
+        Eigen::ConstRef<VectorMax12d> positions) const override
+    {
+        return VertexVertexCandidate::compute_distance_gradient(positions);
+    }
 
 protected:
     MatrixMax<double, 3, 2> compute_tangent_basis(

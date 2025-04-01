@@ -31,7 +31,14 @@ void TangentialCollisions::build(
     const auto& C_ev = collisions.ev_collisions;
     const auto& C_ee = collisions.ee_collisions;
     const auto& C_fv = collisions.fv_collisions;
-    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
+
+    auto& FC_vv = this->vv_collisions;
+    auto& FC_ev = this->ev_collisions;
+    auto& FC_ee = this->ee_collisions;
+    auto& FC_fv = this->fv_collisions;
+
+    // Check if we need to use material IDs
+    bool use_materials = mesh.has_material_ids();
 
     FC_vv.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
@@ -40,7 +47,13 @@ void TangentialCollisions::build(
             normal_stiffness);
         const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
 
-        FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i), blend_type);
+        // Only set material IDs if needed
+        if (use_materials) {
+            FC_vv.back().material_id1 = mesh.vertex_material(v0i);
+            FC_vv.back().material_id2 = mesh.vertex_material(v1i);
+        }
+
+        FC_vv.back().mu = default_blend_mu(mus(v0i), mus(v1i), blend_type);
         FC_vv.back().s_mu = -1;
         FC_vv.back().k_mu = -1;
     }
@@ -52,9 +65,15 @@ void TangentialCollisions::build(
             normal_stiffness);
         const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
 
+        // Only set material IDs if needed
+        if (use_materials) {
+            FC_ev.back().material_id1 = mesh.edge_material(FC_ev.back().edge_id);
+            FC_ev.back().material_id2 = mesh.vertex_material(vi);
+        }
+
         const double edge_mu =
             (mus(e1i) - mus(e0i)) * FC_ev.back().closest_point[0] + mus(e0i);
-        FC_ev.back().mu = blend_mu(edge_mu, mus(vi), blend_type);
+        FC_ev.back().mu = default_blend_mu(edge_mu, mus(vi), blend_type);
         FC_ev.back().s_mu = -1;
         FC_ev.back().k_mu = -1;
     }
@@ -76,11 +95,17 @@ void TangentialCollisions::build(
             c_ee, c_ee.dof(vertices, edges, faces), normal_potential,
             normal_stiffness);
 
+        // Only set material IDs if needed
+        if (use_materials) {
+            FC_ee.back().material_id1 = mesh.edge_material(FC_ee.back().edge0_id);
+            FC_ee.back().material_id2 = mesh.edge_material(FC_ee.back().edge1_id);
+        }
+
         double ea_mu =
             (mus(ea1i) - mus(ea0i)) * FC_ee.back().closest_point[0] + mus(ea0i);
         double eb_mu =
             (mus(eb1i) - mus(eb0i)) * FC_ee.back().closest_point[1] + mus(eb0i);
-        FC_ee.back().mu = blend_mu(ea_mu, eb_mu, blend_type);
+        FC_ee.back().mu = default_blend_mu(ea_mu, eb_mu, blend_type);
         FC_ee.back().s_mu = -1;
         FC_ee.back().k_mu = -1;
     }
@@ -92,15 +117,20 @@ void TangentialCollisions::build(
             normal_stiffness);
         const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
 
+        // Only set material IDs if needed
+        if (use_materials) {
+            FC_fv.back().material_id1 = mesh.face_material(FC_fv.back().face_id);
+            FC_fv.back().material_id2 = mesh.vertex_material(vi);
+        }
+
         double face_mu = mus(f0i)
             + FC_fv.back().closest_point[0] * (mus(f1i) - mus(f0i))
             + FC_fv.back().closest_point[1] * (mus(f2i) - mus(f0i));
-        FC_fv.back().mu = blend_mu(face_mu, mus(vi), blend_type);
+        FC_fv.back().mu = default_blend_mu(face_mu, mus(vi), blend_type);
         FC_fv.back().s_mu = -1;
         FC_fv.back().k_mu = -1;
     }
 }
-
 
 void TangentialCollisions::build(
     const CollisionMesh& mesh,
@@ -122,11 +152,18 @@ void TangentialCollisions::build(
         collision.k_mu = g_k_mu;
     };
 
+    // Check if we need to use material IDs
+    bool use_materials = mesh.has_material_ids();
+
     const auto& C_vv = collisions.vv_collisions;
     const auto& C_ev = collisions.ev_collisions;
     const auto& C_ee = collisions.ee_collisions;
     const auto& C_fv = collisions.fv_collisions;
-    auto& [FC_vv, FC_ev, FC_ee, FC_fv] = *this;
+
+    auto& FC_vv = this->vv_collisions;
+    auto& FC_ev = this->ev_collisions;
+    auto& FC_ee = this->ee_collisions;
+    auto& FC_fv = this->fv_collisions;
 
     FC_vv.reserve(C_vv.size());
     for (const auto& c_vv : C_vv) {
@@ -134,6 +171,13 @@ void TangentialCollisions::build(
             c_vv, c_vv.dof(vertices, edges, faces), normal_potential,
             barrier_stiffness);
         const auto& [v0i, v1i, _, __] = FC_vv.back().vertex_ids(edges, faces);
+        
+        // Only set material IDs if needed
+        if (use_materials) {
+            FC_vv.back().material_id1 = mesh.vertex_material(v0i);
+            FC_vv.back().material_id2 = mesh.vertex_material(v1i);
+        }
+        
         setFrictionParams(FC_vv.back(), mu, s_mu, k_mu);
     }
 
@@ -143,6 +187,13 @@ void TangentialCollisions::build(
             c_ev, c_ev.dof(vertices, edges, faces), normal_potential,
             barrier_stiffness);
         const auto& [vi, e0i, e1i, _] = FC_ev.back().vertex_ids(edges, faces);
+        
+        // Only set material IDs if needed
+        if (use_materials) {
+            FC_ev.back().material_id1 = mesh.edge_material(FC_ev.back().edge_id);
+            FC_ev.back().material_id2 = mesh.vertex_material(vi);
+        }
+        
         setFrictionParams(FC_ev.back(), mu, s_mu, k_mu);
     }
 
@@ -163,6 +214,12 @@ void TangentialCollisions::build(
             c_ee, c_ee.dof(vertices, edges, faces), normal_potential,
             barrier_stiffness);
 
+        // Only set material IDs if needed
+        if (use_materials) {
+            FC_ee.back().material_id1 = mesh.edge_material(FC_ee.back().edge0_id);
+            FC_ee.back().material_id2 = mesh.edge_material(FC_ee.back().edge1_id);
+        }
+
         setFrictionParams(FC_ee.back(), mu, s_mu, k_mu);
     }
 
@@ -172,6 +229,12 @@ void TangentialCollisions::build(
             c_fv, c_fv.dof(vertices, edges, faces), normal_potential,
             barrier_stiffness);
         const auto& [vi, f0i, f1i, f2i] = FC_fv.back().vertex_ids(edges, faces);
+
+        // Only set material IDs if needed
+        if (use_materials) {
+            FC_fv.back().material_id1 = mesh.face_material(FC_fv.back().face_id);
+            FC_fv.back().material_id2 = mesh.vertex_material(vi);
+        }
 
         setFrictionParams(FC_fv.back(), mu, s_mu, k_mu);
     }

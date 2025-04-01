@@ -476,5 +476,51 @@ void define_collision_mesh(py::module_& m)
             A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide.
 
             By default all primitives can collide with all other primitives.
-            )ipc_Qu8mg5v7");
+            )ipc_Qu8mg5v7")
+        .def_property(
+            "vertex_materials",
+            [](const CollisionMesh& self) {
+                Eigen::VectorXi materials(self.num_vertices());
+                for (int i = 0; i < self.num_vertices(); i++) {
+                    materials(i) = self.vertex_material(i);
+                }
+                return materials;
+            },
+            [](CollisionMesh& self, const Eigen::VectorXi& materials) {
+                self.set_vertex_materials(materials);
+            },
+            "Material IDs for vertices in the collision mesh")
+        .def_property(
+            "edge_materials",
+            [](const CollisionMesh& self) {
+                Eigen::VectorXi materials(self.num_edges());
+                for (int i = 0; i < self.num_edges(); i++) {
+                    materials(i) = self.edge_material(i);
+                }
+                return materials;
+            },
+            [](CollisionMesh& self, const Eigen::VectorXi& materials) {
+                self.set_edge_materials(materials);
+            },
+            "Material IDs for edges in the collision mesh")
+        .def_property(
+            "face_materials",
+            [](const CollisionMesh& self) {
+                Eigen::VectorXi materials(self.num_faces());
+                for (int i = 0; i < self.num_faces(); i++) {
+                    materials(i) = self.face_material(i);
+                }
+                return materials;
+            },
+            [](CollisionMesh& self, const Eigen::VectorXi& materials) {
+                self.set_face_materials(materials);
+            },
+            "Material IDs for faces in the collision mesh")
+        .def(
+            "set_single_material_id", &CollisionMesh::set_single_material_id,
+            "Set a single material ID for the entire mesh",
+            py::arg("material_id"))
+        .def(
+            "has_material_ids", &CollisionMesh::has_material_ids,
+            "Check if material IDs are being used for this mesh");
 }

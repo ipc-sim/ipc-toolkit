@@ -18,6 +18,36 @@ public:
         Eigen::ConstRef<VectorMax12d> positions,
         const NormalPotential& normal_potential,
         const double normal_stiffness);
+        
+    int dim() const override { return 3; }
+    int ndof() const override { return 9; } // 3 vertices * 3 coordinates each 
+    int num_vertices() const override { return 3; } // Edge-vertex has 3 vertices
+    
+    std::array<long, 4> vertex_ids(
+        Eigen::ConstRef<Eigen::MatrixXi> edges, 
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const override
+    {
+        return EdgeVertexCandidate::vertex_ids(edges, faces);
+    }
+    
+    VectorMax12d dof(
+        Eigen::ConstRef<Eigen::MatrixXd> dof,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const override 
+    {
+        return EdgeVertexCandidate::dof(dof, edges, faces);
+    }
+    
+    double compute_distance(Eigen::ConstRef<VectorMax12d> positions) const override
+    {
+        return EdgeVertexCandidate::compute_distance(positions);
+    }
+    
+    VectorMax12d compute_distance_gradient(
+        Eigen::ConstRef<VectorMax12d> positions) const override
+    {
+        return EdgeVertexCandidate::compute_distance_gradient(positions);
+    }
 
 protected:
     MatrixMax<double, 3, 2> compute_tangent_basis(

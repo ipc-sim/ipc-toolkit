@@ -139,5 +139,4 @@ double smooth_friction_f1_over_x_mus(const double y, const double eps_v, const d
 /// @return The value of \(\mu(y) \cdot \frac{f_2(y) \cdot y - f_1(y)}{y^3}\) at y.
 double smooth_friction_f2_x_minus_f1_over_x3_mus(const double y, const double eps_v, const double mu_s, const double mu_k);
 
-
 } // namespace ipc

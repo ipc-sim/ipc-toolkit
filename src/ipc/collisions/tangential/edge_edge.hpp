@@ -18,6 +18,36 @@ public:
         Eigen::ConstRef<VectorMax12d> positions,
         const NormalPotential& normal_potential,
         const double normal_stiffness);
+        
+    int dim() const override { return 3; } // Use fixed dimension 3 since it's a 3D problem
+    int ndof() const override { return 12; } // 4 vertices * 3 coordinates each
+    int num_vertices() const override { return 4; } // Edge-edge has 4 vertices
+    
+    std::array<long, 4> vertex_ids(
+        Eigen::ConstRef<Eigen::MatrixXi> edges, 
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const override
+    {
+        return EdgeEdgeCandidate::vertex_ids(edges, faces);
+    }
+    
+    VectorMax12d dof(
+        Eigen::ConstRef<Eigen::MatrixXd> dof,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const override 
+    {
+        return EdgeEdgeCandidate::dof(dof, edges, faces);
+    }
+    
+    double compute_distance(Eigen::ConstRef<VectorMax12d> positions) const override
+    {
+        return EdgeEdgeCandidate::compute_distance(positions);
+    }
+    
+    VectorMax12d compute_distance_gradient(
+        Eigen::ConstRef<VectorMax12d> positions) const override
+    {
+        return EdgeEdgeCandidate::compute_distance_gradient(positions);
+    }
 
 protected:
     EdgeEdgeDistanceType known_dtype() const override
