@@ -31,4 +31,19 @@ MatrixMax<double, 3, 12> TangentialCollision::relative_velocity_matrix() const
     return relative_velocity_matrix(closest_point);
 }
 
+int TangentialCollision::dim() const
+{
+    return 3;
+}
+
+int TangentialCollision::ndof() const
+{
+    return num_vertices() * dim();
+}
+
+int TangentialCollision::num_vertices() const
+{
+    return 0;
+}
+
 } // namespace ipc
