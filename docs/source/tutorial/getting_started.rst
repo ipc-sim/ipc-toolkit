@@ -405,12 +405,16 @@ Now we can compute the friction dissipative potential using the ``FrictionPotent
 Here ``eps_v`` (:math:`\epsilon_v`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
 
 .. important::
-   The friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is
+   In :cite:t:`Li2020IPC`, friction was based on displacement :math:`\mathbf{u}=\mathbf{x}-\mathbf{x}^t`, but this limits the time-integration scheme for friction to  implicit Euler.
+
+   Here, the friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is
 
    .. math::
       \mathbf{v} = \frac{\mathbf{x} - \mathbf{x}^t}{h},
 
    where :math:`\mathbf{x}` is the current position, :math:`\mathbf{x}^t` is the previous position, and :math:`h` is the time step size.
+
+   Additionally, the parameter :math:`\epsilon_v h` in :cite:t:`Li2020IPC` is now simply :math:`\epsilon_v`.
 
 This returns a scalar value ``friction_potential`` which is the sum of the individual friction potentials.
 
@@ -447,6 +451,14 @@ We can also compute the first and second derivatives of the friction dissipative
 
             friction_potential_hess = D.hessian(
                 tangential_collisions, collision_mesh, velocity)
+
+.. important::
+
+    When computing the derivatives with respect to positions, the chain rule is applied to :math:`v(\mathbf{x})`. However, this does not produce the correct friction force. To correct this, we need to divide :math:`D` by :math:`\partial \mathbf{v}/\partial \mathbf{x}`. This will cancel out the chain rule to get the correct friction force.
+
+    This assumes that :math:`\partial \mathbf{v}/\partial \mathbf{x}` is a constant (i.e., :math:`v(\mathbf{x})` is a linear function). This assumption is valid for many popular time integration schemes (e.g., Implicit Euler, Implicit Newmark, and BDF).
+
+    Note, you still apply the chain rule to the hessian -- i.e., multiply :math:`\nabla^2 D` by :math:`\partial \mathbf{v}/\partial \mathbf{x}`.
 
 Continuous Collision Detection
 ------------------------------
