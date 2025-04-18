@@ -454,9 +454,9 @@ We can also compute the first and second derivatives of the friction dissipative
 
 .. important::
 
-    When computing the derivatives with respect to positions, the chain rule is applied to :math:`v(\mathbf{x})`. However, this does not produce the correct friction force. To correct this, we need to divide :math:`D` by :math:`\partial \mathbf{v}/\partial \mathbf{x}`. This will cancel out the chain rule to get the correct friction force.
+    When computing the derivatives with respect to positions, the chain rule is applied to :math:`\mathbf{v}(\mathbf{x})`. However, this does not produce the correct friction force. To correct this, we need to divide :math:`D` by :math:`\partial \mathbf{v}/\partial \mathbf{x}`. This will cancel out the chain rule to get the correct friction force.
 
-    This assumes that :math:`\partial \mathbf{v}/\partial \mathbf{x}` is a constant (i.e., :math:`v(\mathbf{x})` is a linear function). This assumption is valid for many popular time integration schemes (e.g., Implicit Euler, Implicit Newmark, and BDF).
+    This assumes that :math:`\partial \mathbf{v}/\partial \mathbf{x}` is a constant (i.e., :math:`\mathbf{v}(\mathbf{x})` is a linear function). This assumption is valid for many popular time integration schemes (e.g., Implicit Euler, Implicit Newmark, and BDF).
 
     Note, you still apply the chain rule to the hessian -- i.e., multiply :math:`\nabla^2 D` by :math:`\partial \mathbf{v}/\partial \mathbf{x}`.
 
