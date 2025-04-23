@@ -273,3 +273,19 @@ endif()
 if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_PYTHON)
   add_subdirectory(python)
 endif()
+
+################################################################################
+# Patch predicates library
+################################################################################
+
+CPMAddPackage(
+  NAME predicates
+  GITHUB_REPOSITORY libigl/libigl-predicates
+  GIT_TAG 0d88c49
+  DOWNLOAD_ONLY ON
+  PATCH_COMMAND ${CMAKE_COMMAND} -E copy 
+                 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ipc_toolkit/patch/predicates.patch
+                 ${CMAKE_CURRENT_BINARY_DIR}/_deps/predicates-src/ &&
+                 cd ${CMAKE_CURRENT_BINARY_DIR}/_deps/predicates-src/ &&
+                 git apply predicates.patch || true
+)

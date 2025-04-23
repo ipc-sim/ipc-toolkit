@@ -1,4 +1,5 @@
 #include "friction_potential.hpp"
+#include <ipc/tangent/tangent_basis.hpp>  // Add this include for TangentBasis
 
 namespace ipc {
 
@@ -146,8 +147,10 @@ double TangentialPotential::operator()(
     const VectorMax2d u = collision.tangent_basis.transpose()
         * collision.relative_velocity(velocities);
 
-    return collision.weight * collision.mu * collision.normal_force_magnitude
-        * f0(u.norm());
+    return collision.weight * collision.mu * collision.normal_force_magnitude *
+        ((collision.s_mu > 0 && collision.k_mu > 0) ? 
+            f0_mus(u.norm(), collision.s_mu, collision.k_mu) : 
+            f0(u.norm()));
 }
 
 VectorMax12d TangentialPotential::gradient(
@@ -167,14 +170,67 @@ VectorMax12d TangentialPotential::gradient(
         * collision.tangent_basis;
 
     // Compute f₁(‖u‖)/‖u‖
-    const double f1_over_norm_u = f1_over_x(u.norm());
+    const double f1_over_norm_u = (collision.s_mu > 0 && collision.k_mu > 0) ?
+                                f1_over_x_mus(u.norm(), collision.s_mu, collision.k_mu) :
+                                f1_over_x(u.norm());
 
     // μ N(xᵗ) f₁(‖u‖)/‖u‖ T(xᵗ) u ∈ ℝⁿ
     // (n×2)(2×1) = (n×1)
+    double mu = (is_dynamic(u.norm()) && collision.k_mu != -1)
+                    ? collision.k_mu
+                    : (collision.s_mu != -1 ? collision.s_mu : collision.mu);
+
     return T
-        * ((collision.weight * collision.mu * collision.normal_force_magnitude
+        * ((collision.weight * mu * collision.normal_force_magnitude
             * f1_over_norm_u)
            * u);
+}
+
+Eigen::VectorXd TangentialPotential::gradient(
+    const Eigen::MatrixXd& V,
+    const Eigen::VectorXd& u0,
+    const Eigen::Ref<const Eigen::MatrixXd>& basis,  // Updated parameter type
+    double dt,
+    double mu,
+    double eps_v,
+    double static_mu, // Added parameter for static friction coefficient
+    double kinetic_mu) const // Added parameter for kinetic friction coefficient
+{
+    // If static and kinetic mu are not specified (or are the same),
+    // use the original implementation
+    if (static_mu <= 0 || std::abs(static_mu - kinetic_mu) < 1e-10) {
+        // Original implementation for single mu
+        const Eigen::VectorXd u0_local = basis.transpose() * u0;
+        const Eigen::VectorXd u = u0_local;
+        const double u_norm = u.norm();
+
+        if (u_norm < 1e-10) {
+            return Eigen::VectorXd::Zero(u0.size());
+        }
+
+        const double force_scale = mu * f1_over_x(u_norm) / u_norm;
+        return basis * (force_scale * u);
+    }
+    
+    // Use the smooth transition between static and dynamic friction
+    const Eigen::VectorXd u0_local = basis.transpose() * u0;
+    const Eigen::VectorXd u = u0_local;
+    const double u_norm = u.norm();
+
+    if (u_norm < 1e-10) {
+        return Eigen::VectorXd::Zero(u0.size());
+    }
+
+    // Simple transition from static to kinetic friction
+    double mu_effective = kinetic_mu;
+    if (u_norm < eps_v) {
+        // Blend between static and kinetic friction based on velocity
+        double t = u_norm / eps_v; // 0 to 1
+        mu_effective = static_mu + (kinetic_mu - static_mu) * t;
+    }
+    
+    const double force_scale = mu_effective * f1_over_x(u_norm) / u_norm;
+    return basis * (force_scale * u);
 }
 
 MatrixMax12d TangentialPotential::hessian(
@@ -199,11 +255,17 @@ MatrixMax12d TangentialPotential::hessian(
     const double norm_u = u.norm();
 
     // Compute f₁(‖u‖)/‖u‖
-    const double f1_over_norm_u = f1_over_x(norm_u);
+    const double f1_over_norm_u = (collision.s_mu > 0 && collision.k_mu > 0) ?
+                                f1_over_x_mus(norm_u, collision.s_mu, collision.k_mu) :
+                                f1_over_x(norm_u);
 
     // Compute μ N(xᵗ)
+    double mu = (is_dynamic(u.norm()) && collision.k_mu != -1)
+                    ? collision.k_mu
+                    : (collision.s_mu != -1 ? collision.s_mu : collision.mu);
+
     const double scale =
-        collision.weight * collision.mu * collision.normal_force_magnitude;
+        collision.weight * mu * collision.normal_force_magnitude;
 
     MatrixMax12d hess;
     if (is_dynamic(norm_u)) {
@@ -237,7 +299,9 @@ MatrixMax12d TangentialPotential::hessian(
     } else {
         // ∇²D(v) = μ N T [f₂(‖u‖) uuᵀ + f₁(‖u‖)/‖u‖ I] Tᵀ
         //  ⟹ only need to project the inner 2x2 matrix to PSD
-        const double f2 = f2_x_minus_f1_over_x3(norm_u);
+        double f2 = (collision.s_mu > 0 && collision.k_mu > 0) ?
+            f2_x_minus_f1_over_x3_mus(norm_u, collision.s_mu, collision.k_mu) :
+            f2_x_minus_f1_over_x3(norm_u);
 
         MatrixMax2d inner_hess = f2 * u * u.transpose();
         inner_hess.diagonal().array() += f1_over_norm_u;
@@ -269,10 +333,6 @@ VectorMax12d TangentialPotential::force(
     assert(rest_positions.size() == lagged_displacements.size());
     assert(rest_positions.size() == velocities.size());
 
-    // const VectorMax12d x = dof(rest_positions, edges, faces);
-    // const VectorMax12d u = dof(lagged_displacements, edges, faces);
-    // const VectorMax12d v = dof(velocities, edges, faces);
-
     // x:
     const VectorMax12d lagged_positions = rest_positions + lagged_displacements;
 
@@ -298,12 +358,39 @@ VectorMax12d TangentialPotential::force(
     const VectorMax2d tau = T.transpose() * velocities;
 
     // Compute f₁(‖τ‖)/‖τ‖
-    const double f1_over_norm_tau = f1_over_x(tau.norm());
-
+    const double tau_norm = tau.norm();
+    
+    // Determine which mu to use
+    double mu = collision.mu;
+    
+    // Function to look up material-specific friction coefficient
+    static thread_local std::shared_ptr<Eigen::MatrixXd> material_friction_table = nullptr;
+    
+    if (!no_mu) {
+        // For material-specific friction, look up the appropriate mu from material IDs
+        if (collision.has_material_ids() && material_friction_table) {
+            mu = get_friction_coefficient(collision, *material_friction_table);
+        } else if (is_dynamic(tau_norm) && collision.k_mu > 0) {
+            // Use kinetic friction if we're in dynamic regime
+            mu = collision.k_mu;
+        } else if (collision.s_mu > 0) {
+            // Use static friction if we're in static regime
+            mu = collision.s_mu;
+        }
+    } else {
+        mu = 1.0; // no_mu case
+    }
+    
+    // Calculate force mollifier factor
+    double f1_over_norm_tau;
+    if (collision.s_mu > 0 && collision.k_mu > 0) {
+        f1_over_norm_tau = f1_over_x_mus(tau_norm, collision.s_mu, collision.k_mu);
+    } else {
+        f1_over_norm_tau = f1_over_x(tau_norm);
+    }
+    
     // F = -μ N f₁(‖τ‖)/‖τ‖ T τ
-    // NOTE: no_mu -> leave mu out of this function (i.e., assuming mu = 1)
-    return -collision.weight * (no_mu ? 1.0 : collision.mu) * N
-        * f1_over_norm_tau * T * tau;
+    return -collision.weight * mu * N * f1_over_norm_tau * T * tau;
 }
 
 MatrixMax12d TangentialPotential::force_jacobian(
@@ -416,7 +503,9 @@ MatrixMax12d TangentialPotential::force_jacobian(
 
     // Compute f₁(‖τ‖)/‖τ‖
     const double tau_norm = tau.norm();
-    const double f1_over_norm_tau = f1_over_x(tau_norm);
+    double f1_over_norm_tau = (collision.s_mu > 0 && collision.k_mu > 0) ?
+                            f1_over_x_mus(tau_norm, collision.s_mu, collision.k_mu) :
+                            f1_over_x(tau_norm);
 
     // Compute ∇(f₁(‖τ‖)/‖τ‖)
     VectorMax12d grad_f1_over_norm_tau;
@@ -425,7 +514,9 @@ MatrixMax12d TangentialPotential::force_jacobian(
         grad_f1_over_norm_tau.setZero(n);
     } else {
         // ∇ (f₁(‖τ‖)/‖τ‖) = (f₂(‖τ‖)‖τ‖ - f₁(‖τ‖)) / ‖τ‖³ τᵀ ∇τ
-        double f2 = f2_x_minus_f1_over_x3(tau_norm);
+        double f2 = (collision.s_mu > 0 && collision.k_mu > 0) ?
+            f2_x_minus_f1_over_x3_mus(tau_norm, collision.s_mu, collision.k_mu) :
+            f2_x_minus_f1_over_x3(tau_norm);
         assert(std::isfinite(f2));
         grad_f1_over_norm_tau = f2 * tau.transpose() * jac_tau;
     }
@@ -465,6 +556,29 @@ MatrixMax12d TangentialPotential::force_jacobian(
     J *= -collision.weight * collision.mu;
 
     return J;
+}
+
+double TangentialPotential::get_friction_coefficient(
+    const TangentialCollision& collision,
+    const Eigen::MatrixXd& material_friction_table) const
+{
+    // If material IDs are not set, use the collision's mu value
+    if (collision.material_id1 == NO_MATERIAL_ID || 
+        collision.material_id2 == NO_MATERIAL_ID || 
+        material_friction_table.size() == 0) {
+        return collision.mu;
+    }
+
+    // Check that material IDs are valid indices for the friction table
+    if (collision.material_id1 >= 0 && 
+        collision.material_id1 < material_friction_table.rows() &&
+        collision.material_id2 >= 0 && 
+        collision.material_id2 < material_friction_table.cols()) {
+        return material_friction_table(collision.material_id1, collision.material_id2);
+    }
+    
+    // Default to collision's mu if material IDs are out of range
+    return collision.mu;
 }
 
 } // namespace ipc

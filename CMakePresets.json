@@ -30,7 +30,10 @@
       "inherits": "release",
       "displayName": "Default Configuration",
       "description": "Default build configuration",
-      "binaryDir": "${sourceDir}/build/default"
+      "binaryDir": "${sourceDir}/build/default",
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
+      }
     },
     {
       "name": "cuda",
@@ -59,9 +62,8 @@
       "description": "Build with unit tests enabled",
       "binaryDir": "${sourceDir}/build/test",
       "cacheVariables": {
-        "IPC_TOOLKIT_WITH_CUDA": "ON",
         "IPC_TOOLKIT_BUILD_TESTS": "ON",
-        "IPC_TOOLKIT_BUILD_PYTHON": "OFF"
+        "IPC_TOOLKIT_WITH_CODE_COVERAGE": "ON"
       }
     },
     {
@@ -110,20 +112,15 @@
     {
       "name": "default-build",
       "configurePreset": "default",
-      "description": "Build using default configuration"
+      "description": "Build using default configuration Release"
     },
     {
-      "name": "cuda-build",
-      "configurePreset": "cuda",
-      "description": "Build with CUDA support"
-    },
-    {
-      "name": "test-build",
+      "name": "test",
       "configurePreset": "test",
       "description": "Build for running tests"
     },
     {
-      "name": "python-build",
+      "name": "python",
       "configurePreset": "python",
       "description": "Build with Python bindings enabled"
     },
@@ -135,7 +132,7 @@
   ],
   "testPresets": [
     {
-      "name": "default-tests",
+      "name": "tests",
       "description": "Run default tests",
       "configurePreset": "test",
       "execution": {
@@ -146,14 +143,6 @@
       "name": "cuda-tests",
       "description": "Run tests with CUDA enabled",
       "configurePreset": "cuda",
-      "execution": {
-        "stopOnFailure": true
-      }
-    },
-    {
-      "name": "debug-cuda-tests",
-      "description": "Run tests with CUDA Debug configuration",
-      "configurePreset": "debug-cuda",
       "execution": {
         "stopOnFailure": true
       }

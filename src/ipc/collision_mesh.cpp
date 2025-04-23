@@ -20,6 +20,10 @@ CollisionMesh::CollisionMesh(
           faces,
           displacement_map)
 {
+    // Initialize material IDs to non-existent
+    m_vertex_materials.resize(0);
+    m_edge_materials.resize(0);
+    m_face_materials.resize(0);
 }
 
 CollisionMesh::CollisionMesh(
@@ -32,7 +36,7 @@ CollisionMesh::CollisionMesh(
     , m_edges(edges)
     , m_faces(faces)
 {
-    assert(include_vertex.size() == full_rest_positions.rows());
+
     const bool include_all_vertices = std::all_of(
         include_vertex.begin(), include_vertex.end(), [](bool b) { return b; });
 
@@ -111,6 +115,11 @@ CollisionMesh::CollisionMesh(
     init_adjacencies();
     // Compute these manually if needed.
     // init_area_jacobian();
+
+    // Initialize material IDs to non-existent
+    m_vertex_materials.resize(0);
+    m_edge_materials.resize(0);
+    m_face_materials.resize(0);
 }
 
 // ============================================================================
@@ -473,8 +482,59 @@ Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
             }
         }
     }
-
     return faces_to_edges;
+}
+
+void CollisionMesh::set_vertex_materials(const Eigen::VectorXi& vertex_materials)
+{
+    assert(vertex_materials.size() == num_vertices());
+    m_vertex_materials = vertex_materials;
+}
+
+void CollisionMesh::set_edge_materials(const Eigen::VectorXi& edge_materials)
+{
+    assert(edge_materials.size() == num_edges());
+    m_edge_materials = edge_materials;
+}
+
+void CollisionMesh::set_face_materials(const Eigen::VectorXi& face_materials)
+{
+    assert(face_materials.size() == num_faces());
+    m_face_materials = face_materials;
+}
+
+void CollisionMesh::set_single_material_id(int material_id)
+{
+    m_vertex_materials = Eigen::VectorXi::Constant(num_vertices(), material_id);
+    m_edge_materials = Eigen::VectorXi::Constant(num_edges(), material_id);
+    m_face_materials = Eigen::VectorXi::Constant(num_faces(), material_id);
+}
+
+int CollisionMesh::vertex_material(int vertex_id) const
+{
+    if (m_vertex_materials.size() > 0) {
+        assert(vertex_id >= 0 && vertex_id < m_vertex_materials.size());
+        return m_vertex_materials(vertex_id);
+    }
+    return NO_MATERIAL_ID; // No material ID set
+}
+
+int CollisionMesh::edge_material(int edge_id) const
+{
+    if (m_edge_materials.size() > 0) {
+        assert(edge_id >= 0 && edge_id < m_edge_materials.size());
+        return m_edge_materials(edge_id);
+    }
+    return NO_MATERIAL_ID; // No material ID set
+}
+
+int CollisionMesh::face_material(int face_id) const
+{
+    if (m_face_materials.size() > 0) {
+        assert(face_id >= 0 && face_id < m_face_materials.size());
+        return m_face_materials(face_id);
+    }
+    return NO_MATERIAL_ID; // No material ID set
 }
 
 } // namespace ipc

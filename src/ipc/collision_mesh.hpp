@@ -5,6 +5,9 @@
 
 namespace ipc {
 
+// Special constant indicating no material differentiation is needed
+constexpr int NO_MATERIAL_ID = -1;
+
 /// @brief A class for encapsolating the transformation/selections needed to go from a volumetric FE mesh to a surface collision mesh.
 class CollisionMesh {
 public:
@@ -284,6 +287,46 @@ public:
     /// primitives can collide with all other primitives.
     std::function<bool(size_t, size_t)> can_collide = default_can_collide;
 
+    /// @brief Set material IDs for vertices in the mesh
+    /// @param vertex_materials Vector of material IDs for each vertex
+    void set_vertex_materials(const Eigen::VectorXi& vertex_materials);
+
+    /// @brief Set material IDs for edges in the mesh
+    /// @param edge_materials Vector of material IDs for each edge
+    void set_edge_materials(const Eigen::VectorXi& edge_materials);
+
+    /// @brief Set material IDs for faces in the mesh
+    /// @param face_materials Vector of material IDs for each face
+    void set_face_materials(const Eigen::VectorXi& face_materials);
+
+    /// @brief Get the material ID for a vertex
+    /// @param vertex_id Vertex index
+    /// @return Material ID for the vertex
+    int vertex_material(int vertex_id) const;
+
+    /// @brief Get the material ID for an edge
+    /// @param edge_id Edge index
+    /// @return Material ID for the edge
+    int edge_material(int edge_id) const;
+
+    /// @brief Get the material ID for a face
+    /// @param face_id Face index
+    /// @return Material ID for the face
+    int face_material(int face_id) const;
+
+    /// @brief Check if material IDs are being used for this mesh
+    /// @return true if any material IDs have been set, false otherwise
+    bool has_material_ids() const 
+    { 
+        return m_vertex_materials.size() > 0 || 
+               m_edge_materials.size() > 0 || 
+               m_face_materials.size() > 0; 
+    }
+
+    /// @brief Set a single material ID for the entire mesh
+    /// @param material_id The material ID to assign to all elements
+    void set_single_material_id(int material_id);
+
 protected:
     // -----------------------------------------------------------------------
     // Helper initialization functions
@@ -362,6 +405,11 @@ protected:
     std::vector<Eigen::SparseVector<double>> m_vertex_area_jacobian;
     /// @brief The rows of the Jacobian of the edge areas vector.
     std::vector<Eigen::SparseVector<double>> m_edge_area_jacobian;
+
+    // Material assignments
+    Eigen::VectorXi m_vertex_materials;
+    Eigen::VectorXi m_edge_materials;
+    Eigen::VectorXi m_face_materials;
 
 private:
     /// @brief By default all primitives can collide with all other primitives.

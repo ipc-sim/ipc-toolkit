@@ -2,6 +2,7 @@
 
 #include <ipc/collisions/tangential/tangential_collisions.hpp>
 #include <ipc/potentials/potential.hpp>
+#include <ipc/tangent/tangent_basis.hpp>  // Include the full definition
 
 namespace ipc {
 
@@ -125,7 +126,7 @@ public:
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
     /// @param normal_potential Normal potential (used for normal force magnitude).
-    /// @param normal_stiffness Noraml stiffness (used for normal force magnitude).
+    /// @param normal_stiffness Normal stiffness (used for normal force magnitude).
     /// @param wrt Variable to differentiate the friction force with respect to.
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @return Friction force Jacobian
@@ -139,10 +140,43 @@ public:
         const DiffWRT wrt,
         const double dmin = 0) const;
 
+    /// @brief Get the friction coefficient for a pair of materials
+    /// @param collision The collision containing material IDs
+    /// @param material_friction_table Table of friction coefficients indexed by material IDs
+    /// @return The friction coefficient for the material pair
+    double get_friction_coefficient(
+        const TangentialCollision& collision,
+        const Eigen::MatrixXd& material_friction_table) const;
+
+    /// @brief Compute the friction gradient with static/kinetic friction.
+    /// @param V Vertices positions
+    /// @param u0 Displacement
+    /// @param basis Tangent basis
+    /// @param dt Time step
+    /// @param mu Friction coefficient (if s_mu and k_mu not provided)
+    /// @param eps_v Smoothing parameter
+    /// @param static_mu Static friction coefficient
+    /// @param kinetic_mu Kinetic friction coefficient
+    /// @return The friction gradient
+    Eigen::VectorXd gradient(
+        const Eigen::MatrixXd& V,
+        const Eigen::VectorXd& u0,
+        const Eigen::Ref<const Eigen::MatrixXd>& basis,
+        double dt,
+        double mu,
+        double eps_v,
+        double static_mu = -1.0, // Added param with default -1.0
+        double kinetic_mu = -1.0) const; // Added param with default -1.0
+
 protected:
     virtual double f0(const double x) const = 0;
     virtual double f1_over_x(const double x) const = 0;
     virtual double f2_x_minus_f1_over_x3(const double x) const = 0;
+
+    virtual double f0_mus(const double x, const double mu_s, const double mu_k) const = 0;
+    virtual double f1_over_x_mus(const double x, const double mu_s, const double mu_k) const = 0;
+    virtual double f2_x_minus_f1_over_x3_mus(const double x, const double mu_s, const double mu_k) const = 0;
+
     virtual bool is_dynamic(const double speed) const = 0;
 };
 

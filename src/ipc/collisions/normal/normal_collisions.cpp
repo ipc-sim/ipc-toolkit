@@ -178,7 +178,7 @@ void NormalCollisions::build(
         use_area_weighting(), enable_shape_derivatives());
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), candidates.vv_candidates.size()),
+        tbb::blocked_range<size_t>(0, candidates.vv_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_vertex_vertex_collisions(
                 mesh, vertices, candidates.vv_candidates, is_active, r.begin(),
@@ -186,7 +186,7 @@ void NormalCollisions::build(
         });
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), candidates.ev_candidates.size()),
+        tbb::blocked_range<size_t>(0, candidates.ev_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_edge_vertex_collisions(
                 mesh, vertices, candidates.ev_candidates, is_active, r.begin(),
@@ -194,7 +194,7 @@ void NormalCollisions::build(
         });
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), candidates.ee_candidates.size()),
+        tbb::blocked_range<size_t>(0, candidates.ee_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_edge_edge_collisions(
                 mesh, vertices, candidates.ee_candidates, is_active, r.begin(),
@@ -202,7 +202,7 @@ void NormalCollisions::build(
         });
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(size_t(0), candidates.fv_candidates.size()),
+        tbb::blocked_range<size_t>(0, candidates.fv_candidates.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             storage.local().add_face_vertex_collisions(
                 mesh, vertices, candidates.fv_candidates, is_active, r.begin(),
@@ -217,7 +217,7 @@ void NormalCollisions::build(
                     mesh, vertices, candidates.ev_candidates, is_active);
 
             tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
+                tbb::blocked_range<size_t>(0, vv_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local()
                         .add_edge_vertex_negative_vertex_vertex_collisions(
@@ -231,7 +231,7 @@ void NormalCollisions::build(
                 mesh, vertices, candidates.ee_candidates, is_active);
 
             tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
+                tbb::blocked_range<size_t>(0, ev_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local()
                         .add_edge_edge_negative_edge_vertex_collisions(
@@ -246,7 +246,7 @@ void NormalCollisions::build(
                     mesh, vertices, candidates.fv_candidates, is_active);
 
             tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), ev_candidates.size()),
+                tbb::blocked_range<size_t>(0, ev_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local()
                         .add_face_vertex_negative_edge_vertex_collisions(
@@ -259,7 +259,7 @@ void NormalCollisions::build(
                     mesh, vertices, candidates.fv_candidates, is_active);
 
             tbb::parallel_for(
-                tbb::blocked_range<size_t>(size_t(0), vv_candidates.size()),
+                tbb::blocked_range<size_t>(0, vv_candidates.size()),
                 [&](const tbb::blocked_range<size_t>& r) {
                     storage.local()
                         .add_face_vertex_positive_vertex_vertex_collisions(
@@ -346,7 +346,7 @@ double NormalCollisions::compute_minimum_distance(
         [&](tbb::blocked_range<size_t> r, double partial_min_dist) -> double {
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const double dist = (*this)[i].compute_distance(
-                    (*this)[i].dof(vertices, edges, faces));
+                    (*this)[i].dof(vertices, mesh.edges(), mesh.faces()));
 
                 if (dist < partial_min_dist) {
                     partial_min_dist = dist;
