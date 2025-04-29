@@ -74,17 +74,18 @@ bool combine_meshes(
 
 TEST_CASE("Has intersections", "[intersection]")
 {
-    std::string mesh1_name = GENERATE("cube.ply", "bunny.ply");
-    std::string mesh2_name = GENERATE("cube.ply", "bunny.ply");
     int dim = GENERATE(2, 3);
 
 #ifdef NDEBUG
+    std::string mesh1_name = GENERATE("cube.ply", "bunny.ply");
+    std::string mesh2_name = GENERATE("cube.ply", "bunny.ply");
+#else
+    std::string mesh1_name = "cube.ply";
+    std::string mesh2_name = "cube.ply";
+#endif
+
     Eigen::Matrix3d R1 = GENERATE(take(4, tests::RotationGenerator::create()));
     Eigen::Matrix3d R2 = GENERATE(take(4, tests::RotationGenerator::create()));
-#else
-    Eigen::Matrix3d R1 = GENERATE(take(2, tests::RotationGenerator::create()));
-    Eigen::Matrix3d R2 = GENERATE(take(2, tests::RotationGenerator::create()));
-#endif
 
     const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
 

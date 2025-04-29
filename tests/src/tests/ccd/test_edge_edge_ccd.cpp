@@ -24,7 +24,7 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge]")
     long max_iter = TightInclusionCCD::DEFAULT_MAX_ITERATIONS;
     double tmax = 1;
 
-#if !defined(WIN32) || defined(NDEBUG)
+#if defined(NDEBUG) || !(defined(WIN32) || defined(_WIN32) || defined(__WIN32))
     SECTION("General")
     {
         double uy = GENERATE(-1.0, 0.0, 1 - EPSILON, 1.0, 1 + EPSILON, 2.0);

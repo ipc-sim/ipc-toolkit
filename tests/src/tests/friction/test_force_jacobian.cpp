@@ -32,7 +32,7 @@ void check_friction_force_jacobian(
     double distance_t1 = collisions.compute_minimum_distance(mesh, X + U);
     // CHECK((distance_t0 < dhat || distance_t1 < dhat));
     if (distance_t0 == 0 || distance_t1 == 0) {
-        return;
+        SKIP("Initial or final distance is zero");
     }
 
     const Eigen::MatrixXd velocities = U - Ut;

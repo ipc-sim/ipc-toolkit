@@ -23,7 +23,7 @@ void test_face_face_broad_phase(
 
     // Face-face collisions
     if (mesh.num_faces() == 0 || broad_phase->name() == "BruteForce") {
-        return;
+        SKIP("Skipping face-face broad phase test for 2D or BruteForce");
     }
 
     broad_phase->can_vertices_collide = mesh.can_collide;
@@ -135,7 +135,7 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase][2D]")
 #if defined(NDEBUG) || !(defined(WIN32) || defined(_WIN32) || defined(__WIN32))
 TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D]")
 #else
-TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D][.]")
+TEST_CASE("Broad Phase: 2D Mesh", "[.][ccd][broad_phase][2D]")
 #endif
 {
     Eigen::MatrixXd tmp;
@@ -159,8 +159,14 @@ TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D][.]")
     test_broad_phase(mesh, V0, V1, broad_phase);
 }
 
+#if defined(NDEBUG) || !(defined(WIN32) || defined(_WIN32) || defined(__WIN32))
 TEST_CASE(
     "Build collisions with codimensional points", "[broad_phase][collisions]")
+#else
+TEST_CASE(
+    "Build collisions with codimensional points",
+    "[.][broad_phase][collisions]")
+#endif
 {
     const double dhat = 1e-3;
     Eigen::MatrixXd V_rest, V;

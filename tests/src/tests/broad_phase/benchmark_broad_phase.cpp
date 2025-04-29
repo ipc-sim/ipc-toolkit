@@ -115,7 +115,7 @@ TEST_CASE(
 
     if (!tests::load_mesh(mesh_name_t0, V0, E, F)
         || !tests::load_mesh(mesh_name_t1, V1, E, F)) {
-        return; // Data is private
+        SKIP("Slow broadphase CCD meshes are private");
     }
 
     double inflation_radius = 1e-2; // GENERATE(take(5, random(0.0, 0.1)));
@@ -127,7 +127,7 @@ TEST_CASE(
 
     const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
     if (broad_phase->name() == "BruteForce") {
-        return; // Skip brute force
+        SKIP("Not benchmarking brute force");
     }
 
     BENCHMARK(fmt::format("BP Real Data ({})", broad_phase->name()))

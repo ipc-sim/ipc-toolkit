@@ -8,11 +8,22 @@
 #include <ipc/broad_phase/bvh.hpp>
 
 using namespace ipc;
+
+#ifdef NDEBUG
 #ifdef IPC_TOOLKIT_WITH_CUDA
-TEST_CASE("STQ All Cases", "[broad_phase][stq][cuda]")
+static std::string STQ_ALL_CASES_TAGS = "[broad_phase][stq][cuda]";
 #else
-TEST_CASE("STQ All Cases", "[broad_phase][stq]")
+static std::string STQ_ALL_CASES_TAGS = "[broad_phase][stq]";
 #endif
+#else
+#ifdef IPC_TOOLKIT_WITH_CUDA
+static std::string STQ_ALL_CASES_TAGS = "[.][broad_phase][stq][cuda]";
+#else
+static std::string STQ_ALL_CASES_TAGS = "[.][broad_phase][stq]";
+#endif
+#endif
+
+TEST_CASE("STQ All Cases", STQ_ALL_CASES_TAGS)
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
@@ -70,7 +81,7 @@ TEST_CASE("Puffer-Ball", "[ccd][broad_phase][stq][cuda]")
 
     if (!tests::load_mesh("private/puffer-ball/20.ply", V0, E, F)
         || !tests::load_mesh("private/puffer-ball/21.ply", V1, E, F)) {
-        return; // Data is private
+        SKIP("Puffer-ball meshes not available");
     }
 
     CollisionMesh mesh(V0, E, F);

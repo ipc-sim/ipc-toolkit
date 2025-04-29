@@ -209,7 +209,7 @@ TEST_CASE("Degenerate tolerance", "[ccd]")
     CHECK(t0 == 1.0);
 }
 
-TEST_CASE("Slow CCD", "[CCD]")
+TEST_CASE("Thick Cloth CCD", "[CCD][!benchmark]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
