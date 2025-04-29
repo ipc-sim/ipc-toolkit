@@ -9,22 +9,12 @@
 
 using namespace ipc;
 
-#ifdef NDEBUG
-#ifdef IPC_TOOLKIT_WITH_CUDA
-static std::string STQ_ALL_CASES_TAGS = "[broad_phase][stq][cuda]";
-#else
-static std::string STQ_ALL_CASES_TAGS = "[broad_phase][stq]";
-#endif
-#else
-#ifdef IPC_TOOLKIT_WITH_CUDA
-static std::string STQ_ALL_CASES_TAGS = "[.][broad_phase][stq][cuda]";
-#else
-static std::string STQ_ALL_CASES_TAGS = "[.][broad_phase][stq]";
-#endif
+TEST_CASE("STQ All Cases", "[broad_phase][stq][cuda]")
+{
+#ifndef NDEBUG
+    SKIP("'STQ All Cases' test is skipped in debug mode");
 #endif
 
-TEST_CASE("STQ All Cases", STQ_ALL_CASES_TAGS)
-{
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
 

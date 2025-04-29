@@ -7,12 +7,12 @@
 
 using namespace ipc;
 
-#ifdef NDEBUG
 TEST_CASE("Build SpatialHash", "[broad_phase][spatial_hash][build]")
-#else
-TEST_CASE("Build SpatialHash", "[.][broad_phase][spatial_hash][build]")
-#endif
 {
+#ifndef NDEBUG
+    SKIP("'Build SpatialHash' test is skipped in debug mode");
+#endif
+
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
 

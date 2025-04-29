@@ -43,7 +43,7 @@ int main(int argc, char** argv)
     using namespace Catch::Clara;
     auto cli = session.cli();
 
-    int log_level = spdlog::level::warn;
+    int log_level = spdlog::level::error;
     cli |=
         Opt([&log_level](int const d) { return parse_log_level(d, log_level); },
             "log_level")["--log"]["--logger-level"](
