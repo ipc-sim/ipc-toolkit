@@ -122,22 +122,6 @@ public:
         throw std::runtime_error(
             "Tried to call pure virtual function \"BroadPhase::detect_face_face_candidates\"");
     }
-
-    void
-    detect_collision_candidates(int dim, Candidates& candidates) const override
-    {
-        {
-            py::gil_scoped_acquire
-                gil; // Acquire GIL before calling Python code
-            py::function override =
-                py::get_override(this, "detect_collision_candidates");
-            if (override) {
-                candidates = override(dim).cast<Candidates>();
-                return;
-            }
-        }
-        BroadPhase::detect_collision_candidates(dim, candidates);
-    }
 };
 
 void define_broad_phase(py::module_& m)

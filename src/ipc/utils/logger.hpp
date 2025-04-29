@@ -17,4 +17,13 @@ spdlog::logger& logger();
 /// @param logger New logger object to be used.
 void set_logger(std::shared_ptr<spdlog::logger> logger);
 
+[[noreturn]] void log_and_throw_error(const std::string& msg);
+
+template <typename... Args>
+[[noreturn]] void
+log_and_throw_error(const std::string& msg, const Args&... args)
+{
+    log_and_throw_error(fmt::format(msg, args...));
+}
+
 } // namespace ipc

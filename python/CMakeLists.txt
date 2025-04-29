@@ -20,3 +20,8 @@ endif()
 
 # Extra warnings
 # target_link_libraries(ipctk PRIVATE IPCToolkit::warnings)
+
+# Folder name for IDE
+set_target_properties(ipctk PROPERTIES FOLDER "SRC")
+get_target_property(IPCTK_SOURCES ipctk SOURCES)
+source_group(TREE "${PROJECT_SOURCE_DIR}/python" FILES ${IPCTK_SOURCES})

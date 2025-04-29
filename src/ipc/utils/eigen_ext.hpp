@@ -181,6 +181,28 @@ inline Eigen::Vector3d to_3D(Eigen::ConstRef<VectorMax3d> v)
     return v.size() == 2 ? Eigen::Vector3d(v.x(), v.y(), 0) : v.head<3>();
 }
 
+// TODO: Change return type to Eigen::MatrixX3f
+inline Eigen::MatrixXf to_X3f(Eigen::ConstRef<Eigen::MatrixXd> vertices)
+{
+    Eigen::MatrixXf vertices_3f(vertices.rows(), 3);
+    vertices_3f.leftCols(vertices.cols()) = vertices.cast<float>();
+    if (vertices.cols() < 3) {
+        vertices_3f.rightCols(3 - vertices.cols()).setZero();
+    }
+    return vertices_3f;
+}
+
+// TODO: Change return type to Eigen::MatrixX3d
+inline Eigen::MatrixXd to_X3d(Eigen::ConstRef<Eigen::MatrixXd> vertices)
+{
+    Eigen::MatrixXd vertices_3d(vertices.rows(), 3);
+    vertices_3d.leftCols(vertices.cols()) = vertices;
+    if (vertices.cols() < 3) {
+        vertices_3d.rightCols(3 - vertices.cols()).setZero();
+    }
+    return vertices_3d;
+}
+
 /// Eigen IO Format to format vectors like vertex rows in an OBJ file.
 static const Eigen::IOFormat OBJ_VERTEX_FORMAT = Eigen::IOFormat(
     Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "", "");

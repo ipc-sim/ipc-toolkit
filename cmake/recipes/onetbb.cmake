@@ -67,7 +67,7 @@ endif()
 foreach(name IN ITEMS tbb tbbmalloc tbbmalloc_proxy)
     if(TARGET ${name})
         # Folder name for IDE
-        set_target_properties(${name} PROPERTIES FOLDER "third_party//tbb")
+        set_target_properties(${name} PROPERTIES FOLDER "ThirdParty/tbb")
 
         # Force debug postfix for library name. Our pre-compiled MKL library expects "tbb12.dll" (without postfix).
         set_target_properties(${name} PROPERTIES DEBUG_POSTFIX "")
