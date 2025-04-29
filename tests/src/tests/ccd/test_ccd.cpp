@@ -15,12 +15,12 @@
 
 using namespace ipc;
 
-#ifdef NDEBUG
 TEST_CASE("Repeated CCD", "[ccd][repeat]")
-#else
-TEST_CASE("Repeated CCD", "[ccd][repeat][.]")
-#endif
 {
+#ifndef NDEBUG
+    SKIP("'Repeated CCD' test is skipped in debug mode");
+#endif
+
     constexpr double FIRST_TOL = 1e-6, SECOND_TOL = 1e-7;
     constexpr long FIRST_MAX_ITER = 1'000'000, SECOND_MAX_ITER = 1'000'000;
     constexpr double MIN_DISTANCE = 0.0;
@@ -209,7 +209,7 @@ TEST_CASE("Degenerate tolerance", "[ccd]")
     CHECK(t0 == 1.0);
 }
 
-TEST_CASE("Slow CCD", "[CCD]")
+TEST_CASE("Thick Cloth CCD", "[CCD][!benchmark]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;

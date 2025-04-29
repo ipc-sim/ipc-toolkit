@@ -38,7 +38,7 @@ TEST_CASE("Benchmark earliest toi", "[!benchmark][ccd][earliest_toi]")
 
     if (!tests::load_mesh(mesh_name_t0, V0, E, F)
         || !tests::load_mesh(mesh_name_t1, V1, E, F)) {
-        return; // Data is private
+        SKIP("Slow broadphase CCD meshes are private");
     }
 
     CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0, E, F);
