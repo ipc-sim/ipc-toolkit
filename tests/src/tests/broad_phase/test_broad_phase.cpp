@@ -23,7 +23,8 @@ void test_face_face_broad_phase(
 
     // Face-face collisions
     if (mesh.num_faces() == 0 || broad_phase->name() == "BruteForce") {
-        SKIP("Skipping face-face broad phase test for 2D or BruteForce");
+        // Skipping face-face broad phase test for 2D or BruteForce
+        return;
     }
 
     broad_phase->can_vertices_collide = mesh.can_collide;
