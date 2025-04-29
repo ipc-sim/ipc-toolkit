@@ -14,7 +14,8 @@ CPMAddPackage("gh:gabime/spdlog@1.11.0")
 
 set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-set_target_properties(spdlog PROPERTIES FOLDER external)
+# Folder name for IDE
+set_target_properties(spdlog PROPERTIES FOLDER "ThirdParty")
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang" OR
    "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")

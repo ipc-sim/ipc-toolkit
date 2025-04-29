@@ -491,7 +491,7 @@ CMakeUserPresets.json
 
 
 ## Build
-build*
+build/
 bin*
 
 ## IDES
@@ -658,6 +658,7 @@ ipctk
 
 IPCToolkitOptions.cmake
 
+# Generated HPP files
 src/ipc/config.hpp
 tests/src/tests/config.hpp
 
