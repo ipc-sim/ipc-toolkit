@@ -9,9 +9,11 @@ using namespace ipc;
 void define_edge_face_candidate(py::module_& m)
 {
     py::class_<EdgeFaceCandidate>(m, "EdgeFaceCandidate")
-        .def(py::init<long, long>(), py::arg("edge_id"), py::arg("face_id"))
         .def(
-            py::init([](std::tuple<long, long> edge_and_face_id) {
+            py::init<index_t, index_t>(), py::arg("edge_id"),
+            py::arg("face_id"))
+        .def(
+            py::init([](std::tuple<index_t, index_t> edge_and_face_id) {
                 return std::make_unique<EdgeFaceCandidate>(
                     std::get<0>(edge_and_face_id),
                     std::get<1>(edge_and_face_id));
@@ -37,5 +39,6 @@ void define_edge_face_candidate(py::module_& m)
         .def_readwrite(
             "face_id", &EdgeFaceCandidate::face_id, "ID of the face");
 
-    py::implicitly_convertible<std::tuple<long, long>, EdgeFaceCandidate>();
+    py::implicitly_convertible<
+        std::tuple<index_t, index_t>, EdgeFaceCandidate>();
 }

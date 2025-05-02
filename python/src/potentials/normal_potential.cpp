@@ -36,7 +36,7 @@ void define_normal_potential(py::module_& m)
         .def(
             "shape_derivative",
             [](const NormalPotential& self, const NormalCollision& collision,
-               const std::array<long, 4>& vertex_ids,
+               const std::array<index_t, 4>& vertex_ids,
                Eigen::ConstRef<VectorMax12d> rest_positions,
                Eigen::ConstRef<VectorMax12d> positions) {
                 std::vector<Eigen::Triplet<double>> out;

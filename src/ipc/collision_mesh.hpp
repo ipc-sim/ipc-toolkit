@@ -142,7 +142,7 @@ public:
     /// @brief Map a vertex ID to the corresponding vertex ID in the full mesh.
     /// @param id Vertex ID in the collision mesh.
     /// @return Vertex ID in the full mesh.
-    size_t to_full_vertex_id(const size_t id) const
+    index_t to_full_vertex_id(const index_t id) const
     {
         assert(id < num_vertices());
         return m_vertex_to_full_vertex[id];
@@ -267,7 +267,7 @@ public:
     /// @param codim_vertices The indices of codimensional vertices (#CV x 1).
     /// @return A vector of bools indicating whether each vertex is on the surface.
     static std::vector<bool> construct_is_on_surface(
-        const long num_vertices,
+        const size_t num_vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::VectorXi> codim_vertices = Eigen::VectorXi());
 

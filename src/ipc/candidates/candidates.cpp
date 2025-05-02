@@ -277,7 +277,7 @@ double Candidates::compute_noncandidate_conservative_stepsize(
 
     std::vector<bool> is_vertex_a_candidates(mesh.num_vertices(), false);
     for (size_t i = 0; i < size(); i++) {
-        for (const long vid : (*this)[i].vertex_ids(E, F)) {
+        for (const index_t vid : (*this)[i].vertex_ids(E, F)) {
             if (vid < 0) {
                 break;
             }

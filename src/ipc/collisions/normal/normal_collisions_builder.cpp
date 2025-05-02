@@ -233,8 +233,8 @@ void NormalCollisionsBuilder::add_face_vertex_collisions(
 {
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [fi, vi] = candidates[i];
-        const long f0i = mesh.faces()(fi, 0), f1i = mesh.faces()(fi, 1),
-                   f2i = mesh.faces()(fi, 2);
+        const index_t f0i = mesh.faces()(fi, 0), f1i = mesh.faces()(fi, 1),
+                      f2i = mesh.faces()(fi, 2);
 
         const auto [v, f0, f1, f2] =
             candidates[i].vertices(vertices, mesh.edges(), mesh.faces());
@@ -312,8 +312,8 @@ void NormalCollisionsBuilder::add_edge_vertex_negative_vertex_vertex_collisions(
                                 double& weight,
                                 Eigen::SparseVector<double>& weight_gradient) {
         const auto& incident_vertices = mesh.vertex_vertex_adjacencies()[vj];
-        const int incident_edge_amt = incident_vertices.size()
-            - int(incident_vertices.find(vi) != incident_vertices.end());
+        const index_t incident_edge_amt = incident_vertices.size()
+            - index_t(incident_vertices.find(vi) != incident_vertices.end());
 
         if (incident_edge_amt > 1) {
             // ÷ 2 to handle double counting for correct integration
@@ -401,8 +401,8 @@ void NormalCollisionsBuilder::add_face_vertex_negative_edge_vertex_collisions(
         assert(vi != mesh.edges()(ei, 0) && vi != mesh.edges()(ei, 1));
 
         const auto& incident_vertices = mesh.edge_vertex_adjacencies()[ei];
-        const int incident_triangle_amt = incident_vertices.size()
-            - int(incident_vertices.find(vi) != incident_vertices.end());
+        const index_t incident_triangle_amt = incident_vertices.size()
+            - index_t(incident_vertices.find(vi) != incident_vertices.end());
 
         if (incident_triangle_amt > 1) {
             // ÷ 4 to handle double counting and PT + EE for correct integration
@@ -438,7 +438,7 @@ void NormalCollisionsBuilder::add_edge_edge_negative_edge_vertex_collisions(
 
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [ea, p] = candidates[i];
-        const int ea0 = mesh.edges()(ea, 0), ea1 = mesh.edges()(ea, 1);
+        const index_t ea0 = mesh.edges()(ea, 0), ea1 = mesh.edges()(ea, 1);
         assert(p != ea0 && p != ea1);
 
         // ÷ 4 to handle double counting and PT + EE for correct integration
@@ -454,12 +454,12 @@ void NormalCollisionsBuilder::add_edge_edge_negative_edge_vertex_collisions(
         const PointEdgeDistanceType dtype = point_edge_distance_type(
             vertices.row(p), vertices.row(ea0), vertices.row(ea1));
 
-        int nonmollified_incident_edge_amt = 0;
+        index_t nonmollified_incident_edge_amt = 0;
 
         const auto& incident_edges = mesh.vertex_edge_adjacencies()[p];
-        for (const int eb : incident_edges) {
-            const int eb0 = mesh.edges()(eb, 0), eb1 = mesh.edges()(eb, 1);
-            const int q = mesh.edges()(eb, int(p == eb0));
+        for (const index_t eb : incident_edges) {
+            const index_t eb0 = mesh.edges()(eb, 0), eb1 = mesh.edges()(eb, 1);
+            const index_t q = mesh.edges()(eb, index_t(p == eb0));
             assert(p != q);
             if (q == ea0 || q == ea1) {
                 continue;
@@ -519,7 +519,7 @@ void NormalCollisionsBuilder::add_edge_edge_negative_edge_vertex_collisions(
 
 void NormalCollisionsBuilder::add_vertex_vertex_collision(
     const VertexVertexNormalCollision& vv_collision,
-    unordered_map<VertexVertexNormalCollision, long>& vv_to_id,
+    unordered_map<VertexVertexNormalCollision, size_t>& vv_to_id,
     std::vector<VertexVertexNormalCollision>& vv_collisions)
 {
     auto found_item = vv_to_id.find(vv_collision);
@@ -537,7 +537,7 @@ void NormalCollisionsBuilder::add_vertex_vertex_collision(
 
 void NormalCollisionsBuilder::add_edge_vertex_collision(
     const EdgeVertexNormalCollision& ev_collision,
-    unordered_map<EdgeVertexNormalCollision, long>& ev_to_id,
+    unordered_map<EdgeVertexNormalCollision, size_t>& ev_to_id,
     std::vector<EdgeVertexNormalCollision>& ev_collisions)
 {
     auto found_item = ev_to_id.find(ev_collision);
@@ -555,7 +555,7 @@ void NormalCollisionsBuilder::add_edge_vertex_collision(
 
 void NormalCollisionsBuilder::add_edge_edge_collision(
     const EdgeEdgeNormalCollision& ee_collision,
-    unordered_map<EdgeEdgeNormalCollision, long>& ee_to_id,
+    unordered_map<EdgeEdgeNormalCollision, size_t>& ee_to_id,
     std::vector<EdgeEdgeNormalCollision>& ee_collisions)
 {
     auto found_item = ee_to_id.find(ee_collision);
@@ -579,9 +579,9 @@ void NormalCollisionsBuilder::merge(
         local_storage,
     NormalCollisions& merged_collisions)
 {
-    unordered_map<VertexVertexNormalCollision, long> vv_to_id;
-    unordered_map<EdgeVertexNormalCollision, long> ev_to_id;
-    unordered_map<EdgeEdgeNormalCollision, long> ee_to_id;
+    unordered_map<VertexVertexNormalCollision, size_t> vv_to_id;
+    unordered_map<EdgeVertexNormalCollision, size_t> ev_to_id;
+    unordered_map<EdgeEdgeNormalCollision, size_t> ee_to_id;
     auto& vv_collisions = merged_collisions.vv_collisions;
     auto& ev_collisions = merged_collisions.ev_collisions;
     auto& ee_collisions = merged_collisions.ee_collisions;

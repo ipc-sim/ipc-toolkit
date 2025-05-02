@@ -11,7 +11,7 @@ void define_edge_edge_normal_collision(py::module_& m)
         m, "EdgeEdgeNormalCollision")
         .def(
             py::init<
-                const long, const long, const double,
+                const index_t, const index_t, const double,
                 const EdgeEdgeDistanceType>(),
             py::arg("edge0_id"), py::arg("edge1_id"), py::arg("eps_x"),
             py::arg("dtype") = EdgeEdgeDistanceType::AUTO)
@@ -23,7 +23,7 @@ void define_edge_edge_normal_collision(py::module_& m)
             py::arg("dtype") = EdgeEdgeDistanceType::AUTO)
         // .def(
         //     py::init<
-        //         const long, const long, const double, const double,
+        //         const index_t, const index_t, const double, const double,
         //         const Eigen::SparseVector<double>&,
         //         const EdgeEdgeDistanceType>(),
         //     py::arg("edge0_id"), py::arg("edge1_id"), py::arg("eps_x"),

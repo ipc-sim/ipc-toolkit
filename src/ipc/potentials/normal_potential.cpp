@@ -142,7 +142,7 @@ MatrixMax12d NormalPotential::hessian(
 
 void NormalPotential::shape_derivative(
     const NormalCollision& collision,
-    const std::array<long, 4>& vertex_ids,
+    const std::array<index_t, 4>& vertex_ids,
     Eigen::ConstRef<VectorMax12d> rest_positions, // = x̄
     Eigen::ConstRef<VectorMax12d> positions,      // = x̄ + u
     std::vector<Eigen::Triplet<double>>& out) const

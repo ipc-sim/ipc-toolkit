@@ -11,14 +11,14 @@ namespace ipc {
 
 class FaceVertexCandidate : virtual public CollisionStencil {
 public:
-    FaceVertexCandidate(long face_id, long vertex_id);
+    FaceVertexCandidate(index_t face_id, index_t vertex_id);
 
     // ------------------------------------------------------------------------
     // CollisionStencil
 
     int num_vertices() const override { return 4; };
 
-    std::array<long, 4> vertex_ids(
+    std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const override
     {
@@ -75,9 +75,9 @@ public:
     // ------------------------------------------------------------------------
 
     /// @brief ID of the face
-    long face_id;
+    index_t face_id;
     /// @brief ID of the vertex
-    long vertex_id;
+    index_t vertex_id;
 };
 
 } // namespace ipc

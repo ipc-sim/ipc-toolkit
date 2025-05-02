@@ -7,8 +7,8 @@
 namespace ipc {
 
 EdgeEdgeNormalCollision::EdgeEdgeNormalCollision(
-    const long _edge0_id,
-    const long _edge1_id,
+    const index_t _edge0_id,
+    const index_t _edge1_id,
     const double _eps_x,
     const EdgeEdgeDistanceType _dtype)
     : EdgeEdgeCandidate(_edge0_id, _edge1_id)
@@ -28,8 +28,8 @@ EdgeEdgeNormalCollision::EdgeEdgeNormalCollision(
 }
 
 EdgeEdgeNormalCollision::EdgeEdgeNormalCollision(
-    const long _edge0_id,
-    const long _edge1_id,
+    const index_t _edge0_id,
+    const index_t _edge1_id,
     const double _eps_x,
     const double _weight,
     const Eigen::SparseVector<double>& _weight_gradient,

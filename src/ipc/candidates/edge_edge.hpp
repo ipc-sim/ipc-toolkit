@@ -11,14 +11,14 @@ namespace ipc {
 
 class EdgeEdgeCandidate : virtual public CollisionStencil {
 public:
-    EdgeEdgeCandidate(long edge0_id, long edge1_id);
+    EdgeEdgeCandidate(index_t edge0_id, index_t edge1_id);
 
     // ------------------------------------------------------------------------
     // CollisionStencil
 
     int num_vertices() const override { return 4; };
 
-    std::array<long, 4> vertex_ids(
+    std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const override
     {
@@ -69,15 +69,15 @@ public:
     template <typename H>
     friend H AbslHashValue(H h, const EdgeEdgeCandidate& ee)
     {
-        long min_ei = std::min(ee.edge0_id, ee.edge1_id);
-        long max_ei = std::max(ee.edge0_id, ee.edge1_id);
+        index_t min_ei = std::min(ee.edge0_id, ee.edge1_id);
+        index_t max_ei = std::max(ee.edge0_id, ee.edge1_id);
         return H::combine(std::move(h), min_ei, max_ei);
     }
 
     /// @brief ID of the first edge.
-    long edge0_id;
+    index_t edge0_id;
     /// @brief ID of the second edge.
-    long edge1_id;
+    index_t edge1_id;
 };
 
 } // namespace ipc

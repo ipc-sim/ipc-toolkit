@@ -39,7 +39,7 @@ Eigen::VectorXd TangentialPotential::force(
                     collision.dof(velocities, edges, faces), //
                     normal_potential, normal_stiffness, dmin, no_mu);
 
-                const std::array<long, 4> vis =
+                const std::array<index_t, 4> vis =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
 
                 local_gradient_to_global_gradient(
@@ -88,7 +88,7 @@ Eigen::SparseMatrix<double> TangentialPotential::force_jacobian(
                     collision.dof(velocities, edges, faces), //
                     normal_potential, normal_stiffness, wrt, dmin);
 
-                const std::array<long, 4> vis =
+                const std::array<index_t, 4> vis =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
 
                 local_hessian_to_global_triplets(

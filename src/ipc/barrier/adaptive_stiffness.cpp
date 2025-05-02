@@ -87,7 +87,6 @@ double update_barrier_stiffness(
 
 double semi_implicit_stiffness(
     const CollisionStencil& stencil,
-    const std::array<long, 4>& vertex_ids,
     Eigen::ConstRef<VectorMax12d> vertices,
     Eigen::ConstRef<VectorMax4d> mass,
     Eigen::ConstRef<MatrixMax12d> local_hess,
@@ -148,7 +147,7 @@ Eigen::VectorXd semi_implicit_stiffness(
         const VectorMax12d positions =
             collision.dof(vertices, mesh.edges(), mesh.faces());
 
-        std::array<long, 4> vertex_ids =
+        std::array<index_t, 4> vertex_ids =
             collision.vertex_ids(mesh.edges(), mesh.faces());
         if (hess.rows() == mesh.full_ndof()) {
             for (int i = 0; i < N; i++) {
@@ -175,7 +174,7 @@ Eigen::VectorXd semi_implicit_stiffness(
         }
 
         stiffnesses[ci] = semi_implicit_stiffness(
-            collision, vertex_ids, positions, local_mass, local_hess, dmin);
+            collision, positions, local_mass, local_hess, dmin);
     }
 
     return stiffnesses;
