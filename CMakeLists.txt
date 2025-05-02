@@ -131,13 +131,19 @@ target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
 # Dependencies
 ################################################################################
 
-# Eigen
-include(eigen)
-target_link_libraries(ipc_toolkit PUBLIC Eigen3::Eigen)
+if(WIN32)
+  # Eigen
+  include(eigen)
+  target_link_libraries(ipc_toolkit PUBLIC Eigen3::Eigen)
+endif()
 
 # libigl
 include(libigl)
 target_link_libraries(ipc_toolkit PUBLIC igl::core igl::predicates)
+
+# Eigen
+include(eigen)
+target_link_libraries(ipc_toolkit PUBLIC Eigen3::Eigen)
 
 # autodiff
 include(autodiff)
