@@ -16,9 +16,15 @@
 
 using namespace ipc;
 
+#if defined(NDEBUG) && !defined(WIN32)
+std::string tagsopt = "[smooth_potential]";
+#else
+std::string tagsopt = "[.][smooth_potential]";
+#endif
+
 TEST_CASE(
     "Number of contact pairs",
-    "[smooth_potential]")
+    tagsopt)
 {
     const BroadPhaseMethod method{0};
 
@@ -112,7 +118,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Smooth barrier potential full gradient and hessian 3D",
-    "[smooth_potential]")
+    tagsopt)
 {
     const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
     const bool adaptive_dhat = GENERATE(true, false);
@@ -368,7 +374,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Benchmark on OIPC",
-    "[smooth_potential]")
+    tagsopt)
 {
     const BroadPhaseMethod method{0};
 
