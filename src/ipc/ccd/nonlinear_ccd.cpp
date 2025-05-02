@@ -286,9 +286,10 @@ bool point_triangle_nonlinear_ccd(
         },
         [&](const double ti0, const double ti1) {
             return p.max_distance_from_linear(ti0, ti1)
-                + std::max({ t0.max_distance_from_linear(ti0, ti1),
-                             t1.max_distance_from_linear(ti0, ti1),
-                             t2.max_distance_from_linear(ti0, ti1) });
+                + std::max(
+                       { t0.max_distance_from_linear(ti0, ti1),
+                         t1.max_distance_from_linear(ti0, ti1),
+                         t2.max_distance_from_linear(ti0, ti1) });
         },
         [&](const double ti0, const double ti1, const double _min_distance,
             const bool no_zero_toi, double& _toi) {
