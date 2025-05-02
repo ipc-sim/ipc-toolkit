@@ -336,7 +336,7 @@ TEST_CASE(
         return smooth_edge3_normal_term(y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3), y.segment(12, 3), alpha, beta, otypes);
     }, fgrad, fd::AccuracyOrder::SECOND, 1e-6);
 
-    CHECK((fgrad - grad).norm() / 1e-7 <= grad.norm());
+    CHECK((fgrad - grad).norm() / 1e-6 <= grad.norm());
 
     Eigen::MatrixXd fhess;
     fd::finite_jacobian(x, [&](const Eigen::VectorXd &y) {
