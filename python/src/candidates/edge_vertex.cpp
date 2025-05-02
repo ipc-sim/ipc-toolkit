@@ -8,9 +8,11 @@ using namespace ipc;
 void define_edge_vertex_candidate(py::module_& m)
 {
     py::class_<EdgeVertexCandidate, CollisionStencil>(m, "EdgeVertexCandidate")
-        .def(py::init<long, long>(), py::arg("edge_id"), py::arg("vertex_id"))
         .def(
-            py::init([](std::tuple<long, long> edge_and_vertex_id) {
+            py::init<index_t, index_t>(), py::arg("edge_id"),
+            py::arg("vertex_id"))
+        .def(
+            py::init([](std::tuple<index_t, index_t> edge_and_vertex_id) {
                 return std::make_unique<EdgeVertexCandidate>(
                     std::get<0>(edge_and_vertex_id),
                     std::get<1>(edge_and_vertex_id));
@@ -39,5 +41,6 @@ void define_edge_vertex_candidate(py::module_& m)
         .def_readwrite(
             "vertex_id", &EdgeVertexCandidate::vertex_id, "ID of the vertex");
 
-    py::implicitly_convertible<std::tuple<long, long>, EdgeVertexCandidate>();
+    py::implicitly_convertible<
+        std::tuple<index_t, index_t>, EdgeVertexCandidate>();
 }

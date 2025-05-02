@@ -158,11 +158,12 @@ double max_edge_length(
     double max_edge = -std::numeric_limits<double>::infinity();
     for (int i = 0; i < edges.rows(); i++) {
         const size_t e0i = edges(i, 0), e1i = edges(i, 1);
-        max_edge = std::max({
-            max_edge,
-            (vertices_t0.row(e0i) - vertices_t0.row(e1i)).norm(),
-            (vertices_t1.row(e0i) - vertices_t1.row(e1i)).norm(),
-        });
+        max_edge = std::max(
+            {
+                max_edge,
+                (vertices_t0.row(e0i) - vertices_t0.row(e1i)).norm(),
+                (vertices_t1.row(e0i) - vertices_t1.row(e1i)).norm(),
+            });
     }
     return max_edge;
 }

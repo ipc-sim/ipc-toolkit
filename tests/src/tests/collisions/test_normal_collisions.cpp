@@ -279,7 +279,7 @@ TEST_CASE("Plane-Vertex NormalCollision", "[collision][plane-vertex]")
     CHECK(c.num_vertices() == 1);
     CHECK(
         c.vertex_ids(edges, faces)
-        == std::array<long, 4> { { 0, -1, -1, -1 } });
+        == std::array<index_t, 4> { { 0, -1, -1, -1 } });
     CHECK(c.plane_origin == o);
     CHECK(c.plane_normal == n);
     CHECK(c.vertex_id == 0);

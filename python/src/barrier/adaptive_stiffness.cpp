@@ -72,10 +72,9 @@ void define_adaptive_stiffness(py::module_& m)
     m.def(
         "semi_implicit_stiffness",
         static_cast<double (*)(
-            const CollisionStencil&, const std::array<long, 4>&,
-            Eigen::ConstRef<VectorMax12d>, Eigen::ConstRef<VectorMax4d>,
-            Eigen::ConstRef<MatrixMax12d>, const double)>(
-            &semi_implicit_stiffness),
+            const CollisionStencil&, Eigen::ConstRef<VectorMax12d>,
+            Eigen::ConstRef<VectorMax4d>, Eigen::ConstRef<MatrixMax12d>,
+            const double)>(&semi_implicit_stiffness),
         R"ipc_Qu8mg5v7(
         Compute the semi-implicit stiffness for a single collision.
 
@@ -92,8 +91,8 @@ void define_adaptive_stiffness(py::module_& m)
         Returns:
             The semi-implicit stiffness.
         )ipc_Qu8mg5v7",
-        py::arg("stencil"), py::arg("vertex_ids"), py::arg("vertices"),
-        py::arg("mass"), py::arg("local_hess"), py::arg("dmin"));
+        py::arg("stencil"), py::arg("vertices"), py::arg("mass"),
+        py::arg("local_hess"), py::arg("dmin"));
 
     m.def(
         "semi_implicit_stiffness",

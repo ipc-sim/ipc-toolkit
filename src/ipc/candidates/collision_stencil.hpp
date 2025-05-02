@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/ccd/default_narrow_phase_ccd.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -30,7 +31,7 @@ public:
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @return The vertex IDs of the collision stencil. Size is always 4, but elements i > num_vertices() are -1.
-    virtual std::array<long, 4> vertex_ids(
+    virtual std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const = 0;
 
@@ -47,7 +48,7 @@ public:
     {
         constexpr double NaN = std::numeric_limits<double>::signaling_NaN();
 
-        const std::array<long, 4> vertex_ids = this->vertex_ids(edges, faces);
+        const auto vertex_ids = this->vertex_ids(edges, faces);
 
         std::array<VectorMax3d, 4> stencil_vertices;
         for (int i = 0; i < 4; i++) {
@@ -74,7 +75,7 @@ public:
     {
         const int dim = X.cols();
         VectorMax12d x(num_vertices() * dim);
-        const std::array<long, 4> idx = vertex_ids(edges, faces);
+        const auto idx = vertex_ids(edges, faces);
         for (int i = 0; i < num_vertices(); i++) {
             x.segment(i * dim, dim) = X.row(idx[i]);
         }

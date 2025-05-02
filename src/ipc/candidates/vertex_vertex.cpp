@@ -6,7 +6,8 @@
 
 namespace ipc {
 
-VertexVertexCandidate::VertexVertexCandidate(long _vertex0_id, long _vertex1_id)
+VertexVertexCandidate::VertexVertexCandidate(
+    index_t _vertex0_id, index_t _vertex1_id)
     : vertex0_id(_vertex0_id)
     , vertex1_id(_vertex1_id)
 {
@@ -78,8 +79,8 @@ bool VertexVertexCandidate::operator!=(const VertexVertexCandidate& other) const
 
 bool VertexVertexCandidate::operator<(const VertexVertexCandidate& other) const
 {
-    long this_min = std::min(this->vertex0_id, this->vertex1_id);
-    long other_min = std::min(other.vertex0_id, other.vertex1_id);
+    index_t this_min = std::min(this->vertex0_id, this->vertex1_id);
+    index_t other_min = std::min(other.vertex0_id, other.vertex1_id);
     if (this_min == other_min) {
         return std::max(this->vertex0_id, this->vertex1_id)
             < std::max(other.vertex0_id, other.vertex1_id);

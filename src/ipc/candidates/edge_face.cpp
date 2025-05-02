@@ -2,7 +2,7 @@
 
 namespace ipc {
 
-EdgeFaceCandidate::EdgeFaceCandidate(long _edge_id, long _face_id)
+EdgeFaceCandidate::EdgeFaceCandidate(index_t _edge_id, index_t _face_id)
     : edge_id(_edge_id)
     , face_id(_face_id)
 {

@@ -10,11 +10,11 @@ public:
     PlaneVertexNormalCollision(
         Eigen::ConstRef<VectorMax3d> plane_origin,
         Eigen::ConstRef<VectorMax3d> plane_normal,
-        const long vertex_id);
+        const index_t vertex_id);
 
     int num_vertices() const override { return 1; };
 
-    std::array<long, 4> vertex_ids(
+    std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const override
     {
@@ -73,7 +73,7 @@ public:
     VectorMax3d plane_normal;
 
     /// @brief The vertex's id.
-    long vertex_id;
+    index_t vertex_id;
 };
 
 } // namespace ipc
