@@ -324,7 +324,7 @@ TEST_CASE(
     e1 << 1, 0, 0;
     dn << 0, 0, 1;
     f0 << 0.4, 0.3, GENERATE(take(10, random(-0.2, 0.2)));
-    f1 << 0.6, 0.2, GENERATE(take(10, random(-0.2, 0.2)));
+    f1 << 0.6, -0.2, GENERATE(take(10, random(-0.2, 0.2)));
 
     ipc::Vector15d x;
     x << dn, e0, e1, f0, f1;
