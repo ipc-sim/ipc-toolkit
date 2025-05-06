@@ -185,7 +185,7 @@ void define_smooth_potential(py::module_& m)
         .def(
             py::init<
                 const double&, const double&, const double&, const double&,
-                const double&, const int&, const int&>(),
+                const double&, const int&>(),
             R"ipc_Qu8mg5v7(
             Construct parameter set for smooth contact.
 
