@@ -24,28 +24,27 @@ double Collision<max_vert>::mollifier(
     return 1.0;
 }
 template <int max_vert>
-Vector<double, -1, Collision<max_vert>::max_size>
-Collision<max_vert>::mollifier_gradient(
+auto Collision<max_vert>::mollifier_gradient(
     const Vector<double, -1, Collision<max_vert>::max_size>& positions) const
+    -> Vector<double, -1, max_size>
 {
     return Vector<double, -1, Collision<max_vert>::max_size>::Zero(
         positions.size());
 }
 
 template <int max_vert>
-Vector<double, -1, Collision<max_vert>::max_size>
-Collision<max_vert>::mollifier_gradient(
+auto Collision<max_vert>::mollifier_gradient(
     const Vector<double, -1, Collision<max_vert>::max_size>& positions,
-    double eps_x) const
+    double eps_x) const -> Vector<double, -1, max_size>
 {
     return Vector<double, -1, Collision<max_vert>::max_size>::Zero(
         positions.size());
 }
 
 template <int max_vert>
-MatrixMax<double, Collision<max_vert>::max_size, Collision<max_vert>::max_size>
-Collision<max_vert>::mollifier_hessian(
+auto Collision<max_vert>::mollifier_hessian(
     const Vector<double, -1, Collision<max_vert>::max_size>& positions) const
+    -> MatrixMax<double, max_size, max_size>
 {
     return MatrixMax<
         double, Collision<max_vert>::max_size, Collision<max_vert>::max_size>::
@@ -53,10 +52,9 @@ Collision<max_vert>::mollifier_hessian(
 }
 
 template <int max_vert>
-MatrixMax<double, Collision<max_vert>::max_size, Collision<max_vert>::max_size>
-Collision<max_vert>::mollifier_hessian(
+auto Collision<max_vert>::mollifier_hessian(
     const Vector<double, -1, Collision<max_vert>::max_size>& positions,
-    double eps_x) const
+    double eps_x) const -> MatrixMax<double, max_size, max_size>
 {
     return MatrixMax<
         double, Collision<max_vert>::max_size, Collision<max_vert>::max_size>::
