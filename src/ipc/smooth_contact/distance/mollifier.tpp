@@ -3,11 +3,11 @@
 #include "mollifier.hpp"
 
 namespace ipc {
-template <typename scalar>
+template <typename scalar, int dim>
 scalar point_edge_mollifier(
-    const Eigen::Ref<const VectorMax3<scalar>>& p,
-    const Eigen::Ref<const VectorMax3<scalar>>& e0,
-    const Eigen::Ref<const VectorMax3<scalar>>& e1,
+    const Eigen::Ref<const Vector<scalar, dim>>& p,
+    const Eigen::Ref<const Vector<scalar, dim>>& e0,
+    const Eigen::Ref<const Vector<scalar, dim>>& e1,
     const scalar& dist_sqr)
 {
     const scalar denominator =

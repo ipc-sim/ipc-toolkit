@@ -17,8 +17,8 @@ public:
         typename PrimitiveDistType<Face, Point3>::type dtype)
     {
         return point_triangle_sqr_distance<T>(
-            x.tail(3) /* point */, x.head(3), x.segment(3, 3),
-            x.segment(6, 3) /* face */, dtype);
+            x.template tail<3>() /* point */, x.template head<3>(), x.template segment<3>(3),
+            x.template segment<3>(6) /* face */, dtype);
     }
 
     static Vector<T, dim> compute_closest_direction(
@@ -26,15 +26,15 @@ public:
         typename PrimitiveDistType<Face, Point3>::type dtype)
     {
         return point_triangle_closest_point_direction<T>(
-            x.tail(3) /* point */, x.head(3), x.segment(3, 3),
-            x.segment(6, 3) /* face */, dtype);
+            x.template tail<3>() /* point */, x.template head<3>(), x.template segment<3>(3),
+            x.template segment<3>(6) /* face */, dtype);
     }
 
     static T mollifier(const Vector<T, n_core_dofs>& x, const T& dist_sqr)
     {
         return point_face_mollifier<T>(
-            x.tail(3) /* point */, x.head(3), x.segment(3, 3),
-            x.segment(6, 3) /* face */, dist_sqr);
+            x.template tail<3>() /* point */, x.template head<3>(), x.template segment<3>(3),
+            x.template segment<3>(6) /* face */, dist_sqr);
     }
 };
 
@@ -51,8 +51,8 @@ public:
         typename PrimitiveDistType<Edge3, Edge3>::type dtype)
     {
         return edge_edge_sqr_distance<T>(
-            x.head(3) /* edge 0 */, x.segment(3, 3) /* edge 0 */,
-            x.segment(6, 3) /* edge 1 */, x.tail(3) /* edge 1 */, dtype);
+            x.template head<3>() /* edge 0 */, x.template segment<3>(3) /* edge 0 */,
+            x.template segment<3>(6) /* edge 1 */, x.template tail<3>() /* edge 1 */, dtype);
     }
 
     static Vector<T, dim> compute_closest_direction(
@@ -60,8 +60,8 @@ public:
         typename PrimitiveDistType<Edge3, Edge3>::type dtype)
     {
         return edge_edge_closest_point_direction<T>(
-            x.head(3) /* edge 0 */, x.segment(3, 3) /* edge 0 */,
-            x.segment(6, 3) /* edge 1 */, x.tail(3) /* edge 1 */, dtype);
+            x.template head<3>() /* edge 0 */, x.template segment<3>(3) /* edge 0 */,
+            x.template segment<3>(6) /* edge 1 */, x.template tail<3>() /* edge 1 */, dtype);
     }
 
     static T mollifier(const Vector<T, n_core_dofs>& x, const T& dist_sqr)
@@ -69,8 +69,8 @@ public:
         std::array<HEAVISIDE_TYPE, 4> types;
         types.fill(HEAVISIDE_TYPE::VARIANT);
         return edge_edge_mollifier<T>(
-            x.head(3) /* edge 0 */, x.segment(3, 3) /* edge 0 */,
-            x.segment(6, 3) /* edge 1 */, x.tail(3) /* edge 1 */, types,
+            x.template head<3>() /* edge 0 */, x.template segment<3>(3) /* edge 0 */,
+            x.template segment<3>(6) /* edge 1 */, x.template tail<3>() /* edge 1 */, types,
             dist_sqr);
     }
 };
@@ -88,8 +88,8 @@ public:
         typename PrimitiveDistType<Edge2, Point2>::type dtype)
     {
         return PointEdgeDistance<T, dim>::point_edge_sqr_distance(
-            x.tail(2) /* point */, x.head(2) /* edge */,
-            x.segment(2, 2) /* edge */, dtype);
+            x.template tail<2>() /* point */, x.template head<2>() /* edge */,
+            x.template segment<2>(2) /* edge */, dtype);
     }
 
     static Vector<T, dim> compute_closest_direction(
@@ -97,15 +97,15 @@ public:
         typename PrimitiveDistType<Edge2, Point2>::type dtype)
     {
         return PointEdgeDistance<T, dim>::point_edge_closest_point_direction(
-            x.tail(2) /* point */, x.head(2) /* edge */,
-            x.segment(2, 2) /* edge */, dtype);
+            x.template tail<2>() /* point */, x.template head<2>() /* edge */,
+            x.template segment<2>(2) /* edge */, dtype);
     }
 
     static T mollifier(const Vector<T, n_core_dofs>& x, const T& dist_sqr)
     {
-        return point_edge_mollifier<T>(
-            x.tail(2) /* point */, x.segment(2, 2) /* edge */,
-            x.head(2) /* edge */, dist_sqr);
+        return point_edge_mollifier<T, 2>(
+            x.template tail<2>() /* point */, x.template segment<2>(2) /* edge */,
+            x.template head<2>() /* edge */, dist_sqr);
     }
 };
 
@@ -122,8 +122,8 @@ public:
         typename PrimitiveDistType<Edge3, Point3>::type dtype)
     {
         return PointEdgeDistance<T, dim>::point_edge_sqr_distance(
-            x.tail(3) /* point */, x.head(3) /* edge */,
-            x.segment(3, 3) /* edge */, dtype);
+            x.template tail<3>() /* point */, x.template head<3>() /* edge */,
+            x.template segment<3>(3) /* edge */, dtype);
     }
 
     static Vector<T, dim> compute_closest_direction(
@@ -131,15 +131,15 @@ public:
         typename PrimitiveDistType<Edge3, Point3>::type dtype)
     {
         return PointEdgeDistance<T, dim>::point_edge_closest_point_direction(
-            x.tail(3) /* point */, x.head(3) /* edge */,
-            x.segment(3, 3) /* edge */, dtype);
+            x.template tail<3>() /* point */, x.template head<3>() /* edge */,
+            x.template segment<3>(3) /* edge */, dtype);
     }
 
     static T mollifier(const Vector<T, n_core_dofs>& x, const T& dist_sqr)
     {
-        return point_edge_mollifier<T>(
-            x.tail(3) /* point */, x.segment(3, 3) /* edge */,
-            x.head(3) /* edge */, dist_sqr);
+        return point_edge_mollifier<T, 3>(
+            x.template tail<3>() /* point */, x.template segment<3>(3) /* edge */,
+            x.template head<3>() /* edge */, dist_sqr);
     }
 };
 
@@ -155,14 +155,14 @@ public:
         const Vector<T, n_core_dofs>& x,
         typename PrimitiveDistType<Point2, Point2>::type dtype)
     {
-        return (x.tail(2) - x.head(2)).squaredNorm();
+        return (x.template tail<2>() - x.template head<2>()).squaredNorm();
     }
 
     static Vector<T, dim> compute_closest_direction(
         const Vector<T, n_core_dofs>& x,
         typename PrimitiveDistType<Point2, Point2>::type dtype)
     {
-        return x.tail(2) - x.head(2);
+        return x.template tail<2>() - x.template head<2>();
     }
 
     static T mollifier(const Vector<T, n_core_dofs>& x, const T& dist_sqr)
@@ -183,14 +183,14 @@ public:
         const Vector<T, n_core_dofs>& x,
         typename PrimitiveDistType<Point3, Point3>::type dtype)
     {
-        return (x.tail(3) - x.head(3)).squaredNorm();
+        return (x.template tail<3>() - x.template head<3>()).squaredNorm();
     }
 
     static Vector<T, dim> compute_closest_direction(
         const Vector<T, n_core_dofs>& x,
         typename PrimitiveDistType<Point3, Point3>::type dtype)
     {
-        return x.tail(3) - x.head(3);
+        return x.template tail<3>() - x.template head<3>();
     }
 
     static T mollifier(const Vector<T, n_core_dofs>& x, const T& dist_sqr)
