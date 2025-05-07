@@ -247,7 +247,7 @@ SmoothFrictionData<3> smooth_friction_data_generator_3d()
 
         igl::edges(F, E);
 
-        int e0, e1;
+        int e0 = E.rows(), e1 = E.rows();
         for (int e = 0; e < E.rows(); e++)
         {
             if (std::min(E(e, 0), E(e, 1)) == 0 &&
