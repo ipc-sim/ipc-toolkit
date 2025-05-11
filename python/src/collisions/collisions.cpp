@@ -19,7 +19,6 @@ void define_SmoothCollisions(py::module_& m, std::string name)
 {
     py::class_<SmoothCollisions<dim>>(m, name.c_str())
         .def(py::init())
-        .def_readwrite("use_high_order_quadrature", &SmoothCollisions<dim>::use_high_order_quadrature)
         .def(
             "build",
             py::overload_cast<
