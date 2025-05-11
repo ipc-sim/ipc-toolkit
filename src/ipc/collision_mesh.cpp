@@ -145,17 +145,17 @@ void CollisionMesh::construct_edges_to_faces()
 
 void CollisionMesh::init_codim_vertices()
 {
-    std::vector<bool> is_codim_vertex(num_vertices(), true);
+    m_is_codim_vertex.assign(num_vertices(), true);
     for (int i : m_edges.reshaped()) {
-        is_codim_vertex[i] = false;
+        m_is_codim_vertex[i] = false;
     }
 
     m_codim_vertices.resize(
-        std::count(is_codim_vertex.begin(), is_codim_vertex.end(), true));
+        std::count(m_is_codim_vertex.begin(), m_is_codim_vertex.end(), true));
 
     int j = 0;
     for (int i = 0; i < num_vertices(); i++) {
-        if (is_codim_vertex[i]) {
+        if (m_is_codim_vertex[i]) {
             assert(j < m_codim_vertices.size());
             m_codim_vertices[j++] = i;
         }
@@ -165,17 +165,17 @@ void CollisionMesh::init_codim_vertices()
 
 void CollisionMesh::init_codim_edges()
 {
-    std::vector<bool> is_codim_edge(num_edges(), true);
+    m_is_codim_edge.assign(num_edges(), true);
     for (int i : m_faces_to_edges.reshaped()) {
-        is_codim_edge[i] = false;
+        m_is_codim_edge[i] = false;
     }
 
     m_codim_edges.resize(
-        std::count(is_codim_edge.begin(), is_codim_edge.end(), true));
+        std::count(m_is_codim_edge.begin(), m_is_codim_edge.end(), true));
 
     int j = 0;
     for (int i = 0; i < num_edges(); i++) {
-        if (is_codim_edge[i]) {
+        if (m_is_codim_edge[i]) {
             assert(j < m_codim_edges.size());
             m_codim_edges[j++] = i;
         }

@@ -99,8 +99,12 @@ public:
     /// @brief Get the indices of codimensional vertices of the collision mesh (#CV x 1).
     const Eigen::VectorXi& codim_vertices() const { return m_codim_vertices; }
 
+    bool is_codim_vertex(const long& v) const { return m_is_codim_vertex[v]; }
+
     /// @brief Get the indices of codimensional edges of the collision mesh (#CE x 1).
     const Eigen::VectorXi& codim_edges() const { return m_codim_edges; }
+
+    bool is_codim_edge(const long& e) const { return m_is_codim_edge[e]; }
 
     /// @brief Get the edges of the collision mesh (#E × 2).
     const Eigen::MatrixXi& edges() const { return m_edges; }
@@ -317,8 +321,12 @@ protected:
     Eigen::MatrixXd m_full_rest_positions;
     /// @brief The vertex positions at rest (#V × dim).
     Eigen::MatrixXd m_rest_positions;
+    /// @brief The mask of codimensional vertices (#V).
+    std::vector<bool> m_is_codim_vertex;
     /// @brief The indices of codimensional vertices (#CV x 1).
     Eigen::VectorXi m_codim_vertices;
+    /// @brief The mask of codimensional edges (#E).
+    std::vector<bool> m_is_codim_edge;
     /// @brief The indices of codimensional edges (#CE x 1).
     Eigen::VectorXi m_codim_edges;
     /// @brief Edges as rows of indicies into vertices (#E × 2).

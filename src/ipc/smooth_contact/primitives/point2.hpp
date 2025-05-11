@@ -36,37 +36,9 @@ public:
     MatrixMax<double, max_size + dim, max_size + dim> hessian(
         const Vector<double, dim>& d,
         const Vector<double, -1, max_size>& x) const;
+
+private:
+    bool has_neighbor_1, has_neighbor_2;
+    bool orientable;
 };
-
-/// @brief
-/// @param v
-/// @param direc points from v
-/// @param e0
-/// @param e1
-/// @param alpha
-/// @param beta
-/// @return
-template <class scalar>
-scalar smooth_point2_term(
-    const Eigen::Ref<const Vector2<scalar>>& v,
-    const Eigen::Ref<const Vector2<scalar>>& direc,
-    const Eigen::Ref<const Vector2<scalar>>& e0,
-    const Eigen::Ref<const Vector2<scalar>>& e1,
-    const ParameterType& param);
-
-/// @brief
-/// @param v
-/// @param direc points from v
-/// @param e0
-/// @param e1
-/// @param alpha
-/// @param beta
-/// @return
-bool smooth_point2_term_type(
-    const Eigen::Ref<const Vector2<double>>& v,
-    const Eigen::Ref<const Vector2<double>>& direc,
-    const Eigen::Ref<const Vector2<double>>& e0,
-    const Eigen::Ref<const Vector2<double>>& e1,
-    const ParameterType& param);
-
 } // namespace ipc
