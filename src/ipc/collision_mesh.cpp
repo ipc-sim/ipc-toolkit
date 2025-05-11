@@ -521,7 +521,7 @@ std::vector<long> CollisionMesh::find_vertex_adjacent_vertices(const long &v) co
     std::vector<long> neighbors;
     if (dim() == 2)
     {
-        neighbors.resize(2);
+        neighbors.assign(2, -1);
         for (long i : vertex_edge_adjacencies()[v])
         {
             if (edges()(i, 0) == v)

@@ -76,37 +76,6 @@ scalar smooth_point2_term(
     return tangent_term * normal_term * ((e0 - v).norm() + (e1 - v).norm()) / 2.;
 }
 
-template double smooth_point2_term(
-    const Eigen::Ref<const Vector2d>& v,
-    const Eigen::Ref<const Vector2d>& direc,
-    const Eigen::Ref<const Vector2d>& e0,
-    const Eigen::Ref<const Vector2d>& e1,
-    const ParameterType& param);
-template ADGrad<12> smooth_point2_term(
-    const Eigen::Ref<const Vector2<ADGrad<12>>>& v,
-    const Eigen::Ref<const Vector2<ADGrad<12>>>& direc,
-    const Eigen::Ref<const Vector2<ADGrad<12>>>& e0,
-    const Eigen::Ref<const Vector2<ADGrad<12>>>& e1,
-    const ParameterType& param);
-template ADHessian<12> smooth_point2_term(
-    const Eigen::Ref<const Vector2<ADHessian<12>>>& v,
-    const Eigen::Ref<const Vector2<ADHessian<12>>>& direc,
-    const Eigen::Ref<const Vector2<ADHessian<12>>>& e0,
-    const Eigen::Ref<const Vector2<ADHessian<12>>>& e1,
-    const ParameterType& param);
-template ADGrad<10> smooth_point2_term(
-    const Eigen::Ref<const Vector2<ADGrad<10>>>& v,
-    const Eigen::Ref<const Vector2<ADGrad<10>>>& direc,
-    const Eigen::Ref<const Vector2<ADGrad<10>>>& e0,
-    const Eigen::Ref<const Vector2<ADGrad<10>>>& e1,
-    const ParameterType& param);
-template ADHessian<10> smooth_point2_term(
-    const Eigen::Ref<const Vector2<ADHessian<10>>>& v,
-    const Eigen::Ref<const Vector2<ADHessian<10>>>& direc,
-    const Eigen::Ref<const Vector2<ADHessian<10>>>& e0,
-    const Eigen::Ref<const Vector2<ADHessian<10>>>& e1,
-    const ParameterType& param);
-
 bool smooth_point2_term_type(
     const Eigen::Ref<const Vector2d>& v,
     const Eigen::Ref<const Vector2d>& direc,

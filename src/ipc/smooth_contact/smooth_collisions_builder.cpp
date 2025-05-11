@@ -60,14 +60,16 @@ void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
             vert_edge_2_to_id, collisions);
 
         for (int j : { 0, 1 }) {
+            const auto& vj = mesh.edges()(ei, j);
+            const double dhat = std::min(vert_dhat(vi), vert_dhat(vj));
+            if ((vertices.row(vi) - vertices.row(vj)).norm() >= dhat)
+                continue;
             add_collision<
                 2, SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(
                 std::make_shared<
                     SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(
-                    mesh.edges()(ei, j), vi, PointPointDistanceType::AUTO, mesh,
-                    param,
-                    std::min(vert_dhat(mesh.edges()(ei, j)), vert_dhat(vi)),
-                    vertices),
+                    std::min<long>(vi, vj), std::max<long>(vi, vj), PointPointDistanceType::AUTO, mesh,
+                    param, dhat, vertices),
                 vert_vert_2_to_id, collisions);
         }
     }

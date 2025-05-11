@@ -140,6 +140,8 @@ public:
         const Eigen::MatrixXd& V);
     virtual ~SmoothCollisionTemplate() = default;
 
+    std::string name() const override;
+
     inline int n_dofs() const override { return pA->n_dofs() + pB->n_dofs(); }
     CollisionType type() const override;
 
