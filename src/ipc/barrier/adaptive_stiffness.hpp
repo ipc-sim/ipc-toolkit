@@ -53,7 +53,6 @@ double update_barrier_stiffness(
 /// @brief Compute the semi-implicit stiffness for a single collision.
 /// See [Ando 2024] for details.
 /// @param stencil Collision stencil.
-/// @param vertex_ids Vertex indices of the collision.
 /// @param vertices Vertex positions.
 /// @param mass Vertex masses.
 /// @param local_hess Local hessian of the elasticity energy function.

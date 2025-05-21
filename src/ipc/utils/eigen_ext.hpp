@@ -139,6 +139,7 @@ using ArrayMax4i = ArrayMax4<int>;
 
 /// @brief Matrix projection onto positive definite cone
 /// @param A Symmetric matrix to project
+/// @param eps Minimum eigenvalue threshold
 /// @return Projected matrix
 template <
     typename _Scalar,
