@@ -14,12 +14,14 @@ class BarrierPotential : public NormalPotential {
 public:
     /// @brief Construct a barrier potential.
     /// @param dhat The activation distance of the barrier.
+    /// @param use_physical_barrier Whether to use the physical barrier.
     explicit BarrierPotential(
         const double dhat, const bool use_physical_barrier = false);
 
     /// @brief Construct a barrier potential.
     /// @param barrier The barrier function.
     /// @param dhat The activation distance of the barrier.
+    /// @param use_physical_barrier Whether to use the physical barrier.
     BarrierPotential(
         const std::shared_ptr<Barrier> barrier,
         const double dhat,

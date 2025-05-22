@@ -53,6 +53,7 @@ public:
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision.
     /// @param positions The collision stencil's positions.
+    /// @param project_hessian_to_psd Whether to project the hessian to the positive semi-definite cone.
     /// @return The hessian of the potential.
     MatrixMax12d hessian(
         const NormalCollision& collision,
