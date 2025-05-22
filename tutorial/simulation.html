@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#optimization-based-time-integration" class="md-skip">
+        <a href="#volumetric-meshes" class="md-skip">
           Skip to content
         </a>
       
@@ -661,16 +661,6 @@
       Contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#optimization-based-time-integration" class="md-nav__link">
-    
-    <span class="md-ellipsis">
-      <span title="/tutorial/simulation.rst#optimization-based-time-integration (reference label)">Optimization-<wbr>Based Time Integration</span>
-    </span>
-  </a>
-  
-</li>
       
         <li class="md-nav__item">
   <a href="#volumetric-meshes" class="md-nav__link">
@@ -1820,16 +1810,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#optimization-based-time-integration" class="md-nav__link">
-    
-    <span class="md-ellipsis">
-      <span title="/tutorial/simulation.rst#optimization-based-time-integration (reference label)">Optimization-<wbr>Based Time Integration</span>
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#volumetric-meshes" class="md-nav__link">
     
     <span class="md-ellipsis">
@@ -1897,16 +1877,6 @@
 <h1 id="physical-simulation">Physical Simulation<a class="headerlink" href="#physical-simulation" title="Link to this heading">¶</a></h1>
 <p>While the IPC Toolkit provides all the principle components of the IPC algorithm, it does not provide a complete simulation framework. Instead, it provides building blocks that can be used to integrate the IPC algorithm into a physical simulation. If all you want is a complete simulation framework using the IPC algorithm, then you should check out our other project <a class="reference external" href="https://polyfem.github.io/">PolyFEM</a> which uses the IPC Toolkit for its collision handling.</p>
 <p>We provide several helper functions to make your job easier. The following examples show how to use these functions.</p>
-<h2 id="optimization-based-time-integration">Optimization-Based Time Integration<a class="headerlink" href="#optimization-based-time-integration" title="Link to this heading">¶</a></h2>
-<p>IPC defines barrier potential <span class="math notranslate nohighlight">\(B(\mathbf{x})\)</span> and a friction potential <span class="math notranslate nohighlight">\(D(\mathbf{v})\)</span>. To add these into a optimization-based time integration, we need to scale the potentials by the time-integrators acceleration scaling. For implicit Euler, this is h^2, where h is the timestep.</p>
-<p>With elasticity <span class="math notranslate nohighlight">\(\Psi(\mathbf{x})\)</span>, the total optimization problem is:</p>
-<div class="math notranslate nohighlight">
-\[\mathbf{x}^{t+1} = \underset{\mathbf{x}}{\arg\min} ~ \tfrac{1}{2} (\mathbf{x} - \hat{\mathbf{x}})^\top\mathbf{M}(\mathbf{x}-\hat{\mathbf{x}})+h^2\Psi(\mathbf{x}) + h^2 \kappa B(\mathbf{x}) + h^2 D(\mathbf{v}(\mathbf{x}))\]</div>
-<p>where <span class="math notranslate nohighlight">\(\hat{\mathbf{x}} = \mathbf{x}^t + h\mathbf{v}^t + h^2\mathbf{g}\)</span> is the time integration scheme-specific “predicted positions.”</p>
-<div class="note admonition">
-<p class="admonition-title">Note</p>
-<p>In cite{Li2020}, all the constants are wrapped up into $kappa$, which is adaptively modified. In follow-up works, we treat the barrier as a physical energy, and so it should have the same multiplier as the elastic energy ($h^2$ for implicit Euler).</p>
-</div>
 <h2 id="volumetric-meshes">Volumetric Meshes<a class="headerlink" href="#volumetric-meshes" title="Link to this heading">¶</a></h2>
 <p>The IPC Toolkit only handles surface meshes (through the <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code>). However, the finite element method often relies on volumetric discretization. In this case, the computed gradients and Hessians need to be mapped back to the full volumetric mesh. The <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> class provides this functionality.</p>
 <p>From the full (volumetric) mesh vertices and surface edges/faces which index into the full mesh vertices, you can build a <code class="docutils literal notranslate"><span class="pre">CollisionMesh</span></code> using the function <code class="docutils literal notranslate"><span class="pre">CollisionMesh::build_from_full_mesh</span></code>. This will internally build and store a selection matrix that goes from the full to surface vertices as well as map the edge/faces entries accordingly.</p>
@@ -2248,8 +2218,6 @@ Python</label></div>
       
         <script src="../_static/sphinx_immaterial_theme.32136f45f91ae6956.min.js?v=a7a9472a"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-        <script id="MathJax-script" src="../_static/mathjax/tex-mml-chtml.js?v=cadf963e"></script>
     
   </body>
 </html>

@@ -5,21 +5,6 @@ While the IPC Toolkit provides all the principle components of the IPC algorithm
 
 We provide several helper functions to make your job easier. The following examples show how to use these functions.
 
-Optimization-Based Time Integration
------------------------------------
-
-IPC defines barrier potential :math:`B(\mathbf{x})` and a friction potential :math:`D(\mathbf{v})`. To add these into a optimization-based time integration, we need to scale the potentials by the time-integrators acceleration scaling. For implicit Euler, this is h^2, where h is the timestep.
-
-With elasticity :math:`\Psi(\mathbf{x})`, the total optimization problem is:
-
-.. math::
-   \mathbf{x}^{t+1} = \underset{\mathbf{x}}{\arg\min} ~ \tfrac{1}{2} (\mathbf{x} - \hat{\mathbf{x}})^\top\mathbf{M}(\mathbf{x}-\hat{\mathbf{x}})+h^2\Psi(\mathbf{x}) + h^2 \kappa B(\mathbf{x}) + h^2 D(\mathbf{v}(\mathbf{x}))
-
-where :math:`\hat{\mathbf{x}} = \mathbf{x}^t + h\mathbf{v}^t + h^2\mathbf{g}` is the time integration scheme-specific “predicted positions.”
-
-.. note::
-    In \cite{Li2020}, all the constants are wrapped up into $\kappa$, which is adaptively modified. In follow-up works, we treat the barrier as a physical energy, and so it should have the same multiplier as the elastic energy ($h^2$ for implicit Euler).
-
 Volumetric Meshes
 -----------------
 
