@@ -73,8 +73,8 @@ if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
 else()
   # If this is not the top-level project, we don't want to build tests or Python
   # bindings. This is useful for projects that use IPC Toolkit as a submodule.
-  set(IPC_TOOLKIT_BUILD_TESTS  OFF CACHE INTERNAL BOOL "Build unit-tests"      FORCE)
-  set(IPC_TOOLKIT_BUILD_PYTHON OFF CACHE INTERNAL BOOL "Build Python bindings" FORCE)
+  set(IPC_TOOLKIT_BUILD_TESTS  OFF CACHE BOOL "Build unit-tests"      FORCE)
+  set(IPC_TOOLKIT_BUILD_PYTHON OFF CACHE BOOL "Build Python bindings" FORCE)
 endif()
 
 if(CMAKE_CUDA_COMPILER)
