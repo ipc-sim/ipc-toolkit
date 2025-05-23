@@ -21,6 +21,12 @@ TEST_CASE(
     "[potential][barrier_potential][gradient][hessian]")
 {
     const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
+#ifndef NDEBUG
+    if (broad_phase->name() == "BruteForce") {
+        SKIP("Brute force is too slow in debug mode");
+    }
+#endif
+
     const bool use_area_weighting = GENERATE(true, false);
     const bool use_improved_max_approximator = GENERATE(true, false);
     const bool use_physical_barrier = GENERATE(true, false);
@@ -33,6 +39,7 @@ TEST_CASE(
         dhat = sqrt(2.0);
         mesh_name = "cube.ply";
     }
+#ifdef NDEBUG
     SECTION("two cubes far")
     {
         dhat = 1e-1;
@@ -45,6 +52,7 @@ TEST_CASE(
         mesh_name = "two-cubes-close.ply";
         all_vertices_on_surface = false;
     }
+#endif
     // WARNING: The bunny takes too long in debug.
     // SECTION("bunny")
     // {

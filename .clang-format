@@ -1,17 +1,17 @@
-# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+---
+Language: Cpp
 BasedOnStyle: WebKit
-ColumnLimit: 80
-AlignTrailingComments: true
-FixNamespaceComments: true
-ReflowComments: true
-BinPackParameters: false
-AllowAllParametersOfDeclarationOnNextLine: true
 AlignAfterOpenBracket: AlwaysBreak
+AlignTrailingComments:
+  Kind:            Always
+  OverEmptyLines:  0
+BinPackParameters: false
+BreakArrays: false
 BreakBeforeBinaryOperators: NonAssignment
-SortIncludes: true
-CommentPragmas:  '^@.+'
 BreakStringLiterals: false
-PackConstructorInitializers: CurrentLine
+ColumnLimit: 80
+CommentPragmas:  '^@.+'
+FixNamespaceComments: true
 # Regroup includes with a priority system
 IncludeBlocks: Regroup
 IncludeCategories:
@@ -37,3 +37,7 @@ IncludeCategories:
     Priority:        1    # internal file group
     SortPriority:    1
     CaseSensitive:   true
+PackConstructorInitializers: CurrentLine
+RemoveEmptyLinesInUnwrappedLines: true
+SortIncludes: CaseInsensitive
+...

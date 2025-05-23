@@ -92,7 +92,7 @@ CollisionMesh::CollisionMesh(
     if (!include_all_vertices) {
         for (int i = 0; i < m_edges.rows(); i++) {
             for (int j = 0; j < m_edges.cols(); j++) {
-                long new_id = m_full_vertex_to_vertex[m_edges(i, j)];
+                index_t new_id = m_full_vertex_to_vertex[m_edges(i, j)];
                 assert(new_id >= 0 && new_id < num_vertices());
                 m_edges(i, j) = new_id;
             }
@@ -100,7 +100,7 @@ CollisionMesh::CollisionMesh(
 
         for (int i = 0; i < m_faces.rows(); i++) {
             for (int j = 0; j < m_faces.cols(); j++) {
-                long new_id = m_full_vertex_to_vertex[m_faces(i, j)];
+                index_t new_id = m_full_vertex_to_vertex[m_faces(i, j)];
                 assert(new_id >= 0 && new_id < num_vertices());
                 m_faces(i, j) = new_id;
             }
@@ -430,7 +430,7 @@ CollisionMesh::to_full_dof(const Eigen::SparseMatrix<double>& X) const
 // ============================================================================/
 
 std::vector<bool> CollisionMesh::construct_is_on_surface(
-    const long num_vertices,
+    const size_t num_vertices,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::VectorXi> codim_vertices)
 {

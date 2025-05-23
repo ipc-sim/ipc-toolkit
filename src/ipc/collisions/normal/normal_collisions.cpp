@@ -283,8 +283,9 @@ void NormalCollisions::build(
 void NormalCollisions::set_use_area_weighting(const bool use_area_weighting)
 {
     if (!empty() && use_area_weighting != m_use_area_weighting) {
-        logger().warn("Setting use_area_weighting after building collisions. "
-                      "Re-build collisions for this to have an effect.");
+        logger().warn(
+            "Setting use_area_weighting after building collisions. "
+            "Re-build collisions for this to have an effect.");
     }
 
     if (!use_area_weighting && use_improved_max_approximator()) {
@@ -487,8 +488,8 @@ std::string NormalCollisions::to_string(
                       ev.dof(vertices, mesh.edges(), mesh.faces())));
     }
     for (const auto& ee : ee_collisions) {
-        const long min_ei = std::min(ee.edge0_id, ee.edge1_id);
-        const long max_ei = std::max(ee.edge0_id, ee.edge1_id);
+        const index_t min_ei = std::min(ee.edge0_id, ee.edge1_id);
+        const index_t max_ei = std::max(ee.edge0_id, ee.edge1_id);
         ss << "\n"
            << fmt::format(
                   "ee: {}=({}, {}) {}=({}, {}), w: {:g}, dtype: {}, d: {:g}",

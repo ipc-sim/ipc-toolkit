@@ -8,7 +8,7 @@ namespace ipc {
 PlaneVertexNormalCollision::PlaneVertexNormalCollision(
     Eigen::ConstRef<VectorMax3d> _plane_origin,
     Eigen::ConstRef<VectorMax3d> _plane_normal,
-    const long _vertex_id)
+    const index_t _vertex_id)
     : plane_origin(_plane_origin)
     , plane_normal(_plane_normal)
     , vertex_id(_vertex_id)

@@ -44,6 +44,8 @@ if(IPC_TOOLKIT_WITH_CCACHE AND CCACHE_PROGRAM)
   endforeach()
 endif()
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 ################################################################################
 # CMake Policies
 ################################################################################
@@ -53,6 +55,7 @@ cmake_policy(SET CMP0076 NEW) # target_sources() command converts relative paths
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
   cmake_policy(SET CMP0135 NEW) # Set the timestamps of all extracted contents to the time of the extraction.
 endif()
+cmake_policy(SET CMP0114 NEW) # Support the Xcode "new build system"
 
 ################################################################################
 
@@ -64,8 +67,16 @@ project(IPCToolkit
 include(CheckLanguage)
 check_language(CUDA)
 
-option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests" ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
-option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings"                        OFF)
+if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
+  option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"       ON)
+  option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
+else()
+  # If this is not the top-level project, we don't want to build tests or Python
+  # bindings. This is useful for projects that use IPC Toolkit as a submodule.
+  set(IPC_TOOLKIT_BUILD_TESTS  OFF CACHE BOOL "Build unit-tests"      FORCE)
+  set(IPC_TOOLKIT_BUILD_PYTHON OFF CACHE BOOL "Build Python bindings" FORCE)
+endif()
+
 if(CMAKE_CUDA_COMPILER)
   option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" ON)
 else()
@@ -117,13 +128,21 @@ add_library(ipc::toolkit ALIAS ipc_toolkit)
 # Fill in configuration options
 configure_file(
   "${IPC_TOOLKIT_SOURCE_DIR}/config.hpp.in"
-  "${IPC_TOOLKIT_SOURCE_DIR}/config.hpp")
+  "${PROJECT_BINARY_DIR}/include/ipc/config.hpp")
 
 # Add source and header files to ipc_toolkit
 add_subdirectory("${IPC_TOOLKIT_SOURCE_DIR}")
 
 # Public include directory for IPC Toolkit
-target_include_directories(ipc_toolkit PUBLIC "${IPC_TOOLKIT_INCLUDE_DIR}")
+target_include_directories(ipc_toolkit PUBLIC
+  "${IPC_TOOLKIT_INCLUDE_DIR}"    # public headers
+  "${PROJECT_BINARY_DIR}/include" # generated config.hpp
+)
+
+# Folder name for IDE
+set_target_properties(ipc_toolkit PROPERTIES FOLDER "SRC")
+get_target_property(IPC_TOOLKIT_SOURCES ipc_toolkit SOURCES)
+source_group(TREE "${PROJECT_SOURCE_DIR}" FILES ${IPC_TOOLKIT_SOURCES})
 
 ################################################################################
 # Dependencies
@@ -243,7 +262,7 @@ endif()
 ################################################################################
 
 # Enable unit testing at the root level
-if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_TESTS)
+if(IPC_TOOLKIT_BUILD_TESTS)
   include(CTest)
   enable_testing()
   add_subdirectory(tests)
@@ -270,22 +289,21 @@ endif()
 # Python bindings
 ################################################################################
 
-if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_PYTHON)
+if(IPC_TOOLKIT_BUILD_PYTHON)
   add_subdirectory(python)
 endif()
 
 ################################################################################
-# Patch predicates library
+# Xcode
 ################################################################################
 
-CPMAddPackage(
-  NAME predicates
-  GITHUB_REPOSITORY libigl/libigl-predicates
-  GIT_TAG 0d88c49
-  DOWNLOAD_ONLY ON
-  PATCH_COMMAND ${CMAKE_COMMAND} -E copy 
-                 ${CMAKE_CURRENT_SOURCE_DIR}/cmake/ipc_toolkit/patch/predicates.patch
-                 ${CMAKE_CURRENT_BINARY_DIR}/_deps/predicates-src/ &&
-                 cd ${CMAKE_CURRENT_BINARY_DIR}/_deps/predicates-src/ &&
-                 git apply predicates.patch || true
-)
+if (CMAKE_GENERATOR STREQUAL "Xcode")
+  set(CMAKE_XCODE_SCHEME_LAUNCH_CONFIGURATION "${CMAKE_BUILD_TYPE}")
+  set_target_properties(ipc_toolkit PROPERTIES XCODE_GENERATE_SCHEME ON)
+  if(IPC_TOOLKIT_BUILD_TESTS)
+    set_target_properties(ipc_toolkit_tests PROPERTIES XCODE_GENERATE_SCHEME ON)
+  endif()
+  if(IPC_TOOLKIT_BUILD_PYTHON)
+    set_target_properties(ipctk PROPERTIES XCODE_GENERATE_SCHEME ON)
+  endif()
+endif()

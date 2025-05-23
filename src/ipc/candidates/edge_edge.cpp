@@ -5,7 +5,7 @@
 
 namespace ipc {
 
-EdgeEdgeCandidate::EdgeEdgeCandidate(long _edge0_id, long _edge1_id)
+EdgeEdgeCandidate::EdgeEdgeCandidate(index_t _edge0_id, index_t _edge1_id)
     : edge0_id(_edge0_id)
     , edge1_id(_edge1_id)
 {
@@ -132,8 +132,8 @@ bool EdgeEdgeCandidate::operator!=(const EdgeEdgeCandidate& other) const
 
 bool EdgeEdgeCandidate::operator<(const EdgeEdgeCandidate& other) const
 {
-    long this_min = std::min(this->edge0_id, this->edge1_id);
-    long other_min = std::min(other.edge0_id, other.edge1_id);
+    index_t this_min = std::min(this->edge0_id, this->edge1_id);
+    index_t other_min = std::min(other.edge0_id, other.edge1_id);
     if (this_min == other_min) {
         return std::max(this->edge0_id, this->edge1_id)
             < std::max(other.edge0_id, other.edge1_id);

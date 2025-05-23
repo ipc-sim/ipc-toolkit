@@ -28,7 +28,7 @@ public:
     /// @param vertices Vertices of the collision mesh.
     /// @param dhat The activation distance of the barrier.
     /// @param dmin Minimum distance.
-    /// @param broad_phase_method Broad-phase method to use.
+    /// @param broad_phase Broad-phase method to use.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,

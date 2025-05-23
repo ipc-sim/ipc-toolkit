@@ -17,15 +17,8 @@ void SweepAndTiniestQueue::build(
 
     clear();
 
-    // Mutable copy of the vertices
-    Eigen::MatrixXd vertices = _vertices;
-
     // Make sure the vertices are 3D
-    if (vertices.cols() < 3) {
-        const int dim = vertices.cols();
-        vertices.conservativeResize(Eigen::NoChange, 3);
-        vertices.rightCols(3 - dim).setZero();
-    }
+    const Eigen::MatrixXd vertices = to_X3d(_vertices);
 
     scalable_ccd::cuda::build_vertex_boxes(
         vertices, vertex_boxes, inflation_radius);
@@ -48,17 +41,8 @@ void SweepAndTiniestQueue::build(
     clear();
 
     // Mutable copies of the vertices
-    Eigen::MatrixXd vertices_t0 = _vertices_t0;
-    Eigen::MatrixXd vertices_t1 = _vertices_t1;
-
-    // Make sure the vertices are 3D
-    if (vertices_t0.cols() < 3) {
-        const int dim = vertices_t0.cols();
-        vertices_t0.conservativeResize(Eigen::NoChange, 3);
-        vertices_t1.conservativeResize(Eigen::NoChange, 3);
-        vertices_t0.rightCols(3 - dim).setZero();
-        vertices_t1.rightCols(3 - dim).setZero();
-    }
+    const Eigen::MatrixXd vertices_t0 = to_X3d(_vertices_t0);
+    const Eigen::MatrixXd vertices_t1 = to_X3d(_vertices_t1);
 
     scalable_ccd::cuda::build_vertex_boxes(
         vertices_t0, vertices_t1, vertex_boxes, inflation_radius);

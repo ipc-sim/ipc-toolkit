@@ -37,8 +37,9 @@ void BVH::build(
 
 void BVH::init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh)
 {
-    if (boxes.size() == 0)
+    if (boxes.size() == 0) {
         return;
+    }
 
     std::vector<std::array<Eigen::Vector3d, 2>> vector_boxes(boxes.size());
     for (int i = 0; i < boxes.size(); i++) {

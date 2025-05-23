@@ -10,8 +10,8 @@ class EdgeEdgeNormalCollision : public EdgeEdgeCandidate,
                                 public NormalCollision {
 public:
     EdgeEdgeNormalCollision(
-        const long edge0_id,
-        const long edge1_id,
+        const index_t edge0_id,
+        const index_t edge1_id,
         const double eps_x,
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
@@ -21,8 +21,8 @@ public:
         const EdgeEdgeDistanceType dtype = EdgeEdgeDistanceType::AUTO);
 
     EdgeEdgeNormalCollision(
-        const long edge0_id,
-        const long edge1_id,
+        const index_t edge0_id,
+        const index_t edge1_id,
         const double eps_x,
         const double weight,
         const Eigen::SparseVector<double>& weight_gradient,

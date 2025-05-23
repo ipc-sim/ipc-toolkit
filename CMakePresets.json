@@ -4,8 +4,7 @@
     "major": 3,
     "minor": 18
   },
-  "configurePresets": [
-    {
+  "configurePresets": [{
       "name": "release",
       "displayName": "Release Build",
       "description": "Base preset for release builds",
@@ -36,11 +35,21 @@
       }
     },
     {
-      "name": "cuda",
+      "name": "cuda-release",
       "inherits": "release",
-      "displayName": "CUDA Enabled",
-      "description": "Build with CUDA support",
-      "binaryDir": "${sourceDir}/build/cuda",
+      "displayName": "CUDA (Release)",
+      "description": "Release build with CUDA support",
+      "binaryDir": "${sourceDir}/build/cuda-release",
+      "cacheVariables": {
+        "IPC_TOOLKIT_WITH_CUDA": "ON"
+      }
+    },
+    {
+      "name": "cuda-debug",
+      "inherits": "debug",
+      "displayName": "CUDA (Debug)",
+      "description": "Debug build with CUDA support",
+      "binaryDir": "${sourceDir}/build/cuda-debug",
       "cacheVariables": {
         "IPC_TOOLKIT_WITH_CUDA": "ON"
       }
@@ -58,7 +67,7 @@
     {
       "name": "test",
       "inherits": "debug",
-      "displayName": "Build for Testing",
+      "displayName": "Unit Tests",
       "description": "Build with unit tests enabled",
       "binaryDir": "${sourceDir}/build/test",
       "cacheVariables": {
@@ -89,50 +98,53 @@
         "IPC_TOOLKIT_WITH_CODE_COVERAGE": "ON",
         "IPC_TOOLKIT_BUILD_TESTS": "ON"
       }
-    },
-    {
-      "name": "debug-cuda",
-      "inherits": [ "debug", "cuda" ],
-      "displayName": "CUDA Debug",
-      "description": "Debug build with CUDA support",
-      "binaryDir": "${sourceDir}/build/debug-cuda"
     }
   ],
-  "buildPresets": [
-    {
+  "buildPresets": [{
       "name": "release",
       "configurePreset": "release",
+      "displayName": "Release Build",
       "description": "Base preset for release builds"
     },
     {
       "name": "debug",
       "configurePreset": "debug",
+      "displayName": "Debug Build",
       "description": "Base preset for debug builds"
     },
     {
       "name": "default-build",
       "configurePreset": "default",
-      "description": "Build using default configuration Release"
+      "displayName": "Default Configuration",
+      "description": "Build using default configuration"
     },
     {
-      "name": "test",
+      "name": "cuda-release",
+      "configurePreset": "cuda-release",
+      "displayName": "CUDA (Release)",
+      "description": "Build with CUDA support"
+    },
+    {
+      "name": "cuda-debug",
+      "configurePreset": "cuda-debug",
+      "displayName": "CUDA (Debug)",
+      "description": "Debug build with CUDA support"
+    },
+    {
+      "name": "test-build",
       "configurePreset": "test",
+      "displayName": "Unit Tests",
       "description": "Build for running tests"
     },
     {
       "name": "python",
       "configurePreset": "python",
+      "displayName": "Python Bindings",
       "description": "Build with Python bindings enabled"
-    },
-    {
-      "name": "debug-cuda-build",
-      "configurePreset": "debug-cuda",
-      "description": "Debug build with CUDA support"
     }
   ],
-  "testPresets": [
-    {
-      "name": "tests",
+  "testPresets": [{
+      "name": "default-tests",
       "description": "Run default tests",
       "configurePreset": "test",
       "execution": {
@@ -140,9 +152,17 @@
       }
     },
     {
-      "name": "cuda-tests",
-      "description": "Run tests with CUDA enabled",
-      "configurePreset": "cuda",
+      "name": "cuda-tests-release",
+      "description": "Run tests with CUDA (Release) enabled",
+      "configurePreset": "cuda-release",
+      "execution": {
+        "stopOnFailure": true
+      }
+    },
+    {
+      "name": "cuda-tests-debug",
+      "description": "Run tests with CUDA (Debug) enabled",
+      "configurePreset": "cuda-debug",
       "execution": {
         "stopOnFailure": true
       }

@@ -50,6 +50,11 @@ public:
     /// @brief Clear any built data.
     virtual void clear();
 
+    /// @brief Detect all collision candidates needed for a given dimensional simulation.
+    /// @param dim The dimension of the simulation (i.e., 2 or 3).
+    /// @param candidates The detected collision candidates.
+    void detect_collision_candidates(int dim, Candidates& candidates) const;
+
     /// @brief Find the candidate vertex-vertex collisions.
     /// @param[out] candidates The candidate vertex-vertex collisions.
     virtual void detect_vertex_vertex_candidates(
@@ -79,12 +84,6 @@ public:
     /// @param[out] candidates The candidate face-face collisions.
     virtual void detect_face_face_candidates(
         std::vector<FaceFaceCandidate>& candidates) const = 0;
-
-    /// @brief Detect all collision candidates needed for a given dimensional simulation.
-    /// @param dim The dimension of the simulation (i.e., 2 or 3).
-    /// @param candidates The detected collision candidates.
-    virtual void
-    detect_collision_candidates(int dim, Candidates& candidates) const;
 
     /// @brief Function for determining if two vertices can collide.
     std::function<bool(size_t, size_t)> can_vertices_collide =

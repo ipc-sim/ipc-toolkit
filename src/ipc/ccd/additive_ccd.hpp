@@ -26,6 +26,7 @@ public:
     static constexpr double DEFAULT_CONSERVATIVE_RESCALING = 0.9;
 
     /// @brief Construct a new AdditiveCCD object.
+    /// @param max_iterations The maximum number of iterations to use for the CCD algorithm. If set to UNLIMITTED_ITERATIONS, the algorithm will run until it converges.
     /// @param conservative_rescaling The conservative rescaling of the time of impact.
     AdditiveCCD(
         const long max_iterations = UNLIMITTED_ITERATIONS,
@@ -39,7 +40,6 @@ public:
     /// @param[out] toi The time of impact between the two points.
     /// @param min_distance The minimum distance between two objects.
     /// @param tmax The maximum time to check for collisions.
-    /// @param conservative_rescaling The conservative rescaling of the time of impact.
     /// @return True if a collision was detected, false otherwise.
     bool point_point_ccd(
         Eigen::ConstRef<VectorMax3d> p0_t0,
@@ -60,7 +60,6 @@ public:
     /// @param[out] toi The time of impact between the point and the edge.
     /// @param min_distance The minimum distance between two objects.
     /// @param tmax The maximum time to check for collisions.
-    /// @param conservative_rescaling The conservative rescaling of the time of impact.
     /// @return True if a collision was detected, false otherwise.
     bool point_edge_ccd(
         Eigen::ConstRef<VectorMax3d> p_t0,
@@ -85,7 +84,6 @@ public:
     /// @param[out] toi The time of impact between the point and the triangle.
     /// @param min_distance The minimum distance between two objects.
     /// @param tmax The maximum time to check for collisions.
-    /// @param conservative_rescaling The conservative rescaling of the time of impact.
     /// @return True if a collision was detected, false otherwise.
     bool point_triangle_ccd(
         Eigen::ConstRef<Eigen::Vector3d> p_t0,
@@ -112,7 +110,6 @@ public:
     /// @param[out] toi The time of impact between the two edges.
     /// @param min_distance The minimum distance between two objects.
     /// @param tmax The maximum time to check for collisions.
-    /// @param conservative_rescaling The conservative rescaling of the time of impact.
     /// @return True if a collision was detected, false otherwise.
     bool edge_edge_ccd(
         Eigen::ConstRef<Eigen::Vector3d> ea0_t0,
@@ -135,11 +132,13 @@ public:
 
 private:
     /// @brief Computes the time of impact between two objects using additive continuous collision detection.
+    /// @param x Initial positions
+    /// @param dx Displacements
     /// @param distance_squared A function that computes the squared distance between the two objects at a given time.
+    /// @param max_disp_mag The maximum displacement magnitude.
     /// @param[out] toi The time of impact between the two objects.
     /// @param min_distance The minimum distance between the objects.
     /// @param tmax The maximum time to check for collisions.
-    /// @param conservative_rescaling The amount to rescale the objects by to ensure conservative advancement.
     /// @return True if a collision was detected, false otherwise.
     bool additive_ccd(
         VectorMax12d x, // mutable copy

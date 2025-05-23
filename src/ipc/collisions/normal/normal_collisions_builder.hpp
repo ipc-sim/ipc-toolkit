@@ -87,12 +87,12 @@ public:
 protected:
     static void add_vertex_vertex_collision(
         const VertexVertexNormalCollision& vv_collision,
-        unordered_map<VertexVertexNormalCollision, long>& vv_to_id,
+        unordered_map<VertexVertexNormalCollision, size_t>& vv_to_id,
         std::vector<VertexVertexNormalCollision>& vv_collisions);
 
     void add_vertex_vertex_collision(
-        const long vertex0_id,
-        const long vertex1_id,
+        const index_t vertex0_id,
+        const index_t vertex1_id,
         const double weight,
         const Eigen::SparseVector<double>& weight_gradient)
     {
@@ -106,12 +106,12 @@ protected:
 
     static void add_edge_vertex_collision(
         const EdgeVertexNormalCollision& ev_collision,
-        unordered_map<EdgeVertexNormalCollision, long>& ev_to_id,
+        unordered_map<EdgeVertexNormalCollision, size_t>& ev_to_id,
         std::vector<EdgeVertexNormalCollision>& ev_collisions);
 
     void add_edge_vertex_collision(
-        const long edge_id,
-        const long vertex_id,
+        const index_t edge_id,
+        const index_t vertex_id,
         const double weight,
         const Eigen::SparseVector<double>& weight_gradient)
     {
@@ -132,12 +132,12 @@ protected:
 
     static void add_edge_edge_collision(
         const EdgeEdgeNormalCollision& ee_collision,
-        unordered_map<EdgeEdgeNormalCollision, long>& ee_to_id,
+        unordered_map<EdgeEdgeNormalCollision, size_t>& ee_to_id,
         std::vector<EdgeEdgeNormalCollision>& ee_collisions);
 
     void add_edge_edge_collision(
-        const long edge0_id,
-        const long edge1_id,
+        const index_t edge0_id,
+        const index_t edge1_id,
         const double eps_x,
         const double weight,
         const Eigen::SparseVector<double>& weight_gradient,
@@ -152,9 +152,9 @@ protected:
     // -------------------------------------------------------------------------
 
     // Store the indices to pairs to avoid duplicates.
-    unordered_map<VertexVertexNormalCollision, long> vv_to_id;
-    unordered_map<EdgeVertexNormalCollision, long> ev_to_id;
-    unordered_map<EdgeEdgeNormalCollision, long> ee_to_id;
+    unordered_map<VertexVertexNormalCollision, size_t> vv_to_id;
+    unordered_map<EdgeVertexNormalCollision, size_t> ev_to_id;
+    unordered_map<EdgeEdgeNormalCollision, size_t> ee_to_id;
 
     // Constructed collisions
     std::vector<VertexVertexNormalCollision> vv_collisions;

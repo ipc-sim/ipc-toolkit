@@ -9,8 +9,8 @@ namespace ipc {
 /// @warning If the lines are parallel this function returns a distance of zero.
 /// @param ea0 The first vertex of the edge defining the first line.
 /// @param ea1 The second vertex of the edge defining the first line.
-/// @param ea0 The first vertex of the edge defining the second line.
-/// @param ea1 The second vertex of the edge defining the second line.
+/// @param eb0 The first vertex of the edge defining the second line.
+/// @param eb1 The second vertex of the edge defining the second line.
 /// @return The distance between the two lines.
 double line_line_distance(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
@@ -23,8 +23,8 @@ double line_line_distance(
 /// @warning If the lines are parallel this function returns a distance of zero.
 /// @param ea0 The first vertex of the edge defining the first line.
 /// @param ea1 The second vertex of the edge defining the first line.
-/// @param ea0 The first vertex of the edge defining the second line.
-/// @param ea1 The second vertex of the edge defining the second line.
+/// @param eb0 The first vertex of the edge defining the second line.
+/// @param eb1 The second vertex of the edge defining the second line.
 /// @return The gradient of the distance wrt ea0, ea1, eb0, and eb1.
 Vector12d line_line_distance_gradient(
     Eigen::ConstRef<Eigen::Vector3d> ea0,
@@ -37,8 +37,8 @@ Vector12d line_line_distance_gradient(
 /// @warning If the lines are parallel this function returns a distance of zero.
 /// @param ea0 The first vertex of the edge defining the first line.
 /// @param ea1 The second vertex of the edge defining the first line.
-/// @param ea0 The first vertex of the edge defining the second line.
-/// @param ea1 The second vertex of the edge defining the second line.
+/// @param eb0 The first vertex of the edge defining the second line.
+/// @param eb1 The second vertex of the edge defining the second line.
 /// @return The hessian of the distance wrt ea0, ea1, eb0, and eb1.
 Matrix12d line_line_distance_hessian(
     Eigen::ConstRef<Eigen::Vector3d> ea0,

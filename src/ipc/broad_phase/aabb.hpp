@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ipc/config.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <array>
@@ -64,7 +65,7 @@ public:
     /// @brief Maximum corner of the AABB.
     ArrayMax3d max;
     /// @brief Vertex IDs attached to the AABB.
-    std::array<long, 3> vertex_ids;
+    std::array<index_t, 3> vertex_ids;
 };
 
 /// @brief Build one AABB per vertex position (row of V).

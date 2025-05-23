@@ -1,5 +1,6 @@
+
 #include "friction_potential.hpp"
-#include <ipc/tangent/tangent_basis.hpp>  // Add this include for TangentBasis
+#include <ipc/tangent/tangent_basis.hpp> 
 
 namespace ipc {
 
@@ -579,6 +580,4 @@ double TangentialPotential::get_friction_coefficient(
     
     // Default to collision's mu if material IDs are out of range
     return collision.mu;
-}
-
 } // namespace ipc

@@ -53,7 +53,6 @@ double update_barrier_stiffness(
 /// @brief Compute the semi-implicit stiffness for a single collision.
 /// See [Ando 2024] for details.
 /// @param stencil Collision stencil.
-/// @param vertex_ids Vertex indices of the collision.
 /// @param vertices Vertex positions.
 /// @param mass Vertex masses.
 /// @param local_hess Local hessian of the elasticity energy function.
@@ -61,7 +60,6 @@ double update_barrier_stiffness(
 /// @return The semi-implicit stiffness.
 double semi_implicit_stiffness(
     const CollisionStencil& stencil,
-    const std::array<long, 4>& vertex_ids,
     Eigen::ConstRef<VectorMax12d> vertices,
     Eigen::ConstRef<VectorMax4d> mass,
     Eigen::ConstRef<MatrixMax12d> local_hess,

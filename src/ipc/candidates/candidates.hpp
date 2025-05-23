@@ -21,7 +21,7 @@ public:
     /// @param mesh The surface of the collision mesh.
     /// @param vertices Surface vertex positions (rowwise).
     /// @param inflation_radius Amount to inflate the bounding boxes.
-    /// @param broad_phase_method Broad phase method to use.
+    /// @param broad_phase Broad phase method to use.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
@@ -35,7 +35,7 @@ public:
     /// @param vertices_t0 Surface vertex starting positions (rowwise).
     /// @param vertices_t1 Surface vertex ending positions (rowwise).
     /// @param inflation_radius Amount to inflate the bounding boxes.
-    /// @param broad_phase_method Broad phase method to use.
+    /// @param broad_phase Broad phase method to use.
     void build(
         const CollisionMesh& mesh,
         Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
@@ -100,6 +100,7 @@ public:
     /// @param vertices_t1 Surface vertex ending positions (rowwise).
     /// @param dhat Barrier activation distance.
     /// @param min_distance The minimum distance allowable between any two elements.
+    /// @param broad_phase The broad phase algorithm to use.
     /// @param narrow_phase_ccd The narrow phase CCD algorithm to use.
     double compute_cfl_stepsize(
         const CollisionMesh& mesh,

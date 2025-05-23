@@ -7,7 +7,7 @@
 
 namespace ipc {
 
-EdgeVertexCandidate::EdgeVertexCandidate(long _edge_id, long _vertex_id)
+EdgeVertexCandidate::EdgeVertexCandidate(index_t _edge_id, index_t _vertex_id)
     : edge_id(_edge_id)
     , vertex_id(_vertex_id)
 {

@@ -53,6 +53,7 @@ public:
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision.
     /// @param positions The collision stencil's positions.
+    /// @param project_hessian_to_psd Whether to project the hessian to the positive semi-definite cone.
     /// @return The hessian of the potential.
     MatrixMax12d hessian(
         const NormalCollision& collision,
@@ -68,7 +69,7 @@ public:
     /// @param[in,out] out Store the triplets of the shape derivative here.
     void shape_derivative(
         const NormalCollision& collision,
-        const std::array<long, 4>& vertex_ids,
+        const std::array<index_t, 4>& vertex_ids,
         Eigen::ConstRef<VectorMax12d> rest_positions,
         Eigen::ConstRef<VectorMax12d> positions,
         std::vector<Eigen::Triplet<double>>& out) const;

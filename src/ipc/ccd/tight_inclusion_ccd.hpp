@@ -18,6 +18,8 @@ public:
     static constexpr double SMALL_TOI = 1e-6;
 
     /// @brief Construct a new AdditiveCCD object.
+    /// @param tolerance The tolerance used for the CCD algorithm.
+    /// @param max_iterations The maximum number of iterations for the CCD algorithm.
     /// @param conservative_rescaling The conservative rescaling of the time of impact.
     TightInclusionCCD(
         const double tolerance = DEFAULT_TOLERANCE,

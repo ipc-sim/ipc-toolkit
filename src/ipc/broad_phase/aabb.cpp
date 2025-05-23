@@ -74,7 +74,7 @@ void build_vertex_boxes(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 vertex_boxes[i] =
                     AABB::from_point(vertices.row(i), inflation_radius);
-                vertex_boxes[i].vertex_ids = { { long(i), -1, -1 } };
+                vertex_boxes[i].vertex_ids = { { index_t(i), -1, -1 } };
             }
         });
 }
@@ -93,7 +93,7 @@ void build_vertex_boxes(
             for (size_t i = r.begin(); i < r.end(); i++) {
                 vertex_boxes[i] = AABB::from_point(
                     vertices_t0.row(i), vertices_t1.row(i), inflation_radius);
-                vertex_boxes[i].vertex_ids = { { long(i), -1, -1 } };
+                vertex_boxes[i].vertex_ids = { { index_t(i), -1, -1 } };
             }
         });
 }
