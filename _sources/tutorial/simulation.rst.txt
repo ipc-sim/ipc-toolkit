@@ -18,7 +18,7 @@ With elasticity :math:`\Psi(\mathbf{x})`, the total optimization problem is:
 where :math:`\hat{\mathbf{x}} = \mathbf{x}^t + h\mathbf{v}^t + h^2\mathbf{g}` is the time integration scheme-specific “predicted positions.”
 
 .. note::
-    In \cite{Li2020}, all the constants are wrapped up into $\kappa$, which is adaptively modified. In follow-up works, we treat the barrier as a physical energy, and so it should have the same multiplier as the elastic energy ($h^2$ for implicit Euler).
+    In :cite:t:`Li2020IPC`, all the constants are wrapped up into $\kappa$, which is adaptively modified. In follow-up works, we treat the barrier as a physical energy, and so it should have the same multiplier as the elastic energy ($h^2$ for implicit Euler).
 
 Volumetric Meshes
 -----------------
