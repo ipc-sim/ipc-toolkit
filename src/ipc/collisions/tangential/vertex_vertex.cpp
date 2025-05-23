@@ -13,6 +13,8 @@ VertexVertexTangentialCollision::VertexVertexTangentialCollision(
 {
     this->weight = collision.weight;
     this->weight_gradient = collision.weight_gradient;
+    this->material_id1 = collision.material_id1;
+    this->material_id2 = collision.material_id2;
 }
 
 VertexVertexTangentialCollision::VertexVertexTangentialCollision(

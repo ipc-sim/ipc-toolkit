@@ -13,6 +13,8 @@ EdgeVertexTangentialCollision::EdgeVertexTangentialCollision(
 {
     this->weight = collision.weight;
     this->weight_gradient = collision.weight_gradient;
+    this->material_id1 = collision.material_id1;
+    this->material_id2 = collision.material_id2;
 }
 
 EdgeVertexTangentialCollision::EdgeVertexTangentialCollision(
@@ -33,8 +35,9 @@ MatrixMax<double, 3, 2> EdgeVertexTangentialCollision::compute_tangent_basis(
 {
     assert(positions.size() == ndof());
     return point_edge_tangent_basis(
-        positions.head(dim()), positions.segment(dim(), dim()),
-        positions.tail(dim()));
+        positions.head(TangentialCollision::dim()), 
+        positions.segment(TangentialCollision::dim(), TangentialCollision::dim()),
+        positions.tail(TangentialCollision::dim()));
 }
 
 MatrixMax<double, 36, 2>
@@ -43,8 +46,9 @@ EdgeVertexTangentialCollision::compute_tangent_basis_jacobian(
 {
     assert(positions.size() == ndof());
     return point_edge_tangent_basis_jacobian(
-        positions.head(dim()), positions.segment(dim(), dim()),
-        positions.tail(dim()));
+        positions.head(TangentialCollision::dim()), 
+        positions.segment(TangentialCollision::dim(), TangentialCollision::dim()),
+        positions.tail(TangentialCollision::dim()));
 }
 
 // ============================================================================
@@ -55,8 +59,9 @@ VectorMax2d EdgeVertexTangentialCollision::compute_closest_point(
     assert(positions.size() == ndof());
     VectorMax2d alpha(1);
     alpha[0] = point_edge_closest_point(
-        positions.head(dim()), positions.segment(dim(), dim()),
-        positions.tail(dim()));
+        positions.head(TangentialCollision::dim()), 
+        positions.segment(TangentialCollision::dim(), TangentialCollision::dim()),
+        positions.tail(TangentialCollision::dim()));
     return alpha;
 }
 
@@ -66,8 +71,9 @@ EdgeVertexTangentialCollision::compute_closest_point_jacobian(
 {
     assert(positions.size() == ndof());
     return point_edge_closest_point_jacobian(
-               positions.head(dim()), positions.segment(dim(), dim()),
-               positions.tail(dim()))
+               positions.head(TangentialCollision::dim()), 
+               positions.segment(TangentialCollision::dim(), TangentialCollision::dim()),
+               positions.tail(TangentialCollision::dim()))
         .transpose();
 }
 
@@ -78,8 +84,9 @@ VectorMax3d EdgeVertexTangentialCollision::relative_velocity(
 {
     assert(velocities.size() == ndof());
     return point_edge_relative_velocity(
-        velocities.head(dim()), velocities.segment(dim(), dim()),
-        velocities.tail(dim()), closest_point[0]);
+        velocities.head(TangentialCollision::dim()), 
+        velocities.segment(TangentialCollision::dim(), TangentialCollision::dim()),
+        velocities.tail(TangentialCollision::dim()), closest_point[0]);
 }
 
 MatrixMax<double, 3, 12>
@@ -87,7 +94,7 @@ EdgeVertexTangentialCollision::relative_velocity_matrix(
     Eigen::ConstRef<VectorMax2d> _closest_point) const
 {
     assert(_closest_point.size() == 1);
-    return point_edge_relative_velocity_matrix(dim(), _closest_point[0]);
+    return point_edge_relative_velocity_matrix(TangentialCollision::dim(), _closest_point[0]);
 }
 
 MatrixMax<double, 6, 12>
@@ -96,7 +103,7 @@ EdgeVertexTangentialCollision::relative_velocity_matrix_jacobian(
 {
     assert(_closest_point.size() == 1);
     return point_edge_relative_velocity_matrix_jacobian(
-        dim(), _closest_point[0]);
+        TangentialCollision::dim(), _closest_point[0]);
 }
 
 } // namespace ipc

@@ -29,9 +29,25 @@ protected:
     double f1_over_x(const double x) const override;
     double f2_x_minus_f1_over_x3(const double x) const override;
 
+    // Implement the required methods for static/kinetic friction
+    double f0_mus(const double x, const double mu_s, const double mu_k) const override
+    {
+        return f0(x); // Adhesion doesn't use static/kinetic distinction
+    }
+    
+    double f1_over_x_mus(const double x, const double mu_s, const double mu_k) const override
+    {
+        return f1_over_x(x); // Adhesion doesn't use static/kinetic distinction
+    }
+    
+    double f2_x_minus_f1_over_x3_mus(const double x, const double mu_s, const double mu_k) const override
+    {
+        return f2_x_minus_f1_over_x3(x); // Adhesion doesn't use static/kinetic distinction
+    }
+
     bool is_dynamic(const double speed) const override
     {
-        return speed > eps_a();
+        return speed > 2 * eps_a();
     }
 
     /// @brief The tangential adhesion mollifier parameter \f$\epsilon_a\f$.

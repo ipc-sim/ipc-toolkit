@@ -75,4 +75,68 @@ double smooth_friction_f1_over_x(const double y, const double eps_v);
 double
 smooth_friction_f2_x_minus_f1_over_x3(const double y, const double eps_v);
 
+/// @brief Smooth transition of friction coefficient \(\mu(y)\) from static \(\mu_s\) to kinetic \(\mu_k\).
+/// 
+/// \f\[
+///     \mu(y) = \begin{cases}
+///         \mu_k, & |y| \geq \epsilon_v 
+///         \newline
+///         (\mu_k - \mu_s)(3 \left(\frac{|y|}{\epsilon_v}\right)^2 - 2 \left(\frac{|y|}{\epsilon_v}\right)^3) + \mu_s, & |y| < \epsilon_v
+///     \end{cases}
+/// \f\]
+///
+/// This function ensures a smooth and differentiable transition between static and kinetic friction coefficients.
+///
+/// @param y The tangential relative speed.
+/// @param eps_v Velocity threshold below which static friction is applied.
+/// @param mu_s Static friction coefficient.
+/// @param mu_k Kinetic friction coefficient.
+/// @return The value of the smooth friction coefficient \(\mu(y)\) at y.
+double smooth_friction_mus(const double y, const double eps_v, const double mu_s, const double mu_k);
+
+/// @brief Computes \(\mu(y) \cdot f_0(y)\).
+///
+/// @param y The tangential relative speed.
+/// @param eps_v Velocity threshold below which static friction force is applied.
+/// @param mu_s Static friction coefficient.
+/// @param mu_k Kinetic friction coefficient.
+/// @return The value of \(\mu(y) \cdot f_0(y)\) at y.
+double smooth_friction_f0_mus(const double y, const double eps_v, const double mu_s, const double mu_k);
+
+/// @brief Computes \(\mu(y) \cdot f_1(y)\).
+///
+/// @param y The tangential relative speed.
+/// @param eps_v Velocity threshold below which static friction force is applied.
+/// @param mu_s Static friction coefficient.
+/// @param mu_k Kinetic friction coefficient.
+/// @return The value of \(\mu(y) \cdot f_1(y)\) at y.
+double smooth_friction_f1_mus(const double y, const double eps_v, const double mu_s, const double mu_k);
+
+/// @brief Computes \(\mu(y) \cdot f_2(y)\).
+///
+/// @param y The tangential relative speed.
+/// @param eps_v Velocity threshold below which static friction force is applied.
+/// @param mu_s Static friction coefficient.
+/// @param mu_k Kinetic friction coefficient.
+/// @return The value of \(\mu(y) \cdot f_2(y)\) at y.
+double smooth_friction_f2_mus(const double y, const double eps_v, const double mu_s, const double mu_k);
+
+/// @brief Computes \(\mu(y) \cdot \frac{f_1(y)}{y}\) with handling for \(y = 0\).
+///
+/// @param y The tangential relative speed.
+/// @param eps_v Velocity threshold below which static friction force is applied.
+/// @param mu_s Static friction coefficient.
+/// @param mu_k Kinetic friction coefficient.
+/// @return The value of \(\mu(y) \cdot \frac{f_1(y)}{y}\) at y.
+double smooth_friction_f1_over_x_mus(const double y, const double eps_v, const double mu_s, const double mu_k);
+
+/// @brief Computes \(\mu(y) \cdot \frac{f_2(y) \cdot y - f_1(y)}{y^3}\) with handling for \(y = 0\).
+///
+/// @param y The tangential relative speed.
+/// @param eps_v Velocity threshold below which static friction force is applied.
+/// @param mu_s Static friction coefficient.
+/// @param mu_k Kinetic friction coefficient.
+/// @return The value of \(\mu(y) \cdot \frac{f_2(y) \cdot y - f_1(y)}{y^3}\) at y.
+double smooth_friction_f2_x_minus_f1_over_x3_mus(const double y, const double eps_v, const double mu_s, const double mu_k);
+
 } // namespace ipc
