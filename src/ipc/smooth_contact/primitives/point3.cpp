@@ -11,8 +11,7 @@ Point3::Point3(
     const ParameterType& param)
     : Primitive(id, param)
 {
-    orientable =
-        !mesh.is_codim_vertex(id) && mesh.vertices_to_faces()[id].size() > 0;
+    orientable = !mesh.is_codim_vertex(id) && mesh.vertices_to_faces()[id].size() > 0;
 
     // Build index mapping from all vertices to one-ring neighbors
     {
@@ -257,6 +256,35 @@ GradType<-1> Point3::smooth_point3_term_normal_gradient(
             grad.head<3>() -= dy.tail<3>();
         }
     }
+
+    // autodiff
+    // TODO: replace with efficient code
+    // double normal_term = 0;
+    // {
+    //     using T = ADGrad<-1>;
+    //     Eigen::VectorXd tmp(direc.size() + tangents.size());
+    //     tmp.head<3>() = direc;
+    //     for (int i = 0; i < tangents.rows(); i++)
+    //         tmp.segment<3>(3 * i + 3) = tangents.row(i);
+
+    //     DiffScalarBase::setVariableCount(tmp.size());
+    //     const Eigen::Matrix<T, -1, dim> X = slice_positions<T, -1, dim>(tmp);
+
+    //     T normal_term_ad(0.);
+    //     for (int a = 0; a < faces.rows(); a++) {
+    //         if (_otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT)
+    //             normal_term_ad =
+    //                 normal_term_ad
+    //                 + Math<T>::smooth_heaviside(
+    //                     -X.row(0).dot(X.row(faces(a, 1))
+    //                                       .cross(X.row(faces(a, 2)))
+    //                                       .normalized()),
+    //                     _param.alpha_n, _param.beta_n);
+    //     }
+
+    //     normal_term = normal_term_ad.getValue();
+    //     grad = normal_term_ad.getGradient();
+    // }
 
     const double val = Math<double>::smooth_heaviside(normal_term - 1, 1., 0);
     const double grad_val =
@@ -554,7 +582,7 @@ scalar Point3::smooth_point3_term(
                 X.row(faces(a, 2)) - X.row(faces(a, 0));
             normal_term = normal_term
                 + Math<scalar>::smooth_heaviside(
-                              -dn.dot(t1.cross(t2).normalized()),
+                              dn.dot(t1.cross(t2).normalized()),
                               _param.alpha_n, _param.beta_n);
         }
         normal_term = Math<scalar>::smooth_heaviside(normal_term - 1, 1., 0);
