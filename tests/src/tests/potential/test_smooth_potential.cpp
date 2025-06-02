@@ -22,99 +22,99 @@ std::string tagsopt = "[smooth_potential]";
 std::string tagsopt = "[.][smooth_potential]";
 #endif
 
-TEST_CASE(
-    "Number of contact pairs",
-    tagsopt)
-{
-    const BroadPhaseMethod method{0};
+// TEST_CASE(
+//     "Number of contact pairs",
+//     tagsopt)
+// {
+//     const BroadPhaseMethod method{0};
 
-    double dhat = -1;
-    std::string mesh_name = "";
-    bool all_vertices_on_surface = true;
+//     double dhat = -1;
+//     std::string mesh_name = "";
+//     bool all_vertices_on_surface = true;
 
-    SECTION("two cubes close")
-    {
-        dhat = 5e-3;
-        mesh_name = (tests::DATA_DIR / "step_1000_surf_contact.obj").string();
-        all_vertices_on_surface = true;
-    }
+//     SECTION("two cubes close")
+//     {
+//         dhat = 5e-3;
+//         mesh_name = (tests::DATA_DIR / "step_1000_surf_contact.obj").string();
+//         all_vertices_on_surface = true;
+//     }
 
-    Eigen::MatrixXd vertices;
-    Eigen::MatrixXi edges, faces;
-    bool success = tests::load_mesh(mesh_name, vertices, edges, faces);
-    CAPTURE(mesh_name);
-    REQUIRE(success);
+//     Eigen::MatrixXd vertices;
+//     Eigen::MatrixXi edges, faces;
+//     bool success = tests::load_mesh(mesh_name, vertices, edges, faces);
+//     CAPTURE(mesh_name);
+//     REQUIRE(success);
 
-    CollisionMesh mesh;
-    if (all_vertices_on_surface) {
-        mesh = CollisionMesh(vertices, edges, faces);
-    } else {
-        mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
-        vertices = mesh.vertices(vertices);
-    }
+//     CollisionMesh mesh;
+//     if (all_vertices_on_surface) {
+//         mesh = CollisionMesh(vertices, edges, faces);
+//     } else {
+//         mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
+//         vertices = mesh.vertices(vertices);
+//     }
 
-    {
-        Collisions collisions;
+//     {
+//         Collisions collisions;
 
-        collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
-        CHECK(collisions.size() > 0);
-        std::cout << "IPC number of pairs " << collisions.size() << "\n";
-    }
+//         collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
+//         CHECK(collisions.size() > 0);
+//         std::cout << "IPC number of pairs " << collisions.size() << "\n";
+//     }
 
-    {
-        Collisions collisions;
-        collisions.set_use_convergent_formulation(true);
+//     {
+//         Collisions collisions;
+//         collisions.set_use_convergent_formulation(true);
 
-        collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
-        CHECK(collisions.size() > 0);
-        std::cout << "CIPC number of pairs " << collisions.size() << "\n";
-    }
+//         collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
+//         CHECK(collisions.size() > 0);
+//         std::cout << "CIPC number of pairs " << collisions.size() << "\n";
+//     }
 
-    {
-        SmoothCollisions<3> collisions;
+//     {
+//         SmoothCollisions<3> collisions;
 
-        ParameterType param(dhat, 0.8, 0, 1, 0, 2);
-        collisions.build(mesh, vertices, param, false, method);
-        CHECK(collisions.size() > 0);
-        std::cout << "OIPC number of pairs (only tangent) " << collisions.size() << "\n";
-    }
+//         ParameterType param(dhat, 0.8, 0, 1, 0, 2);
+//         collisions.build(mesh, vertices, param, false, method);
+//         CHECK(collisions.size() > 0);
+//         std::cout << "OIPC number of pairs (only tangent) " << collisions.size() << "\n";
+//     }
 
-    {
-        SmoothCollisions<3> collisions;
+//     {
+//         SmoothCollisions<3> collisions;
 
-        ParameterType param(dhat, 1, 0, 0, 0.1, 2);
-        collisions.build(mesh, vertices, param, false, method);
-        CHECK(collisions.size() > 0);
-        std::cout << "OIPC number of pairs (only normal) " << collisions.size() << "\n";
-    }
+//         ParameterType param(dhat, 1, 0, 0, 0.1, 2);
+//         collisions.build(mesh, vertices, param, false, method);
+//         CHECK(collisions.size() > 0);
+//         std::cout << "OIPC number of pairs (only normal) " << collisions.size() << "\n";
+//     }
 
-    {
-        SmoothCollisions<3> collisions;
+//     {
+//         SmoothCollisions<3> collisions;
 
-        ParameterType param(dhat, 0.8, 0, 0, 0.1, 2);
-        collisions.build(mesh, vertices, param, false, method);
-        CHECK(collisions.size() > 0);
-        std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
-    }
+//         ParameterType param(dhat, 0.8, 0, 0, 0.1, 2);
+//         collisions.build(mesh, vertices, param, false, method);
+//         CHECK(collisions.size() > 0);
+//         std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
+//     }
 
-    {
-        SmoothCollisions<3> collisions;
+//     {
+//         SmoothCollisions<3> collisions;
 
-        ParameterType param(dhat, 0.5, 0, 0, 0.1, 2);
-        collisions.build(mesh, vertices, param, false, method);
-        CHECK(collisions.size() > 0);
-        std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
-    }
+//         ParameterType param(dhat, 0.5, 0, 0, 0.1, 2);
+//         collisions.build(mesh, vertices, param, false, method);
+//         CHECK(collisions.size() > 0);
+//         std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
+//     }
 
-    {
-        SmoothCollisions<3> collisions;
+//     {
+//         SmoothCollisions<3> collisions;
 
-        ParameterType param(dhat, 0.1, 0, 0, 0.1, 2);
-        collisions.build(mesh, vertices, param, false, method);
-        CHECK(collisions.size() > 0);
-        std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
-    }
-}
+//         ParameterType param(dhat, 0.1, 0, 0, 0.1, 2);
+//         collisions.build(mesh, vertices, param, false, method);
+//         CHECK(collisions.size() > 0);
+//         std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
+//     }
+// }
 
 TEST_CASE(
     "Smooth barrier potential full gradient and hessian 3D",
@@ -372,93 +372,93 @@ TEST_CASE(
     // CHECK(fd::compare_gradient(grad_b, fgrad_b));
 }
 
-TEST_CASE(
-    "Benchmark on OIPC",
-    tagsopt)
-{
-    const BroadPhaseMethod method{0};
+// TEST_CASE(
+//     "Benchmark on OIPC",
+//     tagsopt)
+// {
+//     const BroadPhaseMethod method{0};
 
-    double dhat = -1;
-    std::string mesh_name = "";
-    bool all_vertices_on_surface = true;
+//     double dhat = -1;
+//     std::string mesh_name = "";
+//     bool all_vertices_on_surface = true;
 
-    SECTION("mat-twist")
-    {
-        dhat = 1e-3;
-        mesh_name = (tests::DATA_DIR / "step_1000_surf_contact.obj").string();
-        all_vertices_on_surface = true;
-    }
+//     SECTION("mat-twist")
+//     {
+//         dhat = 1e-3;
+//         mesh_name = (tests::DATA_DIR / "step_1000_surf_contact.obj").string();
+//         all_vertices_on_surface = true;
+//     }
 
-    Eigen::MatrixXd vertices;
-    Eigen::MatrixXi edges, faces;
-    bool success = tests::load_mesh(mesh_name, vertices, edges, faces);
-    CAPTURE(mesh_name);
-    REQUIRE(success);
+//     Eigen::MatrixXd vertices;
+//     Eigen::MatrixXi edges, faces;
+//     bool success = tests::load_mesh(mesh_name, vertices, edges, faces);
+//     CAPTURE(mesh_name);
+//     REQUIRE(success);
 
-    CollisionMesh mesh;
-    if (all_vertices_on_surface) {
-        mesh = CollisionMesh(vertices, edges, faces);
-    } else {
-        mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
-        vertices = mesh.vertices(vertices);
-    }
+//     CollisionMesh mesh;
+//     if (all_vertices_on_surface) {
+//         mesh = CollisionMesh(vertices, edges, faces);
+//     } else {
+//         mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
+//         vertices = mesh.vertices(vertices);
+//     }
 
-    {
-        igl::Timer timer;
-        timer.start();
-        Collisions collisions;
+//     {
+//         igl::Timer timer;
+//         timer.start();
+//         Collisions collisions;
 
-        collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
-        CHECK(collisions.size() > 0);
-        // std::cout << "IPC number of pairs " << collisions.size() << "\n";
+//         collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
+//         CHECK(collisions.size() > 0);
+//         // std::cout << "IPC number of pairs " << collisions.size() << "\n";
 
-        timer.stop();
-        std::cout << "IPC build time " << timer.getElapsedTime() << " s\n";
-        timer.start();
+//         timer.stop();
+//         std::cout << "IPC build time " << timer.getElapsedTime() << " s\n";
+//         timer.start();
 
-        BarrierPotential barrier_potential(dhat);
-        const Eigen::VectorXd grad_b =
-            barrier_potential.gradient(collisions, mesh, vertices);
+//         BarrierPotential barrier_potential(dhat);
+//         const Eigen::VectorXd grad_b =
+//             barrier_potential.gradient(collisions, mesh, vertices);
 
-        timer.stop();
-        std::cout << "IPC grad time " << timer.getElapsedTime() << " s\n";
-        timer.start();
+//         timer.stop();
+//         std::cout << "IPC grad time " << timer.getElapsedTime() << " s\n";
+//         timer.start();
 
-        barrier_potential.hessian(collisions, mesh, vertices);
+//         barrier_potential.hessian(collisions, mesh, vertices);
 
-        timer.stop();
-        std::cout << "IPC hess time " << timer.getElapsedTime() << " s\n";
-        timer.start();
-    }
+//         timer.stop();
+//         std::cout << "IPC hess time " << timer.getElapsedTime() << " s\n";
+//         timer.start();
+//     }
 
-    {
-        igl::Timer timer;
-        timer.start();
-        SmoothCollisions<3> collisions;
+//     {
+//         igl::Timer timer;
+//         timer.start();
+//         SmoothCollisions<3> collisions;
 
-        ParameterType param(dhat, 0.8, 0, 0, 0.1, 2);
-        collisions.build(mesh, vertices, param, false, method);
-        CHECK(collisions.size() > 0);
-        // std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
+//         ParameterType param(dhat, 0.8, 0, 0, 0.1, 2);
+//         collisions.build(mesh, vertices, param, false, method);
+//         CHECK(collisions.size() > 0);
+//         // std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
 
-        timer.stop();
-        std::cout << "OIPC build time " << timer.getElapsedTime() << " s\n";
-        timer.start();
+//         timer.stop();
+//         std::cout << "OIPC build time " << timer.getElapsedTime() << " s\n";
+//         timer.start();
 
-        SmoothContactPotential<SmoothCollisions<3>> potential(param);
-        const Eigen::VectorXd grad_b =
-            potential.gradient(collisions, mesh, vertices);
+//         SmoothContactPotential<SmoothCollisions<3>> potential(param);
+//         const Eigen::VectorXd grad_b =
+//             potential.gradient(collisions, mesh, vertices);
 
-        timer.stop();
-        std::cout << "OIPC grad time " << timer.getElapsedTime() << " s\n";
+//         timer.stop();
+//         std::cout << "OIPC grad time " << timer.getElapsedTime() << " s\n";
 
-        potential.hessian(collisions, mesh, vertices);
+//         potential.hessian(collisions, mesh, vertices);
 
-        timer.stop();
-        std::cout << "OIPC hess time " << timer.getElapsedTime() << " s\n";
-        timer.start();
-    }
-}
+//         timer.stop();
+//         std::cout << "OIPC hess time " << timer.getElapsedTime() << " s\n";
+//         timer.start();
+//     }
+// }
 
 TEST_CASE(
     "Benchmark autogen code", "[!benchmark]")

@@ -1,10 +1,10 @@
 name: Docs
 
 on:
-  push:
-    branches:
-      - main
-      - docs
+  # push:
+  #   branches:
+  #     - main
+  #     - docs
 
 jobs:
   Docs:
