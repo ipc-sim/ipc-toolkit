@@ -92,7 +92,7 @@ Vector<double, -1, Point3::max_size + Point3::dim> Point3::grad(
     const Eigen::Matrix<double, -1, dim> X =
         slice_positions<double, -1, dim>(x);
     const auto [val, grad] = smooth_point3_term_gradient(
-        d, X.row(0), X.bottomRows(n_neighbors), _param);
+        d, X, _param);
     return grad;
 #endif
 }
@@ -115,7 +115,7 @@ Point3::hessian(
 #else
     const auto X = slice_positions<double, -1, dim>(x);
     const auto [val, grad, hess] = smooth_point3_term_hessian(
-        d, X.row(0), X.bottomRows(n_neighbors), _param);
+        d, X, _param);
     return hess;
 #endif
 }

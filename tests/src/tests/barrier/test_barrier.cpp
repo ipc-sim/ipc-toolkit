@@ -313,7 +313,6 @@ TEST_CASE("point term derivatives", "[deriv]")
     }
 
     {
-        auto y = point_term->potential(vectors.row(0), fd::flatten(V));
         auto y_grad = point_term->grad(vectors.row(0), fd::flatten(V));
         auto y_hess = point_term->hessian(vectors.row(0), fd::flatten(V));
         
