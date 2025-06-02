@@ -31,7 +31,11 @@ Face::Face(
                     mesh.faces()(id, 2) } };
     Vector3d a = vertices.row(_vert_ids[1]) - vertices.row(_vert_ids[0]);
     Vector3d b = vertices.row(_vert_ids[2]) - vertices.row(_vert_ids[0]);
-    is_active_ = a.cross(b).dot(d) > 0;
+    
+    bool orientable = !mesh.is_codim_vertex(_vert_ids[0]) &&
+                      !mesh.is_codim_vertex(_vert_ids[1]) &&
+                      !mesh.is_codim_vertex(_vert_ids[2]);
+    is_active_ = !orientable || a.cross(b).dot(d) > 0;
 }
 int Face::n_vertices() const { return n_face_neighbors_3d; }
 double Face::potential(const Vector3d& d, const Vector9d& x) const

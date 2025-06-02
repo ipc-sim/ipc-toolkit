@@ -38,89 +38,68 @@ public:
         const Vector<double, dim>& d,
         const Vector<double, -1, max_size>& x) const;
 
+    /// @brief
+    /// @tparam scalar
+    /// @param direc normalized
+    /// @param v
+    /// @param direc points from v to the other point
+    /// @param neighbors follow counter-clockwise order
+    /// @param params
+    /// @return
+    template <typename scalar, int n_verts = -1>
+    scalar smooth_point3_term(
+        const Eigen::Matrix<scalar, n_verts, 3>& X,
+        const Eigen::Ref<const RowVector3<scalar>>& direc) const;
+
+    GradType<-1> smooth_point3_term_gradient(
+        const Eigen::Ref<const RowVector3<double>>& direc,
+        const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& X,
+        const ParameterType& param) const;
+
+    HessianType<-1> smooth_point3_term_hessian(
+        const Eigen::Ref<const RowVector3<double>>& direc,
+        const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& X,
+        const ParameterType& param) const;
+
+    GradType<-1> smooth_point3_term_tangent_gradient(
+        const Eigen::Ref<const RowVector3<double>>& direc,
+        const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+        const double& alpha,
+        const double& beta) const;
+
+    HessianType<-1>
+    smooth_point3_term_tangent_hessian(
+        const Eigen::Ref<const RowVector3<double>>& direc,
+        const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+        const double& alpha,
+        const double& beta) const;
+
+    GradType<-1> smooth_point3_term_normal_gradient(
+        const Eigen::Ref<const RowVector3<double>>& direc,
+        const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+        const double& alpha,
+        const double& beta) const;
+
+    HessianType<-1>
+    smooth_point3_term_normal_hessian(
+        const Eigen::Ref<const RowVector3<double>>& direc,
+        const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
+        const double& alpha,
+        const double& beta) const;
 private:
     int n_neighbors;
-    ORIENTATION_TYPES otypes;
+    ORIENTATION_TYPES _otypes;
+
+    std::vector<long> local_to_global_vids;
+    std::map<long, int> global_to_local_vids;
+
+    Eigen::Matrix<int, -1, 3> faces;
+    Eigen::Matrix<int, -1, 2> edges;
+    bool orientable;
+
+    bool smooth_point3_term_type(
+        const Eigen::Matrix<double, -1, 3>& X,
+        const Eigen::Ref<const RowVector3<double>>& direc);
 };
 
-/// @brief
-/// @tparam scalar
-/// @param direc normalized
-/// @param v
-/// @param direc points from v to the other point
-/// @param neighbors follow counter-clockwise order
-/// @param params
-/// @return
-template <typename scalar, int n_neighbors = -1>
-scalar smooth_point3_term(
-    const Eigen::Ref<const RowVector3<scalar>>& v,
-    const Eigen::Ref<const RowVector3<scalar>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<scalar, n_neighbors, 3>>& neighbors,
-    const ParameterType& param,
-    const ORIENTATION_TYPES& otypes);
-
-bool smooth_point3_term_type(
-    const Eigen::Ref<const RowVector3<double>>& v,
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Matrix<double, -1, 3>& neighbors,
-    const ParameterType& param,
-    ORIENTATION_TYPES& otypes);
-
-GradType<-1> smooth_point3_term_gradient(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const RowVector3<double>>& v,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,
-    const ParameterType& param,
-    const ORIENTATION_TYPES& otypes);
-
-HessianType<-1> smooth_point3_term_hessian(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const RowVector3<double>>& v,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,
-    const ParameterType& param,
-    const ORIENTATION_TYPES& otypes);
-
-double smooth_point3_term_tangent(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
-    const double& alpha,
-    const double& beta,
-    const ORIENTATION_TYPES& otypes);
-
-GradType<-1> smooth_point3_term_tangent_gradient(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
-    const double& alpha,
-    const double& beta,
-    const ORIENTATION_TYPES& otypes);
-
-HessianType<-1>
-smooth_point3_term_tangent_hessian(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
-    const double& alpha,
-    const double& beta,
-    const ORIENTATION_TYPES& otypes);
-
-double smooth_point3_term_normal(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
-    const double& alpha,
-    const double& beta,
-    const ORIENTATION_TYPES& otypes);
-
-GradType<-1> smooth_point3_term_normal_gradient(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
-    const double& alpha,
-    const double& beta,
-    const ORIENTATION_TYPES& otypes);
-
-HessianType<-1>
-smooth_point3_term_normal_hessian(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
-    const double& alpha,
-    const double& beta,
-    const ORIENTATION_TYPES& otypes);
 } // namespace ipc

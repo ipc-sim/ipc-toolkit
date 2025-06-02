@@ -264,13 +264,13 @@ void CollisionMesh::init_adjacencies()
 
 void CollisionMesh::init_areas()
 {
-    // m_vertices_to_edges.resize(num_vertices());
-    // for (int i = 0; i < m_edges.rows(); i++) {
-    //     for (int j = 0; j < m_edges.cols(); j++) {
-    //         m_vertices_to_edges[m_edges(i, j)].push_back(i);
-    //     }
-    // }
-    //
+    m_vertices_to_edges.resize(num_vertices());
+    for (int i = 0; i < m_edges.rows(); i++) {
+        for (int j = 0; j < m_edges.cols(); j++) {
+            m_vertices_to_edges[m_edges(i, j)].push_back(i);
+        }
+    }
+    
     m_vertices_to_faces.resize(num_vertices());
     for (int i = 0; i < m_faces.rows(); i++) {
         for (int j = 0; j < m_faces.cols(); j++) {
@@ -534,71 +534,46 @@ std::vector<long> CollisionMesh::find_vertex_adjacent_vertices(const long &v) co
     }
     else
     {
-        std::unordered_map<long, long> map;
-        for (auto f : vertices_to_faces()[v])
+        if (vertices_to_faces()[v].size() > 0)
         {
-            for (int lv = 0; lv < 3; lv++)
+            // construct a map of neighboring vertices, it maps every neighbor to the next counter-clockwise neighbor
+            std::unordered_map<long, long> map;
+            for (auto f : vertices_to_faces()[v])
             {
-                if (faces()(f, lv) == v)
+                for (int lv = 0; lv < 3; lv++)
                 {
-                    map[faces()(f, (lv+1)%3)] = faces()(f, (lv+2)%3);
-                    break;
+                    if (faces()(f, lv) == v)
+                    {
+                        map[faces()(f, (lv+1)%3)] = faces()(f, (lv+2)%3);
+                        break;
+                    }
                 }
             }
-        }
-        if (vertices_to_faces()[v].size() != map.size())
-            throw std::runtime_error("Non-manifold vertex! Map size smaller than neighbor!");
-        
-        auto iter = map.find(map.begin()->first);
-        while (neighbors.empty() || iter->first != neighbors.front())
-        {
-            neighbors.push_back(iter->first);
-            iter = map.find(iter->second);
-            if (iter == map.end())
+            if (vertices_to_faces()[v].size() != map.size())
+                throw std::runtime_error("Non-manifold vertex! Map size smaller than neighbor!");
+            
+            // verify that the neighboring vertices form a loop
+            auto iter = map.find(map.begin()->first);
+            while (neighbors.empty() || iter->first != neighbors.front())
             {
-                logger().error("neighbor faces {}, map {}", vertices_to_faces()[v].size(), map);
-                throw std::runtime_error("Non-manifold vertex! Cannot find next neighbor!");
+                neighbors.push_back(iter->first);
+                iter = map.find(iter->second);
+                if (iter == map.end())
+                {
+                    logger().error("neighbor faces {}, map {}", vertices_to_faces()[v].size(), map);
+                    throw std::runtime_error("Non-manifold vertex! Cannot find next neighbor!");
+                }
             }
+            if (neighbors.size() != map.size())
+                throw std::runtime_error("Non-manifold vertex!");
         }
-        if (neighbors.size() != map.size())
-            throw std::runtime_error("Non-manifold vertex!");
-    }
-    return neighbors;
-}
-
-/// @brief 
-/// @param e edge id 
-/// @return 4 vertices of the 2 faces adjacent to this edge, in the order of [e0, e1, f0, f1]
-/// the two faces are [f0, e0, e1] and [f1, e1, e0]
-std::array<long, 4> CollisionMesh::find_edge_adjacent_vertices(const long &e) const
-{
-    std::array<long, 4> neighbors;
-    if (dim() == 2)
-        throw std::runtime_error("find_edge_adjacent_vertices is only for 3d collision mesh!");
-    
-    std::array<long, 2> lf = {{edges_to_faces()(e, 0), edges_to_faces()(e, 1)}};
-
-    for (int j : {0, 1})
-    {
-        int i;
-        for (i = 0; i < 3; i++)
+        else
         {
-            const auto va = faces()(lf[j], i);
-
-            if (va != edges()(e, 0) && va != edges()(e, 1))
-            {
-                neighbors[2 + j] = va;
-                break;
-            }
-        }
-
-        if (j == 0)
-        {
-            neighbors[0] = faces()(lf[j], (i+1) % 3);
-            neighbors[1] = faces()(lf[j], (i+2) % 3);
+            for (int eid : vertices_to_edges()[v])
+                neighbors.push_back(
+                    edges()(eid, 0) == v ? edges()(eid, 1) : edges()(eid, 0));
         }
     }
-
     return neighbors;
 }
 

@@ -118,10 +118,10 @@ public:
     double edge_length(const int& edge_id) const;
     double max_edge_length() const;
 
-    // const std::vector<std::vector<int>>& vertices_to_edges() const
-    // {
-    //     return m_vertices_to_edges;
-    // }
+    const std::vector<std::vector<int>>& vertices_to_edges() const
+    {
+        return m_vertices_to_edges;
+    }
 
     const std::vector<std::vector<int>>& vertices_to_faces() const
     {
@@ -131,7 +131,6 @@ public:
     const Eigen::MatrixXi& edges_to_faces() const { return m_edges_to_faces; }
 
     std::vector<long> find_vertex_adjacent_vertices(const long& v) const;
-    std::array<long, 4> find_edge_adjacent_vertices(const long& e) const;
 
     // -----------------------------------------------------------------------
 
@@ -363,7 +362,7 @@ protected:
     std::vector<unordered_set<int>> m_edge_vertex_adjacencies;
 
     std::vector<std::vector<int>> m_vertices_to_faces;
-    // std::vector<std::vector<int>> m_vertices_to_edges;
+    std::vector<std::vector<int>> m_vertices_to_edges;
 
     /// @brief Is vertex on the boundary of the triangle mesh in 3D or polyline in 2D?
     std::vector<bool> m_is_vertex_on_boundary;

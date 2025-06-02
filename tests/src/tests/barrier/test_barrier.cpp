@@ -4,6 +4,7 @@
 #include <catch2/generators/catch_generators_random.hpp>
 #include <catch2/generators/catch_generators_adapters.hpp>
 
+#include <igl/edges.h>
 #include <ipc/barrier/barrier.hpp>
 
 #include <finitediff.hpp>
@@ -239,31 +240,57 @@ TEST_CASE("negative_orientation_penalty derivatives", "[deriv]")
     }
 }
 
-TEST_CASE("point tangent term derivatives", "[deriv]")
+TEST_CASE("point term derivatives", "[deriv]")
 {
+    ipc::ParameterType param(1, 1, 1, 0.01, 0, 2);
+
     Eigen::Matrix<double, -1, 3> vectors(9, 3);
-    vectors << -0.696515, -0.173578, -0.696231,
-                0.50146, -0.0017947,   0.999718,
+    vectors << -0.696515,  -0.173578,  -0.696231,
+                0.50146,  -0.0017947,   0.999718,
                 0.346908,   0.152939,    1.00049,
                 0.208062,   0.290611,    1.00075,
                 0.280725,   0.498548,    1.00069,
                 0.499796,    0.49999,    1.00127,
                 0.501162,   0.498839,   0.779581,
-                0.50047 ,  0.290411 ,  0.709051,
+                0.50047 ,   0.290411,   0.709051,
                 0.500615,   0.153465,   0.846423;
-    const double alpha = 1;
-    const double beta = 1;
-    {
-        ipc::ORIENTATION_TYPES otypes;
-        otypes.set_size(8);
 
-        auto [y, y_grad, y_hess] = ipc::smooth_point3_term_tangent_hessian(vectors.row(0), vectors.bottomRows(8), alpha, beta, otypes);
+    Eigen::Matrix<double, -1, 3> V = vectors;
+    V.row(0).setZero();
+
+    Eigen::MatrixXi E(8, 2), F(8, 3);
+    E << 0, 1,
+         0, 2,
+         0, 3,
+         0, 4,
+         0, 5,
+         0, 6,
+         0, 7,
+         0, 8;
+    F << 0, 2, 1,
+         0, 3, 2,
+         0, 4, 3,
+         0, 5, 4,
+         0, 6, 5,
+         0, 6, 7,
+         0, 7, 8,
+         0, 8, 1;
+    igl::edges(F, E);
+    ipc::CollisionMesh mesh(V, E, F);
+
+    auto point_term = std::make_unique<ipc::Point3>(0, mesh, V, -vectors.row(0), param);
+
+    {
+        auto [y, y_grad, y_hess] = point_term->smooth_point3_term_tangent_hessian(vectors.row(0), V.bottomRows(8), param.alpha_t, param.beta_t);
         
         Eigen::VectorXd fgrad;
         fd::finite_gradient(
             fd::flatten(vectors), [&](const Eigen::VectorXd& x)
             { 
-                return std::get<0>(ipc::smooth_point3_term_tangent_hessian(x.head(3), fd::unflatten(x.tail(x.size()-3), 3), alpha, beta, otypes));
+                Eigen::MatrixXd V_fd = fd::unflatten(x, 3);
+                V_fd.row(0).setZero();
+                auto point_term_fd = std::make_unique<ipc::Point3>(0, mesh, V_fd, -x.head<3>(), param);
+                return std::get<0>(point_term_fd->smooth_point3_term_tangent_gradient(x.head(3), fd::unflatten(x.tail(x.size()-3), 3), param.alpha_t, param.beta_t));
             },
             fgrad);
 
@@ -274,9 +301,105 @@ TEST_CASE("point tangent term derivatives", "[deriv]")
         fd::finite_jacobian(
             fd::flatten(vectors), [&](const Eigen::VectorXd& x)
             { 
-                return std::get<1>(ipc::smooth_point3_term_tangent_hessian(x.head(3), fd::unflatten(x.tail(x.size()-3), 3), alpha, beta, otypes));
+                Eigen::MatrixXd V_fd = fd::unflatten(x, 3);
+                V_fd.row(0).setZero();
+                auto point_term_fd = std::make_unique<ipc::Point3>(0, mesh, V_fd, -x.head<3>(), param);
+                return std::get<1>(point_term_fd->smooth_point3_term_tangent_gradient(x.head(3), fd::unflatten(x.tail(x.size()-3), 3), param.alpha_t, param.beta_t));
             },
             fhess);
+        
+        std::cout << "err " << (y_hess - fhess).norm() / fhess.norm() << ", norm " << fhess.norm() << " " << y_hess.norm() << "\n";
+        CHECK((y_hess - fhess).norm() <= 1e-7 * fhess.norm());
+    }
+
+    {
+        auto y = point_term->potential(vectors.row(0), fd::flatten(V));
+        auto y_grad = point_term->grad(vectors.row(0), fd::flatten(V));
+        auto y_hess = point_term->hessian(vectors.row(0), fd::flatten(V));
+        
+        Eigen::MatrixXd X(V.rows() + 1, 3);
+        X << vectors.row(0), V;
+
+        Eigen::VectorXd fgrad;
+        fd::finite_gradient(
+            fd::flatten(X), [&](const Eigen::VectorXd& x)
+            { 
+                return point_term->potential(x.head(3), x.tail(x.size()-3));
+            },
+            fgrad);
+
+        std::cout << "err " << (y_grad - fgrad).norm() / fgrad.norm() << ", norm " << fgrad.norm() << " " << y_grad.norm() << "\n";
+        CHECK((y_grad - fgrad).norm() <= 1e-7 * fgrad.norm());
+
+        Eigen::MatrixXd fhess;
+        fd::finite_jacobian(
+            fd::flatten(X), [&](const Eigen::VectorXd& x)
+            { 
+                return point_term->grad(x.head(3), x.tail(x.size()-3));
+            },
+            fhess);
+        
+        std::cout << "err " << (y_hess - fhess).norm() / fhess.norm() << ", norm " << fhess.norm() << " " << y_hess.norm() << "\n";
+        CHECK((y_hess - fhess).norm() <= 1e-7 * fhess.norm());
+    }
+}
+
+TEST_CASE("point term normal derivatives", "[deriv]")
+{
+    ipc::ParameterType param(1, 1, 1, 1, 0, 2);
+
+    Eigen::Matrix<double, -1, 3> vectors(9, 3);
+    vectors << -0.696515,  -0.173578,  -0.696231,
+                0.50146,  -0.0017947,   0.999718,
+                0.346908,   0.152939,    1.00049,
+                0.208062,   0.290611,    1.00075,
+                0.280725,   0.498548,    1.00069,
+                0.499796,    0.49999,    1.00127,
+                0.501162,   0.498839,   0.779581,
+                0.50047 ,   0.290411,   0.709051,
+                0.500615,   0.153465,   0.846423;
+
+    Eigen::Matrix<double, -1, 3> V = vectors;
+    V.row(0).setZero();
+
+    Eigen::MatrixXi E(3, 2), F(1, 3);
+    E << 0, 1,
+         0, 2,
+         1, 2;
+    F << 0, 1, 2;
+    igl::edges(F, E);
+    ipc::CollisionMesh mesh(V, E, F);
+
+    auto point_term = std::make_unique<ipc::Point3>(0, mesh, V, -vectors.row(0), param);
+
+    {
+        auto [y, y_grad, y_hess] = point_term->smooth_point3_term_normal_hessian(vectors.row(0), V.bottomRows(8), param.alpha_n, param.beta_n);
+        std::cout << y << " " << y_grad.norm() << " " << y_hess.norm() << std::endl;
+        
+        Eigen::VectorXd fgrad;
+        fd::finite_gradient(
+            fd::flatten(vectors), [&](const Eigen::VectorXd& x)
+            { 
+                Eigen::MatrixXd V_fd = fd::unflatten(x, 3);
+                V_fd.row(0).setZero();
+                auto point_term_fd = std::make_unique<ipc::Point3>(0, mesh, V_fd, -x.head<3>(), param);
+                return std::get<0>(point_term_fd->smooth_point3_term_normal_hessian(x.head(3), fd::unflatten(x.tail(x.size()-3), 3), param.alpha_n, param.beta_n));
+            },
+            fgrad);
+
+        std::cout << "err " << (y_grad - fgrad).norm() / fgrad.norm() << ", norm " << fgrad.norm() << " " << y_grad.norm() << "\n";
+        CHECK((y_grad - fgrad).norm() <= 1e-7 * fgrad.norm());
+
+        Eigen::MatrixXd fhess;
+        fd::finite_jacobian(
+            fd::flatten(vectors), [&](const Eigen::VectorXd& x)
+            { 
+                Eigen::MatrixXd V_fd = fd::unflatten(x, 3);
+                V_fd.row(0).setZero();
+                auto point_term_fd = std::make_unique<ipc::Point3>(0, mesh, V_fd, -x.head<3>(), param);
+                return std::get<1>(point_term_fd->smooth_point3_term_normal_hessian(x.head(3), fd::unflatten(x.tail(x.size()-3), 3), param.alpha_n, param.beta_n));
+            },
+            fhess, fd::AccuracyOrder::FOURTH, 1e-6);
         
         std::cout << "err " << (y_hess - fhess).norm() / fhess.norm() << ", norm " << fhess.norm() << " " << y_hess.norm() << "\n";
         CHECK((y_hess - fhess).norm() <= 1e-7 * fhess.norm());

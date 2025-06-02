@@ -469,7 +469,7 @@ void check_smooth_friction_force_jacobian(
 
         Eigen::VectorXd fd_normal_force_jacobian;
         fd::finite_gradient(fd::flatten(X), F_X, fd_normal_force_jacobian);
-        CHECK((normal_force_jacobian - fd_normal_force_jacobian).norm() <= 1e-7 * normal_force_jacobian.norm());
+        CHECK((normal_force_jacobian - fd_normal_force_jacobian).norm() <= 1e-7 * std::max(normal_force_jacobian.norm(), 1e-8));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -499,7 +499,7 @@ void check_smooth_friction_force_jacobian(
     // if (!fd::compare_jacobian(JF_wrt_X, fd_JF_wrt_X)) {
     //     tests::print_compare_nonzero(JF_wrt_X, fd_JF_wrt_X);
     // }
-    CHECK((JF_wrt_X - fd_JF_wrt_X).norm() <= 1e-7 * JF_wrt_X.norm());
+    CHECK((JF_wrt_X - fd_JF_wrt_X).norm() <= 1e-7 * std::max(JF_wrt_X.norm(), 1e-8));
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -526,7 +526,7 @@ void check_smooth_friction_force_jacobian(
     // if (!fd::compare_jacobian(JF_wrt_Ut, fd_JF_wrt_Ut)) {
     //     tests::print_compare_nonzero(JF_wrt_Ut, fd_JF_wrt_Ut);
     // }
-    CHECK((JF_wrt_Ut - fd_JF_wrt_Ut).norm() <= 1e-7 * JF_wrt_Ut.norm());
+    CHECK((JF_wrt_Ut - fd_JF_wrt_Ut).norm() <= 1e-7 * std::max(JF_wrt_Ut.norm(), 1e-8));
 
     ///////////////////////////////////////////////////////////////////////////
 

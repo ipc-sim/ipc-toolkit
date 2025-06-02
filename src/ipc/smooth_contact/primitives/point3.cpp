@@ -11,36 +11,70 @@ Point3::Point3(
     const ParameterType& param)
     : Primitive(id, param)
 {
-    auto neighbor_ids = mesh.find_vertex_adjacent_vertices(id);
-    n_neighbors = neighbor_ids.size();
-    _vert_ids.reserve(1 + n_neighbors);
-    _vert_ids.push_back(id);
-    _vert_ids.insert(_vert_ids.end(), neighbor_ids.begin(), neighbor_ids.end());
+    orientable =
+        !mesh.is_codim_vertex(id) && mesh.vertices_to_faces()[id].size() > 0;
+
+    // Build index mapping from all vertices to one-ring neighbors
+    {
+        global_to_local_vids[id] = 0;
+        local_to_global_vids.push_back(id);
+
+        int i = 0;
+        edges.setZero(mesh.vertices_to_edges()[id].size(), 2);
+        for (int eid : mesh.vertices_to_edges()[id]) {
+            i++;
+            long neighbor_id = mesh.edges()(eid, 0) == id
+                ? mesh.edges()(eid, 1)
+                : mesh.edges()(eid, 0);
+            assert(
+                global_to_local_vids.find(neighbor_id)
+                == global_to_local_vids.end());
+            global_to_local_vids[neighbor_id] = i;
+            edges.row(i - 1) = Eigen::RowVector2i(0, i);
+            local_to_global_vids.push_back(neighbor_id);
+        }
+    }
+
+    // If the vertex is on some faces, record the local indices of the face
+    // vertices
+    if (mesh.vertices_to_faces()[id].size() > 0) {
+        int i = 0;
+        faces.setZero(mesh.vertices_to_faces()[id].size(), 3);
+        for (auto f : mesh.vertices_to_faces()[id]) {
+            int lv = 0;
+            for (; lv < 3; lv++) {
+                if (mesh.faces()(f, lv) == id) {
+                    faces.row(i) << 0,
+                        global_to_local_vids[mesh.faces()(f, (lv + 1) % 3)],
+                        global_to_local_vids[mesh.faces()(f, (lv + 2) % 3)];
+                    break;
+                }
+            }
+            assert(lv < 3);
+            i++;
+        }
+    }
+
+    n_neighbors = local_to_global_vids.size() - 1;
+    _vert_ids = local_to_global_vids;
 
     if (_vert_ids.size() > n_vert_neighbors_3d)
         logger().error(
             "Too many neighbors for point3 primitive! {} > {}! Increase n_vert_neighbors_3d in common.hpp",
             _vert_ids.size(), n_vert_neighbors_3d);
 
-    Eigen::Vector3d v = vertices.row(id);
-    MatrixMax<double, n_vert_neighbors_3d, 3> neighbors(n_neighbors, dim);
-    int k = 0;
-    for (long i : neighbor_ids)
-        neighbors.row(k++) = vertices.row(i);
-
-    is_active_ =
-        smooth_point3_term_type(v, d, neighbors, _param, otypes);
+    is_active_ = smooth_point3_term_type(
+        vertices(local_to_global_vids, Eigen::all), d);
 }
 
-int Point3::n_vertices() const { return n_neighbors + 1; }
+int Point3::n_vertices() const { return local_to_global_vids.size(); }
 
 double Point3::potential(
     const Vector<double, dim>& d, const Vector<double, -1, max_size>& x) const
 {
     const Eigen::Matrix<double, -1, dim> X =
         slice_positions<double, -1, dim>(x);
-    return smooth_point3_term<double, -1>(
-        X.row(0), d, X.bottomRows(n_neighbors), _param, otypes);
+    return smooth_point3_term<double, -1>(X, d);
 }
 
 Vector<double, -1, Point3::max_size + Point3::dim> Point3::grad(
@@ -52,15 +86,13 @@ Vector<double, -1, Point3::max_size + Point3::dim> Point3::grad(
     tmp << d, x;
     DiffScalarBase::setVariableCount(tmp.size());
     const Eigen::Matrix<T, -1, dim> X = slice_positions<T, -1, dim>(tmp);
-    return smooth_point3_term<T, -1>(
-               X.row(1), X.row(0), X.bottomRows(n_neighbors), _param,
-               otypes)
+    return smooth_point3_term<T, -1>(X.bottomRows(X.rows() - 1), X.row(0))
         .getGradient();
 #else
     const Eigen::Matrix<double, -1, dim> X =
         slice_positions<double, -1, dim>(x);
     const auto [val, grad] = smooth_point3_term_gradient(
-        d, X.row(0), X.bottomRows(n_neighbors), _param, otypes);
+        d, X.row(0), X.bottomRows(n_neighbors), _param);
     return grad;
 #endif
 }
@@ -78,58 +110,40 @@ Point3::hessian(
     tmp << d, x;
     DiffScalarBase::setVariableCount(tmp.size());
     const Eigen::Matrix<T, -1, dim> X = slice_positions<T, -1, dim>(tmp);
-    return smooth_point3_term<T, -1>(
-               X.row(1), X.row(0), X.bottomRows(n_neighbors), _param,
-               otypes)
+    return smooth_point3_term<T, -1>(X.bottomRows(X.rows() - 1), X.row(0))
         .getHessian();
 #else
     const auto X = slice_positions<double, -1, dim>(x);
     const auto [val, grad, hess] = smooth_point3_term_hessian(
-        d, X.row(0), X.bottomRows(n_neighbors), _param, otypes);
+        d, X.row(0), X.bottomRows(n_neighbors), _param);
     return hess;
 #endif
 }
 
-double smooth_point3_term_tangent(
+GradType<-1> Point3::smooth_point3_term_tangent_gradient(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
     const double& alpha,
-    const double& beta,
-    const ORIENTATION_TYPES& otypes)
-{
-    double tangent_term = 1.;
-    for (int a = 0; a < tangents.rows(); a++)
-        if (otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT)
-            tangent_term *=
-                opposite_direction_penalty(tangents.row(a), direc, alpha, beta);
-
-    return tangent_term;
-}
-
-GradType<-1> smooth_point3_term_tangent_gradient(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
-    const double& alpha,
-    const double& beta,
-    const ORIENTATION_TYPES& otypes)
+    const double& beta) const
 {
     const int nn = tangents.rows();
     Eigen::VectorXd values = Eigen::VectorXd::Ones(nn, 1);
     Eigen::VectorXd acc_val_1 = Eigen::VectorXd::Ones(nn, 1);
     std::vector<Vector6d> tmp_grad(nn);
     for (int a = 0; a < nn; a++) {
-        if (otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT) {
+        if (_otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT) {
             std::tie(values(a), tmp_grad[a]) = opposite_direction_penalty_grad(
                 tangents.row(a), direc, alpha, beta);
             for (int b = 0; b < nn; b++)
-                if (otypes.tangent_type(b) == HEAVISIDE_TYPE::VARIANT && b != a)
+                if (_otypes.tangent_type(b) == HEAVISIDE_TYPE::VARIANT
+                    && b != a)
                     acc_val_1(b) *= values(a);
         }
     }
 
     Eigen::VectorXd tangent_grad = Eigen::VectorXd::Zero((nn + 1) * 3);
     for (int a = 0; a < nn; a++) {
-        if (otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT) {
+        if (_otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT) {
             const int id = (a + 1) * 3;
             tangent_grad.segment<3>(id) = tmp_grad[a].head<3>() * acc_val_1(a);
             tangent_grad.segment<3>(0) += tmp_grad[a].tail<3>() * acc_val_1(a);
@@ -139,13 +153,11 @@ GradType<-1> smooth_point3_term_tangent_gradient(
     return std::make_tuple(values.prod(), tangent_grad);
 }
 
-HessianType<-1>
-smooth_point3_term_tangent_hessian(
+HessianType<-1> Point3::smooth_point3_term_tangent_hessian(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
     const double& alpha,
-    const double& beta,
-    const ORIENTATION_TYPES& otypes)
+    const double& beta) const
 {
     const int nn = tangents.rows();
     Eigen::VectorXd values = Eigen::VectorXd::Ones(nn, 1);
@@ -154,7 +166,7 @@ smooth_point3_term_tangent_hessian(
     std::vector<Vector6d> tmp_grad(nn);
     std::vector<Matrix6d> tmp_hess(nn);
     for (int a = 0; a < nn; a++) {
-        if (otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT) {
+        if (_otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT) {
             std::tie(values(a), tmp_grad[a], tmp_hess[a]) =
                 opposite_direction_penalty_hess(
                     tangents.row(a), direc, alpha, beta);
@@ -175,14 +187,14 @@ smooth_point3_term_tangent_hessian(
         Eigen::MatrixXd::Zero(tangent_grad.size(), tangent_grad.size());
     Eigen::Vector3d tmp;
     for (int a = 0; a < nn; a++) {
-        if (otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT) {
+        if (_otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT) {
             const int id = (a + 1) * 3;
             tangent_grad.segment<3>(id) = tmp_grad[a].head<3>() * acc_val_1(a);
             tangent_grad.segment<3>(0) += tmp_grad[a].tail<3>() * acc_val_1(a);
 
             tmp.setZero();
             for (int b = 0; b < nn; b++)
-                if (otypes.tangent_type(b) == HEAVISIDE_TYPE::VARIANT
+                if (_otypes.tangent_type(b) == HEAVISIDE_TYPE::VARIANT
                     && b != a) {
                     tmp += tmp_grad[b].tail<3>() * acc_val_2(a, b);
                     tangent_hess.block<3, 3>(id, (b + 1) * 3) =
@@ -214,118 +226,120 @@ smooth_point3_term_tangent_hessian(
     return std::make_tuple(values.prod(), tangent_grad, tangent_hess);
 }
 
-double smooth_point3_term_normal(
+GradType<-1> Point3::smooth_point3_term_normal_gradient(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
     const double& alpha,
-    const double& beta,
-    const ORIENTATION_TYPES& otypes)
+    const double& beta) const
 {
-    if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE)
-        return 1.;
-
-    double normal_term = 0.;
-    for (int a = 0; a < tangents.rows(); a++) {
-        const Eigen::Ref<const RowVector3<double>> t_prev =
-            tangents.row((a + tangents.rows() - 1) % tangents.rows());
-        const Eigen::Ref<const RowVector3<double>> t = tangents.row(a);
-
-        if (otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT)
-            normal_term +=
-                negative_orientation_penalty(t_prev, t, -direc, alpha, beta);
-    }
-
-    return Math<double>::smooth_heaviside(normal_term - 1, 1., 0);
-}
-
-GradType<-1> smooth_point3_term_normal_gradient(
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
-    const double& alpha,
-    const double& beta,
-    const ORIENTATION_TYPES& otypes)
-{
-    Eigen::VectorXd grad = Eigen::VectorXd::Zero((tangents.rows() + 1) * 3);
-    if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE)
+    Eigen::VectorXd grad =
+        Eigen::VectorXd::Zero(tangents.size() + direc.size());
+    if (!orientable || _otypes.normal_type(0) == HEAVISIDE_TYPE::ONE)
         return std::make_tuple(1., grad);
 
     double normal_term = 0.;
-    for (int a = 0; a < tangents.rows(); a++) {
-        const int a_prev = (a + tangents.rows() - 1) % tangents.rows();
-        const Eigen::Ref<const RowVector3<double>> t_prev =
-            tangents.row(a_prev);
-        const Eigen::Ref<const RowVector3<double>> t = tangents.row(a);
+    for (int a = 0; a < faces.rows(); a++) {
+        const Eigen::Ref<const RowVector3<double>> t1 =
+            tangents.row(faces(a, 1) - 1);
+        const Eigen::Ref<const RowVector3<double>> t2 =
+            tangents.row(faces(a, 2) - 1);
 
-        if (otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT) {
-            const int id_prev = (a_prev + 1) * 3;
-            const int id = (a + 1) * 3;
-            const auto [y, dy] = negative_orientation_penalty_grad(
-                t_prev, t, -direc, alpha, beta);
+        if (_otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT) {
+            const int id1 = faces(a, 1) * 3;
+            const int id2 = faces(a, 2) * 3;
+            const auto [y, dy] =
+                negative_orientation_penalty_grad(t1, t2, -direc, alpha, beta);
 
             normal_term += y;
 
-            grad.segment<3>(id_prev) += dy.head<3>();
-            grad.segment<3>(id) += dy.segment<3>(3);
+            grad.segment<3>(id1) += dy.head<3>();
+            grad.segment<3>(id2) += dy.segment<3>(3);
             grad.head<3>() -= dy.tail<3>();
         }
     }
 
-    const double val =
-        Math<double>::smooth_heaviside(normal_term - 1, 1., 0);
+    const double val = Math<double>::smooth_heaviside(normal_term - 1, 1., 0);
     const double grad_val =
         Math<double>::smooth_heaviside_grad(normal_term - 1, 1., 0);
 
     return std::make_tuple(val, grad * grad_val);
 }
 
-HessianType<-1>
-smooth_point3_term_normal_hessian(
+HessianType<-1> Point3::smooth_point3_term_normal_hessian(
     const Eigen::Ref<const RowVector3<double>>& direc,
     const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
     const double& alpha,
-    const double& beta,
-    const ORIENTATION_TYPES& otypes)
+    const double& beta) const
 {
     Eigen::VectorXd grad = Eigen::VectorXd::Zero((tangents.rows() + 1) * 3);
     Eigen::MatrixXd hess = Eigen::MatrixXd::Zero(grad.size(), grad.size());
-    if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE)
+    if (!orientable || _otypes.normal_type(0) == HEAVISIDE_TYPE::ONE)
         return std::make_tuple(1., grad, hess);
 
-    double normal_term = 0.;
-    for (int a = 0; a < tangents.rows(); a++) {
-        const int a_prev = (a + tangents.rows() - 1) % tangents.rows();
-        const Eigen::Ref<const RowVector3<double>> t_prev =
-            tangents.row(a_prev);
-        const Eigen::Ref<const RowVector3<double>> t = tangents.row(a);
+    // double normal_term = 0.;
+    // for (int a = 0; a < faces.rows(); a++) {
+    //     const Eigen::Ref<const RowVector3<double>> t1 = tangents.row(faces(a,
+    //     1) - 1); const Eigen::Ref<const RowVector3<double>> t2 =
+    //     tangents.row(faces(a, 2) - 1);
 
-        if (otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT) {
-            const int id_prev = (a_prev + 1) * 3;
-            const int id = (a + 1) * 3;
-            auto [y, dy, ddy] = negative_orientation_penalty_hess(
-                t_prev, t, -direc, alpha, beta);
+    //     if (_otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT)
+    //     {
+    //         const int id1 = faces(a, 1) * 3;
+    //         const int id2 = faces(a, 2) * 3;
+    //         auto [y, dy, ddy] = negative_orientation_penalty_hess(
+    //             t1, t2, -direc, alpha, beta);
 
-            normal_term += y;
+    //         normal_term += y;
 
-            grad.segment<3>(id_prev) += dy.head(3);
-            grad.segment<3>(id) += dy.segment(3, 3);
-            grad.head<3>() -= dy.tail(3);
+    //         grad.segment<3>(id1) += dy.head(3);
+    //         grad.segment<3>(id2) += dy.segment<3>(3);
+    //         grad.head<3>() -= dy.tail<3>();
 
-            hess.block<3, 3>(id_prev, id_prev) += ddy.block<3, 3>(0, 0);
-            hess.block<3, 3>(id_prev, id) += ddy.block<3, 3>(0, 3);
-            hess.block<3, 3>(id_prev, 0) += ddy.block<3, 3>(0, 6);
+    //         hess.block<3, 3>(id1, id1) += ddy.block<3, 3>(0, 0);
+    //         hess.block<3, 3>(id1, id2) += ddy.block<3, 3>(0, 3);
+    //         hess.block<3, 3>(id1, 0) += ddy.block<3, 3>(0, 6);
 
-            hess.block<3, 3>(id, id_prev) += ddy.block<3, 3>(3, 0);
-            hess.block<3, 3>(id, id) += ddy.block<3, 3>(3, 3);
-            hess.block<3, 3>(id, 0) += ddy.block<3, 3>(3, 6);
+    //         hess.block<3, 3>(id2, id1) += ddy.block<3, 3>(3, 0);
+    //         hess.block<3, 3>(id2, id2) += ddy.block<3, 3>(3, 3);
+    //         hess.block<3, 3>(id2, 0) += ddy.block<3, 3>(3, 6);
 
-            hess.block<3, 3>(0, id_prev) += ddy.block<3, 3>(6, 0);
-            hess.block<3, 3>(0, id) += ddy.block<3, 3>(6, 3);
-            hess.block<3, 3>(0, 0) -= ddy.block<3, 3>(6, 6);
+    //         hess.block<3, 3>(0, id1) += ddy.block<3, 3>(6, 0);
+    //         hess.block<3, 3>(0, id2) += ddy.block<3, 3>(6, 3);
+    //         hess.block<3, 3>(0, 0) -= ddy.block<3, 3>(6, 6);
+    //     }
+    // }
+
+    // autodiff
+    // TODO: replace with efficient code
+    double normal_term = 0;
+    {
+        using T = ADHessian<-1>;
+        Eigen::VectorXd tmp(direc.size() + tangents.size());
+        tmp.head<3>() = direc;
+        for (int i = 0; i < tangents.rows(); i++)
+            tmp.segment<3>(3 * i + 3) = tangents.row(i);
+
+        DiffScalarBase::setVariableCount(tmp.size());
+        const Eigen::Matrix<T, -1, dim> X = slice_positions<T, -1, dim>(tmp);
+
+        T normal_term_ad(0.);
+        for (int a = 0; a < faces.rows(); a++) {
+            if (_otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT)
+                normal_term_ad =
+                    normal_term_ad
+                    + Math<T>::smooth_heaviside(
+                        -X.row(0).dot(X.row(faces(a, 1))
+                                          .cross(X.row(faces(a, 2)))
+                                          .normalized()),
+                        _param.alpha_n, _param.beta_n);
         }
+
+        normal_term = normal_term_ad.getValue();
+        hess = normal_term_ad.getHessian();
+        grad = normal_term_ad.getGradient();
     }
 
-    const double val =
-        Math<double>::smooth_heaviside(normal_term - 1, 1., 0);
+    const double val = Math<double>::smooth_heaviside(normal_term - 1, 1., 0);
     const double grad_val =
         Math<double>::smooth_heaviside_grad(normal_term - 1, 1., 0);
     const double hess_val =
@@ -336,67 +350,67 @@ smooth_point3_term_normal_hessian(
         grad * hess_val * grad.transpose() + grad_val * hess);
 }
 
-bool smooth_point3_term_type(
-    const Eigen::Ref<const RowVector3<double>>& v,
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Matrix<double, -1, 3>& neighbors,
-    const ParameterType& param,
-    ORIENTATION_TYPES& otypes)
+bool Point3::smooth_point3_term_type(
+    const Eigen::Matrix<double, -1, 3>& X,
+    const Eigen::Ref<const RowVector3<double>>& direc)
 {
-    RowVector3<double> t, t_prev;
-    assert(neighbors.rows() > 2);
-    otypes.set_size(neighbors.rows());
+    _otypes.set_size(edges.rows());
 
     const RowVector3<double> dn = direc.normalized();
-    double normal_term = 0;
-    t_prev = neighbors.row(neighbors.rows() - 1) - v;
-    for (int a = 0; a < neighbors.rows(); a++) {
-        t = neighbors.row(a) - v;
-        otypes.tangent_type(a) =
-            otypes.compute_type(-dn.dot(t) / t.norm(), param.alpha_t, param.beta_t);
-        if (otypes.tangent_type(a) == HEAVISIDE_TYPE::ZERO)
+    for (int a = 0; a < edges.rows(); a++) {
+        const RowVector3<double> t = X.row(edges(a, 1)) - X.row(edges(a, 0));
+        _otypes.tangent_type(a) = _otypes.compute_type(
+            -dn.dot(t) / t.norm(), _param.alpha_t, _param.beta_t);
+        if (_otypes.tangent_type(a) == HEAVISIDE_TYPE::ZERO)
             return false;
+    }
 
-        const double tmp = dn.dot(t_prev.cross(t).normalized());
-        otypes.normal_type(a) = otypes.compute_type(tmp, param.alpha_n, param.beta_n);
-        normal_term += Math<double>::smooth_heaviside(tmp, param.alpha_n, param.beta_n);
+    if (!orientable) {
+        return true;
+    }
 
-        std::swap(t, t_prev);
+    double normal_term = 0;
+    for (int a = 0; a < faces.rows(); a++) {
+        const RowVector3<double> t1 = X.row(faces(a, 1)) - X.row(faces(a, 0));
+        const RowVector3<double> t2 = X.row(faces(a, 2)) - X.row(faces(a, 0));
+        const double tmp = dn.dot(t1.cross(t2).normalized());
+        _otypes.normal_type(a) =
+            _otypes.compute_type(tmp, _param.alpha_n, _param.beta_n);
+        normal_term +=
+            Math<double>::smooth_heaviside(tmp, _param.alpha_n, _param.beta_n);
     }
 
     if (normal_term >= 1) {
-        for (int a = 0; a < neighbors.rows(); a++)
-            otypes.normal_type(a) = HEAVISIDE_TYPE::ONE;
+        for (int a = 0; a < faces.rows(); a++)
+            _otypes.normal_type(a) = HEAVISIDE_TYPE::ONE;
     }
 
     return normal_term > 0;
 }
 
-GradType<-1> smooth_point3_term_gradient(
+GradType<-1> Point3::smooth_point3_term_gradient(
     const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const RowVector3<double>>& v,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,
-    const ParameterType& param,
-    const ORIENTATION_TYPES& otypes)
+    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& X,
+    const ParameterType& param) const
 {
-    const int n_neighbors = neighbors.rows();
-    const int n_dofs = (n_neighbors + 2) * 3;
+    const int n_dofs = (X.rows() + 1) * 3;
     const int n_neighbor_dofs = n_neighbors * 3;
-    assert(n_neighbors > 2);
-    assert(otypes.size() == n_neighbors);
 
     const Eigen::Matrix<double, -1, 3, Eigen::RowMajor> tangents =
-        neighbors.rowwise() - v;
+        X.bottomRows(n_neighbors).rowwise() - X.row(0);
     const Eigen::VectorXd tangents_vec =
         Eigen::Map<const Eigen::VectorXd>(tangents.data(), tangents.size());
+
     auto [dn, dn_grad] = normalize_vector_grad(direc);
     dn *= -1;
     dn_grad *= -1;
 
     const auto [tangent_term, tangent_grad] =
-        smooth_point3_term_tangent_gradient(dn, tangents, param.alpha_t, param.beta_t, otypes);
-    const auto [normal_term, normal_grad] =
-        smooth_point3_term_normal_gradient(dn, tangents, param.alpha_n, param.beta_n, otypes);
+        smooth_point3_term_tangent_gradient(
+            dn, tangents, param.alpha_t, param.beta_t);
+
+    auto [normal_term, normal_grad] = smooth_point3_term_normal_gradient(
+        dn, tangents, param.alpha_n, param.beta_n);
 
     double val = tangent_term * normal_term;
 
@@ -420,23 +434,19 @@ GradType<-1> smooth_point3_term_gradient(
     return std::tuple(val, grad);
 }
 
-HessianType<-1> smooth_point3_term_hessian(
+HessianType<-1> Point3::smooth_point3_term_hessian(
     const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const RowVector3<double>>& v,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,
-    const ParameterType& param,
-    const ORIENTATION_TYPES& otypes)
+    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& X,
+    const ParameterType& param) const
 {
-    const int n_neighbors = neighbors.rows();
-    const int n_dofs = (n_neighbors + 2) * 3;
+    const int n_dofs = (X.rows() + 1) * 3;
     const int n_neighbor_dofs = n_neighbors * 3;
-    assert(n_neighbors > 2);
-    assert(otypes.size() == n_neighbors);
 
     const Eigen::Matrix<double, -1, 3, Eigen::RowMajor> tangents =
-        neighbors.rowwise() - v;
-    const Eigen::Ref<const Eigen::VectorXd> tangents_vec =
+        X.bottomRows(n_neighbors).rowwise() - X.row(0);
+    const Eigen::VectorXd tangents_vec =
         Eigen::Map<const Eigen::VectorXd>(tangents.data(), tangents.size());
+
     auto [dn, dn_grad, dn_hess] = normalize_vector_hess(direc);
     dn *= -1;
     dn_grad *= -1;
@@ -444,9 +454,12 @@ HessianType<-1> smooth_point3_term_hessian(
         mat *= -1;
 
     const auto [tangent_term, tangent_grad, tangent_hess] =
-        smooth_point3_term_tangent_hessian(dn, tangents, param.alpha_t, param.beta_t, otypes);
-    const auto [normal_term, normal_grad, normal_hess] =
-        smooth_point3_term_normal_hessian(dn, tangents, param.alpha_n, param.beta_n, otypes);
+        smooth_point3_term_tangent_hessian(
+            dn, tangents, param.alpha_t, param.beta_t);
+
+    auto [normal_term, normal_grad, normal_hess] =
+        smooth_point3_term_normal_hessian(
+            dn, tangents, param.alpha_n, param.beta_n);
 
     double val = tangent_term * normal_term;
 
@@ -510,69 +523,43 @@ HessianType<-1> smooth_point3_term_hessian(
     return std::tuple(val, grad, hess);
 }
 
-template <typename scalar, int n_neighbors>
-scalar smooth_point3_term(
-    const Eigen::Ref<const RowVector3<scalar>>& v,
-    const Eigen::Ref<const RowVector3<scalar>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<scalar, n_neighbors, 3>>& neighbors,
-    const ParameterType& param,
-    const ORIENTATION_TYPES& otypes)
+template <typename scalar, int n_verts>
+scalar Point3::smooth_point3_term(
+    const Eigen::Matrix<scalar, n_verts, 3>& X,
+    const Eigen::Ref<const RowVector3<scalar>>& direc) const
 {
-    RowVector3<scalar> t, t_prev;
-    assert(neighbors.rows() > 2);
-    assert(otypes.size() == neighbors.rows());
-
     const RowVector3<scalar> dn = direc.normalized();
     scalar tangent_term(1.);
     scalar weight(0.);
     scalar normal_term(0.);
-    t_prev = neighbors.row(neighbors.rows() - 1) - v;
-    for (int a = 0; a < neighbors.rows(); a++) {
-        t = neighbors.row(a) - v;
-        if (otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT)
-            tangent_term = tangent_term
+    for (int a = 0; a < edges.rows(); a++) {
+        const RowVector3<scalar> t = X.row(edges(a, 1)) - X.row(edges(a, 0));
+        if (_otypes.tangent_type(a) == HEAVISIDE_TYPE::VARIANT)
+            tangent_term =
+                tangent_term
                 * Math<scalar>::smooth_heaviside(
-                               -dn.dot(t) / t.norm(), param.alpha_t, param.beta_t);
-
-        if (otypes.normal_type(a) == HEAVISIDE_TYPE::VARIANT)
-            normal_term =
-                normal_term
-                + Math<scalar>::smooth_heaviside(
-                    dn.dot(t_prev.cross(t).normalized()), param.alpha_n, param.beta_n);
+                    -dn.dot(t) / t.norm(), _param.alpha_t, _param.beta_t);
 
         weight = weight + t.squaredNorm();
-        std::swap(t, t_prev);
     }
-
     weight /= 3.;
 
-    if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE)
+    if (!orientable || _otypes.normal_type(0) == HEAVISIDE_TYPE::ONE)
         normal_term = scalar(1.);
-    else
+    else {
+        for (int a = 0; a < faces.rows(); a++) {
+            const RowVector3<scalar> t1 =
+                X.row(faces(a, 1)) - X.row(faces(a, 0));
+            const RowVector3<scalar> t2 =
+                X.row(faces(a, 2)) - X.row(faces(a, 0));
+            normal_term = normal_term
+                + Math<scalar>::smooth_heaviside(
+                              -dn.dot(t1.cross(t2).normalized()),
+                              _param.alpha_n, _param.beta_n);
+        }
         normal_term = Math<scalar>::smooth_heaviside(normal_term - 1, 1., 0);
+    }
 
     return weight * normal_term * tangent_term;
 }
-
-template double smooth_point3_term(
-    const Eigen::Ref<const RowVector3<double>>& v,
-    const Eigen::Ref<const RowVector3<double>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& neighbors,
-    const ParameterType& param,
-    const ORIENTATION_TYPES& otypes);
-
-#ifdef DERIVATIVES_WITH_AUTODIFF
-template ADGrad<-1> smooth_point3_term(
-    const Eigen::Ref<const RowVector3<ADGrad<-1>>>& v,
-    const Eigen::Ref<const RowVector3<ADGrad<-1>>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<ADGrad<-1>, -1, 3>>& neighbors,
-    const ParameterType& param,
-    const ORIENTATION_TYPES& otypes);
-template ADHessian<-1> smooth_point3_term(
-    const Eigen::Ref<const RowVector3<ADHessian<-1>>>& v,
-    const Eigen::Ref<const RowVector3<ADHessian<-1>>>& direc,
-    const Eigen::Ref<const Eigen::Matrix<ADHessian<-1>, -1, 3>>& neighbors,
-    const ParameterType& param,
-    const ORIENTATION_TYPES& otypes);
-#endif
 } // namespace ipc

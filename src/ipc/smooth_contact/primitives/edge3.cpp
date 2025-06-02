@@ -13,79 +13,6 @@ Vector3<scalar> project(
     return a - a.dot(b) * b;
 }
 
-}
-// d is a vector from any point on the edge to the point outside of the edge
-Edge3::Edge3(
-    const long& id,
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
-    const VectorMax3d& d,
-    const ParameterType& param)
-    : Primitive(id, param)
-{
-    auto ids = mesh.find_edge_adjacent_vertices(id);
-    _vert_ids = std::vector<long>(ids.begin(), ids.begin() + ids.size());
-    is_active_ = smooth_edge3_term_type(
-        d.normalized(), vertices.row(_vert_ids[0]), vertices.row(_vert_ids[1]),
-        vertices.row(_vert_ids[2]), vertices.row(_vert_ids[3]), _param,
-        otypes);
-}
-
-int Edge3::n_vertices() const { return n_edge_neighbors_3d; }
-
-double Edge3::potential(
-    const Eigen::Ref<const Vector3d>& d,
-    const Eigen::Ref<const Vector12d>& x) const
-{
-#ifdef DERIVATIVES_WITH_AUTODIFF
-    return smooth_edge3_term_template<double>(
-        d.normalized(), x.head<3>(), x.segment<3>(3), x.segment<3>(6),
-        x.tail<3>(), _param, otypes);
-#else
-    return smooth_edge3_term(
-        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6),
-        x.tail<3>(), _param, otypes);
-#endif
-}
-Vector15d Edge3::grad(
-    const Eigen::Ref<const Vector3d>& d,
-    const Eigen::Ref<const Vector12d>& x) const
-{
-#ifdef DERIVATIVES_WITH_AUTODIFF
-    Vector15d tmp;
-    tmp << d, x;
-    DiffScalarBase::setVariableCount(15);
-    using T = ADGrad<15>;
-    auto X = slice_positions<T, 5, 3>(tmp);
-    return smooth_edge3_term_template<T>(
-               X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
-               X.row(4), _param, otypes)
-        .getGradient();
-#else
-    return std::get<1>(smooth_edge3_term_gradient(
-        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), _param, otypes));
-#endif
-}
-Matrix15d Edge3::hessian(
-    const Eigen::Ref<const Vector3d>& d,
-    const Eigen::Ref<const Vector12d>& x) const
-{
-#ifdef DERIVATIVES_WITH_AUTODIFF
-    Vector15d tmp;
-    tmp << d, x;
-    DiffScalarBase::setVariableCount(15);
-    using T = ADHessian<15>;
-    auto X = slice_positions<T, 5, 3>(tmp);
-    return smooth_edge3_term_template<T>(
-               X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
-               X.row(4), _param, otypes)
-        .getHessian();
-#else
-    return std::get<2>(smooth_edge3_term_hessian(
-        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), _param, otypes));
-#endif
-}
-
 bool smooth_edge3_term_type(
     const Eigen::Ref<const Vector3d>& dn,
     const Eigen::Ref<const Vector3d>& e0,
@@ -93,7 +20,8 @@ bool smooth_edge3_term_type(
     const Eigen::Ref<const Vector3d>& f0,
     const Eigen::Ref<const Vector3d>& f1,
     const ParameterType& param,
-    ORIENTATION_TYPES& otypes)
+    ORIENTATION_TYPES& otypes,
+    const bool orientable)
 {
     otypes.set_size(2);
 
@@ -114,7 +42,7 @@ bool smooth_edge3_term_type(
             return false;
     }
 
-    {
+    if (orientable) {
         const Vector3d edge = (e0 - e1).normalized();
         const Vector3d d = project<double>(dn, edge).normalized();
         otypes.normal_type(0) = otypes.compute_type((d - t0).cross(d - t1).dot(edge), param.alpha_n, param.beta_n);
@@ -122,145 +50,6 @@ bool smooth_edge3_term_type(
     }
 
     return true;
-}
-
-double smooth_edge3_normal_term(
-    const Eigen::Ref<const Vector3d>& dn,
-    const Eigen::Ref<const Vector3d>& e0,
-    const Eigen::Ref<const Vector3d>& e1,
-    const Eigen::Ref<const Vector3d>& f0,
-    const Eigen::Ref<const Vector3d>& f1,
-    const double alpha,
-    const double beta,
-    const ORIENTATION_TYPES& otypes)
-{
-    if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE
-        || otypes.normal_type(1) == HEAVISIDE_TYPE::ONE)
-        return 1.;
-
-    const Vector3d t0 =
-        PointEdgeDistance<double, 3>::point_line_closest_point_direction(
-            f0, e0, e1).normalized();
-    const Vector3d t1 =
-        PointEdgeDistance<double, 3>::point_line_closest_point_direction(
-            f1, e0, e1).normalized();
-    const Vector3d edge = (e0 - e1).normalized();
-    const Vector3d d = project<double>(dn, edge).normalized();
-    return Math<double>::smooth_heaviside((d - t0).cross(d - t1).dot(edge), alpha, beta);
-}
-
-GradType<15> smooth_edge3_normal_term_gradient(
-    const Eigen::Ref<const Vector3d>& dn,
-    const Eigen::Ref<const Vector3d>& e0,
-    const Eigen::Ref<const Vector3d>& e1,
-    const Eigen::Ref<const Vector3d>& f0,
-    const Eigen::Ref<const Vector3d>& f1,
-    const double alpha,
-    const double beta,
-    const ORIENTATION_TYPES& otypes)
-{
-    double val = 1.;
-    Vector15d gradient = Vector15d::Zero();
-
-    if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE
-        || otypes.normal_type(1) == HEAVISIDE_TYPE::ONE)
-        return std::make_tuple(val, gradient);
-
-    {
-        const auto t0n = 
-        PointEdgeDistance<double, 3>::point_line_closest_point_direction(
-                f0, e0, e1).normalized();
-
-        const auto t1n = 
-        PointEdgeDistance<double, 3>::point_line_closest_point_direction(
-                f1, e0, e1).normalized();
-        const auto edge = (e0 - e1).normalized();
-        
-        const Vector3d d = project<double>(dn, edge).normalized();
-        val = (d - t0n).cross(d - t1n).dot(edge);
-    }
-
-    autogen::edge_normal_term_gradient(
-        dn[0], dn[1], dn[2], e0[0], e0[1], e0[2],
-        e1[0], e1[1], e1[2], f0[0], f0[1], f0[2],
-        f1[0], f1[1], f1[2], gradient.data());
-
-    gradient *= Math<double>::smooth_heaviside_grad(val, alpha, beta);
-    val = Math<double>::smooth_heaviside(val, alpha, beta);
-    return std::make_tuple(val, gradient);
-}
-
-HessianType<15> smooth_edge3_normal_term_hessian(
-    const Eigen::Ref<const Vector3d>& dn,
-    const Eigen::Ref<const Vector3d>& e0,
-    const Eigen::Ref<const Vector3d>& e1,
-    const Eigen::Ref<const Vector3d>& f0,
-    const Eigen::Ref<const Vector3d>& f1,
-    const double alpha,
-    const double beta,
-    const ORIENTATION_TYPES& otypes)
-{
-    double val = 1.;
-    Vector15d gradient = Vector15d::Zero();
-    Matrix15d hessian = Matrix15d::Zero();
-
-    if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE
-        || otypes.normal_type(1) == HEAVISIDE_TYPE::ONE)
-        return std::make_tuple(val, gradient, hessian);
-
-    {
-        const auto t0n = 
-        PointEdgeDistance<double, 3>::point_line_closest_point_direction(
-                f0, e0, e1).normalized();
-
-        const auto t1n = 
-        PointEdgeDistance<double, 3>::point_line_closest_point_direction(
-                f1, e0, e1).normalized();
-        const auto edge = (e0 - e1).normalized();
-        
-        const Vector3d d = project<double>(dn, edge).normalized();
-        val = (d - t0n).cross(d - t1n).dot(edge);
-    }
-
-    autogen::edge_normal_term_gradient(
-        dn[0], dn[1], dn[2], e0[0], e0[1], e0[2],
-        e1[0], e1[1], e1[2], f0[0], f0[1], f0[2],
-        f1[0], f1[1], f1[2], gradient.data());
-    
-    autogen::edge_normal_term_hessian(
-        dn[0], dn[1], dn[2], e0[0], e0[1], e0[2],
-        e1[0], e1[1], e1[2], f0[0], f0[1], f0[2],
-        f1[0], f1[1], f1[2], hessian.data());
-
-    const double tmp = Math<double>::smooth_heaviside_grad(val, alpha, beta);
-    hessian = hessian * tmp + gradient * Math<double>::smooth_heaviside_hess(val, alpha, beta) * gradient.transpose();
-    gradient *= tmp;
-    val = Math<double>::smooth_heaviside(val, alpha, beta);
-    
-    // verify with autodiff
-    // {
-    //     DiffScalarBase::setVariableCount(15);
-    //     using T = ADHessian<15>;
-    //     Vector15d tmp;
-    //     tmp << dn, e0, e1, f0, f1;
-    //     auto X = slice_positions<T, 15, 1>(tmp);
-    //     const Vector3<T> n0 = (X.segment<3>(3) - X.segment<3>(9)).cross(X.segment<3>(6) - X.segment<3>(9));
-    //     const Vector3<T> n1 = -(X.segment<3>(3) - X.tail<3>()).cross(X.segment<3>(6) - X.tail<3>());
-    //     T normal_term = Math<T>::smooth_heaviside(
-    //         (Math<T>::smooth_heaviside(X.head<3>().dot(n0) / n0.norm(), alpha, beta)
-    //         + Math<T>::smooth_heaviside(X.head<3>().dot(n1) / n1.norm(), alpha, beta)
-    //         - 1), 1., 0);
-        
-    //     if ((normal_term.getHessian() - hessian).norm() > 1e-6 * hessian.norm()) {
-    //         std::cout << "gradient: \n" << normal_term.getGradient().transpose() << "\n vs \n" << gradient.transpose() << std::endl;
-    //         std::cout << "hessian mismatch: \n" << normal_term.getHessian() << "\n vs \n" << hessian << std::endl;
-    //     }
-    // }
-
-    return std::make_tuple(
-        val,
-        gradient,
-        hessian);
 }
 
 double smooth_edge3_tangent_term(
@@ -406,12 +195,13 @@ double smooth_edge3_term(
     const Eigen::Ref<const Vector3d>& f0,
     const Eigen::Ref<const Vector3d>& f1,
     const ParameterType& param,
-    const ORIENTATION_TYPES& otypes)
+    const ORIENTATION_TYPES& otypes,
+    const bool orientable)
 {
     const Vector3d dn = direc.normalized();
     double tangent_term =
         smooth_edge3_tangent_term(dn, e0, e1, f0, f1, param.alpha_t, param.beta_t, otypes);
-    double normal_term =
+    double normal_term = !orientable ? 1 :
         smooth_edge3_normal_term(dn, e0, e1, f0, f1, param.alpha_n, param.beta_n, otypes);
 
     return (e1 - e0).squaredNorm() * tangent_term * normal_term;
@@ -424,7 +214,8 @@ GradType<15> smooth_edge3_term_gradient(
     const Eigen::Ref<const Vector3d>& f0,
     const Eigen::Ref<const Vector3d>& f1,
     const ParameterType& param,
-    const ORIENTATION_TYPES& otypes)
+    const ORIENTATION_TYPES& otypes,
+    const bool orientable)
 {
     assert(otypes.size() == 2);
 
@@ -432,8 +223,14 @@ GradType<15> smooth_edge3_term_gradient(
 
     auto [t_term, t_grad] = smooth_edge3_tangent_term_gradient(
         dn, e0, e1, f0, f1, param.alpha_t, param.beta_t, otypes);
-    auto [n_term, n_grad] = smooth_edge3_normal_term_gradient(dn, e0, e1, f0,
-    f1, param.alpha_n, param.beta_n, otypes);
+
+    double n_term = 1.;
+    Vector15d n_grad = Vector15d::Zero();
+    if (orientable)
+    {
+        std::tie(n_term, n_grad) = smooth_edge3_normal_term_gradient(dn, e0, e1, f0,
+        f1, param.alpha_n, param.beta_n, otypes);
+    }
 
     t_grad.head<3>() = dn_grad * t_grad.head<3>();
     n_grad.head<3>() = dn_grad * n_grad.head<3>();
@@ -456,7 +253,8 @@ HessianType<15> smooth_edge3_term_hessian(
     const Eigen::Ref<const Vector3d>& f0,
     const Eigen::Ref<const Vector3d>& f1,
     const ParameterType& param,
-    const ORIENTATION_TYPES& otypes)
+    const ORIENTATION_TYPES& otypes,
+    const bool orientable)
 {
     assert(otypes.size() == 2);
 
@@ -464,8 +262,15 @@ HessianType<15> smooth_edge3_term_hessian(
 
     auto [t_term, t_grad, t_hess] = smooth_edge3_tangent_term_hessian(
         dn, e0, e1, f0, f1, param.alpha_t, param.beta_t, otypes);
-    auto [n_term, n_grad, n_hess] = smooth_edge3_normal_term_hessian(dn, e0,
-    e1, f0, f1, param.alpha_n, param.beta_n, otypes);
+
+    double n_term = 1.;
+    Vector15d n_grad = Vector15d::Zero();
+    Matrix15d n_hess = Matrix15d::Zero();
+    if (orientable)
+    {
+        std::tie(n_term, n_grad, n_hess) = smooth_edge3_normal_term_hessian(dn, e0,
+        e1, f0, f1, param.alpha_n, param.beta_n, otypes);
+    }
 
     t_hess.topRows<3>() = dn_grad * t_hess.topRows<3>();
     t_hess.leftCols<3>() = t_hess.leftCols<3>() * dn_grad;
@@ -504,6 +309,15 @@ HessianType<15> smooth_edge3_term_hessian(
     return std::make_tuple(weight * t_term * n_term, gradient, hessian);
 }
 
+/// @brief
+/// @tparam scalar
+/// @param dn from edge to point outside, normalized
+/// @param e0
+/// @param e1
+/// @param f0 face [f0, e0, e1]
+/// @param f1 face [f1, e1, e0]
+/// @param alpha
+/// @return
 template <typename scalar>
 scalar smooth_edge3_term_template(
     const Eigen::Ref<const Vector3<scalar>>& dn,
@@ -512,7 +326,8 @@ scalar smooth_edge3_term_template(
     const Eigen::Ref<const Vector3<scalar>>& f0,
     const Eigen::Ref<const Vector3<scalar>>& f1,
     const ParameterType& param,
-    const ORIENTATION_TYPES& otypes)
+    const ORIENTATION_TYPES& otypes,
+    const bool orientable)
 {
     scalar tangent_term = scalar(1.);
     const Vector3<scalar> t0 =
@@ -533,7 +348,7 @@ scalar smooth_edge3_term_template(
                            -dn.dot(t1), param.alpha_t, param.beta_t);
 
     scalar normal_term = scalar(1.);
-    if (otypes.normal_type(0) != HEAVISIDE_TYPE::ONE) {
+    if (orientable && otypes.normal_type(0) != HEAVISIDE_TYPE::ONE) {
         const Vector3<scalar> edge = (e0 - e1).normalized();
         const Vector3<scalar> d = project<scalar>(dn, edge).normalized();
         normal_term = Math<scalar>::smooth_heaviside((d - t0).cross(d - t1).dot(edge), param.alpha_n, param.beta_n);
@@ -542,30 +357,284 @@ scalar smooth_edge3_term_template(
     return (e1 - e0).squaredNorm() * tangent_term * normal_term;
 }
 
+}
+// d is a vector from any point on the edge to the point outside of the edge
+Edge3::Edge3(
+    const long& id,
+    const CollisionMesh& mesh,
+    const Eigen::MatrixXd& vertices,
+    const VectorMax3d& d,
+    const ParameterType& param)
+    : Primitive(id, param)
+{
+    orientable = !mesh.is_codim_edge(id);
+
+    std::array<long, 4> neighbors{{-1, -1, -1, -1}};
+    {
+        std::array<long, 2> lf = {{mesh.edges_to_faces()(id, 0), mesh.edges_to_faces()(id, 1)}};
+        has_neighbor_1 = lf[0] >= 0;
+        has_neighbor_2 = lf[1] >= 0;
+
+        if (has_neighbor_1)
+        {
+            const int j = 0;
+            for (int i = 0; i < 3; i++)
+            {
+                const auto va = mesh.faces()(lf[j], i);
+
+                if (va != mesh.edges()(id, 0) && va != mesh.edges()(id, 1))
+                {
+                    neighbors[2 + j] = va;
+
+                    // When there is a face adjacent to the edge, we orient the edge the same way as in the face
+                    neighbors[0] = mesh.faces()(lf[j], (i+1) % 3);
+                    neighbors[1] = mesh.faces()(lf[j], (i+2) % 3);
+                    break;
+                }
+            }
+            assert(neighbors[2] >= 0 && neighbors[0] >= 0 && neighbors[1] >= 0);
+        }
+
+        if (has_neighbor_2)
+        {
+            const int j = 1;
+            for (int i = 0; i < 3; i++)
+            {
+                const auto va = mesh.faces()(lf[j], i);
+
+                if (va != mesh.edges()(id, 0) && va != mesh.edges()(id, 1))
+                {
+                    neighbors[2 + j] = va;
+
+                    // When has_neighbor_1==false, we orient the edge the same way as in the second face.
+                    if (!has_neighbor_1)
+                    {
+                        neighbors[0] = mesh.faces()(lf[j], (i+2) % 3);
+                        neighbors[1] = mesh.faces()(lf[j], (i+1) % 3);
+                    }
+                    else
+                    {
+                        assert(neighbors[0] == mesh.faces()(lf[j], (i+2) % 3));
+                        assert(neighbors[1] == mesh.faces()(lf[j], (i+1) % 3));
+                    }
+                    break;
+                }
+            }
+            assert(neighbors[3] >= 0);
+        }
+    }
+
+    if (has_neighbor_1 && has_neighbor_2)
+    {
+        _vert_ids = std::vector<long>(neighbors.begin(), neighbors.begin() + neighbors.size());
+        is_active_ = smooth_edge3_term_type(
+            d.normalized(), vertices.row(_vert_ids[0]), vertices.row(_vert_ids[1]),
+            vertices.row(_vert_ids[2]), vertices.row(_vert_ids[3]), _param,
+            otypes, orientable);
+    }
+    else if (has_neighbor_1 || has_neighbor_2)
+    {
+        _vert_ids = {{neighbors[0], neighbors[1], has_neighbor_1 ? neighbors[2] : neighbors[3]}};
+        
+    }
+    else
+    {
+        _vert_ids = {{neighbors[0], neighbors[1]}};
+        is_active_ = true;
+    }
+}
+
+int Edge3::n_vertices() const { return n_edge_neighbors_3d; }
+
+double Edge3::potential(
+    const Eigen::Ref<const Vector3d>& d,
+    const Eigen::Ref<const Vector12d>& x) const
+{
 #ifdef DERIVATIVES_WITH_AUTODIFF
-template double smooth_edge3_term_template(
-    const Eigen::Ref<const Vector3<double>>& dn,
-    const Eigen::Ref<const Vector3<double>>& e0,
-    const Eigen::Ref<const Vector3<double>>& e1,
-    const Eigen::Ref<const Vector3<double>>& f0,
-    const Eigen::Ref<const Vector3<double>>& f1,
-    const ParameterType& param,
-    const ORIENTATION_TYPES& otypes);
-template ADGrad<15> smooth_edge3_term_template(
-    const Eigen::Ref<const Vector3<ADGrad<15>>>& dn,
-    const Eigen::Ref<const Vector3<ADGrad<15>>>& e0,
-    const Eigen::Ref<const Vector3<ADGrad<15>>>& e1,
-    const Eigen::Ref<const Vector3<ADGrad<15>>>& f0,
-    const Eigen::Ref<const Vector3<ADGrad<15>>>& f1,
-    const ParameterType& param,
-    const ORIENTATION_TYPES& otypes);
-template ADHessian<15> smooth_edge3_term_template(
-    const Eigen::Ref<const Vector3<ADHessian<15>>>& dn,
-    const Eigen::Ref<const Vector3<ADHessian<15>>>& e0,
-    const Eigen::Ref<const Vector3<ADHessian<15>>>& e1,
-    const Eigen::Ref<const Vector3<ADHessian<15>>>& f0,
-    const Eigen::Ref<const Vector3<ADHessian<15>>>& f1,
-    const ParameterType& param,
-    const ORIENTATION_TYPES& otypes);
+    return smooth_edge3_term_template<double>(
+        d.normalized(), x.head<3>(), x.segment<3>(3), x.segment<3>(6),
+        x.tail<3>(), _param, otypes, orientable);
+#else
+    return smooth_edge3_term(
+        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6),
+        x.tail<3>(), _param, otypes, orientable);
 #endif
+}
+Vector15d Edge3::grad(
+    const Eigen::Ref<const Vector3d>& d,
+    const Eigen::Ref<const Vector12d>& x) const
+{
+#ifdef DERIVATIVES_WITH_AUTODIFF
+    Vector15d tmp;
+    tmp << d, x;
+    DiffScalarBase::setVariableCount(15);
+    using T = ADGrad<15>;
+    auto X = slice_positions<T, 5, 3>(tmp);
+    return smooth_edge3_term_template<T>(
+               X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
+               X.row(4), _param, otypes, orientable)
+        .getGradient();
+#else
+    return std::get<1>(smooth_edge3_term_gradient(
+        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), _param, otypes, orientable));
+#endif
+}
+Matrix15d Edge3::hessian(
+    const Eigen::Ref<const Vector3d>& d,
+    const Eigen::Ref<const Vector12d>& x) const
+{
+#ifdef DERIVATIVES_WITH_AUTODIFF
+    Vector15d tmp;
+    tmp << d, x;
+    DiffScalarBase::setVariableCount(15);
+    using T = ADHessian<15>;
+    auto X = slice_positions<T, 5, 3>(tmp);
+    return smooth_edge3_term_template<T>(
+               X.row(0) / X.row(0).norm(), X.row(1), X.row(2), X.row(3),
+               X.row(4), _param, otypes, orientable)
+        .getHessian();
+#else
+    return std::get<2>(smooth_edge3_term_hessian(
+        d, x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>(), _param, otypes, orientable));
+#endif
+}
+
+double smooth_edge3_normal_term(
+    const Eigen::Ref<const Vector3d>& dn,
+    const Eigen::Ref<const Vector3d>& e0,
+    const Eigen::Ref<const Vector3d>& e1,
+    const Eigen::Ref<const Vector3d>& f0,
+    const Eigen::Ref<const Vector3d>& f1,
+    const double alpha,
+    const double beta,
+    const ORIENTATION_TYPES& otypes)
+{
+    if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE
+        || otypes.normal_type(1) == HEAVISIDE_TYPE::ONE)
+        return 1.;
+
+    const Vector3d t0 =
+        PointEdgeDistance<double, 3>::point_line_closest_point_direction(
+            f0, e0, e1).normalized();
+    const Vector3d t1 =
+        PointEdgeDistance<double, 3>::point_line_closest_point_direction(
+            f1, e0, e1).normalized();
+    const Vector3d edge = (e0 - e1).normalized();
+    const Vector3d d = project<double>(dn, edge).normalized();
+    return Math<double>::smooth_heaviside((d - t0).cross(d - t1).dot(edge), alpha, beta);
+}
+
+GradType<15> smooth_edge3_normal_term_gradient(
+    const Eigen::Ref<const Vector3d>& dn,
+    const Eigen::Ref<const Vector3d>& e0,
+    const Eigen::Ref<const Vector3d>& e1,
+    const Eigen::Ref<const Vector3d>& f0,
+    const Eigen::Ref<const Vector3d>& f1,
+    const double alpha,
+    const double beta,
+    const ORIENTATION_TYPES& otypes)
+{
+    double val = 1.;
+    Vector15d gradient = Vector15d::Zero();
+
+    if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE
+        || otypes.normal_type(1) == HEAVISIDE_TYPE::ONE)
+        return std::make_tuple(val, gradient);
+
+    {
+        const auto t0n = 
+        PointEdgeDistance<double, 3>::point_line_closest_point_direction(
+                f0, e0, e1).normalized();
+
+        const auto t1n = 
+        PointEdgeDistance<double, 3>::point_line_closest_point_direction(
+                f1, e0, e1).normalized();
+        const auto edge = (e0 - e1).normalized();
+        
+        const Vector3d d = project<double>(dn, edge).normalized();
+        val = (d - t0n).cross(d - t1n).dot(edge);
+    }
+
+    autogen::edge_normal_term_gradient(
+        dn[0], dn[1], dn[2], e0[0], e0[1], e0[2],
+        e1[0], e1[1], e1[2], f0[0], f0[1], f0[2],
+        f1[0], f1[1], f1[2], gradient.data());
+
+    gradient *= Math<double>::smooth_heaviside_grad(val, alpha, beta);
+    val = Math<double>::smooth_heaviside(val, alpha, beta);
+    return std::make_tuple(val, gradient);
+}
+
+HessianType<15> smooth_edge3_normal_term_hessian(
+    const Eigen::Ref<const Vector3d>& dn,
+    const Eigen::Ref<const Vector3d>& e0,
+    const Eigen::Ref<const Vector3d>& e1,
+    const Eigen::Ref<const Vector3d>& f0,
+    const Eigen::Ref<const Vector3d>& f1,
+    const double alpha,
+    const double beta,
+    const ORIENTATION_TYPES& otypes)
+{
+    double val = 1.;
+    Vector15d gradient = Vector15d::Zero();
+    Matrix15d hessian = Matrix15d::Zero();
+
+    if (otypes.normal_type(0) == HEAVISIDE_TYPE::ONE
+        || otypes.normal_type(1) == HEAVISIDE_TYPE::ONE)
+        return std::make_tuple(val, gradient, hessian);
+
+    {
+        const auto t0n = 
+        PointEdgeDistance<double, 3>::point_line_closest_point_direction(
+                f0, e0, e1).normalized();
+
+        const auto t1n = 
+        PointEdgeDistance<double, 3>::point_line_closest_point_direction(
+                f1, e0, e1).normalized();
+        const auto edge = (e0 - e1).normalized();
+        
+        const Vector3d d = project<double>(dn, edge).normalized();
+        val = (d - t0n).cross(d - t1n).dot(edge);
+    }
+
+    autogen::edge_normal_term_gradient(
+        dn[0], dn[1], dn[2], e0[0], e0[1], e0[2],
+        e1[0], e1[1], e1[2], f0[0], f0[1], f0[2],
+        f1[0], f1[1], f1[2], gradient.data());
+    
+    autogen::edge_normal_term_hessian(
+        dn[0], dn[1], dn[2], e0[0], e0[1], e0[2],
+        e1[0], e1[1], e1[2], f0[0], f0[1], f0[2],
+        f1[0], f1[1], f1[2], hessian.data());
+
+    const double tmp = Math<double>::smooth_heaviside_grad(val, alpha, beta);
+    hessian = hessian * tmp + gradient * Math<double>::smooth_heaviside_hess(val, alpha, beta) * gradient.transpose();
+    gradient *= tmp;
+    val = Math<double>::smooth_heaviside(val, alpha, beta);
+    
+    // verify with autodiff
+    // {
+    //     DiffScalarBase::setVariableCount(15);
+    //     using T = ADHessian<15>;
+    //     Vector15d tmp;
+    //     tmp << dn, e0, e1, f0, f1;
+    //     auto X = slice_positions<T, 15, 1>(tmp);
+    //     const Vector3<T> n0 = (X.segment<3>(3) - X.segment<3>(9)).cross(X.segment<3>(6) - X.segment<3>(9));
+    //     const Vector3<T> n1 = -(X.segment<3>(3) - X.tail<3>()).cross(X.segment<3>(6) - X.tail<3>());
+    //     T normal_term = Math<T>::smooth_heaviside(
+    //         (Math<T>::smooth_heaviside(X.head<3>().dot(n0) / n0.norm(), alpha, beta)
+    //         + Math<T>::smooth_heaviside(X.head<3>().dot(n1) / n1.norm(), alpha, beta)
+    //         - 1), 1., 0);
+        
+    //     if ((normal_term.getHessian() - hessian).norm() > 1e-6 * hessian.norm()) {
+    //         std::cout << "gradient: \n" << normal_term.getGradient().transpose() << "\n vs \n" << gradient.transpose() << std::endl;
+    //         std::cout << "hessian mismatch: \n" << normal_term.getHessian() << "\n vs \n" << hessian << std::endl;
+    //     }
+    // }
+
+    return std::make_tuple(
+        val,
+        gradient,
+        hessian);
+}
 } // namespace ipc
