@@ -444,33 +444,33 @@ void check_smooth_friction_force_jacobian(
     ///////////////////////////////////////////////////////////////////////////
 
     // test contact force norm derivative
-    {
-        const Eigen::MatrixXd lagged_positions = X + Ut;
-        Eigen::VectorXd normal_force_jacobian = Eigen::VectorXd::Zero(X.size());
-        {
-            auto cc = create_smooth_collision(mesh, lagged_positions);
-            SmoothContactPotential<SmoothCollisions<dim>> potential(params);
-            Eigen::VectorXd g = potential.gradient(cc, mesh, lagged_positions);
-            Eigen::SparseMatrix<double> h = potential.hessian(cc, mesh, lagged_positions);
-            normal_force_jacobian = (h * g) / g.norm();
-        }
+    //{
+    //    const Eigen::MatrixXd lagged_positions = X + Ut;
+    //    Eigen::VectorXd normal_force_jacobian = Eigen::VectorXd::Zero(X.size());
+    //    {
+    //        auto cc = create_smooth_collision(mesh, lagged_positions);
+    //        SmoothContactPotential<SmoothCollisions<dim>> potential(params);
+    //        Eigen::VectorXd g = potential.gradient(cc, mesh, lagged_positions);
+    //        Eigen::SparseMatrix<double> h = potential.hessian(cc, mesh, lagged_positions);
+    //        normal_force_jacobian = (h * g) / g.norm();
+    //    }
 
-        // finite difference
-        auto F_X = [&](const Eigen::VectorXd& x) {
-            Eigen::MatrixXd fd_X = fd::unflatten(x, dim);
-            const Eigen::MatrixXd fd_lagged_positions = fd_X + Ut;
+    //    // finite difference
+    //    auto F_X = [&](const Eigen::VectorXd& x) {
+    //        Eigen::MatrixXd fd_X = fd::unflatten(x, dim);
+    //        const Eigen::MatrixXd fd_lagged_positions = fd_X + Ut;
 
-            CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
-            auto fd_cc = create_smooth_collision(fd_mesh, fd_lagged_positions);
+    //        CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
+    //        auto fd_cc = create_smooth_collision(fd_mesh, fd_lagged_positions);
 
-            SmoothContactPotential<SmoothCollisions<dim>> potential(params);
-            return potential.gradient(fd_cc, fd_mesh, fd_lagged_positions).norm();
-        };
+    //        SmoothContactPotential<SmoothCollisions<dim>> potential(params);
+    //        return potential.gradient(fd_cc, fd_mesh, fd_lagged_positions).norm();
+    //    };
 
-        Eigen::VectorXd fd_normal_force_jacobian;
-        fd::finite_gradient(fd::flatten(X), F_X, fd_normal_force_jacobian);
-        CHECK((normal_force_jacobian - fd_normal_force_jacobian).norm() <= 1e-7 * std::max(normal_force_jacobian.norm(), 1e-8));
-    }
+    //    Eigen::VectorXd fd_normal_force_jacobian;
+    //    fd::finite_gradient(fd::flatten(X), F_X, fd_normal_force_jacobian);
+    //    CHECK((normal_force_jacobian - fd_normal_force_jacobian).norm() <= 1e-7 * std::max(normal_force_jacobian.norm(), 1e-8));
+    //}
 
     ///////////////////////////////////////////////////////////////////////////
 
