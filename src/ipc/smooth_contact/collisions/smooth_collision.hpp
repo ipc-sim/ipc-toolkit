@@ -48,25 +48,15 @@ public:
 
     virtual double operator()(
         const Vector<double, -1, max_size>& positions,
-        const ParameterType& params) const
-    {
-        return 0.;
-    }
+        const ParameterType& params) const = 0;
 
     virtual Vector<double, -1, max_size> gradient(
         const Vector<double, -1, max_size>& positions,
-        const ParameterType& params) const
-    {
-        return Vector<double, -1, max_size>::Zero(positions.size());
-    }
+        const ParameterType& params) const = 0;
 
-    virtual MatrixMax<double, max_size, max_size> hessian(
+    virtual Eigen::MatrixXd hessian(
         const Vector<double, -1, max_size>& positions,
-        const ParameterType& params) const
-    {
-        return MatrixMax<double, max_size, max_size>::Zero(
-            positions.size(), positions.size());
-    }
+        const ParameterType& params) const = 0;
 
     // ---- distance ----
 
@@ -170,7 +160,7 @@ public:
         const Vector<double, -1, max_size>& positions,
         const ParameterType& params) const override;
 
-    MatrixMax<double, max_size, max_size> hessian(
+    Eigen::MatrixXd hessian(
         const Vector<double, -1, max_size>& positions,
         const ParameterType& params) const override;
 

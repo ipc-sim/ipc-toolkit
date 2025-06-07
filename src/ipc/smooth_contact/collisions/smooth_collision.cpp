@@ -259,13 +259,14 @@ auto SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::gradient(
 }
 
 template <int max_vert, typename PrimitiveA, typename PrimitiveB>
-auto SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::hessian(
+Eigen::MatrixXd
+SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::hessian(
     const Vector<
         double,
         -1,
         SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::max_size>&
         positions,
-    const ParameterType& params) const -> MatrixMax<double, max_size, max_size>
+    const ParameterType& params) const
 {
     const auto core_indices = get_core_indices();
 
