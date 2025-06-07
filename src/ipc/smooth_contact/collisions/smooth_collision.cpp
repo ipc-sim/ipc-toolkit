@@ -259,14 +259,14 @@ auto SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::gradient(
 }
 
 template <int max_vert, typename PrimitiveA, typename PrimitiveB>
-Eigen::MatrixXd
+auto
 SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::hessian(
     const Vector<
         double,
         -1,
         SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::max_size>&
         positions,
-    const ParameterType& params) const
+    const ParameterType& params) const -> Eigen::MatrixXd
 {
     const auto core_indices = get_core_indices();
 
@@ -387,17 +387,15 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::hessian(
     // grad of tangent/normal terms
     double orient = 0;
     Vector<double, -1, max_size> gOrient;
-    MatrixMax<double, max_size, max_size> hOrient;
+    Eigen::MatrixXd hOrient;
     {
         Vector<double, -1, max_size> gA = Vector<double, -1, max_size>::Zero(
                                          n_dofs()),
                                      gB = Vector<double, -1, max_size>::Zero(
                                          n_dofs());
-        MatrixMax<double, max_size, max_size>
-            hA =
-                MatrixMax<double, max_size, max_size>::Zero(n_dofs(), n_dofs()),
-            hB =
-                MatrixMax<double, max_size, max_size>::Zero(n_dofs(), n_dofs());
+        Eigen::MatrixXd
+            hA = Eigen::MatrixXd::Zero(n_dofs(), n_dofs()),
+            hB = Eigen::MatrixXd::Zero(n_dofs(), n_dofs());
         {
             gA(core_indices) =
                 closest_direction_grad.transpose() * gA_reduced.head(dim);
