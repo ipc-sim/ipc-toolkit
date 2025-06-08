@@ -16,16 +16,17 @@ void test_face_face_broad_phase(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const std::optional<Eigen::MatrixXd>& V1,
-    const BroadPhaseMethod method,
+    const std::shared_ptr<BroadPhase> broad_phase,
     double inflation_radius)
 {
+    REQUIRE(broad_phase != nullptr);
+
     // Face-face collisions
-    if (mesh.num_faces() == 0 || method == BroadPhaseMethod::BRUTE_FORCE) {
+    if (mesh.num_faces() == 0 || broad_phase->name() == "BruteForce") {
+        // Skipping face-face broad phase test for 2D or BruteForce
         return;
     }
 
-    std::shared_ptr<BroadPhase> broad_phase =
-        BroadPhase::make_broad_phase(method);
     broad_phase->can_vertices_collide = mesh.can_collide;
     if (V1.has_value()) {
         broad_phase->build(
@@ -54,52 +55,57 @@ void test_broad_phase(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V0,
     const Eigen::MatrixXd& V1,
-    const BroadPhaseMethod method,
+    const std::shared_ptr<BroadPhase> broad_phase,
     const bool expect_collision = true,
     const std::string& cached_bf_candidates = "")
 {
-    CAPTURE(method);
+    REQUIRE(broad_phase != nullptr);
+
+    CAPTURE(broad_phase->name());
     REQUIRE(V0.rows() == mesh.num_vertices());
     REQUIRE(V1.rows() == mesh.num_vertices());
 
     double inflation_radius = 0;
 
     Candidates candidates;
-    candidates.build(mesh, V0, V1, inflation_radius, method);
+    candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
 
     if (expect_collision) {
         CHECK(!candidates.is_step_collision_free(mesh, V0, V1));
     }
 
-    if (method != BroadPhaseMethod::BRUTE_FORCE) {
+    if (broad_phase->name() != "BruteForce") {
         brute_force_comparison(
             mesh, V0, V1, candidates, inflation_radius, cached_bf_candidates);
     }
 
     // Face-face collisions
-    test_face_face_broad_phase(mesh, V0, V1, method, 0);
+    test_face_face_broad_phase(mesh, V0, V1, broad_phase, 0);
 }
 
-Candidates test_broad_phase(
+std::shared_ptr<Candidates> test_broad_phase(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& V,
-    BroadPhaseMethod method,
+    const std::shared_ptr<BroadPhase> broad_phase,
     double inflation_radius,
     const std::string& cached_bf_candidates = "")
 {
-    CAPTURE(method);
+    REQUIRE(broad_phase != nullptr);
+
+    CAPTURE(broad_phase->name());
     REQUIRE(V.rows() == mesh.num_vertices());
 
-    Candidates candidates;
-    candidates.build(mesh, V, inflation_radius, method);
+    auto candidates = std::make_shared<Candidates>();
+    candidates->build(mesh, V, inflation_radius, broad_phase);
 
-    if (method != BroadPhaseMethod::BRUTE_FORCE) {
+    if (broad_phase->name() != "BruteForce") {
         brute_force_comparison(
-            mesh, V, V, candidates, inflation_radius, cached_bf_candidates);
+            mesh, V, V, *candidates, inflation_radius, cached_bf_candidates);
     }
 
     // Face-face collisions
-    test_face_face_broad_phase(mesh, V, std::nullopt, method, inflation_radius);
+    test_face_face_broad_phase(
+        mesh, V, std::nullopt, broad_phase, inflation_radius);
 
     return candidates;
 }
@@ -122,17 +128,17 @@ TEST_CASE("Vertex-Vertex Broad Phase", "[ccd][broad_phase][2D]")
 
     CollisionMesh mesh(V0, E);
 
-    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
 
-    test_broad_phase(mesh, V0, V1, method);
+    test_broad_phase(mesh, V0, V1, broad_phase);
 }
 
-#if defined(NDEBUG) || !(defined(WIN32) || defined(_WIN32) || defined(__WIN32))
 TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D]")
-#else
-TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D][.]")
-#endif
 {
+#if (defined(WIN32) || defined(_WIN32) || defined(__WIN32)) && !defined(NDEBUG)
+    SKIP("'Broad Phase: 2D Mesh' test is skipped in debug mode");
+#endif
+
     Eigen::MatrixXd tmp;
     REQUIRE(igl::readCSV((tests::DATA_DIR / "mesh-2D/V_t0.csv").string(), tmp));
     const Eigen::MatrixXd V0_full = tmp.leftCols(2);
@@ -149,14 +155,19 @@ TEST_CASE("Broad Phase: 2D Mesh", "[ccd][broad_phase][2D][.]")
     const Eigen::MatrixXd V0 = mesh.vertices(V0_full);
     const Eigen::MatrixXd V1 = mesh.vertices(V1_full);
 
-    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
 
-    test_broad_phase(mesh, V0, V1, method);
+    test_broad_phase(mesh, V0, V1, broad_phase);
 }
 
 TEST_CASE(
     "Build collisions with codimensional points", "[broad_phase][collisions]")
 {
+#if (defined(WIN32) || defined(_WIN32) || defined(__WIN32)) && !defined(NDEBUG)
+    SKIP(
+        "'Build collisions with codimensional points' test is skipped in debug mode");
+#endif
+
     const double dhat = 1e-3;
     Eigen::MatrixXd V_rest, V;
     igl::readDMAT(
@@ -169,14 +180,14 @@ TEST_CASE(
     CollisionMesh mesh(V_rest, E, F);
     CHECK(mesh.num_codim_vertices() > 0);
 
-    BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
 
-    CAPTURE(method);
+    CAPTURE(broad_phase->name());
 
-    const Candidates candidates = test_broad_phase(mesh, V, method, dhat);
+    auto candidates = test_broad_phase(mesh, V, broad_phase, dhat);
 
     NormalCollisions collisions;
-    collisions.build(candidates, mesh, V, dhat);
+    collisions.build(*candidates, mesh, V, dhat);
     CHECK(collisions.size() != 0);
 }
 
@@ -184,7 +195,7 @@ TEST_CASE("Compare BP against brute force", "[broad_phase]")
 {
     using namespace ipc;
 
-    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
 
     Eigen::MatrixXd V0, U;
     Eigen::MatrixXi E, F;
@@ -232,7 +243,7 @@ TEST_CASE("Compare BP against brute force", "[broad_phase]")
     for (int i = 0; i < 2; i++) {
         Eigen::MatrixXd V1 = V0 + U;
 
-        test_broad_phase(mesh, V0, V1, method, false);
+        test_broad_phase(mesh, V0, V1, broad_phase, false);
 
         U.setRandom();
         U *= 3;
@@ -249,9 +260,9 @@ TEST_CASE("Cloth-Ball", "[ccd][broad_phase][cloth-ball][.]")
 
     CollisionMesh mesh(V0, E, F);
 
-    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
 
     test_broad_phase(
-        mesh, V0, V1, method, true,
+        mesh, V0, V1, broad_phase, true,
         (tests::DATA_DIR / "cloth_ball_bf_ccd_candidates.json").string());
 }

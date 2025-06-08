@@ -5,7 +5,7 @@
 namespace ipc {
 
 std::vector<size_t>
-vertex_to_min_edge(size_t num_vertices, const Eigen::MatrixXi& edges)
+vertex_to_min_edge(size_t num_vertices, Eigen::ConstRef<Eigen::MatrixXi> edges)
 {
     std::vector<size_t> V2E(num_vertices, edges.rows() + 1);
     // Column first because colmajor

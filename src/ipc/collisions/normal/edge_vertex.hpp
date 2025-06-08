@@ -16,8 +16,8 @@ public:
     }
 
     EdgeVertexNormalCollision(
-        const long _edge_id,
-        const long _vertex_id,
+        const index_t _edge_id,
+        const index_t _vertex_id,
         const double _weight,
         const Eigen::SparseVector<double>& _weight_gradient)
         : EdgeVertexCandidate(_edge_id, _vertex_id)

@@ -8,6 +8,8 @@ Code Formatting
 
 We utilize `ClangFormat <https://clang.llvm.org/docs/ClangFormat.html>`_ to automate code formatting. Please format your code before pushing and/or creating a pull request.
 
+Additionally, ensure that your code adheres to the project's linting rules. Use the provided linting tools to check for any issues before committing your changes.
+
 Naming conventions
 ------------------
 
@@ -26,17 +28,17 @@ In general, we stick to the following naming conventions:
 Specific
 ^^^^^^^^
 
-* vertex positions: ``vertices`` or ``positions``
-* vertex displacements: ``displacements``
-* vertex rest positions/material coordinates: ``rest_positions``
-* vertex velocities: ``velocities``
-* mesh edge matrix: ``edges``
-* mesh face matrix: ``faces``
-* element vertices: we use a numeral suffix (e.g., ``e0`` and ``e1`` for the end-points of an edge)
-* edge-edge pairings: suffix of ``a`` and ``b``
-* continuous collision detection pairs: suffix of ``_t0`` for starting values and ``_t1`` for end values
-* favor the term "collision" over "contact" (but this is not a hard rule)
-* we prefer the term "potential" over "constraint" when referring to the collisions and friction
+* Vertex positions: ``vertices`` or ``positions``
+* Vertex displacements: ``displacements``
+* Vertex rest positions/material coordinates: ``rest_positions``
+* Vertex velocities: ``velocities``
+* Mesh edge matrix: ``edges``
+* Mesh face matrix: ``faces``
+* Element vertices: Use a numeral suffix (e.g., ``e0`` and ``e1`` for the end-points of an edge).
+* Edge-edge pairings: Use suffixes ``a`` and ``b``.
+* Continuous collision detection pairs: Use the suffix ``_t0`` for starting values and ``_t1`` for end values.
+* Favor the term "collision" over "contact" (but this is not a hard rule).
+* Prefer the term "potential" over "constraint" when referring to collisions and friction.
 
 Documentation
 -------------

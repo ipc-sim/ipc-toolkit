@@ -29,12 +29,12 @@ def load_mesh(mesh_name):
     return mesh.points, ipctk.edges(mesh.cells_dict['triangle']), mesh.cells_dict['triangle']
 
 
-def broad_phase_methods():
-    yield ipctk.BroadPhaseMethod.BRUTE_FORCE
-    yield ipctk.BroadPhaseMethod.HASH_GRID
-    yield ipctk.BroadPhaseMethod.SPATIAL_HASH
-    yield ipctk.BroadPhaseMethod.BOUNDING_VOLUME_HIERARCHY
-    yield ipctk.BroadPhaseMethod.SWEEP_AND_PRUNE
+def broad_phases():
+    yield ipctk.BruteForce()
+    yield ipctk.HashGrid()
+    yield ipctk.SpatialHash()
+    yield ipctk.BVH()
+    yield ipctk.SweepAndPrune()
 
 
 def finite_jacobian(x, f, h=1e-8):

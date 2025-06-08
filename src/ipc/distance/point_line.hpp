@@ -11,9 +11,9 @@ namespace ipc {
 /// @param e1 The second vertex of the edge defining the line.
 /// @return The distance between the point and line.
 double point_line_distance(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1);
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1);
 
 /// @brief Compute the gradient of the distance between a point and line.
 /// @note The distance is actually squared distance.
@@ -22,9 +22,9 @@ double point_line_distance(
 /// @param e1 The second vertex of the edge defining the line.
 /// @return The gradient of the distance wrt p, e0, and e1.
 VectorMax9d point_line_distance_gradient(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1);
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1);
 
 /// @brief Compute the hessian of the distance between a point and line.
 /// @note The distance is actually squared distance.
@@ -33,9 +33,9 @@ VectorMax9d point_line_distance_gradient(
 /// @param e1 The second vertex of the edge defining the line.
 /// @return The hessian of the distance wrt p, e0, and e1.
 MatrixMax9d point_line_distance_hessian(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1);
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1);
 
 // Symbolically generated derivatives;
 namespace autogen {

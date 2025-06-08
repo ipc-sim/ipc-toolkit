@@ -1,7 +1,6 @@
 #pragma once
 
 #include <ipc/collision_mesh.hpp>
-#include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/collisions/normal/edge_edge.hpp>
 #include <ipc/collisions/normal/edge_vertex.hpp>
@@ -29,13 +28,14 @@ public:
     /// @param vertices Vertices of the collision mesh.
     /// @param dhat The activation distance of the barrier.
     /// @param dmin Minimum distance.
-    /// @param broad_phase_method Broad-phase method to use.
+    /// @param broad_phase Broad-phase method to use.
     void build(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const double dhat,
         const double dmin = 0,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
+        const std::shared_ptr<BroadPhase> broad_phase =
+            make_default_broad_phase());
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param candidates Distance candidates from which the collision set is built.
@@ -46,7 +46,7 @@ public:
     void build(
         const Candidates& candidates,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const double dhat,
         const double dmin = 0);
 
@@ -57,7 +57,8 @@ public:
     /// @param vertices Vertices of the collision mesh.
     /// @returns The minimum distance between any non-adjacent elements.
     double compute_minimum_distance(
-        const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
     // ------------------------------------------------------------------------
 
@@ -139,8 +140,9 @@ public:
     /// @param enable_shape_derivatives If the collision set should enable shape derivative computation.
     void set_enable_shape_derivatives(const bool enable_shape_derivatives);
 
-    std::string
-    to_string(const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const;
+    std::string to_string(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
 public:
     /// @brief Vertex-vertex normal collisions.

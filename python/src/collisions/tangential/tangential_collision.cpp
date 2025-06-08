@@ -72,7 +72,7 @@ void define_tangential_collision(py::module_& m)
             Compute the relative velocity of the collision.
 
             Parameters:
-                positions: Collision stencil's vertex velocities.
+                velocities: Collision stencil's vertex velocities.
 
             Returns:
                 Relative velocity of the collision.
@@ -93,7 +93,7 @@ void define_tangential_collision(py::module_& m)
             )ipc_Qu8mg5v7")
         .def(
             "relative_velocity_matrix",
-            py::overload_cast<const VectorMax2d&>(
+            py::overload_cast<Eigen::ConstRef<VectorMax2d>>(
                 &TangentialCollision::relative_velocity_matrix, py::const_),
             R"ipc_Qu8mg5v7(
             Construct the premultiplier matrix for the relative velocity.

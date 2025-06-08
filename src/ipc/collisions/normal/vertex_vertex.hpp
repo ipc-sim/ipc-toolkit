@@ -17,8 +17,8 @@ public:
     }
 
     VertexVertexNormalCollision(
-        const long _vertex0_id,
-        const long _vertex1_id,
+        const index_t _vertex0_id,
+        const index_t _vertex1_id,
         const double _weight,
         const Eigen::SparseVector<double>& _weight_gradient)
         : VertexVertexCandidate(_vertex0_id, _vertex1_id)

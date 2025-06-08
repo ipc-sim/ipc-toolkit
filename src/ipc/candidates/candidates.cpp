@@ -2,6 +2,7 @@
 
 #include <ipc/config.hpp>
 #include <ipc/ipc.hpp>
+#include <ipc/broad_phase/default_broad_phase.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/save_obj.hpp>
 
@@ -16,7 +17,7 @@ namespace ipc {
 
 namespace {
     // Pad codim_edges because remove_unreferenced requires a N×3 matrix.
-    Eigen::MatrixXi pad_edges(const Eigen::MatrixXi& E)
+    Eigen::MatrixXi pad_edges(Eigen::ConstRef<Eigen::MatrixXi> E)
     {
         assert(E.cols() == 2);
         Eigen::MatrixXi E_padded(E.rows(), 3);
@@ -25,7 +26,7 @@ namespace {
         return E_padded;
     }
 
-    Eigen::MatrixXi unpad_edges(const Eigen::MatrixXi& E_padded)
+    Eigen::MatrixXi unpad_edges(Eigen::ConstRef<Eigen::MatrixXi> E_padded)
     {
         return E_padded.leftCols(2);
     }
@@ -33,16 +34,16 @@ namespace {
 
 void Candidates::build(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const double inflation_radius,
-    const BroadPhaseMethod broad_phase_method)
+    const std::shared_ptr<BroadPhase> broad_phase)
 {
+    assert(broad_phase != nullptr);
+
     const int dim = vertices.cols();
 
     clear();
 
-    std::shared_ptr<BroadPhase> broad_phase =
-        BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(vertices, mesh.edges(), mesh.faces(), inflation_radius);
     broad_phase->detect_collision_candidates(dim, *this);
@@ -104,17 +105,17 @@ void Candidates::build(
 
 void Candidates::build(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double inflation_radius,
-    const BroadPhaseMethod broad_phase_method)
+    const std::shared_ptr<BroadPhase> broad_phase)
 {
+    assert(broad_phase != nullptr);
+
     const int dim = vertices_t0.cols();
 
     clear();
 
-    std::shared_ptr<BroadPhase> broad_phase =
-        BroadPhase::make_broad_phase(broad_phase_method);
     broad_phase->can_vertices_collide = mesh.can_collide;
     broad_phase->build(
         vertices_t0, vertices_t1, mesh.edges(), mesh.faces(), inflation_radius);
@@ -184,8 +185,8 @@ void Candidates::build(
 
 bool Candidates::is_step_collision_free(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double min_distance,
     const NarrowPhaseCCD& narrow_phase_ccd) const
 {
@@ -194,7 +195,7 @@ bool Candidates::is_step_collision_free(
 
     // Narrow phase
     for (size_t i = 0; i < size(); i++) {
-        const ContinuousCollisionCandidate& candidate = (*this)[i];
+        const CollisionStencil& candidate = (*this)[i];
 
         double toi;
         bool is_collision = candidate.ccd(
@@ -212,8 +213,8 @@ bool Candidates::is_step_collision_free(
 
 double Candidates::compute_collision_free_stepsize(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double min_distance,
     const NarrowPhaseCCD& narrow_phase_ccd) const
 {
@@ -239,7 +240,7 @@ double Candidates::compute_collision_free_stepsize(
                     tmax = earliest_toi;
                 }
 
-                const ContinuousCollisionCandidate& candidate = (*this)[i];
+                const CollisionStencil& candidate = (*this)[i];
 
                 double toi = std::numeric_limits<double>::infinity(); // output
                 const bool are_colliding = candidate.ccd(
@@ -262,7 +263,7 @@ double Candidates::compute_collision_free_stepsize(
 
 double Candidates::compute_noncandidate_conservative_stepsize(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& displacements,
+    Eigen::ConstRef<Eigen::MatrixXd> displacements,
     const double dhat) const
 {
     assert(displacements.rows() == mesh.num_vertices());
@@ -271,12 +272,12 @@ double Candidates::compute_noncandidate_conservative_stepsize(
         return 1; // No possible collisions, so can take full step.
     }
 
-    const auto& E = mesh.edges();
-    const auto& F = mesh.faces();
+    const Eigen::MatrixXi& E = mesh.edges();
+    const Eigen::MatrixXi& F = mesh.faces();
 
     std::vector<bool> is_vertex_a_candidates(mesh.num_vertices(), false);
     for (size_t i = 0; i < size(); i++) {
-        for (const long vid : (*this)[i].vertex_ids(E, F)) {
+        for (const index_t vid : (*this)[i].vertex_ids(E, F)) {
             if (vid < 0) {
                 break;
             }
@@ -298,11 +299,11 @@ double Candidates::compute_noncandidate_conservative_stepsize(
 
 double Candidates::compute_cfl_stepsize(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
     const double dhat,
-    const BroadPhaseMethod broad_phase_method,
     const double min_distance,
+    const std::shared_ptr<BroadPhase> broad_phase,
     const NarrowPhaseCCD& narrow_phase_ccd) const
 {
     assert(vertices_t0.rows() == mesh.num_vertices());
@@ -317,8 +318,8 @@ double Candidates::compute_cfl_stepsize(
     // If alpha_F < 0.5 * alpha_C, then we should do full CCD.
     if (alpha_F < 0.5 * alpha_C) {
         return ipc::compute_collision_free_stepsize(
-            mesh, vertices_t0, vertices_t1, min_distance, //
-            broad_phase_method, narrow_phase_ccd);
+            mesh, vertices_t0, vertices_t1, min_distance, broad_phase,
+            narrow_phase_ccd);
     }
     return std::min(alpha_C, alpha_F);
 }
@@ -343,7 +344,7 @@ void Candidates::clear()
     fv_candidates.clear();
 }
 
-ContinuousCollisionCandidate& Candidates::operator[](size_t i)
+CollisionStencil& Candidates::operator[](size_t i)
 {
     if (i < vv_candidates.size()) {
         return vv_candidates[i];
@@ -363,7 +364,7 @@ ContinuousCollisionCandidate& Candidates::operator[](size_t i)
     throw std::out_of_range("Candidate index is out of range!");
 }
 
-const ContinuousCollisionCandidate& Candidates::operator[](size_t i) const
+const CollisionStencil& Candidates::operator[](size_t i) const
 {
     if (i < vv_candidates.size()) {
         return vv_candidates[i];
@@ -385,9 +386,9 @@ const ContinuousCollisionCandidate& Candidates::operator[](size_t i) const
 
 bool Candidates::save_obj(
     const std::string& filename,
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces) const
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces) const
 {
     std::ofstream obj(filename, std::ios::out);
     if (!obj.is_open()) {

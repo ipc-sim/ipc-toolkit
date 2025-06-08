@@ -132,9 +132,9 @@ This returns a scalar value ``barrier_potential`` which is the sum of the barrie
 Mathematically this is defined as
 
 .. math::
-   B(x) = \sum_{k \in C} b(d_k(x), \hat{d}),
+   B(\mathbf{x}) = \sum_{k \in C} b(d_k(\mathbf{x}); \hat{d}),
 
-where :math:`x` is our deformed vertex positions, :math:`C` is the active collisions, :math:`d_k` is the distance (squared) of the :math:`k`-th active collision, and :math:`b` is IPC's C2-clamped log-barrier function.
+where :math:`\mathbf{x}` is our deformed vertex positions, :math:`C` is the active collisions, :math:`d_k` is the distance (squared) of the :math:`k`-th active collision, and :math:`b` is IPC's C2-clamped log-barrier function.
 
 .. note::
    This is **not** premultiplied by the barrier stiffness :math:`\kappa`.
@@ -186,7 +186,7 @@ you will get the gradient of size :math:`|V|d \times 1` with the order
     \frac{\partial B}{\partial x_n} &
     \frac{\partial B}{\partial y_n} &
     \frac{\partial B}{\partial z_n}
-    \end{bmatrix}^T,
+    \end{bmatrix}^\top,
 
 and the Hessian of size :math:`|V|d \times |V|d` with the order
 
@@ -392,34 +392,38 @@ Now we can compute the friction dissipative potential using the ``FrictionPotent
 
         .. code-block:: c++
 
-            const FrictionPotential D(eps_v);
+            const ipc::FrictionPotential D(eps_v);
             double friction_potential = D(tangential_collisions, collision_mesh, velocity);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            D = FrictionPotential(eps_v)
+            D = ipctk.FrictionPotential(eps_v)
             friction_potential = D(tangential_collisions, collision_mesh, velocity)
 
 Here ``eps_v`` (:math:`\epsilon_v`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
 
 .. important::
-   The friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is
+   In :cite:t:`Li2020IPC`, friction was based on displacement :math:`\mathbf{u}=\mathbf{x}-\mathbf{x}^t`, but this limits the time-integration scheme for friction to  implicit Euler.
+
+   Here, the friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is
 
    .. math::
-      v = \frac{x - x^t}{h},
+      \mathbf{v} = \frac{\mathbf{x} - \mathbf{x}^t}{h},
 
-   where :math:`x` is the current position, :math:`x^t` is the previous position, and :math:`h` is the time step size.
+   where :math:`\mathbf{x}` is the current position, :math:`\mathbf{x}^t` is the previous position, and :math:`h` is the time step size.
+
+   Additionally, the parameter :math:`\epsilon_v h` in :cite:t:`Li2020IPC` is now simply :math:`\epsilon_v`.
 
 This returns a scalar value ``friction_potential`` which is the sum of the individual friction potentials.
 
 Mathematically this is defined as
 
 .. math::
-   D(x) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|T_k^Tv\|, \epsilon_v\right),
+   D(\mathbf{v}) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|\mathbf{T}_k^\top \mathbf{v}\|; \epsilon_v\right),
 
-where :math:`C` is the lagged collisions, :math:`\lambda_k^n` is the normal force magnitude for the :math:`k`-th collision, :math:`T_k` is the tangential basis for the :math:`k`-th collision, and :math:`f_0` is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.
+where :math:`C` is the lagged collisions, :math:`\lambda_k^n` is the normal force magnitude for the :math:`k`-th collision, :math:`\mathbf{T}_k` is the tangential basis for the :math:`k`-th collision, and :math:`f_0` is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.
 
 Derivatives
 ^^^^^^^^^^^
@@ -447,6 +451,14 @@ We can also compute the first and second derivatives of the friction dissipative
 
             friction_potential_hess = D.hessian(
                 tangential_collisions, collision_mesh, velocity)
+
+.. important::
+
+    When computing the derivatives with respect to positions, the chain rule is applied to :math:`\mathbf{v}(\mathbf{x})`. However, this does not produce the correct friction force. To correct this, we need to divide :math:`D` by :math:`\partial \mathbf{v}/\partial \mathbf{x}`. This will cancel out the chain rule to get the correct friction force.
+
+    This assumes that :math:`\partial \mathbf{v}/\partial \mathbf{x}` is a constant (i.e., :math:`\mathbf{v}(\mathbf{x})` is a linear function). This assumption is valid for many popular time integration schemes (e.g., Implicit Euler, Implicit Newmark, and BDF).
+
+    Note, you still apply the chain rule to the hessian -- i.e., multiply :math:`\nabla^2 D` by :math:`\partial \mathbf{v}/\partial \mathbf{x}`.
 
 Continuous Collision Detection
 ------------------------------
@@ -508,9 +520,8 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
 
             ipc::Candidates candidates;
             candidates.build(
-                mesh, vertices_t0, vertices_t1,
-                /*inflation_radius=*/0.0,
-                /*broad_phase_method=*/ipc::BroadPhaseMethod::HASH_GRID);
+                mesh, vertices_t0, vertices_t1, /*inflation_radius=*/0.0,
+                /*broad_phase=*/std::make_shared<ipc::HashGrid>());
 
     .. md-tab-item:: Python
 
@@ -518,11 +529,10 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
 
             candidates = ipctk.Candidates()
             candidates.build(
-                mesh, vertices_t0, vertices_t1,
-                broad_phase_method=ipctk.BroadPhaseMethod.HASH_GRID)
+                mesh, vertices_t0, vertices_t1, broad_phase=ipctk.HashGrid())
 
-Possible values for ``broad_phase_method`` are: ``BRUTE_FORCE`` (parallel brute force culling), ``HASH_GRID`` (default), ``SPATIAL_HASH`` (implementation from the original IPC codebase),
-``BVH`` (`SimpleBVH <https://github.com/geometryprocessing/SimpleBVH>`_), ``SWEEP_AND_PRUNE`` (method of :cite:t:`Belgrod2023Time`), or ``SWEEP_AND_TINIEST_QUEUE`` (requires CUDA).
+Possible values for ``broad_phase`` are: ``BruteForce`` (parallel brute force culling), ``HashGrid`` (default), ``SpatialHash`` (implementation from the original IPC codebase),
+``BVH`` (`SimpleBVH <https://github.com/geometryprocessing/SimpleBVH>`_), ``SweepAndPrune`` (method of :cite:t:`Belgrod2023Time`), or ``SweepAndTiniestQueue`` (requires CUDA).
 
 Narrow-Phase
 ^^^^^^^^^^^^
@@ -628,17 +638,12 @@ To do this, we need to set the ``min_distance`` parameter when calling ``is_step
         .. code-block:: c++
 
             double max_step_size = ipc::compute_collision_free_stepsize(
-                    collision_mesh, vertices_t0, vertices_t1,
-                    /*broad_phase_method=*/ipc::DEFAULT_BROAD_PHASE_METHOD,
-                    /*min_distance=*/1e-4);
+                    collision_mesh, vertices_t0, vertices_t1, /*min_distance=*/1e-4);
 
             Eigen::MatrixXd collision_free_vertices =
                 (vertices_t1 - vertices_t0) * max_step_size + vertices_t0;
             assert(ipc::is_step_collision_free(
-                mesh, vertices_t0, collision_free_vertices,
-                /*broad_phase_method=*/ipc::DEFAULT_BROAD_PHASE_METHOD,
-                /*min_distance=*/1e-4
-            ));
+                mesh, vertices_t0, collision_free_vertices, /*min_distance=*/1e-4));
 
     .. md-tab-item:: Python
 

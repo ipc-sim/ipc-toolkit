@@ -1,9 +1,8 @@
 set(SOURCES
   candidates.cpp
   candidates.hpp
+  collision_stencil.cpp
   collision_stencil.hpp
-  continuous_collision_candidate.cpp
-  continuous_collision_candidate.hpp
   edge_edge.cpp
   edge_edge.hpp
   edge_face.cpp
@@ -20,5 +19,4 @@ set(SOURCES
   vertex_vertex.hpp
 )
 
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})
 target_sources(ipc_toolkit PRIVATE ${SOURCES})

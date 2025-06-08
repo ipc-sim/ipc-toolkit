@@ -10,8 +10,7 @@ namespace ipc {
 /// @param p1 The second point.
 /// @return The distance between p0 and p1.
 double point_point_distance(
-    const Eigen::Ref<const VectorMax3d>& p0,
-    const Eigen::Ref<const VectorMax3d>& p1);
+    Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1);
 
 /// @brief Compute the gradient of the distance between two points.
 /// @note The distance is actually squared distance.
@@ -19,8 +18,7 @@ double point_point_distance(
 /// @param p1 The second point.
 /// @return The computed gradient.
 VectorMax6d point_point_distance_gradient(
-    const Eigen::Ref<const VectorMax3d>& p0,
-    const Eigen::Ref<const VectorMax3d>& p1);
+    Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1);
 
 /// @brief Compute the hessian of the distance between two points.
 /// @note The distance is actually squared distance.
@@ -28,7 +26,6 @@ VectorMax6d point_point_distance_gradient(
 /// @param p1 The second point.
 /// @return The computed hessian.
 MatrixMax6d point_point_distance_hessian(
-    const Eigen::Ref<const VectorMax3d>& p0,
-    const Eigen::Ref<const VectorMax3d>& p1);
+    Eigen::ConstRef<VectorMax3d> p0, Eigen::ConstRef<VectorMax3d> p1);
 
 } // namespace ipc

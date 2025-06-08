@@ -34,8 +34,8 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
     CHECK(mesh.num_edges() == 0);
     CHECK(mesh.num_faces() == 0);
 
-    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
-    CAPTURE(method);
+    auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
+    CAPTURE(broad_phase->name());
 
     SECTION("Candidates")
     {
@@ -43,7 +43,7 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
         V1.col(1) *= 0.5;
 
         Candidates candidates;
-        candidates.build(mesh, vertices, V1, thickness, method);
+        candidates.build(mesh, vertices, V1, thickness, broad_phase);
 
         CHECK(candidates.size() > 0);
         CHECK(candidates.vv_candidates.size() == candidates.size());
@@ -79,7 +79,7 @@ TEST_CASE("Codim. vertex-vertex collisions", "[collisions][codim]")
             use_improved_max_approximator);
         collisions.set_enable_shape_derivatives(enable_shape_derivatives);
 
-        collisions.build(mesh, vertices, dhat, min_distance, method);
+        collisions.build(mesh, vertices, dhat, min_distance, broad_phase);
 
         CHECK(collisions.size() == 12);
         CHECK(collisions.vv_collisions.size() == 12);
@@ -126,8 +126,8 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
     CHECK(mesh.num_edges() == 4);
     CHECK(mesh.num_faces() == 0);
 
-    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
-    CAPTURE(method);
+    auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
+    CAPTURE(broad_phase->name());
 
     SECTION("Candidates")
     {
@@ -135,7 +135,7 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
         V1.bottomRows(3).col(1).array() -= 4; // Translate the codim vertices
 
         Candidates candidates;
-        candidates.build(mesh, vertices, V1, thickness, method);
+        candidates.build(mesh, vertices, V1, thickness, broad_phase);
 
         CHECK(candidates.size() == 15);
         CHECK(candidates.vv_candidates.size() == 3);
@@ -174,7 +174,8 @@ TEST_CASE("Codim. edge-vertex collisions", "[collisions][codim]")
         collisions.set_enable_shape_derivatives(enable_shape_derivatives);
 
         const double dhat = 0.25;
-        collisions.build(mesh, vertices, dhat, /*min_distance=*/0.8, method);
+        collisions.build(
+            mesh, vertices, dhat, /*min_distance=*/0.8, broad_phase);
 
         const int expected_num_collisions =
             6 + int(use_improved_max_approximator);
@@ -278,7 +279,7 @@ TEST_CASE("Plane-Vertex NormalCollision", "[collision][plane-vertex]")
     CHECK(c.num_vertices() == 1);
     CHECK(
         c.vertex_ids(edges, faces)
-        == std::array<long, 4> { { 0, -1, -1, -1 } });
+        == std::array<index_t, 4> { { 0, -1, -1, -1 } });
     CHECK(c.plane_origin == o);
     CHECK(c.plane_normal == n);
     CHECK(c.vertex_id == 0);

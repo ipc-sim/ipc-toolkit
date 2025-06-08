@@ -1,17 +1,144 @@
 #include <common.hpp>
 
 #include <ipc/collision_mesh.hpp>
+#include <ipc/utils/logger.hpp>
 
 namespace py = pybind11;
 using namespace ipc;
 
+#ifdef IPC_TOOLKIT_WITH_ABSEIL
+using MapCanCollide = std::unordered_map<
+    std::pair<size_t, size_t>,
+    bool,
+    absl::Hash<std::pair<size_t, size_t>>>;
+#else
+using MapCanCollide = std::unordered_map<
+    std::pair<size_t, size_t>,
+    bool,
+    Hash<std::pair<size_t, size_t>>>;
+#endif
+
+/// @brief A functor which the value of the pair if it is in the map, otherwise a default value.
+class SparseCanCollide {
+public:
+    /// @brief Construct a new Sparse Can Collide object.
+    /// @param explicit_values A map from vertex pairs to whether they can collide. Only the upper triangle is used. The map is assumed to be symmetric.
+    /// @param default_value The default value to return if the pair is not in the map.
+    SparseCanCollide(const MapCanCollide& explicit_values, bool default_value)
+        : m_explicit_values(explicit_values)
+        , m_default_value(default_value)
+    {
+    }
+
+    /// @brief Can two vertices collide?
+    /// @param i Index of the first vertex.
+    /// @param j Index of the second vertex.
+    /// @return The value of the pair if it is in the map, otherwise the default value.
+    bool operator()(size_t i, size_t j) const
+    {
+        auto it = m_explicit_values.find({ std::min(i, j), std::max(i, j) });
+
+        assert(
+            m_explicit_values.find({ std::max(i, j), std::min(i, j) })
+            == m_explicit_values.end());
+
+        if (it != m_explicit_values.end()) {
+            return it->second;
+        }
+        return m_default_value;
+    }
+
+private:
+    const MapCanCollide m_explicit_values;
+    const bool m_default_value;
+};
+
+class VertexPatchesCanCollide {
+public:
+    /// @brief Construct a new Vertex Patches Can Collide object.
+    /// @param vertex_patches Vector of patches labels for each vertex.
+    VertexPatchesCanCollide(Eigen::ConstRef<Eigen::VectorXi> vertex_patches)
+        : m_vertex_patches(vertex_patches)
+    {
+    }
+
+    /// @brief Can two vertices collide?
+    /// @param i Index of the first vertex.
+    /// @param j Index of the second vertex.
+    /// @return true if the vertices are in different patches
+    bool operator()(size_t i, size_t j) const
+    {
+        assert(i < m_vertex_patches.size());
+        assert(j < m_vertex_patches.size());
+        return m_vertex_patches[i] != m_vertex_patches[j];
+    }
+
+    size_t num_vertices() const { return m_vertex_patches.size(); }
+
+private:
+    const Eigen::VectorXi m_vertex_patches;
+};
+
 void define_collision_mesh(py::module_& m)
 {
+    py::class_<SparseCanCollide>(
+        m, "SparseCanCollide",
+        "A functor which the value of the pair if it is in the map, otherwise a default value.")
+        .def(
+            py::init<const MapCanCollide&, bool>(),
+            R"ipc_Qu8mg5v7(
+            Construct a new Sparse Can Collide object.
+
+            Parameters:
+                explicit_values: A map from vertex pairs to whether they can collide. Only the upper triangle is used. The map is assumed to be symmetric.
+                default_value: The default value to return if the pair is not in the map.
+            )ipc_Qu8mg5v7",
+            py::arg("explicit_values"), py::arg("default_value"))
+        .def(
+            "__call__", &SparseCanCollide::operator(), R"ipc_Qu8mg5v7(
+            Can two vertices collide?
+
+            Parameters:
+                i: Index of the first vertex.
+                j: Index of the second vertex.
+
+            Returns:
+                The value of the pair if it is in the map, otherwise the default value.
+            )ipc_Qu8mg5v7",
+            py::arg("i"), py::arg("j"));
+
+    py::class_<VertexPatchesCanCollide>(
+        m, "VertexPatchesCanCollide",
+        "A functor which returns true if the vertices are in different patches.")
+        .def(
+            py::init<Eigen::ConstRef<Eigen::VectorXi>>(),
+            py::arg("vertex_patches"),
+            R"ipc_Qu8mg5v7(
+            Construct a new Vertex Patches Can Collide object.
+
+            Parameters:
+                vertex_patches: Vector of patches labels for each vertex.
+            )ipc_Qu8mg5v7")
+        .def(
+            "__call__", &VertexPatchesCanCollide::operator(), R"ipc_Qu8mg5v7(
+            Can two vertices collide?
+
+            Parameters:
+                i: Index of the first vertex.
+                j: Index of the second vertex.
+
+            Returns:
+                True if the vertices are in different patches.
+            )ipc_Qu8mg5v7",
+            py::arg("i"), py::arg("j"));
+
     py::class_<CollisionMesh>(m, "CollisionMesh")
         .def(
             py::init<
-                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-                const Eigen::MatrixXi&, const Eigen::SparseMatrix<double>&>(),
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                const Eigen::SparseMatrix<double>&>(),
             R"ipc_Qu8mg5v7(
             Construct a new Collision Mesh object directly from the collision mesh vertices.
 
@@ -26,8 +153,9 @@ void define_collision_mesh(py::module_& m)
             py::arg("displacement_map") = Eigen::SparseMatrix<double>())
         .def(
             py::init<
-                const std::vector<bool>&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXi&, const Eigen::MatrixXi&,
+                const std::vector<bool>&, Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
                 const Eigen::SparseMatrix<double>&>(),
             R"ipc_Qu8mg5v7(
             Construct a new Collision Mesh object from a full mesh vertices.
@@ -158,7 +286,7 @@ void define_collision_mesh(py::module_& m)
             py::arg("id"))
         .def(
             "to_full_dof",
-            py::overload_cast<const Eigen::VectorXd&>(
+            py::overload_cast<Eigen::ConstRef<Eigen::VectorXd>>(
                 &CollisionMesh::to_full_dof, py::const_),
             R"ipc_Qu8mg5v7(
             Map a vector quantity on the collision mesh to the full mesh.
@@ -309,8 +437,41 @@ void define_collision_mesh(py::module_& m)
                 Matrix that maps from the faces' edges to rows in the edges matrix.
             )ipc_Qu8mg5v7",
             py::arg("faces"), py::arg("edges"))
-        .def_readwrite(
-            "can_collide", &CollisionMesh::can_collide,
+        .def_property(
+            "can_collide", [](CollisionMesh& self) { return self.can_collide; },
+            [](CollisionMesh& self, const py::object& can_collide) {
+                if (py::isinstance<SparseCanCollide>(can_collide)) {
+
+                    self.can_collide = py::cast<SparseCanCollide>(can_collide);
+
+                } else if (py::isinstance<VertexPatchesCanCollide>(
+                               can_collide)) {
+
+                    const VertexPatchesCanCollide& vertex_patches_can_collide =
+                        py::cast<VertexPatchesCanCollide>(can_collide);
+
+                    if (self.num_vertices()
+                        != vertex_patches_can_collide.num_vertices()) {
+                        throw py::value_error(
+                            "The number of vertices in the VertexPatchesCanCollide object must match the number of vertices in the CollisionMesh.");
+                    }
+
+                    self.can_collide = vertex_patches_can_collide;
+
+                } else if (py::isinstance<py::function>(can_collide)) {
+
+                    logger().warn(
+                        "Using a custom function for can_collide is deprecated because it is slow. "
+                        "Please use a SparseCanCollide or VertexPatchesCanCollide object.");
+                    self.can_collide = [can_collide](size_t i, size_t j) {
+                        return py::cast<bool>(can_collide(i, j));
+                    };
+
+                } else {
+                    throw py::value_error(
+                        "Unknown type for can_collide. Must be a SparseCanCollide, VertexPatchesCanCollide, or a function.");
+                }
+            },
             R"ipc_Qu8mg5v7(
             A function that takes two vertex IDs and returns true if the vertices (and faces or edges containing the vertices) can collide.
 

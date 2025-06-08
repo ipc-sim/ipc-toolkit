@@ -13,8 +13,8 @@ void define_face_vertex_tangential_collision(py::module_& m)
         .def(py::init<const FaceVertexNormalCollision&>(), py::arg("collision"))
         .def(
             py::init<
-                const FaceVertexNormalCollision&, const VectorMax12d&,
-                const BarrierPotential&, const double>(),
+                const FaceVertexNormalCollision&, Eigen::ConstRef<VectorMax12d>,
+                const NormalPotential&, const double>(),
             py::arg("collision"), py::arg("positions"),
-            py::arg("barrier_potential"), py::arg("barrier_stiffness"));
+            py::arg("normal_potential"), py::arg("normal_stiffness"));
 }

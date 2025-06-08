@@ -17,19 +17,19 @@ EdgeVertexTangentialCollision::EdgeVertexTangentialCollision(
 
 EdgeVertexTangentialCollision::EdgeVertexTangentialCollision(
     const EdgeVertexNormalCollision& collision,
-    const VectorMax12d& positions,
-    const BarrierPotential& barrier_potential,
-    const double barrier_stiffness)
+    Eigen::ConstRef<VectorMax12d> positions,
+    const NormalPotential& normal_potential,
+    const double normal_stiffness)
     : EdgeVertexTangentialCollision(collision)
 {
     TangentialCollision::init(
-        collision, positions, barrier_potential, barrier_stiffness);
+        collision, positions, normal_potential, normal_stiffness);
 }
 
 // ============================================================================
 
 MatrixMax<double, 3, 2> EdgeVertexTangentialCollision::compute_tangent_basis(
-    const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == ndof());
     return point_edge_tangent_basis(
@@ -39,7 +39,7 @@ MatrixMax<double, 3, 2> EdgeVertexTangentialCollision::compute_tangent_basis(
 
 MatrixMax<double, 36, 2>
 EdgeVertexTangentialCollision::compute_tangent_basis_jacobian(
-    const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == ndof());
     return point_edge_tangent_basis_jacobian(
@@ -50,7 +50,7 @@ EdgeVertexTangentialCollision::compute_tangent_basis_jacobian(
 // ============================================================================
 
 VectorMax2d EdgeVertexTangentialCollision::compute_closest_point(
-    const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == ndof());
     VectorMax2d alpha(1);
@@ -62,7 +62,7 @@ VectorMax2d EdgeVertexTangentialCollision::compute_closest_point(
 
 MatrixMax<double, 2, 12>
 EdgeVertexTangentialCollision::compute_closest_point_jacobian(
-    const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == ndof());
     return point_edge_closest_point_jacobian(
@@ -74,7 +74,7 @@ EdgeVertexTangentialCollision::compute_closest_point_jacobian(
 // ============================================================================
 
 VectorMax3d EdgeVertexTangentialCollision::relative_velocity(
-    const VectorMax12d& velocities) const
+    Eigen::ConstRef<VectorMax12d> velocities) const
 {
     assert(velocities.size() == ndof());
     return point_edge_relative_velocity(
@@ -84,7 +84,7 @@ VectorMax3d EdgeVertexTangentialCollision::relative_velocity(
 
 MatrixMax<double, 3, 12>
 EdgeVertexTangentialCollision::relative_velocity_matrix(
-    const VectorMax2d& _closest_point) const
+    Eigen::ConstRef<VectorMax2d> _closest_point) const
 {
     assert(_closest_point.size() == 1);
     return point_edge_relative_velocity_matrix(dim(), _closest_point[0]);
@@ -92,7 +92,7 @@ EdgeVertexTangentialCollision::relative_velocity_matrix(
 
 MatrixMax<double, 6, 12>
 EdgeVertexTangentialCollision::relative_velocity_matrix_jacobian(
-    const VectorMax2d& _closest_point) const
+    Eigen::ConstRef<VectorMax2d> _closest_point) const
 {
     assert(_closest_point.size() == 1);
     return point_edge_relative_velocity_matrix_jacobian(

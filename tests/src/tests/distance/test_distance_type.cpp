@@ -211,7 +211,7 @@ TEST_CASE(
 
 TEST_CASE(
     "Point-triangle distance type GH Issue",
-    "[distance][distance-type][point-triangle][debug]")
+    "[distance][distance-type][point-triangle]")
 {
     Eigen::Vector3d p(0.488166, 0.0132623, 0.289055);
     Eigen::Vector3d v0(0.456476, 0.0526442, 0.260834);

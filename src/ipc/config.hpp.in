@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 // WARNING: Do not modify config.hpp directly. Instead, modify config.hpp.in.
 
 #define IPC_TOOLKIT_NAME "@PROJECT_NAME@"
@@ -14,3 +16,11 @@
 #cmakedefine IPC_TOOLKIT_WITH_ROBIN_MAP
 #cmakedefine IPC_TOOLKIT_WITH_ABSEIL
 #cmakedefine IPC_TOOLKIT_WITH_FILIB
+
+namespace ipc {
+
+// Type definitions
+using index_t = int32_t;
+// using scalar_t = double;
+
+} // namespace ipc

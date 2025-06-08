@@ -14,12 +14,14 @@ class BarrierPotential : public NormalPotential {
 public:
     /// @brief Construct a barrier potential.
     /// @param dhat The activation distance of the barrier.
+    /// @param use_physical_barrier Whether to use the physical barrier.
     explicit BarrierPotential(
         const double dhat, const bool use_physical_barrier = false);
 
     /// @brief Construct a barrier potential.
     /// @param barrier The barrier function.
     /// @param dhat The activation distance of the barrier.
+    /// @param use_physical_barrier Whether to use the physical barrier.
     BarrierPotential(
         const std::shared_ptr<Barrier> barrier,
         const double dhat,
@@ -73,7 +75,7 @@ public:
     /// @return The gradient of the force.
     VectorMax12d force_magnitude_gradient(
         const double distance_squared,
-        const VectorMax12d& distance_squared_gradient,
+        Eigen::ConstRef<VectorMax12d> distance_squared_gradient,
         const double dmin,
         const double barrier_stiffness) const override;
 

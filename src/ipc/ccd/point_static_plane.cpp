@@ -9,10 +9,10 @@ namespace ipc {
 inline bool is_in_01(double x) { return 0 <= x && x <= 1; };
 
 bool point_static_plane_ccd(
-    const VectorMax3d& p_t0,
-    const VectorMax3d& p_t1,
-    const VectorMax3d& plane_origin,
-    const VectorMax3d& plane_normal,
+    Eigen::ConstRef<VectorMax3d> p_t0,
+    Eigen::ConstRef<VectorMax3d> p_t1,
+    Eigen::ConstRef<VectorMax3d> plane_origin,
+    Eigen::ConstRef<VectorMax3d> plane_normal,
     double& toi,
     double conservative_rescaling)
 {

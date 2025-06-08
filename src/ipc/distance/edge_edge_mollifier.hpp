@@ -11,10 +11,10 @@ namespace ipc {
 /// @param eb1 The second vertex of the second edge.
 /// @return The squared norm of the edge-edge cross product.
 double edge_edge_cross_squarednorm(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1);
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 /// @brief Compute the gradient of the squared norm of the edge cross product.
 /// @param ea0 The first vertex of the first edge.
@@ -23,10 +23,10 @@ double edge_edge_cross_squarednorm(
 /// @param eb1 The second vertex of the second edge.
 /// @return The gradient of the squared norm of the edge cross product wrt ea0, ea1, eb0, and eb1.
 Vector12d edge_edge_cross_squarednorm_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1);
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 /// @brief Compute the hessian of the squared norm of the edge cross product.
 /// @param ea0 The first vertex of the first edge.
@@ -35,10 +35,10 @@ Vector12d edge_edge_cross_squarednorm_gradient(
 /// @param eb1 The second vertex of the second edge.
 /// @return The hessian of the squared norm of the edge cross product wrt ea0, ea1, eb0, and eb1.
 Matrix12d edge_edge_cross_squarednorm_hessian(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1);
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 /// @brief Mollifier function for edge-edge distance.
 /// @param x Squared norm of the edge-edge cross product.
@@ -83,10 +83,10 @@ double edge_edge_mollifier_gradient_derivative_wrt_eps_x(
 /// @param eps_x Mollifier activation threshold.
 /// @return The mollifier coefficient to premultiply the edge-edge distance.
 double edge_edge_mollifier(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
     const double eps_x);
 
 /// @brief Compute the gradient of the mollifier for the edge-edge distance.
@@ -97,10 +97,10 @@ double edge_edge_mollifier(
 /// @param eps_x Mollifier activation threshold.
 /// @return The gradient of the mollifier.
 Vector12d edge_edge_mollifier_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
     const double eps_x);
 
 /// @brief Compute the hessian of the mollifier for the edge-edge distance.
@@ -111,10 +111,10 @@ Vector12d edge_edge_mollifier_gradient(
 /// @param eps_x Mollifier activation threshold.
 /// @return The hessian of the mollifier.
 Matrix12d edge_edge_mollifier_hessian(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
     const double eps_x);
 
 /// @brief Compute the gradient of the mollifier for the edge-edge distance wrt rest positions.
@@ -128,14 +128,14 @@ Matrix12d edge_edge_mollifier_hessian(
 /// @param eb1 The second vertex of the second edge.
 /// @return The derivative of the mollifier wrt rest positions.
 Vector12d edge_edge_mollifier_gradient_wrt_x(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1);
+    Eigen::ConstRef<Eigen::Vector3d> ea0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_rest,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 /// @brief Compute the jacobian of the edge-edge distance mollifier's gradient wrt rest positions.
 /// @note This is not the hessian of the mollifier wrt rest positions, but the jacobian wrt rest positions of the mollifier's gradient wrt positions.
@@ -149,14 +149,14 @@ Vector12d edge_edge_mollifier_gradient_wrt_x(
 /// @param eb1 The second vertex of the second edge.
 /// @return The jacobian of the mollifier's gradient wrt rest positions.
 Matrix12d edge_edge_mollifier_gradient_jacobian_wrt_x(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1);
+    Eigen::ConstRef<Eigen::Vector3d> ea0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_rest,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 /// @brief Compute the threshold of the mollifier edge-edge distance.
 ///
@@ -168,10 +168,10 @@ Matrix12d edge_edge_mollifier_gradient_jacobian_wrt_x(
 /// @param eb1_rest The rest position of the second vertex of the second edge.
 /// @return Threshold for edge-edge mollification.
 double edge_edge_mollifier_threshold(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1_rest);
+    Eigen::ConstRef<Eigen::Vector3d> ea0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_rest);
 
 /// @brief Compute the gradient of the threshold of the mollifier edge-edge distance.
 ///
@@ -183,10 +183,10 @@ double edge_edge_mollifier_threshold(
 /// @param eb1_rest The rest position of the second vertex of the second edge.
 /// @return Gradient of the threshold for edge-edge mollification.
 Vector12d edge_edge_mollifier_threshold_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1_rest);
+    Eigen::ConstRef<Eigen::Vector3d> ea0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_rest);
 
 // Symbolically generated derivatives;
 namespace autogen {

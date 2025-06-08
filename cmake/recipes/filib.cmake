@@ -13,3 +13,6 @@ option(FILIB_BUILD_SHARED_LIB "Build shared library" OFF)
 
 include(CPM)
 CPMAddPackage("gh:zfergus/filib#7cf13519b0db72df2493c9c8997a8bef9e372848")
+
+# Folder name for IDE
+set_target_properties(filib PROPERTIES FOLDER "ThirdParty")

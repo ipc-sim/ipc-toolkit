@@ -18,6 +18,8 @@ public:
     static constexpr double SMALL_TOI = 1e-6;
 
     /// @brief Construct a new AdditiveCCD object.
+    /// @param tolerance The tolerance used for the CCD algorithm.
+    /// @param max_iterations The maximum number of iterations for the CCD algorithm.
     /// @param conservative_rescaling The conservative rescaling of the time of impact.
     TightInclusionCCD(
         const double tolerance = DEFAULT_TOLERANCE,
@@ -34,10 +36,10 @@ public:
     /// @param[in] tmax The maximum time to check for collisions.
     /// @return True if a collision was detected, false otherwise.
     bool point_point_ccd(
-        const VectorMax3d& p0_t0,
-        const VectorMax3d& p1_t0,
-        const VectorMax3d& p0_t1,
-        const VectorMax3d& p1_t1,
+        Eigen::ConstRef<VectorMax3d> p0_t0,
+        Eigen::ConstRef<VectorMax3d> p1_t0,
+        Eigen::ConstRef<VectorMax3d> p0_t1,
+        Eigen::ConstRef<VectorMax3d> p1_t1,
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0) const override;
@@ -52,17 +54,14 @@ public:
     /// @param[out] toi The time of impact between the point and the edge.
     /// @param[in] min_distance The minimum distance between the objects.
     /// @param[in] tmax The maximum time to check for collisions.
-    /// @param[in] tolerance The error tolerance for the time of impact.
-    /// @param[in] max_iterations The maximum number of iterations to perform.
-    /// @param[in] conservative_rescaling The conservative rescaling of the time of impact.
     /// @return True if a collision was detected, false otherwise.
     bool point_edge_ccd(
-        const VectorMax3d& p_t0,
-        const VectorMax3d& e0_t0,
-        const VectorMax3d& e1_t0,
-        const VectorMax3d& p_t1,
-        const VectorMax3d& e0_t1,
-        const VectorMax3d& e1_t1,
+        Eigen::ConstRef<VectorMax3d> p_t0,
+        Eigen::ConstRef<VectorMax3d> e0_t0,
+        Eigen::ConstRef<VectorMax3d> e1_t0,
+        Eigen::ConstRef<VectorMax3d> p_t1,
+        Eigen::ConstRef<VectorMax3d> e0_t1,
+        Eigen::ConstRef<VectorMax3d> e1_t1,
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0) const override;
@@ -79,19 +78,16 @@ public:
     /// @param[out] toi The time of impact between the two edges.
     /// @param[in] min_distance The minimum distance between the objects.
     /// @param[in] tmax The maximum time to check for collisions.
-    /// @param[in] tolerance The error tolerance for the time of impact.
-    /// @param[in] max_iterations The maximum number of iterations to perform.
-    /// @param[in] conservative_rescaling The conservative rescaling of the time of impact.
     /// @return True if a collision was detected, false otherwise.
     bool edge_edge_ccd(
-        const Eigen::Vector3d& ea0_t0,
-        const Eigen::Vector3d& ea1_t0,
-        const Eigen::Vector3d& eb0_t0,
-        const Eigen::Vector3d& eb1_t0,
-        const Eigen::Vector3d& ea0_t1,
-        const Eigen::Vector3d& ea1_t1,
-        const Eigen::Vector3d& eb0_t1,
-        const Eigen::Vector3d& eb1_t1,
+        Eigen::ConstRef<Eigen::Vector3d> ea0_t0,
+        Eigen::ConstRef<Eigen::Vector3d> ea1_t0,
+        Eigen::ConstRef<Eigen::Vector3d> eb0_t0,
+        Eigen::ConstRef<Eigen::Vector3d> eb1_t0,
+        Eigen::ConstRef<Eigen::Vector3d> ea0_t1,
+        Eigen::ConstRef<Eigen::Vector3d> ea1_t1,
+        Eigen::ConstRef<Eigen::Vector3d> eb0_t1,
+        Eigen::ConstRef<Eigen::Vector3d> eb1_t1,
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0) const override;
@@ -108,19 +104,16 @@ public:
     /// @param[out] toi The time of impact between the point and the triangle.
     /// @param[in] min_distance The minimum distance between the objects.
     /// @param[in] tmax The maximum time to check for collisions.
-    /// @param[in] tolerance The error tolerance for the time of impact.
-    /// @param[in] max_iterations The maximum number of iterations to perform.
-    /// @param[in] conservative_rescaling The conservative rescaling of the time of impact.
     /// @return True if a collision was detected, false otherwise.
     bool point_triangle_ccd(
-        const Eigen::Vector3d& p_t0,
-        const Eigen::Vector3d& t0_t0,
-        const Eigen::Vector3d& t1_t0,
-        const Eigen::Vector3d& t2_t0,
-        const Eigen::Vector3d& p_t1,
-        const Eigen::Vector3d& t0_t1,
-        const Eigen::Vector3d& t1_t1,
-        const Eigen::Vector3d& t2_t1,
+        Eigen::ConstRef<Eigen::Vector3d> p_t0,
+        Eigen::ConstRef<Eigen::Vector3d> t0_t0,
+        Eigen::ConstRef<Eigen::Vector3d> t1_t0,
+        Eigen::ConstRef<Eigen::Vector3d> t2_t0,
+        Eigen::ConstRef<Eigen::Vector3d> p_t1,
+        Eigen::ConstRef<Eigen::Vector3d> t0_t1,
+        Eigen::ConstRef<Eigen::Vector3d> t1_t1,
+        Eigen::ConstRef<Eigen::Vector3d> t2_t1,
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0) const override;
@@ -145,10 +138,10 @@ private:
     /// @param[in] tmax The maximum time to check for collisions.
     /// @return True if a collision was detected, false otherwise.
     bool point_point_ccd_3D(
-        const Eigen::Vector3d& p0_t0,
-        const Eigen::Vector3d& p1_t0,
-        const Eigen::Vector3d& p0_t1,
-        const Eigen::Vector3d& p1_t1,
+        Eigen::ConstRef<Eigen::Vector3d> p0_t0,
+        Eigen::ConstRef<Eigen::Vector3d> p1_t0,
+        Eigen::ConstRef<Eigen::Vector3d> p0_t1,
+        Eigen::ConstRef<Eigen::Vector3d> p1_t1,
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0) const;
@@ -163,17 +156,14 @@ private:
     /// @param[out] toi The time of impact between the point and the edge.
     /// @param[in] min_distance The minimum distance between the objects.
     /// @param[in] tmax The maximum time to check for collisions.
-    /// @param[in] tolerance The error tolerance for the time of impact.
-    /// @param[in] max_iterations The maximum number of iterations to perform.
-    /// @param[in] conservative_rescaling The conservative rescaling of the time of impact.
     /// @return True if a collision was detected, false otherwise.
     bool point_edge_ccd_3D(
-        const Eigen::Vector3d& p_t0,
-        const Eigen::Vector3d& e0_t0,
-        const Eigen::Vector3d& e1_t0,
-        const Eigen::Vector3d& p_t1,
-        const Eigen::Vector3d& e0_t1,
-        const Eigen::Vector3d& e1_t1,
+        Eigen::ConstRef<Eigen::Vector3d> p_t0,
+        Eigen::ConstRef<Eigen::Vector3d> e0_t0,
+        Eigen::ConstRef<Eigen::Vector3d> e1_t0,
+        Eigen::ConstRef<Eigen::Vector3d> p_t1,
+        Eigen::ConstRef<Eigen::Vector3d> e0_t1,
+        Eigen::ConstRef<Eigen::Vector3d> e1_t1,
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0) const;

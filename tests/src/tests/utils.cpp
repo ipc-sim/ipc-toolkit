@@ -2,6 +2,15 @@
 
 #include <tests/config.hpp>
 
+#include <ipc/broad_phase/brute_force.hpp>
+#include <ipc/broad_phase/hash_grid.hpp>
+#include <ipc/broad_phase/spatial_hash.hpp>
+#include <ipc/broad_phase/bvh.hpp>
+#include <ipc/broad_phase/sweep_and_prune.hpp>
+#ifdef IPC_TOOLKIT_WITH_CUDA
+#include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
+#endif
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <unsupported/Eigen/SparseExtra>
@@ -10,6 +19,42 @@
 #include <igl/edges.h>
 
 namespace ipc::tests {
+
+BroadPhaseGenerator::BroadPhaseGenerator()
+{
+    m_broad_phases = { {
+        std::make_shared<BruteForce>(),
+        std::make_shared<HashGrid>(),
+        std::make_shared<SpatialHash>(),
+        std::make_shared<BVH>(),
+        std::make_shared<SweepAndPrune>(),
+#ifdef IPC_TOOLKIT_WITH_CUDA
+        std::make_shared<SweepAndTiniestQueue>(),
+#endif
+    } };
+}
+
+// Attempts to move the generator to the next element.
+// Returns true if successful (and thus has another element that can be
+// read)
+bool BroadPhaseGenerator::next() { return ++m_current < m_broad_phases.size(); }
+
+// Precondition:
+// The generator is either freshly constructed or the last call to next()
+// returned true
+std::shared_ptr<BroadPhase> const& BroadPhaseGenerator::get() const
+{
+    return m_broad_phases[m_current];
+}
+
+Catch::Generators::GeneratorWrapper<std::shared_ptr<BroadPhase>>
+BroadPhaseGenerator::create()
+{
+    return Catch::Generators::GeneratorWrapper<std::shared_ptr<BroadPhase>>(
+        Catch::Detail::make_unique<BroadPhaseGenerator>());
+}
+
+// ============================================================================
 
 bool load_mesh(
     const std::string& mesh_name,

@@ -31,9 +31,10 @@ void define_tangential_potential(py::module_& m)
             "force",
             py::overload_cast<
                 const TangentialCollisions&, const CollisionMesh&,
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const BarrierPotential&, const double,
-                const double, const bool>(
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXd>, const NormalPotential&,
+                const double, const double, const bool>(
                 &TangentialPotential::force, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the friction force from the given velocities.
@@ -44,8 +45,8 @@ void define_tangential_potential(py::module_& m)
                 rest_positions: Rest positions of the vertices (rowwise).
                 lagged_displacements: Previous displacements of the vertices (rowwise).
                 velocities: Current displacements of the vertices (rowwise).
-                barrier_potential: Barrier potential (used for normal force magnitude).
-                barrier_stiffness: Barrier stiffness (used for normal force magnitude).
+                normal_potential: Normal potential (used for normal force magnitude).
+                normal_stiffness: Normal stiffness (used for normal force magnitude).
                 dmin: Minimum distance (used for normal force magnitude).
                 no_mu: whether to not multiply by mu
 
@@ -54,15 +55,16 @@ void define_tangential_potential(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("collisions"), py::arg("mesh"), py::arg("rest_positions"),
             py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("normal_potential"), py::arg("normal_stiffness"),
             py::arg("dmin") = 0, py::arg("no_mu") = false)
         .def(
             "force_jacobian",
             py::overload_cast<
                 const TangentialCollisions&, const CollisionMesh&,
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const BarrierPotential&, const double,
-                const TangentialPotential::DiffWRT, const double>(
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXd>, const NormalPotential&,
+                const double, const TangentialPotential::DiffWRT, const double>(
                 &TangentialPotential::force_jacobian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the Jacobian of the friction force wrt the velocities.
@@ -73,8 +75,8 @@ void define_tangential_potential(py::module_& m)
                 rest_positions: Rest positions of the vertices (rowwise).
                 lagged_displacements: Previous displacements of the vertices (rowwise).
                 velocities: Current displacements of the vertices (rowwise).
-                barrier_potential: Barrier potential (used for normal force magnitude).
-                barrier_stiffness: Barrier stiffness (used for normal force magnitude).
+                normal_potential: Normal potential (used for normal force magnitude).
+                normal_stiffness: Normal stiffness (used for normal force magnitude).
                 wrt: The variable to take the derivative with respect to.
                 dmin: Minimum distance (used for normal force magnitude).
 
@@ -83,15 +85,15 @@ void define_tangential_potential(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("collisions"), py::arg("mesh"), py::arg("rest_positions"),
             py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("normal_potential"), py::arg("normal_stiffness"),
             py::arg("wrt"), py::arg("dmin") = 0)
         .def(
             "force",
             py::overload_cast<
-                const TangentialCollision&, const VectorMax12d&,
-                const VectorMax12d&, const VectorMax12d&,
-                const BarrierPotential&, const double, const double,
-                const bool>(&TangentialPotential::force, py::const_),
+                const TangentialCollision&, Eigen::ConstRef<VectorMax12d>,
+                Eigen::ConstRef<VectorMax12d>, Eigen::ConstRef<VectorMax12d>,
+                const NormalPotential&, const double, const double, const bool>(
+                &TangentialPotential::force, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the friction force.
 
@@ -100,8 +102,8 @@ void define_tangential_potential(py::module_& m)
                 rest_positions: Rest positions of the vertices (rowwise).
                 lagged_displacements: Previous displacements of the vertices (rowwise).
                 velocities: Current displacements of the vertices (rowwise).
-                barrier_potential: Barrier potential (used for normal force magnitude).
-                barrier_stiffness: Barrier stiffness (used for normal force magnitude).
+                normal_potential: Normal potential (used for normal force magnitude).
+                normal_stiffness: Normal stiffness (used for normal force magnitude).
                 dmin: Minimum distance (used for normal force magnitude).
                 no_mu: Whether to not multiply by mu
 
@@ -110,14 +112,14 @@ void define_tangential_potential(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("collision"), py::arg("rest_positions"),
             py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("normal_potential"), py::arg("normal_stiffness"),
             py::arg("dmin") = 0, py::arg("no_mu") = false)
         .def(
             "force_jacobian",
             py::overload_cast<
-                const TangentialCollision&, const VectorMax12d&,
-                const VectorMax12d&, const VectorMax12d&,
-                const BarrierPotential&, const double,
+                const TangentialCollision&, Eigen::ConstRef<VectorMax12d>,
+                Eigen::ConstRef<VectorMax12d>, Eigen::ConstRef<VectorMax12d>,
+                const NormalPotential&, const double,
                 const TangentialPotential::DiffWRT, const double>(
                 &TangentialPotential::force_jacobian, py::const_),
             R"ipc_Qu8mg5v7(
@@ -128,8 +130,8 @@ void define_tangential_potential(py::module_& m)
                 rest_positions: Rest positions of the vertices (rowwise).
                 lagged_displacements: Previous displacements of the vertices (rowwise).
                 velocities: Current displacements of the vertices (rowwise).
-                barrier_potential: Barrier potential (used for normal force magnitude).
-                barrier_stiffness: Barrier stiffness (used for normal force magnitude).
+                normal_potential: Normal potential (used for normal force magnitude).
+                normal_stiffness: Normal stiffness (used for normal force magnitude).
                 wrt: Variable to differentiate the friction force with respect to.
                 dmin: Minimum distance (used for normal force magnitude).
 
@@ -138,6 +140,6 @@ void define_tangential_potential(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("collision"), py::arg("rest_positions"),
             py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("normal_potential"), py::arg("normal_stiffness"),
             py::arg("wrt"), py::arg("dmin") = 0);
 }

@@ -1,6 +1,7 @@
 #include <common.hpp>
 
 #include <memory>
+#include <cstdlib>
 
 #include <tbb/info.h>
 #include <tbb/global_control.h>
@@ -40,4 +41,6 @@ void define_thread_limiter(py::module_& m)
     m.def(
         "set_num_threads", &set_num_threads,
         "set maximum number of threads to use", py::arg("nthreads"));
+
+    std::atexit([]() { thread_limiter.reset(); });
 }

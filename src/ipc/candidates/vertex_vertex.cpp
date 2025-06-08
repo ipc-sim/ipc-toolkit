@@ -6,14 +6,15 @@
 
 namespace ipc {
 
-VertexVertexCandidate::VertexVertexCandidate(long _vertex0_id, long _vertex1_id)
+VertexVertexCandidate::VertexVertexCandidate(
+    index_t _vertex0_id, index_t _vertex1_id)
     : vertex0_id(_vertex0_id)
     , vertex1_id(_vertex1_id)
 {
 }
 
-double
-VertexVertexCandidate::compute_distance(const VectorMax12d& positions) const
+double VertexVertexCandidate::compute_distance(
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 4 || positions.size() == 6);
     const int dim = this->dim(positions.size());
@@ -21,7 +22,7 @@ VertexVertexCandidate::compute_distance(const VectorMax12d& positions) const
 }
 
 VectorMax12d VertexVertexCandidate::compute_distance_gradient(
-    const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 4 || positions.size() == 6);
     const int dim = this->dim(positions.size());
@@ -30,7 +31,7 @@ VectorMax12d VertexVertexCandidate::compute_distance_gradient(
 }
 
 MatrixMax12d VertexVertexCandidate::compute_distance_hessian(
-    const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(positions.size() == 4 || positions.size() == 6);
     const int dim = this->dim(positions.size());
@@ -38,9 +39,17 @@ MatrixMax12d VertexVertexCandidate::compute_distance_hessian(
         positions.head(dim), positions.tail(dim));
 }
 
+VectorMax4d VertexVertexCandidate::compute_coefficients(
+    Eigen::ConstRef<VectorMax12d> positions) const
+{
+    VectorMax4d coeffs(2);
+    coeffs << 1.0, -1.0;
+    return coeffs;
+}
+
 bool VertexVertexCandidate::ccd(
-    const VectorMax12d& vertices_t0,
-    const VectorMax12d& vertices_t1,
+    Eigen::ConstRef<VectorMax12d> vertices_t0,
+    Eigen::ConstRef<VectorMax12d> vertices_t1,
     double& toi,
     const double min_distance,
     const double tmax,
@@ -70,8 +79,8 @@ bool VertexVertexCandidate::operator!=(const VertexVertexCandidate& other) const
 
 bool VertexVertexCandidate::operator<(const VertexVertexCandidate& other) const
 {
-    long this_min = std::min(this->vertex0_id, this->vertex1_id);
-    long other_min = std::min(other.vertex0_id, other.vertex1_id);
+    index_t this_min = std::min(this->vertex0_id, this->vertex1_id);
+    index_t other_min = std::min(other.vertex0_id, other.vertex1_id);
     if (this_min == other_min) {
         return std::max(this->vertex0_id, this->vertex1_id)
             < std::max(other.vertex0_id, other.vertex1_id);

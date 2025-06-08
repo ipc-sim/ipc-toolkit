@@ -4,6 +4,7 @@ set(SOURCES
   additive_ccd.cpp
   additive_ccd.hpp
   check_initial_distance.hpp
+  default_narrow_phase_ccd.cpp
   default_narrow_phase_ccd.hpp
   inexact_ccd.cpp
   inexact_ccd.hpp
@@ -17,5 +18,4 @@ set(SOURCES
   tight_inclusion_ccd.hpp
 )
 
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})
 target_sources(ipc_toolkit PRIVATE ${SOURCES})

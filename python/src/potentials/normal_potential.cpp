@@ -17,7 +17,7 @@ void define_normal_potential(py::module_& m)
             "shape_derivative",
             py::overload_cast<
                 const NormalCollisions&, const CollisionMesh&,
-                const Eigen::MatrixXd&>(
+                Eigen::ConstRef<Eigen::MatrixXd>>(
                 &NormalPotential::shape_derivative, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the shape derivative of the potential.
@@ -36,9 +36,9 @@ void define_normal_potential(py::module_& m)
         .def(
             "shape_derivative",
             [](const NormalPotential& self, const NormalCollision& collision,
-               const std::array<long, 4>& vertex_ids,
-               const VectorMax12d& rest_positions,
-               const VectorMax12d& positions) {
+               const std::array<index_t, 4>& vertex_ids,
+               Eigen::ConstRef<VectorMax12d> rest_positions,
+               Eigen::ConstRef<VectorMax12d> positions) {
                 std::vector<Eigen::Triplet<double>> out;
                 self.shape_derivative(
                     collision, vertex_ids, rest_positions, positions, out);

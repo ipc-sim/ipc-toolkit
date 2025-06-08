@@ -12,36 +12,37 @@ void define_tangential_collisions(py::module_& m)
         .def(
             "build",
             py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&,
-                const NormalCollisions&, const BarrierPotential&, double,
+                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+                const NormalCollisions&, const NormalPotential&, double,
                 double>(&TangentialCollisions::build),
             py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
-            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("normal_potential"), py::arg("normal_stiffness"),
             py::arg("mu"))
         .def(
             "build",
             [](TangentialCollisions& self, const CollisionMesh& mesh,
-               const Eigen::MatrixXd& vertices,
+               Eigen::ConstRef<Eigen::MatrixXd> vertices,
                const NormalCollisions& collisions,
-               const BarrierPotential& barrier_potential,
-               const double barrier_stiffness, const Eigen::VectorXd& mus) {
+               const NormalPotential& normal_potential,
+               const double normal_stiffness,
+               Eigen::ConstRef<Eigen::VectorXd> mus) {
                 self.build(
-                    mesh, vertices, collisions, barrier_potential,
-                    barrier_stiffness, mus);
+                    mesh, vertices, collisions, normal_potential,
+                    normal_stiffness, mus);
             },
             py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
-            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("normal_potential"), py::arg("normal_stiffness"),
             py::arg("mus"))
         .def(
             "build",
             py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&,
-                const NormalCollisions&, const BarrierPotential&, const double,
-                const Eigen::VectorXd&,
+                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+                const NormalCollisions&, const NormalPotential&, const double,
+                Eigen::ConstRef<Eigen::VectorXd>,
                 const std::function<double(double, double)>&>(
                 &TangentialCollisions::build),
             py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
-            py::arg("barrier_potential"), py::arg("barrier_stiffness"),
+            py::arg("normal_potential"), py::arg("normal_stiffness"),
             py::arg("mus"), py::arg("blend_mu"))
         .def(
             "__len__", &TangentialCollisions::size,

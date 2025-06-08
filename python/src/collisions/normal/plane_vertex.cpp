@@ -10,7 +10,9 @@ void define_plane_vertex_normal_collision(py::module_& m)
     py::class_<PlaneVertexNormalCollision, NormalCollision>(
         m, "PlaneVertexNormalCollision")
         .def(
-            py::init<const VectorMax3d&, const VectorMax3d&, const long>(),
+            py::init<
+                Eigen::ConstRef<VectorMax3d>, Eigen::ConstRef<VectorMax3d>,
+                const index_t>(),
             py::arg("plane_origin"), py::arg("plane_normal"),
             py::arg("vertex_id"))
         .def_readwrite(

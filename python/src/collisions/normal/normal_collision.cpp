@@ -25,7 +25,7 @@ void define_normal_collision(py::module_& m)
             py::arg("rest_positions"))
         .def(
             "mollifier",
-            py::overload_cast<const VectorMax12d&>(
+            py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
                 &NormalCollision::mollifier, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the mollifier for the distance.
@@ -39,7 +39,7 @@ void define_normal_collision(py::module_& m)
             py::arg("positions"))
         .def(
             "mollifier",
-            py::overload_cast<const VectorMax12d&, double>(
+            py::overload_cast<Eigen::ConstRef<VectorMax12d>, double>(
                 &NormalCollision::mollifier, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the mollifier for the distance.
@@ -54,7 +54,7 @@ void define_normal_collision(py::module_& m)
             py::arg("positions"), py::arg("eps_x"))
         .def(
             "mollifier_gradient",
-            py::overload_cast<const VectorMax12d&>(
+            py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
                 &NormalCollision::mollifier_gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the mollifier for the distance wrt the positions.
@@ -68,7 +68,7 @@ void define_normal_collision(py::module_& m)
             py::arg("positions"))
         .def(
             "mollifier_gradient",
-            py::overload_cast<const VectorMax12d&, double>(
+            py::overload_cast<Eigen::ConstRef<VectorMax12d>, double>(
                 &NormalCollision::mollifier_gradient, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the mollifier for the distance wrt the positions.
@@ -83,7 +83,7 @@ void define_normal_collision(py::module_& m)
             py::arg("positions"), py::arg("eps_x"))
         .def(
             "mollifier_hessian",
-            py::overload_cast<const VectorMax12d&>(
+            py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
                 &NormalCollision::mollifier_hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the Hessian of the mollifier for the distance wrt the positions.
@@ -97,7 +97,7 @@ void define_normal_collision(py::module_& m)
             py::arg("positions"))
         .def(
             "mollifier_hessian",
-            py::overload_cast<const VectorMax12d&, double>(
+            py::overload_cast<Eigen::ConstRef<VectorMax12d>, double>(
                 &NormalCollision::mollifier_hessian, py::const_),
             R"ipc_Qu8mg5v7(
             Compute the Hessian of the mollifier for the distance wrt the positions.

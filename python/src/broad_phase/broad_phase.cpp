@@ -6,44 +6,137 @@
 namespace py = pybind11;
 using namespace ipc;
 
+class PyBroadPhase : public BroadPhase {
+public:
+    using BroadPhase::BroadPhase; // Inherit constructors
+
+    std::string name() const override
+    {
+        PYBIND11_OVERRIDE_PURE(std::string, BroadPhase, name);
+    }
+
+    void build(
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
+        const double inflation_radius = 0) override
+    {
+        PYBIND11_OVERRIDE(
+            void, BroadPhase, build, vertices, edges, faces, inflation_radius);
+    }
+
+    void build(
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
+        const double inflation_radius = 0) override
+    {
+        PYBIND11_OVERRIDE(
+            void, BroadPhase, build, vertices_t0, vertices_t1, edges, faces,
+            inflation_radius);
+    }
+
+    void clear() override { PYBIND11_OVERRIDE(void, BroadPhase, clear); }
+
+    void detect_vertex_vertex_candidates(
+        std::vector<VertexVertexCandidate>& candidates) const override
+    {
+        py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
+        py::function override =
+            py::get_override(this, "detect_vertex_vertex_candidates");
+        if (override) {
+            candidates = override().cast<std::vector<VertexVertexCandidate>>();
+            return;
+        }
+        throw std::runtime_error(
+            "Tried to call pure virtual function \"BroadPhase::detect_vertex_vertex_candidates\"");
+    }
+
+    void detect_edge_vertex_candidates(
+        std::vector<EdgeVertexCandidate>& candidates) const override
+    {
+        py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
+        py::function override =
+            py::get_override(this, "detect_edge_vertex_candidates");
+        if (override) {
+            candidates = override().cast<std::vector<EdgeVertexCandidate>>();
+            return;
+        }
+        throw std::runtime_error(
+            "Tried to call pure virtual function \"BroadPhase::detect_edge_vertex_candidates\"");
+    }
+
+    void detect_edge_edge_candidates(
+        std::vector<EdgeEdgeCandidate>& candidates) const override
+    {
+        py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
+        py::function override =
+            py::get_override(this, "detect_edge_edge_candidates");
+        if (override) {
+            candidates = override().cast<std::vector<EdgeEdgeCandidate>>();
+            return;
+        }
+        throw std::runtime_error(
+            "Tried to call pure virtual function \"BroadPhase::detect_edge_edge_candidates\"");
+    }
+
+    void detect_face_vertex_candidates(
+        std::vector<FaceVertexCandidate>& candidates) const override
+    {
+        py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
+        py::function override =
+            py::get_override(this, "detect_face_vertex_candidates");
+        if (override) {
+            candidates = override().cast<std::vector<FaceVertexCandidate>>();
+            return;
+        }
+        throw std::runtime_error(
+            "Tried to call pure virtual function \"BroadPhase::detect_face_vertex_candidates\"");
+    }
+
+    void detect_edge_face_candidates(
+        std::vector<EdgeFaceCandidate>& candidates) const override
+    {
+        py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
+        py::function override =
+            py::get_override(this, "detect_edge_face_candidates");
+        if (override) {
+            candidates = override().cast<std::vector<EdgeFaceCandidate>>();
+            return;
+        }
+        throw std::runtime_error(
+            "Tried to call pure virtual function \"BroadPhase::detect_edge_face_candidates\"");
+    }
+
+    void detect_face_face_candidates(
+        std::vector<FaceFaceCandidate>& candidates) const override
+    {
+        py::gil_scoped_acquire gil; // Acquire GIL before calling Python code
+        py::function override =
+            py::get_override(this, "detect_face_face_candidates");
+        if (override) {
+            candidates = override().cast<std::vector<FaceFaceCandidate>>();
+            return;
+        }
+        throw std::runtime_error(
+            "Tried to call pure virtual function \"BroadPhase::detect_face_face_candidates\"");
+    }
+};
+
 void define_broad_phase(py::module_& m)
 {
-    py::enum_<BroadPhaseMethod>(
-        m, "BroadPhaseMethod",
-        "Enumeration of implemented broad phase methods.")
-        .value("BRUTE_FORCE", BroadPhaseMethod::BRUTE_FORCE, "Brute force")
-        .value("HASH_GRID", BroadPhaseMethod::HASH_GRID, "Hash grid")
-        .value("SPATIAL_HASH", BroadPhaseMethod::SPATIAL_HASH, "Spatial hash")
-        .value(
-            "BOUNDING_VOLUME_HIERARCHY", BroadPhaseMethod::BVH,
-            "Bounding volume hierarchy")
-        .value(
-            "SWEEP_AND_PRUNE", BroadPhaseMethod::SWEEP_AND_PRUNE,
-            "Sweep and prune")
-        .value(
-            "SWEEP_AND_TINIEST_QUEUE",
-            BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE,
-            "Sweep and tiniest queue (GPU)")
-        .export_values();
-
-    py::class_<BroadPhase>(m, "BroadPhase")
-        .def_static(
-            "make_broad_phase", &BroadPhase::make_broad_phase,
-            R"ipc_Qu8mg5v7(
-            Construct a registered broad phase object.
-
-            Parameters:
-                method: The broad phase method to use.
-
-            Returns:
-                The constructed broad phase object.
-            )ipc_Qu8mg5v7",
-            py::arg("method"))
+    py::class_<BroadPhase, PyBroadPhase, std::shared_ptr<BroadPhase>>(
+        m, "BroadPhase")
+        .def(py::init<>())
+        .def("name", &BroadPhase::name, "Get the name of the broad phase.")
         .def(
             "build",
             py::overload_cast<
-                const Eigen::MatrixXd&, const Eigen::MatrixXi&,
-                const Eigen::MatrixXi&, const double>(&BroadPhase::build),
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>, const double>(
+                &BroadPhase::build),
             R"ipc_Qu8mg5v7(
             Build the broad phase for static collision detection.
 
@@ -58,8 +151,10 @@ void define_broad_phase(py::module_& m)
         .def(
             "build",
             py::overload_cast<
-                const Eigen::MatrixXd&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXi&, const Eigen::MatrixXi&, const double>(
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXi>,
+                Eigen::ConstRef<Eigen::MatrixXi>, const double>(
                 &BroadPhase::build),
             R"ipc_Qu8mg5v7(
             Build the broad phase for continuous collision detection.

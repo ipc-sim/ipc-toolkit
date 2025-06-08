@@ -6,6 +6,7 @@
 
 #include <ipc/collisions/tangential/tangential_collisions.hpp>
 #include <ipc/potentials/friction_potential.hpp>
+#include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/utils/logger.hpp>
 
 #include <igl/edges.h>

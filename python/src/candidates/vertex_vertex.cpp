@@ -7,12 +7,17 @@ using namespace ipc;
 
 void define_vertex_vertex_candidate(py::module_& m)
 {
-    py::class_<
-        VertexVertexCandidate, CollisionStencil, ContinuousCollisionCandidate>(
+    py::class_<VertexVertexCandidate, CollisionStencil>(
         m, "VertexVertexCandidate")
         .def(
-            py::init<long, long>(), py::arg("vertex0_id"),
+            py::init<index_t, index_t>(), py::arg("vertex0_id"),
             py::arg("vertex1_id"))
+        .def(
+            py::init([](std::tuple<index_t, index_t> vertex_ids) {
+                return std::make_unique<VertexVertexCandidate>(
+                    std::get<0>(vertex_ids), std::get<1>(vertex_ids));
+            }),
+            py::arg("vertex_ids"))
         .def(
             "__str__",
             [](const VertexVertexCandidate& ev) {
@@ -37,4 +42,7 @@ void define_vertex_vertex_candidate(py::module_& m)
         .def_readwrite(
             "vertex1_id", &VertexVertexCandidate::vertex1_id,
             "ID of the second vertex");
+
+    py::implicitly_convertible<
+        std::tuple<index_t, index_t>, VertexVertexCandidate>();
 }

@@ -45,9 +45,9 @@ TEST_CASE("Normal adhesion derivatives", "[adhesion][normal]")
     Eigen::VectorXd fgrad(1);
     fd::finite_gradient(
         d_vec,
-        [&](const Eigen::VectorXd& d) {
-            REQUIRE(d[0] >= 0);
-            return normal_adhesion_potential(d[0], dhat_p, dhat_a, a2);
+        [&](const Eigen::VectorXd& _d) {
+            REQUIRE(_d[0] >= 0);
+            return normal_adhesion_potential(_d[0], dhat_p, dhat_a, a2);
         },
         fgrad);
 
@@ -65,10 +65,10 @@ TEST_CASE("Normal adhesion derivatives", "[adhesion][normal]")
 
     fd::finite_gradient(
         d_vec,
-        [&](const Eigen::VectorXd& d) {
-            REQUIRE(d[0] >= 0);
+        [&](const Eigen::VectorXd& _d) {
+            REQUIRE(_d[0] >= 0);
             return normal_adhesion_potential_first_derivative(
-                d[0], dhat_p, dhat_a, a2);
+                _d[0], dhat_p, dhat_a, a2);
         },
         fgrad);
 

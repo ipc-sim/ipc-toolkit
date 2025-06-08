@@ -33,19 +33,19 @@ public:
     /// @param rest_positions Rest positions of the vertices (rowwise).
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
-    /// @param barrier_potential Barrier potential (used for normal force magnitude).
-    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param normal_potential Normal potential (used for normal force magnitude).
+    /// @param normal_stiffness Normal stiffness (used for normal force magnitude).
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @param no_mu whether to not multiply by mu
     /// @return The friction force.
     Eigen::VectorXd force(
         const TangentialCollisions& collisions,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& rest_positions,
-        const Eigen::MatrixXd& lagged_displacements,
-        const Eigen::MatrixXd& velocities,
-        const BarrierPotential& barrier_potential,
-        const double barrier_stiffness,
+        Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+        Eigen::ConstRef<Eigen::MatrixXd> velocities,
+        const NormalPotential& normal_potential,
+        const double normal_stiffness,
         const double dmin = 0,
         const bool no_mu = false) const;
 
@@ -55,19 +55,19 @@ public:
     /// @param rest_positions Rest positions of the vertices (rowwise).
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
-    /// @param barrier_potential Barrier potential (used for normal force magnitude).
-    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param normal_potential Normal potential (used for normal force magnitude).
+    /// @param normal_stiffness Normal stiffness (used for normal force magnitude).
     /// @param wrt The variable to take the derivative with respect to.
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @return The Jacobian of the friction force wrt the velocities.
     Eigen::SparseMatrix<double> force_jacobian(
         const TangentialCollisions& collisions,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& rest_positions,
-        const Eigen::MatrixXd& lagged_displacements,
-        const Eigen::MatrixXd& velocities,
-        const BarrierPotential& barrier_potential,
-        const double barrier_stiffness,
+        Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+        Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
+        Eigen::ConstRef<Eigen::MatrixXd> velocities,
+        const NormalPotential& normal_potential,
+        const double normal_stiffness,
         const DiffWRT wrt,
         const double dmin = 0) const;
 
@@ -79,7 +79,7 @@ public:
     /// @return The potential.
     double operator()(
         const TangentialCollision& collision,
-        const VectorMax12d& velocities) const override;
+        Eigen::ConstRef<VectorMax12d> velocities) const override;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision
@@ -87,15 +87,16 @@ public:
     /// @return The gradient of the potential.
     VectorMax12d gradient(
         const TangentialCollision& collision,
-        const VectorMax12d& velocities) const override;
+        Eigen::ConstRef<VectorMax12d> velocities) const override;
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision
     /// @param velocities The collision stencil's velocities.
+    /// @param project_hessian_to_psd Whether to project the hessian to the positive semi-definite cone.
     /// @return The hessian of the potential.
     MatrixMax12d hessian(
         const TangentialCollision& collision,
-        const VectorMax12d& velocities,
+        Eigen::ConstRef<VectorMax12d> velocities,
         const PSDProjectionMethod project_hessian_to_psd =
             PSDProjectionMethod::NONE) const override;
 
@@ -104,18 +105,18 @@ public:
     /// @param rest_positions Rest positions of the vertices (rowwise).
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
-    /// @param barrier_potential Barrier potential (used for normal force magnitude).
-    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param normal_potential Normal potential (used for normal force magnitude).
+    /// @param normal_stiffness Normal stiffness (used for normal force magnitude).
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @param no_mu Whether to not multiply by mu
     /// @return Friction force
     VectorMax12d force(
         const TangentialCollision& collision,
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& lagged_displacements,
-        const VectorMax12d& velocities,
-        const BarrierPotential& barrier_potential,
-        const double barrier_stiffness,
+        Eigen::ConstRef<VectorMax12d> rest_positions,
+        Eigen::ConstRef<VectorMax12d> lagged_displacements,
+        Eigen::ConstRef<VectorMax12d> velocities,
+        const NormalPotential& normal_potential,
+        const double normal_stiffness,
         const double dmin = 0,
         const bool no_mu = false) const; //< whether to not multiply by mu
 
@@ -124,18 +125,18 @@ public:
     /// @param rest_positions Rest positions of the vertices (rowwise).
     /// @param lagged_displacements Previous displacements of the vertices (rowwise).
     /// @param velocities Current displacements of the vertices (rowwise).
-    /// @param barrier_potential Barrier potential (used for normal force magnitude).
-    /// @param barrier_stiffness Barrier stiffness (used for normal force magnitude).
+    /// @param normal_potential Normal potential (used for normal force magnitude).
+    /// @param normal_stiffness Noraml stiffness (used for normal force magnitude).
     /// @param wrt Variable to differentiate the friction force with respect to.
     /// @param dmin Minimum distance (used for normal force magnitude).
     /// @return Friction force Jacobian
     MatrixMax12d force_jacobian(
         const TangentialCollision& collision,
-        const VectorMax12d& rest_positions,
-        const VectorMax12d& lagged_displacements,
-        const VectorMax12d& velocities,
-        const BarrierPotential& barrier_potential,
-        const double barrier_stiffness,
+        Eigen::ConstRef<VectorMax12d> rest_positions,
+        Eigen::ConstRef<VectorMax12d> lagged_displacements,
+        Eigen::ConstRef<VectorMax12d> velocities,
+        const NormalPotential& normal_potential,
+        const double normal_stiffness,
         const DiffWRT wrt,
         const double dmin = 0) const;
 

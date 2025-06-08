@@ -27,3 +27,6 @@ target_link_libraries(evouga_ccd PUBLIC Eigen3::Eigen)
 
 # Turn off floating point contraction for CCD robustness
 target_compile_options(evouga_ccd PRIVATE "-ffp-contract=off")
+
+# Folder name for IDE
+set_target_properties(evouga_ccd PROPERTIES FOLDER "ThirdParty")

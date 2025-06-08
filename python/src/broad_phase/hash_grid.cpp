@@ -18,7 +18,7 @@ void define_hash_grid(py::module_& m)
         .def_readwrite("key", &HashItem::key, "The key of the item.")
         .def_readwrite("id", &HashItem::id, "The value of the item.");
 
-    py::class_<HashGrid, BroadPhase>(m, "HashGrid")
+    py::class_<HashGrid, BroadPhase, std::shared_ptr<HashGrid>>(m, "HashGrid")
         .def(py::init())
         .def_property_readonly("cell_size", &HashGrid::cell_size)
         .def_property_readonly(

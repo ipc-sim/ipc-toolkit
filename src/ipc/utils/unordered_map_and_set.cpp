@@ -18,6 +18,19 @@ template <> Hash<int> AbslHashValue(Hash<int> h, const int i)
     return Hash<int>::combine(std::move(h), i);
 }
 
+template <>
+Hash<std::pair<size_t, size_t>> AbslHashValue(
+    Hash<std::pair<size_t, size_t>> h, const std::pair<size_t, size_t> p)
+{
+    return Hash<std::pair<size_t, size_t>>::combine(
+        std::move(h), p.first, p.second);
+}
+
+template <> Hash<size_t> AbslHashValue(Hash<size_t> h, const size_t i)
+{
+    return Hash<size_t>::combine(std::move(h), i);
+}
+
 } // namespace ipc
 
 #endif

@@ -1,6 +1,7 @@
 name: Docs
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -30,7 +31,7 @@ jobs:
 
       - name: Cache Build
         id: cache-build
-        uses: actions/cache@v4.0.2
+        uses: actions/cache@v4
         with:
           path: ${{ env.CACHE_PATH }}
           key: docs-cache

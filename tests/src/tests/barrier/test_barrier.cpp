@@ -12,71 +12,27 @@
 
 namespace ipc {
 
-class NormalizedClampedLogBarrier : public ipc::Barrier {
-public:
-    double operator()(const double d, const double dhat) const override
-    {
-        if (d <= 0.0) {
-            return std::numeric_limits<double>::infinity();
-        }
-        if (d >= dhat) {
-            return 0;
-        }
-
-        // b(d) = -(d/d̂-1)²ln(d / d̂)
-        const auto d_dhat = d / dhat;
-        const auto d_dhat_minus_1 = d_dhat - 1;
-        return -d_dhat_minus_1 * d_dhat_minus_1 * std::log(d_dhat);
-    }
-
-    double first_derivative(const double d, const double dhat) const override
-    {
-        if (d <= 0.0 || d >= dhat) {
-            return 0.0;
-        }
-        const double t0 = 1.0 / dhat;
-        const double t1 = d * t0;
-        const double t2 = 1 - t1;
-        return t2 * (2 * t0 * std::log(t1) - t2 / d);
-    }
-
-    double second_derivative(const double d, const double dhat) const override
-    {
-        if (d <= 0.0 || d >= dhat) {
-            return 0.0;
-        }
-
-        const double t0 = 1.0 / dhat;
-        const double t1 = d * t0;
-        const double t2 = 1 - t1;
-        return 4 * t0 * t2 / d + (t2 * t2) / (d * d)
-            - 2 * std::log(t1) / (dhat * dhat);
-    }
-
-    double units(const double dhat) const override { return 1; }
-};
-
 /// @warning This implementation will not work with dmin > 0
-class PhysicalBarrier : public ipc::NormalizedClampedLogBarrier {
+class PhysicalBarrier : public NormalizedClampedLogBarrier {
 public:
     PhysicalBarrier(const bool _use_dist_sqr) : use_dist_sqr(_use_dist_sqr) { }
 
     double operator()(const double d, const double dhat) const override
     {
         return (use_dist_sqr ? sqrt(dhat) : dhat)
-            * ipc::NormalizedClampedLogBarrier::operator()(d, dhat);
+            * NormalizedClampedLogBarrier::operator()(d, dhat);
     }
 
     double first_derivative(const double d, const double dhat) const override
     {
         return (use_dist_sqr ? sqrt(dhat) : dhat)
-            * ipc::NormalizedClampedLogBarrier::first_derivative(d, dhat);
+            * NormalizedClampedLogBarrier::first_derivative(d, dhat);
     }
 
     double second_derivative(const double d, const double dhat) const override
     {
         return (use_dist_sqr ? sqrt(dhat) : dhat)
-            * ipc::NormalizedClampedLogBarrier::second_derivative(d, dhat);
+            * NormalizedClampedLogBarrier::second_derivative(d, dhat);
     }
 
 private:
@@ -111,6 +67,11 @@ TEST_CASE("Barrier derivatives", "[barrier]")
     {
         barrier = std::make_unique<ipc::PhysicalBarrier>(use_dist_sqr);
     }
+    SECTION("ClampedLogSq")
+    {
+        barrier = std::make_unique<ipc::ClampedLogSqBarrier>();
+    }
+    SECTION("Cubic") { barrier = std::make_unique<ipc::CubicBarrier>(); }
 
     if (use_dist_sqr) {
         d_vec *= d;

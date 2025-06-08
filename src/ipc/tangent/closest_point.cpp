@@ -9,18 +9,18 @@ namespace ipc {
 // Point - Edge
 
 double point_edge_closest_point(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1)
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1)
 {
     const VectorMax3d e = e1 - e0;
     return (p - e0).dot(e) / e.squaredNorm();
 }
 
 VectorMax9d point_edge_closest_point_jacobian(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1)
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1)
 {
     const int dim = p.size();
     assert(dim == 2 || dim == 3);
@@ -40,11 +40,11 @@ VectorMax9d point_edge_closest_point_jacobian(
 // ============================================================================
 // Edge - Edge
 
-Vector2<double> edge_edge_closest_point(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+Eigen::Vector2d edge_edge_closest_point(
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     const Eigen::Vector3d eb_to_ea = ea0 - eb0;
     const Eigen::Vector3d ea = ea1 - ea0;
@@ -55,7 +55,7 @@ Vector2<double> edge_edge_closest_point(
     coefMtr(0, 1) = coefMtr(1, 0) = -eb.dot(ea);
     coefMtr(1, 1) = eb.squaredNorm();
 
-    Vector2<double> rhs;
+    Eigen::Vector2d rhs;
     rhs[0] = -eb_to_ea.dot(ea);
     rhs[1] = eb_to_ea.dot(eb);
 
@@ -65,10 +65,10 @@ Vector2<double> edge_edge_closest_point(
 }
 
 Eigen::Matrix<double, 2, 12> edge_edge_closest_point_jacobian(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     Eigen::Matrix<double, 2, 12> J;
 
@@ -82,15 +82,15 @@ Eigen::Matrix<double, 2, 12> edge_edge_closest_point_jacobian(
 // ============================================================================
 // Point - Triangle
 
-Vector2<double> point_triangle_closest_point(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2)
+Eigen::Vector2d point_triangle_closest_point(
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     Eigen::Matrix<double, 2, 3> basis;
-    basis.row(0) = RowVector3<double>(t1 - t0); // edge 0
-    basis.row(1) = RowVector3<double>(t2 - t0); // edge 1
+    basis.row(0) = Eigen::RowVector3d(t1 - t0); // edge 0
+    basis.row(1) = Eigen::RowVector3d(t2 - t0); // edge 1
     const Eigen::Matrix2d A = basis * basis.transpose();
     const Eigen::Vector2d b = basis * (p - t0);
     const Eigen::Vector2d x = A.ldlt().solve(b);
@@ -99,10 +99,10 @@ Vector2<double> point_triangle_closest_point(
 }
 
 Eigen::Matrix<double, 2, 12> point_triangle_closest_point_jacobian(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     Eigen::Matrix<double, 2, 12> J;
     autogen::point_triangle_closest_point_jacobian(

@@ -7,7 +7,7 @@
 
 using namespace ipc;
 
-static const double EPSILON = std::numeric_limits<float>::epsilon();
+static constexpr double EPSILON = std::numeric_limits<float>::epsilon();
 
 #ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
 TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle][!mayfail]")
@@ -24,11 +24,17 @@ TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle]")
     {
         name = "General";
         const double v0z = GENERATE(0.0, -1.0);
+#ifdef NDEBUG
         const double u0y =
             -GENERATE(-1.0, 0.0, 0.5 - EPSILON, 0.5, 0.5 + EPSILON, 1.0, 2.0);
         const double u0z = GENERATE(-EPSILON, 0.0, EPSILON);
         const double u1y =
             GENERATE(-1.0, 0.0, 0.5 - EPSILON, 0.5, 0.5 + EPSILON, 1.0, 2.0);
+#else
+        const double u0y = -GENERATE(-1.0, 0.0, 0.5, 1.0, 2.0);
+        const double u0z = 0.0;
+        const double u1y = GENERATE(-1.0, 0.0, 0.5, 1.0, 2.0);
+#endif
         CAPTURE(v0z, u0y, u1y, u0z);
 
         p_t0 << 0, 1, v0z;

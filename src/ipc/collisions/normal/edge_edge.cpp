@@ -7,8 +7,8 @@
 namespace ipc {
 
 EdgeEdgeNormalCollision::EdgeEdgeNormalCollision(
-    const long _edge0_id,
-    const long _edge1_id,
+    const index_t _edge0_id,
+    const index_t _edge1_id,
     const double _eps_x,
     const EdgeEdgeDistanceType _dtype)
     : EdgeEdgeCandidate(_edge0_id, _edge1_id)
@@ -28,8 +28,8 @@ EdgeEdgeNormalCollision::EdgeEdgeNormalCollision(
 }
 
 EdgeEdgeNormalCollision::EdgeEdgeNormalCollision(
-    const long _edge0_id,
-    const long _edge1_id,
+    const index_t _edge0_id,
+    const index_t _edge1_id,
     const double _eps_x,
     const double _weight,
     const Eigen::SparseVector<double>& _weight_gradient,
@@ -42,20 +42,21 @@ EdgeEdgeNormalCollision::EdgeEdgeNormalCollision(
 }
 
 double EdgeEdgeNormalCollision::mollifier_threshold(
-    const VectorMax12d& rest_positions) const
+    Eigen::ConstRef<VectorMax12d> rest_positions) const
 {
     return edge_edge_mollifier_threshold(
         rest_positions.segment<3>(0), rest_positions.segment<3>(3),
         rest_positions.segment<3>(6), rest_positions.segment<3>(9));
 }
 
-double EdgeEdgeNormalCollision::mollifier(const VectorMax12d& positions) const
+double EdgeEdgeNormalCollision::mollifier(
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     return mollifier(positions, eps_x);
 }
 
 double EdgeEdgeNormalCollision::mollifier(
-    const VectorMax12d& positions, const double _eps_x) const
+    Eigen::ConstRef<VectorMax12d> positions, const double _eps_x) const
 {
     assert(positions.size() == 12);
     return edge_edge_mollifier(
@@ -63,14 +64,14 @@ double EdgeEdgeNormalCollision::mollifier(
         positions.segment<3>(6), positions.segment<3>(9), _eps_x);
 }
 
-VectorMax12d
-EdgeEdgeNormalCollision::mollifier_gradient(const VectorMax12d& positions) const
+VectorMax12d EdgeEdgeNormalCollision::mollifier_gradient(
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     return mollifier_gradient(positions, eps_x);
 }
 
 VectorMax12d EdgeEdgeNormalCollision::mollifier_gradient(
-    const VectorMax12d& positions, const double _eps_x) const
+    Eigen::ConstRef<VectorMax12d> positions, const double _eps_x) const
 {
     assert(positions.size() == 12);
     return edge_edge_mollifier_gradient(
@@ -78,14 +79,14 @@ VectorMax12d EdgeEdgeNormalCollision::mollifier_gradient(
         positions.segment<3>(6), positions.segment<3>(9), _eps_x);
 }
 
-MatrixMax12d
-EdgeEdgeNormalCollision::mollifier_hessian(const VectorMax12d& positions) const
+MatrixMax12d EdgeEdgeNormalCollision::mollifier_hessian(
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     return mollifier_hessian(positions, eps_x);
 }
 
 MatrixMax12d EdgeEdgeNormalCollision::mollifier_hessian(
-    const VectorMax12d& positions, const double _eps_x) const
+    Eigen::ConstRef<VectorMax12d> positions, const double _eps_x) const
 {
     assert(positions.size() == 12);
     return edge_edge_mollifier_hessian(
@@ -94,7 +95,8 @@ MatrixMax12d EdgeEdgeNormalCollision::mollifier_hessian(
 }
 
 Vector12d EdgeEdgeNormalCollision::mollifier_gradient_wrt_x(
-    const VectorMax12d& rest_positions, const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> rest_positions,
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(rest_positions.size() == 12);
     assert(positions.size() == 12);
@@ -106,7 +108,8 @@ Vector12d EdgeEdgeNormalCollision::mollifier_gradient_wrt_x(
 }
 
 Matrix12d EdgeEdgeNormalCollision::mollifier_gradient_jacobian_wrt_x(
-    const VectorMax12d& rest_positions, const VectorMax12d& positions) const
+    Eigen::ConstRef<VectorMax12d> rest_positions,
+    Eigen::ConstRef<VectorMax12d> positions) const
 {
     assert(rest_positions.size() == 12);
     assert(positions.size() == 12);

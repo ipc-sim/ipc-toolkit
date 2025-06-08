@@ -53,7 +53,7 @@ function(onetbb_import_target)
 
     set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME tbb)
     include(CPM)
-    CPMAddPackage("gh:oneapi-src/oneTBB@2021.9.0")
+    CPMAddPackage("gh:uxlfoundation/oneTBB@2022.1.0")
 
     pop_variable(BUILD_SHARED_LIBS)
 endfunction()
@@ -67,7 +67,7 @@ endif()
 foreach(name IN ITEMS tbb tbbmalloc tbbmalloc_proxy)
     if(TARGET ${name})
         # Folder name for IDE
-        set_target_properties(${name} PROPERTIES FOLDER "third_party//tbb")
+        set_target_properties(${name} PROPERTIES FOLDER "ThirdParty/tbb")
 
         # Force debug postfix for library name. Our pre-compiled MKL library expects "tbb12.dll" (without postfix).
         set_target_properties(${name} PROPERTIES DEBUG_POSTFIX "")

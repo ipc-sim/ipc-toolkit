@@ -15,33 +15,33 @@ public:
 
     EdgeVertexTangentialCollision(
         const EdgeVertexNormalCollision& collision,
-        const VectorMax12d& positions,
-        const BarrierPotential& barrier_potential,
-        const double barrier_stiffness);
+        Eigen::ConstRef<VectorMax12d> positions,
+        const NormalPotential& normal_potential,
+        const double normal_stiffness);
 
 protected:
-    MatrixMax<double, 3, 2>
-    compute_tangent_basis(const VectorMax12d& positions) const override;
+    MatrixMax<double, 3, 2> compute_tangent_basis(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 
     MatrixMax<double, 36, 2> compute_tangent_basis_jacobian(
-        const VectorMax12d& positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 
-    VectorMax2d
-    compute_closest_point(const VectorMax12d& positions) const override;
+    VectorMax2d compute_closest_point(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 
     MatrixMax<double, 2, 12> compute_closest_point_jacobian(
-        const VectorMax12d& positions) const override;
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 
     VectorMax3d
-    relative_velocity(const VectorMax12d& velocities) const override;
+    relative_velocity(Eigen::ConstRef<VectorMax12d> velocities) const override;
 
     using TangentialCollision::relative_velocity_matrix;
 
-    MatrixMax<double, 3, 12>
-    relative_velocity_matrix(const VectorMax2d& closest_point) const override;
+    MatrixMax<double, 3, 12> relative_velocity_matrix(
+        Eigen::ConstRef<VectorMax2d> closest_point) const override;
 
     MatrixMax<double, 6, 12> relative_velocity_matrix_jacobian(
-        const VectorMax2d& closest_point) const override;
+        Eigen::ConstRef<VectorMax2d> closest_point) const override;
 };
 
 } // namespace ipc

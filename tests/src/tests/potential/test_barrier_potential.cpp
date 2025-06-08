@@ -20,7 +20,13 @@ TEST_CASE(
     "Barrier potential full gradient and hessian",
     "[potential][barrier_potential][gradient][hessian]")
 {
-    const BroadPhaseMethod method = GENERATE_BROAD_PHASE_METHODS();
+    const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
+#ifndef NDEBUG
+    if (broad_phase->name() == "BruteForce") {
+        SKIP("Brute force is too slow in debug mode");
+    }
+#endif
+
     const bool use_area_weighting = GENERATE(true, false);
     const bool use_improved_max_approximator = GENERATE(true, false);
     const bool use_physical_barrier = GENERATE(true, false);
@@ -33,6 +39,7 @@ TEST_CASE(
         dhat = sqrt(2.0);
         mesh_name = "cube.ply";
     }
+#ifdef NDEBUG
     SECTION("two cubes far")
     {
         dhat = 1e-1;
@@ -45,6 +52,7 @@ TEST_CASE(
         mesh_name = "two-cubes-close.ply";
         all_vertices_on_surface = false;
     }
+#endif
     // WARNING: The bunny takes too long in debug.
     // SECTION("bunny")
     // {
@@ -69,9 +77,9 @@ TEST_CASE(
         mesh = CollisionMesh::build_from_full_mesh(vertices, edges, faces);
         vertices = mesh.vertices(vertices);
     }
-    collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
+    collisions.build(mesh, vertices, dhat, /*dmin=*/0, broad_phase);
     CAPTURE(
-        dhat, method, all_vertices_on_surface, use_area_weighting,
+        dhat, broad_phase->name(), all_vertices_on_surface, use_area_weighting,
         use_improved_max_approximator);
     CHECK(collisions.size() > 0);
 
