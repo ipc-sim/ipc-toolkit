@@ -88,7 +88,7 @@ TEST_CASE("Interval sinc with looser bounds", "[sinc][interval]")
     }
 }
 
-TEST_CASE("Interval sinc_normx", "[sinc][interval]")
+TEST_CASE("Interval sinc_norm_x", "[sinc][interval]")
 {
     VectorMax3<filib::Interval> x = VectorMax3<filib::Interval>::Zero(3);
     filib::Interval expected_y;
@@ -114,7 +114,7 @@ TEST_CASE("Interval sinc_normx", "[sinc][interval]")
         expected_y = filib::Interval(0, 1);
     }
 
-    filib::Interval y = sinc_normx(x);
+    filib::Interval y = sinc_norm_x<filib::Interval>(x);
     CAPTURE(y.INF, y.SUP, expected_y.INF, expected_y.SUP);
     CHECK(expected_y.INF == Catch::Approx(y.INF).margin(1e-8));
     CHECK(expected_y.SUP == Catch::Approx(y.SUP).margin(1e-8));
@@ -129,9 +129,9 @@ TEST_CASE("∇sinc(||x||)", "[sinc][vector][diff]")
     x(index) = sign * val;
 
     Eigen::VectorXd fgrad(3);
-    fd::finite_gradient(x, sinc_normx<double>, fgrad);
+    fd::finite_gradient(x, sinc_norm_x<double>, fgrad);
 
-    Eigen::Vector3d grad = sinc_normx_grad(x);
+    Eigen::Vector3d grad = sinc_norm_x_grad(x);
     CHECK(fd::compare_gradient(grad, fgrad));
 }
 
@@ -144,8 +144,8 @@ TEST_CASE("∇²sinc(||x||)", "[sinc][vector][diff]")
     x(index) = sign * val;
 
     Eigen::MatrixXd fhess(3, 3);
-    fd::finite_hessian(x, sinc_normx<double>, fhess);
+    fd::finite_hessian(x, sinc_norm_x<double>, fhess);
 
-    Eigen::Matrix3d hess = sinc_normx_hess(x);
+    Eigen::Matrix3d hess = sinc_norm_x_hess(x);
     CHECK(fd::compare_hessian(hess, fhess));
 }

@@ -55,7 +55,7 @@ namespace {
     }
 } // namespace
 
-double sinc(const double& x)
+double sinc(const double x)
 {
     if (abs(x) >= taylor_n_bound) {
         return sin(x) / x;
@@ -134,16 +134,16 @@ filib::Interval sinc(const filib::Interval& x)
     return intsec(y, bounds);
 }
 
-VectorMax3d sinc_normx_grad(const VectorMax3d& x)
+VectorMax3d sinc_norm_x_grad(Eigen::ConstRef<VectorMax3d> x)
 {
     return dsinc_over_x(x.norm()) * x;
 }
 
-MatrixMax3d sinc_normx_hess(const VectorMax3d& x)
+MatrixMax3d sinc_norm_x_hess(Eigen::ConstRef<VectorMax3d> x)
 {
-    double normx = x.norm();
-    return ddsinc_over_x2_minus_dsinc_over_x3(normx) * x * x.transpose()
-        + dsinc_over_x(normx) * MatrixMax3d::Identity(x.size(), x.size());
+    double norm_x = x.norm();
+    return ddsinc_over_x2_minus_dsinc_over_x3(norm_x) * x * x.transpose()
+        + dsinc_over_x(norm_x) * MatrixMax3d::Identity(x.size(), x.size());
 }
 
 } // namespace ipc
