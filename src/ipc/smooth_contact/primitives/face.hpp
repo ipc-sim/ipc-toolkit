@@ -1,7 +1,8 @@
 #pragma once
 
-#include <ipc/smooth_contact/distance/mollifier.hpp>
 #include "primitive.hpp"
+
+#include <ipc/smooth_contact/distance/mollifier.hpp>
 
 namespace ipc {
 class Face : public Primitive {

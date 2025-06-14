@@ -1,4 +1,5 @@
 #include "point3.hpp"
+
 #include <ipc/utils/AutodiffTypes.hpp>
 
 namespace ipc {
@@ -11,7 +12,8 @@ Point3::Point3(
     const ParameterType& param)
     : Primitive(id, param)
 {
-    orientable = !mesh.is_codim_vertex(id) && mesh.vertices_to_faces()[id].size() > 0;
+    orientable =
+        !mesh.is_codim_vertex(id) && mesh.vertices_to_faces()[id].size() > 0;
 
     // Build index mapping from all vertices to one-ring neighbors
     {
@@ -62,8 +64,8 @@ Point3::Point3(
             "Too many neighbors for point3 primitive! {} > {}! Increase n_vert_neighbors_3d in common.hpp",
             _vert_ids.size(), n_vert_neighbors_3d);
 
-    is_active_ = smooth_point3_term_type(
-        vertices(local_to_global_vids, Eigen::all), d);
+    is_active_ =
+        smooth_point3_term_type(vertices(local_to_global_vids, Eigen::all), d);
 }
 
 int Point3::n_vertices() const { return local_to_global_vids.size(); }
@@ -90,8 +92,7 @@ Vector<double, -1, Point3::max_size + Point3::dim> Point3::grad(
 #else
     const Eigen::Matrix<double, -1, dim> X =
         slice_positions<double, -1, dim>(x);
-    const auto [val, grad] = smooth_point3_term_gradient(
-        d, X, _param);
+    const auto [val, grad] = smooth_point3_term_gradient(d, X, _param);
     return grad;
 #endif
 }
@@ -113,8 +114,7 @@ Point3::hessian(
         .getHessian();
 #else
     const auto X = slice_positions<double, -1, dim>(x);
-    const auto [val, grad, hess] = smooth_point3_term_hessian(
-        d, X, _param);
+    const auto [val, grad, hess] = smooth_point3_term_hessian(d, X, _param);
     return hess;
 #endif
 }
@@ -582,8 +582,8 @@ scalar Point3::smooth_point3_term(
                 X.row(faces(a, 2)) - X.row(faces(a, 0));
             normal_term = normal_term
                 + Math<scalar>::smooth_heaviside(
-                              dn.dot(t1.cross(t2).normalized()),
-                              _param.alpha_n, _param.beta_n);
+                              dn.dot(t1.cross(t2).normalized()), _param.alpha_n,
+                              _param.beta_n);
         }
         normal_term = Math<scalar>::smooth_heaviside(normal_term - 1, 1., 0);
     }

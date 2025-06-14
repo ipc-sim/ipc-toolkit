@@ -1,6 +1,7 @@
 #pragma once
 
 #include "primitive.hpp"
+
 #include <ipc/smooth_contact/distance/mollifier.hpp>
 
 namespace ipc {

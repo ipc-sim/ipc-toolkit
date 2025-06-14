@@ -1,10 +1,13 @@
 #include "smooth_collisions_builder.hpp"
-#include <tbb/enumerable_thread_specific.h>
+
 #include <ipc/distance/distance_type.hpp>
-#include <ipc/distance/point_point.hpp>
-#include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
+
+#include <tbb/enumerable_thread_specific.h>
+
 #include <iostream>
 
 namespace ipc {
@@ -68,8 +71,8 @@ void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
                 2, SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(
                 std::make_shared<
                     SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(
-                    std::min<long>(vi, vj), std::max<long>(vi, vj), PointPointDistanceType::AUTO, mesh,
-                    param, dhat, vertices),
+                    std::min<long>(vi, vj), std::max<long>(vi, vj),
+                    PointPointDistanceType::AUTO, mesh, param, dhat, vertices),
                 vert_vert_2_to_id, collisions);
         }
     }

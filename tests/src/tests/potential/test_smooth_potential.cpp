@@ -35,8 +35,9 @@ std::string tagsopt = "[.][smooth_potential]";
 //     SECTION("two cubes close")
 //     {
 //         dhat = 5e-3;
-//         mesh_name = (tests::DATA_DIR / "step_1000_surf_contact.obj").string();
-//         all_vertices_on_surface = true;
+//         mesh_name = (tests::DATA_DIR /
+//         "step_1000_surf_contact.obj").string(); all_vertices_on_surface =
+//         true;
 //     }
 
 //     Eigen::MatrixXd vertices;
@@ -76,7 +77,8 @@ std::string tagsopt = "[.][smooth_potential]";
 //         ParameterType param(dhat, 0.8, 0, 1, 0, 2);
 //         collisions.build(mesh, vertices, param, false, method);
 //         CHECK(collisions.size() > 0);
-//         std::cout << "OIPC number of pairs (only tangent) " << collisions.size() << "\n";
+//         std::cout << "OIPC number of pairs (only tangent) " <<
+//         collisions.size() << "\n";
 //     }
 
 //     {
@@ -85,7 +87,8 @@ std::string tagsopt = "[.][smooth_potential]";
 //         ParameterType param(dhat, 1, 0, 0, 0.1, 2);
 //         collisions.build(mesh, vertices, param, false, method);
 //         CHECK(collisions.size() > 0);
-//         std::cout << "OIPC number of pairs (only normal) " << collisions.size() << "\n";
+//         std::cout << "OIPC number of pairs (only normal) " <<
+//         collisions.size() << "\n";
 //     }
 
 //     {
@@ -94,7 +97,8 @@ std::string tagsopt = "[.][smooth_potential]";
 //         ParameterType param(dhat, 0.8, 0, 0, 0.1, 2);
 //         collisions.build(mesh, vertices, param, false, method);
 //         CHECK(collisions.size() > 0);
-//         std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
+//         std::cout << "OIPC number of pairs (both) " << collisions.size() <<
+//         "\n";
 //     }
 
 //     {
@@ -103,7 +107,8 @@ std::string tagsopt = "[.][smooth_potential]";
 //         ParameterType param(dhat, 0.5, 0, 0, 0.1, 2);
 //         collisions.build(mesh, vertices, param, false, method);
 //         CHECK(collisions.size() > 0);
-//         std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
+//         std::cout << "OIPC number of pairs (both) " << collisions.size() <<
+//         "\n";
 //     }
 
 //     {
@@ -112,13 +117,12 @@ std::string tagsopt = "[.][smooth_potential]";
 //         ParameterType param(dhat, 0.1, 0, 0, 0.1, 2);
 //         collisions.build(mesh, vertices, param, false, method);
 //         CHECK(collisions.size() > 0);
-//         std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
+//         std::cout << "OIPC number of pairs (both) " << collisions.size() <<
+//         "\n";
 //     }
 // }
 
-TEST_CASE(
-    "Smooth barrier potential full gradient and hessian 3D",
-    tagsopt)
+TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
 {
     const auto method = make_default_broad_phase();
     const bool adaptive_dhat = GENERATE(true, false);
@@ -154,7 +158,8 @@ TEST_CASE(
     Eigen::MatrixXd vertices;
     Eigen::MatrixXi edges, faces;
     bool success = tests::load_mesh(mesh_name, vertices, edges, faces);
-    vertices += Eigen::MatrixXd::Random(vertices.rows(), vertices.cols()) * 1e-3;
+    vertices +=
+        Eigen::MatrixXd::Random(vertices.rows(), vertices.cols()) * 1e-3;
     CAPTURE(mesh_name);
     REQUIRE(success);
 
@@ -193,19 +198,21 @@ TEST_CASE(
             return potential(
                 collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
-        fd::finite_gradient(fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-8);
+        fd::finite_gradient(
+            fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-8);
     }
 
     // REQUIRE(grad_b.squaredNorm() > 1e-8);
-    std::cout << "grad relative error " << (grad_b - fgrad_b).norm() / grad_b.norm() << ", norms " << grad_b.norm() << " " << fgrad_b.norm() << "\n";
+    std::cout << "grad relative error "
+              << (grad_b - fgrad_b).norm() / grad_b.norm() << ", norms "
+              << grad_b.norm() << " " << fgrad_b.norm() << "\n";
     CHECK((grad_b - fgrad_b).norm() / grad_b.norm() < 1e-5);
 
     // -------------------------------------------------------------------------
     // Hessian
     // -------------------------------------------------------------------------
 
-    Eigen::MatrixXd hess_b =
-        potential.hessian(collisions, mesh, vertices);
+    Eigen::MatrixXd hess_b = potential.hessian(collisions, mesh, vertices);
 
     // Compute the gradient using finite differences
     Eigen::MatrixXd fhess_b;
@@ -214,17 +221,18 @@ TEST_CASE(
             return potential.gradient(
                 collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
-        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-8);
+        fd::finite_jacobian(
+            fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-8);
     }
 
     REQUIRE(hess_b.squaredNorm() > 1e-8);
-    std::cout << "hess relative error " << (hess_b - fhess_b).norm() / hess_b.norm() << ", norms " << hess_b.norm() << " " << fhess_b.norm() << "\n";
+    std::cout << "hess relative error "
+              << (hess_b - fhess_b).norm() / hess_b.norm() << ", norms "
+              << hess_b.norm() << " " << fhess_b.norm() << "\n";
     CHECK((hess_b - fhess_b).norm() / hess_b.norm() < 1e-5);
 }
 
-TEST_CASE(
-    "Smooth barrier potential real sim 2D C^2",
-    "[smooth_potential]")
+TEST_CASE("Smooth barrier potential real sim 2D C^2", "[smooth_potential]")
 {
     const auto method = make_default_broad_phase();
     const bool adaptive_dhat = GENERATE(true, false);
@@ -233,7 +241,8 @@ TEST_CASE(
     std::string mesh_name = "";
     SECTION("debug1")
     {
-        mesh_name = (tests::GCP_DATA_DIR / "nonlinear_solve_iter020.obj").string();
+        mesh_name =
+            (tests::GCP_DATA_DIR / "nonlinear_solve_iter020.obj").string();
         dhat = 3e-2;
     }
 
@@ -256,7 +265,8 @@ TEST_CASE(
     collisions.build(mesh, vertices, param, adaptive_dhat, method);
     CAPTURE(dhat, method, adaptive_dhat);
     CHECK(collisions.size() > 0);
-    std::cout << "smooth collision candidate size " << collisions.size() << "\n";
+    std::cout << "smooth collision candidate size " << collisions.size()
+              << "\n";
 
     CHECK(!has_intersections(mesh, vertices));
 
@@ -277,11 +287,13 @@ TEST_CASE(
             return potential(
                 collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
-        fd::finite_gradient(fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-8);
+        fd::finite_gradient(
+            fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-8);
     }
 
     REQUIRE(grad_b.squaredNorm() > 1e-8);
-    std::cout << "grad relative error " << (grad_b - fgrad_b).norm() / grad_b.norm() << "\n";
+    std::cout << "grad relative error "
+              << (grad_b - fgrad_b).norm() / grad_b.norm() << "\n";
     CHECK((grad_b - fgrad_b).norm() < 1e-7 * grad_b.norm());
     // CHECK(fd::compare_gradient(grad_b, fgrad_b));
 
@@ -289,8 +301,7 @@ TEST_CASE(
     // Hessian
     // -------------------------------------------------------------------------
 
-    Eigen::MatrixXd hess_b =
-        potential.hessian(collisions, mesh, vertices);
+    Eigen::MatrixXd hess_b = potential.hessian(collisions, mesh, vertices);
 
     // Compute the gradient using finite differences
     Eigen::MatrixXd fhess_b;
@@ -299,18 +310,18 @@ TEST_CASE(
             return potential.gradient(
                 collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
-        fd::finite_jacobian(fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-8);
+        fd::finite_jacobian(
+            fd::flatten(vertices), f, fhess_b, fd::AccuracyOrder::SECOND, 1e-8);
     }
 
     REQUIRE(hess_b.squaredNorm() > 1e-3);
-    std::cout << "hess relative error " << (hess_b - fhess_b).norm() / hess_b.norm() << "\n";
+    std::cout << "hess relative error "
+              << (hess_b - fhess_b).norm() / hess_b.norm() << "\n";
     CHECK((hess_b - fhess_b).norm() < 1e-7 * hess_b.norm());
     // CHECK(fd::compare_hessian(hess_b, fhess_b, 1e-3));
 }
 
-TEST_CASE(
-    "Smooth barrier potential real sim 2D C^1",
-    "[smooth_potential]")
+TEST_CASE("Smooth barrier potential real sim 2D C^1", "[smooth_potential]")
 {
     const auto method = make_default_broad_phase();
     const bool adaptive_dhat = GENERATE(true, false);
@@ -342,7 +353,8 @@ TEST_CASE(
     collisions.build(mesh, vertices, param, adaptive_dhat, method);
     CAPTURE(dhat, method, adaptive_dhat);
     CHECK(collisions.size() > 0);
-    std::cout << "smooth collision candidate size " << collisions.size() << "\n";
+    std::cout << "smooth collision candidate size " << collisions.size()
+              << "\n";
 
     CHECK(!has_intersections(mesh, vertices));
 
@@ -363,11 +375,13 @@ TEST_CASE(
             return potential(
                 collisions, mesh, fd::unflatten(x, vertices.cols()));
         };
-        fd::finite_gradient(fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-8);
+        fd::finite_gradient(
+            fd::flatten(vertices), f, fgrad_b, fd::AccuracyOrder::SECOND, 1e-8);
     }
 
     REQUIRE(grad_b.squaredNorm() > 1e-8);
-    std::cout << "grad relative error " << (grad_b - fgrad_b).norm() / grad_b.norm() << "\n";
+    std::cout << "grad relative error "
+              << (grad_b - fgrad_b).norm() / grad_b.norm() << "\n";
     CHECK((grad_b - fgrad_b).norm() < 1e-7 * grad_b.norm());
     // CHECK(fd::compare_gradient(grad_b, fgrad_b));
 }
@@ -385,8 +399,9 @@ TEST_CASE(
 //     SECTION("mat-twist")
 //     {
 //         dhat = 1e-3;
-//         mesh_name = (tests::DATA_DIR / "step_1000_surf_contact.obj").string();
-//         all_vertices_on_surface = true;
+//         mesh_name = (tests::DATA_DIR /
+//         "step_1000_surf_contact.obj").string(); all_vertices_on_surface =
+//         true;
 //     }
 
 //     Eigen::MatrixXd vertices;
@@ -439,7 +454,8 @@ TEST_CASE(
 //         ParameterType param(dhat, 0.8, 0, 0, 0.1, 2);
 //         collisions.build(mesh, vertices, param, false, method);
 //         CHECK(collisions.size() > 0);
-//         // std::cout << "OIPC number of pairs (both) " << collisions.size() << "\n";
+//         // std::cout << "OIPC number of pairs (both) " << collisions.size()
+//         << "\n";
 
 //         timer.stop();
 //         std::cout << "OIPC build time " << timer.getElapsedTime() << " s\n";
@@ -460,14 +476,13 @@ TEST_CASE(
 //     }
 // }
 
-TEST_CASE(
-    "Benchmark autogen code", "[!benchmark]")
+TEST_CASE("Benchmark autogen code", "[!benchmark]")
 {
     ipc::Vector3d ea0, ea1, eb0, eb1;
     ea0 << -0.9, 0, 0;
-    ea1 <<  1.05, 0, 0;
+    ea1 << 1.05, 0, 0;
     eb0 << 0, -1.1, 1.02;
-    eb1 << 0,  0.99, 1.01;
+    eb1 << 0, 0.99, 1.01;
 
     BENCHMARK("autogen")
     {

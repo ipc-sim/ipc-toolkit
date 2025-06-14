@@ -1,17 +1,19 @@
 #include "smooth_collisions.hpp"
-#include <tbb/enumerable_thread_specific.h>
+
 #include "smooth_collisions_builder.hpp"
+
+#include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
-#include <ipc/distance/point_edge.hpp>
-#include <ipc/distance/edge_edge.hpp>
-#include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/getRSS.h>
+#include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/MaybeParallelFor.hpp>
 
+#include <tbb/blocked_range.h>
+#include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
-#include <tbb/blocked_range.h>
-#include <ipc/utils/MaybeParallelFor.hpp>
 
 #include <stdexcept> // std::out_of_range
 
@@ -40,7 +42,7 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
     if constexpr (dim == 3)
         face_adaptive_dhat.setConstant(mesh.num_faces(), dhat);
 
-    auto assign_min = [](double &a, const double &b) -> void {
+    auto assign_min = [](double& a, const double& b) -> void {
         a = std::min(a, b);
     };
 
@@ -49,33 +51,35 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
             * sqrt(cc->compute_distance(
                 cc->dof(vertices, mesh.edges(), mesh.faces())));
         switch (cc->type()) {
-            case CollisionType::EdgeEdge:
-                    assign_min(edge_adaptive_dhat((*cc)[0]), dist);
-                    assign_min(edge_adaptive_dhat((*cc)[1]), dist);
-                break;
-            case CollisionType::EdgeVertex:
-                    assign_min(edge_adaptive_dhat((*cc)[0]), dist);
-                    assign_min(vert_adaptive_dhat((*cc)[1]), dist);
-                break;
-            case CollisionType::FaceVertex:
-                    assign_min(face_adaptive_dhat((*cc)[0]), dist);
-                    assign_min(vert_adaptive_dhat((*cc)[1]), dist);
-                break;
-            case CollisionType::VertexVertex:
-                    assign_min(vert_adaptive_dhat((*cc)[0]), dist);
-                    assign_min(vert_adaptive_dhat((*cc)[1]), dist);
-                break;
-            default:
-                throw std::runtime_error("Invalid collision type!");
+        case CollisionType::EdgeEdge:
+            assign_min(edge_adaptive_dhat((*cc)[0]), dist);
+            assign_min(edge_adaptive_dhat((*cc)[1]), dist);
+            break;
+        case CollisionType::EdgeVertex:
+            assign_min(edge_adaptive_dhat((*cc)[0]), dist);
+            assign_min(vert_adaptive_dhat((*cc)[1]), dist);
+            break;
+        case CollisionType::FaceVertex:
+            assign_min(face_adaptive_dhat((*cc)[0]), dist);
+            assign_min(vert_adaptive_dhat((*cc)[1]), dist);
+            break;
+        case CollisionType::VertexVertex:
+            assign_min(vert_adaptive_dhat((*cc)[0]), dist);
+            assign_min(vert_adaptive_dhat((*cc)[1]), dist);
+            break;
+        default:
+            throw std::runtime_error("Invalid collision type!");
         }
     }
 
-    // face adaptive dhat should be minimum of all its adjacent vertices and edges
+    // face adaptive dhat should be minimum of all its adjacent vertices and
+    // edges
     if constexpr (dim == 3)
         for (int f = 0; f < mesh.num_faces(); f++) {
             for (int lv = 0; lv < 3; lv++) {
                 face_adaptive_dhat(f) = std::min(
-                    face_adaptive_dhat(f), vert_adaptive_dhat(mesh.faces()(f, lv)));
+                    face_adaptive_dhat(f),
+                    vert_adaptive_dhat(mesh.faces()(f, lv)));
                 face_adaptive_dhat(f) = std::min(
                     face_adaptive_dhat(f),
                     edge_adaptive_dhat(mesh.faces_to_edges()(f, lv)));
@@ -91,15 +95,15 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
     }
 
     logger().debug(
-        "Adaptive dhat: vert dhat min {:.2e}, max {:.2e}", vert_adaptive_dhat.minCoeff(),
-        vert_adaptive_dhat.maxCoeff());
+        "Adaptive dhat: vert dhat min {:.2e}, max {:.2e}",
+        vert_adaptive_dhat.minCoeff(), vert_adaptive_dhat.maxCoeff());
     logger().debug(
-        "Adaptive dhat: edge dhat min {:.2e}, max {:.2e}", edge_adaptive_dhat.minCoeff(),
-        edge_adaptive_dhat.maxCoeff());
+        "Adaptive dhat: edge dhat min {:.2e}, max {:.2e}",
+        edge_adaptive_dhat.minCoeff(), edge_adaptive_dhat.maxCoeff());
     if constexpr (dim == 3)
         logger().debug(
-            "Adaptive dhat: face dhat min {:.2e}, max {:.2e}", face_adaptive_dhat.minCoeff(),
-            face_adaptive_dhat.maxCoeff());
+            "Adaptive dhat: face dhat min {:.2e}, max {:.2e}",
+            face_adaptive_dhat.minCoeff(), face_adaptive_dhat.maxCoeff());
 }
 
 template <int dim>
@@ -116,7 +120,8 @@ void SmoothCollisions<dim>::build(
 
     // Candidates candidates;
     candidates.build(mesh, vertices, inflation_radius, broad_phase);
-    // std::cout << "Candidate Memory " << getCurrentRSS() / (1024.*1024) << "MB\n";
+    // std::cout << "Candidate Memory " << getCurrentRSS() / (1024.*1024) <<
+    // "MB\n";
     this->build(candidates, mesh, vertices, param, use_adaptive_dhat);
 }
 
@@ -153,28 +158,39 @@ void SmoothCollisions<dim>::build(
     };
 
     // tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>> storage;
-    auto storage = ipc::utils::create_thread_storage<SmoothCollisionsBuilder<dim>>(SmoothCollisionsBuilder<dim>());
+    auto storage =
+        ipc::utils::create_thread_storage<SmoothCollisionsBuilder<dim>>(
+            SmoothCollisionsBuilder<dim>());
     if constexpr (dim == 2) {
-        ipc::utils::maybe_parallel_for(candidates_.ev_candidates.size(), [&](int start, int end, int thread_id) {
-            SmoothCollisionsBuilder<dim> &local_storage = ipc::utils::get_local_thread_storage(storage, thread_id);
-            local_storage.add_edge_vertex_collisions(
-                mesh, vertices, candidates_.ev_candidates, param, vert_dhat,
-                edge_dhat, start, end);
-        });
+        ipc::utils::maybe_parallel_for(
+            candidates_.ev_candidates.size(),
+            [&](int start, int end, int thread_id) {
+                SmoothCollisionsBuilder<dim>& local_storage =
+                    ipc::utils::get_local_thread_storage(storage, thread_id);
+                local_storage.add_edge_vertex_collisions(
+                    mesh, vertices, candidates_.ev_candidates, param, vert_dhat,
+                    edge_dhat, start, end);
+            });
     } else {
-        ipc::utils::maybe_parallel_for(candidates_.ee_candidates.size(), [&](int start, int end, int thread_id) {
-            SmoothCollisionsBuilder<dim> &local_storage = ipc::utils::get_local_thread_storage(storage, thread_id);
-            local_storage.add_edge_edge_collisions(
-                mesh, vertices, candidates_.ee_candidates, param, vert_dhat,
-                edge_dhat, start, end);
-        });
+        ipc::utils::maybe_parallel_for(
+            candidates_.ee_candidates.size(),
+            [&](int start, int end, int thread_id) {
+                SmoothCollisionsBuilder<dim>& local_storage =
+                    ipc::utils::get_local_thread_storage(storage, thread_id);
+                local_storage.add_edge_edge_collisions(
+                    mesh, vertices, candidates_.ee_candidates, param, vert_dhat,
+                    edge_dhat, start, end);
+            });
 
-        ipc::utils::maybe_parallel_for(candidates_.fv_candidates.size(), [&](int start, int end, int thread_id) {
-            SmoothCollisionsBuilder<dim> &local_storage = ipc::utils::get_local_thread_storage(storage, thread_id);
-            local_storage.add_face_vertex_collisions(
-                mesh, vertices, candidates_.fv_candidates, param, vert_dhat,
-                edge_dhat, face_dhat, start, end);
-        });
+        ipc::utils::maybe_parallel_for(
+            candidates_.fv_candidates.size(),
+            [&](int start, int end, int thread_id) {
+                SmoothCollisionsBuilder<dim>& local_storage =
+                    ipc::utils::get_local_thread_storage(storage, thread_id);
+                local_storage.add_face_vertex_collisions(
+                    mesh, vertices, candidates_.fv_candidates, param, vert_dhat,
+                    edge_dhat, face_dhat, start, end);
+            });
     }
     SmoothCollisionsBuilder<dim>::merge(storage, *this);
     candidates = candidates_;
@@ -278,8 +294,7 @@ double SmoothCollisions<dim>::compute_minimum_distance(
 
 template <int dim>
 double SmoothCollisions<dim>::compute_active_minimum_distance(
-    const CollisionMesh& mesh,
-    Eigen::ConstRef<Eigen::MatrixXd> vertices) const
+    const CollisionMesh& mesh, Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());
 

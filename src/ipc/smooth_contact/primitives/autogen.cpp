@@ -1,4 +1,5 @@
 #include "autogen.hpp"
+
 #include <cmath>
 
 namespace ipc {

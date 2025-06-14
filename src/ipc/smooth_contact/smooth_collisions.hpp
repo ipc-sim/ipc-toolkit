@@ -5,9 +5,7 @@
 
 namespace ipc {
 
-template <int dim>
-class SmoothCollisions
-    : public CollisionsBase {
+template <int dim> class SmoothCollisions : public CollisionsBase {
 public:
     using Super = CollisionsBase;
     /// @brief The type of the collisions.
@@ -18,7 +16,8 @@ public:
 
     std::shared_ptr<CollisionsBase> deepcopy() const override
     {
-        std::shared_ptr<SmoothCollisions<dim>> ptr = std::make_shared<SmoothCollisions<dim>>();
+        std::shared_ptr<SmoothCollisions<dim>> ptr =
+            std::make_shared<SmoothCollisions<dim>>();
         ptr->candidates = this->candidates;
         ptr->vert_adaptive_dhat = this->vert_adaptive_dhat;
         ptr->edge_adaptive_dhat = this->edge_adaptive_dhat;

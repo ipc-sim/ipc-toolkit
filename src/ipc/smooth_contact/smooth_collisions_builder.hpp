@@ -1,7 +1,8 @@
 #pragma once
 
-#include <ipc/collision_mesh.hpp>
 #include "smooth_collisions.hpp"
+
+#include <ipc/collision_mesh.hpp>
 #include <ipc/utils/MaybeParallelFor.hpp>
 
 #include <Eigen/Core>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "primitive.hpp"
+
 #include <ipc/smooth_contact/distance/mollifier.hpp>
 
 namespace ipc {
@@ -67,8 +68,7 @@ public:
         const double& alpha,
         const double& beta) const;
 
-    HessianType<-1>
-    smooth_point3_term_tangent_hessian(
+    HessianType<-1> smooth_point3_term_tangent_hessian(
         const Eigen::Ref<const RowVector3<double>>& direc,
         const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
         const double& alpha,
@@ -80,12 +80,12 @@ public:
         const double& alpha,
         const double& beta) const;
 
-    HessianType<-1>
-    smooth_point3_term_normal_hessian(
+    HessianType<-1> smooth_point3_term_normal_hessian(
         const Eigen::Ref<const RowVector3<double>>& direc,
         const Eigen::Ref<const Eigen::Matrix<double, -1, 3>>& tangents,
         const double& alpha,
         const double& beta) const;
+
 private:
     int n_neighbors;
     ORIENTATION_TYPES _otypes;

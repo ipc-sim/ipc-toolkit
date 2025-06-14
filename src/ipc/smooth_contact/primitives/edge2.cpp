@@ -11,13 +11,13 @@ Edge2::Edge2(
 {
     _vert_ids = { { mesh.edges()(id, 0), mesh.edges()(id, 1) } };
 
-    is_active_ = mesh.is_codim_edge(id) || Math<double>::cross2(d, vertices.row(_vert_ids[1]) - vertices.row(_vert_ids[0])) > 0;
+    is_active_ = mesh.is_codim_edge(id)
+        || Math<double>::cross2(
+               d, vertices.row(_vert_ids[1]) - vertices.row(_vert_ids[0]))
+            > 0;
 }
 
-int Edge2::n_vertices() const 
-{ 
-    return n_edge_neighbors_2d; 
-}
+int Edge2::n_vertices() const { return n_edge_neighbors_2d; }
 
 double Edge2::potential(const Vector2d& d, const Vector4d& x) const
 {
@@ -31,7 +31,7 @@ Vector6d Edge2::grad(const Vector2d& d, const Vector4d& x) const
     Vector6d g;
     g.setZero();
     g.segment<2>(2) = -t / len;
-    g.segment<2>(4) =  t / len;
+    g.segment<2>(4) = t / len;
     return g;
 }
 
@@ -47,7 +47,8 @@ Matrix6d Edge2::hessian(const Vector2d& d, const Vector4d& x) const
 #else
     const Vector2d t = x.tail<2>() - x.head<2>();
     const double norm = t.norm();
-    h.block<2, 2>(2, 2) = (Matrix2d::Identity() - t * (1. / norm / norm) * t.transpose()) / norm;
+    h.block<2, 2>(2, 2) =
+        (Matrix2d::Identity() - t * (1. / norm / norm) * t.transpose()) / norm;
     h.block<2, 2>(4, 4) = h.block<2, 2>(2, 2);
     h.block<2, 2>(2, 4) = -h.block<2, 2>(2, 2);
     h.block<2, 2>(4, 2) = -h.block<2, 2>(2, 2);

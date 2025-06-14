@@ -1,7 +1,7 @@
 #pragma once
-#include <ipc/utils/eigen_ext.hpp>
 #include <ipc/collision_mesh.hpp>
 #include <ipc/smooth_contact/common.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 class Primitive {

@@ -33,13 +33,15 @@ using namespace ipc;
 //     std::string mesh_name = "";
 //     SECTION("cusp")
 //     {
-//         mesh_name = ("/home/zizhou/polyfem/result/smooth-ipc/examples/cusp-2d/out_surf_contact.vtu");
+//         mesh_name =
+//         ("/home/zizhou/polyfem/result/smooth-ipc/examples/cusp-2d/out_surf_contact.vtu");
 //         dhat = 0.2;
 //     }
 
 //     SECTION("convex")
 //     {
-//         mesh_name = ("/home/zizhou/polyfem/result/smooth-ipc/examples/visualize-contact/2D/circle-bar/out_surf_contact.vtu");
+//         mesh_name =
+//         ("/home/zizhou/polyfem/result/smooth-ipc/examples/visualize-contact/2D/circle-bar/out_surf_contact.vtu");
 //         dhat = 0.5;
 //     }
 
@@ -61,24 +63,29 @@ using namespace ipc;
 //     collisions.build(mesh, vertices, param, adaptive_dhat, method);
 //     CAPTURE(dhat, method, adaptive_dhat);
 //     CHECK(collisions.size() > 0);
-//     std::cout << "smooth collision candidate size " << collisions.size() << "\n";
+//     std::cout << "smooth collision candidate size " << collisions.size() <<
+//     "\n";
 
 //     CHECK(!has_intersections(mesh, vertices));
 
 //     SmoothContactPotential<SmoothCollisions<2>> potential(param);
 //     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
 
-//     // -------------------------------------------------------------------------
+//     //
+//     -------------------------------------------------------------------------
 //     // Gradient
-//     // -------------------------------------------------------------------------
+//     //
+//     -------------------------------------------------------------------------
 
 //     // const Eigen::VectorXd grad_b =
 //     //     potential.gradient(collisions, mesh, vertices);
 //     // std::cout << "grad: " << grad_b.norm() << "\n";
 
-//     // -------------------------------------------------------------------------
+//     //
+//     -------------------------------------------------------------------------
 //     // Hessian
-//     // -------------------------------------------------------------------------
+//     //
+//     -------------------------------------------------------------------------
 
 //     // Eigen::MatrixXd hess_b =
 //     //     potential.hessian(collisions, mesh, vertices);
@@ -127,19 +134,23 @@ using namespace ipc;
 
 //     // collisions.compute_adaptive_dhat(mesh, vertices, param, method);
 //     collisions.build(mesh, vertices, param, adaptive_dhat, method);
-//     std::cout << "Collision set Memory " << getCurrentRSS() / (1024.*1024) << "MB" << std::endl;
-//     CAPTURE(dhat, method, adaptive_dhat);
+//     std::cout << "Collision set Memory " << getCurrentRSS() / (1024.*1024) <<
+//     "MB" << std::endl; CAPTURE(dhat, method, adaptive_dhat);
 //     CHECK(collisions.size() > 0);
-//     std::cout << "smooth collision candidate size " << collisions.size() << std::endl;
+//     std::cout << "smooth collision candidate size " << collisions.size() <<
+//     std::endl;
 
 //     CHECK(!has_intersections(mesh, vertices));
 
 //     SmoothContactPotential<SmoothCollisions<3>> potential(param);
-//     std::cout << std::setprecision(12) << "energy: " << potential(collisions, mesh, vertices) << std::endl;
+//     std::cout << std::setprecision(12) << "energy: " << potential(collisions,
+//     mesh, vertices) << std::endl;
 
-//     // -------------------------------------------------------------------------
+//     //
+//     -------------------------------------------------------------------------
 //     // Gradient
-//     // -------------------------------------------------------------------------
+//     //
+//     -------------------------------------------------------------------------
 
 //     // const Eigen::VectorXd grad_b =
 //     //     potential.gradient(collisions, mesh, vertices);

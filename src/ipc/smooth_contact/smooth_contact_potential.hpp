@@ -26,7 +26,8 @@ public:
     /// @return The potential.
     double operator()(
         const TCollision& collision,
-        Eigen::ConstRef<Vector<double, -1, element_size>> positions) const override
+        Eigen::ConstRef<Vector<double, -1, element_size>> positions)
+        const override
     {
         return collision.weight * collision(positions, params);
     }
@@ -37,7 +38,8 @@ public:
     /// @return The gradient of the potential.
     Vector<double, -1, element_size> gradient(
         const TCollision& collision,
-        Eigen::ConstRef<Vector<double, -1, element_size>> positions) const override
+        Eigen::ConstRef<Vector<double, -1, element_size>> positions)
+        const override
     {
         return collision.weight * collision.gradient(positions, params);
     }

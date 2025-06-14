@@ -6,15 +6,15 @@
 
 namespace ipc {
 
-enum class CollisionType
-{
+enum class CollisionType {
     EdgeVertex,
     VertexVertex,
     FaceVertex,
     EdgeEdge,
 };
 
-template <int max_vert> class SmoothCollision : public CollisionStencil<max_vert> {
+template <int max_vert>
+class SmoothCollision : public CollisionStencil<max_vert> {
 protected:
     SmoothCollision(
         long primitive0_,
@@ -61,19 +61,22 @@ public:
     // ---- distance ----
 
     Vector<double, -1, max_size> compute_distance_gradient(
-        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions) const override
+        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions)
+        const override
     {
         return Vector<double, -1, max_size>::Zero(max_size);
     }
 
     MatrixMax<double, max_size, max_size> compute_distance_hessian(
-        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions) const override
+        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions)
+        const override
     {
         return MatrixMax<double, max_size, max_size>::Zero(max_size, max_size);
     }
 
-    VectorMax4d
-    compute_coefficients(Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions) const override
+    VectorMax4d compute_coefficients(
+        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions)
+        const override
     {
         VectorMax4d coeffs(4);
         coeffs << 0, 0, 0, 0;
@@ -121,7 +124,7 @@ public:
     virtual std::string name() const { return ""; }
 
     double weight = 1;
-    
+
 protected:
     bool is_active_ = true;
     index_t primitive0, primitive1;
@@ -161,11 +164,14 @@ public:
     std::array<index_t, n_core_dofs> core_vertex_ids(
         const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const;
 
-    inline int num_vertices() const override { return pA->n_vertices() + pB->n_vertices(); }
+    inline int num_vertices() const override
+    {
+        return pA->n_vertices() + pB->n_vertices();
+    }
 
     template <typename T>
-    Vector<T, n_core_dofs>
-    core_dof(const MatrixX<T>& X,
+    Vector<T, n_core_dofs> core_dof(
+        const MatrixX<T>& X,
         const Eigen::MatrixXi& edges,
         const Eigen::MatrixXi& faces) const
     {
@@ -189,13 +195,16 @@ public:
     // ---- distance ----
 
     double compute_distance(
-        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions) const override;
+        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions)
+        const override;
 
     Vector<double, -1, max_size> compute_distance_gradient(
-        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions) const override;
+        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions)
+        const override;
 
     MatrixMax<double, max_size, max_size> compute_distance_hessian(
-        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions) const override;
+        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions)
+        const override;
 
 private:
     std::unique_ptr<PrimitiveA> pA;

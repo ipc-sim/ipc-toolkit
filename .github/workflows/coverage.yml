@@ -1,16 +1,16 @@
 name: Coverage
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    paths:
-      - '.github/workflows/coverage.yml'
-      - 'cmake/**'
-      - 'src/**'
-      - 'tests/**'
-      - 'CMakeLists.txt'
-      - 'codecov.yml'
+  # push:
+  #   branches: [main]
+  # pull_request:
+  #   paths:
+  #     - '.github/workflows/coverage.yml'
+  #     - 'cmake/**'
+  #     - 'src/**'
+  #     - 'tests/**'
+  #     - 'CMakeLists.txt'
+  #     - 'codecov.yml'
 
 jobs:
   Coverage:
