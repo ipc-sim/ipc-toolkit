@@ -16,7 +16,7 @@ rotation_vector_to_matrix(Eigen::ConstRef<Eigen::Vector3d> theta);
 /// @brief Compute the Jacobian of the rotation matrix with respect to the rotation vector.
 /// @param theta The rotation vector
 /// @return The Jacobian matrix
-Eigen::Matrix<double, 3, 9>
+Eigen::Matrix<double, 9, 3>
 rotation_vector_to_matrix_jacobian(Eigen::ConstRef<Eigen::Vector3d> theta);
 
 /// @brief Compute the Hessian of the rotation matrix with respect to the rotation vector.

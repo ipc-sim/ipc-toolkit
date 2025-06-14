@@ -168,11 +168,11 @@ VectorMax6d InertialTerm::gradient(
             const Eigen::Matrix3d Q = rotation_vector_to_matrix(x.tail<3>());
 
             // ∂f​/∂xₖ = ∑ᵢ∑ⱼ ∂E/∂Qᵢⱼ ∂Qᵢⱼ/∂xₖ
-            const Eigen::Matrix<double, 3, 9> dQ_dx =
+            const Eigen::Matrix<double, 9, 3> dQ_dx =
                 rotation_vector_to_matrix_jacobian(x.tail<3>());
             const Eigen::Vector<double, 9> dE_dQ =
                 ((Q - Q_hat) * body.J()).reshaped();
-            grad.tail<3>() = dQ_dx * dE_dQ;
+            grad.tail<3>() = dQ_dx.transpose() * dE_dQ;
         } else {
             assert(q_hat.size() == 2);
             assert(x.size() == 3);
@@ -206,7 +206,7 @@ MatrixMax6d InertialTerm::hessian(
     {
         if (q_hat.size() == 3) {
             const Eigen::Matrix3d Q = rotation_vector_to_matrix(x.tail<3>());
-            const Eigen::Matrix<double, 3, 9> dQ_dx =
+            const Eigen::Matrix<double, 9, 3> dQ_dx =
                 rotation_vector_to_matrix_jacobian(x.tail<3>());
             const Eigen::Matrix<double, 9, 9> d2Q_dx2 =
                 rotation_vector_to_matrix_hessian(x.tail<3>());
@@ -222,8 +222,8 @@ MatrixMax6d InertialTerm::hessian(
             d2E_dQ2.diagonal().segment<3>(6).array() = body.J()(2, 2);
 
             // (3x3) = (3×9)(9×9)(9x3) + mat((9x9)(9x1))
-            hess.bottomRightCorner<3, 3>() = dQ_dx * d2E_dQ2 * dQ_dx.transpose()
-                + (d2Q_dx2 * dE_dQ).reshaped(3, 3);
+            hess.bottomRightCorner<3, 3>() = dQ_dx.transpose() * d2E_dQ2 * dQ_dx
+                + (d2Q_dx2.transpose() * dE_dQ).reshaped(3, 3);
         } else {
             assert(q_hat.size() == 2);
             assert(x.size() == 3);
