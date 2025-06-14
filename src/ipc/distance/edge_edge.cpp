@@ -1,10 +1,9 @@
 
 
 #include "edge_edge.hpp"
-#include "point_edge.hpp"
-#include <ipc/distance/point_point.hpp>
-#include <ipc/distance/point_line.hpp>
 #include <ipc/distance/line_line.hpp>
+#include <ipc/distance/point_line.hpp>
+#include <ipc/distance/point_point.hpp>
 
 #include <stdexcept> // std::invalid_argument
 
@@ -33,10 +32,10 @@ double edge_edge_distance_2d(
 }
 
 double edge_edge_distance(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
     EdgeEdgeDistanceType dtype)
 {
     if (dtype == EdgeEdgeDistanceType::AUTO) {
@@ -78,10 +77,10 @@ double edge_edge_distance(
 }
 
 Vector12d edge_edge_distance_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
     EdgeEdgeDistanceType dtype)
 {
     if (dtype == EdgeEdgeDistanceType::AUTO) {
@@ -154,10 +153,10 @@ Vector12d edge_edge_distance_gradient(
 }
 
 Matrix12d edge_edge_distance_hessian(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
     EdgeEdgeDistanceType dtype)
 {
     if (dtype == EdgeEdgeDistanceType::AUTO) {

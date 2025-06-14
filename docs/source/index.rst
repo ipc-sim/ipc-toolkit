@@ -13,8 +13,10 @@
     tutorial/getting_started.rst
     tutorial/convergent.rst
     tutorial/nonlinear_ccd.rst
+    tutorial/adhesion.rst
     tutorial/simulation.rst
     tutorial/misc.rst
+    tutorial/faq.rst
     tutorial/references.rst
 
 .. toctree::
@@ -25,13 +27,17 @@
     cpp-api/potentials.rst
     cpp-api/collision_mesh.rst
     cpp-api/candidates.rst
-    cpp-api/collisions.rst
+    cpp-api/normal_collisions.rst
+    cpp-api/tangential_collisions.rst
     cpp-api/friction.rst
     cpp-api/broad_phase.rst
     cpp-api/ccd.rst
     cpp-api/distance.rst
+    cpp-api/tangent.rst
     cpp-api/barrier.rst
+    cpp-api/adhesion.rst
     cpp-api/intersections.rst
+    cpp-api/interval.rst
     cpp-api/utils.rst
 
 .. toctree::
@@ -42,13 +48,17 @@
     python-api/potentials.rst
     python-api/collision_mesh.rst
     python-api/candidates.rst
-    python-api/collisions.rst
+    python-api/normal_collisions.rst
+    python-api/tangential_collisions.rst
     python-api/friction.rst
     python-api/broad_phase.rst
     python-api/ccd.rst
     python-api/distance.rst
+    python-api/tangent.rst
     python-api/barrier.rst
+    python-api/adhesion.rst
     python-api/intersections.rst
+    python-api/interval.rst
     python-api/utils.rst
 
 .. toctree::

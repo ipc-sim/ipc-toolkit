@@ -1,7 +1,7 @@
 #include "edge_edge.hpp"
 
 #include <unsupported/Eigen/KroneckerProduct>
-#include <ipc/friction/closest_point.hpp>
+#include <ipc/tangent/closest_point.hpp>
 #include "autogen.hpp"
 
 namespace ipc {

@@ -26,10 +26,10 @@ void define_edge_edge_mollifier(py::module_& m)
     m.def(
         "edge_edge_cross_squarednorm_gradient",
         py::overload_cast<
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&>(
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>>(
             &edge_edge_cross_squarednorm_gradient),
         R"ipc_Qu8mg5v7(
         Compute the gradient of the squared norm of the edge cross product.
@@ -48,10 +48,10 @@ void define_edge_edge_mollifier(py::module_& m)
     m.def(
         "edge_edge_cross_squarednorm_hessian",
         py::overload_cast<
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&>(
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>>(
             &edge_edge_cross_squarednorm_hessian),
         R"ipc_Qu8mg5v7(
         Compute the hessian of the squared norm of the edge cross product.
@@ -147,10 +147,10 @@ void define_edge_edge_mollifier(py::module_& m)
     m.def(
         "edge_edge_mollifier",
         py::overload_cast<
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&, const double>(
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>, const double>(
             &edge_edge_mollifier),
         R"ipc_Qu8mg5v7(
         Compute a mollifier for the edge-edge distance.
@@ -173,10 +173,10 @@ void define_edge_edge_mollifier(py::module_& m)
     m.def(
         "edge_edge_mollifier_gradient",
         py::overload_cast<
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&, const double>(
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>, const double>(
             &edge_edge_mollifier_gradient),
         R"ipc_Qu8mg5v7(
         Compute the gradient of the mollifier for the edge-edge distance.
@@ -197,10 +197,10 @@ void define_edge_edge_mollifier(py::module_& m)
     m.def(
         "edge_edge_mollifier_hessian",
         py::overload_cast<
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&,
-            const Eigen::Ref<const Eigen::Vector3d>&, const double>(
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>,
+            Eigen::ConstRef<const Eigen::Vector3d>, const double>(
             &edge_edge_mollifier_hessian),
         R"ipc_Qu8mg5v7(
         Compute the hessian of the mollifier for the edge-edge distance.

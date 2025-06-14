@@ -3,8 +3,8 @@
 #pragma once
 
 #include <ipc/broad_phase/broad_phase.hpp>
-#include <ipc/utils/unordered_map_and_set.hpp>
 #include <ipc/utils/eigen_ext.hpp>
+#include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <vector>
 
@@ -52,9 +52,9 @@ public: // constructor
     SpatialHash() = default;
 
     SpatialHash(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         double inflation_radius = 0,
         double voxel_size = -1)
     {
@@ -62,10 +62,10 @@ public: // constructor
     }
 
     SpatialHash(
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         double inflation_radius = 0,
         double voxel_size = -1)
     {
@@ -74,21 +74,25 @@ public: // constructor
             voxel_size);
     }
 
+    /// @brief Get the name of the broad phase method.
+    /// @return The name of the broad phase method.
+    std::string name() const override { return "SpatialHash"; }
+
 public: // API
     void build(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         double inflation_radius = 0) override
     {
         build(vertices, edges, faces, inflation_radius, /*voxel_size=*/-1);
     }
 
     void build(
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         double inflation_radius = 0) override
     {
         build(
@@ -97,17 +101,17 @@ public: // API
     }
 
     void build(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         double inflation_radius,
         double voxel_size);
 
     void build(
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         double inflation_radius,
         double voxel_size);
 
@@ -193,19 +197,19 @@ protected: // helper functions
     void
     query_triangle_for_triangles(int ti, unordered_set<int>& tri_inds) const;
 
-    int locate_voxel_index(const VectorMax3d& p) const;
+    int locate_voxel_index(Eigen::ConstRef<VectorMax3d> p) const;
 
-    ArrayMax3i locate_voxel_axis_index(const VectorMax3d& p) const;
+    ArrayMax3i locate_voxel_axis_index(Eigen::ConstRef<VectorMax3d> p) const;
 
     void locate_box_voxel_axis_index(
         ArrayMax3d min_corner,
         ArrayMax3d max_corner,
-        ArrayMax3i& min_index,
-        ArrayMax3i& max_index,
+        Eigen::Ref<ArrayMax3i> min_index,
+        Eigen::Ref<ArrayMax3i> max_index,
         const double inflation_radius = 0) const;
 
-    int
-    voxel_axis_index_to_voxel_index(const ArrayMax3i& voxel_axis_index) const;
+    int voxel_axis_index_to_voxel_index(
+        Eigen::ConstRef<ArrayMax3i> voxel_axis_index) const;
 
     int voxel_axis_index_to_voxel_index(int ix, int iy, int iz) const;
 

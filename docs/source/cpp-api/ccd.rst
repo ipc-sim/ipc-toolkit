@@ -5,41 +5,45 @@ Continuous Collision Detection
 
 .. doxygenfunction:: ipc::compute_collision_free_stepsize
 
-.. doxygenvariable:: ipc::DEFAULT_CCD_TOLERANCE
-.. doxygenvariable:: ipc::DEFAULT_CCD_MAX_ITERATIONS
-.. doxygenvariable:: ipc::DEFAULT_CCD_CONSERVATIVE_RESCALING
+Narrow Phase CCD
+----------------
 
-Individual CCD Functions
-------------------------
+.. doxygenclass:: ipc::NarrowPhaseCCD
+    :allow-dot-graphs:
 
-.. doxygenfunction:: ipc::point_point_ccd
-.. doxygenfunction:: ipc::point_edge_ccd
-.. doxygenfunction:: ipc::edge_edge_ccd
-.. doxygenfunction:: ipc::point_triangle_ccd
+Tight Inclusion CCD
+^^^^^^^^^^^^^^^^^^^
 
-Generic Interface
-^^^^^^^^^^^^^^^^^
-
-.. doxygenfunction:: ipc::ccd_strategy
+.. doxygenclass:: ipc::TightInclusionCCD
+    :allow-dot-graphs:
 
 Additive CCD
-------------
+^^^^^^^^^^^^
 
-.. doxygenfunction:: ipc::additive_ccd::point_point_ccd
-.. doxygenfunction:: ipc::additive_ccd::point_edge_ccd
-.. doxygenfunction:: ipc::additive_ccd::edge_edge_ccd
-.. doxygenfunction:: ipc::additive_ccd::point_triangle_ccd
+.. doxygenclass:: ipc::AdditiveCCD
+    :allow-dot-graphs:
 
-Generic Interface
-^^^^^^^^^^^^^^^^^
+Inexact CCD
+^^^^^^^^^^^
 
-.. doxygenfunction:: ipc::additive_ccd::additive_ccd
+.. note::
+    This method is disabled by default. To enable it, set the
+    ``IPC_TOOLKIT_WITH_INEXACT_CCD`` CMake option to ``ON``.
+
+.. .. doxygenclass:: ipc::InexactCCD
+..     :allow-dot-graphs:
+
+.. doxygenfunction:: ipc::inexact_point_edge_ccd_2D
 
 Nonlinear CCD
 -------------
 
 .. doxygenclass:: ipc::NonlinearTrajectory
+    :allow-dot-graphs:
+
 .. doxygenclass:: ipc::IntervalNonlinearTrajectory
+    :allow-dot-graphs:
+
 
 .. doxygenfunction:: ipc::point_point_nonlinear_ccd
 .. doxygenfunction:: ipc::point_edge_nonlinear_ccd
@@ -50,3 +54,8 @@ Generic Interface
 ^^^^^^^^^^^^^^^^^
 
 .. doxygenfunction:: ipc::conservative_piecewise_linear_ccd
+
+Miscellaneous
+-------------
+
+.. doxygenfunction:: ipc::point_static_plane_ccd

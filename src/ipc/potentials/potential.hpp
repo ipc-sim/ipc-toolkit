@@ -27,7 +27,7 @@ public:
     double operator()(
         const TCollisions& collisions,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& X) const;
+        Eigen::ConstRef<Eigen::MatrixXd> X) const;
 
     /// @brief Compute the gradient of the potential.
     /// @param collisions The set of collisions.
@@ -37,7 +37,7 @@ public:
     Eigen::VectorXd gradient(
         const TCollisions& collisions,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& X) const;
+        Eigen::ConstRef<Eigen::MatrixXd> X) const;
 
     /// @brief Compute the hessian of the potential.
     /// @param collisions The set of collisions.
@@ -48,8 +48,9 @@ public:
     virtual Eigen::SparseMatrix<double> hessian(
         const TCollisions& collisions,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& X,
-        const bool project_hessian_to_psd = false) const;
+        Eigen::ConstRef<Eigen::MatrixXd> X,
+        const PSDProjectionMethod project_hessian_to_psd =
+            PSDProjectionMethod::NONE) const;
 
     // -- Single collision methods ---------------------------------------------
 
@@ -58,25 +59,25 @@ public:
     /// @param x The collision stencil's degrees of freedom.
     /// @return The potential.
     virtual double operator()(
-        const TCollision& collision,
-        const Vector<double, -1, element_size>& x) const = 0;
+        const TCollision& collision, Eigen::ConstRef<Vector<double, -1, element_size>> x) const = 0;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
     /// @return The gradient of the potential.
     virtual Vector<double, -1, element_size> gradient(
-        const TCollision& collision,
-        const Vector<double, -1, element_size>& x) const = 0;
+        const TCollision& collision, Eigen::ConstRef<Vector<double, -1, element_size>> x) const = 0;
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
+    /// @param project_hessian_to_psd Whether to project the hessian to the positive semi-definite cone.
     /// @return The hessian of the potential.
     virtual MatrixMax<double, element_size, element_size> hessian(
         const TCollision& collision,
-        const Vector<double, -1, element_size>& x,
-        const bool project_hessian_to_psd = false) const = 0;
+        Eigen::ConstRef<Vector<double, -1, element_size>> x,
+        const PSDProjectionMethod project_hessian_to_psd =
+            PSDProjectionMethod::NONE) const = 0;
 };
 
 } // namespace ipc

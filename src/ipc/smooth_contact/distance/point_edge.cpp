@@ -1,5 +1,5 @@
 #include "point_edge.hpp"
-#include <ipc/friction/closest_point.hpp>
+#include <ipc/tangent/closest_point.hpp>
 
 namespace ipc {
 template <typename scalar, int dim>

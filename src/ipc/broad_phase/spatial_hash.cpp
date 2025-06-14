@@ -2,11 +2,10 @@
 // Originally created by Minchen Li.
 #include "spatial_hash.hpp"
 
-#include <ipc/ccd/aabb.hpp>
-#include <ipc/broad_phase/voxel_size_heuristic.hpp>
-#include <ipc/utils/merge_thread_local.hpp>
-
 #include <ipc/config.hpp>
+#include <ipc/broad_phase/voxel_size_heuristic.hpp>
+#include <ipc/ccd/aabb.hpp>
+#include <ipc/utils/merge_thread_local.hpp>
 
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
@@ -32,9 +31,9 @@ namespace {
     }
 
     void fill_primitive_to_voxels(
-        const Eigen::Array3i& min_voxel,
-        const Eigen::Array3i& max_voxel,
-        const ArrayMax3i& voxel_count,
+        Eigen::ConstRef<Eigen::Array3i> min_voxel,
+        Eigen::ConstRef<Eigen::Array3i> max_voxel,
+        Eigen::ConstRef<ArrayMax3i> voxel_count,
         const int voxel_count_0x1,
         std::vector<int>& primitive_to_voxels)
     {
@@ -71,9 +70,9 @@ namespace {
 } // namespace
 
 void SpatialHash::build(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     double inflation_radius,
     double voxel_size)
 {
@@ -81,10 +80,10 @@ void SpatialHash::build(
 }
 
 void SpatialHash::build(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     double inflation_radius,
     double voxel_size)
 {
@@ -406,12 +405,13 @@ void SpatialHash::detect_face_face_candidates(
 
 // ============================================================================
 
-int SpatialHash::locate_voxel_index(const VectorMax3d& p) const
+int SpatialHash::locate_voxel_index(Eigen::ConstRef<VectorMax3d> p) const
 {
     return voxel_axis_index_to_voxel_index(locate_voxel_axis_index(p));
 }
 
-ArrayMax3i SpatialHash::locate_voxel_axis_index(const VectorMax3d& p) const
+ArrayMax3i
+SpatialHash::locate_voxel_axis_index(Eigen::ConstRef<VectorMax3d> p) const
 {
     return ((p.array() - left_bottom_corner) * one_div_voxelSize)
         .floor()
@@ -419,10 +419,10 @@ ArrayMax3i SpatialHash::locate_voxel_axis_index(const VectorMax3d& p) const
 }
 
 void SpatialHash::locate_box_voxel_axis_index(
-    ArrayMax3d min_corner, // input but will be modified
-    ArrayMax3d max_corner, // input but will be modified
-    ArrayMax3i& min_index, // output
-    ArrayMax3i& max_index, // output
+    ArrayMax3d min_corner,            // input but will be modified
+    ArrayMax3d max_corner,            // input but will be modified
+    Eigen::Ref<ArrayMax3i> min_index, // output
+    Eigen::Ref<ArrayMax3i> max_index, // output
     const double inflation_radius) const
 {
     AABB::conservative_inflation(min_corner, max_corner, inflation_radius);
@@ -431,7 +431,7 @@ void SpatialHash::locate_box_voxel_axis_index(
 }
 
 int SpatialHash::voxel_axis_index_to_voxel_index(
-    const ArrayMax3i& voxel_axis_index) const
+    Eigen::ConstRef<ArrayMax3i> voxel_axis_index) const
 {
     return voxel_axis_index_to_voxel_index(
         voxel_axis_index[0], voxel_axis_index[1],

@@ -1,41 +1,42 @@
 #include "point_plane.hpp"
 
 #include <ipc/utils/eigen_ext.hpp>
+
 #include <Eigen/Geometry>
 
 namespace ipc {
 
 double point_plane_distance(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& origin,
-    const Eigen::Ref<const Eigen::Vector3d>& normal)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> origin,
+    Eigen::ConstRef<Eigen::Vector3d> normal)
 {
     const double point_to_plane = (p - origin).dot(normal);
     return point_to_plane * point_to_plane / normal.squaredNorm();
 }
 
 double point_plane_distance(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     return point_plane_distance(p, t0, (t1 - t0).cross(t2 - t0));
 }
 
 Eigen::Vector3d point_plane_distance_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& origin,
-    const Eigen::Ref<const Eigen::Vector3d>& normal)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> origin,
+    Eigen::ConstRef<Eigen::Vector3d> normal)
 {
     return (2 / normal.squaredNorm()) * (p - origin).dot(normal) * normal;
 }
 
 Vector12d point_plane_distance_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     Vector12d grad;
     autogen::point_plane_distance_gradient(
@@ -45,18 +46,18 @@ Vector12d point_plane_distance_gradient(
 }
 
 Eigen::Matrix3d point_plane_distance_hessian(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& origin,
-    const Eigen::Ref<const Eigen::Vector3d>& normal)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> origin,
+    Eigen::ConstRef<Eigen::Vector3d> normal)
 {
     return 2 / normal.squaredNorm() * normal * normal.transpose();
 }
 
 Matrix12d point_plane_distance_hessian(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2)
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     Matrix12d hess;
     autogen::point_plane_distance_hessian(

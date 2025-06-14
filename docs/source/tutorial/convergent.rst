@@ -5,7 +5,7 @@ Convergent Formulation
 
 In addition to the original implementation of :cite:t:`Li2020IPC`, we also implement the convergent formulation of :cite:t:`Li2023Convergent`.
 
-To enable the convergent formulation, we need to set ``use_convergent_formulation`` before building ``Collisions``:
+Fully enabling the convergent formulation requires to set three flags: ``use_area_weighting`` and ``use_improved_max_approximator`` in ``Collisions`` (before calling ``build``) and ``use_physical_barrier`` in ``BarrierPotential``.
 
 .. md-tab-set::
 
@@ -13,18 +13,26 @@ To enable the convergent formulation, we need to set ``use_convergent_formulatio
 
         .. code-block:: c++
 
-            collisions.set_use_convergent_formulation(true);
+            collisions.set_use_area_weighting(true);
+            collisions.set_use_improved_max_approximator(true);
             collisions.build(collision_mesh, vertices, dhat);
+
+            barrier_potential.set_use_physical_barrier(true);
+            double b = barrier_potential(collisions, mesh, vertices);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            collisions.use_convergent_formulation = True
+            collisions.use_area_weighting = True
+            collisions.use_improved_max_approximator = True
             collisions.build(collision_mesh, vertices, dhat)
 
+            barrier_potential.use_physical_barrier = True
+            b = barrier_potential(collisions, mesh, vertices);
+
 .. important::
-    The variable ``use_convergent_formulation`` should be set before calling ``Collisions::build`` for it to take effect. By default, it is ``false``.
+    The flags ``use_area_weighting`` and ``use_improved_max_approximator`` should be set before calling ``build`` for them to take effect. By default, they are ``false``.
 
 Technical Details
 -----------------
@@ -34,7 +42,7 @@ Technical Details
 In order to derive a convergent formulation, we first define a continuous form of our barrier potential :math:`P`. For a surface :math:`\mathcal{S}` embedded in 3D space, we parameterize the surfaces by common (possibly discontinuous) coordinates :math:`u \in \tilde{M} \subset \mathbb{R}^2`, so that :math:`\mathcal{S}(u)` traverses the material points across all surfaces contiguously. The total barrier potential is then
 
 .. math::
-   P(\mathcal{S})=\frac{1}{2} \int_{u \in \tilde{M}} \max _{v \in \tilde{M} \setminus{ }_r u} b(d(\mathcal{S}(u), \mathcal{S}(v)), \hat{d})~\mathrm{d} u,
+   P(\mathcal{S})=\frac{1}{2} \int_{u \in \tilde{M}}~\max_{v \in \tilde{M} \setminus{ }_r u} b(d(\mathcal{S}(u), \mathcal{S}(v)), \hat{d})~\mathrm{d} u,
 
 where we define the operator :math:`\setminus_r: \mathcal{P}(\mathbb{R}^2) \times \mathbb{R} \times \mathbb{R}^2 \mapsto \mathcal{P}(\mathbb{R}^2)` to be
 
@@ -57,6 +65,9 @@ Applying mesh vertices as nodes (and quadrature points), we numerically integrat
 
 where :math:`w_{\bar{x}}` are the quadrature weights, each given by one-third of the sum of the areas (in material space) of the boundary triangles incident to :math:`\bar{x}`.
 
+.. note::
+    The area weighted quadrature is enabled by setting ``use_area_weighting`` to ``true`` in ``Collisions``.
+
 We next need to smoothly approximate the max operator in the barrier potentials. However, common approaches such as an :math:`L^p`-norm or LogSumExp would decrease sparsity in subsequent numerical solves by increasing the stencil size per collision evaluation. We instead leverage the locality of our barrier function to approximate the max operator by removing duplicate distance pairs. Our resulting approximators for a triangulated surface is
 
 .. math::
@@ -66,6 +77,9 @@ We next need to smoothly approximate the max operator in the barrier potentials.
     \end{aligned}
 
 where :math:`V_{\text{int}} \subseteq V` is the subset of internal surface nodes and :math:`E_{\text{int}} \subseteq E` is the subset of internal surface edges (i.e., edges incident to two triangles). For locally convex regions this estimator is tight while remaining smooth. In turn, for nonconvex regions, it improves over direct summation.
+
+.. note::
+    The improved max approximator is enabled by setting ``use_improved_max_approximator`` to ``true`` in ``Collisions``.
 
 The corresponding discrete barrier potential is then simply
 
@@ -101,6 +115,9 @@ The barrier stiffness (:math:`\kappa`) then has units of pressure (e.g., :math:`
 This implies we can get good solver convergence even when using a fixed :math:`\kappa` by setting it relative to the material's Young's modulus (:math:`\kappa = 0.1 E` works well in many examples).
 The intention is to treat the barrier as a thin elastic region around the mesh, and having consistent units makes it easier to pick the stiffness for this "material".
 
+.. note::
+    The physical barrier is enabled by setting ``use_physical_barrier`` to ``true`` in ``BarrierPotential``.
+
 .. _convergent-friction-formulation:
 
 Friction
@@ -108,4 +125,4 @@ Friction
 
 Just as with the :ref:`collisions <convergent-collision-formulation>`, we implement both the original friction formulation of :cite:t:`Li2020IPC` and the convergent formulation of :cite:t:`Li2023Convergent`.
 
-The choice of formulation is dependent on how the fixed set of ``collisions`` given to ``FrictionCollisions::build`` was built. If the ``collisions`` were built using the convergent formulation, then the friction collisions will also use the convergent formulation. Otherwise, the original formulation will be used.
+The choice of formulation is dependent on how the fixed set of ``collisions`` given to ``TangentialCollisions::build`` was built. If the ``collisions`` were built using the convergent formulation, then the friction collisions will also use the convergent formulation. Otherwise, the original formulation will be used.

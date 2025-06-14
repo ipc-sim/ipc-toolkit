@@ -66,6 +66,7 @@ protected:
     }
 };
 
+#ifdef IPC_TOOLKIT_WITH_FILIB
 class IntervalRotationalTrajectory : public RotationalTrajectory,
                                      public IntervalNonlinearTrajectory {
 public:
@@ -90,6 +91,7 @@ public:
         return IntervalNonlinearTrajectory::max_distance_from_linear(t0, t1);
     }
 };
+#endif
 
 class StaticTrajectory : public NonlinearTrajectory {
 public:
@@ -165,16 +167,20 @@ TEST_CASE("Nonlinear Point-Point CCD", "[ccd][nonlinear][point-point]")
         p1 = std::make_unique<RotationalTrajectory>(
             Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), igl::PI);
     }
+#ifdef IPC_TOOLKIT_WITH_FILIB
     SECTION("Interval max")
     {
         p1 = std::make_unique<IntervalRotationalTrajectory>(
             Eigen::Vector2d(1, 0), Eigen::Vector2d::Zero(), igl::PI);
     }
+#endif
 
     double toi;
     bool collision = point_point_nonlinear_ccd(
-        p0, *p1, toi, /*tmax=*/1.0, /*min_distance=*/0, DEFAULT_CCD_TOLERANCE,
-        DEFAULT_CCD_MAX_ITERATIONS, /*conservative_rescaling=*/0.9);
+        p0, *p1, toi, /*tmax=*/1.0, /*min_distance=*/0,
+        TightInclusionCCD::DEFAULT_TOLERANCE,
+        TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+        /*conservative_rescaling=*/0.9);
 
     CHECK(collision);
     CHECK(toi <= 0.5);
@@ -191,8 +197,10 @@ TEST_CASE("Nonlinear Point-Edge CCD", "[ccd][nonlinear][point-edge]")
 
     double toi;
     bool collision = point_edge_nonlinear_ccd(
-        p, e0, e1, toi, /*tmax=*/1.0, /*min_distance=*/0, DEFAULT_CCD_TOLERANCE,
-        DEFAULT_CCD_MAX_ITERATIONS, /*conservative_rescaling=*/0.9);
+        p, e0, e1, toi, /*tmax=*/1.0, /*min_distance=*/0,
+        TightInclusionCCD::DEFAULT_TOLERANCE,
+        TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+        /*conservative_rescaling=*/0.9);
 
     CHECK(collision);
     CHECK(toi <= 0.25);
@@ -216,8 +224,9 @@ TEST_CASE("Rigid 2D Trajectory", "[ccd][nonlinear][point-edge]")
 
     double toi;
     bool collision = ipc::point_edge_nonlinear_ccd(
-        p, e0, e1, toi, /*tmax=*/1.0, /*min_distance=*/0, DEFAULT_CCD_TOLERANCE,
-        DEFAULT_CCD_MAX_ITERATIONS,
+        p, e0, e1, toi, /*tmax=*/1.0, /*min_distance=*/0,
+        TightInclusionCCD::DEFAULT_TOLERANCE,
+        TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
         // increase the conservative_rescaling from 0.8 to 0.9 to get a more
         // accurate estimate
         /*conservative_rescaling=*/0.9);
@@ -259,7 +268,8 @@ TEST_CASE("Nonlinear Point-Triangle CCD", "[ccd][nonlinear][point-triangle]")
     double toi;
     bool collision = point_triangle_nonlinear_ccd(
         p, t0, t1, t2, toi, /*tmax=*/1.0, /*min_distance=*/0,
-        DEFAULT_CCD_TOLERANCE, DEFAULT_CCD_MAX_ITERATIONS,
+        TightInclusionCCD::DEFAULT_TOLERANCE,
+        TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
         /*conservative_rescaling=*/0.9);
 
     CHECK(collision);

@@ -8,7 +8,7 @@ Collision Mesh
 
 First, we need to create a collision mesh. The ``CollisionMesh`` data structure represents the surface geometry used for collision processing.
 
-We will start by creating a collision mesh from a ``bunny.obj`` mesh file (you can find the mesh `here <https://github.com/ipc-sim/ipc-toolkit/blob/main/tests/data/bunny.obj>`_):
+We will start by creating a collision mesh from a ``bunny.ply`` mesh file (you can find the mesh `here <https://github.com/ipc-sim/ipc-toolkit-tests-data/blob/main/bunny.ply>`_):
 
 .. md-tab-set::
 
@@ -20,14 +20,14 @@ We will start by creating a collision mesh from a ``bunny.obj`` mesh file (you c
 
             #include <Eigen/Core>
             #include <Eigen/Sparse>
-            #include <igl/readOBJ.h>
+            #include <igl/read_triangle_mesh.h>
             #include <igl/edges.h>
 
             // ...
 
             Eigen::MatrixXd rest_positions;
             Eigen::MatrixXi edges, faces;
-            igl::readOBJ("bunny.obj", rest_positions, faces);
+            igl::read_triangle_mesh("bunny.ply", rest_positions, faces);
             igl::edges(faces, edges);
 
             ipc::CollisionMesh collision_mesh(rest_positions, edges, faces);
@@ -40,7 +40,7 @@ We will start by creating a collision mesh from a ``bunny.obj`` mesh file (you c
 
             import meshio
 
-            mesh = meshio.read("bunny.obj")
+            mesh = meshio.read("bunny.ply")
             rest_positions = mesh.points
             faces = mesh.cells_dict["triangle"]
             edges = ipctk.edges(faces)
@@ -60,7 +60,7 @@ The sizes of ``edges`` and ``faces`` are ``#E x 2`` and ``#F x 3`` respectively 
 Collisions
 ----------
 
-Now that we have a collision mesh, we can compute the collision barrier potential. To do this we first need to build the set of active collisions (``Collisions``).
+Now that we have a collision mesh, we can compute the collision barrier potential. To do this we first need to build the set of active collisions (``NormalCollisions``).
 
 To start we need the current positions of the ``vertices``. For this tutorial, let us use squash the bunny has to 1% of its original height.
 
@@ -77,7 +77,7 @@ To start we need the current positions of the ``vertices``. For this tutorial, l
 
         .. code-block:: python
 
-            vertices = collision_mesh.rest_positions()
+            vertices = collision_mesh.rest_positions.copy()
             vertices[:, 1] *= 0.01  # Squash the bunny in the y-direction
 
 Using these deformed positions, we can build the set of active collisions.
@@ -92,7 +92,7 @@ We will use a value of :math:`\hat{d} = 10^{-3}`.
 
             const double dhat = 1e-3;
 
-            ipc::Collisions collisions;
+            ipc::NormalCollisions collisions;
             collisions.build(collision_mesh, vertices, dhat);
 
     .. md-tab-item:: Python
@@ -101,7 +101,7 @@ We will use a value of :math:`\hat{d} = 10^{-3}`.
 
             dhat = 1e-3
 
-            collisions = ipctk.Collisions()
+            collisions = ipctk.NormalCollisions()
             collisions.build(collision_mesh, vertices, dhat)
 
 This will automatically use a spatial data structure to perform a broad-phase culling and then perform a narrow-phase culling by computing distances (discarding any collision candidates with a distance :math:`> \hat{d}`).
@@ -132,9 +132,9 @@ This returns a scalar value ``barrier_potential`` which is the sum of the barrie
 Mathematically this is defined as
 
 .. math::
-   B(x) = \sum_{k \in C} b(d_k(x), \hat{d}),
+   B(\mathbf{x}) = \sum_{k \in C} b(d_k(\mathbf{x}); \hat{d}),
 
-where :math:`x` is our deformed vertex positions, :math:`C` is the active collisions, :math:`d_k` is the distance (squared) of the :math:`k`-th active collision, and :math:`b` is IPC's C2-clamped log-barrier function.
+where :math:`\mathbf{x}` is our deformed vertex positions, :math:`C` is the active collisions, :math:`d_k` is the distance (squared) of the :math:`k`-th active collision, and :math:`b` is IPC's C2-clamped log-barrier function.
 
 .. note::
    This is **not** premultiplied by the barrier stiffness :math:`\kappa`.
@@ -186,7 +186,7 @@ you will get the gradient of size :math:`|V|d \times 1` with the order
     \frac{\partial B}{\partial x_n} &
     \frac{\partial B}{\partial y_n} &
     \frac{\partial B}{\partial z_n}
-    \end{bmatrix}^T,
+    \end{bmatrix}^\top,
 
 and the Hessian of size :math:`|V|d \times |V|d` with the order
 
@@ -249,7 +249,7 @@ Adaptive Barrier Stiffness
 
 The last piece of the barrier potential is the barrier stiffness. This is a weight that is multiplied by the barrier potential to better scale it relative to the energy potential. This can be a fixed value or adaptive.
 
-To compute the adaptive barrier stiffness, we can use two functions: ``initial_barrier_stiffness`` and ``update_barrier_stiffness``. The function ``initial_barrier_stiffness``computes the initial value from the current energy and barrier potential gradients. This function also provides a minimum and maximum value for the barrier stiffness. The function ``update_barrier_stiffness`` updates the barrier stiffness if the minimum distance has become too small.
+To compute the adaptive barrier stiffness, we can use two functions: ``initial_barrier_stiffness`` and ``update_barrier_stiffness``. The function ``initial_barrier_stiffness`` computes the initial value from the current energy and barrier potential gradients. This function also provides a minimum and maximum value for the barrier stiffness. The function ``update_barrier_stiffness`` updates the barrier stiffness if the minimum distance has become too small.
 
 .. md-tab-set::
 
@@ -266,8 +266,8 @@ To compute the adaptive barrier stiffness, we can use two functions: ``initial_b
 
             double max_barrier_stiffness; // output of initial_barrier_stiffness
             double barrier_stiffness = ipc::initial_barrier_stiffness(
-                bbox_diagonal, dhat, avg_mass, grad_energy, grad_barrier,
-                max_barrier_stiffness);
+                bbox_diagonal, B.barrier(), dhat, avg_mass, grad_energy,
+                grad_barrier, max_barrier_stiffness);
 
             double prev_distance = collisions.compute_minimum_distance(
                 collision_mesh, vertices);
@@ -299,7 +299,7 @@ To compute the adaptive barrier stiffness, we can use two functions: ``initial_b
             bbox_diagonal = ipctk.world_bbox_diagonal_length(vertices)
 
             barrier_stiffness, max_barrier_stiffness = ipctk.initial_barrier_stiffness(
-                bbox_diagonal, dhat, avg_mass, grad_energy, grad_barrier,
+                bbox_diagonal, B.barrier, dhat, avg_mass, grad_energy, grad_barrier,
                 max_barrier_stiffness)
 
             prev_distance = collisions.compute_minimum_distance(collision_mesh, vertices)
@@ -336,7 +336,7 @@ To add a collision offset, we need to set the ``dmin`` variable. For example, we
             const double dhat = 1e-4;
             const double dmin = 1e-3;
 
-            ipc::Collisions collisions;
+            ipc::NormalCollisions collisions;
             collisions.build(collision_mesh, vertices, dhat, dmin);
 
     .. md-tab-item:: Python
@@ -367,17 +367,17 @@ Computing the friction dissipative potential is similar to the barrier potential
 
         .. code-block:: c++
 
-            ipc::FrictionCollisions friction_collisions;
-            friction_collisions.build(
-                collision_mesh, vertices, collisions, dhat, barrier_stiffness, mu);
+            ipc::TangentialCollisions tangential_collisions;
+            tangential_collisions.build(
+                collision_mesh, vertices, collisions, B, barrier_stiffness, mu);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            friction_collisions = ipctk.FrictionCollisions()
-            friction_collisions.build(
-                collision_mesh, vertices, collisions, dhat, barrier_stiffness, mu)
+            tangential_collisions = ipctk.TangentialCollisions()
+            tangential_collisions.build(
+                collision_mesh, vertices, collisions, B, barrier_stiffness, mu)
 
 Here ``mu`` (:math:`\mu`) is the (global) coefficient of friction, and ``barrier_stiffness`` (:math:`\kappa`) is the barrier stiffness.
 
@@ -392,34 +392,38 @@ Now we can compute the friction dissipative potential using the ``FrictionPotent
 
         .. code-block:: c++
 
-            const FrictionPotential D(epsv);
-            double friction_potential = D(friction_collisions, collision_mesh, velocity);
+            const ipc::FrictionPotential D(eps_v);
+            double friction_potential = D(tangential_collisions, collision_mesh, velocity);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            D = FrictionPotential(epsv)
-            friction_potential = D(friction_collisions, collision_mesh, velocity)
+            D = ipctk.FrictionPotential(eps_v)
+            friction_potential = D(tangential_collisions, collision_mesh, velocity)
 
-Here ``epsv`` (:math:`\epsilon_v`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
+Here ``eps_v`` (:math:`\epsilon_v`) is the static friction threshold (in units of velocity) used to smoothly transition from dynamic to static friction.
 
 .. important::
-   The friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is
+   In :cite:t:`Li2020IPC`, friction was based on displacement :math:`\mathbf{u}=\mathbf{x}-\mathbf{x}^t`, but this limits the time-integration scheme for friction to  implicit Euler.
+
+   Here, the friction potential is a function of the velocities rather than the positions. We can compute the velocities directly from the current and previous position(s) based on our time-integration scheme. For example, if we are using backward Euler integration, then the velocity is
 
    .. math::
-      v = \frac{x - x^t}{h},
+      \mathbf{v} = \frac{\mathbf{x} - \mathbf{x}^t}{h},
 
-   where :math:`x` is the current position, :math:`x^t` is the previous position, and :math:`h` is the time step size.
+   where :math:`\mathbf{x}` is the current position, :math:`\mathbf{x}^t` is the previous position, and :math:`h` is the time step size.
+
+   Additionally, the parameter :math:`\epsilon_v h` in :cite:t:`Li2020IPC` is now simply :math:`\epsilon_v`.
 
 This returns a scalar value ``friction_potential`` which is the sum of the individual friction potentials.
 
 Mathematically this is defined as
 
 .. math::
-   D(x) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|T_k^Tv\|, \epsilon_v\right),
+   D(\mathbf{v}) = \sum_{k \in C} \mu\lambda_k^nf_0\left(\|\mathbf{T}_k^\top \mathbf{v}\|; \epsilon_v\right),
 
-where :math:`C` is the lagged collisions, :math:`\lambda_k^n` is the normal force magnitude for the :math:`k`-th collision, :math:`T_k` is the tangential basis for the :math:`k`-th collision, and :math:`f_0` is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.
+where :math:`C` is the lagged collisions, :math:`\lambda_k^n` is the normal force magnitude for the :math:`k`-th collision, :math:`\mathbf{T}_k` is the tangential basis for the :math:`k`-th collision, and :math:`f_0` is the smooth friction function used to approximate the non-smooth transition from dynamic to static friction.
 
 Derivatives
 ^^^^^^^^^^^
@@ -433,20 +437,28 @@ We can also compute the first and second derivatives of the friction dissipative
         .. code-block:: c++
 
             Eigen::VectorXd friction_potential_grad =
-                D.gradient(friction_collisions, collision_mesh, velocity);
+                D.gradient(tangential_collisions, collision_mesh, velocity);
 
             Eigen::SparseMatrix<double> friction_potential_hess =
-                D.hessian(friction_collisions, collision_mesh, velocity);
+                D.hessian(tangential_collisions, collision_mesh, velocity);
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
             friction_potential_grad = D.gradient(
-                friction_collisions, collision_mesh, velocity)
+                tangential_collisions, collision_mesh, velocity)
 
             friction_potential_hess = D.hessian(
-                friction_collisions, collision_mesh, velocity)
+                tangential_collisions, collision_mesh, velocity)
+
+.. important::
+
+    When computing the derivatives with respect to positions, the chain rule is applied to :math:`\mathbf{v}(\mathbf{x})`. However, this does not produce the correct friction force. To correct this, we need to divide :math:`D` by :math:`\partial \mathbf{v}/\partial \mathbf{x}`. This will cancel out the chain rule to get the correct friction force.
+
+    This assumes that :math:`\partial \mathbf{v}/\partial \mathbf{x}` is a constant (i.e., :math:`\mathbf{v}(\mathbf{x})` is a linear function). This assumption is valid for many popular time integration schemes (e.g., Implicit Euler, Implicit Newmark, and BDF).
+
+    Note, you still apply the chain rule to the hessian -- i.e., multiply :math:`\nabla^2 D` by :math:`\partial \mathbf{v}/\partial \mathbf{x}`.
 
 Continuous Collision Detection
 ------------------------------
@@ -467,12 +479,12 @@ The following example determines the maximum step size allowable between the res
             Eigen::MatrixXd vertices_t1 = vertices_t0;                     // vertices at t=1
             vertices_t1.col(1) *= 0.01; // squash the mesh in the y-direction
 
-            double max_step_size = compute_collision_free_stepsize(
+            double max_step_size = ipc::compute_collision_free_stepsize(
                     collision_mesh, vertices_t0, vertices_t1);
 
             Eigen::MatrixXd collision_free_vertices =
                 (vertices_t1 - vertices_t0) * max_step_size + vertices_t0;
-            assert(is_step_collision_free(mesh, vertices_t0, collision_free_vertices));
+            assert(ipc::is_step_collision_free(mesh, vertices_t0, collision_free_vertices));
 
     .. md-tab-item:: Python
 
@@ -482,12 +494,12 @@ The following example determines the maximum step size allowable between the res
             vertices_t1 = vertices_t0.copy()              # vertices at t=1
             vertices_t1[:, 1] *= 0.01 # squash the mesh in the y-direction
 
-            max_step_size = compute_collision_free_stepsize(
+            max_step_size = ipctk.compute_collision_free_stepsize(
                     collision_mesh, vertices_t0, vertices_t1)
 
             collision_free_vertices =
                 (vertices_t1 - vertices_t0) * max_step_size + vertices_t0
-            assert(is_step_collision_free(mesh, vertices_t0, collision_free_vertices))
+            assert(ipctk.is_step_collision_free(mesh, vertices_t0, collision_free_vertices))
 
 CCD is comprised of two parts (phases): broad-phase and narrow-phase.
 
@@ -508,9 +520,8 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
 
             ipc::Candidates candidates;
             candidates.build(
-                mesh, vertices_t0, vertices_t1,
-                /*inflation_radius=*/0.0,
-                /*broad_phase_method=*/ipc::BroadPhaseMethod::HASH_GRID);
+                mesh, vertices_t0, vertices_t1, /*inflation_radius=*/0.0,
+                /*broad_phase=*/std::make_shared<ipc::HashGrid>());
 
     .. md-tab-item:: Python
 
@@ -518,11 +529,10 @@ The ``Candidates`` class represents the culled set of candidate pairs and is bui
 
             candidates = ipctk.Candidates()
             candidates.build(
-                mesh, vertices_t0, vertices_t1,
-                broad_phase_method=ipctk.BroadPhaseMethod.HASH_GRID)
+                mesh, vertices_t0, vertices_t1, broad_phase=ipctk.HashGrid())
 
-Possible values for ``broad_phase_method`` are: ``BRUTE_FORCE`` (parallel brute force culling), ``HASH_GRID`` (default), ``SPATIAL_HASH`` (implementation from the original IPC codebase),
-``BVH`` (`SimpleBVH <https://github.com/geometryprocessing/SimpleBVH>`_), ``SWEEP_AND_PRUNE`` (method of :cite:t:`Belgrod2023Time`), or ``SWEEP_AND_TINIEST_QUEUE`` (requires CUDA).
+Possible values for ``broad_phase`` are: ``BruteForce`` (parallel brute force culling), ``HashGrid`` (default), ``SpatialHash`` (implementation from the original IPC codebase),
+``BVH`` (`SimpleBVH <https://github.com/geometryprocessing/SimpleBVH>`_), ``SweepAndPrune`` (method of :cite:t:`Belgrod2023Time`), or ``SweepAndTiniestQueue`` (requires CUDA).
 
 Narrow-Phase
 ^^^^^^^^^^^^
@@ -627,27 +637,22 @@ To do this, we need to set the ``min_distance`` parameter when calling ``is_step
 
         .. code-block:: c++
 
-            double max_step_size = compute_collision_free_stepsize(
-                    collision_mesh, vertices_t0, vertices_t1,
-                    /*broad_phase_method=*/ipc::DEFAULT_BROAD_PHASE_METHOD,
-                    /*min_distance=*/1e-4);
+            double max_step_size = ipc::compute_collision_free_stepsize(
+                    collision_mesh, vertices_t0, vertices_t1, /*min_distance=*/1e-4);
 
             Eigen::MatrixXd collision_free_vertices =
                 (vertices_t1 - vertices_t0) * max_step_size + vertices_t0;
-            assert(is_step_collision_free(
-                mesh, vertices_t0, collision_free_vertices,
-                /*broad_phase_method=*/ipc::DEFAULT_BROAD_PHASE_METHOD,
-                /*min_distance=*/1e-4
-            ));
+            assert(ipc::is_step_collision_free(
+                mesh, vertices_t0, collision_free_vertices, /*min_distance=*/1e-4));
 
     .. md-tab-item:: Python
 
         .. code-block:: python
 
-            max_step_size = compute_collision_free_stepsize(
+            max_step_size = ipctk.compute_collision_free_stepsize(
                     collision_mesh, vertices_t0, vertices_t1, min_distance=1e-4)
 
             collision_free_vertices =
                 (vertices_t1 - vertices_t0) * max_step_size + vertices_t0
-            assert(is_step_collision_free(
+            assert(ipctk.is_step_collision_free(
                 mesh, vertices_t0, collision_free_vertices, min_distance=1e-4))

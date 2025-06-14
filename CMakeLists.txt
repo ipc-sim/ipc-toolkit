@@ -44,6 +44,8 @@ if(IPC_TOOLKIT_WITH_CCACHE AND CCACHE_PROGRAM)
   endforeach()
 endif()
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 ################################################################################
 # CMake Policies
 ################################################################################
@@ -53,29 +55,46 @@ cmake_policy(SET CMP0076 NEW) # target_sources() command converts relative paths
 if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.24")
   cmake_policy(SET CMP0135 NEW) # Set the timestamps of all extracted contents to the time of the extraction.
 endif()
+cmake_policy(SET CMP0114 NEW) # Support the Xcode "new build system"
 
 ################################################################################
 
 project(IPCToolkit
         DESCRIPTION "A set of reusable functions to integrate IPC into an existing simulation."
         LANGUAGES CXX C
-        VERSION "1.3.0")
+        VERSION "1.4.0")
 
-option(IPC_TOOLKIT_BUILD_TESTS                "Build unit-tests"  ${IPC_TOOLKIT_TOPLEVEL_PROJECT})
-option(IPC_TOOLKIT_BUILD_PYTHON               "Build Python bindings"                         OFF)
-option(IPC_TOOLKIT_WITH_CUDA                  "Enable CUDA CCD"                               OFF)
+include(CheckLanguage)
+check_language(CUDA)
+
+if(IPC_TOOLKIT_TOPLEVEL_PROJECT)
+  option(IPC_TOOLKIT_BUILD_TESTS  "Build unit-tests"       ON)
+  option(IPC_TOOLKIT_BUILD_PYTHON "Build Python bindings" OFF)
+else()
+  # If this is not the top-level project, we don't want to build tests or Python
+  # bindings. This is useful for projects that use IPC Toolkit as a submodule.
+  set(IPC_TOOLKIT_BUILD_TESTS  OFF CACHE BOOL "Build unit-tests"      FORCE)
+  set(IPC_TOOLKIT_BUILD_PYTHON OFF CACHE BOOL "Build Python bindings" FORCE)
+endif()
+
+set(IPC_TOOLKIT_TESTS_GCP_DATA_DIR "${PROJECT_SOURCE_DIR}/tests/gcp-data/" CACHE PATH "")
+
+if(CMAKE_CUDA_COMPILER)
+  option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" ON)
+else()
+  option(IPC_TOOLKIT_WITH_CUDA "Enable CUDA CCD" OFF)
+endif()
 option(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION "Use rational edge-triangle intersection check" OFF)
 option(IPC_TOOLKIT_WITH_ROBIN_MAP             "Use Tessil's robin-map rather than std maps"    ON)
 option(IPC_TOOLKIT_WITH_ABSEIL                "Use Abseil's hash functions"                    ON)
 option(IPC_TOOLKIT_WITH_FILIB                 "Use filib for interval arithmetic"              ON)
+option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
 
 # Advanced options
-option(IPC_TOOLKIT_WITH_INEXACT_CCD           "Use the original inexact CCD method of IPC"    OFF)
 option(IPC_TOOLKIT_WITH_SIMD                  "Enable SIMD"                                   OFF)
 option(IPC_TOOLKIT_WITH_CODE_COVERAGE         "Enable coverage reporting"                     OFF)
 option(IPC_TOOLKIT_WITH_AUTODIFF              "Enable AutoDiff for computing derivatives"     OFF)
 
-mark_as_advanced(IPC_TOOLKIT_WITH_INEXACT_CCD)   # This is only for comparison purposes
 mark_as_advanced(IPC_TOOLKIT_WITH_SIMD)          # This does not work reliably
 mark_as_advanced(IPC_TOOLKIT_WITH_CODE_COVERAGE) # This is used in GitHub Actions
 
@@ -112,20 +131,21 @@ add_library(ipc::toolkit ALIAS ipc_toolkit)
 # Fill in configuration options
 configure_file(
   "${IPC_TOOLKIT_SOURCE_DIR}/config.hpp.in"
-  "${IPC_TOOLKIT_SOURCE_DIR}/config.hpp")
+  "${PROJECT_BINARY_DIR}/include/ipc/config.hpp")
 
 # Add source and header files to ipc_toolkit
 add_subdirectory("${IPC_TOOLKIT_SOURCE_DIR}")
 
 # Public include directory for IPC Toolkit
-target_include_directories(ipc_toolkit PUBLIC "${IPC_TOOLKIT_INCLUDE_DIR}")
+target_include_directories(ipc_toolkit PUBLIC
+  "${IPC_TOOLKIT_INCLUDE_DIR}"    # public headers
+  "${PROJECT_BINARY_DIR}/include" # generated config.hpp
+)
 
-################################################################################
-# Optional Definitions
-################################################################################
-
-# For MSVC, do not use the min and max macros.
-target_compile_definitions(ipc_toolkit PUBLIC NOMINMAX)
+# Folder name for IDE
+set_target_properties(ipc_toolkit PROPERTIES FOLDER "SRC")
+get_target_property(IPC_TOOLKIT_SOURCES ipc_toolkit SOURCES)
+source_group(TREE "${PROJECT_SOURCE_DIR}" FILES ${IPC_TOOLKIT_SOURCES})
 
 ################################################################################
 # Dependencies
@@ -210,38 +230,39 @@ else()
   message(STATUS "SIMD support disabled")
 endif()
 
+# For MSVC, do not use the min and max macros.
+if(MSVC)
+  target_compile_definitions(ipc_toolkit PRIVATE NOMINMAX)
+endif()
+
 # Use C++17
 target_compile_features(ipc_toolkit PUBLIC cxx_std_17)
+
+if(IPC_TOOLKIT_WITH_AUTODIFF)
+  target_compile_definitions(ipc_toolkit PUBLIC DERIVATIVES_WITH_AUTODIFF)
+endif()
+target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_TBB)
 
 ################################################################################
 # CUDA
 ################################################################################
 
 if(IPC_TOOLKIT_WITH_CUDA)
-  include(CheckLanguage)
-  check_language(CUDA)
-  if(CMAKE_CUDA_COMPILER)
-    enable_language(CUDA)
-  else()
-    message(FATAL_ERROR "No CUDA support found!")
+  if(NOT CMAKE_CUDA_COMPILER)
+    message(FATAL_ERROR "CUDA support requested but no CUDA compiler found!")
   endif()
+
+  # Enable CUDA support
+  enable_language(CUDA)
 
   # We need to explicitly state that we need all CUDA files in the particle
   # library to be built with -dc as the member functions could be called by
   # other libraries and executables.
   set_target_properties(ipc_toolkit PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
-  if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.24.0")
-    set(CMAKE_CUDA_ARCHITECTURES "native")
-  else()
-    include(FindCUDA/select_compute_arch)
-    CUDA_DETECT_INSTALLED_GPUS(CUDA_ARCH_LIST)
-    string(STRIP "${CUDA_ARCH_LIST}" CUDA_ARCH_LIST)
-    string(REPLACE " " ";" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
-    string(REPLACE "." "" CUDA_ARCH_LIST "${CUDA_ARCH_LIST}")
-    set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
-  endif()
-  set_target_properties(scalable_ccd PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
+  # Use the same CUDA architectures Scalable CCD
+  get_target_property(CMAKE_CUDA_ARCHITECTURES scalable_ccd CUDA_ARCHITECTURES)
+  set_target_properties(ipc_toolkit PROPERTIES CUDA_ARCHITECTURES "${CMAKE_CUDA_ARCHITECTURES}")
 endif()
 
 ################################################################################
@@ -249,7 +270,7 @@ endif()
 ################################################################################
 
 # Enable unit testing at the root level
-if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_TESTS)
+if(IPC_TOOLKIT_BUILD_TESTS)
   include(CTest)
   enable_testing()
   add_subdirectory(tests)
@@ -261,22 +282,36 @@ endif()
 
 if(IPC_TOOLKIT_WITH_CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   # Add required flags (GCC & LLVM/Clang)
-  target_compile_options(ipc_toolkit PUBLIC
+  target_compile_options(ipc_toolkit PRIVATE
     -g         # generate debug info
     --coverage # sets all required flags
+    -fprofile-update=atomic
   )
-  target_link_options(ipc_toolkit PUBLIC --coverage)
+  target_link_options(ipc_toolkit PUBLIC
+    --coverage
+    -fprofile-update=atomic
+  )
 endif()
 
 ################################################################################
 # Python bindings
 ################################################################################
 
-if(IPC_TOOLKIT_TOPLEVEL_PROJECT AND IPC_TOOLKIT_BUILD_PYTHON)
+if(IPC_TOOLKIT_BUILD_PYTHON)
   add_subdirectory(python)
 endif()
 
-if(IPC_TOOLKIT_WITH_AUTODIFF)
-  target_compile_definitions(ipc_toolkit PUBLIC DERIVATIVES_WITH_AUTODIFF)
+################################################################################
+# Xcode
+################################################################################
+
+if (CMAKE_GENERATOR STREQUAL "Xcode")
+  set(CMAKE_XCODE_SCHEME_LAUNCH_CONFIGURATION "${CMAKE_BUILD_TYPE}")
+  set_target_properties(ipc_toolkit PROPERTIES XCODE_GENERATE_SCHEME ON)
+  if(IPC_TOOLKIT_BUILD_TESTS)
+    set_target_properties(ipc_toolkit_tests PROPERTIES XCODE_GENERATE_SCHEME ON)
+  endif()
+  if(IPC_TOOLKIT_BUILD_PYTHON)
+    set_target_properties(ipctk PROPERTIES XCODE_GENERATE_SCHEME ON)
+  endif()
 endif()
-target_compile_definitions(ipc_toolkit PUBLIC IPC_TOOLKIT_WITH_TBB)

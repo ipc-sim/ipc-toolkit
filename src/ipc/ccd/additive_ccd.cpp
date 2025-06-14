@@ -9,6 +9,7 @@
 //  • return true if the initial distance is less than the minimum distance
 //  • add an explicit tmax parameter rather than relying on the initial value of
 //    toi
+//  • add a maximum number of iterations to limit the computation time
 //
 // NOTE: These methods are provided for reference comparison with [Li et al.
 // 2021] and is not utilized by the high-level functionality. In compairson to
@@ -21,12 +22,12 @@
 
 #include "additive_ccd.hpp"
 
-#include <ipc/distance/point_point.hpp>
-#include <ipc/distance/point_edge.hpp>
-#include <ipc/distance/point_triangle.hpp>
 #include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_point.hpp>
+#include <ipc/distance/point_triangle.hpp>
 
-namespace ipc::additive_ccd {
+namespace ipc {
 
 namespace {
     template <typename... Args> void subtract_mean(Args&... args)
@@ -48,10 +49,10 @@ namespace {
         }
     }
 
-    VectorMax12d stack(const VectorMax3d& x) { return x; }
+    VectorMax12d stack(Eigen::ConstRef<VectorMax3d> x) { return x; }
 
     template <typename... Args>
-    VectorMax12d stack(const VectorMax3d& x0, const Args&... args)
+    VectorMax12d stack(Eigen::ConstRef<VectorMax3d> x0, const Args&... args)
     {
         VectorMax12d x(x0.size() * (1 + sizeof...(args)));
         x.head(x0.size()) = x0;
@@ -60,15 +61,21 @@ namespace {
     }
 } // namespace
 
-bool additive_ccd(
-    VectorMax12d x,
-    const VectorMax12d& dx,
-    const std::function<double(const VectorMax12d&)>& distance_squared,
+AdditiveCCD::AdditiveCCD(
+    const long _max_iterations, const double _conservative_rescaling)
+    : max_iterations(_max_iterations)
+    , conservative_rescaling(_conservative_rescaling)
+{
+}
+
+bool AdditiveCCD::additive_ccd(
+    VectorMax12d x, // mutable copy
+    Eigen::ConstRef<VectorMax12d> dx,
+    const std::function<double(Eigen::ConstRef<VectorMax12d>)> distance_squared,
     const double max_disp_mag,
     double& toi,
     const double min_distance,
-    const double tmax,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     assert(conservative_rescaling > 0 && conservative_rescaling <= 1);
 
@@ -82,9 +89,14 @@ bool additive_ccd(
     assert(d_func > 0);
     const double gap = // (d - ξ) = (d² - ξ²) / (d + ξ)
         (1 - conservative_rescaling) * d_func / (d + min_distance);
+    if (gap < std::numeric_limits<double>::epsilon()) {
+        logger().warn(
+            "Small gap {:g} ≤ ε in Additive CCD can lead to missed collisions",
+            gap);
+    }
 
     toi = 0;
-    while (true) {
+    for (long i = 0; max_iterations < 0 || i < max_iterations; ++i) {
         // tₗ = η ⋅ (d - ξ) / lₚ = η ⋅ (d² - ξ²) / (lₚ ⋅ (d + ξ))
         const double toi_lower_bound = conservative_rescaling * d_func
             / ((d + min_distance) * max_disp_mag);
@@ -103,20 +115,25 @@ bool additive_ccd(
         if (toi > tmax) {
             return false; // collision occurs after tmax
         }
+
+        if (max_iterations < 0 && i == DEFAULT_MAX_ITERATIONS) {
+            logger().warn(
+                "Slow convergence in Additive CCD. Perhaps the gap is too small (gap={:g})?",
+                gap);
+        }
     }
 
     return true;
 }
 
-bool point_point_ccd(
-    const VectorMax3d& p0_t0,
-    const VectorMax3d& p1_t0,
-    const VectorMax3d& p0_t1,
-    const VectorMax3d& p1_t1,
+bool AdditiveCCD::point_point_ccd(
+    Eigen::ConstRef<VectorMax3d> p0_t0,
+    Eigen::ConstRef<VectorMax3d> p1_t0,
+    Eigen::ConstRef<VectorMax3d> p0_t1,
+    Eigen::ConstRef<VectorMax3d> p1_t1,
     double& toi,
     const double min_distance,
-    const double tmax,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     const int dim = p0_t0.size();
     assert(dim == p1_t0.size() && dim == p0_t1.size() && dim == p1_t1.size());
@@ -139,7 +156,7 @@ bool point_point_ccd(
         return false;
     }
 
-    auto distance_squared = [dim](const VectorMax12d& x) {
+    auto distance_squared = [dim](Eigen::ConstRef<VectorMax12d> x) {
         return point_point_distance(x.head(dim), x.tail(dim));
     };
 
@@ -147,21 +164,19 @@ bool point_point_ccd(
     const VectorMax12d dx = stack(dp0, dp1);
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
-        conservative_rescaling);
+        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax);
 }
 
-bool point_edge_ccd(
-    const VectorMax3d& p_t0,
-    const VectorMax3d& e0_t0,
-    const VectorMax3d& e1_t0,
-    const VectorMax3d& p_t1,
-    const VectorMax3d& e0_t1,
-    const VectorMax3d& e1_t1,
+bool AdditiveCCD::point_edge_ccd(
+    Eigen::ConstRef<VectorMax3d> p_t0,
+    Eigen::ConstRef<VectorMax3d> e0_t0,
+    Eigen::ConstRef<VectorMax3d> e1_t0,
+    Eigen::ConstRef<VectorMax3d> p_t1,
+    Eigen::ConstRef<VectorMax3d> e0_t1,
+    Eigen::ConstRef<VectorMax3d> e1_t1,
     double& toi,
     const double min_distance,
-    const double tmax,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     const int dim = p_t0.size();
     assert(dim == e0_t0.size() && dim == e1_t0.size());
@@ -187,7 +202,7 @@ bool point_edge_ccd(
         return false;
     }
 
-    auto distance_squared = [dim](const VectorMax12d& x) {
+    auto distance_squared = [dim](Eigen::ConstRef<VectorMax12d> x) {
         return point_edge_distance(
             x.head(dim), x.segment(dim, dim), x.tail(dim));
     };
@@ -196,23 +211,21 @@ bool point_edge_ccd(
     const VectorMax12d dx = stack(dp, de0, de1);
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
-        conservative_rescaling);
+        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax);
 }
 
-bool point_triangle_ccd(
-    const Eigen::Vector3d& p_t0,
-    const Eigen::Vector3d& t0_t0,
-    const Eigen::Vector3d& t1_t0,
-    const Eigen::Vector3d& t2_t0,
-    const Eigen::Vector3d& p_t1,
-    const Eigen::Vector3d& t0_t1,
-    const Eigen::Vector3d& t1_t1,
-    const Eigen::Vector3d& t2_t1,
+bool AdditiveCCD::point_triangle_ccd(
+    Eigen::ConstRef<Eigen::Vector3d> p_t0,
+    Eigen::ConstRef<Eigen::Vector3d> t0_t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1_t0,
+    Eigen::ConstRef<Eigen::Vector3d> t2_t0,
+    Eigen::ConstRef<Eigen::Vector3d> p_t1,
+    Eigen::ConstRef<Eigen::Vector3d> t0_t1,
+    Eigen::ConstRef<Eigen::Vector3d> t1_t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2_t1,
     double& toi,
     const double min_distance,
-    const double tmax,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     const double initial_distance =
         point_triangle_distance(p_t0, t0_t0, t1_t0, t2_t0);
@@ -237,7 +250,7 @@ bool point_triangle_ccd(
         return false;
     }
 
-    auto distance_squared = [](const VectorMax12d& x) {
+    auto distance_squared = [](Eigen::ConstRef<VectorMax12d> x) {
         return point_triangle_distance(
             x.head<3>(), x.segment<3>(3), x.segment<3>(6), x.tail<3>());
     };
@@ -246,23 +259,21 @@ bool point_triangle_ccd(
     const VectorMax12d dx = stack(dp, dt0, dt1, dt2);
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
-        conservative_rescaling);
+        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax);
 }
 
-bool edge_edge_ccd(
-    const Eigen::Vector3d& ea0_t0,
-    const Eigen::Vector3d& ea1_t0,
-    const Eigen::Vector3d& eb0_t0,
-    const Eigen::Vector3d& eb1_t0,
-    const Eigen::Vector3d& ea0_t1,
-    const Eigen::Vector3d& ea1_t1,
-    const Eigen::Vector3d& eb0_t1,
-    const Eigen::Vector3d& eb1_t1,
+bool AdditiveCCD::edge_edge_ccd(
+    Eigen::ConstRef<Eigen::Vector3d> ea0_t0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_t0,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_t0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_t0,
+    Eigen::ConstRef<Eigen::Vector3d> ea0_t1,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_t1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_t1,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_t1,
     double& toi,
     const double min_distance,
-    const double tmax,
-    const double conservative_rescaling)
+    const double tmax) const
 {
     const double initial_distance =
         edge_edge_distance(ea0_t0, ea1_t0, eb0_t0, eb1_t0);
@@ -288,7 +299,7 @@ bool edge_edge_ccd(
     }
 
     const double min_distance_sq = min_distance * min_distance;
-    auto distance_squared = [min_distance_sq](const VectorMax12d& x) {
+    auto distance_squared = [min_distance_sq](Eigen::ConstRef<VectorMax12d> x) {
         const auto& ea0 = x.head<3>();
         const auto& ea1 = x.segment<3>(3);
         const auto& eb0 = x.segment<3>(6);
@@ -309,8 +320,7 @@ bool edge_edge_ccd(
     const VectorMax12d dx = stack(dea0, dea1, deb0, deb1);
 
     return additive_ccd(
-        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax,
-        conservative_rescaling);
+        x, dx, distance_squared, max_disp_mag, toi, min_distance, tmax);
 }
 
-} // namespace ipc::additive_ccd
+} // namespace ipc

@@ -1,11 +1,11 @@
 #include "hash_grid.hpp"
 
 #include <ipc/broad_phase/voxel_size_heuristic.hpp>
-#include <ipc/utils/merge_thread_local.hpp>
 #include <ipc/utils/logger.hpp>
+#include <ipc/utils/merge_thread_local.hpp>
 
-#include <tbb/enumerable_thread_specific.h>
 #include <tbb/blocked_range2d.h>
+#include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_sort.h>
 
@@ -18,9 +18,9 @@ using namespace std::placeholders;
 namespace ipc {
 
 void HashGrid::build(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
     BroadPhase::build(vertices, edges, faces, inflation_radius);
@@ -38,10 +38,10 @@ void HashGrid::build(
 }
 
 void HashGrid::build(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
     BroadPhase::build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
@@ -64,8 +64,8 @@ void HashGrid::build(
 }
 
 void HashGrid::resize(
-    const ArrayMax3d& domain_min,
-    const ArrayMax3d& domain_max,
+    Eigen::ConstRef<ArrayMax3d> domain_min,
+    Eigen::ConstRef<ArrayMax3d> domain_max,
     double cell_size)
 {
     assert(cell_size != 0.0);

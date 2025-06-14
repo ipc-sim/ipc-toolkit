@@ -1,0 +1,77 @@
+name: CUDA
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - '.github/workflows/cuda.yml'
+      - 'cmake/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'python/**'
+      - 'CMakeLists.txt'
+
+env:
+  CTEST_OUTPUT_ON_FAILURE: ON
+  CTEST_PARALLEL_LEVEL: 2
+
+jobs:
+  Build:
+    name: CUDA (${{ matrix.config }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - Debug
+          - Release
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4.0.0
+        with:
+          fetch-depth: 10
+
+      - name: Dependencies
+        run: |
+          sudo apt-get install ccache
+          echo 'CACHE_PATH=~/.cache/ccache' >> "$GITHUB_ENV"
+
+      - name: cuda-toolkit
+        uses: Jimver/cuda-toolkit@v0.2.21
+        with:
+          sub-packages: '["nvcc"]'
+          method: 'network'
+
+      - name: Get number of CPU cores
+        uses: SimenB/github-actions-cpu-cores@v2.0.0
+        id: cpu-cores
+
+      - name: Cache Build
+        id: cache-build
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.CACHE_PATH }}
+          key: ${{ runner.os }}-${{ matrix.config }}-cache
+
+      - name: Prepare ccache
+        run: |
+          ccache --max-size=1.0G
+          ccache -V && ccache --show-config
+          ccache --show-stats && ccache --zero-stats
+
+      - name: Configure
+        run: |
+          mkdir -p build
+          cd build
+          cmake .. \
+            -DIPC_TOOLKIT_WITH_CUDA=ON \
+            -DSCALABLE_CCD_CUDA_ARCHITECTURES=75 \
+            -DIPC_TOOLKIT_BUILD_TESTS=ON \
+            -DIPC_TOOLKIT_BUILD_PYTHON=ON \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config }}
+
+      - name: Build
+        run: |
+          cmake --build build -j ${{ steps.cpu-cores.outputs.count }}
+          ccache --show-stats

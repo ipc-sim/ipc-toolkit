@@ -1,7 +1,7 @@
 #include "point_face.hpp"
 #include "point_edge.hpp"
 #include "autogen.hpp"
-#include <ipc/friction/closest_point.hpp>
+#include <ipc/tangent/closest_point.hpp>
 
 namespace ipc {
 

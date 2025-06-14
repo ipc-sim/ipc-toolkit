@@ -20,9 +20,9 @@ namespace ipc {
 template <int dim>
 void SmoothCollisions<dim>::compute_adaptive_dhat(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices, // set to zero for rest pose
+    Eigen::ConstRef<Eigen::MatrixXd> vertices, // set to zero for rest pose
     const ParameterType param,
-    const BroadPhaseMethod broad_phase_method)
+    const std::shared_ptr<BroadPhase> broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
@@ -30,7 +30,7 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
     double inflation_radius = dhat / 2;
 
     // Candidates candidates;
-    candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
+    candidates.build(mesh, vertices, inflation_radius, broad_phase);
     this->build(
         candidates, mesh, vertices, param,
         false /*disable adaptive dhat to compute true pairs*/);
@@ -105,17 +105,17 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
 template <int dim>
 void SmoothCollisions<dim>::build(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const ParameterType param,
     const bool use_adaptive_dhat,
-    const BroadPhaseMethod broad_phase_method)
+    const std::shared_ptr<BroadPhase> broad_phase)
 {
     assert(vertices.rows() == mesh.num_vertices());
 
     double inflation_radius = param.dhat / 2;
 
     // Candidates candidates;
-    candidates.build(mesh, vertices, inflation_radius, broad_phase_method);
+    candidates.build(mesh, vertices, inflation_radius, broad_phase);
     // std::cout << "Candidate Memory " << getCurrentRSS() / (1024.*1024) << "MB\n";
     this->build(candidates, mesh, vertices, param, use_adaptive_dhat);
 }
@@ -124,7 +124,7 @@ template <int dim>
 void SmoothCollisions<dim>::build(
     const Candidates& candidates_,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const ParameterType param,
     const bool use_adaptive_dhat)
 {
@@ -219,7 +219,7 @@ SmoothCollisions<dim>::operator[](size_t i) const
 template <int dim>
 std::string SmoothCollisions<dim>::to_string(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const ParameterType& params) const
 {
     std::stringstream ss;
@@ -244,7 +244,7 @@ std::string SmoothCollisions<dim>::to_string(
 // NOTE: Actually distance squared
 template <int dim>
 double SmoothCollisions<dim>::compute_minimum_distance(
-    const CollisionMesh& mesh, const Eigen::MatrixXd& vertices) const
+    const CollisionMesh& mesh, Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());
 
@@ -279,7 +279,7 @@ double SmoothCollisions<dim>::compute_minimum_distance(
 template <int dim>
 double SmoothCollisions<dim>::compute_active_minimum_distance(
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices) const
+    Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());
 

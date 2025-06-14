@@ -59,9 +59,9 @@ enum class EdgeEdgeDistanceType {
 /// @param e1 The second vertex of the edge.
 /// @return The distance type of the point-edge pair.
 PointEdgeDistanceType point_edge_distance_type(
-    const Eigen::Ref<const VectorMax3d>& p,
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1);
+    Eigen::ConstRef<VectorMax3d> p,
+    Eigen::ConstRef<VectorMax3d> e0,
+    Eigen::ConstRef<VectorMax3d> e1);
 
 /// @brief Determine the closest pair between a point and triangle.
 /// @param p The point.
@@ -70,10 +70,10 @@ PointEdgeDistanceType point_edge_distance_type(
 /// @param t2 The third vertex of the triangle.
 /// @return The distance type of the point-triangle pair.
 PointTriangleDistanceType point_triangle_distance_type(
-    const Eigen::Ref<const Eigen::Vector3d>& p,
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2);
+    Eigen::ConstRef<Eigen::Vector3d> p,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2);
 
 /// @brief Determine the closest pair between two edges.
 /// @param ea0 The first vertex of the first edge.
@@ -82,10 +82,10 @@ PointTriangleDistanceType point_triangle_distance_type(
 /// @param eb1 The second vertex of the second edge.
 /// @return The distance type of the edge-edge pair.
 EdgeEdgeDistanceType edge_edge_distance_type(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1);
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 /// @brief Determine the closest pair between two parallel edges.
 /// @param ea0 The first vertex of the first edge.
@@ -94,9 +94,9 @@ EdgeEdgeDistanceType edge_edge_distance_type(
 /// @param eb1 The second vertex of the second edge.
 /// @return The distance type of the edge-edge pair.
 EdgeEdgeDistanceType edge_edge_parallel_distance_type(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1);
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1);
 
 } // namespace ipc

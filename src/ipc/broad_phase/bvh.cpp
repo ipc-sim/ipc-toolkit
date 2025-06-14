@@ -2,18 +2,18 @@
 
 #include <ipc/utils/merge_thread_local.hpp>
 
-#include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
+#include <tbb/parallel_for.h>
 
 using namespace std::placeholders;
 
 namespace ipc {
 
 void BVH::build(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
     BroadPhase::build(vertices, edges, faces, inflation_radius);
@@ -23,10 +23,10 @@ void BVH::build(
 }
 
 void BVH::build(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
     BroadPhase::build(vertices_t0, vertices_t1, edges, faces, inflation_radius);
@@ -37,8 +37,9 @@ void BVH::build(
 
 void BVH::init_bvh(const std::vector<AABB>& boxes, SimpleBVH::BVH& bvh)
 {
-    if (boxes.size() == 0)
+    if (boxes.size() == 0) {
         return;
+    }
 
     std::vector<std::array<Eigen::Vector3d, 2>> vector_boxes(boxes.size());
     for (int i = 0; i < boxes.size(); i++) {

@@ -1,6 +1,6 @@
 #include <common.hpp>
 
-#include <ipc/ccd/ccd.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 
 #include <tight_inclusion/ccd.hpp>
 #include <tight_inclusion/interval_root_finder.hpp>
@@ -73,8 +73,9 @@ void define_tight_inclusion_ccd(py::module_& m)
         py::arg("ea0_t0"), py::arg("ea1_t0"), py::arg("eb0_t0"),
         py::arg("eb1_t0"), py::arg("ea0_t1"), py::arg("ea1_t1"),
         py::arg("eb0_t1"), py::arg("eb1_t1"), py::arg("min_distance") = 0,
-        py::arg("tmax") = 1, py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
-        py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
+        py::arg("tmax") = 1,
+        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
+        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
         py::arg("filter") = ticcd::Array3::Constant(-1),
         py::arg("no_zero_toi") = ticcd::DEFAULT_NO_ZERO_TOI,
         py::arg("ccd_method") =
@@ -127,8 +128,8 @@ void define_tight_inclusion_ccd(py::module_& m)
         py::arg("v_t0"), py::arg("f0_t0"), py::arg("f1_t0"), py::arg("f2_t0"),
         py::arg("v_t1"), py::arg("f0_t1"), py::arg("f1_t1"), py::arg("f2_t1"),
         py::arg("min_distance") = 0, py::arg("tmax") = 1,
-        py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
-        py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS,
+        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
+        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
         py::arg("filter") = ticcd::Array3::Constant(-1),
         py::arg("no_zero_toi") = ticcd::DEFAULT_NO_ZERO_TOI,
         py::arg("ccd_method") =
@@ -162,4 +163,48 @@ void define_tight_inclusion_ccd(py::module_& m)
         )ipc_Qu8mg5v7",
         py::arg("min_corner"), py::arg("max_corner"), py::arg("is_vertex_face"),
         py::arg("using_minimum_separation"));
+
+    py::class_<TightInclusionCCD, NarrowPhaseCCD>(m, "TightInclusionCCD")
+        .def(
+            py::init<const double, const long, const double>(),
+            R"ipc_Qu8mg5v7(
+            Construct a new AdditiveCCD object.
+
+            Parameters:
+                conservative_rescaling: The conservative rescaling of the time of impact.
+            )ipc_Qu8mg5v7",
+            py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
+            py::arg("max_iterations") =
+                TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+            py::arg("conservative_rescaling") =
+                TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING)
+        .def_readonly_static(
+            "DEFAULT_TOLERANCE", &TightInclusionCCD::DEFAULT_TOLERANCE,
+            "The default tolerance used with Tight-Inclusion CCD.")
+        .def_readonly_static(
+            "DEFAULT_MAX_ITERATIONS",
+            &TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+            "The default maximum number of iterations used with Tight-Inclusion CCD.")
+        .def_readonly_static(
+            "DEFAULT_CONSERVATIVE_RESCALING",
+            &TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING,
+            R"ipc_Qu8mg5v7(
+            The default conservative rescaling value used to avoid taking steps
+exactly to impact.
+            )ipc_Qu8mg5v7")
+        .def_readonly_static(
+            "SMALL_TOI", &TightInclusionCCD::SMALL_TOI,
+            R"ipc_Qu8mg5v7(
+            Tolerance for small time of impact which triggers rerunning CCD without
+a minimum separation.
+            )ipc_Qu8mg5v7")
+        .def_readwrite(
+            "tolerance", &TightInclusionCCD::tolerance, "Solver tolerance.")
+        .def_readwrite(
+            "max_iterations", &TightInclusionCCD::max_iterations,
+            "Maximum number of iterations.")
+        .def_readwrite(
+            "conservative_rescaling",
+            &TightInclusionCCD::conservative_rescaling,
+            "Conservative rescaling of the time of impact.");
 }

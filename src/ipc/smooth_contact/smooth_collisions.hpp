@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/collisions/collisions.hpp>
+#include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/smooth_contact/collisions/smooth_collision.hpp>
 
 namespace ipc {
@@ -30,9 +30,10 @@ public:
 
     void compute_adaptive_dhat(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const ParameterType param,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
+        const std::shared_ptr<BroadPhase> broad_phase =
+            make_default_broad_phase());
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param mesh The collision mesh.
@@ -40,10 +41,11 @@ public:
     /// @param broad_phase_method Broad-phase method to use.
     void build(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const ParameterType param,
         const bool use_adaptive_dhat = false,
-        const BroadPhaseMethod broad_phase_method = DEFAULT_BROAD_PHASE_METHOD);
+        const std::shared_ptr<BroadPhase> broad_phase =
+            make_default_broad_phase());
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param candidates Distance candidates from which the collision set is built.
@@ -52,7 +54,7 @@ public:
     void build(
         const Candidates& _candidates,
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const ParameterType param,
         const bool use_adaptive_dhat = false);
 
@@ -79,15 +81,15 @@ public:
 
     double compute_minimum_distance(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices) const override;
+        Eigen::ConstRef<Eigen::MatrixXd> vertices) const override;
 
     double compute_active_minimum_distance(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices) const;
+        Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
     std::string to_string(
         const CollisionMesh& mesh,
-        const Eigen::MatrixXd& vertices,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const ParameterType& params) const;
 
     void set_use_convergent_formulation(

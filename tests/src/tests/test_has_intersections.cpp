@@ -74,25 +74,26 @@ bool combine_meshes(
 
 TEST_CASE("Has intersections", "[intersection]")
 {
-    std::string mesh1_name = GENERATE("cube.obj", "bunny.obj");
-    std::string mesh2_name = GENERATE("cube.obj", "bunny.obj");
     int dim = GENERATE(2, 3);
 
 #ifdef NDEBUG
-    Eigen::Matrix3d R1 = GENERATE(take(4, tests::RotationGenerator::create()));
-    Eigen::Matrix3d R2 = GENERATE(take(4, tests::RotationGenerator::create()));
+    std::string mesh1_name = GENERATE("cube.ply", "bunny.ply");
+    std::string mesh2_name = GENERATE("cube.ply", "bunny.ply");
 #else
-    Eigen::Matrix3d R1 = GENERATE(take(2, tests::RotationGenerator::create()));
-    Eigen::Matrix3d R2 = GENERATE(take(2, tests::RotationGenerator::create()));
+    std::string mesh1_name = "cube.ply";
+    std::string mesh2_name = "cube.ply";
 #endif
 
-    const BroadPhaseMethod broad_phase_method = GENERATE_BROAD_PHASE_METHODS();
+    Eigen::Matrix3d R1 = GENERATE(take(4, tests::RotationGenerator::create()));
+    Eigen::Matrix3d R2 = GENERATE(take(4, tests::RotationGenerator::create()));
+
+    const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
 
     Eigen::MatrixXd V;
     Eigen::MatrixXi E, F;
     bool success = combine_meshes(mesh1_name, mesh2_name, R1, R2, dim, V, E, F);
     REQUIRE(success);
 
-    CAPTURE(broad_phase_method);
-    CHECK(has_intersections(CollisionMesh(V, E, F), V, broad_phase_method));
+    CAPTURE(broad_phase->name());
+    CHECK(has_intersections(CollisionMesh(V, E, F), V, broad_phase));
 }

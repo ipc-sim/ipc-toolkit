@@ -3,13 +3,21 @@
     "title": "main",
     "aliases": ["latest", "head"]
 }, {
-    "version": "https://ipctk.xyz/v1.2.0",
-    "title": "v1.2.0",
+    "version": "https://ipctk.xyz/v1.3.1",
+    "title": "v1.3.1",
     "aliases": ["stable"]
 }, {
+    "version": "https://ipctk.xyz/v1.3.0",
+    "title": "v1.3.0"
+}, {
+    "version": "https://ipctk.xyz/v1.2.1",
+    "title": "v1.2.1"
+}, {
+    "version": "https://ipctk.xyz/v1.2.0",
+    "title": "v1.2.0"
+}, {
     "version": "https://ipctk.xyz/v1.1.1",
-    "title": "v1.1.1",
-    "aliases": ["stable"]
+    "title": "v1.1.1"
 }, {
     "version": "https://ipctk.xyz/v1.1.0",
     "title": "v1.1.0"

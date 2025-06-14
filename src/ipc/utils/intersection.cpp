@@ -1,11 +1,10 @@
 #include "intersection.hpp"
 
-#include <ipc/utils/eigen_ext.hpp>
 #include <ipc/config.hpp>
-
-#include <igl/predicates/predicates.h>
+#include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Geometry>
+#include <igl/predicates/predicates.h>
 
 #ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
 #include <rational/rational.hpp>
@@ -16,11 +15,11 @@ namespace ipc {
 #ifdef IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION
 namespace {
     bool is_edge_intersecting_triangle_rational(
-        const Eigen::Vector3d& e0_float,
-        const Eigen::Vector3d& e1_float,
-        const Eigen::Vector3d& t0_float,
-        const Eigen::Vector3d& t1_float,
-        const Eigen::Vector3d& t2_float)
+        Eigen::ConstRef<Eigen::Vector3d> e0_float,
+        Eigen::ConstRef<Eigen::Vector3d> e1_float,
+        Eigen::ConstRef<Eigen::Vector3d> t0_float,
+        Eigen::ConstRef<Eigen::Vector3d> t1_float,
+        Eigen::ConstRef<Eigen::Vector3d> t2_float)
     {
         using namespace rational;
 
@@ -115,11 +114,11 @@ namespace {
 #endif
 
 bool is_edge_intersecting_triangle(
-    const Eigen::Vector3d& e0,
-    const Eigen::Vector3d& e1,
-    const Eigen::Vector3d& t0,
-    const Eigen::Vector3d& t1,
-    const Eigen::Vector3d& t2)
+    Eigen::ConstRef<Eigen::Vector3d> e0,
+    Eigen::ConstRef<Eigen::Vector3d> e1,
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     igl::predicates::exactinit();
     const auto ori1 = igl::predicates::orient3d(t0, t1, t2, e0);

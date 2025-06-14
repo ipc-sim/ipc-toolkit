@@ -11,4 +11,8 @@ option(CATCH_INSTALL_DOCS "Install documentation alongside library" OFF)
 option(CATCH_INSTALL_EXTRAS "Install extras alongside library" OFF)
 
 include(CPM)
-CPMAddPackage("gh:catchorg/Catch2@3.3.2")
+CPMAddPackage("gh:catchorg/Catch2@3.8.1")
+
+# Folder name for IDE
+set_target_properties(Catch2 PROPERTIES FOLDER "ThirdParty/Catch2")
+set_target_properties(Catch2WithMain PROPERTIES FOLDER "ThirdParty/Catch2")

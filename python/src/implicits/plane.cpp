@@ -9,10 +9,11 @@ void define_plane_implicit(py::module_& m)
 {
     m.def(
         "construct_point_plane_collisions",
-        [](const Eigen::MatrixXd& points, const Eigen::MatrixXd& plane_origins,
-           const Eigen::MatrixXd& plane_normals, const double dhat,
+        [](Eigen::ConstRef<Eigen::MatrixXd> points,
+           Eigen::ConstRef<Eigen::MatrixXd> plane_origins,
+           Eigen::ConstRef<Eigen::MatrixXd> plane_normals, const double dhat,
            const double dmin = 0) {
-            std::vector<PlaneVertexCollision> pv_collisions;
+            std::vector<PlaneVertexNormalCollision> pv_collisions;
             construct_point_plane_collisions(
                 points, plane_origins, plane_normals, dhat, pv_collisions,
                 dmin);
@@ -41,11 +42,12 @@ void define_plane_implicit(py::module_& m)
 
     m.def(
         "construct_point_plane_collisions",
-        [](const Eigen::MatrixXd& points, const Eigen::MatrixXd& plane_origins,
-           const Eigen::MatrixXd& plane_normals, const double dhat,
+        [](Eigen::ConstRef<Eigen::MatrixXd> points,
+           Eigen::ConstRef<Eigen::MatrixXd> plane_origins,
+           Eigen::ConstRef<Eigen::MatrixXd> plane_normals, const double dhat,
            const double dmin,
            const std::function<bool(size_t, size_t)>& can_collide) {
-            std::vector<PlaneVertexCollision> pv_collisions;
+            std::vector<PlaneVertexNormalCollision> pv_collisions;
             construct_point_plane_collisions(
                 points, plane_origins, plane_normals, dhat, pv_collisions, dmin,
                 can_collide);
@@ -75,9 +77,10 @@ void define_plane_implicit(py::module_& m)
 
     m.def(
         "is_step_point_plane_collision_free",
-        [](const Eigen::MatrixXd& points_t0, const Eigen::MatrixXd& points_t1,
-           const Eigen::MatrixXd& plane_origins,
-           const Eigen::MatrixXd& plane_normals) {
+        [](Eigen::ConstRef<Eigen::MatrixXd> points_t0,
+           Eigen::ConstRef<Eigen::MatrixXd> points_t1,
+           Eigen::ConstRef<Eigen::MatrixXd> plane_origins,
+           Eigen::ConstRef<Eigen::MatrixXd> plane_normals) {
             return is_step_point_plane_collision_free(
                 points_t0, points_t1, plane_origins, plane_normals);
         },
@@ -101,9 +104,10 @@ void define_plane_implicit(py::module_& m)
 
     m.def(
         "is_step_point_plane_collision_free",
-        [](const Eigen::MatrixXd& points_t0, const Eigen::MatrixXd& points_t1,
-           const Eigen::MatrixXd& plane_origins,
-           const Eigen::MatrixXd& plane_normals,
+        [](Eigen::ConstRef<Eigen::MatrixXd> points_t0,
+           Eigen::ConstRef<Eigen::MatrixXd> points_t1,
+           Eigen::ConstRef<Eigen::MatrixXd> plane_origins,
+           Eigen::ConstRef<Eigen::MatrixXd> plane_normals,
            const std::function<bool(size_t, size_t)>& can_collide) {
             return is_step_point_plane_collision_free(
                 points_t0, points_t1, plane_origins, plane_normals,
@@ -130,9 +134,10 @@ void define_plane_implicit(py::module_& m)
 
     m.def(
         "compute_point_plane_collision_free_stepsize",
-        [](const Eigen::MatrixXd& points_t0, const Eigen::MatrixXd& points_t1,
-           const Eigen::MatrixXd& plane_origins,
-           const Eigen::MatrixXd& plane_normals) {
+        [](Eigen::ConstRef<Eigen::MatrixXd> points_t0,
+           Eigen::ConstRef<Eigen::MatrixXd> points_t1,
+           Eigen::ConstRef<Eigen::MatrixXd> plane_origins,
+           Eigen::ConstRef<Eigen::MatrixXd> plane_normals) {
             return compute_point_plane_collision_free_stepsize(
                 points_t0, points_t1, plane_origins, plane_normals);
         },
@@ -159,9 +164,10 @@ void define_plane_implicit(py::module_& m)
 
     m.def(
         "compute_point_plane_collision_free_stepsize",
-        [](const Eigen::MatrixXd& points_t0, const Eigen::MatrixXd& points_t1,
-           const Eigen::MatrixXd& plane_origins,
-           const Eigen::MatrixXd& plane_normals,
+        [](Eigen::ConstRef<Eigen::MatrixXd> points_t0,
+           Eigen::ConstRef<Eigen::MatrixXd> points_t1,
+           Eigen::ConstRef<Eigen::MatrixXd> plane_origins,
+           Eigen::ConstRef<Eigen::MatrixXd> plane_normals,
            const std::function<bool(size_t, size_t)>& can_collide) {
             return compute_point_plane_collision_free_stepsize(
                 points_t0, points_t1, plane_origins, plane_normals,

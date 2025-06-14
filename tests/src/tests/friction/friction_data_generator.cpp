@@ -26,7 +26,7 @@ FrictionData friction_data_generator()
     auto& [V0, V1, E, F, collisions, mu, epsv_times_h, dhat, barrier_stiffness] =
         data;
 
-    collisions.set_are_shape_derivatives_enabled(true);
+    collisions.set_enable_shape_derivatives(true);
 
     mu = GENERATE(range(0.0, 1.0, 0.2));
 #ifdef NDEBUG

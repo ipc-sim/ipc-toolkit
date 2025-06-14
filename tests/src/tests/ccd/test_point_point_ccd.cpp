@@ -3,7 +3,7 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include <ipc/config.hpp>
-#include <ipc/ccd/ccd.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 #include <ipc/ccd/additive_ccd.hpp>
 
 using namespace ipc;
@@ -19,16 +19,19 @@ TEST_CASE("Point-point CCD", "[ccd][point-point]")
     const double min_distance = GENERATE(0, 1e-6, 1e-4, 1e-2);
 
     double toi;
-    bool is_colliding =
-        point_point_ccd(p0_t0, p1_t0, p0_t1, p1_t1, toi, min_distance);
+
+    const TightInclusionCCD tight_inclusion_ccd;
+    bool is_colliding = tight_inclusion_ccd.point_point_ccd(
+        p0_t0, p1_t0, p0_t1, p1_t1, toi, min_distance);
 
     // Check the results
     CHECK(is_colliding);
     CHECK(toi == Catch::Approx(0.5).margin(1e-3));
 
-    is_colliding = additive_ccd::point_point_ccd(
-        p0_t0, p1_t0, p0_t1, p1_t1, toi, min_distance, /*tmax=*/1,
-        /*conservative_rescaling=*/0.999);
+    const AdditiveCCD additive_ccd(
+        AdditiveCCD::UNLIMITTED_ITERATIONS, /*conservative_rescaling=*/0.999);
+    is_colliding = additive_ccd.point_point_ccd(
+        p0_t0, p1_t0, p0_t1, p1_t1, toi, min_distance);
 
     // Check the results
     CHECK(is_colliding);

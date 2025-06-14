@@ -1,8 +1,9 @@
 #include "nonlinear_ccd.hpp"
 
-#include <ipc/distance/point_point.hpp>
-#include <ipc/distance/point_edge.hpp>
+#include <ipc/ccd/check_initial_distance.hpp>
 #include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
 #include <tight_inclusion/ccd.hpp>
@@ -93,7 +94,7 @@ bool conservative_piecewise_linear_ccd(
         // If distance has decreased by a factor and the toi is not near zero,
         // then we can call this a collision.
         if (distance_ti0 < (1 - conservative_rescaling) * distance_t0
-            && ti0 >= CCD_SMALL_TOI) {
+            && ti0 >= TightInclusionCCD::SMALL_TOI) {
             toi = ti0;
             logger().trace(
                 "Distance small enough distance_ti0={:g}; toi={:g}",
@@ -285,9 +286,10 @@ bool point_triangle_nonlinear_ccd(
         },
         [&](const double ti0, const double ti1) {
             return p.max_distance_from_linear(ti0, ti1)
-                + std::max({ t0.max_distance_from_linear(ti0, ti1),
-                             t1.max_distance_from_linear(ti0, ti1),
-                             t2.max_distance_from_linear(ti0, ti1) });
+                + std::max(
+                       { t0.max_distance_from_linear(ti0, ti1),
+                         t1.max_distance_from_linear(ti0, ti1),
+                         t2.max_distance_from_linear(ti0, ti1) });
         },
         [&](const double ti0, const double ti1, const double _min_distance,
             const bool no_zero_toi, double& _toi) {

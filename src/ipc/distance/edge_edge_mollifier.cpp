@@ -5,19 +5,19 @@
 namespace ipc {
 
 double edge_edge_cross_squarednorm(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     return (ea1 - ea0).cross(eb1 - eb0).squaredNorm();
 }
 
 Vector12d edge_edge_cross_squarednorm_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     Vector12d grad;
     autogen::edge_edge_cross_squarednorm_gradient(
@@ -27,10 +27,10 @@ Vector12d edge_edge_cross_squarednorm_gradient(
 }
 
 Matrix12d edge_edge_cross_squarednorm_hessian(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     Matrix12d hess;
     autogen::edge_edge_cross_squarednorm_hessian(
@@ -81,10 +81,10 @@ double edge_edge_mollifier_gradient_derivative_wrt_eps_x(
 }
 
 double edge_edge_mollifier(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
     const double eps_x)
 {
     const double ee_cross_norm_sqr =
@@ -97,10 +97,10 @@ double edge_edge_mollifier(
 }
 
 Vector12d edge_edge_mollifier_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
     const double eps_x)
 {
     const double ee_cross_norm_sqr =
@@ -114,10 +114,10 @@ Vector12d edge_edge_mollifier_gradient(
 }
 
 Matrix12d edge_edge_mollifier_hessian(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1,
     const double eps_x)
 {
     const double ee_cross_norm_sqr =
@@ -136,14 +136,14 @@ Matrix12d edge_edge_mollifier_hessian(
 }
 
 Vector12d edge_edge_mollifier_gradient_wrt_x(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_rest,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     const double eps_x =
         edge_edge_mollifier_threshold(ea0_rest, ea1_rest, eb0_rest, eb1_rest);
@@ -160,14 +160,14 @@ Vector12d edge_edge_mollifier_gradient_wrt_x(
 }
 
 Matrix12d edge_edge_mollifier_gradient_jacobian_wrt_x(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& ea0,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1)
+    Eigen::ConstRef<Eigen::Vector3d> ea0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_rest,
+    Eigen::ConstRef<Eigen::Vector3d> ea0,
+    Eigen::ConstRef<Eigen::Vector3d> ea1,
+    Eigen::ConstRef<Eigen::Vector3d> eb0,
+    Eigen::ConstRef<Eigen::Vector3d> eb1)
 {
     const double eps_x =
         edge_edge_mollifier_threshold(ea0_rest, ea1_rest, eb0_rest, eb1_rest);
@@ -189,20 +189,20 @@ Matrix12d edge_edge_mollifier_gradient_jacobian_wrt_x(
 }
 
 double edge_edge_mollifier_threshold(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1_rest)
+    Eigen::ConstRef<Eigen::Vector3d> ea0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_rest)
 {
     return 1e-3 * (ea0_rest - ea1_rest).squaredNorm()
         * (eb0_rest - eb1_rest).squaredNorm();
 }
 
 Vector12d edge_edge_mollifier_threshold_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& ea0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& ea1_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb0_rest,
-    const Eigen::Ref<const Eigen::Vector3d>& eb1_rest)
+    Eigen::ConstRef<Eigen::Vector3d> ea0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> ea1_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb0_rest,
+    Eigen::ConstRef<Eigen::Vector3d> eb1_rest)
 {
     Vector12d grad;
     autogen::edge_edge_mollifier_threshold_gradient(

@@ -1,5 +1,8 @@
 #include "brute_force_comparison.hpp"
 
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
+#include <ipc/broad_phase/brute_force.hpp>
+
 #include <catch2/catch_test_macros.hpp>
 
 #include <tbb/parallel_sort.h>
@@ -23,7 +26,7 @@ void brute_force_comparison(
     if (cached_bf_candidates.empty()
         || !load_candidates(cached_bf_candidates, bf_candidates)) {
         bf_candidates.build(
-            mesh, V0, V1, inflation_radius, BroadPhaseMethod::BRUTE_FORCE);
+            mesh, V0, V1, inflation_radius, std::make_shared<BruteForce>());
         if (!cached_bf_candidates.empty()) {
             save_candidates(cached_bf_candidates, bf_candidates);
         }
@@ -125,6 +128,9 @@ void brute_force_comparison(
 
     tbb::parallel_sort(candidates.begin(), candidates.end());
 
+    ipc::TightInclusionCCD ccd;
+    ccd.conservative_rescaling = 1.0;
+
     for (const Candidate& bf_candidate : bf_candidates) {
         CAPTURE(bf_candidate);
         const bool found = std::binary_search(
@@ -135,9 +141,7 @@ void brute_force_comparison(
             const bool hit = bf_candidate.ccd(
                 bf_candidate.dof(V0, mesh.edges(), mesh.faces()),
                 bf_candidate.dof(V1, mesh.edges(), mesh.faces()), //
-                toi, /*min_distance=*/0, /*tmax=*/1.0,
-                ipc::DEFAULT_CCD_TOLERANCE, ipc::DEFAULT_CCD_MAX_ITERATIONS,
-                /*conservative_rescaling=*/1.0);
+                toi, /*min_distance=*/0, /*tmax=*/1.0, ccd);
             CHECK(!hit); // Check for FN
         }
     }

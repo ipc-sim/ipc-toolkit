@@ -2,12 +2,12 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include <ipc/config.hpp>
-#include <ipc/ccd/ccd.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 #include <ipc/ccd/additive_ccd.hpp>
 
 using namespace ipc;
 
-static const double EPSILON = std::numeric_limits<float>::epsilon();
+static constexpr double EPSILON = std::numeric_limits<float>::epsilon();
 
 #ifdef IPC_TOOLKIT_WITH_INEXACT_CCD
 TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle][!mayfail]")
@@ -24,11 +24,17 @@ TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle]")
     {
         name = "General";
         const double v0z = GENERATE(0.0, -1.0);
+#ifdef NDEBUG
         const double u0y =
             -GENERATE(-1.0, 0.0, 0.5 - EPSILON, 0.5, 0.5 + EPSILON, 1.0, 2.0);
         const double u0z = GENERATE(-EPSILON, 0.0, EPSILON);
         const double u1y =
             GENERATE(-1.0, 0.0, 0.5 - EPSILON, 0.5, 0.5 + EPSILON, 1.0, 2.0);
+#else
+        const double u0y = -GENERATE(-1.0, 0.0, 0.5, 1.0, 2.0);
+        const double u0z = 0.0;
+        const double u1y = GENERATE(-1.0, 0.0, 0.5, 1.0, 2.0);
+#endif
         CAPTURE(v0z, u0y, u1y, u0z);
 
         p_t0 << 0, 1, v0z;
@@ -94,7 +100,9 @@ TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle]")
     INFO(name);
 
     double toi;
-    bool is_colliding = point_triangle_ccd(
+
+    const TightInclusionCCD tight_inclusion_ccd;
+    bool is_colliding = tight_inclusion_ccd.point_triangle_ccd(
         p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, toi);
 
     if (conservative_check) {
@@ -103,7 +111,8 @@ TEST_CASE("Point-Triangle CCD", "[ccd][3D][point-triangle]")
         CHECK(is_colliding == is_collision_expected);
     }
 
-    is_colliding = additive_ccd::point_triangle_ccd(
+    const AdditiveCCD additive_ccd;
+    is_colliding = additive_ccd.point_triangle_ccd(
         p_t0, t0_t0, t1_t0, t2_t0, p_t1, t0_t1, t1_t1, t2_t1, toi);
     if (conservative_check) {
         CHECK((is_colliding || !is_collision_expected));

@@ -19,11 +19,5 @@ if (NOT DEFINED Python_FIND_FRAMEWORK)
     set(Python_FIND_FRAMEWORK "LAST")
 endif ()
 
-# Pybind11 still uses the deprecated FindPythonInterp. So let's call CMake's
-# new FindPython module and set PYTHON_EXECUTABLE for Pybind11 to pick up.
-# This works well with conda environments.
-find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
-set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
-
 include(CPM)
-CPMAddPackage("gh:pybind/pybind11@2.11.1")
+CPMAddPackage("gh:pybind/pybind11@2.13.1")

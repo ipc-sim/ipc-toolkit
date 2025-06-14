@@ -74,8 +74,8 @@ auto SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
 template <int max_vert, typename PrimitiveA, typename PrimitiveB>
 SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
     SmoothCollisionTemplate(
-        long primitive0_,
-        long primitive1_,
+        index_t primitive0_,
+        index_t primitive1_,
         SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::DTYPE dtype,
         const CollisionMesh& mesh,
         const ParameterType& param,
@@ -112,10 +112,7 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
 
 template <int max_vert, typename PrimitiveA, typename PrimitiveB>
 double SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::operator()(
-    const Vector<
-        double,
-        -1,
-        SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::max_size>&
+    Eigen::ConstRef<Vector<double, -1, 3 * max_vert>>
         positions,
     const ParameterType& params) const
 {
@@ -147,10 +144,7 @@ double SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::operator()(
 
 template <int max_vert, typename PrimitiveA, typename PrimitiveB>
 auto SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::gradient(
-    const Vector<
-        double,
-        -1,
-        SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::max_size>&
+    Eigen::ConstRef<Vector<double, -1, 3 * max_vert>>
         positions,
     const ParameterType& params) const -> Vector<double, -1, max_size>
 {
@@ -261,10 +255,7 @@ auto SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::gradient(
 template <int max_vert, typename PrimitiveA, typename PrimitiveB>
 auto
 SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::hessian(
-    const Vector<
-        double,
-        -1,
-        SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::max_size>&
+    Eigen::ConstRef<Vector<double, -1, 3 * max_vert>>
         positions,
     const ParameterType& params) const -> Eigen::MatrixXd
 {
@@ -464,10 +455,7 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::hessian(
 template <int max_vert, typename PrimitiveA, typename PrimitiveB>
 double
 SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::compute_distance(
-    const Vector<
-        double,
-        -1,
-        SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::max_size>&
+    Eigen::ConstRef<Vector<double, -1, 3 * max_vert>>
         positions) const
 {
     Vector<double, n_core_points * dim> x;
@@ -485,11 +473,7 @@ SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::compute_distance(
 template <int max_vert, typename PrimitiveA, typename PrimitiveB>
 auto SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
     compute_distance_gradient(
-        const Vector<
-            double,
-            -1,
-            SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
-                max_size>& positions) const -> Vector<double, -1, max_size>
+            Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions) const -> Vector<double, -1, max_size>
 {
     Vector<double, n_core_points * dim> x;
     x << positions.head(PrimitiveA::n_core_points * dim),
@@ -507,11 +491,7 @@ auto SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
 template <int max_vert, typename PrimitiveA, typename PrimitiveB>
 auto SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
     compute_distance_hessian(
-        const Vector<
-            double,
-            -1,
-            SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
-                max_size>& positions) const
+        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions) const
     -> MatrixMax<double, max_size, max_size>
 {
     Vector<double, n_core_points * dim> x;
@@ -538,9 +518,9 @@ auto SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::
 template <int max_vert, typename PrimitiveA, typename PrimitiveB>
 auto SmoothCollisionTemplate<max_vert, PrimitiveA, PrimitiveB>::core_vertex_ids(
     const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const
-    -> std::array<long, n_core_dofs>
+    -> std::array<index_t, n_core_dofs>
 {
-    std::array<long, n_core_dofs> vids;
+    std::array<index_t, n_core_dofs> vids;
     auto ids = get_core_indices();
     for (int i = 0; i < n_core_dofs; i++)
         vids[i] = Super::vertices[ids[i]];

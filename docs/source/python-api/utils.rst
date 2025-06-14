@@ -18,3 +18,4 @@ Positive Semi-Definite Projection
 
 .. autofunction:: ipctk.project_to_psd
 .. autofunction:: ipctk.project_to_pd
+.. autoclass:: ipctk.PSDProjectionMethod

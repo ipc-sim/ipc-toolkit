@@ -7,10 +7,10 @@ Generic Potential
 .. doxygenclass:: ipc::Potential
     :allow-dot-graphs:
 
-Distance-based Potential
-------------------------
+Normal Potentials
+-----------------
 
-.. doxygenclass:: ipc::DistanceBasedPotential
+.. doxygenclass:: ipc::NormalPotential
     :allow-dot-graphs:
 
 Barrier Potential
@@ -19,8 +19,26 @@ Barrier Potential
 .. doxygenclass:: ipc::BarrierPotential
     :allow-dot-graphs:
 
+Normal Adhesion Potential
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. doxygenclass:: ipc::NormalAdhesionPotential
+    :allow-dot-graphs:
+
+Tangential Potentials
+---------------------
+
+.. doxygenclass:: ipc::TangentialPotential
+    :allow-dot-graphs:
+
 Friction Potential
-------------------
+^^^^^^^^^^^^^^^^^^
 
 .. doxygenclass:: ipc::FrictionPotential
+    :allow-dot-graphs:
+
+Tangential Adhesion Potential
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. doxygenclass:: ipc::TangentialAdhesionPotential
     :allow-dot-graphs:

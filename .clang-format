@@ -1,14 +1,43 @@
-# https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+---
+Language: Cpp
 BasedOnStyle: WebKit
-ColumnLimit: 80
-AlignTrailingComments: true
-FixNamespaceComments: true
-ReflowComments: true
-BinPackParameters: false
-AllowAllParametersOfDeclarationOnNextLine: true
 AlignAfterOpenBracket: AlwaysBreak
+AlignTrailingComments:
+  Kind:            Always
+  OverEmptyLines:  0
+BinPackParameters: false
+BreakArrays: false
 BreakBeforeBinaryOperators: NonAssignment
-SortIncludes: false
-CommentPragmas:  '^@.+'
 BreakStringLiterals: false
+ColumnLimit: 80
+CommentPragmas:  '^@.+'
+FixNamespaceComments: true
+# Regroup includes with a priority system
+IncludeBlocks: Regroup
+IncludeCategories:
+  # by default, the main header of a cpp will get priority 0
+  # regex here are sorted by search pattern, not by sort priority
+  - Regex:           "^<ipc\/[^/]*>" # this libraries
+    Priority:        2    # internal library group
+    SortPriority:    2
+    CaseSensitive:   true
+  - Regex:           "^<ipc\/.*\/.*>" # this libraries
+    Priority:        2    # internal library group
+    SortPriority:    3
+    CaseSensitive:   true
+  - Regex:           "^<(.*\\.h[px]*)|(Eigen\/.*)>"
+    Priority:        4    # libraries (because they end in .h)
+    SortPriority:    4
+    CaseSensitive:   false
+  - Regex:           "^<.*"
+    Priority:        5    # system (without .h, because that is captured by the other group)
+    SortPriority:    5
+    CaseSensitive:   false
+  - Regex:           ".*" # catch-all for internal files
+    Priority:        1    # internal file group
+    SortPriority:    1
+    CaseSensitive:   true
 PackConstructorInitializers: CurrentLine
+RemoveEmptyLinesInUnwrappedLines: true
+SortIncludes: CaseInsensitive
+...

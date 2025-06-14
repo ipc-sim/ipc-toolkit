@@ -54,7 +54,7 @@ std::string tagsopt = "[.][smooth_potential]";
 //     }
 
 //     {
-//         Collisions collisions;
+//         NormalCollisions collisions;
 
 //         collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
 //         CHECK(collisions.size() > 0);
@@ -62,7 +62,7 @@ std::string tagsopt = "[.][smooth_potential]";
 //     }
 
 //     {
-//         Collisions collisions;
+//         NormalCollisions collisions;
 //         collisions.set_use_convergent_formulation(true);
 
 //         collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
@@ -120,7 +120,7 @@ TEST_CASE(
     "Smooth barrier potential full gradient and hessian 3D",
     tagsopt)
 {
-    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
+    const auto method = make_default_broad_phase();
     const bool adaptive_dhat = GENERATE(true, false);
     double dhat = -1;
     std::string mesh_name = "";
@@ -134,13 +134,13 @@ TEST_CASE(
     SECTION("two cubes far")
     {
         dhat = 1;
-        mesh_name = "two-cubes-far.obj";
+        mesh_name = "two-cubes-far.ply";
         all_vertices_on_surface = false;
     }
     SECTION("two cubes close")
     {
         dhat = 1e-1;
-        mesh_name = "two-cubes-close.obj";
+        mesh_name = "two-cubes-close.ply";
         all_vertices_on_surface = false;
     }
     // WARNING: The bunny takes too long in debug.
@@ -226,14 +226,14 @@ TEST_CASE(
     "Smooth barrier potential real sim 2D C^2",
     "[smooth_potential]")
 {
-    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
+    const auto method = make_default_broad_phase();
     const bool adaptive_dhat = GENERATE(true, false);
 
     double dhat = -1;
     std::string mesh_name = "";
     SECTION("debug1")
     {
-        mesh_name = (tests::DATA_DIR / "nonlinear_solve_iter020.obj").string();
+        mesh_name = (tests::GCP_DATA_DIR / "nonlinear_solve_iter020.obj").string();
         dhat = 3e-2;
     }
 
@@ -312,14 +312,14 @@ TEST_CASE(
     "Smooth barrier potential real sim 2D C^1",
     "[smooth_potential]")
 {
-    const BroadPhaseMethod method = BroadPhaseMethod::HASH_GRID;
+    const auto method = make_default_broad_phase();
     const bool adaptive_dhat = GENERATE(true, false);
 
     double dhat = -1;
     std::string mesh_name = "";
     SECTION("debug2")
     {
-        mesh_name = (tests::DATA_DIR / "simple_2d.obj").string();
+        mesh_name = (tests::GCP_DATA_DIR / "simple_2d.obj").string();
         dhat = 0.1;
     }
 
@@ -406,7 +406,7 @@ TEST_CASE(
 //     {
 //         igl::Timer timer;
 //         timer.start();
-//         Collisions collisions;
+//         NormalCollisions collisions;
 
 //         collisions.build(mesh, vertices, dhat, /*dmin=*/0, method);
 //         CHECK(collisions.size() > 0);

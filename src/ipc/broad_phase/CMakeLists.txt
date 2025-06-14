@@ -7,6 +7,7 @@ set(SOURCES
   brute_force.hpp
   bvh.cpp
   bvh.hpp
+  default_broad_phase.hpp
   hash_grid.cpp
   hash_grid.hpp
   spatial_hash.cpp
@@ -19,5 +20,4 @@ set(SOURCES
   voxel_size_heuristic.hpp
 )
 
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})
 target_sources(ipc_toolkit PRIVATE ${SOURCES})

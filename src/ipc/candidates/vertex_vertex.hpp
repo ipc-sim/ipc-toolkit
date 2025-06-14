@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/candidates/continuous_collision_candidate.hpp>
+#include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <Eigen/Core>
@@ -9,9 +9,9 @@
 
 namespace ipc {
 
-class VertexVertexCandidate : public ContinuousCollisionCandidate {
+class VertexVertexCandidate : virtual public CollisionStencil<4> {
 public:
-    VertexVertexCandidate(long vertex0_id, long vertex1_id);
+    VertexVertexCandidate(index_t vertex0_id, index_t vertex1_id);
 
     // ------------------------------------------------------------------------
     // CollisionStencil
@@ -22,34 +22,40 @@ public:
     /// @param edges edge matrix of mesh
     /// @param faces face matrix of mesh
     /// @return List of vertex indices
-    std::array<long, 4> vertex_ids(
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override
+    std::array<index_t, 4> vertex_ids(
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const override
     {
         return { { vertex0_id, vertex1_id, -1, -1 } };
     }
 
-    double compute_distance(const VectorMax12d& positions) const override;
+    using CollisionStencil<4>::compute_coefficients;
+    using CollisionStencil<4>::compute_distance;
+    using CollisionStencil<4>::compute_distance_gradient;
+    using CollisionStencil<4>::compute_distance_hessian;
 
-    VectorMax12d
-    compute_distance_gradient(const VectorMax12d& positions) const override;
+    double
+    compute_distance(Eigen::ConstRef<VectorMax12d> positions) const override;
 
-    MatrixMax12d
-    compute_distance_hessian(const VectorMax12d& positions) const override;
+    VectorMax12d compute_distance_gradient(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
+
+    MatrixMax12d compute_distance_hessian(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
+
+    VectorMax4d compute_coefficients(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 
     // ------------------------------------------------------------------------
-    // ContinuousCollisionCandidate
 
     bool
-    ccd(const VectorMax12d& vertices_t0,
-        const VectorMax12d& vertices_t1,
+    ccd(Eigen::ConstRef<VectorMax12d> vertices_t0,
+        Eigen::ConstRef<VectorMax12d> vertices_t1,
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
-        const double tolerance = DEFAULT_CCD_TOLERANCE,
-        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
-        const double conservative_rescaling =
-            DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
+        const NarrowPhaseCCD& narrow_phase_ccd =
+            DEFAULT_NARROW_PHASE_CCD) const override;
 
     // ------------------------------------------------------------------------
 
@@ -61,15 +67,15 @@ public:
     template <typename H>
     friend H AbslHashValue(H h, const VertexVertexCandidate& vv)
     {
-        long min_vi = std::min(vv.vertex0_id, vv.vertex1_id);
-        long max_vi = std::max(vv.vertex0_id, vv.vertex1_id);
+        index_t min_vi = std::min(vv.vertex0_id, vv.vertex1_id);
+        index_t max_vi = std::max(vv.vertex0_id, vv.vertex1_id);
         return H::combine(std::move(h), min_vi, max_vi);
     }
 
     /// @brief ID of the first vertex
-    long vertex0_id;
+    index_t vertex0_id;
     /// @brief ID of the second vertex
-    long vertex1_id;
+    index_t vertex1_id;
 };
 
 } // namespace ipc

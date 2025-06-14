@@ -10,8 +10,8 @@ TEST_CASE("Is step collision free", "[is_step_collision_free]")
 {
     Eigen::MatrixXd V0, V1;
     Eigen::MatrixXi E, F;
-    REQUIRE(tests::load_mesh("two-cubes-close.obj", V0, E, F));
-    REQUIRE(tests::load_mesh("two-cubes-intersecting.obj", V1, E, F));
+    REQUIRE(tests::load_mesh("two-cubes-close.ply", V0, E, F));
+    REQUIRE(tests::load_mesh("two-cubes-intersecting.ply", V1, E, F));
 
     CollisionMesh mesh(V0, E, F);
 

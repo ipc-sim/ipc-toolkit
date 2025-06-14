@@ -12,6 +12,7 @@ public:
     double operator()(const double d, const double dhat) const override { PYBIND11_OVERRIDE_PURE_NAME(double, Barrier, "__call__", operator(), d, dhat); }
     double first_derivative(const double d, const double dhat) const override { PYBIND11_OVERRIDE_PURE(double, Barrier, first_derivative, d, dhat); }
     double second_derivative(const double d, const double dhat) const override { PYBIND11_OVERRIDE_PURE(double, Barrier, second_derivative, d, dhat); }
+    double units(const double dhat) const override { PYBIND11_OVERRIDE_PURE(double, Barrier, units, dhat); }
     // clang-format on
 };
 
@@ -19,16 +20,104 @@ void define_barrier(py::module_& m)
 {
     py::class_<Barrier, PyBarrier, std::shared_ptr<Barrier>>(m, "Barrier")
         .def(py::init<>())
-        .def("__call__", &Barrier::operator(), py::arg("d"), py::arg("dhat"))
+        .def(
+            "__call__", &Barrier::operator(), py::arg("d"), py::arg("dhat"),
+            R"ipc_Qu8mg5v7(
+            Evaluate the barrier function.
+
+            Parameters:
+                d: The distance.
+                dhat: Activation distance of the barrier.
+
+            Returns:
+                The value of the barrier function at d.
+            )ipc_Qu8mg5v7")
         .def(
             "first_derivative", &Barrier::first_derivative, py::arg("d"),
-            py::arg("dhat"))
+            py::arg("dhat"),
+            R"ipc_Qu8mg5v7(
+            Evaluate the first derivative of the barrier function wrt d.
+
+            Parameters:
+                d: The distance.
+                dhat: Activation distance of the barrier.
+
+            Returns:
+                The value of the first derivative of the barrier function at d.
+            )ipc_Qu8mg5v7")
         .def(
             "second_derivative", &Barrier::second_derivative, py::arg("d"),
-            py::arg("dhat"));
+            py::arg("dhat"),
+            R"ipc_Qu8mg5v7(
+            Evaluate the second derivative of the barrier function wrt d.
+
+            Parameters:
+                d: The distance.
+                dhat: Activation distance of the barrier.
+
+            Returns:
+                The value of the second derivative of the barrier function at d.
+            )ipc_Qu8mg5v7")
+        .def(
+            "units", &Barrier::units, py::arg("dhat"),
+            R"ipc_Qu8mg5v7(
+            Get the units of the barrier function.
+
+            Parameters:
+                dhat: Activation distance of the barrier.
+
+            Returns:
+                The units of the barrier function.
+            )ipc_Qu8mg5v7");
 
     py::class_<ClampedLogBarrier, Barrier, std::shared_ptr<ClampedLogBarrier>>(
-        m, "ClampedLogBarrier")
+        m, "ClampedLogBarrier",
+        R"ipc_Qu8mg5v7(
+        Smoothly clamped log barrier functions from [Li et al. 2020].
+
+        .. math::
+
+            b(d) = -(d-\hat{d})^2\ln\left(\frac{d}{\hat{d}}\right)
+
+        )ipc_Qu8mg5v7")
+        .def(py::init());
+
+    py::class_<
+        NormalizedClampedLogBarrier, ClampedLogBarrier,
+        std::shared_ptr<NormalizedClampedLogBarrier>>(
+        m, "NormalizedClampedLogBarrier",
+        R"ipc_Qu8mg5v7(
+        Normalized barrier function from [Li et al. 2023].
+
+        .. math::
+
+            b(d) = -\left(\frac{d}{\hat{d}}-1\right)^2\ln\left(\frac{d}{\hat{d}}\right)
+
+        )ipc_Qu8mg5v7")
+        .def(py::init());
+
+    py::class_<
+        ClampedLogSqBarrier, Barrier, std::shared_ptr<ClampedLogSqBarrier>>(
+        m, "ClampedLogSqBarrier",
+        R"ipc_Qu8mg5v7(
+        Clamped log barrier with a quadratic log term from [Huang et al. 2024].
+
+        .. math::
+
+            b(d) = (d-\hat{d})^2\ln^2\left(\frac{d}{\hat{d}}\right)
+
+        )ipc_Qu8mg5v7")
+        .def(py::init());
+
+    py::class_<CubicBarrier, Barrier, std::shared_ptr<CubicBarrier>>(
+        m, "CubicBarrier", R"ipc_Qu8mg5v7(
+        Cubic barrier function from [Ando 2024].
+
+        .. math::
+
+            b(d) = -\frac{2}{3\hat{d}} (d - \hat{d})^3
+
+        )ipc_Qu8mg5v7")
         .def(py::init());
 
     m.def(

@@ -6,7 +6,8 @@ autoclasstoc
 breathe
 nbsphinx
 pandoc
-myst_parser==1.0.0
+myst_parser
 sphinxcontrib-bibtex
 sphinxemoji
 sphinx-last-updated-by-git
+sphinx-autobuild

@@ -8,12 +8,12 @@
 
 namespace ipc {
 
-template <typename DerivedLocalGrad, typename IDContainer, typename DerivedGrad>
+template <typename IDContainer>
 void local_gradient_to_global_gradient(
-    const Eigen::MatrixBase<DerivedLocalGrad>& local_grad,
+    Eigen::ConstRef<Eigen::VectorXd> local_grad,
     const IDContainer& ids,
-    int dim,
-    Eigen::PlainObjectBase<DerivedGrad>& grad)
+    const int dim,
+    Eigen::Ref<Eigen::VectorXd> grad)
 {
     assert(local_grad.size() % dim == 0);
     const int n_verts = local_grad.size() / dim;
@@ -23,15 +23,12 @@ void local_gradient_to_global_gradient(
     }
 }
 
-template <
-    typename DerivedLocalGrad,
-    typename IDContainer,
-    typename Scalar = typename DerivedLocalGrad::Scalar>
+template <typename IDContainer>
 void local_gradient_to_global_gradient(
-    const Eigen::MatrixBase<DerivedLocalGrad>& local_grad,
+    Eigen::ConstRef<Eigen::VectorXd> local_grad,
     const IDContainer& ids,
-    int dim,
-    Eigen::SparseVector<Scalar>& grad)
+    const int dim,
+    Eigen::SparseVector<double>& grad)
 {
     assert(local_grad.size() % dim == 0);
     const int n_verts = local_grad.size() / dim;
@@ -43,11 +40,11 @@ void local_gradient_to_global_gradient(
     }
 }
 
-template <typename Derived, typename IDContainer>
+template <typename IDContainer>
 void local_hessian_to_global_triplets(
-    const Eigen::MatrixBase<Derived>& local_hessian,
+    Eigen::ConstRef<Eigen::MatrixXd> local_hessian,
     const IDContainer& ids,
-    int dim,
+    const int dim,
     std::vector<Eigen::Triplet<double>>& triplets)
 {
     assert(local_hessian.rows() == local_hessian.cols());

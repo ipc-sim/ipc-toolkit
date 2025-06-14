@@ -9,5 +9,19 @@ target_include_directories(ipctk PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 target_link_libraries(ipctk PRIVATE ipc::toolkit)
 
+if (FILIB_BUILD_SHARED_LIB AND WIN32)
+  # Copy DLLs to the output directory
+  add_custom_command(
+    TARGET ipctk POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_RUNTIME_DLLS:ipctk> $<TARGET_FILE_DIR:ipctk>
+    COMMAND_EXPAND_LISTS
+  )
+endif()
+
 # Extra warnings
 # target_link_libraries(ipctk PRIVATE IPCToolkit::warnings)
+
+# Folder name for IDE
+set_target_properties(ipctk PROPERTIES FOLDER "SRC")
+get_target_property(IPCTK_SOURCES ipctk SOURCES)
+source_group(TREE "${PROJECT_SOURCE_DIR}/python" FILES ${IPCTK_SOURCES})

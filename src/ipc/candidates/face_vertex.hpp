@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ipc/candidates/continuous_collision_candidate.hpp>
+#include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/distance/distance_type.hpp>
 
 #include <Eigen/Core>
@@ -9,44 +9,50 @@
 
 namespace ipc {
 
-class FaceVertexCandidate : public ContinuousCollisionCandidate {
+class FaceVertexCandidate : virtual public CollisionStencil<4> {
 public:
-    FaceVertexCandidate(long face_id, long vertex_id);
+    FaceVertexCandidate(index_t face_id, index_t vertex_id);
 
     // ------------------------------------------------------------------------
     // CollisionStencil
 
     int num_vertices() const override { return 4; };
 
-    std::array<long, 4> vertex_ids(
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const override
+    std::array<index_t, 4> vertex_ids(
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const override
     {
         return { { vertex_id, faces(face_id, 0), faces(face_id, 1),
                    faces(face_id, 2) } };
     }
 
-    double compute_distance(const VectorMax12d& positions) const override;
+    using CollisionStencil<4>::compute_coefficients;
+    using CollisionStencil<4>::compute_distance;
+    using CollisionStencil<4>::compute_distance_gradient;
+    using CollisionStencil<4>::compute_distance_hessian;
 
-    VectorMax12d
-    compute_distance_gradient(const VectorMax12d& positions) const override;
+    double
+    compute_distance(Eigen::ConstRef<VectorMax12d> positions) const override;
 
-    MatrixMax12d
-    compute_distance_hessian(const VectorMax12d& positions) const override;
+    VectorMax12d compute_distance_gradient(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
+
+    MatrixMax12d compute_distance_hessian(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
+
+    VectorMax4d compute_coefficients(
+        Eigen::ConstRef<VectorMax12d> positions) const override;
 
     // ------------------------------------------------------------------------
-    // ContinuousCollisionCandidate
 
     bool
-    ccd(const VectorMax12d& vertices_t0,
-        const VectorMax12d& vertices_t1,
+    ccd(Eigen::ConstRef<VectorMax12d> vertices_t0,
+        Eigen::ConstRef<VectorMax12d> vertices_t1,
         double& toi,
         const double min_distance = 0.0,
         const double tmax = 1.0,
-        const double tolerance = DEFAULT_CCD_TOLERANCE,
-        const long max_iterations = DEFAULT_CCD_MAX_ITERATIONS,
-        const double conservative_rescaling =
-            DEFAULT_CCD_CONSERVATIVE_RESCALING) const override;
+        const NarrowPhaseCCD& narrow_phase_ccd =
+            DEFAULT_NARROW_PHASE_CCD) const override;
 
     // ------------------------------------------------------------------------
 
@@ -69,9 +75,9 @@ public:
     // ------------------------------------------------------------------------
 
     /// @brief ID of the face
-    long face_id;
+    index_t face_id;
     /// @brief ID of the vertex
-    long vertex_id;
+    index_t vertex_id;
 };
 
 } // namespace ipc

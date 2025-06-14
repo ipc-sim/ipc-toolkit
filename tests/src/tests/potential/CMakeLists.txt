@@ -1,5 +1,6 @@
 set(SOURCES
   # Tests
+  test_adhesion_potentials.cpp
   test_barrier_potential.cpp
   test_smooth_potential.cpp
   test_friction_potential.cpp
@@ -10,7 +11,6 @@ set(SOURCES
   # Utilities
 )
 
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" PREFIX "Source Files" FILES ${SOURCES})
 target_sources(ipc_toolkit_tests PRIVATE ${SOURCES})
 
 ################################################################################

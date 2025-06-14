@@ -19,9 +19,9 @@ TEST_CASE("Benchmark broad phase", "[!benchmark][broad_phase]")
 
 #ifdef NDEBUG
     std::string filename =
-        GENERATE(std::string("cube.obj"), std::string("bunny.obj"));
+        GENERATE(std::string("cube.ply"), std::string("bunny.ply"));
 #else
-    std::string filename = "cube.obj";
+    std::string filename = "cube.ply";
 #endif
     REQUIRE(tests::load_mesh(filename, V0, E, F));
 
@@ -75,17 +75,13 @@ TEST_CASE("Benchmark broad phase", "[!benchmark][broad_phase]")
     V0 = mesh.vertices(V0);
     V1 = mesh.vertices(V1);
 
-    const static std::vector<std::string> BP_names = {
-        "BF", "HG", "SH", "BVH", "STQ", "GPU_STQ",
+    const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
+
+    BENCHMARK(fmt::format("BP {} ({})", testcase_name, broad_phase->name()))
+    {
+        Candidates candidates;
+        candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
     };
-    for (int i = 0; i < NUM_BROAD_PHASE_METHODS; i++) {
-        BroadPhaseMethod method = static_cast<BroadPhaseMethod>(i);
-        BENCHMARK(fmt::format("BP {} ({})", testcase_name, BP_names[i]))
-        {
-            Candidates candidates;
-            candidates.build(mesh, V0, V1, inflation_radius, method);
-        };
-    }
 }
 
 TEST_CASE(
@@ -98,13 +94,13 @@ TEST_CASE(
     std::string mesh_name_t0, mesh_name_t1;
     SECTION("Data 0")
     {
-        mesh_name_t0 = "private/slow-broadphase-ccd/0.obj";
-        mesh_name_t1 = "private/slow-broadphase-ccd/1.obj";
+        mesh_name_t0 = "private/slow-broadphase-ccd/0.ply";
+        mesh_name_t1 = "private/slow-broadphase-ccd/1.ply";
     }
     SECTION("Data 1")
     {
-        mesh_name_t0 = "private/slow-broadphase-ccd/s0.obj";
-        mesh_name_t1 = "private/slow-broadphase-ccd/s1.obj";
+        mesh_name_t0 = "private/slow-broadphase-ccd/s0.ply";
+        mesh_name_t1 = "private/slow-broadphase-ccd/s1.ply";
     }
     SECTION("Cloth-Ball")
     {
@@ -119,7 +115,7 @@ TEST_CASE(
 
     if (!tests::load_mesh(mesh_name_t0, V0, E, F)
         || !tests::load_mesh(mesh_name_t1, V1, E, F)) {
-        return; // Data is private
+        SKIP("Slow broadphase CCD meshes are private");
     }
 
     double inflation_radius = 1e-2; // GENERATE(take(5, random(0.0, 0.1)));
@@ -129,15 +125,14 @@ TEST_CASE(
     V0 = mesh.vertices(V0);
     V1 = mesh.vertices(V1);
 
-    const static std::vector<std::string> BP_names = {
-        "BF", "HG", "SH", "BVH", "STQ", "GPU_STQ",
-    };
-    for (int i = 1; i < NUM_BROAD_PHASE_METHODS; i++) {
-        BroadPhaseMethod method = static_cast<BroadPhaseMethod>(i);
-        BENCHMARK(fmt::format("BP Real Data ({})", BP_names[i]))
-        {
-            Candidates candidates;
-            candidates.build(mesh, V0, V1, inflation_radius, method);
-        };
+    const auto broad_phase = GENERATE(tests::BroadPhaseGenerator::create());
+    if (broad_phase->name() == "BruteForce") {
+        SKIP("Not benchmarking brute force");
     }
+
+    BENCHMARK(fmt::format("BP Real Data ({})", broad_phase->name()))
+    {
+        Candidates candidates;
+        candidates.build(mesh, V0, V1, inflation_radius, broad_phase);
+    };
 }

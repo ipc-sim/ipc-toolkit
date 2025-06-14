@@ -4,7 +4,7 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include <ipc/friction/closest_point.hpp>
+#include <ipc/tangent/closest_point.hpp>
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
 #include <ipc/smooth_contact/distance/point_face.hpp>

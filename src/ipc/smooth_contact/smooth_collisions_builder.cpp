@@ -283,7 +283,4 @@ void SmoothCollisionsBuilder<2>::merge(
         vert_vert_count);
 }
 
-template class SmoothCollisionsBuilder<2>;
-template class SmoothCollisionsBuilder<3>;
-
 } // namespace ipc

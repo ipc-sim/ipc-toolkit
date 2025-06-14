@@ -2,12 +2,12 @@
 
 #include <ipc/distance/point_edge.hpp>
 
-#include <ipc/utils/unordered_map_and_set.hpp>
-#include <ipc/utils/logger.hpp>
+#include <ipc/utils/area_gradient.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/math.hpp>
 #include <ipc/utils/local_to_global.hpp>
-#include <ipc/utils/area_gradient.hpp>
+#include <ipc/utils/logger.hpp>
+#include <ipc/utils/unordered_map_and_set.hpp>
 
 #include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
@@ -15,24 +15,24 @@
 namespace ipc {
 
 CollisionMesh::CollisionMesh(
-    const Eigen::MatrixXd& rest_positions,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const Eigen::SparseMatrix<double>& displacement_map)
     : CollisionMesh(
-        std::vector<bool>(rest_positions.rows(), true),
-        rest_positions,
-        edges,
-        faces,
-        displacement_map)
+          std::vector<bool>(rest_positions.rows(), true),
+          rest_positions,
+          edges,
+          faces,
+          displacement_map)
 {
 }
 
 CollisionMesh::CollisionMesh(
     const std::vector<bool>& include_vertex,
-    const Eigen::MatrixXd& full_rest_positions,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const Eigen::SparseMatrix<double>& displacement_map)
     : m_full_rest_positions(full_rest_positions)
     , m_edges(edges)
@@ -66,7 +66,7 @@ CollisionMesh::CollisionMesh(
 
     const int dim = full_rest_positions.cols();
 
-    // Selection matrix S ∈ ℝ^{collision×full}
+    // Initializes m_select_vertices and m_select_dof
     init_selection_matrices(dim);
 
     if (displacement_map.size() == 0) {
@@ -94,7 +94,7 @@ CollisionMesh::CollisionMesh(
     if (!include_all_vertices) {
         for (int i = 0; i < m_edges.rows(); i++) {
             for (int j = 0; j < m_edges.cols(); j++) {
-                long new_id = m_full_vertex_to_vertex[m_edges(i, j)];
+                index_t new_id = m_full_vertex_to_vertex[m_edges(i, j)];
                 assert(new_id >= 0 && new_id < num_vertices());
                 m_edges(i, j) = new_id;
             }
@@ -102,7 +102,7 @@ CollisionMesh::CollisionMesh(
 
         for (int i = 0; i < m_faces.rows(); i++) {
             for (int j = 0; j < m_faces.cols(); j++) {
-                long new_id = m_full_vertex_to_vertex[m_faces(i, j)];
+                index_t new_id = m_full_vertex_to_vertex[m_faces(i, j)];
                 assert(new_id >= 0 && new_id < num_vertices());
                 m_faces(i, j) = new_id;
             }
@@ -290,7 +290,7 @@ void CollisionMesh::init_areas()
             if (vertex_edge_areas[m_edges(i, j)] < 0) {
                 vertex_edge_areas[m_edges(i, j)] = 0;
             }
-            vertex_edge_areas[m_edges(i, j)] += edge_len / 2;
+            vertex_edge_areas[m_edges(i, j)] += 0.5 * edge_len;
         }
     }
 
@@ -303,18 +303,18 @@ void CollisionMesh::init_areas()
             const Eigen::Vector3d f0 = m_rest_positions.row(m_faces(i, 0));
             const Eigen::Vector3d f1 = m_rest_positions.row(m_faces(i, 1));
             const Eigen::Vector3d f2 = m_rest_positions.row(m_faces(i, 2));
-            double face_area = (f1 - f0).cross(f2 - f0).norm() / 2;
+            double face_area = 0.5 * (f1 - f0).cross(f2 - f0).norm();
 
             for (int j = 0; j < m_faces.cols(); ++j) {
                 if (vertex_face_areas[m_faces(i, j)] < 0) {
                     vertex_face_areas[m_faces(i, j)] = 0;
                 }
-                vertex_face_areas[m_faces(i, j)] += face_area / 3;
+                vertex_face_areas[m_faces(i, j)] += face_area / 3.0;
 
                 if (m_edge_areas[m_faces_to_edges(i, j)] < 0) {
                     m_edge_areas[m_faces_to_edges(i, j)] = 0;
                 }
-                m_edge_areas[m_faces_to_edges(i, j)] += face_area / 3;
+                m_edge_areas[m_faces_to_edges(i, j)] += face_area / 3.0;
             }
         }
     }
@@ -388,7 +388,7 @@ void CollisionMesh::init_area_jacobians()
         if (!was_vertex_visited[e0i]) {
             for (int j = 0; j < m_edges.cols(); j++) {
                 local_gradient_to_global_gradient(
-                    edge_len_gradient / 2, m_edges.row(i), dim(),
+                    0.5 * edge_len_gradient, m_edges.row(i), dim(),
                     m_vertex_area_jacobian[m_edges(i, j)]);
             }
         }
@@ -404,7 +404,7 @@ void CollisionMesh::init_area_jacobians()
 // ============================================================================/
 
 Eigen::MatrixXd
-CollisionMesh::vertices(const Eigen::MatrixXd& full_positions) const
+CollisionMesh::vertices(Eigen::ConstRef<Eigen::MatrixXd> full_positions) const
 {
     // full_U = full_V - full_V_rest
     assert(full_positions.rows() == full_num_vertices());
@@ -413,14 +413,14 @@ CollisionMesh::vertices(const Eigen::MatrixXd& full_positions) const
 }
 
 Eigen::MatrixXd CollisionMesh::displace_vertices(
-    const Eigen::MatrixXd& full_displacements) const
+    Eigen::ConstRef<Eigen::MatrixXd> full_displacements) const
 {
     // V_rest + S * T * full_U; m_displacement_map = S * T
     return m_rest_positions + map_displacements(full_displacements);
 }
 
 Eigen::MatrixXd CollisionMesh::map_displacements(
-    const Eigen::MatrixXd& full_displacements) const
+    Eigen::ConstRef<Eigen::MatrixXd> full_displacements) const
 {
     assert(m_displacement_map.cols() == full_displacements.rows());
     assert(full_displacements.cols() == dim());
@@ -429,7 +429,8 @@ Eigen::MatrixXd CollisionMesh::map_displacements(
 
 // ============================================================================/
 
-Eigen::VectorXd CollisionMesh::to_full_dof(const Eigen::VectorXd& x) const
+Eigen::VectorXd
+CollisionMesh::to_full_dof(Eigen::ConstRef<Eigen::VectorXd> x) const
 {
     // ∇_{full} f(S * T * x_full) = Tᵀ * Sᵀ * ∇_{collision} f(S * T * x_full)
     // x = ∇_{collision} f(S * T * x_full); m_displacement_dof_map = S * T
@@ -448,9 +449,9 @@ CollisionMesh::to_full_dof(const Eigen::SparseMatrix<double>& X) const
 // ============================================================================/
 
 std::vector<bool> CollisionMesh::construct_is_on_surface(
-    const long num_vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::VectorXi& codim_vertices)
+    const size_t num_vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::VectorXi> codim_vertices)
 {
     std::vector<bool> is_on_surface(num_vertices, false);
     for (int i = 0; i < codim_vertices.size(); i++) {
@@ -470,7 +471,8 @@ std::vector<bool> CollisionMesh::construct_is_on_surface(
 // ============================================================================/
 
 Eigen::MatrixXi CollisionMesh::construct_faces_to_edges(
-    const Eigen::MatrixXi& faces, const Eigen::MatrixXi& edges)
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
+    Eigen::ConstRef<Eigen::MatrixXi> edges)
 {
     if (faces.size() == 0) {
         return Eigen::MatrixXi(faces.rows(), faces.cols());

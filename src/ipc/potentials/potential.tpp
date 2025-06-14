@@ -4,8 +4,8 @@
 
 #include <ipc/utils/local_to_global.hpp>
 
-#include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
+#include <tbb/combinable.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <ipc/utils/MaybeParallelFor.hpp>
 #include <igl/Timer.h>
@@ -16,7 +16,7 @@ template <class TCollisions>
 double Potential<TCollisions>::operator()(
     const TCollisions& collisions,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& X) const
+    Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
     assert(X.rows() == mesh.num_vertices());
 
@@ -38,13 +38,6 @@ double Potential<TCollisions>::operator()(
             }
         });
 
-    // for (size_t i = 0; i < collisions.size(); i++) {
-    //     // Quadrature weight is premultiplied by local potential
-    //     double local = (*this)(
-    //         collisions[i],
-    //         collisions[i].dof(X, mesh.edges(), mesh.faces()));
-    // }
-
     return storage.combine([](double a, double b) { return a + b; });
 }
 
@@ -52,7 +45,7 @@ template <class TCollisions>
 Eigen::VectorXd Potential<TCollisions>::gradient(
     const TCollisions& collisions,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& X) const
+    Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
     assert(X.rows() == mesh.num_vertices());
 
@@ -62,13 +55,6 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
 
     const int dim = X.cols();
 
-    // tbb::enumerable_thread_specific<Eigen::VectorXd> storage(
-    //     Eigen::VectorXd::Zero(X.size()));
-
-    // tbb::parallel_for(
-    //     tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-    //     [&](const tbb::blocked_range<size_t>& r) {
-    //         auto& global_grad = storage.local();
     auto storage = ipc::utils::create_thread_storage<Eigen::VectorXd>(Eigen::VectorXd::Zero(X.size()));
     ipc::utils::maybe_parallel_for(collisions.size(), [&](int start, int end, int thread_id) {
         auto& global_grad = ipc::utils::get_local_thread_storage(storage, thread_id);
@@ -81,7 +67,7 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
                         collision,
                         collision.dof(X, mesh.edges(), mesh.faces()));
 
-                const std::array<long, TCollision::element_size> vids =
+                const std::array<index_t, TCollision::element_size> vids =
                     collision.vertex_ids(mesh.edges(), mesh.faces());
 
                 local_gradient_to_global_gradient(
@@ -94,17 +80,14 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
     for (const auto &local_storage : storage)
         grad += local_storage;
     return grad;
-
-    // return storage.combine([](const Eigen::VectorXd& a,
-    //                           const Eigen::VectorXd& b) { return a + b; });
 }
 
 template <class TCollisions>
 Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const TCollisions& collisions,
     const CollisionMesh& mesh,
-    const Eigen::MatrixXd& X,
-    const bool project_hessian_to_psd) const
+    Eigen::ConstRef<Eigen::MatrixXd> X,
+    const PSDProjectionMethod project_hessian_to_psd) const
 {
     assert(X.rows() == mesh.num_vertices());
 
@@ -120,14 +103,6 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
 
     igl::Timer timer;
     timer.start();
-
-    // tbb::enumerable_thread_specific<std::vector<Eigen::Triplet<double>>>
-    //     storage;
-
-    // tbb::parallel_for(
-    //     tbb::blocked_range<size_t>(size_t(0), collisions.size()),
-    //     [&](const tbb::blocked_range<size_t>& r) {
-    //         auto& hess_triplets = storage.local();
 
     const int max_triplets_size = int(1e7);
     const int buffer_size = std::min(max_triplets_size, ndof);
@@ -145,7 +120,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
                         collisions[i], collisions[i].dof(X, edges, faces),
                         project_hessian_to_psd);
 
-                const std::array<long, TCollision::element_size> vids =
+                const std::array<index_t, TCollision::element_size> vids =
                     collision.vertex_ids(edges, faces);
 
                 local_hessian_to_global_triplets(
@@ -157,13 +132,6 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     logger().trace("done separate assembly {}s...", timer.getElapsedTime());
 
     Eigen::SparseMatrix<double> hess(ndof, ndof);
-    // for (const auto& local_hess_triplets : storage) {
-    //     Eigen::SparseMatrix<double> local_hess(ndof, ndof);
-    //     local_hess.setFromTriplets(
-    //         local_hess_triplets.begin(), local_hess_triplets.end());
-    //     hess += local_hess;
-    // }
-    // return hess;
 
     // Assemble the stiffness matrix by concatenating the tuples in each local storage
 

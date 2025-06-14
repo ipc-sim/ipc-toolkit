@@ -2,7 +2,7 @@
 
 #include <catch2/generators/catch_generators_range.hpp>
 
-#include <ipc/collisions/collisions.hpp>
+#include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
@@ -10,17 +10,30 @@
 
 #include <string>
 
-#ifdef IPC_TOOLKIT_WITH_CUDA
-#define NUM_BROAD_PHASE_METHODS static_cast<int>(BroadPhaseMethod::NUM_METHODS)
-#else
-#define NUM_BROAD_PHASE_METHODS                                                \
-    (static_cast<int>(BroadPhaseMethod::NUM_METHODS) - 1)
-#endif
-
-#define GENERATE_BROAD_PHASE_METHODS()                                         \
-    static_cast<BroadPhaseMethod>(GENERATE(range(0, NUM_BROAD_PHASE_METHODS)));
-
 namespace ipc::tests {
+
+class BroadPhaseGenerator
+    : public Catch::Generators::IGenerator<std::shared_ptr<BroadPhase>> {
+public:
+    BroadPhaseGenerator();
+
+    // Attempts to move the generator to the next element.
+    // Returns true if successful (and thus has another element that can be
+    // read)
+    bool next() override;
+
+    // Precondition:
+    // The generator is either freshly constructed or the last call to next()
+    // returned true
+    std::shared_ptr<BroadPhase> const& get() const override;
+
+    static Catch::Generators::GeneratorWrapper<std::shared_ptr<BroadPhase>>
+    create();
+
+private:
+    std::vector<std::shared_ptr<BroadPhase>> m_broad_phases;
+    int m_current = 0;
+};
 
 // ============================================================================
 
@@ -36,7 +49,7 @@ void mmcvids_to_collisions(
     const Eigen::MatrixXi& E,
     const Eigen::MatrixXi& F,
     const Eigen::MatrixXi& mmcvids,
-    ipc::Collisions& collisions);
+    ipc::NormalCollisions& collisions);
 
 // ============================================================================
 // Rotation generator

@@ -1,9 +1,12 @@
 #pragma once
 
+#include <ipc/config.hpp>
+#include <ipc/ccd/default_narrow_phase_ccd.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 #include <array>
 #include <limits>
+#include <ostream>
 
 namespace ipc {
 
@@ -29,33 +32,32 @@ public:
     /// @brief Get the vertex IDs of the collision stencil.
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
-    /// @return The vertex IDs of the collision stencil. Size is always max_vert, but elements i > num_vertices() are -1.
-    virtual std::array<long, max_vert> vertex_ids(
-        const Eigen::MatrixXi& edges, const Eigen::MatrixXi& faces) const = 0;
+    /// @return The vertex IDs of the collision stencil. Size is always 4, but elements i > num_vertices() are -1.
+    virtual std::array<index_t, max_vert> vertex_ids(
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const = 0;
 
     /// @brief Get the vertex attributes of the collision stencil.
     /// @tparam T Type of the attributes
     /// @param vertices Vertex attributes
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
-    /// @return The vertex positions of the collision stencil. Size is always max_vert, but elements i > num_vertices() are NaN.
-    template <typename T>
-    std::array<VectorMax3<T>, max_vert> vertices(
-        const MatrixX<T>& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const
+    /// @return The vertex positions of the collision stencil. Size is always 4, but elements i > num_vertices() are NaN.
+    std::array<VectorMax3d, max_vert> vertices(
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
     {
         constexpr double NaN = std::numeric_limits<double>::signaling_NaN();
 
-        const std::array<long, max_vert> vertex_ids =
-            this->vertex_ids(edges, faces);
+        const auto vertex_ids = this->vertex_ids(edges, faces);
 
-        std::array<VectorMax3<T>, max_vert> stencil_vertices;
+        std::array<VectorMax3d, max_vert> stencil_vertices;
         for (int i = 0; i < max_vert; i++) {
             if (vertex_ids[i] >= 0) {
                 stencil_vertices[i] = vertices.row(vertex_ids[i]);
             } else {
-                stencil_vertices[i].setConstant(vertices.cols(), T(NaN));
+                stencil_vertices[i].setConstant(vertices.cols(), NaN);
             }
         }
 
@@ -68,19 +70,70 @@ public:
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
     /// @return This stencil's DOF.
-    template <typename T>
-    Vector<T, -1, 3 * max_vert>
-    dof(const MatrixX<T>& X,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces) const
+    Vector<double, -1, 3 * max_vert>
+    dof(Eigen::ConstRef<Eigen::MatrixXd> X,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
     {
         const int dim = X.cols();
-        Vector<T, -1, 3 * max_vert> x(num_vertices() * dim);
-        const std::array<long, max_vert> idx = vertex_ids(edges, faces);
+        Vector<double, -1, 3 * max_vert> x(num_vertices() * dim);
+        const auto idx = vertex_ids(edges, faces);
         for (int i = 0; i < num_vertices(); i++) {
             x.segment(i * dim, dim) = X.row(idx[i]);
         }
         return x;
+    }
+
+    /// @brief Compute the distance of the stencil.
+    /// @param vertices Collision mesh vertices
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @return Distance of the stencil.
+    double compute_distance(
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
+    {
+        return compute_distance(dof(vertices, edges, faces));
+    }
+
+    /// @brief Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
+    /// @param vertices Collision mesh vertices
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @return Distance gradient of the stencil w.r.t. the stencil's vertex positions.
+    Vector<double, -1, 3 * max_vert> compute_distance_gradient(
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
+    {
+        return compute_distance_gradient(dof(vertices, edges, faces));
+    }
+
+    /// @brief Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
+    /// @param vertices Collision mesh vertices
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @return Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
+    MatrixMax<double, 3 * max_vert, 3 * max_vert> compute_distance_hessian(
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
+    {
+        return compute_distance_hessian(dof(vertices, edges, faces));
+    }
+
+    /// @brief Compute the coefficients of the stencil s.t. d(x) = ‖∑ cᵢ xᵢ‖².
+    /// @param vertices Collision mesh vertices
+    /// @param edges Collision mesh edges
+    /// @param faces Collision mesh faces
+    /// @return Coefficients of the stencil.
+    VectorMax4d compute_coefficients(
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces) const
+    {
+        return compute_coefficients(dof(vertices, edges, faces));
     }
 
     // ----------------------------------------------------------------------
@@ -92,22 +145,54 @@ public:
     /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance of the stencil.
     virtual double compute_distance(
-        const Vector<double, -1, 3 * max_vert>& positions) const = 0;
+        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>>& positions) const = 0;
 
     /// @brief Compute the distance gradient of the stencil w.r.t. the stencil's vertex positions.
     /// @param positions Stencil's vertex positions.
     /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance gradient of the stencil w.r.t. the stencil's vertex positions.
     virtual Vector<double, -1, 3 * max_vert> compute_distance_gradient(
-        const Vector<double, -1, 3 * max_vert>& positions) const = 0;
+        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions) const = 0;
 
     /// @brief Compute the distance Hessian of the stencil w.r.t. the stencil's vertex positions.
     /// @param positions Stencil's vertex positions.
     /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
     virtual MatrixMax<double, 3 * max_vert, 3 * max_vert>
-    compute_distance_hessian(
-        const Vector<double, -1, 3 * max_vert>& positions) const = 0;
+    compute_distance_hessian(Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions) const = 0;
+
+    /// @brief Compute the coefficients of the stencil s.t. d(x) = ‖∑ cᵢ xᵢ‖².
+    /// @param positions Stencil's vertex positions.
+    /// @return Coefficients of the stencil.
+    virtual VectorMax4d
+    compute_coefficients(Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> positions) const = 0;
+
+    /// @brief Perform narrow-phase CCD on the candidate.
+    /// @param[in] vertices_t0 Stencil vertices at the start of the time step.
+    /// @param[in] vertices_t1 Stencil vertices at the end of the time step.
+    /// @param[out] toi Computed time of impact (normalized).
+    /// @param[in] min_distance Minimum separation distance between primitives.
+    /// @param[in] tmax Maximum time (normalized) to look for collisions.
+    /// @param[in] narrow_phase_ccd The narrow phase CCD algorithm to use.
+    /// @return If the candidate had a collision over the time interval.
+    virtual bool
+    ccd(Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> vertices_t0,
+        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> vertices_t1,
+        double& toi,
+        const double min_distance = 0.0,
+        const double tmax = 1.0,
+        const NarrowPhaseCCD& narrow_phase_ccd =
+            DEFAULT_NARROW_PHASE_CCD) const = 0;
+
+    /// @brief Write the CCD query to a stream.
+    /// @param out Stream to write to.
+    /// @param vertices_t0 Stencil vertices at the start of the time step.
+    /// @param vertices_t1 Stencil vertices at the end of the time step.
+    /// @return The stream.
+    std::ostream& write_ccd_query(
+        std::ostream& out,
+        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> vertices_t0,
+        Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> vertices_t1) const;
 };
 
 } // namespace ipc

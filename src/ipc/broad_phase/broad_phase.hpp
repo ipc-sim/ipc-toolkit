@@ -13,20 +13,6 @@
 
 namespace ipc {
 
-/// Enumeration of implemented broad phase methods.
-enum class BroadPhaseMethod {
-    BRUTE_FORCE = 0,
-    HASH_GRID,
-    SPATIAL_HASH,
-    BVH,
-    SWEEP_AND_PRUNE,
-    SWEEP_AND_TINIEST_QUEUE, // Requires CUDA
-    NUM_METHODS
-};
-
-static constexpr BroadPhaseMethod DEFAULT_BROAD_PHASE_METHOD =
-    BroadPhaseMethod::HASH_GRID;
-
 class Candidates; // Forward declaration
 
 class BroadPhase {
@@ -34,11 +20,9 @@ public:
     BroadPhase() { }
     virtual ~BroadPhase() { clear(); }
 
-    /// @brief Construct a registered broad phase object.
-    /// @param method The broad phase method to use.
-    /// @return The constructed broad phase object.
-    static std::shared_ptr<BroadPhase>
-    make_broad_phase(const BroadPhaseMethod method);
+    /// @brief Get the name of the broad phase method.
+    /// @return The name of the broad phase method.
+    virtual std::string name() const = 0;
 
     /// @brief Build the broad phase for static collision detection.
     /// @param vertices Vertex positions
@@ -46,9 +30,9 @@ public:
     /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
     virtual void build(
-        const Eigen::MatrixXd& vertices,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         const double inflation_radius = 0);
 
     /// @brief Build the broad phase for continuous collision detection.
@@ -58,14 +42,19 @@ public:
     /// @param faces Collision mesh faces
     /// @param inflation_radius Radius of inflation around all elements.
     virtual void build(
-        const Eigen::MatrixXd& vertices_t0,
-        const Eigen::MatrixXd& vertices_t1,
-        const Eigen::MatrixXi& edges,
-        const Eigen::MatrixXi& faces,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+        Eigen::ConstRef<Eigen::MatrixXi> edges,
+        Eigen::ConstRef<Eigen::MatrixXi> faces,
         const double inflation_radius = 0);
 
     /// @brief Clear any built data.
     virtual void clear();
+
+    /// @brief Detect all collision candidates needed for a given dimensional simulation.
+    /// @param dim The dimension of the simulation (i.e., 2 or 3).
+    /// @param candidates The detected collision candidates.
+    void detect_collision_candidates(int dim, Candidates& candidates) const;
 
     /// @brief Find the candidate vertex-vertex collisions.
     /// @param[out] candidates The candidate vertex-vertex collisions.
@@ -96,12 +85,6 @@ public:
     /// @param[out] candidates The candidate face-face collisions.
     virtual void detect_face_face_candidates(
         std::vector<FaceFaceCandidate>& candidates) const = 0;
-
-    /// @brief Detect all collision candidates needed for a given dimensional simulation.
-    /// @param dim The dimension of the simulation (i.e., 2 or 3).
-    /// @param candidates The detected collision candidates.
-    virtual void
-    detect_collision_candidates(int dim, Candidates& candidates) const;
 
     /// @brief Function for determining if two vertices can collide.
     std::function<bool(size_t, size_t)> can_vertices_collide =

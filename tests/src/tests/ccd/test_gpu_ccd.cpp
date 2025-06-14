@@ -6,6 +6,8 @@
 #include <catch2/catch_approx.hpp>
 
 #include <ipc/ipc.hpp>
+#include <ipc/broad_phase/sweep_and_prune.hpp>
+#include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 
 using namespace ipc;
 
@@ -30,7 +32,7 @@ TEST_CASE("GPU CCD", "[ccd][gpu]")
 
     if (!tests::load_mesh(mesh_name_t0, V0, E, F)
         || !tests::load_mesh(mesh_name_t1, V1, E, F)) {
-        return; // Data is private
+        SKIP("Puffer-ball meshes are not available");
     }
 
     CollisionMesh mesh = CollisionMesh::build_from_full_mesh(V0, E, F);
@@ -43,15 +45,15 @@ TEST_CASE("GPU CCD", "[ccd][gpu]")
     const double min_distance = 0;
 
     const double toi_cpu = compute_collision_free_stepsize(
-        mesh, V0, V1, BroadPhaseMethod::SWEEP_AND_PRUNE, min_distance,
-        tolerance, max_iterations);
+        mesh, V0, V1, min_distance, std::make_shared<SweepAndPrune>(),
+        TightInclusionCCD(tolerance, max_iterations));
 
     // Got this value from running the code
     CHECK(toi_cpu == Catch::Approx(4.76837158203125000e-06));
 
     const double toi_gpu = compute_collision_free_stepsize(
-        mesh, V0, V1, BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE, min_distance,
-        tolerance, max_iterations);
+        mesh, V0, V1, min_distance, std::make_shared<SweepAndTiniestQueue>(),
+        TightInclusionCCD(tolerance, max_iterations));
 
     // Got this value from running the code
     CHECK(toi_gpu == Catch::Approx(3.05175781250000017e-6));

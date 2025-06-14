@@ -2,7 +2,7 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include <ipc/config.hpp>
-#include <ipc/ccd/ccd.hpp>
+#include <ipc/ccd/tight_inclusion_ccd.hpp>
 #include <ipc/ccd/additive_ccd.hpp>
 
 using namespace ipc;
@@ -20,11 +20,11 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge]")
     bool is_collision_expected;
     bool conservative_check = true;
 
-    double tol = DEFAULT_CCD_TOLERANCE;
-    long max_iter = DEFAULT_CCD_MAX_ITERATIONS;
+    double tol = TightInclusionCCD::DEFAULT_TOLERANCE;
+    long max_iter = TightInclusionCCD::DEFAULT_MAX_ITERATIONS;
     double tmax = 1;
 
-#if !defined(WIN32) || defined(NDEBUG)
+#if defined(NDEBUG) || !(defined(WIN32) || defined(_WIN32) || defined(__WIN32))
     SECTION("General")
     {
         double uy = GENERATE(-1.0, 0.0, 1 - EPSILON, 1.0, 1 + EPSILON, 2.0);
@@ -143,16 +143,19 @@ TEST_CASE("Edge-Edge CCD", "[ccd][3D][edge-edge]")
     CAPTURE(is_collision_expected);
 
     double toi;
-    bool is_colliding = edge_edge_ccd(
+
+    const TightInclusionCCD tight_inclusion_ccd(tol, max_iter);
+    bool is_colliding = tight_inclusion_ccd.edge_edge_ccd(
         ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
-        /*min_distance=*/0.0, tmax, tol, max_iter);
+        /*min_distance=*/0.0, tmax);
     if (conservative_check) {
         CHECK((is_colliding || !is_collision_expected));
     } else {
         CHECK(is_colliding == is_collision_expected);
     }
 
-    is_colliding = additive_ccd::edge_edge_ccd(
+    const AdditiveCCD additive_ccd;
+    is_colliding = additive_ccd.edge_edge_ccd(
         ea0_t0, ea1_t0, eb0_t0, eb1_t0, ea0_t1, ea1_t1, eb0_t1, eb1_t1, toi,
         /*min_distance=*/0.0, tmax);
     if (conservative_check) {

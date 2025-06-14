@@ -12,8 +12,8 @@ void define_candidates(py::module_& m)
         .def(
             "build",
             py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&, const double,
-                const BroadPhaseMethod>(&Candidates::build),
+                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+                const double, std::shared_ptr<BroadPhase>>(&Candidates::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of discrete collision detection candidates.
 
@@ -21,17 +21,17 @@ void define_candidates(py::module_& m)
                 mesh: The surface of the collision mesh.
                 vertices: Surface vertex positions (rowwise).
                 inflation_radius: Amount to inflate the bounding boxes.
-                broad_phase_method: Broad phase method to use.
+                broad_phase: Broad phase to use.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"),
             py::arg("inflation_radius") = 0,
-            py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD)
+            py::arg("broad_phase") = make_default_broad_phase())
         .def(
             "build",
             py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&,
-                const Eigen::MatrixXd&, const double, const BroadPhaseMethod>(
-                &Candidates::build),
+                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+                Eigen::ConstRef<Eigen::MatrixXd>, const double,
+                std::shared_ptr<BroadPhase>>(&Candidates::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of continuous collision detection candidates.
 
@@ -43,17 +43,17 @@ void define_candidates(py::module_& m)
                 vertices_t0: Surface vertex starting positions (rowwise).
                 vertices_t1: Surface vertex ending positions (rowwise).
                 inflation_radius: Amount to inflate the bounding boxes.
-                broad_phase_method: Broad phase method to use.
+                broad_phase: Broad phase to use.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
             py::arg("inflation_radius") = 0,
-            py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD)
+            py::arg("broad_phase") = make_default_broad_phase())
         .def("__len__", &Candidates::size)
         .def("empty", &Candidates::empty)
         .def("clear", &Candidates::clear)
         .def(
             "__getitem__",
-            [](Candidates& self, size_t i) -> ContinuousCollisionCandidate& {
+            [](Candidates& self, size_t i) -> CollisionStencil& {
                 return self[i];
             },
             py::return_value_policy::reference)
@@ -70,16 +70,14 @@ void define_candidates(py::module_& m)
                 vertices_t0: Surface vertex starting positions (rowwise).
                 vertices_t1: Surface vertex ending positions (rowwise).
                 min_distance: The minimum distance allowable between any two elements.
-                tolerance: The tolerance for the CCD algorithm.
-                max_iterations: The maximum number of iterations for the CCD algorithm.
+                narrow_phase_ccd: The narrow phase CCD algorithm to use.
 
             Returns:
                 True if <b>any</b> collisions occur.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
             py::arg("min_distance") = 0.0,
-            py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
-            py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS)
+            py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD)
         .def(
             "compute_collision_free_stepsize",
             &Candidates::compute_collision_free_stepsize,
@@ -94,16 +92,14 @@ void define_candidates(py::module_& m)
                 vertices_t0: Surface vertex starting positions (rowwise). Assumed to be intersection free.
                 vertices_t1: Surface vertex ending positions (rowwise).
                 min_distance: The minimum distance allowable between any two elements.
-                tolerance: The tolerance for the CCD algorithm.
-                max_iterations: The maximum number of iterations for the CCD algorithm.
+                narrow_phase_ccd: The narrow phase CCD algorithm to use.
 
             Returns:
                 A step-size :math:`\in [0, 1]` that is collision free. A value of 1.0 if a full step and 0.0 is no step.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
             py::arg("min_distance") = 0.0,
-            py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
-            py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS)
+            py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD)
         .def(
             "compute_noncandidate_conservative_stepsize",
             &Candidates::compute_noncandidate_conservative_stepsize,
@@ -126,16 +122,14 @@ void define_candidates(py::module_& m)
                 vertices_t0: Surface vertex starting positions (rowwise).
                 vertices_t1: Surface vertex ending positions (rowwise).
                 dhat: Barrier activation distance.
-                min_distance: The minimum distance allowable between any two elements.
-                tolerance: The tolerance for the CCD algorithm.
-                max_iterations: The maximum number of iterations for the CCD algorithm.
+                min_distance: Minimum distance allowable between any two elements.
+                broad_phase: Broad phase algorithm to use.
+                narrow_phase_ccd: Narrow phase CCD algorithm to use.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("dhat"),
-            py::arg("broad_phase_method") = DEFAULT_BROAD_PHASE_METHOD,
-            py::arg("min_distance") = 0.0,
-            py::arg("tolerance") = DEFAULT_CCD_TOLERANCE,
-            py::arg("max_iterations") = DEFAULT_CCD_MAX_ITERATIONS)
+            py::arg("dhat"), py::arg("min_distance") = 0.0,
+            py::arg("broad_phase") = make_default_broad_phase(),
+            py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD)
         .def(
             "save_obj", &Candidates::save_obj, py::arg("filename"),
             py::arg("vertices"), py::arg("edges"), py::arg("faces"))

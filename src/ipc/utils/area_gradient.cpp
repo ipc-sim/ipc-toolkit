@@ -5,8 +5,7 @@
 namespace ipc {
 
 VectorMax6d edge_length_gradient(
-    const Eigen::Ref<const VectorMax3d>& e0,
-    const Eigen::Ref<const VectorMax3d>& e1)
+    Eigen::ConstRef<VectorMax3d> e0, Eigen::ConstRef<VectorMax3d> e1)
 {
     assert(e0.size() == 2 || e0.size() == 3);
     assert(e1.size() == 2 || e1.size() == 3);
@@ -20,9 +19,9 @@ VectorMax6d edge_length_gradient(
 }
 
 Vector9d triangle_area_gradient(
-    const Eigen::Ref<const Eigen::Vector3d>& t0,
-    const Eigen::Ref<const Eigen::Vector3d>& t1,
-    const Eigen::Ref<const Eigen::Vector3d>& t2)
+    Eigen::ConstRef<Eigen::Vector3d> t0,
+    Eigen::ConstRef<Eigen::Vector3d> t1,
+    Eigen::ConstRef<Eigen::Vector3d> t2)
 {
     Vector9d grad;
     autogen::triangle_area_gradient(
@@ -60,8 +59,7 @@ namespace autogen {
         const auto t11 = t0_z - t1_z;
         const auto t12 = t10 * t2 - t11 * t5;
         const auto t13 = t10 * t6 - t11 * t3;
-        const auto t14 =
-            (1.0 / 2.0) / std::sqrt(t12 * t12 + t13 * t13 + t7 * t7);
+        const auto t14 = 0.5 / std::sqrt(t12 * t12 + t13 * t13 + t7 * t7);
         const auto t15 = t1_x + t4;
         dA[0] = t14 * (t1 * t7 + t12 * t9);
         dA[1] = -t14 * (-t13 * t9 + t15 * t7);

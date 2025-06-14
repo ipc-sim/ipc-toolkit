@@ -1,23 +1,20 @@
 #include "broad_phase.hpp"
 
+#include <ipc/config.hpp>
 #include <ipc/broad_phase/brute_force.hpp>
 #include <ipc/broad_phase/bvh.hpp>
-#include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/hash_grid.hpp>
+#include <ipc/broad_phase/spatial_hash.hpp>
 #include <ipc/broad_phase/sweep_and_prune.hpp>
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 #include <ipc/candidates/candidates.hpp>
 
-#include <ipc/config.hpp>
-#include <iostream>
-#include <set>
-
 namespace ipc {
 
 void BroadPhase::build(
-    const Eigen::MatrixXd& vertices,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
     assert(edges.size() == 0 || edges.cols() == 2);
@@ -29,10 +26,10 @@ void BroadPhase::build(
 }
 
 void BroadPhase::build(
-    const Eigen::MatrixXd& vertices_t0,
-    const Eigen::MatrixXd& vertices_t1,
-    const Eigen::MatrixXi& edges,
-    const Eigen::MatrixXi& faces,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t0,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices_t1,
+    Eigen::ConstRef<Eigen::MatrixXi> edges,
+    Eigen::ConstRef<Eigen::MatrixXi> faces,
     const double inflation_radius)
 {
     assert(edges.size() == 0 || edges.cols() == 2);
@@ -61,34 +58,6 @@ void BroadPhase::detect_collision_candidates(
         // These are not needed for 2D
         detect_edge_edge_candidates(candidates.ee_candidates);
         detect_face_vertex_candidates(candidates.fv_candidates);
-    }
-}
-
-// ============================================================================
-
-std::shared_ptr<BroadPhase>
-BroadPhase::make_broad_phase(const BroadPhaseMethod method)
-{
-    switch (method) {
-    case BroadPhaseMethod::BRUTE_FORCE:
-        return std::make_shared<BruteForce>();
-    case BroadPhaseMethod::HASH_GRID:
-        return std::make_shared<HashGrid>();
-    case BroadPhaseMethod::SPATIAL_HASH:
-        return std::make_shared<SpatialHash>();
-    case BroadPhaseMethod::SWEEP_AND_PRUNE:
-        return std::make_shared<SweepAndPrune>();
-    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
-#ifdef IPC_TOOLKIT_WITH_CUDA
-        return std::make_shared<SweepAndTiniestQueue>();
-#else
-        throw std::runtime_error("GPU Sweep and Tiniest Queue is disabled "
-                                 "because CUDA is disabled!");
-#endif
-    case BroadPhaseMethod::BVH:
-        return std::make_shared<BVH>();
-    default:
-        throw std::runtime_error("Invalid BroadPhaseMethod!");
     }
 }
 
