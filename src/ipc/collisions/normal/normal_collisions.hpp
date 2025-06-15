@@ -38,30 +38,6 @@ public:
     virtual double compute_minimum_distance(
         const CollisionMesh& mesh, Eigen::ConstRef<Eigen::MatrixXd> vertices) const = 0;
 
-    /// @brief Get if the collision set should use the convergent formulation.
-    /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
-    /// @return If the collision set should use the convergent formulation.
-    bool use_convergent_formulation() const
-    {
-        return m_use_convergent_formulation;
-    }
-
-    /// @brief Set if the collision set should use the convergent formulation.
-    /// @warning This must be set before the collisions are built.
-    /// @param use_convergent_formulation If the collision set should use the convergent formulation.
-    virtual void
-    set_use_convergent_formulation(const bool use_convergent_formulation)
-    {
-        if (!empty()
-            && use_convergent_formulation != m_use_convergent_formulation) {
-            logger().warn(
-                "Setting use_convergent_formulation after building collisions. "
-                "Re-build collisions for this to have an effect.");
-        }
-
-        m_use_convergent_formulation = use_convergent_formulation;
-    }
-
     /// @brief Get if the collision set are using the convergent formulation.
     /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
     /// @return If the collision set are using the convergent formulation.

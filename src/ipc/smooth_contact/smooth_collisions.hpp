@@ -91,14 +91,6 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         const ParameterType& params) const;
 
-    void set_use_convergent_formulation(
-        const bool use_convergent_formulation) override
-    {
-        if (use_convergent_formulation)
-            logger().error(
-                "Smooth contact formulation doesn't have convergent version!");
-    }
-
     double get_vert_dhat(int vert_id) const
     {
         if (vert_adaptive_dhat.size() > 1)
