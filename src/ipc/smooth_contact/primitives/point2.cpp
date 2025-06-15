@@ -86,7 +86,7 @@ Point2::Point2(
     const ParameterType& param)
     : Primitive(id, param)
 {
-    orientable = !mesh.is_codim_vertex(id);
+    orientable = mesh.is_orient_vertex(id);
     auto neighbor_verts = mesh.find_vertex_adjacent_vertices(id);
     has_neighbor_1 = neighbor_verts[0] >= 0;
     has_neighbor_2 = neighbor_verts[1] >= 0;

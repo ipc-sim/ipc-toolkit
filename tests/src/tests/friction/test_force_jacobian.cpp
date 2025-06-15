@@ -318,7 +318,7 @@ TEST_CASE(
 
     std::vector<bool> is_on_surface =
         CollisionMesh::construct_is_on_surface(X.rows(), E);
-    CollisionMesh mesh(is_on_surface, X, E, F);
+    CollisionMesh mesh(is_on_surface, std::vector<bool>(X.rows(), false), X, E, F);
     mesh.init_area_jacobians();
 
     X = mesh.vertices(X);

@@ -11,7 +11,7 @@ Edge2::Edge2(
 {
     _vert_ids = { { mesh.edges()(id, 0), mesh.edges()(id, 1) } };
 
-    is_active_ = mesh.is_codim_edge(id)
+    is_active_ = (mesh.is_orient_vertex(_vert_ids[0]) && mesh.is_orient_vertex(_vert_ids[1]))
         || Math<double>::cross2(
                d, vertices.row(_vert_ids[1]) - vertices.row(_vert_ids[0]))
             > 0;

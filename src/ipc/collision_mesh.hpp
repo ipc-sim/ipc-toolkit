@@ -26,12 +26,14 @@ public:
 
     /// @brief Construct a new Collision Mesh object from a full mesh vertices.
     /// @param include_vertex Vector of bools indicating whether each vertex should be included in the collision mesh.
+    /// @param orient_vertex Vector of bools indicating whether each vertex is orientable.
     /// @param full_rest_positions The vertices of the full mesh at rest (|V| × dim).
     /// @param edges The edges of the collision mesh indexed into the full mesh vertices (|E| × 2).
     /// @param faces The faces of the collision mesh indexed into the full mesh vertices (|F| × 3).
     /// @param displacement_map The displacement mapping from displacements on the full mesh to the collision mesh.
     CollisionMesh(
         const std::vector<bool>& include_vertex,
+        const std::vector<bool>& orient_vertex,
         Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
         Eigen::ConstRef<Eigen::MatrixXi> edges = Eigen::MatrixXi(),
         Eigen::ConstRef<Eigen::MatrixXi> faces = Eigen::MatrixXi(),
@@ -49,7 +51,7 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> faces = Eigen::MatrixXi())
     {
         return CollisionMesh(
-            construct_is_on_surface(full_rest_positions.rows(), edges),
+            construct_is_on_surface(full_rest_positions.rows(), edges), std::vector<bool>(full_rest_positions.rows(), false),
             full_rest_positions, edges, faces);
     }
 
@@ -98,6 +100,8 @@ public:
     const Eigen::VectorXi& codim_vertices() const { return m_codim_vertices; }
 
     bool is_codim_vertex(const long& v) const { return m_is_codim_vertex[v]; }
+
+    bool is_orient_vertex(const long& v) const { return m_is_orient_vertex[v]; }
 
     /// @brief Get the indices of codimensional edges of the collision mesh (#CE x 1).
     const Eigen::VectorXi& codim_edges() const { return m_codim_edges; }
@@ -322,6 +326,8 @@ protected:
     Eigen::MatrixXd m_rest_positions;
     /// @brief The mask of codimensional vertices (#V).
     std::vector<bool> m_is_codim_vertex;
+    /// @brief The mask of orientable vertices (#V).
+    std::vector<bool> m_is_orient_vertex;
     /// @brief The indices of codimensional vertices (#CV x 1).
     Eigen::VectorXi m_codim_vertices;
     /// @brief The mask of codimensional edges (#E).

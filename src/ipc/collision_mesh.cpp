@@ -21,6 +21,7 @@ CollisionMesh::CollisionMesh(
     const Eigen::SparseMatrix<double>& displacement_map)
     : CollisionMesh(
           std::vector<bool>(rest_positions.rows(), true),
+          std::vector<bool>(rest_positions.rows(), false),
           rest_positions,
           edges,
           faces,
@@ -30,6 +31,7 @@ CollisionMesh::CollisionMesh(
 
 CollisionMesh::CollisionMesh(
     const std::vector<bool>& include_vertex,
+    const std::vector<bool>& orient_vertex,
     Eigen::ConstRef<Eigen::MatrixXd> full_rest_positions,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces,
@@ -89,6 +91,12 @@ CollisionMesh::CollisionMesh(
     // Set vertices at rest using full → reduced map
     m_rest_positions = m_select_vertices * full_rest_positions;
     // m_rest_positions = vertices(full_rest_positions);
+
+    assert(orient_vertex.size() == full_rest_positions.rows());
+    m_is_orient_vertex.assign(m_rest_positions.rows(), false);
+    for (int i = 0; i < m_is_orient_vertex.size(); i++) {
+        m_is_orient_vertex[i] = orient_vertex[m_vertex_to_full_vertex[i]];
+    }
 
     // Map faces and edges to only included vertices
     if (!include_all_vertices) {

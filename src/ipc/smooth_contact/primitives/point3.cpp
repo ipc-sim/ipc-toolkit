@@ -13,7 +13,7 @@ Point3::Point3(
     : Primitive(id, param)
 {
     orientable =
-        !mesh.is_codim_vertex(id) && mesh.vertices_to_faces()[id].size() > 0;
+        mesh.is_orient_vertex(id) && mesh.vertices_to_faces()[id].size() > 0;
 
     // Build index mapping from all vertices to one-ring neighbors
     {
