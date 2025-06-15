@@ -53,7 +53,7 @@ void define_candidates(py::module_& m)
         .def("clear", &Candidates::clear)
         .def(
             "__getitem__",
-            [](Candidates& self, size_t i) -> CollisionStencil& {
+            [](Candidates& self, size_t i) -> CollisionStencil<4>& {
                 return self[i];
             },
             py::return_value_policy::reference)

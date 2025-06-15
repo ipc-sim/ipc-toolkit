@@ -88,7 +88,7 @@ void define_smooth_potential(py::module_& m)
             "__call__",
             py::overload_cast<
                 const SmoothCollisions<2>&, const CollisionMesh&,
-                const Eigen::MatrixXd&>(
+                Eigen::ConstRef<Eigen::MatrixXd>>(
                 &SmoothContactPotential<
                     SmoothCollisions<2>>::Potential::operator(),
                 py::const_),
@@ -108,7 +108,7 @@ void define_smooth_potential(py::module_& m)
             "gradient",
             py::overload_cast<
                 const SmoothCollisions<2>&, const CollisionMesh&,
-                const Eigen::MatrixXd&>(
+                Eigen::ConstRef<Eigen::MatrixXd>>(
                 &SmoothContactPotential<
                     SmoothCollisions<2>>::Potential::gradient,
                 py::const_),
@@ -128,7 +128,7 @@ void define_smooth_potential(py::module_& m)
             "hessian",
             py::overload_cast<
                 const SmoothCollisions<2>&, const CollisionMesh&,
-                const Eigen::MatrixXd&, const bool>(
+                Eigen::ConstRef<Eigen::MatrixXd>, const PSDProjectionMethod>(
                 &SmoothContactPotential<
                     SmoothCollisions<2>>::Potential::hessian,
                 py::const_),
@@ -145,11 +145,11 @@ void define_smooth_potential(py::module_& m)
                 The hessian of all barrier potentials (not scaled by the barrier stiffness). This will have a size of |vertices|x|vertices|.
             )ipc_Qu8mg5v7",
             py::arg("collisions"), py::arg("mesh"), py::arg("vertices"),
-            py::arg("project_hessian_to_psd") = false)
+            py::arg("project_hessian_to_psd") = PSDProjectionMethod::NONE)
         .def(
             "__call__",
             py::overload_cast<
-                const SmoothCollision<6>&, const Vector<double, -1, 18>&>(
+                const SmoothCollision<6>&, Eigen::ConstRef<Vector<double, -1, 18>>>(
                 &SmoothContactPotential<SmoothCollisions<2>>::operator(),
                 py::const_),
             R"ipc_Qu8mg5v7(
@@ -166,7 +166,7 @@ void define_smooth_potential(py::module_& m)
         .def(
             "gradient",
             py::overload_cast<
-                const SmoothCollision<6>&, const Vector<double, -1, 18>&>(
+                const SmoothCollision<6>&, Eigen::ConstRef<Vector<double, -1, 18>>>(
                 &SmoothContactPotential<SmoothCollisions<2>>::gradient,
                 py::const_),
             R"ipc_Qu8mg5v7(
@@ -183,8 +183,8 @@ void define_smooth_potential(py::module_& m)
         .def(
             "hessian",
             py::overload_cast<
-                const SmoothCollision<6>&, const Vector<double, -1, 18>&,
-                const bool>(
+                const SmoothCollision<6>&, Eigen::ConstRef<Vector<double, -1, 18>>,
+                const PSDProjectionMethod>(
                 &SmoothContactPotential<SmoothCollisions<2>>::hessian,
                 py::const_),
             R"ipc_Qu8mg5v7(
@@ -198,5 +198,5 @@ void define_smooth_potential(py::module_& m)
                 The hessian of the potential.
             )ipc_Qu8mg5v7",
             py::arg("collision"), py::arg("x"),
-            py::arg("project_hessian_to_psd") = false);
+            py::arg("project_hessian_to_psd") = PSDProjectionMethod::NONE);
 }

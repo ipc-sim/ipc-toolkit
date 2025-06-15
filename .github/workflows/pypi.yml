@@ -2,16 +2,16 @@ name: PyPi Release
 
 on:
   workflow_dispatch:
-  # release:
-  #   types: [published]
-  # push:
-  #   branches:
-  #     - pypi
-  #     - main
-  #     - python
-  # pull_request:
-  #   branches:
-  #     - main
+  release:
+    types: [published]
+  push:
+    branches:
+      - pypi
+      - main
+      - python
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build_wheels:

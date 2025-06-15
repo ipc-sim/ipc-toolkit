@@ -72,7 +72,7 @@ void define_adaptive_stiffness(py::module_& m)
     m.def(
         "semi_implicit_stiffness",
         static_cast<double (*)(
-            const CollisionStencil&, Eigen::ConstRef<VectorMax12d>,
+            const CollisionStencil<4>&, Eigen::ConstRef<VectorMax12d>,
             Eigen::ConstRef<VectorMax4d>, Eigen::ConstRef<MatrixMax12d>,
             const double)>(&semi_implicit_stiffness),
         R"ipc_Qu8mg5v7(

@@ -1,19 +1,19 @@
 name: Python
 
 on:
-  # push:
-  #   branches: [main]
-  # pull_request:
-  #   paths:
-  #     - '.github/workflows/python.yml'
-  #     - 'cmake/**'
-  #     - 'python/src/**'
-  #     - 'python/src/CMakeLists.txt'
-  #     - 'src/**'
-  #     - 'CMakeLists.txt'
-  #     - 'MANIFEST.in'
-  #     - 'pyproject.toml'
-  #     - 'setup.py'
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - '.github/workflows/python.yml'
+      - 'cmake/**'
+      - 'python/src/**'
+      - 'python/src/CMakeLists.txt'
+      - 'src/**'
+      - 'CMakeLists.txt'
+      - 'MANIFEST.in'
+      - 'pyproject.toml'
+      - 'setup.py'
 
 jobs:
   Build:

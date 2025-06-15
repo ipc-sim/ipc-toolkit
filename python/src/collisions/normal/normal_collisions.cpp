@@ -22,7 +22,7 @@ void define_SmoothCollisions(py::module_& m, std::string name)
         .def(
             "build",
             py::overload_cast<
-                const CollisionMesh&, const Eigen::MatrixXd&, const ParameterType, const bool, const BroadPhaseMethod>(&SmoothCollisions<dim>::build),
+                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>, const ParameterType, const bool, std::shared_ptr<BroadPhase>>(&SmoothCollisions<dim>::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of collisions used to compute the barrier potential.
 
@@ -34,7 +34,7 @@ void define_SmoothCollisions(py::module_& m, std::string name)
                 broad_phase: Broad phase method.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"), py::arg("param"),
-            py::arg("use_adaptive_dhat") = false, py::arg("broad_phase") = DEFAULT_BROAD_PHASE_METHOD)
+            py::arg("use_adaptive_dhat") = false, py::arg("broad_phase") = make_default_broad_phase())
         .def(
             "compute_minimum_distance", &SmoothCollisions<dim>::compute_minimum_distance,
             R"ipc_Qu8mg5v7(

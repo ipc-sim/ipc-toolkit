@@ -7,7 +7,7 @@ using namespace ipc;
 
 void define_vertex_vertex_candidate(py::module_& m)
 {
-    py::class_<VertexVertexCandidate, CollisionStencil>(
+    py::class_<VertexVertexCandidate, CollisionStencil<4>>(
         m, "VertexVertexCandidate")
         .def(
             py::init<index_t, index_t>(), py::arg("vertex0_id"),
