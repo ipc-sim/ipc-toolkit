@@ -11,6 +11,29 @@
 
 namespace ipc {
 
+std::shared_ptr<ipc::BroadPhase> build_broad_phase(const BroadPhaseMethod& broad_phase_method)
+{
+    switch(broad_phase_method)
+    {
+    case BroadPhaseMethod::HASH_GRID:
+        return std::make_shared<ipc::HashGrid>();
+    case BroadPhaseMethod::BRUTE_FORCE:
+        return std::make_shared<ipc::BruteForce>();
+    case BroadPhaseMethod::SPATIAL_HASH:
+        return std::make_shared<ipc::SpatialHash>();
+    case BroadPhaseMethod::BVH:
+        return std::make_shared<ipc::BVH>();
+#ifdef IPC_TOOLKIT_WITH_CUDA
+    case BroadPhaseMethod::SWEEP_AND_TINIEST_QUEUE:
+        return std::make_shared<ipc::SweepAndTiniestQueue>();
+#endif
+    default:
+        log_and_throw_error("Unknown broad phase type!");
+    }
+
+    return std::make_shared<ipc::HashGrid>();
+}
+
 void BroadPhase::build(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     Eigen::ConstRef<Eigen::MatrixXi> edges,

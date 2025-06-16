@@ -8,7 +8,6 @@
 #include <tbb/combinable.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <ipc/utils/MaybeParallelFor.hpp>
-#include <igl/Timer.h>
 
 namespace ipc {
 
@@ -101,9 +100,6 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     const int dim = X.cols();
     const int ndof = X.size();
 
-    igl::Timer timer;
-    timer.start();
-
     const int max_triplets_size = int(1e7);
     const int buffer_size = std::min(max_triplets_size, ndof);
     auto storage = ipc::utils::create_thread_storage(LocalThreadMatStorage(buffer_size, ndof, ndof));
@@ -127,9 +123,6 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
                     local_hess, vids, dim, *(hess_triplets.cache));
             }
         });
-    
-    timer.stop();
-    logger().trace("done separate assembly {}s...", timer.getElapsedTime());
 
     Eigen::SparseMatrix<double> hess(ndof, ndof);
 
@@ -143,12 +136,9 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
         storages[index++] = &local_storage;
     }
 
-    timer.start();
     utils::maybe_parallel_for(storages.size(), [&](int i) {
         storages[i]->cache->prune();
     });
-    timer.stop();
-    logger().trace("done pruning triplets {}s...", timer.getElapsedTime());
 
     if (storage.size() == 0)
     {
@@ -171,16 +161,12 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     assert(storages.size() >= 1);
     if (storages[0]->cache->is_dense())
     {
-        timer.start();
         // Serially merge local storages
         Eigen::MatrixXd tmp(hess);
         for (const auto &local_storage : storage)
             tmp += dynamic_cast<const DenseMatrixCache &>(*local_storage.cache).mat();
         hess = tmp.sparseView();
         hess.makeCompressed();
-        timer.stop();
-
-        logger().trace("Serial assembly time: {}s...", timer.getElapsedTime());
     }
     else if (triplet_count >= triplets.max_size())
     {
@@ -188,25 +174,15 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
 
         logger().warn("Cannot allocate space for triplets, switching to serial assembly.");
 
-        timer.start();
         // Serially merge local storages
         for (LocalThreadMatStorage &local_storage : storage)
             hess += local_storage.cache->get_matrix(false); // will also prune
         hess.makeCompressed();
-        timer.stop();
-
-        logger().trace("Serial assembly time: {}s...", timer.getElapsedTime());
     }
     else
     {
-        timer.start();
         triplets.resize(triplet_count);
-        timer.stop();
 
-        logger().trace("done allocate triplets {}s...", timer.getElapsedTime());
-        logger().trace("Triplets Count: {}", triplet_count);
-
-        timer.start();
         // Parallel copy into triplets
         utils::maybe_parallel_for(storages.size(), [&](int i) {
             const SparseMatrixCache &cache = dynamic_cast<const SparseMatrixCache &>(*storages[i]->cache);
@@ -229,15 +205,8 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
             }
         });
 
-        timer.stop();
-        logger().trace("done concatenate triplets {}s...", timer.getElapsedTime());
-
-        timer.start();
         // Sort and assemble
         hess.setFromTriplets(triplets.begin(), triplets.end());
-        timer.stop();
-
-        logger().trace("done setFromTriplets assembly {}s...", timer.getElapsedTime());
     }
 
     return hess;

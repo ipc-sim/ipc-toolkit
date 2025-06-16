@@ -36,7 +36,7 @@ namespace {
         return scalar(1.);
     }
 
-    double smooth_heaviside_standard_grad(const double& x)
+    [[maybe_unused]] double smooth_heaviside_standard_grad(const double& x)
     {
         if (x <= -3 || x >= 0)
             return 0.;
@@ -48,7 +48,7 @@ namespace {
         return Math<double>::sqr(x) / 2.;
     }
 
-    double smooth_heaviside_standard_hess(const double& x)
+    [[maybe_unused]] double smooth_heaviside_standard_hess(const double& x)
     {
         if (x <= -3 || x >= 0)
             return 0.;
