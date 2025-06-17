@@ -12,12 +12,12 @@ public:
         Eigen::Ref<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces,
-        Pose<>& initial_pose);
+        Pose& initial_pose);
 
     double mass() const { return m_mass; }
     const VectorMax3d& moment_of_inertia() const { return m_moment_of_inertia; }
     const Eigen::Matrix3d& J() const { return m_J; }
-    const Pose<>& external_force() const { return m_external_force; }
+    const Pose& external_force() const { return m_external_force; }
 
 private:
     /// @brief Total mass of the rigid body
@@ -29,7 +29,7 @@ private:
     Eigen::Matrix3d m_J;
 
     /// @brief External force and torque applied to the rigid body
-    Pose<> m_external_force;
+    Pose m_external_force;
 };
 
 } // namespace ipc::rigid

@@ -10,7 +10,7 @@ namespace {
         Eigen::Ref<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces,
-        Pose<>& pose)
+        Pose& pose)
     {
         // compute the center of mass several times to get more accurate
         for (int i = 0; i < 10; i++) {
@@ -47,7 +47,7 @@ RigidBody::RigidBody(
     Eigen::Ref<Eigen::MatrixXd> vertices,
     Eigen::ConstRef<Eigen::MatrixXi> edges,
     Eigen::ConstRef<Eigen::MatrixXi> faces,
-    Pose<>& initial_pose)
+    Pose& initial_pose)
 {
     const double density = 1.0; // Default density
 

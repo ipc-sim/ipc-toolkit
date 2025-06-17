@@ -45,8 +45,7 @@ void InertialTerm::update(const RigidBodies& bodies)
                 // Add external torques to the predicted pose
                 if (!torque.isZero()) {
                     if (torque.size() == 3) {
-                        const RotationMatrix& Q =
-                            time_integrator->pose(i).rotation;
+                        const auto& Q = time_integrator->pose(i).rotation;
                         // Transform the world space torque into body space
                         const Eigen::Matrix3d Tau =
                             Q.transpose() * cross_product_matrix(torque);
@@ -131,7 +130,7 @@ double InertialTerm::operator()(
             const Eigen::Matrix3d Q = rotation_vector_to_matrix(x.tail<3>());
 
             // ½tr((Q - Q̂) J (Q - Q̂)ᵀ)
-            const RotationMatrix dQ = Q - Q_hat;
+            const Eigen::Matrix3d dQ = Q - Q_hat;
             energy += 0.5 * (dQ * body.J() * dQ.transpose()).trace();
         } else {
             assert(q_hat.size() == 2);

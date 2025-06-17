@@ -182,7 +182,4 @@ Eigen::Vector3d rotation_matrix_to_vector(Eigen::ConstRef<Eigen::Matrix3d> R)
 #endif
 }
 
-template struct Pose<RotationVector>;
-template struct Pose<RotationMatrix>;
-
 } // namespace ipc::rigid

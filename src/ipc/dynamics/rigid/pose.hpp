@@ -4,9 +4,6 @@
 
 namespace ipc::rigid {
 
-using RotationVector = VectorMax3d;
-using RotationMatrix = MatrixMax3d;
-
 /// @brief Convert from a 3D rotation vector to a rotation matrix.
 /// @param theta The rotation vector
 /// @return The rotation matrix corresponding to the rotation vector
@@ -37,19 +34,54 @@ Eigen::Vector3d rotation_matrix_to_vector(Eigen::ConstRef<Eigen::Matrix3d> R);
 
 // ----------------------------------------------------------------------------
 
-template <typename RotationType = RotationVector> struct Pose {
+struct Pose {
     // Position of the rigid body
     VectorMax3d position;
     // Rotation of the rigid body (rotation vector for 3D, angle for 1D)
-    RotationType rotation;
+    VectorMax3d rotation;
 
-    RotationMatrix rotation_matrix() const
+    Pose() = default;
+
+    Pose(
+        Eigen::ConstRef<VectorMax3d> _position,
+        Eigen::ConstRef<VectorMax3d> _rotation)
+        : position(_position)
+        , rotation(_rotation)
     {
-        if constexpr (std::is_same_v<RotationType, RotationVector>) {
-            return rotation_vector_to_matrix(rotation);
+    }
+
+    static Pose Zero(const int dim)
+    {
+        return Pose(VectorMax3d::Zero(dim), VectorMax3d::Zero(dim));
+    }
+
+    MatrixMax3d rotation_matrix() const
+    {
+        return rotation_vector_to_matrix(rotation);
+    }
+
+    Eigen::MatrixXd transform_vertices(Eigen::ConstRef<Eigen::MatrixXd> V) const
+    {
+        // Compute: R(θ) V + p
+        // transpose because x is row-ordered
+        return (V * rotation_matrix().transpose()).rowwise()
+            + position.transpose();
+    }
+
+    friend Pose operator*(const Pose& a, const Pose& b)
+    {
+        Pose c;
+
+        c.position = a.position + b.position;
+
+        if (c.position.size() == 2) {
+            c.rotation = a.rotation + b.rotation;
         } else {
-            return rotation;
+            MatrixMax3d R = a.rotation_matrix() * b.rotation_matrix();
+            c.rotation = rotation_matrix_to_vector(R);
         }
+
+        return c;
     }
 };
 
@@ -75,16 +107,13 @@ struct AffinePose {
             return angle;
         } else {
             // For 3D, return the rotation vector
-            // Eigen::AngleAxisd r =
-            // Eigen::AngleAxisd(Eigen::Matrix3d(rotation)); return r.angle() *
-            // r.axis();
             return rotation_matrix_to_vector(rotation);
         }
     }
 
     /// @brief Set the rotation matrix from a rotation vector or angle.
     /// @param theta The rotation vector (3D) or angle (2D).
-    void set_rotation_vector(Eigen::ConstRef<RotationVector> theta)
+    void set_rotation_vector(Eigen::ConstRef<VectorMax3d> theta)
     {
         assert(theta.size() == 1 || theta.size() == 3);
         if (theta.size() == 1) {

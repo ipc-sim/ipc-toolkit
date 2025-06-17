@@ -61,7 +61,7 @@ RigidBodies::RigidBodies(
     assert(body_face_starts.back() == num_faces());
 
     bodies.reserve(body_vertex_starts.size() - 1);
-    Pose<> initial_pose;
+    Pose initial_pose = Pose::Zero(dim());
     for (size_t i = 0; i < body_vertex_starts.size() - 1; ++i) {
         bodies.emplace_back(
             m_rest_positions.middleRows(
