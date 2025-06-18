@@ -20,25 +20,25 @@ namespace {
 void InertialTerm::update(const RigidBodies& bodies)
 {
     // Update the predicted poses based on the current time integrator state
-    predicted_poses = time_integrator->predicted_pose();
+    m_predicted_poses = time_integrator->predicted_pose();
 
     // Gravity in the y-direction
     const double dt_sq = time_integrator->dt * time_integrator->dt;
 
     tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, predicted_poses.size()),
+        tbb::blocked_range<size_t>(0, m_predicted_poses.size()),
         [&](const tbb::blocked_range<size_t>& r) {
             for (size_t i = r.begin(); i < r.end(); ++i) {
                 // Add gravity to the predicted pose
                 // TODO: Make this configurable
-                predicted_poses[i].position.y() += dt_sq * -9.81;
+                m_predicted_poses[i].position.y() += dt_sq * -9.81;
 
                 const auto& force = bodies[i].external_force().position;
                 const auto& torque = bodies[i].external_force().rotation;
 
                 // Add external forces to the predicted pose
                 if (!force.isZero()) {
-                    predicted_poses[i].position +=
+                    m_predicted_poses[i].position +=
                         dt_sq * force / bodies[i].mass();
                 }
 
@@ -49,11 +49,11 @@ void InertialTerm::update(const RigidBodies& bodies)
                         // Transform the world space torque into body space
                         const Eigen::Matrix3d Tau =
                             Q.transpose() * cross_product_matrix(torque);
-                        predicted_poses[i].rotation +=
+                        m_predicted_poses[i].rotation +=
                             dt_sq * bodies[i].J().inverse() * Tau;
                     } else {
                         assert(torque.size() == 1);
-                        predicted_poses[i].rotation(0) += dt_sq * torque(0)
+                        m_predicted_poses[i].rotation(0) += dt_sq * torque(0)
                             / bodies[i].moment_of_inertia()(0);
                     }
                 }
@@ -66,13 +66,15 @@ void InertialTerm::update(const RigidBodies& bodies)
 double InertialTerm::operator()(
     const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
 {
+    assert(predicted_poses().size() == bodies.num_bodies());
+
     const int ndof = x.size() / bodies.num_bodies();
 
     double energy = 0.0;
     for (size_t i = 0; i < bodies.num_bodies(); ++i) {
         energy += operator()(
-            bodies[i], x.segment(i * ndof, ndof), predicted_poses[i].position,
-            predicted_poses[i].rotation);
+            bodies[i], x.segment(i * ndof, ndof), predicted_poses()[i].position,
+            predicted_poses()[i].rotation);
     }
     return energy;
 }
@@ -80,27 +82,33 @@ double InertialTerm::operator()(
 Eigen::VectorXd InertialTerm::gradient(
     const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
 {
+    assert(predicted_poses().size() == bodies.num_bodies());
+
     const int ndof = x.size() / bodies.num_bodies();
 
     Eigen::VectorXd grad = Eigen::VectorXd::Zero(x.size());
     for (size_t i = 0; i < bodies.num_bodies(); ++i) {
         grad.segment(i * ndof, ndof) = gradient(
-            bodies[i], x.segment(i * ndof, ndof), predicted_poses[i].position,
-            predicted_poses[i].rotation);
+            bodies[i], x.segment(i * ndof, ndof), predicted_poses()[i].position,
+            predicted_poses()[i].rotation);
     }
     return grad;
 }
 
 Eigen::MatrixXd InertialTerm::hessian(
-    const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x)
+    const RigidBodies& bodies,
+    Eigen::ConstRef<Eigen::VectorXd> x,
+    const PSDProjectionMethod project_hessian_to_psd)
 {
+    assert(predicted_poses().size() == bodies.num_bodies());
+
     const int ndof = x.size() / bodies.num_bodies();
 
     Eigen::MatrixXd hess(x.size(), x.size());
     for (size_t i = 0; i < bodies.num_bodies(); ++i) {
         hess.block(i * ndof, i * ndof, ndof, ndof) = hessian(
-            bodies[i], x.segment(i * ndof, ndof), predicted_poses[i].position,
-            predicted_poses[i].rotation);
+            bodies[i], x.segment(i * ndof, ndof), predicted_poses()[i].position,
+            predicted_poses()[i].rotation, project_hessian_to_psd);
     }
     return hess;
 }
@@ -188,7 +196,8 @@ MatrixMax6d InertialTerm::hessian(
     const RigidBody& body,
     Eigen::ConstRef<VectorMax6d> x,
     Eigen::ConstRef<VectorMax3d> q_hat,
-    Eigen::ConstRef<MatrixMax3d> Q_hat) const
+    Eigen::ConstRef<MatrixMax3d> Q_hat,
+    const PSDProjectionMethod project_hessian_to_psd) const
 {
     MatrixMax6d hess = MatrixMax6d::Zero(x.size(), x.size());
 
@@ -198,6 +207,9 @@ MatrixMax6d InertialTerm::hessian(
         // m (q - q̂)
         hess.topLeftCorner(q_hat.size(), q_hat.size()).diagonal().array() =
             body.mass();
+
+        // NOTE: No need to project to PSD here, as the Hessian is already
+        // positive semi-definite (diagonal matrix with positive entries).
     }
 
     // Rotational energy
@@ -221,14 +233,22 @@ MatrixMax6d InertialTerm::hessian(
             d2E_dQ2.diagonal().segment<3>(6).array() = body.J()(2, 2);
 
             // (3x3) = (3×9)(9×9)(9x3) + mat((9x9)(9x1))
-            hess.bottomRightCorner<3, 3>() = dQ_dx.transpose() * d2E_dQ2 * dQ_dx
+            Eigen::Matrix3d hess_rotation = dQ_dx.transpose() * d2E_dQ2 * dQ_dx
                 + (d2Q_dx2.transpose() * dE_dQ).reshaped(3, 3);
+
+            hess.bottomRightCorner<3, 3>() =
+                project_to_psd(hess_rotation, project_hessian_to_psd);
+
         } else {
             assert(q_hat.size() == 2);
             assert(x.size() == 3);
             assert(Q_hat.size() == 1);
             // I (θ - θ̂)
             hess(2, 2) = body.moment_of_inertia()(0);
+
+            // NOTE: No need to project to PSD here, as the Hessian is already
+            // positive semi-definite (single positive value).
+            assert(body.moment_of_inertia()(0) > 0.0);
         }
     }
 

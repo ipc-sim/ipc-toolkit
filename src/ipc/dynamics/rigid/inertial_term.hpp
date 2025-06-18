@@ -38,8 +38,11 @@ public:
     /// @param bodies The collection of rigid bodies.
     /// @param x The DOFs of the rigid bodies, where the first 3 entries are the positions and the last 3 entries are the rotations.
     /// @return The Hessian of the total energy of the rigid bodies.
-    Eigen::MatrixXd
-    hessian(const RigidBodies& bodies, Eigen::ConstRef<Eigen::VectorXd> x);
+    Eigen::MatrixXd hessian(
+        const RigidBodies& bodies,
+        Eigen::ConstRef<Eigen::VectorXd> x,
+        const PSDProjectionMethod project_hessian_to_psd =
+            PSDProjectionMethod::NONE);
 
     // ---- Per-body functions -------------------------------------------------
 
@@ -75,13 +78,24 @@ public:
         const RigidBody& body,
         Eigen::ConstRef<VectorMax6d> x,
         Eigen::ConstRef<VectorMax3d> q_hat,
-        Eigen::ConstRef<MatrixMax3d> Q_hat) const;
+        Eigen::ConstRef<MatrixMax3d> Q_hat,
+        const PSDProjectionMethod project_hessian_to_psd =
+            PSDProjectionMethod::NONE) const;
+
+    // ---- Predicted poses ----------------------------------------------------
+
+    /// @brief Get the predicted poses of the rigid bodies.
+    /// @return A vector of predicted poses for each rigid body.
+    const std::vector<AffinePose>& predicted_poses() const
+    {
+        return m_predicted_poses;
+    }
 
 private:
     const std::shared_ptr<const ImplicitEuler> time_integrator;
 
     /// Cached predicted poses for the rigid body
-    std::vector<AffinePose> predicted_poses;
+    std::vector<AffinePose> m_predicted_poses;
 };
 
 } // namespace ipc::rigid

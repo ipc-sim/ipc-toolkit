@@ -1,4 +1,5 @@
 set(SOURCES
+  test_inertial_term.cpp
   test_mass.cpp
   test_pose.cpp
   test_rigid_body.cpp
