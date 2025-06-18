@@ -24,6 +24,8 @@ TEST_CASE("Rigid body construction", "[rigid]")
     V.col(1).array() *= W;
     V.col(2).array() *= H;
 
+    const double density = GENERATE(1.0, 2.0, 3.0);
+
     Pose input_pose = Pose::Zero(3);
     Pose initial_pose = Pose::Zero(3);
 
@@ -48,7 +50,7 @@ TEST_CASE("Rigid body construction", "[rigid]")
 
     Eigen::MatrixXd modified_V = input_pose.transform_vertices(V);
 
-    const double m = L * W * H; // unit mass per voxel
+    const double m = density * L * W * H; // unit mass per voxel
     const double Ixx = m * (W * W + H * H) / 12.0;
     const double Iyy = m * (L * L + H * H) / 12.0;
     const double Izz = m * (L * L + W * W) / 12.0;
@@ -65,7 +67,7 @@ TEST_CASE("Rigid body construction", "[rigid]")
     }
 
     Pose modified_pose = initial_pose;
-    const RigidBody body(modified_V, E, F, modified_pose);
+    const RigidBody body(modified_V, E, F, density, modified_pose);
     REQUIRE(modified_V.rows() == V.rows());
     REQUIRE(modified_V.cols() == V.cols());
 

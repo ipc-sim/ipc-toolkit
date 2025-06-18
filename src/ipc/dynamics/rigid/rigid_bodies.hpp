@@ -12,14 +12,16 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces,
-        std::vector<index_t> body_vertex_starts,
-        std::vector<index_t> body_edge_starts,
-        std::vector<index_t> body_face_starts);
+        const std::vector<index_t>& body_vertex_starts,
+        const std::vector<index_t>& body_edge_starts,
+        const std::vector<index_t>& body_face_starts,
+        const std::vector<double>& densities);
 
     static RigidBodies build_from_meshes(
         const std::vector<Eigen::MatrixXd>& rest_positions,
         const std::vector<Eigen::MatrixXi>& edges,
-        const std::vector<Eigen::MatrixXi>& faces);
+        const std::vector<Eigen::MatrixXi>& faces,
+        const std::vector<double>& densities);
 
     size_t num_bodies() const { return bodies.size(); }
 

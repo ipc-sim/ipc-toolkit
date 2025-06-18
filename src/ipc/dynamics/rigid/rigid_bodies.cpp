@@ -5,10 +5,12 @@ namespace ipc::rigid {
 RigidBodies RigidBodies::build_from_meshes(
     const std::vector<Eigen::MatrixXd>& rest_positions,
     const std::vector<Eigen::MatrixXi>& edges,
-    const std::vector<Eigen::MatrixXi>& faces)
+    const std::vector<Eigen::MatrixXi>& faces,
+    const std::vector<double>& densities)
 {
     assert(rest_positions.size() == edges.size());
     assert(rest_positions.size() == faces.size());
+    assert(rest_positions.size() == densities.size());
 
     size_t num_vertices = 0, num_edges = 0, num_faces = 0;
     std::vector<index_t> body_vertex_starts(rest_positions.size() + 1);
@@ -39,16 +41,17 @@ RigidBodies RigidBodies::build_from_meshes(
 
     return RigidBodies(
         concat_rest_positions, concat_edges, concat_faces, body_vertex_starts,
-        body_edge_starts, body_face_starts);
+        body_edge_starts, body_face_starts, densities);
 }
 
 RigidBodies::RigidBodies(
     Eigen::ConstRef<Eigen::MatrixXd> _rest_positions,
     Eigen::ConstRef<Eigen::MatrixXi> _edges,
     Eigen::ConstRef<Eigen::MatrixXi> _faces,
-    std::vector<index_t> _body_vertex_starts,
-    std::vector<index_t> _body_edge_starts,
-    std::vector<index_t> _body_face_starts)
+    const std::vector<index_t>& _body_vertex_starts,
+    const std::vector<index_t>& _body_edge_starts,
+    const std::vector<index_t>& _body_face_starts,
+    const std::vector<double>& densities)
     : CollisionMesh(_rest_positions, _edges, _faces)
     , body_vertex_starts(std::move(_body_vertex_starts))
     , body_edge_starts(std::move(_body_edge_starts))
@@ -73,7 +76,7 @@ RigidBodies::RigidBodies(
             faces().middleRows(
                 body_face_starts[i],
                 body_face_starts[i + 1] - body_face_starts[i]),
-            initial_pose);
+            densities[i], initial_pose);
     }
 }
 

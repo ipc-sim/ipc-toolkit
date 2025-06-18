@@ -228,9 +228,9 @@ MatrixMax6d InertialTerm::hessian(
             // ∂²E/∂Q² = J ⊗ I
             Eigen::Matrix<double, 9, 9> d2E_dQ2 =
                 Eigen::Matrix<double, 9, 9>::Zero();
-            d2E_dQ2.diagonal().segment<3>(0).array() = body.J()(0, 0);
-            d2E_dQ2.diagonal().segment<3>(3).array() = body.J()(1, 1);
-            d2E_dQ2.diagonal().segment<3>(6).array() = body.J()(2, 2);
+            d2E_dQ2.diagonal().segment<3>(0).array() = body.J().diagonal()(0);
+            d2E_dQ2.diagonal().segment<3>(3).array() = body.J().diagonal()(1);
+            d2E_dQ2.diagonal().segment<3>(6).array() = body.J().diagonal()(2);
 
             // (3x3) = (3×9)(9×9)(9x3) + mat((9x9)(9x1))
             Eigen::Matrix3d hess_rotation = dQ_dx.transpose() * d2E_dQ2 * dQ_dx

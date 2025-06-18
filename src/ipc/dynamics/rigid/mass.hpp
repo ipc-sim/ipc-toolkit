@@ -16,6 +16,7 @@ namespace ipc::rigid {
 void compute_mass_properties(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& facets,
+    const double density,
     double& total_mass,
     VectorMax3d& center_of_mass,
     MatrixMax3d& moment_of_inertia);

@@ -28,7 +28,9 @@ RigidBodies rigid_bodies()
     V.col(1).array() *= W;
     V.col(2).array() *= H;
 
-    return RigidBodies::build_from_meshes({ V }, { E }, { F });
+    const double density = GENERATE(1.0, 2.0, 3.0);
+
+    return RigidBodies::build_from_meshes({ V }, { E }, { F }, { density });
 }
 
 std::shared_ptr<const ImplicitEuler> time_integrator(const RigidBodies& bodies)
@@ -128,7 +130,7 @@ TEST_CASE(
 
 TEST_CASE(
     "InertialTerm total energy and derivatives",
-    "[inertial_term][total_energy][total_gradient][total_hessian]")
+    "[rigid][inertial_term][total_energy][total_gradient][total_hessian]")
 {
     RigidBodies bodies = rigid_bodies();
     InertialTerm inertial_term(time_integrator(bodies));

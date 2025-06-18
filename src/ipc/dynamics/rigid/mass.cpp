@@ -11,6 +11,7 @@ namespace {
     void compute_mass_properties_2D(
         const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& edges,
+        const double density,
         double& total_mass,
         VectorMax3d& center,
         MatrixMax3d& inertia)
@@ -28,6 +29,12 @@ namespace {
         // ∑ mᵢ rᵢ ⋅ rᵢ
         inertia.resize(1, 1);
         inertia(0) = (mass_matrix * vertices.rowwise().squaredNorm()).sum();
+
+        // Total mass above is the paremeter length of the edges, so we need to
+        // multiply by the density to get the total mass in the correct units.
+        total_mass *= density;
+        // Same for the inertia.
+        inertia *= density;
     }
 
     // Based on ChTriangleMeshConnected.cpp::ComputeMassProperties from Chrono:
@@ -40,6 +47,7 @@ namespace {
     bool compute_mass_properties_3D(
         const Eigen::MatrixXd& vertices,
         const Eigen::MatrixXi& faces,
+        const double density,
         double& total_mass,
         VectorMax3d& center,
         MatrixMax3d& inertia)
@@ -109,16 +117,20 @@ namespace {
             integral[9] += N.z() * (v0.x() * g0z + v1.x() * g1z + v2.x() * g2z);
         }
 
-        integral[0] /= 6;
-        integral[1] /= 24;
-        integral[2] /= 24;
-        integral[3] /= 24;
-        integral[4] /= 60;
-        integral[5] /= 60;
-        integral[6] /= 60;
-        integral[7] /= 120;
-        integral[8] /= 120;
-        integral[9] /= 120;
+        constexpr double inv_6 = 1.0 / 6.0;
+        constexpr double inv_24 = 1.0 / 24.0;
+        constexpr double inv_60 = 1.0 / 60.0;
+        constexpr double inv_120 = 1.0 / 120.0;
+        integral[0] *= inv_6;
+        integral[1] *= inv_24;
+        integral[2] *= inv_24;
+        integral[3] *= inv_24;
+        integral[4] *= inv_60;
+        integral[5] *= inv_60;
+        integral[6] *= inv_60;
+        integral[7] *= inv_120;
+        integral[8] *= inv_120;
+        integral[9] *= inv_120;
 
         // total_mass
         total_mass = integral[0];
@@ -158,11 +170,18 @@ namespace {
         inertia(2, 2) -=
             total_mass * (center.x() * center.x() + center.y() * center.y());
 
+        // Total mass above is the volume of the mesh, so we need to multiply by
+        // the density to get the total mass in the correct units.
+        total_mass *= density;
+        // Same for the inertia.
+        inertia *= density;
+
         return true;
     }
 
     void compute_mass_properties_point_cloud(
         const Eigen::MatrixXd& vertices,
+        const double density,
         double& total_mass,
         VectorMax3d& center,
         MatrixMax3d& inertia)
@@ -185,6 +204,12 @@ namespace {
         inertia(1, 0) = inertia(0, 1);
         inertia(2, 0) = inertia(0, 2);
         inertia(2, 1) = inertia(1, 2);
+
+        // Total mass above is the number of points, so we need to multiply by
+        // the density to get the total mass in the correct units.
+        total_mass *= density;
+        // Same for the inertia.
+        inertia *= density;
     }
 
 } // namespace
@@ -192,21 +217,27 @@ namespace {
 void compute_mass_properties(
     const Eigen::MatrixXd& vertices,
     const Eigen::MatrixXi& facets,
+    const double density,
     double& total_mass,
     VectorMax3d& center,
     MatrixMax3d& inertia)
 {
+    assert(facets.cols() <= 3);
     if (vertices.cols() == 2) {
         compute_mass_properties_2D(
-            vertices, facets, total_mass, center, inertia);
+            vertices, facets, density, total_mass, center, inertia);
     }
     if (facets.size() == 0 || facets.cols() != 3) {
         compute_mass_properties_point_cloud(
-            vertices, total_mass, center, inertia);
-    } else if (!compute_mass_properties_3D(
-                   vertices, facets, total_mass, center, inertia)) {
+            vertices, density, total_mass, center, inertia);
+    } else if (
+        facets.rows() < 4 // Not enough faces to form a closed mesh
+        || !compute_mass_properties_3D(
+            vertices, facets, density, total_mass, center, inertia)) {
+        // If the mesh is not closed, we fall back to treating it as a point
+        // cloud.
         compute_mass_properties_point_cloud(
-            vertices, total_mass, center, inertia);
+            vertices, density, total_mass, center, inertia);
     }
 }
 

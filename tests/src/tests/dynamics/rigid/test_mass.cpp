@@ -23,12 +23,14 @@ TEST_CASE("Mass properties", "[rigid][mass]")
     V.col(1).array() *= W;
     V.col(2).array() *= H;
 
+    const double density = GENERATE(1.0, 2.0, 3.0);
+
     double total_mass;
     VectorMax3d center;
     MatrixMax3d inertia;
-    compute_mass_properties(V, F, total_mass, center, inertia);
+    compute_mass_properties(V, F, density, total_mass, center, inertia);
 
-    const double m = L * W * H; // unit mass per voxel
+    const double m = density * L * W * H;
     const double Ixx = m * (W * W + H * H) / 12.0;
     const double Iyy = m * (L * L + H * H) / 12.0;
     const double Izz = m * (L * L + W * W) / 12.0;
