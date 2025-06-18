@@ -15,71 +15,13 @@
 
 namespace ipc {
 
-class CollisionsBase {
-public:
-    CollisionsBase() = default;
-    virtual ~CollisionsBase() = default;
-
-    virtual std::shared_ptr<CollisionsBase> deepcopy() const = 0;
-
-    /// @brief Get the number of collisions.
-    virtual size_t size() const = 0;
-
-    /// @brief Get if the collision set are empty.
-    virtual bool empty() const = 0;
-
-    /// @brief Clear the collision set.
-    virtual void clear() = 0;
-
-    /// @brief Computes the minimum distance between any non-adjacent elements.
-    /// @param mesh The collision mesh.
-    /// @param vertices Vertices of the collision mesh.
-    /// @returns The minimum distance between any non-adjacent elements.
-    virtual double compute_minimum_distance(
-        const CollisionMesh& mesh, Eigen::ConstRef<Eigen::MatrixXd> vertices) const = 0;
-
-    /// @brief Get if the collision set are using the convergent formulation.
-    /// @note If not empty, this is the current value not necessarily the value used to build the collisions.
-    /// @return If the collision set are using the convergent formulation.
-    bool are_shape_derivatives_enabled() const
-    {
-        return m_are_shape_derivatives_enabled;
-    }
-
-    /// @brief Set if the collision set should enable shape derivative computation.
-    /// @warning This must be set before the collisions are built.
-    /// @param are_shape_derivatives_enabled If the collision set should enable shape derivative computation.
-    void
-    set_are_shape_derivatives_enabled(const bool are_shape_derivatives_enabled)
-    {
-        if (!empty()
-            && are_shape_derivatives_enabled
-                != m_are_shape_derivatives_enabled) {
-            logger().warn(
-                "Setting enable_shape_derivatives after building collisions. "
-                "Re-build collisions for this to have an effect.");
-        }
-
-        m_are_shape_derivatives_enabled = are_shape_derivatives_enabled;
-    }
-
-protected:
-    bool m_use_convergent_formulation = false;
-    bool m_are_shape_derivatives_enabled = false;
-};
-
-class NormalCollisions : public CollisionsBase {
+class NormalCollisions {
 public:
     /// @brief The type of the collisions.
     using value_type = NormalCollision;
 
 public:
     NormalCollisions() = default;
-
-    std::shared_ptr<CollisionsBase> deepcopy() const override
-    {
-        return std::make_shared<NormalCollisions>(*this);
-    }
 
     /// @brief Initialize the set of collisions used to compute the barrier potential.
     /// @param mesh The collision mesh.
@@ -116,18 +58,18 @@ public:
     /// @returns The minimum distance between any non-adjacent elements.
     double compute_minimum_distance(
         const CollisionMesh& mesh,
-        Eigen::ConstRef<Eigen::MatrixXd> vertices) const override;
+        Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
     // ------------------------------------------------------------------------
 
     /// @brief Get the number of collisions.
-    size_t size() const override;
+    size_t size() const;
 
     /// @brief Get if the collision set are empty.
-    bool empty() const override;
+    bool empty() const;
 
     /// @brief Clear the collision set.
-    void clear() override;
+    void clear();
 
     /// @brief Get a reference to collision at index i.
     /// @param i The index of the collision.

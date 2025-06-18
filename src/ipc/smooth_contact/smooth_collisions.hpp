@@ -1,31 +1,28 @@
 #pragma once
 
-#include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/smooth_contact/collisions/smooth_collision.hpp>
 
-namespace ipc {
+#include <ipc/collision_mesh.hpp>
+#include <ipc/candidates/candidates.hpp>
+#include <ipc/collisions/normal/edge_edge.hpp>
+#include <ipc/collisions/normal/edge_vertex.hpp>
+#include <ipc/collisions/normal/face_vertex.hpp>
+#include <ipc/collisions/normal/normal_collision.hpp>
+#include <ipc/collisions/normal/plane_vertex.hpp>
+#include <ipc/collisions/normal/vertex_vertex.hpp>
 
-template <int dim> class SmoothCollisions : public CollisionsBase {
+#include <Eigen/Core>
+
+#include <vector>
+
+namespace ipc {
+template <int dim> class SmoothCollisions {
 public:
-    using Super = CollisionsBase;
     /// @brief The type of the collisions.
     using value_type = SmoothCollision<MaxVertices<dim>::value>;
 
 public:
     SmoothCollisions() = default;
-
-    std::shared_ptr<CollisionsBase> deepcopy() const override
-    {
-        std::shared_ptr<SmoothCollisions<dim>> ptr =
-            std::make_shared<SmoothCollisions<dim>>();
-        ptr->candidates = this->candidates;
-        ptr->vert_adaptive_dhat = this->vert_adaptive_dhat;
-        ptr->edge_adaptive_dhat = this->edge_adaptive_dhat;
-        ptr->face_adaptive_dhat = this->face_adaptive_dhat;
-        for (const auto& cc : this->collisions)
-            ptr->collisions.push_back(cc);
-        return ptr;
-    }
 
     void compute_adaptive_dhat(
         const CollisionMesh& mesh,
@@ -60,13 +57,13 @@ public:
     // ------------------------------------------------------------------------
 
     /// @brief Get the number of collisions.
-    size_t size() const override;
+    size_t size() const;
 
     /// @brief Get if the collision set are empty.
-    bool empty() const override;
+    bool empty() const;
 
     /// @brief Clear the collision set.
-    void clear() override;
+    void clear();
 
     /// @brief Get a reference to collision at index i.
     /// @param i The index of the collision.
@@ -80,7 +77,7 @@ public:
 
     double compute_minimum_distance(
         const CollisionMesh& mesh,
-        Eigen::ConstRef<Eigen::MatrixXd> vertices) const override;
+        Eigen::ConstRef<Eigen::MatrixXd> vertices) const;
 
     double compute_active_minimum_distance(
         const CollisionMesh& mesh,

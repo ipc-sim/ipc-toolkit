@@ -356,8 +356,6 @@ void check_smooth_friction_force_jacobian(
     const double barrier_stiffness,
     const bool recompute_collisions)
 {
-    REQUIRE(collisions.are_shape_derivatives_enabled());
-
     const double dhat = params.dhat;
     const Eigen::MatrixXd& X = mesh.rest_positions();
     double distance_t0 = collisions.compute_minimum_distance(mesh, X + Ut);
@@ -606,7 +604,6 @@ TEST_CASE(
     SmoothFrictionData<2> data = smooth_friction_data_generator_2d();
     const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, param, barrier_stiffness] =
         data;
-    REQUIRE(collisions.are_shape_derivatives_enabled());
 
     Eigen::MatrixXd X, Ut, U;
     X = V0;
@@ -626,7 +623,6 @@ TEST_CASE(
     SmoothFrictionData<3> data = smooth_friction_data_generator_3d();
     const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, param, barrier_stiffness] =
         data;
-    REQUIRE(collisions.are_shape_derivatives_enabled());
 
     Eigen::MatrixXd X, Ut, U;
     X = V0;

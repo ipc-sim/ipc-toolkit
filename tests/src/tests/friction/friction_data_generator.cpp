@@ -157,7 +157,6 @@ SmoothFrictionData<3> smooth_friction_data_generator_3d()
         data;
 
     double& dhat = param.dhat;
-    collisions.set_are_shape_derivatives_enabled(true);
 
     mu = 1.; // GENERATE(range(0.0, 1.0, 0.2));
 #ifdef NDEBUG
@@ -325,7 +324,6 @@ SmoothFrictionData<2> smooth_friction_data_generator_2d()
         data;
 
     double& dhat = param.dhat;
-    collisions.set_are_shape_derivatives_enabled(true);
 
     mu = 1.; // GENERATE(range(0.0, 1.0, 0.2));
 #ifdef NDEBUG
