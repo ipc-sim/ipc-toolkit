@@ -9,6 +9,7 @@ set(SOURCES
   rigid_bodies.hpp
   rigid_body.cpp
   rigid_body.hpp
+  simulator.cpp
   time_integrator.hpp
 )
 

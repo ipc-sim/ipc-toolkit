@@ -30,7 +30,11 @@ RigidBodies rigid_bodies()
 
     const double density = GENERATE(1.0, 2.0, 3.0);
 
-    return RigidBodies::build_from_meshes({ V }, { E }, { F }, { density });
+    std::vector<Pose> initial_poses;
+    initial_poses.push_back(Pose::Zero(3)); // Initial pose at the origin
+
+    return RigidBodies::build_from_meshes(
+        { V }, { E }, { F }, { density }, initial_poses);
 }
 
 std::shared_ptr<const ImplicitEuler> time_integrator(const RigidBodies& bodies)

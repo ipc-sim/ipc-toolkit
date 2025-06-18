@@ -1,12 +1,15 @@
 #include "rigid_bodies.hpp"
 
+#include <ipc/utils/logger.hpp>
+
 namespace ipc::rigid {
 
 RigidBodies RigidBodies::build_from_meshes(
     const std::vector<Eigen::MatrixXd>& rest_positions,
     const std::vector<Eigen::MatrixXi>& edges,
     const std::vector<Eigen::MatrixXi>& faces,
-    const std::vector<double>& densities)
+    const std::vector<double>& densities,
+    std::vector<Pose>& initial_poses)
 {
     assert(rest_positions.size() == edges.size());
     assert(rest_positions.size() == faces.size());
@@ -41,7 +44,7 @@ RigidBodies RigidBodies::build_from_meshes(
 
     return RigidBodies(
         concat_rest_positions, concat_edges, concat_faces, body_vertex_starts,
-        body_edge_starts, body_face_starts, densities);
+        body_edge_starts, body_face_starts, densities, initial_poses);
 }
 
 RigidBodies::RigidBodies(
@@ -51,7 +54,8 @@ RigidBodies::RigidBodies(
     const std::vector<index_t>& _body_vertex_starts,
     const std::vector<index_t>& _body_edge_starts,
     const std::vector<index_t>& _body_face_starts,
-    const std::vector<double>& densities)
+    const std::vector<double>& densities,
+    std::vector<Pose>& initial_poses)
     : CollisionMesh(_rest_positions, _edges, _faces)
     , body_vertex_starts(std::move(_body_vertex_starts))
     , body_edge_starts(std::move(_body_edge_starts))
@@ -62,9 +66,9 @@ RigidBodies::RigidBodies(
     assert(body_vertex_starts.back() == num_vertices());
     assert(body_edge_starts.back() == num_edges());
     assert(body_face_starts.back() == num_faces());
+    assert(initial_poses.size() == body_vertex_starts.size() - 1);
 
     bodies.reserve(body_vertex_starts.size() - 1);
-    Pose initial_pose = Pose::Zero(dim());
     for (size_t i = 0; i < body_vertex_starts.size() - 1; ++i) {
         bodies.emplace_back(
             m_rest_positions.middleRows(
@@ -76,7 +80,11 @@ RigidBodies::RigidBodies(
             faces().middleRows(
                 body_face_starts[i],
                 body_face_starts[i + 1] - body_face_starts[i]),
-            densities[i], initial_pose);
+            densities[i], initial_poses[i]);
+        logger().info(
+            "Initial pose: position={}, rotation={}",
+            initial_poses[i].position.transpose(),
+            initial_poses[i].rotation.transpose());
     }
 }
 
