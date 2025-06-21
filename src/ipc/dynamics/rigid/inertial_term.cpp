@@ -3,62 +3,14 @@
 #include <ipc/dynamics/rigid/rigid_body.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
-namespace ipc::rigid {
+#include <iostream>
 
-namespace {
-    inline Eigen::Matrix3d
-    cross_product_matrix(Eigen::ConstRef<Eigen::Vector3d> x)
-    {
-        Eigen::Matrix3d X;
-        X << 0, -x.z(), x.y(), //
-            x.z(), 0, -x.x(),  //
-            -x.y(), x.x(), 0;
-        return X;
-    }
-} // namespace
+namespace ipc::rigid {
 
 void InertialTerm::update(const RigidBodies& bodies)
 {
     // Update the predicted poses based on the current time integrator state
     m_predicted_poses = time_integrator->predicted_pose();
-
-    // Gravity in the y-direction
-    const double dt_sq = time_integrator->dt * time_integrator->dt;
-
-    tbb::parallel_for(
-        tbb::blocked_range<size_t>(0, m_predicted_poses.size()),
-        [&](const tbb::blocked_range<size_t>& r) {
-            for (size_t i = r.begin(); i < r.end(); ++i) {
-                // Add gravity to the predicted pose
-                // TODO: Make this configurable
-                m_predicted_poses[i].position.y() += dt_sq * -9.81;
-
-                const auto& force = bodies[i].external_force().position;
-                const auto& torque = bodies[i].external_force().rotation;
-
-                // Add external forces to the predicted pose
-                if (!force.isZero()) {
-                    m_predicted_poses[i].position +=
-                        dt_sq * force / bodies[i].mass();
-                }
-
-                // Add external torques to the predicted pose
-                if (!torque.isZero()) {
-                    if (torque.size() == 3) {
-                        const auto& Q = time_integrator->pose(i).rotation;
-                        // Transform the world space torque into body space
-                        const Eigen::Matrix3d Tau =
-                            Q.transpose() * cross_product_matrix(torque);
-                        m_predicted_poses[i].rotation +=
-                            dt_sq * bodies[i].J().inverse() * Tau;
-                    } else {
-                        assert(torque.size() == 1);
-                        m_predicted_poses[i].rotation(0) += dt_sq * torque(0)
-                            / bodies[i].moment_of_inertia()(0);
-                    }
-                }
-            }
-        });
 }
 
 // ---- Cumulative functions ---------------------------------------------------

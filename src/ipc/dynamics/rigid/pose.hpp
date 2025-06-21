@@ -60,6 +60,14 @@ struct Pose {
         return rotation_vector_to_matrix(rotation);
     }
 
+    Eigen::Quaternion<double> quaternion() const
+    {
+        assert(rotation.size() == 3);
+        double angle = rotation.norm();
+        Eigen::Vector3d axis = rotation / angle;
+        return Eigen::Quaternion<double>(Eigen::AngleAxis<double>(angle, axis));
+    }
+
     Eigen::MatrixXd transform_vertices(Eigen::ConstRef<Eigen::MatrixXd> V) const
     {
         // Compute: R(θ) V + p

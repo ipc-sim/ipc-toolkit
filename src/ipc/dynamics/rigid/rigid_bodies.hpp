@@ -38,9 +38,63 @@ public:
         return V;
     }
 
+    /// @brief Get the rigid body at index i.
+    /// @param i Index of the rigid body.
+    /// @return Reference to the rigid body at index i.
+    const RigidBody& operator[](size_t i) const { return bodies[i]; }
+
+    /// @brief Get the number of rigid bodies in the system.
+    /// @return Number of rigid bodies.
     size_t num_bodies() const { return bodies.size(); }
 
-    const RigidBody& operator[](size_t i) const { return bodies[i]; }
+    /// @brief Get the number of vertices in the i-th rigid body mesh.
+    /// @param i Index of the rigid body mesh.
+    /// @return Number of vertices in the i-th rigid body mesh.
+    size_t num_body_vertices(size_t i) const
+    {
+        return body_vertex_starts[i + 1] - body_vertex_starts[i];
+    }
+
+    /// @brief Get the number of edges in the i-th rigid body mesh.
+    /// @param i Index of the rigid body mesh.
+    /// @return Number of edges in the i-th rigid body mesh.
+    size_t num_body_edges(size_t i) const
+    {
+        return body_edge_starts[i + 1] - body_edge_starts[i];
+    }
+
+    /// @brief Get the number of faces in the i-th rigid body mesh.
+    /// @param i Index of the rigid body mesh.
+    /// @return Number of faces in the i-th rigid body mesh.
+    size_t num_body_faces(size_t i) const
+    {
+        return body_face_starts[i + 1] - body_face_starts[i];
+    }
+
+    /// @brief Get the vertices of the i-th rigid body mesh.
+    /// @param i Index of the rigid body mesh.
+    /// @return Vertices of the i-th rigid body mesh.
+    auto body_vertices(size_t i) const
+    {
+        return rest_positions().middleRows(
+            body_vertex_starts[i], num_body_vertices(i));
+    }
+
+    /// @brief Get the edges of the i-th rigid body mesh.
+    /// @param i Index of the rigid body mesh.
+    /// @return Edges of the i-th rigid body mesh.
+    auto body_edges(size_t i) const
+    {
+        return edges().middleRows(body_edge_starts[i], num_body_edges(i));
+    }
+
+    /// @brief Get the faces of the i-th rigid body mesh.
+    /// @param i Index of the rigid body mesh.
+    /// @return Faces of the i-th rigid body mesh.
+    auto body_faces(size_t i) const
+    {
+        return faces().middleRows(body_face_starts[i], num_body_faces(i));
+    }
 
 private:
     std::vector<RigidBody> bodies;

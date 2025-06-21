@@ -1,4 +1,6 @@
 set(SOURCES
+  body_forces.cpp
+  body_forces.hpp
   inertial_term.cpp
   inertial_term.hpp
   mass.cpp

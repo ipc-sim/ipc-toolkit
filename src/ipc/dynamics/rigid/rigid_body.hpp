@@ -8,6 +8,16 @@ namespace ipc::rigid {
 
 class RigidBody {
 public:
+    enum class Type {
+        /// @brief Static rigid body, does not move
+        STATIC,
+        /// @brief Kinematic rigid body, moves but does not respond to forces
+        KINEMATIC,
+        /// @brief Dynamic rigid body, moves and responds to forces
+        DYNAMIC
+    };
+
+public:
     RigidBody(
         Eigen::Ref<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,

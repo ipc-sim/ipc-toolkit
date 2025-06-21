@@ -11,8 +11,6 @@ set(SOURCES
   logger.cpp
   logger.hpp
   merge_thread_local.hpp
-  save_obj.cpp
-  save_obj.hpp
   sinc.cpp
   sinc.hpp
   unordered_map_and_set.cpp

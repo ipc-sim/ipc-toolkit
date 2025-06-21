@@ -168,13 +168,6 @@ target_link_libraries(ipc_toolkit PUBLIC tight_inclusion::tight_inclusion)
 include(scalable_ccd)
 target_link_libraries(ipc_toolkit PUBLIC scalable_ccd::scalable_ccd)
 
-# CCD
-if(IPC_TOOLKIT_WITH_INEXACT_CCD)
-  # Etienne Vouga's CTCD Library for the floating point root finding algorithm
-  include(evouga_ccd)
-  target_link_libraries(ipc_toolkit PUBLIC evouga::ccd)
-endif()
-
 # SimpleBVH
 include(simple_bvh)
 target_link_libraries(ipc_toolkit PUBLIC simple_bvh::simple_bvh)
@@ -182,6 +175,17 @@ target_link_libraries(ipc_toolkit PUBLIC simple_bvh::simple_bvh)
 # Logger
 include(spdlog)
 target_link_libraries(ipc_toolkit PUBLIC spdlog::spdlog)
+
+# TinyGLTF
+include(tinygltf)
+target_link_libraries(ipc_toolkit PRIVATE tinygltf::tinygltf)
+
+# CCD
+if(IPC_TOOLKIT_WITH_INEXACT_CCD)
+  # Etienne Vouga's CTCD Library for the floating point root finding algorithm
+  include(evouga_ccd)
+  target_link_libraries(ipc_toolkit PUBLIC evouga::ccd)
+endif()
 
 # rational-cpp (requires GMP)
 if(IPC_TOOLKIT_WITH_RATIONAL_INTERSECTION)

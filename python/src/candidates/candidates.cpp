@@ -131,7 +131,7 @@ void define_candidates(py::module_& m)
             py::arg("broad_phase") = make_default_broad_phase(),
             py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD)
         .def(
-            "save_obj", &Candidates::save_obj, py::arg("filename"),
+            "write_obj", &Candidates::write_obj, py::arg("filename"),
             py::arg("vertices"), py::arg("edges"), py::arg("faces"))
         .def_readwrite("vv_candidates", &Candidates::vv_candidates)
         .def_readwrite("ev_candidates", &Candidates::ev_candidates)

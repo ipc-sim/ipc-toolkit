@@ -112,7 +112,7 @@ public:
         const NarrowPhaseCCD& narrow_phase_ccd =
             DEFAULT_NARROW_PHASE_CCD) const;
 
-    bool save_obj(
+    bool write_obj(
         const std::string& filename,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,
         Eigen::ConstRef<Eigen::MatrixXi> edges,

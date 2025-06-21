@@ -204,6 +204,15 @@ inline Eigen::MatrixXd to_X3d(Eigen::ConstRef<Eigen::MatrixXd> vertices)
     return vertices_3d;
 }
 
+inline Eigen::Matrix3d cross_product_matrix(Eigen::ConstRef<Eigen::Vector3d> x)
+{
+    Eigen::Matrix3d X;
+    X << 0, -x.z(), x.y(), //
+        x.z(), 0, -x.x(),  //
+        -x.y(), x.x(), 0;
+    return X;
+}
+
 /// Eigen IO Format to format vectors like vertex rows in an OBJ file.
 static const Eigen::IOFormat OBJ_VERTEX_FORMAT = Eigen::IOFormat(
     Eigen::FullPrecision, Eigen::DontAlignCols, " ", "", "v ", "\n", "", "");

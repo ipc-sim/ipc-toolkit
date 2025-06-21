@@ -43,7 +43,7 @@ public:
     // Accessors
     // -----------------------------------------------------------------------
 
-    const std::vector<std::vector<Pose>>& poses_history() const
+    const std::list<std::vector<Pose>>& poses_history() const
     {
         return m_pose_history;
     }
@@ -51,6 +51,14 @@ public:
     const std::shared_ptr<RigidBodies>& bodies() const { return m_bodies; }
 
     double t() const { return m_t; }
+    // double dt() const { return m_time_integrator->dt; }
+    // void set_dt(const double dt) { m_time_integrator->set_dt(dt); }
+
+    // VectorMax3d gravity() const { return m_inertial_term->gravity(); }
+    // void set_gravity(const VectorMax3d& gravity)
+    // {
+    //     m_inertial_term->set_gravity(gravity);
+    // }
 
 protected:
     /// @brief Bodies in the simulation
@@ -62,7 +70,7 @@ protected:
     /// @brief Inertial term for the rigid body dynamics
     std::shared_ptr<InertialTerm> m_inertial_term;
 
-    std::vector<std::vector<Pose>> m_pose_history;
+    std::list<std::vector<Pose>> m_pose_history;
 
     /// @brief t Current simulation time
     double m_t = 0.0;
