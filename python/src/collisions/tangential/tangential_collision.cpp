@@ -2,7 +2,6 @@
 
 #include <ipc/collisions/tangential/tangential_collision.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_tangential_collision(py::module_& m)
@@ -26,7 +25,7 @@ void define_tangential_collision(py::module_& m)
             Returns:
                 Tangent basis of the collision.
             )ipc_Qu8mg5v7",
-            py::arg("positions"))
+            "positions"_a)
         .def(
             "compute_tangent_basis_jacobian",
             &TangentialCollision::compute_tangent_basis_jacobian,
@@ -39,7 +38,7 @@ void define_tangential_collision(py::module_& m)
             Returns:
                 Jacobian of the tangent basis of the collision.
             )ipc_Qu8mg5v7",
-            py::arg("positions"))
+            "positions"_a)
         .def(
             "compute_closest_point",
             &TangentialCollision::compute_closest_point,
@@ -52,7 +51,7 @@ void define_tangential_collision(py::module_& m)
             Returns:
                 Barycentric coordinates of the closest point.
             )ipc_Qu8mg5v7",
-            py::arg("positions"))
+            "positions"_a)
         .def(
             "compute_closest_point_jacobian",
             &TangentialCollision::compute_closest_point_jacobian,
@@ -65,7 +64,7 @@ void define_tangential_collision(py::module_& m)
             Returns:
                 Jacobian of the barycentric coordinates of the closest point.
             )ipc_Qu8mg5v7",
-            py::arg("positions"))
+            "positions"_a)
         .def(
             "relative_velocity", &TangentialCollision::relative_velocity,
             R"ipc_Qu8mg5v7(
@@ -77,7 +76,7 @@ void define_tangential_collision(py::module_& m)
             Returns:
                 Relative velocity of the collision.
             )ipc_Qu8mg5v7",
-            py::arg("velocities"))
+            "velocities"_a)
         .def(
             "relative_velocity_matrix",
             py::overload_cast<>(
@@ -104,7 +103,7 @@ void define_tangential_collision(py::module_& m)
             Returns:
                 A matrix M such that `relative_velocity = M * velocities`.
             )ipc_Qu8mg5v7",
-            py::arg("closest_point"))
+            "closest_point"_a)
         .def(
             "relative_velocity_matrix_jacobian",
             &TangentialCollision::relative_velocity_matrix_jacobian,
@@ -117,7 +116,7 @@ void define_tangential_collision(py::module_& m)
             Returns:
                 Jacobian of the relative velocity premultiplier wrt the closest points.
             )ipc_Qu8mg5v7",
-            py::arg("closest_point"))
+            "closest_point"_a)
         .def_readwrite(
             "normal_force_magnitude",
             &TangentialCollision::normal_force_magnitude,

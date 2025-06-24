@@ -2,7 +2,6 @@
 
 #include <ipc/ccd/point_static_plane.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_point_static_plane(py::module_& m)
@@ -34,8 +33,7 @@ void define_point_static_plane(py::module_& m)
             True if a collision was detected, false otherwise.
             Output time of impact
         )ipc_Qu8mg5v7",
-        py::arg("p_t0"), py::arg("p_t1"), py::arg("plane_origin"),
-        py::arg("plane_normal"),
-        py::arg("conservative_rescaling") =
+        "p_t0"_a, "p_t1"_a, "plane_origin"_a, "plane_normal"_a,
+        "conservative_rescaling"_a =
             TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 }

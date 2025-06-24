@@ -2,21 +2,18 @@
 
 #include <ipc/candidates/edge_edge.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_edge_edge_candidate(py::module_& m)
 {
     py::class_<EdgeEdgeCandidate, CollisionStencil>(m, "EdgeEdgeCandidate")
-        .def(
-            py::init<index_t, index_t>(), py::arg("edge0_id"),
-            py::arg("edge1_id"))
+        .def(py::init<index_t, index_t>(), "edge0_id"_a, "edge1_id"_a)
         .def(
             py::init([](std::tuple<index_t, index_t> edge_ids) {
                 return std::make_unique<EdgeEdgeCandidate>(
                     std::get<0>(edge_ids), std::get<1>(edge_ids));
             }),
-            py::arg("edge_ids"))
+            "edge_ids"_a)
         .def("known_dtype", &EdgeEdgeCandidate::known_dtype)
         .def(
             "__str__",
@@ -29,11 +26,11 @@ void define_edge_edge_candidate(py::module_& m)
                 return fmt::format(
                     "EdgeEdgeCandidate({:d}, {:d})", ee.edge0_id, ee.edge1_id);
             })
-        .def("__eq__", &EdgeEdgeCandidate::operator==, py::arg("other"))
-        .def("__ne__", &EdgeEdgeCandidate::operator!=, py::arg("other"))
+        .def("__eq__", &EdgeEdgeCandidate::operator==, "other"_a)
+        .def("__ne__", &EdgeEdgeCandidate::operator!=, "other"_a)
         .def(
             "__lt__", &EdgeEdgeCandidate::operator<,
-            "Compare EdgeEdgeCandidates for sorting.", py::arg("other"))
+            "Compare EdgeEdgeCandidates for sorting.", "other"_a)
         .def_readwrite(
             "edge0_id", &EdgeEdgeCandidate::edge0_id, "ID of the first edge.")
         .def_readwrite(

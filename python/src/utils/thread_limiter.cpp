@@ -8,7 +8,6 @@
 
 #include <ipc/utils/logger.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 static std::shared_ptr<tbb::global_control> thread_limiter;
@@ -40,7 +39,7 @@ void define_thread_limiter(py::module_& m)
         "get maximum number of threads to use");
     m.def(
         "set_num_threads", &set_num_threads,
-        "set maximum number of threads to use", py::arg("nthreads"));
+        "set maximum number of threads to use", "nthreads"_a);
 
     std::atexit([]() { thread_limiter.reset(); });
 }

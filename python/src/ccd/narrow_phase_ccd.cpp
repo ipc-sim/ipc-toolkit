@@ -2,7 +2,6 @@
 
 #include <ipc/ccd/narrow_phase_ccd.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 class PyNarrowPhaseCCD : public NarrowPhaseCCD {
@@ -114,9 +113,8 @@ void define_narrow_phase_ccd(py::module_& m)
                     p0_t0, p1_t0, p0_t1, p1_t1, toi, min_distance, tmax);
                 return std::make_tuple(r, toi);
             },
-            py::arg("p0_t0"), py::arg("p1_t0"), py::arg("p0_t1"),
-            py::arg("p1_t1"), py::arg("min_distance") = 0.0,
-            py::arg("tmax") = 1.0)
+            "p0_t0"_a, "p1_t0"_a, "p0_t1"_a, "p1_t1"_a, "min_distance"_a = 0.0,
+            "tmax"_a = 1.0)
         .def(
             "point_edge_ccd",
             [](const NarrowPhaseCCD& self, Eigen::ConstRef<VectorMax3d> p_t0,
@@ -132,9 +130,8 @@ void define_narrow_phase_ccd(py::module_& m)
                     tmax);
                 return std::make_tuple(r, toi);
             },
-            py::arg("p_t0"), py::arg("e0_t0"), py::arg("e1_t0"),
-            py::arg("p_t1"), py::arg("e0_t1"), py::arg("e1_t1"),
-            py::arg("min_distance") = 0.0, py::arg("tmax") = 1.0)
+            "p_t0"_a, "e0_t0"_a, "e1_t0"_a, "p_t1"_a, "e0_t1"_a, "e1_t1"_a,
+            "min_distance"_a = 0.0, "tmax"_a = 1.0)
         .def(
             "point_triangle_ccd",
             [](const NarrowPhaseCCD& self,
@@ -153,10 +150,8 @@ void define_narrow_phase_ccd(py::module_& m)
                     min_distance, tmax);
                 return std::make_tuple(r, toi);
             },
-            py::arg("p_t0"), py::arg("t0_t0"), py::arg("t1_t0"),
-            py::arg("t2_t0"), py::arg("p_t1"), py::arg("t0_t1"),
-            py::arg("t1_t1"), py::arg("t2_t1"), py::arg("min_distance") = 0.0,
-            py::arg("tmax") = 1.0)
+            "p_t0"_a, "t0_t0"_a, "t1_t0"_a, "t2_t0"_a, "p_t1"_a, "t0_t1"_a,
+            "t1_t1"_a, "t2_t1"_a, "min_distance"_a = 0.0, "tmax"_a = 1.0)
         .def(
             "edge_edge_ccd",
             [](const NarrowPhaseCCD& self,
@@ -175,8 +170,7 @@ void define_narrow_phase_ccd(py::module_& m)
                     eb1_t1, toi, min_distance, tmax);
                 return std::make_tuple(r, toi);
             },
-            py::arg("ea0_t0"), py::arg("ea1_t0"), py::arg("eb0_t0"),
-            py::arg("eb1_t0"), py::arg("ea0_t1"), py::arg("ea1_t1"),
-            py::arg("eb0_t1"), py::arg("eb1_t1"), py::arg("min_distance") = 0.0,
-            py::arg("tmax") = 1.0);
+            "ea0_t0"_a, "ea1_t0"_a, "eb0_t0"_a, "eb1_t0"_a, "ea0_t1"_a,
+            "ea1_t1"_a, "eb0_t1"_a, "eb1_t1"_a, "min_distance"_a = 0.0,
+            "tmax"_a = 1.0);
 }

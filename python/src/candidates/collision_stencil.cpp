@@ -2,7 +2,6 @@
 
 #include <ipc/candidates/collision_stencil.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_collision_stencil(py::module_& m)
@@ -22,7 +21,7 @@ void define_collision_stencil(py::module_& m)
             Returns:
                 The dimension of the collision stencil.
             )ipc_Qu8mg5v7",
-            py::arg("ndof"))
+            "ndof"_a)
         .def(
             "vertex_ids", &CollisionStencil::vertex_ids,
             R"ipc_Qu8mg5v7(
@@ -35,7 +34,7 @@ void define_collision_stencil(py::module_& m)
             Returns:
                 The vertex IDs of the collision stencil. Size is always 4, but elements i > num_vertices() are -1.
             )ipc_Qu8mg5v7",
-            py::arg("edges"), py::arg("faces"))
+            "edges"_a, "faces"_a)
         .def(
             "vertices", &CollisionStencil::vertices,
             R"ipc_Qu8mg5v7(
@@ -51,7 +50,7 @@ void define_collision_stencil(py::module_& m)
             Returns:
                 The vertex positions of the collision stencil. Size is always 4, but elements i > num_vertices() are NaN.
             )ipc_Qu8mg5v7",
-            py::arg("vertices"), py::arg("edges"), py::arg("faces"))
+            "vertices"_a, "edges"_a, "faces"_a)
         .def(
             "dof", &CollisionStencil::dof,
             R"ipc_Qu8mg5v7(
@@ -67,7 +66,7 @@ void define_collision_stencil(py::module_& m)
             Returns:
                 This stencil's DOF.
             )ipc_Qu8mg5v7",
-            py::arg("X"), py::arg("edges"), py::arg("faces"))
+            "X"_a, "edges"_a, "faces"_a)
         .def(
             "compute_distance",
             py::overload_cast<
@@ -86,7 +85,7 @@ void define_collision_stencil(py::module_& m)
             Returns:
                 Distance of the stencil.
             )ipc_Qu8mg5v7",
-            py::arg("vertices"), py::arg("edges"), py::arg("faces"))
+            "vertices"_a, "edges"_a, "faces"_a)
         .def(
             "compute_distance_gradient",
             py::overload_cast<
@@ -105,7 +104,7 @@ void define_collision_stencil(py::module_& m)
             Returns:
                 Distance gradient of the stencil w.r.t. the stencil's vertex positions.
             )ipc_Qu8mg5v7",
-            py::arg("vertices"), py::arg("edges"), py::arg("faces"))
+            "vertices"_a, "edges"_a, "faces"_a)
         .def(
             "compute_distance_hessian",
             py::overload_cast<
@@ -124,7 +123,7 @@ void define_collision_stencil(py::module_& m)
             Returns:
                 Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
             )ipc_Qu8mg5v7",
-            py::arg("vertices"), py::arg("edges"), py::arg("faces"))
+            "vertices"_a, "edges"_a, "faces"_a)
         .def(
             "compute_distance",
             py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
@@ -141,7 +140,7 @@ void define_collision_stencil(py::module_& m)
             Returns:
                 Distance of the stencil.
             )ipc_Qu8mg5v7",
-            py::arg("positions"))
+            "positions"_a)
         .def(
             "compute_distance_gradient",
             py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
@@ -158,7 +157,7 @@ void define_collision_stencil(py::module_& m)
             Returns:
                 Distance gradient of the stencil w.r.t. the stencil's vertex positions.
             )ipc_Qu8mg5v7",
-            py::arg("positions"))
+            "positions"_a)
         .def(
             "compute_distance_hessian",
             py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
@@ -175,7 +174,7 @@ void define_collision_stencil(py::module_& m)
             Returns:
                 Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
             )ipc_Qu8mg5v7",
-            py::arg("positions"))
+            "positions"_a)
         .def(
             "ccd",
             [](const CollisionStencil& self,
@@ -204,9 +203,8 @@ void define_collision_stencil(py::module_& m)
                     If the candidate had a collision over the time interval.
                     Computed time of impact (normalized).
                 )ipc_Qu8mg5v7",
-            py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("min_distance") = 0.0, py::arg("tmax") = 1.0,
-            py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD)
+            "vertices_t0"_a, "vertices_t1"_a, "min_distance"_a = 0.0,
+            "tmax"_a = 1.0, "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD)
         .def(
             "print_ccd_query",
             [](const CollisionStencil& self,
@@ -221,5 +219,5 @@ void define_collision_stencil(py::module_& m)
                                     vertices_t0: Stencil vertices at the start of the time step.
                     vertices_t1: Stencil vertices at the end of the time step.
                 )ipc_Qu8mg5v7",
-            py::arg("vertices_t0"), py::arg("vertices_t1"));
+            "vertices_t0"_a, "vertices_t1"_a);
 }

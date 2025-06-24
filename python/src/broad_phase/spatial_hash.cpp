@@ -2,7 +2,6 @@
 
 #include <ipc/broad_phase/spatial_hash.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_spatial_hash(py::module_& m)
@@ -15,17 +14,16 @@ void define_spatial_hash(py::module_& m)
                 Eigen::ConstRef<Eigen::MatrixXd>,
                 Eigen::ConstRef<Eigen::MatrixXi>,
                 Eigen::ConstRef<Eigen::MatrixXi>, double, double>(),
-            py::arg("vertices"), py::arg("edges"), py::arg("faces"),
-            py::arg("inflation_radius") = 0, py::arg("voxel_size") = -1)
+            "vertices"_a, "edges"_a, "faces"_a, "inflation_radius"_a = 0,
+            "voxel_size"_a = -1)
         .def(
             py::init<
                 Eigen::ConstRef<Eigen::MatrixXd>,
                 Eigen::ConstRef<Eigen::MatrixXd>,
                 Eigen::ConstRef<Eigen::MatrixXi>,
                 Eigen::ConstRef<Eigen::MatrixXi>, double, double>(),
-            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
-            py::arg("faces"), py::arg("inflation_radius") = 0,
-            py::arg("voxel_size") = -1)
+            "vertices_t0"_a, "vertices_t1"_a, "edges"_a, "faces"_a,
+            "inflation_radius"_a = 0, "voxel_size"_a = -1)
         .def(
             "build",
             py::overload_cast<
@@ -33,8 +31,8 @@ void define_spatial_hash(py::module_& m)
                 Eigen::ConstRef<Eigen::MatrixXi>,
                 Eigen::ConstRef<Eigen::MatrixXi>, double, double>(
                 &SpatialHash::build),
-            py::arg("vertices"), py::arg("edges"), py::arg("faces"),
-            py::arg("inflation_radius") = 0, py::arg("voxel_size") = -1)
+            "vertices"_a, "edges"_a, "faces"_a, "inflation_radius"_a = 0,
+            "voxel_size"_a = -1)
         .def(
             "build",
             py::overload_cast<
@@ -43,25 +41,24 @@ void define_spatial_hash(py::module_& m)
                 Eigen::ConstRef<Eigen::MatrixXi>,
                 Eigen::ConstRef<Eigen::MatrixXi>, double, double>(
                 &SpatialHash::build),
-            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
-            py::arg("faces"), py::arg("inflation_radius") = 0,
-            py::arg("voxel_size") = -1)
+            "vertices_t0"_a, "vertices_t1"_a, "edges"_a, "faces"_a,
+            "inflation_radius"_a = 0, "voxel_size"_a = -1)
         .def("clear", &SpatialHash::clear)
         .def(
             "is_vertex_index", &SpatialHash::is_vertex_index,
-            "Check if primitive index refers to a vertex.", py::arg("idx"))
+            "Check if primitive index refers to a vertex.", "idx"_a)
         .def(
             "is_edge_index", &SpatialHash::is_edge_index,
-            "Check if primitive index refers to an edge.", py::arg("idx"))
+            "Check if primitive index refers to an edge.", "idx"_a)
         .def(
             "is_triangle_index", &SpatialHash::is_triangle_index,
-            "Check if primitive index refers to a triangle.", py::arg("idx"))
+            "Check if primitive index refers to a triangle.", "idx"_a)
         .def(
             "to_edge_index", &SpatialHash::to_edge_index,
-            "Convert a primitive index to an edge index.", py::arg("idx"))
+            "Convert a primitive index to an edge index.", "idx"_a)
         .def(
             "to_triangle_index", &SpatialHash::to_triangle_index,
-            "Convert a primitive index to a triangle index.", py::arg("idx"))
+            "Convert a primitive index to a triangle index.", "idx"_a)
         .def_readwrite(
             "left_bottom_corner", &SpatialHash::left_bottom_corner,
             "The left bottom corner of the world bounding box.")

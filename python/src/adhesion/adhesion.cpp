@@ -2,7 +2,6 @@
 
 #include <ipc/adhesion/adhesion.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_adhesion(py::module_& m)
@@ -21,7 +20,7 @@ void define_adhesion(py::module_& m)
         Returns:
             The normal adhesion potential.
         )ipc_Qu8mg5v7",
-        py::arg("d"), py::arg("dhat_p"), py::arg("dhat_a"), py::arg("a2"));
+        "d"_a, "dhat_p"_a, "dhat_a"_a, "a2"_a);
 
     m.def(
         "normal_adhesion_potential_first_derivative",
@@ -38,7 +37,7 @@ void define_adhesion(py::module_& m)
         Returns:
             The first derivative of the normal adhesion potential wrt d.
         )ipc_Qu8mg5v7",
-        py::arg("d"), py::arg("dhat_p"), py::arg("dhat_a"), py::arg("a2"));
+        "d"_a, "dhat_p"_a, "dhat_a"_a, "a2"_a);
 
     m.def(
         "normal_adhesion_potential_second_derivative",
@@ -55,7 +54,7 @@ void define_adhesion(py::module_& m)
         Returns:
             The second derivative of the normal adhesion potential wrt d.
         )ipc_Qu8mg5v7",
-        py::arg("d"), py::arg("dhat_p"), py::arg("dhat_a"), py::arg("a2"));
+        "d"_a, "dhat_p"_a, "dhat_a"_a, "a2"_a);
 
     m.def(
         "max_normal_adhesion_force_magnitude",
@@ -71,7 +70,7 @@ void define_adhesion(py::module_& m)
         Returns:
             The maximum normal adhesion force magnitude.
         )ipc_Qu8mg5v7",
-        py::arg("dhat_p"), py::arg("dhat_a"), py::arg("a2"));
+        "dhat_p"_a, "dhat_a"_a, "a2"_a);
 
     m.def(
         "tangential_adhesion_f0", &tangential_adhesion_f0,
@@ -85,7 +84,7 @@ void define_adhesion(py::module_& m)
         Returns:
             The tangential adhesion mollifier function at y.
         )ipc_Qu8mg5v7",
-        py::arg("y"), py::arg("eps_a"));
+        "y"_a, "eps_a"_a);
 
     m.def(
         "tangential_adhesion_f1", &tangential_adhesion_f1,
@@ -99,7 +98,7 @@ void define_adhesion(py::module_& m)
         Returns:
             The first derivative of the tangential adhesion mollifier function at y.
         )ipc_Qu8mg5v7",
-        py::arg("y"), py::arg("eps_a"));
+        "y"_a, "eps_a"_a);
 
     m.def(
         "tangential_adhesion_f2", &tangential_adhesion_f2,
@@ -113,7 +112,7 @@ void define_adhesion(py::module_& m)
         Returns:
             The second derivative of the tangential adhesion mollifier function at y.
         )ipc_Qu8mg5v7",
-        py::arg("y"), py::arg("eps_a"));
+        "y"_a, "eps_a"_a);
 
     m.def(
         "tangential_adhesion_f1_over_x", &tangential_adhesion_f1_over_x,
@@ -127,7 +126,7 @@ void define_adhesion(py::module_& m)
         Returns:
             The first derivative of the tangential adhesion mollifier function divided by y.
         )ipc_Qu8mg5v7",
-        py::arg("y"), py::arg("eps_a"));
+        "y"_a, "eps_a"_a);
 
     m.def(
         "tangential_adhesion_f2_x_minus_f1_over_x3",
@@ -142,5 +141,5 @@ void define_adhesion(py::module_& m)
         Returns:
             The second derivative of the tangential adhesion mollifier function times y minus the first derivative all divided by y cubed.
         )ipc_Qu8mg5v7",
-        py::arg("y"), py::arg("eps_a"));
+        "y"_a, "eps_a"_a);
 }

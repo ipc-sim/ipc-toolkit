@@ -2,8 +2,6 @@
 
 #include <pybind11/pybind11.h>
 
-namespace py = pybind11;
-
 void define_aabb(py::module_& m);
 void define_broad_phase(py::module_& m);
 void define_brute_force(py::module_& m);

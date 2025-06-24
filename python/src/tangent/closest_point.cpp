@@ -2,7 +2,6 @@
 
 #include <ipc/tangent/closest_point.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_closest_point(py::module_& m)
@@ -27,7 +26,7 @@ void define_closest_point(py::module_& m)
         Returns:
             barycentric coordinates of the closest point
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("e0"), py::arg("e1"));
+        "p"_a, "e0"_a, "e1"_a);
 
     m.def(
         "point_edge_closest_point_jacobian",
@@ -49,7 +48,7 @@ void define_closest_point(py::module_& m)
         Returns:
             Jacobian of the closest point
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("e0"), py::arg("e1"));
+        "p"_a, "e0"_a, "e1"_a);
 
     m.def(
         "edge_edge_closest_point",
@@ -71,7 +70,7 @@ void define_closest_point(py::module_& m)
         Returns:
             Barycentric coordinates of the closest points
         )ipc_Qu8mg5v7",
-        py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
+        "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a);
 
     m.def(
         "edge_edge_closest_point_jacobian",
@@ -93,7 +92,7 @@ void define_closest_point(py::module_& m)
         Returns:
             Jacobian of the closest points
         )ipc_Qu8mg5v7",
-        py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
+        "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a);
 
     m.def(
         "point_triangle_closest_point",
@@ -115,7 +114,7 @@ void define_closest_point(py::module_& m)
         Returns:
             Barycentric coordinates of the closest point
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"));
+        "p"_a, "t0"_a, "t1"_a, "t2"_a);
 
     m.def(
         "point_triangle_closest_point_jacobian",
@@ -137,5 +136,5 @@ void define_closest_point(py::module_& m)
         Returns:
             Jacobian of the closest point
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"));
+        "p"_a, "t0"_a, "t1"_a, "t2"_a);
 }

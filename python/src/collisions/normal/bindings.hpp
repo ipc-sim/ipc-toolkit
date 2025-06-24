@@ -1,7 +1,6 @@
 #pragma once
 
 #include <pybind11/pybind11.h>
-namespace py = pybind11;
 
 void define_normal_collision(py::module_& m);
 void define_normal_collisions(py::module_& m);

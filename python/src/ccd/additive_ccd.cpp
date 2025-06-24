@@ -2,7 +2,6 @@
 
 #include <ipc/ccd/additive_ccd.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_additive_ccd(py::module_& m)
@@ -16,8 +15,8 @@ void define_additive_ccd(py::module_& m)
             Parameters:
                 conservative_rescaling: The conservative rescaling of the time of impact.
             )ipc_Qu8mg5v7",
-            py::arg("max_iterations") = AdditiveCCD::DEFAULT_MAX_ITERATIONS,
-            py::arg("conservative_rescaling") =
+            "max_iterations"_a = AdditiveCCD::DEFAULT_MAX_ITERATIONS,
+            "conservative_rescaling"_a =
                 AdditiveCCD::DEFAULT_CONSERVATIVE_RESCALING)
         .def_readonly_static(
             "DEFAULT_CONSERVATIVE_RESCALING",

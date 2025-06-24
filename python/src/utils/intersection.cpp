@@ -4,15 +4,13 @@
 
 #include <igl/predicates/segment_segment_intersect.h>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_intersection(py::module_& m)
 {
     m.def(
-        "is_edge_intersecting_triangle", &is_edge_intersecting_triangle,
-        py::arg("e0"), py::arg("e1"), py::arg("t0"), py::arg("t1"),
-        py::arg("t2"));
+        "is_edge_intersecting_triangle", &is_edge_intersecting_triangle, "e0"_a,
+        "e1"_a, "t0"_a, "t1"_a, "t2"_a);
 
     m.def(
         "segment_segment_intersect",
@@ -35,5 +33,5 @@ void define_intersection(py::module_& m)
         Returns:
             true if they intersect
         )ipc_Qu8mg5v7",
-        py::arg("A"), py::arg("B"), py::arg("C"), py::arg("D"));
+        "A"_a, "B"_a, "C"_a, "D"_a);
 }

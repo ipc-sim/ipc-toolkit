@@ -2,7 +2,6 @@
 
 #include <ipc/candidates/candidates.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_candidates(py::module_& m)
@@ -23,9 +22,8 @@ void define_candidates(py::module_& m)
                 inflation_radius: Amount to inflate the bounding boxes.
                 broad_phase: Broad phase to use.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"),
-            py::arg("inflation_radius") = 0,
-            py::arg("broad_phase") = make_default_broad_phase())
+            "mesh"_a, "vertices"_a, "inflation_radius"_a = 0,
+            "broad_phase"_a = make_default_broad_phase())
         .def(
             "build",
             py::overload_cast<
@@ -45,9 +43,9 @@ void define_candidates(py::module_& m)
                 inflation_radius: Amount to inflate the bounding boxes.
                 broad_phase: Broad phase to use.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("inflation_radius") = 0,
-            py::arg("broad_phase") = make_default_broad_phase())
+            "mesh"_a, "vertices_t0"_a, "vertices_t1"_a,
+            "inflation_radius"_a = 0,
+            "broad_phase"_a = make_default_broad_phase())
         .def("__len__", &Candidates::size)
         .def("empty", &Candidates::empty)
         .def("clear", &Candidates::clear)
@@ -75,9 +73,8 @@ void define_candidates(py::module_& m)
             Returns:
                 True if <b>any</b> collisions occur.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("min_distance") = 0.0,
-            py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD)
+            "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "min_distance"_a = 0.0,
+            "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD)
         .def(
             "compute_collision_free_stepsize",
             &Candidates::compute_collision_free_stepsize,
@@ -97,9 +94,8 @@ void define_candidates(py::module_& m)
             Returns:
                 A step-size :math:`\in [0, 1]` that is collision free. A value of 1.0 if a full step and 0.0 is no step.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("min_distance") = 0.0,
-            py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD)
+            "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "min_distance"_a = 0.0,
+            "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD)
         .def(
             "compute_noncandidate_conservative_stepsize",
             &Candidates::compute_noncandidate_conservative_stepsize,
@@ -111,7 +107,7 @@ void define_candidates(py::module_& m)
                 displacements: Surface vertex displacements (rowwise).
                 dhat: Barrier activation distance.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("displacements"), py::arg("dhat"))
+            "mesh"_a, "displacements"_a, "dhat"_a)
         .def(
             "compute_cfl_stepsize", &Candidates::compute_cfl_stepsize,
             R"ipc_Qu8mg5v7(
@@ -126,13 +122,13 @@ void define_candidates(py::module_& m)
                 broad_phase: Broad phase algorithm to use.
                 narrow_phase_ccd: Narrow phase CCD algorithm to use.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices_t0"), py::arg("vertices_t1"),
-            py::arg("dhat"), py::arg("min_distance") = 0.0,
-            py::arg("broad_phase") = make_default_broad_phase(),
-            py::arg("narrow_phase_ccd") = DEFAULT_NARROW_PHASE_CCD)
+            "mesh"_a, "vertices_t0"_a, "vertices_t1"_a, "dhat"_a,
+            "min_distance"_a = 0.0,
+            "broad_phase"_a = make_default_broad_phase(),
+            "narrow_phase_ccd"_a = DEFAULT_NARROW_PHASE_CCD)
         .def(
-            "save_obj", &Candidates::save_obj, py::arg("filename"),
-            py::arg("vertices"), py::arg("edges"), py::arg("faces"))
+            "save_obj", &Candidates::save_obj, "filename"_a, "vertices"_a,
+            "edges"_a, "faces"_a)
         .def_readwrite("vv_candidates", &Candidates::vv_candidates)
         .def_readwrite("ev_candidates", &Candidates::ev_candidates)
         .def_readwrite("ee_candidates", &Candidates::ee_candidates)

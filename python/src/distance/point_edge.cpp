@@ -3,7 +3,6 @@
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_edge.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_point_edge_distance(py::module_& m)
@@ -25,8 +24,7 @@ void define_point_edge_distance(py::module_& m)
         Returns:
             The distance between the point and edge.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("e0"), py::arg("e1"),
-        py::arg("dtype") = PointEdgeDistanceType::AUTO);
+        "p"_a, "e0"_a, "e1"_a, "dtype"_a = PointEdgeDistanceType::AUTO);
 
     m.def(
         "point_edge_distance_gradient", &point_edge_distance_gradient,
@@ -45,8 +43,7 @@ void define_point_edge_distance(py::module_& m)
         Returns:
             grad The gradient of the distance wrt p, e0, and e1.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("e0"), py::arg("e1"),
-        py::arg("dtype") = PointEdgeDistanceType::AUTO);
+        "p"_a, "e0"_a, "e1"_a, "dtype"_a = PointEdgeDistanceType::AUTO);
 
     m.def(
         "point_edge_distance_hessian", &point_edge_distance_hessian,
@@ -65,6 +62,5 @@ void define_point_edge_distance(py::module_& m)
         Returns:
             hess The hessian of the distance wrt p, e0, and e1.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("e0"), py::arg("e1"),
-        py::arg("dtype") = PointEdgeDistanceType::AUTO);
+        "p"_a, "e0"_a, "e1"_a, "dtype"_a = PointEdgeDistanceType::AUTO);
 }

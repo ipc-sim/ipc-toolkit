@@ -3,7 +3,6 @@
 #include <ipc/utils/area_gradient.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_area_gradient(py::module_& m)
@@ -20,7 +19,7 @@ void define_area_gradient(py::module_& m)
         Returns:
             The gradient of the edge's length wrt e0, and e1.
         )ipc_Qu8mg5v7",
-        py::arg("e0"), py::arg("e1"));
+        "e0"_a, "e1"_a);
 
     m.def(
         "triangle_area_gradient", &triangle_area_gradient,
@@ -35,5 +34,5 @@ void define_area_gradient(py::module_& m)
         Returns:
             The gradient of the triangle's area t0, t1, and t2.
         )ipc_Qu8mg5v7",
-        py::arg("t0"), py::arg("t1"), py::arg("t2"));
+        "t0"_a, "t1"_a, "t2"_a);
 }
