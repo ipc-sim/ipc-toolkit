@@ -2,7 +2,6 @@
 
 #include <ipc/ccd/check_initial_distance.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_check_initial_distance(py::module_& m)
@@ -15,5 +14,5 @@ void define_check_initial_distance(py::module_& m)
                 check_initial_distance(initial_distance, min_distance, toi);
             return std::make_tuple(r, toi);
         },
-        py::arg("initial_distance"), py::arg("min_distance"));
+        "initial_distance"_a, "min_distance"_a);
 }

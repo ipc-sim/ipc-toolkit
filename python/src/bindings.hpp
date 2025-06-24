@@ -15,7 +15,5 @@
 
 #include <pybind11/pybind11.h>
 
-namespace py = pybind11;
-
 void define_collision_mesh(py::module_& m);
 void define_ipc(py::module_& m);

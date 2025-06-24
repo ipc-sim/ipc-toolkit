@@ -2,7 +2,6 @@
 
 #include <ipc/tangent/relative_velocity.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_relative_velocity(py::module_& m)
@@ -19,7 +18,7 @@ void define_relative_velocity(py::module_& m)
         Returns:
             The relative velocity of the two points
         )ipc_Qu8mg5v7",
-        py::arg("dp0"), py::arg("dp1"));
+        "dp0"_a, "dp1"_a);
 
     m.def(
         "point_point_relative_velocity_matrix",
@@ -33,7 +32,7 @@ void define_relative_velocity(py::module_& m)
         Returns:
             The relative velocity premultiplier matrix
         )ipc_Qu8mg5v7",
-        py::arg("dim"));
+        "dim"_a);
 
     m.def(
         "point_point_relative_velocity_matrix_jacobian",
@@ -47,7 +46,7 @@ void define_relative_velocity(py::module_& m)
         Returns:
             The Jacobian of the relative velocity premultiplier matrix
         )ipc_Qu8mg5v7",
-        py::arg("dim"));
+        "dim"_a);
 
     m.def(
         "point_edge_relative_velocity", &point_edge_relative_velocity,
@@ -63,7 +62,7 @@ void define_relative_velocity(py::module_& m)
         Returns:
             The relative velocity of the point and the edge
         )ipc_Qu8mg5v7",
-        py::arg("dp"), py::arg("de0"), py::arg("de1"), py::arg("alpha"));
+        "dp"_a, "de0"_a, "de1"_a, "alpha"_a);
 
     m.def(
         "point_edge_relative_velocity_matrix",
@@ -78,7 +77,7 @@ void define_relative_velocity(py::module_& m)
         Returns:
             The relative velocity premultiplier matrix
         )ipc_Qu8mg5v7",
-        py::arg("dim"), py::arg("alpha"));
+        "dim"_a, "alpha"_a);
 
     m.def(
         "point_edge_relative_velocity_matrix_jacobian",
@@ -93,7 +92,7 @@ void define_relative_velocity(py::module_& m)
         Returns:
             The Jacobian of the relative velocity premultiplier matrix
         )ipc_Qu8mg5v7",
-        py::arg("dim"), py::arg("alpha"));
+        "dim"_a, "alpha"_a);
 
     m.def(
         "edge_edge_relative_velocity", &edge_edge_relative_velocity,
@@ -110,8 +109,7 @@ void define_relative_velocity(py::module_& m)
         Returns:
             The relative velocity of the edges
         )ipc_Qu8mg5v7",
-        py::arg("dea0"), py::arg("dea1"), py::arg("deb0"), py::arg("deb1"),
-        py::arg("coords"));
+        "dea0"_a, "dea1"_a, "deb0"_a, "deb1"_a, "coords"_a);
 
     m.def(
         "edge_edge_relative_velocity_matrix",
@@ -126,7 +124,7 @@ void define_relative_velocity(py::module_& m)
         Returns:
             The relative velocity matrix
         )ipc_Qu8mg5v7",
-        py::arg("dim"), py::arg("coords"));
+        "dim"_a, "coords"_a);
 
     m.def(
         "edge_edge_relative_velocity_matrix_jacobian",
@@ -141,7 +139,7 @@ void define_relative_velocity(py::module_& m)
         Returns:
             The Jacobian of the relative velocity matrix
         )ipc_Qu8mg5v7",
-        py::arg("dim"), py::arg("coords"));
+        "dim"_a, "coords"_a);
 
     m.def(
         "point_triangle_relative_velocity", &point_triangle_relative_velocity,
@@ -158,8 +156,7 @@ void define_relative_velocity(py::module_& m)
         Returns:
             The relative velocity of the point to the triangle
         )ipc_Qu8mg5v7",
-        py::arg("dp"), py::arg("dt0"), py::arg("dt1"), py::arg("dt2"),
-        py::arg("coords"));
+        "dp"_a, "dt0"_a, "dt1"_a, "dt2"_a, "coords"_a);
 
     m.def(
         "point_triangle_relative_velocity_matrix",
@@ -174,7 +171,7 @@ void define_relative_velocity(py::module_& m)
         Returns:
             The relative velocity matrix
         )ipc_Qu8mg5v7",
-        py::arg("dim"), py::arg("coords"));
+        "dim"_a, "coords"_a);
 
     m.def(
         "point_triangle_relative_velocity_matrix_jacobian",
@@ -189,5 +186,5 @@ void define_relative_velocity(py::module_& m)
         Returns:
             The Jacobian of the relative velocity matrix
         )ipc_Qu8mg5v7",
-        py::arg("dim"), py::arg("coords"));
+        "dim"_a, "coords"_a);
 }

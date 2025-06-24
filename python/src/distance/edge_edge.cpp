@@ -3,7 +3,6 @@
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/edge_edge.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_edge_edge_distance(py::module_& m)
@@ -26,8 +25,8 @@ void define_edge_edge_distance(py::module_& m)
         Returns:
             The distance between the two edges.
         )ipc_Qu8mg5v7",
-        py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"),
-        py::arg("dtype") = EdgeEdgeDistanceType::AUTO);
+        "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a,
+        "dtype"_a = EdgeEdgeDistanceType::AUTO);
 
     m.def(
         "edge_edge_distance_gradient", &edge_edge_distance_gradient,
@@ -47,8 +46,8 @@ void define_edge_edge_distance(py::module_& m)
         Returns:
             The gradient of the distance wrt ea0, ea1, eb0, and eb1.
         )ipc_Qu8mg5v7",
-        py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"),
-        py::arg("dtype") = EdgeEdgeDistanceType::AUTO);
+        "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a,
+        "dtype"_a = EdgeEdgeDistanceType::AUTO);
 
     m.def(
         "edge_edge_distance_hessian", &edge_edge_distance_hessian,
@@ -68,6 +67,6 @@ void define_edge_edge_distance(py::module_& m)
         Returns:
             The hessian of the distance wrt ea0, ea1, eb0, and eb1.
         )ipc_Qu8mg5v7",
-        py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"),
-        py::arg("dtype") = EdgeEdgeDistanceType::AUTO);
+        "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a,
+        "dtype"_a = EdgeEdgeDistanceType::AUTO);
 }

@@ -2,7 +2,6 @@
 
 #include <ipc/broad_phase/hash_grid.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_hash_grid(py::module_& m)
@@ -10,11 +9,10 @@ void define_hash_grid(py::module_& m)
     py::class_<HashItem>(m, "HashItem")
         .def(
             py::init<int, int>(),
-            "Construct a hash item as a (key, value) pair.", py::arg("key"),
-            py::arg("id"))
+            "Construct a hash item as a (key, value) pair.", "key"_a, "id"_a)
         .def(
             "__lt__", &HashItem::operator<,
-            "Compare HashItems by their keys for sorting.", py::arg("other"))
+            "Compare HashItems by their keys for sorting.", "other"_a)
         .def_readwrite("key", &HashItem::key, "The key of the item.")
         .def_readwrite("id", &HashItem::id, "The value of the item.");
 

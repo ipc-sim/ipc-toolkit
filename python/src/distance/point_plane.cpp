@@ -2,7 +2,6 @@
 
 #include <ipc/distance/point_plane.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_point_plane_distance(py::module_& m)
@@ -27,7 +26,7 @@ void define_point_plane_distance(py::module_& m)
         Returns:
             The distance between the point and plane.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("origin"), py::arg("normal"));
+        "p"_a, "origin"_a, "normal"_a);
 
     m.def(
         "point_plane_distance",
@@ -51,7 +50,7 @@ void define_point_plane_distance(py::module_& m)
         Returns:
             The distance between the point and plane.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"));
+        "p"_a, "t0"_a, "t1"_a, "t2"_a);
 
     m.def(
         "point_plane_distance_gradient",
@@ -74,7 +73,7 @@ void define_point_plane_distance(py::module_& m)
         Returns:
             The gradient of the distance wrt p.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("origin"), py::arg("normal"));
+        "p"_a, "origin"_a, "normal"_a);
 
     m.def(
         "point_plane_distance_gradient",
@@ -99,7 +98,7 @@ void define_point_plane_distance(py::module_& m)
         Returns:
             The gradient of the distance wrt p, t0, t1, and t2.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"));
+        "p"_a, "t0"_a, "t1"_a, "t2"_a);
 
     m.def(
         "point_plane_distance_hessian",
@@ -122,7 +121,7 @@ void define_point_plane_distance(py::module_& m)
         Returns:
             The hessian of the distance wrt p.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("origin"), py::arg("normal"));
+        "p"_a, "origin"_a, "normal"_a);
 
     m.def(
         "point_plane_distance_hessian",
@@ -147,5 +146,5 @@ void define_point_plane_distance(py::module_& m)
         Returns:
             The hessian of the distance wrt p, t0, t1, and t2.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"));
+        "p"_a, "t0"_a, "t1"_a, "t2"_a);
 }

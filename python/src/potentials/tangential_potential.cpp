@@ -3,7 +3,6 @@
 
 #include <ipc/potentials/tangential_potential.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_tangential_potential(py::module_& m)
@@ -53,10 +52,9 @@ void define_tangential_potential(py::module_& m)
             Returns:
                 The friction force.
             )ipc_Qu8mg5v7",
-            py::arg("collisions"), py::arg("mesh"), py::arg("rest_positions"),
-            py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("normal_potential"), py::arg("normal_stiffness"),
-            py::arg("dmin") = 0, py::arg("no_mu") = false)
+            "collisions"_a, "mesh"_a, "rest_positions"_a,
+            "lagged_displacements"_a, "velocities"_a, "normal_potential"_a,
+            "normal_stiffness"_a, "dmin"_a = 0, "no_mu"_a = false)
         .def(
             "force_jacobian",
             py::overload_cast<
@@ -83,10 +81,9 @@ void define_tangential_potential(py::module_& m)
             Returns:
                 The Jacobian of the friction force wrt the velocities.
             )ipc_Qu8mg5v7",
-            py::arg("collisions"), py::arg("mesh"), py::arg("rest_positions"),
-            py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("normal_potential"), py::arg("normal_stiffness"),
-            py::arg("wrt"), py::arg("dmin") = 0)
+            "collisions"_a, "mesh"_a, "rest_positions"_a,
+            "lagged_displacements"_a, "velocities"_a, "normal_potential"_a,
+            "normal_stiffness"_a, "wrt"_a, "dmin"_a = 0)
         .def(
             "force",
             py::overload_cast<
@@ -110,10 +107,9 @@ void define_tangential_potential(py::module_& m)
             Returns:
                 Friction force
             )ipc_Qu8mg5v7",
-            py::arg("collision"), py::arg("rest_positions"),
-            py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("normal_potential"), py::arg("normal_stiffness"),
-            py::arg("dmin") = 0, py::arg("no_mu") = false)
+            "collision"_a, "rest_positions"_a, "lagged_displacements"_a,
+            "velocities"_a, "normal_potential"_a, "normal_stiffness"_a,
+            "dmin"_a = 0, "no_mu"_a = false)
         .def(
             "force_jacobian",
             py::overload_cast<
@@ -138,8 +134,7 @@ void define_tangential_potential(py::module_& m)
             Returns:
                 Friction force Jacobian
             )ipc_Qu8mg5v7",
-            py::arg("collision"), py::arg("rest_positions"),
-            py::arg("lagged_displacements"), py::arg("velocities"),
-            py::arg("normal_potential"), py::arg("normal_stiffness"),
-            py::arg("wrt"), py::arg("dmin") = 0);
+            "collision"_a, "rest_positions"_a, "lagged_displacements"_a,
+            "velocities"_a, "normal_potential"_a, "normal_stiffness"_a, "wrt"_a,
+            "dmin"_a = 0);
 }

@@ -5,7 +5,6 @@
 #include <tight_inclusion/ccd.hpp>
 #include <tight_inclusion/interval_root_finder.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_tight_inclusion_ccd(py::module_& m)
@@ -70,16 +69,13 @@ void define_tight_inclusion_ccd(py::module_& m)
                 the earliest time of collision if collision happens (infinity if no collision occurs), and
                 if max_iterations < 0, the solver precision otherwise the input tolerance.
         )ipc_Qu8mg5v7",
-        py::arg("ea0_t0"), py::arg("ea1_t0"), py::arg("eb0_t0"),
-        py::arg("eb1_t0"), py::arg("ea0_t1"), py::arg("ea1_t1"),
-        py::arg("eb0_t1"), py::arg("eb1_t1"), py::arg("min_distance") = 0,
-        py::arg("tmax") = 1,
-        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
-        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
-        py::arg("filter") = ticcd::Array3::Constant(-1),
-        py::arg("no_zero_toi") = ticcd::DEFAULT_NO_ZERO_TOI,
-        py::arg("ccd_method") =
-            ticcd::CCDRootFindingMethod::BREADTH_FIRST_SEARCH);
+        "ea0_t0"_a, "ea1_t0"_a, "eb0_t0"_a, "eb1_t0"_a, "ea0_t1"_a, "ea1_t1"_a,
+        "eb0_t1"_a, "eb1_t1"_a, "min_distance"_a = 0, "tmax"_a = 1,
+        "tolerance"_a = TightInclusionCCD::DEFAULT_TOLERANCE,
+        "max_iterations"_a = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+        "filter"_a = ticcd::Array3::Constant(-1),
+        "no_zero_toi"_a = ticcd::DEFAULT_NO_ZERO_TOI,
+        "ccd_method"_a = ticcd::CCDRootFindingMethod::BREADTH_FIRST_SEARCH);
 
     m_ti.def(
         "point_triangle_ccd",
@@ -125,15 +121,13 @@ void define_tight_inclusion_ccd(py::module_& m)
                 the earliest time of collision if collision happens (infinity if no collision occurs), and
                 if max_iterations < 0, the solver precision otherwise the input tolerance.
         )ipc_Qu8mg5v7",
-        py::arg("v_t0"), py::arg("f0_t0"), py::arg("f1_t0"), py::arg("f2_t0"),
-        py::arg("v_t1"), py::arg("f0_t1"), py::arg("f1_t1"), py::arg("f2_t1"),
-        py::arg("min_distance") = 0, py::arg("tmax") = 1,
-        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
-        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
-        py::arg("filter") = ticcd::Array3::Constant(-1),
-        py::arg("no_zero_toi") = ticcd::DEFAULT_NO_ZERO_TOI,
-        py::arg("ccd_method") =
-            ticcd::CCDRootFindingMethod::BREADTH_FIRST_SEARCH);
+        "v_t0"_a, "f0_t0"_a, "f1_t0"_a, "f2_t0"_a, "v_t1"_a, "f0_t1"_a,
+        "f1_t1"_a, "f2_t1"_a, "min_distance"_a = 0, "tmax"_a = 1,
+        "tolerance"_a = TightInclusionCCD::DEFAULT_TOLERANCE,
+        "max_iterations"_a = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+        "filter"_a = ticcd::Array3::Constant(-1),
+        "no_zero_toi"_a = ticcd::DEFAULT_NO_ZERO_TOI,
+        "ccd_method"_a = ticcd::CCDRootFindingMethod::BREADTH_FIRST_SEARCH);
 
     m_ti.def(
         "compute_ccd_filters",
@@ -161,8 +155,8 @@ void define_tight_inclusion_ccd(py::module_& m)
         Returns:
             The numerical error filters for the input parameters.
         )ipc_Qu8mg5v7",
-        py::arg("min_corner"), py::arg("max_corner"), py::arg("is_vertex_face"),
-        py::arg("using_minimum_separation"));
+        "min_corner"_a, "max_corner"_a, "is_vertex_face"_a,
+        "using_minimum_separation"_a);
 
     py::class_<TightInclusionCCD, NarrowPhaseCCD>(m, "TightInclusionCCD")
         .def(
@@ -173,10 +167,9 @@ void define_tight_inclusion_ccd(py::module_& m)
             Parameters:
                 conservative_rescaling: The conservative rescaling of the time of impact.
             )ipc_Qu8mg5v7",
-            py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
-            py::arg("max_iterations") =
-                TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
-            py::arg("conservative_rescaling") =
+            "tolerance"_a = TightInclusionCCD::DEFAULT_TOLERANCE,
+            "max_iterations"_a = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+            "conservative_rescaling"_a =
                 TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING)
         .def_readonly_static(
             "DEFAULT_TOLERANCE", &TightInclusionCCD::DEFAULT_TOLERANCE,

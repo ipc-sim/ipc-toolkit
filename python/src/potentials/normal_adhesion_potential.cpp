@@ -2,7 +2,6 @@
 
 #include <ipc/potentials/normal_adhesion_potential.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_normal_adhesion_potential(py::module_& m)
@@ -11,8 +10,7 @@ void define_normal_adhesion_potential(py::module_& m)
         m, "NormalAdhesionPotential")
         .def(
             py::init<const double, const double, const double, const double>(),
-            py::arg("dhat_p"), py::arg("dhat_a"), py::arg("Y"),
-            py::arg("eps_c"))
+            "dhat_p"_a, "dhat_a"_a, "Y"_a, "eps_c"_a)
         .def_readwrite(
             "dhat_p", &NormalAdhesionPotential::dhat_p,
             "The distance of largest adhesion force (:math:`\\hat{d}_{p}`) (:math:`0 < \\hat{d}_{p} < \\hat{d}_{a}`).")

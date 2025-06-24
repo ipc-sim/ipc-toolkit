@@ -2,7 +2,6 @@
 
 #include <ipc/distance/point_line.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_point_line_distance(py::module_& m)
@@ -23,7 +22,7 @@ void define_point_line_distance(py::module_& m)
         Returns:
             The distance between the point and line.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("e0"), py::arg("e1"));
+        "p"_a, "e0"_a, "e1"_a);
 
     m.def(
         "point_line_distance_gradient", &point_line_distance_gradient,
@@ -41,7 +40,7 @@ void define_point_line_distance(py::module_& m)
         Returns:
             The gradient of the distance wrt p, e0, and e1.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("e0"), py::arg("e1"));
+        "p"_a, "e0"_a, "e1"_a);
 
     m.def(
         "point_line_distance_hessian", &point_line_distance_hessian,
@@ -59,5 +58,5 @@ void define_point_line_distance(py::module_& m)
         Returns:
             The hessian of the distance wrt p, e0, and e1.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("e0"), py::arg("e1"));
+        "p"_a, "e0"_a, "e1"_a);
 }

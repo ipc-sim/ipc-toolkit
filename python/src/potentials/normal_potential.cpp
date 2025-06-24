@@ -3,7 +3,6 @@
 
 #include <ipc/potentials/normal_potential.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_normal_potential(py::module_& m)
@@ -32,7 +31,7 @@ void define_normal_potential(py::module_& m)
             Returns:
                 The derivative of the force with respect to X, the rest vertices.
             )ipc_Qu8mg5v7",
-            py::arg("collisions"), py::arg("mesh"), py::arg("vertices"))
+            "collisions"_a, "mesh"_a, "vertices"_a)
         .def(
             "shape_derivative",
             [](const NormalPotential& self, const NormalCollision& collision,
@@ -54,8 +53,7 @@ void define_normal_potential(py::module_& m)
                 positions: The collision stencil's positions.
                 ,out]: out Store the triplets of the shape derivative here.
             )ipc_Qu8mg5v7",
-            py::arg("collision"), py::arg("vertex_ids"),
-            py::arg("rest_positions"), py::arg("positions"))
+            "collision"_a, "vertex_ids"_a, "rest_positions"_a, "positions"_a)
         .def(
             "force_magnitude", &NormalPotential::force_magnitude,
             R"ipc_Qu8mg5v7(
@@ -69,8 +67,7 @@ void define_normal_potential(py::module_& m)
             Returns:
                 The force magnitude.
             )ipc_Qu8mg5v7",
-            py::arg("distance_squared"), py::arg("dmin"),
-            py::arg("barrier_stiffness"))
+            "distance_squared"_a, "dmin"_a, "barrier_stiffness"_a)
         .def(
             "force_magnitude_gradient",
             &NormalPotential::force_magnitude_gradient,
@@ -86,6 +83,6 @@ void define_normal_potential(py::module_& m)
             Returns:
                 The gradient of the force.
             )ipc_Qu8mg5v7",
-            py::arg("distance_squared"), py::arg("distance_squared_gradient"),
-            py::arg("dmin"), py::arg("barrier_stiffness"));
+            "distance_squared"_a, "distance_squared_gradient"_a, "dmin"_a,
+            "barrier_stiffness"_a);
 }

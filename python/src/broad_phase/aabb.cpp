@@ -2,7 +2,6 @@
 
 #include <ipc/broad_phase/aabb.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_aabb(py::module_& m)
@@ -12,13 +11,11 @@ void define_aabb(py::module_& m)
         .def(
             py::init<
                 Eigen::ConstRef<ArrayMax3d>, Eigen::ConstRef<ArrayMax3d>>(),
-            py::arg("min"), py::arg("max"))
+            "min"_a, "max"_a)
+        .def(py::init<const AABB&, const AABB&>(), "aabb1"_a, "aabb2"_a)
         .def(
-            py::init<const AABB&, const AABB&>(), py::arg("aabb1"),
-            py::arg("aabb2"))
-        .def(
-            py::init<const AABB&, const AABB&, const AABB&>(), py::arg("aabb1"),
-            py::arg("aabb2"), py::arg("aabb3"))
+            py::init<const AABB&, const AABB&, const AABB&>(), "aabb1"_a,
+            "aabb2"_a, "aabb3"_a)
         .def_static(
             "from_point",
             py::overload_cast<Eigen::ConstRef<VectorMax3d>, const double>(
@@ -33,7 +30,7 @@ void define_aabb(py::module_& m)
             Returns:
                 The constructed AABB.
             )ipc_Qu8mg5v7",
-            py::arg("p"), py::arg("inflation_radius") = 0)
+            "p"_a, "inflation_radius"_a = 0)
         .def_static(
             "from_point",
             py::overload_cast<
@@ -50,7 +47,7 @@ void define_aabb(py::module_& m)
             Returns:
                 The constructed AABB.
             )ipc_Qu8mg5v7",
-            py::arg("p_t0"), py::arg("p_t1"), py::arg("inflation_radius") = 0)
+            "p_t0"_a, "p_t1"_a, "inflation_radius"_a = 0)
         .def(
             "intersects", &AABB::intersects,
             R"ipc_Qu8mg5v7(
@@ -62,15 +59,15 @@ void define_aabb(py::module_& m)
             Returns:
                 If the two AABBs intersect.
             )ipc_Qu8mg5v7",
-            py::arg("other"))
+            "other"_a)
         .def_static(
             "conservative_inflation",
             [](ArrayMax3d min, ArrayMax3d max, const double inflation_radius) {
                 AABB::conservative_inflation(min, max, inflation_radius);
                 return std::make_tuple(min, max);
             },
-            "Compute a conservative inflation of the AABB.", py::arg("min"),
-            py::arg("max"), py::arg("inflation_radius"))
+            "Compute a conservative inflation of the AABB.", "min"_a, "max"_a,
+            "inflation_radius"_a)
         .def_readwrite("min", &AABB::min, "Minimum corner of the AABB.")
         .def_readwrite("max", &AABB::max, "Maximum corner of the AABB.")
         .def_readwrite(
@@ -95,7 +92,7 @@ void define_aabb(py::module_& m)
         Returns:
             Vertex AABBs.
         )ipc_Qu8mg5v7",
-        py::arg("vertices"), py::arg("inflation_radius") = 0);
+        "vertices"_a, "inflation_radius"_a = 0);
 
     m.def(
         "build_vertex_boxes",
@@ -118,8 +115,7 @@ void define_aabb(py::module_& m)
         Returns:
             Vertex AABBs.
         )ipc_Qu8mg5v7",
-        py::arg("vertices_t0"), py::arg("vertices_t1"),
-        py::arg("inflation_radius") = 0);
+        "vertices_t0"_a, "vertices_t1"_a, "inflation_radius"_a = 0);
 
     m.def(
         "build_edge_boxes",
@@ -139,7 +135,7 @@ void define_aabb(py::module_& m)
         Returns:
             edge_boxes: Edge AABBs.
         )ipc_Qu8mg5v7",
-        py::arg("vertex_boxes"), py::arg("edges"));
+        "vertex_boxes"_a, "edges"_a);
 
     m.def(
         "build_face_boxes",
@@ -159,5 +155,5 @@ void define_aabb(py::module_& m)
         Returns:
             face_boxes: Face AABBs.
         )ipc_Qu8mg5v7",
-        py::arg("vertex_boxes"), py::arg("faces"));
+        "vertex_boxes"_a, "faces"_a);
 }

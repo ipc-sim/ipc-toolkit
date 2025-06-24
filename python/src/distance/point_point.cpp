@@ -3,7 +3,6 @@
 #include <ipc/distance/point_point.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_point_point_distance(py::module_& m)
@@ -23,7 +22,7 @@ void define_point_point_distance(py::module_& m)
         Returns:
             The distance between p0 and p1.
         )ipc_Qu8mg5v7",
-        py::arg("p0"), py::arg("p1"));
+        "p0"_a, "p1"_a);
 
     m.def(
         "point_point_distance_gradient", &point_point_distance_gradient,
@@ -40,7 +39,7 @@ void define_point_point_distance(py::module_& m)
         Returns:
             The computed gradient.
         )ipc_Qu8mg5v7",
-        py::arg("p0"), py::arg("p1"));
+        "p0"_a, "p1"_a);
 
     m.def(
         "point_point_distance_hessian", &point_point_distance_hessian,
@@ -57,5 +56,5 @@ void define_point_point_distance(py::module_& m)
         Returns:
             The computed hessian.
         )ipc_Qu8mg5v7",
-        py::arg("p0"), py::arg("p1"));
+        "p0"_a, "p1"_a);
 }

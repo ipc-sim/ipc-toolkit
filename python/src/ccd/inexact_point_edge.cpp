@@ -2,7 +2,6 @@
 
 #include <ipc/ccd/inexact_point_edge.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_inexact_point_edge(py::module_& m)
@@ -39,6 +38,6 @@ void define_inexact_point_edge(py::module_& m)
             True if a collision was detected, false otherwise.
             Output time of impact
         )ipc_Qu8mg5v7",
-        py::arg("p_t0"), py::arg("e0_t0"), py::arg("e1_t0"), py::arg("p_t1"),
-        py::arg("e0_t1"), py::arg("e1_t1"), py::arg("conservative_rescaling"));
+        "p_t0"_a, "e0_t0"_a, "e1_t0"_a, "p_t1"_a, "e0_t1"_a, "e1_t1"_a,
+        "conservative_rescaling"_a);
 }

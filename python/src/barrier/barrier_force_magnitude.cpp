@@ -2,7 +2,6 @@
 
 #include <ipc/barrier/barrier_force_magnitude.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_barrier_force_magnitude(py::module_& m)
@@ -22,8 +21,8 @@ void define_barrier_force_magnitude(py::module_& m)
         Returns:
             The magnitude of the force.
         )ipc_Qu8mg5v7",
-        py::arg("distance_squared"), py::arg("barrier"), py::arg("dhat"),
-        py::arg("barrier_stiffness"), py::arg("dmin") = 0);
+        "distance_squared"_a, "barrier"_a, "dhat"_a, "barrier_stiffness"_a,
+        "dmin"_a = 0);
 
     m.def(
         "barrier_force_magnitude_gradient", &barrier_force_magnitude_gradient,
@@ -41,7 +40,6 @@ void define_barrier_force_magnitude(py::module_& m)
         Returns:
             The gradient of the force.
         )ipc_Qu8mg5v7",
-        py::arg("distance_squared"), py::arg("distance_squared_gradient"),
-        py::arg("barrier"), py::arg("dhat"), py::arg("barrier_stiffness"),
-        py::arg("dmin") = 0);
+        "distance_squared"_a, "distance_squared_gradient"_a, "barrier"_a,
+        "dhat"_a, "barrier_stiffness"_a, "dmin"_a = 0);
 }
