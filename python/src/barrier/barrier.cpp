@@ -118,8 +118,7 @@ void define_barrier(py::module_& m)
         .def(py::init());
 
     m.def(
-        "barrier", &barrier, "d"_a,
-        "dhat"_a
+        "barrier", &barrier, "d"_a, "dhat"_a,
         R"ipc_Qu8mg5v7(
         Function that grows to infinity as d approaches 0 from the right.
 
