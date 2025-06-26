@@ -19,8 +19,7 @@
 
 namespace ipc {
 
-template <int dim>
-void SmoothCollisions<dim>::compute_adaptive_dhat(
+void SmoothCollisions::compute_adaptive_dhat(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices, // set to zero for rest pose
     const ParameterType param,
@@ -39,8 +38,10 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
 
     vert_adaptive_dhat.setConstant(mesh.num_vertices(), dhat);
     edge_adaptive_dhat.setConstant(mesh.num_edges(), dhat);
-    if constexpr (dim == 3)
+    if (mesh.dim() == 3)
         face_adaptive_dhat.setConstant(mesh.num_faces(), dhat);
+    else
+        face_adaptive_dhat.resize(0);
 
     auto assign_min = [](double& a, const double& b) -> void {
         a = std::min(a, b);
@@ -48,8 +49,7 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
 
     for (const auto& cc : collisions) {
         const double dist = param.get_adaptive_dhat_ratio()
-            * sqrt(cc->compute_distance(
-                cc->dof(vertices, mesh.edges(), mesh.faces())));
+            * sqrt(cc->compute_distance(vertices));
         switch (cc->type()) {
         case CollisionType::EdgeEdge:
             assign_min(edge_adaptive_dhat((*cc)[0]), dist);
@@ -74,7 +74,7 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
 
     // face adaptive dhat should be minimum of all its adjacent vertices and
     // edges
-    if constexpr (dim == 3)
+    if (mesh.dim() == 3)
         for (int f = 0; f < mesh.num_faces(); f++) {
             for (int lv = 0; lv < 3; lv++) {
                 face_adaptive_dhat(f) = std::min(
@@ -100,14 +100,13 @@ void SmoothCollisions<dim>::compute_adaptive_dhat(
     logger().debug(
         "Adaptive dhat: edge dhat min {:.2e}, max {:.2e}",
         edge_adaptive_dhat.minCoeff(), edge_adaptive_dhat.maxCoeff());
-    if constexpr (dim == 3)
+    if (mesh.dim() == 3)
         logger().debug(
             "Adaptive dhat: face dhat min {:.2e}, max {:.2e}",
             face_adaptive_dhat.minCoeff(), face_adaptive_dhat.maxCoeff());
 }
 
-template <int dim>
-void SmoothCollisions<dim>::build(
+void SmoothCollisions::build(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const ParameterType param,
@@ -125,8 +124,7 @@ void SmoothCollisions<dim>::build(
     this->build(candidates, mesh, vertices, param, use_adaptive_dhat);
 }
 
-template <int dim>
-void SmoothCollisions<dim>::build(
+void SmoothCollisions::build(
     const Candidates& candidates_,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
@@ -143,8 +141,13 @@ void SmoothCollisions<dim>::build(
         vert_adaptive_dhat(0) = dhat;
         edge_adaptive_dhat.resize(1);
         edge_adaptive_dhat(0) = dhat;
-        face_adaptive_dhat.resize(1);
-        face_adaptive_dhat(0) = dhat;
+        if (mesh.dim() == 3)
+        {
+            face_adaptive_dhat.resize(1);
+            face_adaptive_dhat(0) = dhat;
+        }
+        else
+            face_adaptive_dhat.resize(0);
     }
 
     auto vert_dhat = [&](const long& v_id) {
@@ -157,25 +160,28 @@ void SmoothCollisions<dim>::build(
         return this->get_face_dhat(f_id);
     };
 
-    // tbb::enumerable_thread_specific<SmoothCollisionsBuilder<dim>> storage;
-    auto storage =
-        ipc::utils::create_thread_storage<SmoothCollisionsBuilder<dim>>(
-            SmoothCollisionsBuilder<dim>());
-    if constexpr (dim == 2) {
+    if (mesh.dim() == 2) {
+        auto storage =
+            ipc::utils::create_thread_storage<SmoothCollisionsBuilder<2>>(
+                SmoothCollisionsBuilder<2>());
         ipc::utils::maybe_parallel_for(
             candidates_.ev_candidates.size(),
             [&](int start, int end, int thread_id) {
-                SmoothCollisionsBuilder<dim>& local_storage =
+                SmoothCollisionsBuilder<2>& local_storage =
                     ipc::utils::get_local_thread_storage(storage, thread_id);
                 local_storage.add_edge_vertex_collisions(
                     mesh, vertices, candidates_.ev_candidates, param, vert_dhat,
                     edge_dhat, start, end);
             });
+        SmoothCollisionsBuilder<2>::merge(storage, *this);
     } else {
+        auto storage =
+            ipc::utils::create_thread_storage<SmoothCollisionsBuilder<3>>(
+                SmoothCollisionsBuilder<3>());
         ipc::utils::maybe_parallel_for(
             candidates_.ee_candidates.size(),
             [&](int start, int end, int thread_id) {
-                SmoothCollisionsBuilder<dim>& local_storage =
+                SmoothCollisionsBuilder<3>& local_storage =
                     ipc::utils::get_local_thread_storage(storage, thread_id);
                 local_storage.add_edge_edge_collisions(
                     mesh, vertices, candidates_.ee_candidates, param, vert_dhat,
@@ -185,36 +191,30 @@ void SmoothCollisions<dim>::build(
         ipc::utils::maybe_parallel_for(
             candidates_.fv_candidates.size(),
             [&](int start, int end, int thread_id) {
-                SmoothCollisionsBuilder<dim>& local_storage =
+                SmoothCollisionsBuilder<3>& local_storage =
                     ipc::utils::get_local_thread_storage(storage, thread_id);
                 local_storage.add_face_vertex_collisions(
                     mesh, vertices, candidates_.fv_candidates, param, vert_dhat,
                     edge_dhat, face_dhat, start, end);
             });
+        SmoothCollisionsBuilder<3>::merge(storage, *this);
     }
-    SmoothCollisionsBuilder<dim>::merge(storage, *this);
     candidates = candidates_;
-
-    // logger().debug(to_string(mesh, vertices, param));
 }
 
 // ============================================================================
-
-template <int dim> size_t SmoothCollisions<dim>::size() const
+ size_t SmoothCollisions::size() const
 {
     return collisions.size();
 }
-
-template <int dim> bool SmoothCollisions<dim>::empty() const
+ bool SmoothCollisions::empty() const
 {
     return collisions.empty();
 }
+ void SmoothCollisions::clear() { collisions.clear(); }
 
-template <int dim> void SmoothCollisions<dim>::clear() { collisions.clear(); }
-
-template <int dim>
-typename SmoothCollisions<dim>::value_type&
-SmoothCollisions<dim>::operator[](size_t i)
+typename SmoothCollisions::value_type&
+SmoothCollisions::operator[](size_t i)
 {
     if (i < collisions.size()) {
         return *collisions[i];
@@ -222,9 +222,8 @@ SmoothCollisions<dim>::operator[](size_t i)
     throw std::out_of_range("Collision index is out of range!");
 }
 
-template <int dim>
-const typename SmoothCollisions<dim>::value_type&
-SmoothCollisions<dim>::operator[](size_t i) const
+const typename SmoothCollisions::value_type&
+SmoothCollisions::operator[](size_t i) const
 {
     if (i < collisions.size()) {
         return *collisions[i];
@@ -232,8 +231,7 @@ SmoothCollisions<dim>::operator[](size_t i) const
     throw std::out_of_range("Collision index is out of range!");
 }
 
-template <int dim>
-std::string SmoothCollisions<dim>::to_string(
+std::string SmoothCollisions::to_string(
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const ParameterType& params) const
@@ -245,12 +243,11 @@ std::string SmoothCollisions<dim>::to_string(
             ss << fmt::format(
                 "[{}]: ({} {}) dist {} potential {} grad {}", cc->name(),
                 (*cc)[0], (*cc)[1],
-                cc->compute_distance(
-                    cc->dof(vertices, mesh.edges(), mesh.faces())),
-                (*cc)(cc->dof(vertices, mesh.edges(), mesh.faces()), params),
+                cc->compute_distance(vertices),
+                (*cc)(cc->dof(vertices), params),
                 (*cc)
                     .gradient(
-                        cc->dof(vertices, mesh.edges(), mesh.faces()), params)
+                        cc->dof(vertices), params)
                     .norm());
         }
     }
@@ -258,8 +255,7 @@ std::string SmoothCollisions<dim>::to_string(
 }
 
 // NOTE: Actually distance squared
-template <int dim>
-double SmoothCollisions<dim>::compute_minimum_distance(
+double SmoothCollisions::compute_minimum_distance(
     const CollisionMesh& mesh, Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());
@@ -292,8 +288,7 @@ double SmoothCollisions<dim>::compute_minimum_distance(
     return storage.combine([](double a, double b) { return std::min(a, b); });
 }
 
-template <int dim>
-double SmoothCollisions<dim>::compute_active_minimum_distance(
+double SmoothCollisions::compute_active_minimum_distance(
     const CollisionMesh& mesh, Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     assert(vertices.rows() == mesh.num_vertices());
@@ -301,9 +296,6 @@ double SmoothCollisions<dim>::compute_active_minimum_distance(
     if (collisions.empty()) {
         return std::numeric_limits<double>::infinity();
     }
-
-    const Eigen::MatrixXi& edges = mesh.edges();
-    const Eigen::MatrixXi& faces = mesh.faces();
 
     tbb::enumerable_thread_specific<double> storage(
         std::numeric_limits<double>::infinity());
@@ -315,7 +307,7 @@ double SmoothCollisions<dim>::compute_active_minimum_distance(
 
             for (size_t i = r.begin(); i < r.end(); i++) {
                 const double dist = collisions[i]->compute_distance(
-                    collisions[i]->dof(vertices, edges, faces));
+                    collisions[i]->dof(vertices));
 
                 if (collisions[i]->is_active() && dist < local_min_dist) {
                     local_min_dist = dist;
@@ -326,6 +318,4 @@ double SmoothCollisions<dim>::compute_active_minimum_distance(
     return storage.combine([](double a, double b) { return std::min(a, b); });
 }
 
-template class SmoothCollisions<2>;
-template class SmoothCollisions<3>;
 } // namespace ipc

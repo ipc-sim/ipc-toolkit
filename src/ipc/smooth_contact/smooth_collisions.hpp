@@ -16,13 +16,14 @@
 #include <vector>
 
 namespace ipc {
-template <int dim> class SmoothCollisions {
+class SmoothCollisions {
 public:
     /// @brief The type of the collisions.
-    using value_type = SmoothCollision<MaxVertices<dim>::value>;
+    using value_type = SmoothCollision;
 
 public:
     SmoothCollisions() = default;
+    virtual ~SmoothCollisions() = default;
 
     void compute_adaptive_dhat(
         const CollisionMesh& mesh,
@@ -113,7 +114,7 @@ public:
     {
         double out = std::max(
             vert_adaptive_dhat.maxCoeff(), edge_adaptive_dhat.maxCoeff());
-        if constexpr (dim == 3)
+        if (face_adaptive_dhat.size() > 0)
             return std::max(out, face_adaptive_dhat.maxCoeff());
         return out;
     }

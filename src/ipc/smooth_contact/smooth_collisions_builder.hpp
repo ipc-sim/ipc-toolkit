@@ -30,10 +30,10 @@ public:
     static void merge(
         const utils::ParallelCacheType<SmoothCollisionsBuilder<2>>&
             local_storage,
-        SmoothCollisions<2>& merged_collisions);
+        SmoothCollisions& merged_collisions);
 
     // Constructed collisions
-    std::vector<std::shared_ptr<typename SmoothCollisions<2>::value_type>>
+    std::vector<std::shared_ptr<typename SmoothCollisions::value_type>>
         collisions;
 
     // -------------------------------------------------------------------------
@@ -41,11 +41,11 @@ public:
     // Store the indices to pairs to avoid duplicates.
     unordered_map<
         std::pair<long, long>,
-        std::shared_ptr<SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>>
+        std::shared_ptr<SmoothCollisionTemplate<Point2, Point2>>>
         vert_vert_2_to_id;
     unordered_map<
         std::pair<long, long>,
-        std::shared_ptr<SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>>
+        std::shared_ptr<SmoothCollisionTemplate<Edge2, Point2>>>
         vert_edge_2_to_id;
 };
 
@@ -79,10 +79,10 @@ public:
     static void merge(
         const utils::ParallelCacheType<SmoothCollisionsBuilder<3>>&
             local_storage,
-        SmoothCollisions<3>& merged_collisions);
+        SmoothCollisions& merged_collisions);
 
     // Constructed collisions
-    std::vector<std::shared_ptr<typename SmoothCollisions<3>::value_type>>
+    std::vector<std::shared_ptr<typename SmoothCollisions::value_type>>
         collisions;
 
     // -------------------------------------------------------------------------
@@ -91,11 +91,11 @@ public:
     // and Edge-Edge
     unordered_map<
         std::pair<long, long>,
-        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>>
+        std::shared_ptr<SmoothCollisionTemplate<Point3, Point3>>>
         vert_vert_3_to_id;
     unordered_map<
         std::pair<long, long>,
-        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>>
+        std::shared_ptr<SmoothCollisionTemplate<Edge3, Point3>>>
         edge_vert_3_to_id;
 };
 

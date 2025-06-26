@@ -108,7 +108,8 @@ Point2::Point2(
 
         is_active_ = dn.dot(t0) > -param.alpha_t;
     } else {
-        _vert_ids = { { id } };
+        _vert_ids.resize(1);
+        _vert_ids[0] = id;
         is_active_ = true;
     }
 }

@@ -90,8 +90,7 @@ public:
 public:
     /// @brief Normal force magnitude
     double normal_force_magnitude;
-    std::shared_ptr<SmoothCollision<max_vert_2d>> smooth_collision_2d;
-    std::shared_ptr<SmoothCollision<max_vert_3d>> smooth_collision_3d;
+    std::shared_ptr<SmoothCollision> smooth_collision;
 
     /// @brief Ratio between normal and tangential forces (e.g., friction coefficient)
     double mu;

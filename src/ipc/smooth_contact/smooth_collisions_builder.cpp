@@ -19,7 +19,7 @@ namespace {
         unordered_map<std::pair<long, long>, std::shared_ptr<TCollision>>&
             cc_to_id_,
         std::vector<
-            std::shared_ptr<typename SmoothCollisions<dim>::value_type>>&
+            std::shared_ptr<typename SmoothCollisions::value_type>>&
             collisions_)
     {
         if (pair->is_active()
@@ -34,7 +34,7 @@ namespace {
     void add_collision(
         const std::shared_ptr<TCollision>& pair,
         std::vector<
-            std::shared_ptr<typename SmoothCollisions<dim>::value_type>>&
+            std::shared_ptr<typename SmoothCollisions::value_type>>&
             collisions_)
     {
         if (pair->is_active())
@@ -55,9 +55,9 @@ void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
     for (size_t i = start_i; i < end_i; i++) {
         const auto& [ei, vi] = candidates[i];
 
-        add_collision<2, SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>(
+        add_collision<2, SmoothCollisionTemplate<Edge2, Point2>>(
             std::make_shared<
-                SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>(
+                SmoothCollisionTemplate<Edge2, Point2>>(
                 ei, vi, PointEdgeDistanceType::AUTO, mesh, param,
                 std::min(edge_dhat(ei), vert_dhat(vi)), vertices),
             vert_edge_2_to_id, collisions);
@@ -68,9 +68,9 @@ void SmoothCollisionsBuilder<2>::add_edge_vertex_collisions(
             if ((vertices.row(vi) - vertices.row(vj)).norm() >= dhat)
                 continue;
             add_collision<
-                2, SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(
+                2, SmoothCollisionTemplate<Point2, Point2>>(
                 std::make_shared<
-                    SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(
+                    SmoothCollisionTemplate<Point2, Point2>>(
                     std::min<long>(vi, vj), std::max<long>(vi, vj),
                     PointPointDistanceType::AUTO, mesh, param, dhat, vertices),
                 vert_vert_2_to_id, collisions);
@@ -106,9 +106,9 @@ void SmoothCollisionsBuilder<3>::add_edge_edge_collisions(
             || distance >= param.dhat)
             continue;
 
-        add_collision<3, SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>(
+        add_collision<3, SmoothCollisionTemplate<Edge3, Edge3>>(
             std::make_shared<
-                SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>(
+                SmoothCollisionTemplate<Edge3, Edge3>>(
                 std::min(eai, ebi), std::max(eai, ebi), actual_dtype, mesh,
                 param, std::min(edge_dhat(eai), edge_dhat(ebi)), vertices),
             collisions);
@@ -143,9 +143,9 @@ void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
 
         if (pt_dtype == PointTriangleDistanceType::P_T)
             add_collision<
-                3, SmoothCollisionTemplate<max_vert_3d, Face, Point3>>(
+                3, SmoothCollisionTemplate<Face, Point3>>(
                 std::make_shared<
-                    SmoothCollisionTemplate<max_vert_3d, Face, Point3>>(
+                    SmoothCollisionTemplate<Face, Point3>>(
                     fi, vi, pt_dtype, mesh, param,
                     std::min(face_dhat(fi), vert_dhat(vi)), vertices),
                 collisions);
@@ -156,9 +156,9 @@ void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
             if ((vertices.row(vi) - vertices.row(vj)).norm() >= dhat)
                 continue;
             add_collision<
-                3, SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>(
+                3, SmoothCollisionTemplate<Point3, Point3>>(
                 std::make_shared<
-                    SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>(
+                    SmoothCollisionTemplate<Point3, Point3>>(
                     std::min<long>(vi, vj), std::max<long>(vi, vj),
                     PointPointDistanceType::AUTO, mesh, param, dhat, vertices),
                 vert_vert_3_to_id, collisions);
@@ -180,9 +180,9 @@ void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
                 continue;
 
             add_collision<
-                3, SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>(
+                3, SmoothCollisionTemplate<Edge3, Point3>>(
                 std::make_shared<
-                    SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>(
+                    SmoothCollisionTemplate<Edge3, Point3>>(
                     eid, vi, pe_dtype, mesh, param, dhat, vertices),
                 edge_vert_3_to_id, collisions);
         }
@@ -191,15 +191,15 @@ void SmoothCollisionsBuilder<3>::add_face_vertex_collisions(
 
 void SmoothCollisionsBuilder<3>::merge(
     const utils::ParallelCacheType<SmoothCollisionsBuilder<3>>& local_storage,
-    SmoothCollisions<3>& merged_collisions)
+    SmoothCollisions& merged_collisions)
 {
     unordered_map<
         std::pair<long, long>,
-        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>>
+        std::shared_ptr<SmoothCollisionTemplate<Point3, Point3>>>
         vert_vert_3_to_id;
     unordered_map<
         std::pair<long, long>,
-        std::shared_ptr<SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>>
+        std::shared_ptr<SmoothCollisionTemplate<Edge3, Point3>>>
         edge_vert_3_to_id;
 
     // size up the hash items
@@ -248,15 +248,15 @@ void SmoothCollisionsBuilder<3>::merge(
 
 void SmoothCollisionsBuilder<2>::merge(
     const utils::ParallelCacheType<SmoothCollisionsBuilder<2>>& local_storage,
-    SmoothCollisions<2>& merged_collisions)
+    SmoothCollisions& merged_collisions)
 {
     unordered_map<
         std::pair<long, long>,
-        std::shared_ptr<SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>>
+        std::shared_ptr<SmoothCollisionTemplate<Point2, Point2>>>
         vert_vert_2_to_id;
     unordered_map<
         std::pair<long, long>,
-        std::shared_ptr<SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>>
+        std::shared_ptr<SmoothCollisionTemplate<Edge2, Point2>>>
         vert_edge_2_to_id;
 
     // size up the hash items

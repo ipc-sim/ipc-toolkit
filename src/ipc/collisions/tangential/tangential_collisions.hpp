@@ -46,11 +46,10 @@ public:
         const std::function<double(double, double)>& blend_mu =
             default_blend_mu);
 
-    template <int dim>
     void build_for_smooth_contact(
         const CollisionMesh& mesh,
         const Eigen::MatrixXd& vertices,
-        const SmoothCollisions<dim>& collisions,
+        const SmoothCollisions& collisions,
         const ParameterType& params,
         const double barrier_stiffness,
         const Eigen::VectorXd& mus,

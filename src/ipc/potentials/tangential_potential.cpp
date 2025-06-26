@@ -582,32 +582,15 @@ Eigen::SparseMatrix<double> TangentialPotential::smooth_contact_force_jacobian(
                 // normal_force_grad is the gradient of contact force norm
                 Eigen::VectorXd normal_force_grad;
                 std::vector<index_t> cc_vert_ids;
-                {
-                    Eigen::MatrixXd Xt = rest_positions + lagged_displacements;
-                    if (dim == 2) {
-                        auto cc = collision.smooth_collision_2d;
-                        const Eigen::VectorXd contact_grad =
-                            cc->gradient(cc->dof(Xt, edges, faces), params);
-                        const Eigen::MatrixXd contact_hess =
-                            cc->hessian(cc->dof(Xt, edges, faces), params);
-                        normal_force_grad = (1 / contact_grad.norm())
-                            * (contact_hess * contact_grad);
-                        auto tmp_ids = cc->vertex_ids(edges, faces);
-                        cc_vert_ids =
-                            std::vector(tmp_ids.begin(), tmp_ids.end());
-                    } else if (dim == 3) {
-                        auto cc = collision.smooth_collision_3d;
-                        const Eigen::VectorXd contact_grad =
-                            cc->gradient(cc->dof(Xt, edges, faces), params);
-                        const Eigen::MatrixXd contact_hess =
-                            cc->hessian(cc->dof(Xt, edges, faces), params);
-                        normal_force_grad = (1 / contact_grad.norm())
-                            * (contact_hess * contact_grad);
-                        auto tmp_ids = cc->vertex_ids(edges, faces);
-                        cc_vert_ids =
-                            std::vector(tmp_ids.begin(), tmp_ids.end());
-                    }
-                }
+                Eigen::MatrixXd Xt = rest_positions + lagged_displacements;
+                auto cc = collision.smooth_collision;
+                const Eigen::VectorXd contact_grad =
+                    cc->gradient(cc->dof(Xt), params);
+                const Eigen::MatrixXd contact_hess =
+                    cc->hessian(cc->dof(Xt), params);
+                normal_force_grad = (1 / contact_grad.norm())
+                    * (contact_hess * contact_grad);
+                cc_vert_ids = cc->vertex_ids();
 
                 local_jacobian_to_global_triplets(
                     local_force * normal_force_grad.transpose(), vis,
