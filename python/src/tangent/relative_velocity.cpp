@@ -151,7 +151,7 @@ void define_relative_velocity(py::module_& m)
             dt0: Velocity of the first vertex of the triangle
             dt1: Velocity of the second vertex of the triangle
             dt2: Velocity of the third vertex of the triangle
-            coords: Baricentric coordinates of the closest point on the triangle
+            coords: Barycentric coordinates of the closest point on the triangle
 
         Returns:
             The relative velocity of the point to the triangle
@@ -166,7 +166,7 @@ void define_relative_velocity(py::module_& m)
 
         Parameters:
             dim: Dimension (2 or 3)
-            coords: Baricentric coordinates of the closest point on the triangle
+            coords: Barycentric coordinates of the closest point on the triangle
 
         Returns:
             The relative velocity matrix
@@ -181,7 +181,7 @@ void define_relative_velocity(py::module_& m)
 
         Parameters:
             dim: Dimension (2 or 3)
-            coords: Baricentric coordinates of the closest point on the triangle
+            coords: Barycentric coordinates of the closest point on the triangle
 
         Returns:
             The Jacobian of the relative velocity matrix

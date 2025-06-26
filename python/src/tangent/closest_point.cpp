@@ -16,7 +16,7 @@ void define_closest_point(py::module_& m)
             return point_edge_closest_point(p, e0, e1);
         },
         R"ipc_Qu8mg5v7(
-        Compute the baricentric coordinate of the closest point on the edge.
+        Compute the barycentric coordinate of the closest point on the edge.
 
         Parameters:
             p: Point
