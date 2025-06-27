@@ -112,6 +112,62 @@ public:
         const NarrowPhaseCCD& narrow_phase_ccd =
             DEFAULT_NARROW_PHASE_CCD) const;
 
+    // == Convert to subelement candidates =====================================
+
+    /// @brief Convert edge-vertex candidates to vertex-vertex candidates.
+    /// @param mesh The collision mesh.
+    /// @param vertices Collision mesh vertex positions (rowwise).
+    /// @param is_active (Optional) Function to determine if a candidate is active.
+    /// @return Vertex-vertex candidates derived from edge-vertex candidates.
+    std::vector<VertexVertexCandidate> edge_vertex_to_vertex_vertex(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        const std::function<bool(double)>& is_active = [](double) {
+            return true;
+        }) const;
+
+    /// @brief Convert face-vertex candidates to vertex-vertex candidates.
+    /// @param mesh The collision mesh.
+    /// @param vertices Collision mesh vertex positions (rowwise).
+    /// @param is_active (Optional) Function to determine if a candidate is active.
+    /// @return Vertex-vertex candidates derived from face-vertex candidates.
+    std::vector<VertexVertexCandidate> face_vertex_to_vertex_vertex(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        const std::function<bool(double)>& is_active = [](double) {
+            return true;
+        }) const;
+
+    /// @brief Convert face-vertex candidates to edge-vertex candidates.
+    /// @param mesh The collision mesh.
+    /// @param vertices Collision mesh vertex positions (rowwise).
+    /// @param is_active (Optional) Function to determine if a candidate is active.
+    /// @return Edge-vertex candidates derived from face-vertex candidates.
+    std::vector<EdgeVertexCandidate> face_vertex_to_edge_vertex(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        const std::function<bool(double)>& is_active = [](double) {
+            return true;
+        }) const;
+
+    /// @brief Convert edge-edge candidates to edge-vertex candidates.
+    /// @param mesh The collision mesh.
+    /// @param vertices Collision mesh vertex positions (rowwise).
+    /// @param is_active (Optional) Function to determine if a candidate is active.
+    /// @return Edge-vertex candidates derived from edge-edge candidates.
+    std::vector<EdgeVertexCandidate> edge_edge_to_edge_vertex(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        const std::function<bool(double)>& is_active = [](double) {
+            return true;
+        }) const;
+
+    /// @brief Save the collision candidates to an OBJ file.
+    /// @param filename The name of the file to save the candidates to.
+    /// @param vertices Collision mesh vertex positions (rowwise).
+    /// @param edges Collision mesh edge indices (rowwise).
+    /// @param faces Collision mesh face indices (rowwise).
+    /// @return True if the file was saved successfully.
     bool save_obj(
         const std::string& filename,
         Eigen::ConstRef<Eigen::MatrixXd> vertices,

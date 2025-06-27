@@ -3,12 +3,18 @@
 #include <ipc/config.hpp>
 #include <ipc/ipc.hpp>
 #include <ipc/broad_phase/default_broad_phase.hpp>
+#include <ipc/distance/edge_edge.hpp>
+#include <ipc/distance/point_edge.hpp>
+#include <ipc/distance/point_line.hpp>
+#include <ipc/distance/point_plane.hpp>
+#include <ipc/distance/point_point.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/save_obj.hpp>
 
 #include <igl/remove_unreferenced.h>
 #include <tbb/blocked_range.h>
 #include <tbb/parallel_for.h>
+#include <tbb/parallel_sort.h>
 
 #include <fstream>
 #include <shared_mutex>
@@ -383,6 +389,125 @@ const CollisionStencil& Candidates::operator[](size_t i) const
     }
     throw std::out_of_range("Candidate index is out of range!");
 }
+
+// == Convert to subelement candidates ========================================
+
+namespace {
+
+    /// @brief Convert element-vertex candidates to vertex-vertex candidates
+    /// @param elements Elements matrix of the mesh
+    /// @param vertices Vertex positions of the mesh
+    /// @param ev_candidates Element-vertex candidates
+    /// @param is_active Function to determine if a candidate is active
+    /// @return Vertex-vertex candidates
+    template <typename Candidate>
+    std::vector<VertexVertexCandidate>
+    element_vertex_to_vertex_vertex_candidates(
+        Eigen::ConstRef<Eigen::MatrixXi> elements,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        const std::vector<Candidate>& candidates,
+        const std::function<bool(double)>& is_active)
+    {
+        std::vector<VertexVertexCandidate> vv_candidates;
+        for (const auto& [ei, vi] : candidates) {
+            for (int j = 0; j < elements.cols(); j++) {
+                const int vj = elements(ei, j);
+                if (is_active(point_point_distance(
+                        vertices.row(vi), vertices.row(vj)))) {
+                    vv_candidates.emplace_back(vi, vj);
+                }
+            }
+        }
+
+        // Remove duplicates
+        tbb::parallel_sort(vv_candidates.begin(), vv_candidates.end());
+        vv_candidates.erase(
+            std::unique(vv_candidates.begin(), vv_candidates.end()),
+            vv_candidates.end());
+
+        return vv_candidates;
+    }
+
+} // namespace
+
+std::vector<VertexVertexCandidate> Candidates::edge_vertex_to_vertex_vertex(
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    const std::function<bool(double)>& is_active) const
+{
+    return element_vertex_to_vertex_vertex_candidates(
+        mesh.edges(), vertices, ev_candidates, is_active);
+}
+
+std::vector<VertexVertexCandidate> Candidates::face_vertex_to_vertex_vertex(
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    const std::function<bool(double)>& is_active) const
+{
+    return element_vertex_to_vertex_vertex_candidates(
+        mesh.faces(), vertices, fv_candidates, is_active);
+}
+
+std::vector<EdgeVertexCandidate> Candidates::face_vertex_to_edge_vertex(
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    const std::function<bool(double)>& is_active) const
+{
+    std::vector<EdgeVertexCandidate> ev;
+    for (const auto& [fi, vi] : fv_candidates) {
+        for (int j = 0; j < 3; j++) {
+            const int ei = mesh.faces_to_edges()(fi, j);
+            const int vj = mesh.edges()(ei, 0);
+            const int vk = mesh.edges()(ei, 1);
+            if (is_active(point_edge_distance(
+                    vertices.row(vi), vertices.row(vj), vertices.row(vk)))) {
+                ev.emplace_back(ei, vi);
+            }
+        }
+    }
+
+    // Remove duplicates
+    tbb::parallel_sort(ev.begin(), ev.end());
+    ev.erase(std::unique(ev.begin(), ev.end()), ev.end());
+
+    return ev;
+}
+
+std::vector<EdgeVertexCandidate> Candidates::edge_edge_to_edge_vertex(
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    const std::function<bool(double)>& is_active) const
+{
+    std::vector<EdgeVertexCandidate> ev_candidates;
+    for (const EdgeEdgeCandidate& ee : ee_candidates) {
+        for (int i = 0; i < 2; i++) {
+            const int ei = i == 0 ? ee.edge0_id : ee.edge1_id;
+            const int ej = i == 0 ? ee.edge1_id : ee.edge0_id;
+
+            const int ei0 = mesh.edges()(ei, 0);
+            const int ei1 = mesh.edges()(ei, 1);
+
+            for (int j = 0; j < 2; j++) {
+                const int vj = mesh.edges()(ej, j);
+                if (is_active(point_edge_distance(
+                        vertices.row(vj), vertices.row(ei0),
+                        vertices.row(ei1)))) {
+                    ev_candidates.emplace_back(ei, vj);
+                }
+            }
+        }
+    }
+
+    // Remove duplicates
+    tbb::parallel_sort(ev_candidates.begin(), ev_candidates.end());
+    ev_candidates.erase(
+        std::unique(ev_candidates.begin(), ev_candidates.end()),
+        ev_candidates.end());
+
+    return ev_candidates;
+}
+
+// ============================================================================
 
 bool Candidates::save_obj(
     const std::string& filename,
