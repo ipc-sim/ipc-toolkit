@@ -33,8 +33,9 @@ public:
     second_derivative(const double d, const double dhat) const = 0;
 
     /// @brief Get the units of the barrier function.
+    /// Essentially, barrier(d, d̂) / units(d̂) should be dimensionless.
     /// @param dhat The activation distance of the barrier.
-    /// @return
+    /// @return The units of the barrier function.
     virtual double units(const double dhat) const = 0;
 };
 
@@ -194,7 +195,10 @@ public:
     /// @brief Get the units of the barrier function.
     /// @param dhat The activation distance of the barrier.
     /// @return The units of the barrier function.
-    double units(const double dhat) const override { return 1.0; }
+    double units(const double dhat) const override
+    {
+        return 1.0; // The normalized barrier is dimensionless.
+    }
 };
 
 using NormalizedClampedLogBarrier = NormalizedBarrier<ClampedLogBarrier>;
@@ -264,6 +268,58 @@ public:
 class CubicBarrier : public Barrier {
 public:
     CubicBarrier() = default;
+
+    /// @brief Weak barrier function.
+    ///
+    /// \f\[
+    ///     b(d) = -\frac{2}{3\hat{d}} (d - \hat{d})^3
+    /// \f\]
+    ///
+    /// @param d The distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The value of the barrier function at d.
+    double operator()(const double d, const double dhat) const override;
+
+    /// @brief Derivative of the barrier function.
+    ///
+    /// \f\[
+    ///     b'(d) = -2 (d - \hat{d})^2
+    /// \f\]
+    ///
+    /// @param d The distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The derivative of the barrier wrt d.
+    double first_derivative(const double d, const double dhat) const override;
+
+    /// @brief Second derivative of the barrier function.
+    ///
+    /// \f\[
+    ///     b''(d) = -4 (d - \hat{d})
+    /// \f\]
+    ///
+    /// @param d The distance.
+    /// @param dhat Activation distance of the barrier.
+    /// @return The second derivative of the barrier wrt d.
+    double second_derivative(const double d, const double dhat) const override;
+
+    /// @brief Get the units of the barrier function.
+    /// @param dhat The activation distance of the barrier.
+    /// @return The units of the barrier function.
+    double units(const double dhat) const override
+    {
+        // (d - d̂)² = d̂² (d/d̂ - 1)²
+        return dhat * dhat;
+    }
+};
+
+// ============================================================================
+// 2-Stage activation function from [Chen et al. 2024]
+// ============================================================================
+
+/// @brief Cubic barrier function from [Chen et al. 2024].
+class TwoStageBarrier : public Barrier {
+public:
+    TwoStageBarrier() = default;
 
     /// @brief Weak barrier function.
     ///
