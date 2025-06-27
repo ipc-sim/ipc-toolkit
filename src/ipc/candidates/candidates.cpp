@@ -330,6 +330,42 @@ double Candidates::compute_cfl_stepsize(
     return std::min(alpha_C, alpha_F);
 }
 
+Eigen::VectorXd Candidates::compute_per_vertex_safe_distances(
+    const CollisionMesh& mesh,
+    Eigen::ConstRef<Eigen::MatrixXd> vertices,
+    const double inflation_radius,
+    const double min_distance) const
+{
+    assert(inflation_radius >= min_distance);
+
+    Eigen::VectorXd min_distances = Eigen::VectorXd::Constant(
+        mesh.num_vertices(), inflation_radius - min_distance);
+
+    for (size_t i = 0; i < size(); i++) {
+        const CollisionStencil& candidate = (*this)[i];
+
+        const double d = sqrt(candidate.compute_distance(
+                             vertices, mesh.edges(), mesh.faces()))
+            - min_distance;
+
+        // Compute the distance for each vertex in the candidate
+        for (const index_t vid :
+             candidate.vertex_ids(mesh.edges(), mesh.faces())) {
+            if (vid < 0) {
+                break; // No more vertices in this candidate
+            }
+            // Distribute the distance to the vertices
+            min_distances[vid] = std::min(min_distances[vid], d);
+        }
+    }
+
+    assert((min_distances.array() >= 0).all());
+
+    return min_distances;
+}
+
+// ============================================================================
+
 size_t Candidates::size() const
 {
     return vv_candidates.size() + ev_candidates.size() + ee_candidates.size()
@@ -453,7 +489,7 @@ std::vector<EdgeVertexCandidate> Candidates::face_vertex_to_edge_vertex(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::function<bool(double)>& is_active) const
 {
-    std::vector<EdgeVertexCandidate> ev;
+    std::vector<EdgeVertexCandidate> C_ev;
     for (const auto& [fi, vi] : fv_candidates) {
         for (int j = 0; j < 3; j++) {
             const int ei = mesh.faces_to_edges()(fi, j);
@@ -461,16 +497,16 @@ std::vector<EdgeVertexCandidate> Candidates::face_vertex_to_edge_vertex(
             const int vk = mesh.edges()(ei, 1);
             if (is_active(point_edge_distance(
                     vertices.row(vi), vertices.row(vj), vertices.row(vk)))) {
-                ev.emplace_back(ei, vi);
+                C_ev.emplace_back(ei, vi);
             }
         }
     }
 
     // Remove duplicates
-    tbb::parallel_sort(ev.begin(), ev.end());
-    ev.erase(std::unique(ev.begin(), ev.end()), ev.end());
+    tbb::parallel_sort(C_ev.begin(), C_ev.end());
+    C_ev.erase(std::unique(C_ev.begin(), C_ev.end()), C_ev.end());
 
-    return ev;
+    return C_ev;
 }
 
 std::vector<EdgeVertexCandidate> Candidates::edge_edge_to_edge_vertex(
@@ -478,7 +514,7 @@ std::vector<EdgeVertexCandidate> Candidates::edge_edge_to_edge_vertex(
     Eigen::ConstRef<Eigen::MatrixXd> vertices,
     const std::function<bool(double)>& is_active) const
 {
-    std::vector<EdgeVertexCandidate> ev_candidates;
+    std::vector<EdgeVertexCandidate> C_ev;
     for (const EdgeEdgeCandidate& ee : ee_candidates) {
         for (int i = 0; i < 2; i++) {
             const int ei = i == 0 ? ee.edge0_id : ee.edge1_id;
@@ -492,19 +528,17 @@ std::vector<EdgeVertexCandidate> Candidates::edge_edge_to_edge_vertex(
                 if (is_active(point_edge_distance(
                         vertices.row(vj), vertices.row(ei0),
                         vertices.row(ei1)))) {
-                    ev_candidates.emplace_back(ei, vj);
+                    C_ev.emplace_back(ei, vj);
                 }
             }
         }
     }
 
     // Remove duplicates
-    tbb::parallel_sort(ev_candidates.begin(), ev_candidates.end());
-    ev_candidates.erase(
-        std::unique(ev_candidates.begin(), ev_candidates.end()),
-        ev_candidates.end());
+    tbb::parallel_sort(C_ev.begin(), C_ev.end());
+    C_ev.erase(std::unique(C_ev.begin(), C_ev.end()), C_ev.end());
 
-    return ev_candidates;
+    return C_ev;
 }
 
 // ============================================================================

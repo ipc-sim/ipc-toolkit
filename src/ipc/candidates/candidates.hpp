@@ -112,7 +112,20 @@ public:
         const NarrowPhaseCCD& narrow_phase_ccd =
             DEFAULT_NARROW_PHASE_CCD) const;
 
-    // == Convert to subelement candidates =====================================
+    /// @brief Compute the maximum distance every vertex can move (independently) without colliding with any other element.
+    /// @note Cap the value at the inflation radius used to build the candidates.
+    /// @param mesh The collision mesh.
+    /// @param vertices Collision mesh vertex positions (rowwise).
+    /// @param inflation_radius The inflation radius used to build the candidates.
+    /// @param min_distance The minimum distance allowable between any two elements.
+    /// @return A vector of minimum distances, one for each vertex.
+    Eigen::VectorXd compute_per_vertex_safe_distances(
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> vertices,
+        const double inflation_radius,
+        const double min_distance = 0.0) const;
+
+    // == Convert to subelement candidates ====================================
 
     /// @brief Convert edge-vertex candidates to vertex-vertex candidates.
     /// @param mesh The collision mesh.
@@ -161,6 +174,8 @@ public:
         const std::function<bool(double)>& is_active = [](double) {
             return true;
         }) const;
+
+    // == Save candidates to file =============================================
 
     /// @brief Save the collision candidates to an OBJ file.
     /// @param filename The name of the file to save the candidates to.
