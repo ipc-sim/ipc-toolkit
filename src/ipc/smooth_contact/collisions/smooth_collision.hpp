@@ -69,15 +69,7 @@ public:
     /// @param X Full matrix of DOF (rowwise).
     /// @return This stencil's DOF.
     Eigen::VectorXd
-    dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
-    {
-        const int dim = X.cols();
-        Eigen::VectorXd x(num_vertices() * dim);
-        for (int i = 0; i < num_vertices(); i++) {
-            x.segment(i * dim, dim) = X.row(vertex_ids_[i]);
-        }
-        return x;
-    }
+    dof(Eigen::ConstRef<Eigen::MatrixXd> X) const;
 
     /// @brief Compute the distance of the stencil.
     /// @param vertices Collision mesh vertices

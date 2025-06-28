@@ -31,6 +31,25 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::type() const
     return CollisionType::VertexVertex;
 }
 
+Eigen::VectorXd SmoothCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
+{
+    const int dim = X.cols();
+    Eigen::VectorXd x(num_vertices() * dim);
+    if (dim == 2) {
+        for (int i = 0; i < num_vertices(); i++) {
+            x.segment<2>(i * 2) = X.row(vertex_ids_[i]);
+        }
+    }
+    else if (dim == 3) {
+        for (int i = 0; i < num_vertices(); i++) {
+            x.segment<3>(i * 3) = X.row(vertex_ids_[i]);
+        }
+    }
+    else
+        throw std::runtime_error("Invalid dimension!");
+    return x;
+}
+
 template <typename PrimitiveA, typename PrimitiveB>
 std::string
 SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::name() const
@@ -106,10 +125,14 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::
         (d.norm() < Super::dhat()) && pA->is_active() && pB->is_active();
 
     if (d.norm() < 1e-12)
+    {
         logger().warn(
             "pair distance {}, id {} and {}, dtype {}, active {}", d.norm(),
             primitive0_, primitive1_,
             PrimitiveDistType<PrimitiveA, PrimitiveB>::name, Super::is_active_);
+
+        logger().warn("value {}", (*this)(this->dof(V), param));
+    }
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
@@ -135,10 +158,13 @@ double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::operator()(
         PrimitiveDistanceTemplate<PrimitiveA, PrimitiveB, double>::mollifier(
             x, dist * dist);
 
+    if (params.r == 0)
+        logger().error("Invalid param!");
+
     if (dist < 1e-12)
         logger().warn(
-            "pair distance {:.3e}, barrier {:.3e}, mollifier {:.3e}, orient {:.3e} {:.3e}",
-            dist, a3, a4, a1, a2);
+            "pair distance {:.3e}, dhat {:.3e}, r {}, barrier {:.3e}, mollifier {:.3e}, orient {:.3e} {:.3e}",
+            dist, Super::dhat(), params.r, a3, a4, a1, a2);
 
     return a1 * a2 * a3 * a4;
 }
