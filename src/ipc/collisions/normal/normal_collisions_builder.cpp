@@ -312,8 +312,12 @@ void NormalCollisionsBuilder::add_edge_vertex_negative_vertex_vertex_collisions(
                                 double& weight,
                                 Eigen::SparseVector<double>& weight_gradient) {
         const auto& incident_vertices = mesh.vertex_vertex_adjacencies()[vj];
-        const index_t incident_edge_amt = incident_vertices.size()
-            - index_t(incident_vertices.find(vi) != incident_vertices.end());
+assert(
+            std::is_sorted(incident_vertices.begin(), incident_vertices.end()));
+        const bool is_vi_incident = std::binary_search(
+            incident_vertices.begin(), incident_vertices.end(), vi);
+        const index_t incident_edge_amt =
+incident_vertices.size() - index_t(is_vi_incident);
 
         if (incident_edge_amt > 1) {
             // ÷ 2 to handle double counting for correct integration
@@ -357,8 +361,11 @@ void NormalCollisionsBuilder::add_face_vertex_positive_vertex_vertex_collisions(
                                 double& weight,
                                 Eigen::SparseVector<double>& weight_gradient) {
         const auto& incident_vertices = mesh.vertex_vertex_adjacencies()[vj];
+assert(
+            std::is_sorted(incident_vertices.begin(), incident_vertices.end()));
         if (mesh.is_vertex_on_boundary(vj)
-            || incident_vertices.find(vi) != incident_vertices.end()) {
+            || std::binary_search(
+incident_vertices.begin(), incident_vertices.end(), vi)) {
             return; // Skip boundary vertices and incident vertices
         }
 
@@ -401,8 +408,12 @@ void NormalCollisionsBuilder::add_face_vertex_negative_edge_vertex_collisions(
         assert(vi != mesh.edges()(ei, 0) && vi != mesh.edges()(ei, 1));
 
         const auto& incident_vertices = mesh.edge_vertex_adjacencies()[ei];
-        const index_t incident_triangle_amt = incident_vertices.size()
-            - index_t(incident_vertices.find(vi) != incident_vertices.end());
+assert(
+            std::is_sorted(incident_vertices.begin(), incident_vertices.end()));
+        const bool is_vi_incident = std::binary_search(
+            incident_vertices.begin(), incident_vertices.end(), vi);
+        const index_t incident_triangle_amt =
+incident_vertices.size() - index_t(is_vi_incident);
 
         if (incident_triangle_amt > 1) {
             // ÷ 4 to handle double counting and PT + EE for correct integration

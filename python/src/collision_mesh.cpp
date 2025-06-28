@@ -2,6 +2,7 @@
 
 #include <ipc/collision_mesh.hpp>
 #include <ipc/utils/logger.hpp>
+#include <ipc/utils/unordered_map_and_set.hpp>
 
 using namespace ipc;
 
