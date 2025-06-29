@@ -65,7 +65,7 @@ double update_barrier_stiffness(
 /// @param dmin Minimum distance between elements.
 /// @return The semi-implicit stiffness.
 double semi_implicit_stiffness(
-    const CollisionStencil<4>& stencil,
+    const CollisionStencil& stencil,
     Eigen::ConstRef<VectorMax12d> vertices,
     Eigen::ConstRef<VectorMax4d> mass,
     Eigen::ConstRef<MatrixMax12d> local_hess,

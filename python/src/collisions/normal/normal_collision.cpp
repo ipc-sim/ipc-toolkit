@@ -2,12 +2,11 @@
 
 #include <ipc/collisions/normal/normal_collision.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_normal_collision(py::module_& m)
 {
-    py::class_<NormalCollision, CollisionStencil<4>>(m, "NormalCollision")
+    py::class_<NormalCollision, CollisionStencil>(m, "NormalCollision")
         .def(
             "is_mollified", &NormalCollision::is_mollified,
             "Does the distance potentially have to be mollified?")
@@ -22,7 +21,7 @@ void define_normal_collision(py::module_& m)
             Returns:
                 The mollifier threshold.
             )ipc_Qu8mg5v7",
-            py::arg("rest_positions"))
+            "rest_positions"_a)
         .def(
             "mollifier",
             py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
@@ -36,7 +35,7 @@ void define_normal_collision(py::module_& m)
             Returns:
                 The mollifier value.
             )ipc_Qu8mg5v7",
-            py::arg("positions"))
+            "positions"_a)
         .def(
             "mollifier",
             py::overload_cast<Eigen::ConstRef<VectorMax12d>, double>(
@@ -51,7 +50,7 @@ void define_normal_collision(py::module_& m)
             Returns:
                 The mollifier value.
             )ipc_Qu8mg5v7",
-            py::arg("positions"), py::arg("eps_x"))
+            "positions"_a, "eps_x"_a)
         .def(
             "mollifier_gradient",
             py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
@@ -65,7 +64,7 @@ void define_normal_collision(py::module_& m)
             Returns:
                 The mollifier gradient.
             )ipc_Qu8mg5v7",
-            py::arg("positions"))
+            "positions"_a)
         .def(
             "mollifier_gradient",
             py::overload_cast<Eigen::ConstRef<VectorMax12d>, double>(
@@ -80,7 +79,7 @@ void define_normal_collision(py::module_& m)
             Returns:
                 The mollifier gradient.
             )ipc_Qu8mg5v7",
-            py::arg("positions"), py::arg("eps_x"))
+            "positions"_a, "eps_x"_a)
         .def(
             "mollifier_hessian",
             py::overload_cast<Eigen::ConstRef<VectorMax12d>>(
@@ -94,7 +93,7 @@ void define_normal_collision(py::module_& m)
             Returns:
                 The mollifier Hessian.
             )ipc_Qu8mg5v7",
-            py::arg("positions"))
+            "positions"_a)
         .def(
             "mollifier_hessian",
             py::overload_cast<Eigen::ConstRef<VectorMax12d>, double>(
@@ -109,7 +108,7 @@ void define_normal_collision(py::module_& m)
             Returns:
                 The mollifier Hessian.
             )ipc_Qu8mg5v7",
-            py::arg("positions"), py::arg("eps_x"))
+            "positions"_a, "eps_x"_a)
         .def(
             "mollifier_gradient_wrt_x",
             &NormalCollision::mollifier_gradient_wrt_x,
@@ -123,7 +122,7 @@ void define_normal_collision(py::module_& m)
             Returns:
                 The mollifier gradient w.r.t. rest positions.
             )ipc_Qu8mg5v7",
-            py::arg("rest_positions"), py::arg("positions"))
+            "rest_positions"_a, "positions"_a)
         .def(
             "mollifier_gradient_jacobian_wrt_x",
             &NormalCollision::mollifier_gradient_jacobian_wrt_x,
@@ -137,7 +136,7 @@ void define_normal_collision(py::module_& m)
             Returns:
                 The jacobian of the mollifier's gradient w.r.t. rest positions.
             )ipc_Qu8mg5v7",
-            py::arg("rest_positions"), py::arg("positions"))
+            "rest_positions"_a, "positions"_a)
         .def_readwrite(
             "dmin", &NormalCollision::dmin, "The minimum separation distance.")
         .def_readwrite(

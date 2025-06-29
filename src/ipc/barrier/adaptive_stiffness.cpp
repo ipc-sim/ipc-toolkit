@@ -103,7 +103,7 @@ double update_barrier_stiffness(
 //
 
 double semi_implicit_stiffness(
-    const CollisionStencil<4>& stencil,
+    const CollisionStencil& stencil,
     Eigen::ConstRef<VectorMax12d> vertices,
     Eigen::ConstRef<VectorMax4d> mass,
     Eigen::ConstRef<MatrixMax12d> local_hess,
@@ -158,7 +158,7 @@ Eigen::VectorXd semi_implicit_stiffness(
     Eigen::VectorXd stiffnesses(collisions.size());
 
     for (size_t ci = 0; ci < collisions.size(); ci++) {
-        const CollisionStencil<4>& collision = collisions[ci];
+        const CollisionStencil& collision = collisions[ci];
         const unsigned N = collision.num_vertices();
 
         const VectorMax12d positions =

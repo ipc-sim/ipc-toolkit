@@ -9,7 +9,7 @@
 
 namespace ipc {
 
-class EdgeVertexCandidate : virtual public CollisionStencil<4> {
+class EdgeVertexCandidate : virtual public CollisionStencil {
 public:
     EdgeVertexCandidate(index_t edge_id, index_t vertex_id);
 
@@ -18,6 +18,10 @@ public:
 
     int num_vertices() const override { return 3; };
 
+    /// @brief Get the vertex IDs for the edge-vertex pair
+    /// @param edges The edge connectivity matrix
+    /// @param faces The face connectivity matrix
+    /// @return An array of vertex IDs in the order: [vi, e0i, e1i, -1]
     std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const override
@@ -25,10 +29,10 @@ public:
         return { { vertex_id, edges(edge_id, 0), edges(edge_id, 1), -1 } };
     }
 
-    using CollisionStencil<4>::compute_coefficients;
-    using CollisionStencil<4>::compute_distance;
-    using CollisionStencil<4>::compute_distance_gradient;
-    using CollisionStencil<4>::compute_distance_hessian;
+    using CollisionStencil::compute_coefficients;
+    using CollisionStencil::compute_distance;
+    using CollisionStencil::compute_distance_gradient;
+    using CollisionStencil::compute_distance_hessian;
 
     double
     compute_distance(Eigen::ConstRef<VectorMax12d> positions) const override;

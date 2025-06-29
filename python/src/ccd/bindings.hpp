@@ -1,7 +1,6 @@
 #pragma once
 
 #include <pybind11/pybind11.h>
-namespace py = pybind11;
 
 void define_ccd_aabb(py::module_& m);
 void define_additive_ccd(py::module_& m);

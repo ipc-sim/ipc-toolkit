@@ -2,7 +2,6 @@
 
 #include <ipc/collisions/normal/edge_edge.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_edge_edge_normal_collision(py::module_& m)
@@ -13,25 +12,24 @@ void define_edge_edge_normal_collision(py::module_& m)
             py::init<
                 const index_t, const index_t, const double,
                 const EdgeEdgeDistanceType>(),
-            py::arg("edge0_id"), py::arg("edge1_id"), py::arg("eps_x"),
-            py::arg("dtype") = EdgeEdgeDistanceType::AUTO)
+            "edge0_id"_a, "edge1_id"_a, "eps_x"_a,
+            "dtype"_a = EdgeEdgeDistanceType::AUTO)
         .def(
             py::init<
                 const EdgeEdgeCandidate&, const double,
                 const EdgeEdgeDistanceType>(),
-            py::arg("candidate"), py::arg("eps_x"),
-            py::arg("dtype") = EdgeEdgeDistanceType::AUTO)
+            "candidate"_a, "eps_x"_a, "dtype"_a = EdgeEdgeDistanceType::AUTO)
         // .def(
         //     py::init<
         //         const index_t, const index_t, const double, const double,
         //         const Eigen::SparseVector<double>&,
         //         const EdgeEdgeDistanceType>(),
-        //     py::arg("edge0_id"), py::arg("edge1_id"), py::arg("eps_x"),
-        //     py::arg("weight"), py::arg("weight_gradient"),
-        //     py::arg("dtype") = EdgeEdgeDistanceType::AUTO)
-        .def("__eq__", &EdgeEdgeNormalCollision::operator==, py::arg("other"))
-        .def("__ne__", &EdgeEdgeNormalCollision::operator!=, py::arg("other"))
-        .def("__lt__", &EdgeEdgeNormalCollision::operator<, py::arg("other"))
+        //     "edge0_id"_a, "edge1_id"_a, "eps_x"_a,
+        //     "weight"_a, "weight_gradient"_a,
+        //     "dtype"_a = EdgeEdgeDistanceType::AUTO)
+        .def("__eq__", &EdgeEdgeNormalCollision::operator==, "other"_a)
+        .def("__ne__", &EdgeEdgeNormalCollision::operator!=, "other"_a)
+        .def("__lt__", &EdgeEdgeNormalCollision::operator<, "other"_a)
         .def_readwrite(
             "eps_x", &EdgeEdgeNormalCollision::eps_x,
             "Mollifier activation threshold.")

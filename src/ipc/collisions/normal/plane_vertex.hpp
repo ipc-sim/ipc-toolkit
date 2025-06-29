@@ -21,10 +21,10 @@ public:
         return { { vertex_id, -1, -1, -1 } };
     }
 
-    using CollisionStencil<4>::compute_coefficients;
-    using CollisionStencil<4>::compute_distance;
-    using CollisionStencil<4>::compute_distance_gradient;
-    using CollisionStencil<4>::compute_distance_hessian;
+    using CollisionStencil::compute_coefficients;
+    using CollisionStencil::compute_distance;
+    using CollisionStencil::compute_distance_gradient;
+    using CollisionStencil::compute_distance_hessian;
 
     /// @brief Compute the distance between the point and plane.
     /// @param point Point's position.

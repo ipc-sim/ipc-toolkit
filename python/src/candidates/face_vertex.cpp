@@ -2,22 +2,19 @@
 
 #include <ipc/candidates/face_vertex.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_face_vertex_candidate(py::module_& m)
 {
-    py::class_<FaceVertexCandidate, CollisionStencil<4>>(m, "FaceVertexCandidate")
-        .def(
-            py::init<index_t, index_t>(), py::arg("face_id"),
-            py::arg("vertex_id"))
+    py::class_<FaceVertexCandidate, CollisionStencil>(m, "FaceVertexCandidate")
+        .def(py::init<index_t, index_t>(), "face_id"_a, "vertex_id"_a)
         .def(
             py::init([](std::tuple<index_t, index_t> face_and_vertex_id) {
                 return std::make_unique<FaceVertexCandidate>(
                     std::get<0>(face_and_vertex_id),
                     std::get<1>(face_and_vertex_id));
             }),
-            py::arg("face_and_vertex_id"))
+            "face_and_vertex_id"_a)
         .def("known_dtype", &FaceVertexCandidate::known_dtype)
         .def(
             "__str__",
@@ -31,11 +28,11 @@ void define_face_vertex_candidate(py::module_& m)
                     "FaceVertexCandidate({:d}, {:d})", ev.face_id,
                     ev.vertex_id);
             })
-        .def("__eq__", &FaceVertexCandidate::operator==, py::arg("other"))
-        .def("__ne__", &FaceVertexCandidate::operator!=, py::arg("other"))
+        .def("__eq__", &FaceVertexCandidate::operator==, "other"_a)
+        .def("__ne__", &FaceVertexCandidate::operator!=, "other"_a)
         .def(
             "__lt__", &FaceVertexCandidate::operator<,
-            "Compare FaceVertexCandidate for sorting.", py::arg("other"))
+            "Compare FaceVertexCandidate for sorting.", "other"_a)
         .def_readwrite(
             "face_id", &FaceVertexCandidate::face_id, "ID of the face")
         .def_readwrite(

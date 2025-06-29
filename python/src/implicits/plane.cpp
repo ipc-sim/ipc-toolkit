@@ -2,7 +2,6 @@
 
 #include <ipc/implicits/plane.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_plane_implicit(py::module_& m)
@@ -37,8 +36,8 @@ void define_plane_implicit(py::module_& m)
         Returns:
             The constructed set of collisions.
         )ipc_Qu8mg5v7",
-        py::arg("points"), py::arg("plane_origins"), py::arg("plane_normals"),
-        py::arg("dhat"), py::arg("dmin") = 0);
+        "points"_a, "plane_origins"_a, "plane_normals"_a, "dhat"_a,
+        "dmin"_a = 0);
 
     m.def(
         "construct_point_plane_collisions",
@@ -72,8 +71,8 @@ void define_plane_implicit(py::module_& m)
         Returns:
             The constructed set of collisions.
         )ipc_Qu8mg5v7",
-        py::arg("points"), py::arg("plane_origins"), py::arg("plane_normals"),
-        py::arg("dhat"), py::arg("dmin"), py::arg("can_collide"));
+        "points"_a, "plane_origins"_a, "plane_normals"_a, "dhat"_a, "dmin"_a,
+        "can_collide"_a);
 
     m.def(
         "is_step_point_plane_collision_free",
@@ -99,8 +98,7 @@ void define_plane_implicit(py::module_& m)
         Returns:
             True if <b>any</b> collisions occur.
         )ipc_Qu8mg5v7",
-        py::arg("points_t0"), py::arg("points_t1"), py::arg("plane_origins"),
-        py::arg("plane_normals"));
+        "points_t0"_a, "points_t1"_a, "plane_origins"_a, "plane_normals"_a);
 
     m.def(
         "is_step_point_plane_collision_free",
@@ -129,8 +127,8 @@ void define_plane_implicit(py::module_& m)
         Returns:
             True if <b>any</b> collisions occur.
         )ipc_Qu8mg5v7",
-        py::arg("points_t0"), py::arg("points_t1"), py::arg("plane_origins"),
-        py::arg("plane_normals"), py::arg("can_collide"));
+        "points_t0"_a, "points_t1"_a, "plane_origins"_a, "plane_normals"_a,
+        "can_collide"_a);
 
     m.def(
         "compute_point_plane_collision_free_stepsize",
@@ -159,8 +157,7 @@ void define_plane_implicit(py::module_& m)
         Returns:
             A step-size $\in [0, 1]$ that is collision free.
         )ipc_Qu8mg5v7",
-        py::arg("points_t0"), py::arg("points_t1"), py::arg("plane_origins"),
-        py::arg("plane_normals"));
+        "points_t0"_a, "points_t1"_a, "plane_origins"_a, "plane_normals"_a);
 
     m.def(
         "compute_point_plane_collision_free_stepsize",
@@ -191,6 +188,6 @@ void define_plane_implicit(py::module_& m)
         Returns:
             A step-size $\in [0, 1]$ that is collision free.
         )ipc_Qu8mg5v7",
-        py::arg("points_t0"), py::arg("points_t1"), py::arg("plane_origins"),
-        py::arg("plane_normals"), py::arg("can_collide"));
+        "points_t0"_a, "points_t1"_a, "plane_origins"_a, "plane_normals"_a,
+        "can_collide"_a);
 }

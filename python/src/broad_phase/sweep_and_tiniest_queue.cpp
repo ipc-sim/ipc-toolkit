@@ -2,7 +2,6 @@
 
 #include <ipc/broad_phase/sweep_and_tiniest_queue.hpp>
 
-namespace py = pybind11;
 #ifdef IPC_TOOLKIT_WITH_CUDA
 using namespace ipc; // not defined if IPC_TOOLKIT_WITH_CUDA is not defined
 #endif

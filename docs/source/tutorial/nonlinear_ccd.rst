@@ -57,7 +57,8 @@ Let's dive deeper by breaking down the implementation of ``Rigid2DTrajectory``. 
 
         .. literalinclude:: ../../../tests/src/tests/ccd/test_nonlinear_ccd.cpp
             :language: c++
-            :lines: 127-134
+            :start-after: // BEGIN_RIGID_2D_CALL
+            :end-before: // END_RIGID_2D_CALL
             :dedent: 4
 
 
@@ -65,7 +66,8 @@ Let's dive deeper by breaking down the implementation of ``Rigid2DTrajectory``. 
 
         .. literalinclude:: ../../../python/tests/test_ccd.py
             :language: python
-            :lines: 90-94
+            :start-after: # BEGIN_RIGID_2D_CALL
+            :end-before: # END_RIGID_2D_CALL
             :dedent: 8
 
 This function computes the position of the point at a time :math:`t \in [0, 1]`. This defines the trajectory of the point. In this case, we have a rigid body with a center of mass (COM) at the origin. The trajectory of the point is given by:
@@ -87,14 +89,16 @@ The second function we need to implement is ``max_distance_from_linear``.
 
         .. literalinclude:: ../../../tests/src/tests/ccd/test_nonlinear_ccd.cpp
             :language: c++
-            :lines: 136-147
+            :start-after: // BEGIN_RIGID_2D_MAX_DISTANCE_FROM_LINEAR
+            :end-before: // END_RIGID_2D_MAX_DISTANCE_FROM_LINEAR
             :dedent: 4
 
     .. md-tab-item:: Python
 
         .. literalinclude:: ../../../python/tests/test_ccd.py
             :language: python
-            :lines: 96-102
+            :start-after: # BEGIN_RIGID_2D_MAX_DISTANCE_FROM_LINEAR
+            :end-before: # END_RIGID_2D_MAX_DISTANCE_FROM_LINEAR
             :dedent: 8
 
 This function computes the maximum distance over a time interval :math:`[t_0, t_1]` between the nonlinear trajectory and a line segment from :math:`x(t_0)` to :math:`x(t_1)`. Mathematically this function computes

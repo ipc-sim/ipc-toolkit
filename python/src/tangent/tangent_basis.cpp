@@ -2,7 +2,6 @@
 
 #include <ipc/tangent/tangent_basis.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_tangent_basis(py::module_& m)
@@ -24,7 +23,7 @@ void define_tangent_basis(py::module_& m)
         Returns:
             A 3x2 matrix whose columns are the basis vectors.
         )ipc_Qu8mg5v7",
-        py::arg("p0"), py::arg("p1"));
+        "p0"_a, "p1"_a);
 
     m.def(
         "point_point_tangent_basis_jacobian",
@@ -43,7 +42,7 @@ void define_tangent_basis(py::module_& m)
         Returns:
             A 6*3x2 matrix whose columns are the basis vectors.
         )ipc_Qu8mg5v7",
-        py::arg("p0"), py::arg("p1"));
+        "p0"_a, "p1"_a);
 
     m.def(
         "point_edge_tangent_basis",
@@ -65,7 +64,7 @@ void define_tangent_basis(py::module_& m)
         Returns:
             A 3x2 matrix whose columns are the basis vectors.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("e0"), py::arg("e1"));
+        "p"_a, "e0"_a, "e1"_a);
 
     m.def(
         "point_edge_tangent_basis_jacobian",
@@ -87,7 +86,7 @@ void define_tangent_basis(py::module_& m)
         Returns:
             A 9*3x2 matrix whose columns are the basis vectors.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("e0"), py::arg("e1"));
+        "p"_a, "e0"_a, "e1"_a);
 
     m.def(
         "edge_edge_tangent_basis",
@@ -109,7 +108,7 @@ void define_tangent_basis(py::module_& m)
         Returns:
             A 3x2 matrix whose columns are the basis vectors.
         )ipc_Qu8mg5v7",
-        py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
+        "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a);
 
     m.def(
         "edge_edge_tangent_basis_jacobian",
@@ -131,7 +130,7 @@ void define_tangent_basis(py::module_& m)
         Returns:
             A 12*3x2 matrix whose columns are the basis vectors.
         )ipc_Qu8mg5v7",
-        py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
+        "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a);
 
     m.def(
         "point_triangle_tangent_basis",
@@ -160,7 +159,7 @@ void define_tangent_basis(py::module_& m)
         Returns:
             A 3x2 matrix whose columns are the basis vectors.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"));
+        "p"_a, "t0"_a, "t1"_a, "t2"_a);
 
     m.def(
         "point_triangle_tangent_basis_jacobian",
@@ -182,5 +181,5 @@ void define_tangent_basis(py::module_& m)
         Returns:
             A 12*3x2 matrix whose columns are the basis vectors.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"));
+        "p"_a, "t0"_a, "t1"_a, "t2"_a);
 }

@@ -3,7 +3,6 @@
 #include <ipc/potentials/barrier_potential.hpp>
 #include <ipc/smooth_contact/smooth_contact_potential.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_barrier_potential(py::module_& m)
@@ -17,7 +16,7 @@ void define_barrier_potential(py::module_& m)
             Parameters:
                 dhat: The activation distance of the barrier.
             )ipc_Qu8mg5v7",
-            py::arg("dhat"), py::arg("use_physical_barrier") = false)
+            "dhat"_a, "use_physical_barrier"_a = false)
         .def(
             py::init<
                 const std::shared_ptr<Barrier>, const double, const bool>(),
@@ -28,8 +27,7 @@ void define_barrier_potential(py::module_& m)
                 barrier: The barrier function.
                 dhat: The activation distance of the barrier.
             )ipc_Qu8mg5v7",
-            py::arg("barrier"), py::arg("dhat"),
-            py::arg("use_physical_barrier") = false)
+            "barrier"_a, "dhat"_a, "use_physical_barrier"_a = false)
         .def_property(
             "dhat", &BarrierPotential::dhat, &BarrierPotential::set_dhat,
             "Barrier activation distance.")
@@ -73,7 +71,7 @@ void define_smooth_potential(py::module_& m)
         .def_readonly("beta_n", &ParameterType::beta_n)
         .def_readonly("r", &ParameterType::r);
 
-    py::class_<SmoothContactPotential<SmoothCollisions<2>>>(
+    py::class_<SmoothContactPotential>(
         m, "SmoothPotential")
         .def(
             py::init<const ParameterType&>(),
@@ -87,10 +85,9 @@ void define_smooth_potential(py::module_& m)
         .def(
             "__call__",
             py::overload_cast<
-                const SmoothCollisions<2>&, const CollisionMesh&,
+                const SmoothCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>>(
-                &SmoothContactPotential<
-                    SmoothCollisions<2>>::Potential::operator(),
+                &ipc::SmoothContactPotential::operator(),
                 py::const_),
             R"ipc_Qu8mg5v7(
             Compute the barrier potential for a set of collisions.
@@ -107,10 +104,9 @@ void define_smooth_potential(py::module_& m)
         .def(
             "gradient",
             py::overload_cast<
-                const SmoothCollisions<2>&, const CollisionMesh&,
+                const SmoothCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>>(
-                &SmoothContactPotential<
-                    SmoothCollisions<2>>::Potential::gradient,
+                &ipc::SmoothContactPotential::gradient,
                 py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the barrier potential.
@@ -127,10 +123,9 @@ void define_smooth_potential(py::module_& m)
         .def(
             "hessian",
             py::overload_cast<
-                const SmoothCollisions<2>&, const CollisionMesh&,
+                const SmoothCollisions&, const CollisionMesh&,
                 Eigen::ConstRef<Eigen::MatrixXd>, const PSDProjectionMethod>(
-                &SmoothContactPotential<
-                    SmoothCollisions<2>>::Potential::hessian,
+                &ipc::SmoothContactPotential::hessian,
                 py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the barrier potential.
@@ -149,8 +144,8 @@ void define_smooth_potential(py::module_& m)
         .def(
             "__call__",
             py::overload_cast<
-                const SmoothCollision<6>&, Eigen::ConstRef<Vector<double, -1, 18>>>(
-                &SmoothContactPotential<SmoothCollisions<2>>::operator(),
+                const SmoothCollision&, Eigen::ConstRef<Eigen::VectorXd>>(
+                &ipc::SmoothContactPotential::operator(),
                 py::const_),
             R"ipc_Qu8mg5v7(
             Compute the potential for a single collision.
@@ -166,8 +161,8 @@ void define_smooth_potential(py::module_& m)
         .def(
             "gradient",
             py::overload_cast<
-                const SmoothCollision<6>&, Eigen::ConstRef<Vector<double, -1, 18>>>(
-                &SmoothContactPotential<SmoothCollisions<2>>::gradient,
+                const SmoothCollision&, Eigen::ConstRef<Eigen::VectorXd>>(
+                &SmoothContactPotential::gradient,
                 py::const_),
             R"ipc_Qu8mg5v7(
             Compute the gradient of the potential for a single collision.
@@ -183,9 +178,9 @@ void define_smooth_potential(py::module_& m)
         .def(
             "hessian",
             py::overload_cast<
-                const SmoothCollision<6>&, Eigen::ConstRef<Vector<double, -1, 18>>,
+                const SmoothCollision&, Eigen::ConstRef<Eigen::VectorXd>,
                 const PSDProjectionMethod>(
-                &SmoothContactPotential<SmoothCollisions<2>>::hessian,
+                &SmoothContactPotential::hessian,
                 py::const_),
             R"ipc_Qu8mg5v7(
             Compute the hessian of the potential for a single collision.

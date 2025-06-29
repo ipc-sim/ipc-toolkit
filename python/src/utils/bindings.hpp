@@ -1,7 +1,6 @@
 #pragma once
 
 #include <pybind11/pybind11.h>
-namespace py = pybind11;
 
 void define_area_gradient(py::module_& m);
 void define_eigen_ext(py::module_& m);

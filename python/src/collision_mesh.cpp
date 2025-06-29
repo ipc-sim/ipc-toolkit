@@ -3,7 +3,6 @@
 #include <ipc/collision_mesh.hpp>
 #include <ipc/utils/logger.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 #ifdef IPC_TOOLKIT_WITH_ABSEIL
@@ -93,7 +92,7 @@ void define_collision_mesh(py::module_& m)
                 explicit_values: A map from vertex pairs to whether they can collide. Only the upper triangle is used. The map is assumed to be symmetric.
                 default_value: The default value to return if the pair is not in the map.
             )ipc_Qu8mg5v7",
-            py::arg("explicit_values"), py::arg("default_value"))
+            "explicit_values"_a, "default_value"_a)
         .def(
             "__call__", &SparseCanCollide::operator(), R"ipc_Qu8mg5v7(
             Can two vertices collide?
@@ -105,14 +104,13 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 The value of the pair if it is in the map, otherwise the default value.
             )ipc_Qu8mg5v7",
-            py::arg("i"), py::arg("j"));
+            "i"_a, "j"_a);
 
     py::class_<VertexPatchesCanCollide>(
         m, "VertexPatchesCanCollide",
         "A functor which returns true if the vertices are in different patches.")
         .def(
-            py::init<Eigen::ConstRef<Eigen::VectorXi>>(),
-            py::arg("vertex_patches"),
+            py::init<Eigen::ConstRef<Eigen::VectorXi>>(), "vertex_patches"_a,
             R"ipc_Qu8mg5v7(
             Construct a new Vertex Patches Can Collide object.
 
@@ -130,7 +128,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 True if the vertices are in different patches.
             )ipc_Qu8mg5v7",
-            py::arg("i"), py::arg("j"));
+            "i"_a, "j"_a);
 
     py::class_<CollisionMesh>(m, "CollisionMesh")
         .def(
@@ -148,9 +146,9 @@ void define_collision_mesh(py::module_& m)
                 faces: The faces of the collision mesh (#F × 3).
                 displacement_map: The displacement mapping from displacements on the full mesh to the collision mesh.
             )ipc_Qu8mg5v7",
-            py::arg("rest_positions"), py::arg("edges") = Eigen::MatrixXi(),
-            py::arg("faces") = Eigen::MatrixXi(),
-            py::arg("displacement_map") = Eigen::SparseMatrix<double>())
+            "rest_positions"_a, "edges"_a = Eigen::MatrixXi(),
+            "faces"_a = Eigen::MatrixXi(),
+            "displacement_map"_a = Eigen::SparseMatrix<double>())
         .def(
             py::init<
                 const std::vector<bool>&, const std::vector<bool>&, Eigen::ConstRef<Eigen::MatrixXd>,
@@ -168,10 +166,9 @@ void define_collision_mesh(py::module_& m)
                 faces: The faces of the collision mesh indexed into the full mesh vertices (#F × 3).
                 displacement_map: The displacement mapping from displacements on the full mesh to the collision mesh.
             )ipc_Qu8mg5v7",
-            py::arg("include_vertex"), py::arg("orient_vertex"), py::arg("full_rest_positions"),
-            py::arg("edges") = Eigen::MatrixXi(),
-            py::arg("faces") = Eigen::MatrixXi(),
-            py::arg("displacement_map") = Eigen::SparseMatrix<double>())
+            "include_vertex"_a, "orient_vertex"_a, "full_rest_positions"_a,
+            "edges"_a = Eigen::MatrixXi(), "faces"_a = Eigen::MatrixXi(),
+            "displacement_map"_a = Eigen::SparseMatrix<double>())
         .def_static(
             "build_from_full_mesh", &CollisionMesh::build_from_full_mesh,
             R"ipc_Qu8mg5v7(
@@ -185,8 +182,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 Constructed CollisionMesh.
             )ipc_Qu8mg5v7",
-            py::arg("full_rest_positions"), py::arg("edges"),
-            py::arg("faces") = Eigen::MatrixXi())
+            "full_rest_positions"_a, "edges"_a, "faces"_a = Eigen::MatrixXi())
         .def(
             "init_adjacencies", &CollisionMesh::init_adjacencies,
             "Initialize vertex-vertex and edge-vertex adjacencies.")
@@ -248,7 +244,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 The vertex positions of the collision mesh (#V × dim).
             )ipc_Qu8mg5v7",
-            py::arg("full_positions"))
+            "full_positions"_a)
         .def(
             "displace_vertices", &CollisionMesh::displace_vertices,
             R"ipc_Qu8mg5v7(
@@ -260,7 +256,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 The vertex positions of the collision mesh (#V × dim).
             )ipc_Qu8mg5v7",
-            py::arg("full_displacements"))
+            "full_displacements"_a)
         .def(
             "map_displacements", &CollisionMesh::map_displacements,
             R"ipc_Qu8mg5v7(
@@ -272,7 +268,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 The vertex displacements on the collision mesh (#V × dim).
             )ipc_Qu8mg5v7",
-            py::arg("full_displacements"))
+            "full_displacements"_a)
         .def(
             "to_full_vertex_id", &CollisionMesh::to_full_vertex_id,
             R"ipc_Qu8mg5v7(
@@ -284,7 +280,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 Vertex ID in the full mesh.
             )ipc_Qu8mg5v7",
-            py::arg("id"))
+            "id"_a)
         .def(
             "to_full_dof",
             py::overload_cast<Eigen::ConstRef<Eigen::VectorXd>>(
@@ -300,7 +296,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 Vector quantity on the full mesh with size equal to full_ndof().
             )ipc_Qu8mg5v7",
-            py::arg("x"))
+            "x"_a)
         .def(
             "to_full_dof",
             py::overload_cast<const Eigen::SparseMatrix<double>&>(
@@ -316,7 +312,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 Matrix quantity on the full mesh with size equal to full_ndof() × full_ndof().
             )ipc_Qu8mg5v7",
-            py::arg("X"))
+            "X"_a)
         .def_property_readonly(
             "vertex_vertex_adjacencies",
             &CollisionMesh::vertex_vertex_adjacencies,
@@ -342,7 +338,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 True if the vertex is on the boundary of the collision mesh.
             )ipc_Qu8mg5v7",
-            py::arg("vi"))
+            "vi"_a)
         .def(
             "vertex_area", &CollisionMesh::vertex_area,
             R"ipc_Qu8mg5v7(
@@ -354,7 +350,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 Barycentric area of vertex vi.
             )ipc_Qu8mg5v7",
-            py::arg("vi"))
+            "vi"_a)
         .def_property_readonly(
             "vertex_areas", &CollisionMesh::vertex_areas,
             "Get the barycentric area of the vertices.")
@@ -373,7 +369,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 Gradient of the barycentric area of vertex vi wrt the rest positions of all points.
             )ipc_Qu8mg5v7",
-            py::arg("vi"))
+            "vi"_a)
         .def(
             "edge_area", &CollisionMesh::edge_area,
             R"ipc_Qu8mg5v7(
@@ -385,7 +381,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 Barycentric area of edge ei.
             )ipc_Qu8mg5v7",
-            py::arg("ei"))
+            "ei"_a)
         .def(
             "edge_areas", &CollisionMesh::edge_areas,
             "Get the barycentric area of the edges.")
@@ -404,7 +400,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 Gradient of the barycentric area of edge ei wrt the rest positions of all points.
             )ipc_Qu8mg5v7",
-            py::arg("ei"))
+            "ei"_a)
         .def(
             "are_area_jacobians_initialized",
             &CollisionMesh::are_area_jacobians_initialized,
@@ -422,8 +418,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 A vector of bools indicating whether each vertex is on the surface.
             )ipc_Qu8mg5v7",
-            py::arg("num_vertices"), py::arg("edges"),
-            py::arg("codim_vertices") = Eigen::VectorXi())
+            "num_vertices"_a, "edges"_a, "codim_vertices"_a = Eigen::VectorXi())
         .def_static(
             "construct_faces_to_edges",
             &CollisionMesh::construct_faces_to_edges,
@@ -437,7 +432,7 @@ void define_collision_mesh(py::module_& m)
             Returns:
                 Matrix that maps from the faces' edges to rows in the edges matrix.
             )ipc_Qu8mg5v7",
-            py::arg("faces"), py::arg("edges"))
+            "faces"_a, "edges"_a)
         .def_property(
             "can_collide", [](CollisionMesh& self) { return self.can_collide; },
             [](CollisionMesh& self, const py::object& can_collide) {

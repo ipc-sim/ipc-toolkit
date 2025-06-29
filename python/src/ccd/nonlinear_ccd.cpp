@@ -2,7 +2,6 @@
 
 #include <ipc/ccd/nonlinear_ccd.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 class PyNonlinearTrajectory : public NonlinearTrajectory {
@@ -33,7 +32,7 @@ void define_nonlinear_ccd(py::module_& m)
         .def(py::init<>())
         .def(
             "__call__", &NonlinearTrajectory::operator(),
-            "Compute the point's position at time t", py::arg("t"))
+            "Compute the point's position at time t", "t"_a)
         .def(
             "max_distance_from_linear",
             &NonlinearTrajectory::max_distance_from_linear,
@@ -44,7 +43,7 @@ void define_nonlinear_ccd(py::module_& m)
                 t0: Start time of the trajectory
                 t1: End time of the trajectory
             )ipc_Qu8mg5v7",
-            py::arg("t0"), py::arg("t1"));
+            "t0"_a, "t1"_a);
 
 #ifdef IPC_TOOLKIT_WITH_FILIB
     py::class_<
@@ -56,12 +55,12 @@ void define_nonlinear_ccd(py::module_& m)
             [](const IntervalNonlinearTrajectory& self, const double t) {
                 return self(t);
             },
-            "Compute the point's position at time t", py::arg("t"))
+            "Compute the point's position at time t", "t"_a)
         .def(
             "__call__",
             py::overload_cast<const filib::Interval&>(
                 &IntervalNonlinearTrajectory::operator(), py::const_),
-            "Compute the point's position over a time interval t", py::arg("t"))
+            "Compute the point's position over a time interval t", "t"_a)
         .def(
             "max_distance_from_linear",
             &IntervalNonlinearTrajectory::max_distance_from_linear,
@@ -75,7 +74,7 @@ void define_nonlinear_ccd(py::module_& m)
                 t0: Start time of the trajectory
                 t1: End time of the trajectory
             )ipc_Qu8mg5v7",
-            py::arg("t0"), py::arg("t1"));
+            "t0"_a, "t1"_a);
 #endif
 
     m.def(
@@ -106,11 +105,10 @@ void define_nonlinear_ccd(py::module_& m)
             True if the two points collide, false otherwise.
             Output time of impact
         )ipc_Qu8mg5v7",
-        py::arg("p0"), py::arg("p1"), py::arg("tmax") = 1.0,
-        py::arg("min_distance") = 0,
-        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
-        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
-        py::arg("conservative_rescaling") =
+        "p0"_a, "p1"_a, "tmax"_a = 1.0, "min_distance"_a = 0,
+        "tolerance"_a = TightInclusionCCD::DEFAULT_TOLERANCE,
+        "max_iterations"_a = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+        "conservative_rescaling"_a =
             TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
     m.def(
@@ -143,11 +141,10 @@ void define_nonlinear_ccd(py::module_& m)
             True if the point and edge collide, false otherwise.
             Output time of impact
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("e0"), py::arg("e1"), py::arg("tmax") = 1.0,
-        py::arg("min_distance") = 0,
-        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
-        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
-        py::arg("conservative_rescaling") =
+        "p"_a, "e0"_a, "e1"_a, "tmax"_a = 1.0, "min_distance"_a = 0,
+        "tolerance"_a = TightInclusionCCD::DEFAULT_TOLERANCE,
+        "max_iterations"_a = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+        "conservative_rescaling"_a =
             TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
     m.def(
@@ -181,11 +178,11 @@ void define_nonlinear_ccd(py::module_& m)
             True if the two edges collide, false otherwise.
             Output time of impact
         )ipc_Qu8mg5v7",
-        py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"),
-        py::arg("tmax") = 1.0, py::arg("min_distance") = 0,
-        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
-        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
-        py::arg("conservative_rescaling") =
+        "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a, "tmax"_a = 1.0,
+        "min_distance"_a = 0,
+        "tolerance"_a = TightInclusionCCD::DEFAULT_TOLERANCE,
+        "max_iterations"_a = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+        "conservative_rescaling"_a =
             TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
     m.def(
@@ -219,11 +216,10 @@ void define_nonlinear_ccd(py::module_& m)
             True if the point and triangle collide, false otherwise.
             Output time of impact
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"),
-        py::arg("tmax") = 1.0, py::arg("min_distance") = 0,
-        py::arg("tolerance") = TightInclusionCCD::DEFAULT_TOLERANCE,
-        py::arg("max_iterations") = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
-        py::arg("conservative_rescaling") =
+        "p"_a, "t0"_a, "t1"_a, "t2"_a, "tmax"_a = 1.0, "min_distance"_a = 0,
+        "tolerance"_a = TightInclusionCCD::DEFAULT_TOLERANCE,
+        "max_iterations"_a = TightInclusionCCD::DEFAULT_MAX_ITERATIONS,
+        "conservative_rescaling"_a =
             TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 
     m.def(
@@ -258,9 +254,8 @@ void define_nonlinear_ccd(py::module_& m)
 
             Output time of impact.
         )ipc_Qu8mg5v7",
-        py::arg("distance"), py::arg("max_distance_from_linear"),
-        py::arg("linear_ccd"), py::arg("tmax") = 1.0,
-        py::arg("min_distance") = 0,
-        py::arg("conservative_rescaling") =
+        "distance"_a, "max_distance_from_linear"_a, "linear_ccd"_a,
+        "tmax"_a = 1.0, "min_distance"_a = 0,
+        "conservative_rescaling"_a =
             TightInclusionCCD::DEFAULT_CONSERVATIVE_RESCALING);
 }

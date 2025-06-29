@@ -8,7 +8,7 @@
 
 namespace ipc {
 
-class TangentialCollision : virtual public CollisionStencil<4> {
+class TangentialCollision : virtual public CollisionStencil {
 protected:
     /// @brief Initialize the collision.
     /// @param collision NormalCollision stencil.

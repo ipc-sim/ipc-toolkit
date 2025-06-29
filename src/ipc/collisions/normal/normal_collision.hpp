@@ -10,7 +10,7 @@
 
 namespace ipc {
 
-class NormalCollision : virtual public CollisionStencil<4> {
+class NormalCollision : virtual public CollisionStencil {
 public:
     NormalCollision() = default;
 
