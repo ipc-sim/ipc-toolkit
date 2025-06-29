@@ -165,7 +165,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
     barrier_stiffness = 1.;
 #else
     epsv_times_h = 1.;      // pow(10, GENERATE(range(-6, 0, 2)));
-    dhat = 1e-1;            // pow(10, GENERATE(range(-4, 0, 2)));
+    dhat = 1e-2;            // pow(10, GENERATE(range(-4, 0, 2)));
     barrier_stiffness = 1.; // 100;
 #endif
 
