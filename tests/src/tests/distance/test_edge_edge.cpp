@@ -309,15 +309,13 @@ TEST_CASE(
     // CHECK(distance.getHessian().squaredNorm() != Catch::Approx(0.0));
 }
 
-
-TEST_CASE(
-    "Edge normal term", "[distance][edge-edge][gradient]")
+TEST_CASE("Edge normal term", "[distance][edge-edge][gradient]")
 {
     ORIENTATION_TYPES otypes;
     otypes.set_size(2);
     const double alpha = 0.85;
     const double beta = 0.2;
-    ParameterType param{1e-3, 1, 0, alpha, beta, 2};
+    ParameterType param { 1e-3, 1, 0, alpha, beta, 2 };
 
     ipc::Vector3d dn, e0, e1, f0, f1;
     e0 << 0, 0, 0;
@@ -328,20 +326,31 @@ TEST_CASE(
 
     ipc::Vector15d x;
     x << dn, e0, e1, f0, f1;
-    
-    const auto [val, grad, hess] = smooth_edge3_normal_term_hessian(dn, e0, e1, f0, f1, alpha, beta, otypes);
+
+    const auto [val, grad, hess] = smooth_edge3_normal_term_hessian(
+        dn, e0, e1, f0, f1, alpha, beta, otypes);
 
     Eigen::VectorXd fgrad;
-    fd::finite_gradient(x, [&](const Eigen::VectorXd &y) {
-        return smooth_edge3_normal_term(y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3), y.segment(12, 3), alpha, beta, otypes);
-    }, fgrad, fd::AccuracyOrder::FOURTH, 1e-5);
+    fd::finite_gradient(
+        x,
+        [&](const Eigen::VectorXd& y) {
+            return smooth_edge3_normal_term(
+                y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3),
+                y.segment(12, 3), alpha, beta, otypes);
+        },
+        fgrad, fd::AccuracyOrder::FOURTH, 1e-5);
 
     CHECK((fgrad - grad).norm() / 1e-8 <= grad.norm());
 
     Eigen::MatrixXd fhess;
-    fd::finite_jacobian(x, [&](const Eigen::VectorXd &y) {
-        return std::get<1>(smooth_edge3_normal_term_gradient(y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3), y.segment(12, 3), alpha, beta, otypes));
-    }, fhess, fd::AccuracyOrder::SECOND, 1e-7);
+    fd::finite_jacobian(
+        x,
+        [&](const Eigen::VectorXd& y) {
+            return std::get<1>(smooth_edge3_normal_term_gradient(
+                y.head(3), y.segment(3, 3), y.segment(6, 3), y.segment(9, 3),
+                y.segment(12, 3), alpha, beta, otypes));
+        },
+        fhess, fd::AccuracyOrder::SECOND, 1e-7);
 
     CHECK((fhess - hess).norm() / 1e-6 <= hess.norm());
 }

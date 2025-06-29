@@ -29,14 +29,15 @@ TEST_CASE("Line-line closest point pair", "[distance][line-line]")
 
     double yb = GENERATE(take(5, random(-100.0, 100.0)));
     double zb = GENERATE(take(5, random(-0.5, 0.5)));
-    Eigen::Vector3d eb0(0, yb, - 1 - zb), eb1(0, yb, 1);
+    Eigen::Vector3d eb0(0, yb, -1 - zb), eb1(0, yb, 1);
 
     double expected_distance = line_line_distance(ea0, ea1, eb0, eb1);
 
-    Eigen::Matrix<double, 3, 2> closest_points
-        = line_line_closest_point_pairs<double>(ea0, ea1, eb0, eb1);
-    double distance = (closest_points.col(0) - closest_points.col(1)).squaredNorm();
-    
+    Eigen::Matrix<double, 3, 2> closest_points =
+        line_line_closest_point_pairs<double>(ea0, ea1, eb0, eb1);
+    double distance =
+        (closest_points.col(0) - closest_points.col(1)).squaredNorm();
+
     CHECK(distance == Catch::Approx(expected_distance));
 }
 
@@ -94,7 +95,8 @@ TEST_CASE("Line-line distance hessian", "[distance][line-line][hessian]")
     CHECK(fd::compare_hessian(hess, expected_hess, 1e-2));
 }
 
-TEST_CASE("Line-line closest direction hessian", "[distance][line-line][hessian]")
+TEST_CASE(
+    "Line-line closest direction hessian", "[distance][line-line][hessian]")
 {
     double ya = GENERATE(take(2, random(-10.0, 10.0)));
     Eigen::Vector3d ea0(-1, ya, 0), ea1(1, ya, 0);
@@ -104,16 +106,21 @@ TEST_CASE("Line-line closest direction hessian", "[distance][line-line][hessian]
 
     using T = ADHessian<12>;
     DiffScalarBase::setVariableCount(12);
-    const auto x = slice_positions<T, 4, 3>((Vector12d() << ea0, ea1, eb0, eb1).finished());
-    BENCHMARK("AutoDiff Hessian") {
-        line_line_closest_point_direction<T>(x.row(0), x.row(1), x.row(2), x.row(3));
+    const auto x = slice_positions<T, 4, 3>(
+        (Vector12d() << ea0, ea1, eb0, eb1).finished());
+    BENCHMARK("AutoDiff Hessian")
+    {
+        line_line_closest_point_direction<T>(
+            x.row(0), x.row(1), x.row(2), x.row(3));
     };
-    BENCHMARK("Hessian") {
+    BENCHMARK("Hessian")
+    {
         line_line_closest_point_direction_hessian(ea0, ea1, eb0, eb1);
     };
 }
 
-TEST_CASE("Line-line closest point pairs gradient", "[distance][line-line][gradient]")
+TEST_CASE(
+    "Line-line closest point pairs gradient", "[distance][line-line][gradient]")
 {
     double ya = GENERATE(take(10, random(-10.0, 10.0)));
     Eigen::Vector3d ea0(-1, ya, 0), ea1(1, ya, 0);
@@ -123,24 +130,29 @@ TEST_CASE("Line-line closest point pairs gradient", "[distance][line-line][gradi
 
     using T = ADGrad<12>;
     DiffScalarBase::setVariableCount(12);
-    const auto x = slice_positions<T, 4, 3>((Vector12d() << ea0, ea1, eb0, eb1).finished());
-    auto yAD = line_line_closest_point_pairs<T>(x.row(0), x.row(1), x.row(2), x.row(3));
+    const auto x = slice_positions<T, 4, 3>(
+        (Vector12d() << ea0, ea1, eb0, eb1).finished());
+    auto yAD = line_line_closest_point_pairs<T>(
+        x.row(0), x.row(1), x.row(2), x.row(3));
     auto [y, grad] = line_line_closest_point_pairs_gradient(ea0, ea1, eb0, eb1);
-    for (int i = 0; i < yAD.size(); i++)
-    {
+    for (int i = 0; i < yAD.size(); i++) {
         REQUIRE((yAD(i).getValue() - y(i)) < 1e-8);
-        REQUIRE((yAD(i).getGradient() - grad.row(i).transpose()).norm() < 1e-6 * grad.row(i).norm());
+        REQUIRE(
+            (yAD(i).getGradient() - grad.row(i).transpose()).norm()
+            < 1e-6 * grad.row(i).norm());
     }
 
     // BENCHMARK("AutoDiff Gradient") {
-    //     line_line_closest_point_pairs<T>(x.row(0), x.row(1), x.row(2), x.row(3));
+    //     line_line_closest_point_pairs<T>(x.row(0), x.row(1), x.row(2),
+    //     x.row(3));
     // };
     // BENCHMARK("Gradient") {
     //     line_line_closest_point_pairs_gradient(ea0, ea1, eb0, eb1);
     // };
 }
 
-TEST_CASE("Line-line closest point pairs hessian", "[distance][line-line][hessian]")
+TEST_CASE(
+    "Line-line closest point pairs hessian", "[distance][line-line][hessian]")
 {
     double ya = GENERATE(take(10, random(-10.0, 10.0)));
     Eigen::Vector3d ea0(-1, ya, 0.05), ea1(1, ya, 0);
@@ -150,18 +162,23 @@ TEST_CASE("Line-line closest point pairs hessian", "[distance][line-line][hessia
 
     using T = ADHessian<12>;
     DiffScalarBase::setVariableCount(12);
-    const auto x = slice_positions<T, 4, 3>((Vector12d() << ea0, ea1, eb0, eb1).finished());
-    auto yAD = line_line_closest_point_pairs<T>(x.row(0), x.row(1), x.row(2), x.row(3));
-    auto [y, grad, hess] = line_line_closest_point_pairs_hessian(ea0, ea1, eb0, eb1);
-    for (int i = 0; i < yAD.size(); i++)
-    {
+    const auto x = slice_positions<T, 4, 3>(
+        (Vector12d() << ea0, ea1, eb0, eb1).finished());
+    auto yAD = line_line_closest_point_pairs<T>(
+        x.row(0), x.row(1), x.row(2), x.row(3));
+    auto [y, grad, hess] =
+        line_line_closest_point_pairs_hessian(ea0, ea1, eb0, eb1);
+    for (int i = 0; i < yAD.size(); i++) {
         REQUIRE((yAD(i).getValue() - y(i)) < 1e-8);
-        REQUIRE((yAD(i).getGradient() - grad.row(i).transpose()).norm() < 1e-8 * grad.row(i).norm());
+        REQUIRE(
+            (yAD(i).getGradient() - grad.row(i).transpose()).norm()
+            < 1e-8 * grad.row(i).norm());
         REQUIRE((yAD(i).getHessian() - hess[i]).norm() < 1e-8 * hess[i].norm());
     }
 
     // BENCHMARK("AutoDiff Hessian") {
-    //     line_line_closest_point_pairs<T>(x.row(0), x.row(1), x.row(2), x.row(3));
+    //     line_line_closest_point_pairs<T>(x.row(0), x.row(1), x.row(2),
+    //     x.row(3));
     // };
     // BENCHMARK("Hessian") {
     //     line_line_closest_point_pairs_hessian(ea0, ea1, eb0, eb1);

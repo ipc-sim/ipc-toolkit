@@ -268,7 +268,9 @@ TEST_CASE("Point-triangle distance hessian", "[distance][point-triangle][hess]")
     CHECK(fd::compare_hessian(hess, fhess, 1e-2));
 }
 
-TEST_CASE("Point-triangle closest direction gradient", "[distance][point-triangle][grad]")
+TEST_CASE(
+    "Point-triangle closest direction gradient",
+    "[distance][point-triangle][grad]")
 {
     double py = GENERATE(-10, -1, -1e-5, 0, 1e-5, 1, 10);
     Eigen::Vector3d p(0, py, 0);
@@ -338,7 +340,8 @@ TEST_CASE("Point-triangle closest direction gradient", "[distance][point-triangl
     Vector12d x;
     x << p, t0, t1, t2;
 
-    const auto [vec, grad, hess] = point_triangle_closest_point_direction_hessian(p, t0, t1, t2, dtype);
+    const auto [vec, grad, hess] =
+        point_triangle_closest_point_direction_hessian(p, t0, t1, t2, dtype);
 
     // Compute the gradient using finite differences
     Eigen::MatrixXd fjac;
@@ -346,21 +349,22 @@ TEST_CASE("Point-triangle closest direction gradient", "[distance][point-triangl
         x,
         [dtype](const Eigen::VectorXd& _x) {
             return point_triangle_closest_point_direction<double>(
-                _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6), _x.segment<3>(9), dtype);
+                _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6),
+                _x.segment<3>(9), dtype);
         },
         fjac);
-    
+
     std::array<Eigen::MatrixXd, 3> grad_fjac;
-    for (int i = 0; i < 3; i++)
-    {
+    for (int i = 0; i < 3; i++) {
         fd::finite_hessian(
             x,
             [dtype, i](const Eigen::VectorXd& _x) {
                 return point_triangle_closest_point_direction<double>(
-                    _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6), _x.segment<3>(9), dtype)(i);
+                    _x.segment<3>(0), _x.segment<3>(3), _x.segment<3>(6),
+                    _x.segment<3>(9), dtype)(i);
             },
             grad_fjac[i]);
-        
+
         CHECK(fd::compare_jacobian(grad_fjac[i], hess[i], 1e-5));
     }
 

@@ -197,8 +197,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
 
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
-            std::make_shared<
-                SmoothCollisionTemplate<Face, Point3>>(
+            std::make_shared<SmoothCollisionTemplate<Face, Point3>>(
                 0, 0, PointTriangleDistanceType::P_T, mesh, param, dhat, V0));
     }
     SECTION("edge-edge")
@@ -245,8 +244,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
 
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
-            std::make_shared<
-                SmoothCollisionTemplate<Edge3, Edge3>>(
+            std::make_shared<SmoothCollisionTemplate<Edge3, Edge3>>(
                 e0, e1, EdgeEdgeDistanceType::EA_EB, mesh, param, dhat, V0));
     }
     SECTION("point-edge")
@@ -282,8 +280,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
 
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
-            std::make_shared<
-                SmoothCollisionTemplate<Edge3, Point3>>(
+            std::make_shared<SmoothCollisionTemplate<Edge3, Point3>>(
                 e, 0, PointEdgeDistanceType::AUTO, mesh, param, dhat, V0));
     }
     SECTION("point-point")
@@ -308,8 +305,7 @@ SmoothFrictionData smooth_friction_data_generator_3d()
 
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
-            std::make_shared<
-                SmoothCollisionTemplate<Point3, Point3>>(
+            std::make_shared<SmoothCollisionTemplate<Point3, Point3>>(
                 0, 1, PointPointDistanceType::AUTO, mesh, param, dhat, V0));
     }
 
@@ -366,8 +362,7 @@ SmoothFrictionData smooth_friction_data_generator_2d()
 
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
-            std::make_shared<
-                SmoothCollisionTemplate<Edge2, Point2>>(
+            std::make_shared<SmoothCollisionTemplate<Edge2, Point2>>(
                 e, 0, PointEdgeDistanceType::AUTO, mesh, param, dhat, V0));
     }
     SECTION("point-point 2D")
@@ -390,8 +385,7 @@ SmoothFrictionData smooth_friction_data_generator_2d()
 
         CollisionMesh mesh(V0, E, F);
         collisions.collisions.push_back(
-            std::make_shared<
-                SmoothCollisionTemplate<Point2, Point2>>(
+            std::make_shared<SmoothCollisionTemplate<Point2, Point2>>(
                 0, 1, PointPointDistanceType::AUTO, mesh, param, dhat, V0));
     }
 

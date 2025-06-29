@@ -158,7 +158,8 @@ TEST_CASE(
     CHECK(fd::compare_hessian(hess, fhess, 1e-2));
 }
 
-TEST_CASE("Point-line closest point pairs hessian", "[distance][point-line][hessian]")
+TEST_CASE(
+    "Point-line closest point pairs hessian", "[distance][point-line][hessian]")
 {
     double ya = GENERATE(take(2, random(-10.0, 10.0)));
     Eigen::Vector3d p(1, ya, 0);
@@ -168,20 +169,28 @@ TEST_CASE("Point-line closest point pairs hessian", "[distance][point-line][hess
 
     using T = ADHessian<9>;
     DiffScalarBase::setVariableCount(9);
-    const auto x = slice_positions<T, 3, 3>((Vector9d() << p, eb0, eb1).finished());
-    auto yAD = PointEdgeDistance<T, 3>::point_line_closest_point_direction(x.row(0), x.row(1), x.row(2));
-    auto [y, grad, hess] = PointEdgeDistanceDerivatives<3>::point_line_closest_point_direction_hessian(p, eb0, eb1);
-    for (int i = 0; i < yAD.size(); i++)
-    {
+    const auto x =
+        slice_positions<T, 3, 3>((Vector9d() << p, eb0, eb1).finished());
+    auto yAD = PointEdgeDistance<T, 3>::point_line_closest_point_direction(
+        x.row(0), x.row(1), x.row(2));
+    auto [y, grad, hess] = PointEdgeDistanceDerivatives<
+        3>::point_line_closest_point_direction_hessian(p, eb0, eb1);
+    for (int i = 0; i < yAD.size(); i++) {
         REQUIRE((yAD(i).getValue() - y(i)) < 1e-8);
-        REQUIRE((yAD(i).getGradient() - grad.row(i).transpose()).norm() < 1e-8 * grad.row(i).norm());
+        REQUIRE(
+            (yAD(i).getGradient() - grad.row(i).transpose()).norm()
+            < 1e-8 * grad.row(i).norm());
         REQUIRE((yAD(i).getHessian() - hess[i]).norm() < 1e-8 * hess[i].norm());
     }
 
-    BENCHMARK("AutoDiff Hessian") {
-        PointEdgeDistance<T, 3>::point_line_closest_point_direction(x.row(0), x.row(1), x.row(2));
+    BENCHMARK("AutoDiff Hessian")
+    {
+        PointEdgeDistance<T, 3>::point_line_closest_point_direction(
+            x.row(0), x.row(1), x.row(2));
     };
-    BENCHMARK("Hessian") {
-        PointEdgeDistanceDerivatives<3>::point_line_closest_point_direction_hessian(p, eb0, eb1);
+    BENCHMARK("Hessian")
+    {
+        PointEdgeDistanceDerivatives<
+            3>::point_line_closest_point_direction_hessian(p, eb0, eb1);
     };
 }
