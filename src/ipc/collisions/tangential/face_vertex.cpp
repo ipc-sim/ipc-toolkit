@@ -21,8 +21,7 @@ FaceVertexTangentialCollision::FaceVertexTangentialCollision(
     const double normal_force)
     : FaceVertexTangentialCollision(collision)
 {
-    TangentialCollision::init(
-        collision, positions, normal_force);
+    TangentialCollision::init(collision, positions, normal_force);
 }
 
 FaceVertexTangentialCollision::FaceVertexTangentialCollision(

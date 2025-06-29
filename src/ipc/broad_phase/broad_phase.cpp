@@ -11,10 +11,10 @@
 
 namespace ipc {
 
-std::shared_ptr<ipc::BroadPhase> build_broad_phase(const BroadPhaseMethod& broad_phase_method)
+std::shared_ptr<ipc::BroadPhase>
+build_broad_phase(const BroadPhaseMethod& broad_phase_method)
 {
-    switch(broad_phase_method)
-    {
+    switch (broad_phase_method) {
     case BroadPhaseMethod::HASH_GRID:
         return std::make_shared<ipc::HashGrid>();
     case BroadPhaseMethod::BRUTE_FORCE:

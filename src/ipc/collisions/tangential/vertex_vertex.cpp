@@ -21,8 +21,7 @@ VertexVertexTangentialCollision::VertexVertexTangentialCollision(
     const double normal_force)
     : VertexVertexTangentialCollision(collision)
 {
-    TangentialCollision::init(
-        collision, positions, normal_force);
+    TangentialCollision::init(collision, positions, normal_force);
 }
 
 VertexVertexTangentialCollision::VertexVertexTangentialCollision(

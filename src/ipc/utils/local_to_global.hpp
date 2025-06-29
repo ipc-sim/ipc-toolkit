@@ -1,10 +1,11 @@
 #pragma once
 
+#include "MatrixCache.hpp"
+
 #include <Eigen/Core>
 #include <Eigen/Sparse>
 
 #include <vector>
-#include "MatrixCache.hpp"
 
 namespace ipc {
 
@@ -92,8 +93,7 @@ void local_jacobian_to_global_triplets(
     }
 }
 
-class LocalThreadMatStorage
-{
+class LocalThreadMatStorage {
 public:
     std::unique_ptr<MatrixCache> cache = nullptr;
 
@@ -104,17 +104,17 @@ public:
         init(buffer_size, rows, cols);
     }
 
-    LocalThreadMatStorage(const int buffer_size, const MatrixCache &c)
+    LocalThreadMatStorage(const int buffer_size, const MatrixCache& c)
     {
         init(buffer_size, c);
     }
 
-    LocalThreadMatStorage(const LocalThreadMatStorage &other)
+    LocalThreadMatStorage(const LocalThreadMatStorage& other)
         : cache(other.cache->copy())
     {
     }
 
-    LocalThreadMatStorage &operator=(const LocalThreadMatStorage &other)
+    LocalThreadMatStorage& operator=(const LocalThreadMatStorage& other)
     {
         assert(other.cache != nullptr);
         cache = other.cache->copy();
@@ -130,7 +130,7 @@ public:
         cache->init(rows, cols);
     }
 
-    void init(const int buffer_size, const MatrixCache &c)
+    void init(const int buffer_size, const MatrixCache& c)
     {
         if (cache == nullptr)
             cache = c.copy();
@@ -154,9 +154,10 @@ void local_hessian_to_global_triplets(
         for (int j = 0; j < n_verts; j++) {
             for (int k = 0; k < dim; k++) {
                 for (int l = 0; l < dim; l++) {
-                    const auto &val = local_hessian(dim * i + k, dim * j + l);
+                    const auto& val = local_hessian(dim * i + k, dim * j + l);
                     if (val != 0)
-                        triplets.add_value(0, dim * ids[i] + k, dim * ids[j] + l, val);
+                        triplets.add_value(
+                            0, dim * ids[i] + k, dim * ids[j] + l, val);
                 }
             }
         }

@@ -1,7 +1,8 @@
 #pragma once
 
-#include <ipc/config.hpp>
 #include "eigen_ext.hpp"
+
+#include <ipc/config.hpp>
 
 namespace ipc {
 enum class HEAVISIDE_TYPE { ZERO = 0, ONE = 1, VARIANT = 2 };

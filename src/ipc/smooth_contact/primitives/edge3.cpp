@@ -375,7 +375,9 @@ Edge3::Edge3(
     const ParameterType& param)
     : Primitive(id, param)
 {
-    orientable = (mesh.is_orient_vertex(mesh.edges()(id, 0)) && mesh.is_orient_vertex(mesh.edges()(id, 0)));
+    orientable =
+        (mesh.is_orient_vertex(mesh.edges()(id, 0))
+         && mesh.is_orient_vertex(mesh.edges()(id, 0)));
 
     std::array<long, 4> neighbors { { -1, -1, -1, -1 } };
     {

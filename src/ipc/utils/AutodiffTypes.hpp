@@ -1,7 +1,7 @@
 #pragma once
 
-#include "eigen_ext.hpp"
 #include "autodiff.h"
+#include "eigen_ext.hpp"
 
 namespace ipc {
 template <int dim, int max_dim = dim>

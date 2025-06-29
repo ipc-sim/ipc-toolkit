@@ -2,8 +2,8 @@
 
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 #include <ipc/potentials/normal_potential.hpp>
-#include <ipc/tangent/relative_velocity.hpp>
 #include <ipc/smooth_contact/collisions/smooth_collision.hpp>
+#include <ipc/tangent/relative_velocity.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {

@@ -21,8 +21,7 @@ EdgeVertexTangentialCollision::EdgeVertexTangentialCollision(
     const double normal_force)
     : EdgeVertexTangentialCollision(collision)
 {
-    TangentialCollision::init(
-        collision, positions, normal_force);
+    TangentialCollision::init(collision, positions, normal_force);
 }
 
 EdgeVertexTangentialCollision::EdgeVertexTangentialCollision(

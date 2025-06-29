@@ -8,6 +8,7 @@
 #include <ipc/distance/point_point.hpp>
 #include <ipc/utils/local_to_global.hpp>
 
+#include <igl/writePLY.h>
 #include <tbb/blocked_range.h>
 #include <tbb/enumerable_thread_specific.h>
 #include <tbb/parallel_for.h>
@@ -15,8 +16,6 @@
 #include <tbb/parallel_sort.h>
 
 #include <stdexcept> // std::out_of_range
-
-#include <igl/writePLY.h>
 
 namespace ipc {
 

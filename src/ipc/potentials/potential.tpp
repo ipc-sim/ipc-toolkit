@@ -3,11 +3,11 @@
 #include "potential.hpp"
 
 #include <ipc/utils/local_to_global.hpp>
+#include <ipc/utils/MaybeParallelFor.hpp>
 
 #include <tbb/blocked_range.h>
 #include <tbb/combinable.h>
 #include <tbb/enumerable_thread_specific.h>
-#include <ipc/utils/MaybeParallelFor.hpp>
 
 namespace ipc {
 
@@ -54,9 +54,12 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
 
     const int dim = X.cols();
 
-    auto storage = ipc::utils::create_thread_storage<Eigen::VectorXd>(Eigen::VectorXd::Zero(X.size()));
-    ipc::utils::maybe_parallel_for(collisions.size(), [&](int start, int end, int thread_id) {
-        auto& global_grad = ipc::utils::get_local_thread_storage(storage, thread_id);
+    auto storage = ipc::utils::create_thread_storage<Eigen::VectorXd>(
+        Eigen::VectorXd::Zero(X.size()));
+    ipc::utils::maybe_parallel_for(
+        collisions.size(), [&](int start, int end, int thread_id) {
+            auto& global_grad =
+                ipc::utils::get_local_thread_storage(storage, thread_id);
 
             for (size_t i = start; i < end; i++) {
                 const TCollision& collision = collisions[i];
@@ -76,7 +79,7 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
 
     Eigen::VectorXd grad;
     grad.setZero(X.size());
-    for (const auto &local_storage : storage)
+    for (const auto& local_storage : storage)
         grad += local_storage;
     return grad;
 }
@@ -102,9 +105,12 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
 
     const int max_triplets_size = int(1e7);
     const int buffer_size = std::min(max_triplets_size, ndof);
-    auto storage = ipc::utils::create_thread_storage(LocalThreadMatStorage(buffer_size, ndof, ndof));
-    ipc::utils::maybe_parallel_for(collisions.size(), [&](int start, int end, int thread_id) {
-        auto& hess_triplets = ipc::utils::get_local_thread_storage(storage, thread_id);
+    auto storage = ipc::utils::create_thread_storage(
+        LocalThreadMatStorage(buffer_size, ndof, ndof));
+    ipc::utils::maybe_parallel_for(
+        collisions.size(), [&](int start, int end, int thread_id) {
+            auto& hess_triplets =
+                ipc::utils::get_local_thread_storage(storage, thread_id);
 
             for (size_t i = start; i < end; i++) {
                 const TCollision& collision = collisions[i];
@@ -126,22 +132,20 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
 
     Eigen::SparseMatrix<double> hess(ndof, ndof);
 
-    // Assemble the stiffness matrix by concatenating the tuples in each local storage
+    // Assemble the stiffness matrix by concatenating the tuples in each local
+    // storage
 
     // Collect thread storages
-    std::vector<LocalThreadMatStorage *> storages(storage.size());
+    std::vector<LocalThreadMatStorage*> storages(storage.size());
     int index = 0;
-    for (auto &local_storage : storage)
-    {
+    for (auto& local_storage : storage) {
         storages[index++] = &local_storage;
     }
 
-    utils::maybe_parallel_for(storages.size(), [&](int i) {
-        storages[i]->cache->prune();
-    });
+    utils::maybe_parallel_for(
+        storages.size(), [&](int i) { storages[i]->cache->prune(); });
 
-    if (storage.size() == 0)
-    {
+    if (storage.size() == 0) {
         return Eigen::SparseMatrix<double>();
     }
 
@@ -150,8 +154,7 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
 
     index = 0;
     int triplet_count = 0;
-    for (auto &local_storage : storage)
-    {
+    for (auto& local_storage : storage) {
         offsets[index++] = triplet_count;
         triplet_count += local_storage.cache->triplet_count();
     }
@@ -159,47 +162,48 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     std::vector<Eigen::Triplet<double>> triplets;
 
     assert(storages.size() >= 1);
-    if (storages[0]->cache->is_dense())
-    {
+    if (storages[0]->cache->is_dense()) {
         // Serially merge local storages
         Eigen::MatrixXd tmp(hess);
-        for (const auto &local_storage : storage)
-            tmp += dynamic_cast<const DenseMatrixCache &>(*local_storage.cache).mat();
+        for (const auto& local_storage : storage)
+            tmp += dynamic_cast<const DenseMatrixCache&>(*local_storage.cache)
+                       .mat();
         hess = tmp.sparseView();
         hess.makeCompressed();
-    }
-    else if (triplet_count >= triplets.max_size())
-    {
-        // Serial fallback version in case the vector of triplets cannot be allocated
+    } else if (triplet_count >= triplets.max_size()) {
+        // Serial fallback version in case the vector of triplets cannot be
+        // allocated
 
-        logger().warn("Cannot allocate space for triplets, switching to serial assembly.");
+        logger().warn(
+            "Cannot allocate space for triplets, switching to serial assembly.");
 
         // Serially merge local storages
-        for (LocalThreadMatStorage &local_storage : storage)
+        for (LocalThreadMatStorage& local_storage : storage)
             hess += local_storage.cache->get_matrix(false); // will also prune
         hess.makeCompressed();
-    }
-    else
-    {
+    } else {
         triplets.resize(triplet_count);
 
         // Parallel copy into triplets
         utils::maybe_parallel_for(storages.size(), [&](int i) {
-            const SparseMatrixCache &cache = dynamic_cast<const SparseMatrixCache &>(*storages[i]->cache);
+            const SparseMatrixCache& cache =
+                dynamic_cast<const SparseMatrixCache&>(*storages[i]->cache);
             int offset = offsets[i];
 
-            std::copy(cache.entries().begin(), cache.entries().end(), triplets.begin() + offset);
+            std::copy(
+                cache.entries().begin(), cache.entries().end(),
+                triplets.begin() + offset);
             offset += cache.entries().size();
 
-            if (cache.mat().nonZeros() > 0)
-            {
+            if (cache.mat().nonZeros() > 0) {
                 int count = 0;
-                for (int k = 0; k < cache.mat().outerSize(); ++k)
-                {
-                    for (Eigen::SparseMatrix<double>::InnerIterator it(cache.mat(), k); it; ++it)
-                    {
+                for (int k = 0; k < cache.mat().outerSize(); ++k) {
+                    for (Eigen::SparseMatrix<double>::InnerIterator it(
+                             cache.mat(), k);
+                         it; ++it) {
                         assert(count < cache.mat().nonZeros());
-                        triplets[offset + count++] = Eigen::Triplet<double>(it.row(), it.col(), it.value());
+                        triplets[offset + count++] = Eigen::Triplet<double>(
+                            it.row(), it.col(), it.value());
                     }
                 }
             }

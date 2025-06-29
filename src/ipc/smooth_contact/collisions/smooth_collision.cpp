@@ -3,8 +3,7 @@
 namespace ipc {
 
 template <typename PrimitiveA, typename PrimitiveB>
-CollisionType
-SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::type() const
+CollisionType SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::type() const
 {
     if constexpr (
         std::is_same_v<PrimitiveA, Edge2> && std::is_same_v<PrimitiveB, Point2>)
@@ -39,20 +38,17 @@ Eigen::VectorXd SmoothCollision::dof(Eigen::ConstRef<Eigen::MatrixXd> X) const
         for (int i = 0; i < num_vertices(); i++) {
             x.segment<2>(i * 2) = X.row(vertex_ids_[i]);
         }
-    }
-    else if (dim == 3) {
+    } else if (dim == 3) {
         for (int i = 0; i < num_vertices(); i++) {
             x.segment<3>(i * 3) = X.row(vertex_ids_[i]);
         }
-    }
-    else
+    } else
         throw std::runtime_error("Invalid dimension!");
     return x;
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
-std::string
-SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::name() const
+std::string SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::name() const
 {
     if constexpr (
         std::is_same_v<PrimitiveA, Edge2> && std::is_same_v<PrimitiveB, Point2>)
@@ -80,8 +76,8 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::name() const
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
-auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::
-    get_core_indices() const -> Vector<int, n_core_dofs>
+auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::get_core_indices() const
+    -> Vector<int, n_core_dofs>
 {
     Vector<int, n_core_dofs> core_indices;
     core_indices << Eigen::VectorXi::LinSpaced(
@@ -92,15 +88,14 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::
 }
 
 template <typename PrimitiveA, typename PrimitiveB>
-SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::
-    SmoothCollisionTemplate(
-        index_t primitive0_,
-        index_t primitive1_,
-        SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::DTYPE dtype,
-        const CollisionMesh& mesh,
-        const ParameterType& param,
-        const double& dhat,
-        const Eigen::MatrixXd& V)
+SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::SmoothCollisionTemplate(
+    index_t primitive0_,
+    index_t primitive1_,
+    SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::DTYPE dtype,
+    const CollisionMesh& mesh,
+    const ParameterType& param,
+    const double& dhat,
+    const Eigen::MatrixXd& V)
     : SmoothCollision(primitive0_, primitive1_, dhat, mesh)
 {
     VectorMax3d d =
@@ -115,7 +110,8 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::
             pA->n_vertices() + pB->n_vertices(), max_vert_3d);
 
     int i = 0;
-    Super::vertex_ids_.assign(pA->vertex_ids().size() + pB->vertex_ids().size(), -1);
+    Super::vertex_ids_.assign(
+        pA->vertex_ids().size() + pB->vertex_ids().size(), -1);
     for (auto& v : pA->vertex_ids())
         Super::vertex_ids_[i++] = v;
     for (auto& v : pB->vertex_ids())
@@ -124,8 +120,7 @@ SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::
     Super::is_active_ =
         (d.norm() < Super::dhat()) && pA->is_active() && pB->is_active();
 
-    if (d.norm() < 1e-12)
-    {
+    if (d.norm() < 1e-12) {
         logger().warn(
             "pair distance {}, id {} and {}, dtype {}, active {}", d.norm(),
             primitive0_, primitive1_,
@@ -248,10 +243,9 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
     double orient = 0;
     Vector<double, -1, element_size> gOrient;
     {
-        Vector<double, -1, element_size> gA = Vector<double, -1, element_size>::Zero(
-                                         n_dofs()),
-                                     gB = Vector<double, -1, element_size>::Zero(
-                                         n_dofs());
+        Vector<double, -1, element_size>
+            gA = Vector<double, -1, element_size>::Zero(n_dofs()),
+            gB = Vector<double, -1, element_size>::Zero(n_dofs());
         {
             gA(core_indices) =
                 closest_direction_grad.transpose() * gA_reduced.head(dim);
@@ -281,7 +275,8 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::gradient(
 template <typename PrimitiveA, typename PrimitiveB>
 auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
     Eigen::ConstRef<Vector<double, -1, element_size>> positions,
-    const ParameterType& params) const -> MatrixMax<double, element_size, element_size>
+    const ParameterType& params) const
+    -> MatrixMax<double, element_size, element_size>
 {
     const auto core_indices = get_core_indices();
 
@@ -404,12 +399,14 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
     Vector<double, -1, element_size> gOrient;
     MatrixMax<double, element_size, element_size> hOrient;
     {
-        Vector<double, -1, element_size> gA = Vector<double, -1, element_size>::Zero(
-                                         n_dofs()),
-                                     gB = Vector<double, -1, element_size>::Zero(
-                                         n_dofs());
-        MatrixMax<double, element_size, element_size> hA = MatrixMax<double, element_size, element_size>::Zero(n_dofs(), n_dofs()),
-                        hB = MatrixMax<double, element_size, element_size>::Zero(n_dofs(), n_dofs());
+        Vector<double, -1, element_size>
+            gA = Vector<double, -1, element_size>::Zero(n_dofs()),
+            gB = Vector<double, -1, element_size>::Zero(n_dofs());
+        MatrixMax<double, element_size, element_size>
+            hA = MatrixMax<double, element_size, element_size>::Zero(
+                n_dofs(), n_dofs()),
+            hB = MatrixMax<double, element_size, element_size>::Zero(
+                n_dofs(), n_dofs());
         {
             gA(core_indices) =
                 closest_direction_grad.transpose() * gA_reduced.head(dim);
@@ -476,8 +473,7 @@ auto SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::hessian(
 // ---- distance ----
 
 template <typename PrimitiveA, typename PrimitiveB>
-double
-SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::compute_distance(
+double SmoothCollisionTemplate<PrimitiveA, PrimitiveB>::compute_distance(
     Eigen::ConstRef<Eigen::MatrixXd> vertices) const
 {
     Vector<double, -1, element_size> positions = dof(vertices);

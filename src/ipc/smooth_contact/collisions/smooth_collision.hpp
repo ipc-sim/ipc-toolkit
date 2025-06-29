@@ -24,7 +24,9 @@ public:
         const CollisionMesh& mesh)
         : primitive0(primitive0_)
         , primitive1(primitive1_)
-        , dhat_(dhat) {}
+        , dhat_(dhat)
+    {
+    }
 
     virtual ~SmoothCollision() = default;
 
@@ -35,7 +37,7 @@ public:
     virtual std::string name() const = 0;
 
     virtual int n_dofs() const = 0;
-    
+
     virtual CollisionType type() const = 0;
 
     /// @brief Get the number of vertices in the collision stencil.
@@ -43,17 +45,13 @@ public:
 
     /// @brief Get the vertex IDs of the collision stencil.
     /// @return The vertex IDs of the collision stencil. Size is always 4, but elements i > num_vertices() are -1.
-    std::vector<index_t> vertex_ids() const
-    {
-        return vertex_ids_;
-    }
+    std::vector<index_t> vertex_ids() const { return vertex_ids_; }
 
     /// @brief Get the vertex attributes of the collision stencil.
     /// @tparam T Type of the attributes
     /// @param vertices Vertex attributes
     /// @return The vertex positions of the collision stencil. Size is always 4, but elements i > num_vertices() are NaN.
-    Eigen::MatrixXd vertices(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices) const
+    Eigen::MatrixXd vertices(Eigen::ConstRef<Eigen::MatrixXd> vertices) const
     {
         const int dim = vertices.cols();
         Eigen::MatrixXd stencil_vertices(vertex_ids_.size(), dim);
@@ -68,14 +66,13 @@ public:
     /// @tparam T Type of the DOF
     /// @param X Full matrix of DOF (rowwise).
     /// @return This stencil's DOF.
-    Eigen::VectorXd
-    dof(Eigen::ConstRef<Eigen::MatrixXd> X) const;
+    Eigen::VectorXd dof(Eigen::ConstRef<Eigen::MatrixXd> X) const;
 
     /// @brief Compute the distance of the stencil.
     /// @param vertices Collision mesh vertices
     /// @return Distance of the stencil.
-    virtual double compute_distance(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices) const = 0;
+    virtual double
+    compute_distance(Eigen::ConstRef<Eigen::MatrixXd> vertices) const = 0;
 
     virtual double operator()(
         Eigen::ConstRef<Vector<double, -1, element_size>> positions,
@@ -159,8 +156,7 @@ public:
     }
 
     template <typename T>
-    Vector<T, n_core_dofs> core_dof(
-        const MatrixX<T>& X) const
+    Vector<T, n_core_dofs> core_dof(const MatrixX<T>& X) const
     {
         return this->dof(X)(get_core_indices());
     }
@@ -181,9 +177,8 @@ public:
 
     // ---- distance ----
 
-    double compute_distance(
-        Eigen::ConstRef<Eigen::MatrixXd> vertices)
-        const override;
+    double
+    compute_distance(Eigen::ConstRef<Eigen::MatrixXd> vertices) const override;
 
 private:
     std::unique_ptr<PrimitiveA> pA;

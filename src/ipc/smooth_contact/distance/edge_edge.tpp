@@ -183,23 +183,31 @@ Eigen::Matrix<scalar, 3, 2> edge_edge_closest_point_pairs(
         break;
 
     case EdgeEdgeDistanceType::EA_EB0:
-        out << eb0 - PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
-            eb0, ea0, ea1), eb0;
+        out << eb0
+                - PointEdgeDistance<scalar, 3>::
+                    point_line_closest_point_direction(eb0, ea0, ea1),
+            eb0;
         break;
 
     case EdgeEdgeDistanceType::EA_EB1:
-        out << eb1 - PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
-            eb1, ea0, ea1), eb1;
+        out << eb1
+                - PointEdgeDistance<scalar, 3>::
+                    point_line_closest_point_direction(eb1, ea0, ea1),
+            eb1;
         break;
 
     case EdgeEdgeDistanceType::EA0_EB:
-        out << ea0, ea0 - PointEdgeDistance<
-            scalar, 3>::point_line_closest_point_direction(ea0, eb0, eb1);
+        out << ea0,
+            ea0
+            - PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
+                ea0, eb0, eb1);
         break;
 
     case EdgeEdgeDistanceType::EA1_EB:
-        out << ea1, ea1 - PointEdgeDistance<
-            scalar, 3>::point_line_closest_point_direction(ea1, eb0, eb1);
+        out << ea1,
+            ea1
+            - PointEdgeDistance<scalar, 3>::point_line_closest_point_direction(
+                ea1, eb0, eb1);
         break;
 
     case EdgeEdgeDistanceType::EA_EB:

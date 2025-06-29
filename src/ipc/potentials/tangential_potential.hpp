@@ -87,30 +87,23 @@ public:
         Eigen::ConstRef<Eigen::MatrixXd> rest_positions,
         Eigen::ConstRef<Eigen::MatrixXd> lagged_displacements,
         Eigen::ConstRef<Eigen::MatrixXd> velocities,
-        const ParameterType &params,
+        const ParameterType& params,
         const DiffWRT wrt,
         const double dmin = 0) const;
 
-    Vector<double, -1, element_size>
-    smooth_contact_force(
+    Vector<double, -1, element_size> smooth_contact_force(
         const TangentialCollision& collision,
-        const Vector<double, -1, element_size>&
-            rest_positions, // = x
-        const Vector<double, -1, element_size>&
-            lagged_displacements, // = u
-        const Vector<double, -1, element_size>&
-            velocities, // = v
+        const Vector<double, -1, element_size>& rest_positions,       // = x
+        const Vector<double, -1, element_size>& lagged_displacements, // = u
+        const Vector<double, -1, element_size>& velocities,           // = v
         const bool no_mu = false,
         const bool no_contact_force_multiplier = false) const;
 
     Eigen::MatrixXd smooth_contact_force_jacobian(
         const TangentialCollision& collision,
-        const Vector<double, -1, element_size>&
-            rest_positions, // = x
-        const Vector<double, -1, element_size>&
-            lagged_displacements, // = u
-        const Vector<double, -1, element_size>&
-            velocities, // = v
+        const Vector<double, -1, element_size>& rest_positions,       // = x
+        const Vector<double, -1, element_size>& lagged_displacements, // = u
+        const Vector<double, -1, element_size>& velocities,           // = v
         const DiffWRT wrt) const;
 
     /// @brief Compute the friction force Jacobian assuming the contact force magnitude being 1.

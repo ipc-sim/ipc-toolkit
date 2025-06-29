@@ -156,14 +156,14 @@ public:
     /// @param positions Stencil's vertex positions.
     /// @note positions can be computed as stencil.dof(vertices, edges, faces)
     /// @return Distance Hessian of the stencil w.r.t. the stencil's vertex positions.
-    virtual MatrixMax<double, 12, 12>
-    compute_distance_hessian(Eigen::ConstRef<Vector<double, -1, 12>> positions) const = 0;
+    virtual MatrixMax<double, 12, 12> compute_distance_hessian(
+        Eigen::ConstRef<Vector<double, -1, 12>> positions) const = 0;
 
     /// @brief Compute the coefficients of the stencil s.t. d(x) = ‖∑ cᵢ xᵢ‖².
     /// @param positions Stencil's vertex positions.
     /// @return Coefficients of the stencil.
-    virtual VectorMax4d
-    compute_coefficients(Eigen::ConstRef<Vector<double, -1, 12>> positions) const = 0;
+    virtual VectorMax4d compute_coefficients(
+        Eigen::ConstRef<Vector<double, -1, 12>> positions) const = 0;
 
     /// @brief Perform narrow-phase CCD on the candidate.
     /// @param[in] vertices_t0 Stencil vertices at the start of the time step.

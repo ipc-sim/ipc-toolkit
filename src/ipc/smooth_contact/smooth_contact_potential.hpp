@@ -1,8 +1,8 @@
 #pragma once
 
 #include <ipc/collision_mesh.hpp>
-#include <ipc/utils/eigen_ext.hpp>
 #include <ipc/smooth_contact/smooth_collisions.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 

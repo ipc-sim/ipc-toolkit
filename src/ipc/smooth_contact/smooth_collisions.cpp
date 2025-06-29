@@ -141,12 +141,10 @@ void SmoothCollisions::build(
         vert_adaptive_dhat(0) = dhat;
         edge_adaptive_dhat.resize(1);
         edge_adaptive_dhat(0) = dhat;
-        if (mesh.dim() == 3)
-        {
+        if (mesh.dim() == 3) {
             face_adaptive_dhat.resize(1);
             face_adaptive_dhat(0) = dhat;
-        }
-        else
+        } else
             face_adaptive_dhat.resize(0);
     }
 
@@ -203,18 +201,11 @@ void SmoothCollisions::build(
 }
 
 // ============================================================================
- size_t SmoothCollisions::size() const
-{
-    return collisions.size();
-}
- bool SmoothCollisions::empty() const
-{
-    return collisions.empty();
-}
- void SmoothCollisions::clear() { collisions.clear(); }
+size_t SmoothCollisions::size() const { return collisions.size(); }
+bool SmoothCollisions::empty() const { return collisions.empty(); }
+void SmoothCollisions::clear() { collisions.clear(); }
 
-typename SmoothCollisions::value_type&
-SmoothCollisions::operator[](size_t i)
+typename SmoothCollisions::value_type& SmoothCollisions::operator[](size_t i)
 {
     if (i < collisions.size()) {
         return *collisions[i];
@@ -242,13 +233,9 @@ std::string SmoothCollisions::to_string(
         {
             ss << fmt::format(
                 "[{}]: ({} {}) dist {} potential {} grad {}", cc->name(),
-                (*cc)[0], (*cc)[1],
-                cc->compute_distance(vertices),
+                (*cc)[0], (*cc)[1], cc->compute_distance(vertices),
                 (*cc)(cc->dof(vertices), params),
-                (*cc)
-                    .gradient(
-                        cc->dof(vertices), params)
-                    .norm());
+                (*cc).gradient(cc->dof(vertices), params).norm());
         }
     }
     return ss.str();
