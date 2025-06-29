@@ -151,7 +151,8 @@ void define_collision_mesh(py::module_& m)
             "displacement_map"_a = Eigen::SparseMatrix<double>())
         .def(
             py::init<
-                const std::vector<bool>&, const std::vector<bool>&, Eigen::ConstRef<Eigen::MatrixXd>,
+                const std::vector<bool>&, const std::vector<bool>&,
+                Eigen::ConstRef<Eigen::MatrixXd>,
                 Eigen::ConstRef<Eigen::MatrixXi>,
                 Eigen::ConstRef<Eigen::MatrixXi>,
                 const Eigen::SparseMatrix<double>&>(),
