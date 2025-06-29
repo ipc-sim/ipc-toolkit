@@ -13,7 +13,7 @@ Frequently Asked Questions
 How do I include IPC Toolkit in my project?
 -------------------------------------------
 
-If you are using CMake, the public include directory is added to the :cmake:`ipc::toolkit` cmake target which means that any lib/bin that includes :cmake:`ipc::toolkit` as a dependency also adds those include directories too.
+If you are using CMake, the public include directory is added to the `ipc::toolkit` cmake target which means that any lib/bin that includes `ipc::toolkit` as a dependency also adds those include directories too.
 
 If you are not using CMake, the include path is ``src``.
 
