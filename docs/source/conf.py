@@ -21,7 +21,10 @@ import pathlib
 # -- Project information -----------------------------------------------------
 
 from datetime import datetime
-import ipctk
+
+import sys
+sys.path.append(str(pathlib.Path(__file__).parents[2] / "python"))
+from _find_ipctk import ipctk  # noqa
 
 project = "IPC Toolkit"
 copyright = f'2020-{datetime.now().year}, IPC-Sim Organization; MIT License'

@@ -20,7 +20,7 @@ Adaptive Barrier Stiffness
 Semi-Implicit Stiffness
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-.. doxygenfunction:: ipc::semi_implicit_stiffness(const CollisionMesh&, const Eigen::MatrixXd&, const StencilsT&, const Eigen::VectorXd&, const Eigen::SparseMatrix<double>&, const double)
+.. doxygenfunction:: ipc::semi_implicit_stiffness(const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>, const StencilsT&, Eigen::ConstRef<Eigen::VectorXd>, const Eigen::SparseMatrix<double>&, const double)
 
 Barrier Class
 -------------
@@ -34,10 +34,10 @@ Clamped Log Barrier
 .. doxygenclass:: ipc::ClampedLogBarrier
     :allow-dot-graphs:
 
-Normalized Clamped Log Barrier
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Normalized Barrier
+~~~~~~~~~~~~~~~~~~
 
-.. doxygenclass:: ipc::NormalizedClampedLogBarrier
+.. doxygenclass:: ipc::NormalizedBarrier
     :allow-dot-graphs:
 
 Clamped Log Squared Barrier
