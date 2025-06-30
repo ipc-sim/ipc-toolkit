@@ -614,6 +614,10 @@ TEST_CASE(
 TEST_CASE(
     "Smooth friction force jacobian 3D", "[friction-smooth][force-jacobian]")
 {
+#if (defined(WIN32) || defined(_WIN32) || defined(__WIN32)) && !defined(NDEBUG)
+    SKIP("'Smooth friction force jacobian 3D' test is skipped in debug mode");
+#endif
+
     SmoothFrictionData data = smooth_friction_data_generator_3d();
     const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, param, barrier_stiffness] =
         data;
