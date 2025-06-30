@@ -6,7 +6,6 @@
 #include <ipc/distance/point_edge.hpp>
 #include <ipc/distance/point_line.hpp>
 #include <ipc/distance/point_point.hpp>
-#include <ipc/utils/getRSS.h>
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/MaybeParallelFor.hpp>
 
