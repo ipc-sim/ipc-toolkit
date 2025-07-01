@@ -22,17 +22,17 @@ Eigen::VectorXd GeomSpaced(int num, double start, double stop);
 
 FrictionData friction_data_generator();
 
-template <int dim> struct SmoothFrictionData {
+struct SmoothFrictionData {
     Eigen::MatrixXd V0;
     Eigen::MatrixXd V1;
     Eigen::MatrixXi E;
     Eigen::MatrixXi F;
-    ipc::SmoothCollisions<dim> collisions;
+    ipc::SmoothCollisions collisions;
     double mu;
     double epsv_times_h;
     ipc::ParameterType p;
     double barrier_stiffness;
 };
 
-SmoothFrictionData<2> smooth_friction_data_generator_2d();
-SmoothFrictionData<3> smooth_friction_data_generator_3d();
+SmoothFrictionData smooth_friction_data_generator_2d();
+SmoothFrictionData smooth_friction_data_generator_3d();

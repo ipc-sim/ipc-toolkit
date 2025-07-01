@@ -1,4 +1,5 @@
 #include "point_edge.hpp"
+
 #include <ipc/tangent/closest_point.hpp>
 
 namespace ipc {
@@ -249,7 +250,7 @@ PointEdgeDistanceDerivatives<dim>::point_edge_closest_point_direction_hessian(
     Eigen::Matrix<double, dim, dim * dim> grad =
         Eigen::Matrix<double, dim, dim * dim>::Zero();
     std::array<Eigen::Matrix<double, dim * dim, dim * dim>, dim> hess;
-    for (auto &hi : hess)
+    for (auto& hi : hess)
         hi.setZero();
 #ifdef DERIVATIVES_WITH_AUTODIFF
     using T = ADHessian<dim * dim>;

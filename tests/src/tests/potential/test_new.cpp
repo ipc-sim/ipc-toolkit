@@ -18,8 +18,6 @@
 #include <igl/readCSV.h>
 #include <ipc/ipc.hpp>
 
-#include <ipc/utils/getRSS.h>
-
 using namespace ipc;
 
 // TEST_CASE(

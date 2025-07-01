@@ -210,33 +210,22 @@ TEST_CASE("eigen vec dynamic vs static", "[!benchmark][eigen]")
 
 TEST_CASE("eigen mat dynamic vs static", "[!benchmark][eigen]")
 {
-    const Eigen::Matrix<double, -1, -1, 0, -1, 3> V = Eigen::MatrixXd::Random(100, 3);
+    const Eigen::Matrix<double, -1, -1, 0, -1, 3> V =
+        Eigen::MatrixXd::Random(100, 3);
     const Eigen::Matrix3d X = Eigen::Matrix3d::Random();
 
     int i = 55;
 
-    BENCHMARK("Static")
-    {
-        return X * V.middleRows(i, 3);
-    };
+    BENCHMARK("Static") { return X * V.middleRows(i, 3); };
 
-    BENCHMARK("Dynamic")
-    {
-        return X * V.block<3, 3>(i, 0);
-    };
+    BENCHMARK("Dynamic") { return X * V.block<3, 3>(i, 0); };
 }
 
 TEST_CASE("trace vs sqr norm", "[!benchmark][eigen]")
 {
     const Eigen::Matrix3d V = Eigen::MatrixXd::Random(3, 3);
 
-    BENCHMARK("trace")
-    {
-        return (V.transpose() * V).trace();
-    };
+    BENCHMARK("trace") { return (V.transpose() * V).trace(); };
 
-    BENCHMARK("sqr_norm")
-    {
-        return V.squaredNorm();
-    };
+    BENCHMARK("sqr_norm") { return V.squaredNorm(); };
 }

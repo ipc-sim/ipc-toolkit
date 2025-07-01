@@ -51,7 +51,8 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> faces = Eigen::MatrixXi())
     {
         return CollisionMesh(
-            construct_is_on_surface(full_rest_positions.rows(), edges), std::vector<bool>(full_rest_positions.rows(), false),
+            construct_is_on_surface(full_rest_positions.rows(), edges),
+            std::vector<bool>(full_rest_positions.rows(), false),
             full_rest_positions, edges, faces);
     }
 

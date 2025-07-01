@@ -3,7 +3,6 @@
 #include <ipc/broad_phase/broad_phase.hpp>
 #include <ipc/candidates/candidates.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 class PyBroadPhase : public BroadPhase {
@@ -146,8 +145,7 @@ void define_broad_phase(py::module_& m)
                 faces: Collision mesh faces
                 inflation_radius: Radius of inflation around all elements.
             )ipc_Qu8mg5v7",
-            py::arg("vertices"), py::arg("edges"), py::arg("faces"),
-            py::arg("inflation_radius") = 0)
+            "vertices"_a, "edges"_a, "faces"_a, "inflation_radius"_a = 0)
         .def(
             "build",
             py::overload_cast<
@@ -166,8 +164,8 @@ void define_broad_phase(py::module_& m)
                 faces: Collision mesh faces
                 inflation_radius: Radius of inflation around all elements.
             )ipc_Qu8mg5v7",
-            py::arg("vertices_t0"), py::arg("vertices_t1"), py::arg("edges"),
-            py::arg("faces"), py::arg("inflation_radius") = 0)
+            "vertices_t0"_a, "vertices_t1"_a, "edges"_a, "faces"_a,
+            "inflation_radius"_a = 0)
         .def("clear", &BroadPhase::clear, "Clear any built data.")
         .def(
             "detect_vertex_vertex_candidates",
@@ -261,7 +259,7 @@ void define_broad_phase(py::module_& m)
                 dim: The dimension of the simulation (i.e., 2 or 3).
                 candidates: The detected collision candidates.
             )ipc_Qu8mg5v7",
-            py::arg("dim"))
+            "dim"_a)
         .def_readwrite(
             "can_vertices_collide", &BroadPhase::can_vertices_collide,
             "Function for determining if two vertices can collide.");

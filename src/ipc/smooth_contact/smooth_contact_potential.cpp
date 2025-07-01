@@ -1,6 +1,4 @@
-#pragma once
-
-#include "potential.hpp"
+#include "smooth_contact_potential.hpp"
 
 #include <ipc/utils/local_to_global.hpp>
 #include <ipc/utils/MaybeParallelFor.hpp>
@@ -11,9 +9,8 @@
 
 namespace ipc {
 
-template <class TCollisions>
-double Potential<TCollisions>::operator()(
-    const TCollisions& collisions,
+double SmoothContactPotential::operator()(
+    const SmoothCollisions& collisions,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
@@ -31,18 +28,15 @@ double Potential<TCollisions>::operator()(
             auto& local_potential = storage.local();
             for (size_t i = r.begin(); i < r.end(); i++) {
                 // Quadrature weight is premultiplied by local potential
-                local_potential += (*this)(
-                    collisions[i],
-                    collisions[i].dof(X, mesh.edges(), mesh.faces()));
+                local_potential += (*this)(collisions[i], collisions[i].dof(X));
             }
         });
 
     return storage.combine([](double a, double b) { return a + b; });
 }
 
-template <class TCollisions>
-Eigen::VectorXd Potential<TCollisions>::gradient(
-    const TCollisions& collisions,
+Eigen::VectorXd SmoothContactPotential::gradient(
+    const SmoothCollisions& collisions,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> X) const
 {
@@ -62,15 +56,12 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
                 ipc::utils::get_local_thread_storage(storage, thread_id);
 
             for (size_t i = start; i < end; i++) {
-                const TCollision& collision = collisions[i];
+                const SmoothCollision& collision = collisions[i];
 
-                const Vector<double, -1, Potential<TCollisions>::element_size>
-                    local_grad = this->gradient(
-                        collision,
-                        collision.dof(X, mesh.edges(), mesh.faces()));
+                const Eigen::VectorXd local_grad =
+                    this->gradient(collision, collision.dof(X));
 
-                const std::array<index_t, TCollision::element_size> vids =
-                    collision.vertex_ids(mesh.edges(), mesh.faces());
+                const std::vector<index_t> vids = collision.vertex_ids();
 
                 local_gradient_to_global_gradient(
                     local_grad, vids, dim, global_grad);
@@ -84,9 +75,8 @@ Eigen::VectorXd Potential<TCollisions>::gradient(
     return grad;
 }
 
-template <class TCollisions>
-Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
-    const TCollisions& collisions,
+Eigen::SparseMatrix<double> SmoothContactPotential::hessian(
+    const SmoothCollisions& collisions,
     const CollisionMesh& mesh,
     Eigen::ConstRef<Eigen::MatrixXd> X,
     const PSDProjectionMethod project_hessian_to_psd) const
@@ -96,9 +86,6 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     if (collisions.empty()) {
         return Eigen::SparseMatrix<double>(X.size(), X.size());
     }
-
-    const Eigen::MatrixXi& edges = mesh.edges();
-    const Eigen::MatrixXi& faces = mesh.faces();
 
     const int dim = X.cols();
     const int ndof = X.size();
@@ -113,20 +100,15 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
                 ipc::utils::get_local_thread_storage(storage, thread_id);
 
             for (size_t i = start; i < end; i++) {
-                const TCollision& collision = collisions[i];
+                const SmoothCollision& collision = collisions[i];
 
-                const MatrixMax<
-                    double, Potential<TCollisions>::element_size,
-                    Potential<TCollisions>::element_size>
-                    local_hess = this->hessian(
-                        collisions[i], collisions[i].dof(X, edges, faces),
-                        project_hessian_to_psd);
-
-                const std::array<index_t, TCollision::element_size> vids =
-                    collision.vertex_ids(edges, faces);
+                const Eigen::MatrixXd local_hess = this->hessian(
+                    collisions[i], collisions[i].dof(X),
+                    project_hessian_to_psd);
 
                 local_hessian_to_global_triplets(
-                    local_hess, vids, dim, *(hess_triplets.cache));
+                    local_hess, collision.vertex_ids(), dim,
+                    *(hess_triplets.cache));
             }
         });
 
@@ -216,4 +198,27 @@ Eigen::SparseMatrix<double> Potential<TCollisions>::hessian(
     return hess;
 }
 
+double SmoothContactPotential::operator()(
+    const SmoothCollision& collision,
+    Eigen::ConstRef<Eigen::VectorXd> positions) const
+{
+    return collision.weight * collision(positions, params);
+}
+
+Eigen::VectorXd SmoothContactPotential::gradient(
+    const SmoothCollision& collision,
+    Eigen::ConstRef<Eigen::VectorXd> positions) const
+{
+    return collision.weight * collision.gradient(positions, params);
+}
+
+Eigen::MatrixXd SmoothContactPotential::hessian(
+    const SmoothCollision& collision,
+    Eigen::ConstRef<Eigen::VectorXd> positions,
+    const PSDProjectionMethod project_hessian_to_psd) const
+{
+    Eigen::MatrixXd hess =
+        collision.weight * collision.hessian(positions, params);
+    return project_to_psd(hess, project_hessian_to_psd);
+}
 } // namespace ipc

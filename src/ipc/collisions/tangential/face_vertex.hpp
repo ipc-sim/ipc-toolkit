@@ -12,10 +12,10 @@ public:
     using FaceVertexCandidate::FaceVertexCandidate;
 
     FaceVertexTangentialCollision(const FaceVertexNormalCollision& collision);
-    
+
     FaceVertexTangentialCollision(
         const FaceVertexNormalCollision& collision,
-        Eigen::ConstRef<VectorMax12d> positions, 
+        Eigen::ConstRef<VectorMax12d> positions,
         const double normal_force);
 
     FaceVertexTangentialCollision(

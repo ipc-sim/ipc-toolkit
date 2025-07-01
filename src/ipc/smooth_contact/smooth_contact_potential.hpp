@@ -1,22 +1,50 @@
 #pragma once
 
-#include <ipc/potentials/potential.hpp>
+#include <ipc/collision_mesh.hpp>
 #include <ipc/smooth_contact/smooth_collisions.hpp>
+#include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
-template <class TCollisions>
-class SmoothContactPotential : public Potential<TCollisions> {
-    using Super = Potential<TCollisions>;
-    using TCollision = typename TCollisions::value_type;
-
+class SmoothContactPotential {
 public:
     SmoothContactPotential(const ParameterType& _params) : params(_params) { }
+    virtual ~SmoothContactPotential() = default;
 
-    using Super::element_size;
-    using Super::operator();
-    using Super::gradient;
-    using Super::hessian;
+    // -- Cumulative methods ---------------------------------------------------
+
+    /// @brief Compute the potential for a set of collisions.
+    /// @param collisions The set of collisions.
+    /// @param mesh The collision mesh.
+    /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
+    /// @returns The potential for a set of collisions.
+    double operator()(
+        const SmoothCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> X) const;
+
+    /// @brief Compute the gradient of the potential.
+    /// @param collisions The set of collisions.
+    /// @param mesh The collision mesh.
+    /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
+    /// @returns The gradient of the potential w.r.t. X. This will have a size of |X|.
+    Eigen::VectorXd gradient(
+        const SmoothCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> X) const;
+
+    /// @brief Compute the hessian of the potential.
+    /// @param collisions The set of collisions.
+    /// @param mesh The collision mesh.
+    /// @param X Degrees of freedom of the collision mesh (e.g., vertices or velocities).
+    /// @param project_hessian_to_psd Make sure the hessian is positive semi-definite.
+    /// @returns The Hessian of the potential w.r.t. X. This will have a size of |X|×|X|.
+    virtual Eigen::SparseMatrix<double> hessian(
+        const SmoothCollisions& collisions,
+        const CollisionMesh& mesh,
+        Eigen::ConstRef<Eigen::MatrixXd> X,
+        const PSDProjectionMethod project_hessian_to_psd =
+            PSDProjectionMethod::NONE) const;
 
     // -- Single collision methods ---------------------------------------------
 
@@ -25,39 +53,26 @@ public:
     /// @param positions The collision stencil's positions.
     /// @return The potential.
     double operator()(
-        const TCollision& collision,
-        Eigen::ConstRef<Vector<double, -1, element_size>> positions)
-        const override
-    {
-        return collision.weight * collision(positions, params);
-    }
+        const SmoothCollision& collision,
+        Eigen::ConstRef<Eigen::VectorXd> positions) const;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision.
     /// @param positions The collision stencil's positions.
     /// @return The gradient of the potential.
-    Vector<double, -1, element_size> gradient(
-        const TCollision& collision,
-        Eigen::ConstRef<Vector<double, -1, element_size>> positions)
-        const override
-    {
-        return collision.weight * collision.gradient(positions, params);
-    }
+    Eigen::VectorXd gradient(
+        const SmoothCollision& collision,
+        Eigen::ConstRef<Eigen::VectorXd> positions) const;
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision.
     /// @param positions The collision stencil's positions.
     /// @return The hessian of the potential.
-    MatrixMax<double, element_size, element_size> hessian(
-        const TCollision& collision,
-        Eigen::ConstRef<Vector<double, -1, element_size>> positions,
+    Eigen::MatrixXd hessian(
+        const SmoothCollision& collision,
+        Eigen::ConstRef<Eigen::VectorXd> positions,
         const PSDProjectionMethod project_hessian_to_psd =
-            PSDProjectionMethod::NONE) const override
-    {
-        MatrixMax<double, element_size, element_size> hess =
-            collision.weight * collision.hessian(positions, params);
-        return project_to_psd(hess, project_hessian_to_psd);
-    }
+            PSDProjectionMethod::NONE) const;
 
 protected:
     ParameterType params;

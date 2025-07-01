@@ -2,7 +2,6 @@
 
 #include <ipc/distance/distance_type.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_distance_type(py::module_& m)
@@ -99,7 +98,7 @@ void define_distance_type(py::module_& m)
         Returns:
             The distance type of the point-edge pair.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("e0"), py::arg("e1"));
+        "p"_a, "e0"_a, "e1"_a);
 
     m.def(
         "point_triangle_distance_type", &point_triangle_distance_type,
@@ -115,7 +114,7 @@ void define_distance_type(py::module_& m)
         Returns:
             The distance type of the point-triangle pair.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"));
+        "p"_a, "t0"_a, "t1"_a, "t2"_a);
 
     m.def(
         "edge_edge_distance_type", &edge_edge_distance_type,
@@ -131,7 +130,7 @@ void define_distance_type(py::module_& m)
         Returns:
             The distance type of the edge-edge pair.
         )ipc_Qu8mg5v7",
-        py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
+        "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a);
 
     m.def(
         "edge_edge_parallel_distance_type", &edge_edge_parallel_distance_type,
@@ -147,5 +146,5 @@ void define_distance_type(py::module_& m)
         Returns:
             The distance type of the edge-edge pair.
         )ipc_Qu8mg5v7",
-        py::arg("ea0"), py::arg("ea1"), py::arg("eb0"), py::arg("eb1"));
+        "ea0"_a, "ea1"_a, "eb0"_a, "eb1"_a);
 }

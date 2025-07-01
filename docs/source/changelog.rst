@@ -307,7 +307,7 @@ Added
 Changed
 ^^^^^^^
 
-* Changed CMake target name to :cmake:`ipc::toolkit`
+* Changed CMake target name to ``ipc::toolkit``
 
 2021-07-26 (`1479aae <https://github.com/ipc-sim/ipc-toolkit/commit/1479aaea958daaa4e963529493e4169dc7757913>`__)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -317,7 +317,7 @@ Changed
 Changed
 ^^^^^^^
 
-* Updated the CMake system to use modern :cpp:`FetchContent` to download externals
+* Updated the CMake system to use modern ``FetchContent`` to download externals
 
 2021-07-22 (`e24c76d <https://github.com/ipc-sim/ipc-toolkit/commit/e24c76ddc818fb9efc4d522ef72a581a15abf751>`__)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -414,7 +414,7 @@ Changed
 ^^^^^^^
 
 * :cpp:`ignore_codimensional_vertices` to :cpp:`false` by default
-* CMake option :cmake:`TIGHT_INCLUSION_WITH_NO_ZERO_TOI=ON` as default
+* CMake option ``TIGHT_INCLUSION_WITH_NO_ZERO_TOI=ON`` as default
 
 2021-06-18 (`aa59aeb <https://github.com/ipc-sim/ipc-toolkit/commit/aa59aeb0634af981a8f1cfbb6d2ff2b76a04d610>`__)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

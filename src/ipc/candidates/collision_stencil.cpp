@@ -2,11 +2,10 @@
 
 namespace ipc {
 
-template <int max_vert>
-std::ostream& CollisionStencil<max_vert>::write_ccd_query(
+std::ostream& CollisionStencil::write_ccd_query(
     std::ostream& out,
-    Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> vertices_t0,
-    Eigen::ConstRef<Vector<double, -1, 3 * max_vert>> vertices_t1) const
+    Eigen::ConstRef<Vector<double, -1, 12>> vertices_t0,
+    Eigen::ConstRef<Vector<double, -1, 12>> vertices_t1) const
 {
     assert(vertices_t0.size() == vertices_t1.size());
 

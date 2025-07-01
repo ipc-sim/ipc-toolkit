@@ -9,7 +9,7 @@
 
 namespace ipc {
 
-class VertexVertexCandidate : virtual public CollisionStencil<4> {
+class VertexVertexCandidate : virtual public CollisionStencil {
 public:
     VertexVertexCandidate(index_t vertex0_id, index_t vertex1_id);
 
@@ -29,10 +29,10 @@ public:
         return { { vertex0_id, vertex1_id, -1, -1 } };
     }
 
-    using CollisionStencil<4>::compute_coefficients;
-    using CollisionStencil<4>::compute_distance;
-    using CollisionStencil<4>::compute_distance_gradient;
-    using CollisionStencil<4>::compute_distance_hessian;
+    using CollisionStencil::compute_coefficients;
+    using CollisionStencil::compute_distance;
+    using CollisionStencil::compute_distance_gradient;
+    using CollisionStencil::compute_distance_hessian;
 
     double
     compute_distance(Eigen::ConstRef<VectorMax12d> positions) const override;

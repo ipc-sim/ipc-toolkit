@@ -2,7 +2,6 @@
 
 #include <ipc/utils/eigen_ext.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_eigen_ext(py::module_& m)
@@ -23,7 +22,7 @@ void define_eigen_ext(py::module_& m)
         Returns:
             Projected matrix
         )ipc_Qu8mg5v7",
-        py::arg("A"), py::arg("eps") = 1e-8);
+        "A"_a, "eps"_a = 1e-8);
 
     py::enum_<PSDProjectionMethod>(
         m, "PSDProjectionMethod",
@@ -52,5 +51,5 @@ void define_eigen_ext(py::module_& m)
         Returns:
             Projected matrix
         )ipc_Qu8mg5v7",
-        py::arg("A"), py::arg("method") = PSDProjectionMethod::CLAMP);
+        "A"_a, "method"_a = PSDProjectionMethod::CLAMP);
 }

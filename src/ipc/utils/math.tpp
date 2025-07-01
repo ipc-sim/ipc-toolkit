@@ -1,6 +1,6 @@
 #pragma once
-#include "math.hpp"
 #include "AutodiffTypes.hpp"
+#include "math.hpp"
 
 namespace ipc {
 
@@ -59,7 +59,7 @@ namespace {
 
         return x;
     }
-}
+} // namespace
 
 template <typename scalar> double Math<scalar>::sign(const double& x)
 {

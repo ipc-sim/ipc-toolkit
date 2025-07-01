@@ -4,7 +4,6 @@
 #include <ipc/candidates/candidates.hpp>
 #include <ipc/collisions/normal/normal_collisions.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_adaptive_stiffness(py::module_& m)
@@ -42,10 +41,9 @@ void define_adaptive_stiffness(py::module_& m)
             The initial barrier stiffness.
             Maximum stiffness of the barrier.
         )ipc_Qu8mg5v7",
-        py::arg("bbox_diagonal"), py::arg("barrier"), py::arg("dhat"),
-        py::arg("average_mass"), py::arg("grad_energy"),
-        py::arg("grad_barrier"), py::arg("min_barrier_stiffness_scale") = 1e11,
-        py::arg("dmin") = 0);
+        "bbox_diagonal"_a, "barrier"_a, "dhat"_a, "average_mass"_a,
+        "grad_energy"_a, "grad_barrier"_a,
+        "min_barrier_stiffness_scale"_a = 1e11, "dmin"_a = 0);
 
     m.def(
         "update_barrier_stiffness", &update_barrier_stiffness,
@@ -64,15 +62,14 @@ void define_adaptive_stiffness(py::module_& m)
         Returns:
             The updated barrier stiffness.
         )ipc_Qu8mg5v7",
-        py::arg("prev_min_distance"), py::arg("min_distance"),
-        py::arg("max_barrier_stiffness"), py::arg("barrier_stiffness"),
-        py::arg("bbox_diagonal"), py::arg("dhat_epsilon_scale") = 1e-9,
-        py::arg("dmin") = 0);
+        "prev_min_distance"_a, "min_distance"_a, "max_barrier_stiffness"_a,
+        "barrier_stiffness"_a, "bbox_diagonal"_a, "dhat_epsilon_scale"_a = 1e-9,
+        "dmin"_a = 0);
 
     m.def(
         "semi_implicit_stiffness",
         static_cast<double (*)(
-            const CollisionStencil<4>&, Eigen::ConstRef<VectorMax12d>,
+            const CollisionStencil&, Eigen::ConstRef<VectorMax12d>,
             Eigen::ConstRef<VectorMax4d>, Eigen::ConstRef<MatrixMax12d>,
             const double)>(&semi_implicit_stiffness),
         R"ipc_Qu8mg5v7(
@@ -91,8 +88,7 @@ void define_adaptive_stiffness(py::module_& m)
         Returns:
             The semi-implicit stiffness.
         )ipc_Qu8mg5v7",
-        py::arg("stencil"), py::arg("vertices"), py::arg("mass"),
-        py::arg("local_hess"), py::arg("dmin"));
+        "stencil"_a, "vertices"_a, "mass"_a, "local_hess"_a, "dmin"_a);
 
     m.def(
         "semi_implicit_stiffness",
@@ -117,8 +113,8 @@ void define_adaptive_stiffness(py::module_& m)
         Returns:
             The semi-implicit stiffness's.
         )ipc_Qu8mg5v7",
-        py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
-        py::arg("vertex_masses"), py::arg("hess"), py::arg("dmin"));
+        "mesh"_a, "vertices"_a, "collisions"_a, "vertex_masses"_a, "hess"_a,
+        "dmin"_a);
 
     m.def(
         "semi_implicit_stiffness",
@@ -143,6 +139,6 @@ void define_adaptive_stiffness(py::module_& m)
         Returns:
             The semi-implicit stiffness's.
         )ipc_Qu8mg5v7",
-        py::arg("mesh"), py::arg("vertices"), py::arg("collisions"),
-        py::arg("vertex_masses"), py::arg("hess"), py::arg("dmin"));
+        "mesh"_a, "vertices"_a, "collisions"_a, "vertex_masses"_a, "hess"_a,
+        "dmin"_a);
 }

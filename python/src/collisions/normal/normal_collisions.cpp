@@ -3,26 +3,28 @@
 #include <ipc/collisions/normal/normal_collisions.hpp>
 #include <ipc/smooth_contact/smooth_collisions.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 template <typename collision_type, typename parent_type>
 void define_SmoothCollisionTemplate(py::module_& m, std::string name)
 {
     py::class_<collision_type, parent_type>(m, name.c_str())
-    .def("name", &collision_type::name, "Get the type name of collision")
-    .def("num_vertices", &collision_type::num_vertices, "Get the number of vertices");
+        .def("name", &collision_type::name, "Get the type name of collision")
+        .def(
+            "num_vertices", &collision_type::num_vertices,
+            "Get the number of vertices");
 }
 
-template <int dim>
 void define_SmoothCollisions(py::module_& m, std::string name)
 {
-    py::class_<SmoothCollisions<dim>>(m, name.c_str())
+    py::class_<SmoothCollisions>(m, name.c_str())
         .def(py::init())
         .def(
             "build",
             py::overload_cast<
-                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>, const ParameterType, const bool, std::shared_ptr<BroadPhase>>(&SmoothCollisions<dim>::build),
+                const CollisionMesh&, Eigen::ConstRef<Eigen::MatrixXd>,
+                const ParameterType, const bool, std::shared_ptr<BroadPhase>>(
+                &SmoothCollisions::build),
             R"ipc_Qu8mg5v7(
             Initialize the set of collisions used to compute the barrier potential.
 
@@ -34,9 +36,11 @@ void define_SmoothCollisions(py::module_& m, std::string name)
                 broad_phase: Broad phase method.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"), py::arg("param"),
-            py::arg("use_adaptive_dhat") = false, py::arg("broad_phase") = make_default_broad_phase())
+            py::arg("use_adaptive_dhat") = false,
+            py::arg("broad_phase") = make_default_broad_phase())
         .def(
-            "compute_minimum_distance", &SmoothCollisions<dim>::compute_minimum_distance,
+            "compute_minimum_distance",
+            &SmoothCollisions::compute_minimum_distance,
             R"ipc_Qu8mg5v7(
             Computes the minimum distance between any non-adjacent elements.
 
@@ -48,12 +52,16 @@ void define_SmoothCollisions(py::module_& m, std::string name)
                 The minimum distance between any non-adjacent elements.
             )ipc_Qu8mg5v7",
             py::arg("mesh"), py::arg("vertices"))
-        .def("__len__", &SmoothCollisions<dim>::size, "Get the number of collisions.")
-        .def("empty", &SmoothCollisions<dim>::empty, "Get if the collision set is empty.")
-        .def("clear", &SmoothCollisions<dim>::clear, "Clear the collision set.")
+        .def(
+            "__len__", &SmoothCollisions::size, "Get the number of collisions.")
+        .def(
+            "empty", &SmoothCollisions::empty,
+            "Get if the collision set is empty.")
+        .def("clear", &SmoothCollisions::clear, "Clear the collision set.")
         .def(
             "__getitem__",
-            [](SmoothCollisions<dim>& self, size_t i) -> typename SmoothCollisions<dim>::value_type& { return self[i]; },
+            [](SmoothCollisions& self, size_t i) ->
+            typename SmoothCollisions::value_type& { return self[i]; },
             py::return_value_policy::reference,
             R"ipc_Qu8mg5v7(
             Get a reference to collision at index i.
@@ -66,9 +74,11 @@ void define_SmoothCollisions(py::module_& m, std::string name)
             )ipc_Qu8mg5v7",
             py::arg("i"))
         .def(
-            "to_string", &SmoothCollisions<dim>::to_string, py::arg("mesh"),
+            "to_string", &SmoothCollisions::to_string, py::arg("mesh"),
             py::arg("vertices"), py::arg("param"))
-        .def("n_candidates", &SmoothCollisions<dim>::n_candidates, "Get the number of candidates.");
+        .def(
+            "n_candidates", &SmoothCollisions::n_candidates,
+            "Get the number of candidates.");
 }
 
 void define_normal_collisions(py::module_& m)
@@ -91,9 +101,8 @@ void define_normal_collisions(py::module_& m)
                 dmin: Minimum distance.
                 broad_phase: Broad-phase to use.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"), py::arg("dhat"),
-            py::arg("dmin") = 0,
-            py::arg("broad_phase") = make_default_broad_phase())
+            "mesh"_a, "vertices"_a, "dhat"_a, "dmin"_a = 0,
+            "broad_phase"_a = make_default_broad_phase())
         .def(
             "build",
             py::overload_cast<
@@ -110,8 +119,7 @@ void define_normal_collisions(py::module_& m)
                 dhat: The activation distance of the barrier.
                 dmin:  Minimum distance.
             )ipc_Qu8mg5v7",
-            py::arg("candidates"), py::arg("mesh"), py::arg("vertices"),
-            py::arg("dhat"), py::arg("dmin") = 0)
+            "candidates"_a, "mesh"_a, "vertices"_a, "dhat"_a, "dmin"_a = 0)
         .def(
             "compute_minimum_distance",
             &NormalCollisions::compute_minimum_distance,
@@ -125,7 +133,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 The minimum distance between any non-adjacent elements.
             )ipc_Qu8mg5v7",
-            py::arg("mesh"), py::arg("vertices"))
+            "mesh"_a, "vertices"_a)
         .def(
             "__len__", &NormalCollisions::size, "Get the number of collisions.")
         .def(
@@ -147,7 +155,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 A reference to the collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
+            "i"_a)
         .def(
             "is_vertex_vertex", &NormalCollisions::is_vertex_vertex,
             R"ipc_Qu8mg5v7(
@@ -159,7 +167,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 If the collision at i is a vertex-vertex collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
+            "i"_a)
         .def(
             "is_edge_vertex", &NormalCollisions::is_edge_vertex,
             R"ipc_Qu8mg5v7(
@@ -171,7 +179,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 If the collision at i is an edge-vertex collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
+            "i"_a)
         .def(
             "is_edge_edge", &NormalCollisions::is_edge_edge,
             R"ipc_Qu8mg5v7(
@@ -183,7 +191,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 If the collision at i is an edge-edge collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
+            "i"_a)
         .def(
             "is_face_vertex", &NormalCollisions::is_face_vertex,
             R"ipc_Qu8mg5v7(
@@ -195,7 +203,7 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 If the collision at i is an face-vertex collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
+            "i"_a)
         .def(
             "is_plane_vertex", &NormalCollisions::is_plane_vertex,
             R"ipc_Qu8mg5v7(
@@ -207,10 +215,8 @@ void define_normal_collisions(py::module_& m)
             Returns:
                 If the collision at i is an plane-vertex collision.
             )ipc_Qu8mg5v7",
-            py::arg("i"))
-        .def(
-            "__str__", &NormalCollisions::to_string, py::arg("mesh"),
-            py::arg("vertices"))
+            "i"_a)
+        .def("__str__", &NormalCollisions::to_string, "mesh"_a, "vertices"_a)
         .def_property(
             "use_area_weighting", &NormalCollisions::use_area_weighting,
             &NormalCollisions::set_use_area_weighting,
@@ -231,11 +237,10 @@ void define_normal_collisions(py::module_& m)
         .def_readwrite("fv_collisions", &NormalCollisions::fv_collisions)
         .def_readwrite("pv_collisions", &NormalCollisions::pv_collisions);
 
-    py::class_<SmoothCollision<6>>(m, "SmoothCollision2")
-        .def("n_dofs", &SmoothCollision<6>::n_dofs, "Get the degree of freedom")
+    py::class_<SmoothCollision>(m, "SmoothCollision2")
+        .def("n_dofs", &SmoothCollision::n_dofs, "Get the degree of freedom")
         .def(
-            "__call__",
-            &SmoothCollision<6>::operator(),
+            "__call__", &SmoothCollision::operator(),
             R"ipc_Qu8mg5v7(
             Compute the potential.
     
@@ -249,7 +254,7 @@ void define_normal_collisions(py::module_& m)
             py::arg("positions"), py::arg("params"))
         .def(
             "__getitem__",
-            [](SmoothCollision<6>& self, size_t i) -> long { return self[i]; },
+            [](SmoothCollision& self, size_t i) -> long { return self[i]; },
             R"ipc_Qu8mg5v7(
             Get primitive id.
 
@@ -261,9 +266,12 @@ void define_normal_collisions(py::module_& m)
             )ipc_Qu8mg5v7",
             py::arg("i"));
 
-    define_SmoothCollisionTemplate<SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>, SmoothCollision<6>>(m, "Edge2Point2Collision");
-    define_SmoothCollisionTemplate<SmoothCollisionTemplate<max_vert_2d, Point2, Point2>, SmoothCollision<6>>(m, "Point2Point2Collision");
+    define_SmoothCollisionTemplate<
+        SmoothCollisionTemplate<Edge2, Point2>, SmoothCollision>(
+        m, "Edge2Point2Collision");
+    define_SmoothCollisionTemplate<
+        SmoothCollisionTemplate<Point2, Point2>, SmoothCollision>(
+        m, "Point2Point2Collision");
 
-    define_SmoothCollisions<2>(m, "SmoothCollisions2");
-    define_SmoothCollisions<3>(m, "SmoothCollisions3");
+    define_SmoothCollisions(m, "SmoothCollisions");
 }

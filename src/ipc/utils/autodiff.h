@@ -29,6 +29,7 @@
 #endif
 
 #include <Eigen/Core>
+
 #include <cmath>
 #include <stdexcept>
 

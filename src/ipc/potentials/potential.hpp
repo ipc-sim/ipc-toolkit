@@ -59,14 +59,16 @@ public:
     /// @param x The collision stencil's degrees of freedom.
     /// @return The potential.
     virtual double operator()(
-        const TCollision& collision, Eigen::ConstRef<Vector<double, -1, element_size>> x) const = 0;
+        const TCollision& collision,
+        Eigen::ConstRef<Vector<double, -1, element_size>> x) const = 0;
 
     /// @brief Compute the gradient of the potential for a single collision.
     /// @param collision The collision.
     /// @param x The collision stencil's degrees of freedom.
     /// @return The gradient of the potential.
     virtual Vector<double, -1, element_size> gradient(
-        const TCollision& collision, Eigen::ConstRef<Vector<double, -1, element_size>> x) const = 0;
+        const TCollision& collision,
+        Eigen::ConstRef<Vector<double, -1, element_size>> x) const = 0;
 
     /// @brief Compute the hessian of the potential for a single collision.
     /// @param collision The collision.

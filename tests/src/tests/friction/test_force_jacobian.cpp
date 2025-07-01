@@ -318,7 +318,8 @@ TEST_CASE(
 
     std::vector<bool> is_on_surface =
         CollisionMesh::construct_is_on_surface(X.rows(), E);
-    CollisionMesh mesh(is_on_surface, std::vector<bool>(X.rows(), false), X, E, F);
+    CollisionMesh mesh(
+        is_on_surface, std::vector<bool>(X.rows(), false), X, E, F);
     mesh.init_area_jacobians();
 
     X = mesh.vertices(X);
@@ -344,18 +345,18 @@ TEST_CASE(
         mesh, Ut, U, collisions, mu, epsv_dt, dhat, kappa, true);
 }
 
-template <int dim>
 void check_smooth_friction_force_jacobian(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& Ut,
     const Eigen::MatrixXd& U,
-    const SmoothCollisions<dim>& collisions,
+    const SmoothCollisions& collisions,
     const double mu,
     const double epsv_times_h,
     const ParameterType& params,
     const double barrier_stiffness,
     const bool recompute_collisions)
 {
+    const int dim = mesh.dim();
     const double dhat = params.dhat;
     const Eigen::MatrixXd& X = mesh.rest_positions();
     double distance_t0 = collisions.compute_minimum_distance(mesh, X + Ut);
@@ -370,7 +371,7 @@ void check_smooth_friction_force_jacobian(
     CAPTURE(mu, epsv_times_h, dhat, barrier_stiffness, collisions.size());
 
     TangentialCollisions friction_collisions;
-    friction_collisions.build_for_smooth_contact<dim>(
+    friction_collisions.build_for_smooth_contact(
         mesh, X + Ut, collisions, params, barrier_stiffness,
         Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
     CHECK(friction_collisions.size());
@@ -415,64 +416,58 @@ void check_smooth_friction_force_jacobian(
 
     ///////////////////////////////////////////////////////////////////////////
 
-    auto create_smooth_collision =
-        [&](const CollisionMesh& fd_mesh,
-            const Eigen::MatrixXd& fd_lagged_positions) {
-            SmoothCollisions<dim> fd_collisions;
-            assert(friction_collisions.size() == 1);
+    auto create_smooth_collision = [&](const CollisionMesh& fd_mesh,
+                                       const Eigen::MatrixXd&
+                                           fd_lagged_positions) {
+        SmoothCollisions fd_collisions;
+        assert(friction_collisions.size() == 1);
 
-            if constexpr (dim == 3) {
-                auto cc = friction_collisions[0].smooth_collision_3d;
-
-                std::shared_ptr<SmoothCollision<max_vert_3d>> fd_cc;
-                if (cc->type() == CollisionType::EdgeEdge)
-                    fd_cc = std::make_shared<
-                        SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>>(
-                        (*cc)[0], (*cc)[1],
-                        PrimitiveDistType<Edge3, Edge3>::type::AUTO, fd_mesh,
-                        params, dhat, fd_lagged_positions);
-                else if (cc->type() == CollisionType::EdgeVertex)
-                    fd_cc = std::make_shared<
-                        SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>>(
+        auto cc = friction_collisions[0].smooth_collision;
+        std::shared_ptr<SmoothCollision> fd_cc;
+        if (dim == 3) {
+            if (cc->type() == CollisionType::EdgeEdge)
+                fd_cc = std::make_shared<SmoothCollisionTemplate<Edge3, Edge3>>(
+                    (*cc)[0], (*cc)[1],
+                    PrimitiveDistType<Edge3, Edge3>::type::AUTO, fd_mesh,
+                    params, dhat, fd_lagged_positions);
+            else if (cc->type() == CollisionType::EdgeVertex)
+                fd_cc =
+                    std::make_shared<SmoothCollisionTemplate<Edge3, Point3>>(
                         (*cc)[0], (*cc)[1],
                         PrimitiveDistType<Edge3, Point3>::type::AUTO, fd_mesh,
                         params, dhat, fd_lagged_positions);
-                else if (cc->type() == CollisionType::VertexVertex)
-                    fd_cc = std::make_shared<
-                        SmoothCollisionTemplate<max_vert_3d, Point3, Point3>>(
+            else if (cc->type() == CollisionType::VertexVertex)
+                fd_cc =
+                    std::make_shared<SmoothCollisionTemplate<Point3, Point3>>(
                         (*cc)[0], (*cc)[1],
                         PrimitiveDistType<Point3, Point3>::type::AUTO, fd_mesh,
                         params, dhat, fd_lagged_positions);
-                else if (cc->type() == CollisionType::FaceVertex)
-                    fd_cc = std::make_shared<
-                        SmoothCollisionTemplate<max_vert_3d, Face, Point3>>(
-                        (*cc)[0], (*cc)[1],
-                        PrimitiveDistType<Face, Point3>::type::AUTO, fd_mesh,
-                        params, dhat, fd_lagged_positions);
+            else if (cc->type() == CollisionType::FaceVertex)
+                fd_cc = std::make_shared<SmoothCollisionTemplate<Face, Point3>>(
+                    (*cc)[0], (*cc)[1],
+                    PrimitiveDistType<Face, Point3>::type::AUTO, fd_mesh,
+                    params, dhat, fd_lagged_positions);
 
-                fd_collisions.collisions.push_back(fd_cc);
-            } else {
-                auto cc = friction_collisions[0].smooth_collision_2d;
-
-                std::shared_ptr<SmoothCollision<max_vert_2d>> fd_cc;
-                if (cc->type() == CollisionType::EdgeVertex)
-                    fd_cc = std::make_shared<
-                        SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>>(
+            fd_collisions.collisions.push_back(fd_cc);
+        } else {
+            if (cc->type() == CollisionType::EdgeVertex)
+                fd_cc =
+                    std::make_shared<SmoothCollisionTemplate<Edge2, Point2>>(
                         (*cc)[0], (*cc)[1],
                         PrimitiveDistType<Edge2, Point2>::type::AUTO, fd_mesh,
                         params, dhat, fd_lagged_positions);
-                else if (cc->type() == CollisionType::VertexVertex)
-                    fd_cc = std::make_shared<
-                        SmoothCollisionTemplate<max_vert_2d, Point2, Point2>>(
+            else if (cc->type() == CollisionType::VertexVertex)
+                fd_cc =
+                    std::make_shared<SmoothCollisionTemplate<Point2, Point2>>(
                         (*cc)[0], (*cc)[1],
                         PrimitiveDistType<Point2, Point2>::type::AUTO, fd_mesh,
                         params, dhat, fd_lagged_positions);
 
-                fd_collisions.collisions.push_back(fd_cc);
-            }
+            fd_collisions.collisions.push_back(fd_cc);
+        }
 
-            return fd_collisions;
-        };
+        return fd_collisions;
+    };
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -483,7 +478,7 @@ void check_smooth_friction_force_jacobian(
     //    Eigen::VectorXd::Zero(X.size());
     //    {
     //        auto cc = create_smooth_collision(mesh, lagged_positions);
-    //        SmoothContactPotential<SmoothCollisions<dim>> potential(params);
+    //        SmoothContactPotential<SmoothCollisions> potential(params);
     //        Eigen::VectorXd g = potential.gradient(cc, mesh,
     //        lagged_positions); Eigen::SparseMatrix<double> h =
     //        potential.hessian(cc, mesh, lagged_positions);
@@ -499,7 +494,7 @@ void check_smooth_friction_force_jacobian(
     //        auto fd_cc = create_smooth_collision(fd_mesh,
     //        fd_lagged_positions);
 
-    //        SmoothContactPotential<SmoothCollisions<dim>> potential(params);
+    //        SmoothContactPotential<SmoothCollisions> potential(params);
     //        return potential.gradient(fd_cc, fd_mesh,
     //        fd_lagged_positions).norm();
     //    };
@@ -522,11 +517,11 @@ void check_smooth_friction_force_jacobian(
 
         CollisionMesh fd_mesh(fd_X, mesh.edges(), mesh.faces());
 
-        SmoothCollisions<dim> fd_collisions =
+        auto fd_collisions =
             create_smooth_collision(fd_mesh, fd_lagged_positions);
 
         TangentialCollisions fd_friction_collisions;
-        fd_friction_collisions.build_for_smooth_contact<dim>(
+        fd_friction_collisions.build_for_smooth_contact(
             fd_mesh, fd_lagged_positions, fd_collisions, params,
             barrier_stiffness, Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
 
@@ -555,11 +550,10 @@ void check_smooth_friction_force_jacobian(
         Eigen::MatrixXd fd_Ut = fd::unflatten(ut, Ut.cols());
         Eigen::MatrixXd fd_lagged_positions = X + fd_Ut;
 
-        SmoothCollisions<dim> fd_collisions =
-            create_smooth_collision(mesh, fd_lagged_positions);
+        auto fd_collisions = create_smooth_collision(mesh, fd_lagged_positions);
 
         TangentialCollisions fd_friction_collisions;
-        fd_friction_collisions.build_for_smooth_contact<dim>(
+        fd_friction_collisions.build_for_smooth_contact(
             mesh, fd_lagged_positions, fd_collisions, params, barrier_stiffness,
             Eigen::VectorXd::Ones(mesh.num_vertices()) * mu);
 
@@ -601,7 +595,7 @@ void check_smooth_friction_force_jacobian(
 TEST_CASE(
     "Smooth friction force jacobian 2D", "[friction-smooth][force-jacobian]")
 {
-    SmoothFrictionData<2> data = smooth_friction_data_generator_2d();
+    SmoothFrictionData data = smooth_friction_data_generator_2d();
     const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, param, barrier_stiffness] =
         data;
 
@@ -612,7 +606,7 @@ TEST_CASE(
 
     CollisionMesh mesh(X, E, F);
 
-    check_smooth_friction_force_jacobian<2>(
+    check_smooth_friction_force_jacobian(
         mesh, Ut, U, collisions, mu, epsv_times_h, param, barrier_stiffness,
         false);
 }
@@ -620,7 +614,11 @@ TEST_CASE(
 TEST_CASE(
     "Smooth friction force jacobian 3D", "[friction-smooth][force-jacobian]")
 {
-    SmoothFrictionData<3> data = smooth_friction_data_generator_3d();
+#if (defined(WIN32) || defined(_WIN32) || defined(__WIN32)) && !defined(NDEBUG)
+    SKIP("'Smooth friction force jacobian 3D' test is skipped in debug mode");
+#endif
+
+    SmoothFrictionData data = smooth_friction_data_generator_3d();
     const auto& [V0, V1, E, F, collisions, mu, epsv_times_h, param, barrier_stiffness] =
         data;
 
@@ -631,7 +629,7 @@ TEST_CASE(
 
     CollisionMesh mesh(X, E, F);
 
-    check_smooth_friction_force_jacobian<3>(
+    check_smooth_friction_force_jacobian(
         mesh, Ut, U, collisions, mu, epsv_times_h, param, barrier_stiffness,
         false);
 }

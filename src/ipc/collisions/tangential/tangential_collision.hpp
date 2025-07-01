@@ -2,13 +2,13 @@
 
 #include <ipc/friction/smooth_friction_mollifier.hpp>
 #include <ipc/potentials/normal_potential.hpp>
-#include <ipc/tangent/relative_velocity.hpp>
 #include <ipc/smooth_contact/collisions/smooth_collision.hpp>
+#include <ipc/tangent/relative_velocity.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 
 namespace ipc {
 
-class TangentialCollision : virtual public CollisionStencil<4> {
+class TangentialCollision : virtual public CollisionStencil {
 protected:
     /// @brief Initialize the collision.
     /// @param collision NormalCollision stencil.
@@ -90,8 +90,7 @@ public:
 public:
     /// @brief Normal force magnitude
     double normal_force_magnitude;
-    std::shared_ptr<SmoothCollision<max_vert_2d>> smooth_collision_2d;
-    std::shared_ptr<SmoothCollision<max_vert_3d>> smooth_collision_3d;
+    std::shared_ptr<SmoothCollision> smooth_collision;
 
     /// @brief Ratio between normal and tangential forces (e.g., friction coefficient)
     double mu;

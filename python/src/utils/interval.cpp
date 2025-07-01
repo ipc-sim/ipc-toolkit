@@ -3,7 +3,6 @@
 
 #include <ipc/utils/interval.hpp>
 
-namespace py = pybind11;
 #ifdef IPC_TOOLKIT_WITH_FILIB
 using namespace filib;
 #endif
@@ -44,8 +43,8 @@ void define_interval(py::module_& m)
 
     py::class_<Interval>(m_filib, "Interval")
         .def(py::init())
-        .def(py::init<double>(), py::arg("x"))
-        .def(py::init<double, double>(), py::arg("x"), py::arg("y"))
+        .def(py::init<double>(), "x"_a)
+        .def(py::init<double, double>(), "x"_a, "y"_a)
         .def(
             "__str__",
             [](const Interval& self) {

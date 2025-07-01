@@ -72,7 +72,7 @@ std::string tagsopt = "[.][smooth_potential]";
 //     }
 
 //     {
-//         SmoothCollisions<3> collisions;
+//         SmoothCollisions collisions;
 
 //         ParameterType param(dhat, 0.8, 0, 1, 0, 2);
 //         collisions.build(mesh, vertices, param, false, method);
@@ -82,7 +82,7 @@ std::string tagsopt = "[.][smooth_potential]";
 //     }
 
 //     {
-//         SmoothCollisions<3> collisions;
+//         SmoothCollisions collisions;
 
 //         ParameterType param(dhat, 1, 0, 0, 0.1, 2);
 //         collisions.build(mesh, vertices, param, false, method);
@@ -92,7 +92,7 @@ std::string tagsopt = "[.][smooth_potential]";
 //     }
 
 //     {
-//         SmoothCollisions<3> collisions;
+//         SmoothCollisions collisions;
 
 //         ParameterType param(dhat, 0.8, 0, 0, 0.1, 2);
 //         collisions.build(mesh, vertices, param, false, method);
@@ -165,7 +165,7 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
 
     CollisionMesh mesh;
 
-    SmoothCollisions<3> collisions;
+    SmoothCollisions collisions;
     if (all_vertices_on_surface) {
         mesh = CollisionMesh(vertices, edges, faces);
     } else {
@@ -181,7 +181,7 @@ TEST_CASE("Smooth barrier potential full gradient and hessian 3D", tagsopt)
     CHECK(collisions.size() > 0);
     CHECK(!has_intersections(mesh, vertices));
 
-    SmoothContactPotential<SmoothCollisions<3>> potential(param);
+    SmoothContactPotential potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
 
     // -------------------------------------------------------------------------
@@ -259,7 +259,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^2", "[smooth_potential]")
     CollisionMesh mesh;
     ParameterType param(dhat, 0.9, -0.05, 0.95, 0.05, 1);
     param.set_adaptive_dhat_ratio(min_dist_ratio);
-    SmoothCollisions<2> collisions;
+    SmoothCollisions collisions;
     mesh = CollisionMesh(vertices, edges, faces);
     collisions.compute_adaptive_dhat(mesh, vertices, param, method);
     collisions.build(mesh, vertices, param, adaptive_dhat, method);
@@ -270,7 +270,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^2", "[smooth_potential]")
 
     CHECK(!has_intersections(mesh, vertices));
 
-    SmoothContactPotential<SmoothCollisions<2>> potential(param);
+    SmoothContactPotential potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
 
     // -------------------------------------------------------------------------
@@ -347,7 +347,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^1", "[smooth_potential]")
     CollisionMesh mesh;
     ParameterType param(dhat, 0.9, -0.05, 0.95, 0.05, 1);
     param.set_adaptive_dhat_ratio(min_dist_ratio);
-    SmoothCollisions<2> collisions;
+    SmoothCollisions collisions;
     mesh = CollisionMesh(vertices, edges, faces);
     collisions.compute_adaptive_dhat(mesh, vertices, param, method);
     collisions.build(mesh, vertices, param, adaptive_dhat, method);
@@ -358,7 +358,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^1", "[smooth_potential]")
 
     CHECK(!has_intersections(mesh, vertices));
 
-    SmoothContactPotential<SmoothCollisions<2>> potential(param);
+    SmoothContactPotential potential(param);
     std::cout << "energy: " << potential(collisions, mesh, vertices) << "\n";
 
     // -------------------------------------------------------------------------
@@ -449,7 +449,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^1", "[smooth_potential]")
 //     {
 //         igl::Timer timer;
 //         timer.start();
-//         SmoothCollisions<3> collisions;
+//         SmoothCollisions collisions;
 
 //         ParameterType param(dhat, 0.8, 0, 0, 0.1, 2);
 //         collisions.build(mesh, vertices, param, false, method);
@@ -461,7 +461,7 @@ TEST_CASE("Smooth barrier potential real sim 2D C^1", "[smooth_potential]")
 //         std::cout << "OIPC build time " << timer.getElapsedTime() << " s\n";
 //         timer.start();
 
-//         SmoothContactPotential<SmoothCollisions<3>> potential(param);
+//         SmoothContactPotential<SmoothCollisions> potential(param);
 //         const Eigen::VectorXd grad_b =
 //             potential.gradient(collisions, mesh, vertices);
 

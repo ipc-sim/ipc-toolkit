@@ -1,7 +1,7 @@
 #pragma once
-#include "point_face.hpp"
-#include "point_edge.hpp"
 #include "edge_edge.hpp"
+#include "point_edge.hpp"
+#include "point_face.hpp"
 
 namespace ipc {
 template <typename scalar, int dim>
@@ -37,8 +37,7 @@ GradType<13> edge_edge_mollifier_gradient(
     const double& dist_sqr);
 
 /// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
-HessianType<13>
-edge_edge_mollifier_hessian(
+HessianType<13> edge_edge_mollifier_hessian(
     const Eigen::Ref<const Vector3d>& ea0,
     const Eigen::Ref<const Vector3d>& ea1,
     const Eigen::Ref<const Vector3d>& eb0,
@@ -55,8 +54,7 @@ scalar point_face_mollifier(
     const scalar& dist_sqr);
 
 /// @brief Compute the gradient of the mollifier function wrt. 4 edge points and the distance squared
-GradType<13>
-point_face_mollifier_gradient(
+GradType<13> point_face_mollifier_gradient(
     const Eigen::Ref<const Vector3d>& p,
     const Eigen::Ref<const Vector3d>& e0,
     const Eigen::Ref<const Vector3d>& e1,
@@ -64,8 +62,7 @@ point_face_mollifier_gradient(
     const double& dist_sqr);
 
 /// @brief Compute the hessian of the mollifier function wrt. 4 edge points and the distance squared
-HessianType<13>
-point_face_mollifier_hessian(
+HessianType<13> point_face_mollifier_hessian(
     const Eigen::Ref<const Vector3d>& p,
     const Eigen::Ref<const Vector3d>& e0,
     const Eigen::Ref<const Vector3d>& e1,

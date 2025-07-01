@@ -3,7 +3,6 @@
 #include <ipc/distance/distance_type.hpp>
 #include <ipc/distance/point_triangle.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 void define_point_triangle_distance(py::module_& m)
@@ -26,8 +25,8 @@ void define_point_triangle_distance(py::module_& m)
         Returns:
             The distance between the point and triangle.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"),
-        py::arg("dtype") = PointTriangleDistanceType::AUTO);
+        "p"_a, "t0"_a, "t1"_a, "t2"_a,
+        "dtype"_a = PointTriangleDistanceType::AUTO);
 
     m.def(
         "point_triangle_distance_gradient", &point_triangle_distance_gradient,
@@ -47,8 +46,8 @@ void define_point_triangle_distance(py::module_& m)
         Returns:
             The gradient of the distance wrt p, t0, t1, and t2.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"),
-        py::arg("dtype") = PointTriangleDistanceType::AUTO);
+        "p"_a, "t0"_a, "t1"_a, "t2"_a,
+        "dtype"_a = PointTriangleDistanceType::AUTO);
 
     m.def(
         "point_triangle_distance_hessian", &point_triangle_distance_hessian,
@@ -68,6 +67,6 @@ void define_point_triangle_distance(py::module_& m)
         Returns:
             The hessian of the distance wrt p, t0, t1, and t2.
         )ipc_Qu8mg5v7",
-        py::arg("p"), py::arg("t0"), py::arg("t1"), py::arg("t2"),
-        py::arg("dtype") = PointTriangleDistanceType::AUTO);
+        "p"_a, "t0"_a, "t1"_a, "t2"_a,
+        "dtype"_a = PointTriangleDistanceType::AUTO);
 }

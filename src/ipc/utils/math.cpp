@@ -1,6 +1,8 @@
 #include "math.hpp"
-#include <ipc/smooth_contact/common.hpp>
+
 #include "AutodiffTypes.hpp"
+
+#include <ipc/smooth_contact/common.hpp>
 
 DECLARE_DIFFSCALAR_BASE();
 
@@ -186,7 +188,8 @@ HessianType<9> negative_orientation_penalty_hess(
     const double& beta)
 {
     const Vector3d n = t1.cross(t2);
-    const Eigen::Matrix<double, 3, 6> cross_grad = cross_product_gradient(t1, t2);
+    const Eigen::Matrix<double, 3, 6> cross_grad =
+        cross_product_gradient(t1, t2);
     const std::array<Matrix6d, 3> cross_hess = cross_product_hessian(t1, t2);
     auto [y, dy, ddy] = opposite_direction_penalty_hess(n, d, alpha, beta);
 

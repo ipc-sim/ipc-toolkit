@@ -168,10 +168,10 @@ using ArrayMax4d = ArrayMax4<double>;
 /// @brief A dynamic size array with a fixed maximum size of 4×1
 using ArrayMax4i = ArrayMax4<int>;
 
+template <int dim> using GradType = std::tuple<double, Vector<double, dim>>;
 template <int dim>
-using GradType = std::tuple<double, Vector<double, dim>>;
-template <int dim>
-using HessianType = std::tuple<double, Vector<double, dim>, Eigen::Matrix<double, dim, dim>>;
+using HessianType =
+    std::tuple<double, Vector<double, dim>, Eigen::Matrix<double, dim, dim>>;
 
 /// @brief Matrix projection onto positive definite cone
 /// @param A Symmetric matrix to project

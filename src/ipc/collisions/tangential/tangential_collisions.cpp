@@ -11,11 +11,10 @@
 
 namespace ipc {
 
-template <int dim>
 void TangentialCollisions::build_for_smooth_contact(
     const CollisionMesh& mesh,
     const Eigen::MatrixXd& vertices,
-    const SmoothCollisions<dim>& collisions,
+    const SmoothCollisions& collisions,
     const ParameterType& params,
     const double barrier_stiffness,
     const Eigen::VectorXd& mus,
@@ -35,16 +34,15 @@ void TangentialCollisions::build_for_smooth_contact(
     for (size_t i = 0; i < collisions.size(); i++) {
         const auto& cc = collisions[i];
         Eigen::VectorXd contact_potential_grad =
-            cc.gradient(cc.dof(vertices, edges, faces), params);
+            cc.gradient(cc.dof(vertices), params);
         const double contact_force =
             barrier_stiffness * contact_potential_grad.norm();
 
-        if constexpr (dim == 3) {
+        if (mesh.dim() == 3) {
             TangentialCollision* ptr = nullptr;
-            if (const auto cvv = dynamic_cast<const SmoothCollisionTemplate<
-                    max_vert_3d, Point3, Point3>*>(&cc)) {
-                Eigen::VectorXd collision_points =
-                    cvv->core_dof(vertices, edges, faces);
+            if (const auto cvv = dynamic_cast<
+                    const SmoothCollisionTemplate<Point3, Point3>*>(&cc)) {
+                Eigen::VectorXd collision_points = cvv->core_dof(vertices);
                 FC_vv.emplace_back(
                     VertexVertexNormalCollision(
                         cc[0], cc[1], 1., Eigen::SparseVector<double>()),
@@ -55,11 +53,10 @@ void TangentialCollisions::build_for_smooth_contact(
                 FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
                 ptr = &(FC_vv.back());
             } else if (
-                const auto cev = dynamic_cast<
-                    const SmoothCollisionTemplate<max_vert_3d, Edge3, Point3>*>(
-                    &cc)) {
-                Eigen::VectorXd collision_points =
-                    cev->core_dof(vertices, edges, faces);
+                const auto cev =
+                    dynamic_cast<const SmoothCollisionTemplate<Edge3, Point3>*>(
+                        &cc)) {
+                Eigen::VectorXd collision_points = cev->core_dof(vertices);
                 collision_points =
                     collision_points({ 6, 7, 8, 0, 1, 2, 3, 4, 5 })
                         .eval(); // {edge, point} -> {point, edge}
@@ -76,12 +73,11 @@ void TangentialCollisions::build_for_smooth_contact(
                 FC_ev.back().mu = blend_mu(edge_mu, mus(vi));
                 ptr = &(FC_ev.back());
             } else if (
-                const auto cee = dynamic_cast<
-                    const SmoothCollisionTemplate<max_vert_3d, Edge3, Edge3>*>(
-                    &cc)) {
-                Eigen::VectorXd collision_points =
-                    cee->core_dof(vertices, edges, faces);
-                const auto vert_ids = cee->core_vertex_ids(edges, faces);
+                const auto cee =
+                    dynamic_cast<const SmoothCollisionTemplate<Edge3, Edge3>*>(
+                        &cc)) {
+                Eigen::VectorXd collision_points = cee->core_dof(vertices);
+                const auto vert_ids = cee->core_vertex_ids();
                 const Eigen::Vector3d ea0 = vertices.row(vert_ids[0]);
                 const Eigen::Vector3d ea1 = vertices.row(vert_ids[1]);
                 const Eigen::Vector3d eb0 = vertices.row(vert_ids[2]);
@@ -107,11 +103,10 @@ void TangentialCollisions::build_for_smooth_contact(
                 FC_ee.back().mu = blend_mu(ea_mu, eb_mu);
                 ptr = &(FC_ee.back());
             } else if (
-                const auto cfv = dynamic_cast<
-                    const SmoothCollisionTemplate<max_vert_3d, Face, Point3>*>(
-                    &cc)) {
-                Eigen::VectorXd collision_points =
-                    cfv->core_dof(vertices, edges, faces);
+                const auto cfv =
+                    dynamic_cast<const SmoothCollisionTemplate<Face, Point3>*>(
+                        &cc)) {
+                Eigen::VectorXd collision_points = cfv->core_dof(vertices);
                 collision_points =
                     collision_points({ 9, 10, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8 })
                         .eval(); // {face, point} -> {point, face}
@@ -129,13 +124,12 @@ void TangentialCollisions::build_for_smooth_contact(
                 ptr = &(FC_fv.back());
             }
             if (ptr)
-                ptr->smooth_collision_3d = collisions.collisions[i];
+                ptr->smooth_collision = collisions.collisions[i];
         } else {
             TangentialCollision* ptr = nullptr;
-            if (const auto cvv = dynamic_cast<const SmoothCollisionTemplate<
-                    max_vert_2d, Point2, Point2>*>(&cc)) {
-                Eigen::VectorXd collision_points =
-                    cvv->core_dof(vertices, edges, faces);
+            if (const auto cvv = dynamic_cast<
+                    const SmoothCollisionTemplate<Point2, Point2>*>(&cc)) {
+                Eigen::VectorXd collision_points = cvv->core_dof(vertices);
                 FC_vv.emplace_back(
                     VertexVertexNormalCollision(
                         cc[0], cc[1], 1., Eigen::SparseVector<double>()),
@@ -146,11 +140,10 @@ void TangentialCollisions::build_for_smooth_contact(
                 FC_vv.back().mu = blend_mu(mus(v0i), mus(v1i));
                 ptr = &(FC_vv.back());
             } else if (
-                const auto cev = dynamic_cast<
-                    const SmoothCollisionTemplate<max_vert_2d, Edge2, Point2>*>(
-                    &cc)) {
-                Eigen::VectorXd collision_points =
-                    cev->core_dof(vertices, edges, faces);
+                const auto cev =
+                    dynamic_cast<const SmoothCollisionTemplate<Edge2, Point2>*>(
+                        &cc)) {
+                Eigen::VectorXd collision_points = cev->core_dof(vertices);
                 collision_points =
                     collision_points({ 4, 5, 0, 1, 2, 3 })
                         .eval(); // {edge, point} -> {point, edge}
@@ -168,28 +161,10 @@ void TangentialCollisions::build_for_smooth_contact(
                 ptr = &(FC_ev.back());
             }
             if (ptr)
-                ptr->smooth_collision_2d = collisions.collisions[i];
+                ptr->smooth_collision = collisions.collisions[i];
         }
     }
 }
-
-template void TangentialCollisions::build_for_smooth_contact<2>(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
-    const SmoothCollisions<2>& collisions,
-    const ParameterType& params,
-    const double barrier_stiffness,
-    const Eigen::VectorXd& mus,
-    const std::function<double(double, double)>& blend_mu);
-
-template void TangentialCollisions::build_for_smooth_contact<3>(
-    const CollisionMesh& mesh,
-    const Eigen::MatrixXd& vertices,
-    const SmoothCollisions<3>& collisions,
-    const ParameterType& params,
-    const double barrier_stiffness,
-    const Eigen::VectorXd& mus,
-    const std::function<double(double, double)>& blend_mu);
 
 void TangentialCollisions::build(
     const CollisionMesh& mesh,

@@ -2,7 +2,6 @@
 
 #include <ipc/barrier/barrier.hpp>
 
-namespace py = pybind11;
 using namespace ipc;
 
 class PyBarrier : public Barrier {
@@ -21,7 +20,7 @@ void define_barrier(py::module_& m)
     py::class_<Barrier, PyBarrier, std::shared_ptr<Barrier>>(m, "Barrier")
         .def(py::init<>())
         .def(
-            "__call__", &Barrier::operator(), py::arg("d"), py::arg("dhat"),
+            "__call__", &Barrier::operator(), "d"_a, "dhat"_a,
             R"ipc_Qu8mg5v7(
             Evaluate the barrier function.
 
@@ -33,8 +32,7 @@ void define_barrier(py::module_& m)
                 The value of the barrier function at d.
             )ipc_Qu8mg5v7")
         .def(
-            "first_derivative", &Barrier::first_derivative, py::arg("d"),
-            py::arg("dhat"),
+            "first_derivative", &Barrier::first_derivative, "d"_a, "dhat"_a,
             R"ipc_Qu8mg5v7(
             Evaluate the first derivative of the barrier function wrt d.
 
@@ -46,8 +44,7 @@ void define_barrier(py::module_& m)
                 The value of the first derivative of the barrier function at d.
             )ipc_Qu8mg5v7")
         .def(
-            "second_derivative", &Barrier::second_derivative, py::arg("d"),
-            py::arg("dhat"),
+            "second_derivative", &Barrier::second_derivative, "d"_a, "dhat"_a,
             R"ipc_Qu8mg5v7(
             Evaluate the second derivative of the barrier function wrt d.
 
@@ -59,7 +56,7 @@ void define_barrier(py::module_& m)
                 The value of the second derivative of the barrier function at d.
             )ipc_Qu8mg5v7")
         .def(
-            "units", &Barrier::units, py::arg("dhat"),
+            "units", &Barrier::units, "dhat"_a,
             R"ipc_Qu8mg5v7(
             Get the units of the barrier function.
 
@@ -121,7 +118,7 @@ void define_barrier(py::module_& m)
         .def(py::init());
 
     m.def(
-        "barrier", &barrier,
+        "barrier", &barrier, "d"_a, "dhat"_a,
         R"ipc_Qu8mg5v7(
         Function that grows to infinity as d approaches 0 from the right.
 
@@ -135,11 +132,10 @@ void define_barrier(py::module_& m)
 
         Returns:
             The value of the barrier function at d.
-        )ipc_Qu8mg5v7",
-        py::arg("d"), py::arg("dhat"));
+        )ipc_Qu8mg5v7");
 
     m.def(
-        "barrier_first_derivative", &barrier_first_derivative,
+        "barrier_first_derivative", &barrier_first_derivative, "d"_a, "dhat"_a,
         R"ipc_Qu8mg5v7(
         Derivative of the barrier function.
 
@@ -154,11 +150,11 @@ void define_barrier(py::module_& m)
 
         Returns:
             The derivative of the barrier wrt d.
-        )ipc_Qu8mg5v7",
-        py::arg("d"), py::arg("dhat"));
+        )ipc_Qu8mg5v7");
 
     m.def(
-        "barrier_second_derivative", &barrier_second_derivative,
+        "barrier_second_derivative", &barrier_second_derivative, "d"_a,
+        "dhat"_a,
         R"ipc_Qu8mg5v7(
         Second derivative of the barrier function.
 
@@ -173,6 +169,5 @@ void define_barrier(py::module_& m)
 
         Returns:
             The second derivative of the barrier wrt d.
-        )ipc_Qu8mg5v7",
-        py::arg("d"), py::arg("dhat"));
+        )ipc_Qu8mg5v7");
 }

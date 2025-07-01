@@ -4,13 +4,14 @@
 #include <ipc/candidates/collision_stencil.hpp>
 #include <ipc/utils/eigen_ext.hpp>
 #include <ipc/utils/logger.hpp>
+
 #include <Eigen/Core>
 
 #include <array>
 
 namespace ipc {
 
-class NormalCollision : virtual public CollisionStencil<4> {
+class NormalCollision : virtual public CollisionStencil {
 public:
     NormalCollision() = default;
 
