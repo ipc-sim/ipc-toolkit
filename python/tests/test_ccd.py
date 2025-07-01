@@ -161,12 +161,15 @@ def test_nonlinear_ccd():
             self.rotation = rotation
             self.delta_rotation = delta_rotation
 
+        # BEGIN_RIGID_2D_CALL
         def __call__(self, t):
             theta = self.rotation + t * self.delta_rotation
             R = np.array([[np.cos(theta), -np.sin(theta)],
                           [np.sin(theta), np.cos(theta)]])
             return R @ self.position + self.translation + t * self.delta_translation
+        # END_RIGID_2D_CALL
 
+        # BEGIN_RIGID_2D_MAX_DISTANCE_FROM_LINEAR
         def max_distance_from_linear(self, t0, t1):
             if self.delta_rotation * (t1 - t0) >= 2 * np.pi:
                 # This is the most conservative estimate
@@ -174,6 +177,7 @@ def test_nonlinear_ccd():
             p_t0 = self(t0)
             p_t1 = self(t1)
             return np.linalg.norm(self((t0 + t1) / 2) - ((p_t1 - p_t0) * 0.5 + p_t0))
+        # END_RIGID_2D_MAX_DISTANCE_FROM_LINEAR
     # END_RIGID_2D_TRAJECTORY
 
     # BEGIN_TEST_RIGID_2D_TRAJECTORY

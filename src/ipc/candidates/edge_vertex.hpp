@@ -18,6 +18,10 @@ public:
 
     int num_vertices() const override { return 3; };
 
+    /// @brief Get the vertex IDs for the edge-vertex pair
+    /// @param edges The edge connectivity matrix
+    /// @param faces The face connectivity matrix
+    /// @return An array of vertex IDs in the order: [vi, e0i, e1i, -1]
     std::array<index_t, 4> vertex_ids(
         Eigen::ConstRef<Eigen::MatrixXi> edges,
         Eigen::ConstRef<Eigen::MatrixXi> faces) const override

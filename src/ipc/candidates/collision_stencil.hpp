@@ -36,7 +36,6 @@ public:
         Eigen::ConstRef<Eigen::MatrixXi> faces) const = 0;
 
     /// @brief Get the vertex attributes of the collision stencil.
-    /// @tparam T Type of the attributes
     /// @param vertices Vertex attributes
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
@@ -63,7 +62,6 @@ public:
     }
 
     /// @brief Select this stencil's DOF from the full matrix of DOF.
-    /// @tparam T Type of the DOF
     /// @param X Full matrix of DOF (rowwise).
     /// @param edges Collision mesh edges
     /// @param faces Collision mesh faces
